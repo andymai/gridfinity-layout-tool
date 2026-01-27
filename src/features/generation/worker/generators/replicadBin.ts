@@ -73,13 +73,13 @@ function decomposeCells(gridUnits: number): number[] {
  * @param cellW_mm Physical width of this cell in mm (after clearance)
  * @param cellD_mm Physical depth of this cell in mm (after clearance)
  */
-function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
+function buildSingleCellSocket(cellW_mm: number, cellD_mm: number, forExport: boolean): Shape3D {
   // Clamp corner radius to fit within cell dimensions
   const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
   const cornerR = Math.min(CORNER_RADIUS, maxRadius);
 
-  // Simplified socket: 2-section loft (top to bottom) instead of 5-section
-  // This is much faster and visually similar since socket is on bottom
+  // Profile insets from outer boundary at each Z breakpoint
+  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
   const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
 
   // Helper to create a rounded rect sketch at a given Z with a given inset
@@ -90,7 +90,24 @@ function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as unknown as Sketch;
   };
 
-  // Simple 2-section loft: top (full size) to bottom (inset)
+  if (forExport) {
+    // Full Gridfinity spec: 5-section loft matching exact profile
+    const Z1 = 0;
+    const Z2 = -(CLEARANCE / 2); // -0.25
+    const Z3 = -SOCKET_BIG_TAPER; // -2.4
+    const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART); // -4.2
+    const Z5 = -SOCKET_HEIGHT; // -5.0
+
+    const s1 = sectionAt(Z1, 0);
+    const s2 = sectionAt(Z2, 0);
+    const s3 = sectionAt(Z3, INSET_MID);
+    const s4 = sectionAt(Z4, INSET_MID);
+    const s5 = sectionAt(Z5, INSET_BOT);
+
+    return s1.loftWith([s2, s3, s4, s5], { ruled: true }) as Shape3D;
+  }
+
+  // Preview: simplified 2-section loft (fast, visually similar)
   const top = sectionAt(0, 0);
   const bottom = sectionAt(-SOCKET_HEIGHT, INSET_BOT);
 
@@ -114,7 +131,8 @@ function buildBaseSocket(
   withScrew: boolean,
   magnetRadius: number,
   magnetDepth: number,
-  screwRadius: number
+  screwRadius: number,
+  forExport: boolean
 ): Shape3D {
   const cellsW = decomposeCells(gridW);
   const cellsD = decomposeCells(gridD);
@@ -140,7 +158,7 @@ function buildBaseSocket(
       const cellD_mm = cellD_units * SIZE - CLEARANCE;
       const cellCenterY = yOffset + (cellD_units * SIZE) / 2 - totalD_mm / 2;
 
-      const cellSocket = buildSingleCellSocket(cellW_mm, cellD_mm).translate([
+      const cellSocket = buildSingleCellSocket(cellW_mm, cellD_mm, forExport).translate([
         cellCenterX,
         cellCenterY,
         0,
@@ -568,10 +586,11 @@ export interface ExportResult {
 }
 
 /**
- * Export the last generated solid in the requested format.
- * If no solid is cached (e.g., worker restarted), regenerates from params.
+ * Export the bin in the requested format with full Gridfinity-spec geometry.
+ * Always regenerates with forExport=true to ensure print-quality geometry
+ * (full 5-section socket profile, fine tessellation).
  *
- * STL: binary mesh with configurable tessellation quality
+ * STL: binary mesh with fine tessellation (0.01mm tolerance, 5° angular)
  * STEP: exact BREP geometry (lossless, CAD-interoperable)
  */
 export async function exportBin(
@@ -580,10 +599,8 @@ export async function exportBin(
   tolerance = 0.01,
   angularTolerance = 5
 ): Promise<ExportResult> {
-  // Regenerate if no cached solid
-  if (!lastSolid) {
-    generateBin(params);
-  }
+  // Always regenerate with full quality for export
+  generateBin(params, undefined, true);
 
   const solid = lastSolid;
   if (!solid) {
@@ -613,7 +630,7 @@ export async function exportBin(
  * Assembly order: base socket + box body + top shape (stacking lip)
  * Then features: dividers, inserts
  */
-export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshData {
+export function generateBin(params: BinParams, onProgress?: ProgressFn, forExport = false): MeshData {
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = totalHeight - GRIDFINITY.BASE_HEIGHT;
@@ -636,7 +653,8 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshDat
     withScrew,
     params.base.magnetDiameter / 2,
     params.base.magnetDepth,
-    params.base.screwDiameter / 2
+    params.base.screwDiameter / 2,
+    forExport
   );
 
   // Stage 2: Build bin box (walls + floor)
