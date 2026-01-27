@@ -13,6 +13,7 @@ import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
+import { BinDesignThumbnail } from './BinDesignThumbnail';
 import type { SavedDesign } from '../types';
 import { useTranslation, useFormatting } from '@/i18n';
 
@@ -236,116 +237,116 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
             </div>
           ) : (
             <ul className="space-y-2">
-              {designs.map((design) => (
-                <li
-                  key={design.id}
-                  className={`group flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
-                    design.id === currentDesignId
-                      ? 'border-accent/50 bg-accent/5'
-                      : 'border-stroke-subtle hover:bg-surface-hover'
-                  }`}
-                >
-                  {/* Thumbnail placeholder */}
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-surface-elevated text-content-disabled">
-                    {design.thumbnail ? (
-                      <img
-                        src={design.thumbnail}
-                        alt=""
-                        className="h-full w-full rounded-md object-cover"
-                      />
-                    ) : (
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              {designs.map((design) => {
+                const isActive = design.id === currentDesignId;
+                const { width, depth, height, compartments } = design.params;
+                const numCompartments = new Set(compartments.cells).size;
+
+                return (
+                  <li
+                    key={design.id}
+                    className={`group relative flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
+                      isActive
+                        ? 'border-accent bg-accent/10 ring-1 ring-accent/30'
+                        : 'border-stroke-subtle hover:bg-surface-hover'
+                    }`}
+                  >
+                    {/* Active badge */}
+                    {isActive && (
+                      <span className="absolute -top-2 left-3 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">
+                        {t('binDesigner.active')}
+                      </span>
+                    )}
+
+                    {/* Isometric thumbnail */}
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md bg-surface-elevated">
+                      <BinDesignThumbnail params={design.params} size={40} />
+                    </div>
+
+                    {/* Name, dimensions & date */}
+                    <div className="min-w-0 flex-1">
+                      {editingId === design.id ? (
+                        <input
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          onBlur={() => void handleRenameConfirm(design)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') void handleRenameConfirm(design);
+                            if (e.key === 'Escape') setEditingId(null);
+                          }}
+                          className="w-full rounded border border-accent bg-surface px-1.5 py-0.5 text-sm text-content outline-none"
+                          autoFocus
+                          aria-label={t('binDesigner.designName')}
                         />
-                      </svg>
-                    )}
-                  </div>
+                      ) : (
+                        <p className="truncate text-sm font-medium text-content">{design.name}</p>
+                      )}
+                      <p className="text-xs text-content-secondary">
+                        {width}×{depth}×{height}u
+                        {numCompartments > 1 && (
+                          <span className="ml-1.5 text-content-tertiary">
+                            · {numCompartments} {t('binDesigner.compartments')}
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-[11px] text-content-tertiary">
+                        {formatRelativeDate(design.updatedAt, { includeTime: true })}
+                      </p>
+                    </div>
 
-                  {/* Name & date */}
-                  <div className="min-w-0 flex-1">
-                    {editingId === design.id ? (
-                      <input
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        onBlur={() => void handleRenameConfirm(design)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') void handleRenameConfirm(design);
-                          if (e.key === 'Escape') setEditingId(null);
-                        }}
-                        className="w-full rounded border border-accent bg-surface px-1.5 py-0.5 text-sm text-content outline-none"
-                        autoFocus
-                        aria-label={t('binDesigner.designName')}
-                      />
-                    ) : (
-                      <p className="truncate text-sm font-medium text-content">{design.name}</p>
-                    )}
-                    <p className="text-xs text-content-secondary">
-                      {formatRelativeDate(design.updatedAt, { includeTime: true })}
-                    </p>
-                  </div>
-
-                  {/* Actions — always visible on touch, hover/focus on desktop */}
-                  <div className="flex items-center gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-                    {design.id !== currentDesignId && (
+                    {/* Actions — always visible on touch, hover/focus on desktop */}
+                    <div className="flex items-center gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                      {!isActive && (
+                        <button
+                          onClick={() => handleLoad(design)}
+                          className="rounded px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10"
+                          aria-label={`Load ${design.name}`}
+                        >{t('binDesigner.load')}</button>
+                      )}
                       <button
-                        onClick={() => handleLoad(design)}
-                        className="rounded px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10"
-                        aria-label={`Load ${design.name}`}
-                      >{t('binDesigner.load')}</button>
-                    )}
-                    <button
-                      onClick={() => handleRenameStart(design)}
-                      className="rounded p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
-                      aria-label={`Rename ${design.name}`}
-                    >
-                      <svg
-                        className="h-3.5 w-3.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
+                        onClick={() => handleRenameStart(design)}
+                        className="rounded p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
+                        aria-label={`Rename ${design.name}`}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => void handleDelete(design.id, design.name)}
-                      className="rounded p-1 text-content-secondary hover:bg-red-500/10 hover:text-red-400"
-                      aria-label={`Delete ${design.name}`}
-                    >
-                      <svg
-                        className="h-3.5 w-3.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
+                        <svg
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => void handleDelete(design.id, design.name)}
+                        className="rounded p-1 text-content-secondary hover:bg-red-500/10 hover:text-red-400"
+                        aria-label={`Delete ${design.name}`}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </li>
-              ))}
+                        <svg
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
