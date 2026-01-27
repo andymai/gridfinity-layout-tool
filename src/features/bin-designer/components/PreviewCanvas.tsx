@@ -19,6 +19,7 @@ import {
   BinNameLabel,
   PreviewControls,
   PreviewSkeleton,
+  GhostDividers,
   type CameraPreset,
 } from './preview';
 import { GradientBackground } from './preview/GradientBackground';
@@ -447,6 +448,9 @@ export function PreviewCanvas() {
 
             {/* Bin mesh with vertex coloring */}
             <BinMesh wireframe={wireframe} color={previewColor} />
+
+            {/* Ghost divider lines (during generation) */}
+            <GhostDividers />
 
             {/* Contact shadows for grounding */}
             <ContactShadows

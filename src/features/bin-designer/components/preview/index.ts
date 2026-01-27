@@ -6,3 +6,4 @@ export { PreviewControls, type CameraPreset } from './PreviewControls';
 export { PreviewSkeleton } from './PreviewSkeleton';
 export { GradientBackground } from './GradientBackground';
 export { FootprintGrid } from './FootprintGrid';
+export { GhostDividers } from './GhostDividers';

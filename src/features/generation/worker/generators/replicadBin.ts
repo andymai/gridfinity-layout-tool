@@ -153,6 +153,36 @@ function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
 }
 
 /**
+ * Build a simplified 3-section socket cell for preview rendering.
+ *
+ * Uses only 3 sections (top, mid, bottom) instead of the full 5-section
+ * profile. Visually similar but generates fewer triangles for faster
+ * preview updates. Export mode uses buildSingleCellSocket for full fidelity.
+ */
+function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
+  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
+  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
+
+  const INSET_TOP = 0;
+  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
+
+  const Z1 = 0;
+  const Z3 = -SOCKET_HEIGHT;
+
+  const sectionAt = (z: number, inset: number): Sketch => {
+    const w = cellW_mm - 2 * inset;
+    const d = cellD_mm - 2 * inset;
+    const r = Math.max(cornerR - inset, 0.1);
+    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as unknown as Sketch;
+  };
+
+  const s1 = sectionAt(Z1, INSET_TOP);
+  const s3 = sectionAt(Z3, INSET_BOT);
+
+  return s1.loftWith([s3], { ruled: true }) as Shape3D;
+}
+
+/**
  * Build the segmented base socket grid for the bin.
  *
  * Decomposes the bin footprint into per-cell sockets (full 42mm or half 21mm cells),
@@ -161,6 +191,8 @@ function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
  *
  * Magnet/screw holes are placed only in full-size (1.0 × 1.0 unit) cells where
  * they physically fit.
+ *
+ * @param forExport If true, uses full 5-section socket profile. Preview uses 3-section.
  */
 function buildBaseSocket(
   gridW: number,
@@ -169,7 +201,8 @@ function buildBaseSocket(
   withScrew: boolean,
   magnetRadius: number,
   magnetDepth: number,
-  screwRadius: number
+  screwRadius: number,
+  forExport = false
 ): Shape3D {
   // Build and position each cell socket
   let baseSocket: Shape3D | null = null;
@@ -177,11 +210,12 @@ function buildBaseSocket(
   forEachCell(gridW, gridD, (cell) => {
     const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
     const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
-    const cellSocket = buildSingleCellSocket(cellW_mm, cellD_mm).translate([
-      cell.centerX,
-      cell.centerY,
-      0,
-    ]);
+    // Use simplified 3-section socket for preview, full 5-section for export
+    const cellSocket = (
+      forExport
+        ? buildSingleCellSocket(cellW_mm, cellD_mm)
+        : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
+    ).translate([cell.centerX, cell.centerY, 0]);
     baseSocket = baseSocket ? baseSocket.fuse(cellSocket) : cellSocket;
   });
 
@@ -517,24 +551,34 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
 
 /**
  * Convert Replicad's indexed mesh to flat triangle arrays (our MeshData format).
+ *
+ * @param mesh Replicad mesh with indexed vertices/normals/triangles
+ * @param skipNormals If true, returns empty normals array (GPU will use flat shading)
  */
-function indexedMeshToFlat(mesh: {
-  vertices: number[];
-  normals: number[];
-  triangles: number[];
-}): MeshData {
+function indexedMeshToFlat(
+  mesh: {
+    vertices: number[];
+    normals: number[];
+    triangles: number[];
+  },
+  skipNormals = false
+): MeshData {
   const triCount = mesh.triangles.length / 3;
   const flatVertices = new Float32Array(mesh.triangles.length * 3);
-  const flatNormals = new Float32Array(mesh.triangles.length * 3);
+  const flatNormals = skipNormals
+    ? new Float32Array(0)
+    : new Float32Array(mesh.triangles.length * 3);
 
   for (let i = 0; i < mesh.triangles.length; i++) {
     const vi = mesh.triangles[i];
     flatVertices[i * 3] = mesh.vertices[vi * 3];
     flatVertices[i * 3 + 1] = mesh.vertices[vi * 3 + 1];
     flatVertices[i * 3 + 2] = mesh.vertices[vi * 3 + 2];
-    flatNormals[i * 3] = mesh.normals[vi * 3];
-    flatNormals[i * 3 + 1] = mesh.normals[vi * 3 + 1];
-    flatNormals[i * 3 + 2] = mesh.normals[vi * 3 + 2];
+    if (!skipNormals) {
+      flatNormals[i * 3] = mesh.normals[vi * 3];
+      flatNormals[i * 3 + 1] = mesh.normals[vi * 3 + 1];
+      flatNormals[i * 3 + 2] = mesh.normals[vi * 3 + 2];
+    }
   }
 
   return {
@@ -605,8 +649,17 @@ export async function exportBin(
  * Generate a complete Gridfinity bin from parameters.
  * Assembly order: base socket + box body + top shape (stacking lip)
  * Then features: dividers, inserts
+ *
+ * @param params Bin configuration parameters
+ * @param onProgress Optional progress callback
+ * @param forExport If true, generates full-fidelity geometry for 3D printing.
+ *                  Preview mode uses simplified geometry for faster rendering.
  */
-export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshData {
+export function generateBin(
+  params: BinParams,
+  onProgress?: ProgressFn,
+  forExport = false
+): MeshData {
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = totalHeight - GRIDFINITY.BASE_HEIGHT;
@@ -620,6 +673,11 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshDat
   const withMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
   const withScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
 
+  // Dynamic quality: small bins (< 4x4) get higher fidelity preview
+  const cellCount = params.width * params.depth;
+  const isSmallBin = cellCount < 16; // 4x4 = 16 cells threshold
+  const useHighQuality = forExport || isSmallBin;
+
   // Stage 1: Build base socket
   onProgress?.('base', 0.1);
   const base = buildBaseSocket(
@@ -629,7 +687,8 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshDat
     withScrew,
     params.base.magnetDiameter / 2,
     params.base.magnetDepth,
-    params.base.screwDiameter / 2
+    params.base.screwDiameter / 2,
+    useHighQuality
   );
 
   // Stage 2: Build bin box (walls + floor)
@@ -690,11 +749,28 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshDat
   onProgress?.('merge', 0.9);
   lastSolid = bin as unknown as Solid;
 
-  const shapeMesh = bin.mesh({
-    tolerance: 0.1,
-    angularTolerance: 15,
-  });
+  // Dynamic tessellation: export gets fine quality, preview adapts to bin size
+  const maxDimension = Math.max(params.width, params.depth) * SIZE;
+  let tolerance: number;
+  let angularTolerance: number;
+
+  if (forExport) {
+    // Export: fine tessellation for smooth curves
+    tolerance = 0.01;
+    angularTolerance = 5;
+  } else if (isSmallBin) {
+    // Small bin preview: moderate quality (fast but still smooth)
+    tolerance = Math.min(0.5, Math.max(0.2, maxDimension / 500));
+    angularTolerance = 15;
+  } else {
+    // Large bin preview: coarse tessellation for speed
+    tolerance = Math.min(3, Math.max(1, maxDimension / 100));
+    angularTolerance = 30;
+  }
+
+  const shapeMesh = bin.mesh({ tolerance, angularTolerance });
 
   onProgress?.('merge', 1.0);
-  return indexedMeshToFlat(shapeMesh);
+  // Skip normals for large bin preview (GPU flat shading is faster)
+  return indexedMeshToFlat(shapeMesh, !useHighQuality);
 }
