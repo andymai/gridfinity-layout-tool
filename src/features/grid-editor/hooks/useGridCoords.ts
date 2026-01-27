@@ -44,7 +44,6 @@ import { useResponsive } from '@/shared/hooks';
  *   - `isInBounds(coord)` - Check if coordinates are within grid bounds
  *   - `cellSize` - Current cell size in pixels (accounts for zoom)
  *   - `halfBinMode` - Whether half-bin mode is active
- *   - `visualCellSize` - Size of each visual cell (half of cellSize when halfBinMode active)
  *
  * @example
  * ```tsx
@@ -72,9 +71,6 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   // Base cell size at current zoom (represents 1 grid unit)
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
-
-  // Visual cell size (same as cellSize since grid is always standard)
-  const visualCellSize = cellSize;
 
   const getGridCoords = useCallback(
     (clientX: number, clientY: number): Coord | null => {
@@ -271,6 +267,5 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
     isInBounds,
     cellSize,
     halfBinMode,
-    visualCellSize,
   };
 }

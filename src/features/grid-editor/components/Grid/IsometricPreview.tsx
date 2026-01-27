@@ -185,14 +185,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
 
       const zStart = getLayerZStart(bin.layerId, layers) * heightToGridScale;
       const category = categoryMap.get(bin.category);
-      const baseColor = category?.color || DEFAULT_CATEGORY_COLOR;
+      const color = category?.color || DEFAULT_CATEGORY_COLOR;
 
-      // No dimming needed since focus mode now hides other layers entirely
-      const color = baseColor;
-
-      // Y-axis: In grid, y=0 is front (bottom), y increases toward back (top)
-      // In 3D: Y=0 is front (toward camera), Y increases away (toward back)
-      // Direct mapping - no flip needed
       result.push({
         bin,
         x: bin.x,

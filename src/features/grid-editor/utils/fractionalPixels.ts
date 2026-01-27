@@ -11,6 +11,19 @@
  */
 
 /**
+ * Convert grid units to pixels, accounting for gaps between cells.
+ * Standard calculation used throughout grid rendering.
+ *
+ * @param units - Size in grid units
+ * @param cellSize - Cell size in pixels
+ * @param gap - Gap between cells in pixels
+ * @returns Pixel size
+ */
+export function toPixels(units: number, cellSize: number, gap: number): number {
+  return units * cellSize + Math.max(0, units - 1) * gap;
+}
+
+/**
  * Epsilon for floating-point gap count calculation.
  * Prevents Math.floor from under-counting due to values like 1.9999999999.
  */

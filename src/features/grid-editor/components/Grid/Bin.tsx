@@ -851,13 +851,14 @@ function BinComponent({
  * Only re-render if props that affect visual appearance change.
  */
 function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
-  // Always re-render if selection state changes
+  const { bin: prevBin, category: prevCat, layer: prevLayer, drawer: prevDrawer } = prevProps;
+  const { bin: nextBin, category: nextCat, layer: nextLayer, drawer: nextDrawer } = nextProps;
+
+  // Selection/ghost state
   if (prevProps.isSelected !== nextProps.isSelected) return false;
   if (prevProps.isGhost !== nextProps.isGhost) return false;
 
-  // Re-render if bin data changes
-  const prevBin = prevProps.bin;
-  const nextBin = nextProps.bin;
+  // Bin visual properties
   if (
     prevBin.id !== nextBin.id ||
     prevBin.x !== nextBin.x ||
@@ -872,55 +873,35 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
     return false;
   }
 
-  // Re-render if customProperties change (compare keys and values)
-  const prevCustomProps = prevBin.customProperties;
-  const nextCustomProps = nextBin.customProperties;
-  const prevHasProps = prevCustomProps && Object.keys(prevCustomProps).length > 0;
-  const nextHasProps = nextCustomProps && Object.keys(nextCustomProps).length > 0;
-  if (prevHasProps !== nextHasProps) {
-    return false;
-  }
-  if (prevHasProps && nextHasProps) {
-    const prevKeys = Object.keys(prevCustomProps);
-    const nextKeys = Object.keys(nextCustomProps);
+  // Custom properties - shallow object comparison
+  const prevCustom = prevBin.customProperties;
+  const nextCustom = nextBin.customProperties;
+  if (prevCustom !== nextCustom) {
+    const prevKeys = prevCustom ? Object.keys(prevCustom) : [];
+    const nextKeys = nextCustom ? Object.keys(nextCustom) : [];
     if (prevKeys.length !== nextKeys.length) return false;
-    for (const key of prevKeys) {
-      if (prevCustomProps[key] !== nextCustomProps[key]) return false;
+    if (prevCustom && nextCustom) {
+      for (const key of prevKeys) {
+        if (prevCustom[key] !== nextCustom[key]) return false;
+      }
     }
   }
 
-  // Re-render if category changes
+  // Category/layer/drawer - only compare visual-affecting properties
+  if (prevCat?.id !== nextCat?.id || prevCat?.color !== nextCat?.color) return false;
+  if (prevLayer?.id !== nextLayer?.id || prevLayer?.height !== nextLayer?.height) return false;
   if (
-    prevProps.category?.id !== nextProps.category?.id ||
-    prevProps.category?.color !== nextProps.category?.color
+    prevDrawer.width !== nextDrawer.width ||
+    prevDrawer.depth !== nextDrawer.depth ||
+    prevDrawer.fractionalEdgeX !== nextDrawer.fractionalEdgeX ||
+    prevDrawer.fractionalEdgeY !== nextDrawer.fractionalEdgeY
   ) {
     return false;
   }
 
-  // Re-render if layer changes
-  if (
-    prevProps.layer?.id !== nextProps.layer?.id ||
-    prevProps.layer?.height !== nextProps.layer?.height
-  ) {
-    return false;
-  }
+  // Cell sizing
+  if (prevProps.cellSize !== nextProps.cellSize || prevProps.gap !== nextProps.gap) return false;
 
-  // Re-render if drawer dimensions or edge configuration changes
-  if (
-    prevProps.drawer.width !== nextProps.drawer.width ||
-    prevProps.drawer.depth !== nextProps.drawer.depth ||
-    prevProps.drawer.fractionalEdgeX !== nextProps.drawer.fractionalEdgeX ||
-    prevProps.drawer.fractionalEdgeY !== nextProps.drawer.fractionalEdgeY
-  ) {
-    return false;
-  }
-
-  // Re-render if cellSize or gap changes (affects sizing)
-  if (prevProps.cellSize !== nextProps.cellSize || prevProps.gap !== nextProps.gap) {
-    return false;
-  }
-
-  // Callbacks are stable (from useCallback), so we don't compare them
   return true;
 }
 

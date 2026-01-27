@@ -1,4 +1,4 @@
-export { calcFractionalPixelSize, type FractionalGridContext } from './fractionalPixels';
+export { calcFractionalPixelSize, toPixels, type FractionalGridContext } from './fractionalPixels';
 
 export {
   isCornerHandle,
