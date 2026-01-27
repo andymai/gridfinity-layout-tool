@@ -56,6 +56,47 @@ function decomposeCells(gridUnits: number): number[] {
   return cells;
 }
 
+/** Cell position info for iteration */
+interface CellInfo {
+  /** Cell size in grid units (1 or 0.5) */
+  readonly widthUnits: number;
+  readonly depthUnits: number;
+  /** Cell center position in mm (relative to bin center) */
+  readonly centerX: number;
+  readonly centerY: number;
+}
+
+/**
+ * Iterate over all cells in a grid, calling the callback with cell info.
+ * Encapsulates the common pattern of nested cell iteration with position tracking.
+ */
+function forEachCell(gridW: number, gridD: number, callback: (cell: CellInfo) => void): void {
+  const cellsW = decomposeCells(gridW);
+  const cellsD = decomposeCells(gridD);
+  const totalW_mm = gridW * SIZE;
+  const totalD_mm = gridD * SIZE;
+
+  let xOffset = 0;
+  for (const cellW_units of cellsW) {
+    const centerX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
+    let yOffset = 0;
+
+    for (const cellD_units of cellsD) {
+      const centerY = yOffset + (cellD_units * SIZE) / 2 - totalD_mm / 2;
+
+      callback({
+        widthUnits: cellW_units,
+        depthUnits: cellD_units,
+        centerX,
+        centerY,
+      });
+
+      yOffset += cellD_units * SIZE;
+    }
+    xOffset += cellW_units * SIZE;
+  }
+}
+
 /**
  * Build a single socket cell solid at the origin using multi-section loft.
  *
@@ -130,43 +171,25 @@ function buildBaseSocket(
   magnetDepth: number,
   screwRadius: number
 ): Shape3D {
-  const cellsW = decomposeCells(gridW);
-  const cellsD = decomposeCells(gridD);
-
-  // Total bin footprint in mm (for computing cell positions relative to center)
-  const totalW_mm = gridW * SIZE;
-  const totalD_mm = gridD * SIZE;
-
   // Build and position each cell socket
   let baseSocket: Shape3D | null = null;
 
-  // Track X position as we iterate cells
-  let xOffset = 0; // mm from left edge
-  for (let ix = 0; ix < cellsW.length; ix++) {
-    const cellW_units = cellsW[ix];
-    const cellW_mm = cellW_units * SIZE - CLEARANCE;
-    const cellCenterX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
+  forEachCell(gridW, gridD, (cell) => {
+    const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
+    const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
+    const cellSocket = buildSingleCellSocket(cellW_mm, cellD_mm).translate([
+      cell.centerX,
+      cell.centerY,
+      0,
+    ]);
+    baseSocket = baseSocket ? baseSocket.fuse(cellSocket) : cellSocket;
+  });
 
-    let yOffset = 0;
-    for (let iy = 0; iy < cellsD.length; iy++) {
-      const cellD_units = cellsD[iy];
-      const cellD_mm = cellD_units * SIZE - CLEARANCE;
-      const cellCenterY = yOffset + (cellD_units * SIZE) / 2 - totalD_mm / 2;
-
-      const cellSocket = buildSingleCellSocket(cellW_mm, cellD_mm).translate([
-        cellCenterX,
-        cellCenterY,
-        0,
-      ]);
-
-      baseSocket = baseSocket ? baseSocket.fuse(cellSocket) : cellSocket;
-
-      yOffset += cellD_units * SIZE;
-    }
-    xOffset += cellW_units * SIZE;
+  // baseSocket is guaranteed to be defined for valid grid dimensions (gridW >= 1, gridD >= 1)
+  if (!baseSocket) {
+    throw new Error('Invalid grid dimensions: at least one cell required');
   }
-
-  let result = baseSocket as Shape3D;
+  let result: Shape3D = baseSocket;
 
   // Cut magnet/screw holes only in full-size (1.0 × 1.0 unit) cells
   if (withScrew || withMagnet) {
@@ -188,52 +211,24 @@ function buildBaseSocket(
         ? magnetCutout.fuse(screwCutout)
         : ((magnetCutout || screwCutout) as Shape3D);
 
-    // Iterate cells again and cut holes only where both axes are full-unit
-    xOffset = 0;
-    for (let ix = 0; ix < cellsW.length; ix++) {
-      const cellW_units = cellsW[ix];
-      if (cellW_units < 1) {
-        xOffset += cellW_units * SIZE;
-        continue;
+    // 4 holes per full cell at ±HOLE_OFFSET from center (hoisted to avoid repeated allocation)
+    const holeOffsets: ReadonlyArray<readonly [number, number]> = [
+      [-HOLE_OFFSET, -HOLE_OFFSET],
+      [-HOLE_OFFSET, HOLE_OFFSET],
+      [HOLE_OFFSET, HOLE_OFFSET],
+      [HOLE_OFFSET, -HOLE_OFFSET],
+    ];
+
+    forEachCell(gridW, gridD, (cell) => {
+      // Only cut holes in full-size cells
+      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+
+      for (const [dx, dy] of holeOffsets) {
+        result = result.cut(
+          cutout.clone().translate([cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
+        );
       }
-      const cellCenterX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
-
-      let yOffset2 = 0;
-      for (let iy = 0; iy < cellsD.length; iy++) {
-        const cellD_units = cellsD[iy];
-        if (cellD_units < 1) {
-          yOffset2 += cellD_units * SIZE;
-          continue;
-        }
-        const cellCenterY = yOffset2 + (cellD_units * SIZE) / 2 - totalD_mm / 2;
-
-        // 4 holes per full cell at ±HOLE_OFFSET from center
-        result = result
-          .cut(
-            cutout
-              .clone()
-              .translate([cellCenterX - HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT])
-          )
-          .cut(
-            cutout
-              .clone()
-              .translate([cellCenterX - HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT])
-          )
-          .cut(
-            cutout
-              .clone()
-              .translate([cellCenterX + HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT])
-          )
-          .cut(
-            cutout
-              .clone()
-              .translate([cellCenterX + HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT])
-          );
-
-        yOffset2 += cellD_units * SIZE;
-      }
-      xOffset += cellW_units * SIZE;
-    }
+    });
   }
 
   return result;
@@ -349,6 +344,49 @@ function buildTopShape(
 // ─── Feature Builders ─────────────────────────────────────────────────────────
 
 /**
+ * Add a wall segment to the dividers, fusing if needed.
+ */
+function addWallSegment(
+  dividers: Shape3D | null,
+  w: number,
+  d: number,
+  height: number,
+  x: number,
+  y: number
+): Shape3D {
+  const wall = (drawRectangle(w, d).sketchOnPlane('XY') as unknown as Sketch).extrude(
+    height
+  ) as Shape3D;
+  const positioned = wall.translate([x, y, 0]);
+  return dividers ? dividers.fuse(positioned) : positioned;
+}
+
+/**
+ * Find consecutive wall segments along a boundary line.
+ * Returns array of [start, end) index pairs where walls are needed.
+ */
+function findWallSegments(
+  count: number,
+  needsWall: (i: number) => boolean
+): Array<[number, number]> {
+  const segments: Array<[number, number]> = [];
+  let segStart: number | null = null;
+
+  for (let i = 0; i < count; i++) {
+    if (needsWall(i)) {
+      if (segStart === null) segStart = i;
+    } else if (segStart !== null) {
+      segments.push([segStart, i]);
+      segStart = null;
+    }
+  }
+  if (segStart !== null) {
+    segments.push([segStart, count]);
+  }
+  return segments;
+}
+
+/**
  * Build compartment divider walls inside the bin.
  *
  * Uses the compartment grid to derive wall segments: walls appear at
@@ -381,80 +419,35 @@ function buildCompartmentWalls(
 
   let dividers: Shape3D | null = null;
 
-  // Derive wall segments from cell boundaries
-
   // Vertical walls: between column boundaries
   for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
     const xPos = -innerW / 2 + colBoundary * cellW;
-
-    // Find consecutive row spans where left cell != right cell
-    let segStart: number | null = null;
-
-    for (let row = 0; row < rows; row++) {
+    const segments = findWallSegments(rows, (row) => {
       const leftId = cells[row * cols + (colBoundary - 1)];
       const rightId = cells[row * cols + colBoundary];
+      return leftId !== rightId;
+    });
 
-      if (leftId !== rightId) {
-        if (segStart === null) segStart = row;
-      } else {
-        if (segStart !== null) {
-          // Create wall segment from segStart to row (exclusive)
-          const segLength = (row - segStart) * cellD;
-          const yCenter = -innerD / 2 + (segStart + (row - segStart) / 2) * cellD;
-          const wall = (
-            drawRectangle(thickness, segLength).sketchOnPlane('XY') as unknown as Sketch
-          ).extrude(wallHeight) as Shape3D;
-          const positioned = wall.translate([xPos, yCenter, 0]);
-          dividers = dividers ? dividers.fuse(positioned) : positioned;
-          segStart = null;
-        }
-      }
-    }
-    // Close trailing segment
-    if (segStart !== null) {
-      const segLength = (rows - segStart) * cellD;
-      const yCenter = -innerD / 2 + (segStart + (rows - segStart) / 2) * cellD;
-      const wall = (
-        drawRectangle(thickness, segLength).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(wallHeight) as Shape3D;
-      const positioned = wall.translate([xPos, yCenter, 0]);
-      dividers = dividers ? dividers.fuse(positioned) : positioned;
+    for (const [start, end] of segments) {
+      const segLength = (end - start) * cellD;
+      const yCenter = -innerD / 2 + (start + (end - start) / 2) * cellD;
+      dividers = addWallSegment(dividers, thickness, segLength, wallHeight, xPos, yCenter);
     }
   }
 
   // Horizontal walls: between row boundaries
   for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
     const yPos = -innerD / 2 + rowBoundary * cellD;
-
-    let segStart: number | null = null;
-
-    for (let col = 0; col < cols; col++) {
+    const segments = findWallSegments(cols, (col) => {
       const topId = cells[(rowBoundary - 1) * cols + col];
       const bottomId = cells[rowBoundary * cols + col];
+      return topId !== bottomId;
+    });
 
-      if (topId !== bottomId) {
-        if (segStart === null) segStart = col;
-      } else {
-        if (segStart !== null) {
-          const segLength = (col - segStart) * cellW;
-          const xCenter = -innerW / 2 + (segStart + (col - segStart) / 2) * cellW;
-          const wall = (
-            drawRectangle(segLength, thickness).sketchOnPlane('XY') as unknown as Sketch
-          ).extrude(wallHeight) as Shape3D;
-          const positioned = wall.translate([xCenter, yPos, 0]);
-          dividers = dividers ? dividers.fuse(positioned) : positioned;
-          segStart = null;
-        }
-      }
-    }
-    if (segStart !== null) {
-      const segLength = (cols - segStart) * cellW;
-      const xCenter = -innerW / 2 + (segStart + (cols - segStart) / 2) * cellW;
-      const wall = (
-        drawRectangle(segLength, thickness).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(wallHeight) as Shape3D;
-      const positioned = wall.translate([xCenter, yPos, 0]);
-      dividers = dividers ? dividers.fuse(positioned) : positioned;
+    for (const [start, end] of segments) {
+      const segLength = (end - start) * cellW;
+      const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;
+      dividers = addWallSegment(dividers, segLength, thickness, wallHeight, xCenter, yPos);
     }
   }
 
