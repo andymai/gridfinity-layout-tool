@@ -1,10 +1,5 @@
 import type { Layout, Bin, Layer, Category } from '@/core/types';
-import type {
-  InspirationLayout,
-  InspirationTheme,
-  LayoutComplexity,
-  LayoutFeature,
-} from '../types';
+import type { InspirationLayout, InspirationTheme } from '../types';
 import { computePreview } from '@/core/storage';
 
 let idCounter = 0;
@@ -70,40 +65,6 @@ export function createCategory(name: string, color: string): Category {
 export { computePreview };
 
 /**
- * Detect features from a layout.
- */
-export function detectFeatures(layout: Layout): LayoutFeature[] {
-  const features: LayoutFeature[] = [];
-
-  if (layout.layers.length > 1) {
-    features.push('multiple-layers');
-  }
-
-  const hasHalfBins = layout.bins.some(
-    (b) => b.x % 1 !== 0 || b.y % 1 !== 0 || b.width % 1 !== 0 || b.depth % 1 !== 0
-  );
-  if (hasHalfBins) {
-    features.push('half-bins');
-  }
-
-  const labeledCount = layout.bins.filter((b) => b.label.trim() !== '').length;
-  if (labeledCount > 0) {
-    features.push('labeled-bins');
-  }
-
-  const hasClearance = layout.bins.some((b) => b.clearanceHeight && b.clearanceHeight > 0);
-  if (hasClearance) {
-    features.push('clearance-height');
-  }
-
-  if (layout.categories.length > 2) {
-    features.push('multiple-categories');
-  }
-
-  return features;
-}
-
-/**
  * Calculate metrics from a layout.
  */
 export function calculateMetrics(layout: Layout): InspirationLayout['metrics'] {
@@ -126,7 +87,6 @@ interface BuilderOptions {
   theme: InspirationTheme;
   description: string;
   shortDescription: string;
-  complexity: LayoutComplexity;
   tags: string[];
 }
 
@@ -140,8 +100,6 @@ export function buildInspirationLayout(layout: Layout, options: BuilderOptions):
     theme: options.theme,
     description: options.description,
     shortDescription: options.shortDescription,
-    complexity: options.complexity,
-    features: detectFeatures(layout),
     metrics: calculateMetrics(layout),
     preview: computePreview(layout),
     layout,

@@ -52,7 +52,6 @@ function createCutleryDrawer(): InspirationLayout {
     description:
       'Silverware organization with main slots sized for dinner cutlery and smaller slots for teaspoons and dessert pieces.',
     shortDescription: 'Forks, knives, spoons, and dessert cutlery',
-    complexity: 'beginner',
     tags: ['kitchen', 'cutlery', 'silverware', 'simple'],
   });
 }
@@ -111,7 +110,6 @@ function createCookingUtensils(): InspirationLayout {
     description:
       'Long cooking tools stored horizontally, organized by type and size. Fits ladles, spatulas, and tongs.',
     shortDescription: 'Spatulas, ladles, whisks, and tongs',
-    complexity: 'beginner',
     tags: ['kitchen', 'utensils', 'cooking'],
   });
 }
@@ -179,7 +177,6 @@ function createKnifeDrawer(): InspirationLayout {
     description:
       'Horizontal knife storage with dedicated slots for each knife to protect blades and keep them accessible.',
     shortDescription: 'Safe storage for kitchen knives',
-    complexity: 'beginner',
     tags: ['kitchen', 'knives', 'safety', 'labeled'],
   });
 }
@@ -287,7 +284,6 @@ function createSpiceDrawer(): InspirationLayout {
     description:
       'Organize your spices with half-bin precision for standard spice jars. Everyday spices up front, herbs in the middle, specialty blends in the back.',
     shortDescription: 'Spice jars organized by frequency of use',
-    complexity: 'intermediate',
     tags: ['kitchen', 'spices', 'cooking', 'half-bins'],
   });
 }

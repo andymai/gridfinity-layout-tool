@@ -68,7 +68,6 @@ function createBathroomMakeup(): InspirationLayout {
     description:
       'Tall slots for makeup brushes, small bins for lipsticks and compacts. Includes spots for hair ties and bobby pins.',
     shortDescription: 'Makeup brushes, cosmetics, and accessories',
-    complexity: 'beginner',
     tags: ['bathroom', 'makeup', 'cosmetics', 'personal'],
   });
 }
@@ -119,7 +118,6 @@ function createNightstandDrawer(): InspirationLayout {
     description:
       'Bedside essentials: phone, earbuds, glasses case, medications, and charger. Shallow layout for typical nightstand drawers.',
     shortDescription: 'Phone, glasses, and bedside essentials',
-    complexity: 'beginner',
     tags: ['bedroom', 'nightstand', 'personal', 'simple'],
   });
 }
@@ -183,7 +181,6 @@ function createFirstAidKit(): InspirationLayout {
     description:
       'Bandages, gauze, and tape up front. Medications organized by type. Tools section for scissors, tweezers, and thermometer.',
     shortDescription: 'Bandages, medications, and medical supplies',
-    complexity: 'beginner',
     tags: ['personal', 'medical', 'first-aid', 'health'],
   });
 }
@@ -237,7 +234,6 @@ function createJewelryDrawer(): InspirationLayout {
     description:
       'Keep jewelry organized and tangle-free. Small compartments for rings, wider bins for earrings, and long trays for necklaces and chains.',
     shortDescription: 'Rings, earrings, necklaces, and watches',
-    complexity: 'beginner',
     tags: ['personal', 'jewelry', 'accessories', 'organization'],
   });
 }
@@ -298,7 +294,6 @@ function createEDCDrawer(): InspirationLayout {
     description:
       'Everyday carry essentials: keys, wallet, watch, flashlight, pocket knife, and glasses. Quick-access layout for items you grab daily.',
     shortDescription: 'Keys, wallet, watch, and daily essentials',
-    complexity: 'beginner',
     tags: ['personal', 'edc', 'keys', 'wallet', 'everyday'],
   });
 }
