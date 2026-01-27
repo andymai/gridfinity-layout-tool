@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '@/core/store';
 import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
+import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';
 import { Bin } from './Bin';
-
 import { getBlockedZones } from '@/shared/utils/collision';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import type { Coord, ResizeHandle } from '@/core/types';
@@ -301,9 +301,12 @@ export function GridCanvas({
           const hasFractionalDims =
             zone.x % 1 !== 0 || zone.y % 1 !== 0 || zone.width % 1 !== 0 || zone.depth % 1 !== 0;
           // Calculate true pixel size for fractional zones
-          const toPixels = (units: number) => units * cellSize + Math.max(0, units - 1) * gap;
-          const zonePixelWidth = hasFractionalDims ? toPixels(zone.width) : undefined;
-          const zonePixelHeight = hasFractionalDims ? toPixels(zone.depth) : undefined;
+          const zonePixelWidth = hasFractionalDims
+            ? toPixels(zone.width, cellSize, gap)
+            : undefined;
+          const zonePixelHeight = hasFractionalDims
+            ? toPixels(zone.depth, cellSize, gap)
+            : undefined;
           // Calculate pixel offset for fractional positions
           const fractionalX = zone.x - Math.floor(zone.x);
           const fractionalYFromTop = Math.ceil(zone.y + zone.depth) - (zone.y + zone.depth);
