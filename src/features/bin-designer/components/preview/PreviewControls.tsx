@@ -131,6 +131,61 @@ const PRESET_ICONS: Record<CameraPreset, () => ReactNode> = {
   isometric: IconIso,
 };
 
+/** Shared color picker content used in both desktop and mobile popovers */
+function ColorPickerContent({
+  previewColor,
+  onColorSelect,
+  onColorChange,
+}: {
+  previewColor: string;
+  onColorSelect: (color: string) => void;
+  onColorChange: (color: string) => void;
+}) {
+  const t = useTranslation();
+  return (
+    <>
+      <div className="grid grid-cols-3 gap-2">
+        {COLOR_SWATCHES.map(({ color, label }) => (
+          <button
+            key={color}
+            type="button"
+            onClick={() => onColorSelect(color)}
+            className={`flex flex-col items-center gap-1 rounded-md p-1.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+              previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
+            }`}
+            aria-label={`${label} color`}
+            aria-selected={previewColor === color}
+            role="option"
+          >
+            <span
+              className={`inline-block h-8 w-8 rounded-md border transition-transform hover:scale-105 ${
+                previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
+              }`}
+              style={{ backgroundColor: color }}
+            />
+            <span className="text-[9px] text-content-tertiary">{label}</span>
+          </button>
+        ))}
+      </div>
+      {/* Custom color input */}
+      <div className="mt-2.5 border-t border-stroke-subtle pt-2.5">
+        <label className="flex items-center gap-2 rounded-md px-2 py-1.5 cursor-pointer hover:bg-surface-hover transition-colors">
+          <input
+            type="color"
+            value={previewColor}
+            onChange={(e) => onColorChange(e.target.value)}
+            className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
+            title={t('binDesigner.customColor')}
+          />
+          <span className="text-[11px] text-content-secondary font-medium">
+            {t('binDesigner.customColor')}
+          </span>
+        </label>
+      </div>
+    </>
+  );
+}
+
 export function PreviewControls({
   wireframe,
   previewColor,
@@ -275,44 +330,11 @@ export function PreviewControls({
                 role="listbox"
                 aria-label={t('binDesigner.previewColorOptions')}
               >
-                <div className="grid grid-cols-3 gap-2">
-                  {COLOR_SWATCHES.map(({ color, label }) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => handleColorSelect(color)}
-                      className={`flex flex-col items-center gap-1 rounded-md p-1.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
-                        previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
-                      }`}
-                      aria-label={`${label} color`}
-                      aria-selected={previewColor === color}
-                      role="option"
-                    >
-                      <span
-                        className={`inline-block h-8 w-8 rounded-md border transition-transform hover:scale-105 ${
-                          previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
-                        }`}
-                        style={{ backgroundColor: color }}
-                      />
-                      <span className="text-[9px] text-content-tertiary">{label}</span>
-                    </button>
-                  ))}
-                </div>
-                {/* Custom color input */}
-                <div className="mt-2.5 border-t border-stroke-subtle pt-2.5">
-                  <label className="flex items-center gap-2 rounded-md px-2 py-1.5 cursor-pointer hover:bg-surface-hover transition-colors">
-                    <input
-                      type="color"
-                      value={previewColor}
-                      onChange={(e) => onColorChange(e.target.value)}
-                      className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
-                      title={t('binDesigner.customColor')}
-                    />
-                    <span className="text-[11px] text-content-secondary font-medium">
-                      {t('binDesigner.customColor')}
-                    </span>
-                  </label>
-                </div>
+                <ColorPickerContent
+                  previewColor={previewColor}
+                  onColorSelect={handleColorSelect}
+                  onColorChange={onColorChange}
+                />
               </div>
             )}
           </div>
@@ -402,42 +424,11 @@ export function PreviewControls({
             role="listbox"
             aria-label={t('binDesigner.previewColorOptions')}
           >
-            <div className="grid grid-cols-3 gap-2">
-              {COLOR_SWATCHES.map(({ color, label }) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => handleColorSelect(color)}
-                  className={`flex flex-col items-center gap-1 rounded-md p-1.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
-                    previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
-                  }`}
-                  aria-label={`${label} color`}
-                  aria-selected={previewColor === color}
-                  role="option"
-                >
-                  <span
-                    className={`inline-block h-8 w-8 rounded-md border transition-transform hover:scale-105 ${
-                      previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="text-[9px] text-content-tertiary">{label}</span>
-                </button>
-              ))}
-            </div>
-            {/* Custom color input */}
-            <div className="mt-2.5 border-t border-stroke-subtle pt-2.5">
-              <label className="flex items-center gap-2 rounded-md px-2 py-1.5 cursor-pointer hover:bg-surface-hover transition-colors">
-                <input
-                  type="color"
-                  value={previewColor}
-                  onChange={(e) => onColorChange(e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
-                  title={t('binDesigner.customColor')}
-                />
-                <span className="text-[11px] text-content-secondary font-medium">{t('binDesigner.customColor')}</span>
-              </label>
-            </div>
+            <ColorPickerContent
+              previewColor={previewColor}
+              onColorSelect={handleColorSelect}
+              onColorChange={onColorChange}
+            />
           </div>
         )}
       </div>

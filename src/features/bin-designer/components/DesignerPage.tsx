@@ -11,7 +11,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ParameterPanel } from '@/features/bin-designer/components/ParameterPanel';
-import { MobileParameterTabs } from '@/features/bin-designer/components/MobileParameterTabs';
 import { PreviewCanvas } from '@/features/bin-designer/components/PreviewCanvas';
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
@@ -37,25 +36,30 @@ interface DesignerPageProps {
   onNavigateBack?: () => void;
 }
 
+/** CSS class for each save status */
+const SAVE_STATUS_CLASSES: Record<Exclude<SaveStatus, 'idle'>, string> = {
+  saving: 'text-content-tertiary',
+  saved: 'text-content-secondary animate-fade-in',
+  error: 'text-red-400',
+};
+
 /**
  * Render a compact status label that reflects the current save state.
- *
- * @param status - The current save state; one of `'idle'`, `'saving'`, `'saved'`, or `'error'`.
- * @returns A small text <span> showing `"Saving…"`, `"Saved"`, or `"Save failed"` depending on `status`, or `null` when `status` is `'idle'`.
+ * Returns null when status is 'idle'.
  */
 function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   const t = useTranslation();
   if (status === 'idle') return null;
 
+  const statusTextKey = {
+    saving: 'binDesigner.saving',
+    saved: 'binDesigner.saved',
+    error: 'binDesigner.saveFailed',
+  } as const;
+
   return (
     <div
-      className={`flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 ${
-        status === 'saving'
-          ? 'text-content-tertiary'
-          : status === 'saved'
-            ? 'text-content-secondary animate-fade-in'
-            : 'text-red-400'
-      }`}
+      className={`flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 ${SAVE_STATUS_CLASSES[status]}`}
       aria-live="polite"
       role="status"
     >
@@ -108,9 +112,7 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
           />
         </svg>
       )}
-      <span>
-        {status === 'saving' ? t('binDesigner.saving') : status === 'saved' ? t('binDesigner.saved') : t('binDesigner.saveFailed')}
-      </span>
+      <span>{t(statusTextKey[status])}</span>
     </div>
   );
 }
@@ -164,12 +166,6 @@ export function DesignerPage(_props: DesignerPageProps) {
   );
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
-  const handleUndo = useCallback(() => {
-    undo();
-  }, [undo]);
-  const handleRedo = useCallback(() => {
-    redo();
-  }, [redo]);
   // Platform detection for keyboard shortcut hints
   const isMac =
     typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -298,7 +294,9 @@ export function DesignerPage(_props: DesignerPageProps) {
                 strokeWidth={2}
                 d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
               />
-            </svg>{t('binDesigner.experimental')}</span>
+            </svg>
+            {t('binDesigner.experimental')}
+          </span>
 
           {/* Design name (click to rename inline) */}
           {isEditingName ? (
@@ -388,7 +386,7 @@ export function DesignerPage(_props: DesignerPageProps) {
           {/* Undo/Redo buttons */}
           <div className="flex items-center">
             <button
-              onClick={handleUndo}
+              onClick={undo}
               disabled={!canUndo}
               className="btn btn-ghost btn-icon"
               title={`Undo (${modKey}+Z)`}
@@ -404,7 +402,7 @@ export function DesignerPage(_props: DesignerPageProps) {
               </svg>
             </button>
             <button
-              onClick={handleRedo}
+              onClick={redo}
               disabled={!canRedo}
               className="btn btn-ghost btn-icon"
               title={`Redo (${modKey}+Y)`}
@@ -484,7 +482,9 @@ export function DesignerPage(_props: DesignerPageProps) {
               fill="currentColor"
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
-          </svg>{t('binDesigner.loadingSharedDesign')}</div>
+          </svg>
+          {t('binDesigner.loadingSharedDesign')}
+        </div>
       )}
 
       {/* Main content - responsive layout */}
@@ -509,9 +509,9 @@ export function DesignerPage(_props: DesignerPageProps) {
             <PreviewCanvas />
           </div>
 
-          {/* Tabbed parameter panel */}
+          {/* Parameter panel */}
           <div className="flex-1 overflow-hidden bg-surface-secondary">
-            <MobileParameterTabs />
+            <ParameterPanel />
           </div>
         </main>
       )}

@@ -61,17 +61,6 @@ function getCompartmentBorder(id: number): string {
   return COMPARTMENT_COLOR_PAIRS[id % COMPARTMENT_COLOR_PAIRS.length].border;
 }
 
-/** Lighten a fill color for hover state using opacity-based approach (no color-mix needed) */
-function getHoverFill(id: number): string {
-  const pair = COMPARTMENT_COLOR_PAIRS[id % COMPARTMENT_COLOR_PAIRS.length];
-  if (isDarkMode()) {
-    // In dark mode, lighten slightly
-    return pair.border; // Use the border color (brighter) as hover fill
-  }
-  // In light mode, make the fill slightly more vivid — use border at low opacity over white
-  return pair.border;
-}
-
 // =============================================================================
 // CompartmentEditor Component
 // =============================================================================
@@ -277,10 +266,14 @@ export function CompartmentEditor() {
         <div className="space-y-5">
           {/* Grid dimensions */}
           <section>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">{t('binDesigner.gridSize')}</h3>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+              {t('binDesigner.gridSize')}
+            </h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="mb-1 block text-xs text-content-tertiary">{t('binDesigner.columns')}</span>
+                <span className="mb-1 block text-xs text-content-tertiary">
+                  {t('binDesigner.columns')}
+                </span>
                 <StepperControl
                   value={cols}
                   onChange={handleColsChange}
@@ -293,7 +286,9 @@ export function CompartmentEditor() {
                 />
               </div>
               <div>
-                <span className="mb-1 block text-xs text-content-tertiary">{t('binDesigner.rows')}</span>
+                <span className="mb-1 block text-xs text-content-tertiary">
+                  {t('binDesigner.rows')}
+                </span>
                 <StepperControl
                   value={rows}
                   onChange={handleRowsChange}
@@ -312,7 +307,9 @@ export function CompartmentEditor() {
           {(cols > 1 || rows > 1) && (
             <section>
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">{t('binDesigner.layout')}</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+                  {t('binDesigner.layout')}
+                </h3>
                 <div className="flex items-center gap-2">
                   {hasMergedCompartments && (
                     <button
@@ -320,7 +317,9 @@ export function CompartmentEditor() {
                       onClick={handleReset}
                       className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
                       aria-label={t('binDesigner.resetCompartmentLayoutToUniformGrid')}
-                    >{t('common.reset')}</button>
+                    >
+                      {t('common.reset')}
+                    </button>
                   )}
                   <span className="text-xs tabular-nums text-content-tertiary">
                     {t('binDesigner.compartments.count', { count: compartmentCount })}
@@ -386,7 +385,9 @@ export function CompartmentEditor() {
           {/* Wall thickness (only when there are dividers) */}
           {compartmentCount > 1 && (
             <section>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">{t('binDesigner.dividerWalls')}</h3>
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+                {t('binDesigner.dividerWalls')}
+              </h3>
               <ThicknessSelector
                 label="Thickness"
                 value={thickness}
@@ -485,7 +486,7 @@ function GridCell({
         backgroundColor: isSelected
           ? 'var(--color-accent)'
           : isHovered && isSplittable
-            ? getHoverFill(compartmentId)
+            ? borderColor
             : fillColor,
         borderRadius: `${topLeft}px ${topRight}px ${bottomRight}px ${bottomLeft}px`,
         borderStyle: 'solid',
