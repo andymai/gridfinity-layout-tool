@@ -6,7 +6,8 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 type GenerateFn = (
   params: BinParams,
-  onProgress?: (stage: string, progress: number) => void
+  onProgress?: (stage: string, progress: number) => void,
+  forExport?: boolean
 ) => MeshData;
 let generateBin: GenerateFn;
 
@@ -37,7 +38,8 @@ describe('replicad bin generation', () => {
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
     };
 
-    const result = generateBin(params);
+    // Use forExport=true to test full mesh with normals
+    const result = generateBin(params, undefined, true);
 
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.normals.length).toBe(result.vertices.length);
@@ -53,14 +55,31 @@ describe('replicad bin generation', () => {
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     };
 
-    const result = generateBin(params);
+    // forExport=true for proper mesh with normals
+    const result = generateBin(params, undefined, true);
 
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.triangleCount).toBeGreaterThan(100);
   }, 30000);
 
+  it('preview mode skips normals for performance', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 1,
+      depth: 1,
+    };
+
+    // Default (preview mode) skips normals
+    const result = generateBin(params);
+
+    expect(result.vertices.length).toBeGreaterThan(0);
+    expect(result.normals).toBeNull();
+    expect(result.triangleCount).toBeGreaterThan(50);
+  }, 30000);
+
   it('generates a 2x2 bin (DEFAULT_BIN_PARAMS)', () => {
-    const result = generateBin(DEFAULT_BIN_PARAMS);
+    // Use forExport=true to test full mesh with normals
+    const result = generateBin(DEFAULT_BIN_PARAMS, undefined, true);
 
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.normals.length).toBe(result.vertices.length);
@@ -76,7 +95,8 @@ describe('replicad bin generation', () => {
         base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
       };
 
-      const result = generateBin(params);
+      // Use forExport=true to test full mesh with normals
+      const result = generateBin(params, undefined, true);
 
       expect(result.vertices.length).toBeGreaterThan(0);
       expect(result.normals.length).toBe(result.vertices.length);
@@ -92,7 +112,8 @@ describe('replicad bin generation', () => {
         base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
       };
 
-      const result = generateBin(params);
+      // Use forExport=true to test full mesh with normals
+      const result = generateBin(params, undefined, true);
 
       expect(result.vertices.length).toBeGreaterThan(0);
       expect(result.normals.length).toBe(result.vertices.length);

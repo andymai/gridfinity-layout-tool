@@ -34,11 +34,18 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   );
 
   const geometry = useMemo(() => {
-    if (!vertices || !normals || vertices.length === 0) return null;
+    if (!vertices || vertices.length === 0) return null;
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+
+    // Use provided normals if available, otherwise compute flat normals
+    if (normals && normals.length > 0) {
+      geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    } else {
+      // Compute face normals for flat shading (GPU-side)
+      geo.computeVertexNormals();
+    }
     return geo;
   }, [vertices, normals]);
 
@@ -72,13 +79,14 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
 
   return (
     <group position={[0, 0, 0.1]}>
-      {/* Solid mesh */}
+      {/* Solid mesh with flat shading for intentional low-poly sketch look */}
       <mesh geometry={geometry}>
         <meshStandardMaterial
           color={color}
           roughness={0.45}
           metalness={0}
           wireframe={wireframe}
+          flatShading
           side={THREE.DoubleSide}
           emissive={color}
           emissiveIntensity={0.08}

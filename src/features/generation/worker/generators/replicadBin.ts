@@ -542,21 +542,38 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
 
 /**
  * Convert Replicad's indexed mesh to flat triangle arrays (our MeshData format).
+ * For preview, skipNormals=true to save time - Three.js computes flat normals on GPU.
  */
-function indexedMeshToFlat(mesh: {
-  vertices: number[];
-  normals: number[];
-  triangles: number[];
-}): MeshData {
+function indexedMeshToFlat(
+  mesh: {
+    vertices: number[];
+    normals: number[];
+    triangles: number[];
+  },
+  skipNormals = false
+): MeshData {
   const triCount = mesh.triangles.length / 3;
   const flatVertices = new Float32Array(mesh.triangles.length * 3);
-  const flatNormals = new Float32Array(mesh.triangles.length * 3);
 
   for (let i = 0; i < mesh.triangles.length; i++) {
     const vi = mesh.triangles[i];
     flatVertices[i * 3] = mesh.vertices[vi * 3];
     flatVertices[i * 3 + 1] = mesh.vertices[vi * 3 + 1];
     flatVertices[i * 3 + 2] = mesh.vertices[vi * 3 + 2];
+  }
+
+  // Skip normals for preview - Three.js will compute flat normals on GPU
+  if (skipNormals) {
+    return {
+      vertices: flatVertices,
+      normals: null as unknown as Float32Array, // BinMesh handles null
+      triangleCount: triCount,
+    };
+  }
+
+  const flatNormals = new Float32Array(mesh.triangles.length * 3);
+  for (let i = 0; i < mesh.triangles.length; i++) {
+    const vi = mesh.triangles[i];
     flatNormals[i * 3] = mesh.normals[vi * 3];
     flatNormals[i * 3 + 1] = mesh.normals[vi * 3 + 1];
     flatNormals[i * 3 + 2] = mesh.normals[vi * 3 + 2];
@@ -729,5 +746,7 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn, forExpor
   });
 
   onProgress?.('merge', 1.0);
-  return indexedMeshToFlat(shapeMesh);
+  // Skip normals for preview (Three.js computes flat normals on GPU)
+  // Keep normals for export (needed for STL/3MF smooth shading)
+  return indexedMeshToFlat(shapeMesh, !forExport);
 }
