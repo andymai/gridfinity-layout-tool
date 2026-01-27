@@ -211,19 +211,19 @@ function buildBaseSocket(
         ? magnetCutout.fuse(screwCutout)
         : ((magnetCutout || screwCutout) as Shape3D);
 
+    // 4 holes per full cell at ±HOLE_OFFSET from center (hoisted to avoid repeated allocation)
+    const holeOffsets: ReadonlyArray<readonly [number, number]> = [
+      [-HOLE_OFFSET, -HOLE_OFFSET],
+      [-HOLE_OFFSET, HOLE_OFFSET],
+      [HOLE_OFFSET, HOLE_OFFSET],
+      [HOLE_OFFSET, -HOLE_OFFSET],
+    ];
+
     forEachCell(gridW, gridD, (cell) => {
       // Only cut holes in full-size cells
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
-      // 4 holes per full cell at ±HOLE_OFFSET from center
-      const offsets: [number, number][] = [
-        [-HOLE_OFFSET, -HOLE_OFFSET],
-        [-HOLE_OFFSET, HOLE_OFFSET],
-        [HOLE_OFFSET, HOLE_OFFSET],
-        [HOLE_OFFSET, -HOLE_OFFSET],
-      ];
-
-      for (const [dx, dy] of offsets) {
+      for (const [dx, dy] of holeOffsets) {
         result = result.cut(
           cutout.clone().translate([cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
         );
