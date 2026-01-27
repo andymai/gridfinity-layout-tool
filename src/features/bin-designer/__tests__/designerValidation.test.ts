@@ -213,22 +213,6 @@ describe('validateDesignerShare', () => {
     });
   });
 
-  describe('walls validation', () => {
-    it('rejects negative wall cutout', () => {
-      const payload = validPayload();
-      payload.params.walls.front = -1;
-      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
-      expect(result.valid).toBe(false);
-    });
-
-    it('rejects wall cutout exceeding max', () => {
-      const payload = validPayload();
-      payload.params.walls.back = 150;
-      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
-      expect(result.valid).toBe(false);
-    });
-  });
-
   describe('inserts validation', () => {
     it('accepts valid inserts', () => {
       const payload = validPayload();

@@ -48,11 +48,6 @@ describe('generateFileName', () => {
       expect(name).toBe('gridfinity_2x2x3_6comp.stl');
     });
 
-    it('should include scoop', () => {
-      const name = generateFileName(makeParams({ scoop: { enabled: true, radius: 'auto', allRows: false } }), 'stl', 'descriptive');
-      expect(name).toBe('gridfinity_2x2x3_scoop.stl');
-    });
-
     it('should include label', () => {
       const name = generateFileName(
         makeParams({ label: { enabled: true, text: 'Test', fontSize: 'auto' } }),
@@ -90,14 +85,13 @@ describe('generateFileName', () => {
         makeParams({
           style: 'solid',
           compartments: { cols: 2, rows: 3, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] },
-          scoop: { enabled: true, radius: 'auto', allRows: false },
           label: { enabled: true, text: 'Tools', fontSize: 'auto' },
           base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
         }),
         'stl',
         'descriptive'
       );
-      expect(name).toBe('gridfinity_2x2x3_solid_6comp_scoop_label_magnets.stl');
+      expect(name).toBe('gridfinity_2x2x3_solid_6comp_label_magnets.stl');
     });
 
     it('should include magnets+screws for magnet_and_screw base style', () => {
@@ -142,12 +136,12 @@ describe('generateFileName', () => {
 
     it('should include features with design name in descriptive mode', () => {
       const name = generateFileName(
-        makeParams({ scoop: { enabled: true, radius: 'auto', allRows: false } }),
+        makeParams({ label: { enabled: true, text: 'Test', fontSize: 'auto' } }),
         'stl',
         'descriptive',
         'Screwdriver Bin'
       );
-      expect(name).toBe('Screwdriver Bin_2x2x3_scoop.stl');
+      expect(name).toBe('Screwdriver Bin_2x2x3_label.stl');
     });
 
     it('should fall back to gridfinity prefix when design name is Untitled Bin', () => {

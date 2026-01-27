@@ -5,7 +5,7 @@
  * 1. buildBaseSocket() — Per-cell segmented sockets (full 42mm + half 21mm cells)
  * 2. buildBinBox() — Rounded rect extruded + shelled (walls + floor)
  * 3. buildTopShape() — Swept stacking lip profile around perimeter
- * 4. Features: dividers, scoops, inserts, magnet/screw holes via booleans
+ * 4. Features: dividers, inserts, magnet/screw holes via booleans
  *
  * Coordinate system:
  * - Z=0: bin floor level (where box meets socket)
@@ -463,57 +463,6 @@ function buildCompartmentWalls(
 }
 
 /**
- * Build scoop cuts — quarter-cylinder cuts from the front wall interior.
- */
-function buildScoops(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number,
-  xDividers: number
-): Shape3D | null {
-  if (!params.scoop.enabled) return null;
-
-  const compartmentW = innerW / (xDividers + 1);
-  const compartmentD = innerD / params.compartments.rows;
-  const autoRadius = Math.min(compartmentW / 3, compartmentD / 3, 15);
-  const maxRadius = wallHeight * 0.75;
-  const radius = Math.min(
-    params.scoop.radius === 'auto' ? autoRadius : params.scoop.radius,
-    maxRadius
-  );
-
-  if (radius <= 0.5) return null;
-
-  let scoops: Shape3D | null = null;
-  const cols = xDividers + 1;
-  const rows = params.compartments.rows;
-  const rowCount = params.scoop.allRows ? rows : 1;
-
-  for (let row = 0; row < rowCount; row++) {
-    for (let col = 0; col < cols; col++) {
-      const cx = -innerW / 2 + compartmentW * (col + 0.5);
-      const cy = -innerD / 2 + compartmentD * (row + 0.5);
-
-      // Scoop is a horizontal cylinder running ACROSS the front wall (axis parallel to X)
-      // This creates a curved edge at the top of the front wall for finger access
-      const scoopCylinder = (drawCircle(radius).sketchOnPlane('YZ') as unknown as Sketch).extrude(
-        compartmentW * 0.8
-      ) as Shape3D;
-
-      const positioned = scoopCylinder.translate([
-        cx - compartmentW * 0.4, // Center the scoop on the compartment
-        cy - compartmentD / 2, // Position at front wall of compartment
-        wallHeight, // At top of wall
-      ]);
-      scoops = scoops ? scoops.fuse(positioned) : positioned;
-    }
-  }
-
-  return scoops;
-}
-
-/**
  * Build insert cavity cuts.
  */
 function buildInsertCuts(params: BinParams): Shape3D | null {
@@ -567,193 +516,6 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
 
     const positioned = solid.translate([insert.x, insert.y, 0]);
     cuts = cuts ? cuts.fuse(positioned) : positioned;
-  }
-
-  return cuts;
-}
-
-// ─── Wall Cutout Builder ─────────────────────────────────────────────────────
-
-/**
- * Build wall cutout boolean cuts for exterior walls and interior divider walls.
- *
- * Each cutout is a trapezoidal notch with 45° slopes and a filleted bottom,
- * cut from the top of the wall downward. For exterior walls with a stacking lip,
- * the lip is also cut through in the notch width region.
- *
- * Profile cross-section (looking at the wall face):
- *   ═══╡                        ╞═══  ← lip cut
- *   ───│╮                      ╭│───  ← wall top
- *       ╲                    ╱        ← 45° slope
- *        ╲                  ╱
- *         ╰────────────────╯          ← filleted bottom
- *         WALL REMAINING BELOW
- */
-function buildWallCutouts(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number
-): Shape3D | null {
-  const { walls, compartments, wallThickness } = params;
-  const hasLip = params.base.stackingLip && params.style !== 'solid';
-  const lipHeight = hasLip ? GRIDFINITY.LIP_HEIGHT : 0;
-
-  let cuts: Shape3D | null = null;
-
-  /**
-   * Build a single wall cutout solid given dimensions and position.
-   * The cutout is oriented along the X axis (width = notchWidth) and
-   * cut into the wall from the top.
-   *
-   * NOTE: This is used for INTERIOR divider cutouts only. Exterior wall
-   * cutouts use inline code with sketchOnPlane(offset) for correct positioning.
-   */
-  function buildCutoutSolid(
-    notchWidth: number,
-    notchDepth: number,
-    extrudeLength: number
-  ): Shape3D | null {
-    if (notchWidth <= 0 || notchDepth <= 0) return null;
-
-    // Simple rectangle profile extruded through the divider
-    // Center at Z=0 so downstream translate([..., wallHeight]) places cutout at top of wall
-    const profile = drawRectangle(notchWidth, notchDepth);
-    const solid = (profile.sketchOnPlane('XZ') as unknown as Sketch).extrude(
-      extrudeLength
-    ) as Shape3D;
-    return solid.translate([0, 0, -notchDepth / 2]);
-  }
-
-  // Helper to position cutout on a wall face
-  type WallSide = 'front' | 'back' | 'left' | 'right';
-
-  function addExteriorCutout(side: WallSide): void {
-    const cutout = walls[side];
-    if (cutout.width <= 0 || cutout.depth <= 0) return;
-
-    const isXWall = side === 'front' || side === 'back';
-    const wallSpan = isXWall ? innerW : innerD;
-    const notchWidth = (wallSpan * cutout.width) / 100;
-    const cutHeight = wallHeight + lipHeight;
-    const notchDepth = (cutHeight * cutout.depth) / 100;
-
-    if (notchWidth <= 0 || notchDepth <= 0) return;
-
-    // Position: center of the wall face
-    // front/back walls use innerD for Y positioning, left/right use innerW for X positioning
-    const halfOuter = (isXWall ? innerD : innerW) / 2 + wallThickness;
-    let positioned: Shape3D;
-
-    // Build cutout directly at the wall position using sketchOnPlane with offset
-    // This ensures correct positioning (similar to how scoops are built)
-    const extrudeLength = wallThickness + 10; // Ensure it goes through the wall
-
-    switch (side) {
-      case 'front': {
-        // Front wall: sketch at Y position, extrude into the bin
-        const yPos = -halfOuter - 1; // Start just outside the wall exterior
-        const cutoutProfile = (
-          drawRectangle(notchWidth, notchDepth).sketchOnPlane('XZ', yPos) as unknown as Sketch
-        ).extrude(extrudeLength) as Shape3D;
-        // Rectangle is centered, so shift Z so top is at wallHeight+lipHeight
-        positioned = cutoutProfile.translate([0, 0, wallHeight + lipHeight - notchDepth / 2]);
-        break;
-      }
-      case 'back': {
-        const yPos = halfOuter - extrudeLength + 1; // Start inside, extrude outward
-        const cutoutProfile = (
-          drawRectangle(notchWidth, notchDepth).sketchOnPlane('XZ', yPos) as unknown as Sketch
-        ).extrude(extrudeLength) as Shape3D;
-        positioned = cutoutProfile.translate([0, 0, wallHeight + lipHeight - notchDepth / 2]);
-        break;
-      }
-      case 'left': {
-        // Left wall: sketch on YZ plane at X position
-        const xPos = -halfOuter - 1;
-        const cutoutProfile = (
-          drawRectangle(notchWidth, notchDepth).sketchOnPlane('YZ', xPos) as unknown as Sketch
-        ).extrude(extrudeLength) as Shape3D;
-        positioned = cutoutProfile.translate([0, 0, wallHeight + lipHeight - notchDepth / 2]);
-        break;
-      }
-      case 'right': {
-        const xPos = halfOuter - extrudeLength + 1;
-        const cutoutProfile = (
-          drawRectangle(notchWidth, notchDepth).sketchOnPlane('YZ', xPos) as unknown as Sketch
-        ).extrude(extrudeLength) as Shape3D;
-        positioned = cutoutProfile.translate([0, 0, wallHeight + lipHeight - notchDepth / 2]);
-        break;
-      }
-    }
-
-    cuts = cuts ? cuts.fuse(positioned) : positioned;
-  }
-
-  // Build exterior wall cutouts
-  addExteriorCutout('front');
-  addExteriorCutout('back');
-  addExteriorCutout('left');
-  addExteriorCutout('right');
-
-  // Build interior divider wall cutouts
-  if (walls.interior && walls.interior.width > 0 && walls.interior.depth > 0) {
-    const { cols, rows, thickness, cells } = compartments;
-    if (cols > 1 || rows > 1) {
-      const cellW = innerW / cols;
-      const cellD = innerD / rows;
-      const notchDepthPct = walls.interior.depth;
-      const notchWidthPct = walls.interior.width;
-
-      // Vertical divider cutouts (along Y axis)
-      for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
-        const xPos = -innerW / 2 + colBoundary * cellW;
-
-        for (let row = 0; row < rows; row++) {
-          const leftId = cells[row * cols + (colBoundary - 1)];
-          const rightId = cells[row * cols + colBoundary];
-          if (leftId === rightId) continue;
-
-          // This cell boundary has a divider wall
-          const dividerLength = cellD;
-          const notchWidth = (dividerLength * notchWidthPct) / 100;
-          const notchDepth = (wallHeight * notchDepthPct) / 100;
-
-          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness);
-          if (!solid) continue;
-
-          const yCenter = -innerD / 2 + (row + 0.5) * cellD;
-          const positioned = solid
-            .rotate(90, [0, 0, 0], [0, 0, 1])
-            .translate([xPos - thickness / 2 - 1, yCenter, wallHeight]);
-
-          cuts = cuts ? cuts.fuse(positioned) : positioned;
-        }
-      }
-
-      // Horizontal divider cutouts (along X axis)
-      for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
-        const yPos = -innerD / 2 + rowBoundary * cellD;
-
-        for (let col = 0; col < cols; col++) {
-          const topId = cells[(rowBoundary - 1) * cols + col];
-          const bottomId = cells[rowBoundary * cols + col];
-          if (topId === bottomId) continue;
-
-          const dividerLength = cellW;
-          const notchWidth = (dividerLength * notchWidthPct) / 100;
-          const notchDepth = (wallHeight * notchDepthPct) / 100;
-
-          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness);
-          if (!solid) continue;
-
-          const xCenter = -innerW / 2 + (col + 0.5) * cellW;
-          const positioned = solid.translate([xCenter, yPos - thickness / 2 - 1, wallHeight]);
-
-          cuts = cuts ? cuts.fuse(positioned) : positioned;
-        }
-      }
-    }
   }
 
   return cuts;
@@ -850,7 +612,7 @@ export async function exportBin(
 /**
  * Generate a complete Gridfinity bin from parameters.
  * Assembly order: base socket + box body + top shape (stacking lip)
- * Then features: dividers, scoops, inserts
+ * Then features: dividers, inserts
  *
  * When a StageCache is provided, skips recomputation of stages whose
  * parameters haven't changed since the last generation.
@@ -940,7 +702,7 @@ export function generateBin(
     bin = (stageCache as StageCache).getAssembly() as Shape3D;
   }
 
-  // Stage 4: Features (dividers, scoops, inserts)
+  // Stage 4: Features (dividers, inserts)
   // Features always rebuild because they apply boolean cuts to the assembly.
   // When only feature params changed, assembly is reused as starting point.
   onProgress?.('features', 0.5);
@@ -955,25 +717,6 @@ export function generateBin(
           '[BinGen] Divider fusion failed, skipping:',
           e instanceof Error ? e.message : e
         );
-      }
-    }
-
-    const xDividers = params.compartments.cols - 1;
-    const scoopCut = buildScoops(params, innerW, innerD, wallHeight, xDividers);
-    if (scoopCut) {
-      try {
-        bin = bin.cut(scoopCut);
-      } catch (e) {
-        console.warn('[BinGen] Scoop cut failed, skipping:', e instanceof Error ? e.message : e);
-      }
-    }
-
-    const wallCutouts = buildWallCutouts(params, innerW, innerD, wallHeight);
-    if (wallCutouts) {
-      try {
-        bin = bin.cut(wallCutouts);
-      } catch (e) {
-        console.warn('[BinGen] Wall cutout failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
 

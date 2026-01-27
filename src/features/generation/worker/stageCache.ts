@@ -2,7 +2,7 @@
  * Worker-side stage cache for BREP generation.
  *
  * Caches intermediate Shape3D objects between generation calls so that
- * when only later-stage parameters change (e.g., scoops, compartments),
+ * when only later-stage parameters change (e.g., compartments, inserts),
  * earlier stages (base, shell) can be reused without recomputation.
  *
  * Stage dependency chain:
@@ -49,9 +49,7 @@ interface AssemblyKey {
 /** Parameters that affect the features stage */
 interface FeaturesKey {
   compartments: string; // JSON-serialized
-  scoop: string; // JSON-serialized
   inserts: string; // JSON-serialized
-  walls: string; // JSON-serialized
 }
 
 function extractBaseKey(params: BinParams): BaseKey {
@@ -86,9 +84,7 @@ function extractAssemblyKey(params: BinParams): AssemblyKey {
 function extractFeaturesKey(params: BinParams): FeaturesKey {
   return {
     compartments: JSON.stringify(params.compartments),
-    scoop: JSON.stringify(params.scoop),
     inserts: JSON.stringify(params.inserts),
-    walls: JSON.stringify(params.walls),
   };
 }
 

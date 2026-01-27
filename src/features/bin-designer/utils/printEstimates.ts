@@ -8,7 +8,7 @@
  * This avoids expensive mesh-based volume integration.
  */
 
-import type { BinParams, WallConfig } from '@/features/bin-designer/types';
+import type { BinParams } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
 
@@ -99,7 +99,7 @@ export function formatFilament(meters: number): string {
  * 2. Divider walls
  * 3. Corner gussets (solid style)
  *
- * Scoops and label tabs are small relative to the bin volume
+ * Label tabs are small relative to the bin volume
  * and are included as minor additions rather than subtractions.
  */
 function computeBinVolume(params: BinParams): number {
@@ -117,19 +117,8 @@ function computeBinVolume(params: BinParams): number {
 
   let volume = 0;
 
-  // Shell volume (outer walls + bottom), accounting for wall cutouts
-  const hasWallCutouts =
-    !constraints.disabledFeatures.includes('walls') &&
-    (params.walls.front.width > 0 ||
-      params.walls.back.width > 0 ||
-      params.walls.left.width > 0 ||
-      params.walls.right.width > 0);
-
-  if (hasWallCutouts) {
-    volume += computeWallCutoutVolume(outerW, outerD, totalH, wallThickness, bottomH, params.walls);
-  } else {
-    volume += computeHollowBoxVolume(outerW, outerD, totalH, wallThickness, bottomH);
-  }
+  // Shell volume (outer walls + bottom)
+  volume += computeHollowBoxVolume(outerW, outerD, totalH, wallThickness, bottomH);
 
   // Divider volumes
   if (!constraints.disabledFeatures.includes('dividers')) {
@@ -167,46 +156,6 @@ function computeHollowBoxVolume(
   }
 
   return outerVol - innerW * innerD * innerH;
-}
-
-/**
- * Volume of a bin shell with per-wall cutout reductions.
- *
- * Each wall has a trapezoidal notch defined by width% and depth%.
- * The material removed is approximated as: width_fraction * depth_fraction * wall_area.
- * Front/back walls span the full outer width; left/right span the inner depth.
- */
-function computeWallCutoutVolume(
-  outerW: number,
-  outerD: number,
-  totalH: number,
-  wall: number,
-  bottomH: number,
-  cutouts: WallConfig
-): number {
-  const innerD = outerD - 2 * wall;
-  const fullWallH = totalH - bottomH;
-
-  if (fullWallH <= 0 || innerD <= 0) {
-    return outerW * outerD * totalH;
-  }
-
-  // Start with full hollow box volume
-  let volume = computeHollowBoxVolume(outerW, outerD, totalH, wall, bottomH);
-
-  // Subtract material removed by each cutout (approximation)
-  const frontRemoved =
-    (cutouts.front.width / 100) * (cutouts.front.depth / 100) * outerW * wall * fullWallH;
-  const backRemoved =
-    (cutouts.back.width / 100) * (cutouts.back.depth / 100) * outerW * wall * fullWallH;
-  const leftRemoved =
-    (cutouts.left.width / 100) * (cutouts.left.depth / 100) * innerD * wall * fullWallH;
-  const rightRemoved =
-    (cutouts.right.width / 100) * (cutouts.right.depth / 100) * innerD * wall * fullWallH;
-
-  volume -= frontRemoved + backRemoved + leftRemoved + rightRemoved;
-
-  return Math.max(0, volume);
 }
 
 /**

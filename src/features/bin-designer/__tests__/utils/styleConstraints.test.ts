@@ -32,7 +32,6 @@ describe('styleConstraints', () => {
   describe('isFeatureDisabled', () => {
     it('returns false for standard style features', () => {
       expect(isFeatureDisabled('standard', 'dividers')).toBe(false);
-      expect(isFeatureDisabled('standard', 'scoop')).toBe(false);
       expect(isFeatureDisabled('standard', 'label')).toBe(false);
     });
 

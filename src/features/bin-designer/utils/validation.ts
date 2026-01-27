@@ -170,42 +170,6 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
     });
   }
 
-  // Wall cutout checks (width and depth: 0 or 20-100%)
-  const wallFields = ['front', 'back', 'left', 'right', 'interior'] as const;
-  for (const side of wallFields) {
-    const cutout = params.walls[side];
-    // Validate width
-    if (cutout.width < 0 || cutout.width > DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT) {
-      return err({
-        code: 'WALL_CUTOUT_OUT_OF_RANGE',
-        message: `${side} wall cutout width must be between 0 and ${DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT}%`,
-        field: `walls.${side}.width`,
-      });
-    }
-    if (cutout.width > 0 && cutout.width < DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT) {
-      return err({
-        code: 'WALL_CUTOUT_TOO_SMALL',
-        message: `${side} wall cutout width must be 0% or at least ${DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT}%`,
-        field: `walls.${side}.width`,
-      });
-    }
-    // Validate depth
-    if (cutout.depth < 0 || cutout.depth > DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT) {
-      return err({
-        code: 'WALL_CUTOUT_OUT_OF_RANGE',
-        message: `${side} wall cutout depth must be between 0 and ${DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT}%`,
-        field: `walls.${side}.depth`,
-      });
-    }
-    if (cutout.depth > 0 && cutout.depth < DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT) {
-      return err({
-        code: 'WALL_CUTOUT_TOO_SMALL',
-        message: `${side} wall cutout depth must be 0% or at least ${DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT}%`,
-        field: `walls.${side}.depth`,
-      });
-    }
-  }
-
   // Label text length
   if (params.label.text.length > DESIGNER_CONSTRAINTS.MAX_LABEL_LENGTH) {
     return err({
@@ -213,20 +177,6 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
       message: `Label text must be at most ${DESIGNER_CONSTRAINTS.MAX_LABEL_LENGTH} characters`,
       field: 'label.text',
     });
-  }
-
-  // Scoop radius check (when not 'auto')
-  if (params.scoop.enabled && typeof params.scoop.radius === 'number') {
-    if (
-      params.scoop.radius < DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS ||
-      params.scoop.radius > DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS
-    ) {
-      return err({
-        code: 'SCOOP_RADIUS_OUT_OF_RANGE',
-        message: `Scoop radius must be between ${DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS}mm and ${DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS}mm`,
-        field: 'scoop.radius',
-      });
-    }
   }
 
   // Compartment size validation (ensures grid cells aren't impossibly thin)

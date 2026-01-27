@@ -11,7 +11,7 @@ import type { BinParams, GenerationStatus, WasmStatus } from '../types';
  * Generate a screen reader description of the current bin.
  *
  * Example output:
- * "3D preview of a 2×2×6 Gridfinity bin with magnet base, stacking lip, 2×1 dividers, label tab, and front scoop"
+ * "3D preview of a 2×2×6 Gridfinity bin with magnet base, stacking lip, 2 compartments, label tab"
  */
 export function describeBin(params: BinParams): string {
   const features: string[] = [];
@@ -38,21 +38,6 @@ export function describeBin(params: BinParams): string {
   // Label
   if (params.label.enabled) {
     features.push('label tab');
-  }
-
-  // Scoop
-  if (params.scoop.enabled) {
-    features.push(params.scoop.allRows ? 'all-row scoops' : 'front scoop');
-  }
-
-  // Wall cutouts
-  const cutoutSides: string[] = [];
-  if (params.walls.front.width > 0) cutoutSides.push('front');
-  if (params.walls.back.width > 0) cutoutSides.push('back');
-  if (params.walls.left.width > 0) cutoutSides.push('left');
-  if (params.walls.right.width > 0) cutoutSides.push('right');
-  if (cutoutSides.length > 0) {
-    features.push(`${cutoutSides.join('/')} wall cutouts`);
   }
 
   // Inserts
