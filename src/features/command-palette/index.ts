@@ -17,4 +17,4 @@
 export { CommandPalette, ShortcutBadge } from './components';
 export { useCommandPalette } from './hooks';
 export { useRecentCommandsStore } from './store';
-export type { Command, CommandCategory, CommandGroup } from './types';
+export type { CommandCategory } from './types';

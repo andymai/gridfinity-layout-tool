@@ -220,6 +220,3 @@ export const useRecentCommandsStore = create<FrecencyState>()((set, get) => {
     },
   };
 });
-
-// Re-export for backward compatibility
-export type { FrecencyState as RecentCommandsState };
