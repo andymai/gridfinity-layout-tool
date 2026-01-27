@@ -10,7 +10,6 @@ import { useUIStore } from '@/core/store/ui';
 import type { SharePermission, CloudShareInfo } from '@/core/types';
 import {
   createShare,
-  updateShare,
   updatePermission as updateSharePermission,
   deleteShare,
   type ShareResponse,
@@ -47,7 +46,6 @@ interface CloudShareState {
 
 interface CloudShareActions {
   share: (permission?: SharePermission) => Promise<boolean>;
-  update: (permission?: SharePermission) => Promise<boolean>;
   updatePermission: (permission: SharePermission) => Promise<boolean>;
   remove: () => Promise<boolean>;
   copyUrl: () => Promise<boolean>;
@@ -96,7 +94,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   const hasActiveShare = !!existingShare;
 
   const handleSuccess = useCallback(
-    (response: ShareResponse, isUpdate: boolean) => {
+    (response: ShareResponse) => {
       const shareInfo: CloudShareInfo = {
         id: response.id,
         deleteToken: response.deleteToken,
@@ -115,17 +113,11 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       });
 
       setStatus('success');
-      announceToScreenReader(
-        isUpdate
-          ? 'Share updated successfully. Link copied to clipboard.'
-          : 'Layout shared successfully. Link copied to clipboard.'
-      );
+      announceToScreenReader('Layout shared successfully. Link copied to clipboard.');
 
       // Track for ML telemetry (share is high-quality signal)
-      if (!isUpdate) {
-        mlTracking.trackSnapshot('share');
-        mlTracking.trackQuality('shared');
-      }
+      mlTracking.trackSnapshot('share');
+      mlTracking.trackQuality('shared');
 
       // Auto-copy URL
       copyToClipboard(response.url);
@@ -167,7 +159,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       if (!mountedRef.current) return false;
 
       if (isOk(result)) {
-        handleSuccess(result.value, false);
+        handleSuccess(result.value);
         markFeatureUsed('cloud_share');
         return true;
       } else {
@@ -176,92 +168,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       }
     },
     [targetLayoutId, layout, authorName, handleSuccess, handleError]
-  );
-
-  const update = useCallback(
-    async (permission?: SharePermission): Promise<boolean> => {
-      if (!existingShare) {
-        setError({
-          message: 'No existing share to update.',
-          code: 'NOT_FOUND',
-        });
-        setStatus('error');
-        return false;
-      }
-
-      if (!navigator.onLine) {
-        setError({
-          message: "You're offline. Connect to the internet to update.",
-          code: 'NETWORK_ERROR',
-        });
-        setStatus('error');
-        return false;
-      }
-
-      setStatus('updating');
-      setError(null);
-
-      const result = await updateShare(
-        existingShare.id,
-        existingShare.deleteToken,
-        layout,
-        permission
-      );
-
-      // Prevent state updates if component unmounted during async operation
-      if (!mountedRef.current) return false;
-
-      if (isOk(result)) {
-        // Update local share info with new permission
-        const shareInfo: CloudShareInfo = {
-          ...existingShare,
-          permission: result.value.permission,
-          lastUpdatedAt: Date.now(),
-        };
-        setCloudShare(targetLayoutId, shareInfo);
-
-        setResult({
-          id: result.value.id,
-          url: result.value.url,
-          deleteToken: existingShare.deleteToken,
-          permission: result.value.permission,
-        });
-
-        setStatus('success');
-        announceToScreenReader('Share updated successfully.');
-        return true;
-      } else {
-        // Handle specific errors
-        if (result.error.code === 'API_NOT_FOUND') {
-          // Share was deleted on server, clear local state
-          clearCloudShare(targetLayoutId);
-          setError({
-            message: 'Previous share was deleted. Create a new share instead.',
-            code: result.error.code,
-          });
-        } else if (result.error.code === 'API_UNAUTHORIZED') {
-          // Token mismatch (shouldn't happen normally)
-          clearCloudShare(targetLayoutId);
-          setError({
-            message: 'Unable to update share. Create a new share instead.',
-            code: result.error.code,
-          });
-        } else {
-          handleError(result.error);
-        }
-        setStatus('error');
-        return false;
-      }
-    },
-    [
-      existingShare,
-      targetLayoutId,
-      layout,
-      setCloudShare,
-      handleError,
-      clearCloudShare,
-      announceToScreenReader,
-    ]
   );
 
   const updatePermissionAction = useCallback(
@@ -417,7 +323,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     existingShare,
     hasActiveShare,
     share,
-    update,
     updatePermission: updatePermissionAction,
     remove,
     copyUrl,
