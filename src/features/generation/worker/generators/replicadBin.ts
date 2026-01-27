@@ -711,13 +711,13 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshDat
   onProgress?.('merge', 0.9);
   lastSolid = bin as unknown as Solid;
 
-  // Maximum tessellation for fast preview - bin geometry is simple
+  // Extreme tessellation for fast preview - bin geometry is simple
   // (flat walls, 4mm rounded corners, tapered sockets)
-  // Tolerance: 5-10mm (vs 0.01mm for export)
-  // Angular: 60° (vs 5° for export) - corners become ~6-sided polygons
+  // Tolerance: 10-20mm (vs 0.01mm for export)
+  // Angular: 90° (vs 5° for export) - corners become ~4-sided (squares)
   const maxDimension = Math.max(outerW, outerD, totalHeight);
-  const previewTolerance = Math.min(10, Math.max(5, maxDimension / 40));
-  const previewAngular = 60;
+  const previewTolerance = Math.min(20, Math.max(10, maxDimension / 20));
+  const previewAngular = 90;
 
   const shapeMesh = bin.mesh({
     tolerance: previewTolerance,
