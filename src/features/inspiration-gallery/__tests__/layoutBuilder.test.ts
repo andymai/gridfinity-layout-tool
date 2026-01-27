@@ -4,7 +4,6 @@ import {
   createLayer,
   createCategory,
   computePreview,
-  detectFeatures,
   calculateMetrics,
   buildInspirationLayout,
 } from '../utils/layoutBuilder';
@@ -337,340 +336,6 @@ describe('layoutBuilder', () => {
     });
   });
 
-  describe('detectFeatures', () => {
-    it('detects multiple-layers feature', () => {
-      const layout = createTestLayout({
-        layers: [
-          { id: 'l1', name: 'Layer 1', height: 3 },
-          { id: 'l2', name: 'Layer 2', height: 3 },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('multiple-layers');
-    });
-
-    it('does not detect multiple-layers for single layer', () => {
-      const layout = createTestLayout({
-        layers: [{ id: 'l1', name: 'Layer 1', height: 3 }],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).not.toContain('multiple-layers');
-    });
-
-    it('detects half-bins feature for fractional x', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0.5,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('half-bins');
-    });
-
-    it('detects half-bins feature for fractional y', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 1.5,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('half-bins');
-    });
-
-    it('detects half-bins feature for fractional width', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1.5,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('half-bins');
-    });
-
-    it('detects half-bins feature for fractional depth', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 2.5,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('half-bins');
-    });
-
-    it('does not detect half-bins for whole numbers', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 3,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).not.toContain('half-bins');
-    });
-
-    it('detects labeled-bins feature', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: 'Screws',
-            notes: '',
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('labeled-bins');
-    });
-
-    it('does not detect labeled-bins for empty labels', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).not.toContain('labeled-bins');
-    });
-
-    it('does not detect labeled-bins for whitespace-only labels', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '   ',
-            notes: '',
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).not.toContain('labeled-bins');
-    });
-
-    it('detects clearance-height feature', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-            clearanceHeight: 5,
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('clearance-height');
-    });
-
-    it('does not detect clearance-height for zero value', () => {
-      const layout = createTestLayout({
-        bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-            clearanceHeight: 0,
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).not.toContain('clearance-height');
-    });
-
-    it('detects multiple-categories for 3+ categories', () => {
-      const layout = createTestLayout({
-        categories: [
-          { id: 'c1', name: 'Cat 1', color: '#ff0000' },
-          { id: 'c2', name: 'Cat 2', color: '#00ff00' },
-          { id: 'c3', name: 'Cat 3', color: '#0000ff' },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('multiple-categories');
-    });
-
-    it('does not detect multiple-categories for 2 or fewer', () => {
-      const layout = createTestLayout({
-        categories: [
-          { id: 'c1', name: 'Cat 1', color: '#ff0000' },
-          { id: 'c2', name: 'Cat 2', color: '#00ff00' },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).not.toContain('multiple-categories');
-    });
-
-    it('detects multiple features at once', () => {
-      const layout = createTestLayout({
-        layers: [
-          { id: 'l1', name: 'Layer 1', height: 3 },
-          { id: 'l2', name: 'Layer 2', height: 3 },
-        ],
-        categories: [
-          { id: 'c1', name: 'Cat 1', color: '#ff0000' },
-          { id: 'c2', name: 'Cat 2', color: '#00ff00' },
-          { id: 'c3', name: 'Cat 3', color: '#0000ff' },
-        ],
-        bins: [
-          {
-            id: 'b1',
-            x: 0.5,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'l1',
-            category: 'c1',
-            label: 'Test',
-            notes: '',
-            clearanceHeight: 2,
-          },
-        ],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toContain('multiple-layers');
-      expect(features).toContain('half-bins');
-      expect(features).toContain('labeled-bins');
-      expect(features).toContain('clearance-height');
-      expect(features).toContain('multiple-categories');
-      expect(features).toHaveLength(5);
-    });
-
-    it('returns empty array for layout with no special features', () => {
-      const layout = createTestLayout({
-        layers: [{ id: 'l1', name: 'Layer 1', height: 3 }],
-        categories: [{ id: 'c1', name: 'Cat 1', color: '#ff0000' }],
-        bins: [],
-      });
-
-      const features = detectFeatures(layout);
-
-      expect(features).toHaveLength(0);
-    });
-  });
-
   describe('calculateMetrics', () => {
     it('counts bins excluding staging', () => {
       const layout = createTestLayout({
@@ -862,7 +527,6 @@ describe('layoutBuilder', () => {
         theme: 'workshop',
         description: 'A detailed description',
         shortDescription: 'A short desc',
-        complexity: 'intermediate',
         tags: ['tools', 'workshop'],
       });
 
@@ -871,46 +535,8 @@ describe('layoutBuilder', () => {
       expect(result.theme).toBe('workshop');
       expect(result.description).toBe('A detailed description');
       expect(result.shortDescription).toBe('A short desc');
-      expect(result.complexity).toBe('intermediate');
       expect(result.tags).toEqual(['tools', 'workshop']);
       expect(result.layout).toBe(layout);
-    });
-
-    it('auto-detects features', () => {
-      const layout = createTestLayout({
-        layers: [
-          { id: 'l1', name: 'Layer 1', height: 3 },
-          { id: 'l2', name: 'Layer 2', height: 3 },
-        ],
-        bins: [
-          {
-            id: 'b1',
-            x: 0.5,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'l1',
-            category: 'cat-1',
-            label: 'Labeled',
-            notes: '',
-          },
-        ],
-      });
-
-      const result = buildInspirationLayout(layout, {
-        id: 'test',
-        name: 'Test',
-        theme: 'hobby',
-        description: 'Desc',
-        shortDescription: 'Short',
-        complexity: 'beginner',
-        tags: [],
-      });
-
-      expect(result.features).toContain('multiple-layers');
-      expect(result.features).toContain('half-bins');
-      expect(result.features).toContain('labeled-bins');
     });
 
     it('calculates metrics correctly', () => {
@@ -955,7 +581,6 @@ describe('layoutBuilder', () => {
         theme: 'kitchen',
         description: 'Desc',
         shortDescription: 'Short',
-        complexity: 'beginner',
         tags: [],
       });
 
@@ -991,7 +616,6 @@ describe('layoutBuilder', () => {
         theme: 'office',
         description: 'Desc',
         shortDescription: 'Short',
-        complexity: 'beginner',
         tags: [],
       });
 

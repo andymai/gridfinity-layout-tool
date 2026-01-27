@@ -94,7 +94,6 @@ function createScrewOrganizer(): InspirationLayout {
     description:
       'Metric fastener organization with small bins for M2-M4, medium for M5-M6, and large bins for nuts and washers. Uses half-bin increments.',
     shortDescription: 'Sort screws by size with half-bin divisions',
-    complexity: 'intermediate',
     tags: ['workshop', 'screws', 'fasteners', 'half-bins', 'ikea-alex'],
   });
 }
@@ -174,7 +173,6 @@ function createToolDrawer(): InspirationLayout {
     description:
       'Tool chest layout with dedicated sections for pliers, screwdrivers, wrenches, and allen keys. Bins sized for real tool dimensions.',
     shortDescription: 'Pliers, screwdrivers, and wrenches organized',
-    complexity: 'beginner',
     tags: ['workshop', 'tools', 'pliers', 'screwdrivers', 'tool-chest'],
   });
 }
@@ -251,7 +249,6 @@ function createElectronicsBench(): InspirationLayout {
     description:
       'Small bins for resistors, capacitors, and LEDs. Tool slots for tweezers and cutters. Larger bins for wire and solder.',
     shortDescription: 'Components, tools, and supplies',
-    complexity: 'intermediate',
     tags: ['workshop', 'electronics', 'soldering', 'components', 'ikea-alex'],
   });
 }
@@ -331,7 +328,6 @@ function createSocketOrganizer(): InspirationLayout {
     description:
       'Metric sockets grouped by drive size (1/4", 3/8", 1/2") with dedicated slots for ratchets and extensions.',
     shortDescription: 'Socket sets with ratchets and extensions',
-    complexity: 'beginner',
     tags: ['workshop', 'sockets', 'automotive', 'mechanic'],
   });
 }
@@ -391,7 +387,6 @@ function createBatteryDrawer(): InspirationLayout {
     description:
       'Batteries organized by type: AA, AAA, 9V, rechargeable 18650s, and coin cells (CR2032, LR44).',
     shortDescription: 'AA, AAA, 18650, and coin cell batteries',
-    complexity: 'beginner',
     tags: ['workshop', 'batteries', 'electronics', 'storage'],
   });
 }
@@ -536,7 +531,6 @@ function createGarageDrawer(): InspirationLayout {
     description:
       'Automotive consumables for a tool chest drawer (13×11 units). Small spray cans, thread lockers, tapes, gloves, and electrical supplies.',
     shortDescription: 'Spray cans, tapes, gloves, and hardware',
-    complexity: 'beginner',
     tags: ['workshop', 'garage', 'automotive', 'car', 'tool-chest'],
   });
 }
@@ -630,7 +624,6 @@ function createDrillBitOrganizer(): InspirationLayout {
     description:
       'Twist drill bits sorted by size (1-13mm), spade bits, forstner bits, hole saws, and countersinks. Long bins for laying bits flat.',
     shortDescription: 'Twist, spade, forstner, and hole saws',
-    complexity: 'intermediate',
     tags: ['workshop', 'drill', 'bits', 'woodworking', 'ikea-alex'],
   });
 }
