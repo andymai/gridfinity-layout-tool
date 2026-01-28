@@ -12,7 +12,7 @@ export const FEATURE_FLAGS = [
     id: 'bin_designer',
     name: 'Bin Designer',
     description:
-      'Create custom parametric Gridfinity bins with a visual designer. Configure dimensions, dividers, scoops, labels, and export STL files for 3D printing.',
+      'Create custom parametric Gridfinity bins with a visual designer. Configure dimensions, compartments, magnet/screw holes, and export STL or 3MF files for 3D printing.',
     status: 'experimental',
     risk: 'medium',
     warning:

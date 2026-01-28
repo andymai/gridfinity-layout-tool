@@ -238,12 +238,17 @@ export interface ExportFileNameConfig {
 // Storage Types
 // =============================================================================
 
+/** Current thumbnail version - increment when changing thumbnail size/quality/format */
+export const THUMBNAIL_VERSION = 4;
+
 /** Saved design entry in IndexedDB */
 export interface SavedDesign {
   readonly id: string;
   readonly name: string;
   readonly params: BinParams;
   readonly thumbnail: string | null;
+  /** Thumbnail format version for detecting outdated thumbnails */
+  readonly thumbnailVersion?: number;
   readonly createdAt: string;
   readonly updatedAt: string;
   /** Per-design export filename preference (null = use defaults) */
@@ -269,6 +274,8 @@ export interface DesignerState {
   saveStatus: SaveStatus;
   exportFileNameConfig: ExportFileNameConfig;
   pendingBinLink: string | null;
+  /** True when we need to capture thumbnail after next successful generation */
+  needsThumbnailUpdate: boolean;
 
   // Param actions
   setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => void;
@@ -287,6 +294,7 @@ export interface DesignerState {
   setExportFileNameConfig: (config: ExportFileNameConfig) => void;
   setPendingBinLink: (binId: string | null) => void;
   clearPendingBinLink: () => void;
+  setNeedsThumbnailUpdate: (needed: boolean) => void;
   newDesign: () => void;
   loadDesign: (design: SavedDesign) => void;
 

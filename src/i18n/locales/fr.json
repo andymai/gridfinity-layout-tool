@@ -1271,6 +1271,8 @@
   "designLinking.menu.unlinkDesign": "Unlink Design",
   "designLinking.menu.designDeleted": "Design Deleted",
   "designLinking.menu.unlinkStale": "Remove Stale Link",
+  "designLinking.menu.sectionTitle": "Bin Design",
+  "designLinking.experimental": "Experimental",
   "designLinking.palette.dragHint": "Drag to place",
   "designLinking.palette.empty": "No saved designs",
   "designLinking.palette.emptyHint": "Create a design in the Bin Designer to see it here",

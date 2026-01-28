@@ -10,11 +10,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLinkedDesign, useBinLinking, useQuickExport } from '../hooks';
 import { useLinkingStore } from '../store';
-import { deleteDesign } from '@/features/bin-designer/storage/DesignerStorage';
-import { removeRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import { ConfirmDialog } from '@/shared/components';
-import { useToastStore } from '@/core/store';
-import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 
@@ -26,10 +22,9 @@ interface LinkedDesignSectionProps {
 export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) {
   const t = useTranslation();
   const { linkedDesign, isStale, hasLink } = useLinkedDesign(bin.linkedDesignId);
-  const { editLinkedDesign, showCreateDesignDialog, unlinkBin } = useBinLinking();
+  const { editLinkedDesign, showCreateDesignDialog, unlinkBin, deleteLinkedDesign } = useBinLinking();
   const { isExporting, exportToSTL } = useQuickExport();
   const showLinkDesignDialog = useLinkingStore((s) => s.showLinkDesignDialog);
-  const { addToast } = useToastStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmUnlink, setConfirmUnlink] = useState(false);
@@ -86,28 +81,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   const confirmDeleteAction = useCallback(async () => {
     if (!linkedDesign) return;
 
-    // First unlink the bin
-    unlinkBin(bin.id);
-
-    // Then delete the design
-    const result = await deleteDesign(linkedDesign.id);
-    if (isOk(result)) {
-      removeRegistryEntry(linkedDesign.id);
-      addToast({
-        message: t('designLinking.toast.deleted', { name: linkedDesign.name }),
-        type: 'success',
-        duration: 3000,
-      });
-    } else {
-      addToast({
-        message: t('designLinking.toast.deleteFailed'),
-        type: 'error',
-        duration: 4000,
-      });
-    }
-
+    await deleteLinkedDesign(bin.id, linkedDesign.id, linkedDesign.name);
     setConfirmDelete(false);
-  }, [linkedDesign, unlinkBin, bin.id, addToast, t]);
+  }, [linkedDesign, deleteLinkedDesign, bin.id]);
 
   const handleThumbnailClick = useCallback(() => {
     if (linkedDesign) {
@@ -125,9 +101,14 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   if (!hasLink) {
     return (
       <div className="space-y-2">
-        <label className={`block ${textSize} text-content-tertiary`}>
-          {t('designLinking.inspector.linkedDesign')}
-        </label>
+        <div className="flex items-center gap-2">
+          <label className={`${textSize} text-content-tertiary`}>
+            {t('designLinking.inspector.linkedDesign')}
+          </label>
+          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+            {t('designLinking.experimental')}
+          </span>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => showCreateDesignDialog(bin.id)}
@@ -167,9 +148,14 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   if (isStale) {
     return (
       <div className="space-y-2">
-        <label className={`block ${textSize} text-content-tertiary`}>
-          {t('designLinking.inspector.linkedDesign')}
-        </label>
+        <div className="flex items-center gap-2">
+          <label className={`${textSize} text-content-tertiary`}>
+            {t('designLinking.inspector.linkedDesign')}
+          </label>
+          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+            {t('designLinking.experimental')}
+          </span>
+        </div>
         <div className="p-3 rounded-lg bg-status-warning/10 border border-status-warning/30">
           <div className="flex items-center gap-2 mb-2">
             <svg
@@ -203,29 +189,37 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   // Linked to existing design
   if (!linkedDesign) return null;
 
-  return (
-    <div className="space-y-2">
-      <label className={`block ${textSize} text-content-tertiary`}>
-        {t('designLinking.inspector.linkedDesign')}
-      </label>
+  const thumbSize = isMobile ? 'w-14 h-14' : 'w-12 h-12';
+  const iconSize = isMobile ? 'w-5 h-5' : 'w-4 h-4';
 
-      <div className="p-3 rounded-lg bg-surface border border-stroke-subtle">
-        {/* Large clickable thumbnail */}
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-2">
+        <label className={`${textSize} text-content-tertiary`}>
+          {t('designLinking.inspector.linkedDesign')}
+        </label>
+        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+          {t('designLinking.experimental')}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 -mx-1 px-1">
+        {/* Compact thumbnail */}
         <button
           onClick={handleThumbnailClick}
-          className="w-full mb-3 rounded-lg overflow-hidden bg-surface-elevated hover:ring-2 hover:ring-accent/50 transition-all focus:outline-none focus:ring-2 focus:ring-accent"
+          className={`${thumbSize} flex-shrink-0 rounded-md overflow-hidden bg-surface-elevated hover:ring-2 hover:ring-accent/50 transition-all focus:outline-none focus:ring-2 focus:ring-accent`}
           title={t('designLinking.inspector.clickToEdit')}
         >
           {linkedDesign.thumbnail ? (
             <img
               src={linkedDesign.thumbnail}
               alt={linkedDesign.name}
-              className="w-full h-24 object-cover"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-24 flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center">
               <svg
-                className="w-10 h-10 text-content-disabled"
+                className="w-6 h-6 text-content-disabled"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -242,22 +236,22 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
         </button>
 
         {/* Name and dimensions */}
-        <div className="mb-3 text-center">
-          <div className="font-medium text-content truncate">{linkedDesign.name}</div>
-          <div className="text-xs text-content-tertiary mt-0.5">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-content truncate">{linkedDesign.name}</div>
+          <div className="text-xs text-content-tertiary">
             {linkedDesign.width}×{linkedDesign.depth}×{linkedDesign.height}u
           </div>
         </div>
 
-        {/* Icon buttons row */}
-        <div className="flex justify-center gap-2">
+        {/* Action buttons */}
+        <div className="flex items-center gap-1">
           {/* Edit button */}
           <button
             onClick={() => editLinkedDesign(linkedDesign.id)}
-            className={`btn btn-secondary ${buttonHeight} px-3`}
+            className="p-1.5 rounded-md text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
             title={t('designLinking.inspector.editDesign')}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -271,11 +265,11 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           <button
             onClick={handleExport}
             disabled={isExporting}
-            className={`btn btn-secondary ${buttonHeight} px-3`}
+            className="p-1.5 rounded-md text-content-secondary hover:text-content hover:bg-surface-hover transition-colors disabled:opacity-50"
             title={t('designLinking.inspector.exportSTL')}
           >
             {isExporting ? (
-              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <svg className={`${iconSize} animate-spin`} fill="none" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -291,7 +285,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
                 />
               </svg>
             ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -307,12 +301,12 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
             <button
               ref={menuButtonRef}
               onClick={() => setMenuOpen(!menuOpen)}
-              className={`btn btn-secondary ${buttonHeight} px-3`}
+              className="p-1.5 rounded-md text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
               title={t('common.moreOptions')}
               aria-haspopup="true"
               aria-expanded={menuOpen}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -326,15 +320,20 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
             {menuOpen && (
               <div
                 ref={menuRef}
-                className="absolute right-0 mt-1 w-40 py-1 bg-surface-secondary border border-stroke rounded-lg shadow-lg z-10"
+                className="absolute right-0 mt-1 w-36 py-1 bg-surface-secondary border border-stroke rounded-lg shadow-lg z-10"
                 role="menu"
               >
                 <button
                   onClick={handleUnlink}
-                  className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface-hover flex items-center gap-2"
+                  className="w-full px-3 py-1.5 text-left text-sm text-content hover:bg-surface-hover flex items-center gap-2"
                   role="menuitem"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -352,10 +351,15 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="w-full px-3 py-2 text-left text-sm text-status-error hover:bg-surface-hover flex items-center gap-2"
+                  className="w-full px-3 py-1.5 text-left text-sm text-status-error hover:bg-surface-hover flex items-center gap-2"
                   role="menuitem"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

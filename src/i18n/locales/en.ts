@@ -1483,6 +1483,7 @@ const en: Record<string, string> = {
   // ===========================================================================
 
   // Context menu actions
+  'designLinking.menu.sectionTitle': 'Bin Design',
   'designLinking.menu.editDesign': 'Edit Design',
   'designLinking.menu.createDesign': 'Create Design',
   'designLinking.menu.linkExisting': 'Link Existing Design',
@@ -1491,6 +1492,7 @@ const en: Record<string, string> = {
   'designLinking.menu.unlinkStale': 'Remove Stale Link',
 
   // Inspector section
+  'designLinking.experimental': 'Experimental',
   'designLinking.inspector.linkedDesign': 'Linked Design',
   'designLinking.inspector.noDesign': 'No design linked',
   'designLinking.inspector.designDeleted': 'Design deleted',

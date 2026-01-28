@@ -10,7 +10,8 @@ import { useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useShallow } from 'zustand/react/shallow';
 import { useCustomBins } from '@/features/bin-designer/hooks/useCustomBins';
-import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
+import { loadDesign, deleteDesign } from '@/features/bin-designer/storage/DesignerStorage';
+import { removeRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import { useLinkingStore } from '../store';
 import {
   compareDimensions,
@@ -21,7 +22,7 @@ import {
   generateDefaultDesignName,
 } from '../domain';
 import type { BinId, DesignId, SyncResult } from '../types';
-import { isErr } from '@/core/result';
+import { isErr, isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 
 interface UseBinLinkingReturn {
@@ -33,6 +34,9 @@ interface UseBinLinkingReturn {
 
   /** Unlink multiple bins (undoable) */
   unlinkBins: (binIds: BinId[]) => void;
+
+  /** Delete a design and unlink the bin */
+  deleteLinkedDesign: (binId: BinId, designId: DesignId, designName: string) => Promise<boolean>;
 
   /** Navigate to designer to edit a linked design */
   editLinkedDesign: (designId: DesignId) => void;
@@ -289,10 +293,41 @@ export function useBinLinking(): UseBinLinkingReturn {
     [hideCreateDesignDialog]
   );
 
+  // Delete a design and unlink the bin
+  const deleteLinkedDesign = useCallback(
+    async (binId: BinId, designId: DesignId, designName: string): Promise<boolean> => {
+      // First unlink the bin
+      execute(() => {
+        updateBin(binId, { linkedDesignId: undefined });
+      });
+
+      // Then delete the design from storage
+      const result = await deleteDesign(designId);
+      if (isOk(result)) {
+        removeRegistryEntry(designId);
+        addToast({
+          message: t('designLinking.toast.deleted', { name: designName }),
+          type: 'success',
+          duration: 3000,
+        });
+        return true;
+      } else {
+        addToast({
+          message: t('designLinking.toast.deleteFailed'),
+          type: 'error',
+          duration: 4000,
+        });
+        return false;
+      }
+    },
+    [execute, updateBin, addToast, t]
+  );
+
   return {
     linkBin,
     unlinkBin,
     unlinkBins,
+    deleteLinkedDesign,
     editLinkedDesign,
     showCreateDesignDialog,
     promptSyncIfNeeded,

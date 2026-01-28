@@ -167,6 +167,9 @@ export function useCreateFromBin(): void {
         setActiveDesignId(design.id);
         useDesignerStore.getState().setSaveStatus('saved');
 
+        // Flag that we need to capture thumbnail after mesh generation completes
+        useDesignerStore.getState().setNeedsThumbnailUpdate(true);
+
         // Sync to custom bin registry for layout planner palette
         upsertRegistryEntry({
           id: design.id,

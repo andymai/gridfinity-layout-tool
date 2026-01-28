@@ -5,7 +5,8 @@
  * resizes it to a small data URL for storage in IndexedDB.
  */
 
-const THUMBNAIL_SIZE = 96;
+/** Thumbnail size for IndexedDB storage (high res for crisp display at any size) */
+const THUMBNAIL_SIZE = 384;
 
 /** Module-level ref to the preview canvas element, set by PreviewCanvas */
 let previewCanvasEl: HTMLCanvasElement | null = null;
@@ -53,24 +54,27 @@ export function captureThumbnailPNG(): Promise<Uint8Array | null> {
 
     ctx.drawImage(
       src,
-      srcX, srcY, srcSize, srcSize,
-      0, 0, THREEMF_THUMBNAIL_SIZE, THREEMF_THUMBNAIL_SIZE
+      srcX,
+      srcY,
+      srcSize,
+      srcSize,
+      0,
+      0,
+      THREEMF_THUMBNAIL_SIZE,
+      THREEMF_THUMBNAIL_SIZE
     );
 
     return new Promise((resolve) => {
-      offscreen.toBlob(
-        (blob) => {
-          if (!blob) {
-            resolve(null);
-            return;
-          }
-          blob.arrayBuffer().then(
-            (buf) => resolve(new Uint8Array(buf)),
-            () => resolve(null)
-          );
-        },
-        'image/png'
-      );
+      offscreen.toBlob((blob) => {
+        if (!blob) {
+          resolve(null);
+          return;
+        }
+        blob.arrayBuffer().then(
+          (buf) => resolve(new Uint8Array(buf)),
+          () => resolve(null)
+        );
+      }, 'image/png');
     });
   } catch {
     return Promise.resolve(null);
@@ -80,9 +84,12 @@ export function captureThumbnailPNG(): Promise<Uint8Array | null> {
 /**
  * Capture a centered square thumbnail of the current 3D preview canvas.
  *
- * Produces a JPEG image scaled to THUMBNAIL_SIZE × THUMBNAIL_SIZE by center-cropping the preview canvas and exporting it at quality 0.7.
+ * Produces a WebP image scaled to THUMBNAIL_SIZE × THUMBNAIL_SIZE by
+ * center-cropping the preview canvas. WebP provides better quality than
+ * JPEG at similar file sizes.
  *
- * @returns A JPEG data URL for the generated thumbnail, or `null` if the preview canvas or 2D context is unavailable or if an error occurs (e.g., canvas is tainted).
+ * @returns A WebP data URL for the generated thumbnail, or `null` if the
+ *   preview canvas or 2D context is unavailable or if an error occurs.
  */
 export function captureThumbnail(): string | null {
   if (!previewCanvasEl) return null;
@@ -101,14 +108,10 @@ export function captureThumbnail(): string | null {
     const srcX = (src.width - srcSize) / 2;
     const srcY = (src.height - srcSize) / 2;
 
-    ctx.drawImage(
-      src,
-      srcX, srcY, srcSize, srcSize,
-      0, 0, THUMBNAIL_SIZE, THUMBNAIL_SIZE
-    );
+    ctx.drawImage(src, srcX, srcY, srcSize, srcSize, 0, 0, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
 
-    // Export as JPEG for smaller file size
-    return offscreen.toDataURL('image/jpeg', 0.7);
+    // Export as WebP for best quality/size ratio (0.9 quality for crisp details)
+    return offscreen.toDataURL('image/webp', 0.9);
   } catch {
     // Canvas may be tainted or unavailable
     return null;

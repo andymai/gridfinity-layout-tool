@@ -19,6 +19,7 @@ import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useDesignerInit } from '@/features/bin-designer/hooks/useDesignerInit';
 import { useCreateFromBin } from '@/features/bin-designer/hooks/useCreateFromBin';
 import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
+import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailCapture';
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { fetchDesignerShare } from '@/features/bin-designer/hooks/useDesignerSharing';
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
@@ -143,6 +144,9 @@ export function DesignerPage(_props: DesignerPageProps) {
 
   // Auto-save params to IndexedDB (debounced 1s)
   useAutoSave();
+
+  // Capture thumbnail after first mesh generation (for designs created from bins)
+  useThumbnailCapture();
 
   // Sync URL ↔ store (deep linking, back/forward navigation)
   useDesignerUrlSync();

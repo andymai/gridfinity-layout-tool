@@ -266,6 +266,15 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
         {/* Design Linking Actions - requires Bin Designer feature flag */}
         {isDesignerEnabled && (
           <>
+            {/* Section heading with experimental badge */}
+            <div className="px-4 py-1.5 flex items-center gap-2">
+              <span className="text-xs font-medium text-content-secondary">
+                {t('designLinking.menu.sectionTitle')}
+              </span>
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                {t('designLinking.experimental')}
+              </span>
+            </div>
             {hasLink && linkedDesign ? (
               // Valid link - show edit and unlink options
               <>
