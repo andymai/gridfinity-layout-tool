@@ -9,6 +9,7 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
 import { Vector3, Spherical } from 'three';
+import type { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
@@ -27,7 +28,7 @@ import {
 import { GradientBackground } from './preview/GradientBackground';
 import { FootprintGrid } from './preview/FootprintGrid';
 import { useDesignerKeyboard } from '../hooks/useDesignerKeyboard';
-import { setPreviewCanvas, clearPreviewCanvas } from '../utils/thumbnail';
+import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
@@ -421,10 +422,11 @@ export function PreviewCanvas() {
               near: 0.1,
               far: 2000,
             }}
-            onCreated={({ camera, gl }) => {
+            onCreated={({ camera, gl, scene }) => {
               camera.up.set(0, 0, 1);
               camera.lookAt(0, 0, totalH / 2);
               setPreviewCanvas(gl.domElement);
+              setPreviewContext(gl, scene, camera as PerspectiveCamera);
             }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >

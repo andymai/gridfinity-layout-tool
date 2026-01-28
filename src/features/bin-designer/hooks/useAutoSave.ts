@@ -14,7 +14,7 @@ import {
   setActiveDesignId,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
-import { captureThumbnail } from '../utils/thumbnail';
+import { captureThumbnailAtPreset } from '../utils/thumbnail';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
 import type { BinParams, ExportFileNameConfig } from '../types';
 
@@ -54,8 +54,12 @@ export function useAutoSave(): void {
     ): Promise<void> => {
       setSaveStatus('saving');
 
-      // Capture thumbnail from the 3D preview (null if canvas not ready)
-      const thumbnail = captureThumbnail();
+      // Capture thumbnail from the standard isometric angle (null if canvas not ready)
+      const thumbnail = captureThumbnailAtPreset({
+        width: paramsToSave.width,
+        depth: paramsToSave.depth,
+        height: paramsToSave.height,
+      });
 
       const result = await updateDesignParams(designId, paramsToSave, thumbnail, configToSave);
       if (abortToken.current) return; // Superseded by newer save

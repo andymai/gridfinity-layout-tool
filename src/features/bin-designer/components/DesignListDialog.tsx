@@ -25,6 +25,7 @@ import { ItemListShell } from '@/shared/components';
 import { DesignGridItem } from './DesignGridItem';
 import { DesignListItem } from './DesignListItem';
 import type { SavedDesign } from '../types';
+import { useThumbnailRegeneration } from '../hooks/useThumbnailRegeneration';
 import { useTranslation } from '@/i18n';
 import type { ViewMode } from '@/shared/components/ViewModeToggle';
 
@@ -107,6 +108,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       cancelled = true;
     };
   }, [open]);
+
+  // Lazily regenerate thumbnails for designs that are missing or outdated
+  const handleThumbnailUpdated = useCallback((id: string, thumbnail: string) => {
+    setDesigns((prev) => prev.map((d) => (d.id === id ? { ...d, thumbnail } : d)));
+  }, []);
+  useThumbnailRegeneration(designs, handleThumbnailUpdated);
 
   // Filter and sort designs
   const sortedDesigns = useMemo(() => {

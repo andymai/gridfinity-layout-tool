@@ -9,7 +9,7 @@ import type { SavedDesign } from '../../types';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 vi.mock('../../utils/thumbnail', () => ({
-  captureThumbnail: () => null,
+  captureThumbnailAtPreset: () => null,
 }));
 
 describe('useAutoSave', () => {
