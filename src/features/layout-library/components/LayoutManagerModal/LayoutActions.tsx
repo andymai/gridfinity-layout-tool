@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { LayoutEntry } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { useTwoClickDelete } from '@/shared/components';
 
 interface LayoutActionsProps {
   entry: LayoutEntry;
@@ -32,10 +33,15 @@ export function LayoutActions({
 }: LayoutActionsProps) {
   const t = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Two-click delete state
+  const { isConfirming: isConfirmingDelete, handleClick: handleDeleteClick, reset: resetDelete } = useTwoClickDelete(() => {
+    onDelete();
+    setIsMenuOpen(false);
+  });
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -49,20 +55,20 @@ export function LayoutActions({
         !menuButtonRef.current.contains(e.target as Node)
       ) {
         setIsMenuOpen(false);
-        setIsConfirmingDelete(false);
+        resetDelete();
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
+  }, [isMenuOpen, resetDelete]);
 
   const handleMenuToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
 
     if (isMenuOpen) {
       setIsMenuOpen(false);
-      setIsConfirmingDelete(false);
+      resetDelete();
     } else {
       // Calculate fixed position based on button location
       const button = menuButtonRef.current;
@@ -83,12 +89,7 @@ export function LayoutActions({
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isConfirmingDelete) {
-      onDelete();
-      setIsMenuOpen(false);
-    } else {
-      setIsConfirmingDelete(true);
-    }
+    handleDeleteClick();
   };
 
   const handleAction = (action: () => void) => (e: React.MouseEvent) => {
@@ -249,7 +250,7 @@ export function LayoutActions({
                     role="menuitem"
                     onClick={handleDelete}
                     className={`
-                      w-full px-3 py-2 text-left text-sm flex flex-col gap-0.5
+                      w-full px-3 py-2 text-left text-sm flex flex-col gap-0.5 transition-colors
                       ${
                         isConfirmingDelete
                           ? 'bg-danger text-on-dark'
@@ -275,7 +276,7 @@ export function LayoutActions({
                       {isConfirmingDelete ? t('layouts.confirmDelete.confirm') : t('common.delete')}
                     </span>
                     {isConfirmingDelete && entry.preview.binCount > 0 && (
-                      <span className="text-xs text-danger/60 ml-6">
+                      <span className="text-xs opacity-70 ml-6">
                         {t('layouts.binsWillBeDeleted', { count: entry.preview.binCount })}
                       </span>
                     )}

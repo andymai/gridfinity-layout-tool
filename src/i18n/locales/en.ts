@@ -1197,6 +1197,23 @@ const en: Record<string, string> = {
   'binDesigner.updatingMesh': 'Updating mesh',
   'binDesigner.wire': 'Wire',
 
+  // Saved Designs Modal
+  'binDesigner.viewMode': 'View mode',
+  'binDesigner.gridView': 'Grid view',
+  'binDesigner.listView': 'List view',
+  'binDesigner.sortBy': 'Sort by',
+  'binDesigner.sortRecent': 'Recently Modified',
+  'binDesigner.sortName': 'Name (A-Z)',
+  'binDesigner.sortSize': 'Size',
+  'binDesigner.searchDesigns': 'Search designs...',
+  'binDesigner.searchDesignsAriaLabel': 'Search designs',
+  'binDesigner.clearSearch': 'Clear search',
+  'binDesigner.noDesignsMatch': 'No designs match "{query}"',
+  'binDesigner.designCount': '{count} design(s)',
+  'binDesigner.duplicateDesign': 'Duplicate design',
+  'binDesigner.deleteDesign': 'Delete design',
+  'binDesigner.confirmDelete': 'Click again to delete',
+
   // ===========================================================================
   // Bin List Modal
   // ===========================================================================

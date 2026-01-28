@@ -177,6 +177,12 @@ export interface UserSettings {
    */
   layoutManagerViewMode: 'grid' | 'list';
 
+  /**
+   * Preferred view mode for the bin designer's saved designs modal.
+   * 'grid' shows cards with thumbnails, 'list' shows compact rows.
+   */
+  designListViewMode: 'grid' | 'list';
+
   // Print view preferences
   printViewSettings: PrintViewSettings;
 
@@ -226,6 +232,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   lastStashCollapsed: false,
   stashMaxHeight: null, // null = use default 33vh
   layoutManagerViewMode: 'grid',
+  designListViewMode: 'grid',
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },

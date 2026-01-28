@@ -15,3 +15,5 @@ export type { GridTemplateState, UseGridTemplateOptions } from './useGridTemplat
 
 export { useSharedWithMe } from './useSharedWithMe';
 export type { SharedWithMeStatus } from './useSharedWithMe';
+
+export { useInlineEdit } from './useInlineEdit';

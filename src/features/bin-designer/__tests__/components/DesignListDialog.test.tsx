@@ -42,6 +42,9 @@ describe('DesignListDialog', () => {
     const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
     vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok(mockDesigns));
     vi.mocked(DesignerStorage.deleteDesign).mockResolvedValue(ok(undefined));
+    vi.mocked(DesignerStorage.duplicateDesign).mockResolvedValue(
+      ok({ ...mockDesigns[0], id: 'design-3', name: 'Copy of Tool Holder' })
+    );
     vi.mocked(DesignerStorage.saveDesign).mockResolvedValue(
       ok({ ...mockDesigns[0], name: 'Renamed' })
     );
@@ -80,31 +83,44 @@ describe('DesignListDialog', () => {
     });
   });
 
-  it('highlights the currently active design', async () => {
+  it('highlights the currently active design with badge', async () => {
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Tool Holder')).toBeInTheDocument();
     });
 
-    // The active design should not have a "Load" button
-    const loadButtons = screen.getAllByRole('button', { name: /load/i });
-    // Only Screw Bin (design-2) should have Load since design-1 is current
-    expect(loadButtons).toHaveLength(1);
-    expect(loadButtons[0]).toHaveAttribute('aria-label', 'Load Screw Bin');
+    // The active design should have an "Active" badge
+    expect(screen.getByText('Active')).toBeInTheDocument();
   });
 
-  it('loads a design and closes dialog', async () => {
+  it('loads a design by clicking on the item', async () => {
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Screw Bin')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load Screw Bin' }));
+    // Click on the design item itself to load it
+    fireEvent.click(screen.getByText('Screw Bin'));
 
     expect(useDesignerStore.getState().currentDesignId).toBe('design-2');
     expect(useDesignerStore.getState().designName).toBe('Screw Bin');
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('closes dialog when clicking the active design', async () => {
+    render(<DesignListDialog open={true} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+    });
+
+    // Click on the active design - should just close the dialog
+    fireEvent.click(screen.getByText('Tool Holder'));
+
+    // Should stay on the same design but close
+    expect(useDesignerStore.getState().currentDesignId).toBe('design-1');
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -122,32 +138,100 @@ describe('DesignListDialog', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('deletes a design from the list', async () => {
-    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+  it('opens overflow menu and shows actions', async () => {
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Screw Bin')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Delete Screw Bin' }));
+    // Find and click the overflow menu button for Screw Bin
+    const moreButtons = screen.getAllByRole('button', { name: /more actions/i });
+    expect(moreButtons.length).toBeGreaterThan(0);
 
+    // Click the menu button for the second design (Screw Bin)
+    fireEvent.click(moreButtons[1]); // Second design's menu
+
+    // The menu should show Load, Rename, Duplicate, Delete options
     await waitFor(() => {
-      expect(DesignerStorage.deleteDesign).toHaveBeenCalledWith('design-2');
-      expect(screen.queryByText('Screw Bin')).not.toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /load/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /rename/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /duplicate/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
     });
   });
 
-  it('starts inline rename on rename button click', async () => {
+  it('duplicates a design via overflow menu', async () => {
+    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Tool Holder')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Rename Tool Holder' }));
+    // Open overflow menu for first design
+    const moreButtons = screen.getAllByRole('button', { name: /more actions/i });
+    fireEvent.click(moreButtons[0]);
 
+    // Click duplicate
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /duplicate/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('menuitem', { name: /duplicate/i }));
+
+    await waitFor(() => {
+      expect(DesignerStorage.duplicateDesign).toHaveBeenCalledWith('design-1');
+    });
+  });
+
+  it('deletes a design with two-click confirmation', async () => {
+    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
+    render(<DesignListDialog open={true} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Screw Bin')).toBeInTheDocument();
+    });
+
+    // Open overflow menu for Screw Bin
+    const moreButtons = screen.getAllByRole('button', { name: /more actions/i });
+    fireEvent.click(moreButtons[1]);
+
+    // First click - shows confirmation
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+    });
+    const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
+    fireEvent.click(deleteButton);
+
+    // Second click - confirms deletion
+    await waitFor(() => {
+      expect(screen.getByText(/click again to delete/i)).toBeInTheDocument();
+    });
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(DesignerStorage.deleteDesign).toHaveBeenCalledWith('design-2');
+    });
+  });
+
+  it('starts inline rename via overflow menu', async () => {
+    render(<DesignListDialog open={true} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+    });
+
+    // Open overflow menu
+    const moreButtons = screen.getAllByRole('button', { name: /more actions/i });
+    fireEvent.click(moreButtons[0]);
+
+    // Click rename
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /rename/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('menuitem', { name: /rename/i }));
+
+    // Check that an input appeared with the current name
     const input = screen.getByRole('textbox', { name: 'Design name' });
     expect(input).toBeInTheDocument();
     expect(input).toHaveValue('Tool Holder');
@@ -169,14 +253,29 @@ describe('DesignListDialog', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('shows thumbnail when design has one', async () => {
+  it('renders isometric SVG thumbnails for designs', async () => {
     const { container } = render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Screw Bin')).toBeInTheDocument();
     });
 
-    const img = container.querySelector('img[src="data:image/png;base64,abc"]');
-    expect(img).toBeInTheDocument();
+    // The new UI uses SVG isometric thumbnails instead of img tags
+    const svgThumbnails = container.querySelectorAll('svg[aria-hidden="true"]');
+    expect(svgThumbnails.length).toBeGreaterThan(0);
+  });
+
+  it('shows design dimensions in list', async () => {
+    render(<DesignListDialog open={true} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+    });
+
+    // Should show dimensions like "3×2×3u" (width×depth×height)
+    // Tool Holder: width=3, depth=2, height=3 (from DEFAULT_BIN_PARAMS)
+    expect(screen.getByText(/3×2×3u/)).toBeInTheDocument();
+    // Screw Bin: width=1, depth=1, height=6
+    expect(screen.getByText(/1×1×6u/)).toBeInTheDocument();
   });
 });

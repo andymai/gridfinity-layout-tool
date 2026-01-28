@@ -132,6 +132,32 @@ export async function listDesigns(): Promise<Result<SavedDesign[], StorageError>
 }
 
 /**
+ * Duplicate a design with a new ID.
+ * Creates a copy with "Copy of {name}" as the name.
+ *
+ * @param id - The ID of the design to duplicate
+ * @returns The duplicated design with a new ID
+ */
+export async function duplicateDesign(id: string): Promise<Result<SavedDesign, StorageError>> {
+  const loadResult = await loadDesign(id);
+  if (isErr(loadResult)) {
+    return loadResult;
+  }
+
+  const original = loadResult.value;
+  const newName = `Copy of ${original.name}`;
+
+  return saveDesign({
+    name: newName,
+    params: { ...original.params },
+    thumbnail: original.thumbnail,
+    exportFileNameConfig: original.exportFileNameConfig
+      ? { ...original.exportFileNameConfig }
+      : null,
+  });
+}
+
+/**
  * Delete a design by ID.
  */
 export async function deleteDesign(id: string): Promise<Result<void, StorageError>> {

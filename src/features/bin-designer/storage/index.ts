@@ -3,6 +3,7 @@ export {
   loadDesign,
   listDesigns,
   deleteDesign,
+  duplicateDesign,
   updateDesignParams,
   closeDesignerDb,
 } from './DesignerStorage';

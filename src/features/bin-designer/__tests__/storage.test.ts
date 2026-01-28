@@ -5,6 +5,7 @@ import {
   loadDesign,
   listDesigns,
   deleteDesign,
+  duplicateDesign,
   updateDesignParams,
   closeDesignerDb,
   getActiveDesignId,
@@ -163,6 +164,33 @@ describe('DesignerStorage', () => {
 
     it('should return error for non-existent design', async () => {
       const result = await deleteDesign('nonexistent');
+      expect(isErr(result)).toBe(true);
+    });
+  });
+
+  describe('duplicateDesign', () => {
+    it('should duplicate a design with new ID and name', async () => {
+      await saveDesign({
+        id: 'original-design',
+        name: 'My Bin',
+        params: { ...DEFAULT_BIN_PARAMS, width: 3 },
+        thumbnail: 'data:image/test',
+      });
+
+      const result = await duplicateDesign('original-design');
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.id).not.toBe('original-design');
+        expect(result.value.id).toMatch(/^design_/);
+        expect(result.value.name).toBe('Copy of My Bin');
+        expect(result.value.params.width).toBe(3);
+        expect(result.value.thumbnail).toBe('data:image/test');
+      }
+    });
+
+    it('should return error for non-existent design', async () => {
+      const result = await duplicateDesign('nonexistent');
       expect(isErr(result)).toBe(true);
     });
   });
