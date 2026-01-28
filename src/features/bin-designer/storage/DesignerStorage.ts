@@ -17,6 +17,7 @@ import {
   storageUnavailable,
 } from '@/core/result';
 import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
+import { THUMBNAIL_VERSION } from '@/features/bin-designer/types';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
@@ -80,6 +81,8 @@ export async function saveDesign(
       name: design.name,
       params: design.params,
       thumbnail: design.thumbnail ?? null,
+      // Set thumbnail version when saving a thumbnail
+      thumbnailVersion: design.thumbnail ? THUMBNAIL_VERSION : undefined,
       exportFileNameConfig: design.exportFileNameConfig ?? null,
       createdAt,
       updatedAt: now,
@@ -186,6 +189,32 @@ export async function updateDesignParams(
     params,
     ...(thumbnail !== undefined ? { thumbnail } : {}),
     ...(exportFileNameConfig !== undefined ? { exportFileNameConfig } : {}),
+  });
+}
+
+/**
+ * Update only the thumbnail for an existing design.
+ *
+ * Used when a design is created before the mesh is ready (e.g., from layout
+ * planner "Create Design" flow) and we need to update the thumbnail after
+ * the first successful mesh generation.
+ *
+ * @param id - The design ID
+ * @param thumbnail - The new thumbnail data URL
+ * @returns A `Result` with the updated `SavedDesign` on success
+ */
+export async function updateDesignThumbnail(
+  id: string,
+  thumbnail: string
+): Promise<Result<SavedDesign, StorageError>> {
+  const loadResult = await loadDesign(id);
+  if (isErr(loadResult)) {
+    return loadResult;
+  }
+
+  return saveDesign({
+    ...loadResult.value,
+    thumbnail,
   });
 }
 

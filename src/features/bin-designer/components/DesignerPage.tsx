@@ -17,7 +17,9 @@ import { DesignListDialog } from '@/features/bin-designer/components/DesignListD
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useDesignerInit } from '@/features/bin-designer/hooks/useDesignerInit';
+import { useCreateFromBin } from '@/features/bin-designer/hooks/useCreateFromBin';
 import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
+import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailCapture';
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { fetchDesignerShare } from '@/features/bin-designer/hooks/useDesignerSharing';
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
@@ -26,9 +28,10 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useToastStore } from '@/core/store/toast';
 import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
-import { saveDesign } from '@/features/bin-designer/storage/DesignerStorage';
+import { saveDesign, setActiveDesignId } from '@/features/bin-designer/storage/DesignerStorage';
 import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import { useLayoutStore } from '@/core/store/layout';
 import type { SaveStatus } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 
@@ -133,11 +136,17 @@ export function DesignerPage(_props: DesignerPageProps) {
   // Must be called before useAutoSave to set currentDesignId
   useDesignerInit();
 
+  // Handle createFrom=bin URL params (must run after init, before generation)
+  useCreateFromBin();
+
   // Initialize generation bridge - auto-generates mesh when params change
   useGeneration();
 
   // Auto-save params to IndexedDB (debounced 1s)
   useAutoSave();
+
+  // Capture thumbnail after first mesh generation (for designs created from bins)
+  useThumbnailCapture();
 
   // Sync URL ↔ store (deep linking, back/forward navigation)
   useDesignerUrlSync();
@@ -155,6 +164,9 @@ export function DesignerPage(_props: DesignerPageProps) {
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
   const setParams = useDesignerStore((s) => s.setParams);
+  const pendingBinLink = useDesignerStore((s) => s.pendingBinLink);
+  const clearPendingBinLink = useDesignerStore((s) => s.clearPendingBinLink);
+  const updateBin = useLayoutStore((s) => s.updateBin);
   const canExport = useDesignerStore(
     (s) =>
       s.generation.mesh !== null &&
@@ -171,6 +183,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   );
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
+  const addToast = useToastStore((s) => s.addToast);
   // Platform detection for keyboard shortcut hints
   const isMac =
     typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -205,6 +218,7 @@ export function DesignerPage(_props: DesignerPageProps) {
       void saveDesign({ name, params, thumbnail, exportFileNameConfig }).then((result) => {
         if (isOk(result)) {
           setCurrentDesignId(result.value.id);
+          setActiveDesignId(result.value.id);
           setSaveStatus('saved');
           upsertRegistryEntry({
             id: result.value.id,
@@ -215,6 +229,19 @@ export function DesignerPage(_props: DesignerPageProps) {
             thumbnail: result.value.thumbnail,
             updatedAt: result.value.updatedAt,
           });
+
+          // Auto-link design to source bin if this was created from a bin
+          if (pendingBinLink) {
+            const linkResult = updateBin(pendingBinLink, { linkedDesignId: result.value.id });
+            clearPendingBinLink();
+            if (isOk(linkResult)) {
+              addToast({
+                message: t('binDesigner.designCreatedAndLinked'),
+                type: 'success',
+                duration: 4000,
+              });
+            }
+          }
         } else {
           setSaveStatus('error');
         }
@@ -228,6 +255,11 @@ export function DesignerPage(_props: DesignerPageProps) {
     exportFileNameConfig,
     setCurrentDesignId,
     setSaveStatus,
+    pendingBinLink,
+    updateBin,
+    clearPendingBinLink,
+    addToast,
+    t,
   ]);
 
   const handleNameKeyDown = useCallback(
@@ -241,8 +273,6 @@ export function DesignerPage(_props: DesignerPageProps) {
     },
     [handleNameSubmit, designName]
   );
-
-  const addToast = useToastStore((s) => s.addToast);
 
   // Handle ?share= URL parameter on mount
   const shareHandled = useRef(false);
@@ -351,7 +381,7 @@ export function DesignerPage(_props: DesignerPageProps) {
           <button
             onClick={() => setDesignListOpen(true)}
             className="sm:hidden btn btn-ghost btn-icon"
-            title={t('binDesigner.myDesigns')}
+            title={t('binDesigner.savedDesigns')}
             aria-label={t('binDesigner.openDesignList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

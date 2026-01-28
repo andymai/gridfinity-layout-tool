@@ -32,7 +32,7 @@ describe('thumbnail', () => {
     } as typeof HTMLCanvasElement.prototype.getContext);
 
     vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(
-      'data:image/jpeg;base64,mockThumb'
+      'data:image/webp;base64,mockThumb'
     );
   });
 
@@ -51,15 +51,15 @@ describe('thumbnail', () => {
     expect(captureThumbnail()).toBeNull();
   });
 
-  it('captures a JPEG data URL when canvas is registered', () => {
+  it('captures a WebP data URL when canvas is registered', () => {
     setPreviewCanvas(mockCanvas);
 
     const result = captureThumbnail();
 
-    expect(result).toBe('data:image/jpeg;base64,mockThumb');
+    expect(result).toBe('data:image/webp;base64,mockThumb');
   });
 
-  it('draws the canvas center-cropped to 96x96', () => {
+  it('draws the canvas center-cropped to 384x384', () => {
     setPreviewCanvas(mockCanvas);
     captureThumbnail();
 
@@ -72,8 +72,8 @@ describe('thumbnail', () => {
       600, // source: center-cropped square
       0,
       0,
-      96,
-      96 // destination: thumbnail size
+      384,
+      384 // destination: thumbnail size
     );
   });
 
@@ -83,7 +83,7 @@ describe('thumbnail', () => {
     setPreviewCanvas(mockCanvas);
     captureThumbnail();
 
-    expect(mockCtx.drawImage).toHaveBeenCalledWith(mockCanvas, 0, 0, 500, 500, 0, 0, 96, 96);
+    expect(mockCtx.drawImage).toHaveBeenCalledWith(mockCanvas, 0, 0, 500, 500, 0, 0, 384, 384);
   });
 
   it('handles tall canvas (portrait) with vertical center crop', () => {
@@ -93,15 +93,15 @@ describe('thumbnail', () => {
     captureThumbnail();
 
     // Min dimension is 400, so srcY = (800-400)/2 = 200
-    expect(mockCtx.drawImage).toHaveBeenCalledWith(mockCanvas, 0, 200, 400, 400, 0, 0, 96, 96);
+    expect(mockCtx.drawImage).toHaveBeenCalledWith(mockCanvas, 0, 200, 400, 400, 0, 0, 384, 384);
   });
 
-  it('calls toDataURL with JPEG format at 0.7 quality', () => {
+  it('calls toDataURL with WebP format at 0.9 quality', () => {
     setPreviewCanvas(mockCanvas);
     captureThumbnail();
 
     // toDataURL is called on the offscreen canvas (not the source)
-    expect(HTMLCanvasElement.prototype.toDataURL).toHaveBeenCalledWith('image/jpeg', 0.7);
+    expect(HTMLCanvasElement.prototype.toDataURL).toHaveBeenCalledWith('image/webp', 0.9);
   });
 
   it('returns null if offscreen getContext fails', () => {

@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
@@ -13,7 +14,15 @@ import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import type { Bin } from '@/core/types';
+
+// Lazy load design-linking section - only needed when bin_designer feature is enabled
+const BinContextMenuDesignSection = lazy(() =>
+  import('./BinContextMenuDesignSection').then((m) => ({
+    default: m.BinContextMenuDesignSection,
+  }))
+);
 
 interface BinContextMenuProps {
   bin: Bin;
@@ -52,6 +61,9 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
 
   const { execute } = useUndoableAction();
   const { isDesktop } = useResponsive();
+
+  // Design linking - requires Bin Designer feature flag
+  const isDesignerEnabled = useFeatureFlag('bin_designer');
 
   const handleDelete = () => {
     // Track deletion BEFORE executing (need bin data)
@@ -231,6 +243,13 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
         />
 
         <ContextMenuDivider />
+
+        {/* Design Linking Actions - requires Bin Designer feature flag */}
+        {isDesignerEnabled && (
+          <Suspense fallback={null}>
+            <BinContextMenuDesignSection bin={bin} onClose={onClose} />
+          </Suspense>
+        )}
 
         <ContextMenuItem
           icon={

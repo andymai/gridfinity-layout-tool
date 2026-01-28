@@ -22,6 +22,7 @@ import type {
   HistoryEntry,
   CachedMesh,
 } from '../types';
+import { THUMBNAIL_VERSION } from '../types';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_GENERATION_STATE,
@@ -82,6 +83,8 @@ export const useDesignerStore = create<DesignerState>()(
     designName: 'Untitled Bin',
     saveStatus: 'idle' as SaveStatus,
     exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG },
+    pendingBinLink: null as string | null,
+    needsThumbnailUpdate: false,
 
     // Param actions
     setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
@@ -162,6 +165,24 @@ export const useDesignerStore = create<DesignerState>()(
       });
     },
 
+    setPendingBinLink: (binId: string | null) => {
+      set((state) => {
+        state.pendingBinLink = binId;
+      });
+    },
+
+    clearPendingBinLink: () => {
+      set((state) => {
+        state.pendingBinLink = null;
+      });
+    },
+
+    setNeedsThumbnailUpdate: (needed: boolean) => {
+      set((state) => {
+        state.needsThumbnailUpdate = needed;
+      });
+    },
+
     newDesign: () => {
       set((state) => {
         state.history.past = [];
@@ -171,12 +192,19 @@ export const useDesignerStore = create<DesignerState>()(
         state.designName = 'Untitled Bin';
         state.saveStatus = 'idle';
         state.exportFileNameConfig = { ...DEFAULT_EXPORT_FILE_NAME_CONFIG };
+        state.pendingBinLink = null;
+        state.needsThumbnailUpdate = false;
         state.generation.epoch += 1;
         pendingMeshCache = null;
       });
     },
 
     loadDesign: (design: SavedDesign) => {
+      // Check if thumbnail needs regeneration (missing or outdated version)
+      const needsNewThumbnail =
+        design.thumbnail !== null &&
+        (design.thumbnailVersion === undefined || design.thumbnailVersion < THUMBNAIL_VERSION);
+
       set((state) => {
         state.params = migrateParams(design.params);
         state.currentDesignId = design.id;
@@ -186,6 +214,8 @@ export const useDesignerStore = create<DesignerState>()(
         };
         state.history = { past: [], future: [] };
         state.saveStatus = 'saved';
+        state.pendingBinLink = null;
+        state.needsThumbnailUpdate = needsNewThumbnail;
         state.generation.epoch += 1;
         pendingMeshCache = null;
       });

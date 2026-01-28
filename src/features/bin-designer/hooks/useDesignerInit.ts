@@ -7,10 +7,11 @@
  *
  * Flow:
  * 1. If URL has ?id=, let useDesignerUrlSync handle loading
- * 2. If no URL param and no currentDesignId, initialize:
+ * 2. If URL has ?createFrom=bin, let useCreateFromBin handle it
+ * 3. If no URL param and no currentDesignId, initialize:
  *    - Try to load previously active design from storage
  *    - If not found, create a new "Untitled Bin" design
- * 3. Set currentDesignId so auto-save works immediately
+ * 4. Set currentDesignId so auto-save works immediately
  *
  * Also handles when newDesign() is called (sets currentDesignId to null):
  * - Creates a new design immediately to keep auto-save working
@@ -28,14 +29,24 @@ import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
 
 /**
+ * Check if URL has createFrom=bin params (handled by useCreateFromBin).
+ */
+function hasCreateFromBinParams(): boolean {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('createFrom') === 'bin';
+}
+
+/**
  * Initialize the designer with an active design.
  *
  * Must be called before useAutoSave to ensure currentDesignId is set.
- * Skips initialization if URL contains a design ID (defers to useDesignerUrlSync).
+ * Skips initialization if URL contains a design ID (defers to useDesignerUrlSync)
+ * or createFrom=bin params (defers to useCreateFromBin).
  */
 export function useDesignerInit(): void {
   const { designIdFromUrl } = useDesignerRouting();
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
+  const pendingBinLink = useDesignerStore((s) => s.pendingBinLink);
   const loadDesign = useDesignerStore((s) => s.loadDesign);
   const setCurrentDesignId = useDesignerStore((s) => s.setCurrentDesignId);
 
@@ -51,6 +62,18 @@ export function useDesignerInit(): void {
       return;
     }
 
+    // Skip if URL has createFrom=bin params - useCreateFromBin will handle it
+    if (hasCreateFromBinParams()) {
+      hasInitialized.current = true;
+      return;
+    }
+
+    // Skip if useCreateFromBin already set up the design (pendingBinLink is set)
+    if (pendingBinLink) {
+      hasInitialized.current = true;
+      return;
+    }
+
     // Skip if we already have a design loaded
     if (currentDesignId) {
       hasInitialized.current = true;
@@ -62,6 +85,15 @@ export function useDesignerInit(): void {
     initInProgress.current = true;
 
     const doInit = async () => {
+      // Double-check URL params haven't been processed while we were waiting
+      // (useCreateFromBin may have run and set pendingBinLink)
+      const state = useDesignerStore.getState();
+      if (state.pendingBinLink || state.currentDesignId) {
+        hasInitialized.current = true;
+        initInProgress.current = false;
+        return;
+      }
+
       if (!hasInitialized.current) {
         // First load - try to restore previous session or create new
         const result = await initializeDesigner();
@@ -87,7 +119,7 @@ export function useDesignerInit(): void {
     };
 
     void doInit();
-  }, [designIdFromUrl, currentDesignId, loadDesign, setCurrentDesignId]);
+  }, [designIdFromUrl, currentDesignId, pendingBinLink, loadDesign, setCurrentDesignId]);
 }
 
 function syncToRegistry(design: {

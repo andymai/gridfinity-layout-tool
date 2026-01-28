@@ -56,7 +56,7 @@ describe('DesignListDialog', () => {
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('My Designs')).toBeInTheDocument();
+    expect(screen.getByText('Saved Designs')).toBeInTheDocument();
     expect(screen.getByText('New Design')).toBeInTheDocument();
   });
 
@@ -169,14 +169,15 @@ describe('DesignListDialog', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('shows thumbnail when design has one', async () => {
+  it('shows isometric thumbnail SVG for each design', async () => {
     const { container } = render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Screw Bin')).toBeInTheDocument();
     });
 
-    const img = container.querySelector('img[src="data:image/png;base64,abc"]');
-    expect(img).toBeInTheDocument();
+    // Should have SVG thumbnails (BinDesignThumbnail component)
+    const svgThumbnails = container.querySelectorAll('svg[aria-hidden="true"]');
+    expect(svgThumbnails.length).toBeGreaterThan(0);
   });
 });

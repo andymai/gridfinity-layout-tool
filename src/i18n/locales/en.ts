@@ -54,6 +54,7 @@ const en: Record<string, string> = {
   'common.quantity': 'Quantity',
   'common.value': 'Value',
   'common.add': 'Add',
+  'common.moreOptions': 'More options',
   'common.category': 'Category',
   'common.color': 'Color',
   'common.depth': 'Depth',
@@ -1093,7 +1094,6 @@ const en: Record<string, string> = {
   'binDesigner.format3MF': '3MF',
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',
-  'binDesigner.myDesigns': 'My Designs',
   'binDesigner.dimensions': 'Dimensions',
   'binDesigner.interior': 'Interior Dividers',
   'binDesigner.interiorSummary': '{count} compartment(s)',
@@ -1197,6 +1197,10 @@ const en: Record<string, string> = {
   'binDesigner.updating': 'Updating',
   'binDesigner.updatingMesh': 'Updating mesh',
   'binDesigner.wire': 'Wire',
+  'binDesigner.creatingFromBin': 'Creating "{name}"...',
+  'binDesigner.designCreatedAndLinked': 'Design created and linked to bin',
+  'binDesigner.designCreatedLinkFailed': 'Design created but linking failed',
+  'binDesigner.designCreateFailed': 'Failed to create design',
 
   // ===========================================================================
   // Bin List Modal
@@ -1473,6 +1477,99 @@ const en: Record<string, string> = {
   // ===========================================================================
   'snappingSlider.default': 'Default',
   'snappingSlider.select': 'Select {value}{unit}',
+
+  // ===========================================================================
+  // Design Linking (Bin Designer ↔ Layout Planner integration)
+  // ===========================================================================
+
+  // Context menu actions
+  'designLinking.menu.sectionTitle': 'Bin Design',
+  'designLinking.menu.editDesign': 'Edit Design',
+  'designLinking.menu.createDesign': 'Create Design',
+  'designLinking.menu.linkExisting': 'Link Existing Design',
+  'designLinking.menu.unlinkDesign': 'Unlink Design',
+  'designLinking.menu.designDeleted': 'Design Deleted',
+  'designLinking.menu.unlinkStale': 'Remove Stale Link',
+
+  // Inspector section
+  'designLinking.experimental': 'Experimental',
+  'designLinking.inspector.linkedDesign': 'Linked Design',
+  'designLinking.inspector.noDesign': 'No design linked',
+  'designLinking.inspector.designDeleted': 'Design deleted',
+  'designLinking.inspector.editDesign': 'Edit',
+  'designLinking.inspector.unlink': 'Unlink',
+  'designLinking.inspector.syncDimensions': 'Sync Dimensions',
+  'designLinking.inspector.createDesign': 'Create',
+  'designLinking.inspector.linkExisting': 'Link',
+  'designLinking.inspector.linkExistingTooltip': 'Link to an existing saved design',
+  'designLinking.inspector.dimensionsMismatch': 'Dimensions differ from design',
+  'designLinking.inspector.clickToEdit': 'Click to open in designer',
+  'designLinking.inspector.exportSTL': 'Export STL',
+  'designLinking.inspector.deleteDesign': 'Delete Bin Design',
+
+  // Confirmation dialogs
+  'designLinking.confirm.unlinkTitle': 'Unlink Bin Design',
+  'designLinking.confirm.unlinkMessage':
+    'This will remove the link between this bin and the 3D model. The bin design will not be deleted.',
+  'designLinking.confirm.deleteTitle': 'Delete Bin Design',
+  'designLinking.confirm.deleteMessage':
+    'This will permanently delete the 3D model "{name}" and unlink it from this bin. This cannot be undone.',
+
+  // Link existing design dialog
+  'designLinking.linkDialog.title': 'Link Existing Design',
+  'designLinking.linkDialog.footprint': 'Showing designs with {width}×{depth} footprint',
+  'designLinking.linkDialog.noCompatible': 'No compatible designs',
+  'designLinking.linkDialog.noCompatibleHint':
+    'Create a design with {width}×{depth} footprint to link it to this bin',
+
+  // Create design dialog
+  'designLinking.createDialog.title': 'Create Design from Bin',
+  'designLinking.createDialog.nameLabel': 'Design name',
+  'designLinking.createDialog.namePlaceholder': 'Enter design name',
+  'designLinking.createDialog.useLabel': 'Use bin label',
+  'designLinking.createDialog.dimensions': 'Dimensions: {width}×{depth}×{height}',
+  'designLinking.createDialog.create': 'Create & Open Designer',
+  'designLinking.createDialog.useLabelTooltip': 'Use "{label}"',
+  'designLinking.createDialog.gridUnits': '{dimensions} grid units',
+
+  // Sync dialog
+  'designLinking.syncDialog.title': 'Sync Dimensions',
+  'designLinking.syncDialog.description':
+    'The design "{name}" has different dimensions than the linked bins.',
+  'designLinking.syncDialog.designDimensions': 'Design: {dimensions}',
+  'designLinking.syncDialog.binDimensions': 'Bins: {dimensions}',
+  'designLinking.syncDialog.binsVary': 'Note: Selected bins have different dimensions',
+  'designLinking.syncDialog.binsToUpdate': '{count} bin(s) will be updated',
+  'designLinking.syncDialog.binsToUnlink': "{count} bin(s) can't fit and will be unlinked",
+  'designLinking.syncDialog.sync': 'Update Bins',
+
+  // Delete warning dialog
+  'designLinking.deleteWarning.title': 'Design has linked bins',
+  'designLinking.deleteWarning.description':
+    'This design is linked to {count} bin(s) in your layout. Deleting it will unlink those bins.',
+  'designLinking.deleteWarning.confirm': 'Delete Anyway',
+  'designLinking.deleteWarning.linkedBinsCount': '{count} linked bin(s)',
+
+  // Custom bins palette (sidebar)
+  'designLinking.palette.title': 'Custom Bins',
+  'designLinking.palette.empty': 'No saved designs',
+  'designLinking.palette.emptyHint': 'Create a design in the Bin Designer to see it here',
+  'designLinking.palette.dragHint': 'Drag to place',
+  'designLinking.palette.openDesigner': 'Open Bin Designer',
+
+  // Toasts
+  'designLinking.toast.linked': 'Linked to "{name}"',
+  'designLinking.toast.unlinked': 'Design unlinked',
+  'designLinking.toast.dimensionsMatch': 'Dimensions already match',
+  'designLinking.toast.synced': 'Updated {count} bin(s)',
+  'designLinking.toast.syncedWithUnlink': "Updated {synced}, unlinked {unlinked} (didn't fit)",
+  'designLinking.toast.unlinkedDidntFit': "Unlinked {count} bin(s) (didn't fit)",
+  'designLinking.toast.failedToLoad': 'Failed to load design',
+  'designLinking.toast.unknownDesign': 'Unknown Design',
+  'designLinking.toast.exported': 'Exported "{name}"',
+  'designLinking.toast.exportFailed': 'Failed to export bin design',
+  'designLinking.toast.deleted': 'Deleted "{name}"',
+  'designLinking.toast.deleteFailed': 'Failed to delete bin design',
 };
 
 export default en;

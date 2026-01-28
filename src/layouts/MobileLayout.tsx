@@ -28,8 +28,16 @@ import { PresenceAvatarList } from '@/components/Collab';
 const LabsDrawer = lazyWithRetry(() =>
   import('@/features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
 );
+
+// Lazy load design-linking dialogs - only needed when bin_designer feature is enabled
+const DesignLinkingDialogs = lazyWithRetry(() =>
+  import('@/features/design-linking/components/DesignLinkingDialogs').then(
+    namedExport('DesignLinkingDialogs')
+  )
+);
 import { usePresence } from '@/hooks/usePresence';
 import { useCollabMode } from '@/hooks/useCollabMode';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 
@@ -72,6 +80,7 @@ export function MobileLayout({
   const setActiveMobilePanel = useMobileStore((state) => state.setActiveMobilePanel);
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
+  const isDesignerEnabled = useFeatureFlag('bin_designer');
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">
@@ -121,6 +130,13 @@ export function MobileLayout({
       {/* Toast notifications */}
       <ToastContainer />
 
+      {/* Design linking dialogs - requires Bin Designer feature flag */}
+      {isDesignerEnabled && (
+        <Suspense fallback={null}>
+          <DesignLinkingDialogs />
+        </Suspense>
+      )}
+
       {/* Mobile help modal (touch gestures guide) */}
       {isMobileHelpOpen && (
         <Suspense fallback={null}>
@@ -152,7 +168,9 @@ function ParticipantsPanel() {
   // but guard just in case
   if (!isCollaborative) {
     return (
-      <div className="px-4 py-8 text-center text-content-secondary text-sm">{t('layout.collaborativeEditingIsNotActive')}</div>
+      <div className="px-4 py-8 text-center text-content-secondary text-sm">
+        {t('layout.collaborativeEditingIsNotActive')}
+      </div>
     );
   }
 
