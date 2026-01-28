@@ -18,7 +18,7 @@ vi.mock('../../features/cloud-share/components/CloudShareTab', () => ({
 // Mock storage utilities
 vi.mock('../../core/storage', () => ({
   generateShareableURL: vi.fn(() => 'https://example.com/share?layout=abc'),
-  downloadLayoutAsFile: vi.fn(),
+  downloadLayoutAsFile: vi.fn(() => Promise.resolve()),
   copyToClipboard: vi.fn(() => Promise.resolve(true)),
   exportLayoutJSON: vi.fn(() => '{"version":"1.0","name":"Test"}'),
   getSharedLayoutFromURL: vi.fn(() => null),
@@ -221,16 +221,20 @@ describe('ShareModal', () => {
       expect(screen.getByText('10×8 grid · 1 bins · 1 layers')).toBeInTheDocument();
     });
 
-    it('downloads file when Download button clicked', () => {
+    it('downloads file when Download button clicked', async () => {
       fireEvent.click(screen.getByText('Download'));
 
-      expect(storage.downloadLayoutAsFile).toHaveBeenCalledWith(mockLayout);
+      await waitFor(() => {
+        expect(storage.downloadLayoutAsFile).toHaveBeenCalledWith(mockLayout);
+      });
     });
 
-    it('tracks file export', () => {
+    it('tracks file export', async () => {
       fireEvent.click(screen.getByText('Download'));
 
-      expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(mockLayout, 'export_json');
+      await waitFor(() => {
+        expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(mockLayout, 'export_json');
+      });
     });
   });
 
@@ -290,7 +294,7 @@ describe('ShareModal', () => {
       });
     });
 
-    it('announces download to screen reader', () => {
+    it('announces download to screen reader', async () => {
       const announceSpy = vi.fn();
       useUIStore.setState({ announceToScreenReader: announceSpy });
 
@@ -298,7 +302,9 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'File' }));
       fireEvent.click(screen.getByText('Download'));
 
-      expect(announceSpy).toHaveBeenCalledWith('Downloaded!');
+      await waitFor(() => {
+        expect(announceSpy).toHaveBeenCalledWith('Downloaded!');
+      });
     });
 
     it('announces JSON copy to screen reader', async () => {

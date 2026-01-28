@@ -92,8 +92,8 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
     }
   };
 
-  const handleDownload = () => {
-    downloadLayoutAsFile(layout);
+  const handleDownload = async () => {
+    await downloadLayoutAsFile(layout);
     announceToScreenReader(t('share.file.downloaded'));
     trackLayoutSnapshot(layout, 'export_json');
     mlTracking.trackSnapshot('export_json');

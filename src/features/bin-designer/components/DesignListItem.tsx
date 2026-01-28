@@ -9,6 +9,7 @@ interface DesignListItemProps {
   isActive: boolean;
   isFocused: boolean;
   onSelect: () => void;
+  onDownloadJSON: () => void;
   onRename: (newName: string) => void;
   onDuplicate: () => void;
   onDelete: () => void;
@@ -25,6 +26,7 @@ export function DesignListItem({
   isActive,
   isFocused,
   onSelect,
+  onDownloadJSON,
   onRename,
   onDuplicate,
   onDelete,
@@ -143,6 +145,7 @@ export function DesignListItem({
           design={design}
           isActive={isActive}
           onLoad={onSelect}
+          onDownloadJSON={onDownloadJSON}
           onRename={startEditing}
           onDuplicate={onDuplicate}
           onDelete={onDelete}

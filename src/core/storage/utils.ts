@@ -5,7 +5,7 @@
  * for interacting with browser APIs (clipboard, file download).
  */
 
-import { exportLayoutJSON } from './ShareService';
+import { exportLayoutJSONWithDesigns } from './ShareService';
 import type { Layout } from '@/core/types';
 
 /**
@@ -36,11 +36,12 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 /**
- * Download a layout as a JSON file.
+ * Download a layout as a JSON file with embedded bin designs.
  * Creates a temporary anchor element to trigger the download.
+ * Async because it needs to look up linked designs from IndexedDB.
  */
-export function downloadLayoutAsFile(layout: Layout, filename?: string): void {
-  const json = exportLayoutJSON(layout);
+export async function downloadLayoutAsFile(layout: Layout, filename?: string): Promise<void> {
+  const json = await exportLayoutJSONWithDesigns(layout);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
 

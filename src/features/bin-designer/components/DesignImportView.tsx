@@ -1,33 +1,37 @@
+/**
+ * Design import view for the Bin Designer.
+ *
+ * Provides drag-and-drop file support and paste area for importing design JSON files.
+ * Validates design structure and shows preview before importing.
+ */
+
 import { useState, useRef, useCallback } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
-import { validateImport } from '@/shared/utils/validation';
-import { decodeLayoutFromURL } from '@/core/storage';
-import type { Layout } from '@/core/types';
+import { parseDesignJSON } from '@/features/bin-designer/utils/designJson';
+import type { BinParams } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 
-interface ImportViewProps {
-  onImport: (layout: Layout) => void;
+interface DesignImportViewProps {
+  onImport: (design: { name: string; params: BinParams }) => void;
   onCancel: () => void;
 }
 
 interface ImportPreview {
   name: string;
-  drawerSize: string;
-  layerCount: number;
-  binCount: number;
-  linkedDesignCount?: number;
+  dimensions: string;
+  compartmentCount: number;
 }
 
 /**
  * Import view with drag-and-drop file support and paste area.
  */
-export function ImportView({ onImport, onCancel }: ImportViewProps) {
+export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) {
   const t = useTranslation();
   const [jsonText, setJsonText] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [validLayout, setValidLayout] = useState<Layout | null>(null);
+  const [validDesign, setValidDesign] = useState<{ name: string; params: BinParams } | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,53 +40,27 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
     setJsonText(text);
     setErrors([]);
     setPreview(null);
-    setValidLayout(null);
+    setValidDesign(null);
 
     if (!text.trim()) return;
 
-    // Check if it's a share URL
-    const shareMatch = text.match(/#share=([A-Za-z0-9_-]+)/);
-    if (shareMatch) {
-      const encoded = shareMatch[1];
-      const result = decodeLayoutFromURL(encoded);
-      if (result.layout) {
-        setPreview({
-          name: result.layout.name,
-          drawerSize: `${result.layout.drawer.width}×${result.layout.drawer.depth}×${result.layout.drawer.height}`,
-          layerCount: result.layout.layers.length,
-          binCount: result.layout.bins.length,
-        });
-        setValidLayout(result.layout);
-      } else {
-        setErrors(result.errors);
-      }
-      return;
-    }
+    // Try to parse as design JSON
+    const result = parseDesignJSON(text);
 
-    // Try to parse as JSON
-    try {
-      const data = JSON.parse(text);
-      const validation = validateImport(data);
+    if (result.design) {
+      const { name, params } = result.design;
+      const compartmentCount = params.compartments.cells.filter(
+        (id, index, arr) => arr.indexOf(id) === index
+      ).length;
 
-      if (validation.valid) {
-        const layout = data as Layout;
-        const linkedDesignCount =
-          Array.isArray(data.linkedDesigns) && data.linkedDesigns.length > 0
-            ? data.linkedDesigns.length
-            : undefined;
-        setPreview({
-          name: layout.name,
-          drawerSize: `${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}`,
-          layerCount: layout.layers.length,
-          binCount: layout.bins.length,
-          linkedDesignCount,
-        });
-        setValidLayout(layout);
-      } else {
-        setErrors(validation.errors);
-      }
-    } catch {
-      setErrors(['Invalid JSON format']);
+      setPreview({
+        name,
+        dimensions: `${params.width}×${params.depth}×${params.height}`,
+        compartmentCount,
+      });
+      setValidDesign(result.design);
+    } else {
+      setErrors(result.errors);
     }
   }, []);
 
@@ -145,41 +123,21 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
     [processInput]
   );
 
-  const handleImport = useCallback(async () => {
-    if (!validLayout) return;
-
-    let layoutToImport = validLayout;
-
-    // Restore embedded designs if present
-    if (jsonText.trim()) {
-      const { restoreEmbeddedDesigns } = await import('@/core/storage');
-      const { layout: updatedLayout } = await restoreEmbeddedDesigns(jsonText, validLayout);
-      layoutToImport = updatedLayout;
+  const handleImport = useCallback(() => {
+    if (validDesign) {
+      onImport(validDesign);
     }
-
-    onImport(layoutToImport);
-  }, [validLayout, jsonText, onImport]);
+  }, [validDesign, onImport]);
 
   const handleClear = useCallback(() => {
     setJsonText('');
     setErrors([]);
     setPreview(null);
-    setValidLayout(null);
+    setValidDesign(null);
   }, []);
 
   return (
     <div className="flex flex-col h-full">
-      {/* Destination note */}
-      <p className="text-xs text-content-tertiary mb-3 flex items-center gap-1.5">
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>{t('layouts.importedLayoutsAreSavedToMyLayouts')}</p>
-
       {/* Drop Zone */}
       <div
         className={`
@@ -213,39 +171,45 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         </svg>
 
         <p className="text-content-secondary mb-2">
-          {isDragging ? t('layouts.dropFileHere') : t('layouts.dragDropJson')}
+          {isDragging ? t('layouts.dropFileHere') : t('binDesigner.dragDropDesignJson')}
         </p>
         <p className="text-content-tertiary text-sm mb-4">{t('layouts.or')}</p>
         <button
           onClick={() => fileInputRef.current?.click()}
           className="px-4 py-2 bg-surface-secondary hover:bg-surface border border-stroke text-content text-sm rounded-lg transition-colors"
-        >{t('layouts.browseFiles')}</button>
+        >
+          {t('layouts.browseFiles')}
+        </button>
       </div>
 
       {/* Divider */}
       <div className="flex items-center gap-4 mb-4">
         <div className="flex-1 border-t border-stroke" />
-        <span className="text-content-tertiary text-sm">{t('layouts.orPasteJson')}</span>
+        <span className="text-content-tertiary text-sm">{t('binDesigner.pasteDesignJson')}</span>
         <div className="flex-1 border-t border-stroke" />
       </div>
 
       {/* Textarea */}
       <div className="flex-1 flex flex-col min-h-0 mb-4 p-0.5">
         <div className="flex items-center justify-between mb-2">
-          <label htmlFor="import-json-input" className="text-sm text-content-secondary">{t('layouts.layoutJson')}</label>
+          <label htmlFor="import-design-json-input" className="text-sm text-content-secondary">
+            {t('binDesigner.designJson')}
+          </label>
           {jsonText && (
             <button
               onClick={handleClear}
               className="text-xs text-content-tertiary hover:text-content"
-            >{t('layouts.clear')}</button>
+            >
+              {t('layouts.clear')}
+            </button>
           )}
         </div>
         <textarea
-          id="import-json-input"
+          id="import-design-json-input"
           ref={textareaRef}
           value={jsonText}
           onChange={handleTextChange}
-          placeholder={t('layouts.jsonPlaceholder')}
+          placeholder={t('binDesigner.pasteDesignJson')}
           className="flex-1 bg-surface text-content p-3 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent border border-stroke min-h-[120px]"
         />
       </div>
@@ -261,7 +225,9 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
                 strokeWidth={2}
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
-            </svg>{t('layouts.validationErrors')}</div>
+            </svg>
+            {t('layouts.validationErrors')}
+          </div>
           <ul className="text-sm text-danger/80 space-y-1 ml-6">
             {errors.map((error, index) => (
               <li key={index}>• {error}</li>
@@ -281,22 +247,16 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
                 strokeWidth={2}
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
-            </svg>{t('layouts.readyToImport')}</div>
+            </svg>
+            {t('binDesigner.readyToImportDesign')}
+          </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-success/80">
             <div>{t('layouts.name')}</div>
             <div className="font-medium">{preview.name}</div>
-            <div>{t('layouts.drawerSize')}</div>
-            <div>{preview.drawerSize}</div>
-            <div>{t('layouts.layers')}</div>
-            <div>{preview.layerCount}</div>
-            <div>{t('layouts.bins')}</div>
-            <div>{preview.binCount}</div>
-            {preview.linkedDesignCount !== undefined && preview.linkedDesignCount > 0 && (
-              <>
-                <div>{t('layouts.binDesigns')}</div>
-                <div>{preview.linkedDesignCount}</div>
-              </>
-            )}
+            <div>{t('binDesigner.dimensions')}</div>
+            <div>{preview.dimensions}</div>
+            <div>{t('binDesigner.compartments')}</div>
+            <div>{preview.compartmentCount}</div>
           </div>
         </div>
       )}
@@ -305,13 +265,17 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
       <div className="flex gap-3 pt-4 border-t border-stroke">
         <button
           onClick={handleImport}
-          disabled={!validLayout}
+          disabled={!validDesign}
           className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
-        >{t('layouts.importLayout')}</button>
+        >
+          {t('binDesigner.importAndLoad')}
+        </button>
         <button
           onClick={onCancel}
           className="py-2.5 px-4 bg-surface-secondary hover:bg-surface border border-stroke text-content rounded-lg transition-colors text-sm"
-        >{t('common.cancel')}</button>
+        >
+          {t('common.cancel')}
+        </button>
       </div>
     </div>
   );
