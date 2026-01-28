@@ -56,18 +56,21 @@ export function LinkDesignDialog() {
   useEffect(() => {
     if (!pendingLinkDesign) return;
 
-    // Defer state updates to avoid synchronous setState in effect
-    queueMicrotask(() => {
-      setLoading(true);
-      setSearchQuery('');
-    });
+    let cancelled = false;
+    setLoading(true);
+    setSearchQuery('');
 
     void listDesigns().then((result) => {
+      if (cancelled) return;
       if (isOk(result)) {
         setDesigns(result.value);
       }
       setLoading(false);
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [pendingLinkDesign]);
 
   // Keyboard handling
