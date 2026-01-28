@@ -8,9 +8,8 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { kv } from '@vercel/kv';
 import { APICallError } from 'ai';
-import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { generateNameSuggestions, createCacheKey, type NameSuggestionRequest } from './lib/llm.js';
 import { ErrorCode } from './lib/shared.js';
 
@@ -140,16 +139,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const cacheKey = createCacheKey(request);
 
     // Check cache first
+    const redis = getRedis();
     try {
-      const cached = await kv.get<{ names: string[] }>(cacheKey);
-      if (cached && cached.names && cached.names.length > 0) {
-        return res.status(200).json({
-          suggestions: cached.names.map((name: string) => ({
-            name,
-            source: 'server_ml' as const,
-          })),
-          cached: true,
-        });
+      if (redis) {
+        const raw = await redis.get(cacheKey);
+        if (raw) {
+          const cached = JSON.parse(raw) as { names: string[] };
+          if (cached.names && cached.names.length > 0) {
+            return res.status(200).json({
+              suggestions: cached.names.map((name: string) => ({
+                name,
+                source: 'server_ml' as const,
+              })),
+              cached: true,
+            });
+          }
+        }
       }
     } catch {
       // Cache read failed, continue without cache
@@ -160,7 +165,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Cache the result
     try {
-      await kv.set(cacheKey, { names: result.names }, { ex: CACHE_TTL_SECONDS });
+      if (redis) {
+        await redis.set(cacheKey, JSON.stringify({ names: result.names }), 'EX', CACHE_TTL_SECONDS);
+      }
     } catch {
       // Cache write failed, continue without caching
     }

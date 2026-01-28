@@ -45,7 +45,7 @@ interface RateLimitResult {
 // Lazy-initialize Redis connection
 let redis: Redis | null = null;
 
-function getRedis(): Redis | null {
+export function getRedis(): Redis | null {
   if (!process.env.REDIS_URL) {
     return null;
   }
