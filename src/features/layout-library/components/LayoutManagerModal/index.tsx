@@ -202,11 +202,11 @@ function LayoutManagerModalContent({
         role="dialog"
         aria-modal="true"
         aria-labelledby="layout-manager-title"
-        className="bg-surface-elevated rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] grid grid-rows-[auto_1fr] animate-scale-in"
+        className="bg-surface-elevated rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] grid grid-rows-[auto_1fr] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center border-b border-stroke-subtle px-6 py-4">
           <div className="flex items-center gap-3">
             {activeTab === 'import' && (
               <button
@@ -269,7 +269,7 @@ function LayoutManagerModalContent({
         </div>
 
         {/* Content */}
-        <div className="min-h-0 overflow-hidden flex flex-col">
+        <div className="min-h-0 overflow-hidden flex flex-col px-6 pb-6">
           {activeTab === 'layouts' && (
             <div className="flex-1 min-h-0 overflow-auto">
               <LayoutList
