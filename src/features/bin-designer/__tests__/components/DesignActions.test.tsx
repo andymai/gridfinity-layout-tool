@@ -106,6 +106,20 @@ describe('DesignActions', () => {
     expect(onDuplicate).toHaveBeenCalled();
   });
 
+  it('calls onDownloadJSON when Download JSON is clicked', async () => {
+    const onDownloadJSON = vi.fn();
+    render(<DesignActions {...defaultProps} onDownloadJSON={onDownloadJSON} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /download json/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('menuitem', { name: /download json/i }));
+    expect(onDownloadJSON).toHaveBeenCalled();
+  });
+
   it('requires two clicks to delete', async () => {
     const onDelete = vi.fn();
     render(<DesignActions {...defaultProps} onDelete={onDelete} />);

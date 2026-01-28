@@ -279,4 +279,68 @@ describe('DesignListDialog', () => {
     // Screw Bin: width=1, depth=1, height=6
     expect(screen.getByText(/1×1×6u/)).toBeInTheDocument();
   });
+
+  describe('Import flow', () => {
+    it('shows Import button in header', async () => {
+      render(<DesignListDialog open={true} onClose={onClose} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+      });
+
+      // Import button should be visible in the header
+      expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument();
+    });
+
+    it('shows import view when Import button is clicked', async () => {
+      render(<DesignListDialog open={true} onClose={onClose} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+      });
+
+      // Click the Import button
+      fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+
+      // Import view should appear with paste prompt text
+      await waitFor(() => {
+        expect(screen.getByText('or paste design JSON')).toBeInTheDocument();
+      });
+
+      // Textarea should be present
+      expect(screen.getByPlaceholderText('or paste design JSON')).toBeInTheDocument();
+
+      // Design list should no longer be visible
+      expect(screen.queryByText('Tool Holder')).not.toBeInTheDocument();
+      expect(screen.queryByText('Screw Bin')).not.toBeInTheDocument();
+    });
+
+    it('returns to design list when cancel is clicked in import view', async () => {
+      render(<DesignListDialog open={true} onClose={onClose} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+      });
+
+      // Click Import button to show import view
+      fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+
+      await waitFor(() => {
+        expect(screen.getByText('or paste design JSON')).toBeInTheDocument();
+      });
+
+      // Click Cancel button in the import view
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+      fireEvent.click(cancelButton);
+
+      // Design list should be visible again
+      await waitFor(() => {
+        expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+        expect(screen.getByText('Screw Bin')).toBeInTheDocument();
+      });
+
+      // Import view should be gone
+      expect(screen.queryByPlaceholderText('or paste design JSON')).not.toBeInTheDocument();
+    });
+  });
 });
