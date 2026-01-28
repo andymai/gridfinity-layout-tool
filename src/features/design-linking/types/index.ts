@@ -136,6 +136,8 @@ export interface PendingLinkDesignState {
     readonly width: number;
     readonly depth: number;
   };
+  /** Bin height for mismatch warning display */
+  readonly binHeight: number;
 }
 
 // =============================================================================

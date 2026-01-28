@@ -38,7 +38,7 @@ export function BinContextMenuDesignSection({ bin, onClose }: BinContextMenuDesi
   };
 
   const handleLinkExisting = () => {
-    showLinkDesignDialog(bin.id, bin.width, bin.depth);
+    showLinkDesignDialog(bin.id, bin.width, bin.depth, bin.height);
     onClose();
   };
 
