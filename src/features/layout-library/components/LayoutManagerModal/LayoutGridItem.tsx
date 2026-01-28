@@ -87,7 +87,7 @@ export function LayoutGridItem({
       onFocus={onFocus}
     >
       {/* Thumbnail - landscape aspect keeps cards short and uniform */}
-      <div className="aspect-[4/3] relative flex items-center justify-center bg-surface-elevated">
+      <div className="aspect-[4/3] relative flex items-center justify-center bg-surface-secondary">
         <LayoutThumbnail
           preview={entry.preview}
           size={180}
