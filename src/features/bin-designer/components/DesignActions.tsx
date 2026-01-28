@@ -109,7 +109,7 @@ export function DesignActions({
               : 'text-content-tertiary hover:text-content hover:bg-surface'
           }
         `}
-        aria-label={`More actions for ${design.name}`}
+        aria-label={t('binDesigner.moreActionsForDesign', { name: design.name })}
         aria-expanded={isMenuOpen}
         aria-haspopup="menu"
       >

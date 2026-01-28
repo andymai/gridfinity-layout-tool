@@ -35,11 +35,15 @@ interface DesignListDialogProps {
 
 type SortOption = 'recent' | 'name' | 'size';
 
-const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
-  { value: 'recent', label: 'Recently Modified' },
-  { value: 'name', label: 'Name (A-Z)' },
-  { value: 'size', label: 'Size' },
-];
+/** Sort option values - labels are generated dynamically via i18n */
+const SORT_OPTIONS: readonly SortOption[] = ['recent', 'name', 'size'] as const;
+
+/** i18n key mapping for sort options */
+const SORT_OPTION_KEYS: Record<SortOption, string> = {
+  recent: 'binDesigner.sortRecent',
+  name: 'binDesigner.sortName',
+  size: 'binDesigner.sortSize',
+};
 
 /**
  * Renders a modal dialog listing saved designs and providing load, rename, duplicate, delete, and create actions.
@@ -77,22 +81,32 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const { navigateToDesign, syncUrlToDesign } = useDesignerRouting();
   const addToast = useToastStore((s) => s.addToast);
 
-  const refreshDesigns = useCallback(async () => {
+  // Reset state when dialog opens (React render-time state adjustment)
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open && !prevOpen) {
+    setPrevOpen(true);
+    setSearchQuery('');
+    setFocusedIndex(0);
     setLoading(true);
-    const result = await listDesigns();
-    if (isOk(result)) {
-      setDesigns(result.value);
-    }
-    setLoading(false);
-  }, []);
+  } else if (!open && prevOpen) {
+    setPrevOpen(false);
+  }
 
+  // Fetch fresh design list when dialog opens
   useEffect(() => {
-    if (open) {
-      void refreshDesigns();
-      setSearchQuery('');
-      setFocusedIndex(0);
-    }
-  }, [open, refreshDesigns]);
+    if (!open) return;
+    let cancelled = false;
+    listDesigns().then((result) => {
+      if (cancelled) return;
+      if (isOk(result)) {
+        setDesigns(result.value);
+      }
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   // Filter and sort designs
   const sortedDesigns = useMemo(() => {
@@ -125,14 +139,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   // Get localized sort options
   const localizedSortOptions = useMemo(
     () =>
-      SORT_OPTIONS.map((opt) => ({
-        value: opt.value,
-        label:
-          opt.value === 'recent'
-            ? t('binDesigner.sortRecent')
-            : opt.value === 'name'
-              ? t('binDesigner.sortName')
-              : t('binDesigner.sortSize'),
+      SORT_OPTIONS.map((value) => ({
+        value,
+        label: t(SORT_OPTION_KEYS[value]),
       })),
     [t]
   );
@@ -436,11 +445,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                 </div>
               )}
               renderList={(items) => (
-                <ul
-                  role="listbox"
-                  aria-label={t('binDesigner.savedDesigns')}
-                  className="space-y-2"
-                >
+                <ul role="listbox" aria-label={t('binDesigner.savedDesigns')} className="space-y-2">
                   {items.map((design, index) => (
                     <DesignListItem
                       key={design.id}

@@ -42,9 +42,12 @@ export function TwoClickDeleteButton({
   const [isConfirming, setIsConfirming] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Derive effective confirming state — disabled resets confirmation
+  const effectiveConfirming = isConfirming && !disabled;
+
   // Reset confirmation state on click outside
   useEffect(() => {
-    if (!isConfirming) return;
+    if (!effectiveConfirming) return;
 
     const handleClickOutside = (e: MouseEvent) => {
       if (buttonRef.current && !buttonRef.current.contains(e.target as Node)) {
@@ -62,14 +65,7 @@ export function TwoClickDeleteButton({
       clearTimeout(timeoutId);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isConfirming, onReset]);
-
-  // Reset confirmation state when disabled changes
-  useEffect(() => {
-    if (disabled) {
-      setIsConfirming(false);
-    }
-  }, [disabled]);
+  }, [effectiveConfirming, onReset]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -87,7 +83,7 @@ export function TwoClickDeleteButton({
   );
 
   const baseStyles = 'w-full px-3 py-2 text-left text-sm flex flex-col gap-0.5 transition-colors';
-  const stateStyles = isConfirming
+  const stateStyles = effectiveConfirming
     ? 'bg-danger text-on-dark'
     : 'text-danger hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed';
 
@@ -115,35 +111,11 @@ export function TwoClickDeleteButton({
             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
           />
         </svg>
-        {isConfirming ? confirmLabel : label}
+        {effectiveConfirming ? confirmLabel : label}
       </span>
-      {isConfirming && confirmSubtext && (
+      {effectiveConfirming && confirmSubtext && (
         <span className="text-xs opacity-70 ml-6">{confirmSubtext}</span>
       )}
     </button>
   );
-}
-
-/**
- * Hook to manage two-click delete state externally.
- * Useful when the button is part of a larger component that needs
- * to coordinate the confirming state (e.g., keep a menu open).
- */
-export function useTwoClickDelete(onDelete: () => void) {
-  const [isConfirming, setIsConfirming] = useState(false);
-
-  const handleClick = useCallback(() => {
-    if (isConfirming) {
-      onDelete();
-      setIsConfirming(false);
-    } else {
-      setIsConfirming(true);
-    }
-  }, [isConfirming, onDelete]);
-
-  const reset = useCallback(() => {
-    setIsConfirming(false);
-  }, []);
-
-  return { isConfirming, handleClick, reset };
 }

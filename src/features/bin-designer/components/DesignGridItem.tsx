@@ -122,7 +122,8 @@ export function DesignGridItem({
         {/* Metadata */}
         <p className="text-xs text-content-secondary mt-0.5">
           {width}×{depth}×{height}u
-          {numCompartments > 1 && ` · ${numCompartments} comp.`}
+          {numCompartments > 1 &&
+            ` · ${t('binDesigner.compartmentsShort', { count: numCompartments })}`}
         </p>
 
         {/* Date and actions row */}

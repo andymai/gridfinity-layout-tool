@@ -1108,7 +1108,8 @@ const en: Record<string, string> = {
   'binDesigner.wallThickness.2': 'Very strong for demanding use',
   'binDesigner.wallThickness.2.4': 'Extra thick for maximum strength',
   'binDesigner.wallThickness.2.6': 'Maximum rigidity for large bins',
-  'binDesigner.wallThickness.nozzleTip': 'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
+  'binDesigner.wallThickness.nozzleTip':
+    'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
   'binDesigner.base': 'Base',
   'binDesigner.physicalUnits': 'Physical Units',
   'binDesigner.resetView': 'Reset view (R)',
@@ -1213,6 +1214,8 @@ const en: Record<string, string> = {
   'binDesigner.duplicateDesign': 'Duplicate design',
   'binDesigner.deleteDesign': 'Delete design',
   'binDesigner.confirmDelete': 'Click again to delete',
+  'binDesigner.moreActionsForDesign': 'More actions for {name}',
+  'binDesigner.compartmentsShort': '{count} comp.',
 
   // ===========================================================================
   // Bin List Modal

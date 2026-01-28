@@ -1,3 +1,4 @@
+import type { RefObject, KeyboardEvent } from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface UseInlineEditOptions {
@@ -8,11 +9,11 @@ interface UseInlineEditOptions {
 interface UseInlineEditResult {
   isEditing: boolean;
   editingValue: string;
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  inputRef: RefObject<HTMLInputElement | null>;
   startEditing: () => void;
   handleChange: (value: string) => void;
   handleFinish: () => void;
-  handleKeyDown: (e: React.KeyboardEvent) => void;
+  handleKeyDown: (e: KeyboardEvent) => void;
 }
 
 /**
@@ -57,7 +58,7 @@ export function useInlineEdit({ initialValue, onSave }: UseInlineEditOptions): U
   }, [editingValue, initialValue, onSave]);
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
+    (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         handleFinish();
       } else if (e.key === 'Escape') {

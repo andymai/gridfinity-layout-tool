@@ -1,1 +1,2 @@
-export { TwoClickDeleteButton, useTwoClickDelete } from './TwoClickDeleteButton';
+export { TwoClickDeleteButton } from './TwoClickDeleteButton';
+export { useTwoClickDelete } from './useTwoClickDelete';
