@@ -695,6 +695,7 @@
   "layouts.canEdit": "Kan bewerken",
   "layouts.clear": "Wissen",
   "layouts.clearSearch": "Zoekopdracht wissen",
+  "layouts.backToLayouts": "Terug naar layouts",
   "layouts.closeLayoutsDialog": "Layouts dialoog sluiten",
   "layouts.confirmDelete.confirm": "Layout verwijderen",
   "layouts.confirmDelete.message": "\"{name}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",

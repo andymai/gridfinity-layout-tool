@@ -521,44 +521,44 @@ describe('LayoutManagerModal Accessibility', () => {
     });
   });
 
-  describe('tab navigation', () => {
-    it('shows layouts tab by default', () => {
+  describe('view navigation', () => {
+    it('shows layouts view by default', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const layoutsTab = screen.getByRole('tab', { name: /My Layouts/i });
-      expect(layoutsTab).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByText('Layouts')).toBeInTheDocument();
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
     });
 
-    it('switches to import tab when clicked', async () => {
+    it('switches to import view when Import button clicked', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const importTab = screen.getByRole('tab', { name: /Import/i });
+      const importButton = screen.getByRole('button', { name: /Import/i });
       act(() => {
-        fireEvent.click(importTab);
+        fireEvent.click(importButton);
       });
 
       await waitFor(() => {
-        expect(importTab).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByText('Import')).toBeInTheDocument();
       });
     });
 
-    it('switches back to layouts tab', async () => {
+    it('switches back to layouts via back button', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      // Switch to import tab
-      const importTab = screen.getByRole('tab', { name: /Import/i });
+      // Switch to import view
+      const importButton = screen.getByRole('button', { name: /Import/i });
       act(() => {
-        fireEvent.click(importTab);
+        fireEvent.click(importButton);
       });
 
-      // Switch back to layouts
-      const layoutsTab = screen.getByRole('tab', { name: /My Layouts/i });
+      // Click back button
+      const backButton = screen.getByRole('button', { name: /Back to layouts/i });
       act(() => {
-        fireEvent.click(layoutsTab);
+        fireEvent.click(backButton);
       });
 
       await waitFor(() => {
-        expect(layoutsTab).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByRole('listbox')).toBeInTheDocument();
       });
     });
   });

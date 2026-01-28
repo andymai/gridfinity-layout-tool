@@ -695,6 +695,7 @@
   "layouts.canEdit": "Puede editar",
   "layouts.clear": "Borrar",
   "layouts.clearSearch": "Borrar búsqueda",
+  "layouts.backToLayouts": "Volver a diseños",
   "layouts.closeLayoutsDialog": "Cerrar diálogo de diseños",
   "layouts.confirmDelete.confirm": "Eliminar Diseño",
   "layouts.confirmDelete.message": "¿Eliminar \"{name}\"? Esto no se puede deshacer.",

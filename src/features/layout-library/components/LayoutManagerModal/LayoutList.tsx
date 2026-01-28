@@ -2,11 +2,11 @@ import { useState, useRef, useCallback, useMemo } from 'react';
 import type { LayoutEntry, Layout } from '@/core/types';
 import { LayoutListItem } from './LayoutListItem';
 import { LayoutGridItem } from './LayoutGridItem';
-import { NewLayoutCard } from './NewLayoutCard';
 import { useLayoutStore } from '@/core/store/layout';
 import { loadLayoutAsync, downloadLayoutAsFile } from '@/core/storage';
 import { useUIStore } from '@/core/store/ui';
 import { useTranslation } from '@/i18n';
+import { ViewModeToggle } from './ViewModeToggle';
 import type { ViewMode } from './ViewModeToggle';
 import type { SortOption } from './index';
 
@@ -17,12 +17,14 @@ interface LayoutListProps {
   entries: LayoutEntry[];
   activeLayoutId: string | null;
   viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
+  showViewToggle: boolean;
   sortBy: SortOption;
+  onSortChange: (value: SortOption) => void;
   onSwitch: (id: string) => void;
   onRename: (id: string, newName: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
-  onCreate: () => void;
   onShare: (id: string) => void;
 }
 
@@ -38,8 +40,10 @@ export function LayoutList({
   onRename,
   onDuplicate,
   onDelete,
-  onCreate,
   onShare,
+  onViewModeChange,
+  showViewToggle,
+  onSortChange,
 }: LayoutListProps) {
   const t = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,10 +107,10 @@ export function LayoutList({
   // Handle keyboard navigation within list/grid
   const handleListKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      // For grid, account for the "New Layout" card as index 0
-      const totalItems = viewMode === 'grid' ? sortedEntries.length + 1 : sortedEntries.length;
-      const cols = getGridColumns();
+      const totalItems = sortedEntries.length;
+      if (totalItems === 0) return;
 
+      const cols = getGridColumns();
       let newIndex = focusedIndex;
 
       switch (e.key) {
@@ -115,7 +119,7 @@ export function LayoutList({
           if (viewMode === 'grid') {
             newIndex = Math.min(focusedIndex + cols, totalItems - 1);
           } else {
-            newIndex = Math.min(focusedIndex + 1, sortedEntries.length - 1);
+            newIndex = Math.min(focusedIndex + 1, totalItems - 1);
           }
           break;
         case 'ArrowUp':
@@ -152,25 +156,9 @@ export function LayoutList({
 
       if (newIndex !== focusedIndex) {
         setFocusedIndex(newIndex);
-        // In grid view, index 0 is the "New Layout" card
-        if (viewMode === 'grid') {
-          if (newIndex === 0) {
-            // Focus the actionable button within the "New Layout" card
-            const newCardButton = gridRef.current?.querySelector(
-              '[data-new-layout-card] button, [data-new-layout-card][role="button"]'
-            ) as HTMLElement | null;
-            newCardButton?.focus();
-          } else {
-            const entry = sortedEntries[newIndex - 1];
-            if (entry) {
-              itemRefs.current.get(entry.id)?.focus();
-            }
-          }
-        } else {
-          const entry = sortedEntries[newIndex];
-          if (entry) {
-            itemRefs.current.get(entry.id)?.focus();
-          }
+        const entry = sortedEntries[newIndex];
+        if (entry) {
+          itemRefs.current.get(entry.id)?.focus();
         }
       }
     },
@@ -241,27 +229,8 @@ export function LayoutList({
 
   return (
     <div className="h-full grid grid-rows-[auto_1fr_auto]">
-      {/* Header: Create Button (list only) + Search */}
+      {/* Header: Search */}
       <div className="space-y-4 pb-4">
-        {/* Create button only shown in list view */}
-        {viewMode === 'list' && (
-          <button
-            onClick={onCreate}
-            className="btn btn-primary w-full py-2.5 flex items-center justify-center gap-2"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {t('layouts.newLayout')}
-          </button>
-        )}
-
         {/* Search (appears with 6+ layouts) */}
         {showSearch && (
           <div className="relative">
@@ -334,7 +303,7 @@ export function LayoutList({
         </div>
       )}
 
-      {sortedEntries.length === 0 && !searchQuery && viewMode === 'list' && (
+      {sortedEntries.length === 0 && !searchQuery && (
         <div className="text-center py-12 text-content-tertiary">
           <svg
             className="w-12 h-12 mx-auto mb-3 opacity-50"
@@ -355,38 +324,20 @@ export function LayoutList({
       )}
 
       {/* Grid View */}
-      {viewMode === 'grid' && (sortedEntries.length > 0 || !searchQuery) && (
+      {viewMode === 'grid' && sortedEntries.length > 0 && (
         <div
           ref={gridRef}
           role="listbox"
           aria-label={t('layouts.availableLayouts')}
-          className="overflow-y-auto min-h-0 [scrollbar-gutter:stable] grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3 content-start"
+          className="overflow-y-auto min-h-0 [scrollbar-gutter:stable] grid grid-cols-[repeat(auto-fill,minmax(225px,1fr))] gap-3 content-start"
           onKeyDown={handleListKeyDown}
         >
-          {/* New Layout Card (first item in grid) */}
-          <div
-            data-new-layout-card
-            role="option"
-            aria-selected={focusedIndex === 0}
-            tabIndex={focusedIndex === 0 ? 0 : -1}
-            onFocus={() => setFocusedIndex(0)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                e.stopPropagation();
-                onCreate();
-              }
-            }}
-          >
-            <NewLayoutCard onCreate={onCreate} />
-          </div>
-
           {sortedEntries.map((entry, index) => (
             <LayoutGridItem
               key={entry.id}
               entry={entry}
               isActive={entry.id === activeLayoutId}
-              isFocused={index + 1 === focusedIndex}
+              isFocused={index === focusedIndex}
               isOnlyLayout={entries.length <= 1}
               onSelect={() => handleSwitch(entry.id)}
               onRename={(newName) => handleRename(entry.id, newName)}
@@ -395,7 +346,7 @@ export function LayoutList({
               onCopyLink={() => onShare(entry.id)}
               onDownload={() => handleDownload(entry)}
               onSuggestName={entry.id === activeLayoutId ? handleSuggestName : undefined}
-              onFocus={() => setFocusedIndex(index + 1)}
+              onFocus={() => setFocusedIndex(index)}
               itemRef={(el) => {
                 if (el) itemRefs.current.set(entry.id, el);
                 else itemRefs.current.delete(entry.id);
@@ -440,8 +391,35 @@ export function LayoutList({
       )}
 
       {/* Footer */}
-      <div className="mt-4 pt-4 border-t border-stroke text-sm text-content-tertiary">
-        {t('layouts.layoutCount', { count: entries.length })}
+      <div className="mt-4 pt-4 border-t border-stroke text-sm text-content-tertiary flex items-center justify-between">
+        <span>{t('layouts.layoutCount', { count: entries.length })}</span>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => onSortChange(e.target.value as SortOption)}
+              className="appearance-none pl-3 pr-8 py-1.5 bg-surface border border-stroke rounded-lg text-sm text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent cursor-pointer"
+              aria-label={t('layouts.sortBy')}
+            >
+              <option value="recent">{t('layouts.sortRecent')}</option>
+              <option value="name">{t('layouts.sortName')}</option>
+              <option value="size">{t('layouts.sortSize')}</option>
+              <option value="binCount">{t('layouts.sortBinCount')}</option>
+            </select>
+            <svg
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          {showViewToggle && (
+            <ViewModeToggle value={viewMode} onChange={onViewModeChange} />
+          )}
+        </div>
       </div>
     </div>
   );

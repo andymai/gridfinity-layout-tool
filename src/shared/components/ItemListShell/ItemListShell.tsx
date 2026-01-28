@@ -82,27 +82,6 @@ export function ItemListShell<T>({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Controls Row: Sort + View Toggle */}
-      <div className="flex items-center justify-between gap-3 pb-3">
-        <div className="flex items-center gap-2">
-          <SortDropdown
-            options={sortOptions}
-            value={sortValue}
-            onChange={onSortChange}
-            ariaLabel={sortAriaLabel}
-          />
-        </div>
-        {showViewToggle && (
-          <ViewModeToggle
-            value={viewMode}
-            onChange={onViewModeChange}
-            ariaLabel={viewModeLabels.ariaLabel}
-            listLabel={viewModeLabels.listLabel}
-            gridLabel={viewModeLabels.gridLabel}
-          />
-        )}
-      </div>
-
       {/* Optional Header Content (e.g., Create Button) */}
       {headerContent && <div className="pb-3">{headerContent}</div>}
 
@@ -138,11 +117,26 @@ export function ItemListShell<T>({
       </div>
 
       {/* Footer */}
-      {footer && (
-        <div className="pt-3 mt-3 border-t border-stroke text-sm text-content-tertiary">
-          {footer}
+      <div className="pt-3 mt-3 border-t border-stroke text-sm text-content-tertiary flex items-center justify-between">
+        <span>{footer}</span>
+        <div className="flex items-center gap-2">
+          <SortDropdown
+            options={sortOptions}
+            value={sortValue}
+            onChange={onSortChange}
+            ariaLabel={sortAriaLabel}
+          />
+          {showViewToggle && (
+            <ViewModeToggle
+              value={viewMode}
+              onChange={onViewModeChange}
+              ariaLabel={viewModeLabels.ariaLabel}
+              listLabel={viewModeLabels.listLabel}
+              gridLabel={viewModeLabels.gridLabel}
+            />
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

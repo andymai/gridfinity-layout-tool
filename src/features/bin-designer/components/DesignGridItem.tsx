@@ -79,8 +79,7 @@ export function DesignGridItem({
       onFocus={onFocus}
       className={`
         group relative flex flex-col rounded-lg border-2
-        cursor-pointer transition-all outline-none overflow-hidden
-        hover:scale-[1.02] hover:shadow-md
+        cursor-pointer transition-colors outline-none overflow-hidden
         focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-secondary
         ${isActive ? 'border-accent' : 'border-transparent hover:border-accent/50'}
       `}

@@ -562,6 +562,7 @@ const en: Record<string, string> = {
   'layouts.canEdit': 'Can edit',
   'layouts.clear': 'Clear',
   'layouts.clearSearch': 'Clear search',
+  'layouts.backToLayouts': 'Back to layouts',
   'layouts.closeLayoutsDialog': 'Close layouts dialog',
   'layouts.createYourFirstLayoutToGetStarted': 'Create your first layout to get started',
   'layouts.currentlyActiveLayout': 'Currently active layout',

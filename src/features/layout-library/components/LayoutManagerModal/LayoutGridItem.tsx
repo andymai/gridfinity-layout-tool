@@ -77,27 +77,27 @@ export function LayoutGridItem({
       tabIndex={isFocused ? 0 : -1}
       data-layout-card
       className={`
-        group w-full text-left bg-surface-secondary rounded-lg p-2
+        group w-full text-left rounded-lg overflow-hidden
         border-2 transition-colors cursor-pointer
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-secondary
         ${isActive ? 'border-accent' : 'border-transparent hover:border-accent/50'}
       `}
       onClick={() => !isEditing && onSelect()}
       onKeyDown={handleItemKeyDown}
       onFocus={onFocus}
     >
-      {/* Thumbnail - portrait aspect like inspiration gallery */}
-      <div className="aspect-[3/4] bg-surface rounded overflow-hidden mb-2 flex items-center justify-center relative p-2">
+      {/* Thumbnail - landscape aspect keeps cards short and uniform */}
+      <div className="aspect-[4/3] relative flex items-center justify-center bg-surface-elevated">
         <LayoutThumbnail
           preview={entry.preview}
-          size={160}
+          size={180}
           showLabels
           className="max-w-full max-h-full"
         />
-        {/* Active badge - top right corner (matches inspiration gallery theme badge) */}
+        {/* Active badge */}
         {isActive && (
           <span
-            className="absolute top-1.5 right-1.5 text-xs px-1.5 py-0.5 rounded-full bg-accent text-on-dark font-medium"
+            className="absolute top-1.5 right-1.5 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-on-dark"
             aria-label={t('layouts.currentlyActiveLayout')}
           >
             {t('layouts.active')}
@@ -105,62 +105,66 @@ export function LayoutGridItem({
         )}
       </div>
 
-      {/* Title */}
-      {isEditing ? (
-        <input
-          ref={inputRef}
-          type="text"
-          value={editingValue}
-          onChange={(e) => handleChange(e.target.value)}
-          onBlur={handleFinish}
-          onKeyDown={handleKeyDown}
-          onClick={(e) => e.stopPropagation()}
-          className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm mb-0.5"
-          maxLength={64}
-          aria-label={t('layouts.layoutName')}
-        />
-      ) : (
-        <h3
-          className="font-medium text-content text-base leading-tight line-clamp-1"
-          title={entry.name}
-        >
-          {entry.name}
-        </h3>
-      )}
+      {/* Content */}
+      <div className="px-2 py-1.5 bg-surface-secondary">
+        {/* Title */}
+        <div className="min-w-0">
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={editingValue}
+              onChange={(e) => handleChange(e.target.value)}
+              onBlur={handleFinish}
+              onKeyDown={handleKeyDown}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full bg-surface px-1.5 py-0.5 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
+              maxLength={64}
+              aria-label={t('layouts.layoutName')}
+            />
+          ) : (
+            <h3
+              className="font-medium text-content text-sm leading-tight line-clamp-1"
+              title={entry.name}
+            >
+              {entry.name}
+            </h3>
+          )}
+        </div>
 
-      {/* Metadata row - matches inspiration gallery format */}
-      <div className="flex items-center mt-0.5">
-        <span className="text-sm text-content-tertiary">
+        {/* Metadata */}
+        <p className="text-xs text-content-secondary mt-0.5">
           {entry.preview.binCount} {t('layouts.bins')} · {entry.preview.drawerWidth}×
           {entry.preview.drawerDepth}
-        </span>
-      </div>
+        </p>
 
-      {/* Modified date */}
-      <div className="text-sm text-content-tertiary mt-0.5">
-        {formatRelativeDate(entry.modifiedAt, false)}
-      </div>
+        {/* Date and actions row */}
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-[10px] text-content-tertiary">
+            {formatRelativeDate(entry.modifiedAt, false)}
+          </span>
 
-      {/* Forked From */}
-      {entry.forkedFrom && (
-        <div className="text-xs text-content-tertiary truncate mt-0.5">
-          {t('layouts.forkedFromName', { name: entry.forkedFrom.name })}
+          <div className="transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100" onClick={(e) => e.stopPropagation()}>
+            <LayoutActions
+              entry={entry}
+              isOnlyLayout={isOnlyLayout}
+              isActive={isActive}
+              onCopyLink={onCopyLink}
+              onDownload={onDownload}
+              onRename={startEditing}
+              onDuplicate={onDuplicate}
+              onDelete={onDelete}
+              onSuggestName={onSuggestName}
+            />
+          </div>
         </div>
-      )}
 
-      {/* Action Buttons - positioned at bottom */}
-      <div className="mt-1.5 flex justify-end" onClick={(e) => e.stopPropagation()}>
-        <LayoutActions
-          entry={entry}
-          isOnlyLayout={isOnlyLayout}
-          isActive={isActive}
-          onCopyLink={onCopyLink}
-          onDownload={onDownload}
-          onRename={startEditing}
-          onDuplicate={onDuplicate}
-          onDelete={onDelete}
-          onSuggestName={onSuggestName}
-        />
+        {/* Forked From */}
+        {entry.forkedFrom && (
+          <div className="text-[10px] text-content-tertiary truncate mt-0.5">
+            {t('layouts.forkedFromName', { name: entry.forkedFrom.name })}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -695,6 +695,7 @@
   "layouts.canEdit": "Pode editar",
   "layouts.clear": "Limpar",
   "layouts.clearSearch": "Limpar pesquisa",
+  "layouts.backToLayouts": "Voltar aos layouts",
   "layouts.closeLayoutsDialog": "Fechar diálogo de layouts",
   "layouts.confirmDelete.confirm": "Excluir Layout",
   "layouts.confirmDelete.message": "Excluir \"{name}\"? Isso não pode ser desfeito.",

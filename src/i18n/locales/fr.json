@@ -695,6 +695,7 @@
   "layouts.canEdit": "Peut modifier",
   "layouts.clear": "Effacer",
   "layouts.clearSearch": "Effacer la recherche",
+  "layouts.backToLayouts": "Retour aux layouts",
   "layouts.closeLayoutsDialog": "Fermer le dialogue des layouts",
   "layouts.confirmDelete.confirm": "Supprimer le layout",
   "layouts.confirmDelete.message": "Supprimer « {name} » ? Cette action est irréversible.",
