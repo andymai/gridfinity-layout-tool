@@ -291,4 +291,6 @@ export const SHORTCUTS = {
   HALF_BIN_TOGGLE: 'h',
   // Layout management
   LAYOUT_MANAGER: 'o', // with Ctrl/Cmd - "Open" layouts
+  // Tool switching
+  TOOL_SWITCH: 'D', // Shift+D — toggle between Grid Editor and Bin Designer
 } as const;

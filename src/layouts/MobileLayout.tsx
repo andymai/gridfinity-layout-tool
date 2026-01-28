@@ -6,7 +6,6 @@ import { Grid } from '@/features/grid-editor';
 import { Staging } from '@/features/staging/components/Staging';
 import { DropZones } from '@/components/DropZones';
 import { DragPreview } from '@/components/DragPreview';
-import { ToastContainer } from '@/shared/components/Toast';
 import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
 import { SharedLayoutImporter, SharedLayoutBanner } from '@/features/cloud-share/components';
 import {
@@ -23,11 +22,6 @@ import {
   BinContextMenuWrapper,
 } from '@/components/Mobile';
 import { PresenceAvatarList } from '@/components/Collab';
-
-// Lazy load LabsDrawer - experimental feature most users won't use
-const LabsDrawer = lazyWithRetry(() =>
-  import('@/features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
-);
 
 // Lazy load design-linking dialogs - only needed when bin_designer feature is enabled
 const DesignLinkingDialogs = lazyWithRetry(() =>
@@ -127,9 +121,6 @@ export function MobileLayout({
         />
       )}
 
-      {/* Toast notifications */}
-      <ToastContainer />
-
       {/* Design linking dialogs - requires Bin Designer feature flag */}
       {isDesignerEnabled && (
         <Suspense fallback={null}>
@@ -146,11 +137,6 @@ export function MobileLayout({
 
       {/* Shared layout URL importer */}
       <SharedLayoutImporter />
-
-      {/* Labs drawer */}
-      <Suspense fallback={null}>
-        <LabsDrawer />
-      </Suspense>
     </div>
   );
 }

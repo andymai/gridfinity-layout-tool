@@ -21,6 +21,7 @@ import { useCreateFromBin } from '@/features/bin-designer/hooks/useCreateFromBin
 import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
 import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailCapture';
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
+import { useUnsavedWarning } from '@/features/bin-designer/hooks/useUnsavedWarning';
 import { fetchDesignerShare } from '@/features/bin-designer/hooks/useDesignerSharing';
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -150,6 +151,9 @@ export function DesignerPage(_props: DesignerPageProps) {
 
   // Sync URL ↔ store (deep linking, back/forward navigation)
   useDesignerUrlSync();
+
+  // Warn before closing tab with unsaved changes
+  useUnsavedWarning();
 
   const { isDesktop, isMobile } = useResponsive();
   const t = useTranslation();
@@ -344,7 +348,7 @@ export function DesignerPage(_props: DesignerPageProps) {
               onKeyDown={handleNameKeyDown}
               maxLength={50}
               aria-label={t('binDesigner.designName')}
-              className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content"
+              className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content max-w-[120px] sm:max-w-[200px]"
               style={{
                 boxShadow: '0 0 0 3px var(--color-primary-muted)',
               }}
@@ -352,7 +356,7 @@ export function DesignerPage(_props: DesignerPageProps) {
           ) : (
             <button
               onClick={handleNameClick}
-              className="hidden px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px] sm:inline-block"
+              className="inline-block px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[120px] sm:max-w-[200px]"
               title={t('binDesigner.clickToRename')}
             >
               {designName}

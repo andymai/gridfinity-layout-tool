@@ -89,6 +89,7 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
           role="tab"
           aria-selected={activeTool === 'planner'}
           onClick={() => handleSwitch('planner')}
+          title={activeTool !== 'planner' ? t('toolSwitcher.switchToPlanner') : undefined}
           className={`${segmentPadding} ${fontSize} font-medium rounded transition-all ${
             activeTool === 'planner'
               ? 'bg-surface-elevated text-content shadow-sm'
@@ -101,6 +102,7 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
           role="tab"
           aria-selected={activeTool === 'designer'}
           onClick={() => handleSwitch('designer')}
+          title={activeTool !== 'designer' ? t('toolSwitcher.switchToDesigner') : undefined}
           className={`${segmentPadding} ${fontSize} font-medium rounded transition-all ${
             activeTool === 'designer'
               ? 'bg-surface-elevated text-content shadow-sm'

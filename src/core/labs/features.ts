@@ -20,6 +20,7 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-01',
     requiresRefresh: false,
     comingSoon: false,
+    defaultEnabled: true,
   },
   {
     id: 'collaborative_editing',

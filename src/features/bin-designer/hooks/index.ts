@@ -6,3 +6,4 @@ export { useDesignerUrlSync } from './useDesignerUrlSync';
 export { useExport } from './useExport';
 export { useGeneration } from './useGeneration';
 export { useThumbnailCapture } from './useThumbnailCapture';
+export { useUnsavedWarning } from './useUnsavedWarning';

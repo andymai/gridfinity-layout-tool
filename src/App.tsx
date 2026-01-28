@@ -139,8 +139,14 @@ export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
 
-  // Command palette state (⌘K / Ctrl+K)
-  const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette();
+  // Bin Designer route detection (behind feature flag)
+  const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
+  const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
+
+  // Command palette state (⌘K / Ctrl+K) — disabled on designer route
+  const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
+    disabled: isDesignerRoute,
+  });
   const { isMobile, isTablet } = useResponsive();
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
@@ -160,10 +166,6 @@ export default function App() {
     const pathname = window.location.pathname;
     return hash.includes('share=') || /^\/l\/[a-zA-Z0-9]{12}$/.test(pathname);
   });
-
-  // Bin Designer route detection (behind feature flag)
-  const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
-  const { isDesignerRoute } = useDesignerRouting();
 
   // Handle ?placeBin= param from Designer's "Use in Layout" button
   usePlaceBinFromURL();
@@ -263,6 +265,13 @@ export default function App() {
     return () => window.removeEventListener('open-help-modal', handleOpenHelp);
   }, []);
 
+  // Switch to designer command palette action
+  useEffect(() => {
+    const handleSwitchToDesigner = () => navigateToDesigner();
+    window.addEventListener('switch-to-designer', handleSwitchToDesigner);
+    return () => window.removeEventListener('switch-to-designer', handleSwitchToDesigner);
+  }, [navigateToDesigner]);
+
   // Download layout command palette action
   useEffect(() => {
     const handleDownloadLayout = async () => {
@@ -348,9 +357,11 @@ export default function App() {
     );
   }
 
-  // Bin Designer route - lazy loaded, behind feature flag
-  if (isDesignerRoute && isDesignerEnabled) {
-    return (
+  // Route-specific content (shared overlays rendered once below)
+  const routeContent = (() => {
+    // Bin Designer route - lazy loaded, behind feature flag
+    if (isDesignerRoute && isDesignerEnabled) {
+      return (
       <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>
         <DesignerPage />
       </Suspense>
@@ -431,9 +442,6 @@ export default function App() {
           </Suspense>
         )}
 
-        {/* Command Palette (⌘K / Ctrl+K) */}
-        <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
-
         {/* Context menu (long-press on bin) */}
         {(() => {
           if (contextMenu) {
@@ -451,20 +459,10 @@ export default function App() {
           return null;
         })()}
 
-        {/* Toast notifications */}
-        <ToastContainer />
-
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (
           <Suspense fallback={null}>
             <SharedLayoutImporter />
-          </Suspense>
-        )}
-
-        {/* Labs drawer - only load when drawer is open */}
-        {isLabsDrawerOpen && (
-          <Suspense fallback={null}>
-            <LabsDrawer />
           </Suspense>
         )}
       </div>
@@ -527,9 +525,6 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* Command Palette (⌘K / Ctrl+K) */}
-      <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
-
       {/* Context menu (right-click on bin) */}
       {(() => {
         if (contextMenu) {
@@ -547,9 +542,6 @@ export default function App() {
         return null;
       })()}
 
-      {/* Toast notifications */}
-      <ToastContainer />
-
       {/* ARIA live region for screen reader announcements */}
       <LiveRegion />
 
@@ -559,13 +551,23 @@ export default function App() {
           <SharedLayoutImporter />
         </Suspense>
       )}
+    </div>
+  );
+  })();
 
-      {/* Labs drawer - only load when drawer is open */}
+  // Shared overlays — rendered once for all routes (designer, mobile, tablet, desktop)
+  return (
+    <>
+      {routeContent}
+      <ToastContainer />
+      {!isMobile && (
+        <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+      )}
       {isLabsDrawerOpen && (
         <Suspense fallback={null}>
           <LabsDrawer />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }

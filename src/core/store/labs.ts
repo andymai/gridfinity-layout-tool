@@ -166,7 +166,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     // Coming Soon features are always disabled
     if (feature?.comingSoon) return false;
 
-    return preferences.enabledFeatures[featureId] ?? false;
+    return preferences.enabledFeatures[featureId] ?? (feature?.defaultEnabled ?? false);
   },
 
   getEnabledCount: () => {
