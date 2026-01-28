@@ -147,18 +147,18 @@ if echo "$CONTENT" | grep -qE 'Ref.*setTimeout|timeoutRef|timerRef'; then
 fi
 
 if [[ -n "$WARNINGS" ]]; then
-  echo ""
-  echo "useEffect cleanup warnings:"
-  echo "---------------------------------------------"
-  echo -e "$WARNINGS"
-  echo "---------------------------------------------"
-  echo "Effects that set up subscriptions/timers should clean up:"
-  echo ""
-  echo "  useEffect(() => {"
-  echo "    const id = setTimeout(fn, delay);"
-  echo "    return () => clearTimeout(id);  // Cleanup!"
-  echo "  }, [deps]);"
-  echo ""
+  echo "" >&2
+  echo "useEffect cleanup warnings:" >&2
+  echo "---------------------------------------------" >&2
+  echo -e "$WARNINGS" >&2
+  echo "---------------------------------------------" >&2
+  echo "Effects that set up subscriptions/timers should clean up:" >&2
+  echo "" >&2
+  echo "  useEffect(() => {" >&2
+  echo "    const id = setTimeout(fn, delay);" >&2
+  echo "    return () => clearTimeout(id);  // Cleanup!" >&2
+  echo "  }, [deps]);" >&2
+  echo "" >&2
 fi
 
 # Informational only - always allow

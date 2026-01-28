@@ -91,13 +91,13 @@ for file in $MODIFIED; do
 done
 
 if [[ -n "$WARNINGS" ]]; then
-  echo ""
-  echo "📋 Test coverage gaps (warning only):"
-  echo "─────────────────────────────────────"
-  echo -e "$WARNINGS"
-  echo "─────────────────────────────────────"
-  echo "Consider adding tests for new code."
-  echo ""
+  echo "" >&2
+  echo "📋 Test coverage gaps (warning only):" >&2
+  echo "─────────────────────────────────────" >&2
+  echo -e "$WARNINGS" >&2
+  echo "─────────────────────────────────────" >&2
+  echo "Consider adding tests for new code." >&2
+  echo "" >&2
 fi
 
 # Always exit 0 - this is a warning, not a blocker

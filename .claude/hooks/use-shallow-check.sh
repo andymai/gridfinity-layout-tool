@@ -79,14 +79,14 @@ if [[ -n "$DESTRUCTURE_SELECTOR" ]] && ! echo "$CONTENT" | grep -q "useShallow";
 fi
 
 if [[ -n "$WARNINGS" ]]; then
-  echo ""
-  echo "Zustand selector optimization (useShallow):"
-  echo "---------------------------------------------"
-  echo -e "$WARNINGS"
-  echo "---------------------------------------------"
-  echo "Import: import { useShallow } from 'zustand/react/shallow'"
-  echo "Usage:  useStore(useShallow(state => ({ a: state.a, b: state.b })))"
-  echo ""
+  echo "" >&2
+  echo "Zustand selector optimization (useShallow):" >&2
+  echo "---------------------------------------------" >&2
+  echo -e "$WARNINGS" >&2
+  echo "---------------------------------------------" >&2
+  echo "Import: import { useShallow } from 'zustand/react/shallow'" >&2
+  echo "Usage:  useStore(useShallow(state => ({ a: state.a, b: state.b })))" >&2
+  echo "" >&2
 fi
 
 # Informational only - always allow

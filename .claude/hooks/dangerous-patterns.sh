@@ -139,12 +139,12 @@ for file in "${TS_FILES[@]}"; do
 done
 
 if [[ -n "$ISSUES" ]]; then
-  echo ""
-  echo "Dangerous patterns detected:"
-  echo "---------------------------------------------"
-  printf '%b' "$ISSUES"
-  echo "---------------------------------------------"
-  echo "Fix these issues or use --no-verify to skip (not recommended)"
+  echo "" >&2
+  echo "Dangerous patterns detected:" >&2
+  echo "---------------------------------------------" >&2
+  printf '%b' "$ISSUES" >&2
+  echo "---------------------------------------------" >&2
+  echo "Fix these issues or use --no-verify to skip (not recommended)" >&2
   exit 2  # Block the commit
 fi
 

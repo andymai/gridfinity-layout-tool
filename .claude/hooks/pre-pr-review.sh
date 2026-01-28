@@ -12,9 +12,9 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
 # Only run for gh pr create commands
 [[ "$COMMAND" != *"gh pr create"* ]] && exit 0
 
-echo ""
-echo "🔍 Running pre-PR review..."
-echo "═══════════════════════════════════════════════════════════════"
+echo "" >&2
+echo "🔍 Running pre-PR review..." >&2
+echo "═══════════════════════════════════════════════════════════════" >&2
 
 # Detect base branch
 BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
@@ -30,13 +30,13 @@ STATS=$(git diff --stat "$BASE_BRANCH"..."$CURRENT_BRANCH" 2>/dev/null | tail -1
 NUM_FILES=$(echo "$FILES_CHANGED" | grep -c . || echo "0")
 NUM_COMMITS=$(echo "$COMMITS" | grep -c . || echo "0")
 
-echo ""
-echo "Branch: $CURRENT_BRANCH → $BASE_BRANCH"
-echo "Files changed: $NUM_FILES"
-echo "Commits: $NUM_COMMITS"
-echo "Stats: $STATS"
-echo ""
-echo "───────────────────────────────────────────────────────────────"
+echo "" >&2
+echo "Branch: $CURRENT_BRANCH → $BASE_BRANCH" >&2
+echo "Files changed: $NUM_FILES" >&2
+echo "Commits: $NUM_COMMITS" >&2
+echo "Stats: $STATS" >&2
+echo "" >&2
+echo "───────────────────────────────────────────────────────────────" >&2
 
 ISSUES=""
 
@@ -119,22 +119,22 @@ fi
 
 # Display findings
 if [[ -n "$ISSUES" ]]; then
-  echo ""
-  echo "Issues found:"
-  echo "───────────────────────────────────────────────────────────────"
-  echo -e "$ISSUES"
-  echo "───────────────────────────────────────────────────────────────"
+  echo "" >&2
+  echo "Issues found:" >&2
+  echo "───────────────────────────────────────────────────────────────" >&2
+  echo -e "$ISSUES" >&2
+  echo "───────────────────────────────────────────────────────────────" >&2
 else
-  echo ""
-  echo "✅ No obvious issues found in quick checks."
+  echo "" >&2
+  echo "✅ No obvious issues found in quick checks." >&2
 fi
 
-echo ""
-echo "Files in this PR:"
-echo "$FILES_CHANGED" | head -15
-[[ $NUM_FILES -gt 15 ]] && echo "... and $((NUM_FILES - 15)) more"
-echo ""
-echo "═══════════════════════════════════════════════════════════════"
+echo "" >&2
+echo "Files in this PR:" >&2
+echo "$FILES_CHANGED" | head -15 >&2
+[[ $NUM_FILES -gt 15 ]] && echo "... and $((NUM_FILES - 15)) more" >&2
+echo "" >&2
+echo "═══════════════════════════════════════════════════════════════" >&2
 
 # Informational only - always allow PR creation
 exit 0

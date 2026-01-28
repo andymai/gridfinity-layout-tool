@@ -65,11 +65,11 @@ EXIT_CODE=$?
 
 # Only show output if tests failed
 if [[ $EXIT_CODE -ne 0 ]]; then
-  echo ""
-  echo "✗ Tests failed for $(basename "$TEST_FILE")"
-  echo "─────────────────────────────────────"
-  echo "$OUTPUT" | tail -30
-  echo "─────────────────────────────────────"
+  echo "" >&2
+  echo "✗ Tests failed for $(basename "$TEST_FILE")" >&2
+  echo "─────────────────────────────────────" >&2
+  echo "$OUTPUT" | tail -30 >&2
+  echo "─────────────────────────────────────" >&2
 fi
 
 # Always exit 0 - PostToolUse hooks are informational

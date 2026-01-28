@@ -93,26 +93,26 @@ for file in "${TS_FILES[@]}"; do
 done
 
 if [[ -n "$ISSUES" ]]; then
-  echo ""
-  echo "Result type exhaustion issues:"
-  echo "---------------------------------------------"
-  printf '%b' "$ISSUES"
-  echo "---------------------------------------------"
-  echo "Result<T,E> values must be checked with isOk()/isErr()"
-  echo ""
-  echo "Correct patterns:"
-  echo "  const result = addBin(...);"
-  echo "  if (isOk(result)) { /* use result.value */ }"
-  echo "  if (isErr(result)) { /* handle result.error */ }"
-  echo ""
-  echo "For bulk operations:"
-  echo "  const errors: Error[] = [];"
-  echo "  for (const item of items) {"
-  echo "    const result = process(item);"
-  echo "    if (isErr(result)) errors.push(result.error);"
-  echo "  }"
-  echo ""
-  echo "Use --no-verify to skip (not recommended)"
+  echo "" >&2
+  echo "Result type exhaustion issues:" >&2
+  echo "---------------------------------------------" >&2
+  printf '%b' "$ISSUES" >&2
+  echo "---------------------------------------------" >&2
+  echo "Result<T,E> values must be checked with isOk()/isErr()" >&2
+  echo "" >&2
+  echo "Correct patterns:" >&2
+  echo "  const result = addBin(...);" >&2
+  echo "  if (isOk(result)) { /* use result.value */ }" >&2
+  echo "  if (isErr(result)) { /* handle result.error */ }" >&2
+  echo "" >&2
+  echo "For bulk operations:" >&2
+  echo "  const errors: Error[] = [];" >&2
+  echo "  for (const item of items) {" >&2
+  echo "    const result = process(item);" >&2
+  echo "    if (isErr(result)) errors.push(result.error);" >&2
+  echo "  }" >&2
+  echo "" >&2
+  echo "Use --no-verify to skip (not recommended)" >&2
   exit 2
 fi
 

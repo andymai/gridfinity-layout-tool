@@ -178,21 +178,21 @@ for file in "${TS_FILES[@]}"; do
 done
 
 if [[ -n "$ISSUES" ]]; then
-  echo ""
-  echo "Union type exhaustiveness issues:"
-  echo "---------------------------------------------"
-  printf '%b' "$ISSUES"
-  echo "---------------------------------------------"
-  echo "Switch statements on union types should handle all cases."
-  echo ""
-  echo "Options:"
-  echo "  1. Add missing case statements"
-  echo "  2. Add default with exhaustive check:"
-  echo "     default:"
-  echo "       const _exhaustive: never = value;"
-  echo "       throw new Error('Unhandled case');"
-  echo ""
-  echo "Use --no-verify to skip (not recommended)"
+  echo "" >&2
+  echo "Union type exhaustiveness issues:" >&2
+  echo "---------------------------------------------" >&2
+  printf '%b' "$ISSUES" >&2
+  echo "---------------------------------------------" >&2
+  echo "Switch statements on union types should handle all cases." >&2
+  echo "" >&2
+  echo "Options:" >&2
+  echo "  1. Add missing case statements" >&2
+  echo "  2. Add default with exhaustive check:" >&2
+  echo "     default:" >&2
+  echo "       const _exhaustive: never = value;" >&2
+  echo "       throw new Error('Unhandled case');" >&2
+  echo "" >&2
+  echo "Use --no-verify to skip (not recommended)" >&2
   exit 2
 fi
 
