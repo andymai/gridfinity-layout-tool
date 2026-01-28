@@ -46,12 +46,6 @@ describe('LayoutActions', () => {
   });
 
   describe('rendering', () => {
-    it('renders copy link button', () => {
-      render(<LayoutActions {...defaultProps} />);
-
-      expect(screen.getByLabelText('Copy Test Layout')).toBeInTheDocument();
-    });
-
     it('renders download button', () => {
       render(<LayoutActions {...defaultProps} />);
 
@@ -66,35 +60,12 @@ describe('LayoutActions', () => {
   });
 
   describe('icon button actions', () => {
-    it('calls onCopyLink when copy button clicked', () => {
-      render(<LayoutActions {...defaultProps} />);
-
-      fireEvent.click(screen.getByLabelText('Copy Test Layout'));
-
-      expect(mockOnCopyLink).toHaveBeenCalledOnce();
-    });
-
     it('calls onDownload when download button clicked', () => {
       render(<LayoutActions {...defaultProps} />);
 
       fireEvent.click(screen.getByLabelText('Download Test Layout'));
 
       expect(mockOnDownload).toHaveBeenCalledOnce();
-    });
-
-    it('stops propagation on icon button click', () => {
-      const parentClickHandler = vi.fn();
-
-      render(
-        <div onClick={parentClickHandler}>
-          <LayoutActions {...defaultProps} />
-        </div>
-      );
-
-      fireEvent.click(screen.getByLabelText('Copy Test Layout'));
-
-      // The parent should not receive the click
-      expect(parentClickHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -105,6 +76,23 @@ describe('LayoutActions', () => {
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
 
       expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('shows copy link option', () => {
+      render(<LayoutActions {...defaultProps} />);
+
+      fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
+
+      expect(screen.getByRole('menuitem', { name: /Copy Link/ })).toBeInTheDocument();
+    });
+
+    it('calls onCopyLink when copy link clicked', () => {
+      render(<LayoutActions {...defaultProps} />);
+
+      fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
+      fireEvent.click(screen.getByRole('menuitem', { name: /Copy Link/ }));
+
+      expect(mockOnCopyLink).toHaveBeenCalledOnce();
     });
 
     it('shows rename option', () => {
