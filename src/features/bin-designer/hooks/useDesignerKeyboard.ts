@@ -4,6 +4,7 @@
  */
 
 import { useEffect } from 'react';
+import { SHORTCUTS } from '@/core/constants';
 import type { CameraPreset } from '../components/preview';
 
 interface UseDesignerKeyboardOptions {
@@ -12,6 +13,7 @@ interface UseDesignerKeyboardOptions {
   onToggleWireframe: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  onToolSwitch?: () => void;
 }
 
 const PRESET_KEYS: Record<string, CameraPreset> = {
@@ -43,6 +45,7 @@ export function useDesignerKeyboard({
   onToggleWireframe,
   onUndo,
   onRedo,
+  onToolSwitch,
 }: UseDesignerKeyboardOptions): void {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -69,6 +72,13 @@ export function useDesignerKeyboard({
 
       if (e.altKey) return;
 
+      // Tool switch (Shift+D) — toggle to Grid Editor
+      if (e.key === SHORTCUTS.TOOL_SWITCH && e.shiftKey && onToolSwitch) {
+        e.preventDefault();
+        onToolSwitch();
+        return;
+      }
+
       const preset = PRESET_KEYS[e.key];
       if (preset) {
         e.preventDefault();
@@ -90,5 +100,5 @@ export function useDesignerKeyboard({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCameraPreset, onResetView, onToggleWireframe, onUndo, onRedo]);
+  }, [onCameraPreset, onResetView, onToggleWireframe, onUndo, onRedo, onToolSwitch]);
 }

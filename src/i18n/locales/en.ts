@@ -710,6 +710,10 @@ const en: Record<string, string> = {
   'help.shortcut.isometricView': 'Isometric view',
   'help.shortcut.frontView': 'Front view',
   'help.shortcut.sideView': 'Side view',
+  'help.shortcut.rotate': 'Rotate selected bin',
+  'help.shortcut.selectAll': 'Select all bins on layer',
+  'help.shortcut.togglePaintMode': 'Toggle paint mode',
+  'help.shortcut.toolSwitch': 'Switch Grid Editor / Bin Designer',
   'help.shortcut.toggleHalfBin': 'Toggle half-bin mode',
 
   // Mouse interactions
@@ -1087,6 +1091,8 @@ const en: Record<string, string> = {
   'toolSwitcher.activeTool': 'Active tool',
   'toolSwitcher.gridfinityLayoutTool': 'Gridfinity Layout Tool',
   'toolSwitcher.toolSwitcher': 'Tool Switcher',
+  'toolSwitcher.switchToPlanner': 'Switch to Grid Editor (Shift+D)',
+  'toolSwitcher.switchToDesigner': 'Switch to Bin Designer (Shift+D)',
 
   // ===========================================================================
   // Bin Designer
@@ -1493,6 +1499,7 @@ const en: Record<string, string> = {
   // Layout management commands
   'commandPalette.newLayout': 'New Layout',
   'commandPalette.duplicateLayout': 'Duplicate Layout',
+  'commandPalette.switchToDesigner': 'Switch to Bin Designer',
 
   // Tools commands (extended)
   'commandPalette.togglePaintMode': 'Toggle Paint Mode',

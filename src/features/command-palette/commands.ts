@@ -54,6 +54,7 @@ export interface CommandDefinition {
   shortcut?: {
     keys: string | string[];
     modifier?: boolean;
+    shift?: boolean;
   };
   keywords?: string[];
 }
@@ -76,6 +77,13 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     labelKey: 'commandPalette.openSettings',
     category: 'navigation',
     keywords: ['preferences', 'options', 'configure'],
+  },
+  {
+    id: 'switch-to-designer',
+    labelKey: 'commandPalette.switchToDesigner',
+    category: 'navigation',
+    shortcut: { keys: SHORTCUTS.TOOL_SWITCH, shift: true },
+    keywords: ['designer', 'bin', 'cad', 'stl', '3d'],
   },
   {
     id: 'open-help',

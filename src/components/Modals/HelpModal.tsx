@@ -63,6 +63,7 @@ interface ShortcutItem {
   keys: string | readonly string[];
   descriptionKey: string; // Translation key
   modifier?: boolean; // Whether to show Ctrl/⌘ prefix
+  shift?: boolean; // Whether to show Shift prefix
 }
 
 interface ShortcutCategory {
@@ -99,6 +100,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
       { keys: formatKey(SHORTCUTS.REDO), descriptionKey: 'help.shortcut.redo', modifier: true },
       { keys: formatKey(SHORTCUTS.HELP), descriptionKey: 'help.shortcut.showHelp' },
       { keys: formatKey(SHORTCUTS.ESCAPE), descriptionKey: 'help.shortcut.cancelDeselect' },
+      { keys: SHORTCUTS.TOOL_SWITCH, descriptionKey: 'help.shortcut.toolSwitch', shift: true },
     ],
   },
   {
@@ -108,10 +110,12 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     shortcuts: [
       { keys: 'D', descriptionKey: 'help.shortcut.duplicate', modifier: true },
       { keys: formatKey(SHORTCUTS.DELETE), descriptionKey: 'help.shortcut.delete' },
+      { keys: formatKey(SHORTCUTS.ROTATE).toUpperCase(), descriptionKey: 'help.shortcut.rotate' },
       {
         keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(),
         descriptionKey: 'help.shortcut.quickLabel',
       },
+      { keys: 'A', descriptionKey: 'help.shortcut.selectAll', modifier: true },
       { keys: 'Arrow keys', descriptionKey: 'help.shortcut.nudge' },
     ],
   },
@@ -162,9 +166,6 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
         descriptionKey: 'help.shortcut.togglePreview',
       },
       { keys: 'Space', descriptionKey: 'help.shortcut.expandPreview' },
-      { keys: '1', descriptionKey: 'help.shortcut.isometricView' },
-      { keys: '2', descriptionKey: 'help.shortcut.frontView' },
-      { keys: '3', descriptionKey: 'help.shortcut.sideView' },
     ],
   },
   {
@@ -176,6 +177,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
         keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(),
         descriptionKey: 'help.shortcut.toggleHalfBin',
       },
+      { keys: 'P', descriptionKey: 'help.shortcut.togglePaintMode' },
     ],
   },
 ];
@@ -424,6 +426,7 @@ function ShortcutCategorySection({
             keys={shortcut.keys}
             description={t(shortcut.descriptionKey)}
             modifier={shortcut.modifier}
+            shift={shortcut.shift}
             modifierKey={modifierKey}
           />
         ))}
@@ -445,11 +448,13 @@ function ShortcutRow({
   keys,
   description,
   modifier,
+  shift,
   modifierKey,
 }: {
   keys: string | readonly string[];
   description: string;
   modifier?: boolean;
+  shift?: boolean;
   modifierKey: string;
 }) {
   const keyArray = typeof keys === 'string' ? keys.split(' / ') : [...keys];
@@ -461,6 +466,12 @@ function ShortcutRow({
         {modifier && (
           <>
             <KeyboardKey>{modifierKey}</KeyboardKey>
+            <span className="text-content-tertiary text-xs">{KEY_SEPARATOR}</span>
+          </>
+        )}
+        {shift && (
+          <>
+            <KeyboardKey>Shift</KeyboardKey>
             <span className="text-content-tertiary text-xs">{KEY_SEPARATOR}</span>
           </>
         )}

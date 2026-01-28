@@ -12,6 +12,7 @@ import { Vector3, Spherical } from 'three';
 import type { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
   BinMesh,
@@ -334,6 +335,7 @@ export function PreviewCanvas() {
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
   const addToast = useToastStore((s) => s.addToast);
+  const { navigateToPlanner } = useDesignerRouting();
 
   // Revert to last working configuration on generation error
   const handleRevert = useCallback(() => {
@@ -378,6 +380,7 @@ export function PreviewCanvas() {
     onToggleWireframe: toggleWireframe,
     onUndo: undo,
     onRedo: redo,
+    onToolSwitch: navigateToPlanner,
   });
 
   const handleRetry = useCallback(() => {

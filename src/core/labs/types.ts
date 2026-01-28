@@ -26,6 +26,7 @@ export interface FeatureFlag {
   requiresRefresh: boolean;
   dependencies?: string[];
   comingSoon?: boolean;
+  defaultEnabled?: boolean;
 }
 
 export interface LabsPreferences {

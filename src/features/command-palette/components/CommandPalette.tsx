@@ -122,6 +122,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => window.dispatchEvent(new CustomEvent('open-help-modal'));
         case 'open-print':
           return () => setPrintModalOpen(true);
+        case 'switch-to-designer':
+          return () => window.dispatchEvent(new CustomEvent('switch-to-designer'));
 
         // Edit
         case 'undo':
@@ -881,6 +883,7 @@ function CommandItem({ command, onSelect, t }: CommandItemProps) {
         <ShortcutBadge
           keys={command.shortcut.keys}
           modifier={command.shortcut.modifier}
+          shift={command.shortcut.shift}
           className="opacity-50 group-data-[selected=true]:opacity-90 transition-opacity shrink-0"
         />
       )}

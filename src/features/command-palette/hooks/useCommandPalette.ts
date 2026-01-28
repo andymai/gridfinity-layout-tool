@@ -5,10 +5,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export function useCommandPalette() {
+export function useCommandPalette({ disabled = false }: { disabled?: boolean } = {}) {
   const [open, setOpen] = useState(false);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (disabled) return;
+
     // Ignore if in input/textarea or contenteditable
     if (
       e.target instanceof HTMLInputElement ||
@@ -23,7 +25,7 @@ export function useCommandPalette() {
       e.preventDefault();
       setOpen(true);
     }
-  }, []);
+  }, [disabled]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
