@@ -69,20 +69,20 @@ export function SyncDimensionsDialog() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="sync-dialog-title"
-        className="max-w-md w-full mx-4 animate-scale-in bg-surface-secondary border border-stroke rounded-[var(--radius-xl)] p-[var(--space-2xl)]"
+        className="max-w-md w-full mx-4 animate-scale-in bg-surface-secondary border border-stroke rounded-[var(--radius-xl)] p-5"
         style={{ boxShadow: 'var(--shadow-xl)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="sync-dialog-title" className="mb-2 text-xl font-semibold text-content">
+        <h2 id="sync-dialog-title" className="mb-1.5 text-lg font-semibold text-content">
           {t('designLinking.syncDialog.title')}
         </h2>
 
-        <p className="mb-4 text-sm text-content-secondary">
+        <p className="mb-3 text-sm text-content-secondary">
           {t('designLinking.syncDialog.description', { name: designName })}
         </p>
 
         {/* Dimension comparison */}
-        <div className="mb-4 p-3 bg-surface rounded-lg border border-stroke-subtle space-y-2">
+        <div className="mb-3 p-2.5 bg-surface rounded-lg border border-stroke-subtle space-y-1.5">
           <div className="flex justify-between text-sm">
             <span className="text-content-secondary">
               {t('designLinking.syncDialog.designDimensions', {
@@ -98,17 +98,22 @@ export function SyncDimensionsDialog() {
             </span>
           </div>
           {binsHaveVaryingDimensions && (
-            <div className="text-xs text-status-warning mt-1">
+            <div className="text-xs text-status-warning mt-0.5">
               {t('designLinking.syncDialog.binsVary')}
             </div>
           )}
         </div>
 
         {/* Sync results preview */}
-        <div className="mb-6 space-y-2">
+        <div className="mb-4 space-y-1.5">
           {canSyncCount > 0 && (
             <div className="flex items-center gap-2 text-sm text-status-success">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-4 h-4 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -121,7 +126,12 @@ export function SyncDimensionsDialog() {
           )}
           {willUnlinkCount > 0 && (
             <div className="flex items-center gap-2 text-sm text-status-warning">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-4 h-4 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -135,11 +145,17 @@ export function SyncDimensionsDialog() {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 justify-end">
-          <button onClick={handleCancel} className="btn btn-secondary">
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={handleCancel}
+            className="btn btn-secondary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+          >
             {t('common.cancel')}
           </button>
-          <button onClick={handleSync} className="btn btn-primary">
+          <button
+            onClick={() => void handleSync()}
+            className="btn btn-primary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+          >
             {t('designLinking.syncDialog.sync')}
           </button>
         </div>

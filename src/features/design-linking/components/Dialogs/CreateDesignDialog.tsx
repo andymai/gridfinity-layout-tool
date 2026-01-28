@@ -98,17 +98,17 @@ export function CreateDesignDialog() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-design-title"
-        className="max-w-md w-full mx-4 animate-scale-in bg-surface-secondary border border-stroke rounded-[var(--radius-xl)] p-[var(--space-2xl)]"
+        className="max-w-md w-full mx-4 animate-scale-in bg-surface-secondary border border-stroke rounded-[var(--radius-xl)] p-5"
         style={{ boxShadow: 'var(--shadow-xl)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="create-design-title" className="mb-4 text-xl font-semibold text-content">
+        <h2 id="create-design-title" className="mb-3 text-lg font-semibold text-content">
           {t('designLinking.createDialog.title')}
         </h2>
 
         <form onSubmit={handleSubmit}>
           {/* Name input */}
-          <div className="mb-4">
+          <div className="mb-3">
             <label htmlFor="design-name" className="block text-sm text-content-secondary mb-1">
               {t('designLinking.createDialog.nameLabel')}
             </label>
@@ -120,7 +120,7 @@ export function CreateDesignDialog() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('designLinking.createDialog.namePlaceholder')}
-                className="input flex-1"
+                className="input flex-1 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 maxLength={64}
                 autoFocus
               />
@@ -128,7 +128,7 @@ export function CreateDesignDialog() {
                 <button
                   type="button"
                   onClick={handleUseBinLabel}
-                  className="btn btn-secondary text-sm whitespace-nowrap"
+                  className="btn btn-secondary text-sm whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
                   title={t('designLinking.createDialog.useLabelTooltip', { label: binLabel })}
                 >
                   {t('designLinking.createDialog.useLabel')}
@@ -138,7 +138,7 @@ export function CreateDesignDialog() {
           </div>
 
           {/* Dimensions display */}
-          <div className="mb-6 p-3 bg-surface rounded-lg border border-stroke-subtle">
+          <div className="mb-4 p-2.5 bg-surface rounded-lg border border-stroke-subtle">
             <div className="text-sm text-content-secondary">
               {t('designLinking.createDialog.dimensions', {
                 width: dimensions.width,
@@ -146,17 +146,25 @@ export function CreateDesignDialog() {
                 height: dimensions.height,
               })}
             </div>
-            <div className="text-xs text-content-disabled mt-1">
+            <div className="text-xs text-content-disabled mt-0.5">
               {t('designLinking.createDialog.gridUnits', { dimensions: dimensionStr })}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-end">
-            <button type="button" onClick={handleCancel} className="btn btn-secondary">
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="btn btn-secondary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+            >
               {t('common.cancel')}
             </button>
-            <button type="submit" className="btn btn-primary" disabled={!name.trim()}>
+            <button
+              type="submit"
+              className="btn btn-primary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+              disabled={!name.trim()}
+            >
               {t('designLinking.createDialog.create')}
             </button>
           </div>

@@ -56,7 +56,7 @@ interface LinkingStoreState {
   hideCreateDesignDialog: () => void;
 
   // Link existing design dialog actions
-  showLinkDesignDialog: (binId: BinId, width: number, depth: number) => void;
+  showLinkDesignDialog: (binId: BinId, width: number, depth: number, height: number) => void;
   hideLinkDesignDialog: () => void;
 }
 
@@ -114,11 +114,12 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
   hideCreateDesignDialog: () => set({ pendingCreateDesign: null }),
 
   // Link existing design dialog
-  showLinkDesignDialog: (binId, width, depth) =>
+  showLinkDesignDialog: (binId, width, depth, height) =>
     set({
       pendingLinkDesign: {
         binId,
         footprint: { width, depth },
+        binHeight: height,
       },
     }),
   hideLinkDesignDialog: () => set({ pendingLinkDesign: null }),

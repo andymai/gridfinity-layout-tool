@@ -1006,6 +1006,7 @@ const en: Record<string, string> = {
   'grid.toggle': 'Toggle',
   'grid.hasNotesAriaLabel': 'Has notes',
   'grid.hasCustomPropertiesAriaLabel': 'Has custom properties',
+  'grid.hasLinkedDesign': 'Has linked design',
   'grid.clickToSeeSplitPreview': 'Click to see split preview',
 
   // ===========================================================================
@@ -1496,8 +1497,9 @@ const en: Record<string, string> = {
   'designLinking.inspector.linkedDesign': 'Linked Design',
   'designLinking.inspector.noDesign': 'No design linked',
   'designLinking.inspector.designDeleted': 'Design deleted',
-  'designLinking.inspector.editDesign': 'Edit',
+  'designLinking.inspector.editDesign': 'Edit Design',
   'designLinking.inspector.unlink': 'Unlink',
+  'designLinking.inspector.export': 'Export',
   'designLinking.inspector.syncDimensions': 'Sync Dimensions',
   'designLinking.inspector.createDesign': 'Create',
   'designLinking.inspector.linkExisting': 'Link',
@@ -1518,9 +1520,13 @@ const en: Record<string, string> = {
   // Link existing design dialog
   'designLinking.linkDialog.title': 'Link Existing Design',
   'designLinking.linkDialog.footprint': 'Showing designs with {width}×{depth} footprint',
+  'designLinking.linkDialog.searchPlaceholder': 'Search designs...',
+  'designLinking.linkDialog.heightMismatch': 'Different height',
   'designLinking.linkDialog.noCompatible': 'No compatible designs',
   'designLinking.linkDialog.noCompatibleHint':
     'Create a design with {width}×{depth} footprint to link it to this bin',
+  'designLinking.linkDialog.noResults': 'No designs match your search',
+  'designLinking.linkDialog.loading': 'Loading designs...',
 
   // Create design dialog
   'designLinking.createDialog.title': 'Create Design from Bin',

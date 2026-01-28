@@ -325,6 +325,7 @@ function BinComponent({
   const hasLabel = showLabels && bin.label;
   const hasNotes = bin.notes && bin.notes.trim().length > 0;
   const hasCustomProps = bin.customProperties && Object.keys(bin.customProperties).length > 0;
+  const hasLinkedDesign = !!bin.linkedDesignId;
   const hasMetadata = hasNotes || hasCustomProps;
 
   // ========== MEMOIZED TEXT CALCULATIONS ==========
@@ -737,6 +738,32 @@ function BinComponent({
         </div>
       )}
 
+      {/* Linked design indicator - shown at bottom-right when bin has a linked design */}
+      {hasLinkedDesign && showBadges && (
+        <div className="absolute bottom-0.5 right-0.5 pointer-events-none">
+          <div
+            className={`${useSmallBadges ? 'p-px' : 'p-0.5'} rounded-sm bg-surface/80`}
+            style={{ boxShadow: 'var(--shadow-sm)' }}
+            title={t('grid.hasLinkedDesign')}
+          >
+            <svg
+              className={`${useSmallBadges ? 'w-2.5 h-2.5' : 'w-3 h-3'} text-accent`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={useSmallBadges ? 2.5 : 2}
+              aria-label={t('grid.hasLinkedDesign')}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
+            </svg>
+          </div>
+        </div>
+      )}
+
       {/* Adaptive label system: primary text (label or dimensions) + optional secondary */}
       {showAnyText && (
         <div
@@ -856,7 +883,8 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
     prevBin.height !== nextBin.height ||
     prevBin.label !== nextBin.label ||
     prevBin.category !== nextBin.category ||
-    prevBin.notes !== nextBin.notes
+    prevBin.notes !== nextBin.notes ||
+    prevBin.linkedDesignId !== nextBin.linkedDesignId
   ) {
     return false;
   }
