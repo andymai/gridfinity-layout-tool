@@ -12,6 +12,7 @@ import * as THREE from 'three';
 import { GenerationBridge } from '@/shared/generation/bridge';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams } from '@/features/bin-designer/types';
+import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 
 /** Thumbnail size matching the main capture utility */
 const THUMBNAIL_SIZE = 384;
@@ -19,31 +20,8 @@ const THUMBNAIL_SIZE = 384;
 /** Default preview color matching PreviewCanvas default */
 const DEFAULT_COLOR = '#d4d8dc';
 
-/** Isometric direction matching PreviewCanvas.CAMERA_PRESETS.isometric */
-const ISOMETRIC_DIRECTION = new THREE.Vector3(0.6, -0.6, 0.5).normalize();
-
-/** Viewport fill fraction matching PreviewCanvas */
-const FRAME_FILL = 0.65;
-
 /** Edge detection angle threshold matching BinMesh */
 const EDGE_THRESHOLD = 12;
-
-/**
- * Calculate ideal camera distance to frame a bin.
- */
-function calculateIdealDistance(width: number, depth: number, height: number, fov: number): number {
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
-
-  const halfW = outerW / 2;
-  const halfD = outerD / 2;
-  const halfH = totalH / 2;
-  const boundingRadius = Math.sqrt(halfW * halfW + halfD * halfD + halfH * halfH);
-
-  const halfFovRad = (fov / 2) * (Math.PI / 180);
-  return (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
-}
 
 /**
  * Generate a thumbnail for a bin design using an offscreen Three.js renderer.
@@ -84,6 +62,13 @@ export async function regenerateThumbnail(
 
     // Build edge geometry for sketch-like appearance
     const edgesGeometry = new THREE.EdgesGeometry(geometry, EDGE_THRESHOLD);
+
+    // Check abort before expensive scene setup and rendering
+    if (signal?.aborted) {
+      geometry.dispose();
+      edgesGeometry.dispose();
+      return null;
+    }
 
     // Create scene matching PreviewCanvas setup
     const scene = new THREE.Scene();

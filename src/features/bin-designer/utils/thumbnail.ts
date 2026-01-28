@@ -8,6 +8,7 @@
 import type { WebGLRenderer, Scene, PerspectiveCamera, Object3D } from 'three';
 import { Vector3 } from 'three';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 
 /** Thumbnail size for IndexedDB storage (high res for crisp display at any size) */
 const THUMBNAIL_SIZE = 384;
@@ -20,11 +21,6 @@ let previewRenderer: WebGLRenderer | null = null;
 let previewScene: Scene | null = null;
 let previewCamera: PerspectiveCamera | null = null;
 
-/** Standard isometric direction (matches PreviewCanvas.CAMERA_PRESETS.isometric) */
-const ISOMETRIC_DIRECTION = new Vector3(0.6, -0.6, 0.5).normalize();
-
-/** How much of the viewport the bin should fill (matches PreviewCanvas.FRAME_FILL) */
-const FRAME_FILL = 0.65;
 
 /**
  * Register the provided canvas as the module-level preview canvas used for thumbnail generation.
@@ -147,23 +143,6 @@ export function captureThumbnail(): string | null {
     // Canvas may be tainted or unavailable
     return null;
   }
-}
-
-/**
- * Calculate ideal camera distance to frame a bin (same math as PreviewCanvas).
- */
-function calculateIdealDistance(width: number, depth: number, height: number, fov: number): number {
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
-
-  const halfW = outerW / 2;
-  const halfD = outerD / 2;
-  const halfH = totalH / 2;
-  const boundingRadius = Math.sqrt(halfW * halfW + halfD * halfD + halfH * halfH);
-
-  const halfFovRad = (fov / 2) * (Math.PI / 180);
-  return (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
 }
 
 /**

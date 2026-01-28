@@ -53,17 +53,24 @@ export function useThumbnailRegeneration(
       for (const design of needsRegen) {
         if (controller.signal.aborted) break;
 
-        // Mark as processed to avoid re-queuing
-        processedRef.current.add(design.id);
-
         const thumbnail = await regenerateThumbnail(design.params, controller.signal);
-        if (controller.signal.aborted || !thumbnail) continue;
+
+        // On abort, don't mark as processed so designs can retry next time
+        if (controller.signal.aborted) break;
+
+        if (!thumbnail) {
+          // Generation failed — skip but don't mark as processed so it can retry
+          continue;
+        }
 
         // Persist to IndexedDB
         const result = await updateDesignThumbnail(design.id, thumbnail);
         if (controller.signal.aborted) break;
 
         if (isOk(result)) {
+          // Mark as successfully processed
+          processedRef.current.add(design.id);
+
           // Update custom bin registry
           upsertRegistryEntry({
             id: design.id,
