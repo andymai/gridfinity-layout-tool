@@ -563,6 +563,7 @@ const en: Record<string, string> = {
   'layouts.canEdit': 'Can edit',
   'layouts.clear': 'Clear',
   'layouts.clearSearch': 'Clear search',
+  'layouts.backToLayouts': 'Back to layouts',
   'layouts.closeLayoutsDialog': 'Close layouts dialog',
   'layouts.createYourFirstLayoutToGetStarted': 'Create your first layout to get started',
   'layouts.currentlyActiveLayout': 'Currently active layout',
@@ -1202,6 +1203,25 @@ const en: Record<string, string> = {
   'binDesigner.designCreatedAndLinked': 'Design created and linked to bin',
   'binDesigner.designCreatedLinkFailed': 'Design created but linking failed',
   'binDesigner.designCreateFailed': 'Failed to create design',
+
+  // Saved Designs Modal
+  'binDesigner.viewMode': 'View mode',
+  'binDesigner.gridView': 'Grid view',
+  'binDesigner.listView': 'List view',
+  'binDesigner.sortBy': 'Sort by',
+  'binDesigner.sortRecent': 'Recently Modified',
+  'binDesigner.sortName': 'Name (A-Z)',
+  'binDesigner.sortSize': 'Size',
+  'binDesigner.searchDesigns': 'Search designs...',
+  'binDesigner.searchDesignsAriaLabel': 'Search designs',
+  'binDesigner.clearSearch': 'Clear search',
+  'binDesigner.noDesignsMatch': 'No designs match "{query}"',
+  'binDesigner.designCount': '{count} design(s)',
+  'binDesigner.duplicateDesign': 'Duplicate design',
+  'binDesigner.deleteDesign': 'Delete design',
+  'binDesigner.confirmDelete': 'Click again to delete',
+  'binDesigner.moreActionsForDesign': 'More actions for {name}',
+  'binDesigner.compartmentsShort': '{count} comp.',
 
   // ===========================================================================
   // Bin List Modal

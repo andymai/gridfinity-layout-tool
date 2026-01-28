@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { LayoutList } from '@/features/layout-library/components/LayoutManagerModal/LayoutList';
 import { useLayoutStore, useUIStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -88,7 +88,6 @@ describe('LayoutList', () => {
   const mockOnRename = vi.fn();
   const mockOnDuplicate = vi.fn();
   const mockOnDelete = vi.fn();
-  const mockOnCreate = vi.fn();
   const mockOnShare = vi.fn();
 
   const defaultProps = {
@@ -103,8 +102,10 @@ describe('LayoutList', () => {
     onRename: mockOnRename,
     onDuplicate: mockOnDuplicate,
     onDelete: mockOnDelete,
-    onCreate: mockOnCreate,
     onShare: mockOnShare,
+    onViewModeChange: vi.fn(),
+    showViewToggle: true,
+    onSortChange: vi.fn(),
   };
 
   beforeEach(() => {
@@ -113,12 +114,6 @@ describe('LayoutList', () => {
   });
 
   describe('rendering', () => {
-    it('renders New Layout button', () => {
-      render(<LayoutList {...defaultProps} />);
-
-      expect(screen.getByText('New Layout')).toBeInTheDocument();
-    });
-
     it('renders layout count in footer', () => {
       render(<LayoutList {...defaultProps} />);
 
@@ -140,7 +135,8 @@ describe('LayoutList', () => {
     it('renders layout items as options', () => {
       render(<LayoutList {...defaultProps} />);
 
-      const options = screen.getAllByRole('option');
+      const listbox = screen.getByRole('listbox');
+      const options = within(listbox).getAllByRole('option');
       expect(options).toHaveLength(2);
     });
   });
@@ -281,16 +277,6 @@ describe('LayoutList', () => {
 
       // Should stay at first item
       expect(document.activeElement).toBe(options[0]);
-    });
-  });
-
-  describe('create action', () => {
-    it('calls onCreate when New Layout button clicked', () => {
-      render(<LayoutList {...defaultProps} />);
-
-      fireEvent.click(screen.getByText('New Layout'));
-
-      expect(mockOnCreate).toHaveBeenCalledOnce();
     });
   });
 

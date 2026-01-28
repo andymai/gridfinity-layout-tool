@@ -177,6 +177,12 @@ export interface UserSettings {
    */
   layoutManagerViewMode: 'grid' | 'list';
 
+  /**
+   * Preferred view mode for the bin designer's saved designs modal.
+   * 'grid' shows cards with thumbnails, 'list' shows compact rows.
+   */
+  designListViewMode: 'grid' | 'list';
+
   // Print view preferences
   printViewSettings: PrintViewSettings;
 
@@ -226,6 +232,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   lastStashCollapsed: false,
   stashMaxHeight: null, // null = use default 33vh
   layoutManagerViewMode: 'grid',
+  designListViewMode: 'grid',
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },
@@ -317,6 +324,14 @@ function normalizeSTLSearchSites(stored: STLSearchSite[] | undefined): STLSearch
 }
 
 /**
+ * Normalize view mode values from localStorage.
+ * Ensures corrupted or invalid values fall back to the provided default.
+ */
+function normalizeViewMode(value: unknown, fallback: 'grid' | 'list'): 'grid' | 'list' {
+  return value === 'grid' || value === 'list' ? value : fallback;
+}
+
+/**
  * Load settings from localStorage.
  */
 function loadSettings(): UserSettings {
@@ -334,6 +349,15 @@ function loadSettings(): UserSettings {
       const stlSearchSites = normalizeSTLSearchSites(parsed.stlSearchSites);
       // Normalize default categories
       const defaultCategories = normalizeCategories(parsed.defaultCategories);
+      // Normalize view mode settings
+      const layoutManagerViewMode = normalizeViewMode(
+        parsed.layoutManagerViewMode,
+        DEFAULT_SETTINGS.layoutManagerViewMode
+      );
+      const designListViewMode = normalizeViewMode(
+        parsed.designListViewMode,
+        DEFAULT_SETTINGS.designListViewMode
+      );
       // Merge with defaults to handle any missing fields
       return {
         ...DEFAULT_SETTINGS,
@@ -341,6 +365,8 @@ function loadSettings(): UserSettings {
         printViewSettings,
         stlSearchSites,
         defaultCategories,
+        layoutManagerViewMode,
+        designListViewMode,
       };
     }
   } catch (e) {
