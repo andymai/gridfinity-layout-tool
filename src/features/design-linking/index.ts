@@ -9,7 +9,7 @@
  * - Navigate from planner to designer to edit linked design
  * - Create new designs from existing bins
  * - Sync dimensions from design to linked bins
- * - Custom Bins palette in sidebar for drag-to-place
+ * - Link existing designs to bins via picker dialog
  *
  * @module design-linking
  */
@@ -28,6 +28,7 @@ export type {
   PendingSyncState,
   PendingDeleteWarningState,
   PendingCreateDesignState,
+  PendingLinkDesignState,
   DesignLinkedBinsSummary,
 } from './types';
 
@@ -75,7 +76,5 @@ export {
   SyncDimensionsDialog,
   DeleteDesignWarningDialog,
   LinkedDesignSection,
-  CustomBinsPalette,
-  CustomBinCard,
   DesignLinkingDialogs,
 } from './components';

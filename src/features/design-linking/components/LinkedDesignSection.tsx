@@ -3,11 +3,12 @@
  *
  * Displays:
  * - Linked: Thumbnail, name, Edit Design button, Unlink button
- * - Unlinked: Create Design button
+ * - Unlinked: Create Design + Link Existing buttons
  * - Stale (design deleted): Warning + Unlink button
  */
 
 import { useLinkedDesign, useBinLinking } from '../hooks';
+import { useLinkingStore } from '../store';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 
@@ -20,32 +21,50 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   const t = useTranslation();
   const { linkedDesign, isStale, hasLink } = useLinkedDesign(bin.linkedDesignId);
   const { editLinkedDesign, showCreateDesignDialog, unlinkBin } = useBinLinking();
+  const showLinkDesignDialog = useLinkingStore((s) => s.showLinkDesignDialog);
 
   const isMobile = variant === 'mobile';
   const buttonHeight = isMobile ? 'h-10' : 'h-8';
   const textSize = isMobile ? 'text-sm' : 'text-xs';
 
-  // No link - show Create Design button
+  // No link - show Create Design and Link Existing buttons
   if (!hasLink) {
     return (
       <div className="space-y-2">
         <label className={`block ${textSize} text-content-tertiary`}>
           {t('designLinking.inspector.linkedDesign')}
         </label>
-        <button
-          onClick={() => showCreateDesignDialog(bin.id)}
-          className={`btn btn-secondary w-full ${buttonHeight} flex items-center justify-center gap-2`}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          {t('designLinking.inspector.createDesign')}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => showCreateDesignDialog(bin.id)}
+            className={`btn btn-secondary flex-1 ${buttonHeight} flex items-center justify-center gap-2`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            {t('designLinking.inspector.createDesign')}
+          </button>
+          <button
+            onClick={() => showLinkDesignDialog(bin.id, bin.width, bin.depth)}
+            className={`btn btn-secondary flex-1 ${buttonHeight} flex items-center justify-center gap-2`}
+            title={t('designLinking.inspector.linkExistingTooltip')}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
+            </svg>
+            {t('designLinking.inspector.linkExisting')}
+          </button>
+        </div>
       </div>
     );
   }

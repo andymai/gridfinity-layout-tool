@@ -127,6 +127,17 @@ export interface PendingCreateDesignState {
   readonly dimensions: SyncableDimensions;
 }
 
+/** State for the link existing design dialog */
+export interface PendingLinkDesignState {
+  /** Bin to link a design to */
+  readonly binId: BinId;
+  /** Bin footprint for filtering compatible designs */
+  readonly footprint: {
+    readonly width: number;
+    readonly depth: number;
+  };
+}
+
 // =============================================================================
 // Summary Types
 // =============================================================================

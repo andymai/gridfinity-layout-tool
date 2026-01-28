@@ -1196,8 +1196,10 @@ const en: Record<string, string> = {
   'binDesigner.updating': 'Updating',
   'binDesigner.updatingMesh': 'Updating mesh',
   'binDesigner.wire': 'Wire',
-  'binDesigner.creatingFromBin': 'Creating "{name}" — save to link to bin',
+  'binDesigner.creatingFromBin': 'Creating "{name}"...',
   'binDesigner.designCreatedAndLinked': 'Design created and linked to bin',
+  'binDesigner.designCreatedLinkFailed': 'Design created but linking failed',
+  'binDesigner.designCreateFailed': 'Failed to create design',
 
   // ===========================================================================
   // Bin List Modal
@@ -1482,6 +1484,7 @@ const en: Record<string, string> = {
   // Context menu actions
   'designLinking.menu.editDesign': 'Edit Design',
   'designLinking.menu.createDesign': 'Create Design',
+  'designLinking.menu.linkExisting': 'Link Existing Design',
   'designLinking.menu.unlinkDesign': 'Unlink Design',
   'designLinking.menu.designDeleted': 'Design Deleted',
   'designLinking.menu.unlinkStale': 'Remove Stale Link',
@@ -1493,8 +1496,17 @@ const en: Record<string, string> = {
   'designLinking.inspector.editDesign': 'Edit',
   'designLinking.inspector.unlink': 'Unlink',
   'designLinking.inspector.syncDimensions': 'Sync Dimensions',
-  'designLinking.inspector.createDesign': 'Create Design',
+  'designLinking.inspector.createDesign': 'Create',
+  'designLinking.inspector.linkExisting': 'Link',
+  'designLinking.inspector.linkExistingTooltip': 'Link to an existing saved design',
   'designLinking.inspector.dimensionsMismatch': 'Dimensions differ from design',
+
+  // Link existing design dialog
+  'designLinking.linkDialog.title': 'Link Existing Design',
+  'designLinking.linkDialog.footprint': 'Showing designs with {width}×{depth} footprint',
+  'designLinking.linkDialog.noCompatible': 'No compatible designs',
+  'designLinking.linkDialog.noCompatibleHint':
+    'Create a design with {width}×{depth} footprint to link it to this bin',
 
   // Create design dialog
   'designLinking.createDialog.title': 'Create Design from Bin',

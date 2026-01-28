@@ -13,7 +13,7 @@ import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
-import { useLinkedDesign, useBinLinking } from '@/features/design-linking';
+import { useLinkedDesign, useBinLinking, useLinkingStore } from '@/features/design-linking';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import type { Bin } from '@/core/types';
 
@@ -59,6 +59,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const isDesignerEnabled = useFeatureFlag('bin_designer');
   const { linkedDesign, hasLink } = useLinkedDesign(bin.linkedDesignId);
   const { editLinkedDesign, showCreateDesignDialog, unlinkBin } = useBinLinking();
+  const showLinkDesignDialog = useLinkingStore((state) => state.showLinkDesignDialog);
 
   const handleDelete = () => {
     // Track deletion BEFORE executing (need bin data)
@@ -146,6 +147,11 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
 
   const handleUnlinkDesign = () => {
     unlinkBin(bin.id);
+    onClose();
+  };
+
+  const handleLinkExisting = () => {
+    showLinkDesignDialog(bin.id, bin.width, bin.depth);
     onClose();
   };
 
@@ -326,21 +332,37 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
                 />
               </>
             ) : (
-              // No link - offer to create a design
-              <ContextMenuItem
-                icon={
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                }
-                label={t('designLinking.menu.createDesign')}
-                onClick={handleCreateDesign}
-              />
+              // No link - offer to create or link a design
+              <>
+                <ContextMenuItem
+                  icon={
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  }
+                  label={t('designLinking.menu.createDesign')}
+                  onClick={handleCreateDesign}
+                />
+                <ContextMenuItem
+                  icon={
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                    </svg>
+                  }
+                  label={t('designLinking.menu.linkExisting')}
+                  onClick={handleLinkExisting}
+                />
+              </>
             )}
             <ContextMenuDivider />
           </>

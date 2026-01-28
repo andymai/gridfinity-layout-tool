@@ -6,10 +6,9 @@ export {
   CreateDesignDialog,
   SyncDimensionsDialog,
   DeleteDesignWarningDialog,
+  LinkDesignDialog,
 } from './Dialogs';
 
 export { LinkedDesignSection } from './LinkedDesignSection';
-
-export { CustomBinsPalette, CustomBinCard } from './CustomBinsPalette';
 
 export { DesignLinkingDialogs } from './DesignLinkingDialogs';

@@ -9,6 +9,7 @@
 import { CreateDesignDialog } from './Dialogs/CreateDesignDialog';
 import { SyncDimensionsDialog } from './Dialogs/SyncDimensionsDialog';
 import { DeleteDesignWarningDialog } from './Dialogs/DeleteDesignWarningDialog';
+import { LinkDesignDialog } from './Dialogs/LinkDesignDialog';
 
 export function DesignLinkingDialogs() {
   return (
@@ -16,6 +17,7 @@ export function DesignLinkingDialogs() {
       <CreateDesignDialog />
       <SyncDimensionsDialog />
       <DeleteDesignWarningDialog />
+      <LinkDesignDialog />
     </>
   );
 }

@@ -22,7 +22,7 @@ Bidirectional integration between the Bin Designer and Layout Planner, enabling 
 │  │ linkingRu- │   │ useBinLinking  │   │ LinkedDesignSection    │  │
 │  │ les.ts     │   │ useLinkedDe-   │   │ CreateDesignDialog     │  │
 │  │ syncOps.ts │   │   sign         │   │ SyncDimensionsDialog   │  │
-│  │ queries.ts │   │ useLinkedBins  │   │ CustomBinsPalette      │  │
+│  │ queries.ts │   │ useLinkedBins  │   │ LinkDesignDialog       │  │
 │  └────────────┘   └────────────────┘   └────────────────────────┘  │
 │                            │                                        │
 │                            ▼                                        │
@@ -78,11 +78,12 @@ Dialog prompts for name → Designer opens with dimensions →
 User customizes → Save creates design + links bin
 ```
 
-### 3. Place from Custom Bins Palette
+### 3. Link Existing Design
 
 ```
-User drags from palette → Drops on grid →
-Bin created with linkedDesignId set → Auto-linked
+User selects unlinked bin → Clicks "Link Existing" →
+Dialog shows compatible designs (matching footprint) →
+User selects design → Bin linked to design
 ```
 
 ### 4. Sync Dimensions

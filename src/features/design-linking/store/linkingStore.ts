@@ -10,6 +10,7 @@ import type {
   PendingSyncState,
   PendingDeleteWarningState,
   PendingCreateDesignState,
+  PendingLinkDesignState,
   DimensionComparison,
   SyncEligibility,
   BinId,
@@ -22,6 +23,7 @@ interface LinkingStoreState {
   pendingSync: PendingSyncState | null;
   pendingDeleteWarning: PendingDeleteWarningState | null;
   pendingCreateDesign: PendingCreateDesignState | null;
+  pendingLinkDesign: PendingLinkDesignState | null;
 
   // Sync dialog actions
   showSyncDialog: (
@@ -52,6 +54,10 @@ interface LinkingStoreState {
     binLabel?: string
   ) => void;
   hideCreateDesignDialog: () => void;
+
+  // Link existing design dialog actions
+  showLinkDesignDialog: (binId: BinId, width: number, depth: number) => void;
+  hideLinkDesignDialog: () => void;
 }
 
 export const useLinkingStore = create<LinkingStoreState>()((set) => ({
@@ -59,6 +65,7 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
   pendingSync: null,
   pendingDeleteWarning: null,
   pendingCreateDesign: null,
+  pendingLinkDesign: null,
 
   // Sync dialog
   showSyncDialog: (
@@ -105,4 +112,14 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
       },
     }),
   hideCreateDesignDialog: () => set({ pendingCreateDesign: null }),
+
+  // Link existing design dialog
+  showLinkDesignDialog: (binId, width, depth) =>
+    set({
+      pendingLinkDesign: {
+        binId,
+        footprint: { width, depth },
+      },
+    }),
+  hideLinkDesignDialog: () => set({ pendingLinkDesign: null }),
 }));
