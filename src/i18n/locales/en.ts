@@ -54,6 +54,7 @@ const en: Record<string, string> = {
   'common.quantity': 'Quantity',
   'common.value': 'Value',
   'common.add': 'Add',
+  'common.moreOptions': 'More options',
   'common.category': 'Category',
   'common.color': 'Color',
   'common.depth': 'Depth',
@@ -1500,6 +1501,17 @@ const en: Record<string, string> = {
   'designLinking.inspector.linkExisting': 'Link',
   'designLinking.inspector.linkExistingTooltip': 'Link to an existing saved design',
   'designLinking.inspector.dimensionsMismatch': 'Dimensions differ from design',
+  'designLinking.inspector.clickToEdit': 'Click to open in designer',
+  'designLinking.inspector.exportSTL': 'Export STL',
+  'designLinking.inspector.deleteDesign': 'Delete Bin Design',
+
+  // Confirmation dialogs
+  'designLinking.confirm.unlinkTitle': 'Unlink Bin Design',
+  'designLinking.confirm.unlinkMessage':
+    'This will remove the link between this bin and the 3D model. The bin design will not be deleted.',
+  'designLinking.confirm.deleteTitle': 'Delete Bin Design',
+  'designLinking.confirm.deleteMessage':
+    'This will permanently delete the 3D model "{name}" and unlink it from this bin. This cannot be undone.',
 
   // Link existing design dialog
   'designLinking.linkDialog.title': 'Link Existing Design',
@@ -1552,6 +1564,10 @@ const en: Record<string, string> = {
   'designLinking.toast.unlinkedDidntFit': "Unlinked {count} bin(s) (didn't fit)",
   'designLinking.toast.failedToLoad': 'Failed to load design',
   'designLinking.toast.unknownDesign': 'Unknown Design',
+  'designLinking.toast.exported': 'Exported "{name}"',
+  'designLinking.toast.exportFailed': 'Failed to export bin design',
+  'designLinking.toast.deleted': 'Deleted "{name}"',
+  'designLinking.toast.deleteFailed': 'Failed to delete bin design',
 };
 
 export default en;
