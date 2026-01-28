@@ -76,18 +76,18 @@ for file in "${TS_FILES[@]}"; do
 done
 
 if [[ -n "$ISSUES" ]]; then
-  echo ""
-  echo "Suppression comments require justification:"
-  echo "---------------------------------------------"
-  printf '%b' "$ISSUES"
-  echo "---------------------------------------------"
-  echo "Valid formats:"
-  echo "  // @ts-expect-error TECH-DEBT: description"
-  echo "  // @ts-expect-error #123"
-  echo "  // eslint-disable-next-line rule -- explanation"
-  echo "  // eslint-disable-next-line rule -- TECH-DEBT: reason"
-  echo ""
-  echo "Use --no-verify to skip (not recommended)"
+  echo "" >&2
+  echo "Suppression comments require justification:" >&2
+  echo "---------------------------------------------" >&2
+  printf '%b' "$ISSUES" >&2
+  echo "---------------------------------------------" >&2
+  echo "Valid formats:" >&2
+  echo "  // @ts-expect-error TECH-DEBT: description" >&2
+  echo "  // @ts-expect-error #123" >&2
+  echo "  // eslint-disable-next-line rule -- explanation" >&2
+  echo "  // eslint-disable-next-line rule -- TECH-DEBT: reason" >&2
+  echo "" >&2
+  echo "Use --no-verify to skip (not recommended)" >&2
   exit 2  # Block the commit
 fi
 

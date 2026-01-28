@@ -70,12 +70,12 @@ for file in $STAGED; do
 done
 
 if [[ -n "$ISSUES" ]]; then
-  echo ""
-  echo "⚠️  Accessibility issues detected in staged files:"
-  echo "─────────────────────────────────────────────────"
-  echo -e "$ISSUES"
-  echo "─────────────────────────────────────────────────"
-  echo "Fix these issues or use --no-verify to skip (not recommended)"
+  echo "" >&2
+  echo "⚠️  Accessibility issues detected in staged files:" >&2
+  echo "─────────────────────────────────────────────────" >&2
+  echo -e "$ISSUES" >&2
+  echo "─────────────────────────────────────────────────" >&2
+  echo "Fix these issues or use --no-verify to skip (not recommended)" >&2
   exit 2  # Block the commit
 fi
 
