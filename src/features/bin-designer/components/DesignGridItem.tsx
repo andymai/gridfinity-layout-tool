@@ -92,8 +92,17 @@ export function DesignGridItem({
       )}
 
       {/* Thumbnail area - portrait aspect ratio */}
-      <div className="aspect-[3/4] flex items-center justify-center bg-surface-elevated rounded-t-md">
-        <BinDesignThumbnail params={design.params} size={80} />
+      <div className="aspect-[3/4] flex items-center justify-center rounded-t-md overflow-hidden bg-surface-elevated">
+        {design.thumbnail ? (
+          <img
+            src={design.thumbnail}
+            alt=""
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
+        ) : (
+          <BinDesignThumbnail params={design.params} size={80} />
+        )}
       </div>
 
       {/* Content area */}

@@ -94,9 +94,18 @@ export function DesignListItem({
         </span>
       )}
 
-      {/* Isometric thumbnail */}
-      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md bg-surface-elevated">
-        <BinDesignThumbnail params={design.params} size={40} />
+      {/* Thumbnail */}
+      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md bg-surface-elevated overflow-hidden">
+        {design.thumbnail ? (
+          <img
+            src={design.thumbnail}
+            alt=""
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
+        ) : (
+          <BinDesignThumbnail params={design.params} size={40} />
+        )}
       </div>
 
       {/* Name, dimensions & date */}

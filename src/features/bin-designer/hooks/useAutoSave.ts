@@ -14,11 +14,36 @@ import {
   setActiveDesignId,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
-import { captureThumbnail } from '../utils/thumbnail';
+import { captureThumbnailAtPreset } from '../utils/thumbnail';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
-import type { BinParams, ExportFileNameConfig } from '../types';
+import type { BinParams, ExportFileNameConfig, GenerationStatus } from '../types';
 
 const AUTO_SAVE_DELAY_MS = 1000;
+
+/**
+ * Wait for generation to reach 'complete' or 'error' status.
+ * Polls the store at 200ms intervals up to a maximum wait time.
+ * Returns the final status, or null if cancelled via AbortSignal.
+ */
+function waitForGenerationComplete(signal: { current: boolean }, maxWaitMs = 5000): Promise<GenerationStatus | null> {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const check = () => {
+      if (signal.current) { resolve(null); return; }
+      const status = useDesignerStore.getState().generation.status;
+      if (status === 'complete' || status === 'error' || status === 'idle') {
+        resolve(status);
+        return;
+      }
+      if (Date.now() - start > maxWaitMs) {
+        resolve(status); // Timed out — capture anyway with whatever is rendered
+        return;
+      }
+      setTimeout(check, 200);
+    };
+    check();
+  });
+}
 
 /**
  * Automatically saves designer parameters to IndexedDB after a short debounce when they change.
@@ -42,6 +67,7 @@ export function useAutoSave(): void {
   const isFirstRender = useRef(true);
   const lastSavedParams = useRef<BinParams | null>(null);
   const lastSavedConfig = useRef<ExportFileNameConfig | null>(null);
+  const lastDesignId = useRef<string | null>(null);
   // Abort token for the current pending save (new object per effect run)
   const abortTokenRef = useRef<{ current: boolean }>({ current: false });
 
@@ -54,8 +80,21 @@ export function useAutoSave(): void {
     ): Promise<void> => {
       setSaveStatus('saving');
 
-      // Capture thumbnail from the 3D preview (null if canvas not ready)
-      const thumbnail = captureThumbnail();
+      // Wait for mesh generation to finish before capturing thumbnail,
+      // otherwise we capture ghost wireframes or stale geometry
+      await waitForGenerationComplete(abortToken);
+      if (abortToken.current) return;
+
+      // Small delay for React Three Fiber to flush the final render
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      if (abortToken.current) return;
+
+      // Capture thumbnail from the standard isometric angle (null if canvas not ready)
+      const thumbnail = captureThumbnailAtPreset({
+        width: paramsToSave.width,
+        depth: paramsToSave.depth,
+        height: paramsToSave.height,
+      });
 
       const result = await updateDesignParams(designId, paramsToSave, thumbnail, configToSave);
       if (abortToken.current) return; // Superseded by newer save
@@ -86,6 +125,16 @@ export function useAutoSave(): void {
     // Skip first render (initial mount shouldn't trigger save)
     if (isFirstRender.current) {
       isFirstRender.current = false;
+      lastSavedParams.current = params;
+      lastSavedConfig.current = exportFileNameConfig;
+      lastDesignId.current = currentDesignId;
+      return;
+    }
+
+    // When switching designs (loadDesign), reset tracking refs without saving.
+    // The loaded design's params are already persisted in IndexedDB.
+    if (currentDesignId !== lastDesignId.current) {
+      lastDesignId.current = currentDesignId;
       lastSavedParams.current = params;
       lastSavedConfig.current = exportFileNameConfig;
       return;

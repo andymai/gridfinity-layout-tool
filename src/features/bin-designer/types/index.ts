@@ -239,7 +239,7 @@ export interface ExportFileNameConfig {
 // =============================================================================
 
 /** Current thumbnail version - increment when changing thumbnail size/quality/format */
-export const THUMBNAIL_VERSION = 4;
+export const THUMBNAIL_VERSION = 5;
 
 /** Saved design entry in IndexedDB */
 export interface SavedDesign {

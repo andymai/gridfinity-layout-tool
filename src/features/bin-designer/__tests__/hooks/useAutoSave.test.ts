@@ -9,7 +9,7 @@ import type { SavedDesign } from '../../types';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 vi.mock('../../utils/thumbnail', () => ({
-  captureThumbnail: () => null,
+  captureThumbnailAtPreset: () => null,
 }));
 
 describe('useAutoSave', () => {
@@ -17,12 +17,13 @@ describe('useAutoSave', () => {
     vi.useFakeTimers();
     vi.clearAllMocks();
 
-    // Reset store to clean state
+    // Reset store to clean state with generation complete (so thumbnail capture proceeds)
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
       currentDesignId: null,
       designName: 'Untitled Bin',
       saveStatus: 'idle',
+      generation: { status: 'complete', mesh: null, progress: 0, epoch: 0 },
     });
   });
 
@@ -48,7 +49,7 @@ describe('useAutoSave', () => {
     renderHook(() => useAutoSave());
 
     await act(async () => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(3000);
     });
 
     expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
@@ -63,12 +64,22 @@ describe('useAutoSave', () => {
     });
 
     await act(async () => {
-      vi.advanceTimersByTime(1100);
+      vi.advanceTimersByTime(2000);
     });
 
     expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
     expect(useDesignerStore.getState().saveStatus).toBe('idle');
   });
+
+  /** Advance timers through debounce + async generation wait + render delay */
+  async function advanceThroughSave() {
+    // 1. Trigger debounce timer (1000ms)
+    await act(async () => { vi.advanceTimersByTime(1100); });
+    // 2. Flush microtasks from waitForGenerationComplete + schedule 150ms render delay
+    await act(async () => { vi.advanceTimersByTime(200); });
+    // 3. Flush remaining microtasks
+    await act(async () => {});
+  }
 
   it('should update existing design when currentDesignId is set', async () => {
     mockUpdateDesignParams();
@@ -83,9 +94,7 @@ describe('useAutoSave', () => {
       useDesignerStore.getState().setParam('width', 4);
     });
 
-    await act(async () => {
-      vi.advanceTimersByTime(1100);
-    });
+    await advanceThroughSave();
 
     expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
       'existing-id',
@@ -119,9 +128,7 @@ describe('useAutoSave', () => {
       useDesignerStore.getState().setParam('width', 4);
     });
 
-    await act(async () => {
-      vi.advanceTimersByTime(1100);
-    });
+    await advanceThroughSave();
 
     // Only the last value should be saved
     expect(DesignerStorage.updateDesignParams).toHaveBeenCalledTimes(1);
@@ -145,9 +152,7 @@ describe('useAutoSave', () => {
       useDesignerStore.getState().setParam('width', 5);
     });
 
-    await act(async () => {
-      vi.advanceTimersByTime(1100);
-    });
+    await advanceThroughSave();
 
     expect(useDesignerStore.getState().saveStatus).toBe('error');
   });
@@ -167,9 +172,7 @@ describe('useAutoSave', () => {
       useDesignerStore.getState().setParam('width', 3);
     });
 
-    await act(async () => {
-      vi.advanceTimersByTime(1100);
-    });
+    await advanceThroughSave();
 
     expect(useDesignerStore.getState().saveStatus).toBe('saving');
 
@@ -200,7 +203,7 @@ describe('useAutoSave', () => {
       useDesignerStore.getState().setParam('width', 3);
     });
     await act(async () => {
-      vi.advanceTimersByTime(1100);
+      vi.advanceTimersByTime(2000);
     });
     expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
 
@@ -213,9 +216,8 @@ describe('useAutoSave', () => {
     act(() => {
       useDesignerStore.getState().setParam('width', 5);
     });
-    await act(async () => {
-      vi.advanceTimersByTime(1100);
-    });
+
+    await advanceThroughSave();
 
     expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
       'new-id',

@@ -10,7 +10,7 @@
 import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '../store';
-import { captureThumbnail } from '../utils/thumbnail';
+import { captureThumbnailAtPreset } from '../utils/thumbnail';
 import { updateDesignThumbnail } from '../storage/DesignerStorage';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
 import { isOk } from '@/core/result';
@@ -52,9 +52,13 @@ export function useThumbnailCapture(): void {
 
     prevStatusRef.current = generationStatus;
 
-    // Small delay to ensure Three.js has rendered the mesh
+    // Delay to ensure React Three Fiber has flushed the completed mesh render
     const timeoutId = setTimeout(() => {
-      const thumbnail = captureThumbnail();
+      const thumbnail = captureThumbnailAtPreset({
+        width: params.width,
+        depth: params.depth,
+        height: params.height,
+      });
       if (!thumbnail) return;
 
       // Update IndexedDB and registry
@@ -75,7 +79,7 @@ export function useThumbnailCapture(): void {
           setNeedsThumbnailUpdate(false);
         }
       });
-    }, 100);
+    }, 250);
 
     return () => clearTimeout(timeoutId);
   }, [
