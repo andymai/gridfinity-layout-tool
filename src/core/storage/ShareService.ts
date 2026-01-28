@@ -13,9 +13,16 @@ import { validateImport } from '@/shared/utils/validation';
 import { generateId, STAGING_ID } from '@/core/constants';
 import type { Layout } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
-import { ok, err, validationImportFailed } from '@/core/result';
+import { ok, err, validationImportFailed, isOk } from '@/core/result';
+import type { BinParams } from '@/features/bin-designer/types';
 
 // === JSON Import/Export ===
+
+interface LinkedDesignExport {
+  readonly id: string;
+  readonly name: string;
+  readonly params: BinParams;
+}
 
 /**
  * Export layout as JSON string.
@@ -24,6 +31,47 @@ import { ok, err, validationImportFailed } from '@/core/result';
 export function exportLayoutJSON(layout: Layout): string {
   const exportData = {
     ...layout,
+    _meta: {
+      exportedFrom: 'https://gridfinitylayouttool.com',
+      exportedAt: new Date().toISOString(),
+    },
+  };
+  return JSON.stringify(exportData, null, 2);
+}
+
+/**
+ * Export layout as JSON string with linked bin designs embedded.
+ * Async because it needs to look up designs from IndexedDB.
+ */
+export async function exportLayoutJSONWithDesigns(layout: Layout): Promise<string> {
+  // Collect unique linkedDesignIds from bins
+  const designIds = new Set<string>();
+  for (const bin of layout.bins) {
+    if (bin.linkedDesignId) {
+      designIds.add(bin.linkedDesignId);
+    }
+  }
+
+  // Look up each design from IndexedDB
+  const linkedDesigns: LinkedDesignExport[] = [];
+  if (designIds.size > 0) {
+    const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
+    for (const id of designIds) {
+      const result = await loadDesign(id);
+      if (isOk(result)) {
+        linkedDesigns.push({
+          id: result.value.id,
+          name: result.value.name,
+          params: result.value.params,
+        });
+      }
+      // If design not found (deleted), just omit it
+    }
+  }
+
+  const exportData = {
+    ...layout,
+    ...(linkedDesigns.length > 0 ? { linkedDesigns } : {}),
     _meta: {
       exportedFrom: 'https://gridfinitylayouttool.com',
       exportedAt: new Date().toISOString(),
@@ -104,6 +152,73 @@ export function importLayoutResult(json: string): Result<Layout, ValidationError
   }
 
   return ok(layout);
+}
+
+/**
+ * Restore embedded bin designs from layout JSON and update bin references.
+ * Call this after importLayoutJSON when you need design restoration.
+ *
+ * @param json - The raw JSON string containing linkedDesigns array
+ * @param layout - The layout with regenerated IDs from importLayoutJSON
+ * @returns Updated layout with new linkedDesignId references and count of imported designs
+ */
+export async function restoreEmbeddedDesigns(
+  json: string,
+  layout: Layout
+): Promise<{ layout: Layout; importedDesignCount: number }> {
+  // Parse the raw JSON again to get linkedDesigns
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(json);
+  } catch {
+    return { layout, importedDesignCount: 0 };
+  }
+
+  if (!Array.isArray(data.linkedDesigns) || data.linkedDesigns.length === 0) {
+    return { layout, importedDesignCount: 0 };
+  }
+
+  const { saveDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
+  const designIdMap = new Map<string, string>();
+  let importedDesignCount = 0;
+
+  for (const linkedDesign of data.linkedDesigns) {
+    if (
+      linkedDesign &&
+      typeof linkedDesign === 'object' &&
+      'id' in linkedDesign &&
+      'name' in linkedDesign &&
+      'params' in linkedDesign &&
+      typeof linkedDesign.id === 'string' &&
+      typeof linkedDesign.name === 'string'
+    ) {
+      const result = await saveDesign({
+        name: linkedDesign.name,
+        params: linkedDesign.params as BinParams,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      });
+      if (isOk(result)) {
+        designIdMap.set(linkedDesign.id, result.value.id);
+        importedDesignCount++;
+      }
+    }
+  }
+
+  // Update linkedDesignId references on bins
+  if (designIdMap.size > 0) {
+    layout = {
+      ...layout,
+      bins: layout.bins.map((bin) => ({
+        ...bin,
+        linkedDesignId: bin.linkedDesignId
+          ? designIdMap.get(bin.linkedDesignId) || bin.linkedDesignId
+          : bin.linkedDesignId,
+      })),
+    };
+  }
+
+  return { layout, importedDesignCount };
 }
 
 // === TSV Export ===

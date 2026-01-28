@@ -163,7 +163,7 @@ export function MobileLayoutsPanel() {
       // For active layout use current state; otherwise load from IndexedDB
       const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutAsync(layoutId);
       if (layout && entry) {
-        downloadLayoutAsFile(
+        await downloadLayoutAsFile(
           layout,
           `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`
         );

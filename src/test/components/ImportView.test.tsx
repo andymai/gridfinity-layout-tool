@@ -11,6 +11,7 @@ vi.mock('../../shared/utils/validation', () => ({
 
 vi.mock('../../core/storage', () => ({
   decodeLayoutFromURL: vi.fn(() => ({ layout: null, errors: [] })),
+  restoreEmbeddedDesigns: vi.fn((json, layout) => Promise.resolve({ layout, importedDesignCount: 0 })),
 }));
 
 describe('ImportView', () => {
@@ -337,7 +338,7 @@ describe('ImportView', () => {
   });
 
   describe('import action', () => {
-    it('calls onImport with valid layout when Import clicked', () => {
+    it('calls onImport with valid layout when Import clicked', async () => {
       vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
@@ -347,7 +348,9 @@ describe('ImportView', () => {
 
       fireEvent.click(screen.getByText('Import Layout'));
 
-      expect(mockOnImport).toHaveBeenCalledWith(validLayout);
+      await waitFor(() => {
+        expect(mockOnImport).toHaveBeenCalledWith(validLayout);
+      });
     });
 
     it('does not call onImport when no valid layout', () => {

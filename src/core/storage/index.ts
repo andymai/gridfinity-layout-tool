@@ -67,8 +67,10 @@ export {
 // === Import/Export ===
 export {
   exportLayoutJSON,
+  exportLayoutJSONWithDesigns,
   importLayoutJSON,
   importLayoutResult,
+  restoreEmbeddedDesigns,
   exportPrintListTSV,
   type PrintListTSVMeta,
 } from './ShareService';

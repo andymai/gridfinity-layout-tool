@@ -265,10 +265,10 @@ export default function App() {
 
   // Download layout command palette action
   useEffect(() => {
-    const handleDownloadLayout = () => {
+    const handleDownloadLayout = async () => {
       const layout = useLayoutStore.getState().layout;
       const filename = `${layout.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
-      downloadLayoutAsFile(layout, filename);
+      await downloadLayoutAsFile(layout, filename);
     };
     window.addEventListener('download-layout', handleDownloadLayout);
     return () => window.removeEventListener('download-layout', handleDownloadLayout);

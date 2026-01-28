@@ -24,10 +24,12 @@ import { useResponsive } from '@/shared/hooks';
 import { ItemListShell } from '@/shared/components';
 import { DesignGridItem } from './DesignGridItem';
 import { DesignListItem } from './DesignListItem';
-import type { SavedDesign } from '../types';
+import { DesignImportView } from './DesignImportView';
+import type { SavedDesign, BinParams } from '../types';
 import { useThumbnailRegeneration } from '../hooks/useThumbnailRegeneration';
 import { useTranslation } from '@/i18n';
 import type { ViewMode } from '@/shared/components/ViewModeToggle';
+import { downloadDesignAsFile } from '@/features/bin-designer/utils/designJson';
 
 interface DesignListDialogProps {
   open: boolean;
@@ -57,6 +59,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const [showImport, setShowImport] = useState(false);
   const itemRefs = useRef<Map<string, HTMLDivElement | HTMLLIElement>>(new Map());
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +85,14 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const { navigateToDesign, syncUrlToDesign } = useDesignerRouting();
   const addToast = useToastStore((s) => s.addToast);
 
+  const handleDownloadJSON = useCallback(
+    (design: SavedDesign) => {
+      downloadDesignAsFile(design.name, design.params);
+      addToast({ message: t('binDesigner.downloadDesignJson'), type: 'success', duration: 2000 });
+    },
+    [addToast, t]
+  );
+
   // Reset state when dialog opens (React render-time state adjustment)
   const [prevOpen, setPrevOpen] = useState(false);
   if (open && !prevOpen) {
@@ -89,6 +100,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     setSearchQuery('');
     setFocusedIndex(0);
     setLoading(true);
+    setShowImport(false);
   } else if (!open && prevOpen) {
     setPrevOpen(false);
   }
@@ -292,6 +304,35 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     setFocusedIndex(0);
   }, []);
 
+  const handleImportDesign = useCallback(
+    async (design: { name: string; params: BinParams }) => {
+      const result = await saveDesign({
+        name: design.name,
+        params: design.params,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      });
+      if (isOk(result)) {
+        loadDesign(result.value);
+        navigateToDesign(result.value.id);
+        addToast({
+          message: t('binDesigner.importDesignSuccess', { name: design.name }),
+          type: 'success',
+          duration: 3000,
+        });
+        onClose();
+      } else {
+        addToast({
+          message: t('binDesigner.invalidDesignFile'),
+          type: 'error',
+          duration: 4000,
+        });
+      }
+      setShowImport(false);
+    },
+    [loadDesign, navigateToDesign, addToast, onClose, t]
+  );
+
   if (!open) return null;
 
   return (
@@ -311,6 +352,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
           <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
+            >
+              {t('binDesigner.importDesign')}
+            </button>
             <button
               onClick={handleNewDesign}
               className="rounded-md bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600"
@@ -340,9 +387,14 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
           </div>
         </div>
 
-        {/* Design list */}
+        {/* Design list or import view */}
         <div className="flex-1 min-h-0 overflow-hidden px-5 py-3" aria-busy={loading}>
-          {loading ? (
+          {showImport ? (
+            <DesignImportView
+              onImport={handleImportDesign}
+              onCancel={() => setShowImport(false)}
+            />
+          ) : loading ? (
             <div className="space-y-2 py-2">
               {[1, 2, 3].map((i) => (
                 <div
@@ -439,6 +491,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                       isActive={design.id === currentDesignId}
                       isFocused={index === focusedIndex}
                       onSelect={() => handleLoad(design)}
+                      onDownloadJSON={() => handleDownloadJSON(design)}
                       onRename={(newName) => void handleRename(design, newName)}
                       onDuplicate={() => void handleDuplicate(design)}
                       onDelete={() => void handleDelete(design)}
@@ -460,6 +513,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                       isActive={design.id === currentDesignId}
                       isFocused={index === focusedIndex}
                       onSelect={() => handleLoad(design)}
+                      onDownloadJSON={() => handleDownloadJSON(design)}
                       onRename={(newName) => void handleRename(design, newName)}
                       onDuplicate={() => void handleDuplicate(design)}
                       onDelete={() => void handleDelete(design)}

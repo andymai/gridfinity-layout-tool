@@ -177,7 +177,7 @@ export function LayoutList({
     async (entry: LayoutEntry) => {
       const layout = await getLayoutData(entry.id);
       if (layout) {
-        downloadLayoutAsFile(
+        await downloadLayoutAsFile(
           layout,
           `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`
         );

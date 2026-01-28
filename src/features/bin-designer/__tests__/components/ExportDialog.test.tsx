@@ -206,4 +206,51 @@ describe('ExportDialog', () => {
     expect(screen.getByText('Compact')).toBeInTheDocument();
     expect(screen.getByText('Custom')).toBeInTheDocument();
   });
+
+  describe('JSON export section', () => {
+    it('shows Design File section with Download JSON button', () => {
+      render(<ExportDialog />);
+
+      // Check for section heading
+      expect(screen.getByText(/Design File.*\.json/i)).toBeInTheDocument();
+
+      // Check for description
+      expect(
+        screen.getByText(/Save your bin configuration for editing later or sharing with others/i)
+      ).toBeInTheDocument();
+
+      // Check for Download JSON button
+      const jsonButton = screen.getByRole('button', { name: /download json/i });
+      expect(jsonButton).toBeInTheDocument();
+    });
+
+    it('JSON download button is always enabled (no mesh required)', () => {
+      setupStore({
+        generation: {
+          status: 'idle',
+          mesh: null, // No mesh generated
+          progress: 0,
+          epoch: 0,
+        },
+      });
+      render(<ExportDialog />);
+
+      const jsonButton = screen.getByRole('button', { name: /download json/i });
+      expect(jsonButton).not.toBeDisabled();
+    });
+
+    it('shows 3D Model section with STL export', () => {
+      render(<ExportDialog />);
+
+      // Check for section heading
+      expect(screen.getByText(/3D Model.*\.stl/i)).toBeInTheDocument();
+
+      // Check for description
+      expect(screen.getByText(/Export a printable 3D model file/i)).toBeInTheDocument();
+
+      // Check for Download STL button
+      const stlButton = screen.getByRole('button', { name: /download stl/i });
+      expect(stlButton).toBeInTheDocument();
+    });
+  });
 });

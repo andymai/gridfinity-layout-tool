@@ -18,6 +18,7 @@ describe('DesignActions', () => {
     design: mockDesign,
     isActive: false,
     onLoad: vi.fn(),
+    onDownloadJSON: vi.fn(),
     onRename: vi.fn(),
     onDuplicate: vi.fn(),
     onDelete: vi.fn(),
@@ -49,7 +50,7 @@ describe('DesignActions', () => {
     fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('menuitem', { name: /load/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /^load$/i })).toBeInTheDocument();
     });
   });
 
@@ -59,7 +60,7 @@ describe('DesignActions', () => {
     fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
 
     await waitFor(() => {
-      expect(screen.queryByRole('menuitem', { name: /load/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('menuitem', { name: /^load$/i })).not.toBeInTheDocument();
     });
   });
 
@@ -70,10 +71,10 @@ describe('DesignActions', () => {
     fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('menuitem', { name: /load/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /^load$/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('menuitem', { name: /load/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^load$/i }));
     expect(onLoad).toHaveBeenCalled();
   });
 

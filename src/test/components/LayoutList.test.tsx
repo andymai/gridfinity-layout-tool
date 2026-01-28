@@ -20,7 +20,7 @@ vi.mock('../../core/storage', () => ({
       heightUnitMm: 7,
     })
   ),
-  downloadLayoutAsFile: vi.fn(),
+  downloadLayoutAsFile: vi.fn(() => Promise.resolve()),
 }));
 
 // Mock LayoutThumbnail

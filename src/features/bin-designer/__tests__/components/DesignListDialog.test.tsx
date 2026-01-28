@@ -152,9 +152,10 @@ describe('DesignListDialog', () => {
     // Click the menu button for the second design (Screw Bin)
     fireEvent.click(moreButtons[1]); // Second design's menu
 
-    // The menu should show Load, Rename, Duplicate, Delete options
+    // The menu should show Load, Download JSON, Rename, Duplicate, Delete options
     await waitFor(() => {
-      expect(screen.getByRole('menuitem', { name: /load/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /^load$/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /download json/i })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: /rename/i })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: /duplicate/i })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();

@@ -11,9 +11,12 @@ import {
   downloadLayoutAsFile,
   importLayoutResult,
   exportLayoutJSON,
+  exportLayoutJSONWithDesigns,
+  restoreEmbeddedDesigns,
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
-import { isOk, isErr, getUserMessage } from '@/core/result';
+import { isOk, isErr, getUserMessage, ok, err, storageNotFound } from '@/core/result';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 
 // Mock clipboard API
 const mockClipboard = {
@@ -24,6 +27,14 @@ const mockClipboard = {
 const originalWindow = global.window;
 const originalNavigator = global.navigator;
 const originalDocument = global.document;
+
+// Mock DesignerStorage
+const mockLoadDesign = vi.fn();
+const mockSaveDesign = vi.fn();
+vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
+  loadDesign: (...args: unknown[]) => mockLoadDesign(...args),
+  saveDesign: (...args: unknown[]) => mockSaveDesign(...args),
+}));
 
 describe('storage-share', () => {
   // Create a test layout
@@ -350,9 +361,9 @@ describe('storage-share', () => {
       });
     });
 
-    it('creates and triggers download link', () => {
+    it('creates and triggers download link', async () => {
       const layout = createTestLayout();
-      downloadLayoutAsFile(layout);
+      await downloadLayoutAsFile(layout);
 
       expect(mockAnchor.download).toBe('test-layout.json');
       expect(mockAnchor.click).toHaveBeenCalled();
@@ -360,17 +371,17 @@ describe('storage-share', () => {
       expect(mockURL.revokeObjectURL).toHaveBeenCalledWith('blob:test');
     });
 
-    it('uses custom filename if provided', () => {
+    it('uses custom filename if provided', async () => {
       const layout = createTestLayout();
-      downloadLayoutAsFile(layout, 'custom-name.json');
+      await downloadLayoutAsFile(layout, 'custom-name.json');
 
       expect(mockAnchor.download).toBe('custom-name.json');
     });
 
-    it('sanitizes layout name for filename', () => {
+    it('sanitizes layout name for filename', async () => {
       const layout = createTestLayout();
       layout.name = 'Test Layout with Special!@#$%^&*() Chars';
-      downloadLayoutAsFile(layout);
+      await downloadLayoutAsFile(layout);
 
       expect(mockAnchor.download).toBe('test-layout-with-special-chars.json');
     });
@@ -613,6 +624,305 @@ describe('storage-share', () => {
         expect(result!.error.code).toBe('VALIDATION_IMPORT_FAILED');
         expect(result!.error.errors.length).toBeGreaterThan(0);
       }
+    });
+  });
+
+  // === Linked Design Export/Import ===
+
+  describe('exportLayoutJSONWithDesigns', () => {
+    const createLayoutWithLinkedDesigns = (): Layout => {
+      const layout = createTestLayout();
+      layout.bins = layout.bins.map((bin, i) => ({
+        ...bin,
+        linkedDesignId: i === 0 ? 'design-1' : undefined,
+      }));
+      return layout;
+    };
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('exports layout without linked designs (no linkedDesigns key in output)', async () => {
+      const layout = createTestLayout();
+      const json = await exportLayoutJSONWithDesigns(layout);
+
+      const parsed = JSON.parse(json);
+      expect(parsed.linkedDesigns).toBeUndefined();
+      expect(parsed._meta).toBeDefined();
+      expect(parsed._meta.exportedFrom).toBe('https://gridfinitylayouttool.com');
+    });
+
+    it('exports layout with linked designs (embeds linkedDesigns array)', async () => {
+      const layout = createLayoutWithLinkedDesigns();
+
+      // Mock loadDesign to return a valid design
+      mockLoadDesign.mockResolvedValue(
+        ok({
+          id: 'design-1',
+          name: 'Test Bin',
+          params: { ...DEFAULT_BIN_PARAMS },
+          thumbnail: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+          exportFileNameConfig: null,
+        })
+      );
+
+      const json = await exportLayoutJSONWithDesigns(layout);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.linkedDesigns).toBeDefined();
+      expect(Array.isArray(parsed.linkedDesigns)).toBe(true);
+      expect(parsed.linkedDesigns).toHaveLength(1);
+      expect(parsed.linkedDesigns[0]).toEqual({
+        id: 'design-1',
+        name: 'Test Bin',
+        params: DEFAULT_BIN_PARAMS,
+      });
+      expect(mockLoadDesign).toHaveBeenCalledWith('design-1');
+    });
+
+    it('omits designs that cannot be found in IndexedDB (deleted designs)', async () => {
+      const layout = createLayoutWithLinkedDesigns();
+
+      // Mock loadDesign to return not found error
+      mockLoadDesign.mockResolvedValue(err(storageNotFound('design-1')));
+
+      const json = await exportLayoutJSONWithDesigns(layout);
+      const parsed = JSON.parse(json);
+
+      // Should not include linkedDesigns key when no designs were found
+      expect(parsed.linkedDesigns).toBeUndefined();
+      expect(mockLoadDesign).toHaveBeenCalledWith('design-1');
+    });
+
+    it('includes only found designs when some are missing', async () => {
+      const layout = createTestLayout();
+      layout.bins = [
+        { ...layout.bins[0], linkedDesignId: 'design-1' },
+        { ...layout.bins[0], id: 'bin-2', x: 2, linkedDesignId: 'design-2' },
+      ];
+
+      // Mock loadDesign: design-1 found, design-2 not found
+      mockLoadDesign
+        .mockResolvedValueOnce(
+          ok({
+            id: 'design-1',
+            name: 'Found Design',
+            params: { ...DEFAULT_BIN_PARAMS },
+            thumbnail: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+            updatedAt: '2024-01-01T00:00:00.000Z',
+            exportFileNameConfig: null,
+          })
+        )
+        .mockResolvedValueOnce(err(storageNotFound('design-2')));
+
+      const json = await exportLayoutJSONWithDesigns(layout);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.linkedDesigns).toBeDefined();
+      expect(parsed.linkedDesigns).toHaveLength(1);
+      expect(parsed.linkedDesigns[0].id).toBe('design-1');
+    });
+  });
+
+  describe('restoreEmbeddedDesigns', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('returns unchanged layout when no linkedDesigns in JSON', async () => {
+      const layout = createTestLayout();
+      const json = JSON.stringify(layout);
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.layout).toEqual(layout);
+      expect(result.importedDesignCount).toBe(0);
+      expect(mockSaveDesign).not.toHaveBeenCalled();
+    });
+
+    it('returns unchanged layout for invalid JSON', async () => {
+      const layout = createTestLayout();
+      const json = 'invalid json {{{';
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.layout).toEqual(layout);
+      expect(result.importedDesignCount).toBe(0);
+      expect(mockSaveDesign).not.toHaveBeenCalled();
+    });
+
+    it('saves each embedded design to IndexedDB with fresh IDs', async () => {
+      const layout = createTestLayout();
+      layout.bins[0].linkedDesignId = 'old-design-id';
+
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          {
+            id: 'old-design-id',
+            name: 'Test Design',
+            params: { ...DEFAULT_BIN_PARAMS },
+          },
+        ],
+      });
+
+      // Mock saveDesign to return a new ID
+      mockSaveDesign.mockResolvedValue(
+        ok({
+          id: 'new-design-id',
+          name: 'Test Design',
+          params: { ...DEFAULT_BIN_PARAMS },
+          thumbnail: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+          exportFileNameConfig: null,
+        })
+      );
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.importedDesignCount).toBe(1);
+      expect(mockSaveDesign).toHaveBeenCalledWith({
+        name: 'Test Design',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      });
+    });
+
+    it('updates linkedDesignId references on bins', async () => {
+      const layout = createTestLayout();
+      layout.bins[0].linkedDesignId = 'old-design-id';
+
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          {
+            id: 'old-design-id',
+            name: 'Test Design',
+            params: { ...DEFAULT_BIN_PARAMS },
+          },
+        ],
+      });
+
+      mockSaveDesign.mockResolvedValue(
+        ok({
+          id: 'new-design-id',
+          name: 'Test Design',
+          params: { ...DEFAULT_BIN_PARAMS },
+          thumbnail: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+          exportFileNameConfig: null,
+        })
+      );
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.layout.bins[0].linkedDesignId).toBe('new-design-id');
+    });
+
+    it('handles invalid/malformed design entries gracefully', async () => {
+      const layout = createTestLayout();
+
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          { id: 'valid-id', name: 'Valid Design', params: { ...DEFAULT_BIN_PARAMS } },
+          { id: 'missing-name' }, // Missing name and params
+          null, // Null entry
+          'not an object', // Invalid type
+          { name: 'No ID', params: {} }, // Missing id
+        ],
+      });
+
+      mockSaveDesign.mockResolvedValue(
+        ok({
+          id: 'new-design-id',
+          name: 'Valid Design',
+          params: { ...DEFAULT_BIN_PARAMS },
+          thumbnail: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+          exportFileNameConfig: null,
+        })
+      );
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      // Only valid design should be saved
+      expect(result.importedDesignCount).toBe(1);
+      expect(mockSaveDesign).toHaveBeenCalledTimes(1);
+    });
+
+    it('handles saveDesign failures gracefully', async () => {
+      const layout = createTestLayout();
+      layout.bins[0].linkedDesignId = 'design-1';
+
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          { id: 'design-1', name: 'Test', params: { ...DEFAULT_BIN_PARAMS } },
+        ],
+      });
+
+      // Mock saveDesign to fail
+      mockSaveDesign.mockResolvedValue(err(storageNotFound('storage unavailable')));
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.importedDesignCount).toBe(0);
+      expect(result.layout.bins[0].linkedDesignId).toBe('design-1'); // Unchanged
+    });
+
+    it('processes multiple designs correctly', async () => {
+      const layout = createTestLayout();
+      layout.bins = [
+        { ...layout.bins[0], linkedDesignId: 'design-1' },
+        { ...layout.bins[0], id: 'bin-2', x: 2, linkedDesignId: 'design-2' },
+      ];
+
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          { id: 'design-1', name: 'Design 1', params: { ...DEFAULT_BIN_PARAMS, width: 2 } },
+          { id: 'design-2', name: 'Design 2', params: { ...DEFAULT_BIN_PARAMS, width: 3 } },
+        ],
+      });
+
+      mockSaveDesign
+        .mockResolvedValueOnce(
+          ok({
+            id: 'new-id-1',
+            name: 'Design 1',
+            params: { ...DEFAULT_BIN_PARAMS, width: 2 },
+            thumbnail: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+            updatedAt: '2024-01-01T00:00:00.000Z',
+            exportFileNameConfig: null,
+          })
+        )
+        .mockResolvedValueOnce(
+          ok({
+            id: 'new-id-2',
+            name: 'Design 2',
+            params: { ...DEFAULT_BIN_PARAMS, width: 3 },
+            thumbnail: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+            updatedAt: '2024-01-01T00:00:00.000Z',
+            exportFileNameConfig: null,
+          })
+        );
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.importedDesignCount).toBe(2);
+      expect(result.layout.bins[0].linkedDesignId).toBe('new-id-1');
+      expect(result.layout.bins[1].linkedDesignId).toBe('new-id-2');
     });
   });
 });
