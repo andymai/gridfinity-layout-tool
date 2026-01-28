@@ -38,7 +38,13 @@ import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
 import { CommandPalette, useCommandPalette } from '@/features/command-palette';
-import { DesignLinkingDialogs } from '@/features/design-linking';
+
+// Lazy load design-linking dialogs - only needed when bin_designer feature is enabled
+const DesignLinkingDialogs = lazyWithRetry(() =>
+  import('./features/design-linking/components/DesignLinkingDialogs').then(
+    namedExport('DesignLinkingDialogs')
+  )
+);
 
 // Lazy load cloud-share components - only needed when viewing/sharing layouts
 const SharedLayoutImporter = lazyWithRetry(() =>
@@ -273,7 +279,11 @@ export default function App() {
   // - Local mode: LocalMutationsProvider
   // Also renders DesignLinkingDialogs once (uses portal, so placement doesn't matter)
   const wrapWithMutations = (content: React.ReactNode) => {
-    const dialogs = isDesignerEnabled ? <DesignLinkingDialogs /> : null;
+    const dialogs = isDesignerEnabled ? (
+      <Suspense fallback={null}>
+        <DesignLinkingDialogs />
+      </Suspense>
+    ) : null;
     if (isCollaborative && shareId) {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.collaboration')} />}>

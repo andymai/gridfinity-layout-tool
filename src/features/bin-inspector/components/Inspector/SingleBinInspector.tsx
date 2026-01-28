@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
 import { useUIStore } from '@/core/store';
 import { getBinLocationContext } from '@/utils/binLocation';
@@ -7,9 +8,15 @@ import { StepperControl } from '@/shared/components/StepperControl';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
-import { LinkedDesignSection } from '@/features/design-linking';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
+
+// Lazy load LinkedDesignSection - only needed when bin_designer feature is enabled
+const LinkedDesignSection = lazy(() =>
+  import('@/features/design-linking/components/LinkedDesignSection').then((m) => ({
+    default: m.LinkedDesignSection,
+  }))
+);
 
 interface SingleBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -302,7 +309,11 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         />
 
         {/* Linked Design - requires Bin Designer feature flag */}
-        {isDesignerEnabled && <LinkedDesignSection bin={bin} variant={variant} />}
+        {isDesignerEnabled && (
+          <Suspense fallback={null}>
+            <LinkedDesignSection bin={bin} variant={variant} />
+          </Suspense>
+        )}
 
         {/* Notes */}
         <div>

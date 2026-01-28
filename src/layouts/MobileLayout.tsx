@@ -9,7 +9,6 @@ import { DragPreview } from '@/components/DragPreview';
 import { ToastContainer } from '@/shared/components/Toast';
 import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
 import { SharedLayoutImporter, SharedLayoutBanner } from '@/features/cloud-share/components';
-import { DesignLinkingDialogs } from '@/features/design-linking';
 import {
   MobileHeader,
   BottomNavBar,
@@ -28,6 +27,13 @@ import { PresenceAvatarList } from '@/components/Collab';
 // Lazy load LabsDrawer - experimental feature most users won't use
 const LabsDrawer = lazyWithRetry(() =>
   import('@/features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
+);
+
+// Lazy load design-linking dialogs - only needed when bin_designer feature is enabled
+const DesignLinkingDialogs = lazyWithRetry(() =>
+  import('@/features/design-linking/components/DesignLinkingDialogs').then(
+    namedExport('DesignLinkingDialogs')
+  )
 );
 import { usePresence } from '@/hooks/usePresence';
 import { useCollabMode } from '@/hooks/useCollabMode';
@@ -125,7 +131,11 @@ export function MobileLayout({
       <ToastContainer />
 
       {/* Design linking dialogs - requires Bin Designer feature flag */}
-      {isDesignerEnabled && <DesignLinkingDialogs />}
+      {isDesignerEnabled && (
+        <Suspense fallback={null}>
+          <DesignLinkingDialogs />
+        </Suspense>
+      )}
 
       {/* Mobile help modal (touch gestures guide) */}
       {isMobileHelpOpen && (
@@ -158,7 +168,9 @@ function ParticipantsPanel() {
   // but guard just in case
   if (!isCollaborative) {
     return (
-      <div className="px-4 py-8 text-center text-content-secondary text-sm">{t('layout.collaborativeEditingIsNotActive')}</div>
+      <div className="px-4 py-8 text-center text-content-secondary text-sm">
+        {t('layout.collaborativeEditingIsNotActive')}
+      </div>
     );
   }
 
