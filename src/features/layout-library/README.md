@@ -11,6 +11,13 @@ graph TB
     ULR[useLayoutRouting] -->|URL /l/id| SAL[switchActiveLayout]
 ```
 
+## Key Files
+
+- `components/LayoutManagerModal/index.tsx` — main library modal
+- `components/LayoutManagerModal/LayoutList.tsx` — layout grid/list view
+- `components/LayoutManagerModal/ImportView.tsx` — JSON import UI
+- `hooks/useLayoutRouting.ts` — URL-based layout switching (`/l/id`)
+
 ## Storage Keys
 
 - **Library index**: `gridfinity-library-v1` (localStorage)

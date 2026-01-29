@@ -10,11 +10,17 @@ graph TB
     SI -->|edits| UA[useUndoableAction] --> LAY
 ```
 
+## Key Files
+
+- `components/Inspector/SingleBinInspector.tsx` — single bin edit panel
+- `components/Inspector/MultiBinInspector.tsx` — multi-select summary
+- `hooks/useBinInspector.ts` — selection resolution and bin data
+
 ## Constraints
 
 | Field        | Limit                                   |
 | ------------ | --------------------------------------- |
-| Label        | 64 chars                                |
+| Label        | 24 chars                                |
 | Notes        | 256 chars                               |
 | Custom props | 50 max, key: 32 chars, value: 256 chars |
 

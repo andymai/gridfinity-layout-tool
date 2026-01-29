@@ -22,12 +22,21 @@ graph TB
     SLI -->|/l/shareId| GET
 ```
 
+## Key Files
+
+- `components/ShareModal.tsx` — main share dialog
+- `components/CloudShareTab.tsx` — cloud sharing controls
+- `components/SharedLayoutImporter.tsx` — import from `/l/shareId` URL
+- `hooks/useCloudShare.ts` — share CRUD operations
+- `hooks/useOwnedShareSync.ts` — auto-sync owned shares
+- `utils/cloudShare.ts` — API client utilities
+
 ## Permission Model
 
-| Permission | Access                                    |
-| ---------- | ----------------------------------------- |
-| `view`     | Read-only, anyone with link               |
-| `edit`     | Collaborative editing (requires Labs flag)|
+| Permission | Access                                     |
+| ---------- | ------------------------------------------ |
+| `view`     | Read-only, anyone with link                |
+| `edit`     | Collaborative editing (requires Labs flag) |
 
 Delete token: random secret, hashed server-side, required for mutations.
 
@@ -42,4 +51,4 @@ Delete token: random secret, hashed server-side, required for mutations.
 
 - Size: 500KB max
 - Bins: 2500 max
-- Rate: 10 shares/hr, 100 reads/hr
+- Rate: 100/min (create, update, view, delete)

@@ -10,6 +10,13 @@ graph TB
     LB -->|InspirationLayout → Layout| LAY[(layout store)]
 ```
 
+## Key Files
+
+- `components/InspirationGallery.tsx` — gallery modal UI
+- `components/LayoutCard.tsx` — layout preview card
+- `data/themes/*.ts` — preset layout definitions per theme
+- `utils/layoutBuilder.ts` — converts InspirationLayout to Layout
+
 ## Themes
 
 `workshop` | `office` | `kitchen` | `hobby` | `personal`
@@ -22,7 +29,7 @@ interface InspirationLayout {
   name: string;
   theme: Theme;
   drawer: { width; depth; height };
-  bins: InspirationBin[];  // Simplified: no layerId
+  bins: InspirationBin[]; // Simplified: no layerId
 }
 ```
 

@@ -15,6 +15,10 @@ graph TB
     ST -->|drag| SDM[stagingDrag mode] --> MFS[moveBinFromStaging] --> LAY
 ```
 
+## Key Files
+
+- `components/Staging.tsx` — staging area UI with drag-out support
+
 ## Key Concept
 
 Bins with `layerId === '__staging__'` are stored here, not on any layer.
