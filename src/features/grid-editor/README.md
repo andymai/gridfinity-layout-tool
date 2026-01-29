@@ -18,6 +18,17 @@ graph TB
     UI --> LAY[(layout)] & SEL[(selection)] & INT[(interaction)]
 ```
 
+## Key Files
+
+- `components/Grid/GridCanvas.tsx` — main CSS Grid canvas
+- `components/Grid/Bin.tsx` — individual bin rendering
+- `components/Grid/IsometricPreview.tsx` — 3D preview panel
+- `components/Grid/GridToolbar.tsx` — editor toolbar
+- `hooks/useInteraction.ts` — draw/drag/resize/paint mode handler
+- `hooks/useGridZoom.ts` — zoom and pan controls
+- `hooks/useGridResize.ts` — drawer resize handles
+- `utils/fractionalPixels.ts` — half-bin pixel snapping
+
 ## Coordinate System (CRITICAL)
 
 ```
@@ -28,13 +39,13 @@ layers[0] is BOTTOM layer (UI displays reversed via getDisplayLayers())
 
 ## Interaction Modes
 
-| Mode          | Trigger          | Purpose                    |
-| ------------- | ---------------- | -------------------------- |
-| `draw`        | Drag empty space | Create bin                 |
-| `drag`        | Drag bin(s)      | Move selected (RAF)        |
-| `resize`      | Drag handle      | Resize bin (RAF)           |
-| `paint`       | Paint mode + drag| Fill area with uniform bins|
-| `stagingDrag` | Drag from stash  | Place from staging         |
+| Mode          | Trigger           | Purpose                     |
+| ------------- | ----------------- | --------------------------- |
+| `draw`        | Drag empty space  | Create bin                  |
+| `drag`        | Drag bin(s)       | Move selected (RAF)         |
+| `resize`      | Drag handle       | Resize bin (RAF)            |
+| `paint`       | Paint mode + drag | Fill area with uniform bins |
+| `stagingDrag` | Drag from stash   | Place from staging          |
 
 ## Validation (`canPlaceBin`)
 

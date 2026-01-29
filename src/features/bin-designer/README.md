@@ -24,6 +24,17 @@ graph TB
     PC --> UG
 ```
 
+## Key Files
+
+- `components/DesignerPage.tsx` — main UI entry point
+- `components/ParameterPanel.tsx` — parameter editing sidebar
+- `components/PreviewCanvas.tsx` — 3D preview with Three.js
+- `store/designer.ts` — design state and parameter mutations
+- `store/cart.ts` — batch export cart
+- `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
+- `hooks/useGeneration.ts` — triggers geometry regeneration via bridge
+- `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs
+
 ## Critical Concepts
 
 - **Epoch pattern**: `store.setParam()` increments epoch → triggers regeneration
@@ -36,7 +47,7 @@ graph TB
 2. **Min compartment size is 5mm** - smaller cells skip wall generation
 3. **Auto-save only for saved designs** - "Untitled" bins don't persist
 4. **Half-cells get no magnet holes** - only full 1×1 unit cells
-5. **Solid style ignores wallThickness** - hardcoded to 1.6mm
+5. **Solid style skips shell** - `keepFull` bypasses `.shell()`, so wallThickness is irrelevant
 
 ## Integration
 

@@ -9,6 +9,10 @@ graph TB
     DC[deleteCategory] -->|reassign bins| LAY
 ```
 
+## Key Files
+
+- `components/CategoriesPanel.tsx` — category CRUD UI
+
 ## Constraints
 
 - **Min 1 category** - can't delete the last one

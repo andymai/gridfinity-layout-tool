@@ -11,6 +11,14 @@ graph TB
     SET[(settings)] --> SPL & PE
 ```
 
+## Key Files
+
+- `components/PrintModal.tsx` — main print list dialog
+- `hooks/usePrintList.ts` — aggregates bins into print rows
+- `utils/split.ts` — recursive bin splitting for print bed
+- `utils/printEstimates.ts` — filament/time/cost calculations
+- `utils/printListOperations.ts` — sort and group operations
+
 ## Split Algorithm
 
 ```
@@ -22,12 +30,12 @@ splitBinSize(w, d, maxUnits):
 
 ## Print Estimates
 
-| Metric       | Formula                              |
-| ------------ | ------------------------------------ |
-| Filament (g) | shell volume × 1.24 g/cm³ + base     |
-| Time (min)   | proportional to filament weight      |
-| Cost         | filament × $/gram setting            |
-| Spool %      | total / spool size                   |
+| Metric       | Formula                          |
+| ------------ | -------------------------------- |
+| Filament (g) | shell volume × 1.24 g/cm³ + base |
+| Time (min)   | proportional to filament weight  |
+| Cost         | filament × $/gram setting        |
+| Spool %      | total / spool size               |
 
 ## Settings Dependencies
 

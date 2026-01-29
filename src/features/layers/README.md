@@ -11,6 +11,12 @@ graph TB
     DL -->|bins to staging| LAY
 ```
 
+## Key Files
+
+- `components/LayerPanel.tsx` — layer list with add/delete/reorder
+- `components/ActiveLayerPanel.tsx` — active layer indicator
+- `utils/layerAutoExpansion.ts` — auto-expand layer height for tall bins
+
 ## Z-Axis Model (CRITICAL)
 
 ```

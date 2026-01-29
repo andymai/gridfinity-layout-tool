@@ -11,6 +11,14 @@ graph TB
     SP -->|accept| LIB[(library store)]
 ```
 
+## Key Files
+
+- `components/SuggestionPopover.tsx` — suggestion dropdown UI
+- `components/NameFieldHighlight.tsx` — pulsing highlight wrapper
+- `hooks/useNameSuggestions.ts` — suggestion generation logic
+- `hooks/useSuggestionTrigger.ts` — auto-trigger conditions
+- `utils/generateSuggestions.ts` — name generation from bin data
+
 ## Trigger Conditions
 
 - 5+ bins have labels

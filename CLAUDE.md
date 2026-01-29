@@ -85,7 +85,7 @@ Import from `@/core/storage` (public facade).
 | Layers            | 1-10         |
 | Categories        | 1-20         |
 | Layouts           | 100 max      |
-| Undo states       | 50           |
+| Undo states       | 100          |
 | Grid unit         | 42mm         |
 | Height unit       | 7mm          |
 | Print bed default | 256mm        |
@@ -103,12 +103,12 @@ Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`.
 
 ## API (`api/`)
 
-| Endpoint            | Purpose                    |
-| ------------------- | -------------------------- |
-| `share.ts`          | POST: Create share         |
-| `share/[id].ts`     | GET/PUT/DELETE share       |
-| `lib/rateLimit.ts`  | 10 shares/hr, 100 reads/hr |
-| `lib/validation.ts` | 500KB max, 2500 bins max   |
+| Endpoint            | Purpose                        |
+| ------------------- | ------------------------------ |
+| `share.ts`          | POST: Create share             |
+| `share/[id].ts`     | GET/PUT/DELETE share           |
+| `lib/rateLimit.ts`  | 100/min (CRUD), 10/hr (report) |
+| `lib/validation.ts` | 500KB max, 2500 bins max       |
 
 ## Testing
 

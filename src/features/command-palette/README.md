@@ -11,6 +11,13 @@ graph TB
     RS -->|recent first| CP
 ```
 
+## Key Files
+
+- `commands.ts` — command definitions and actions
+- `components/CommandPalette.tsx` — search UI and command list
+- `hooks/useCommandPalette.ts` — search, execute, and recent tracking
+- `store/recentStore.ts` — recently used commands (localStorage)
+
 ## Categories
 
 `navigation` | `edit` | `layers` | `view` | `preview` | `bins` | `tools` | `export`

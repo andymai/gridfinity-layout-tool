@@ -14,10 +14,19 @@ graph TB
         RB --> WASM[Replicad WASM]
     end
     subgraph Export
-        MD[MeshData] --> STL & TMF[3MF]
+        MD[MeshData] --> STL
     end
     RB -->|tessellate| MD -->|transfer| GB
 ```
+
+## Key Files
+
+- `bridge/GenerationBridge.ts` — main thread API, manages worker lifecycle
+- `bridge/adaptiveDebounce.ts` — dynamic debounce based on generation speed
+- `worker/generation.worker.ts` — Web Worker entry point
+- `worker/generators/replicadBin.ts` — Replicad geometry pipeline
+- `export/stlExporter.ts` — STL file export
+- `export/threemfExporter.ts` — 3MF file export
 
 ## Pipeline Stages
 
