@@ -21,6 +21,7 @@ import { useLabsStore } from '@/core/store';
 import { useGridNavigation } from '@/features/grid-editor';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { findBinById, findBinsByIds } from '@/utils/entity';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -149,9 +150,7 @@ export function useKeyboard() {
       if (isShortcut(key, SHORTCUTS.DELETE) && selectedBinIds.length > 0) {
         e.preventDefault();
         // Track deletion BEFORE executing (need bin data)
-        const binsToDelete = selectedBinIds
-          .map((id) => layout.bins.find((b) => b.id === id))
-          .filter((b): b is (typeof layout.bins)[number] => b !== undefined);
+        const binsToDelete = findBinsByIds(layout, selectedBinIds);
         if (binsToDelete.length > 0) {
           mlTracking.trackDeletion(binsToDelete[0], 'key', binsToDelete.length);
           // Check for quick-correction (deleted shortly after creation)
@@ -208,9 +207,7 @@ export function useKeyboard() {
             if (isOk(result)) {
               newIds.push(result.value);
               // Track for ML telemetry
-              const newBin = useLayoutStore
-                .getState()
-                .layout.bins.find((b) => b.id === result.value);
+              const newBin = findBinById(useLayoutStore.getState().layout, result.value);
               if (newBin) {
                 mlTracking.trackPlacement(newBin, 'duplicate');
               }
@@ -228,7 +225,7 @@ export function useKeyboard() {
       // Smart rotation: if rotation doesn't fit in place, finds nearby valid position
       if (key.toLowerCase() === SHORTCUTS.ROTATE && !ctrlOrMeta && selectedBinIds.length === 1) {
         e.preventDefault();
-        const bin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+        const bin = findBinById(layout, selectedBinIds[0]);
         if (!bin) return;
 
         const result = validateBinRotation(bin, layout);
@@ -330,7 +327,7 @@ export function useKeyboard() {
 
         if (selectedBinIds.length > 0) {
           // Change category of selected bins
-          const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+          const firstBin = findBinById(layout, selectedBinIds[0]);
           if (!firstBin) return;
 
           const currentPos = categories.findIndex((c) => c.id === firstBin.category);
@@ -338,11 +335,9 @@ export function useKeyboard() {
           const newCategoryId = categories[nextPos].id;
 
           // Filter to only bins that actually change
-          const binsToUpdate = selectedBinIds
-            .map((id) => layout.bins.find((b) => b.id === id))
-            .filter(
-              (bin): bin is (typeof layout.bins)[number] => !!bin && bin.category !== newCategoryId
-            );
+          const binsToUpdate = findBinsByIds(layout, selectedBinIds).filter(
+            (bin) => bin.category !== newCategoryId
+          );
           if (binsToUpdate.length === 0) return;
 
           const batchSize = binsToUpdate.length;
@@ -420,9 +415,7 @@ export function useKeyboard() {
         // Otherwise, use existing nudge logic for selected bins
         if (selectedBinIds.length > 0) {
           // Check if any selected bins have fractional dimensions
-          const selectedBins = selectedBinIds
-            .map((id) => layout.bins.find((b) => b.id === id))
-            .filter((b): b is (typeof layout.bins)[number] => b !== undefined);
+          const selectedBins = findBinsByIds(layout, selectedBinIds);
           const increment = selectedBins.some((bin) => hasFractionalDimensions(bin)) ? 0.5 : 1;
 
           let dx = 0,
@@ -437,7 +430,7 @@ export function useKeyboard() {
           let allValid = true;
 
           for (const binId of selectedBinIds) {
-            const bin = layout.bins.find((b) => b.id === binId);
+            const bin = findBinById(layout, binId);
             if (!bin || bin.layerId === STAGING_ID) {
               allValid = false;
               break;
@@ -472,7 +465,7 @@ export function useKeyboard() {
 
             execute(() => {
               for (const binId of selectedBinIds) {
-                const bin = layout.bins.find((b) => b.id === binId);
+                const bin = findBinById(layout, binId);
                 if (!bin) continue;
                 updateBin(binId, { x: bin.x + dx, y: bin.y + dy });
               }
