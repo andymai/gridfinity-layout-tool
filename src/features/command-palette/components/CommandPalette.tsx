@@ -474,7 +474,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     const hasSingleBin = selectedBinIds.length === 1;
     const hasMultipleLayers = layout.layers.length > 1;
     const hasLayerBins = layout.bins.some((b) => b.layerId === activeLayerId);
-    const hasStagingBins = layout.bins.some((b) => b.layerId === STAGING_ID);
+    const hasStagingBins = getStagingBins(layout.bins).length > 0;
 
     // Returns multiplier: >1 = boosted, <1 = demoted, 1 = neutral
     const boosts: Record<string, number> = {
