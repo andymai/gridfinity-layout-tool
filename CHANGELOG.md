@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.0...gridfinity-layout-tool-v2.0.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* resolve code scanning alerts ([#492](https://github.com/andymai/gridfinity-layout-tool/issues/492)) ([e2d0441](https://github.com/andymai/gridfinity-layout-tool/commit/e2d0441d4f4f59294236accb32bfcad9a4bcc129))
+
 ## [2.0.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v1.21.0...gridfinity-layout-tool-v2.0.0) (2026-01-29)
 
 
