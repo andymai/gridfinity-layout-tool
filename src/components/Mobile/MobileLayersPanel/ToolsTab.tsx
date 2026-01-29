@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
+import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useTranslation } from '@/i18n';
 
@@ -72,7 +73,7 @@ export function ToolsTab() {
   const { execute } = useUndoableAction();
 
   const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
-  const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
+  const layerBins = getLayerBins(layout.bins, activeLayerId);
 
   // Calculate empty cells for Fill Gaps button
   const totalCells = layout.drawer.width * layout.drawer.depth;
@@ -151,7 +152,11 @@ export function ToolsTab() {
             ? 'bg-accent/20 ring-2 ring-accent'
             : 'bg-surface-elevated hover:bg-surface-hover'
         }`}
-        aria-label={t('mobile.tools.selectForPaint', { action: t(isActive ? 'mobile.tools.deselect' : 'mobile.tools.select'), width: w, depth: d })}
+        aria-label={t('mobile.tools.selectForPaint', {
+          action: t(isActive ? 'mobile.tools.deselect' : 'mobile.tools.select'),
+          width: w,
+          depth: d,
+        })}
       >
         <div
           className="rounded-[2px]"
@@ -173,12 +178,12 @@ export function ToolsTab() {
   return (
     <div className="pb-4">
       {/* Instructions */}
-      <p className="text-xs text-content-tertiary mb-4">
-        {t('mobile.tools.instructions')}
-      </p>
+      <p className="text-xs text-content-tertiary mb-4">{t('mobile.tools.instructions')}</p>
 
       {/* Squares section */}
-      <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">{t('mobile.tools.squares')}</div>
+      <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
+        {t('mobile.tools.squares')}
+      </div>
       <div className="grid grid-cols-6 gap-2">
         {SQUARE_SIZES.map((size) => (
           <SizeButton key={`${size}×${size}`} w={size} d={size} />
@@ -187,7 +192,9 @@ export function ToolsTab() {
 
       {/* Rectangles section */}
       <div className="flex items-center justify-between mt-4 mb-2">
-        <span className="text-xs text-content-tertiary uppercase tracking-wide">{t('mobile.tools.rectangles')}</span>
+        <span className="text-xs text-content-tertiary uppercase tracking-wide">
+          {t('mobile.tools.rectangles')}
+        </span>
         <button
           onClick={() => setRotated(!rotated)}
           className="text-xs text-content-tertiary hover:text-content flex items-center gap-1.5 px-2 py-1 rounded transition-colors"
@@ -237,7 +244,9 @@ export function ToolsTab() {
               d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
             />
           </svg>
-          {emptyCells > 0 ? t('mobile.tools.fillGaps', { count: emptyCells }) : t('mobile.tools.noGaps')}
+          {emptyCells > 0
+            ? t('mobile.tools.fillGaps', { count: emptyCells })
+            : t('mobile.tools.noGaps')}
         </button>
 
         {/* Clear Layer */}
@@ -254,7 +263,9 @@ export function ToolsTab() {
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
-          {layerBins.length > 0 ? t('mobile.tools.clearBins', { count: layerBins.length }) : t('mobile.tools.noBins')}
+          {layerBins.length > 0
+            ? t('mobile.tools.clearBins', { count: layerBins.length })
+            : t('mobile.tools.noBins')}
         </button>
       </div>
 
