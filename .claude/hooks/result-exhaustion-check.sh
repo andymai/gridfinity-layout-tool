@@ -47,7 +47,7 @@ for file in "${TS_FILES[@]}"; do
   # Pattern 1: Result-returning function called but result not stored or checked
   # e.g., addBin({ ... }); // Result ignored
   # This is tricky - look for function calls not assigned to anything
-  IGNORED_RESULTS=$(echo "$ADDED_LINES" | grep -E "^\+\s*(${RESULT_FUNCTIONS})\s*\(" | grep -v '=' | grep -v 'isOk' | grep -v 'isErr' | head -3)
+  IGNORED_RESULTS=$(echo "$ADDED_LINES" | grep -E "^\+.*\b(${RESULT_FUNCTIONS})\s*\(" | grep -v '=' | grep -v 'isOk' | grep -v 'isErr' | head -3)
 
   if [[ -n "$IGNORED_RESULTS" ]]; then
     ISSUES+="  $file: Result-returning function called but result ignored\n"

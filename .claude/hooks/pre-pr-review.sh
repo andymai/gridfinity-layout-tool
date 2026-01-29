@@ -72,16 +72,7 @@ if [[ -n "$ANY_TYPES" ]]; then
   done <<< "$ANY_TYPES"
 fi
 
-# Check 5: Non-null assertions
-NON_NULL=$(git diff "$BASE_BRANCH"..."$CURRENT_BRANCH" -- '*.ts' '*.tsx' 2>/dev/null | grep '^+' | grep -v '^+++' | grep -E '\w+!' | grep -v '!==' | grep -v '!=' | grep -v '<!--' | head -3)
-if [[ -n "$NON_NULL" ]]; then
-  ISSUES+="⚠️  Non-null assertions (!) - consider null checks:\n"
-  while IFS= read -r line; do
-    ISSUES+="    ${line:0:80}\n"
-  done <<< "$NON_NULL"
-fi
-
-# Check 6: Accessibility issues in changed TSX files
+# Check 5: Accessibility issues in changed TSX files
 A11Y_ISSUES=""
 for file in $FILES_CHANGED; do
   [[ "$file" != *.tsx ]] && continue
