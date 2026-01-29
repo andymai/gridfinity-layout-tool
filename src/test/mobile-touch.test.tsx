@@ -3,11 +3,7 @@ import { render, fireEvent, act } from '@testing-library/react';
 import { Bin } from '@/features/grid-editor/components/Grid/Bin';
 import { useUIStore } from '@/core/store/ui';
 import { useLayoutStore } from '@/core/store/layout';
-import { useSelectionStore } from '@/core/store/selection';
-import { useViewStore } from '@/core/store/view';
-import { useInteractionStore } from '@/core/store/interaction';
-import { useMobileStore } from '@/core/store/mobile';
-import { createDefaultLayout } from '@/core/constants';
+import { resetAllStores } from '@/test/testUtils';
 import type { Bin as BinType, Category, Layer } from '@/core/types';
 
 // Mock useResponsive to simulate touch device
@@ -30,7 +26,6 @@ Object.defineProperty(navigator, 'vibrate', {
 });
 
 describe('Mobile Touch Interactions', () => {
-  let defaultLayout: ReturnType<typeof createDefaultLayout>;
   let testBin: BinType;
   let testCategory: Category;
   let testLayer: Layer;
@@ -43,36 +38,11 @@ describe('Mobile Touch Interactions', () => {
     mockStartDrag.mockClear();
     mockStartResize.mockClear();
 
-    defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
-    useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-    });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
 
-    testCategory = defaultLayout.categories[0];
-    testLayer = defaultLayout.layers[0];
+    testCategory = layout.categories[0];
+    testLayer = layout.layers[0];
     testBin = {
       id: 'test-bin-1',
       x: 2,

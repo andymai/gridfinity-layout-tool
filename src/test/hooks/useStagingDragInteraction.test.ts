@@ -4,9 +4,8 @@ import { useStagingDragInteraction } from '@/hooks/interactions/useStagingDragIn
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useHistoryStore } from '@/core/store/history';
-import { createDefaultLayout, STAGING_ID } from '@/core/constants';
-import { isOk } from '@/core/result';
+import { STAGING_ID } from '@/core/constants';
+import { resetAllStores, getBinId } from '@/test/testUtils';
 import type { InteractionContext } from '@/hooks/interactions/types';
 
 // Mock ML tracking to avoid side effects
@@ -17,15 +16,6 @@ vi.mock('@/shared/analytics/useMLTracking', () => ({
     trackDeletion: vi.fn(),
   },
 }));
-
-// Helper type for addBin result
-type AddBinResult = ReturnType<ReturnType<typeof useLayoutStore.getState>['addBin']>;
-
-// Helper to extract bin ID from Result
-function getBinId(result: AddBinResult): string {
-  if (!isOk(result)) throw new Error('addBin failed');
-  return result.value;
-}
 
 describe('useStagingDragInteraction', () => {
   const mockSetInteraction = vi.fn();
@@ -58,34 +48,11 @@ describe('useStagingDragInteraction', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Reset all stores
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
