@@ -41,7 +41,8 @@
     "check:boundaries:staged": "./scripts/check-module-boundaries.sh --staged",
     "check:i18n": "tsx scripts/check-i18n-keys.ts",
     "check:i18n:interpolation": "tsx scripts/check-i18n-interpolation.ts",
-    "check:exhaustiveness": "./scripts/check-union-exhaustiveness.sh"
+    "check:exhaustiveness": "./scripts/check-union-exhaustiveness.sh",
+    "check:missing-tests": "./scripts/check-missing-tests.sh"
   },
   "size-limit": [
     {
