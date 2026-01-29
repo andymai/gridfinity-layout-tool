@@ -320,16 +320,18 @@ for entry in "${entries[@]}"; do
   git tag "$tag" "$commit" 2>/dev/null || echo "  Tag ${tag} already exists, skipping tag creation"
 
   # Create GitHub release
-  gh release create "$tag" \
+  if gh release view "$tag" --repo "$REPO" >/dev/null 2>&1; then
+    echo "  Release ${tag} already exists, skipping"
+  elif ! gh release create "$tag" \
     --repo "$REPO" \
     --title "$title" \
     --notes "${notes[$version]}" \
-    --target "$commit" \
-    2>/dev/null || echo "  Release ${tag} already exists, skipping"
+    --target "$commit"; then
+    echo "  Failed to create release ${tag}; see error above." >&2
+  fi
 
   echo "  ✓ ${tag}"
 done
 
 echo ""
 echo "Done! Push tags with: git push origin --tags"
-echo "Then update .release-please-manifest.json to: { \".\": \"1.19.0\" }"

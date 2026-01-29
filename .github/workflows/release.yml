@@ -23,4 +23,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr merge ${{ fromJSON(steps.release.outputs.pr).number }} \
-            --auto --squash --repo ${{ github.repository }}
+            --auto --merge --repo ${{ github.repository }}
