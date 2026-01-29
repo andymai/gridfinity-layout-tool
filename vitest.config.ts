@@ -22,6 +22,7 @@ export default defineConfig({
         'node_modules/**',
         'e2e/**',
         'src/test/**',
+        '**/*.test.{ts,tsx}',
         '**/*.d.ts',
         '**/*.config.*',
         '**/types.ts',
