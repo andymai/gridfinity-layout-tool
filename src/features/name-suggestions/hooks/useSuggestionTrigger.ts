@@ -14,7 +14,7 @@ import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useShallow } from 'zustand/react/shallow';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { inferDrawerPurpose } from '@/shared/analytics/purposeInference';
 import { useLocale } from '@/i18n';
 import { isOk } from '@/core/result';
@@ -56,22 +56,23 @@ export function useSuggestionTrigger() {
   // Use app's configured locale (not navigator.language)
   const { locale } = useLocale();
 
-  const { status, layoutId, setSuggestions, setLoadingMore, shouldShowFor } = useNameSuggestionStore(
-    useShallow((s) => ({
-      status: s.status,
-      layoutId: s.layoutId,
-      setSuggestions: s.setSuggestions,
-      setLoadingMore: s.setLoadingMore,
-      shouldShowFor: s.shouldShowFor,
-    }))
-  );
+  const { status, layoutId, setSuggestions, setLoadingMore, shouldShowFor } =
+    useNameSuggestionStore(
+      useShallow((s) => ({
+        status: s.status,
+        layoutId: s.layoutId,
+        setSuggestions: s.setSuggestions,
+        setLoadingMore: s.setLoadingMore,
+        shouldShowFor: s.shouldShowFor,
+      }))
+    );
 
   // Get full layout for purpose inference (only when needed)
   const layout = useLayoutStore((s) => s.layout);
 
   // Count labeled bins (excluding staging)
   const labeledBinCount = useMemo(() => {
-    return bins.filter((b) => b.layerId !== STAGING_ID && b.label?.trim()).length;
+    return getLabeledBins(getGridBins(bins)).length;
   }, [bins]);
 
   // Check if layout name is the default
@@ -243,14 +244,11 @@ function buildSuggestionInput(
   existingNames?: string[]
 ): SuggestionInput {
   // Extract labels from on-grid bins
-  const labels = layout.bins
-    .filter((b) => b.layerId !== STAGING_ID && b.label?.trim())
-    .map((b) => b.label as string);
+  const labels = getLabeledBins(getGridBins(layout.bins)).map((b) => b.label as string);
 
   // Count bins per category
   const categoryCountMap = new Map<string, number>();
-  for (const bin of layout.bins) {
-    if (bin.layerId === STAGING_ID) continue;
+  for (const bin of getGridBins(layout.bins)) {
     if (bin.category) {
       categoryCountMap.set(bin.category, (categoryCountMap.get(bin.category) ?? 0) + 1);
     }
@@ -345,8 +343,7 @@ function mergeSuggestions(
   // Filter out duplicates (same name, case-insensitive)
   const llmAlternatives = llmSuggestions.slice(1);
   const localAlternatives = local.alternatives.filter(
-    (alt) =>
-      !llmSuggestions.some((llm) => llm.name.toLowerCase() === alt.name.toLowerCase())
+    (alt) => !llmSuggestions.some((llm) => llm.name.toLowerCase() === alt.name.toLowerCase())
   );
 
   // Include local primary as alternative if it's different from LLM primary

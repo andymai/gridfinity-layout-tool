@@ -9,7 +9,7 @@
  */
 
 import type { Layout, Bin } from '@/core/types';
-import { getGridBins } from '@/shared/utils/bins';
+import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { processLabel, type LabelDomain } from './labelVocabulary';
 
 // ============================================
@@ -144,7 +144,7 @@ function getSizePatternSignals(bins: Bin[]): PurposeSignal[] {
 function getLabelPatternSignals(bins: Bin[]): PurposeSignal[] {
   const signals: PurposeSignal[] = [];
   const gridBins = getGridBins(bins);
-  const labeledBins = gridBins.filter((b) => b.label?.trim());
+  const labeledBins = getLabeledBins(gridBins);
 
   if (labeledBins.length === 0) return signals;
 
@@ -378,7 +378,7 @@ export function recordLabelSize(labelHash: string, size: string): void {
  */
 export function recordLayoutLabelSizes(layout: Layout): void {
   const gridBins = getGridBins(layout.bins);
-  const labeledBins = gridBins.filter((b) => b.label?.trim());
+  const labeledBins = getLabeledBins(gridBins);
 
   if (labeledBins.length === 0) return;
 

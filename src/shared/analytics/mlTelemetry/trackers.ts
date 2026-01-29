@@ -59,7 +59,7 @@ import {
   getUserHash,
 } from './computations';
 import { STAGING_ID } from '@/core/constants';
-import { getGridBins } from '@/shared/utils/bins';
+import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { useSettingsStore } from '@/core/store/settings';
 import { processLabel, VOCAB_VERSION } from '../labelVocabulary';
 import { analyzeGaps } from '../gapAnalysis';
@@ -1001,7 +1001,7 @@ export function trackCrossLayoutPattern(layout: Layout): void {
 
   const gridBins = getGridBins(layout.bins);
 
-  const labeledBins = gridBins.filter((b) => b.label?.trim());
+  const labeledBins = getLabeledBins(gridBins);
   if (labeledBins.length === 0) return;
 
   recordLayoutLabelSizes(layout);

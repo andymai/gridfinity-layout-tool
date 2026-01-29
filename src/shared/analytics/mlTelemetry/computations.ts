@@ -5,7 +5,7 @@ import type {
   AbandonmentType,
   ConfidenceBreakdown,
 } from './types';
-import { getGridBins } from '@/shared/utils/bins';
+import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { layoutSession } from './sessionState';
 
 // ============================================
@@ -34,7 +34,7 @@ export function assessLayoutQuality(layout: Layout): LayoutQualityTier {
   const hasSizeVariety = uniqueSizes.size >= 2;
 
   // Check if any bins have labels (shows intentional design)
-  const labeledCount = bins.filter((b) => b.label?.trim()).length;
+  const labeledCount = getLabeledBins(bins).length;
   const hasLabels = labeledCount > 0;
 
   // High quality: good fill, has labels, variety
@@ -173,7 +173,7 @@ export function computeLabeledPercentage(bins: Bin[]): number {
   const gridBins = getGridBins(bins);
   if (gridBins.length === 0) return 0;
 
-  const labeledCount = gridBins.filter((b) => b.label?.trim()).length;
+  const labeledCount = getLabeledBins(gridBins).length;
   return Math.round((labeledCount / gridBins.length) * 100);
 }
 
@@ -251,7 +251,7 @@ export function computeConfidenceBreakdown(layout: Layout): ConfidenceBreakdown 
           : 0.4;
 
   const fillPct = computeFillPercentage(layout);
-  const labeledBins = getGridBins(layout.bins).filter((b) => b.label?.trim()).length;
+  const labeledBins = getLabeledBins(getGridBins(layout.bins)).length;
   const labelRate = binsPlaced > 0 ? labeledBins / binsPlaced : 0;
   const completionScore = Math.round(fillPct * 0.7 + labelRate * 100 * 0.3) / 100;
 

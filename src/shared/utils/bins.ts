@@ -120,6 +120,20 @@ export function getLayerBins(bins: Bin[], layerId: string): Bin[] {
 }
 
 /**
+ * Get bins that have a non-empty label.
+ * Commonly used for analytics, name suggestions, and label-based features.
+ *
+ * @param bins - Bins to filter (pre-filter with getGridBins if staging should be excluded)
+ * @returns Bins with a non-empty trimmed label
+ *
+ * @example
+ * const labeled = getLabeledBins(getGridBins(layout.bins));
+ */
+export function getLabeledBins(bins: Bin[]): Bin[] {
+  return bins.filter((bin) => bin.label?.trim());
+}
+
+/**
  * Split bins into grid and staging groups.
  * Useful when you need both sets and want to avoid filtering twice.
  *

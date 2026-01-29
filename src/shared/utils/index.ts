@@ -31,6 +31,7 @@ export {
   getGridBins,
   getStagingBins,
   getLayerBins,
+  getLabeledBins,
   splitBinsByLocation,
 } from './bins';
 export type { VisibleBinsOptions } from './bins';
