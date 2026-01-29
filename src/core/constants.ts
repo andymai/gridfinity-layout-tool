@@ -159,10 +159,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
 
 export function generateId(): string {
   const bytes = new Uint8Array(5);
-  crypto.getRandomValues(bytes);
-  const rand = Array.from(bytes, (b) => b.toString(36).padStart(2, '0'))
-    .join('')
-    .slice(0, 9);
+  globalThis.crypto.getRandomValues(bytes);
+  const rand = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
   return `${Date.now().toString(36)}-${rand}`;
 }
 

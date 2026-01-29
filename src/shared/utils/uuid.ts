@@ -6,13 +6,14 @@
  * backward compatibility with existing layouts.
  */
 export function generateUUID(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
+  const c = globalThis.crypto;
+  if (c?.randomUUID) {
+    return c.randomUUID();
   }
 
   // Fallback for environments without crypto.randomUUID
   const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
+  c.getRandomValues(bytes);
   // Set version (4) and variant (RFC 4122)
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
