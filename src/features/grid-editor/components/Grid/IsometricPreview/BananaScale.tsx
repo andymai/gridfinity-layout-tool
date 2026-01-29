@@ -44,19 +44,18 @@ export function BananaScale({ drawerWidth, drawerDepth, gridUnitMm }: BananaScal
   const x = drawerWidth + 1.5;
   const z = 0;
 
-  // Label at the bottom end of the banana (negative Y side)
-  const labelY = -(bananaGridUnits / 2) - 0.3;
-
   return (
     <group position={[x, drawerDepth / 2, z]}>
       <Clone object={scene} scale={scaleFactor} position={[0, yOffset, 0]} />
+      {/* Label running alongside the banana's length (offset in X, centered in Y) */}
       <Text
-        position={[0, labelY, 0]}
+        position={[-0.5, 0, 0]}
         fontSize={FONT_SIZE}
         color={TEXT_COLOR}
         fillOpacity={TEXT_OPACITY}
         anchorX="center"
-        anchorY="top"
+        anchorY="middle"
+        rotation={[0, 0, Math.PI / 2]}
       >
         {t('grid.bananaLabel')}
       </Text>
