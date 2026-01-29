@@ -55,12 +55,7 @@
             "type": "command",
             "command": ".claude/hooks/union-exhaustiveness-check.sh",
             "timeout": 30
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": ".claude/hooks/pre-pr-review.sh",

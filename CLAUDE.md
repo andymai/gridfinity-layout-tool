@@ -8,7 +8,6 @@ Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organiz
 
 - **Main is protected** - all changes via PRs
 - Pre-commit hooks enforce lint, build, test coverage
-- **Coverage:** Lines 81%, Branches 69%, Functions 81%
 
 ## Code Style (Enforced)
 
@@ -131,8 +130,3 @@ npm run size          # Bundle size check
 **Vercel (required):** `BLOB_READ_WRITE_TOKEN`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `TOKEN_SALT`
 
 **Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`
-
-## Claude Code Hooks
-
-- `pre-pr-review.sh` - Lint, build, coverage before PR
-- `post-edit-test.sh` - Affected tests after edits

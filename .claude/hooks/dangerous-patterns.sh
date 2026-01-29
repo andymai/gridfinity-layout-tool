@@ -45,7 +45,7 @@ for file in "${TS_FILES[@]}"; do
   [[ -z "$ADDED_LINES" ]] && continue
 
   # Get the actual diff with context once per file (for checks that need it)
-  DIFF_CONTEXT=$(git diff --cached -U10 "$file" 2>/dev/null)
+  DIFF_CONTEXT=$(git diff --cached -U30 "$file" 2>/dev/null)
 
   # Check 1: innerHTML assignment (XSS risk)
   if echo "$ADDED_LINES" | grep -qE '\.innerHTML\s*='; then
