@@ -21,10 +21,11 @@ const RAW_MODEL_LENGTH = 98;
 
 interface BananaScaleProps {
   drawerWidth: number;
+  drawerDepth: number;
   gridUnitMm: number;
 }
 
-export function BananaScale({ drawerWidth, gridUnitMm }: BananaScaleProps) {
+export function BananaScale({ drawerWidth, drawerDepth, gridUnitMm }: BananaScaleProps) {
   const t = useTranslation();
   const { scene } = useGLTF('/models/banana.glb');
 
@@ -47,7 +48,7 @@ export function BananaScale({ drawerWidth, gridUnitMm }: BananaScaleProps) {
   const labelY = -(bananaGridUnits / 2) - 0.3;
 
   return (
-    <group position={[x, 0, z]}>
+    <group position={[x, drawerDepth / 2, z]}>
       <Clone object={scene} scale={scaleFactor} position={[0, yOffset, 0]} />
       <Text
         position={[0, labelY, 0]}
