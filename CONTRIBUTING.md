@@ -17,10 +17,6 @@ Found something broken? [Open a bug report](https://github.com/andymai/gridfinit
 
 Have an idea? [Open a feature request](https://github.com/andymai/gridfinity-layout-tool/issues/new?template=feature_request.md). Describe the problem you're trying to solve — that context helps more than a specific solution.
 
-### Discussions
-
-Use [GitHub Discussions](https://github.com/andymai/gridfinity-layout-tool/discussions) for questions, ideas, and general conversation about the project.
-
 ### Security Vulnerabilities
 
 See [SECURITY.md](./SECURITY.md) for how to privately report security issues.
