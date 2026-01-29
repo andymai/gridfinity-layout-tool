@@ -6,7 +6,7 @@ import {
   computePreview,
   calculateMetrics,
   buildInspirationLayout,
-} from './utils/layoutBuilder';
+} from './layoutBuilder';
 import type { Layout } from '@/core/types';
 
 /**

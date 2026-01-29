@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import {
-  generateFileName,
-  sanitizeFileName,
-  DEFAULT_EXPORT_FILE_NAME_CONFIG,
-} from './utils/fileNaming';
-import { DEFAULT_BIN_PARAMS } from './constants/defaults';
-import type { BinParams, ExportFileNameConfig } from './types';
+import { generateFileName, sanitizeFileName, DEFAULT_EXPORT_FILE_NAME_CONFIG } from './fileNaming';
+import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import type { BinParams, ExportFileNameConfig } from '../types';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };

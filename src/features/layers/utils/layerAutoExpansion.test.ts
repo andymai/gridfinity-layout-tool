@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateLayerAutoExpansion } from './utils/layerAutoExpansion';
+import { calculateLayerAutoExpansion } from './layerAutoExpansion';
 import type { Layer, Bin } from '@/core/types';
 
 // Helper to create a test bin with required fields

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SliderInput } from './controls/SliderInput';
+import { SliderInput } from './SliderInput';
 
 describe('SliderInput', () => {
   const defaultProps = {

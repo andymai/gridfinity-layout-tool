@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SnappingSlider } from './controls/SnappingSlider';
-import type { SnappingSliderOption } from './controls/SnappingSlider';
+import { SnappingSlider } from './SnappingSlider';
+import type { SnappingSliderOption } from './SnappingSlider';
 
 describe('SnappingSlider', () => {
   const options: SnappingSliderOption[] = [

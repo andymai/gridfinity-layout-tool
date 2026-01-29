@@ -12,8 +12,8 @@ import {
   createNewDesign,
   initializeDesigner,
 } from '@/features/bin-designer/storage/DesignerStorage';
-import { DEFAULT_BIN_PARAMS } from './constants/defaults';
-import type { BinParams } from './types';
+import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import type { BinParams } from '../types';
 import { expectOk, expectErr } from '@/test/testUtils';
 
 describe('DesignerStorage', () => {
