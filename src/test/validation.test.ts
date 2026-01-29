@@ -9,22 +9,17 @@ import {
   isValidBin,
 } from '@/shared/utils/validation';
 import { CONSTRAINTS } from '@/core/constants';
-import type { Layout } from '@/core/types';
+import { createTestLayout as baseCreateTestLayout, createTestBin } from '@/test/testUtils';
 
-const createTestLayout = (): Layout => ({
-  version: '1.0',
-  name: 'Test',
-  drawer: { width: 10, depth: 10, height: 12 },
-  printBedSize: 168, // 4 grid units * 42mm
-  gridUnitMm: 42,
-  heightUnitMm: 7,
-  categories: [{ id: 'cat1', name: 'Test', color: '#000' }],
-  layers: [
-    { id: 'layer1', name: 'Layer 1', height: 3 },
-    { id: 'layer2', name: 'Layer 2', height: 6 },
-  ],
-  bins: [],
-});
+const createTestLayout = () =>
+  baseCreateTestLayout({
+    drawer: { width: 10, depth: 10, height: 12 },
+    printBedSize: 168,
+    layers: [
+      { id: 'layer1', name: 'Layer 1', height: 3 },
+      { id: 'layer2', name: 'Layer 2', height: 6 },
+    ],
+  });
 
 describe('canPlaceBin', () => {
   it('allows valid placement', () => {
@@ -47,20 +42,7 @@ describe('canPlaceBin', () => {
 
   it('rejects collision with existing bin', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'existing',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 3,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'existing', width: 3, depth: 3 })];
     const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 3 }, 'layer1', layout);
     expect(result).toMatchObject({ valid: false, reason: 'collision' });
     expect(result.blockingInfo).toMatchObject({ binId: 'existing', layerId: 'layer1' });
@@ -68,40 +50,14 @@ describe('canPlaceBin', () => {
 
   it('allows placement next to existing bin', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'existing',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'existing', width: 2, depth: 2 })];
     const result = canPlaceBin({ x: 2, y: 0, width: 2, depth: 2, height: 3 }, 'layer1', layout);
     expect(result.valid).toBe(true);
   });
 
   it('excludes specified bin from collision check', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'moving',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'moving', width: 2, depth: 2 })];
     const result = canPlaceBin(
       { x: 1, y: 1, width: 2, depth: 2, height: 3 },
       'layer1',
@@ -115,18 +71,7 @@ describe('canPlaceBin', () => {
     const layout = createTestLayout();
     layout.bins = [
       // Tall bin on layer 1 that protrudes into layer 2
-      {
-        id: 'tall',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 3,
-        height: 6,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'tall', width: 3, depth: 3, height: 6 }),
     ];
     const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 6 }, 'layer2', layout);
     expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
@@ -137,18 +82,7 @@ describe('canPlaceBin', () => {
     const layout = createTestLayout();
     // Small fractional bin on layer 1 that protrudes into layer 2
     layout.bins = [
-      {
-        id: 'small-tall',
-        layerId: 'layer1',
-        x: 1.5,
-        y: 1.5,
-        width: 0.5,
-        depth: 0.5,
-        height: 6,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'small-tall', x: 1.5, y: 1.5, width: 0.5, depth: 0.5, height: 6 }),
     ];
     // Bin on layer 2 that covers the blocked zone area
     const result = canPlaceBin({ x: 0, y: 0, width: 3, depth: 3, height: 6 }, 'layer2', layout);
@@ -158,20 +92,7 @@ describe('canPlaceBin', () => {
 
   it('allows placement adjacent to fractional blocked zone', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'small-tall',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 0.5,
-        depth: 0.5,
-        height: 6,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'small-tall', width: 0.5, depth: 0.5, height: 6 })];
     // Bin placed at (1, 0) doesn't overlap the 0.5x0.5 blocked zone at (0, 0)
     const result = canPlaceBin({ x: 1, y: 0, width: 2, depth: 2, height: 6 }, 'layer2', layout);
     expect(result.valid).toBe(true);
@@ -211,30 +132,8 @@ describe('canPlaceBin', () => {
   it('excludes multiple bins from collision check via excludeBinIds', () => {
     const layout = createTestLayout();
     layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-      {
-        id: 'bin2',
-        layerId: 'layer1',
-        x: 1,
-        y: 1,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin1', width: 2, depth: 2 }),
+      createTestBin({ id: 'bin2', x: 1, y: 1, width: 2, depth: 2 }),
     ];
     const result = canPlaceBin(
       { x: 0, y: 0, width: 3, depth: 3, height: 3 },
@@ -328,20 +227,7 @@ describe('validateImport', () => {
 
   it('rejects bins referencing invalid layers', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'nonexistent',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'bin1', layerId: 'nonexistent', width: 2, depth: 2 })];
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('invalid layer'))).toBe(true);
@@ -349,20 +235,7 @@ describe('validateImport', () => {
 
   it('rejects bins out of bounds', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 15,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'bin1', x: 15, width: 2, depth: 2 })];
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
     // canPlaceBin provides more specific error messages
@@ -437,20 +310,7 @@ describe('truncate', () => {
 describe('canPlaceBin - rotation scenarios', () => {
   it('allows rotation of square bin (no-op)', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'bin1', width: 2, depth: 2 })];
     // Rotation swaps width/depth, but for square it's the same
     const result = canPlaceBin(
       { x: 0, y: 0, width: 2, depth: 2, height: 3 },
@@ -463,20 +323,7 @@ describe('canPlaceBin - rotation scenarios', () => {
 
   it('allows rotation of rectangular bin that fits after rotation', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 4,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'bin1', width: 2, depth: 4 })];
     // Rotate: 2x4 -> 4x2 at (0,0), should fit in 10x10 drawer
     const result = canPlaceBin(
       { x: 0, y: 0, width: 4, depth: 2, height: 3 },
@@ -491,18 +338,7 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // 2x8 bin at position (8,0) - rotation would make it 8x2 which exceeds width
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 8,
-        y: 0,
-        width: 2,
-        depth: 8,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin1', x: 8, width: 2, depth: 8 }),
     ];
     const result = canPlaceBin(
       { x: 8, y: 0, width: 8, depth: 2, height: 3 },
@@ -517,18 +353,7 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // 8x2 bin at position (0,8) - rotation would make it 2x8 which exceeds depth
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 8,
-        width: 8,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin1', y: 8, width: 8, depth: 2 }),
     ];
     const result = canPlaceBin(
       { x: 0, y: 8, width: 2, depth: 8, height: 3 },
@@ -543,31 +368,9 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // Bin to rotate: 2x4 at (0,0)
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 4,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin1', width: 2, depth: 4 }),
       // Adjacent bin at (3,0) - would collide with rotated bin (4x2)
-      {
-        id: 'bin2',
-        layerId: 'layer1',
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin2', x: 3, width: 2, depth: 2 }),
     ];
     // Rotate bin1: 2x4 -> 4x2
     const result = canPlaceBin(
@@ -584,31 +387,9 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // Bin to rotate: 2x4 at (0,0)
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 4,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin1', width: 2, depth: 4 }),
       // Adjacent bin at (5,0) - won't collide with rotated bin (4x2)
-      {
-        id: 'bin2',
-        layerId: 'layer1',
-        x: 5,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin2', x: 5, width: 2, depth: 2 }),
     ];
     // Rotate bin1: 2x4 -> 4x2
     const result = canPlaceBin(
@@ -624,31 +405,9 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // Tall bin on layer 1 that blocks part of layer 2
-      {
-        id: 'tall',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 4,
-        depth: 4,
-        height: 6,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'tall', width: 4, depth: 4, height: 6 }),
       // Bin on layer 2 to rotate: 2x4 at (5,0) - rotation would be 4x2 which doesn't overlap with blocked zone
-      {
-        id: 'bin1',
-        layerId: 'layer2',
-        x: 5,
-        y: 0,
-        width: 2,
-        depth: 4,
-        height: 6,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin1', layerId: 'layer2', x: 5, width: 2, depth: 4, height: 6 }),
     ];
     // This should work since rotated position doesn't overlap blocked zone
     const result = canPlaceBin(
@@ -662,21 +421,7 @@ describe('canPlaceBin - rotation scenarios', () => {
 
   it('handles rotation with clearance height', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 4,
-        height: 3,
-        clearanceHeight: 2,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'bin1', width: 2, depth: 4, clearanceHeight: 2 })];
     // Rotate preserving clearance
     const result = canPlaceBin(
       { x: 0, y: 0, width: 4, depth: 2, height: 3, clearanceHeight: 2 },
@@ -691,20 +436,7 @@ describe('canPlaceBin - rotation scenarios', () => {
 describe('validateLayoutIntegrity', () => {
   it('returns valid for well-formed layout', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'bin1', width: 2, depth: 2 })];
 
     const result = validateLayoutIntegrity(layout);
     expect(result.valid).toBe(true);
@@ -714,18 +446,7 @@ describe('validateLayoutIntegrity', () => {
   it('returns error when bin references missing layer', () => {
     const layout = createTestLayout();
     layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'nonexistent',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: 'Test Bin',
-        notes: '',
-      },
+      createTestBin({ id: 'bin1', layerId: 'nonexistent', width: 2, depth: 2, label: 'Test Bin' }),
     ];
 
     const result = validateLayoutIntegrity(layout);
@@ -736,18 +457,7 @@ describe('validateLayoutIntegrity', () => {
   it('returns error when bin references missing category', () => {
     const layout = createTestLayout();
     layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'nonexistent',
-        label: 'Test Bin',
-        notes: '',
-      },
+      createTestBin({ id: 'bin1', width: 2, depth: 2, category: 'nonexistent', label: 'Test Bin' }),
     ];
 
     const result = validateLayoutIntegrity(layout);
@@ -757,20 +467,7 @@ describe('validateLayoutIntegrity', () => {
 
   it('allows bins in staging with any layerId', () => {
     const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'bin1',
-        layerId: '__staging__',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
+    layout.bins = [createTestBin({ id: 'bin1', layerId: '__staging__', width: 2, depth: 2 })];
 
     const result = validateLayoutIntegrity(layout);
     expect(result.valid).toBe(true);
@@ -799,18 +496,13 @@ describe('validateLayoutIntegrity', () => {
   it('uses bin label in error message if present', () => {
     const layout = createTestLayout();
     layout.bins = [
-      {
+      createTestBin({
         id: 'bin1',
         layerId: 'nonexistent',
-        x: 0,
-        y: 0,
         width: 2,
         depth: 2,
-        height: 3,
-        category: 'cat1',
         label: 'My Special Bin',
-        notes: '',
-      },
+      }),
     ];
 
     const result = validateLayoutIntegrity(layout);
@@ -821,18 +513,7 @@ describe('validateLayoutIntegrity', () => {
   it('uses bin id in error message if no label', () => {
     const layout = createTestLayout();
     layout.bins = [
-      {
-        id: 'bin-abc-123',
-        layerId: 'nonexistent',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
+      createTestBin({ id: 'bin-abc-123', layerId: 'nonexistent', width: 2, depth: 2 }),
     ];
 
     const result = validateLayoutIntegrity(layout);

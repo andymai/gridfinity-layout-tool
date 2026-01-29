@@ -1,24 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { areSizeCompatible, canSwapBins, findBinAtPosition } from '@/shared/utils/position';
-import { createTestLayout } from '@/test/testUtils';
-import type { Bin } from '@/core/types';
-
-// Test helper: Create a test bin
-function createTestBin(overrides: Partial<Bin> = {}): Bin {
-  return {
-    id: 'bin1',
-    layerId: 'layer1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 2,
-    height: 3,
-    category: 'cat1',
-    label: '',
-    notes: '',
-    ...overrides,
-  };
-}
+import { createTestBin, createTestLayout } from '@/test/testUtils';
 
 describe('areSizeCompatible', () => {
   it('returns compatible for exact size match', () => {

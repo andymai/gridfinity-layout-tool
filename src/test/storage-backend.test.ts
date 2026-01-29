@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as backend from '@/core/storage/backend';
 import * as localStorage from '@/core/storage/backends/localStorage';
 import * as indexedDB from '@/core/storage/backends/indexedDB';
-import type { Layout } from '@/core/types';
+import { createTestLayout } from '@/test/testUtils';
 
 // Mock IndexedDB module
 vi.mock('../core/storage/backends/indexedDB', () => ({
@@ -46,21 +46,6 @@ const createLocalStorageMock = () => {
 };
 
 let localStorageMock: ReturnType<typeof createLocalStorageMock>;
-
-function createTestLayout(overrides?: Partial<Layout>): Layout {
-  return {
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    categories: [{ id: 'cat1', name: 'Default', color: '#3b82f6' }],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
-    bins: [],
-    ...overrides,
-  };
-}
 
 describe('storage backend', () => {
   beforeEach(() => {

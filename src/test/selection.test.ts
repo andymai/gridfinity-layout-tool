@@ -1,23 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getSelectionBounds, constrainGroupDelta, applyGroupDelta } from '@/utils/selection';
-import type { Bin } from '@/core/types';
-
-// Helper to create test bins
-function createBin(overrides: Partial<Bin>): Bin {
-  return {
-    id: 'test-bin',
-    layerId: 'layer-1',
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 3,
-    category: '',
-    label: '',
-    notes: '',
-    ...overrides,
-  };
-}
+import { createTestBin } from '@/test/testUtils';
 
 describe('getSelectionBounds', () => {
   it('returns zero rect for empty array', () => {
@@ -26,15 +9,15 @@ describe('getSelectionBounds', () => {
   });
 
   it('returns bin dimensions for single bin', () => {
-    const bin = createBin({ x: 2, y: 3, width: 4, depth: 5 });
+    const bin = createTestBin({ x: 2, y: 3, width: 4, depth: 5 });
     const bounds = getSelectionBounds([bin]);
     expect(bounds).toEqual({ x: 2, y: 3, width: 4, depth: 5 });
   });
 
   it('calculates bounding box for multiple bins', () => {
     const bins = [
-      createBin({ id: 'a', x: 0, y: 0, width: 2, depth: 2 }),
-      createBin({ id: 'b', x: 5, y: 3, width: 3, depth: 2 }),
+      createTestBin({ id: 'a', x: 0, y: 0, width: 2, depth: 2 }),
+      createTestBin({ id: 'b', x: 5, y: 3, width: 3, depth: 2 }),
     ];
     const bounds = getSelectionBounds(bins);
     // minX=0, minY=0, maxX=5+3=8, maxY=3+2=5
@@ -43,9 +26,9 @@ describe('getSelectionBounds', () => {
 
   it('handles bins in a row (same y)', () => {
     const bins = [
-      createBin({ id: 'a', x: 0, y: 2, width: 1, depth: 1 }),
-      createBin({ id: 'b', x: 3, y: 2, width: 1, depth: 1 }),
-      createBin({ id: 'c', x: 6, y: 2, width: 1, depth: 1 }),
+      createTestBin({ id: 'a', x: 0, y: 2, width: 1, depth: 1 }),
+      createTestBin({ id: 'b', x: 3, y: 2, width: 1, depth: 1 }),
+      createTestBin({ id: 'c', x: 6, y: 2, width: 1, depth: 1 }),
     ];
     const bounds = getSelectionBounds(bins);
     expect(bounds).toEqual({ x: 0, y: 2, width: 7, depth: 1 });
@@ -53,8 +36,8 @@ describe('getSelectionBounds', () => {
 
   it('handles overlapping bins', () => {
     const bins = [
-      createBin({ id: 'a', x: 0, y: 0, width: 3, depth: 3 }),
-      createBin({ id: 'b', x: 1, y: 1, width: 3, depth: 3 }),
+      createTestBin({ id: 'a', x: 0, y: 0, width: 3, depth: 3 }),
+      createTestBin({ id: 'b', x: 1, y: 1, width: 3, depth: 3 }),
     ];
     const bounds = getSelectionBounds(bins);
     // minX=0, minY=0, maxX=1+3=4, maxY=1+3=4
@@ -71,7 +54,7 @@ describe('constrainGroupDelta', () => {
   });
 
   it('allows movement within bounds', () => {
-    const bins = [createBin({ x: 2, y: 2, width: 2, depth: 2 })];
+    const bins = [createTestBin({ x: 2, y: 2, width: 2, depth: 2 })];
     const result = constrainGroupDelta(bins, 3, 3, drawer);
     expect(result).toEqual({ deltaX: 3, deltaY: 3 });
   });
@@ -79,14 +62,14 @@ describe('constrainGroupDelta', () => {
   it('constrains movement to right edge', () => {
     // Bin at x=7, width=2, maxX=9, drawer.width=10
     // Can only move right by 1 (10-9=1)
-    const bins = [createBin({ x: 7, y: 0, width: 2, depth: 1 })];
+    const bins = [createTestBin({ x: 7, y: 0, width: 2, depth: 1 })];
     const result = constrainGroupDelta(bins, 5, 0, drawer);
     expect(result).toEqual({ deltaX: 1, deltaY: 0 });
   });
 
   it('constrains movement to left edge', () => {
     // Bin at x=2, can only move left by 2
-    const bins = [createBin({ x: 2, y: 0, width: 1, depth: 1 })];
+    const bins = [createTestBin({ x: 2, y: 0, width: 1, depth: 1 })];
     const result = constrainGroupDelta(bins, -5, 0, drawer);
     expect(result).toEqual({ deltaX: -2, deltaY: 0 });
   });
@@ -94,14 +77,14 @@ describe('constrainGroupDelta', () => {
   it('constrains movement to top edge', () => {
     // Bin at y=6, depth=3, maxY=9, drawer.depth=10
     // Can only move up by 1
-    const bins = [createBin({ x: 0, y: 6, width: 1, depth: 3 })];
+    const bins = [createTestBin({ x: 0, y: 6, width: 1, depth: 3 })];
     const result = constrainGroupDelta(bins, 0, 5, drawer);
     expect(result).toEqual({ deltaX: 0, deltaY: 1 });
   });
 
   it('constrains movement to bottom edge', () => {
     // Bin at y=3, can only move down by 3
-    const bins = [createBin({ x: 0, y: 3, width: 1, depth: 1 })];
+    const bins = [createTestBin({ x: 0, y: 3, width: 1, depth: 1 })];
     const result = constrainGroupDelta(bins, 0, -5, drawer);
     expect(result).toEqual({ deltaX: 0, deltaY: -3 });
   });
@@ -110,8 +93,8 @@ describe('constrainGroupDelta', () => {
     // Two bins: one at x=0, one at x=7 (width 2)
     // Group spans x=0 to x=9, can only move right by 1
     const bins = [
-      createBin({ id: 'a', x: 0, y: 0, width: 1, depth: 1 }),
-      createBin({ id: 'b', x: 7, y: 0, width: 2, depth: 1 }),
+      createTestBin({ id: 'a', x: 0, y: 0, width: 1, depth: 1 }),
+      createTestBin({ id: 'b', x: 7, y: 0, width: 2, depth: 1 }),
     ];
     const result = constrainGroupDelta(bins, 5, 0, drawer);
     expect(result).toEqual({ deltaX: 1, deltaY: 0 });
@@ -120,7 +103,7 @@ describe('constrainGroupDelta', () => {
   it('constrains diagonally', () => {
     // Bin at (7, 7), size 2x2, in 10x10 drawer
     // Can move right by 1, up by 1
-    const bins = [createBin({ x: 7, y: 7, width: 2, depth: 2 })];
+    const bins = [createTestBin({ x: 7, y: 7, width: 2, depth: 2 })];
     const result = constrainGroupDelta(bins, 5, 5, drawer);
     expect(result).toEqual({ deltaX: 1, deltaY: 1 });
   });
@@ -129,8 +112,8 @@ describe('constrainGroupDelta', () => {
     // Two bins 3 units apart horizontally
     // After constraint, they should still be 3 units apart
     const bins = [
-      createBin({ id: 'a', x: 0, y: 0, width: 1, depth: 1 }),
-      createBin({ id: 'b', x: 3, y: 0, width: 1, depth: 1 }),
+      createTestBin({ id: 'a', x: 0, y: 0, width: 1, depth: 1 }),
+      createTestBin({ id: 'b', x: 3, y: 0, width: 1, depth: 1 }),
     ];
     // Try to move right by 10 (way past edge)
     const result = constrainGroupDelta(bins, 10, 0, drawer);
@@ -152,16 +135,16 @@ describe('applyGroupDelta', () => {
   });
 
   it('applies delta to single bin', () => {
-    const bins = [createBin({ id: 'a', x: 2, y: 3 })];
+    const bins = [createTestBin({ id: 'a', x: 2, y: 3 })];
     const result = applyGroupDelta(bins, 5, -2);
     expect(result.get('a')).toEqual({ x: 7, y: 1 });
   });
 
   it('applies uniform delta to all bins', () => {
     const bins = [
-      createBin({ id: 'a', x: 0, y: 0 }),
-      createBin({ id: 'b', x: 5, y: 3 }),
-      createBin({ id: 'c', x: 2, y: 7 }),
+      createTestBin({ id: 'a', x: 0, y: 0 }),
+      createTestBin({ id: 'b', x: 5, y: 3 }),
+      createTestBin({ id: 'c', x: 2, y: 7 }),
     ];
     const result = applyGroupDelta(bins, 2, 1);
 
@@ -171,7 +154,7 @@ describe('applyGroupDelta', () => {
   });
 
   it('preserves relative positions', () => {
-    const bins = [createBin({ id: 'a', x: 1, y: 2 }), createBin({ id: 'b', x: 4, y: 5 })];
+    const bins = [createTestBin({ id: 'a', x: 1, y: 2 }), createTestBin({ id: 'b', x: 4, y: 5 })];
     const result = applyGroupDelta(bins, 3, 2);
 
     const posA = result.get('a')!;
@@ -184,13 +167,13 @@ describe('applyGroupDelta', () => {
   });
 
   it('handles negative deltas', () => {
-    const bins = [createBin({ id: 'a', x: 5, y: 5 })];
+    const bins = [createTestBin({ id: 'a', x: 5, y: 5 })];
     const result = applyGroupDelta(bins, -3, -2);
     expect(result.get('a')).toEqual({ x: 2, y: 3 });
   });
 
   it('handles zero delta', () => {
-    const bins = [createBin({ id: 'a', x: 5, y: 5 })];
+    const bins = [createTestBin({ id: 'a', x: 5, y: 5 })];
     const result = applyGroupDelta(bins, 0, 0);
     expect(result.get('a')).toEqual({ x: 5, y: 5 });
   });
@@ -202,9 +185,9 @@ describe('integration: constrainGroupDelta + applyGroupDelta', () => {
   it('preserves arrangement when dragging group to edge', () => {
     // L-shaped group of bins
     const bins = [
-      createBin({ id: 'a', x: 0, y: 0, width: 2, depth: 2 }),
-      createBin({ id: 'b', x: 2, y: 0, width: 2, depth: 1 }),
-      createBin({ id: 'c', x: 0, y: 2, width: 1, depth: 2 }),
+      createTestBin({ id: 'a', x: 0, y: 0, width: 2, depth: 2 }),
+      createTestBin({ id: 'b', x: 2, y: 0, width: 2, depth: 1 }),
+      createTestBin({ id: 'c', x: 0, y: 2, width: 1, depth: 2 }),
     ];
 
     // Try to move far right and up
@@ -238,8 +221,8 @@ describe('integration: constrainGroupDelta + applyGroupDelta', () => {
   it('no bins can go out of bounds', () => {
     // Bins at various positions
     const bins = [
-      createBin({ id: 'a', x: 1, y: 1, width: 2, depth: 2 }),
-      createBin({ id: 'b', x: 5, y: 0, width: 3, depth: 3 }),
+      createTestBin({ id: 'a', x: 1, y: 1, width: 2, depth: 2 }),
+      createTestBin({ id: 'b', x: 5, y: 0, width: 3, depth: 3 }),
     ];
 
     // Try to move in each direction

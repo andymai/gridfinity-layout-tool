@@ -1,23 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { findNearestBinInDirection, type Direction } from '@/features/grid-editor/utils/navigation';
-import type { Bin } from '@/core/types';
-
-// Helper to create a test bin
-function createTestBin(overrides: Partial<Bin> = {}): Bin {
-  return {
-    id: 'test-bin',
-    layerId: 'layer1',
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 3,
-    category: 'cat1',
-    label: '',
-    notes: '',
-    ...overrides,
-  };
-}
+import { createTestBin } from '@/test/testUtils';
 
 describe('findNearestBinInDirection', () => {
   const activeLayerId = 'layer1';

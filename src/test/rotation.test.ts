@@ -1,35 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { validateRotation } from '@/utils/rotation';
-import type { Bin, Layout } from '@/core/types';
-
-function createTestLayout(overrides: Partial<Layout> = {}): Layout {
-  return {
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    categories: [{ id: 'cat1', name: 'Test', color: '#ff0000' }],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
-    bins: [],
-    ...overrides,
-  };
-}
-
-function createTestBin(overrides: Partial<Bin> = {}): Bin {
-  return {
-    id: 'bin1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 3,
-    height: 3,
-    layerId: 'layer1',
-    category: 'cat1',
-    ...overrides,
-  };
-}
+import { createTestBin, createTestLayout } from '@/test/testUtils';
 
 describe('validateRotation', () => {
   describe('valid rotations', () => {

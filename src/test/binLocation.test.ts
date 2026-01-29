@@ -7,39 +7,7 @@ import {
   type BinLocation,
 } from '@/utils/binLocation';
 import { STAGING_ID } from '@/core/constants';
-import type { Bin, Layout } from '@/core/types';
-
-// Test helper: Create a minimal valid layout
-function createTestLayout(overrides: Partial<Layout> = {}): Layout {
-  return {
-    name: 'Test Layout',
-    bins: [],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
-    categories: [{ id: 'cat1', name: 'Category 1', color: '#3b82f6' }],
-    drawer: { width: 10, height: 12, depth: 8 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    ...overrides,
-  };
-}
-
-// Test helper: Create a test bin
-function createTestBin(overrides: Partial<Bin> = {}): Bin {
-  return {
-    id: 'bin1',
-    layerId: 'layer1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 2,
-    height: 3,
-    category: 'cat1',
-    label: '',
-    notes: '',
-    ...overrides,
-  };
-}
+import { createTestBin, createTestLayout } from '@/test/testUtils';
 
 describe('binLocation utility', () => {
   describe('getBinLocationContext', () => {

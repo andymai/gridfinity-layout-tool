@@ -1,18 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
-import type { Layout } from '@/core/types';
+import { createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
 
-const createTestLayout = (): Layout => ({
-  version: '1.0',
-  name: 'Test',
-  drawer: { width: 6, depth: 6, height: 9 },
-  printBedSize: 168, // 4 grid units * 42mm
-  gridUnitMm: 42,
-  heightUnitMm: 7,
-  categories: [{ id: 'cat1', name: 'Test', color: '#000' }],
-  layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
-  bins: [],
-});
+// 6×6 drawer for fill algorithm tests
+const createTestLayout = () =>
+  baseCreateTestLayout({ drawer: { width: 6, depth: 6, height: 9 }, printBedSize: 168 });
 
 describe('fillAllWithSize', () => {
   it('fills empty layer with specified size', () => {

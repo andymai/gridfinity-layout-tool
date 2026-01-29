@@ -1,48 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { LayoutThumbnailWithLabels } from '../components/LayoutThumbnailWithLabels';
-import type { Layout, Bin } from '@/core/types';
-
-/**
- * Helper to create a minimal valid Layout for testing.
- */
-function createTestLayout(overrides: Partial<Layout> = {}): Layout {
-  return {
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: {
-      width: 10,
-      depth: 8,
-      height: 12,
-    },
-    layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
-    categories: [{ id: 'cat-1', name: 'General', color: '#6b7280' }],
-    bins: [],
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
-    ...overrides,
-  };
-}
-
-/**
- * Helper to create a test bin.
- */
-function createTestBin(overrides: Partial<Bin> = {}): Bin {
-  return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 2,
-    height: 3,
-    layerId: 'layer-1',
-    category: 'cat-1',
-    label: '',
-    notes: '',
-    ...overrides,
-  };
-}
+import { createTestBin, createTestLayout } from '@/test/testUtils';
 
 describe('LayoutThumbnailWithLabels', () => {
   describe('rendering', () => {
@@ -165,7 +124,7 @@ describe('LayoutThumbnailWithLabels', () => {
     it('excludes bins in staging area', () => {
       const layout = createTestLayout({
         bins: [
-          createTestBin({ id: 'b1', layerId: 'layer-1' }),
+          createTestBin({ id: 'b1', layerId: 'layer1' }),
           createTestBin({ id: 'b2', layerId: '__staging__' }),
         ],
       });

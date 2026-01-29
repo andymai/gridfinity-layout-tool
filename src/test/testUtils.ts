@@ -1,6 +1,6 @@
 import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import type { Layout, LayoutLibrary } from '@/core/types';
+import type { Bin, Layout, LayoutLibrary } from '@/core/types';
 import { createDefaultLayout } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/store/history';
@@ -122,6 +122,33 @@ export function resetAllStores(): void {
 }
 
 /**
+ * Factory to create test bins with variations.
+ * Prevents inline factory duplication across test files.
+ *
+ * @param overrides - Partial bin to merge with defaults
+ * @returns A new Bin object
+ *
+ * @example
+ * const bin = createTestBin({ id: 'bin-1', x: 3, y: 5 });
+ * const stagingBin = createTestBin({ layerId: '__staging__' });
+ */
+export function createTestBin(overrides: Partial<Bin> = {}): Bin {
+  return {
+    id: 'test-bin',
+    layerId: 'layer1',
+    x: 0,
+    y: 0,
+    width: 1,
+    depth: 1,
+    height: 3,
+    category: 'cat1',
+    label: '',
+    notes: '',
+    ...overrides,
+  };
+}
+
+/**
  * Create a test library with one default entry.
  * Used by resetAllStores and can be used in tests that need custom library setup.
  *
@@ -165,7 +192,19 @@ export function createTestLibrary(layoutId?: string): LayoutLibrary {
  * const layoutWithBins = createTestLayout({ bins: [testBin1, testBin2] });
  */
 export function createTestLayout(overrides?: Partial<Layout>): Layout {
-  const defaultLayout = createDefaultLayout();
+  // Use deterministic defaults instead of createDefaultLayout() which generates random IDs.
+  // This ensures tests can reference layer/category IDs predictably.
+  const defaultLayout: Layout = {
+    version: '1.0',
+    name: 'Test Layout',
+    drawer: { width: 10, depth: 8, height: 12 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories: [{ id: 'cat1', name: 'General', color: '#3b82f6' }],
+    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    bins: [],
+  };
 
   if (!overrides) {
     return defaultLayout;

@@ -1,20 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { analyzeGaps, calculateFillPercentage } from '@/shared/analytics/gapAnalysis';
-import type { Layout } from '@/core/types';
-
-function createTestLayout(overrides: Partial<Layout> = {}): Layout {
-  return {
-    name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
-    categories: [{ id: 'cat1', name: 'Test', color: '#ff0000' }],
-    bins: [],
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    ...overrides,
-  };
-}
+import { createTestLayout } from '@/test/testUtils';
 
 describe('gapAnalysis', () => {
   describe('analyzeGaps', () => {
