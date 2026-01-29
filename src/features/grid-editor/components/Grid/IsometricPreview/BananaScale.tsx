@@ -39,16 +39,12 @@ export function BananaScale({ drawerDepth, gridUnitMm }: BananaScaleProps) {
   const rawCenterY = 7;
   const yOffset = -rawCenterY * scaleFactor;
 
-  // Raw model Z min is ~21 units. Offset so the bottom sits on the floor (z=0).
-  const rawZMin = 21;
-  const zOffset = -rawZMin * scaleFactor;
-
   // Position to the left of the grid, centered along the depth axis.
   const x = -3;
 
   return (
-    <group position={[x, drawerDepth / 2, 0]}>
-      <Clone object={scene} scale={scaleFactor} position={[0, yOffset, zOffset]} />
+    <group position={[x, drawerDepth / 2, 0.34]}>
+      <Clone object={scene} scale={scaleFactor} position={[0, yOffset, 0]} />
       {/* Label running alongside the banana's length (offset in X, centered in Y) */}
       <Text
         position={[1.2, 0, 0]}
