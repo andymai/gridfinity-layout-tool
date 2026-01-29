@@ -41,10 +41,9 @@ export function BananaScale({ drawerDepth, gridUnitMm }: BananaScaleProps) {
 
   // Position to the left of the grid, centered along the depth axis.
   const x = -3;
-  const z = 0;
 
   return (
-    <group position={[x, drawerDepth / 2, z]}>
+    <group position={[x, drawerDepth / 2, 0.34]}>
       <Clone object={scene} scale={scaleFactor} position={[0, yOffset, 0]} />
       {/* Label running alongside the banana's length (offset in X, centered in Y) */}
       <Text
