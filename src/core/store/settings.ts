@@ -209,6 +209,11 @@ export interface UserSettings {
    * null means use built-in DEFAULT_CATEGORIES from constants.ts
    */
   defaultCategories: Category[] | null;
+
+  /**
+   * Show a banana model in the 3D preview as a real-world scale reference.
+   */
+  showBananaScale: boolean;
 }
 
 /**
@@ -248,6 +253,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Default categories - null means use app defaults
   defaultCategories: null,
+
+  // 3D preview - banana for scale
+  showBananaScale: false,
 };
 
 /**
