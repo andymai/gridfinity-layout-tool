@@ -40,10 +40,9 @@ export function BananaScale({ drawerWidth, gridUnitMm }: BananaScaleProps) {
   const y = 0;
   const z = 0;
 
-  // Lay flat on the floor with length along the X axis.
-  // Model length runs along Y; rotate 90° around Z to swing it to X.
-  // Small X tilt so it rests naturally rather than hovering.
-  const rotation = useMemo<[number, number, number]>(() => [0, 0, -Math.PI / 2], []);
+  // Lay flat on the floor with length along the Y axis.
+  // Model length already runs along Y, so no rotation needed.
+  const rotation = useMemo<[number, number, number]>(() => [0, 0, 0], []);
 
   return (
     <group position={[x, y, z]}>
