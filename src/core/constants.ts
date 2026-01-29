@@ -158,7 +158,12 @@ export const DEFAULT_CATEGORIES: Category[] = [
 // === ID Generation ===
 
 export function generateId(): string {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+  const bytes = new Uint8Array(5);
+  crypto.getRandomValues(bytes);
+  const rand = Array.from(bytes, (b) => b.toString(36).padStart(2, '0'))
+    .join('')
+    .slice(0, 9);
+  return `${Date.now().toString(36)}-${rand}`;
 }
 
 // === Default Layout ===
