@@ -35,16 +35,15 @@ export function BananaScale({ drawerWidth, gridUnitMm }: BananaScaleProps) {
   // Scale factor: desired grid-unit length / raw model length
   const scaleFactor = bananaGridUnits / RAW_MODEL_LENGTH;
 
-  // Position next to the drawer's front-right corner, standing on the floor.
-  // Raw model Y center is ~7 units; after rotation that becomes Z offset.
-  // Shift down so the base sits at z=0.
+  // Position next to the drawer's front-right corner, lying on the floor.
   const x = drawerWidth + 1.5;
   const y = 0;
-  const z = 42 * scaleFactor; // offset to ground the base (~raw Y min at -42)
+  const z = 0;
 
-  // Stand the banana upright: model is Y-up with length along Y,
-  // scene is Z-up, so rotate 90° around X to point the length along Z.
-  const rotation = useMemo<[number, number, number]>(() => [Math.PI / 2, 0, 0], []);
+  // Lay flat on the floor with length along the X axis.
+  // Model length runs along Y; rotate 90° around Z to swing it to X.
+  // Small X tilt so it rests naturally rather than hovering.
+  const rotation = useMemo<[number, number, number]>(() => [0, 0, -Math.PI / 2], []);
 
   return (
     <group position={[x, y, z]}>
