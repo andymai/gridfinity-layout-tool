@@ -48,7 +48,7 @@ export function BananaScale({ drawerDepth, gridUnitMm }: BananaScaleProps) {
       <Clone object={scene} scale={scaleFactor} position={[0, yOffset, 0]} />
       {/* Label running alongside the banana's length (offset in X, centered in Y) */}
       <Text
-        position={[0.5, 0, 0]}
+        position={[1.2, 0, 0]}
         fontSize={FONT_SIZE}
         color={TEXT_COLOR}
         fillOpacity={TEXT_OPACITY}
