@@ -40,7 +40,7 @@ export function BananaScale({ drawerDepth, gridUnitMm }: BananaScaleProps) {
   const yOffset = -rawCenterY * scaleFactor;
 
   // Position to the left of the grid, centered along the depth axis.
-  const x = -1.5;
+  const x = -3;
   const z = 0;
 
   return (
