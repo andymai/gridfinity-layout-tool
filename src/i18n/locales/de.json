@@ -480,7 +480,7 @@
   "grid.all": "Alle",
   "grid.allShowAllLayers": "Alle: Alle Layers anzeigen",
   "grid.bananaForScale": "Banane als Maßstab",
-  "grid.bananaLabel": "~20cm / 8in",
+  "grid.bananaLabel": "~20 cm",
   "grid.bin": "Bin",
   "grid.blockedByBin": "Blockiert von Bin auf {layer}",
   "grid.blockedZone": "Blockierte Zone",

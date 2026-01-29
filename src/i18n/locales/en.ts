@@ -974,7 +974,7 @@ const en: Record<string, string> = {
   'grid.all': 'All',
   'grid.allShowAllLayers': 'All: Show all layers',
   'grid.bananaForScale': 'Banana for scale',
-  'grid.bananaLabel': '~20cm / 8in',
+  'grid.bananaLabel': '~20 cm',
   'grid.bin': 'Bin',
   'grid.blockedByBin': 'Blocked by bin on {layer}',
   'grid.blockedZone': 'Blocked zone',

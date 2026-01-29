@@ -3,7 +3,6 @@
  *
  * Banana model by Poly by Google, CC-BY 4.0, via get3dmodels.com
  */
-import { useMemo } from 'react';
 import { useGLTF, Text, Clone } from '@react-three/drei';
 import { useTranslation } from '@/i18n';
 
@@ -35,20 +34,23 @@ export function BananaScale({ drawerWidth, gridUnitMm }: BananaScaleProps) {
   // Scale factor: desired grid-unit length / raw model length
   const scaleFactor = bananaGridUnits / RAW_MODEL_LENGTH;
 
-  // Position next to the drawer's front-right corner, lying on the floor.
+  // Raw model Y center is ~7 units (midpoint of -42 to +56).
+  // Offset so the banana is centered at Y=0 within the inner group.
+  const rawCenterY = 7;
+  const yOffset = -rawCenterY * scaleFactor;
+
+  // Position beside the drawer's front-right corner, lying on the floor.
   const x = drawerWidth + 1.5;
-  const y = 0;
   const z = 0;
 
-  // Lay flat on the floor with length along the Y axis.
-  // Model length already runs along Y, so no rotation needed.
-  const rotation = useMemo<[number, number, number]>(() => [0, 0, 0], []);
+  // Label at the bottom end of the banana (negative Y side)
+  const labelY = -(bananaGridUnits / 2) - 0.3;
 
   return (
-    <group position={[x, y, z]}>
-      <Clone object={scene} scale={scaleFactor} rotation={rotation} />
+    <group position={[x, 0, z]}>
+      <Clone object={scene} scale={scaleFactor} position={[0, yOffset, 0]} />
       <Text
-        position={[0, -0.6, 0]}
+        position={[0, labelY, 0]}
         fontSize={FONT_SIZE}
         color={TEXT_COLOR}
         fillOpacity={TEXT_OPACITY}
