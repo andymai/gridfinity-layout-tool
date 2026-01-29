@@ -203,28 +203,7 @@ export {
   // Pattern matching
   match,
 
-  // Combining
-  combine,
-  combine3,
-  collect,
-  collectAll,
-
-  // Boolean operations
-  or,
-  and,
-
   // Try-catch wrappers
   tryCatch,
   tryCatchAsync,
-
-  // Unit helpers
-  toUnit,
-  tap,
-  tapErr,
-
-  // Array utilities
-  allOk,
-  anyErr,
-  filterOk,
-  filterErr,
 } from './utils';
