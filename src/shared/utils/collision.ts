@@ -139,20 +139,11 @@ export function binsCollideResult(
  * @throws Error if either bin's layer not found - use binsCollideResult for safe error handling
  */
 export function binsCollide(binA: Bin, binB: Bin, layers: Layer[]): boolean {
-  // Staging bins don't collide with anything
-  if (binA.layerId === STAGING_ID || binB.layerId === STAGING_ID) {
-    return false;
+  const result = binsCollideResult(binA, binB, layers);
+  if (isOk(result)) {
+    return result.value;
   }
-
-  // Check footprint overlap first (cheaper)
-  if (!footprintsOverlap(binA, binB)) {
-    return false;
-  }
-
-  const rectA = getBin3DRect(binA, layers);
-  const rectB = getBin3DRect(binB, layers);
-
-  return verticalRangesOverlap(rectA, rectB);
+  throw new Error(result.error.message);
 }
 
 // Simple cache for getBlockedZones - avoids recomputation when called repeatedly

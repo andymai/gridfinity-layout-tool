@@ -200,20 +200,20 @@ export const useLayoutStore = create<LayoutState>()(
         return err(layoutInvalidOperation('duplicateBin', `Bin ${id} not found`));
       }
 
+      const copyProps = (overrides: { layerId: string; x: number; y: number }) => ({
+        width: bin.width,
+        depth: bin.depth,
+        height: bin.height,
+        clearanceHeight: bin.clearanceHeight,
+        category: bin.category,
+        label: bin.label,
+        notes: bin.notes,
+        customProperties: bin.customProperties,
+        ...overrides,
+      });
+
       if (bin.layerId === STAGING_ID) {
-        return addBin({
-          layerId: STAGING_ID,
-          x: 0,
-          y: 0,
-          width: bin.width,
-          depth: bin.depth,
-          height: bin.height,
-          clearanceHeight: bin.clearanceHeight,
-          category: bin.category,
-          label: bin.label,
-          notes: bin.notes,
-          customProperties: bin.customProperties,
-        });
+        return addBin(copyProps({ layerId: STAGING_ID, x: 0, y: 0 }));
       }
 
       const offsets = [
@@ -234,36 +234,12 @@ export const useLayoutStore = create<LayoutState>()(
         );
 
         if (result.valid) {
-          return addBin({
-            layerId: bin.layerId,
-            x: newX,
-            y: newY,
-            width: bin.width,
-            depth: bin.depth,
-            height: bin.height,
-            clearanceHeight: bin.clearanceHeight,
-            category: bin.category,
-            label: bin.label,
-            notes: bin.notes,
-            customProperties: bin.customProperties,
-          });
+          return addBin(copyProps({ layerId: bin.layerId, x: newX, y: newY }));
         }
       }
 
       // Fallback to staging if no adjacent space available
-      return addBin({
-        layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: bin.width,
-        depth: bin.depth,
-        height: bin.height,
-        clearanceHeight: bin.clearanceHeight,
-        category: bin.category,
-        label: bin.label,
-        notes: bin.notes,
-        customProperties: bin.customProperties,
-      });
+      return addBin(copyProps({ layerId: STAGING_ID, x: 0, y: 0 }));
     },
 
     moveBinToStaging: (id) => {
