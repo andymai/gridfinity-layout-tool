@@ -5,17 +5,14 @@
  * - Transformations: map, mapErr, flatMap/andThen
  * - Extraction: unwrap, unwrapOr, unwrapOrElse
  * - Pattern matching: match
- * - Combining: combine, collect, collectAll
- * - Boolean operations: or, and
  * - Try-catch wrappers: tryCatch, tryCatchAsync
- * - Side effects: tap, tapErr
  *
  * These utilities are inspired by Rust's Result type and functional
  * programming patterns, adapted for TypeScript ergonomics.
  */
 
-import type { Result, Unit } from './types';
-import { ok, err, isOk, isErr, OK } from './types';
+import type { Result } from './types';
+import { ok, err, isOk, isErr } from './types';
 
 // =============================================================================
 // Mapping & Transformation
@@ -178,127 +175,6 @@ export function match<T, E, U>(
 }
 
 // =============================================================================
-// Combining Results
-// =============================================================================
-
-/**
- * Combine two Results into a tuple.
- * Returns the first Err if either is Err.
- *
- * @example
- * ```ts
- * const r1 = ok(1);
- * const r2 = ok('hello');
- * const combined = combine(r1, r2);
- * // { ok: true, value: [1, 'hello'] }
- * ```
- */
-export function combine<T1, T2, E>(r1: Result<T1, E>, r2: Result<T2, E>): Result<[T1, T2], E> {
-  if (isErr(r1)) return r1;
-  if (isErr(r2)) return r2;
-  return ok([r1.value, r2.value]);
-}
-
-/**
- * Combine three Results into a tuple.
- */
-export function combine3<T1, T2, T3, E>(
-  r1: Result<T1, E>,
-  r2: Result<T2, E>,
-  r3: Result<T3, E>
-): Result<[T1, T2, T3], E> {
-  if (isErr(r1)) return r1;
-  if (isErr(r2)) return r2;
-  if (isErr(r3)) return r3;
-  return ok([r1.value, r2.value, r3.value]);
-}
-
-/**
- * Collect an array of Results into a Result of array.
- * Returns the first Err if any Result is Err.
- *
- * @example
- * ```ts
- * const results = [ok(1), ok(2), ok(3)];
- * const collected = collect(results);
- * // { ok: true, value: [1, 2, 3] }
- *
- * const mixed = [ok(1), err('failed'), ok(3)];
- * const failed = collect(mixed);
- * // { ok: false, error: 'failed' }
- * ```
- */
-export function collect<T, E>(results: Result<T, E>[]): Result<T[], E> {
-  const values: T[] = [];
-  for (const result of results) {
-    if (isErr(result)) {
-      return result;
-    }
-    values.push(result.value);
-  }
-  return ok(values);
-}
-
-/**
- * Collect an array of Results, accumulating all errors.
- * Returns Ok with all values if all succeed, or Err with all errors.
- *
- * @example
- * ```ts
- * const results = [ok(1), err('a'), ok(2), err('b')];
- * const collected = collectAll(results);
- * // { ok: false, error: ['a', 'b'] }
- * ```
- */
-export function collectAll<T, E>(results: Result<T, E>[]): Result<T[], E[]> {
-  const values: T[] = [];
-  const errors: E[] = [];
-
-  for (const result of results) {
-    if (isOk(result)) {
-      values.push(result.value);
-    } else {
-      errors.push(result.error);
-    }
-  }
-
-  if (errors.length > 0) {
-    return err(errors);
-  }
-  return ok(values);
-}
-
-// =============================================================================
-// Boolean Operations
-// =============================================================================
-
-/**
- * Return the first Ok, or the last Err if all fail.
- * Useful for fallback chains.
- *
- * @example
- * ```ts
- * const result = or(
- *   loadFromCache(id),
- *   loadFromDatabase(id)
- * );
- * ```
- */
-export function or<T, E>(r1: Result<T, E>, r2: Result<T, E>): Result<T, E> {
-  if (isOk(r1)) return r1;
-  return r2;
-}
-
-/**
- * Return r2 if r1 is Ok, otherwise return r1's Err.
- * Useful when you need both operations to succeed but only want the second value.
- */
-export function and<T, U, E>(r1: Result<T, E>, r2: Result<U, E>): Result<U, E> {
-  if (isErr(r1)) return r1;
-  return r2;
-}
-
-// =============================================================================
 // Try-Catch Wrappers
 // =============================================================================
 
@@ -345,95 +221,4 @@ export async function tryCatchAsync<T, E = unknown>(
   } catch (error) {
     return err(mapError ? mapError(error) : (error as E));
   }
-}
-
-// =============================================================================
-// Void/Unit Helpers
-// =============================================================================
-
-/**
- * Convert any Ok result to Ok<Unit>.
- * Useful when you don't care about the value, only success/failure.
- *
- * @example
- * ```ts
- * const result = saveFile(data); // Result<FileInfo, Error>
- * const voidResult = toUnit(result); // Result<void, Error>
- * ```
- */
-export function toUnit<T, E>(result: Result<T, E>): Result<Unit, E> {
-  if (isOk(result)) {
-    return OK;
-  }
-  return result;
-}
-
-/**
- * Perform a side effect if Result is Ok, then return the original result.
- * Useful for logging or other side effects without changing the result.
- *
- * @example
- * ```ts
- * const result = tap(loadUser(id), (user) => {
- *   console.log('Loaded user:', user.name);
- * });
- * ```
- */
-export function tap<T, E>(result: Result<T, E>, fn: (value: T) => void): Result<T, E> {
-  if (isOk(result)) {
-    fn(result.value);
-  }
-  return result;
-}
-
-/**
- * Perform a side effect if Result is Err, then return the original result.
- * Useful for logging errors without changing the result.
- *
- * @example
- * ```ts
- * const result = tapErr(loadUser(id), (error) => {
- *   console.error('Failed to load user:', error.message);
- * });
- * ```
- */
-export function tapErr<T, E>(result: Result<T, E>, fn: (error: E) => void): Result<T, E> {
-  if (isErr(result)) {
-    fn(result.error);
-  }
-  return result;
-}
-
-// =============================================================================
-// Utility Functions
-// =============================================================================
-
-/**
- * Check if all Results in an array are Ok.
- */
-export function allOk<T, E>(results: Result<T, E>[]): boolean {
-  return results.every(isOk);
-}
-
-/**
- * Check if any Result in an array is Err.
- */
-export function anyErr<T, E>(results: Result<T, E>[]): boolean {
-  return results.some(isErr);
-}
-
-/**
- * Get all Ok values from an array of Results.
- * Filters out Err results and returns only the Ok values.
- */
-export function filterOk<T, E>(results: Result<T, E>[]): T[] {
-  return results.filter(isOk).map((r) => r.value);
-}
-
-/**
- * Get all Err values from an array of Results.
- * Filters out Ok results and returns only the errors.
- */
-export function filterErr<T, E>(results: Result<T, E>[]): E[] {
-  return results.filter(isErr).map((r) => r.error);
 }

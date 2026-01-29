@@ -17,21 +17,8 @@ import {
   unwrapOrElse,
   unwrapErr,
   match,
-  combine,
-  combine3,
-  collect,
-  collectAll,
-  or,
-  and,
   tryCatch,
   tryCatchAsync,
-  toUnit,
-  tap,
-  tapErr,
-  allOk,
-  anyErr,
-  filterOk,
-  filterErr,
 
   // Error constructors
   storageNotFound,
@@ -276,107 +263,6 @@ describe('Result utilities', () => {
     });
   });
 
-  describe('combine()', () => {
-    it('combines two ok results into tuple', () => {
-      const result = combine(ok(1), ok('hello'));
-      expect(result).toEqual({ ok: true, value: [1, 'hello'] });
-    });
-
-    it('returns first error if first is err', () => {
-      const result = combine(err('first'), ok('hello'));
-      expect(result).toEqual({ ok: false, error: 'first' });
-    });
-
-    it('returns second error if second is err', () => {
-      const result = combine(ok(1), err('second'));
-      expect(result).toEqual({ ok: false, error: 'second' });
-    });
-  });
-
-  describe('combine3()', () => {
-    it('combines three ok results into tuple', () => {
-      const result = combine3(ok(1), ok('hello'), ok(true));
-      expect(result).toEqual({ ok: true, value: [1, 'hello', true] });
-    });
-
-    it('returns first error when first is err', () => {
-      const result = combine3(err('first'), ok('hello'), ok(true));
-      expect(result).toEqual({ ok: false, error: 'first' });
-    });
-
-    it('returns second error when first is ok and second is err', () => {
-      const result = combine3(ok(1), err('second'), err('third'));
-      expect(result).toEqual({ ok: false, error: 'second' });
-    });
-
-    it('returns third error when first two are ok', () => {
-      const result = combine3(ok(1), ok('hello'), err('third'));
-      expect(result).toEqual({ ok: false, error: 'third' });
-    });
-  });
-
-  describe('collect()', () => {
-    it('collects all ok values into array', () => {
-      const results = [ok(1), ok(2), ok(3)];
-      const collected = collect(results);
-      expect(collected).toEqual({ ok: true, value: [1, 2, 3] });
-    });
-
-    it('returns first error', () => {
-      const results = [ok(1), err('error'), ok(3)];
-      const collected = collect(results);
-      expect(collected).toEqual({ ok: false, error: 'error' });
-    });
-
-    it('handles empty array', () => {
-      const collected = collect([]);
-      expect(collected).toEqual({ ok: true, value: [] });
-    });
-  });
-
-  describe('collectAll()', () => {
-    it('collects all ok values when no errors', () => {
-      const results = [ok(1), ok(2), ok(3)];
-      const collected = collectAll(results);
-      expect(collected).toEqual({ ok: true, value: [1, 2, 3] });
-    });
-
-    it('collects all errors when some fail', () => {
-      const results = [ok(1), err('a'), ok(2), err('b')];
-      const collected = collectAll(results);
-      expect(collected).toEqual({ ok: false, error: ['a', 'b'] });
-    });
-  });
-
-  describe('or()', () => {
-    it('returns first ok', () => {
-      const result = or(ok(1), ok(2));
-      expect(result).toEqual({ ok: true, value: 1 });
-    });
-
-    it('returns second if first is err', () => {
-      const result = or(err('first') as Result<number, string>, ok(2));
-      expect(result).toEqual({ ok: true, value: 2 });
-    });
-
-    it('returns last err if both fail', () => {
-      const result = or(err('first'), err('second'));
-      expect(result).toEqual({ ok: false, error: 'second' });
-    });
-  });
-
-  describe('and()', () => {
-    it('returns second if first is ok', () => {
-      const result = and(ok(1), ok('hello'));
-      expect(result).toEqual({ ok: true, value: 'hello' });
-    });
-
-    it('returns first error if first is err', () => {
-      const result = and(err('first'), ok('hello'));
-      expect(result).toEqual({ ok: false, error: 'first' });
-    });
-  });
-
   describe('tryCatch()', () => {
     it('returns ok for successful function', () => {
       const result = tryCatch(() => JSON.parse('{"a": 1}'));
@@ -420,88 +306,6 @@ describe('Result utilities', () => {
         throw originalError;
       });
       expect(result).toEqual({ ok: false, error: originalError });
-    });
-  });
-
-  describe('toUnit()', () => {
-    it('converts ok to ok<void>', () => {
-      const result = toUnit(ok(42));
-      expect(result).toEqual({ ok: true, value: undefined });
-    });
-
-    it('preserves err', () => {
-      const result = toUnit(err('error'));
-      expect(result).toEqual({ ok: false, error: 'error' });
-    });
-  });
-
-  describe('tap()', () => {
-    it('calls function for ok and returns original', () => {
-      let captured = 0;
-      const original = ok(42);
-      const result = tap(original, (v) => {
-        captured = v;
-      });
-      expect(captured).toBe(42);
-      expect(result).toBe(original);
-    });
-
-    it('does not call function for err', () => {
-      let called = false;
-      const result = tap(err('error'), () => {
-        called = true;
-      });
-      expect(called).toBe(false);
-      expect(isErr(result)).toBe(true);
-    });
-  });
-
-  describe('tapErr()', () => {
-    it('calls function for err and returns original', () => {
-      let captured = '';
-      const original = err('error');
-      const result = tapErr(original, (e) => {
-        captured = e;
-      });
-      expect(captured).toBe('error');
-      expect(result).toBe(original);
-    });
-
-    it('does not call function for ok', () => {
-      let called = false;
-      const result = tapErr(ok(42), () => {
-        called = true;
-      });
-      expect(called).toBe(false);
-      expect(isOk(result)).toBe(true);
-    });
-  });
-
-  describe('array utilities', () => {
-    it('allOk returns true when all ok', () => {
-      expect(allOk([ok(1), ok(2), ok(3)])).toBe(true);
-    });
-
-    it('allOk returns false when any err', () => {
-      expect(allOk([ok(1), err('e'), ok(3)])).toBe(false);
-    });
-
-    it('anyErr returns true when any err', () => {
-      expect(anyErr([ok(1), err('e'), ok(3)])).toBe(true);
-    });
-
-    it('anyErr returns false when all ok', () => {
-      expect(anyErr([ok(1), ok(2), ok(3)])).toBe(false);
-    });
-
-    it('filterOk extracts ok values', () => {
-      const results = [ok(1), err('e'), ok(3)];
-      expect(filterOk(results)).toEqual([1, 3]);
-    });
-
-    it('filterErr extracts err values', () => {
-      const results = [ok(1), err('a'), ok(3), err('b')];
-      expect(filterErr(results)).toEqual(['a', 'b']);
     });
   });
 });
