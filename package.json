@@ -1,9 +1,24 @@
 {
   "name": "gridfinity-layout-tool",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.19.0",
+  "description": "A web app for designing and planning Gridfinity drawer organizer layouts",
   "license": "AGPL-3.0-only",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andymai/gridfinity-layout-tool.git"
+  },
+  "homepage": "https://gridfinitylayouttool.com",
+  "author": "Andy Aragon",
+  "keywords": [
+    "gridfinity",
+    "3d-printing",
+    "drawer-organizer",
+    "layout-tool",
+    "react",
+    "threejs"
+  ],
   "scripts": {
     "dev": "npm run build:content && vite",
     "build": "npm run build:content && tsc -b && vite build",
