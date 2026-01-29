@@ -479,6 +479,8 @@
   "gallery.yourSize": "Votre taille",
   "grid.all": "Tout",
   "grid.allShowAllLayers": "Tout : Afficher tous les layers",
+  "grid.bananaForScale": "Banane pour l'échelle",
+  "grid.bananaLabel": "~20 cm",
   "grid.bin": "Bin",
   "grid.blockedByBin": "Bloqué par un bin sur {layer}",
   "grid.blockedZone": "Zone bloquée",

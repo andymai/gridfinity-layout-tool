@@ -13,6 +13,7 @@ import { SplitLineOverlay } from './IsometricPreview/SplitLineOverlay';
 import { BatchedCornerMarkers } from './IsometricPreview/BatchedCornerMarkers';
 import { MergedBinMeshes } from './IsometricPreview/MergedBinMeshes';
 import { useTranslation } from '@/i18n';
+import { useSettingsStore } from '@/core/store/settings';
 
 const PREVIEW_SIZE_SMALL = 280; // Default small preview
 
@@ -52,6 +53,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       toggleIsometricPreview: state.toggleIsometricPreview,
     }))
   );
+
+  const showBananaScale = useSettingsStore((state) => state.settings.showBananaScale);
+  const updateSetting = useSettingsStore((state) => state.updateSetting);
 
   // Track container dimensions in inline mode
   useEffect(() => {
@@ -507,6 +511,23 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           </svg>
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('grid.side')}</span>
+          )}
+        </button>
+        {/* Banana for scale toggle */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            updateSetting('showBananaScale', !showBananaScale);
+          }}
+          className={`btn btn-ghost ${
+            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
+          } ${showBananaScale ? 'text-yellow-400' : ''}`}
+          title={t('grid.bananaForScale')}
+        >
+          {/* eslint-disable-next-line i18next/no-literal-string -- emoji icon */}
+          <span className={isPreviewExpanded && !isMobile ? 'text-base' : 'text-sm'}>🍌</span>
+          {isPreviewExpanded && !isMobile && (
+            <span className="text-xs font-medium">{t('grid.bananaForScale')}</span>
           )}
         </button>
       </div>

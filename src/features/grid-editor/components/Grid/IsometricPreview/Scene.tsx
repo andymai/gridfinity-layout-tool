@@ -9,6 +9,8 @@ import { FrontLabel } from './FrontLabel';
 import { AxisLabels } from './AxisLabels';
 import { DrawerDimensions } from './DrawerDimensions';
 import { ScaleIndicator } from './ScaleIndicator';
+import { BananaScale } from './BananaScale';
+import { useSettingsStore } from '@/core/store/settings';
 
 import type { FractionalEdge } from '@/core/types';
 
@@ -82,6 +84,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
     },
     ref
   ) => {
+    const showBananaScale = useSettingsStore((state) => state.settings.showBananaScale);
     const controlsRef = useRef<OrbitControlsType>(null);
     const hasInitializedRef = useRef(false);
     const pendingFitZoomRef = useRef(false);
@@ -349,6 +352,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           heightUnitMm={heightUnitMm}
         />
         <ScaleIndicator gridUnitMm={gridUnitMm} drawerDepth={drawerDepth} />
+        {showBananaScale && <BananaScale drawerDepth={drawerDepth} gridUnitMm={gridUnitMm} />}
 
         {/* Bins */}
         {children}

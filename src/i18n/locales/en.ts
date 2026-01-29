@@ -973,6 +973,8 @@ const en: Record<string, string> = {
   'grid.resizeCorner': 'Drag to add/remove rows and columns',
   'grid.all': 'All',
   'grid.allShowAllLayers': 'All: Show all layers',
+  'grid.bananaForScale': 'Banana for scale',
+  'grid.bananaLabel': '~20 cm',
   'grid.bin': 'Bin',
   'grid.blockedByBin': 'Blocked by bin on {layer}',
   'grid.blockedZone': 'Blocked zone',
