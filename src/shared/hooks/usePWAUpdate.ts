@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useToastStore } from '@/core/store/toast';
 import { useUIStore } from '@/core/store/ui';
-import { STAGING_ID } from '@/core/constants';
+import { getStagingBins } from '@/shared/utils/bins';
 import { useLayoutStore } from '@/core/store/layout';
 import {
   saveEphemeralState,
@@ -43,7 +43,7 @@ function isSafeToReload(): boolean {
   }
 
   // Don't reload with bins in staging (user might lose track of them)
-  const stagedBins = layout.layout.bins.filter((b) => b.layerId === STAGING_ID);
+  const stagedBins = getStagingBins(layout.layout.bins);
   if (stagedBins.length > 0) {
     return false;
   }

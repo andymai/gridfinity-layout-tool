@@ -23,7 +23,8 @@
 import * as backend from './backend';
 import { validateImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
-import { STAGING_ID, CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS } from '@/core/constants';
+import { getGridBins } from '@/shared/utils/bins';
 import type {
   Layout,
   LayoutEntry,
@@ -120,16 +121,14 @@ export function computePreview(layout: Layout): LayoutPreview {
     categoryColors.set(cat.id, cat.color);
   }
 
-  const binMap: ThumbnailBin[] = layout.bins
-    .filter((bin) => bin.layerId !== STAGING_ID)
-    .map((bin) => ({
-      x: bin.x,
-      y: bin.y,
-      w: bin.width,
-      d: bin.depth,
-      c: categoryColors.get(bin.category) || '#6B7280',
-      l: bin.label || undefined, // Include label if present
-    }));
+  const binMap: ThumbnailBin[] = getGridBins(layout.bins).map((bin) => ({
+    x: bin.x,
+    y: bin.y,
+    w: bin.width,
+    d: bin.depth,
+    c: categoryColors.get(bin.category) || '#6B7280',
+    l: bin.label || undefined, // Include label if present
+  }));
 
   return {
     drawerWidth: layout.drawer.width,

@@ -13,7 +13,7 @@
  */
 
 import type { Layout, Bin } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins } from '@/shared/utils/bins';
 
 /**
  * Compute a structure hash for layout clustering.
@@ -23,7 +23,7 @@ import { STAGING_ID } from '@/core/constants';
  * @returns 8-character hex hash
  */
 export function computeStructureHash(layout: Layout): string {
-  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const bins = getGridBins(layout.bins);
 
   // Component 1: Drawer aspect ratio bucket (2 bits)
   const aspectRatioBucket = computeAspectRatioBucket(layout.drawer.width, layout.drawer.depth);

@@ -7,7 +7,7 @@ import {
   ContextMenuDivider,
 } from '@/shared/components/ContextMenu';
 import { useContextMenu } from '@/hooks/useContextMenu';
-import { STAGING_ID } from '@/core/constants';
+import { splitBinsByLocation } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
@@ -57,8 +57,7 @@ export function MultiBinContextMenu({
     .map((id) => layout.bins.find((b) => b.id === id))
     .filter((b): b is Bin => b !== undefined);
 
-  const stagingBins = bins.filter((b) => b.layerId === STAGING_ID);
-  const gridBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const { stagingBins, gridBins } = splitBinsByLocation(bins);
 
   // Only show layer picker if there are bins that can be moved to a layer
   // (staging bins can be moved to grid)
@@ -137,10 +136,15 @@ export function MultiBinContextMenu({
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-stroke-subtle">
-        <div className="font-medium text-content">{t('inspector.multi.title', { count: bins.length })}</div>
+        <div className="font-medium text-content">
+          {t('inspector.multi.title', { count: bins.length })}
+        </div>
         {stagingBins.length > 0 && gridBins.length > 0 && (
           <div className="text-sm text-content-tertiary">
-            {t('mobile.contextMenu.stashAndGrid', { stash: stagingBins.length, grid: gridBins.length })}
+            {t('mobile.contextMenu.stashAndGrid', {
+              stash: stagingBins.length,
+              grid: gridBins.length,
+            })}
           </div>
         )}
       </div>
@@ -245,7 +249,9 @@ export function MultiBinContextMenu({
                     className="w-full px-3 py-2 text-left rounded transition-colors hover:bg-surface-hover"
                   >
                     <div className="text-sm text-content">{layer.name}</div>
-                    <div className="text-xs text-content-tertiary">{t('mobile.contextMenu.minHeight', { height: layer.height })}</div>
+                    <div className="text-xs text-content-tertiary">
+                      {t('mobile.contextMenu.minHeight', { height: layer.height })}
+                    </div>
                   </button>
                 ))}
               </div>

@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore, useUndoableAction } from '@/core/store';
-import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS } from '@/core/constants';
+import { getGridBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk, isErr, getUserMessage } from '@/core/result';
@@ -85,7 +86,7 @@ export function LayersTab() {
   const totalCells = drawer.width * drawer.depth;
 
   // Multi-layer stats
-  const allPlacedBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const allPlacedBins = getGridBins(bins);
   const totalBinCount = allPlacedBins.length;
   const totalCoveredCells = allPlacedBins.reduce((sum, b) => sum + b.width * b.depth, 0);
   const totalAvailableCells = totalCells * layers.length;

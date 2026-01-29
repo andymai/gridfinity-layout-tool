@@ -13,7 +13,6 @@
 import type { PostHog } from 'posthog-js';
 import type { Layout } from '@/core/types';
 import {
-  STAGING_ID,
   DEFAULT_CATEGORIES,
   calcMaxGridUnits,
   hasFractionalDimensions,
@@ -21,7 +20,7 @@ import {
 } from '@/core/constants';
 import { useLabsStore, useInteractionStore, useLayoutStore, useSettingsStore } from '@/core/store';
 import { getFeature } from '@/core/labs';
-import { generateUUID } from '@/shared/utils';
+import { generateUUID, splitBinsByLocation, getGridBins } from '@/shared/utils';
 
 // ============================================
 // STABLE USER IDENTITY
@@ -263,8 +262,7 @@ const DEFAULT_PRINT_BED = 256;
 const DEFAULT_CATEGORY_NAMES = new Set(DEFAULT_CATEGORIES.map((c) => c.name.toLowerCase()));
 
 export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
-  const gridBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
-  const stagingBins = layout.bins.filter((b) => b.layerId === STAGING_ID);
+  const { gridBins, stagingBins } = splitBinsByLocation(layout.bins);
 
   // Bin size distribution
   const sizeCount = new Map<string, number>();
@@ -522,7 +520,7 @@ const MILESTONE_THRESHOLDS: Array<{ key: 'first_bin' | 'engaged' | 'substantial'
 function checkEngagementMilestones(): void {
   try {
     const bins = useLayoutStore.getState().layout.bins;
-    const binsOnGrid = bins.filter((b) => b.layerId !== STAGING_ID).length;
+    const binsOnGrid = getGridBins(bins).length;
 
     for (const { key, min } of MILESTONE_THRESHOLDS) {
       const storageKey = `gridfinity_milestone_${key}`;

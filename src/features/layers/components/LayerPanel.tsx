@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
-import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS } from '@/core/constants';
+import { getGridBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
@@ -48,7 +49,7 @@ export function LayerPanel() {
   const hasMultipleLayers = layers.length > 1;
 
   // Total stats across all layers
-  const allPlacedBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const allPlacedBins = getGridBins(layout.bins);
   const totalBinCount = allPlacedBins.length;
   const totalCoveredCells = allPlacedBins.reduce((sum, b) => sum + b.width * b.depth, 0);
   const totalAvailableCells = totalCells * layers.length;

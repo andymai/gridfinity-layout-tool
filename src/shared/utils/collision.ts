@@ -2,6 +2,7 @@ import type { Bin, Layer, Rect3D, BlockedZone } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, isOk, validationInvalidLayer } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
+import { getGridBins } from '@/shared/utils/bins';
 
 /**
  * Reverse layers for display purposes.
@@ -235,7 +236,7 @@ export function checkLayerReorderCollisions(
   newLayers: Layer[]
 ): Array<{ binA: Bin; binB: Bin }> {
   const collisions: Array<{ binA: Bin; binB: Bin }> = [];
-  const placedBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const placedBins = getGridBins(bins);
 
   for (let i = 0; i < placedBins.length; i++) {
     for (let j = i + 1; j < placedBins.length; j++) {

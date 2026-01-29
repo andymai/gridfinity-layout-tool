@@ -6,7 +6,7 @@
  */
 
 import type { Layout, Bin, Drawer } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins } from '@/shared/utils/bins';
 
 // ============================================
 // TYPES
@@ -50,7 +50,7 @@ export interface EdgeUsage {
  * Get all non-staging bins from a layout.
  */
 function getActiveBins(layout: Layout): Bin[] {
-  return layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  return getGridBins(layout.bins);
 }
 
 /**

@@ -21,7 +21,7 @@ import { useMutations } from '@/shared/contexts';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutSwitcher } from '@/hooks';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../commands';
-import { STAGING_ID } from '@/core/constants';
+import { getStagingBins } from '@/shared/utils';
 import type { CommandDefinition } from '../commands';
 import { useRecentCommandsStore } from '../store/recentStore';
 import { ShortcutBadge } from './ShortcutBadge';
@@ -396,7 +396,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
         // Staging
         case 'clear-staging': {
-          const stagingBins = layout.bins.filter((b) => b.layerId === STAGING_ID);
+          const stagingBins = getStagingBins(layout.bins);
           return stagingBins.length > 0
             ? () => {
                 execute(() => {
@@ -409,7 +409,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             : null;
         }
         case 'restore-from-staging': {
-          const stagingBins = layout.bins.filter((b) => b.layerId === STAGING_ID);
+          const stagingBins = getStagingBins(layout.bins);
           return stagingBins.length > 0
             ? () => {
                 execute(() => {

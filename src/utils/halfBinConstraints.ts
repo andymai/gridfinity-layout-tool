@@ -1,6 +1,6 @@
 import type { Layout, Bin } from '@/core/types';
 import { hasFractionalDimensions } from '@/core/constants';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins } from '@/shared/utils/bins';
 
 /**
  * Describes a constraint violation when attempting to disable half-bin mode.
@@ -35,7 +35,7 @@ export interface HalfBinConstraintResult {
  * ```
  */
 export function hasFractionalBins(bins: Bin[]): boolean {
-  return bins.some((bin) => bin.layerId !== STAGING_ID && hasFractionalDimensions(bin));
+  return getGridBins(bins).some((bin) => hasFractionalDimensions(bin));
 }
 
 /**
@@ -52,8 +52,7 @@ export function hasFractionalBins(bins: Bin[]): boolean {
  * ```
  */
 export function getFractionalBinIds(bins: Bin[]): string[] {
-  return bins
-    .filter((bin) => bin.layerId !== STAGING_ID)
+  return getGridBins(bins)
     .filter((bin) => hasFractionalDimensions(bin))
     .map((bin) => bin.id);
 }
