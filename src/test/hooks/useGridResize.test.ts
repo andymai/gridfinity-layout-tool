@@ -2,37 +2,15 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGridResize } from '@/features/grid-editor/hooks/useGridResize';
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore } from '@/core/store/history';
-import { createDefaultLayout, STAGING_ID } from '@/core/constants';
-import { isOk } from '@/core/result';
-
-// Helper to extract bin ID from Result
-function getBinId(
-  result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (
-    ...args: unknown[]
-  ) => infer R
-    ? R
-    : never
-): string {
-  if (!isOk(result)) throw new Error('addBin failed');
-  return result.value;
-}
+import { STAGING_ID } from '@/core/constants';
+import { resetAllStores, getBinId } from '@/test/testUtils';
 
 describe('useGridResize', () => {
   const HINT_KEY = 'gridfinity-grid-resize-hint-shown';
 
   beforeEach(() => {
     vi.useFakeTimers();
-    // Reset stores
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
-    });
-    // Clear localStorage
+    resetAllStores();
     localStorage.removeItem(HINT_KEY);
   });
 

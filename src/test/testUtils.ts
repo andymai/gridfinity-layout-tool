@@ -125,6 +125,18 @@ export function resetAllStores(): void {
 }
 
 /**
+ * Extract a bin ID from an addBin() Result, throwing if the operation failed.
+ * Replaces the duplicated getBinId() helpers across hook test files.
+ *
+ * @example
+ * const binId = getBinId(addBin({ layerId, x: 0, y: 0, ... }));
+ */
+export function getBinId(result: Result<string, unknown>): string {
+  if (!isOk(result)) throw new Error('addBin failed');
+  return result.value;
+}
+
+/**
  * Factory to create test bins with variations.
  * Prevents inline factory duplication across test files.
  *

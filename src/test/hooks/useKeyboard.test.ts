@@ -7,10 +7,9 @@ import { useLibraryStore } from '@/core/store/library';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';
-import { useMobileStore } from '@/core/store/mobile';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
-import { isOk } from '@/core/result';
+import { resetAllStores, getBinId } from '@/test/testUtils';
 
 // Helper to create keyboard event
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
@@ -29,64 +28,14 @@ function pressKey(key: string, options: Partial<KeyboardEventInit> = {}) {
   return event;
 }
 
-// Helper to extract bin ID from Result
-function getBinId(
-  result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (
-    ...args: unknown[]
-  ) => infer R
-    ? R
-    : never
-): string {
-  if (!isOk(result)) throw new Error('addBin failed');
-  return result.value;
-}
-
 describe('useKeyboard', () => {
   beforeEach(() => {
-    // Reset all stores
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    // Set activeLayerId/activeCategoryId from the reset layout
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHalfBinModeStore.setState({
-      halfBinMode: false,
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 

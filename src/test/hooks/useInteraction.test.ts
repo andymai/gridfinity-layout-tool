@@ -3,26 +3,11 @@ import { renderHook, act } from '@testing-library/react';
 import { useInteraction } from '@/features/grid-editor/hooks/useInteraction';
 import { useUIStore } from '@/core/store/ui';
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore } from '@/core/store/history';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useViewStore } from '@/core/store/view';
-import { useMobileStore } from '@/core/store/mobile';
-import { createDefaultLayout, STAGING_ID } from '@/core/constants';
-import { isOk } from '@/core/result';
+import { STAGING_ID } from '@/core/constants';
+import { resetAllStores, getBinId } from '@/test/testUtils';
 import type { RefObject } from 'react';
-
-// Helper to extract bin ID from Result
-function getBinId(
-  result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (
-    ...args: unknown[]
-  ) => infer R
-    ? R
-    : never
-): string {
-  if (!isOk(result)) throw new Error('addBin failed');
-  return result.value;
-}
 
 // Mock grid ref that returns consistent coords
 function createMockGridRef(width = 320, height = 256): RefObject<HTMLDivElement> {
@@ -45,49 +30,11 @@ function createMockGridRef(width = 320, height = 256): RefObject<HTMLDivElement>
 
 describe('useInteraction', () => {
   beforeEach(() => {
-    // Reset all stores
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -464,48 +411,11 @@ describe('useInteraction', () => {
 // Since it's not exported, we test it indirectly through behavior
 describe('resize rect calculation (integration)', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -583,48 +493,11 @@ describe('resize rect calculation (integration)', () => {
 // Test pointer event handlers
 describe('pointer events', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -1104,48 +977,11 @@ describe('pointer events', () => {
 // Test stagingDrag interaction
 describe('stagingDrag interaction', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -1411,48 +1247,11 @@ describe('stagingDrag interaction', () => {
 // Test Alt+drag duplicate behavior
 describe('duplicate drag (Alt+drag)', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -1861,48 +1660,11 @@ describe('duplicate drag (Alt+drag)', () => {
 // Test actual drag completion with movement
 describe('drag completion with movement', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -2026,48 +1788,11 @@ describe('drag completion with movement', () => {
 // Test resize completion with actual changes
 describe('resize completion with changes', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -2244,48 +1969,11 @@ describe('resize completion with changes', () => {
 // Test stagingDrag behavior
 describe('staging drag', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -2317,48 +2005,11 @@ describe('staging drag', () => {
 // Test resize via pointer movement (hits calculateResizeRect)
 describe('resize via pointer movement', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
@@ -2544,48 +2195,11 @@ describe('resize via pointer movement', () => {
 // Test cleanup on unmount
 describe('cleanup on unmount', () => {
   beforeEach(() => {
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    resetAllStores();
+    const { layout } = useLayoutStore.getState();
     useSelectionStore.setState({
-      activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
-      activeCategoryId: defaultLayout.categories[0].id,
-      focusedBinId: null,
-      quickLabelBinId: null,
-    });
-    useInteractionStore.setState({
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-      liveMessage: null,
-    });
-    useViewStore.setState({
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      contextMenu: null,
-      highlightedCategoryId: null,
-      highlightedRowLabel: null,
-      highlightedColLabel: null,
-      printModalOpen: false,
-    });
-    useMobileStore.setState({
-      activeMobilePanel: null,
-      mobileLayersTab: 'layers',
-    });
-    useHistoryStore.setState({
-      past: [],
-      future: [],
-      canUndo: false,
-      canRedo: false,
+      activeLayerId: layout.layers[0].id,
+      activeCategoryId: layout.categories[0].id,
     });
   });
 
