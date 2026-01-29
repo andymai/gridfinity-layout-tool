@@ -352,13 +352,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           heightUnitMm={heightUnitMm}
         />
         <ScaleIndicator gridUnitMm={gridUnitMm} drawerDepth={drawerDepth} />
-        {showBananaScale && (
-          <BananaScale
-            drawerWidth={drawerWidth}
-            drawerDepth={drawerDepth}
-            gridUnitMm={gridUnitMm}
-          />
-        )}
+        {showBananaScale && <BananaScale drawerDepth={drawerDepth} gridUnitMm={gridUnitMm} />}
 
         {/* Bins */}
         {children}

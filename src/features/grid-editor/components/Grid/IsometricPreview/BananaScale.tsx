@@ -20,12 +20,11 @@ const BANANA_LENGTH_MM = 200;
 const RAW_MODEL_LENGTH = 98;
 
 interface BananaScaleProps {
-  drawerWidth: number;
   drawerDepth: number;
   gridUnitMm: number;
 }
 
-export function BananaScale({ drawerWidth, drawerDepth, gridUnitMm }: BananaScaleProps) {
+export function BananaScale({ drawerDepth, gridUnitMm }: BananaScaleProps) {
   const t = useTranslation();
   const { scene } = useGLTF('/models/banana.glb');
 
@@ -40,8 +39,8 @@ export function BananaScale({ drawerWidth, drawerDepth, gridUnitMm }: BananaScal
   const rawCenterY = 7;
   const yOffset = -rawCenterY * scaleFactor;
 
-  // Position beside the drawer's front-right corner, lying on the floor.
-  const x = drawerWidth + 1.5;
+  // Position to the left of the grid, centered along the depth axis.
+  const x = -1.5;
   const z = 0;
 
   return (
@@ -49,7 +48,7 @@ export function BananaScale({ drawerWidth, drawerDepth, gridUnitMm }: BananaScal
       <Clone object={scene} scale={scaleFactor} position={[0, yOffset, 0]} />
       {/* Label running alongside the banana's length (offset in X, centered in Y) */}
       <Text
-        position={[-0.5, 0, 0]}
+        position={[0.5, 0, 0]}
         fontSize={FONT_SIZE}
         color={TEXT_COLOR}
         fillOpacity={TEXT_OPACITY}
