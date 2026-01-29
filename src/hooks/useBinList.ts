@@ -13,6 +13,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import type { LayoutError } from '@/core/result';
 import { markFeatureUsed } from '@/utils/analytics';
 import { isErr, getUserMessage } from '@/core/result';
+import { findBinsByIds } from '@/utils/entity';
 import { usePrintList, type UsePrintListReturn } from '@/features/print-export';
 import {
   filterBySearch,
@@ -148,9 +149,7 @@ export function useBinList(): UseBinListReturn {
     if (selectedBinIds.length === 0) return;
 
     // Track deletion BEFORE executing (need bin data)
-    const binsToDelete = selectedBinIds
-      .map((id) => layout.bins.find((b) => b.id === id))
-      .filter((bin): bin is (typeof layout.bins)[number] => bin !== undefined);
+    const binsToDelete = findBinsByIds(layout, selectedBinIds);
     if (binsToDelete.length > 0) {
       mlTracking.trackDeletion(binsToDelete[0], 'bulk', binsToDelete.length);
 
@@ -201,9 +200,9 @@ export function useBinList(): UseBinListReturn {
       if (selectedBinIds.length === 0) return;
 
       // Filter to only bins that actually change
-      const binsToUpdate = selectedBinIds
-        .map((id) => layout.bins.find((b) => b.id === id))
-        .filter((bin): bin is (typeof layout.bins)[number] => !!bin && bin.category !== categoryId);
+      const binsToUpdate = findBinsByIds(layout, selectedBinIds).filter(
+        (bin) => bin.category !== categoryId
+      );
       if (binsToUpdate.length === 0) return;
 
       const category = printList.categories.find((c) => c.id === categoryId);

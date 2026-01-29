@@ -9,8 +9,8 @@ import {
 import { useContextMenu } from '@/hooks/useContextMenu';
 import { splitBinsByLocation } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { findBinsByIds } from '@/utils/entity';
 import { useTranslation } from '@/i18n';
-import type { Bin } from '@/core/types';
 
 interface MultiBinContextMenuProps {
   binIds: string[];
@@ -53,9 +53,7 @@ export function MultiBinContextMenu({
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
   // Get bins and categorize them
-  const bins = binIds
-    .map((id) => layout.bins.find((b) => b.id === id))
-    .filter((b): b is Bin => b !== undefined);
+  const bins = findBinsByIds(layout, binIds);
 
   const { stagingBins, gridBins } = splitBinsByLocation(bins);
 

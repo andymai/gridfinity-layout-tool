@@ -12,6 +12,7 @@ import {
 } from '@/shared/components/ContextMenu';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { findBinById } from '@/utils/entity';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
@@ -87,7 +88,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
       const result = duplicateBin(bin.id);
       if (isOk(result)) {
         // Track for ML telemetry
-        const newBin = useLayoutStore.getState().layout.bins.find((b) => b.id === result.value);
+        const newBin = findBinById(useLayoutStore.getState().layout, result.value);
         if (newBin) {
           mlTracking.trackPlacement(newBin, 'duplicate');
         }

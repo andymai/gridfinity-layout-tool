@@ -22,6 +22,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutSwitcher } from '@/hooks';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../commands';
 import { getStagingBins } from '@/shared/utils';
+import { findBinById } from '@/utils/entity';
 import type { CommandDefinition } from '../commands';
 import { useRecentCommandsStore } from '../store/recentStore';
 import { ShortcutBadge } from './ShortcutBadge';
@@ -160,7 +161,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             : null;
         case 'rotate-bin': {
           if (selectedBinIds.length !== 1) return null;
-          const bin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+          const bin = findBinById(layout, selectedBinIds[0]);
           if (!bin) return null;
           return () => {
             execute(() => {
@@ -245,7 +246,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
           if (selectedBinIds.length > 0) {
             // Cycle category of selected bins
-            const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+            const firstBin = findBinById(layout, selectedBinIds[0]);
             if (!firstBin) return null;
 
             return () => {
@@ -344,7 +345,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         }
         case 'select-by-category': {
           if (selectedBinIds.length === 0) return null;
-          const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+          const firstBin = findBinById(layout, selectedBinIds[0]);
           if (!firstBin) return null;
           const sameCategoryBins = layout.bins
             .filter((b) => b.layerId === activeLayerId && b.category === firstBin.category)
