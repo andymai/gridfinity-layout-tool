@@ -15,7 +15,7 @@ import {
   updateCloudShare,
   renameLayoutEntry,
 } from '@/core/storage/LayoutManager';
-import { isOk, isErr } from '@/core/result';
+import { expectOk, expectErr } from '@/test/testUtils';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import type { Layout, LayoutLibrary, LayoutEntry, Bin } from '@/core/types';
 
@@ -206,12 +206,10 @@ describe('saveLayoutWithMetadata', () => {
 
     const result = await saveLayoutWithMetadata('layout-1', layout, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.layoutId).toBe('layout-1');
-      expect(result.value.entry.name).toBe('Updated Name');
-      expect(result.value.library.entries[0].name).toBe('Updated Name');
-    }
+    const value = expectOk(result);
+    expect(value.layoutId).toBe('layout-1');
+    expect(value.entry.name).toBe('Updated Name');
+    expect(value.library.entries[0].name).toBe('Updated Name');
   });
 
   it('computes and updates preview', async () => {
@@ -221,11 +219,9 @@ describe('saveLayoutWithMetadata', () => {
 
     const result = await saveLayoutWithMetadata('layout-1', layout, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.preview.binCount).toBe(3);
-      expect(result.value.entry.preview.binMap.length).toBe(2); // Excludes staging
-    }
+    const value = expectOk(result);
+    expect(value.entry.preview.binCount).toBe(3);
+    expect(value.entry.preview.binMap.length).toBe(2); // Excludes staging
   });
 
   it('updates modifiedAt timestamp', async () => {
@@ -238,11 +234,9 @@ describe('saveLayoutWithMetadata', () => {
     const result = await saveLayoutWithMetadata('layout-1', layout, library);
     const after = Date.now();
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.modifiedAt).toBeGreaterThanOrEqual(before);
-      expect(result.value.entry.modifiedAt).toBeLessThanOrEqual(after);
-    }
+    const value = expectOk(result);
+    expect(value.entry.modifiedAt).toBeGreaterThanOrEqual(before);
+    expect(value.entry.modifiedAt).toBeLessThanOrEqual(after);
   });
 
   it('returns error for non-existent layout', async () => {
@@ -251,10 +245,7 @@ describe('saveLayoutWithMetadata', () => {
 
     const result = await saveLayoutWithMetadata('non-existent', layout, library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
 
   it('returns error when backend save fails', async () => {
@@ -266,10 +257,7 @@ describe('saveLayoutWithMetadata', () => {
 
     const result = await saveLayoutWithMetadata('layout-1', layout, library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_QUOTA_EXCEEDED');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_QUOTA_EXCEEDED');
   });
 
   it('skips preview computation when skipPreview is true', async () => {
@@ -282,10 +270,8 @@ describe('saveLayoutWithMetadata', () => {
       skipPreview: true,
     });
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.preview.binCount).toBe(999); // Preserved
-    }
+    const value = expectOk(result);
+    expect(value.entry.preview.binCount).toBe(999); // Preserved
   });
 
   it('uses provided preview when skipPreview is true', async () => {
@@ -306,10 +292,8 @@ describe('saveLayoutWithMetadata', () => {
       preview: customPreview,
     });
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.preview).toEqual(customPreview);
-    }
+    const value = expectOk(result);
+    expect(value.entry.preview).toEqual(customPreview);
   });
 
   it('respects name option override', async () => {
@@ -321,10 +305,8 @@ describe('saveLayoutWithMetadata', () => {
       name: 'Override Name',
     });
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.name).toBe('Override Name');
-    }
+    const value = expectOk(result);
+    expect(value.entry.name).toBe('Override Name');
   });
 
   it('calls backend saveAsync with correct key', async () => {
@@ -351,11 +333,9 @@ describe('createLayoutEntry', () => {
 
     const result = await createLayoutEntry(layout, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.layoutId).toBe('generated-id-123');
-      expect(result.value.entry.id).toBe('generated-id-123');
-    }
+    const value = expectOk(result);
+    expect(value.layoutId).toBe('generated-id-123');
+    expect(value.entry.id).toBe('generated-id-123');
   });
 
   it('adds entry to library', async () => {
@@ -364,11 +344,9 @@ describe('createLayoutEntry', () => {
 
     const result = await createLayoutEntry(layout, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.library.entries.length).toBe(2);
-      expect(result.value.library.entries[1].name).toBe('New Layout');
-    }
+    const value = expectOk(result);
+    expect(value.library.entries.length).toBe(2);
+    expect(value.library.entries[1].name).toBe('New Layout');
   });
 
   it('sets createdAt and modifiedAt to current time', async () => {
@@ -379,13 +357,11 @@ describe('createLayoutEntry', () => {
     const result = await createLayoutEntry(layout, library);
     const after = Date.now();
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.createdAt).toBeGreaterThanOrEqual(before);
-      expect(result.value.entry.createdAt).toBeLessThanOrEqual(after);
-      expect(result.value.entry.modifiedAt).toBeGreaterThanOrEqual(before);
-      expect(result.value.entry.modifiedAt).toBeLessThanOrEqual(after);
-    }
+    const value = expectOk(result);
+    expect(value.entry.createdAt).toBeGreaterThanOrEqual(before);
+    expect(value.entry.createdAt).toBeLessThanOrEqual(after);
+    expect(value.entry.modifiedAt).toBeGreaterThanOrEqual(before);
+    expect(value.entry.modifiedAt).toBeLessThanOrEqual(after);
   });
 
   it('uses author from options', async () => {
@@ -394,10 +370,8 @@ describe('createLayoutEntry', () => {
 
     const result = await createLayoutEntry(layout, library, { author: 'Test Author' });
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.author).toBe('Test Author');
-    }
+    const value = expectOk(result);
+    expect(value.entry.author).toBe('Test Author');
   });
 
   it('uses author from library settings as fallback', async () => {
@@ -407,10 +381,8 @@ describe('createLayoutEntry', () => {
 
     const result = await createLayoutEntry(layout, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.author).toBe('Library Author');
-    }
+    const value = expectOk(result);
+    expect(value.entry.author).toBe('Library Author');
   });
 
   it('adds forkedFrom metadata when provided', async () => {
@@ -421,13 +393,11 @@ describe('createLayoutEntry', () => {
       forkedFrom: { name: 'Original Layout', author: 'Original Author' },
     });
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.forkedFrom).toEqual({
-        name: 'Original Layout',
-        author: 'Original Author',
-      });
-    }
+    const value = expectOk(result);
+    expect(value.entry.forkedFrom).toEqual({
+      name: 'Original Layout',
+      author: 'Original Author',
+    });
   });
 
   it('computes preview for new layout', async () => {
@@ -436,10 +406,8 @@ describe('createLayoutEntry', () => {
 
     const result = await createLayoutEntry(layout, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.preview.binCount).toBe(3);
-    }
+    const value = expectOk(result);
+    expect(value.entry.preview.binCount).toBe(3);
   });
 
   it('returns error when backend save fails', async () => {
@@ -450,7 +418,7 @@ describe('createLayoutEntry', () => {
 
     const result = await createLayoutEntry(layout, library);
 
-    expect(isErr(result)).toBe(true);
+    expectErr(result);
   });
 });
 
@@ -469,11 +437,9 @@ describe('deleteLayoutWithEntry', () => {
 
     const result = await deleteLayoutWithEntry('layout-2', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.library.entries.length).toBe(1);
-      expect(result.value.library.entries[0].id).toBe('layout-1');
-    }
+    const value = expectOk(result);
+    expect(value.library.entries.length).toBe(1);
+    expect(value.library.entries[0].id).toBe('layout-1');
   });
 
   it('returns newActiveId when deleting active layout', async () => {
@@ -485,11 +451,9 @@ describe('deleteLayoutWithEntry', () => {
 
     const result = await deleteLayoutWithEntry('layout-1', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.newActiveId).toBe('layout-2');
-      expect(result.value.library.activeLayoutId).toBe('layout-2');
-    }
+    const value = expectOk(result);
+    expect(value.newActiveId).toBe('layout-2');
+    expect(value.library.activeLayoutId).toBe('layout-2');
   });
 
   it('does not set newActiveId when deleting non-active layout', async () => {
@@ -501,11 +465,9 @@ describe('deleteLayoutWithEntry', () => {
 
     const result = await deleteLayoutWithEntry('layout-2', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.newActiveId).toBeUndefined();
-      expect(result.value.library.activeLayoutId).toBe('layout-1');
-    }
+    const value = expectOk(result);
+    expect(value.newActiveId).toBeUndefined();
+    expect(value.library.activeLayoutId).toBe('layout-1');
   });
 
   it('returns error when trying to delete last layout', async () => {
@@ -513,10 +475,7 @@ describe('deleteLayoutWithEntry', () => {
 
     const result = await deleteLayoutWithEntry('only-layout', library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_CORRUPTED');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_CORRUPTED');
   });
 
   it('returns error for non-existent layout', async () => {
@@ -527,10 +486,7 @@ describe('deleteLayoutWithEntry', () => {
 
     const result = await deleteLayoutWithEntry('non-existent', library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
 
   it('calls backend deleteAsync with correct key', async () => {
@@ -559,11 +515,9 @@ describe('duplicateLayoutEntry', () => {
 
     const result = await duplicateLayoutEntry('source-id', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entry.name).toBe('Source Layout (copy)');
-      expect(result.value.layout.name).toBe('Source Layout (copy)');
-    }
+    const value = expectOk(result);
+    expect(value.entry.name).toBe('Source Layout (copy)');
+    expect(value.layout.name).toBe('Source Layout (copy)');
   });
 
   it('adds duplicated entry to library', async () => {
@@ -571,10 +525,8 @@ describe('duplicateLayoutEntry', () => {
 
     const result = await duplicateLayoutEntry('source-id', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.library.entries.length).toBe(2);
-    }
+    const value = expectOk(result);
+    expect(value.library.entries.length).toBe(2);
   });
 
   it('generates new ID for duplicated layout', async () => {
@@ -582,11 +534,9 @@ describe('duplicateLayoutEntry', () => {
 
     const result = await duplicateLayoutEntry('source-id', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.layoutId).toBe('generated-id-123');
-      expect(result.value.layoutId).not.toBe('source-id');
-    }
+    const value = expectOk(result);
+    expect(value.layoutId).toBe('generated-id-123');
+    expect(value.layoutId).not.toBe('source-id');
   });
 
   it('returns error for non-existent source', async () => {
@@ -594,10 +544,7 @@ describe('duplicateLayoutEntry', () => {
 
     const result = await duplicateLayoutEntry('non-existent', library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
 
   it('returns error when source layout fails to load', async () => {
@@ -606,10 +553,7 @@ describe('duplicateLayoutEntry', () => {
 
     const result = await duplicateLayoutEntry('source-id', library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
 });
 
@@ -643,10 +587,8 @@ describe('switchActiveLayout', () => {
 
     const result = await switchActiveLayout('from-id', fromLayout, 'to-id', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.targetLayout.name).toBe('Target Layout');
-    }
+    const value = expectOk(result);
+    expect(value.targetLayout.name).toBe('Target Layout');
   });
 
   it('updates activeLayoutId in library', async () => {
@@ -659,10 +601,8 @@ describe('switchActiveLayout', () => {
 
     const result = await switchActiveLayout('from-id', fromLayout, 'to-id', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.library.activeLayoutId).toBe('to-id');
-    }
+    const value = expectOk(result);
+    expect(value.library.activeLayoutId).toBe('to-id');
   });
 
   it('returns target entry in result', async () => {
@@ -674,10 +614,8 @@ describe('switchActiveLayout', () => {
 
     const result = await switchActiveLayout('from-id', fromLayout, 'to-id', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.targetEntry.name).toBe('Target Entry');
-    }
+    const value = expectOk(result);
+    expect(value.targetEntry.name).toBe('Target Entry');
   });
 
   it('skips saving when fromId is __shared_preview__', async () => {
@@ -702,10 +640,7 @@ describe('switchActiveLayout', () => {
 
     const result = await switchActiveLayout('from-id', fromLayout, 'non-existent', library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
 
   it('returns error when target layout fails to load', async () => {
@@ -718,10 +653,7 @@ describe('switchActiveLayout', () => {
 
     const result = await switchActiveLayout('from-id', fromLayout, 'to-id', library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
 });
 
@@ -743,10 +675,8 @@ describe('updateCloudShare', () => {
 
     const result = updateCloudShare('layout-1', cloudShare, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entries[0].cloudShare).toEqual(cloudShare);
-    }
+    const value = expectOk(result);
+    expect(value.entries[0].cloudShare).toEqual(cloudShare);
   });
 
   it('clears cloud share info when undefined', () => {
@@ -760,10 +690,8 @@ describe('updateCloudShare', () => {
 
     const result = updateCloudShare('layout-1', undefined, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entries[0].cloudShare).toBeUndefined();
-    }
+    const value = expectOk(result);
+    expect(value.entries[0].cloudShare).toBeUndefined();
   });
 
   it('returns error for non-existent layout', () => {
@@ -771,10 +699,7 @@ describe('updateCloudShare', () => {
 
     const result = updateCloudShare('non-existent', undefined, library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
 
   it('saves library after update', () => {
@@ -809,10 +734,8 @@ describe('renameLayoutEntry', () => {
 
     const result = renameLayoutEntry('layout-1', 'New Name', library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entries[0].name).toBe('New Name');
-    }
+    const value = expectOk(result);
+    expect(value.entries[0].name).toBe('New Name');
   });
 
   it('updates modifiedAt timestamp', () => {
@@ -823,11 +746,9 @@ describe('renameLayoutEntry', () => {
     const result = renameLayoutEntry('layout-1', 'New Name', library);
     const after = Date.now();
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entries[0].modifiedAt).toBeGreaterThanOrEqual(before);
-      expect(result.value.entries[0].modifiedAt).toBeLessThanOrEqual(after);
-    }
+    const value = expectOk(result);
+    expect(value.entries[0].modifiedAt).toBeGreaterThanOrEqual(before);
+    expect(value.entries[0].modifiedAt).toBeLessThanOrEqual(after);
   });
 
   it('truncates long names to max length', () => {
@@ -836,10 +757,8 @@ describe('renameLayoutEntry', () => {
 
     const result = renameLayoutEntry('layout-1', longName, library);
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.entries[0].name.length).toBeLessThanOrEqual(100);
-    }
+    const value = expectOk(result);
+    expect(value.entries[0].name.length).toBeLessThanOrEqual(100);
   });
 
   it('returns error for non-existent layout', () => {
@@ -847,10 +766,7 @@ describe('renameLayoutEntry', () => {
 
     const result = renameLayoutEntry('non-existent', 'New Name', library);
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
 
   it('saves library after rename', () => {

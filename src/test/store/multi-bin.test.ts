@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
-import { isOk, isErr } from '@/core/result';
+import { expectOk, expectErr } from '@/test/testUtils';
 
 describe('multi-bin operations', () => {
   beforeEach(() => {
@@ -38,9 +38,8 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(result1)).toBe(true);
-      expect(isOk(result2)).toBe(true);
-      if (!isOk(result1) || !isOk(result2)) return;
+      expectOk(result1);
+      expectOk(result2);
 
       // Simulate moving both bins (update positions)
       updateBin(result1.value, { x: 0, y: 4 });
@@ -96,7 +95,7 @@ describe('multi-bin operations', () => {
       });
 
       // Should return error because of collision
-      expect(isErr(collidingResult)).toBe(true);
+      expectErr(collidingResult);
     });
   });
 
@@ -118,16 +117,14 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const originalId = addResult.value;
+      const originalId = addResultValue;
       const dupResult = duplicateBin(originalId);
 
-      expect(isOk(dupResult)).toBe(true);
-      if (!isOk(dupResult)) return;
+      const dupResultValue = expectOk(dupResult);
 
-      const duplicateId = dupResult.value;
+      const duplicateId = dupResultValue;
       expect(duplicateId).not.toBe(originalId);
 
       const bins = useLayoutStore.getState().layout.bins;
@@ -154,16 +151,14 @@ describe('multi-bin operations', () => {
         clearanceHeight: 2,
       });
 
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const originalId = addResult.value;
+      const originalId = addResultValue;
       const dupResult = duplicateBin(originalId);
 
-      expect(isOk(dupResult)).toBe(true);
-      if (!isOk(dupResult)) return;
+      const dupResultValue = expectOk(dupResult);
 
-      const duplicateId = dupResult.value;
+      const duplicateId = dupResultValue;
       const bins = useLayoutStore.getState().layout.bins;
       const original = bins.find((b) => b.id === originalId);
       const duplicate = bins.find((b) => b.id === duplicateId);
@@ -194,20 +189,18 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const originalId = addResult.value;
+      const originalId = addResultValue;
 
       // Duplicate multiple times
       const dup1 = duplicateBin(originalId);
       const dup2 = duplicateBin(originalId);
       const dup3 = duplicateBin(originalId);
 
-      expect(isOk(dup1)).toBe(true);
-      expect(isOk(dup2)).toBe(true);
-      expect(isOk(dup3)).toBe(true);
-      if (!isOk(dup1) || !isOk(dup2) || !isOk(dup3)) return;
+      expectOk(dup1);
+      expectOk(dup2);
+      expectOk(dup3);
 
       const ids = [originalId, dup1.value, dup2.value, dup3.value];
       const uniqueIds = new Set(ids);
@@ -233,12 +226,11 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
-      deleteBin(addResult.value);
+      deleteBin(addResultValue);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
     });
 
@@ -302,10 +294,9 @@ describe('multi-bin operations', () => {
 
       // Add second layer
       const layerResult = addLayer();
-      expect(isOk(layerResult)).toBe(true);
-      if (!isOk(layerResult)) return;
+      const layerResultValue = expectOk(layerResult);
 
-      const layer2Id = layerResult.value;
+      const layer2Id = layerResultValue;
 
       // Add bin to each layer
       const bin1Result = addBin({
@@ -344,9 +335,9 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(bin1Result)).toBe(true);
-      expect(isOk(bin2Result)).toBe(true);
-      expect(isOk(bin3Result)).toBe(true);
+      expectOk(bin1Result);
+      expectOk(bin2Result);
+      expectOk(bin3Result);
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(3);
 
@@ -380,11 +371,10 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
       // Resize the bin
-      updateBin(addResult.value, { width: 4, depth: 4 });
+      updateBin(addResultValue, { width: 4, depth: 4 });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.width).toBe(4);
@@ -408,10 +398,9 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      updateBin(addResult.value, { width: 3, depth: 3 });
+      updateBin(addResultValue, { width: 3, depth: 3 });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.x).toBe(2);
@@ -459,10 +448,9 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(bin1Result)).toBe(true);
-      expect(isOk(bin2Result)).toBe(true);
-      expect(isOk(bin3Result)).toBe(true);
-      if (!isOk(bin1Result) || !isOk(bin2Result) || !isOk(bin3Result)) return;
+      expectOk(bin1Result);
+      expectOk(bin2Result);
+      expectOk(bin3Result);
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(3);
 
@@ -504,9 +492,8 @@ describe('multi-bin operations', () => {
         notes: '',
       });
 
-      expect(isOk(bin1Result)).toBe(true);
-      expect(isOk(bin2Result)).toBe(true);
-      if (!isOk(bin1Result) || !isOk(bin2Result)) return;
+      expectOk(bin1Result);
+      expectOk(bin2Result);
 
       // Update category for multiple bins
       updateBin(bin1Result.value, { category: newCategoryId });

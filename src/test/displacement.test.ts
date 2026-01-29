@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
-import { isOk, isErr } from '@/core/result';
+import { expectOk, expectErr } from '@/test/testUtils';
 
 describe('bin displacement logic', () => {
   beforeEach(() => {
@@ -109,8 +109,7 @@ describe('bin displacement logic', () => {
         label: 'Survivor',
         notes: '',
       });
-      expect(isOk(result1)).toBe(true);
-      if (!isOk(result1)) return;
+      const result1Value = expectOk(result1);
 
       // Add bin at edge (will be displaced)
       const result2 = addBin({
@@ -124,15 +123,14 @@ describe('bin displacement logic', () => {
         label: 'Displaced',
         notes: '',
       });
-      expect(isOk(result2)).toBe(true);
-      if (!isOk(result2)) return;
+      const result2Value = expectOk(result2);
 
       // Shrink drawer
       updateDrawer({ width: 5 });
 
       const bins = useLayoutStore.getState().layout.bins;
-      const survivorBin = bins.find((b) => b.id === result1.value);
-      const displacedBin = bins.find((b) => b.id === result2.value);
+      const survivorBin = bins.find((b) => b.id === result1Value);
+      const displacedBin = bins.find((b) => b.id === result2Value);
 
       expect(survivorBin?.layerId).toBe(layerId);
       expect(displacedBin?.layerId).toBe(STAGING_ID);
@@ -224,7 +222,7 @@ describe('bin displacement logic', () => {
         notes: '',
       });
 
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
     });
 
@@ -258,7 +256,7 @@ describe('bin displacement logic', () => {
         notes: '',
       });
 
-      expect(isOk(adjacentResult)).toBe(true);
+      expectOk(adjacentResult);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
     });
 
@@ -283,14 +281,13 @@ describe('bin displacement logic', () => {
 
       // Add layer 2 (stacks on top of layer 1)
       const layer2Result = addLayer();
-      expect(isOk(layer2Result)).toBe(true);
-      if (!isOk(layer2Result)) return;
+      const layer2ResultValue = expectOk(layer2Result);
 
       // Add bin on layer 2 in same footprint
       // Since layer 1 bin has no clearanceHeight, it doesn't protrude into layer 2
       // Layer 2 also has height 3, so bin must be >= 3
       const layer2BinResult = addBin({
-        layerId: layer2Result.value,
+        layerId: layer2ResultValue,
         x: 0,
         y: 0,
         width: 2,
@@ -301,7 +298,7 @@ describe('bin displacement logic', () => {
         notes: '',
       });
 
-      expect(isOk(layer2BinResult)).toBe(true);
+      expectOk(layer2BinResult);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
     });
   });
@@ -324,13 +321,12 @@ describe('bin displacement logic', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
       // Move to grid
-      const moveResult = moveBinFromStaging(addResult.value, layerId, 0, 0);
+      const moveResult = moveBinFromStaging(addResultValue, layerId, 0, 0);
 
-      expect(isOk(moveResult)).toBe(true);
+      expectOk(moveResult);
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.layerId).toBe(layerId);
       expect(bin.x).toBe(0);
@@ -367,16 +363,15 @@ describe('bin displacement logic', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(stagingResult)).toBe(true);
-      if (!isOk(stagingResult)) return;
+      const stagingResultValue = expectOk(stagingResult);
 
       // Try to move to overlapping position
-      const moveResult = moveBinFromStaging(stagingResult.value, layerId, 1, 1);
+      const moveResult = moveBinFromStaging(stagingResultValue, layerId, 1, 1);
 
-      expect(isErr(moveResult)).toBe(true);
+      expectErr(moveResult);
 
       // Bin should still be in staging
-      const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === stagingResult.value);
+      const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === stagingResultValue);
       expect(bin?.layerId).toBe(STAGING_ID);
     });
 
@@ -397,14 +392,13 @@ describe('bin displacement logic', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
       // Try to move to position that would exceed bounds
       // Drawer is 10x8, bin is 3x3, so x=8 means x+width=11 > 10
-      const moveResult = moveBinFromStaging(addResult.value, layerId, 8, 0);
+      const moveResult = moveBinFromStaging(addResultValue, layerId, 8, 0);
 
-      expect(isErr(moveResult)).toBe(true);
+      expectErr(moveResult);
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.layerId).toBe(STAGING_ID);
@@ -417,9 +411,8 @@ describe('bin displacement logic', () => {
 
       // Add second layer with different height
       const layer2Result = addLayer();
-      expect(isOk(layer2Result)).toBe(true);
-      if (!isOk(layer2Result)) return;
-      updateLayer(layer2Result.value, { height: 5 });
+      const layer2ResultValue = expectOk(layer2Result);
+      updateLayer(layer2ResultValue, { height: 5 });
 
       // Add bin to staging with original height
       const addResult = addBin({
@@ -433,11 +426,10 @@ describe('bin displacement logic', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
       // Move to layer 2
-      moveBinFromStaging(addResult.value, layer2Result.value, 0, 0);
+      moveBinFromStaging(addResultValue, layer2ResultValue, 0, 0);
 
       // Bin height should match layer 2 height
       const bin = useLayoutStore.getState().layout.bins[0];
@@ -461,9 +453,8 @@ describe('bin displacement logic', () => {
       const dupResult = duplicateBin(someBin!.id);
 
       // Duplicate should go to staging
-      expect(isOk(dupResult)).toBe(true);
-      if (!isOk(dupResult)) return;
-      const dupBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResult.value);
+      const dupResultValue = expectOk(dupResult);
+      const dupBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResultValue);
       expect(dupBin?.layerId).toBe(STAGING_ID);
     });
 
@@ -484,14 +475,12 @@ describe('bin displacement logic', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const dupResult = duplicateBin(addResult.value);
+      const dupResult = duplicateBin(addResultValue);
 
-      expect(isOk(dupResult)).toBe(true);
-      if (!isOk(dupResult)) return;
-      const dupBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResult.value);
+      const dupResultValue = expectOk(dupResult);
+      const dupBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResultValue);
 
       // Should be on the same layer, adjacent to original
       expect(dupBin?.layerId).toBe(layerId);

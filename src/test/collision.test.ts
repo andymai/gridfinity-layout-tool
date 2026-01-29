@@ -11,10 +11,9 @@ import {
   checkLayerReorderCollisions,
   isInBlockedZone,
 } from '@/shared/utils/collision';
-import { isOk, isErr } from '@/core/result';
 import type { Layer } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
-import { createTestBin } from '@/test/testUtils';
+import { createTestBin, expectOk, expectErr } from '@/test/testUtils';
 
 const layers: Layer[] = [
   { id: 'layer1', name: 'Layer 1', height: 3 },
@@ -39,52 +38,36 @@ describe('getLayerZStart', () => {
 
 describe('getLayerZStartResult', () => {
   it('returns Ok(0) for first layer', () => {
-    const result = getLayerZStartResult('layer1', layers);
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value).toBe(0);
-    }
+    expect(expectOk(getLayerZStartResult('layer1', layers))).toBe(0);
   });
 
   it('sums heights for subsequent layers', () => {
-    const result2 = getLayerZStartResult('layer2', layers);
-    const result3 = getLayerZStartResult('layer3', layers);
-
-    expect(isOk(result2)).toBe(true);
-    expect(isOk(result3)).toBe(true);
-    if (isOk(result2)) expect(result2.value).toBe(3);
-    if (isOk(result3)) expect(result3.value).toBe(9);
+    expect(expectOk(getLayerZStartResult('layer2', layers))).toBe(3);
+    expect(expectOk(getLayerZStartResult('layer3', layers))).toBe(9);
   });
 
   it('returns Err for unknown layer', () => {
-    const result = getLayerZStartResult('unknown', layers);
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('VALIDATION_INVALID_LAYER');
-    }
+    expect(expectErr(getLayerZStartResult('unknown', layers)).code).toBe(
+      'VALIDATION_INVALID_LAYER'
+    );
   });
 
   it('returns Err for empty string layer ID', () => {
-    const result = getLayerZStartResult('', layers);
-    expect(isErr(result)).toBe(true);
+    expectErr(getLayerZStartResult('', layers));
   });
 });
 
 describe('getBin3DRectResult', () => {
   it('returns Ok with correct 3D rect for valid bin', () => {
     const bin = createTestBin({ id: '1', x: 2, y: 3, width: 4, depth: 5 });
-    const result = getBin3DRectResult(bin, layers);
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value).toEqual({
-        x: 2,
-        y: 3,
-        width: 4,
-        depth: 5,
-        zStart: 0,
-        zEnd: 3, // height only, no clearance
-      });
-    }
+    expect(expectOk(getBin3DRectResult(bin, layers))).toEqual({
+      x: 2,
+      y: 3,
+      width: 4,
+      depth: 5,
+      zStart: 0,
+      zEnd: 3, // height only, no clearance
+    });
   });
 
   it('includes clearanceHeight in zEnd', () => {
@@ -96,21 +79,14 @@ describe('getBin3DRectResult', () => {
       height: 4,
       clearanceHeight: 2,
     });
-    const result = getBin3DRectResult(bin, layers);
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.zStart).toBe(3); // layer2 starts at z=3
-      expect(result.value.zEnd).toBe(9); // 3 + 4 + 2 = 9
-    }
+    const value = expectOk(getBin3DRectResult(bin, layers));
+    expect(value.zStart).toBe(3); // layer2 starts at z=3
+    expect(value.zEnd).toBe(9); // 3 + 4 + 2 = 9
   });
 
   it('returns Err for bin with invalid layer', () => {
     const bin = createTestBin({ id: '1', layerId: 'nonexistent', width: 2, depth: 2 });
-    const result = getBin3DRectResult(bin, layers);
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('VALIDATION_INVALID_LAYER');
-    }
+    expect(expectErr(getBin3DRectResult(bin, layers)).code).toBe('VALIDATION_INVALID_LAYER');
   });
 });
 
@@ -164,61 +140,37 @@ describe('binsCollideResult', () => {
   it('returns Ok(true) for overlapping bins on same layer', () => {
     const binA = createTestBin({ id: '1', width: 2, depth: 2 });
     const binB = createTestBin({ id: '2', x: 1, y: 1, width: 2, depth: 2 });
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value).toBe(true);
-    }
+    expect(expectOk(binsCollideResult(binA, binB, layers))).toBe(true);
   });
 
   it('returns Ok(false) for bins on different layers with no vertical overlap', () => {
     const binA = createTestBin({ id: '1', width: 2, depth: 2 });
     const binB = createTestBin({ id: '2', layerId: 'layer2', width: 2, depth: 2 });
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value).toBe(false);
-    }
+    expect(expectOk(binsCollideResult(binA, binB, layers))).toBe(false);
   });
 
   it('returns Ok(false) for staging bins', () => {
     const binA = createTestBin({ id: '1', layerId: STAGING_ID, width: 2, depth: 2 });
     const binB = createTestBin({ id: '2', width: 2, depth: 2 });
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value).toBe(false);
-    }
+    expect(expectOk(binsCollideResult(binA, binB, layers))).toBe(false);
   });
 
   it('returns Ok(false) for non-overlapping footprints', () => {
     const binA = createTestBin({ id: '1', width: 2, depth: 2 });
     const binB = createTestBin({ id: '2', x: 5, y: 5, width: 2, depth: 2 });
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value).toBe(false);
-    }
+    expect(expectOk(binsCollideResult(binA, binB, layers))).toBe(false);
   });
 
   it('returns Err when binA has invalid layer', () => {
     const binA = createTestBin({ id: '1', layerId: 'nonexistent', width: 2, depth: 2 });
     const binB = createTestBin({ id: '2', width: 2, depth: 2 });
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('VALIDATION_INVALID_LAYER');
-    }
+    expect(expectErr(binsCollideResult(binA, binB, layers)).code).toBe('VALIDATION_INVALID_LAYER');
   });
 
   it('returns Err when binB has invalid layer', () => {
     const binA = createTestBin({ id: '1', width: 2, depth: 2 });
     const binB = createTestBin({ id: '2', layerId: 'nonexistent', width: 2, depth: 2 });
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('VALIDATION_INVALID_LAYER');
-    }
+    expect(expectErr(binsCollideResult(binA, binB, layers)).code).toBe('VALIDATION_INVALID_LAYER');
   });
 });
 

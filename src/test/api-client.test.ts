@@ -5,7 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createShare, updateShare, fetchShare, deleteShare, reportShare } from '@/core/api/share';
-import { isOk, isErr, getUserMessage } from '@/core/result';
+import { expectOk, expectErr } from '@/test/testUtils';
+import { getUserMessage } from '@/core/result';
 import type { Layout } from '@/core/types';
 
 // Mock layout for testing
@@ -45,11 +46,9 @@ describe('createShare', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.id).toBe('abc123xyz789');
-      expect(result.value.deleteToken).toBe('token123');
-    }
+    const value = expectOk(result);
+    expect(value.id).toBe('abc123xyz789');
+    expect(value.deleteToken).toBe('token123');
   });
 
   it('returns Err with ApiRateLimitedError on rate limit', async () => {
@@ -65,13 +64,11 @@ describe('createShare', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_RATE_LIMITED');
-      expect(result.error.kind).toBe('ApiError');
-      if ('retryAfter' in result.error) {
-        expect(result.error.retryAfter).toBe(3600);
-      }
+    const error = expectErr(result);
+    expect(error.code).toBe('API_RATE_LIMITED');
+    expect(error.kind).toBe('ApiError');
+    if ('retryAfter' in error) {
+      expect(error.retryAfter).toBe(3600);
     }
   });
 
@@ -80,11 +77,9 @@ describe('createShare', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_NETWORK_ERROR');
-      expect(result.error.kind).toBe('ApiError');
-    }
+    const error = expectErr(result);
+    expect(error.code).toBe('API_NETWORK_ERROR');
+    expect(error.kind).toBe('ApiError');
   });
 
   it('returns Err with ApiSizeLimitError on size limit', async () => {
@@ -99,10 +94,7 @@ describe('createShare', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_SIZE_LIMIT');
-    }
+    expect(expectErr(result).code).toBe('API_SIZE_LIMIT');
   });
 
   it('returns Err with ApiBinLimitError on bin limit', async () => {
@@ -117,10 +109,7 @@ describe('createShare', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_BIN_LIMIT');
-    }
+    expect(expectErr(result).code).toBe('API_BIN_LIMIT');
   });
 
   it('provides user-friendly message via getUserMessage', async () => {
@@ -135,12 +124,10 @@ describe('createShare', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      const message = getUserMessage(result.error);
-      expect(message).toBeTruthy();
-      expect(message).toContain('500KB');
-    }
+    const error = expectErr(result);
+    const message = getUserMessage(error);
+    expect(message).toBeTruthy();
+    expect(message).toContain('500KB');
   });
 });
 
@@ -167,10 +154,8 @@ describe('updateShare', () => {
 
     const result = await updateShare('abc123xyz789', 'token123', mockLayout, 'edit');
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.id).toBe('abc123xyz789');
-    }
+    const value = expectOk(result);
+    expect(value.id).toBe('abc123xyz789');
   });
 
   it('returns Err with ApiUnauthorizedError on unauthorized', async () => {
@@ -185,10 +170,7 @@ describe('updateShare', () => {
 
     const result = await updateShare('abc123xyz789', 'wrong-token', mockLayout, 'edit');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_UNAUTHORIZED');
-    }
+    expect(expectErr(result).code).toBe('API_UNAUTHORIZED');
   });
 
   it('returns Err with ApiNotFoundError on not found', async () => {
@@ -203,10 +185,7 @@ describe('updateShare', () => {
 
     const result = await updateShare('nonexistent', 'token', mockLayout, 'edit');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('API_NOT_FOUND');
   });
 });
 
@@ -237,11 +216,9 @@ describe('fetchShare', () => {
 
     const result = await fetchShare('abc123xyz789');
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.layout.name).toBe('Test Layout');
-      expect(result.value.metadata.authorName).toBe('Test Author');
-    }
+    const value = expectOk(result);
+    expect(value.layout.name).toBe('Test Layout');
+    expect(value.metadata.authorName).toBe('Test Author');
   });
 
   it('returns Err with ApiNotFoundError on 404', async () => {
@@ -256,10 +233,7 @@ describe('fetchShare', () => {
 
     const result = await fetchShare('nonexistent');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('API_NOT_FOUND');
   });
 
   it('returns Err with ApiExpiredError on expired share', async () => {
@@ -274,10 +248,7 @@ describe('fetchShare', () => {
 
     const result = await fetchShare('expired123');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_EXPIRED');
-    }
+    expect(expectErr(result).code).toBe('API_EXPIRED');
   });
 });
 
@@ -298,10 +269,8 @@ describe('deleteShare', () => {
 
     const result = await deleteShare('abc123xyz789', 'token123');
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.success).toBe(true);
-    }
+    const value = expectOk(result);
+    expect(value.success).toBe(true);
   });
 
   it('returns Err with ApiUnauthorizedError on invalid token', async () => {
@@ -316,10 +285,7 @@ describe('deleteShare', () => {
 
     const result = await deleteShare('abc123xyz789', 'wrong-token');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_UNAUTHORIZED');
-    }
+    expect(expectErr(result).code).toBe('API_UNAUTHORIZED');
   });
 });
 
@@ -340,10 +306,8 @@ describe('reportShare', () => {
 
     const result = await reportShare('abc123xyz789', 'Offensive content');
 
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.success).toBe(true);
-    }
+    const value = expectOk(result);
+    expect(value.success).toBe(true);
   });
 
   it('returns Err with ApiNotFoundError when share not found', async () => {
@@ -358,10 +322,7 @@ describe('reportShare', () => {
 
     const result = await reportShare('nonexistent');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_NOT_FOUND');
-    }
+    expect(expectErr(result).code).toBe('API_NOT_FOUND');
   });
 });
 
@@ -386,10 +347,7 @@ describe('API error mapping', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_CONTENT_BLOCKED');
-    }
+    expect(expectErr(result).code).toBe('API_CONTENT_BLOCKED');
   });
 
   it('maps INVALID_PERMISSION to ApiValidationError', async () => {
@@ -404,11 +362,9 @@ describe('API error mapping', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'invalid' as 'view');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      // INVALID_PERMISSION is mapped to validation error
-      expect(result.error.code).toBe('API_VALIDATION_ERROR');
-    }
+    const error = expectErr(result);
+    // INVALID_PERMISSION is mapped to validation error
+    expect(error.code).toBe('API_VALIDATION_ERROR');
   });
 
   it('maps VALIDATION_ERROR to ApiValidationError', async () => {
@@ -423,10 +379,7 @@ describe('API error mapping', () => {
 
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.code).toBe('API_VALIDATION_ERROR');
-    }
+    expect(expectErr(result).code).toBe('API_VALIDATION_ERROR');
   });
 
   it('errors have timestamp for debugging', async () => {
@@ -443,10 +396,8 @@ describe('API error mapping', () => {
     const result = await createShare('test-layout-id', mockLayout, 'view');
     const afterTime = Date.now();
 
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      expect(result.error.timestamp).toBeGreaterThanOrEqual(beforeTime);
-      expect(result.error.timestamp).toBeLessThanOrEqual(afterTime);
-    }
+    const error = expectErr(result);
+    expect(error.timestamp).toBeGreaterThanOrEqual(beforeTime);
+    expect(error.timestamp).toBeLessThanOrEqual(afterTime);
   });
 });

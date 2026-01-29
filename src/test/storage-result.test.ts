@@ -19,7 +19,8 @@ import {
   getLayoutStorageKey,
 } from '@/core/storage';
 import { createDefaultLayout } from '@/core/constants';
-import { isOk, isErr, getUserMessage, isRetryable } from '@/core/result';
+import { expectOk, expectErr } from '@/test/testUtils';
+import { getUserMessage, isRetryable } from '@/core/result';
 import type { Layout, LayoutLibrary } from '@/core/types';
 
 // Mock the backend module
@@ -71,7 +72,7 @@ describe('Result-based storage functions', () => {
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(backend.saveAsync).toHaveBeenCalledWith(getLayoutStorageKey('test-id'), defaultLayout);
     });
 
@@ -80,13 +81,11 @@ describe('Result-based storage functions', () => {
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_QUOTA_EXCEEDED');
-        expect(result.error.kind).toBe('StorageError');
-        // Verify it has user message
-        expect(getUserMessage(result.error)).toBeTruthy();
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_QUOTA_EXCEEDED');
+      expect(error.kind).toBe('StorageError');
+      // Verify it has user message
+      expect(getUserMessage(error)).toBeTruthy();
     });
 
     it('returns Err with unavailable error for generic failures', async () => {
@@ -94,10 +93,7 @@ describe('Result-based storage functions', () => {
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_UNAVAILABLE');
     });
 
     it('preserves original error as cause', async () => {
@@ -106,10 +102,8 @@ describe('Result-based storage functions', () => {
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.cause).toBe(originalError);
-      }
+      const error = expectErr(result);
+      expect(error.cause).toBe(originalError);
     });
   });
 
@@ -119,10 +113,8 @@ describe('Result-based storage functions', () => {
 
       const result = await loadLayoutResult('test-id');
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.name).toBe(defaultLayout.name);
-      }
+      const value = expectOk(result);
+      expect(value.name).toBe(defaultLayout.name);
     });
 
     it('returns Err with not found error when layout does not exist', async () => {
@@ -130,14 +122,12 @@ describe('Result-based storage functions', () => {
 
       const result = await loadLayoutResult('missing-id');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-        expect(result.error.kind).toBe('StorageError');
-        // Verify the key is preserved in the error
-        if ('key' in result.error) {
-          expect(result.error.key).toBe(getLayoutStorageKey('missing-id'));
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_NOT_FOUND');
+      expect(error.kind).toBe('StorageError');
+      // Verify the key is preserved in the error
+      if ('key' in error) {
+        expect(error.key).toBe(getLayoutStorageKey('missing-id'));
       }
     });
 
@@ -150,13 +140,11 @@ describe('Result-based storage functions', () => {
 
       const result = await loadLayoutResult('corrupted-id');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_CORRUPTED');
-        // Verify validation errors are included
-        if ('validationErrors' in result.error) {
-          expect(result.error.validationErrors).toBeDefined();
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_CORRUPTED');
+      // Verify validation errors are included
+      if ('validationErrors' in error) {
+        expect(error.validationErrors).toBeDefined();
       }
     });
 
@@ -167,10 +155,7 @@ describe('Result-based storage functions', () => {
 
       const result = await loadLayoutResult('test-id');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_UNAVAILABLE');
     });
 
     it('migrates old layout format and returns Ok', async () => {
@@ -188,14 +173,12 @@ describe('Result-based storage functions', () => {
 
       const result = await loadLayoutResult('old-layout');
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        // Migration should have added default values
-        expect(result.value.gridUnitMm).toBe(42);
-        expect(result.value.heightUnitMm).toBe(7);
-        // And converted maxPrintSize to printBedSize
-        expect(result.value.printBedSize).toBe(252); // 6 * 42
-      }
+      const value = expectOk(result);
+      // Migration should have added default values
+      expect(value.gridUnitMm).toBe(42);
+      expect(value.heightUnitMm).toBe(7);
+      // And converted maxPrintSize to printBedSize
+      expect(value.printBedSize).toBe(252); // 6 * 42
     });
   });
 
@@ -205,7 +188,7 @@ describe('Result-based storage functions', () => {
 
       const result = await deleteLayoutResult('test-id');
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(backend.deleteAsync).toHaveBeenCalledWith(getLayoutStorageKey('test-id'));
     });
 
@@ -215,7 +198,7 @@ describe('Result-based storage functions', () => {
 
       const result = await deleteLayoutResult('non-existent');
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
     });
 
     it('returns Err with unavailable error on backend failure', async () => {
@@ -223,10 +206,7 @@ describe('Result-based storage functions', () => {
 
       const result = await deleteLayoutResult('test-id');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_UNAVAILABLE');
     });
   });
 
@@ -245,7 +225,7 @@ describe('Result-based storage functions', () => {
 
       const result = saveLibraryResult(testLibrary);
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
     });
 
     it('returns Err with quota exceeded error', () => {
@@ -255,10 +235,7 @@ describe('Result-based storage functions', () => {
 
       const result = saveLibraryResult(testLibrary);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_QUOTA_EXCEEDED');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_QUOTA_EXCEEDED');
     });
 
     it('returns Err with unavailable error for generic failures', () => {
@@ -268,13 +245,11 @@ describe('Result-based storage functions', () => {
 
       const result = saveLibraryResult(testLibrary);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
-        // For localStorage errors, backend should be localStorage
-        if ('backend' in result.error) {
-          expect(result.error.backend).toBe('localStorage');
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_UNAVAILABLE');
+      // For localStorage errors, backend should be localStorage
+      if ('backend' in error) {
+        expect(error.backend).toBe('localStorage');
       }
     });
   });
@@ -285,13 +260,11 @@ describe('Result-based storage functions', () => {
 
       const result = await loadLayoutResult('test-id');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.timestamp).toBeDefined();
-        expect(typeof result.error.timestamp).toBe('number');
-        // Should be recent (within last minute)
-        expect(Date.now() - result.error.timestamp).toBeLessThan(60000);
-      }
+      const error = expectErr(result);
+      expect(error.timestamp).toBeDefined();
+      expect(typeof error.timestamp).toBe('number');
+      // Should be recent (within last minute)
+      expect(Date.now() - error.timestamp).toBeLessThan(60000);
     });
 
     it('retryable errors are marked correctly', async () => {
@@ -300,10 +273,8 @@ describe('Result-based storage functions', () => {
 
       const result = await loadLayoutResult('test-id');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(isRetryable(result.error.code)).toBe(true);
-      }
+      const error = expectErr(result);
+      expect(isRetryable(error.code)).toBe(true);
     });
 
     it('not found errors are not retryable', async () => {
@@ -311,10 +282,8 @@ describe('Result-based storage functions', () => {
 
       const result = await loadLayoutResult('missing-id');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(isRetryable(result.error.code)).toBe(false);
-      }
+      const error = expectErr(result);
+      expect(isRetryable(error.code)).toBe(false);
     });
   });
 
@@ -345,11 +314,9 @@ describe('Result-based storage functions', () => {
 
       const result = loadLibraryResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.version).toBe('1.0');
-        expect(result.value.activeLayoutId).toBe('test-id');
-      }
+      const value = expectOk(result);
+      expect(value.version).toBe('1.0');
+      expect(value.activeLayoutId).toBe('test-id');
     });
 
     it('returns Err with not found error when library does not exist', () => {
@@ -357,10 +324,7 @@ describe('Result-based storage functions', () => {
 
       const result = loadLibraryResult();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
     });
 
     it('returns Err with corrupted error for invalid library structure', () => {
@@ -370,10 +334,7 @@ describe('Result-based storage functions', () => {
 
       const result = loadLibraryResult();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_CORRUPTED');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_CORRUPTED');
     });
 
     it('returns Err with unavailable error on exception', () => {
@@ -383,10 +344,7 @@ describe('Result-based storage functions', () => {
 
       const result = loadLibraryResult();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_UNAVAILABLE');
     });
   });
 
@@ -396,10 +354,8 @@ describe('Result-based storage functions', () => {
 
       const result = migrateFromLegacyStorageResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value).toBeNull();
-      }
+      const value = expectOk(result);
+      expect(value).toBeNull();
     });
 
     it('returns Ok with migrated library on successful migration', () => {
@@ -410,10 +366,10 @@ describe('Result-based storage functions', () => {
 
       const result = migrateFromLegacyStorageResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result) && result.value) {
-        expect(result.value.version).toBe('1.0');
-        expect(result.value.entries.length).toBe(1);
+      const value = expectOk(result);
+      if (value) {
+        expect(value.version).toBe('1.0');
+        expect(value.entries.length).toBe(1);
       }
     });
 
@@ -424,10 +380,7 @@ describe('Result-based storage functions', () => {
 
       const result = migrateFromLegacyStorageResult();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_CORRUPTED');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_CORRUPTED');
     });
 
     it('returns Err with quota exceeded on storage full', () => {
@@ -438,10 +391,7 @@ describe('Result-based storage functions', () => {
 
       const result = migrateFromLegacyStorageResult();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_QUOTA_EXCEEDED');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_QUOTA_EXCEEDED');
     });
   });
 });
@@ -471,7 +421,7 @@ describe('Migration Result functions', () => {
 
       const result = await migrateLayoutToIndexedDBResult('test-id');
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(indexedDBBackend.saveLayout).toHaveBeenCalledWith('test-id', defaultLayout);
     });
 
@@ -480,10 +430,7 @@ describe('Migration Result functions', () => {
 
       const result = await migrateLayoutToIndexedDBResult('missing-id');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-      }
+      expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
     });
 
     it('returns Err when IndexedDB save fails', async () => {
@@ -492,7 +439,7 @@ describe('Migration Result functions', () => {
 
       const result = await migrateLayoutToIndexedDBResult('test-id');
 
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
   });
 
@@ -506,11 +453,9 @@ describe('Migration Result functions', () => {
 
       const result = await migrateAllLayoutsToIndexedDBResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.migratedCount).toBe(2);
-        expect(result.value.skippedCount).toBe(0);
-      }
+      const value = expectOk(result);
+      expect(value.migratedCount).toBe(2);
+      expect(value.skippedCount).toBe(0);
     });
 
     it('returns Ok with zero counts when no layouts to migrate', async () => {
@@ -519,11 +464,9 @@ describe('Migration Result functions', () => {
 
       const result = await migrateAllLayoutsToIndexedDBResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.migratedCount).toBe(0);
-        expect(result.value.skippedCount).toBe(0);
-      }
+      const value = expectOk(result);
+      expect(value.migratedCount).toBe(0);
+      expect(value.skippedCount).toBe(0);
     });
 
     it('skips layouts already in IndexedDB', async () => {
@@ -535,11 +478,9 @@ describe('Migration Result functions', () => {
 
       const result = await migrateAllLayoutsToIndexedDBResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.migratedCount).toBe(1);
-        expect(result.value.skippedCount).toBe(1);
-      }
+      const value = expectOk(result);
+      expect(value.migratedCount).toBe(1);
+      expect(value.skippedCount).toBe(1);
     });
 
     it('returns Err when IndexedDB unavailable', async () => {
@@ -547,12 +488,10 @@ describe('Migration Result functions', () => {
 
       const result = await migrateAllLayoutsToIndexedDBResult();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
-        if ('backend' in result.error) {
-          expect(result.error.backend).toBe('indexedDB');
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_UNAVAILABLE');
+      if ('backend' in error) {
+        expect(error.backend).toBe('indexedDB');
       }
     });
   });
@@ -565,12 +504,10 @@ describe('Migration Result functions', () => {
 
       const result = await getMigrationStatusResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.localStorageCount).toBe(2);
-        expect(result.value.indexedDBCount).toBe(3);
-        expect(result.value.migrationComplete).toBe(true);
-      }
+      const value = expectOk(result);
+      expect(value.localStorageCount).toBe(2);
+      expect(value.indexedDBCount).toBe(3);
+      expect(value.migrationComplete).toBe(true);
     });
 
     it('returns Ok with zero indexedDB count when IndexedDB fails', async () => {
@@ -579,11 +516,9 @@ describe('Migration Result functions', () => {
 
       const result = await getMigrationStatusResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.localStorageCount).toBe(1);
-        expect(result.value.indexedDBCount).toBe(0);
-      }
+      const value = expectOk(result);
+      expect(value.localStorageCount).toBe(1);
+      expect(value.indexedDBCount).toBe(0);
     });
   });
 });

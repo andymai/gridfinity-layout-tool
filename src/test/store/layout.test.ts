@@ -2,9 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { createDefaultLayout, STAGING_ID, CONSTRAINTS } from '@/core/constants';
-import { resetAllStores } from '@/test/testUtils';
+import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
 import type { Layout } from '@/core/types';
-import { isOk, isErr } from '@/core/result';
 
 describe('layout store', () => {
   beforeEach(() => {
@@ -34,7 +33,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       const updatedLayout = useLayoutStore.getState().layout;
       expect(updatedLayout.bins).toHaveLength(1);
       expect(updatedLayout.bins[0].label).toBe('Test bin');
@@ -57,7 +56,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
     });
 
@@ -92,7 +91,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
     });
 
@@ -112,7 +111,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
     });
   });
@@ -136,10 +135,9 @@ describe('layout store', () => {
       });
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
-      expect(isOk(result)).toBe(true);
-      if (!isOk(result)) return;
+      const resultValue = expectOk(result);
 
-      deleteBin(result.value);
+      deleteBin(resultValue);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
     });
 
@@ -182,10 +180,9 @@ describe('layout store', () => {
         label: 'Original',
         notes: '',
       });
-      expect(isOk(result)).toBe(true);
-      if (!isOk(result)) return;
+      const resultValue = expectOk(result);
 
-      updateBin(result.value, { label: 'Updated', notes: 'New notes' });
+      updateBin(resultValue, { label: 'Updated', notes: 'New notes' });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.label).toBe('Updated');
@@ -210,11 +207,10 @@ describe('layout store', () => {
         label: 'Original',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const dupResult = duplicateBin(addResult.value);
-      expect(isOk(dupResult)).toBe(true);
+      const dupResult = duplicateBin(addResultValue);
+      expectOk(dupResult);
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins).toHaveLength(2);
@@ -236,11 +232,10 @@ describe('layout store', () => {
       const binToClone = bins.find((b) => b.layerId !== STAGING_ID);
 
       const dupResult = duplicateBin(binToClone!.id);
-      expect(isOk(dupResult)).toBe(true);
-      if (!isOk(dupResult)) return;
+      const dupResultValue = expectOk(dupResult);
 
       const updatedBins = useLayoutStore.getState().layout.bins;
-      const newBin = updatedBins.find((b) => b.id === dupResult.value);
+      const newBin = updatedBins.find((b) => b.id === dupResultValue);
       expect(newBin?.layerId).toBe(STAGING_ID);
     });
 
@@ -259,11 +254,10 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const dupResult = duplicateBin(addResult.value);
-      expect(isOk(dupResult)).toBe(true);
+      const dupResult = duplicateBin(addResultValue);
+      expectOk(dupResult);
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins).toHaveLength(2);
@@ -353,11 +347,10 @@ describe('layout store', () => {
 
       // Add layer 2 and add bin to it
       const layer2Result = addLayer();
-      expect(isOk(layer2Result)).toBe(true);
-      if (!isOk(layer2Result)) return;
+      const layer2ResultValue = expectOk(layer2Result);
 
       addBin({
-        layerId: layer2Result.value,
+        layerId: layer2ResultValue,
         x: 0,
         y: 0,
         width: 2,
@@ -373,7 +366,7 @@ describe('layout store', () => {
       clearLayer(layer1Id);
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins).toHaveLength(1);
-      expect(bins[0].layerId).toBe(layer2Result.value);
+      expect(bins[0].layerId).toBe(layer2ResultValue);
     });
   });
 
@@ -456,7 +449,7 @@ describe('layout store', () => {
       const { addLayer } = useLayoutStore.getState();
 
       const result = addLayer();
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
 
       const layers = useLayoutStore.getState().layout.layers;
       expect(layers).toHaveLength(2);
@@ -472,7 +465,7 @@ describe('layout store', () => {
       }
 
       const result = addLayer();
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
 
     it('addLayer uses default layer height setting', () => {
@@ -487,7 +480,7 @@ describe('layout store', () => {
       const { addLayer } = useLayoutStore.getState();
 
       const result = addLayer();
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
 
       const layers = useLayoutStore.getState().layout.layers;
       expect(layers).toHaveLength(2);
@@ -508,7 +501,7 @@ describe('layout store', () => {
       updateDrawer({ height: 5 });
 
       const result = addLayer();
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
 
       const layers = useLayoutStore.getState().layout.layers;
       // New layer should be 2 (remaining) not 5 (default)
@@ -522,9 +515,8 @@ describe('layout store', () => {
 
       // Add second layer
       const layer2Result = addLayer();
-      expect(isOk(layer2Result)).toBe(true);
-      if (!isOk(layer2Result)) return;
-      const layer2Id = layer2Result.value;
+      const layer2ResultValue = expectOk(layer2Result);
+      const layer2Id = layer2ResultValue;
 
       // Add bin to each layer
       addBin({
@@ -553,7 +545,7 @@ describe('layout store', () => {
       expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
 
       const result = deleteLayer(layer1Id);
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
 
       const state = useLayoutStore.getState().layout;
       expect(state.layers).toHaveLength(1);
@@ -567,7 +559,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
 
       const result = deleteLayer(layerId);
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
       expect(useLayoutStore.getState().layout.layers).toHaveLength(1);
     });
   });
@@ -624,11 +616,10 @@ describe('layout store', () => {
       const { addCategory } = useLayoutStore.getState();
 
       const result = addCategory({ name: 'New Cat', color: '#00ff00' });
-      expect(isOk(result)).toBe(true);
-      if (!isOk(result)) return;
+      const resultValue = expectOk(result);
 
       const cats = useLayoutStore.getState().layout.categories;
-      const newCat = cats.find((c) => c.id === result.value);
+      const newCat = cats.find((c) => c.id === resultValue);
       expect(newCat?.name).toBe('New Cat');
       expect(newCat?.color).toBe('#00ff00');
     });
@@ -637,13 +628,12 @@ describe('layout store', () => {
       const { addCategory, deleteCategory } = useLayoutStore.getState();
 
       const addResult = addCategory({ name: 'To Delete', color: '#ff0000' });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const result = deleteCategory(addResult.value);
-      expect(isOk(result)).toBe(true);
+      const result = deleteCategory(addResultValue);
+      expectOk(result);
       expect(
-        useLayoutStore.getState().layout.categories.find((c) => c.id === addResult.value)
+        useLayoutStore.getState().layout.categories.find((c) => c.id === addResultValue)
       ).toBeUndefined();
     });
 
@@ -665,7 +655,7 @@ describe('layout store', () => {
       });
 
       const result = deleteCategory(categoryId);
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
   });
 
@@ -757,13 +747,12 @@ describe('layout store', () => {
         label: 'Test',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(layerId);
 
-      const result = moveBinToStaging(addResult.value);
-      expect(isOk(result)).toBe(true);
+      const result = moveBinToStaging(addResultValue);
+      expectOk(result);
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(STAGING_ID);
     });
 
@@ -771,7 +760,7 @@ describe('layout store', () => {
       const { moveBinToStaging } = useLayoutStore.getState();
 
       const result = moveBinToStaging('nonexistent');
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
   });
 
@@ -793,11 +782,10 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const result = moveBinFromStaging(addResult.value, layerId, 0, 0);
-      expect(isOk(result)).toBe(true);
+      const result = moveBinFromStaging(addResultValue, layerId, 0, 0);
+      expectOk(result);
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.layerId).toBe(layerId);
@@ -810,7 +798,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
 
       const result = moveBinFromStaging('nonexistent', layerId, 0, 0);
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
 
     it('returns Err when layer does not exist', () => {
@@ -828,11 +816,10 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const result = moveBinFromStaging(addResult.value, 'nonexistent-layer', 0, 0);
-      expect(isErr(result)).toBe(true);
+      const result = moveBinFromStaging(addResultValue, 'nonexistent-layer', 0, 0);
+      expectErr(result);
     });
 
     it('returns Err when placement is invalid', () => {
@@ -865,12 +852,11 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
       // Try to move to occupied position
-      const result = moveBinFromStaging(addResult.value, layerId, 0, 0);
-      expect(isErr(result)).toBe(true);
+      const result = moveBinFromStaging(addResultValue, layerId, 0, 0);
+      expectErr(result);
     });
   });
 
@@ -912,7 +898,7 @@ describe('layout store', () => {
       const layer2Id = useLayoutStore.getState().layout.layers[1].id;
 
       const result = reorderLayers(0, 1);
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
 
       const layers = useLayoutStore.getState().layout.layers;
       expect(layers[0].id).toBe(layer2Id);
@@ -921,23 +907,17 @@ describe('layout store', () => {
 
     it('returns Ok for same index', () => {
       const result = useLayoutStore.getState().reorderLayers(0, 0);
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
     });
 
     it('returns Err for invalid source index', () => {
       const result = useLayoutStore.getState().reorderLayers(-1, 0);
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-      }
+      expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });
 
     it('returns Err for invalid target index', () => {
       const result = useLayoutStore.getState().reorderLayers(0, 10);
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-      }
+      expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });
 
     it('returns Err when reorder would cause collisions', () => {
@@ -949,9 +929,8 @@ describe('layout store', () => {
 
       // Add second layer
       const layer2Result = addLayer();
-      expect(isOk(layer2Result)).toBe(true);
-      if (!isOk(layer2Result)) return;
-      const layer2Id = layer2Result.value;
+      const layer2ResultValue = expectOk(layer2Result);
+      const layer2Id = layer2ResultValue;
 
       // Layer 1 height = 3, layer 2 height = 3
       const layer1Id = useLayoutStore.getState().layout.layers[0].id;
@@ -968,7 +947,7 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(bin1Result)).toBe(true);
+      expectOk(bin1Result);
 
       // Add a bin on layer 2 at same (0,0) position with height 4 (spans into next space)
       // Before swap: layers = [Layer1(h=3), Layer2(h=3)]
@@ -991,7 +970,7 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(bin2Result)).toBe(true);
+      expectOk(bin2Result);
 
       // Verify bins were added
       const bins = useLayoutStore.getState().layout.bins;
@@ -1000,10 +979,7 @@ describe('layout store', () => {
       // Reordering should cause collision since bins would vertically overlap
       const result = useLayoutStore.getState().reorderLayers(0, 1);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-      }
+      expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });
   });
 
@@ -1141,7 +1117,7 @@ describe('layout store', () => {
       const { duplicateBin } = useLayoutStore.getState();
 
       const result = duplicateBin('nonexistent');
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
 
     it('preserves clearanceHeight when duplicating', () => {
@@ -1161,14 +1137,12 @@ describe('layout store', () => {
         notes: '',
         clearanceHeight: 2,
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const dupResult = duplicateBin(addResult.value);
-      expect(isOk(dupResult)).toBe(true);
-      if (!isOk(dupResult)) return;
+      const dupResult = duplicateBin(addResultValue);
+      const dupResultValue = expectOk(dupResult);
 
-      const newBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResult.value);
+      const newBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResultValue);
       expect(newBin?.clearanceHeight).toBe(2);
     });
   });
@@ -1206,11 +1180,9 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value).toBeDefined();
-        expect(useLayoutStore.getState().layout.bins[0].id).toBe(result.value);
-      }
+      const value = expectOk(result);
+      expect(value).toBeDefined();
+      expect(useLayoutStore.getState().layout.bins[0].id).toBe(value);
     });
 
     it('returns Err with VALIDATION_OUT_OF_BOUNDS when out of bounds', () => {
@@ -1230,11 +1202,9 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_OUT_OF_BOUNDS');
-        expect(result.error.kind).toBe('ValidationError');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('VALIDATION_OUT_OF_BOUNDS');
+      expect(error.kind).toBe('ValidationError');
     });
 
     it('returns Err with VALIDATION_COLLISION when bin overlaps', () => {
@@ -1268,10 +1238,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_COLLISION');
-      }
+      expect(expectErr(result).code).toBe('VALIDATION_COLLISION');
     });
 
     it('returns Err with VALIDATION_INVALID_LAYER for nonexistent layer', () => {
@@ -1290,10 +1257,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_INVALID_LAYER');
-      }
+      expect(expectErr(result).code).toBe('VALIDATION_INVALID_LAYER');
     });
 
     it('allows adding to staging without validation', () => {
@@ -1312,7 +1276,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
     });
   });
 
@@ -1333,11 +1297,10 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const result = moveBinFromStaging(addResult.value, layerId, 0, 0);
-      expect(isOk(result)).toBe(true);
+      const result = moveBinFromStaging(addResultValue, layerId, 0, 0);
+      expectOk(result);
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.layerId).toBe(layerId);
@@ -1358,15 +1321,11 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const result = moveBinFromStaging(addResult.value, 'nonexistent-layer', 0, 0);
+      const result = moveBinFromStaging(addResultValue, 'nonexistent-layer', 0, 0);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_INVALID_LAYER');
-      }
+      expect(expectErr(result).code).toBe('VALIDATION_INVALID_LAYER');
     });
 
     it('returns Err with VALIDATION_COLLISION when position is occupied', () => {
@@ -1399,15 +1358,11 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(isOk(stagingResult)).toBe(true);
-      if (!isOk(stagingResult)) return;
+      const stagingResultValue = expectOk(stagingResult);
 
-      const result = moveBinFromStaging(stagingResult.value, layerId, 0, 0);
+      const result = moveBinFromStaging(stagingResultValue, layerId, 0, 0);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_COLLISION');
-      }
+      expect(expectErr(result).code).toBe('VALIDATION_COLLISION');
     });
   });
 
@@ -1417,11 +1372,9 @@ describe('layout store', () => {
 
       const result = addLayer();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value).toBeDefined();
-        expect(useLayoutStore.getState().layout.layers).toHaveLength(2);
-      }
+      const value = expectOk(result);
+      expect(value).toBeDefined();
+      expect(useLayoutStore.getState().layout.layers).toHaveLength(2);
     });
 
     it('returns Err with LAYOUT_LAYER_LIMIT when at max layers', () => {
@@ -1437,14 +1390,12 @@ describe('layout store', () => {
 
       const result = addLayer();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_LAYER_LIMIT');
-        expect(result.error.kind).toBe('LayoutError');
-        if ('currentCount' in result.error) {
-          expect(result.error.currentCount).toBe(CONSTRAINTS.LAYERS_MAX);
-          expect(result.error.maxCount).toBe(CONSTRAINTS.LAYERS_MAX);
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_LAYER_LIMIT');
+      expect(error.kind).toBe('LayoutError');
+      if ('currentCount' in error) {
+        expect(error.currentCount).toBe(CONSTRAINTS.LAYERS_MAX);
+        expect(error.maxCount).toBe(CONSTRAINTS.LAYERS_MAX);
       }
     });
 
@@ -1458,10 +1409,7 @@ describe('layout store', () => {
       // First layer now takes all height
       const result = addLayer();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-      }
+      expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });
   });
 
@@ -1471,12 +1419,11 @@ describe('layout store', () => {
 
       // Add second layer first
       const addResult = addLayer();
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const result = deleteLayer(addResult.value);
+      const result = deleteLayer(addResultValue);
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(useLayoutStore.getState().layout.layers).toHaveLength(1);
     });
 
@@ -1486,13 +1433,11 @@ describe('layout store', () => {
 
       const result = deleteLayer(layerId);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_LAST_ENTITY');
-        expect(result.error.kind).toBe('LayoutError');
-        if ('entityType' in result.error) {
-          expect(result.error.entityType).toBe('layer');
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_LAST_ENTITY');
+      expect(error.kind).toBe('LayoutError');
+      if ('entityType' in error) {
+        expect(error.entityType).toBe('layer');
       }
     });
 
@@ -1504,10 +1449,7 @@ describe('layout store', () => {
 
       const result = deleteLayer('nonexistent-layer');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-      }
+      expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });
   });
 
@@ -1522,7 +1464,7 @@ describe('layout store', () => {
 
       const result = reorderLayers(0, 1);
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       const layers = useLayoutStore.getState().layout.layers;
       expect(layers[0].id).toBe(layer2Id);
       expect(layers[1].id).toBe(layer1Id);
@@ -1530,30 +1472,26 @@ describe('layout store', () => {
 
     it('returns Ok for same index', () => {
       const result = useLayoutStore.getState().reorderLayers(0, 0);
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION for invalid source index', () => {
       const result = useLayoutStore.getState().reorderLayers(-1, 0);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-        if ('reason' in result.error) {
-          expect(result.error.reason).toContain('source index');
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_INVALID_OPERATION');
+      if ('reason' in error) {
+        expect(error.reason).toContain('source index');
       }
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION for invalid target index', () => {
       const result = useLayoutStore.getState().reorderLayers(0, 10);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-        if ('reason' in result.error) {
-          expect(result.error.reason).toContain('target index');
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_INVALID_OPERATION');
+      if ('reason' in error) {
+        expect(error.reason).toContain('target index');
       }
     });
   });
@@ -1564,12 +1502,10 @@ describe('layout store', () => {
 
       const result = addCategory({ name: 'New Cat', color: '#00ff00' });
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value).toBeDefined();
-        const cat = useLayoutStore.getState().layout.categories.find((c) => c.id === result.value);
-        expect(cat?.name).toBe('New Cat');
-      }
+      const value = expectOk(result);
+      expect(value).toBeDefined();
+      const cat = useLayoutStore.getState().layout.categories.find((c) => c.id === value);
+      expect(cat?.name).toBe('New Cat');
     });
 
     it('returns Err with LAYOUT_CATEGORY_LIMIT when at max categories', () => {
@@ -1582,11 +1518,9 @@ describe('layout store', () => {
 
       const result = addCategory({ name: 'One Too Many', color: '#ff0000' });
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_CATEGORY_LIMIT');
-        expect(result.error.kind).toBe('LayoutError');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_CATEGORY_LIMIT');
+      expect(error.kind).toBe('LayoutError');
     });
   });
 
@@ -1595,14 +1529,13 @@ describe('layout store', () => {
       const { addCategory, deleteCategory } = useLayoutStore.getState();
 
       const addResult = addCategory({ name: 'To Delete', color: '#ff0000' });
-      expect(isOk(addResult)).toBe(true);
-      if (!isOk(addResult)) return;
+      const addResultValue = expectOk(addResult);
 
-      const result = deleteCategory(addResult.value);
+      const result = deleteCategory(addResultValue);
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(
-        useLayoutStore.getState().layout.categories.find((c) => c.id === addResult.value)
+        useLayoutStore.getState().layout.categories.find((c) => c.id === addResultValue)
       ).toBeUndefined();
     });
 
@@ -1625,12 +1558,10 @@ describe('layout store', () => {
 
       const result = deleteCategory(categoryId);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-        if ('reason' in result.error) {
-          expect(result.error.reason).toContain('in use');
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_INVALID_OPERATION');
+      if ('reason' in error) {
+        expect(error.reason).toContain('in use');
       }
     });
 
@@ -1647,12 +1578,10 @@ describe('layout store', () => {
       const lastCategoryId = useLayoutStore.getState().layout.categories[0].id;
       const result = deleteCategory(lastCategoryId);
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_LAST_ENTITY');
-        if ('entityType' in result.error) {
-          expect(result.error.entityType).toBe('category');
-        }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_LAST_ENTITY');
+      if ('entityType' in error) {
+        expect(error.entityType).toBe('category');
       }
     });
 
@@ -1664,10 +1593,7 @@ describe('layout store', () => {
 
       const result = deleteCategory('nonexistent-category');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-      }
+      expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });
   });
 });

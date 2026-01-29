@@ -1,6 +1,9 @@
 import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import { expect } from 'vitest';
 import type { Bin, Layout, LayoutLibrary } from '@/core/types';
+import type { Result } from '@/core/result/types';
+import { isOk, isErr } from '@/core/result';
 import { createDefaultLayout } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/store/history';
@@ -146,6 +149,40 @@ export function createTestBin(overrides: Partial<Bin> = {}): Bin {
     notes: '',
     ...overrides,
   };
+}
+
+/**
+ * Assert that a Result is Ok and return the unwrapped value.
+ * Combines the assertion and type narrowing in one step, replacing:
+ *
+ *   expect(isOk(result)).toBe(true);
+ *   if (isOk(result)) { expect(result.value).toBe(42); }
+ *
+ * With:
+ *
+ *   expect(expectOk(result)).toBe(42);
+ */
+export function expectOk<T>(result: Result<T, unknown>): T {
+  expect(isOk(result)).toBe(true);
+  if (!isOk(result)) throw new Error('Expected Ok result');
+  return result.value;
+}
+
+/**
+ * Assert that a Result is Err and return the unwrapped error.
+ * Combines the assertion and type narrowing in one step, replacing:
+ *
+ *   expect(isErr(result)).toBe(true);
+ *   if (isErr(result)) { expect(result.error.code).toBe('NOT_FOUND'); }
+ *
+ * With:
+ *
+ *   expect(expectErr(result).code).toBe('NOT_FOUND');
+ */
+export function expectErr<E>(result: Result<unknown, E>): E {
+  expect(isErr(result)).toBe(true);
+  if (!isErr(result)) throw new Error('Expected Err result');
+  return result.error;
 }
 
 /**
