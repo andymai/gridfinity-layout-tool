@@ -15,8 +15,9 @@ import {
   restoreEmbeddedDesigns,
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
-import { isOk, isErr, getUserMessage, ok, err, storageNotFound } from '@/core/result';
+import { getUserMessage, ok, err, storageNotFound } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { expectOk, expectErr } from '@/test/testUtils';
 
 // Mock clipboard API
 const mockClipboard = {
@@ -443,48 +444,38 @@ describe('storage-share', () => {
 
       const result = importLayoutResult(json);
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.name).toBe(layout.name);
-        expect(result.value.drawer).toEqual(layout.drawer);
-      }
+      const value = expectOk(result);
+      expect(value.name).toBe(layout.name);
+      expect(value.drawer).toEqual(layout.drawer);
     });
 
     it('returns Err with ValidationImportError on invalid JSON', () => {
       const result = importLayoutResult('not valid json{{{');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
-        expect(result.error.kind).toBe('ValidationError');
-        expect(result.error.errors.length).toBeGreaterThan(0);
-        expect(result.error.errors[0]).toContain('Parse error');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+      expect(error.kind).toBe('ValidationError');
+      expect(error.errors.length).toBeGreaterThan(0);
+      expect(error.errors[0]).toContain('Parse error');
     });
 
     it('returns Err with validation errors on invalid layout structure', () => {
       const result = importLayoutResult(JSON.stringify({ invalid: 'data' }));
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
-        expect(result.error.errors.length).toBeGreaterThan(0);
-        // Errors should describe what's missing
-        expect(result.error.errors.some((e) => e.includes('drawer') || e.includes('Missing'))).toBe(
-          true
-        );
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+      expect(error.errors.length).toBeGreaterThan(0);
+      // Errors should describe what's missing
+      expect(error.errors.some((e) => e.includes('drawer') || e.includes('Missing'))).toBe(true);
     });
 
     it('provides user-friendly message via getUserMessage', () => {
       const result = importLayoutResult('invalid');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        const message = getUserMessage(result.error);
-        expect(message).toBeTruthy();
-        expect(typeof message).toBe('string');
-      }
+      const error = expectErr(result);
+      const message = getUserMessage(error);
+      expect(message).toBeTruthy();
+      expect(typeof message).toBe('string');
     });
 
     it('regenerates IDs to prevent collisions', () => {
@@ -493,13 +484,11 @@ describe('storage-share', () => {
 
       const result = importLayoutResult(json);
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        // IDs should be different from original
-        expect(result.value.layers[0].id).not.toBe(layout.layers[0].id);
-        expect(result.value.categories[0].id).not.toBe(layout.categories[0].id);
-        expect(result.value.bins[0].id).not.toBe(layout.bins[0].id);
-      }
+      const value = expectOk(result);
+      // IDs should be different from original
+      expect(value.layers[0].id).not.toBe(layout.layers[0].id);
+      expect(value.categories[0].id).not.toBe(layout.categories[0].id);
+      expect(value.bins[0].id).not.toBe(layout.bins[0].id);
     });
   });
 
@@ -510,30 +499,24 @@ describe('storage-share', () => {
 
       const result = decodeLayoutResult(encoded);
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.name).toBe(layout.name);
-      }
+      const value = expectOk(result);
+      expect(value.name).toBe(layout.name);
     });
 
     it('returns Err on invalid encoded string', () => {
       const result = decodeLayoutResult('invalid!!!');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
-        expect(result.error.errors.length).toBeGreaterThan(0);
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+      expect(error.errors.length).toBeGreaterThan(0);
     });
 
     it('returns Err on corrupted base64', () => {
       // Valid base64 but not valid JSON inside
       const result = decodeLayoutResult('aGVsbG8gd29ybGQ'); // "hello world" in base64
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
     });
 
     it('round-trip works with Result API', () => {
@@ -541,12 +524,10 @@ describe('storage-share', () => {
       const encoded = encodeLayoutForURL(layout);
       const result = decodeLayoutResult(encoded);
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        // Verify the decoded layout has same structure
-        expect(result.value.drawer).toEqual(layout.drawer);
-        expect(result.value.bins.length).toBe(layout.bins.length);
-      }
+      const value = expectOk(result);
+      // Verify the decoded layout has same structure
+      expect(value.drawer).toEqual(layout.drawer);
+      expect(value.bins.length).toBe(layout.bins.length);
     });
   });
 
@@ -601,10 +582,8 @@ describe('storage-share', () => {
 
       const result = getSharedLayoutResult();
       expect(result).not.toBeNull();
-      expect(isOk(result!)).toBe(true);
-      if (isOk(result!)) {
-        expect(result!.value.name).toBe(layout.name);
-      }
+      const value = expectOk(result!);
+      expect(value.name).toBe(layout.name);
     });
 
     it('returns Err for invalid share hash', () => {
@@ -619,11 +598,9 @@ describe('storage-share', () => {
 
       const result = getSharedLayoutResult();
       expect(result).not.toBeNull();
-      expect(isErr(result!)).toBe(true);
-      if (isErr(result!)) {
-        expect(result!.error.code).toBe('VALIDATION_IMPORT_FAILED');
-        expect(result!.error.errors.length).toBeGreaterThan(0);
-      }
+      const error = expectErr(result!);
+      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+      expect(error.errors.length).toBeGreaterThan(0);
     });
   });
 
@@ -865,9 +842,7 @@ describe('storage-share', () => {
 
       const json = JSON.stringify({
         ...layout,
-        linkedDesigns: [
-          { id: 'design-1', name: 'Test', params: { ...DEFAULT_BIN_PARAMS } },
-        ],
+        linkedDesigns: [{ id: 'design-1', name: 'Test', params: { ...DEFAULT_BIN_PARAMS } }],
       });
 
       // Mock saveDesign to fail

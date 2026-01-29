@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isOk, isErr } from '../core/result';
+import { expectOk, expectErr } from '@/test/testUtils';
 import {
   findLibraryEntry,
   findLibraryEntryResult,
@@ -73,11 +73,9 @@ describe('libraryUtils', () => {
 
       const result = findLibraryEntryResult(library, 'layout-1');
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.entry.id).toBe('layout-1');
-        expect(result.value.index).toBe(0);
-      }
+      const value = expectOk(result);
+      expect(value.entry.id).toBe('layout-1');
+      expect(value.index).toBe(0);
     });
 
     it('returns Err for non-existent entry', () => {
@@ -85,10 +83,8 @@ describe('libraryUtils', () => {
 
       const result = findLibraryEntryResult(library, 'layout-999');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_NOT_FOUND');
     });
   });
 
@@ -138,10 +134,8 @@ describe('libraryUtils', () => {
         name: 'Updated Second',
       });
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.entries[1].name).toBe('Updated Second');
-      }
+      const value = expectOk(result);
+      expect(value.entries[1].name).toBe('Updated Second');
     });
 
     it('returns error for non-existent ID', () => {
@@ -151,10 +145,8 @@ describe('libraryUtils', () => {
         name: 'Updated',
       });
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_NOT_FOUND');
     });
   });
 
@@ -169,12 +161,10 @@ describe('libraryUtils', () => {
 
       const result = removeLibraryEntry(library, 'layout-2');
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.entries).toHaveLength(2);
-        expect(result.value.entries[0].id).toBe('layout-1');
-        expect(result.value.entries[1].id).toBe('layout-3');
-      }
+      const value = expectOk(result);
+      expect(value.entries).toHaveLength(2);
+      expect(value.entries[0].id).toBe('layout-1');
+      expect(value.entries[1].id).toBe('layout-3');
     });
 
     it('returns error for non-existent ID', () => {
@@ -182,10 +172,8 @@ describe('libraryUtils', () => {
 
       const result = removeLibraryEntry(library, 'layout-999');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_NOT_FOUND');
     });
 
     it('does not mutate original library', () => {
@@ -195,9 +183,8 @@ describe('libraryUtils', () => {
       const result = removeLibraryEntry(library, 'layout-2');
 
       expect(library.entries).toHaveLength(2);
-      if (isOk(result)) {
-        expect(result.value.entries).toHaveLength(1);
-      }
+      const value = expectOk(result);
+      expect(value.entries).toHaveLength(1);
     });
   });
 

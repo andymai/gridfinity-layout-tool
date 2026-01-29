@@ -7,9 +7,8 @@ import {
   loadSharedWithMeResult,
   clearSharedWithMeResult,
 } from '@/core/storage/SharedWithMeService';
-import { isOk, isErr } from '@/core/result';
 import type { SharedWithMeEntry } from '@/core/types';
-import { createIsolatedLocalStorageMock } from '@/test/testUtils';
+import { createIsolatedLocalStorageMock, expectOk, expectErr } from '@/test/testUtils';
 
 const STORAGE_KEY = 'gridfinity-shared-with-me-v1';
 
@@ -158,7 +157,7 @@ describe('SharedWithMeService', () => {
   describe('saveSharedWithMeResult', () => {
     it('returns Ok on success', () => {
       const result = saveSharedWithMeResult(mockEntries);
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
 
       const stored = JSON.parse(localStorageMock.mock._store[STORAGE_KEY]);
       expect(stored.entries).toEqual(mockEntries);
@@ -170,10 +169,8 @@ describe('SharedWithMeService', () => {
       });
 
       const result = saveSharedWithMeResult(mockEntries);
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.kind).toBe('StorageError');
-      }
+      const error = expectErr(result);
+      expect(error.kind).toBe('StorageError');
     });
   });
 
@@ -185,18 +182,14 @@ describe('SharedWithMeService', () => {
       });
 
       const result = loadSharedWithMeResult();
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value).toEqual(mockEntries);
-      }
+      const value = expectOk(result);
+      expect(value).toEqual(mockEntries);
     });
 
     it('returns Ok with empty array when key missing', () => {
       const result = loadSharedWithMeResult();
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value).toEqual([]);
-      }
+      const value = expectOk(result);
+      expect(value).toEqual([]);
     });
 
     it('returns Err for invalid structure', () => {
@@ -206,22 +199,18 @@ describe('SharedWithMeService', () => {
       });
 
       const result = loadSharedWithMeResult();
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.kind).toBe('StorageError');
-        expect(result.error.code).toBe('STORAGE_CORRUPTED');
-      }
+      const error = expectErr(result);
+      expect(error.kind).toBe('StorageError');
+      expect(error.code).toBe('STORAGE_CORRUPTED');
     });
 
     it('returns Err for malformed JSON', () => {
       localStorageMock.mock._store[STORAGE_KEY] = 'not json';
 
       const result = loadSharedWithMeResult();
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.kind).toBe('StorageError');
-        expect(result.error.code).toBe('STORAGE_CORRUPTED');
-      }
+      const error = expectErr(result);
+      expect(error.kind).toBe('StorageError');
+      expect(error.code).toBe('STORAGE_CORRUPTED');
     });
   });
 
@@ -229,7 +218,7 @@ describe('SharedWithMeService', () => {
     it('returns Ok on success', () => {
       localStorageMock.mock._store[STORAGE_KEY] = 'data';
       const result = clearSharedWithMeResult();
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(localStorageMock.mock._store[STORAGE_KEY]).toBeUndefined();
     });
 
@@ -239,10 +228,8 @@ describe('SharedWithMeService', () => {
       });
 
       const result = clearSharedWithMeResult();
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.kind).toBe('StorageError');
-      }
+      const error = expectErr(result);
+      expect(error.kind).toBe('StorageError');
     });
   });
 });

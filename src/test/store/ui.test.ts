@@ -10,8 +10,7 @@ import {
   useSharedPreviewStore,
 } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';
-import { resetAllStores } from '@/test/testUtils';
-import { isOk, isErr } from '@/core/result';
+import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
 
 // Helper to get state from the correct focused store after facade actions
 // Since the facade no longer syncs state synchronously, we need to read from the source stores
@@ -710,7 +709,7 @@ describe('ui store', () => {
 
       const result = toggleHalfBinModeResult();
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(getHalfBinModeState().halfBinMode).toBe(true);
     });
 
@@ -723,7 +722,7 @@ describe('ui store', () => {
 
       const result = toggleHalfBinModeResult();
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(getHalfBinModeState().halfBinMode).toBe(false);
     });
 
@@ -747,13 +746,11 @@ describe('ui store', () => {
 
       const result = toggleHalfBinModeResult();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
-        expect(result.error.kind).toBe('LayoutError');
-        expect(result.error.operation).toBe('toggleHalfBinMode');
-        expect(result.error.reason).toContain('fractional dimensions');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_INVALID_OPERATION');
+      expect(error.kind).toBe('LayoutError');
+      expect(error.operation).toBe('toggleHalfBinMode');
+      expect(error.reason).toContain('fractional dimensions');
       expect(getHalfBinModeState().halfBinMode).toBe(true); // Should remain enabled
     });
   });

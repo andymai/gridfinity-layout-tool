@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { isOk } from '@/core/result';
 import { DEFAULT_BIN_PARAMS, migrateParams } from '../constants/defaults';
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { validateBinParams } from '../utils/validation';
+import { expectOk } from '@/test/testUtils';
 
 describe('DEFAULT_BIN_PARAMS', () => {
   it('should pass validation', () => {
     const result = validateBinParams(DEFAULT_BIN_PARAMS);
-    expect(isOk(result)).toBe(true);
+    expectOk(result);
   });
 
   it('should have valid dimension ranges', () => {
@@ -76,7 +76,7 @@ describe('migrateParams', () => {
 
   it('should produce valid params from empty input', () => {
     const result = migrateParams({});
-    expect(isOk(validateBinParams(result))).toBe(true);
+    expectOk(validateBinParams(result));
   });
 
   it('should produce valid params from legacy format', () => {
@@ -87,7 +87,7 @@ describe('migrateParams', () => {
       style: 'standard',
       scoop: true as any,
     });
-    expect(isOk(validateBinParams(result))).toBe(true);
+    expectOk(validateBinParams(result));
     expect(result.scoop.enabled).toBe(true);
   });
 
@@ -141,7 +141,7 @@ describe('migrateParams', () => {
 
   it('should produce valid params from legacy wall format', () => {
     const result = migrateParams({ walls: { front: 50, back: 80, left: 0, right: 100 } } as any);
-    expect(isOk(validateBinParams(result))).toBe(true);
+    expectOk(validateBinParams(result));
   });
 });
 

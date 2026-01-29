@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useLibraryStore, computePreview, createDefaultLibrary } from '@/core/store/library';
 import { createDefaultLayout, CONSTRAINTS } from '@/core/constants';
-import { resetAllStores } from '@/test/testUtils';
+import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
 import type { LayoutLibrary, LayoutEntry, LayoutPreview } from '@/core/types';
-import { isOk, isErr } from '@/core/result';
 
 // Helper to create test library with multiple entries (uses testUtils createTestLibrary as base)
 function createTestLibraryWithEntries(entryCount: number): LayoutLibrary {
@@ -185,7 +184,7 @@ describe('library store', () => {
     it('returns Ok when deleting an entry', () => {
       const result = useLibraryStore.getState().deleteEntry('layout-1');
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(useLibraryStore.getState().library.entries).toHaveLength(2);
       expect(useLibraryStore.getState().getEntry('layout-1')).toBeUndefined();
     });
@@ -199,12 +198,10 @@ describe('library store', () => {
 
       const result = useLibraryStore.getState().deleteEntry('layout-0');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('LAYOUT_LAST_ENTITY');
-        expect(result.error.kind).toBe('LayoutError');
-        expect(result.error.entityType).toBe('layout');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('LAYOUT_LAST_ENTITY');
+      expect(error.kind).toBe('LayoutError');
+      expect(error.entityType).toBe('layout');
       expect(useLibraryStore.getState().library.entries).toHaveLength(1);
     });
 
@@ -215,7 +212,7 @@ describe('library store', () => {
 
       const result = useLibraryStore.getState().deleteEntry('layout-1');
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-0');
     });
 
@@ -226,7 +223,7 @@ describe('library store', () => {
 
       const result = useLibraryStore.getState().deleteEntry('layout-2');
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
       expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-0');
     });
   });

@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { isOk, isErr } from '@/core/result';
 import {
   saveDesign,
   loadDesign,
@@ -15,6 +14,7 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams } from '../types';
+import { expectOk, expectErr } from '@/test/testUtils';
 
 describe('DesignerStorage', () => {
   beforeEach(async () => {
@@ -34,14 +34,12 @@ describe('DesignerStorage', () => {
         thumbnail: null,
       });
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.id).toMatch(/^design_/);
-        expect(result.value.name).toBe('Test Bin');
-        expect(result.value.params).toEqual(DEFAULT_BIN_PARAMS);
-        expect(result.value.createdAt).toBeTruthy();
-        expect(result.value.updatedAt).toBeTruthy();
-      }
+      const value = expectOk(result);
+      expect(value.id).toMatch(/^design_/);
+      expect(value.name).toBe('Test Bin');
+      expect(value.params).toEqual(DEFAULT_BIN_PARAMS);
+      expect(value.createdAt).toBeTruthy();
+      expect(value.updatedAt).toBeTruthy();
     });
 
     it('should save with a provided ID', async () => {
@@ -52,10 +50,8 @@ describe('DesignerStorage', () => {
         thumbnail: null,
       });
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.id).toBe('custom-id-123');
-      }
+      const value = expectOk(result);
+      expect(value.id).toBe('custom-id-123');
     });
 
     it('should update existing design preserving createdAt', async () => {
@@ -66,9 +62,8 @@ describe('DesignerStorage', () => {
         thumbnail: null,
       });
 
-      expect(isOk(firstResult)).toBe(true);
-      if (!isOk(firstResult)) return;
-      const firstCreatedAt = firstResult.value.createdAt;
+      const firstValue = expectOk(firstResult);
+      const firstCreatedAt = firstValue.createdAt;
 
       // Small delay to ensure different timestamps
       await new Promise((r) => setTimeout(r, 10));
@@ -80,12 +75,10 @@ describe('DesignerStorage', () => {
         thumbnail: null,
       });
 
-      expect(isOk(secondResult)).toBe(true);
-      if (isOk(secondResult)) {
-        expect(secondResult.value.name).toBe('Updated');
-        expect(secondResult.value.createdAt).toBe(firstCreatedAt);
-        expect(secondResult.value.updatedAt).not.toBe(firstCreatedAt);
-      }
+      const secondValue = expectOk(secondResult);
+      expect(secondValue.name).toBe('Updated');
+      expect(secondValue.createdAt).toBe(firstCreatedAt);
+      expect(secondValue.updatedAt).not.toBe(firstCreatedAt);
     });
   });
 
@@ -99,16 +92,14 @@ describe('DesignerStorage', () => {
       });
 
       const result = await loadDesign('load-test');
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.name).toBe('Load Test');
-        expect(result.value.params).toEqual(DEFAULT_BIN_PARAMS);
-      }
+      const value = expectOk(result);
+      expect(value.name).toBe('Load Test');
+      expect(value.params).toEqual(DEFAULT_BIN_PARAMS);
     });
 
     it('should return error for non-existent design', async () => {
       const result = await loadDesign('nonexistent');
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
   });
 
@@ -129,20 +120,16 @@ describe('DesignerStorage', () => {
       });
 
       const result = await listDesigns();
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.length).toBe(2);
-        expect(result.value[0].name).toBe('Second'); // most recent first
-        expect(result.value[1].name).toBe('First');
-      }
+      const value = expectOk(result);
+      expect(value.length).toBe(2);
+      expect(value[0].name).toBe('Second'); // most recent first
+      expect(value[1].name).toBe('First');
     });
 
     it('should return empty list when no designs exist', async () => {
       const result = await listDesigns();
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value).toEqual([]);
-      }
+      const value = expectOk(result);
+      expect(value).toEqual([]);
     });
   });
 
@@ -156,15 +143,15 @@ describe('DesignerStorage', () => {
       });
 
       const deleteResult = await deleteDesign('delete-test');
-      expect(isOk(deleteResult)).toBe(true);
+      expectOk(deleteResult);
 
       const loadResult = await loadDesign('delete-test');
-      expect(isErr(loadResult)).toBe(true);
+      expectErr(loadResult);
     });
 
     it('should return error for non-existent design', async () => {
       const result = await deleteDesign('nonexistent');
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
   });
 
@@ -179,19 +166,17 @@ describe('DesignerStorage', () => {
 
       const result = await duplicateDesign('original-design');
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.id).not.toBe('original-design');
-        expect(result.value.id).toMatch(/^design_/);
-        expect(result.value.name).toBe('Copy of My Bin');
-        expect(result.value.params.width).toBe(3);
-        expect(result.value.thumbnail).toBe('data:image/test');
-      }
+      const value = expectOk(result);
+      expect(value.id).not.toBe('original-design');
+      expect(value.id).toMatch(/^design_/);
+      expect(value.name).toBe('Copy of My Bin');
+      expect(value.params.width).toBe(3);
+      expect(value.thumbnail).toBe('data:image/test');
     });
 
     it('should return error for non-existent design', async () => {
       const result = await duplicateDesign('nonexistent');
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
   });
 
@@ -207,17 +192,15 @@ describe('DesignerStorage', () => {
       const newParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 4, height: 6 };
       const result = await updateDesignParams('params-test', newParams);
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.params.width).toBe(4);
-        expect(result.value.params.height).toBe(6);
-        expect(result.value.name).toBe('Params Test'); // name preserved
-      }
+      const value = expectOk(result);
+      expect(value.params.width).toBe(4);
+      expect(value.params.height).toBe(6);
+      expect(value.name).toBe('Params Test'); // name preserved
     });
 
     it('should return error for non-existent design', async () => {
       const result = await updateDesignParams('nonexistent', DEFAULT_BIN_PARAMS);
-      expect(isErr(result)).toBe(true);
+      expectErr(result);
     });
   });
 
@@ -248,21 +231,17 @@ describe('DesignerStorage', () => {
     it('should create a new design with default params', async () => {
       const result = await createNewDesign();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.id).toMatch(/^design_/);
-        expect(result.value.name).toBe('Untitled Bin');
-        expect(result.value.params).toEqual(DEFAULT_BIN_PARAMS);
-      }
+      const value = expectOk(result);
+      expect(value.id).toMatch(/^design_/);
+      expect(value.name).toBe('Untitled Bin');
+      expect(value.params).toEqual(DEFAULT_BIN_PARAMS);
     });
 
     it('should create a new design with custom name', async () => {
       const result = await createNewDesign('My Custom Bin');
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.name).toBe('My Custom Bin');
-      }
+      const value = expectOk(result);
+      expect(value.name).toBe('My Custom Bin');
     });
   });
 
@@ -276,11 +255,9 @@ describe('DesignerStorage', () => {
     it('should create a new design when no active design exists', async () => {
       const result = await initializeDesigner();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.name).toBe('Untitled Bin');
-        expect(result.value.params).toEqual(DEFAULT_BIN_PARAMS);
-      }
+      const value = expectOk(result);
+      expect(value.name).toBe('Untitled Bin');
+      expect(value.params).toEqual(DEFAULT_BIN_PARAMS);
     });
 
     it('should load existing active design', async () => {
@@ -291,7 +268,7 @@ describe('DesignerStorage', () => {
         params: { ...DEFAULT_BIN_PARAMS, width: 5 },
         thumbnail: null,
       });
-      expect(isOk(createResult)).toBe(true);
+      expectOk(createResult);
 
       // Set it as active
       setActiveDesignId('existing-design');
@@ -299,12 +276,10 @@ describe('DesignerStorage', () => {
       // Initialize should load it
       const result = await initializeDesigner();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.id).toBe('existing-design');
-        expect(result.value.name).toBe('Existing Design');
-        expect(result.value.params.width).toBe(5);
-      }
+      const value = expectOk(result);
+      expect(value.id).toBe('existing-design');
+      expect(value.name).toBe('Existing Design');
+      expect(value.params.width).toBe(5);
     });
 
     it('should create new design if active design was deleted', async () => {
@@ -313,12 +288,10 @@ describe('DesignerStorage', () => {
 
       const result = await initializeDesigner();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        // Should create a new design, not the deleted one
-        expect(result.value.id).not.toBe('deleted-design');
-        expect(result.value.name).toBe('Untitled Bin');
-      }
+      const value = expectOk(result);
+      // Should create a new design, not the deleted one
+      expect(value.id).not.toBe('deleted-design');
+      expect(value.name).toBe('Untitled Bin');
 
       // Should have cleared the stale reference
       expect(getActiveDesignId()).not.toBe('deleted-design');

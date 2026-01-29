@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { isOk, isErr } from '@/core/result';
+import { expectOk, expectErr } from '@/test/testUtils';
 
 // Mock all dependencies before importing the module under test
 vi.mock('@/core/storage/backend', () => ({
@@ -262,7 +262,7 @@ describe('migration.ts', () => {
 
       const result = await migrateLayoutToIndexedDBResult('layout-123');
 
-      expect(isOk(result)).toBe(true);
+      expectOk(result);
     });
 
     it('returns Err with NOT_FOUND when layout missing', async () => {
@@ -270,10 +270,8 @@ describe('migration.ts', () => {
 
       const result = await migrateLayoutToIndexedDBResult('missing');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_NOT_FOUND');
     });
 
     it('returns Err with NETWORK_ERROR on IndexedDB failure', async () => {
@@ -283,10 +281,8 @@ describe('migration.ts', () => {
 
       const result = await migrateLayoutToIndexedDBResult('layout-123');
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_NETWORK_ERROR');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_NETWORK_ERROR');
     });
   });
 
@@ -296,10 +292,8 @@ describe('migration.ts', () => {
 
       const result = await migrateAllLayoutsToIndexedDBResult();
 
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
-      }
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_UNAVAILABLE');
     });
 
     it('returns Ok with stats on successful migration', async () => {
@@ -311,11 +305,9 @@ describe('migration.ts', () => {
 
       const result = await migrateAllLayoutsToIndexedDBResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.migratedCount).toBe(1);
-        expect(result.value.skippedCount).toBe(1);
-      }
+      const value = expectOk(result);
+      expect(value.migratedCount).toBe(1);
+      expect(value.skippedCount).toBe(1);
     });
 
     it('returns Ok with zero counts for empty localStorage', async () => {
@@ -324,11 +316,9 @@ describe('migration.ts', () => {
 
       const result = await migrateAllLayoutsToIndexedDBResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.migratedCount).toBe(0);
-        expect(result.value.skippedCount).toBe(0);
-      }
+      const value = expectOk(result);
+      expect(value.migratedCount).toBe(0);
+      expect(value.skippedCount).toBe(0);
     });
 
     it('silently skips failed individual migrations', async () => {
@@ -342,11 +332,9 @@ describe('migration.ts', () => {
 
       const result = await migrateAllLayoutsToIndexedDBResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.migratedCount).toBe(1);
-        // Note: failed migrations don't increment skippedCount
-      }
+      const value = expectOk(result);
+      expect(value.migratedCount).toBe(1);
+      // Note: failed migrations don't increment skippedCount
     });
   });
 
@@ -358,12 +346,10 @@ describe('migration.ts', () => {
 
       const result = await getMigrationStatusResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.localStorageCount).toBe(1);
-        expect(result.value.indexedDBCount).toBe(2);
-        expect(result.value.migrationComplete).toBe(true);
-      }
+      const value = expectOk(result);
+      expect(value.localStorageCount).toBe(1);
+      expect(value.indexedDBCount).toBe(2);
+      expect(value.migrationComplete).toBe(true);
     });
 
     it('returns Ok with zero indexedDBCount when IndexedDB fails', async () => {
@@ -372,11 +358,9 @@ describe('migration.ts', () => {
 
       const result = await getMigrationStatusResult();
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.value.localStorageCount).toBe(1);
-        expect(result.value.indexedDBCount).toBe(0);
-      }
+      const value = expectOk(result);
+      expect(value.localStorageCount).toBe(1);
+      expect(value.indexedDBCount).toBe(0);
     });
   });
 });
