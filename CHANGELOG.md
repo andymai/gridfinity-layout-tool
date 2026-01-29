@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.1...gridfinity-layout-tool-v2.0.2) (2026-01-29)
+
+
+### Bug Fixes
+
+* auto-approve release-please PRs via GitHub App token ([#493](https://github.com/andymai/gridfinity-layout-tool/issues/493)) ([f5e404b](https://github.com/andymai/gridfinity-layout-tool/commit/f5e404b19b76c4e92e332b5b38b28aae15556155))
+
 ## [2.0.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.0...gridfinity-layout-tool-v2.0.1) (2026-01-29)
 
 
