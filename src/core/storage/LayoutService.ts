@@ -310,60 +310,66 @@ export function saveLibraryResult(library: LayoutLibrary): Result<void, StorageE
 }
 
 /**
+ * Validate and clean a parsed library object.
+ * Removes orphaned entries (layout data missing from storage) and
+ * fixes the activeLayoutId if it points to a removed entry.
+ *
+ * Returns null if the library is structurally invalid or has no surviving entries.
+ */
+function validateAndCleanLibrary(parsed: LayoutLibrary): LayoutLibrary | null {
+  if (!parsed.version || !parsed.activeLayoutId || !Array.isArray(parsed.entries)) {
+    console.warn('Invalid library format');
+    return null;
+  }
+
+  // Validate each entry exists in storage (clean up orphaned entries)
+  const validEntries = parsed.entries.filter((entry: LayoutEntry) => {
+    const key = getLayoutStorageKey(entry.id);
+    try {
+      const exists = backend.loadSync(key) !== null;
+      if (!exists) {
+        console.warn(`Layout ${entry.id} listed in library but not found in storage, removing`);
+      }
+      return exists;
+    } catch {
+      console.warn(`Layout ${entry.id} listed in library but corrupted, removing`);
+      return false;
+    }
+  });
+
+  // If we lost some entries, persist the cleaned library
+  if (validEntries.length < parsed.entries.length) {
+    parsed.entries = validEntries;
+
+    if (validEntries.length === 0) {
+      console.warn('All library entries are corrupted/missing, will recreate');
+      return null;
+    }
+
+    // If active layout was removed, switch to first available
+    if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
+      parsed.activeLayoutId = validEntries[0].id;
+    }
+
+    // Persist cleanup so orphaned entries don't reappear on next load
+    try {
+      backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, parsed);
+    } catch {
+      // Best-effort: cleanup will re-run on next load if save fails
+    }
+  }
+
+  return parsed;
+}
+
+/**
  * Load the layout library index from localStorage.
  */
 export function loadLibrary(): LayoutLibrary | null {
   try {
     const parsed = backend.loadSyncGeneric<LayoutLibrary>(LIBRARY_STORAGE_KEY);
-
     if (!parsed) return null;
-
-    // Basic validation
-    if (!parsed.version || !parsed.activeLayoutId || !Array.isArray(parsed.entries)) {
-      console.warn('Invalid library format');
-      return null;
-    }
-
-    // Validate each entry exists in storage (clean up orphaned entries)
-    const validEntries = parsed.entries.filter((entry: LayoutEntry) => {
-      const key = getLayoutStorageKey(entry.id);
-      try {
-        const exists = backend.loadSync(key) !== null;
-        if (!exists) {
-          console.warn(`Layout ${entry.id} listed in library but not found in storage, removing`);
-        }
-        return exists;
-      } catch {
-        // Corrupted JSON is treated as "not found"
-        console.warn(`Layout ${entry.id} listed in library but corrupted, removing`);
-        return false;
-      }
-    });
-
-    // If we lost some entries, persist the cleaned library
-    if (validEntries.length < parsed.entries.length) {
-      parsed.entries = validEntries;
-
-      // If all entries are gone, treat library as unrecoverable
-      if (validEntries.length === 0) {
-        console.warn('All library entries are corrupted/missing, will recreate');
-        return null;
-      }
-
-      // If active layout was removed, switch to first available
-      if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
-        parsed.activeLayoutId = validEntries[0].id;
-      }
-
-      // Persist cleanup so orphaned entries don't reappear on next load
-      try {
-        backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, parsed);
-      } catch {
-        // Best-effort: cleanup will re-run on next load if save fails
-      }
-    }
-
-    return parsed;
+    return validateAndCleanLibrary(parsed);
   } catch (error) {
     console.error('Failed to load library:', error);
     return null;
@@ -397,48 +403,16 @@ export function loadLibraryResult(): Result<LayoutLibrary, StorageError> {
       return err(storageNotFound(LIBRARY_STORAGE_KEY));
     }
 
-    // Basic validation
-    if (!parsed.version || !parsed.activeLayoutId || !Array.isArray(parsed.entries)) {
+    const cleaned = validateAndCleanLibrary(parsed);
+    if (!cleaned) {
       return err(
-        storageCorrupted(LIBRARY_STORAGE_KEY, ['Invalid library format: missing required fields'])
+        storageCorrupted(LIBRARY_STORAGE_KEY, [
+          'Invalid library format or all entries corrupted/missing',
+        ])
       );
     }
 
-    // Validate each entry exists in storage (clean up orphaned entries)
-    const validEntries = parsed.entries.filter((entry: LayoutEntry) => {
-      const key = getLayoutStorageKey(entry.id);
-      try {
-        return backend.loadSync(key) !== null;
-      } catch {
-        return false;
-      }
-    });
-
-    // If we lost some entries, persist the cleaned library
-    if (validEntries.length < parsed.entries.length) {
-      parsed.entries = validEntries;
-
-      // If all entries are gone, treat library as unrecoverable
-      if (validEntries.length === 0) {
-        return err(
-          storageCorrupted(LIBRARY_STORAGE_KEY, ['All library entries are corrupted or missing'])
-        );
-      }
-
-      // If active layout was removed, switch to first available
-      if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
-        parsed.activeLayoutId = validEntries[0].id;
-      }
-
-      // Persist cleanup so orphaned entries don't reappear on next load
-      try {
-        backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, parsed);
-      } catch {
-        // Best-effort: cleanup will re-run on next load if save fails
-      }
-    }
-
-    return ok(parsed);
+    return ok(cleaned);
   } catch (error) {
     return err(storageUnavailable('localStorage', error));
   }
