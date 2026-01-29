@@ -14,7 +14,8 @@ import {
   useGridFirstUseHints,
 } from '@/features/grid-editor/hooks';
 import { useResponsive } from '@/shared/hooks';
-import { getBaseCellSize, STAGING_ID, HALF_BIN_SCALE } from '@/core/constants';
+import { getBaseCellSize, HALF_BIN_SCALE } from '@/core/constants';
+import { getGridBins, getLayerBins } from '@/shared/utils';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
@@ -208,8 +209,8 @@ export function Grid() {
 
   // Get active layer info
   const activeLayer = layers.find((l) => l.id === activeLayerId);
-  const layerBins = bins.filter((b) => b.layerId === activeLayerId && b.layerId !== STAGING_ID);
-  const placedBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const layerBins = getLayerBins(bins, activeLayerId);
+  const placedBins = getGridBins(bins);
   const isEmpty = layerBins.length === 0;
   const isFirstLayer = layers.length > 0 && activeLayerId === layers[0]?.id;
 

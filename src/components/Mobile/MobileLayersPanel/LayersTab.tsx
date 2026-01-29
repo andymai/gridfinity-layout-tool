@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore, useUndoableAction } from '@/core/store';
-import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS } from '@/core/constants';
+import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk, isErr, getUserMessage } from '@/core/result';
@@ -85,7 +86,7 @@ export function LayersTab() {
   const totalCells = drawer.width * drawer.depth;
 
   // Multi-layer stats
-  const allPlacedBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const allPlacedBins = getGridBins(bins);
   const totalBinCount = allPlacedBins.length;
   const totalCoveredCells = allPlacedBins.reduce((sum, b) => sum + b.width * b.depth, 0);
   const totalAvailableCells = totalCells * layers.length;
@@ -93,7 +94,7 @@ export function LayersTab() {
     totalAvailableCells > 0 ? Math.round((totalCoveredCells / totalAvailableCells) * 100) : 0;
 
   // Single layer stats
-  const activeLayerBins = bins.filter((b) => b.layerId === activeLayerId);
+  const activeLayerBins = getLayerBins(bins, activeLayerId);
   const activeCoverage =
     totalCells > 0
       ? Math.round(
@@ -201,7 +202,7 @@ export function LayersTab() {
   };
 
   const layerToDelete = deleteLayerId ? layers.find((l) => l.id === deleteLayerId) : null;
-  const binsInLayer = deleteLayerId ? bins.filter((b) => b.layerId === deleteLayerId).length : 0;
+  const binsInLayer = deleteLayerId ? getLayerBins(bins, deleteLayerId).length : 0;
   const canAddLayer = totalLayerHeight < drawer.height;
 
   const cancelDeleteLayer = () => {
@@ -255,7 +256,7 @@ export function LayersTab() {
       <div className="space-y-1.5">
         {displayLayers.map((layer, displayIndex) => {
           const isActive = layer.id === activeLayerId;
-          const layerBins = bins.filter((b) => b.layerId === layer.id);
+          const layerBins = getLayerBins(bins, layer.id);
           const binCount = layerBins.length;
           const layerCoveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
           const layerCoverage =

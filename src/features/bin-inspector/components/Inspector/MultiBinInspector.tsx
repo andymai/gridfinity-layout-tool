@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '@/core/constants';
+import { getGridBins } from '@/shared/utils';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import type { Layer } from '@/core/types';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
@@ -83,7 +84,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
   const canMoveToStaging = selectedBins.some((b) => b.layerId !== STAGING_ID);
 
   // Check if all bins are on the same layer
-  const gridBins = selectedBins.filter((b) => b.layerId !== STAGING_ID);
+  const gridBins = getGridBins(selectedBins);
   const commonLayer: Layer | null =
     gridBins.length > 0 && gridBins.every((b) => b.layerId === gridBins[0]?.layerId)
       ? (layout.layers.find((l) => l.id === gridBins[0]?.layerId) ?? null)
@@ -145,7 +146,9 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
       <div className="space-y-3">
         {/* Category */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>{t('common.category')}</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>
+            {t('common.category')}
+          </label>
           <SelectDropdown
             value={commonCategory || ''}
             onChange={updateMultiCategory}
@@ -162,7 +165,9 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         {/* Layer - only show when there are bins on grid and multiple layers */}
         {gridBins.length > 0 && layout.layers.length > 1 && (
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.layer')}</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              {t('inspector.layer')}
+            </label>
             <SelectDropdown
               value={commonLayer?.id || ''}
               onChange={updateMultiLayer}
@@ -215,13 +220,17 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         {/* Custom Properties - Set same property on all bins */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.customProperties')}</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              {t('inspector.customProperties')}
+            </label>
             {!showPropertyForm && (
               <button
                 type="button"
                 onClick={() => setShowPropertyForm(true)}
                 className="text-xs text-accent hover:text-accent-hover transition-colors"
-              >{t('inspector.setProperty')}</button>
+              >
+                {t('inspector.setProperty')}
+              </button>
             )}
           </div>
           {showPropertyForm ? (
@@ -270,7 +279,9 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                   }}
                   disabled={!propertyKey.trim()}
                   className={`btn btn-primary flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
-                >{t('inspector.setOnAll')}</button>
+                >
+                  {t('inspector.setOnAll')}
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -279,11 +290,15 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                     setShowPropertyForm(false);
                   }}
                   className={`btn btn-ghost flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
-                >{t('common.cancel')}</button>
+                >
+                  {t('common.cancel')}
+                </button>
               </div>
             </div>
           ) : (
-            <p className={`text-xs text-content-disabled ${isMobile ? '' : 'mt-1'}`}>{t('inspector.setTheSamePropertyOnAllSelectedBins')}</p>
+            <p className={`text-xs text-content-disabled ${isMobile ? '' : 'mt-1'}`}>
+              {t('inspector.setTheSamePropertyOnAllSelectedBins')}
+            </p>
           )}
         </div>
 
@@ -294,13 +309,17 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
               type="button"
               onClick={moveToStaging}
               className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
-            >{t('inspector.toStash')}</button>
+            >
+              {t('inspector.toStash')}
+            </button>
           )}
           <button
             type="button"
             onClick={requestDelete}
             className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
-          >{t('inspector.deleteAll')}</button>
+          >
+            {t('inspector.deleteAll')}
+          </button>
         </div>
       </div>
     </div>

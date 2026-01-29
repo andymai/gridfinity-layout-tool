@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { STAGING_ID } from '@/core/constants';
+import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { useTranslation } from '@/i18n';
@@ -70,9 +71,7 @@ export function ActiveLayerPanel() {
   const isPaintActive = (w: number, d: number) => paintSize?.width === w && paintSize?.depth === d;
 
   const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
-  const layerBins = layout.bins.filter(
-    (b) => b.layerId === activeLayerId && b.layerId !== STAGING_ID
-  );
+  const layerBins = getLayerBins(layout.bins, activeLayerId);
 
   // Calculate empty cells for Fill gaps button
   const totalCells = layout.drawer.width * layout.drawer.depth;

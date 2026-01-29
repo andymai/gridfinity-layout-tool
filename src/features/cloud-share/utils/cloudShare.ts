@@ -4,7 +4,7 @@
  */
 
 import type { Layout } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins } from '@/shared/utils';
 
 /**
  * Format a timestamp as a localized date string.
@@ -23,7 +23,7 @@ export function formatShareDate(timestamp: number): string {
  */
 export function createLayoutFingerprint(layout: Layout): string {
   return JSON.stringify({
-    bins: layout.bins.filter((b) => b.layerId !== STAGING_ID),
+    bins: getGridBins(layout.bins),
     layers: layout.layers,
     categories: layout.categories,
     drawer: layout.drawer,

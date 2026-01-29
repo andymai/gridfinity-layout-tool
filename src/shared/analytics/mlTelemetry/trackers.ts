@@ -59,6 +59,7 @@ import {
   getUserHash,
 } from './computations';
 import { STAGING_ID } from '@/core/constants';
+import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { useSettingsStore } from '@/core/store/settings';
 import { processLabel, VOCAB_VERSION } from '../labelVocabulary';
 import { analyzeGaps } from '../gapAnalysis';
@@ -323,7 +324,7 @@ export function trackLayoutSnapshot(layout: Layout, trigger: LayoutSnapshotTrigg
   const snapshotIndex = (layoutSession.snapshotCounts.get(layoutHash) || 0) + 1;
   layoutSession.snapshotCounts.set(layoutHash, snapshotIndex);
 
-  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const bins = getGridBins(layout.bins);
   const temporal = computeTemporalFields();
 
   const event: LayoutSnapshotEvent = {
@@ -823,8 +824,8 @@ export function trackPlacementRejection(
 export function trackUndo(previousLayout: Layout, currentLayout: Layout): void {
   if (!isEnabled()) return;
 
-  const prevBins = previousLayout.bins.filter((b) => b.layerId !== STAGING_ID);
-  const currBins = currentLayout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const prevBins = getGridBins(previousLayout.bins);
+  const currBins = getGridBins(currentLayout.bins);
 
   const prevBinIds = new Set(prevBins.map((b) => b.id));
   const currBinIds = new Set(currBins.map((b) => b.id));
@@ -998,9 +999,9 @@ export function trackSessionSummary(
 export function trackCrossLayoutPattern(layout: Layout): void {
   if (!isEnabled()) return;
 
-  const gridBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const gridBins = getGridBins(layout.bins);
 
-  const labeledBins = gridBins.filter((b) => b.label?.trim());
+  const labeledBins = getLabeledBins(gridBins);
   if (labeledBins.length === 0) return;
 
   recordLayoutLabelSizes(layout);

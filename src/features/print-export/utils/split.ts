@@ -1,5 +1,5 @@
 import type { Bin, PrintPiece, PrintRow, EnhancedPrintRow, PrintListConfig } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins } from '@/shared/utils';
 import {
   calcFilamentCost,
   calcSpoolPercentage,
@@ -186,7 +186,7 @@ export function generatePrintList(
   maxPrintSize: number,
   heightUnitMm: number = DEFAULT_HEIGHT_UNIT_MM
 ): PrintRow[] {
-  const placedBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const placedBins = getGridBins(bins);
 
   // Group by size, height, label, and category (consolidate same dimensions + label + category)
   const groups = new Map<

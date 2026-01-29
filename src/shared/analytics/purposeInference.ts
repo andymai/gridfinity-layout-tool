@@ -9,7 +9,7 @@
  */
 
 import type { Layout, Bin } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { processLabel, type LabelDomain } from './labelVocabulary';
 
 // ============================================
@@ -88,8 +88,7 @@ const SIZE_PATTERNS: Record<string, SizePatternDef> = {
 function getDomainDistribution(bins: Bin[]): Map<LabelDomain | 'unknown', number> {
   const distribution = new Map<LabelDomain | 'unknown', number>();
 
-  for (const bin of bins) {
-    if (bin.layerId === STAGING_ID) continue;
+  for (const bin of getGridBins(bins)) {
     if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
@@ -118,7 +117,7 @@ function matchesSizePattern(bin: Bin, pattern: SizePatternDef): boolean {
  */
 function getSizePatternSignals(bins: Bin[]): PurposeSignal[] {
   const signals: PurposeSignal[] = [];
-  const gridBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const gridBins = getGridBins(bins);
 
   if (gridBins.length === 0) return signals;
 
@@ -144,8 +143,8 @@ function getSizePatternSignals(bins: Bin[]): PurposeSignal[] {
  */
 function getLabelPatternSignals(bins: Bin[]): PurposeSignal[] {
   const signals: PurposeSignal[] = [];
-  const gridBins = bins.filter((b) => b.layerId !== STAGING_ID);
-  const labeledBins = gridBins.filter((b) => b.label?.trim());
+  const gridBins = getGridBins(bins);
+  const labeledBins = getLabeledBins(gridBins);
 
   if (labeledBins.length === 0) return signals;
 
@@ -218,7 +217,7 @@ function domainToPurpose(domain: LabelDomain | 'unknown'): string | null {
  */
 export function inferDrawerPurpose(layout: Layout): PurposeInferenceResult {
   const bins = layout.bins;
-  const gridBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const gridBins = getGridBins(bins);
   const signals: PurposeSignal[] = [];
 
   // Collect signals
@@ -378,8 +377,8 @@ export function recordLabelSize(labelHash: string, size: string): void {
  * @param layout - Layout to process
  */
 export function recordLayoutLabelSizes(layout: Layout): void {
-  const gridBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
-  const labeledBins = gridBins.filter((b) => b.label?.trim());
+  const gridBins = getGridBins(layout.bins);
+  const labeledBins = getLabeledBins(gridBins);
 
   if (labeledBins.length === 0) return;
 
@@ -424,7 +423,7 @@ export function getLabelSizeConsistency(
   const results: Array<{ labelHash: string; sizesUsed: string[]; isConsistent: boolean }> = [];
   const processedHashes = new Set<string>();
 
-  const gridBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const gridBins = getGridBins(layout.bins);
 
   for (const bin of gridBins) {
     if (!bin.label?.trim()) continue;

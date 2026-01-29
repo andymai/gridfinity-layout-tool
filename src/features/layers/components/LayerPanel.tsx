@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
-import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS } from '@/core/constants';
+import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
@@ -48,7 +49,7 @@ export function LayerPanel() {
   const hasMultipleLayers = layers.length > 1;
 
   // Total stats across all layers
-  const allPlacedBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const allPlacedBins = getGridBins(layout.bins);
   const totalBinCount = allPlacedBins.length;
   const totalCoveredCells = allPlacedBins.reduce((sum, b) => sum + b.width * b.depth, 0);
   const totalAvailableCells = totalCells * layers.length;
@@ -56,7 +57,7 @@ export function LayerPanel() {
     totalAvailableCells > 0 ? Math.round((totalCoveredCells / totalAvailableCells) * 100) : 0;
 
   // Single layer stats
-  const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
+  const layerBins = getLayerBins(layout.bins, activeLayerId);
   const binCount = layerBins.length;
   const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
   const coverage = totalCells > 0 ? Math.round((coveredCells / totalCells) * 100) : 0;
@@ -245,9 +246,7 @@ export function LayerPanel() {
   const handleDragEnd = resetDragState;
 
   const layerToDelete = deleteLayerId ? layers.find((l) => l.id === deleteLayerId) : null;
-  const binsInDeleteLayer = deleteLayerId
-    ? layout.bins.filter((b) => b.layerId === deleteLayerId).length
-    : 0;
+  const binsInDeleteLayer = deleteLayerId ? getLayerBins(layout.bins, deleteLayerId).length : 0;
 
   if (!activeLayer) return null;
 

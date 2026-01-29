@@ -4,8 +4,8 @@ import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
-import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import { getBinTextColors, clamp } from '@/shared/utils';
+import { BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { getBinTextColors, clamp, getStagingBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
@@ -203,10 +203,7 @@ export function Staging() {
     }
   };
 
-  const stagingBins = useMemo(
-    () => layout.bins.filter((bin) => bin.layerId === STAGING_ID),
-    [layout.bins]
-  );
+  const stagingBins = useMemo(() => getStagingBins(layout.bins), [layout.bins]);
 
   // Observe container width for responsive stash (desktop fills available space)
   useEffect(() => {

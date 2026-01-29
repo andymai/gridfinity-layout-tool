@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 import { track } from '@vercel/analytics';
 import { useLayoutStore } from '@/core/store';
 import { trackLayoutSnapshot, getActivityContext } from '@/utils/analytics';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins } from '@/shared/utils';
 
 /** Heartbeat interval: 3 minutes (matches Vercel's "online" window) */
 const HEARTBEAT_INTERVAL_MS = 3 * 60 * 1000;
@@ -62,7 +62,7 @@ export function useAnalytics(): void {
       if (hasTrackedRef.current) return;
 
       const layout = useLayoutStore.getState().layout;
-      const binCount = layout.bins.filter((b) => b.layerId !== STAGING_ID).length;
+      const binCount = getGridBins(layout.bins).length;
 
       // Only track engaged sessions (5+ bins)
       if (binCount < 5) return;

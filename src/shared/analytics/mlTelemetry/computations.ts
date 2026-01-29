@@ -5,7 +5,7 @@ import type {
   AbandonmentType,
   ConfidenceBreakdown,
 } from './types';
-import { STAGING_ID } from '@/core/constants';
+import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { layoutSession } from './sessionState';
 
 // ============================================
@@ -17,7 +17,7 @@ import { layoutSession } from './sessionState';
  * Filters out "just trying it out" data.
  */
 export function assessLayoutQuality(layout: Layout): LayoutQualityTier {
-  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const bins = getGridBins(layout.bins);
 
   // Skip if too few bins (probably just testing)
   if (bins.length < 3) return 'skip';
@@ -34,7 +34,7 @@ export function assessLayoutQuality(layout: Layout): LayoutQualityTier {
   const hasSizeVariety = uniqueSizes.size >= 2;
 
   // Check if any bins have labels (shows intentional design)
-  const labeledCount = bins.filter((b) => b.label?.trim()).length;
+  const labeledCount = getLabeledBins(bins).length;
   const hasLabels = labeledCount > 0;
 
   // High quality: good fill, has labels, variety
@@ -71,7 +71,7 @@ export function isSubstantialLayout(layout: Layout): boolean {
  * Uses bin composition, not positions (order-independent).
  */
 export function computeLayoutHash(layout: Layout): string {
-  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const bins = getGridBins(layout.bins);
 
   // Create a deterministic representation of bin composition
   const binSignatures = bins
@@ -94,8 +94,7 @@ export function computeLayoutHash(layout: Layout): string {
  */
 export function computeSizeDistribution(bins: Bin[]): Record<string, number> {
   const distribution: Record<string, number> = {};
-  for (const bin of bins) {
-    if (bin.layerId === STAGING_ID) continue;
+  for (const bin of getGridBins(bins)) {
     const size = `${bin.width}x${bin.depth}x${bin.height}`;
     distribution[size] = (distribution[size] || 0) + 1;
   }
@@ -107,8 +106,7 @@ export function computeSizeDistribution(bins: Bin[]): Record<string, number> {
  */
 export function computeCategoryDistribution(bins: Bin[]): Record<string, number> {
   const distribution: Record<string, number> = {};
-  for (const bin of bins) {
-    if (bin.layerId === STAGING_ID) continue;
+  for (const bin of getGridBins(bins)) {
     const category = bin.category || 'uncategorized';
     distribution[category] = (distribution[category] || 0) + 1;
   }
@@ -123,8 +121,7 @@ export function computeDomainDistribution(
   processLabel: (label: string) => { domain: string | null }
 ): Record<string, number> {
   const distribution: Record<string, number> = {};
-  for (const bin of bins) {
-    if (bin.layerId === STAGING_ID) continue;
+  for (const bin of getGridBins(bins)) {
     if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
@@ -144,8 +141,7 @@ export function computeTopLabelHashes(
 ): string[] {
   const hashCounts: Record<string, number> = {};
 
-  for (const bin of bins) {
-    if (bin.layerId === STAGING_ID) continue;
+  for (const bin of getGridBins(bins)) {
     if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
@@ -162,7 +158,7 @@ export function computeTopLabelHashes(
  * Compute fill percentage of layout.
  */
 export function computeFillPercentage(layout: Layout): number {
-  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const bins = getGridBins(layout.bins);
   const totalArea = layout.drawer.width * layout.drawer.depth;
   if (totalArea === 0) return 0;
 
@@ -174,10 +170,10 @@ export function computeFillPercentage(layout: Layout): number {
  * Compute percentage of bins that have labels.
  */
 export function computeLabeledPercentage(bins: Bin[]): number {
-  const gridBins = bins.filter((b) => b.layerId !== STAGING_ID);
+  const gridBins = getGridBins(bins);
   if (gridBins.length === 0) return 0;
 
-  const labeledCount = gridBins.filter((b) => b.label?.trim()).length;
+  const labeledCount = getLabeledBins(gridBins).length;
   return Math.round((labeledCount / gridBins.length) * 100);
 }
 
@@ -233,7 +229,7 @@ export function computeSessionConfidence(
  * Compute detailed confidence breakdown for quality events.
  */
 export function computeConfidenceBreakdown(layout: Layout): ConfidenceBreakdown {
-  const binsPlaced = layout.bins.filter((b) => b.layerId !== STAGING_ID).length;
+  const binsPlaced = getGridBins(layout.bins).length;
 
   if (binsPlaced === 0) {
     return {
@@ -255,7 +251,7 @@ export function computeConfidenceBreakdown(layout: Layout): ConfidenceBreakdown 
           : 0.4;
 
   const fillPct = computeFillPercentage(layout);
-  const labeledBins = layout.bins.filter((b) => b.layerId !== STAGING_ID && b.label?.trim()).length;
+  const labeledBins = getLabeledBins(getGridBins(layout.bins)).length;
   const labelRate = binsPlaced > 0 ? labeledBins / binsPlaced : 0;
   const completionScore = Math.round(fillPct * 0.7 + labelRate * 100 * 0.3) / 100;
 
@@ -293,7 +289,7 @@ export function detectAbandonmentType(
   layout: Layout,
   signal: QualitySignal
 ): AbandonmentType | null {
-  const binsOnGrid = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const binsOnGrid = getGridBins(layout.bins);
   const fillPct = computeFillPercentage(layout);
   const timeSinceLastEdit = Date.now() - layoutSession.lastEditTime;
 

@@ -7,7 +7,8 @@
  */
 
 import type { Layout, Bin } from '@/core/types';
-import { STAGING_ID, isFractional } from '@/core/constants';
+import { isFractional } from '@/core/constants';
+import { getLayerBins } from '@/shared/utils/bins';
 
 export interface GapAnalysis {
   /** Largest empty rectangle as "WxD" string (in grid units) */
@@ -142,7 +143,7 @@ export function analyzeGaps(
   const { drawer } = layout;
 
   // Get bins on this layer (excluding staging)
-  const layerBins = layout.bins.filter((b) => b.layerId === layerId && b.layerId !== STAGING_ID);
+  const layerBins = getLayerBins(layout.bins, layerId);
 
   // Determine scale factor: 2x for half-bin mode, 1x otherwise
   const scale = hasFractionalCoordinates(layerBins, drawer.width, drawer.depth) ? 2 : 1;
@@ -203,10 +204,8 @@ export function calculateFillPercentage(layout: Layout, layerId: string): number
   if (totalArea === 0) return 0;
 
   let occupiedArea = 0;
-  for (const bin of layout.bins) {
-    if (bin.layerId === layerId && bin.layerId !== STAGING_ID) {
-      occupiedArea += bin.width * bin.depth;
-    }
+  for (const bin of getLayerBins(layout.bins, layerId)) {
+    occupiedArea += bin.width * bin.depth;
   }
 
   return Math.round((occupiedArea / totalArea) * 100);
