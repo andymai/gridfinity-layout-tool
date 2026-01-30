@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.3.1...gridfinity-layout-tool-v2.4.0) (2026-01-30)
+
+
+### Features
+
+* add GitHub star link to header, sidebar, and mobile views ([#523](https://github.com/andymai/gridfinity-layout-tool/issues/523)) ([6372be5](https://github.com/andymai/gridfinity-layout-tool/commit/6372be52f630e2c0fc5abaf3b164062946968bdb))
+
 ## [2.3.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.3.0...gridfinity-layout-tool-v2.3.1) (2026-01-30)
 
 
