@@ -881,6 +881,89 @@ input[type='range']:hover::-moz-range-thumb {
   }
 }
 
+/* Onboarding: draw tutorial — click, drag, release gesture
+   Timeline (3s): click 0-10% → drag 10-50% → hold 50-65% → fade 65-85% → reset 85-100% */
+
+/* 1. Click ring — expands and fades as drag begins */
+@keyframes draw-hint-click {
+  0% {
+    transform: scale(0);
+    opacity: 0.8;
+  }
+  15% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  16%,
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* 2. Cursor — drags diagonally, holds at end */
+@keyframes draw-hint-cursor {
+  0% {
+    transform: translate(0, 0);
+  }
+  35%,
+  70% {
+    transform: translate(80px, 52px);
+  }
+  88%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* 3. Selection rectangle — grows with cursor, holds at end */
+@keyframes draw-hint-rect {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  35%,
+  70% {
+    width: 80px;
+    height: 52px;
+    opacity: 1;
+  }
+  86%,
+  100% {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+}
+
+.animate-draw-hint-click {
+  animation: draw-hint-click 3s ease-out infinite;
+}
+
+.animate-draw-hint-cursor {
+  animation: draw-hint-cursor 3s ease-in-out infinite;
+}
+
+.animate-draw-hint-rect {
+  animation: draw-hint-rect 3s ease-in-out infinite;
+}
+
+/* Onboarding: sidebar gallery pulse glow */
+@keyframes gallery-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--color-accent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+.animate-gallery-pulse {
+  animation: gallery-pulse 2s ease-in-out 3;
+}
+
 /* ===========================================
    REDUCED MOTION
    =========================================== */
@@ -891,6 +974,20 @@ input[type='range']:hover::-moz-range-thumb {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Instructional animations — teach interaction, exempt from blanket kill.
+     Class specificity (0,1,0) beats * (0,0,0) when both use !important. */
+  .animate-draw-hint-click {
+    animation: draw-hint-click 3s ease-out infinite !important;
+  }
+
+  .animate-draw-hint-cursor {
+    animation: draw-hint-cursor 3s ease-in-out infinite !important;
+  }
+
+  .animate-draw-hint-rect {
+    animation: draw-hint-rect 3s ease-in-out infinite !important;
   }
 }
 

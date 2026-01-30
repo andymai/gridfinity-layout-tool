@@ -2,6 +2,7 @@ import { useEffect, useRef, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore, useLabsStore } from '@/core/store';
+import { useToastStore } from '@/core/store/toast';
 import { getToggleableFeatures, getGraduatedFeatures, type FeatureId } from '@/core/labs';
 import { FeatureCard } from '@/features/labs/components/FeatureCard';
 import { GraduatedSection } from '@/features/labs/components/GraduatedSection';
@@ -14,6 +15,7 @@ import type { Locale } from '@/i18n';
 import type { STLSearchSite } from '@/core/store/settings';
 import { DEFAULT_CATEGORIES } from '@/core/constants';
 import { optInAnalytics, optOutAnalytics } from '@/shared/analytics/posthog';
+import { resetOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 
 // Style constants
 const STYLES = {
@@ -71,6 +73,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       updateSetting: state.updateSetting,
     }))
   );
+
+  const addToast = useToastStore((state) => state.addToast);
 
   const { toggleFeature, isFeatureEnabled } = useLabsStore(
     useShallow((state) => ({
@@ -427,6 +431,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
                 <Checkbox checked={analyticsEnabled} variant="desktop" />
               </div>
+            </section>
+
+            {/* Divider */}
+            <hr className="border-stroke-subtle" />
+
+            {/* Onboarding Reset */}
+            <section>
+              <h3 style={STYLES.sectionHeader} className="mb-3">
+                {t('settings.resetOnboarding')}
+              </h3>
+              <p className="text-sm text-content-tertiary mb-3">
+                {t('settings.resetOnboardingDescription')}
+              </p>
+              <button
+                onClick={() => {
+                  resetOnboarding();
+                  addToast(t('toast.onboardingReset'), 'info');
+                }}
+                className="text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle transition-colors"
+              >
+                {t('settings.resetOnboarding')}
+              </button>
             </section>
 
             {/* Divider */}

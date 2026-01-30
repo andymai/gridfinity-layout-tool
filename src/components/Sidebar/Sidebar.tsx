@@ -16,6 +16,7 @@ import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
+import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>
@@ -81,6 +82,9 @@ export function Sidebar() {
     setShowHalfBinBlockedModal,
     halfBinViolation,
   } = useDrawerSettings();
+
+  // Onboarding — sidebar gallery pulse for low-engagement users
+  const { shouldPulseGallery, dismissGalleryPulse } = useOnboarding();
 
   // Listen for command palette open-settings-modal event
   useEffect(() => {
@@ -180,8 +184,11 @@ export function Sidebar() {
             {/* Inspiration Gallery - Prominent placement */}
             <div className="px-4 py-4 border-b border-stroke-subtle">
               <button
-                onClick={() => setShowInspirationGallery(true)}
-                className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 transition-all group"
+                onClick={() => {
+                  setShowInspirationGallery(true);
+                  if (shouldPulseGallery) dismissGalleryPulse();
+                }}
+                className={`w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 transition-all group ${shouldPulseGallery ? 'animate-gallery-pulse' : ''}`}
               >
                 <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                   <svg
