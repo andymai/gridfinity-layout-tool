@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.3...gridfinity-layout-tool-v2.0.4) (2026-01-30)
+
+
+### Bug Fixes
+
+* use app token and squash merge for release-please auto-merge ([#504](https://github.com/andymai/gridfinity-layout-tool/issues/504)) ([6c93d67](https://github.com/andymai/gridfinity-layout-tool/commit/6c93d675d41b6c95ff7b0436e7df58e631b2d634))
+
 ## [2.0.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.2...gridfinity-layout-tool-v2.0.3) (2026-01-30)
 
 
