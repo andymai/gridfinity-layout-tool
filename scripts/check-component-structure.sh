@@ -48,12 +48,17 @@ while IFS= read -r FILE; do
     */__tests__/*) continue ;;
   esac
 
+  # Skip lowercase files (utilities like panelUtils.ts, not components)
+  case "$BASENAME" in
+    [a-z]*) continue ;;
+  esac
+
   DIR=$(dirname "$FILE")
   DIRNAME=$(basename "$DIR")
 
-  # Check Rule 1: Component must not be bare at a components/ root
-  # e.g., src/components/Foo.tsx or src/features/x/components/Foo.tsx
-  if [ "$DIRNAME" = "components" ]; then
+  # Check Rule 1: Component must live in a matching named folder
+  # e.g., Foo.tsx must be in Foo/Foo.tsx — catches bare files at ANY depth
+  if [ "$DIRNAME" != "$BASENAME" ]; then
     VIOLATIONS="${VIOLATIONS}  ${FILE} (must be in a named folder, e.g., ${DIR}/${BASENAME}/${FILENAME})\n"
     VIOLATION_COUNT=$((VIOLATION_COUNT + 1))
     continue
@@ -72,7 +77,7 @@ if [ "$VIOLATION_COUNT" -gt 0 ]; then
   echo ""
   echo -e "$VIOLATIONS"
   echo "  All component .tsx files under any components/ directory must:"
-  echo "    1. Live inside a named folder (not bare at the components/ root)"
+  echo "    1. Live inside a matching named folder (e.g., Foo/Foo.tsx)"
   echo "    2. Have a sibling test file (e.g., MyComponent.test.tsx)"
   echo ""
   exit 1
