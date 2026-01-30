@@ -45,7 +45,12 @@ const MobileGridToolbar = lazyWithRetry(() =>
  * Main grid container with zoom controls, layer indicator, and row/column numbering.
  * Displays the drawer grid with bins, handles user interactions.
  */
-export function Grid() {
+interface GridProps {
+  /** When true, show the animated drag-to-draw gesture on empty first-layer grids */
+  shouldShowDrawTutorial?: boolean;
+}
+
+export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   const t = useTranslation();
   const { isMobile, viewportWidth } = useResponsive();
   const gridRef = useRef<HTMLDivElement>(null);
@@ -367,7 +372,7 @@ export function Grid() {
                           className="flex flex-col items-center p-6 rounded-xl max-w-xs text-center bg-surface"
                           style={{ opacity: 0.95, backdropFilter: 'blur(4px)' }}
                         >
-                          {isFirstLayer ? (
+                          {isFirstLayer && shouldShowDrawTutorial ? (
                             <>
                               {/* Animated draw gesture */}
                               <div
@@ -407,7 +412,7 @@ export function Grid() {
                             </>
                           ) : (
                             <>
-                              {/* Static icon for non-first layers */}
+                              {/* Static icon for empty layers */}
                               <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-lg bg-surface-hover">
                                 <svg
                                   className="w-6 h-6 text-content-tertiary"
@@ -429,9 +434,11 @@ export function Grid() {
                                   ? t('grid.emptyHint.tapToDraw')
                                   : t('grid.emptyHint.clickToDraw')}
                               </p>
-                              <p className="text-xs text-content-disabled">
-                                {t('grid.emptyHint.stripedBlocked')}
-                              </p>
+                              {!isFirstLayer && (
+                                <p className="text-xs text-content-disabled">
+                                  {t('grid.emptyHint.stripedBlocked')}
+                                </p>
+                              )}
                             </>
                           )}
                         </div>

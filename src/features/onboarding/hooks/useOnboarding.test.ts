@@ -134,6 +134,55 @@ describe('useOnboarding', () => {
     });
   });
 
+  describe('auto-dismiss', () => {
+    it('auto-dismisses draw tutorial when first bin is created', () => {
+      const { result } = renderHook(() => useOnboarding());
+      expect(result.current.shouldShowDrawTutorial).toBe(true);
+
+      // Simulate adding a bin
+      const layout = useLayoutStore.getState().layout;
+      act(() => {
+        useLayoutStore.getState().addBin({
+          x: 0,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: layout.layers[0].height,
+          layerId: layout.layers[0].id,
+          categoryId: layout.categories[0].id,
+        });
+      });
+
+      expect(result.current.shouldShowDrawTutorial).toBe(false);
+      expect(localStorage.getItem('gridfinity_onboarding_draw_tutorial_seen')).toBe('true');
+    });
+
+    it('auto-dismisses gallery pulse when engagement threshold is reached', () => {
+      setFlags({ gridfinity_onboarding_welcome_seen: 'true' });
+      const { result } = renderHook(() => useOnboarding());
+      expect(result.current.shouldPulseGallery).toBe(true);
+
+      // Add bins up to the engagement threshold (3)
+      const layout = useLayoutStore.getState().layout;
+      for (let i = 0; i < 3; i++) {
+        act(() => {
+          useLayoutStore.getState().addBin({
+            x: i,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: layout.layers[0].height,
+            layerId: layout.layers[0].id,
+            categoryId: layout.categories[0].id,
+          });
+        });
+      }
+
+      expect(result.current.shouldPulseGallery).toBe(false);
+      expect(localStorage.getItem('gridfinity_onboarding_sidebar_pulse_dismissed')).toBe('true');
+    });
+  });
+
   describe('cross-instance state sharing', () => {
     it('persists choseBlankCanvas to localStorage so other hook instances see it', () => {
       const { result } = renderHook(() => useOnboarding());

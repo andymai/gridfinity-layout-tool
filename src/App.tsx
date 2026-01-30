@@ -156,7 +156,7 @@ export default function App() {
   const { isMobile, isTablet } = useResponsive();
 
   // Onboarding — first-visit welcome modal
-  const { shouldShowWelcome, markWelcomeComplete } = useOnboarding();
+  const { shouldShowWelcome, shouldShowDrawTutorial, markWelcomeComplete } = useOnboarding();
 
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
@@ -412,7 +412,7 @@ export default function App() {
           {/* Main content area - Grid takes full width */}
           <div className="flex-1 flex overflow-hidden">
             <main className="flex-1 flex flex-col overflow-hidden bg-surface">
-              <Grid />
+              <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
               <Staging />
             </main>
           </div>
@@ -512,7 +512,7 @@ export default function App() {
             className="flex-1 flex flex-col overflow-hidden bg-surface"
             tabIndex={-1}
           >
-            <Grid />
+            <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
             <Staging />
           </main>
 

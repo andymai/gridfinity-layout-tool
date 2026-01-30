@@ -34,6 +34,7 @@ import { useCollabMode } from '@/hooks/useCollabMode';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
+import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
 interface LegacyContextMenuStateWithBinId {
@@ -75,6 +76,7 @@ export function MobileLayout({
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
   const isDesignerEnabled = useFeatureFlag('bin_designer');
+  const { shouldShowDrawTutorial } = useOnboarding();
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">
@@ -90,7 +92,7 @@ export function MobileLayout({
 
       {/* Main content area - Grid takes full width */}
       <main className="flex-1 flex flex-col overflow-hidden bg-surface">
-        <Grid />
+        <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
         <Staging />
       </main>
 

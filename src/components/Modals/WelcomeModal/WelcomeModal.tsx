@@ -32,6 +32,13 @@ const CURATED_TEMPLATES: InspirationLayout[] = CURATED_TEMPLATE_IDS.map((id) =>
   INSPIRATION_LAYOUTS.find((l) => l.id === id)
 ).filter((l): l is InspirationLayout => l !== undefined);
 
+if (import.meta.env.DEV && CURATED_TEMPLATES.length !== CURATED_TEMPLATE_IDS.length) {
+  const found = new Set(CURATED_TEMPLATES.map((l) => l.id));
+  const missing = CURATED_TEMPLATE_IDS.filter((id) => !found.has(id));
+
+  console.warn(`[WelcomeModal] Missing template IDs in INSPIRATION_LAYOUTS: ${missing.join(', ')}`);
+}
+
 // ============================================================================
 // Component
 // ============================================================================
