@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.1.0...gridfinity-layout-tool-v2.2.0) (2026-01-30)
+
+
+### Features
+
+* add first-visit onboarding welcome flow ([#516](https://github.com/andymai/gridfinity-layout-tool/issues/516)) ([ce8307f](https://github.com/andymai/gridfinity-layout-tool/commit/ce8307f70e76f3412b5249e9ee5fd995c286bd56))
+
 ## [2.1.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.4...gridfinity-layout-tool-v2.1.0) (2026-01-30)
 
 
