@@ -38,6 +38,7 @@ import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
 import { CommandPalette, useCommandPalette } from '@/features/command-palette';
+import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 
 // Lazy load design-linking dialogs - only needed when bin_designer feature is enabled
 const DesignLinkingDialogs = lazyWithRetry(() =>
@@ -61,6 +62,11 @@ const SharedLayoutBanner = lazyWithRetry(() =>
 // Lazy load LabsDrawer - experimental feature most users won't use
 const LabsDrawer = lazyWithRetry(() =>
   import('./features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
+);
+
+// Lazy load Welcome Modal - only shown on first visit for new users
+const WelcomeModal = lazyWithRetry(() =>
+  import('./components/Modals/WelcomeModal').then(namedExport('WelcomeModal'))
 );
 
 // Lazy load Bin Designer page - only loaded when navigating to /designer
@@ -148,6 +154,10 @@ export default function App() {
     disabled: isDesignerRoute,
   });
   const { isMobile, isTablet } = useResponsive();
+
+  // Onboarding — first-visit welcome modal
+  const { shouldShowWelcome, shouldShowDrawTutorial, markWelcomeComplete } = useOnboarding();
+
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
@@ -362,33 +372,123 @@ export default function App() {
     // Bin Designer route - lazy loaded, behind feature flag
     if (isDesignerRoute && isDesignerEnabled) {
       return (
-      <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>
-        <DesignerPage />
-      </Suspense>
-    );
-  }
-
-  // Mobile layout - lazy loaded
-  if (isMobile) {
-    return wrapWithMutations(
-      <div className={`h-screen ${entranceClass}`}>
-        <Suspense fallback={<LoadingFallback label={t('loading.mobileLayout')} />}>
-          <MobileLayout
-            isMobileHelpOpen={isMobileHelpOpen}
-            setIsMobileHelpOpen={setIsMobileHelpOpen}
-            saveStatus={saveStatus}
-          />
+        <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>
+          <DesignerPage />
         </Suspense>
-      </div>
-    );
-  }
+      );
+    }
 
-  // Tablet layout - full width grid with overlay panels
-  if (isTablet) {
+    // Mobile layout - lazy loaded
+    if (isMobile) {
+      return wrapWithMutations(
+        <div className={`h-screen ${entranceClass}`}>
+          <Suspense fallback={<LoadingFallback label={t('loading.mobileLayout')} />}>
+            <MobileLayout
+              isMobileHelpOpen={isMobileHelpOpen}
+              setIsMobileHelpOpen={setIsMobileHelpOpen}
+              saveStatus={saveStatus}
+            />
+          </Suspense>
+        </div>
+      );
+    }
+
+    // Tablet layout - full width grid with overlay panels
+    if (isTablet) {
+      return wrapWithMutations(
+        <div
+          className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
+        >
+          {/* Shared layout banner (shown when viewing unsaved shared layout) */}
+          {hasSharedLayoutPreview && (
+            <Suspense fallback={null}>
+              <SharedLayoutBanner />
+            </Suspense>
+          )}
+
+          {/* Header */}
+          <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
+
+          {/* Main content area - Grid takes full width */}
+          <div className="flex-1 flex overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-hidden bg-surface">
+              <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
+              <Staging />
+            </main>
+          </div>
+
+          {/* Left sidebar as overlay */}
+          <TabletPanelOverlay isOpen={tabletLeftPanelOpen} onClose={closeLeftPanel} side="left">
+            <PanelErrorBoundary panelName="Sidebar">
+              <Sidebar />
+            </PanelErrorBoundary>
+          </TabletPanelOverlay>
+
+          {/* Right panel as overlay */}
+          <TabletPanelOverlay isOpen={tabletRightPanelOpen} onClose={closeRightPanel} side="right">
+            <PanelErrorBoundary panelName="Inspector">
+              <RightPanel />
+            </PanelErrorBoundary>
+          </TabletPanelOverlay>
+
+          {/* Drop zones (appear when dragging) */}
+          <DropZones />
+
+          {/* Floating drag preview */}
+          <DragPreview />
+
+          {/* Panel trigger buttons (FABs) - shown when panels are closed */}
+          <TabletPanelTriggers
+            leftPanelOpen={tabletLeftPanelOpen}
+            rightPanelOpen={tabletRightPanelOpen}
+            onOpenLeftPanel={openLeftPanel}
+            onOpenRightPanel={openRightPanel}
+          />
+
+          {/* Modals */}
+          {isHelpOpen && (
+            <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
+              <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet />
+            </Suspense>
+          )}
+
+          {/* Context menu (long-press on bin) */}
+          {(() => {
+            if (contextMenu) {
+              const binIds =
+                contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
+              return (
+                <BinContextMenuWrapper
+                  binIds={binIds}
+                  position={contextMenu.position}
+                  onClose={hideContextMenu}
+                  source={contextMenu.source}
+                />
+              );
+            }
+            return null;
+          })()}
+
+          {/* Shared layout URL importer - only load when URL has share params */}
+          {hasShareUrl && (
+            <Suspense fallback={null}>
+              <SharedLayoutImporter />
+            </Suspense>
+          )}
+        </div>
+      );
+    }
+
+    // Desktop layout
     return wrapWithMutations(
       <div
         className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
       >
+        {/* Skip to content link for keyboard navigation */}
+        <a href="#main-grid" className="skip-to-content">
+          {t('app.skipToGridEditor')}
+        </a>
+
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
         {hasSharedLayoutPreview && (
           <Suspense fallback={null}>
@@ -399,27 +499,28 @@ export default function App() {
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
 
-        {/* Main content area - Grid takes full width */}
+        {/* Main content area */}
         <div className="flex-1 flex overflow-hidden">
-          <main className="flex-1 flex flex-col overflow-hidden bg-surface">
-            <Grid />
-            <Staging />
-          </main>
-        </div>
-
-        {/* Left sidebar as overlay */}
-        <TabletPanelOverlay isOpen={tabletLeftPanelOpen} onClose={closeLeftPanel} side="left">
+          {/* Left sidebar */}
           <PanelErrorBoundary panelName="Sidebar">
             <Sidebar />
           </PanelErrorBoundary>
-        </TabletPanelOverlay>
 
-        {/* Right panel as overlay */}
-        <TabletPanelOverlay isOpen={tabletRightPanelOpen} onClose={closeRightPanel} side="right">
+          {/* Grid area */}
+          <main
+            id="main-grid"
+            className="flex-1 flex flex-col overflow-hidden bg-surface"
+            tabIndex={-1}
+          >
+            <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
+            <Staging />
+          </main>
+
+          {/* Right panel - Selection & Actions */}
           <PanelErrorBoundary panelName="Inspector">
             <RightPanel />
           </PanelErrorBoundary>
-        </TabletPanelOverlay>
+        </div>
 
         {/* Drop zones (appear when dragging) */}
         <DropZones />
@@ -427,22 +528,14 @@ export default function App() {
         {/* Floating drag preview */}
         <DragPreview />
 
-        {/* Panel trigger buttons (FABs) - shown when panels are closed */}
-        <TabletPanelTriggers
-          leftPanelOpen={tabletLeftPanelOpen}
-          rightPanelOpen={tabletRightPanelOpen}
-          onOpenLeftPanel={openLeftPanel}
-          onOpenRightPanel={openRightPanel}
-        />
-
         {/* Modals */}
         {isHelpOpen && (
           <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
-            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet />
+            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
           </Suspense>
         )}
 
-        {/* Context menu (long-press on bin) */}
+        {/* Context menu (right-click on bin) */}
         {(() => {
           if (contextMenu) {
             const binIds =
@@ -459,6 +552,9 @@ export default function App() {
           return null;
         })()}
 
+        {/* ARIA live region for screen reader announcements */}
+        <LiveRegion />
+
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (
           <Suspense fallback={null}>
@@ -467,92 +563,6 @@ export default function App() {
         )}
       </div>
     );
-  }
-
-  // Desktop layout
-  return wrapWithMutations(
-    <div
-      className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
-    >
-      {/* Skip to content link for keyboard navigation */}
-      <a href="#main-grid" className="skip-to-content">
-        {t('app.skipToGridEditor')}
-      </a>
-
-      {/* Shared layout banner (shown when viewing unsaved shared layout) */}
-      {hasSharedLayoutPreview && (
-        <Suspense fallback={null}>
-          <SharedLayoutBanner />
-        </Suspense>
-      )}
-
-      {/* Header */}
-      <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
-
-      {/* Main content area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left sidebar */}
-        <PanelErrorBoundary panelName="Sidebar">
-          <Sidebar />
-        </PanelErrorBoundary>
-
-        {/* Grid area */}
-        <main
-          id="main-grid"
-          className="flex-1 flex flex-col overflow-hidden bg-surface"
-          tabIndex={-1}
-        >
-          <Grid />
-          <Staging />
-        </main>
-
-        {/* Right panel - Selection & Actions */}
-        <PanelErrorBoundary panelName="Inspector">
-          <RightPanel />
-        </PanelErrorBoundary>
-      </div>
-
-      {/* Drop zones (appear when dragging) */}
-      <DropZones />
-
-      {/* Floating drag preview */}
-      <DragPreview />
-
-      {/* Modals */}
-      {isHelpOpen && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
-          <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-        </Suspense>
-      )}
-
-      {/* Context menu (right-click on bin) */}
-      {(() => {
-        if (contextMenu) {
-          const binIds =
-            contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
-          return (
-            <BinContextMenuWrapper
-              binIds={binIds}
-              position={contextMenu.position}
-              onClose={hideContextMenu}
-              source={contextMenu.source}
-            />
-          );
-        }
-        return null;
-      })()}
-
-      {/* ARIA live region for screen reader announcements */}
-      <LiveRegion />
-
-      {/* Shared layout URL importer - only load when URL has share params */}
-      {hasShareUrl && (
-        <Suspense fallback={null}>
-          <SharedLayoutImporter />
-        </Suspense>
-      )}
-    </div>
-  );
   })();
 
   // Shared overlays — rendered once for all routes (designer, mobile, tablet, desktop)
@@ -566,6 +576,11 @@ export default function App() {
       {isLabsDrawerOpen && (
         <Suspense fallback={null}>
           <LabsDrawer />
+        </Suspense>
+      )}
+      {shouldShowWelcome && (
+        <Suspense fallback={null}>
+          <WelcomeModal isOpen onClose={markWelcomeComplete} />
         </Suspense>
       )}
     </>

@@ -1086,6 +1086,19 @@ const en: Record<string, string> = {
   'gallery.yourSize': '(yours: {size})',
 
   // ===========================================================================
+  // Onboarding
+  // ===========================================================================
+  'onboarding.welcome.title': 'Plan it before you print it',
+  'onboarding.welcome.subtitle': 'Layout your bins, then print with confidence',
+  'onboarding.welcome.startBlank': 'Start with an empty drawer',
+  'onboarding.welcome.showcaseHeading': 'See what others have built',
+  'onboarding.welcome.showcaseAction': 'Click any to start from it',
+  'onboarding.drawTutorial.hint': 'Drag to draw your first bin',
+  'settings.resetOnboarding': 'Reset onboarding',
+  'settings.resetOnboardingDescription': 'Show the welcome screen and tutorials again',
+  'toast.onboardingReset': 'Onboarding reset — reload to see the welcome screen',
+
+  // ===========================================================================
   // Tool Switcher
   // ===========================================================================
   'toolSwitcher.gridEditor': 'Grid Editor',

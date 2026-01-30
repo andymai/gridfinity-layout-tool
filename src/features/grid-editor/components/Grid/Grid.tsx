@@ -45,7 +45,12 @@ const MobileGridToolbar = lazyWithRetry(() =>
  * Main grid container with zoom controls, layer indicator, and row/column numbering.
  * Displays the drawer grid with bins, handles user interactions.
  */
-export function Grid() {
+interface GridProps {
+  /** When true, show the animated drag-to-draw gesture on empty first-layer grids */
+  shouldShowDrawTutorial?: boolean;
+}
+
+export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   const t = useTranslation();
   const { isMobile, viewportWidth } = useResponsive();
   const gridRef = useRef<HTMLDivElement>(null);
@@ -357,7 +362,7 @@ export function Grid() {
                   {/* Collaborative cursors overlay - shows other users' cursors */}
                   {isCollaborative && <CollabCursors />}
 
-                  {/* Empty state overlay - hide while dragging or when grid is too small */}
+                  {/* Empty state overlay */}
                   {isEmpty &&
                     !interaction &&
                     drawer.width * cellSize > 200 &&
@@ -367,34 +372,75 @@ export function Grid() {
                           className="flex flex-col items-center p-6 rounded-xl max-w-xs text-center bg-surface"
                           style={{ opacity: 0.95, backdropFilter: 'blur(4px)' }}
                         >
-                          <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-lg bg-surface-hover">
-                            <svg
-                              className="w-6 h-6 text-content-tertiary"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                              />
-                            </svg>
-                          </div>
-                          <p className="font-medium mb-1 text-sm text-content-secondary">
-                            {isMobile
-                              ? t('grid.emptyHint.tapToDraw')
-                              : t('grid.emptyHint.clickToDraw')}
-                          </p>
-                          <p className="text-xs text-content-disabled">
-                            {isFirstLayer
-                              ? isMobile
-                                ? t('grid.emptyHint.useLayersTab')
-                                : t('grid.emptyHint.useBinPalette')
-                              : t('grid.emptyHint.stripedBlocked')}
-                          </p>
+                          {isFirstLayer && shouldShowDrawTutorial ? (
+                            <>
+                              {/* Animated draw gesture */}
+                              <div
+                                className="mb-3 relative"
+                                style={{ width: 104, height: 80 }}
+                                aria-hidden="true"
+                              >
+                                <div
+                                  className="absolute rounded-full border-2 border-accent animate-draw-hint-click"
+                                  style={{ width: 36, height: 36, top: -14, left: -14 }}
+                                />
+                                <div className="absolute top-0 left-0 border-2 border-dashed border-accent/60 bg-accent/10 rounded-sm animate-draw-hint-rect" />
+                                <div
+                                  className="absolute top-0 left-0 animate-draw-hint-cursor"
+                                  style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))' }}
+                                >
+                                  {isMobile ? (
+                                    /* Touch circle for mobile */
+                                    <div className="w-6 h-6 rounded-full bg-white/90 border-2 border-gray-700" />
+                                  ) : (
+                                    /* Mouse cursor for desktop */
+                                    <svg width="20" height="24" viewBox="0 0 18 22" fill="none">
+                                      <path
+                                        d="M2 1 L2 17 L6.2 13 L9.5 20 L12.2 18.8 L9 12.5 L14 12.5 Z"
+                                        fill="white"
+                                        stroke="#222"
+                                        strokeWidth="1.5"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="font-medium mb-1 text-sm text-content-secondary">
+                                {t('onboarding.drawTutorial.hint')}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              {/* Static icon for empty layers */}
+                              <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-lg bg-surface-hover">
+                                <svg
+                                  className="w-6 h-6 text-content-tertiary"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                                  />
+                                </svg>
+                              </div>
+                              <p className="font-medium mb-1 text-sm text-content-secondary">
+                                {isMobile
+                                  ? t('grid.emptyHint.tapToDraw')
+                                  : t('grid.emptyHint.clickToDraw')}
+                              </p>
+                              {!isFirstLayer && (
+                                <p className="text-xs text-content-disabled">
+                                  {t('grid.emptyHint.stripedBlocked')}
+                                </p>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     )}
