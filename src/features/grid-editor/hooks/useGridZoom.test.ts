@@ -426,32 +426,29 @@ describe('useGridZoom', () => {
     });
   });
 
-  describe('auto-fit on preview toggle', () => {
-    it('refits when showIsometricPreview changes', () => {
+  describe('preview toggle does not auto-fit', () => {
+    it('keeps zoom stable when showIsometricPreview changes', () => {
       const scrollContainerRef = createMockScrollContainerRef(800, 600);
 
       const { result, rerender } = renderHook(
-        ({ showPreview }) =>
+        ({ _showPreview }) =>
           useGridZoom({
             scrollContainerRef,
             drawerWidth: 10,
             drawerDepth: 8,
             gap: 2,
             isMobile: false,
-            showIsometricPreview: showPreview,
           }),
-        { initialProps: { showPreview: false } }
+        { initialProps: { _showPreview: false } }
       );
 
-      // Record initial state
-      const _initialZoom = result.current.zoom;
+      // Record initial zoom set by mount auto-fit
+      const initialZoom = result.current.zoom;
 
-      // Toggle preview
-      rerender({ showPreview: true });
+      // Toggle preview — zoom should NOT change
+      rerender({ _showPreview: true });
 
-      // fitToScreen should have been called
-      // (zoom might be same or different depending on calculation)
-      expect(result.current.zoom).toBeDefined();
+      expect(result.current.zoom).toBe(initialZoom);
     });
   });
 

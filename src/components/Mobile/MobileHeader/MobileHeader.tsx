@@ -3,7 +3,6 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore, useUIStore } from '@/core/store';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
-import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { PresenceAvatars } from '@/components/Collab';
 import type { MobilePanel } from '@/core/store/ui';
 import type { SaveStatus } from '@/shared/hooks';
@@ -73,7 +72,9 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
     <div className="flex-shrink-0">
       {/* App title bar */}
       <div className="h-7 flex items-center justify-between px-3 bg-surface border-b border-stroke-subtle">
-        <ToolSwitcher compact />
+        <span className="text-xs font-medium text-content-secondary">
+          {t('toolSwitcher.gridfinityLayoutTool')}
+        </span>
         <div className="flex items-center gap-3">
           <a
             href="https://ko-fi.com/andyaragon"
