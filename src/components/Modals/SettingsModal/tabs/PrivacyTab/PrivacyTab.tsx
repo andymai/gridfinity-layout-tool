@@ -1,16 +1,11 @@
-import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '@/core/store';
-import { useToastStore } from '@/core/store/toast';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { optInAnalytics, optOutAnalytics } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 
 export function PrivacyTab() {
   const t = useTranslation();
-  const addToast = useToastStore((state) => state.addToast);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const { analyticsEnabled, updateSetting } = useSettingsStore(
     useShallow((state) => ({
@@ -27,13 +22,6 @@ export function PrivacyTab() {
     } else {
       optOutAnalytics();
     }
-  };
-
-  const handleReset = () => {
-    updateSetting('analyticsEnabled', true);
-    optInAnalytics();
-    setShowResetConfirm(false);
-    addToast(t('settings.resetPrivacy'), 'info');
   };
 
   return (
@@ -92,34 +80,6 @@ export function PrivacyTab() {
           </a>
         </div>
       </section>
-
-      {/* Reset to defaults */}
-      <div className="pt-6 border-t border-stroke-subtle mt-6">
-        <button
-          onClick={() => {
-            // If analytics is already enabled, nothing to reset
-            if (analyticsEnabled) {
-              addToast(t('settings.resetPrivacy'), 'info');
-              return;
-            }
-            // Otherwise confirm re-enabling analytics
-            setShowResetConfirm(true);
-          }}
-          className="text-sm text-content-tertiary hover:text-content transition-colors"
-          aria-label={t('settings.resetTabDefaults') + ' — ' + t('settings.tabs.privacy')}
-        >
-          {t('settings.resetTabDefaults')}
-        </button>
-      </div>
-
-      <ConfirmDialog
-        isOpen={showResetConfirm}
-        title={t('settings.resetTabDefaults')}
-        message={t('settings.confirmResetPrivacy')}
-        confirmText={t('common.apply')}
-        onConfirm={handleReset}
-        onCancel={() => setShowResetConfirm(false)}
-      />
     </div>
   );
 }

@@ -42,6 +42,20 @@ vi.mock('./tabs/LabsTab/LabsTab', () => ({
   LabsTab: () => <div data-testid="labs-tab">Labs</div>,
 }));
 
+vi.mock('@/core/store', () => ({
+  useSettingsStore: (selector: (state: Record<string, unknown>) => unknown) =>
+    selector({ resetSettings: vi.fn() }),
+}));
+
+vi.mock('@/core/store/toast', () => ({
+  useToastStore: (selector: (state: Record<string, unknown>) => unknown) =>
+    selector({ addToast: vi.fn() }),
+}));
+
+vi.mock('@/shared/components/ConfirmDialog', () => ({
+  ConfirmDialog: () => null,
+}));
+
 describe('SettingsModal', () => {
   beforeEach(() => {
     sessionStorage.clear();
@@ -70,5 +84,10 @@ describe('SettingsModal', () => {
   it('displays settings title', () => {
     render(<SettingsModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByText('settings.title')).toBeInTheDocument();
+  });
+
+  it('renders reset all settings button', () => {
+    render(<SettingsModal isOpen={true} onClose={vi.fn()} />);
+    expect(screen.getByText('settings.resetTabDefaults')).toBeInTheDocument();
   });
 });

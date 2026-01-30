@@ -71,9 +71,4 @@ describe('DefaultsTab', () => {
     render(<DefaultsTab />);
     expect(screen.getByText('settings.copyFromCurrentLayout')).toBeInTheDocument();
   });
-
-  it('renders reset to defaults button', () => {
-    render(<DefaultsTab />);
-    expect(screen.getByText('settings.resetTabDefaults')).toBeInTheDocument();
-  });
 });

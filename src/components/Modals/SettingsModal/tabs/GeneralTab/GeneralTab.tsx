@@ -17,13 +17,6 @@ export function GeneralTab() {
     }))
   );
 
-  const handleReset = () => {
-    updateSetting('locale', 'auto');
-    setLocale(detectBrowserLocale());
-    resetOnboarding();
-    addToast(t('settings.resetGeneral'), 'info');
-  };
-
   return (
     <div className="space-y-8">
       {/* Language Section */}
@@ -143,17 +136,6 @@ export function GeneralTab() {
           {t('settings.resetOnboarding')}
         </button>
       </section>
-
-      {/* Reset to defaults */}
-      <div className="pt-6 border-t border-stroke-subtle mt-6">
-        <button
-          onClick={handleReset}
-          className="text-sm text-content-tertiary hover:text-content transition-colors"
-          aria-label={t('settings.resetTabDefaults') + ' — ' + t('settings.tabs.general')}
-        >
-          {t('settings.resetTabDefaults')}
-        </button>
-      </div>
     </div>
   );
 }

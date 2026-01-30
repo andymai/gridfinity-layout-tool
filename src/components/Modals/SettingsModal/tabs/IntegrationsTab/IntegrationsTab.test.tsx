@@ -23,11 +23,6 @@ vi.mock('@/core/store', () => ({
     }),
 }));
 
-vi.mock('@/core/store/toast', () => ({
-  useToastStore: (selector: (state: Record<string, unknown>) => unknown) =>
-    selector({ addToast: vi.fn() }),
-}));
-
 vi.mock('@/shared/components/Checkbox', () => ({
   Checkbox: ({ checked }: { checked: boolean }) => (
     <input type="checkbox" checked={checked} readOnly />
@@ -44,10 +39,5 @@ describe('IntegrationsTab', () => {
     render(<IntegrationsTab />);
     expect(screen.getByText('Thangs')).toBeInTheDocument();
     expect(screen.getByText('Printables')).toBeInTheDocument();
-  });
-
-  it('renders reset to defaults button', () => {
-    render(<IntegrationsTab />);
-    expect(screen.getByText('settings.resetTabDefaults')).toBeInTheDocument();
   });
 });

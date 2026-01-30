@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { DEFAULT_SETTINGS } from '@/core/store/settings';
 import { CONSTRAINTS, DEFAULT_CATEGORIES } from '@/core/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -43,17 +42,6 @@ export function DefaultsTab() {
     updateSetting('defaultGridUnitMm', gridUnitMm);
     setShowCopyConfirm(false);
     addToast(t('settings.resetDefaults'), 'success');
-  };
-
-  const handleReset = () => {
-    updateSetting('defaultDrawerWidth', DEFAULT_SETTINGS.defaultDrawerWidth);
-    updateSetting('defaultDrawerDepth', DEFAULT_SETTINGS.defaultDrawerDepth);
-    updateSetting('defaultDrawerHeight', DEFAULT_SETTINGS.defaultDrawerHeight);
-    updateSetting('defaultLayerHeight', DEFAULT_SETTINGS.defaultLayerHeight);
-    updateSetting('defaultPrintBedSize', DEFAULT_SETTINGS.defaultPrintBedSize);
-    updateSetting('defaultGridUnitMm', DEFAULT_SETTINGS.defaultGridUnitMm);
-    updateSetting('defaultCategories', null);
-    addToast(t('settings.resetDefaults'), 'info');
   };
 
   return (
@@ -274,17 +262,6 @@ export function DefaultsTab() {
           )}
         </div>
       </section>
-
-      {/* Reset to defaults */}
-      <div className="pt-6 border-t border-stroke-subtle mt-6">
-        <button
-          onClick={handleReset}
-          className="text-sm text-content-tertiary hover:text-content transition-colors"
-          aria-label={t('settings.resetTabDefaults') + ' — ' + t('settings.tabs.defaults')}
-        >
-          {t('settings.resetTabDefaults')}
-        </button>
-      </div>
 
       {/* Copy from current layout confirmation */}
       <ConfirmDialog

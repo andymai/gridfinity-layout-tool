@@ -1,15 +1,12 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '@/core/store';
-import { useToastStore } from '@/core/store/toast';
-import { DEFAULT_STL_SEARCH_SITES } from '@/core/store/settings';
 import type { STLSearchSite } from '@/core/store/settings';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { useTranslation } from '@/i18n';
 
 export function IntegrationsTab() {
   const t = useTranslation();
-  const addToast = useToastStore((state) => state.addToast);
 
   const { stlSearchSites, updateSetting } = useSettingsStore(
     useShallow((state) => ({
@@ -27,11 +24,6 @@ export function IntegrationsTab() {
     },
     [stlSearchSites, updateSetting]
   );
-
-  const handleReset = () => {
-    updateSetting('stlSearchSites', [...DEFAULT_STL_SEARCH_SITES]);
-    addToast(t('settings.resetIntegrations'), 'info');
-  };
 
   return (
     <div className="space-y-8">
@@ -66,17 +58,6 @@ export function IntegrationsTab() {
           ))}
         </div>
       </section>
-
-      {/* Reset to defaults */}
-      <div className="pt-6 border-t border-stroke-subtle mt-6">
-        <button
-          onClick={handleReset}
-          className="text-sm text-content-tertiary hover:text-content transition-colors"
-          aria-label={t('settings.resetTabDefaults') + ' — ' + t('settings.tabs.integrations')}
-        >
-          {t('settings.resetTabDefaults')}
-        </button>
-      </div>
     </div>
   );
 }

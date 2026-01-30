@@ -664,11 +664,11 @@ const en: Record<string, string> = {
 
   // Settings tabs
   'settings.tabs.general': 'General',
-  'settings.tabs.defaults': 'New Layout',
+  'settings.tabs.defaults': 'Defaults',
   'settings.tabs.integrations': 'STL Search',
   'settings.tabs.privacy': 'Privacy',
   'settings.tabs.labs': 'Labs',
-  'settings.resetTabDefaults': 'Reset to defaults',
+  'settings.resetTabDefaults': 'Reset all settings',
   'settings.copyFromCurrentLayout': 'Copy from Current Layout',
   'settings.confirmCopyFromLayout.title': 'Copy from Current Layout',
   'settings.confirmCopyFromLayout.message':
@@ -685,6 +685,8 @@ const en: Record<string, string> = {
   'settings.resetIntegrations': 'Search sites restored',
   'settings.resetPrivacy': 'Analytics re-enabled',
   'settings.confirmResetPrivacy': 'This will re-enable anonymous analytics. Continue?',
+  'settings.confirmResetAll': 'Reset all settings to their defaults? This cannot be undone.',
+  'settings.resetAllConfirmed': 'All settings reset',
 
   // ===========================================================================
   // Help

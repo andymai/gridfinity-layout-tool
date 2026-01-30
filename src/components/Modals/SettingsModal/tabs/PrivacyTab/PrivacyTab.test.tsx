@@ -18,19 +18,10 @@ vi.mock('@/core/store', () => ({
     }),
 }));
 
-vi.mock('@/core/store/toast', () => ({
-  useToastStore: (selector: (state: Record<string, unknown>) => unknown) =>
-    selector({ addToast: vi.fn() }),
-}));
-
 vi.mock('@/shared/components/Checkbox', () => ({
   Checkbox: ({ checked }: { checked: boolean }) => (
     <input type="checkbox" checked={checked} readOnly />
   ),
-}));
-
-vi.mock('@/shared/components/ConfirmDialog', () => ({
-  ConfirmDialog: () => null,
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({
@@ -53,10 +44,5 @@ describe('PrivacyTab', () => {
     render(<PrivacyTab />);
     expect(screen.getByText('settings.privacyPolicy')).toBeInTheDocument();
     expect(screen.getByText('settings.termsOfService')).toBeInTheDocument();
-  });
-
-  it('renders reset to defaults button', () => {
-    render(<PrivacyTab />);
-    expect(screen.getByText('settings.resetTabDefaults')).toBeInTheDocument();
   });
 });

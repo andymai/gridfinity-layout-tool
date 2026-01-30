@@ -1,7 +1,10 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useResponsive } from '@/shared/hooks';
+import { useSettingsStore } from '@/core/store';
+import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { TabNavigation } from './TabNavigation/TabNavigation';
 import { useSettingsTab } from './hooks/useSettingsTab';
 import { GeneralTab } from './tabs/GeneralTab/GeneralTab';
@@ -47,6 +50,15 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { activeTab, setActiveTab } = useSettingsTab(initialTab);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const resetSettings = useSettingsStore((state) => state.resetSettings);
+  const addToast = useToastStore((state) => state.addToast);
+
+  const handleResetAll = () => {
+    resetSettings();
+    setShowResetConfirm(false);
+    addToast(t('settings.resetAllConfirmed'), 'info');
+  };
 
   // Handle escape key and body scroll lock
   useEffect(() => {
@@ -124,6 +136,25 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
             </div>
           </div>
         </div>
+
+        {/* Footer with reset */}
+        <div className="px-6 py-3 border-t border-stroke-subtle">
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="text-sm text-content-tertiary hover:text-content transition-colors"
+          >
+            {t('settings.resetTabDefaults')}
+          </button>
+        </div>
+
+        <ConfirmDialog
+          isOpen={showResetConfirm}
+          title={t('settings.resetTabDefaults')}
+          message={t('settings.confirmResetAll')}
+          confirmText={t('common.apply')}
+          onConfirm={handleResetAll}
+          onCancel={() => setShowResetConfirm(false)}
+        />
       </div>
     </div>,
     document.body

@@ -40,9 +40,4 @@ describe('GeneralTab', () => {
     render(<GeneralTab />);
     expect(screen.getAllByText('settings.resetOnboarding').length).toBeGreaterThan(0);
   });
-
-  it('renders reset to defaults button', () => {
-    render(<GeneralTab />);
-    expect(screen.getByText('settings.resetTabDefaults')).toBeInTheDocument();
-  });
 });
