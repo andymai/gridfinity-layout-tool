@@ -67,7 +67,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
 
   /** Close gallery with tracking (fires only once per open). */
   const handleCloseGallery = useCallback(
-    (reason: 'applied_template' | 'browsed_only' | 'dismissed') => {
+    (reason: 'applied_template' | 'dismissed') => {
       if (!hasTrackedCloseRef.current) {
         trackGalleryClosed(reason);
         hasTrackedCloseRef.current = true;
@@ -344,7 +344,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
               <button
                 ref={closeButtonRef}
                 onClick={() =>
-                  handleCloseGallery(templateApplied ? 'applied_template' : 'browsed_only')
+                  handleCloseGallery(templateApplied ? 'applied_template' : 'dismissed')
                 }
                 className="p-1.5 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
                 aria-label={t('common.close')}

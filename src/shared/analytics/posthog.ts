@@ -889,8 +889,6 @@ export function trackGalleryOpened(layoutCount: number): void {
 /**
  * Track gallery close with reason indicating user behavior.
  */
-export function trackGalleryClosed(
-  reason: 'applied_template' | 'browsed_only' | 'dismissed'
-): void {
+export function trackGalleryClosed(reason: 'applied_template' | 'dismissed'): void {
   trackEvent('gallery_closed', { reason });
 }
