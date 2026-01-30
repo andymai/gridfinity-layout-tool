@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.2...gridfinity-layout-tool-v2.0.3) (2026-01-30)
+
+
+### Bug Fixes
+
+* expand component structure hook to all components/ dirs ([#499](https://github.com/andymai/gridfinity-layout-tool/issues/499)) ([c9dc1fc](https://github.com/andymai/gridfinity-layout-tool/commit/c9dc1fc9bee2280d3938a8a056f674f786920f51))
+
 ## [2.0.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.1...gridfinity-layout-tool-v2.0.2) (2026-01-29)
 
 
