@@ -5,6 +5,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 // Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
   captureException: vi.fn(),
+  track3DRenderError: vi.fn(),
 }));
 
 // Mock getStaticTranslation since it's not a hook

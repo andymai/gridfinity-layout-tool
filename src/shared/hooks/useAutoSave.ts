@@ -5,6 +5,7 @@ import { saveLayoutWithMetadata } from '@/core/storage';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
 import { isErr, getUserMessage, isRetryable } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { trackLayoutSaveFailure } from '@/shared/analytics/posthog';
 import type { StorageError } from '@/core/result';
 
 const SAVE_DEBOUNCE_MS = 1000;
@@ -86,6 +87,11 @@ export function useAutoSave(): SaveStatus {
           const result = await saveLayoutWithMetadata(savingLayoutId, layout, currentLibrary);
 
           if (isErr(result)) {
+            trackLayoutSaveFailure(
+              result.error.code,
+              result.error.message,
+              failureCountRef.current + 1
+            );
             handleSaveError(result.error);
             return;
           }

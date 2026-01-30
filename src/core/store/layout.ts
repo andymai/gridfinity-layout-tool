@@ -12,11 +12,13 @@ import { canPlaceBin, clamp } from '@/shared/utils/validation';
 import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from './settings';
+import { trackBinCreated } from '@/shared/analytics/posthog';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
 import {
   ok,
   err,
   OK,
+  isOk,
   layoutLayerLimit,
   layoutLastEntity,
   layoutInvalidOperation,
@@ -212,8 +214,20 @@ export const useLayoutStore = create<LayoutState>()(
         ...overrides,
       });
 
+      const trackDuplicate = () => {
+        trackBinCreated({
+          method: 'duplicate',
+          count: 1,
+          width: bin.width,
+          depth: bin.depth,
+          height: bin.height,
+        });
+      };
+
       if (bin.layerId === STAGING_ID) {
-        return addBin(copyProps({ layerId: STAGING_ID, x: 0, y: 0 }));
+        const result = addBin(copyProps({ layerId: STAGING_ID, x: 0, y: 0 }));
+        if (isOk(result)) trackDuplicate();
+        return result;
       }
 
       const offsets = [
@@ -227,19 +241,23 @@ export const useLayoutStore = create<LayoutState>()(
         const newX = bin.x + dx;
         const newY = bin.y + dy;
 
-        const result = canPlaceBin(
+        const placement = canPlaceBin(
           { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
           bin.layerId,
           layout
         );
 
-        if (result.valid) {
-          return addBin(copyProps({ layerId: bin.layerId, x: newX, y: newY }));
+        if (placement.valid) {
+          const result = addBin(copyProps({ layerId: bin.layerId, x: newX, y: newY }));
+          if (isOk(result)) trackDuplicate();
+          return result;
         }
       }
 
       // Fallback to staging if no adjacent space available
-      return addBin(copyProps({ layerId: STAGING_ID, x: 0, y: 0 }));
+      const result = addBin(copyProps({ layerId: STAGING_ID, x: 0, y: 0 }));
+      if (isOk(result)) trackDuplicate();
+      return result;
     },
 
     moveBinToStaging: (id) => {

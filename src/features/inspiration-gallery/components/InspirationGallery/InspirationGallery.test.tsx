@@ -12,8 +12,16 @@ vi.mock('@/shared/hooks', () => ({
 
 // Mock analytics
 const mockTrackEvent = vi.fn();
+const mockTrackBinCreated = vi.fn();
+const mockTrackGalleryOpened = vi.fn();
+const mockTrackGalleryClosed = vi.fn();
+const mockTrackTemplateLoadError = vi.fn();
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: (...args: unknown[]) => mockTrackEvent(...args),
+  trackBinCreated: (...args: unknown[]) => mockTrackBinCreated(...args),
+  trackGalleryOpened: (...args: unknown[]) => mockTrackGalleryOpened(...args),
+  trackGalleryClosed: (...args: unknown[]) => mockTrackGalleryClosed(...args),
+  trackTemplateLoadError: (...args: unknown[]) => mockTrackTemplateLoadError(...args),
 }));
 
 const mockImportLayoutFromJSON = vi.fn();
@@ -590,9 +598,7 @@ describe('InspirationGallery', () => {
     it('tracks gallery_opened on mount', () => {
       render(<InspirationGallery {...defaultProps} />);
 
-      expect(mockTrackEvent).toHaveBeenCalledWith('gallery_opened', {
-        layout_count: 3, // Mock has 3 layouts
-      });
+      expect(mockTrackGalleryOpened).toHaveBeenCalledWith(3); // Mock has 3 layouts
     });
 
     it('tracks gallery_filter_changed when theme filter changes', () => {

@@ -53,11 +53,11 @@ export function initLayoutAnalytics(): () => void {
       );
       markFeatureUsed('fill');
       trackFillOperation(meta.type === 'uniform' ? 'fill_layer' : 'fill_gaps', meta.count);
-      trackBinCreated(
-        meta.type === 'uniform' ? 'fill_layer' : 'fill_gaps',
-        meta.count,
-        meta.type === 'uniform' ? { width: w, depth: d, height: meta.layerHeight ?? 1 } : undefined
-      );
+      trackBinCreated({
+        method: meta.type === 'uniform' ? 'fill_layer' : 'fill_gaps',
+        count: meta.count,
+        ...(meta.type === 'uniform' ? { width: w, depth: d, height: meta.layerHeight ?? 1 } : {}),
+      });
 
       // Clear fill meta after consuming.
       // This setState triggers the subscriber again, but the if(meta) guard
