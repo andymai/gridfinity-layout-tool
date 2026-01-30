@@ -8,6 +8,7 @@
  * - Dimensions (expanded) — Width, Depth, Height
  * - Walls (expanded) — Wall thickness
  * - Interior (expanded) — Compartments
+ * - Label Tabs — Shelf tabs on back wall
  * - Base (expanded) — Magnets, Screws, Stacking lip
  * - Physical Units — Grid unit size (mm)
  */
@@ -15,6 +16,7 @@
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { BaseSection } from '../panel/BaseSection';
 import { InteriorSection } from '../panel/InteriorSection';
+import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { useTranslation } from '@/i18n';
@@ -30,6 +32,9 @@ export function ParameterPanel() {
         </div>
         <div className="px-4 py-4 border-b border-stroke-subtle">
           <WallsSection />
+        </div>
+        <div className="px-4 py-4 border-b border-stroke-subtle">
+          <LabelTabsSection />
         </div>
         <div className="px-4 py-4 border-b border-stroke-subtle">
           <InteriorSection />

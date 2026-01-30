@@ -1,9 +1,8 @@
 /**
  * Interior section: Compartment grid editor.
  *
- * Embeds the existing CompartmentEditor for configuring the bin's
- * internal compartment layout. Scoop and label features are not yet
- * supported by the generator.
+ * Embeds the CompartmentEditor for configuring the bin's internal
+ * compartment layout.
  */
 
 import { useShallow } from 'zustand/react/shallow';
@@ -15,9 +14,7 @@ import { getCompartmentCount } from '../../../utils/compartments';
 import { useTranslation } from '@/i18n';
 
 export function InteriorSection() {
-  const compartments = useDesignerStore(
-    useShallow((s) => s.params.compartments)
-  );
+  const compartments = useDesignerStore(useShallow((s) => s.params.compartments));
   const t = useTranslation();
 
   const compartmentCount = getCompartmentCount(compartments);

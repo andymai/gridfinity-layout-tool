@@ -77,7 +77,13 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_COMPARTMENT_THICKNESS: 2.4, // mm divider wall thickness
   COMPARTMENT_THICKNESS_STEP: 0.1, // mm (legacy — use WALL_THICKNESS_OPTIONS)
   MIN_COMPARTMENT_SIZE: 5, // mm (minimum viable compartment dimension)
-  MAX_LABEL_LENGTH: 20, // characters
+  // Label tabs
+  MIN_LABEL_TAB_DEPTH: 8, // mm
+  MAX_LABEL_TAB_DEPTH: 20, // mm
+  LABEL_TAB_DEPTH_STEP: 1, // mm
+  MIN_LABEL_TAB_WIDTH: 10, // % of compartment column width
+  MAX_LABEL_TAB_WIDTH: 100, // %
+  LABEL_TAB_WIDTH_STEP: 5, // %
   MAX_HISTORY: 100, // undo/redo states
   // Wall thickness
   MIN_WALL_THICKNESS: 0.4, // mm (1-wall for 0.4mm nozzle)

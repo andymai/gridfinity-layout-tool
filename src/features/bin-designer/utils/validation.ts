@@ -170,13 +170,35 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
     });
   }
 
-  // Label text length
-  if (params.label.text.length > DESIGNER_CONSTRAINTS.MAX_LABEL_LENGTH) {
-    return err({
-      code: 'LABEL_TOO_LONG',
-      message: `Label text must be at most ${DESIGNER_CONSTRAINTS.MAX_LABEL_LENGTH} characters`,
-      field: 'label.text',
-    });
+  // Label tab validation
+  if (params.label.enabled) {
+    if (params.label.style !== 'bracket' && params.label.style !== 'solid') {
+      return err({
+        code: 'LABEL_TAB_STYLE_INVALID',
+        message: 'Label tab style must be "bracket" or "solid"',
+        field: 'label.style',
+      });
+    }
+    if (
+      params.label.depth < DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH ||
+      params.label.depth > DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH
+    ) {
+      return err({
+        code: 'LABEL_TAB_DEPTH_OUT_OF_RANGE',
+        message: `Label tab depth must be between ${DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH}mm and ${DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH}mm`,
+        field: 'label.depth',
+      });
+    }
+    if (
+      params.label.width < DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH ||
+      params.label.width > DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH
+    ) {
+      return err({
+        code: 'LABEL_TAB_WIDTH_OUT_OF_RANGE',
+        message: `Label tab width must be between ${DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}% and ${DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}%`,
+        field: 'label.width',
+      });
+    }
   }
 
   // Compartment size validation (ensures grid cells aren't impossibly thin)
