@@ -6,7 +6,7 @@ import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout, generateId } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
 import type { Layout, Bin } from '@/core/types';
-import * as binListOperations from '@/utils/binListOperations';
+import * as binListOperations from '@/shared/utils/binListOperations';
 
 // Helper to create test bins
 function createTestBin(overrides: Partial<Bin> = {}): Bin {

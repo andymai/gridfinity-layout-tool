@@ -3,7 +3,7 @@ import { useUIStore, useLayoutStore, useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import { markFeatureUsed } from '@/utils/analytics';
+import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -128,7 +128,11 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
       >
         {/* Header */}
         <div className="px-3 py-2 border-b border-stroke-subtle bg-surface-secondary">
-          <div className="text-xs font-medium text-content-secondary">{t('grid.labelFor')}{bin.width}×{bin.depth}{t('grid.bin')}</div>
+          <div className="text-xs font-medium text-content-secondary">
+            {t('grid.labelFor')}
+            {bin.width}×{bin.depth}
+            {t('grid.bin')}
+          </div>
         </div>
 
         {/* Input area */}

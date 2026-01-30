@@ -11,7 +11,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import type { LayoutError } from '@/core/result';
-import { markFeatureUsed } from '@/utils/analytics';
+import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { isErr, getUserMessage } from '@/core/result';
 import { findBinsByIds } from '@/utils/entity';
 import { usePrintList, type UsePrintListReturn } from '@/features/print-export';
@@ -25,7 +25,7 @@ import {
   downloadAsFile,
   calculateCategoryBreakdown,
   type CategoryBreakdown,
-} from '@/utils/binListOperations';
+} from '@/shared/utils/binListOperations';
 import { exportPrintListTSV } from '@/core/storage';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { EnhancedPrintRow } from '@/core/types';

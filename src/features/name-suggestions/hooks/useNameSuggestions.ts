@@ -10,7 +10,7 @@
 import { useCallback, useMemo } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useShallow } from 'zustand/react/shallow';
-import { trackEvent } from '@/utils/analytics';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { useNameSuggestionStore } from '../store';
 import { hashName, editDistance } from '../utils';
 import type { NameSuggestion, SuggestionTelemetryEvent } from '../types';

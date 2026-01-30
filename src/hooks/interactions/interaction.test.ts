@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { capturePointer, calculateResizeRect, mapInteractionToHint } from '@/utils/interaction';
+import { capturePointer, calculateResizeRect, mapInteractionToHint } from './interaction';
 import type { Interaction, Rect, ResizeHandle } from '@/core/types';
-import type { PointerCaptureHandle } from '@/hooks/interactions/types';
+import type { PointerCaptureHandle } from './types';
 
 describe('calculateResizeRect', () => {
   const defaultDrawer = { width: 10, depth: 8 };

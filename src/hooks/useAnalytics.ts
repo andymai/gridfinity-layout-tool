@@ -7,7 +7,7 @@
 import { useEffect, useRef } from 'react';
 import { track } from '@vercel/analytics';
 import { useLayoutStore } from '@/core/store';
-import { trackLayoutSnapshot, getActivityContext } from '@/utils/analytics';
+import { trackLayoutSnapshot, getActivityContext } from '@/shared/analytics/posthog';
 import { getGridBins } from '@/shared/utils';
 
 /** Heartbeat interval: 3 minutes (matches Vercel's "online" window) */

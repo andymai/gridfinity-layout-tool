@@ -6,7 +6,7 @@ import {
   copyToClipboard,
   exportLayoutJSON,
 } from '@/core/storage';
-import { trackLayoutSnapshot, trackEvent } from '@/utils/analytics';
+import { trackLayoutSnapshot, trackEvent } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { CloudShareTab } from './CloudShareTab';
@@ -205,9 +205,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
           {activeTab === 'url' && (
             <div className="space-y-4">
-              <p className="text-sm text-content-secondary">
-                {t('share.link.description')}
-              </p>
+              <p className="text-sm text-content-secondary">{t('share.link.description')}</p>
               <div className="flex gap-2">
                 <input
                   ref={urlInputRef}
@@ -221,17 +219,13 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                   {copied ? t('common.copied') : t('common.copy')}
                 </button>
               </div>
-              <div className="text-xs text-content-tertiary">
-                {t('share.link.longUrlNote')}
-              </div>
+              <div className="text-xs text-content-tertiary">{t('share.link.longUrlNote')}</div>
             </div>
           )}
 
           {activeTab === 'file' && (
             <div className="space-y-4">
-              <p className="text-sm text-content-secondary">
-                {t('share.file.description')}
-              </p>
+              <p className="text-sm text-content-secondary">{t('share.file.description')}</p>
               <div className="bg-surface rounded-lg p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
@@ -250,9 +244,16 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-content">{t('share.layoutFilename', { name: layout.name })}</div>
+                    <div className="font-medium text-content">
+                      {t('share.layoutFilename', { name: layout.name })}
+                    </div>
                     <div className="text-sm text-content-secondary">
-                      {t('share.layoutSummary', { grid: `${layout.drawer.width}×${layout.drawer.depth}`, bins: layout.bins.length, layers: layout.layers.length })}</div>
+                      {t('share.layoutSummary', {
+                        grid: `${layout.drawer.width}×${layout.drawer.depth}`,
+                        bins: layout.bins.length,
+                        layers: layout.layers.length,
+                      })}
+                    </div>
                   </div>
                   <button onClick={handleDownload} className="btn btn-primary">
                     {t('common.download')}
@@ -264,9 +265,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
           {activeTab === 'json' && (
             <div className="space-y-4 flex-1 flex flex-col">
-              <p className="text-sm text-content-secondary">
-                {t('share.json.description')}
-              </p>
+              <p className="text-sm text-content-secondary">{t('share.json.description')}</p>
               <textarea
                 ref={jsonTextareaRef}
                 value={jsonText}

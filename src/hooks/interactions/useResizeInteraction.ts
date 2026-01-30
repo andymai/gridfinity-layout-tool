@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
-import { calculateResizeRect, capturePointer } from '@/utils/interaction';
+import { calculateResizeRect, capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';

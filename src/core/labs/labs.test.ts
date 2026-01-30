@@ -17,7 +17,7 @@ import {
 import * as features from '@/core/labs/features';
 
 // Mock trackEvent to avoid analytics calls in tests
-vi.mock('@/utils/analytics', () => ({
+vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
 

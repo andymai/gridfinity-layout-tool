@@ -101,7 +101,7 @@ vi.mock('@/core/storage', () => ({
 }));
 
 // Mock analytics
-vi.mock('@/utils/analytics', () => ({
+vi.mock('@/shared/analytics/posthog', () => ({
   trackLayoutSnapshot: vi.fn(),
 }));
 

@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { track3DPreview, markFeatureUsed } from '@/utils/analytics';
+import { track3DPreview, markFeatureUsed } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
@@ -297,7 +297,9 @@ export const GridToolbar = memo(function GridToolbar({
               }
             }}
           >
-            <span className={showLabels ? 'text-content' : 'text-content-secondary'}>{t('toolbar.labels')}</span>
+            <span className={showLabels ? 'text-content' : 'text-content-secondary'}>
+              {t('toolbar.labels')}
+            </span>
             <Checkbox checked={showLabels} variant="desktop" />
           </div>
         )}
@@ -324,7 +326,11 @@ export const GridToolbar = memo(function GridToolbar({
         )}
 
         {/* Zoom controls */}
-        <div className="flex items-center gap-1" role="group" aria-label={t('toolbar.zoomControls')}>
+        <div
+          className="flex items-center gap-1"
+          role="group"
+          aria-label={t('toolbar.zoomControls')}
+        >
           <button
             onClick={zoomOut}
             disabled={!canZoomOut}

@@ -13,7 +13,7 @@ import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } fro
 import type { Locale } from '@/i18n';
 import type { STLSearchSite } from '@/core/store/settings';
 import { DEFAULT_CATEGORIES } from '@/core/constants';
-import { optInAnalytics, optOutAnalytics } from '@/utils/analytics';
+import { optInAnalytics, optOutAnalytics } from '@/shared/analytics/posthog';
 
 // Style constants
 const STYLES = {

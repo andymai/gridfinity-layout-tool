@@ -8,7 +8,7 @@ import { LocaleProvider } from './i18n/context.tsx';
 import { detectBrowserLocale } from './i18n/detection.ts';
 import { isLocale } from './i18n/types.ts';
 import { useSettingsStore } from './core/store/settings.ts';
-import { initAnalytics } from './utils/analytics.ts';
+import { initAnalytics } from './shared/analytics/posthog.ts';
 import { initMLTelemetry, setLayoutStoreRef } from './shared/analytics/mlTelemetry';
 import { useLayoutStore } from './core/store/layout.ts';
 import type { Locale } from './i18n/types.ts';

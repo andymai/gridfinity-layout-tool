@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useBinList } from '@/hooks/useBinList';
 import { useUIStore } from '@/core/store/ui';
 import { useResponsive } from '@/shared/hooks';
-import { markFeatureUsed } from '@/utils/analytics';
+import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { BinListTable } from './BinListTable';
 import { BinListFilters } from './BinListFilters';
 import { BinListDashboard } from './BinListDashboard';
@@ -201,9 +201,12 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
             <h2
               id="bin-list-modal-title"
               className="text-base md:text-lg font-semibold text-content"
-            >{t('binList.binList')}</h2>
+            >
+              {t('binList.binList')}
+            </h2>
             <span className="text-xs md:text-sm text-content-tertiary hidden sm:inline">
-              {t('binList.headerSummary', { bins: totalBins, filament: totalFilament })}</span>
+              {t('binList.headerSummary', { bins: totalBins, filament: totalFilament })}
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -317,7 +320,9 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
             <div className="text-xs text-content-tertiary hidden md:block">
               Double-click label or notes to edit inline. Shift+click for range selection.
             </div>
-            <div className="text-xs text-content-tertiary md:hidden">{t('binList.tapToSelectLongPressForOptions')}</div>
+            <div className="text-xs text-content-tertiary md:hidden">
+              {t('binList.tapToSelectLongPressForOptions')}
+            </div>
             <div className="hidden md:flex items-center gap-2">
               <kbd className="px-1.5 py-0.5 text-xs bg-surface border border-stroke rounded">
                 ⌘A
@@ -387,41 +392,57 @@ function ExportDropdown({
             strokeWidth={2}
             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
           />
-        </svg>{t('common.export')}<svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        </svg>
+        {t('common.export')}
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-1 w-48 py-1 bg-surface-elevated border border-stroke rounded-lg shadow-lg z-50">
-          <div className="px-3 py-1.5 text-xs text-content-tertiary border-b border-stroke-subtle">{t('common.download')}</div>
+          <div className="px-3 py-1.5 text-xs text-content-tertiary border-b border-stroke-subtle">
+            {t('common.download')}
+          </div>
           <button
             onClick={() => handleDownload('tsv')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">TSV</span>{t('binList.tabSeparated')}</button>
+            <span className="w-8 text-xs text-content-tertiary">TSV</span>
+            {t('binList.tabSeparated')}
+          </button>
           <button
             onClick={() => handleDownload('csv')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">CSV</span>{t('binList.commaSeparated')}</button>
+            <span className="w-8 text-xs text-content-tertiary">CSV</span>
+            {t('binList.commaSeparated')}
+          </button>
           <button
             onClick={() => handleDownload('json')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">JSON</span>{t('binList.fullData')}</button>
+            <span className="w-8 text-xs text-content-tertiary">JSON</span>
+            {t('binList.fullData')}
+          </button>
 
-          <div className="px-3 py-1.5 text-xs text-content-tertiary border-y border-stroke-subtle mt-1">{t('binList.copyToClipboard')}</div>
+          <div className="px-3 py-1.5 text-xs text-content-tertiary border-y border-stroke-subtle mt-1">
+            {t('binList.copyToClipboard')}
+          </div>
           <button
             onClick={() => handleCopy('tsv')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">TSV</span>{t('binList.copyAsTsv')}</button>
+            <span className="w-8 text-xs text-content-tertiary">TSV</span>
+            {t('binList.copyAsTsv')}
+          </button>
           <button
             onClick={() => handleCopy('csv')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">CSV</span>{t('binList.copyAsCsv')}</button>
+            <span className="w-8 text-xs text-content-tertiary">CSV</span>
+            {t('binList.copyAsCsv')}
+          </button>
         </div>
       )}
     </div>

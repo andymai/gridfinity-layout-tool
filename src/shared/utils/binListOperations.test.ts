@@ -8,7 +8,7 @@ import {
   formatAsJSON,
   calculateCategoryBreakdown,
   downloadAsFile,
-} from '@/utils/binListOperations';
+} from './binListOperations';
 import type { EnhancedPrintRow, Category, Layout } from '@/core/types';
 
 // Helper to create test rows

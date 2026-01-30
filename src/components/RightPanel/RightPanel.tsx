@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '@/core/store';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
-import { trackLayoutSnapshot } from '@/utils/analytics';
+import { trackLayoutSnapshot } from '@/shared/analytics/posthog';
 import { ConfirmDialog, CollapsibleSection, LoadingFallback } from '@/shared/components';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';

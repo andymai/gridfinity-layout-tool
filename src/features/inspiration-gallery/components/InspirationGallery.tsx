@@ -5,7 +5,7 @@ import { useLayoutSwitcher } from '@/hooks';
 import { useUIStore } from '@/core/store/ui';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
-import { trackEvent } from '@/utils/analytics';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { INSPIRATION_LAYOUTS, getLayoutsByTheme } from '../data';
 import { THEME_CONFIG } from '../types';
 import type { InspirationLayout, InspirationTheme } from '../types';

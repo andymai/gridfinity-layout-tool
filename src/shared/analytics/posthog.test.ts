@@ -12,7 +12,7 @@ import {
   trackFillOperation,
   trackPaintMode,
   initAnalytics,
-} from '@/utils/analytics';
+} from '@/shared/analytics/posthog';
 import { useInteractionStore, useLabsStore } from '@/core/store';
 import { STAGING_ID } from '@/core/constants';
 

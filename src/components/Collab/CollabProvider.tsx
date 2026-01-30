@@ -23,7 +23,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore } from '@/core/store/ui';
 import { generateId } from '@/core/constants';
 import { generateGuestName, generateGuestColor } from '@/utils/guestNames';
-import { trackEvent } from '@/utils/analytics';
+import { trackEvent } from '@/shared/analytics/posthog';
 import {
   PresenceContext,
   type CollabPresenceActions,

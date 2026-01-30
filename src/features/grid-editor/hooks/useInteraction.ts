@@ -11,7 +11,7 @@ import { useMutations } from '@/shared/contexts';
 import { useGridCoords } from './useGridCoords';
 import { useCollabPresence } from '@/hooks/useCollabPresence';
 import { throttleRAF, cancelThrottledRAF } from '@/shared/utils';
-import { mapInteractionToHint } from '@/utils/interaction';
+import { mapInteractionToHint } from '@/hooks/interactions/interaction';
 import { useDrawInteraction } from '@/hooks/interactions/useDrawInteraction';
 import { useDragInteraction } from '@/hooks/interactions/useDragInteraction';
 import { useResizeInteraction } from '@/hooks/interactions/useResizeInteraction';

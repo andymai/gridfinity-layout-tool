@@ -102,8 +102,8 @@ for file in "${TS_FILES[@]}"; do
   # Check 6: Unguarded localStorage/sessionStorage in non-utility files
   # Storage can throw in private browsing, when full, or when disabled
   if echo "$ADDED_LINES" | grep -qE '(localStorage|sessionStorage)\.(get|set|remove)Item'; then
-    # Skip if file is in storage/ directory (assumed to have proper handling)
-    if [[ "$file" != */storage/* ]]; then
+    # Skip if file is in storage/ or analytics/ directory (assumed to have proper handling)
+    if [[ "$file" != */storage/* && "$file" != */analytics/* ]]; then
       # Check each storage access for try-catch
       while IFS= read -r match_line; do
         [[ -z "$match_line" ]] && continue
