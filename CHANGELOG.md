@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.3.0...gridfinity-layout-tool-v2.3.1) (2026-01-30)
+
+
+### Bug Fixes
+
+* remove mobile ToolSwitcher and prevent 3D toggle zoom reset ([#521](https://github.com/andymai/gridfinity-layout-tool/issues/521)) ([04ef45b](https://github.com/andymai/gridfinity-layout-tool/commit/04ef45b60731af2be9726aae7bec65160e3e7988))
+
 ## [2.3.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.2.0...gridfinity-layout-tool-v2.3.0) (2026-01-30)
 
 
