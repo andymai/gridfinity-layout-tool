@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.4...gridfinity-layout-tool-v2.1.0) (2026-01-30)
+
+
+### Features
+
+* support single-click bin placement in paint mode ([#512](https://github.com/andymai/gridfinity-layout-tool/issues/512)) ([e6de3b4](https://github.com/andymai/gridfinity-layout-tool/commit/e6de3b4a7db9b82e03f8eff6a799f00acf7baf8a))
+
+
+### Bug Fixes
+
+* **ci:** use GITHUB_TOKEN for release PR auto-approve ([#515](https://github.com/andymai/gridfinity-layout-tool/issues/515)) ([feb2bf5](https://github.com/andymai/gridfinity-layout-tool/commit/feb2bf5da5fbee14ce32b0f3526b248d23307b0a))
+* enforce minimum 2u bin height in inspector ([#513](https://github.com/andymai/gridfinity-layout-tool/issues/513)) ([fe47b23](https://github.com/andymai/gridfinity-layout-tool/commit/fe47b232f1b5b987b3209b537f087c181c7bf00b))
+* use app token for release-please to trigger CI on release PRs ([#506](https://github.com/andymai/gridfinity-layout-tool/issues/506)) ([61c0de2](https://github.com/andymai/gridfinity-layout-tool/commit/61c0de2853002d7379ffd98edcb600ef3d732c22))
+
 ## [2.0.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.0.3...gridfinity-layout-tool-v2.0.4) (2026-01-30)
 
 
