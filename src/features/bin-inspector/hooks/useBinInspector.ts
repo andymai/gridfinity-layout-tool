@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
-import { calcMaxGridUnits, STAGING_ID } from '@/core/constants';
+import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk } from '@/core/result';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
@@ -117,12 +117,12 @@ export function useBinInspector(): UseBinInspectorReturn {
   const constraints = useMemo<BinConstraints>(() => {
     if (!bin) {
       return {
-        minHeight: 1,
-        maxHeight: 1,
+        minHeight: CONSTRAINTS.MIN_BIN_HEIGHT,
+        maxHeight: CONSTRAINTS.MIN_BIN_HEIGHT,
         maxClearance: 0,
         maxGridUnits: 5,
         needsSplit: false,
-        heightRange: '1u',
+        heightRange: `${CONSTRAINTS.MIN_BIN_HEIGHT}u`,
       };
     }
 
@@ -132,7 +132,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     // For bins in staging, use full drawer height range
     // They're not on a layer yet, so no layer-based constraints apply
     if (bin.layerId === STAGING_ID || !layer) {
-      const minHeight = 1;
+      const minHeight = CONSTRAINTS.MIN_BIN_HEIGHT;
       const maxHeight = layout.drawer.height;
       const maxClearance = maxHeight - bin.height;
       return {
@@ -145,7 +145,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       };
     }
 
-    const minHeight = layer.height;
+    const minHeight = Math.max(CONSTRAINTS.MIN_BIN_HEIGHT, layer.height);
     const zStartResult = getLayerZStartResult(bin.layerId, layout.layers);
     const maxHeight =
       layout.drawer.height - (isOk(zStartResult) ? zStartResult.value : layout.drawer.height);
@@ -187,10 +187,11 @@ export function useBinInspector(): UseBinInspectorReturn {
           // Minimum 0.5 (for half-bin mode compatibility)
           updateBin(bin.id, { [field]: Math.max(0.5, numValue) });
         } else if (field === 'height') {
-          const minHeight = layer?.height || 1;
           const newHeight = clamp(
-            typeof value === 'number' ? value : parseInt(value as string, 10) || minHeight,
-            minHeight,
+            typeof value === 'number'
+              ? value
+              : parseInt(value as string, 10) || constraints.minHeight,
+            constraints.minHeight,
             constraints.maxHeight
           );
 
@@ -230,7 +231,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     },
     [
       bin,
-      layer,
+      constraints.minHeight,
       constraints.maxHeight,
       constraints.maxClearance,
       execute,
@@ -314,7 +315,10 @@ export function useBinInspector(): UseBinInspectorReturn {
       execute(() => {
         for (const b of selectedBins) {
           const binLayer = layout.layers.find((l) => l.id === b.layerId);
-          const minHeight = binLayer?.height || 1;
+          const minHeight = Math.max(
+            CONSTRAINTS.MIN_BIN_HEIGHT,
+            binLayer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
+          );
           // For staging bins, use full drawer height; for placed bins, account for layer position
           let binMaxHeight = layout.drawer.height;
           if (b.layerId !== STAGING_ID && binLayer) {
