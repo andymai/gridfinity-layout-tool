@@ -118,6 +118,7 @@ const en: Record<string, string> = {
   'header.pressForHelp': 'Press',
   'header.forHelp': 'for help',
   'header.help': 'Help',
+  'header.starOnGithub': 'Star',
   'header.loadingLayouts': 'Loading layouts',
   'header.changeLanguage': 'Change language',
   'header.selectLanguage': 'Select language',
@@ -182,6 +183,7 @@ const en: Record<string, string> = {
   'sidebar.openSettings': 'Open settings',
   'sidebar.right': 'Right',
   'sidebar.tip': 'Tip',
+  'sidebar.github': 'GitHub',
   'sidebar.toggleHalfBinMode': 'Toggle half-bin mode',
   'sidebar.toolBy': 'Tool by',
   'sidebar.top': 'Top',
@@ -816,6 +818,7 @@ const en: Record<string, string> = {
   'mobile.header.openSettings': 'Open settings',
   'mobile.header.saved': 'Saved',
   'mobile.header.tip': 'Tip',
+  'mobile.header.github': 'GitHub',
   'mobile.help.drawingSelection': 'Drawing & Selection',
   'mobile.help.editing': 'Editing',
   'mobile.help.longPressABinToDuplicateDeleteOrMov':
