@@ -24,7 +24,7 @@ jobs:
       - name: Auto-approve Release PR
         if: steps.release.outputs.pr
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr review ${{ fromJSON(steps.release.outputs.pr).number }} \
             --approve --repo ${{ github.repository }}
