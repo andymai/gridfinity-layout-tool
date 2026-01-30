@@ -62,3 +62,15 @@ export {
 } from './collision';
 
 export { fillAllWithSize, fillGaps } from './fill';
+
+export {
+  filterBySearch,
+  calculateSelectionRange,
+  toggleSelection,
+  getSelectedBinIds,
+  formatAsCSV,
+  formatAsJSON,
+  downloadAsFile,
+  calculateCategoryBreakdown,
+} from './binListOperations';
+export type { CategoryBreakdown } from './binListOperations';

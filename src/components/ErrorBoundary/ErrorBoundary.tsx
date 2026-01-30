@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
-import { captureException } from '@/utils/analytics';
+import { captureException } from '@/shared/analytics/posthog';
 import { getStaticTranslation } from '@/i18n';
 
 interface Props {

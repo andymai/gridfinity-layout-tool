@@ -27,6 +27,9 @@ export type {
   StagingDragStartArgs,
 } from './types';
 
+// Interaction utilities (shared by all mode hooks)
+export { capturePointer, calculateResizeRect, mapInteractionToHint } from './interaction';
+
 // Mode hooks
 export { useDrawInteraction } from './useDrawInteraction';
 export { useDragInteraction } from './useDragInteraction';

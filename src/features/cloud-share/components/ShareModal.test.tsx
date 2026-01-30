@@ -4,7 +4,7 @@ import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
-import * as analytics from '@/utils/analytics';
+import * as analytics from '@/shared/analytics/posthog';
 
 // Mock CloudShareTab since it's a complex component
 vi.mock('@/features/cloud-share/components/CloudShareTab', () => ({
@@ -26,7 +26,7 @@ vi.mock('@/core/storage', () => ({
 }));
 
 // Mock analytics
-vi.mock('@/utils/analytics', () => ({
+vi.mock('@/shared/analytics/posthog', () => ({
   trackLayoutSnapshot: vi.fn(),
   trackEvent: vi.fn(),
 }));

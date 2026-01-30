@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BinListDashboard } from '@/components/Modals/BinListModal/BinListDashboard';
-import type { CategoryBreakdown } from '@/utils/binListOperations';
+import type { CategoryBreakdown } from '@/shared/utils/binListOperations';
 
 // Mock the BinList components
-vi.mock('@/components/BinList', () => ({
+vi.mock('./StatCard', () => ({
   StatCard: ({
     icon,
     label,
@@ -33,6 +33,9 @@ vi.mock('@/components/BinList', () => ({
   CostIcon: () => <span>CostIcon</span>,
   TimeIcon: () => <span>TimeIcon</span>,
   SpoolIcon: () => <span>SpoolIcon</span>,
+}));
+
+vi.mock('./CategoryBreakdownChart', () => ({
   CategoryBreakdownChart: ({ breakdown }: { breakdown: CategoryBreakdown[] }) => (
     <div data-testid="category-breakdown-chart">{breakdown.length} categories</div>
   ),

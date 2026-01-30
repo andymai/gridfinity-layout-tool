@@ -12,7 +12,7 @@ import {
   trackFillOperation,
   trackBinCreated,
   trackPaintMode,
-} from '@/utils/analytics';
+} from '@/shared/analytics/posthog';
 import { useLayoutStore, type FillMeta } from './layout';
 import { useInteractionStore, type PaintSize } from './interaction';
 import type { Layout } from '@/core/types';

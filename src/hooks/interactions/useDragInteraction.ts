@@ -3,7 +3,7 @@ import { useInteractionStore, useViewStore, useLayoutStore, useToastStore } from
 import { canPlaceBin } from '@/shared/utils/validation';
 import { canSwapBins, findBinAtPosition } from '@/shared/utils/position';
 import { constrainGroupDelta } from '@/utils/selection';
-import { capturePointer } from '@/utils/interaction';
+import { capturePointer } from './interaction';
 import { findBinById, findBinsByIds } from '@/utils/entity';
 import { STAGING_ID, getBaseCellSize } from '@/core/constants';
 import { isOk } from '@/core/result';

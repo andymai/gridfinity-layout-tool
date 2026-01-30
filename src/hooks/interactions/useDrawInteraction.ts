@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
-import { capturePointer } from '@/utils/interaction';
+import { capturePointer } from './interaction';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import { trackBinCreated, trackPaintMode } from '@/utils/analytics';
+import { trackBinCreated, trackPaintMode } from '@/shared/analytics/posthog';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
 import type { Coord, Bin } from '@/core/types';
 

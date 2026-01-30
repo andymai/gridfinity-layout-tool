@@ -1,17 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { StatCard, BinIcon, FilamentIcon, CostIcon, TimeIcon, SpoolIcon } from './StatCard';
 import {
-  StatCard,
-  BinIcon,
-  FilamentIcon,
-  CostIcon,
-  TimeIcon,
-  SpoolIcon,
   CategoryBreakdownChart,
   CategoryStackedBar,
   CategoryLegend,
-} from '@/components/BinList';
-import type { CategoryBreakdown } from '@/utils/binListOperations';
+} from './CategoryBreakdownChart';
+import type { CategoryBreakdown } from '@/shared/utils/binListOperations';
 
 describe('StatCard', () => {
   const defaultIcon = <span data-testid="test-icon">Icon</span>;

@@ -17,7 +17,7 @@ import {
 import { isOk, getUserMessage } from '@/core/result';
 import type { ApiError } from '@/core/result';
 import { copyToClipboard } from '@/core/storage';
-import { markFeatureUsed } from '@/utils/analytics';
+import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { slugify } from '@/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 

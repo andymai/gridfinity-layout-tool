@@ -1,6 +1,6 @@
 import type { Coord, Rect, ResizeHandle, Interaction } from '@/core/types';
 import type { InteractionHint } from '@/liveblocks.config';
-import type { PointerCaptureHandle } from '@/hooks/interactions/types';
+import type { PointerCaptureHandle } from './types';
 
 /**
  * Capture pointer at document body level for reliable event delivery during interactions.

@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
-import { captureException } from '@/utils/analytics';
+import { captureException } from '@/shared/analytics/posthog';
 
 // Error boundary strings as constants (class components cannot use hooks)
 const ERROR_SUFFIX = 'Error';
@@ -68,7 +68,9 @@ export class PanelErrorBoundary extends Component<Props, State> {
               />
             </svg>
           </div>
-          <h3 className="text-sm font-medium text-content mb-1">{this.props.panelName} {ERROR_SUFFIX}</h3>
+          <h3 className="text-sm font-medium text-content mb-1">
+            {this.props.panelName} {ERROR_SUFFIX}
+          </h3>
           <p className="text-xs text-content-secondary mb-3 max-w-[200px]">
             Something went wrong loading this panel.
           </p>
@@ -80,7 +82,9 @@ export class PanelErrorBoundary extends Component<Props, State> {
           <button
             onClick={this.handleRetry}
             className="px-3 py-1.5 text-xs font-medium bg-surface-secondary hover:bg-surface-elevated rounded transition-colors"
-          >{RETRY_LABEL}</button>
+          >
+            {RETRY_LABEL}
+          </button>
         </div>
       );
     }

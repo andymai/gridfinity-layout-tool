@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
 
-vi.mock('@/utils/analytics', () => ({
+vi.mock('@/shared/analytics/posthog', () => ({
   captureException: vi.fn(),
 }));
 

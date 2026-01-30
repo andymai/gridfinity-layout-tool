@@ -1,15 +1,12 @@
 import { useState, useCallback, useId } from 'react';
 import { useTranslation } from '@/i18n';
+import { StatCard, BinIcon, FilamentIcon, CostIcon, TimeIcon, SpoolIcon } from './StatCard';
 import {
-  StatCard,
-  BinIcon,
-  FilamentIcon,
-  CostIcon,
-  TimeIcon,
-  SpoolIcon,
-} from '@/components/BinList';
-import { CategoryBreakdownChart, CategoryStackedBar, CategoryLegend } from '@/components/BinList';
-import type { CategoryBreakdown } from '@/utils/binListOperations';
+  CategoryBreakdownChart,
+  CategoryStackedBar,
+  CategoryLegend,
+} from './CategoryBreakdownChart';
+import type { CategoryBreakdown } from '@/shared/utils/binListOperations';
 
 interface BinListDashboardProps {
   /** Total number of unique bin types */
@@ -80,7 +77,8 @@ export function BinListDashboard({
         <h3 className="text-sm font-medium text-content">{t('dashboard.statistics')}</h3>
         {collapsible && (
           <span className="text-xs text-content-tertiary">
-            {t('dashboard.compactSummary', { bins: totalBins, filament: totalFilament })}</span>
+            {t('dashboard.compactSummary', { bins: totalBins, filament: totalFilament })}
+          </span>
         )}
       </div>
       {collapsible && (
@@ -175,7 +173,9 @@ export function BinListDashboard({
       {/* Category breakdown */}
       {categoryBreakdown.length > 0 && (
         <div className="bg-surface-elevated rounded-lg p-4">
-          <h4 className="text-sm font-medium text-content mb-3">{t('dashboard.filamentByCategory')}</h4>
+          <h4 className="text-sm font-medium text-content mb-3">
+            {t('dashboard.filamentByCategory')}
+          </h4>
           <CategoryBreakdownChart breakdown={categoryBreakdown} />
           <div className="mt-3 pt-3 border-t border-stroke-subtle">
             <CategoryLegend breakdown={categoryBreakdown} />

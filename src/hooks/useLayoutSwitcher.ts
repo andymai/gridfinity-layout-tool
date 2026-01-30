@@ -21,7 +21,7 @@ import {
 } from '@/core/storage';
 import { setLayoutURL } from '@/utils/url';
 import { createLayoutWithSettings } from '@/core/constants';
-import { trackLayoutAction } from '@/utils/analytics';
+import { trackLayoutAction } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Result, Unit, LayoutError, StorageError, UnknownError } from '@/core/result';
 import { ok, err, OK, layoutLastEntity, layoutInvalidOperation, fromUnknown } from '@/core/result';

@@ -12,7 +12,7 @@ vi.mock('@/shared/hooks', () => ({
 
 // Mock analytics
 const mockTrackEvent = vi.fn();
-vi.mock('@/utils/analytics', () => ({
+vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: (...args: unknown[]) => mockTrackEvent(...args),
 }));
 

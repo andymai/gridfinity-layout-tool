@@ -16,7 +16,7 @@ import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import type { STLSearchSite } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
-import { optInAnalytics, optOutAnalytics } from '@/utils/analytics';
+import { optInAnalytics, optOutAnalytics } from '@/shared/analytics/posthog';
 
 /**
  * Privacy settings section for mobile.

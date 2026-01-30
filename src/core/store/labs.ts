@@ -9,7 +9,7 @@
 import { create } from 'zustand';
 import type { LabsPreferences, FeatureId } from '@/core/labs';
 import { createDefaultLabsPreferences, getFeature } from '@/core/labs';
-import { trackEvent } from '@/utils/analytics';
+import { trackEvent } from '@/shared/analytics/posthog';
 
 export const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
 
@@ -166,7 +166,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     // Coming Soon features are always disabled
     if (feature?.comingSoon) return false;
 
-    return preferences.enabledFeatures[featureId] ?? (feature?.defaultEnabled ?? false);
+    return preferences.enabledFeatures[featureId] ?? feature?.defaultEnabled ?? false;
   },
 
   getEnabledCount: () => {

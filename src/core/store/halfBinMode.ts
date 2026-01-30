@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
-import { markFeatureUsed } from '@/utils/analytics';
+import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useLayoutStore } from './layout';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutInvalidOperation, OK } from '@/core/result';

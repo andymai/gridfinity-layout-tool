@@ -3,10 +3,10 @@ import { renderHook } from '@testing-library/react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useLayoutStore } from '@/core/store/layout';
 import { resetAllStores } from '@/test/testUtils';
-import * as analytics from '@/utils/analytics';
+import * as analytics from '@/shared/analytics/posthog';
 
 // Mock the analytics module
-vi.mock('@/utils/analytics', () => ({
+vi.mock('@/shared/analytics/posthog', () => ({
   trackLayoutSnapshot: vi.fn(),
   getActivityContext: vi.fn(() => 'viewing'),
 }));

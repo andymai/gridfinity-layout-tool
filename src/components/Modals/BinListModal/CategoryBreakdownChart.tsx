@@ -1,4 +1,4 @@
-import type { CategoryBreakdown } from '@/utils/binListOperations';
+import type { CategoryBreakdown } from '@/shared/utils/binListOperations';
 import { useTranslation } from '@/i18n';
 
 export interface CategoryBreakdownChartProps {
@@ -25,7 +25,9 @@ export function CategoryBreakdownChart({
   const t = useTranslation();
 
   if (breakdown.length === 0) {
-    return <div className="text-center py-4 text-content-tertiary text-sm">{t('dashboard.noData')}</div>;
+    return (
+      <div className="text-center py-4 text-content-tertiary text-sm">{t('dashboard.noData')}</div>
+    );
   }
 
   // Limit categories and group the rest as "Other"
