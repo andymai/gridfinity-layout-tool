@@ -36,7 +36,9 @@ if (import.meta.env.DEV && CURATED_TEMPLATES.length !== CURATED_TEMPLATE_IDS.len
   const found = new Set(CURATED_TEMPLATES.map((l) => l.id));
   const missing = CURATED_TEMPLATE_IDS.filter((id) => !found.has(id));
 
-  console.warn(`[WelcomeModal] Missing template IDs in INSPIRATION_LAYOUTS: ${missing.join(', ')}`);
+  throw new Error(
+    `[WelcomeModal] Missing template IDs in INSPIRATION_LAYOUTS: ${missing.join(', ')}`
+  );
 }
 
 // ============================================================================
