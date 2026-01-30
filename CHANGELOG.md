@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.2.0...gridfinity-layout-tool-v2.3.0) (2026-01-30)
+
+
+### Features
+
+* enrich PostHog tracking with context, failure, and discovery events ([#517](https://github.com/andymai/gridfinity-layout-tool/issues/517)) ([d617109](https://github.com/andymai/gridfinity-layout-tool/commit/d61710977054fc8ea77f3d87bd0fc5305a50367c))
+
 ## [2.2.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.1.0...gridfinity-layout-tool-v2.2.0) (2026-01-30)
 
 
