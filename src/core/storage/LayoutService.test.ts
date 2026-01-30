@@ -62,14 +62,13 @@ describe('storage', () => {
       );
     });
 
-    it('throws error when storage is full', () => {
+    it('does not throw when storage is full (returns Result)', () => {
       localStorageMock.setItem.mockImplementationOnce(() => {
         throw new Error('QuotaExceededError');
       });
 
-      expect(() => saveLayout(defaultLayout)).toThrow(
-        'Storage full. Export your layout to save it.'
-      );
+      // saveLayout (deprecated) silently ignores storage errors
+      expect(() => saveLayout(defaultLayout)).not.toThrow();
     });
   });
 

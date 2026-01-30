@@ -20,7 +20,14 @@ import {
 } from '@/core/storage';
 import { createDefaultLayout } from '@/core/constants';
 import { expectOk, expectErr } from '@/test/testUtils';
-import { getUserMessage, isRetryable } from '@/core/result';
+import {
+  ok,
+  err,
+  getUserMessage,
+  isRetryable,
+  storageQuotaExceeded,
+  storageUnavailable,
+} from '@/core/result';
 import type { Layout, LayoutLibrary } from '@/core/types';
 
 // Mock the backend module
@@ -219,9 +226,7 @@ describe('Result-based storage functions', () => {
     };
 
     it('returns Ok on successful save', () => {
-      vi.mocked(backend.saveSyncGeneric).mockImplementation(() => {
-        // Success - no throw
-      });
+      vi.mocked(backend.saveSyncGeneric).mockReturnValue(ok(undefined));
 
       const result = saveLibraryResult(testLibrary);
 
@@ -229,9 +234,7 @@ describe('Result-based storage functions', () => {
     });
 
     it('returns Err with quota exceeded error', () => {
-      vi.mocked(backend.saveSyncGeneric).mockImplementation(() => {
-        throw new Error('QuotaExceededError');
-      });
+      vi.mocked(backend.saveSyncGeneric).mockReturnValue(err(storageQuotaExceeded()));
 
       const result = saveLibraryResult(testLibrary);
 
@@ -239,9 +242,7 @@ describe('Result-based storage functions', () => {
     });
 
     it('returns Err with unavailable error for generic failures', () => {
-      vi.mocked(backend.saveSyncGeneric).mockImplementation(() => {
-        throw new Error('Unknown error');
-      });
+      vi.mocked(backend.saveSyncGeneric).mockReturnValue(err(storageUnavailable('localStorage')));
 
       const result = saveLibraryResult(testLibrary);
 
@@ -360,8 +361,8 @@ describe('Result-based storage functions', () => {
 
     it('returns Ok with migrated library on successful migration', () => {
       vi.mocked(backend.loadSync).mockReturnValue(defaultLayout);
-      vi.mocked(backend.saveSync).mockImplementation(() => {});
-      vi.mocked(backend.saveSyncGeneric).mockImplementation(() => {});
+      vi.mocked(backend.saveSync).mockReturnValue(ok(undefined));
+      vi.mocked(backend.saveSyncGeneric).mockReturnValue(ok(undefined));
       vi.mocked(backend.deleteSync).mockImplementation(() => {});
 
       const result = migrateFromLegacyStorageResult();
@@ -385,9 +386,7 @@ describe('Result-based storage functions', () => {
 
     it('returns Err with quota exceeded on storage full', () => {
       vi.mocked(backend.loadSync).mockReturnValue(defaultLayout);
-      vi.mocked(backend.saveSync).mockImplementation(() => {
-        throw new Error('QuotaExceededError');
-      });
+      vi.mocked(backend.saveSync).mockReturnValue(err(storageQuotaExceeded()));
 
       const result = migrateFromLegacyStorageResult();
 

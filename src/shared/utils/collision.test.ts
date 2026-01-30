@@ -1,16 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import {
-  getLayerZStart,
   getLayerZStartResult,
   getBin3DRectResult,
   footprintsOverlap,
-  binsCollide,
   binsCollideResult,
   getBlockedZones,
   getDisplayLayers,
   checkLayerReorderCollisions,
   isInBlockedZone,
 } from '@/shared/utils/collision';
+import { isOk } from '@/core/result';
 import type { Layer } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, expectOk, expectErr } from '@/test/testUtils';
@@ -20,21 +19,6 @@ const layers: Layer[] = [
   { id: 'layer2', name: 'Layer 2', height: 6 },
   { id: 'layer3', name: 'Layer 3', height: 3 },
 ];
-
-describe('getLayerZStart', () => {
-  it('returns 0 for first layer', () => {
-    expect(getLayerZStart('layer1', layers)).toBe(0);
-  });
-
-  it('sums heights for subsequent layers', () => {
-    expect(getLayerZStart('layer2', layers)).toBe(3);
-    expect(getLayerZStart('layer3', layers)).toBe(9);
-  });
-
-  it('throws for unknown layer', () => {
-    expect(() => getLayerZStart('unknown', layers)).toThrow();
-  });
-});
 
 describe('getLayerZStartResult', () => {
   it('returns Ok(0) for first layer', () => {
@@ -107,32 +91,6 @@ describe('footprintsOverlap', () => {
     const a = { x: 0, y: 0, width: 2, depth: 2 };
     const b = { x: 5, y: 5, width: 2, depth: 2 };
     expect(footprintsOverlap(a, b)).toBe(false);
-  });
-});
-
-describe('binsCollide', () => {
-  it('returns true for overlapping bins on same layer', () => {
-    const binA = createTestBin({ id: '1', width: 2, depth: 2 });
-    const binB = createTestBin({ id: '2', x: 1, y: 1, width: 2, depth: 2 });
-    expect(binsCollide(binA, binB, layers)).toBe(true);
-  });
-
-  it('returns false for bins on different layers with no vertical overlap', () => {
-    const binA = createTestBin({ id: '1', width: 2, depth: 2 });
-    const binB = createTestBin({ id: '2', layerId: 'layer2', width: 2, depth: 2 });
-    expect(binsCollide(binA, binB, layers)).toBe(false);
-  });
-
-  it('returns true for tall bin protruding into upper layer', () => {
-    const binA = createTestBin({ id: '1', width: 2, depth: 2, height: 6 }); // extends into layer2
-    const binB = createTestBin({ id: '2', layerId: 'layer2', width: 2, depth: 2 });
-    expect(binsCollide(binA, binB, layers)).toBe(true);
-  });
-
-  it('returns false for staging bins', () => {
-    const binA = createTestBin({ id: '1', layerId: STAGING_ID, width: 2, depth: 2 });
-    const binB = createTestBin({ id: '2', width: 2, depth: 2 });
-    expect(binsCollide(binA, binB, layers)).toBe(false);
   });
 });
 
@@ -321,7 +279,8 @@ describe('clearanceHeight', () => {
     const binB = createTestBin({ id: '2', layerId: 'layer2', width: 2, depth: 2 });
     // Layer2 starts at z=3, binA extends to z=3+3=6 (height + clearance), binB is at z=3-6
     // They should collide because clearance from binA extends into binB's space
-    expect(binsCollide(binA, binB, layers)).toBe(true);
+    const result = binsCollideResult(binA, binB, layers);
+    expect(isOk(result) && result.value).toBe(true);
   });
 
   it('does not cause collision when clearance does not reach upper layer', () => {
@@ -331,7 +290,8 @@ describe('clearanceHeight', () => {
     const binB = createTestBin({ id: '2', layerId: 'layer2', width: 2, depth: 2 });
     // binA: z=0-3 (height 2 + clearance 1), binB: z=3-6
     // They touch but don't overlap (exclusive boundary)
-    expect(binsCollide(binA, binB, layers)).toBe(false);
+    const result = binsCollideResult(binA, binB, layers);
+    expect(isOk(result) && result.value).toBe(false);
   });
 
   it('creates blocked zone when clearance extends into upper layer', () => {
@@ -356,6 +316,7 @@ describe('clearanceHeight', () => {
     const binA = createTestBin({ id: '1', width: 2, depth: 2 });
     const binB = createTestBin({ id: '2', layerId: 'layer2', width: 2, depth: 2 });
     // Without clearance, layer1 bin (z=0-3) doesn't overlap with layer2 bin (z=3-6)
-    expect(binsCollide(binA, binB, layers)).toBe(false);
+    const result = binsCollideResult(binA, binB, layers);
+    expect(isOk(result) && result.value).toBe(false);
   });
 });

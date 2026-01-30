@@ -1,6 +1,12 @@
 import type { Bin, Layout, ValidationResult, Rect, OperationResult } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '@/core/constants';
-import { binsCollide, getLayerZStart, getBlockedZones, footprintsOverlap } from './collision';
+import {
+  binsCollideResult,
+  getLayerZStartResult,
+  getBlockedZones,
+  footprintsOverlap,
+} from './collision';
+import { isOk } from '@/core/result';
 
 // ============================================================================
 // Type Guards for Import Validation
@@ -141,8 +147,11 @@ export function canPlaceBin(
 
   // Height check - only validate max height (bin can't exceed drawer)
   // Layer height is a default for new bins, not a constraint for existing bins
-  const zStart = getLayerZStart(layerId, layers);
-  const maxHeight = drawer.height - zStart;
+  const zStartResult = getLayerZStartResult(layerId, layers);
+  if (!isOk(zStartResult)) {
+    return { valid: false, reason: 'invalid_layer' };
+  }
+  const maxHeight = drawer.height - zStartResult.value;
   if (rect.height > maxHeight) {
     return { valid: false, reason: 'exceeds_height' };
   }
@@ -184,7 +193,8 @@ export function canPlaceBin(
     if (other.id === excludeBinId) continue;
     if (excludeBinIds?.has(other.id)) continue;
     if (other.layerId === STAGING_ID) continue;
-    if (binsCollide(testBin, other, layers)) {
+    const collisionResult = binsCollideResult(testBin, other, layers);
+    if (isOk(collisionResult) && collisionResult.value) {
       // Find the layer name for the colliding bin
       const otherLayer = layers.find((l) => l.id === other.layerId);
       return {

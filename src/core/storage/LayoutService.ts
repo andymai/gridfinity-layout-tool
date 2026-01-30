@@ -24,12 +24,13 @@ import type { StorageError } from '@/core/result';
 import {
   ok,
   err,
+  isErr,
   tryCatchAsync,
   storageNotFound,
   storageCorrupted,
   storageUnavailable,
 } from '@/core/result';
-import { createStorageErrorClassifier, classifyStorageError } from './errorUtils';
+import { createStorageErrorClassifier } from './errorUtils';
 
 // Storage keys
 const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';
@@ -243,11 +244,11 @@ export async function deleteLayoutResult(layoutId: string): Promise<Result<void,
 /**
  * Save a layout synchronously to localStorage.
  * Use only during initialization when async is not available.
- * @throws Error if storage is full
+ * Returns Result with StorageError if storage is full.
  */
-export function saveLayoutSync(layoutId: string, layout: Layout): void {
+export function saveLayoutSync(layoutId: string, layout: Layout): Result<void, StorageError> {
   const key = getLayoutStorageKey(layoutId);
-  backend.saveSync(key, layout);
+  return backend.saveSync(key, layout);
 }
 
 /**
@@ -286,27 +287,18 @@ export function deleteLayoutSync(layoutId: string): void {
 
 /**
  * Save the layout library index to localStorage.
- * @throws Error if storage is full
+ * Returns Result with StorageError if storage is full.
  */
-export function saveLibrary(library: LayoutLibrary): void {
-  try {
-    backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
-  } catch {
-    throw new Error('Storage full. Export your layouts to save them.');
-  }
+export function saveLibrary(library: LayoutLibrary): Result<void, StorageError> {
+  return backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
 }
 
 /**
  * Save the layout library index with Result-based error handling.
- * Returns Ok on success, or Err with StorageError on failure.
+ * @deprecated Use saveLibrary directly — it now returns Result.
  */
 export function saveLibraryResult(library: LayoutLibrary): Result<void, StorageError> {
-  try {
-    backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
-    return ok(undefined);
-  } catch (error) {
-    return err(classifyStorageError(error, 'localStorage'));
-  }
+  return saveLibrary(library);
 }
 
 /**
@@ -527,13 +519,15 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
   };
 
   // Save layout and library
-  try {
-    saveLayoutSync(layoutId, legacyData);
-    saveLibrary(library);
-    backend.deleteSync(LEGACY_STORAGE_KEY);
-  } catch (error) {
-    return err(classifyStorageError(error, 'localStorage'));
+  const layoutSaveResult = saveLayoutSync(layoutId, legacyData);
+  if (isErr(layoutSaveResult)) {
+    return err(layoutSaveResult.error);
   }
+  const librarySaveResult = saveLibrary(library);
+  if (isErr(librarySaveResult)) {
+    return err(librarySaveResult.error);
+  }
+  backend.deleteSync(LEGACY_STORAGE_KEY);
 
   return ok(library);
 }

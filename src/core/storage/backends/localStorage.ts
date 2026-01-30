@@ -7,16 +7,19 @@
  */
 
 import type { Layout, LayoutLibrary } from '@/core/types';
+import type { Result, StorageError } from '@/core/result';
+import { ok, err, storageQuotaExceeded } from '@/core/result';
 
 /**
  * Save data to localStorage as JSON.
- * @throws Error if storage is full
+ * Returns Err with StorageQuotaExceededError if storage is full.
  */
-export function saveToLocalStorage<T>(key: string, data: T): void {
+export function saveToLocalStorage<T>(key: string, data: T): Result<void, StorageError> {
   try {
     localStorage.setItem(key, JSON.stringify(data));
-  } catch {
-    throw new Error('Storage full. Export your layout to save it.');
+    return ok(undefined);
+  } catch (cause) {
+    return err(storageQuotaExceeded(undefined, undefined, cause));
   }
 }
 
@@ -94,8 +97,8 @@ export function getStorageUsagePercent(): number {
 /**
  * Save a layout to localStorage.
  */
-export function saveLayout(key: string, layout: Layout): void {
-  saveToLocalStorage(key, layout);
+export function saveLayout(key: string, layout: Layout): Result<void, StorageError> {
+  return saveToLocalStorage(key, layout);
 }
 
 /**
@@ -108,8 +111,8 @@ export function loadLayout(key: string): Layout | null {
 /**
  * Save the library index to localStorage.
  */
-export function saveLibraryIndex(key: string, library: LayoutLibrary): void {
-  saveToLocalStorage(key, library);
+export function saveLibraryIndex(key: string, library: LayoutLibrary): Result<void, StorageError> {
+  return saveToLocalStorage(key, library);
 }
 
 /**

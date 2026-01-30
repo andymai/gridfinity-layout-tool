@@ -6,7 +6,8 @@ import { useUIStore } from '@/core/store';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, calcMaxGridUnits } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 import { use3DPreviewKeyboard } from '@/hooks/use3DPreviewKeyboard';
-import { getLayerZStart } from '@/shared/utils/collision';
+import { getLayerZStartResult } from '@/shared/utils/collision';
+import { isOk } from '@/core/result';
 import { Scene, type SceneHandle } from './IsometricPreview/Scene';
 import { BinMesh } from './IsometricPreview/BinMesh';
 import { SplitLineOverlay } from './IsometricPreview/SplitLineOverlay';
@@ -187,7 +188,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         }
       }
 
-      const zStart = getLayerZStart(bin.layerId, layers) * heightToGridScale;
+      const zStartResult = getLayerZStartResult(bin.layerId, layers);
+      if (!isOk(zStartResult)) continue;
+      const zStart = zStartResult.value * heightToGridScale;
       const category = categoryMap.get(bin.category);
       const color = category?.color || DEFAULT_CATEGORY_COLOR;
 

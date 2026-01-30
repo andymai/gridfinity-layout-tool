@@ -51,13 +51,10 @@ export {
 
 export {
   getDisplayLayers,
-  getLayerZStart,
   getLayerZStartResult,
-  getBin3DRect,
   getBin3DRectResult,
   footprintsOverlap,
   verticalRangesOverlap,
-  binsCollide,
   binsCollideResult,
   getBlockedZones,
   isInBlockedZone,
