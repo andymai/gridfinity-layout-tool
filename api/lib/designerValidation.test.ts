@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateDesignerShare } from '../../../api/lib/designerValidation';
+import { validateDesignerShare } from './designerValidation';
 
 function validPayload() {
   return {
