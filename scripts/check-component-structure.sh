@@ -11,7 +11,7 @@ set -e
 # Get staged .tsx/.ts files inside any components/ directory under src/
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | \
   grep -E '\.(tsx?)$' | \
-  grep -E '^src/.*components/' || true)
+  grep -E '^src/(.*/)?components/' || true)
 
 if [ -z "$STAGED_FILES" ]; then
   exit 0
