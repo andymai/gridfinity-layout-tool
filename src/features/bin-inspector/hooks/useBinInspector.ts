@@ -187,13 +187,11 @@ export function useBinInspector(): UseBinInspectorReturn {
           // Minimum 0.5 (for half-bin mode compatibility)
           updateBin(bin.id, { [field]: Math.max(0.5, numValue) });
         } else if (field === 'height') {
-          const minHeight = Math.max(
-            CONSTRAINTS.MIN_BIN_HEIGHT,
-            layer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
-          );
           const newHeight = clamp(
-            typeof value === 'number' ? value : parseInt(value as string, 10) || minHeight,
-            minHeight,
+            typeof value === 'number'
+              ? value
+              : parseInt(value as string, 10) || constraints.minHeight,
+            constraints.minHeight,
             constraints.maxHeight
           );
 
@@ -233,7 +231,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     },
     [
       bin,
-      layer,
+      constraints.minHeight,
       constraints.maxHeight,
       constraints.maxClearance,
       execute,
