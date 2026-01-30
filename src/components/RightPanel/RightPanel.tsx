@@ -11,11 +11,11 @@ import { useTranslation } from '@/i18n';
 const LIST_SEPARATOR = ', ';
 
 const BinListModal = lazyWithRetry(() =>
-  import('./Modals/BinListModal').then(namedExport('BinListModal'))
+  import('../Modals/BinListModal').then(namedExport('BinListModal'))
 );
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
-import { SplitPreview } from './Print/SplitPreview';
+import { SplitPreview } from '../Print/SplitPreview';
 import {
   useBinInspector,
   SingleBinInspector,
