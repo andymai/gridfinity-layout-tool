@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.4.0...gridfinity-layout-tool-v2.5.0) (2026-01-30)
+
+
+### Features
+
+* add Norwegian Bokmål (nb) localization ([#525](https://github.com/andymai/gridfinity-layout-tool/issues/525)) ([13c45c3](https://github.com/andymai/gridfinity-layout-tool/commit/13c45c3f2b2baf5bb533e02191a264df59b5d2c0))
+
 ## [2.4.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.3.1...gridfinity-layout-tool-v2.4.0) (2026-01-30)
 
 
