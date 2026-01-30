@@ -174,7 +174,6 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
     gap,
     isMobile,
     isResizing: !!resizeDirection,
-    showIsometricPreview,
   });
 
   // Listen for fit-to-screen command from command palette

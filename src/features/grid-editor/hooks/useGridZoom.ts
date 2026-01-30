@@ -23,8 +23,6 @@ export interface UseGridZoomOptions {
   isMobile: boolean;
   /** Whether user is actively resizing the grid (skip auto-fit during resize) */
   isResizing?: boolean;
-  /** Whether 3D preview is shown (affects available space) */
-  showIsometricPreview?: boolean;
 }
 
 export interface GridZoomState {
@@ -52,7 +50,6 @@ export function useGridZoom(options: UseGridZoomOptions): GridZoomState {
     gap,
     isMobile,
     isResizing = false,
-    showIsometricPreview = false,
   } = options;
 
   const { zoom, setZoom, zoomIn, zoomOut } = useViewStore(
@@ -100,13 +97,16 @@ export function useGridZoom(options: UseGridZoomOptions): GridZoomState {
     setZoom(clampedZoom);
   }, [drawerWidth, drawerDepth, gap, setZoom, isMobile, scrollContainerRef]);
 
-  // Fit to screen on initial mount, drawer size changes, or 3D preview toggle.
+  // Fit to screen on initial mount and drawer size changes.
   // Uses useLayoutEffect to calculate zoom synchronously before paint, preventing CLS.
   // Skips during active resize drag to avoid fighting the user's intent.
+  // Note: showIsometricPreview is intentionally excluded — toggling the 3D preview
+  // on mobile halves the container, causing fitToScreen to zoom out to the minimum.
+  // Users expect their zoom to stay stable when toggling the preview.
   useLayoutEffect(() => {
     if (isResizing) return;
     fitToScreen();
-  }, [fitToScreen, drawerWidth, drawerDepth, isResizing, showIsometricPreview]);
+  }, [fitToScreen, drawerWidth, drawerDepth, isResizing]);
 
   return {
     zoom,
