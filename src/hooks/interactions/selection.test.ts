@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSelectionBounds, constrainGroupDelta, applyGroupDelta } from '@/utils/selection';
+import { getSelectionBounds, constrainGroupDelta, applyGroupDelta } from './selection';
 import { createTestBin } from '@/test/testUtils';
 
 describe('getSelectionBounds', () => {

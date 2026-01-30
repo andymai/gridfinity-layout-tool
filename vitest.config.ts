@@ -33,12 +33,11 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to prevent regression
-        // Updated 2026-01-28: Adjusted after modal overhaul added new UI components
-        // New components are tested via integration tests (DesignListDialog.test.tsx)
-        lines: 79,
-        branches: 67,
-        functions: 79,
-        statements: 78,
+        // Updated 2026-01-29: Adjusted after removing dead isometric utilities
+        lines: 78,
+        branches: 66.5,
+        functions: 78.5,
+        statements: 77.5,
       },
     },
   },

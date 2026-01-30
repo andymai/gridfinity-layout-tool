@@ -29,6 +29,7 @@ export type {
 
 // Interaction utilities (shared by all mode hooks)
 export { capturePointer, calculateResizeRect, mapInteractionToHint } from './interaction';
+export { getSelectionBounds, constrainGroupDelta, applyGroupDelta } from './selection';
 
 // Mode hooks
 export { useDrawInteraction } from './useDrawInteraction';

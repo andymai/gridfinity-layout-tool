@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useInteractionStore, useViewStore, useLayoutStore, useToastStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { canSwapBins, findBinAtPosition } from '@/shared/utils/position';
-import { constrainGroupDelta } from '@/utils/selection';
+import { constrainGroupDelta } from './selection';
 import { capturePointer } from './interaction';
 import { findBinById, findBinsByIds } from '@/utils/entity';
 import { STAGING_ID, getBaseCellSize } from '@/core/constants';
