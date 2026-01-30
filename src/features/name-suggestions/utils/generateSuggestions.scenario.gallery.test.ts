@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSuggestions } from './utils/generateSuggestions';
-import type { SuggestionInput } from './types';
+import { generateSuggestions } from './generateSuggestions';
+import type { SuggestionInput } from '../types';
 
 describe('Name suggestions for inspiration gallery layouts', () => {
   describe('Workshop layouts', () => {

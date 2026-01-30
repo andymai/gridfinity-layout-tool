@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GenerationBridge } from '../bridge/GenerationBridge';
+import { GenerationBridge } from './GenerationBridge';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import type { WorkerResponse } from '../bridge/types';
+import type { WorkerResponse } from './types';
 
 /**
  * Mock Worker that simulates the generation worker's message protocol.
