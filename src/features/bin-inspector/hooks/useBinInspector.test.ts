@@ -87,12 +87,12 @@ describe('useBinInspector', () => {
       const { result } = renderHook(() => useBinInspector());
 
       expect(result.current.constraints).toEqual({
-        minHeight: 1,
-        maxHeight: 1,
+        minHeight: 2,
+        maxHeight: 2,
         maxClearance: 0,
         maxGridUnits: 5,
         needsSplit: false,
-        heightRange: '1u',
+        heightRange: '2u',
       });
     });
 
