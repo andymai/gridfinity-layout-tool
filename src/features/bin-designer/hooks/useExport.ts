@@ -40,10 +40,7 @@ export function useExport(): UseExportReturn {
 
   // Export requires both a preview mesh (to show UI) and an active bridge (to regenerate)
   const canExport =
-    mesh !== null &&
-    mesh.vertices !== null &&
-    mesh.error === null &&
-    getActiveBridge() !== null;
+    mesh !== null && mesh.vertices !== null && mesh.error === null && getActiveBridge() !== null;
 
   const estimates = useMemo(() => estimatePrint(params), [params]);
 
@@ -55,7 +52,7 @@ export function useExport(): UseExportReturn {
     async (config: ExportFileNameConfig, designName?: string) => {
       const bridge = getActiveBridge();
       if (!bridge) {
-        throw new Error('Export worker not available');
+        return;
       }
 
       setIsExporting(true);

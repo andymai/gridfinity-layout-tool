@@ -87,7 +87,7 @@ describe('storage-library', () => {
       expect(stored.name).toBe('Second');
     });
 
-    it('throws when storage quota exceeded', () => {
+    it('returns Err when storage quota exceeded', () => {
       // Mock localStorage.setItem to throw
       const mockSetItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw new DOMException('QuotaExceededError');
@@ -95,7 +95,12 @@ describe('storage-library', () => {
 
       const layout = createTestLayout();
 
-      expect(() => saveLayoutSync('test-id', layout)).toThrow('Storage full');
+      const result = saveLayoutSync('test-id', layout);
+      expect(result).toEqual(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'STORAGE_QUOTA_EXCEEDED' }),
+        })
+      );
 
       mockSetItem.mockRestore();
     });
@@ -189,14 +194,19 @@ describe('storage-library', () => {
       expect(JSON.parse(stored!).entries).toHaveLength(2);
     });
 
-    it('throws when storage quota exceeded', () => {
+    it('returns Err when storage quota exceeded', () => {
       const mockSetItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw new DOMException('QuotaExceededError');
       });
 
       const library = createTestLibrary();
 
-      expect(() => saveLibrary(library)).toThrow('Storage full');
+      const result = saveLibrary(library);
+      expect(result).toEqual(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'STORAGE_QUOTA_EXCEEDED' }),
+        })
+      );
 
       mockSetItem.mockRestore();
     });

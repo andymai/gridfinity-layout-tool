@@ -15,6 +15,8 @@
 import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
 import type { Layout } from '@/core/types';
+import type { Result, StorageError } from '@/core/result';
+import { isErr } from '@/core/result';
 
 // Cache the backend determination for async operations
 let cachedBackend: 'indexeddb' | 'localstorage' | null = null;
@@ -60,14 +62,16 @@ export async function saveAsync(key: string, layout: Layout): Promise<void> {
     await indexedDB.saveLayout(key, layout);
 
     // Backup: localStorage (ignore errors - IndexedDB has it)
-    try {
-      localStorage.saveLayout(key, layout);
-    } catch {
+    const backupResult = localStorage.saveLayout(key, layout);
+    if (isErr(backupResult)) {
       console.warn(`[Storage] localStorage backup failed for ${key} - using IndexedDB only`);
     }
   } else {
     // Fallback: localStorage only
-    localStorage.saveLayout(key, layout);
+    const result = localStorage.saveLayout(key, layout);
+    if (isErr(result)) {
+      throw new Error('Storage full. Export your layout to save it.');
+    }
   }
 }
 
@@ -114,10 +118,10 @@ export async function deleteAsync(key: string): Promise<void> {
 /**
  * Save a layout synchronously to localStorage.
  * Used only during initialization when async is not available.
- * @throws Error if storage is full
+ * Returns Result with StorageError if storage is full.
  */
-export function saveSync(key: string, layout: Layout): void {
-  localStorage.saveLayout(key, layout);
+export function saveSync(key: string, layout: Layout): Result<void, StorageError> {
+  return localStorage.saveLayout(key, layout);
 }
 
 /**
@@ -139,10 +143,10 @@ export function deleteSync(key: string): void {
 
 /**
  * Save arbitrary data synchronously to localStorage.
- * @throws Error if storage is full
+ * Returns Result with StorageError if storage is full.
  */
-export function saveSyncGeneric<T>(key: string, data: T): void {
-  localStorage.saveToLocalStorage(key, data);
+export function saveSyncGeneric<T>(key: string, data: T): Result<void, StorageError> {
+  return localStorage.saveToLocalStorage(key, data);
 }
 
 /**

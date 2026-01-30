@@ -2,7 +2,8 @@ import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
 import { calcMaxGridUnits, STAGING_ID } from '@/core/constants';
-import { getLayerZStart } from '@/shared/utils/collision';
+import { getLayerZStartResult } from '@/shared/utils/collision';
+import { isOk } from '@/core/result';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -145,7 +146,9 @@ export function useBinInspector(): UseBinInspectorReturn {
     }
 
     const minHeight = layer.height;
-    const maxHeight = layout.drawer.height - getLayerZStart(bin.layerId, layout.layers);
+    const zStartResult = getLayerZStartResult(bin.layerId, layout.layers);
+    const maxHeight =
+      layout.drawer.height - (isOk(zStartResult) ? zStartResult.value : layout.drawer.height);
     const maxClearance = maxHeight - bin.height;
 
     return {
@@ -313,10 +316,11 @@ export function useBinInspector(): UseBinInspectorReturn {
           const binLayer = layout.layers.find((l) => l.id === b.layerId);
           const minHeight = binLayer?.height || 1;
           // For staging bins, use full drawer height; for placed bins, account for layer position
-          const binMaxHeight =
-            b.layerId === STAGING_ID || !binLayer
-              ? layout.drawer.height
-              : layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
+          let binMaxHeight = layout.drawer.height;
+          if (b.layerId !== STAGING_ID && binLayer) {
+            const zR = getLayerZStartResult(b.layerId, layout.layers);
+            binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
+          }
           const newHeight = clamp(b.height + delta, minHeight, binMaxHeight);
           updateBin(b.id, { height: newHeight });
         }
@@ -333,10 +337,11 @@ export function useBinInspector(): UseBinInspectorReturn {
         for (const b of selectedBins) {
           const binLayer = layout.layers.find((l) => l.id === b.layerId);
           // For staging bins, use full drawer height; for placed bins, account for layer position
-          const binMaxHeight =
-            b.layerId === STAGING_ID || !binLayer
-              ? layout.drawer.height
-              : layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
+          let binMaxHeight = layout.drawer.height;
+          if (b.layerId !== STAGING_ID && binLayer) {
+            const zR = getLayerZStartResult(b.layerId, layout.layers);
+            binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
+          }
           const maxClearance = binMaxHeight - b.height;
           const newClearance = clamp((b.clearanceHeight || 0) + delta, 0, maxClearance);
           updateBin(b.id, { clearanceHeight: newClearance });

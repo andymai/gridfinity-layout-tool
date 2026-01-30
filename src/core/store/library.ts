@@ -226,11 +226,8 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately so cloudShare survives refresh
-      try {
-        saveLibrary(get().library);
-      } catch {
-        // Storage full - state is updated in memory but won't persist on refresh
-      }
+      // If storage is full, state is updated in memory but won't persist on refresh
+      saveLibrary(get().library);
     },
 
     clearCloudShare: (layoutId) => {
@@ -241,11 +238,8 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately
-      try {
-        saveLibrary(get().library);
-      } catch {
-        // Storage full - state is updated in memory but won't persist on refresh
-      }
+      // If storage is full, state is updated in memory but won't persist on refresh
+      saveLibrary(get().library);
     },
 
     // === Name suggestion state actions ===
@@ -268,11 +262,8 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately so dismiss state survives refresh
-      try {
-        saveLibrary(get().library);
-      } catch {
-        // Storage full - state is updated in memory but won't persist on refresh
-      }
+      // If storage is full, state is updated in memory but won't persist on refresh
+      saveLibrary(get().library);
     },
 
     clearNameSuggestionState: (layoutId) => {
@@ -283,11 +274,8 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately
-      try {
-        saveLibrary(get().library);
-      } catch {
-        // Storage full - state is updated in memory but won't persist on refresh
-      }
+      // If storage is full, state is updated in memory but won't persist on refresh
+      saveLibrary(get().library);
     },
 
     getNameSuggestionState: (layoutId) => {

@@ -29,20 +29,6 @@ export function getLayerZStartResult(
 }
 
 /**
- * Calculate the Z-axis start position for a layer.
- * Layers stack from bottom (index 0) upward.
- *
- * @throws Error if layer not found - use getLayerZStartResult for safe error handling
- */
-export function getLayerZStart(layerId: string, layers: Layer[]): number {
-  const result = getLayerZStartResult(layerId, layers);
-  if (isOk(result)) {
-    return result.value;
-  }
-  throw new Error(`Layer not found: ${layerId}`);
-}
-
-/**
  * Get the 3D bounding box for a bin with Result-based error handling.
  * Use this when layer existence is not guaranteed.
  */
@@ -60,24 +46,6 @@ export function getBin3DRectResult(bin: Bin, layers: Layer[]): Result<Rect3D, Va
     zStart,
     zEnd: zStart + bin.height + (bin.clearanceHeight || 0),
   });
-}
-
-/**
- * Get the 3D bounding box for a bin.
- * Includes clearanceHeight in the vertical extent for collision detection.
- *
- * @throws Error if bin's layer not found - use getBin3DRectResult for safe error handling
- */
-export function getBin3DRect(bin: Bin, layers: Layer[]): Rect3D {
-  const zStart = getLayerZStart(bin.layerId, layers);
-  return {
-    x: bin.x,
-    y: bin.y,
-    width: bin.width,
-    depth: bin.depth,
-    zStart,
-    zEnd: zStart + bin.height + (bin.clearanceHeight || 0),
-  };
 }
 
 /**
@@ -133,20 +101,6 @@ export function binsCollideResult(
   return ok(verticalRangesOverlap(rectAResult.value, rectBResult.value));
 }
 
-/**
- * Check if two bins collide in 3D space.
- * Bins must overlap in both footprint AND vertical range to collide.
- *
- * @throws Error if either bin's layer not found - use binsCollideResult for safe error handling
- */
-export function binsCollide(binA: Bin, binB: Bin, layers: Layer[]): boolean {
-  const result = binsCollideResult(binA, binB, layers);
-  if (isOk(result)) {
-    return result.value;
-  }
-  throw new Error(result.error.message);
-}
-
 // Simple cache for getBlockedZones - avoids recomputation when called repeatedly
 // with same inputs (common during drag/resize interactions)
 let blockedZonesCache: {
@@ -181,7 +135,9 @@ export function getBlockedZones(
   const targetLayerIndex = layers.findIndex((l) => l.id === targetLayerId);
   if (targetLayerIndex === -1) return [];
 
-  const targetZStart = getLayerZStart(targetLayerId, layers);
+  const targetZStartResult = getLayerZStartResult(targetLayerId, layers);
+  if (!isOk(targetZStartResult)) return [];
+  const targetZStart = targetZStartResult.value;
 
   const blocked: BlockedZone[] = [];
 
@@ -191,7 +147,9 @@ export function getBlockedZones(
     const binLayerIndex = layers.findIndex((l) => l.id === bin.layerId);
     if (binLayerIndex >= targetLayerIndex) continue;
 
-    const binRect = getBin3DRect(bin, layers);
+    const binRectResult = getBin3DRectResult(bin, layers);
+    if (!isOk(binRectResult)) continue;
+    const binRect = binRectResult.value;
     if (binRect.zEnd > targetZStart) {
       blocked.push({
         x: bin.x,
@@ -245,10 +203,12 @@ export function checkLayerReorderCollisions(
 
       if (!footprintsOverlap(binA, binB)) continue;
 
-      const rectA = getBin3DRect(binA, newLayers);
-      const rectB = getBin3DRect(binB, newLayers);
+      const rectAResult = getBin3DRectResult(binA, newLayers);
+      if (!isOk(rectAResult)) continue;
+      const rectBResult = getBin3DRectResult(binB, newLayers);
+      if (!isOk(rectBResult)) continue;
 
-      if (verticalRangesOverlap(rectA, rectB)) {
+      if (verticalRangesOverlap(rectAResult.value, rectBResult.value)) {
         collisions.push({ binA, binB });
       }
     }

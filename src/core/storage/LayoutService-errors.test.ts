@@ -65,25 +65,31 @@ describe('storage error handling', () => {
       );
     });
 
-    it('throws error when localStorage quota exceeded', () => {
+    it('returns Err when localStorage quota exceeded', () => {
       localStorageMock.setItem.mockImplementationOnce(() => {
         const error = new Error('QuotaExceededError');
         error.name = 'QuotaExceededError';
         throw error;
       });
 
-      expect(() => saveLayoutSync('test-id', defaultLayout)).toThrow(
-        'Storage full. Export your layout to save it.'
+      const result = saveLayoutSync('test-id', defaultLayout);
+      expect(result).toEqual(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'STORAGE_QUOTA_EXCEEDED' }),
+        })
       );
     });
 
-    it('throws error on generic storage failure', () => {
+    it('returns Err on generic storage failure', () => {
       localStorageMock.setItem.mockImplementationOnce(() => {
         throw new Error('Storage unavailable');
       });
 
-      expect(() => saveLayoutSync('test-id', defaultLayout)).toThrow(
-        'Storage full. Export your layout to save it.'
+      const result = saveLayoutSync('test-id', defaultLayout);
+      expect(result).toEqual(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'STORAGE_QUOTA_EXCEEDED' }),
+        })
       );
     });
   });
@@ -181,13 +187,16 @@ describe('storage error handling', () => {
       );
     });
 
-    it('throws error when quota exceeded', () => {
+    it('returns Err when quota exceeded', () => {
       localStorageMock.setItem.mockImplementationOnce(() => {
         throw new Error('QuotaExceededError');
       });
 
-      expect(() => saveLibrary(testLibrary)).toThrow(
-        'Storage full. Export your layouts to save them.'
+      const result = saveLibrary(testLibrary);
+      expect(result).toEqual(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'STORAGE_QUOTA_EXCEEDED' }),
+        })
       );
     });
   });

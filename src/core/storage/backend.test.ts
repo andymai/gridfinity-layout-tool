@@ -67,13 +67,18 @@ describe('storage backend', () => {
       expect(localStorageMock.setItem).toHaveBeenCalledWith('test-key', JSON.stringify(layout));
     });
 
-    it('throws on storage full error', () => {
+    it('returns Err on storage full error', () => {
       localStorageMock.setItem.mockImplementationOnce(() => {
         throw new Error('QuotaExceededError');
       });
 
       const layout = createTestLayout();
-      expect(() => backend.saveSync('test-key', layout)).toThrow('Storage full');
+      const result = backend.saveSync('test-key', layout);
+      expect(result).toEqual(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'STORAGE_QUOTA_EXCEEDED' }),
+        })
+      );
     });
   });
 
@@ -266,12 +271,17 @@ describe('localStorage backend', () => {
       expect(localStorageMock.setItem).toHaveBeenCalledWith('key', JSON.stringify({ foo: 'bar' }));
     });
 
-    it('throws on storage full', () => {
+    it('returns Err on storage full', () => {
       localStorageMock.setItem.mockImplementationOnce(() => {
         throw new Error('QuotaExceededError');
       });
 
-      expect(() => localStorage.saveToLocalStorage('key', {})).toThrow('Storage full');
+      const result = localStorage.saveToLocalStorage('key', {});
+      expect(result).toEqual(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'STORAGE_QUOTA_EXCEEDED' }),
+        })
+      );
     });
   });
 
