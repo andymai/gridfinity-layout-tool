@@ -5,6 +5,7 @@ import {
   FRAME_FILL,
   calculateIdealDistance,
 } from '@/features/bin-designer/utils/cameraFraming';
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
 describe('cameraFraming', () => {
   describe('ISOMETRIC_DIRECTION', () => {
@@ -75,27 +76,15 @@ describe('cameraFraming', () => {
     });
 
     it('calculates expected distance for 1x1x3 bin at 50° FOV', () => {
-      // Manual calculation:
-      // width=1, depth=1, height=3
-      // GRID_SIZE=42, HEIGHT_UNIT=7
-      // outerW = 1 * 42 = 42mm
-      // outerD = 1 * 42 = 42mm
-      // totalH = 3 * 7 = 21mm
-      // halfW = 21, halfD = 21, halfH = 10.5
-      // boundingRadius = sqrt(21² + 21² + 10.5²) = sqrt(441 + 441 + 110.25) = sqrt(992.25) ≈ 31.506
-      // halfFovRad = 25° = 0.4363 rad
-      // sin(0.4363) ≈ 0.4226
-      // distance = (31.506 / 0.4226) * (1 / 0.65) ≈ 74.56 * 1.538 ≈ 114.72
-
       const distance = calculateIdealDistance(1, 1, 3, 50);
 
-      // Calculate expected values step by step
-      const halfW = 21;
-      const halfD = 21;
-      const halfH = 10.5;
+      // Calculate expected values using the source constants
+      const halfW = (1 * GRIDFINITY.GRID_SIZE) / 2;
+      const halfD = (1 * GRIDFINITY.GRID_SIZE) / 2;
+      const halfH = (3 * GRIDFINITY.HEIGHT_UNIT) / 2;
       const boundingRadius = Math.sqrt(halfW * halfW + halfD * halfD + halfH * halfH);
       const halfFovRad = (50 / 2) * (Math.PI / 180);
-      const expected = (boundingRadius / Math.sin(halfFovRad)) * (1 / 0.65);
+      const expected = (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
 
       expect(distance).toBeCloseTo(expected, 2);
       // Also verify the approximate value from manual calculation
@@ -103,24 +92,14 @@ describe('cameraFraming', () => {
     });
 
     it('calculates expected distance for 2x2x5 bin at 60° FOV', () => {
-      // width=2, depth=2, height=5
-      // outerW = 2 * 42 = 84mm
-      // outerD = 2 * 42 = 84mm
-      // totalH = 5 * 7 = 35mm
-      // halfW = 42, halfD = 42, halfH = 17.5
-      // boundingRadius = sqrt(42² + 42² + 17.5²) = sqrt(1764 + 1764 + 306.25) = sqrt(3834.25) ≈ 61.92
-      // halfFovRad = 30° = 0.5236 rad
-      // sin(0.5236) = 0.5
-      // distance = (61.92 / 0.5) * (1 / 0.65) ≈ 123.84 * 1.538 ≈ 190.47
-
       const distance = calculateIdealDistance(2, 2, 5, 60);
 
-      const halfW = 42;
-      const halfD = 42;
-      const halfH = 17.5;
+      const halfW = (2 * GRIDFINITY.GRID_SIZE) / 2;
+      const halfD = (2 * GRIDFINITY.GRID_SIZE) / 2;
+      const halfH = (5 * GRIDFINITY.HEIGHT_UNIT) / 2;
       const boundingRadius = Math.sqrt(halfW * halfW + halfD * halfD + halfH * halfH);
       const halfFovRad = (60 / 2) * (Math.PI / 180);
-      const expected = (boundingRadius / Math.sin(halfFovRad)) * (1 / 0.65);
+      const expected = (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
 
       expect(distance).toBeCloseTo(expected, 2);
       expect(distance).toBeCloseTo(190.47, 0);

@@ -6,25 +6,19 @@ import type { TabletPanelsState } from '@/hooks/useTabletPanels';
 // Mock state that persists across hook calls
 let mockLeftPanelCollapsed = false;
 let mockRightPanelCollapsed = false;
-const mockListeners = new Set<() => void>();
 
 // Mock the view store with proper Zustand-like behavior
 vi.mock('@/core/store/view', () => {
   return {
     useViewStore: vi.fn((selector) => {
-      // Subscribe to state changes (simplified version of Zustand's subscription)
       const state = {
         leftPanelCollapsed: mockLeftPanelCollapsed,
         rightPanelCollapsed: mockRightPanelCollapsed,
         toggleLeftPanel: () => {
           mockLeftPanelCollapsed = !mockLeftPanelCollapsed;
-          // Notify all listeners
-          mockListeners.forEach((listener) => listener());
         },
         toggleRightPanel: () => {
           mockRightPanelCollapsed = !mockRightPanelCollapsed;
-          // Notify all listeners
-          mockListeners.forEach((listener) => listener());
         },
       };
 
@@ -38,7 +32,6 @@ describe('useTabletPanels', () => {
     // Reset mock state before each test
     mockLeftPanelCollapsed = false;
     mockRightPanelCollapsed = false;
-    mockListeners.clear();
   });
 
   describe('panel state when not tablet', () => {
