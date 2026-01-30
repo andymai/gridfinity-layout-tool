@@ -412,6 +412,15 @@ export function MobileSettingsPanel() {
           >
             {t('settings.termsOfService')}
           </a>
+          <span>·</span>
+          <a
+            href="https://github.com/andymai/gridfinity-layout-tool"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-content-tertiary"
+          >
+            {t('sidebar.github')}
+          </a>
         </div>
       </section>
 
