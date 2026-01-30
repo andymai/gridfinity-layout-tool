@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { snapToGrid } from '@/core/constants';
 import { capturePointer } from './interaction';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -153,17 +154,60 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
     } else if (interaction.type === 'paint') {
       // Paint mode - fill the selected area with bins of paintSize
       const { start, current, paintSize: ps } = interaction;
+
+      const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
+      const minSizeNow = halfBinModeNow ? 0.5 : 1;
+      const layer = layout.layers.find((l) => l.id === activeLayerId);
+
+      // Single-click placement: when user clicks without dragging, place one bin
+      // centered on the clicked position, clamped to drawer bounds
+      const isSingleClick = start.x === current.x && start.y === current.y;
+      if (isSingleClick && layer && ps) {
+        const { drawer } = layout;
+        // Center the bin on the clicked cell, then snap to grid
+        const centeredX = snapToGrid(start.x - (ps.width - minSizeNow) / 2, halfBinModeNow);
+        const centeredY = snapToGrid(start.y - (ps.depth - minSizeNow) / 2, halfBinModeNow);
+        // Clamp to drawer bounds so the bin always fits
+        const clampedX = Math.max(0, Math.min(centeredX, drawer.width - ps.width));
+        const clampedY = Math.max(0, Math.min(centeredY, drawer.depth - ps.depth));
+
+        execute(() => {
+          const binData = {
+            layerId: activeLayerId,
+            x: clampedX,
+            y: clampedY,
+            width: ps.width,
+            depth: ps.depth,
+            height: layer.height,
+            category: activeCategoryId,
+            label: '',
+            notes: '',
+          };
+          const result = addBin(binData);
+          if (isOk(result)) {
+            setSelectedBin(result.value);
+            const placedBin: Bin = { ...binData, id: result.value };
+            mlTracking.trackPlacement(placedBin, 'paint');
+            mlTracking.recordCreation(
+              result.value,
+              'paint',
+              `${ps.width}x${ps.depth}x${layer.height}`
+            );
+            trackBinCreated('paint', 1, { width: ps.width, depth: ps.depth, height: layer.height });
+            trackPaintMode('exited', 1);
+          }
+        });
+        return;
+      }
+
       const x1 = Math.min(start.x, current.x);
       const y1 = Math.min(start.y, current.y);
       const x2 = Math.max(start.x, current.x);
       const y2 = Math.max(start.y, current.y);
 
-      const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
-      const minSizeNow = halfBinModeNow ? 0.5 : 1;
       const areaWidth = x2 - x1 + minSizeNow;
       const areaDepth = y2 - y1 + minSizeNow;
 
-      const layer = layout.layers.find((l) => l.id === activeLayerId);
       if (layer && ps) {
         // Calculate how many bins fit in the selected area
         const binsAcross = Math.floor(areaWidth / ps.width);
