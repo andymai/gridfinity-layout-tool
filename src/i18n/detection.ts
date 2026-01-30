@@ -41,6 +41,14 @@ const LANGUAGE_MAP: Record<string, Locale> = {
   'fr-BE': 'fr',
   'fr-CH': 'fr',
   'fr-CA': 'fr',
+
+  // Norwegian variants → Bokmål
+  nb: 'nb',
+  nn: 'nb', // Nynorsk falls back to Bokmål
+  no: 'nb', // Generic Norwegian → Bokmål
+  'nb-NO': 'nb',
+  'nn-NO': 'nb',
+  'no-NO': 'nb',
 };
 
 /**

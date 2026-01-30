@@ -14,6 +14,7 @@ describe('isLocale', () => {
     expect(isLocale('es')).toBe(true);
     expect(isLocale('fr')).toBe(true);
     expect(isLocale('pt-BR')).toBe(true);
+    expect(isLocale('nb')).toBe(true);
   });
 
   it('returns false for invalid locale codes', () => {
@@ -27,7 +28,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(6);
+    expect(SUPPORTED_LOCALES).toHaveLength(7);
   });
 
   it('has required properties for each locale', () => {
@@ -89,6 +90,11 @@ describe('detectBrowserLocale', () => {
       vi.stubGlobal('navigator', { languages: ['pt-BR'], language: 'pt-BR' });
       expect(detectBrowserLocale()).toBe('pt-BR');
     });
+
+    it('detects Norwegian Bokmål', () => {
+      vi.stubGlobal('navigator', { languages: ['nb'], language: 'nb' });
+      expect(detectBrowserLocale()).toBe('nb');
+    });
   });
 
   describe('regional variants', () => {
@@ -145,6 +151,21 @@ describe('detectBrowserLocale', () => {
     it('maps pt to pt-BR', () => {
       vi.stubGlobal('navigator', { languages: ['pt'], language: 'pt' });
       expect(detectBrowserLocale()).toBe('pt-BR');
+    });
+
+    it('maps nb-NO to nb', () => {
+      vi.stubGlobal('navigator', { languages: ['nb-NO'], language: 'nb-NO' });
+      expect(detectBrowserLocale()).toBe('nb');
+    });
+
+    it('maps nn (Nynorsk) to nb', () => {
+      vi.stubGlobal('navigator', { languages: ['nn'], language: 'nn' });
+      expect(detectBrowserLocale()).toBe('nb');
+    });
+
+    it('maps no (generic Norwegian) to nb', () => {
+      vi.stubGlobal('navigator', { languages: ['no'], language: 'no' });
+      expect(detectBrowserLocale()).toBe('nb');
     });
   });
 
