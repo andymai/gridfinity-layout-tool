@@ -67,9 +67,9 @@ export function DropZones() {
       if (isOverTrash) {
         if (dropTargetRef.current !== 'trash') setDropTarget('trash');
       } else if (dropTargetRef.current === 'trash') {
-        // Only clear trash target; staging is handled by Staging component
         setDropTarget(null);
       }
+      // 'staging' drop target is managed by the Staging component
     };
 
     document.addEventListener('pointermove', handlePointerMove);

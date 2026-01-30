@@ -3,7 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
 import App from './App.tsx';
-import { ErrorBoundary } from './components/ErrorBoundary.tsx';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { LocaleProvider } from './i18n/context.tsx';
 import { detectBrowserLocale } from './i18n/detection.ts';
 import { isLocale } from './i18n/types.ts';

@@ -10,7 +10,7 @@ import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { LanguageSelector } from '@/shared/components/LanguageSelector';
-import { PresenceAvatars } from './Collab';
+import { PresenceAvatars } from '../Collab';
 import { useTranslation } from '@/i18n';
 import type { SaveStatus } from '@/shared/hooks';
 import type { ShareModalRenderProps } from '@/features/layout-library/components/LayoutManagerModal';
