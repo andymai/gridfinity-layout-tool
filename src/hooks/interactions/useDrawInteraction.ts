@@ -147,7 +147,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             // Record creation for quick-correction detection
             mlTracking.recordCreation(result.value, 'draw', `${width}x${depth}x${layer.height}`);
             // Track for PostHog analytics
-            trackBinCreated('draw', 1, { width, depth, height: layer.height });
+            trackBinCreated({ method: 'draw', count: 1, width, depth, height: layer.height });
           }
         });
       }
@@ -193,7 +193,13 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
               'paint',
               `${ps.width}x${ps.depth}x${layer.height}`
             );
-            trackBinCreated('paint', 1, { width: ps.width, depth: ps.depth, height: layer.height });
+            trackBinCreated({
+              method: 'paint',
+              count: 1,
+              width: ps.width,
+              depth: ps.depth,
+              height: layer.height,
+            });
             trackPaintMode('exited', 1);
           }
         });
@@ -272,7 +278,9 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
               mlTracking.recordCreation(bin.id, 'paint', `${bin.width}x${bin.depth}x${bin.height}`);
             }
             // Track for PostHog analytics (with count of bins created)
-            trackBinCreated('paint', placedBinIds.length, {
+            trackBinCreated({
+              method: 'paint',
+              count: placedBinIds.length,
               width: ps.width,
               depth: ps.depth,
               height: layer.height,

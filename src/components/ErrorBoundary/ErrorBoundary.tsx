@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
-import { captureException } from '@/shared/analytics/posthog';
+import { captureException, track3DRenderError } from '@/shared/analytics/posthog';
 import { getStaticTranslation } from '@/i18n';
 
 interface Props {
@@ -28,6 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
       boundary: 'root',
       componentStack: errorInfo.componentStack,
     });
+    track3DRenderError('root', error.message);
   }
 
   handleReset = () => {

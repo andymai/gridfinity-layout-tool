@@ -67,6 +67,24 @@ function getFirstSeenDate(): string {
   }
 }
 
+/**
+ * Check if this is the user's first session (within 30 minutes of first_seen).
+ * Uses the existing gridfinity_first_seen timestamp.
+ */
+function isFirstSession(): boolean {
+  try {
+    const firstSeen = localStorage.getItem(USER_FIRST_SEEN_KEY);
+    if (!firstSeen) return true;
+
+    const firstSeenTime = new Date(firstSeen).getTime();
+    const thirtyMinutes = 30 * 60 * 1000;
+
+    return Date.now() - firstSeenTime < thirtyMinutes;
+  } catch {
+    return true;
+  }
+}
+
 // ============================================
 // INITIALIZATION (LAZY LOADED)
 // ============================================
@@ -74,6 +92,8 @@ function getFirstSeenDate(): string {
 let posthogInstance: PostHog | null = null;
 let initPromise: Promise<void> | null = null;
 let eventQueue: Array<{ name: string; properties: Record<string, unknown> }> = [];
+/** Re-entrancy guard: prevents infinite loops if captureException itself throws */
+let isCapturingGlobalError = false;
 
 export function initAnalytics(): void {
   if (initPromise) return;
@@ -125,6 +145,41 @@ export function initAnalytics(): void {
         posthog.capture(event.name, event.properties);
       }
       eventQueue = [];
+
+      // Install global error handlers for structured exception capture.
+      // PostHog's auto-capture sends raw browser events with null message/type.
+      // These handlers intercept errors first and send structured data.
+      // A re-entrancy guard prevents infinite loops if captureException itself throws.
+      window.addEventListener('error', (event: ErrorEvent) => {
+        if (isCapturingGlobalError) return;
+        isCapturingGlobalError = true;
+        try {
+          if (event.error instanceof Error) {
+            captureException(event.error, {
+              source: 'window.onerror',
+              file: event.filename,
+              line: event.lineno,
+              column: event.colno,
+            });
+          }
+        } finally {
+          isCapturingGlobalError = false;
+        }
+      });
+
+      window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+        if (isCapturingGlobalError) return;
+        isCapturingGlobalError = true;
+        try {
+          const error =
+            event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+          captureException(error, {
+            source: 'unhandledrejection',
+          });
+        } finally {
+          isCapturingGlobalError = false;
+        }
+      });
     })
     .catch(() => {
       // Fail silently
@@ -424,6 +479,7 @@ export function trackLayoutSnapshot(
     capture('layout_snapshot', {
       trigger,
       device_type: getDeviceType(),
+      is_first_session: isFirstSession(),
       ...metrics,
       ...labsMetrics,
       ...(sessionContext || {}),
@@ -438,7 +494,7 @@ export function trackLayoutSnapshot(
  */
 export function trackEvent(
   name: string,
-  properties?: Record<string, string | number | boolean>
+  properties?: Record<string, string | number | boolean | null>
 ): void {
   try {
     capture(name, {
@@ -491,20 +547,46 @@ export function trackPaintMode(action: 'entered' | 'exited', binsCreated?: numbe
 }
 
 /**
- * Track bin creation events.
- * Called when bins are created via draw, paint, or fill operations.
+ * Properties for tracking bin creation events.
  */
-export function trackBinCreated(
-  method: 'draw' | 'paint' | 'fill_layer' | 'fill_gaps' | 'import' | 'duplicate',
-  count: number = 1,
-  size?: { width: number; depth: number; height: number }
-): void {
-  trackEvent('bin_created', {
-    method,
-    count,
-    ...(size ? { size: `${size.width}x${size.depth}x${size.height}` } : {}),
-  });
-  checkEngagementMilestones();
+export interface BinCreatedProperties {
+  method: 'draw' | 'paint' | 'fill_layer' | 'fill_gaps' | 'import' | 'duplicate';
+  count: number;
+  width?: number;
+  depth?: number;
+  height?: number;
+  from_template_id?: string | null;
+}
+
+/**
+ * Track bin creation events with enriched context.
+ * Called when bins are created via draw, paint, fill, duplicate, or import operations.
+ */
+export function trackBinCreated(props: BinCreatedProperties): void {
+  try {
+    const isFirstBin = !localStorage.getItem('gridfinity_milestone_first_bin');
+    const hasDimensions =
+      props.width !== undefined && props.depth !== undefined && props.height !== undefined;
+
+    trackEvent('bin_created', {
+      method: props.method,
+      count: props.count,
+      is_first_bin: isFirstBin,
+      is_first_session: isFirstSession(),
+      ...(hasDimensions
+        ? {
+            size: `${props.width}x${props.depth}x${props.height}`,
+            bin_width: props.width as number,
+            bin_depth: props.depth as number,
+            bin_height: props.height as number,
+          }
+        : {}),
+      from_template_id: props.from_template_id ?? null,
+    });
+    checkEngagementMilestones();
+  } catch {
+    // Fail silently
+  }
 }
 
 const MILESTONE_THRESHOLDS: Array<{ key: 'first_bin' | 'engaged' | 'substantial'; min: number }> = [
@@ -736,4 +818,77 @@ export function captureException(error: Error, additionalContext?: Record<string
  */
 export function getPostHogInstance(): PostHog | null {
   return posthogInstance;
+}
+
+// ============================================
+// FAILURE TRACKING
+// ============================================
+
+/**
+ * Track layout save failures.
+ * Called when auto-save fails to persist layout data.
+ */
+export function trackLayoutSaveFailure(
+  errorCode: string,
+  errorMessage: string,
+  failureCount: number
+): void {
+  trackEvent('layout_save_failure', {
+    error_code: errorCode,
+    error_message: errorMessage,
+    failure_count: failureCount,
+  });
+}
+
+/**
+ * Track cloud share failures.
+ * Called when share create/update/delete fails.
+ */
+export function trackShareFailure(errorCode: string, errorMessage: string): void {
+  trackEvent('share_failure', {
+    error_code: errorCode,
+    error_message: errorMessage,
+  });
+}
+
+/**
+ * Track 3D rendering or component errors.
+ * Called from error boundaries when a panel/component crashes.
+ */
+export function track3DRenderError(component: string, errorMessage: string): void {
+  trackEvent('3d_render_error', {
+    component,
+    error_message: errorMessage,
+  });
+}
+
+/**
+ * Track template load failures from the inspiration gallery.
+ */
+export function trackTemplateLoadError(templateId: string, errorMessage: string): void {
+  trackEvent('template_load_error', {
+    template_id: templateId,
+    error_message: errorMessage,
+  });
+}
+
+// ============================================
+// GALLERY TRACKING
+// ============================================
+
+/**
+ * Track gallery opened with first-session context.
+ */
+export function trackGalleryOpened(layoutCount: number): void {
+  trackEvent('gallery_opened', {
+    layout_count: layoutCount,
+    is_first_session: isFirstSession(),
+  });
+}
+
+/**
+ * Track gallery close with reason indicating user behavior.
+ */
+export function trackGalleryClosed(reason: 'applied_template' | 'dismissed'): void {
+  trackEvent('gallery_closed', { reason });
 }

@@ -17,7 +17,7 @@ import {
 import { isOk, getUserMessage } from '@/core/result';
 import type { ApiError } from '@/core/result';
 import { copyToClipboard } from '@/core/storage';
-import { markFeatureUsed } from '@/shared/analytics/posthog';
+import { markFeatureUsed, trackShareFailure } from '@/shared/analytics/posthog';
 import { slugify } from '@/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
@@ -128,6 +128,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   const handleError = useCallback(
     (err: ApiError) => {
       const message = getUserMessage(err);
+      trackShareFailure(err.code, message);
       setError({
         message,
         code: err.code,

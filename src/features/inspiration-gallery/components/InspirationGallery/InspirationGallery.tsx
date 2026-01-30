@@ -5,7 +5,13 @@ import { useLayoutSwitcher } from '@/hooks';
 import { useUIStore } from '@/core/store/ui';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
-import { trackEvent } from '@/shared/analytics/posthog';
+import {
+  trackEvent,
+  trackBinCreated,
+  trackGalleryOpened,
+  trackGalleryClosed,
+  trackTemplateLoadError,
+} from '@/shared/analytics/posthog';
 import { INSPIRATION_LAYOUTS, getLayoutsByTheme } from '../../data';
 import { THEME_CONFIG } from '../../types';
 import type { InspirationLayout, InspirationTheme } from '../../types';
@@ -41,12 +47,14 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   const [selectedTheme, setSelectedTheme] = useState<InspirationTheme | 'all'>('all');
   const [previewLayout, setPreviewLayout] = useState<InspirationLayout | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [templateApplied, setTemplateApplied] = useState(false);
   const [focusedCardIndex, setFocusedCardIndex] = useState(-1);
   // Initialize grid columns from responsive viewport (user can adjust via slider)
   const [gridColumns, setGridColumns] = useState(() => getGridColumns(viewportWidth));
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const hasTrackedCloseRef = useRef(false);
 
   const { importLayoutFromJSON, switchLayout } = useLayoutSwitcher();
   const { announceToScreenReader, closeMobilePanel } = useUIStore(
@@ -56,6 +64,18 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     }))
   );
   const addToast = useToastStore((state) => state.addToast);
+
+  /** Close gallery with tracking (fires only once per open). */
+  const handleCloseGallery = useCallback(
+    (reason: 'applied_template' | 'dismissed') => {
+      if (!hasTrackedCloseRef.current) {
+        trackGalleryClosed(reason);
+        hasTrackedCloseRef.current = true;
+      }
+      onClose();
+    },
+    [onClose]
+  );
 
   // Filter by theme
   const filteredLayouts = getLayoutsByTheme(selectedTheme);
@@ -77,13 +97,13 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
         if (previewLayout) {
           setPreviewLayout(null);
         } else {
-          onClose();
+          handleCloseGallery(templateApplied ? 'applied_template' : 'dismissed');
         }
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, previewLayout]);
+  }, [handleCloseGallery, previewLayout, templateApplied]);
 
   // Focus trap
   useEffect(() => {
@@ -114,9 +134,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     announceToScreenReader(
       `Inspiration Gallery opened. ${INSPIRATION_LAYOUTS.length} layouts available. Use Tab to navigate.`
     );
-    trackEvent('gallery_opened', {
-      layout_count: INSPIRATION_LAYOUTS.length,
-    });
+    trackGalleryOpened(INSPIRATION_LAYOUTS.length);
   }, [announceToScreenReader]);
 
   // Lock body scroll
@@ -169,6 +187,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       if (isOk(result)) {
         const switchResult = await switchLayout(result.value);
         if (isOk(switchResult)) {
+          setTemplateApplied(true);
           addToast(t('toast.galleryAdded', { name: previewLayout.name }), 'success');
           announceToScreenReader(`${previewLayout.name} added to your library`);
           trackEvent('template_applied', {
@@ -178,10 +197,16 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
             bin_count: previewLayout.metrics.binCount,
             layer_count: previewLayout.metrics.layerCount,
           });
+          trackBinCreated({
+            method: 'import',
+            count: previewLayout.metrics.binCount,
+            from_template_id: previewLayout.id,
+          });
         }
         closeMobilePanel();
-        onClose();
+        handleCloseGallery('applied_template');
       } else {
+        trackTemplateLoadError(previewLayout.id, 'Import failed');
         addToast(t('toast.galleryAddFailed'), 'error');
       }
     } finally {
@@ -195,7 +220,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     addToast,
     announceToScreenReader,
     closeMobilePanel,
-    onClose,
+    handleCloseGallery,
     t,
   ]);
 
@@ -253,7 +278,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 z-50 animate-fade-in"
-        onClick={onClose}
+        onClick={() => handleCloseGallery(templateApplied ? 'applied_template' : 'dismissed')}
         aria-hidden="true"
       />
 
@@ -318,7 +343,9 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
               )}
               <button
                 ref={closeButtonRef}
-                onClick={onClose}
+                onClick={() =>
+                  handleCloseGallery(templateApplied ? 'applied_template' : 'dismissed')
+                }
                 className="p-1.5 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
                 aria-label={t('common.close')}
               >
