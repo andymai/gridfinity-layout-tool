@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ParameterPanel } from './ParameterPanel';
 import { useDesignerStore } from '../../store';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
@@ -13,17 +13,35 @@ describe('ParameterPanel', () => {
         exportDialogOpen: false,
         designListOpen: false,
         wireframeMode: false,
+        halfBinMode: false,
+        previewCompartments: null,
+        previewSelection: null,
       },
     });
+  });
+
+  it('renders group headers', () => {
+    render(<ParameterPanel />);
+
+    expect(screen.getByText('Shape')).toBeInTheDocument();
+    expect(screen.getByText('Interior')).toBeInTheDocument();
+    expect(screen.getByText('Base')).toBeInTheDocument();
+    expect(screen.getByText('Mounting')).toBeInTheDocument();
   });
 
   it('renders section headers', () => {
     render(<ParameterPanel />);
 
     expect(screen.getByText('Dimensions')).toBeInTheDocument();
-    expect(screen.getByText('Base')).toBeInTheDocument();
-    expect(screen.getByText('Interior Dividers')).toBeInTheDocument();
     expect(screen.getByText('Walls')).toBeInTheDocument();
+  });
+
+  it('renders section headers including lazy-loaded interior', async () => {
+    render(<ParameterPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Interior Dividers')).toBeInTheDocument();
+    });
   });
 
   it('renders dimension sliders', () => {
@@ -277,11 +295,41 @@ describe('ParameterPanel', () => {
   });
 
   describe('interior section', () => {
-    it('renders compartment grid controls', () => {
+    it('renders compartment grid controls', async () => {
       render(<ParameterPanel />);
 
-      expect(screen.getByLabelText('Columns')).toBeInTheDocument();
-      expect(screen.getByLabelText('Rows')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByLabelText('Columns')).toBeInTheDocument();
+        expect(screen.getByLabelText('Rows')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('section groups', () => {
+    it('collapsing a group hides child sections', () => {
+      render(<ParameterPanel />);
+
+      // Shape group contains Dimensions — click Shape header to collapse
+      const shapeButton = screen.getByText('Shape').closest('button');
+      expect(shapeButton).toBeInTheDocument();
+      expect(shapeButton).toHaveAttribute('aria-expanded', 'true');
+
+      fireEvent.click(shapeButton!);
+
+      // After collapsing, aria-expanded should be false
+      expect(shapeButton).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('all three groups render expanded by default', () => {
+      render(<ParameterPanel />);
+
+      const shapeBtn = screen.getByText('Shape').closest('button');
+      const interiorBtn = screen.getByText('Interior').closest('button');
+      const baseGroupBtn = screen.getByText('Base').closest('button');
+
+      expect(shapeBtn).toHaveAttribute('aria-expanded', 'true');
+      expect(interiorBtn).toHaveAttribute('aria-expanded', 'true');
+      expect(baseGroupBtn).toHaveAttribute('aria-expanded', 'true');
     });
   });
 });

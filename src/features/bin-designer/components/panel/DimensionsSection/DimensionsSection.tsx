@@ -6,93 +6,20 @@
  * height on its own row.
  */
 
-import { useCallback } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { DimensionsIcon } from '../SectionIllustrations';
-import { useTranslation } from '@/i18n';
+import { useDimensionsSection } from './useDimensionsSection';
 
 export function DimensionsSection() {
-  const {
-    width,
-    depth,
-    height,
-    gridUnitMm,
-    heightUnitMm,
-    halfBinMode,
-    setParam,
-    setParams,
-    toggleHalfBinMode,
-  } = useDesignerStore(
-    useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
-      height: s.params.height,
-      gridUnitMm: s.params.gridUnitMm,
-      heightUnitMm: s.params.heightUnitMm,
-      halfBinMode: s.ui.halfBinMode,
-      setParam: s.setParam,
-      setParams: s.setParams,
-      toggleHalfBinMode: s.toggleHalfBinMode,
-    }))
-  );
-  const t = useTranslation();
-
-  // Step sizes depend on half-bin mode
-  const dimensionStep = halfBinMode ? 0.5 : 1;
-  const minDimension = halfBinMode ? 0.5 : 1;
-
-  // Physical mm calculations using per-bin unit settings
-  const widthMm = width * gridUnitMm;
-  const depthMm = depth * gridUnitMm;
-  const heightMm = height * heightUnitMm;
-
-  const summary = `${width}×${depth} × ${height}u (${widthMm.toFixed(0)}×${depthMm.toFixed(0)}×${heightMm.toFixed(0)}mm)`;
-
-  const handleWidthStep = useCallback(
-    (delta: number) => {
-      const next = width + delta * dimensionStep;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_DIMENSION, Math.max(minDimension, next));
-      setParam('width', clamped);
-    },
-    [width, dimensionStep, minDimension, setParam]
-  );
-
-  const handleDepthStep = useCallback(
-    (delta: number) => {
-      const next = depth + delta * dimensionStep;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_DIMENSION, Math.max(minDimension, next));
-      setParam('depth', clamped);
-    },
-    [depth, dimensionStep, minDimension, setParam]
-  );
-
-  const handleHeightStep = useCallback(
-    (delta: number) => {
-      const next = height + delta * DESIGNER_CONSTRAINTS.HEIGHT_STEP;
-      const clamped = Math.min(
-        DESIGNER_CONSTRAINTS.MAX_HEIGHT,
-        Math.max(DESIGNER_CONSTRAINTS.MIN_HEIGHT, next)
-      );
-      setParam('height', clamped);
-    },
-    [height, setParam]
-  );
-
-  const handleSwapDimensions = useCallback(() => {
-    setParams({ width: depth, depth: width });
-  }, [width, depth, setParams]);
+  const { state, handlers, meta, t } = useDimensionsSection();
 
   return (
     <CollapsibleSection
       title={t('binDesigner.dimensions')}
       defaultExpanded={true}
-      illustration={<DimensionsIcon />}
-      summary={summary}
+      summary={meta.summary}
     >
       <div className="space-y-3">
         {/* Width and Depth on same row with swap button */}
@@ -101,12 +28,12 @@ export function DimensionsSection() {
           <div className="flex-1 min-w-0">
             <span className="mb-1 block text-xs text-content-tertiary">{t('common.width')}</span>
             <StepperControl
-              value={width}
-              onChange={(v) => setParam('width', v)}
-              onStep={handleWidthStep}
-              min={minDimension}
+              value={state.width}
+              onChange={(v) => handlers.setParam('width', v)}
+              onStep={handlers.handleWidthStep}
+              min={state.minDimension}
               max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
-              step={dimensionStep}
+              step={state.dimensionStep}
               variant="desktop"
               ariaLabel="Width"
             />
@@ -115,7 +42,7 @@ export function DimensionsSection() {
           {/* Swap button */}
           <button
             type="button"
-            onClick={handleSwapDimensions}
+            onClick={handlers.handleSwapDimensions}
             className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary transition-colors hover:bg-surface-hover hover:text-content"
             title={t('inspector.swapDimensions')}
             aria-label={t('inspector.swapWidthAndDepth')}
@@ -139,12 +66,12 @@ export function DimensionsSection() {
           <div className="flex-1 min-w-0">
             <span className="mb-1 block text-xs text-content-tertiary">{t('common.depth')}</span>
             <StepperControl
-              value={depth}
-              onChange={(v) => setParam('depth', v)}
-              onStep={handleDepthStep}
-              min={minDimension}
+              value={state.depth}
+              onChange={(v) => handlers.setParam('depth', v)}
+              onStep={handlers.handleDepthStep}
+              min={state.minDimension}
               max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
-              step={dimensionStep}
+              step={state.dimensionStep}
               variant="desktop"
               ariaLabel="Depth"
             />
@@ -167,7 +94,7 @@ export function DimensionsSection() {
             />
           </svg>
           <span className="tabular-nums">
-            {widthMm.toFixed(0)} × {depthMm.toFixed(0)} × {heightMm.toFixed(0)} mm
+            {state.widthMm.toFixed(0)} × {state.depthMm.toFixed(0)} × {state.heightMm.toFixed(0)} mm
           </span>
         </div>
 
@@ -175,12 +102,12 @@ export function DimensionsSection() {
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="text-xs text-content-tertiary">{t('common.height')}</span>
-            <span className="text-[11px] tabular-nums text-content-tertiary">{height}u</span>
+            <span className="text-[11px] tabular-nums text-content-tertiary">{state.height}u</span>
           </div>
           <StepperControl
-            value={height}
-            onChange={(v) => setParam('height', v)}
-            onStep={handleHeightStep}
+            value={state.height}
+            onChange={(v) => handlers.setParam('height', v)}
+            onStep={handlers.handleHeightStep}
             min={DESIGNER_CONSTRAINTS.MIN_HEIGHT}
             max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
             step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
@@ -192,24 +119,24 @@ export function DimensionsSection() {
         {/* Half-bin mode toggle */}
         <div
           className="group flex items-center justify-between pt-2 cursor-pointer rounded-md px-1 -mx-1 py-1 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-          onClick={toggleHalfBinMode}
+          onClick={handlers.toggleHalfBinMode}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              toggleHalfBinMode();
+              handlers.toggleHalfBinMode();
             }
           }}
           role="checkbox"
-          aria-checked={halfBinMode}
+          aria-checked={state.halfBinMode}
           aria-label={t('binDesigner.halfBinModeEnable05Grid')}
           tabIndex={0}
         >
           <span
-            className={`text-xs leading-none transition-colors ${halfBinMode ? 'text-content' : 'text-content-tertiary group-hover:text-content-secondary'}`}
+            className={`text-xs leading-none transition-colors ${state.halfBinMode ? 'text-content' : 'text-content-tertiary group-hover:text-content-secondary'}`}
           >
             {t('binDesigner.halfBinMode')}
           </span>
-          <Checkbox checked={halfBinMode} variant="desktop" />
+          <Checkbox checked={state.halfBinMode} variant="desktop" />
         </div>
       </div>
     </CollapsibleSection>

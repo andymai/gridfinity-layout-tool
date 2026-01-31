@@ -1206,8 +1206,11 @@ const en: Record<string, string> = {
   'binDesigner.wallThickness.2.6': 'Maximum rigidity for large bins',
   'binDesigner.wallThickness.nozzleTip':
     'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
-  'binDesigner.base': 'Base',
+  'binDesigner.base': 'Mounting',
   'binDesigner.physicalUnits': 'Physical Units',
+  'binDesigner.group.shape': 'Shape',
+  'binDesigner.group.interior': 'Interior',
+  'binDesigner.group.base': 'Base',
   'binDesigner.resetView': 'Reset view (R)',
   'binDesigner.toggleWireframe': 'Toggle wireframe (W)',
   'binDesigner.changeColor': 'Change preview color',
