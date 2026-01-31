@@ -13,10 +13,6 @@ import type {
   BinParams,
   BaseConfig,
   LabelTabConfig,
-  ScoopConfig,
-  WallConfig,
-  SlotConfig,
-  DividerPieceConfig,
   Insert,
   ExportFileNameConfig,
   GenerationStatus,
@@ -158,34 +154,6 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params.label, partial);
-      });
-    },
-
-    updateScoop: (partial: Partial<ScoopConfig>) => {
-      set((state) => {
-        pushHistoryEntry(state);
-        Object.assign(state.params.scoop, partial);
-      });
-    },
-
-    updateWalls: (partial: Partial<WallConfig>) => {
-      set((state) => {
-        pushHistoryEntry(state);
-        Object.assign(state.params.walls, partial);
-      });
-    },
-
-    updateSlotConfig: (partial: Partial<SlotConfig>) => {
-      set((state) => {
-        pushHistoryEntry(state);
-        Object.assign(state.params.slotConfig, partial);
-      });
-    },
-
-    updateDividerPieces: (partial: Partial<DividerPieceConfig>) => {
-      set((state) => {
-        pushHistoryEntry(state);
-        Object.assign(state.params.dividerPieces, partial);
       });
     },
 

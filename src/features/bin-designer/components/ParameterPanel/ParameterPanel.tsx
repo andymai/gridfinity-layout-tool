@@ -6,12 +6,12 @@
  *
  * Groups:
  * - Shape: Dimensions, Walls
- * - Interior: Interior Dividers (lazy), Label Tabs
+ * - Interior: Interior Dividers, Label Tabs
  * - Base: Base attachments, Physical Units
  */
 
-import { Suspense, lazy } from 'react';
 import { DimensionsSection } from '../panel/DimensionsSection';
+import { InteriorSection } from '../panel/InteriorSection';
 import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { WallsSection } from '../panel/WallsSection';
@@ -21,14 +21,6 @@ import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
 import { useTranslation } from '@/i18n';
-
-const LazyInteriorSection = lazy(() =>
-  import('../panel/InteriorSection').then((m) => ({ default: m.InteriorSection }))
-);
-
-function InteriorFallback() {
-  return <div className="px-4 py-6 text-xs text-content-tertiary animate-pulse">Loading...</div>;
-}
 
 export function ParameterPanel() {
   const t = useTranslation();
@@ -56,9 +48,7 @@ export function ParameterPanel() {
           summary={interiorSummary}
         >
           <div className="px-4 py-4 border-b border-stroke-subtle/50">
-            <Suspense fallback={<InteriorFallback />}>
-              <LazyInteriorSection />
-            </Suspense>
+            <InteriorSection />
           </div>
           <div className="px-4 py-4">
             <LabelTabsSection />
