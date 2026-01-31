@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.15.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.14.1...gridfinity-layout-tool-v2.15.0) (2026-01-31)
+
+
+### Features
+
+* add branded ID types for compile-time type safety ([7918752](https://github.com/andymai/gridfinity-layout-tool/commit/791875291220fefb0301caa6ab953a8356dc0dcf))
+* branded ID types for compile-time type safety ([#567](https://github.com/andymai/gridfinity-layout-tool/issues/567)) ([cee698c](https://github.com/andymai/gridfinity-layout-tool/commit/cee698ca3ba0e6020b6c2e6d64f0e3b879a3932f))
+
 ## [2.14.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.14.0...gridfinity-layout-tool-v2.14.1) (2026-01-31)
 
 ### Bug Fixes
