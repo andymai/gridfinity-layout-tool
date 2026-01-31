@@ -1160,7 +1160,7 @@
   "settings.defaultDrawerWidth": "Breite",
   "settings.defaultDrawerDepth": "Tiefe",
   "settings.defaultDrawerHeight": "Höhe",
-  "settings.defaultLayerHeight": "Layerhöhe",
+  "settings.defaultLayerHeight": "Bin-Höhe",
   "settings.defaultPrintBedSize": "Druckbett",
   "settings.defaultGridUnit": "Rastereinheit",
   "settings.confirmCopyFromLayout.title": "Vom aktuellen Layout kopieren",

@@ -1160,7 +1160,7 @@
   "settings.defaultDrawerWidth": "Largura",
   "settings.defaultDrawerDepth": "Profundidade",
   "settings.defaultDrawerHeight": "Altura",
-  "settings.defaultLayerHeight": "Altura da camada",
+  "settings.defaultLayerHeight": "Altura do bin",
   "settings.defaultPrintBedSize": "Mesa de impressão",
   "settings.defaultGridUnit": "Unidade da grade",
   "settings.confirmCopyFromLayout.title": "Copiar do layout atual",

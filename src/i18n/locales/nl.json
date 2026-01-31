@@ -1160,7 +1160,7 @@
   "settings.defaultDrawerWidth": "Breedte",
   "settings.defaultDrawerDepth": "Diepte",
   "settings.defaultDrawerHeight": "Hoogte",
-  "settings.defaultLayerHeight": "Laaghoogte",
+  "settings.defaultLayerHeight": "Bin-hoogte",
   "settings.defaultPrintBedSize": "Printbed",
   "settings.defaultGridUnit": "Rastereenheid",
   "settings.confirmCopyFromLayout.title": "Kopiëren van huidig ontwerp",

@@ -1160,7 +1160,7 @@
   "settings.defaultDrawerWidth": "Largeur",
   "settings.defaultDrawerDepth": "Profondeur",
   "settings.defaultDrawerHeight": "Hauteur",
-  "settings.defaultLayerHeight": "Hauteur de couche",
+  "settings.defaultLayerHeight": "Hauteur de bin",
   "settings.defaultPrintBedSize": "Plateau d'impression",
   "settings.defaultGridUnit": "Unité de grille",
   "settings.confirmCopyFromLayout.title": "Copier depuis le design actuel",

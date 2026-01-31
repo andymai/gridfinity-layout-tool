@@ -1160,7 +1160,7 @@
   "settings.defaultDrawerWidth": "Ancho",
   "settings.defaultDrawerDepth": "Profundidad",
   "settings.defaultDrawerHeight": "Altura",
-  "settings.defaultLayerHeight": "Altura de capa",
+  "settings.defaultLayerHeight": "Altura de bin",
   "settings.defaultPrintBedSize": "Cama de impresión",
   "settings.defaultGridUnit": "Unidad de rejilla",
   "settings.confirmCopyFromLayout.title": "Copiar del diseño actual",

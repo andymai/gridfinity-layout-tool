@@ -677,7 +677,7 @@ const en: Record<string, string> = {
   'settings.defaultDrawerWidth': 'Width',
   'settings.defaultDrawerDepth': 'Depth',
   'settings.defaultDrawerHeight': 'Height',
-  'settings.defaultLayerHeight': 'Layer Height',
+  'settings.defaultLayerHeight': 'Bin Height',
   'settings.defaultPrintBedSize': 'Print Bed',
   'settings.defaultGridUnit': 'Grid Unit',
   'settings.resetGeneral': 'Language reset to auto',
