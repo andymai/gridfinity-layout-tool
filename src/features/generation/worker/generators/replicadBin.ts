@@ -319,11 +319,7 @@ function buildBinBox(
  *
  * Built at Z=0 locally, caller translates to wallHeight.
  */
-function buildTopShape(
-  gridW: number,
-  gridD: number,
-  includeLip: boolean
-): Shape3D {
+function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape3D {
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
@@ -560,6 +556,191 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
   return cuts;
 }
 
+// ─── Label Tab Builder ───────────────────────────────────────────────────────
+
+/**
+ * Build label tabs for every compartment.
+ *
+ * Each tab is a flat shelf with support structure. Bracket style uses thin 45°
+ * triangular gussets (less filament, still strong). Solid style uses a
+ * continuous 45° triangle prism (maximum strength, still FDM-printable).
+ *
+ * Structure per compartment:
+ *   - Flat shelf plate: tabWidth × tabDepth × wallThickness at the top
+ *   - N interior gussets: 45° right-triangle supports, each divider-thickness
+ *     wide, placed evenly between the walls that already support the shelf ends.
+ *     Gusset count keeps unsupported span ≤10mm (conservative FDM bridge limit).
+ *
+ * Tabs are placed on the back edge of each compartment — the outer back wall
+ * for the rearmost row, or a row divider wall for interior rows. Merged cells
+ * get a single tab at the back of the merged group.
+ *
+ * Tab width is auto-capped to compartment column width when the configured
+ * width exceeds available space.
+ *
+ * @param params - Bin parameters (label config, compartments)
+ * @param innerW - Interior width in mm (outer - 2 × wallThickness)
+ * @param innerD - Interior depth in mm
+ * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
+ * @param wallThickness - Bin wall thickness in mm (used for shelf thickness)
+ */
+function buildLabelTabs(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): Shape3D | null {
+  if (!params.label.enabled) return null;
+
+  const { cols, rows, thickness, cells } = params.compartments;
+  const tabDepth = params.label.depth;
+  const widthPercent = params.label.width; // 1-100%
+  const alignment = params.label.alignment;
+  const wt = wallThickness;
+  const gt = thickness; // gusset thickness = compartment divider thickness
+
+  // 45° triangle envelope: height = depth
+  const tabHeight = tabDepth;
+
+  // Safety: tab must fit within wall height
+  if (tabHeight > wallHeight || tabHeight <= 0) return null;
+
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
+  let tabs: Shape3D | null = null;
+
+  for (let col = 0; col < cols; col++) {
+    // Available width within this column (accounting for divider walls)
+    let availableWidth = cellW;
+    if (cols > 1) {
+      if (col === 0 || col === cols - 1) {
+        availableWidth -= thickness / 2;
+      } else {
+        availableWidth -= thickness;
+      }
+    }
+
+    // Compute tab width from percentage of available column width
+    const tabWidth = (availableWidth * widthPercent) / 100;
+    if (tabWidth <= 0) continue;
+
+    // X center of this column (bin coordinates, X=0 at center)
+    const colXCenter = -innerW / 2 + col * cellW + cellW / 2;
+
+    // Compute X offset based on alignment within the column
+    let tabXStart: number;
+    if (alignment === 'left') {
+      const colLeft = colXCenter - availableWidth / 2;
+      tabXStart = colLeft;
+    } else if (alignment === 'right') {
+      const colRight = colXCenter + availableWidth / 2;
+      tabXStart = colRight - tabWidth;
+    } else {
+      tabXStart = colXCenter - tabWidth / 2;
+    }
+
+    // Place a tab at the back edge of each compartment in this column.
+    // For merged cells spanning multiple rows, only the rearmost row triggers
+    // a tab (the back edge of the merged group).
+    for (let row = 0; row < rows; row++) {
+      const isLastRow = row === rows - 1;
+      const cellId = cells[row * cols + col];
+      const nextCellId = isLastRow ? undefined : cells[(row + 1) * cols + col];
+
+      // Tab goes here if this is the back wall or a divider exists behind this cell
+      if (!isLastRow && cellId === nextCellId) continue;
+
+      // Y position: back edge of this cell
+      const backEdgeY = -innerD / 2 + (row + 1) * cellD;
+
+      // ── Determine which ends touch a wall ──
+      const fullWidth = tabWidth >= availableWidth;
+      const touchesLeft = fullWidth || alignment === 'left';
+      const touchesRight = fullWidth || alignment === 'right';
+
+      // ── Shelf: flat plate with rounded front corners on free ends ──
+      // XY footprint extruded along Z for wallThickness.
+      // Only front corners (away from back wall) are rounded on free ends.
+      const cornerR = 1; // mm
+      let pen = draw([0, 0]).lineTo([tabWidth, 0]).lineTo([tabWidth, -tabDepth]);
+      if (!touchesRight) pen = pen.customCorner(cornerR);
+      pen = pen.lineTo([0, -tabDepth]);
+      if (!touchesLeft) pen = pen.customCorner(cornerR);
+      const shelfSketch = pen.close().sketchOnPlane('XY', tabHeight - wt) as unknown as Sketch;
+      const shelf = shelfSketch.extrude(wt) as Shape3D;
+
+      // ── Gussets: 45° triangular supports under the shelf ──
+      // Free ends get edge gussets for structural support.
+      // Interior gussets keep unsupported span ≤10mm (FDM bridge limit).
+      const gussetLeg = tabHeight - wt;
+      const maxSpan = 10; // mm
+
+      // Collect all gusset X positions (left edge of each gusset)
+      const gussetPositions: number[] = [];
+
+      // Edge gussets at free ends
+      if (!touchesLeft) gussetPositions.push(0);
+      if (!touchesRight) gussetPositions.push(tabWidth - gt);
+
+      // Interior gussets between the outermost supports
+      const leftSupport = touchesLeft ? 0 : gt;
+      const rightSupport = touchesRight ? tabWidth : tabWidth - gt;
+      const interiorSpan = rightSupport - leftSupport;
+      const numInterior = Math.max(0, Math.ceil(interiorSpan / maxSpan) - 1);
+      for (let g = 0; g < numInterior; g++) {
+        const center = leftSupport + (interiorSpan * (g + 1)) / (numInterior + 1);
+        gussetPositions.push(center - gt / 2);
+      }
+
+      let tabSolid: Shape3D = shelf;
+
+      const labelSupport = params.label.support ?? 'bracket';
+
+      if (labelSupport === 'solid') {
+        // Solid style: single continuous 45° right-triangle prism under the shelf
+        const gussetLegSolid = tabHeight - wt;
+        if (gussetLegSolid > 0) {
+          const solidProfile = draw([0, gussetLegSolid])
+            .lineTo([-gussetLegSolid, gussetLegSolid])
+            .lineTo([0, 0])
+            .close();
+          const solidSketch = solidProfile.sketchOnPlane('YZ', 0) as unknown as Sketch;
+          const solidSupport = solidSketch.extrude(tabWidth) as Shape3D;
+          tabSolid = tabSolid.fuse(solidSupport);
+        }
+      } else {
+        // Bracket style: discrete triangular gussets at edges + every ≤10mm
+        if (gussetPositions.length > 0) {
+          const gussetProfile = draw([0, gussetLeg])
+            .lineTo([-gussetLeg, gussetLeg])
+            .lineTo([0, 0])
+            .close();
+
+          let gussets: Shape3D | null = null;
+          for (const gx of gussetPositions) {
+            const gussetSketch = gussetProfile.sketchOnPlane('YZ', 0) as unknown as Sketch;
+            let gusset = gussetSketch.extrude(gt) as Shape3D;
+            gusset = gusset.translateX(gx);
+            gussets = gussets ? gussets.fuse(gusset) : gusset;
+          }
+
+          if (gussets) {
+            tabSolid = tabSolid.fuse(gussets);
+          }
+        }
+      }
+
+      // Position: X at alignment offset, Y at compartment back edge, Z at tab base
+      tabSolid = tabSolid.translate([tabXStart, backEdgeY, wallHeight - tabHeight]);
+
+      tabs = tabs ? tabs.fuse(tabSolid) : tabSolid;
+    }
+  }
+
+  return tabs;
+}
+
 // ─── Mesh Conversion ────────────────────────────────────────────────────────
 
 /**
@@ -716,18 +897,14 @@ export function generateBin(
   let bin: Shape3D;
   if (params.base.stackingLip && !keepFull) {
     try {
-      const top = buildTopShape(params.width, params.depth, true).translateZ(
-        wallHeight
-      );
+      const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
       bin = base
         .fuse(box, { optimisation: 'commonFace' })
         .fuse(top, { optimisation: 'commonFace' });
     } catch (e) {
-      console.warn(
-        '[BinGen] Stacking lip failed, skipping:',
-        e instanceof Error ? e.message : e,
-        { wallThickness }
-      );
+      console.warn('[BinGen] Stacking lip failed, skipping:', e instanceof Error ? e.message : e, {
+        wallThickness,
+      });
       bin = base.fuse(box, { optimisation: 'commonFace' });
     }
   } else {
@@ -740,7 +917,13 @@ export function generateBin(
   onProgress?.('features', 0.5);
 
   if (!keepFull) {
-    const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, wallHeight);
+    // Interior features (dividers, tabs) must clear the stacking lip zone.
+    // The lip's bottom taper extends LIP_SMALL_TAPER (0.7mm) inward from the
+    // outer wall at wallHeight. Dividers and tabs stop short to avoid interference.
+    const hasLip = params.base.stackingLip && !keepFull;
+    const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
+
+    const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
     if (compartmentWalls) {
       try {
         bin = bin.fuse(compartmentWalls);
@@ -758,6 +941,18 @@ export function generateBin(
         bin = bin.cut(insertCuts);
       } catch (e) {
         console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
+      }
+    }
+
+    const labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
+    if (labelTabs) {
+      try {
+        bin = bin.fuse(labelTabs);
+      } catch (e) {
+        console.warn(
+          '[BinGen] Label tab fusion failed, skipping:',
+          e instanceof Error ? e.message : e
+        );
       }
     }
   }

@@ -96,6 +96,29 @@ export function WallsIcon() {
   );
 }
 
+/** Side cross-section showing a label tab shelf on the back wall */
+export function LabelTabsIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Bin wall cross-section */}
+      <path d="M3 3 L3 13 L13 13 L13 3" />
+      {/* Label tab shelf */}
+      <line x1="13" y1="5" x2="9" y2="5" />
+      {/* 45° support gusset */}
+      <line x1="13" y1="9" x2="9" y2="5" />
+    </svg>
+  );
+}
+
 /** Circle cut into bin floor representing inserts */
 export function InsertsIcon() {
   return (

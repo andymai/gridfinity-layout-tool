@@ -147,18 +147,82 @@ describe('validateBinParams', () => {
     });
   });
 
-  describe('label constraints', () => {
-    it('should reject label text exceeding max length', () => {
+  describe('label tab constraints', () => {
+    it('should reject label tab depth out of range', () => {
       const result = validateBinParams(
-        makeParams({ label: { enabled: true, text: 'a'.repeat(21), fontSize: 'auto' } })
+        makeParams({
+          label: { enabled: true, support: 'bracket', depth: 25, width: 100, alignment: 'left' },
+        })
       );
       const error = expectErr(result);
-      expect(error.code).toBe('LABEL_TOO_LONG');
+      expect(error.code).toBe('LABEL_TAB_DEPTH_OUT_OF_RANGE');
     });
 
-    it('should accept label at max length', () => {
+    it('should reject label tab width out of range', () => {
       const result = validateBinParams(
-        makeParams({ label: { enabled: true, text: 'a'.repeat(20), fontSize: 'auto' } })
+        makeParams({
+          label: { enabled: true, support: 'bracket', depth: 12, width: 110, alignment: 'left' },
+        })
+      );
+      const error = expectErr(result);
+      expect(error.code).toBe('LABEL_TAB_WIDTH_OUT_OF_RANGE');
+    });
+
+    it('should accept valid label tab config', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: { enabled: true, support: 'bracket', depth: 12, width: 100, alignment: 'left' },
+        })
+      );
+      expectOk(result);
+    });
+
+    it('should accept solid label tab support', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: { enabled: true, support: 'solid', depth: 12, width: 100, alignment: 'left' },
+        })
+      );
+      expectOk(result);
+    });
+
+    it('should reject invalid label tab support', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: {
+            enabled: true,
+            support: 'invalid' as any,
+            depth: 12,
+            width: 100,
+            alignment: 'left',
+          },
+        })
+      );
+      const error = expectErr(result);
+      expect(error.code).toBe('LABEL_TAB_SUPPORT_INVALID');
+    });
+
+    it('should reject invalid label alignment', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: {
+            enabled: true,
+            support: 'bracket',
+            depth: 12,
+            width: 100,
+            alignment: 'top' as any,
+          },
+        })
+      );
+      const error = expectErr(result);
+      expect(error.code).toBe('LABEL_ALIGNMENT_INVALID');
+    });
+
+    it('should skip validation when label disabled', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: { enabled: false, support: 'bracket', depth: 12, width: 100, alignment: 'left' },
+        })
       );
       expectOk(result);
     });

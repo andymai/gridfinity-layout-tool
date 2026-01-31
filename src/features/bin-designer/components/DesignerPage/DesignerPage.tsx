@@ -29,7 +29,11 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useToastStore } from '@/core/store/toast';
 import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
-import { saveDesign, setActiveDesignId } from '@/features/bin-designer/storage/DesignerStorage';
+import {
+  saveDesign,
+  setActiveDesignId,
+  updateDesignName,
+} from '@/features/bin-designer/storage/DesignerStorage';
 import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
@@ -214,6 +218,24 @@ export function DesignerPage(_props: DesignerPageProps) {
     const name = editNameValue.trim() || 'Untitled Bin';
     setDesignName(name);
     setIsEditingName(false);
+
+    // Persist rename for existing designs
+    if (currentDesignId) {
+      void updateDesignName(currentDesignId, name).then((result) => {
+        if (isOk(result)) {
+          upsertRegistryEntry({
+            id: result.value.id,
+            name: result.value.name,
+            width: params.width,
+            depth: params.depth,
+            height: params.height,
+            thumbnail: result.value.thumbnail,
+            updatedAt: result.value.updatedAt,
+          });
+        }
+      });
+      return;
+    }
 
     // First save: when user names an unsaved design, persist it
     if (!currentDesignId) {
@@ -457,7 +479,6 @@ export function DesignerPage(_props: DesignerPageProps) {
               </svg>
             </button>
           </div>
-
         </div>
       </header>
 

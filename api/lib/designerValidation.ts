@@ -8,6 +8,7 @@
 // Type-safe enum validation
 const VALID_BIN_STYLES = ['standard', 'lite', 'solid'] as const;
 const VALID_BASE_STYLES = ['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted'] as const;
+const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 
@@ -24,7 +25,10 @@ const CONSTRAINTS = {
   MAX_COMPARTMENT_GRID: 8,
   MIN_COMPARTMENT_THICKNESS: 0.8,
   MAX_COMPARTMENT_THICKNESS: 2.4,
-  MAX_LABEL_LENGTH: 20,
+  MIN_LABEL_TAB_DEPTH: 8,
+  MAX_LABEL_TAB_DEPTH: 20,
+  MIN_LABEL_TAB_WIDTH: 10, // %
+  MAX_LABEL_TAB_WIDTH: 100, // %
   MAGNET_MIN_DEPTH: 2.0,
   MAGNET_MAX_DEPTH: 4.0,
   MAX_INSERTS: 20,
@@ -187,20 +191,41 @@ function validateCompartments(compartments: unknown): string | null {
 }
 
 /**
- * Validates a label object from the designer payload.
+ * Validates a label tab object from the designer payload.
  *
- * @param label - The value to validate as a label object (expected shape: `{ enabled, text, fontSize }`)
- * @returns `null` if `label` satisfies required structure and constraints; otherwise an error message describing the first validation failure
+ * @param label - The value to validate as a label tab object
+ * @returns `null` if valid; otherwise an error message
  */
 function validateLabel(label: unknown): string | null {
   if (!isObject(label)) return 'label must be an object';
   if (!isBoolean(label.enabled)) return 'label.enabled must be boolean';
-  if (!isString(label.text)) return 'label.text must be a string';
-  if (label.text.length > CONSTRAINTS.MAX_LABEL_LENGTH) {
-    return `label.text must be ${CONSTRAINTS.MAX_LABEL_LENGTH} chars or less`;
-  }
-  if (label.fontSize !== 'auto' && (!isNumber(label.fontSize) || !inRange(label.fontSize, 4, 72))) {
-    return 'label.fontSize must be "auto" or 4-72';
+
+  // Only validate detail fields when the feature is enabled (matches client-side logic)
+  if (label.enabled) {
+    if (
+      !isNumber(label.depth) ||
+      !inRange(label.depth, CONSTRAINTS.MIN_LABEL_TAB_DEPTH, CONSTRAINTS.MAX_LABEL_TAB_DEPTH)
+    ) {
+      return `label.depth must be ${CONSTRAINTS.MIN_LABEL_TAB_DEPTH}-${CONSTRAINTS.MAX_LABEL_TAB_DEPTH}`;
+    }
+    if (
+      !isNumber(label.width) ||
+      !inRange(label.width, CONSTRAINTS.MIN_LABEL_TAB_WIDTH, CONSTRAINTS.MAX_LABEL_TAB_WIDTH)
+    ) {
+      return `label.width must be ${CONSTRAINTS.MIN_LABEL_TAB_WIDTH}-${CONSTRAINTS.MAX_LABEL_TAB_WIDTH}`;
+    }
+    if (
+      label.support !== undefined &&
+      !VALID_LABEL_TAB_SUPPORTS.includes(label.support as (typeof VALID_LABEL_TAB_SUPPORTS)[number])
+    ) {
+      return `label.support must be one of: ${VALID_LABEL_TAB_SUPPORTS.join(', ')}`;
+    }
+    if (
+      label.alignment !== undefined &&
+      !['left', 'center', 'right'].includes(label.alignment as string)
+    ) {
+      return 'label.alignment must be "left", "center", or "right"';
+    }
   }
   return null;
 }

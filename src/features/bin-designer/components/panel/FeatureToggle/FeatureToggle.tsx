@@ -18,6 +18,8 @@ interface FeatureToggleProps {
   onChange: () => void;
   /** Brief summary of current value shown when enabled (e.g., "6.5mm × 2mm") */
   valueSummary?: string;
+  /** Controls shown immediately when enabled (no Customize click needed) */
+  primaryControls?: ReactNode;
   /** Detailed controls shown when "Customize" is clicked */
   children?: ReactNode;
   /** Whether this feature is coming soon (shows badge, disables toggle) */
@@ -29,6 +31,7 @@ export function FeatureToggle({
   checked,
   onChange,
   valueSummary,
+  primaryControls,
   children,
   comingSoon = false,
 }: FeatureToggleProps) {
@@ -43,7 +46,9 @@ export function FeatureToggle({
         <div className="flex items-center gap-2">
           <span className="text-xs text-content-secondary">{label}</span>
           {comingSoon && (
-            <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-[10px] font-medium text-content-tertiary">{t('binDesigner.soon')}</span>
+            <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-[10px] font-medium text-content-tertiary">
+              {t('binDesigner.soon')}
+            </span>
           )}
         </div>
         <button
@@ -68,6 +73,11 @@ export function FeatureToggle({
           />
         </button>
       </div>
+
+      {/* Primary controls (shown immediately when enabled, no Customize needed) */}
+      {checked && !comingSoon && primaryControls && (
+        <div className="mt-1.5 space-y-3">{primaryControls}</div>
+      )}
 
       {/* Value summary + Customize link (shown when enabled and has children) */}
       {checked && !comingSoon && children && (
@@ -97,9 +107,7 @@ export function FeatureToggle({
               customizeOpen ? 'opacity-100 max-h-[500px] mt-2' : 'opacity-0 max-h-0'
             }`}
           >
-            <div className="space-y-3 border-l-2 border-accent/20 pl-3 pb-1">
-              {children}
-            </div>
+            <div className="space-y-3 border-l-2 border-accent/20 pl-3 pb-1">{children}</div>
           </div>
         </div>
       )}

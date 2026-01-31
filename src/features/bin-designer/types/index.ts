@@ -67,11 +67,23 @@ export interface ScoopConfig {
   readonly allRows: boolean;
 }
 
-/** Label configuration for front-face text embossing */
-export interface LabelConfig {
+/** Horizontal alignment of each label tab within its compartment column */
+export type LabelTabAlignment = 'left' | 'center' | 'right';
+
+/** Support structure style for the label tab */
+export type LabelTabSupport = 'bracket' | 'solid';
+
+/** Label tab configuration for back-wall identification shelf */
+export interface LabelTabConfig {
   readonly enabled: boolean;
-  readonly text: string;
-  readonly fontSize: 'auto' | number;
+  /** Support structure: 'bracket' = open gussets, 'solid' = filled triangle */
+  readonly support: LabelTabSupport;
+  /** Depth of tab from inner back wall (horizontal inward), in mm */
+  readonly depth: number;
+  /** Width of each tab as percentage of compartment column width (1-100) */
+  readonly width: number;
+  /** Horizontal alignment within each compartment column */
+  readonly alignment: LabelTabAlignment;
 }
 
 /** A single wall cutout: width of the U-notch (centered) and depth from wall top */
@@ -107,7 +119,7 @@ export interface BinParams {
   readonly style: BinStyle;
   readonly compartments: CompartmentConfig;
   readonly scoop: ScoopConfig;
-  readonly label: LabelConfig;
+  readonly label: LabelTabConfig;
   readonly walls: WallConfig;
   readonly inserts: Insert[];
 }

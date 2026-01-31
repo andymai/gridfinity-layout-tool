@@ -190,6 +190,28 @@ export function closeDesignerDb(): void {
 }
 
 /**
+ * Update only the name of an existing design.
+ *
+ * @param id - The design ID
+ * @param name - The new design name
+ * @returns A `Result` with the updated `SavedDesign` on success, or a `StorageError` on failure
+ */
+export async function updateDesignName(
+  id: string,
+  name: string
+): Promise<Result<SavedDesign, StorageError>> {
+  const loadResult = await loadDesign(id);
+  if (isErr(loadResult)) {
+    return loadResult;
+  }
+
+  return saveDesign({
+    ...loadResult.value,
+    name,
+  });
+}
+
+/**
  * Update an existing design's bin parameters, thumbnail, and/or export config.
  *
  * If `thumbnail` is `undefined` the design's thumbnail is left unchanged; if `null` the thumbnail is cleared.

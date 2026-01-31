@@ -170,13 +170,46 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
     });
   }
 
-  // Label text length
-  if (params.label.text.length > DESIGNER_CONSTRAINTS.MAX_LABEL_LENGTH) {
-    return err({
-      code: 'LABEL_TOO_LONG',
-      message: `Label text must be at most ${DESIGNER_CONSTRAINTS.MAX_LABEL_LENGTH} characters`,
-      field: 'label.text',
-    });
+  // Label tab validation
+  if (params.label.enabled) {
+    if (params.label.support !== 'bracket' && params.label.support !== 'solid') {
+      return err({
+        code: 'LABEL_TAB_SUPPORT_INVALID',
+        message: 'Label tab support must be "bracket" or "solid"',
+        field: 'label.support',
+      });
+    }
+    if (
+      params.label.depth < DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH ||
+      params.label.depth > DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH
+    ) {
+      return err({
+        code: 'LABEL_TAB_DEPTH_OUT_OF_RANGE',
+        message: `Label tab depth must be between ${DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH}mm and ${DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH}mm`,
+        field: 'label.depth',
+      });
+    }
+    if (
+      params.label.width < DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH ||
+      params.label.width > DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH
+    ) {
+      return err({
+        code: 'LABEL_TAB_WIDTH_OUT_OF_RANGE',
+        message: `Label tab width must be between ${DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}% and ${DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}%`,
+        field: 'label.width',
+      });
+    }
+    if (
+      params.label.alignment !== 'left' &&
+      params.label.alignment !== 'center' &&
+      params.label.alignment !== 'right'
+    ) {
+      return err({
+        code: 'LABEL_ALIGNMENT_INVALID',
+        message: 'Label alignment must be "left", "center", or "right"',
+        field: 'label.alignment',
+      });
+    }
   }
 
   // Compartment size validation (ensures grid cells aren't impossibly thin)

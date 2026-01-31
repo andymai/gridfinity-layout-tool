@@ -26,7 +26,7 @@ function validPayload() {
         stackingLip: true,
       },
       compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
-      label: { enabled: false, text: '', fontSize: 'auto' },
+      label: { enabled: false, support: 'bracket', depth: 12, width: 100, alignment: 'center' },
       walls: { front: 0, back: 0, left: 0, right: 0 },
       inserts: [],
     },
@@ -190,24 +190,61 @@ describe('validateDesignerShare', () => {
     });
   });
 
-  describe('label validation', () => {
-    it('rejects label text exceeding max length', () => {
+  describe('label tab validation', () => {
+    it('rejects label tab depth out of range', () => {
       const payload = validPayload();
-      payload.params.label.text = 'A'.repeat(25);
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).depth = 25;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });
 
-    it('accepts "auto" fontSize', () => {
+    it('rejects label tab width out of range', () => {
       const payload = validPayload();
-      payload.params.label.fontSize = 'auto';
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).width = 101;
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts valid label tab config', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).depth = 12;
+      (payload.params.label as Record<string, unknown>).width = 75;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(true);
     });
 
-    it('accepts numeric fontSize in range', () => {
+    it('rejects invalid label tab support', () => {
       const payload = validPayload();
-      (payload.params.label as Record<string, unknown>).fontSize = 12;
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).support = 'invalid';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts bracket label tab support', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).support = 'bracket';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+
+    it('accepts solid label tab support', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).support = 'solid';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+
+    it('skips detail validation when label disabled', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = false;
+      (payload.params.label as Record<string, unknown>).depth = 999;
+      (payload.params.label as Record<string, unknown>).support = 'invalid';
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(true);
     });
