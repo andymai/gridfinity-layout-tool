@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.11.0...gridfinity-layout-tool-v2.11.1) (2026-01-31)
+
+
+### Bug Fixes
+
+* bin designer UI fixes and remove JSON export from export modal ([#548](https://github.com/andymai/gridfinity-layout-tool/issues/548)) ([9bf5a89](https://github.com/andymai/gridfinity-layout-tool/commit/9bf5a8986f74dedf06198b610fc0aebc8a09dee4))
+
 ## [2.11.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.10.1...gridfinity-layout-tool-v2.11.0) (2026-01-31)
 
 
