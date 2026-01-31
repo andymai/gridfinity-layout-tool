@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.12.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.11.1...gridfinity-layout-tool-v2.12.0) (2026-01-31)
+
+
+### Features
+
+* **i18n:** localize bin designer loading messages ([#551](https://github.com/andymai/gridfinity-layout-tool/issues/551)) ([83364ea](https://github.com/andymai/gridfinity-layout-tool/commit/83364ea05e860b7e4f9a3636295e73fd9b2cba88))
+
 ## [2.11.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.11.0...gridfinity-layout-tool-v2.11.1) (2026-01-31)
 
 
