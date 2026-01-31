@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.9.0...gridfinity-layout-tool-v2.10.0) (2026-01-31)
+
+
+### Features
+
+* add unused i18n key detection script ([#541](https://github.com/andymai/gridfinity-layout-tool/issues/541)) ([94a706b](https://github.com/andymai/gridfinity-layout-tool/commit/94a706ba74e6a55610297c37e7a78349dad7fe92))
+
 ## [2.9.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.8.0...gridfinity-layout-tool-v2.9.0) (2026-01-31)
 
 
