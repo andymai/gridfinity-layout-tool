@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": ["src/main.tsx", "api/**/*.ts", "scripts/**/*.ts"],
+  "project": ["src/**/*.{ts,tsx}", "api/**/*.ts", "scripts/**/*.ts"],
+  "ignore": ["src/test/**", "**/*.test.{ts,tsx}", "e2e/**", "**/index.ts"],
+  "ignoreDependencies": ["three-stdlib", "axe-core", "postcss"],
+  "ignoreBinaries": ["partykit"],
+  "exclude": ["exports", "types", "duplicates"],
+  "vite": {
+    "config": ["vite.config.ts"]
+  },
+  "vitest": {
+    "config": ["vite.config.ts", "vitest.config.ts"]
+  },
+  "playwright": {
+    "config": ["playwright.config.ts"]
+  }
+}
