@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { resetOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 import { TabNavigation } from './TabNavigation/TabNavigation';
 import { useSettingsTab } from './hooks/useSettingsTab';
 import { GeneralTab } from './tabs/GeneralTab/GeneralTab';
@@ -138,14 +139,26 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-3 border-t border-stroke-subtle">
-          <button
-            onClick={() => setShowResetConfirm(true)}
-            className="text-xs text-content-tertiary hover:text-content transition-colors"
-          >
-            {t('settings.resetTabDefaults')}
-          </button>
-          <div className="text-xs text-content-disabled space-x-3">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-stroke-subtle text-xs">
+          <div className="text-content-tertiary space-x-3">
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="hover:text-content transition-colors"
+            >
+              {t('settings.resetTabDefaults')}
+            </button>
+            <span className="text-content-disabled">·</span>
+            <button
+              onClick={() => {
+                resetOnboarding();
+                addToast(t('toast.onboardingReset'), 'info');
+              }}
+              className="hover:text-content transition-colors"
+            >
+              {t('settings.resetOnboarding')}
+            </button>
+          </div>
+          <div className="text-content-disabled space-x-3">
             <a
               href="/privacy"
               target="_blank"

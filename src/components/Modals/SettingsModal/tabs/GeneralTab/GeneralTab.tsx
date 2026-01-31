@@ -1,14 +1,11 @@
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '@/core/store';
-import { useToastStore } from '@/core/store/toast';
 import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } from '@/i18n';
 import type { Locale } from '@/i18n';
-import { resetOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 
 export function GeneralTab() {
   const t = useTranslation();
   const { locale, setLocale } = useLocale();
-  const addToast = useToastStore((state) => state.addToast);
 
   const { settingsLocale, updateSetting } = useSettingsStore(
     useShallow((state) => ({
@@ -113,28 +110,6 @@ export function GeneralTab() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Divider */}
-      <hr className="border-stroke-subtle" />
-
-      {/* Onboarding Reset */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-3">
-          {t('settings.resetOnboarding')}
-        </h3>
-        <p className="text-sm text-content-tertiary mb-3">
-          {t('settings.resetOnboardingDescription')}
-        </p>
-        <button
-          onClick={() => {
-            resetOnboarding();
-            addToast(t('toast.onboardingReset'), 'info');
-          }}
-          className="text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle transition-colors"
-        >
-          {t('settings.resetOnboarding')}
-        </button>
       </section>
     </div>
   );

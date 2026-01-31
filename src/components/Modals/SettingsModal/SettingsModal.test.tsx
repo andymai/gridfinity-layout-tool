@@ -56,6 +56,10 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
   ConfirmDialog: () => null,
 }));
 
+vi.mock('@/features/onboarding/hooks/useOnboarding', () => ({
+  resetOnboarding: vi.fn(),
+}));
+
 describe('SettingsModal', () => {
   beforeEach(() => {
     sessionStorage.clear();
@@ -95,5 +99,10 @@ describe('SettingsModal', () => {
     render(<SettingsModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByText('settings.privacyPolicy')).toBeInTheDocument();
     expect(screen.getByText('settings.termsOfService')).toBeInTheDocument();
+  });
+
+  it('renders reset onboarding button in footer', () => {
+    render(<SettingsModal isOpen={true} onClose={vi.fn()} />);
+    expect(screen.getByText('settings.resetOnboarding')).toBeInTheDocument();
   });
 });

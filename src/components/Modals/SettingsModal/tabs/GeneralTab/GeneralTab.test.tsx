@@ -21,23 +21,9 @@ vi.mock('@/core/store', () => ({
     }),
 }));
 
-vi.mock('@/core/store/toast', () => ({
-  useToastStore: (selector: (state: Record<string, unknown>) => unknown) =>
-    selector({ addToast: vi.fn() }),
-}));
-
-vi.mock('@/features/onboarding/hooks/useOnboarding', () => ({
-  resetOnboarding: vi.fn(),
-}));
-
 describe('GeneralTab', () => {
   it('renders language section', () => {
     render(<GeneralTab />);
     expect(screen.getByText('settings.language')).toBeInTheDocument();
-  });
-
-  it('renders onboarding reset section', () => {
-    render(<GeneralTab />);
-    expect(screen.getAllByText('settings.resetOnboarding').length).toBeGreaterThan(0);
   });
 });
