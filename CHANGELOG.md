@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.14.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.14.0...gridfinity-layout-tool-v2.14.1) (2026-01-31)
+
+
+### Bug Fixes
+
+* resolve ESLint errors and add missing tests ([#563](https://github.com/andymai/gridfinity-layout-tool/issues/563)) ([485f776](https://github.com/andymai/gridfinity-layout-tool/commit/485f776c0e2cd4ffc7ae20189e8d51c9c267f472))
+
 ## [2.14.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.13.1...gridfinity-layout-tool-v2.14.0) (2026-01-31)
 
 
