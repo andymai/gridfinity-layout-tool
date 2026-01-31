@@ -52,10 +52,11 @@ export function getSourceFiles(dir: string): string[] {
     const stat = statSync(fullPath);
 
     if (stat.isDirectory()) {
-      if (entry === 'node_modules' || entry === 'locales') continue;
+      if (entry === 'node_modules' || entry === 'locales' || entry === 'test') continue;
       files.push(...getSourceFiles(fullPath));
     } else if (entry.endsWith('.ts') || entry.endsWith('.tsx')) {
       if (entry.endsWith('.d.ts')) continue;
+      if (entry.includes('.test.') || entry.includes('.spec.')) continue;
       files.push(fullPath);
     }
   }
@@ -95,7 +96,7 @@ export function extractKeyReferences(content: string, knownKeys?: Set<string>): 
   // Strategy 2: If we have the full key set, find any string literal matching a known key.
   // This catches keys stored in data structures (labelKey, descriptionKey, arrays, etc.)
   if (knownKeys && knownKeys.size > 0) {
-    const stringLiteralRegex = /['"]([a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z][a-zA-Z0-9]*)+)['"]/g;
+    const stringLiteralRegex = /['"]([a-zA-Z0-9][a-zA-Z0-9]*(?:\.[a-zA-Z0-9][a-zA-Z0-9]*)+)['"]/g;
     while ((match = stringLiteralRegex.exec(content)) !== null) {
       if (knownKeys.has(match[1])) {
         literalKeys.add(match[1]);
@@ -143,11 +144,12 @@ export interface UnusedKeyReport {
 export function classifyUnusedKeys(allKeys: string[], usage: KeyUsage): UnusedKeyReport {
   const definitelyUnused: string[] = [];
   const possiblyUnused: string[] = [];
+  const prefixArray = [...usage.dynamicPrefixes];
 
   for (const key of allKeys) {
     if (usage.literalKeys.has(key)) continue;
 
-    const coveredByDynamic = [...usage.dynamicPrefixes].some((prefix) => key.startsWith(prefix));
+    const coveredByDynamic = prefixArray.some((prefix) => key.startsWith(prefix));
 
     if (coveredByDynamic) {
       possiblyUnused.push(key);
