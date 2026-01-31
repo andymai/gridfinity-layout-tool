@@ -10,22 +10,11 @@ describe('styleConstraints', () => {
       expect(constraints.hasGussets).toBe(false);
     });
 
-    it('lite style has no disabled features', () => {
-      const constraints = getStyleConstraints('lite');
-      expect(constraints.disabledFeatures).toEqual([]);
+    it('slotted style disables dividers and label', () => {
+      const constraints = getStyleConstraints('slotted');
+      expect(constraints.disabledFeatures).toContain('dividers');
+      expect(constraints.disabledFeatures).toContain('label');
       expect(constraints.hasGussets).toBe(false);
-    });
-
-    it('solid style enables gussets', () => {
-      const constraints = getStyleConstraints('solid');
-      expect(constraints.disabledFeatures).toEqual([]);
-      expect(constraints.hasGussets).toBe(true);
-    });
-
-    it('lite has a warning about structural integrity', () => {
-      const constraints = getStyleConstraints('lite');
-      expect(constraints.warnings.length).toBeGreaterThan(0);
-      expect(constraints.warnings[0]).toContain('structural');
     });
   });
 
@@ -35,10 +24,14 @@ describe('styleConstraints', () => {
       expect(isFeatureDisabled('standard', 'label')).toBe(false);
     });
 
+    it('returns true for slotted style dividers and label', () => {
+      expect(isFeatureDisabled('slotted', 'dividers')).toBe(true);
+      expect(isFeatureDisabled('slotted', 'label')).toBe(true);
+    });
+
     it('covers all style types', () => {
-      const styles: BinStyle[] = ['standard', 'lite', 'solid'];
+      const styles: BinStyle[] = ['standard', 'slotted'];
       for (const style of styles) {
-        // Should not throw for any valid style
         expect(() => getStyleConstraints(style)).not.toThrow();
       }
     });

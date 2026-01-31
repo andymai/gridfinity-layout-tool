@@ -32,7 +32,7 @@ export function LabelTabsSection() {
   );
   const t = useTranslation();
 
-  const isSolid = style === 'solid';
+  const isSlotted = style === 'slotted';
 
   const toggleLabelTabs = useCallback(() => {
     setParam('label', { ...label, enabled: !label.enabled });
@@ -93,7 +93,7 @@ export function LabelTabsSection() {
     return parts.join(' · ');
   }, [label.enabled, label.support, label.width, label.alignment, t]);
 
-  if (isSolid) return null;
+  if (isSlotted) return null;
 
   return (
     <CollapsibleSection

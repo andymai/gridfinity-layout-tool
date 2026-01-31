@@ -12,8 +12,37 @@
 /** Base attachment style for bin-to-baseplate connection */
 export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted';
 
-/** Bin wall/style variant affecting thickness and reinforcement */
-export type BinStyle = 'standard' | 'lite' | 'solid';
+/** Bin wall/style variant */
+export type BinStyle = 'standard' | 'slotted';
+
+/** Slot configuration for one axis */
+export interface AxisSlotConfig {
+  readonly enabled: boolean;
+  /** Distance between slot centers in mm */
+  readonly pitch: number;
+}
+
+/** Slot configuration for removable divider walls */
+export interface SlotConfig {
+  /** Slots on left/right walls (for Y-axis dividers) */
+  readonly x: AxisSlotConfig;
+  /** Slots on front/back walls (for X-axis dividers) */
+  readonly y: AxisSlotConfig;
+  /** Slot opening width in mm */
+  readonly width: number;
+  /** Slot cut depth into wall in mm */
+  readonly depth: number;
+}
+
+/** Configuration for removable divider pieces */
+export interface DividerPieceConfig {
+  /** Height in mm, or 'auto' to match bin interior height */
+  readonly height: number | 'auto';
+  /** Divider wall thickness in mm */
+  readonly thickness: number;
+  /** Fit clearance in mm (subtracted from each side) */
+  readonly clearance: number;
+}
 
 /** Base configuration for bin attachment */
 export interface BaseConfig {
@@ -113,7 +142,7 @@ export interface BinParams {
   readonly gridUnitMm: number;
   /** Height unit size in mm (default 7mm per Gridfinity spec) */
   readonly heightUnitMm: number;
-  /** Wall thickness in mm (default 1.2). Ignored when style is 'solid'. */
+  /** Wall thickness in mm (default 1.2) */
   readonly wallThickness: number;
   readonly base: BaseConfig;
   readonly style: BinStyle;
@@ -121,6 +150,8 @@ export interface BinParams {
   readonly scoop: ScoopConfig;
   readonly label: LabelTabConfig;
   readonly walls: WallConfig;
+  readonly slotConfig: SlotConfig;
+  readonly dividerPieces: DividerPieceConfig;
   readonly inserts: Insert[];
 }
 

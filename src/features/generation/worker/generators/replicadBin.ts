@@ -19,6 +19,7 @@ import type { Solid, Shape3D, Sketch, Plane, Point } from 'replicad';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
+import { buildSlotCuts } from './slotBuilder';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -287,21 +288,16 @@ function buildBinBox(
   gridW: number,
   gridD: number,
   wallHeight: number,
-  wallThickness: number,
-  keepFull: boolean
+  wallThickness: number
 ): Shape3D {
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  let box = (
+  const box = (
     drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as unknown as Sketch
   ).extrude(wallHeight) as Shape3D;
 
-  if (!keepFull) {
-    box = box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight));
-  }
-
-  return box;
+  return box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight));
 }
 
 // ─── Top Shape (Stacking Lip) Builder ─────────────────────────────────────────
@@ -865,7 +861,7 @@ export function generateBin(
   const outerD = params.depth * SIZE - CLEARANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const keepFull = params.style === 'solid';
+  const isSlotted = params.style === 'slotted';
 
   const withMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
   const withScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
@@ -890,12 +886,12 @@ export function generateBin(
 
   // Stage 2: Build bin box (walls + floor)
   onProgress?.('shell', 0.3);
-  const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, keepFull);
+  const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness);
 
   // Stage 3: Assemble base + shell + stacking lip
   onProgress?.('features', 0.4);
   let bin: Shape3D;
-  if (params.base.stackingLip && !keepFull) {
+  if (params.base.stackingLip) {
     try {
       const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
       bin = base
@@ -916,13 +912,13 @@ export function generateBin(
   // When only feature params changed, assembly is reused as starting point.
   onProgress?.('features', 0.5);
 
-  if (!keepFull) {
-    // Interior features (dividers, tabs) must clear the stacking lip zone.
-    // The lip's bottom taper extends LIP_SMALL_TAPER (0.7mm) inward from the
-    // outer wall at wallHeight. Dividers and tabs stop short to avoid interference.
-    const hasLip = params.base.stackingLip && !keepFull;
-    const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
+  // Interior features (dividers, tabs) must clear the stacking lip zone.
+  // The lip's bottom taper extends LIP_SMALL_TAPER (0.7mm) inward from the
+  // outer wall at wallHeight. Dividers and tabs stop short to avoid interference.
+  const hasLip = params.base.stackingLip;
+  const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
 
+  if (!isSlotted) {
     const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
     if (compartmentWalls) {
       try {
@@ -934,16 +930,35 @@ export function generateBin(
         );
       }
     }
+  }
 
-    const insertCuts = buildInsertCuts(params);
-    if (insertCuts) {
+  const insertCuts = buildInsertCuts(params);
+  if (insertCuts) {
+    try {
+      bin = bin.cut(insertCuts);
+    } catch (e) {
+      console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
+    }
+  }
+
+  if (isSlotted) {
+    // Wall slots use interiorHeight (below lip taper zone).
+    // Lip cutouts are wider rectangles that cut through the full lip profile
+    // so dividers can slide in from the top.
+    const lipInfo = hasLip
+      ? { wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
+      : undefined;
+    const slotCuts = buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo);
+    if (slotCuts) {
       try {
-        bin = bin.cut(insertCuts);
+        bin = bin.cut(slotCuts);
       } catch (e) {
-        console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
+        console.warn('[BinGen] Slot cut failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
+  }
 
+  if (!isSlotted) {
     const labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
     if (labelTabs) {
       try {

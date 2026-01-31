@@ -9,7 +9,12 @@ import type { BinParams } from '@/shared/types/bin';
 
 // ─── Main → Worker Messages ──────────────────────────────────────────────────
 
-export type WorkerMessage = InitMessage | GenerateMessage | CancelMessage | ExportMessage;
+export type WorkerMessage =
+  | InitMessage
+  | GenerateMessage
+  | CancelMessage
+  | ExportMessage
+  | ExportDividersMessage;
 
 export interface InitMessage {
   readonly type: 'INIT';
@@ -45,6 +50,16 @@ export interface ExportPayload {
   readonly angularTolerance?: number;
 }
 
+export interface ExportDividersMessage {
+  readonly type: 'EXPORT_DIVIDERS';
+  readonly payload: ExportDividersPayload;
+}
+
+export interface ExportDividersPayload {
+  readonly params: BinParams;
+  readonly requestId: string;
+}
+
 /** Export file formats supported by the BREP worker */
 export type ExportFormat = 'stl' | 'step';
 
@@ -55,6 +70,7 @@ export type WorkerResponse =
   | ProgressResponse
   | MeshResultResponse
   | ExportResultResponse
+  | DividersExportResultResponse
   | ErrorResponse;
 
 export interface InitReadyResponse {
@@ -82,6 +98,13 @@ export interface ExportResultResponse {
   readonly requestId: string;
   readonly data: ArrayBuffer;
   readonly format: ExportFormat;
+  readonly fileName: string;
+}
+
+export interface DividersExportResultResponse {
+  readonly type: 'DIVIDERS_EXPORT_RESULT';
+  readonly requestId: string;
+  readonly data: ArrayBuffer;
   readonly fileName: string;
 }
 

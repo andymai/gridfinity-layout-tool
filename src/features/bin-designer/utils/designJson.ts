@@ -253,9 +253,9 @@ export function validateBinParams(params: unknown): ValidateBinParamsResult {
   // Validate style
   if (
     typeof p.style !== 'string' ||
-    !['standard', 'lite', 'solid'].includes(p.style as string)
+    !['standard', 'slotted', 'lite', 'solid'].includes(p.style as string)
   ) {
-    errors.push('style must be one of: standard, lite, solid');
+    errors.push('style must be one of: standard, slotted');
   }
 
   // Validate compartments config
@@ -284,9 +284,7 @@ export function validateBinParams(params: unknown): ValidateBinParamsResult {
       errors.push('compartments.cells must be an array');
     } else {
       const expectedLength =
-        typeof comp.cols === 'number' && typeof comp.rows === 'number'
-          ? comp.cols * comp.rows
-          : 0;
+        typeof comp.cols === 'number' && typeof comp.rows === 'number' ? comp.cols * comp.rows : 0;
       if (comp.cells.length !== expectedLength) {
         errors.push(
           `compartments.cells length must equal cols × rows (expected ${expectedLength}, got ${comp.cells.length})`

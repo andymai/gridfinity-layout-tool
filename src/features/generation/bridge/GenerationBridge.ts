@@ -31,6 +31,12 @@ export interface ExportResult {
   readonly format: ExportFormat;
 }
 
+/** Result from a successful dividers export */
+export interface DividersExportResult {
+  readonly data: ArrayBuffer;
+  readonly fileName: string;
+}
+
 /**
  * GenerationBridge manages a single Web Worker instance for geometry generation.
  *
@@ -52,6 +58,9 @@ export class GenerationBridge {
   private pendingExportResolve: ((result: ExportResult) => void) | null = null;
   private pendingExportReject: ((error: Error) => void) | null = null;
   private exportRequestId: string | null = null;
+  private pendingDividersResolve: ((result: DividersExportResult) => void) | null = null;
+  private pendingDividersReject: ((error: Error) => void) | null = null;
+  private dividersRequestId: string | null = null;
   private adaptiveDebounce = new AdaptiveDebounce();
 
   /**
@@ -167,12 +176,18 @@ export class GenerationBridge {
 
     this.cancel();
 
-    // Reject pending export
+    // Reject pending exports
     if (this.pendingExportReject) {
       this.pendingExportReject(new Error('Bridge destroyed'));
       this.pendingExportResolve = null;
       this.pendingExportReject = null;
       this.exportRequestId = null;
+    }
+    if (this.pendingDividersReject) {
+      this.pendingDividersReject(new Error('Bridge destroyed'));
+      this.pendingDividersResolve = null;
+      this.pendingDividersReject = null;
+      this.dividersRequestId = null;
     }
 
     if (this.worker) {
@@ -226,6 +241,37 @@ export class GenerationBridge {
           tolerance: options?.tolerance,
           angularTolerance: options?.angularTolerance,
         },
+      });
+    });
+  }
+
+  /**
+   * Export divider pieces as a combined STL file.
+   * Returns a Promise that resolves with the binary file data.
+   */
+  async exportDividers(params: BinParams): Promise<DividersExportResult> {
+    if (this.destroyed) {
+      throw new Error('Bridge has been destroyed');
+    }
+
+    await this.init();
+
+    // Reject any pending dividers export
+    if (this.pendingDividersReject) {
+      this.pendingDividersReject(new Error('Dividers export superseded'));
+      this.pendingDividersResolve = null;
+      this.pendingDividersReject = null;
+    }
+
+    const requestId = this.nextRequestId();
+    this.dividersRequestId = requestId;
+
+    return new Promise<DividersExportResult>((resolve, reject) => {
+      this.pendingDividersResolve = resolve;
+      this.pendingDividersReject = reject;
+      this.postMessage({
+        type: 'EXPORT_DIVIDERS',
+        payload: { params, requestId },
       });
     });
   }
@@ -287,6 +333,12 @@ export class GenerationBridge {
             this.pendingExportReject = null;
             this.exportRequestId = null;
             reject(new Error(response.error));
+          } else if (response.requestId === this.dividersRequestId && this.pendingDividersReject) {
+            const reject = this.pendingDividersReject;
+            this.pendingDividersResolve = null;
+            this.pendingDividersReject = null;
+            this.dividersRequestId = null;
+            reject(new Error(response.error));
           }
           break;
 
@@ -300,6 +352,19 @@ export class GenerationBridge {
               data: response.data,
               fileName: response.fileName,
               format: response.format,
+            });
+          }
+          break;
+
+        case 'DIVIDERS_EXPORT_RESULT':
+          if (response.requestId === this.dividersRequestId && this.pendingDividersResolve) {
+            const resolve = this.pendingDividersResolve;
+            this.pendingDividersResolve = null;
+            this.pendingDividersReject = null;
+            this.dividersRequestId = null;
+            resolve({
+              data: response.data,
+              fileName: response.fileName,
             });
           }
           break;

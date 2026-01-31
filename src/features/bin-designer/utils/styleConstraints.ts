@@ -26,15 +26,10 @@ const STYLE_CONSTRAINTS: Record<BinStyle, StyleConstraints> = {
     warnings: [],
     hasGussets: false,
   },
-  lite: {
-    disabledFeatures: [],
-    warnings: ['Thinner walls may reduce structural integrity with heavy items'],
-    hasGussets: false,
-  },
-  solid: {
-    disabledFeatures: [],
+  slotted: {
+    disabledFeatures: ['dividers', 'label'],
     warnings: [],
-    hasGussets: true,
+    hasGussets: false,
   },
 };
 

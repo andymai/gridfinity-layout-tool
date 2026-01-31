@@ -40,7 +40,7 @@ export function GhostLabelTabs() {
 
   const shouldShow =
     label.enabled &&
-    style !== 'solid' &&
+    style !== 'slotted' &&
     generationStatus === 'generating' &&
     cells.length >= rows * cols;
 

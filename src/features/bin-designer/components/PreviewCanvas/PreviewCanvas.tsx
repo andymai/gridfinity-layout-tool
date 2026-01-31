@@ -25,6 +25,8 @@ import {
   GhostWireframe,
   GhostCompartmentPreview,
   GhostLabelTabs,
+  GhostSlotLines,
+  GhostDividerPieces,
   type CameraPreset,
 } from '../preview';
 import { GradientBackground } from '../preview/GradientBackground';
@@ -459,6 +461,8 @@ export function PreviewCanvas() {
             <GhostDividers />
             <GhostCompartmentPreview />
             <GhostLabelTabs />
+            <GhostSlotLines />
+            <GhostDividerPieces />
 
             {/* Footprint grid */}
             <FootprintGrid width={width} depth={depth} />

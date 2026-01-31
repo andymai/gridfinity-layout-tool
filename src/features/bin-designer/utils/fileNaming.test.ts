@@ -78,14 +78,14 @@ describe('generateFileName', () => {
     });
 
     it('should include non-standard bin style', () => {
-      const name = generateFileName(makeParams({ style: 'lite' }), 'stl', 'descriptive');
-      expect(name).toBe('gridfinity_2x2x3_lite.stl');
+      const name = generateFileName(makeParams({ style: 'slotted' }), 'stl', 'descriptive');
+      expect(name).toBe('gridfinity_2x2x3_slotted.stl');
     });
 
     it('should combine multiple features', () => {
       const name = generateFileName(
         makeParams({
-          style: 'solid',
+          style: 'slotted',
           compartments: { cols: 2, rows: 3, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] },
           label: { enabled: true, text: 'Tools', fontSize: 'auto' },
           base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
@@ -93,7 +93,7 @@ describe('generateFileName', () => {
         'stl',
         'descriptive'
       );
-      expect(name).toBe('gridfinity_2x2x3_solid_6comp_label_magnets.stl');
+      expect(name).toBe('gridfinity_2x2x3_slotted_6comp_label_magnets.stl');
     });
 
     it('should include magnets+screws for magnet_and_screw base style', () => {

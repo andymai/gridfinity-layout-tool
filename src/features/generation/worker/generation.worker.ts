@@ -14,8 +14,9 @@
 import { setOC } from 'replicad';
 import type { WorkerMessage, WorkerResponse } from '../bridge/types';
 import type { BinParams } from '@/shared/types/bin';
-import type { ExportPayload } from '../bridge/types';
+import type { ExportPayload, ExportDividersPayload } from '../bridge/types';
 import { generateBin, exportBin } from './generators/replicadBin';
+import { exportDividers } from './generators/dividerExport';
 
 import opencascade from 'replicad-opencascadejs/src/replicad_single.js';
 import opencascadeWasm from 'replicad-opencascadejs/src/replicad_single.wasm?url';
@@ -161,6 +162,38 @@ async function handleExport(payload: ExportPayload): Promise<void> {
   }
 }
 
+/**
+ * Export pipeline for divider pieces — generates combined STL of all dividers.
+ */
+async function handleExportDividers(payload: ExportDividersPayload): Promise<void> {
+  if (!ocInitialized) {
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: 'OpenCascade not initialized',
+    });
+    return;
+  }
+
+  try {
+    const result = await exportDividers(payload.params);
+
+    const response = {
+      type: 'DIVIDERS_EXPORT_RESULT' as const,
+      requestId: payload.requestId,
+      data: result.data,
+      fileName: result.fileName,
+    };
+    self.postMessage(response, { transfer: [result.data] });
+  } catch (e) {
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: `Divider export failed: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
+}
+
 // ─── Message Handler ─────────────────────────────────────────────────────────
 
 self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
@@ -186,6 +219,10 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
 
     case 'EXPORT':
       await handleExport(message.payload);
+      break;
+
+    case 'EXPORT_DIVIDERS':
+      await handleExportDividers(message.payload);
       break;
 
     case 'CANCEL':
