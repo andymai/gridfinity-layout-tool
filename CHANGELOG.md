@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.7.1...gridfinity-layout-tool-v2.8.0) (2026-01-31)
+
+
+### Features
+
+* label tab support style and ghost previews ([#534](https://github.com/andymai/gridfinity-layout-tool/issues/534)) ([9a42fbe](https://github.com/andymai/gridfinity-layout-tool/commit/9a42fbe88bedc8dea567abb87a7f43beb44bd2a3))
+
 ## [2.7.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.7.0...gridfinity-layout-tool-v2.7.1) (2026-01-31)
 
 
