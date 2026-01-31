@@ -229,80 +229,80 @@ export function SlotConfigurator() {
         />
       </div>
 
-      {/* Thickness */}
-      <div>
-        <span className="mb-1 block text-xs text-content-tertiary">
-          {t('binDesigner.dividerThickness')}
-        </span>
-        <StepperControl
-          value={dividerPieces.thickness}
-          onChange={(v) =>
-            updateDividerPieces({
-              thickness: Math.min(
-                DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS,
-                Math.max(DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS, v)
-              ),
-            })
-          }
-          onStep={(delta) =>
-            updateDividerPieces({
-              thickness: Math.min(
-                DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS,
-                Math.max(
-                  DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS,
-                  Math.round(
-                    (dividerPieces.thickness +
-                      delta * DESIGNER_CONSTRAINTS.DIVIDER_THICKNESS_STEP) *
-                      10
-                  ) / 10
-                )
-              ),
-            })
-          }
-          min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS}
-          max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS}
-          step={DESIGNER_CONSTRAINTS.DIVIDER_THICKNESS_STEP}
-          variant="desktop"
-          ariaLabel={t('binDesigner.dividerThickness')}
-        />
-      </div>
-
-      {/* Fit tolerance */}
-      <div>
-        <span className="mb-1 block text-xs text-content-tertiary">
-          {t('binDesigner.dividerClearance')}
-        </span>
-        <StepperControl
-          value={dividerPieces.clearance}
-          onChange={(v) =>
-            updateDividerPieces({
-              clearance: Math.min(
-                DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE,
-                Math.max(DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE, v)
-              ),
-            })
-          }
-          onStep={(delta) =>
-            updateDividerPieces({
-              clearance: Math.min(
-                DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE,
-                Math.max(
-                  DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE,
-                  Math.round(
-                    (dividerPieces.clearance +
-                      delta * DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP) *
-                      100
-                  ) / 100
-                )
-              ),
-            })
-          }
-          min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE}
-          max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE}
-          step={DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP}
-          variant="desktop"
-          ariaLabel={t('binDesigner.dividerClearance')}
-        />
+      {/* Thickness + Fit tolerance side by side */}
+      <div className="flex items-end gap-2">
+        <div className="flex-1 min-w-0">
+          <span className="mb-1 block text-xs text-content-tertiary">
+            {t('binDesigner.dividerThickness')}
+          </span>
+          <StepperControl
+            value={dividerPieces.thickness}
+            onChange={(v) =>
+              updateDividerPieces({
+                thickness: Math.min(
+                  DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS,
+                  Math.max(DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS, v)
+                ),
+              })
+            }
+            onStep={(delta) =>
+              updateDividerPieces({
+                thickness: Math.min(
+                  DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS,
+                  Math.max(
+                    DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS,
+                    Math.round(
+                      (dividerPieces.thickness +
+                        delta * DESIGNER_CONSTRAINTS.DIVIDER_THICKNESS_STEP) *
+                        10
+                    ) / 10
+                  )
+                ),
+              })
+            }
+            min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS}
+            max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS}
+            step={DESIGNER_CONSTRAINTS.DIVIDER_THICKNESS_STEP}
+            variant="desktop"
+            ariaLabel={t('binDesigner.dividerThickness')}
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="mb-1 block text-xs text-content-tertiary">
+            {t('binDesigner.dividerClearance')}
+          </span>
+          <StepperControl
+            value={dividerPieces.clearance}
+            onChange={(v) =>
+              updateDividerPieces({
+                clearance: Math.min(
+                  DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE,
+                  Math.max(DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE, v)
+                ),
+              })
+            }
+            onStep={(delta) =>
+              updateDividerPieces({
+                clearance: Math.min(
+                  DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE,
+                  Math.max(
+                    DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE,
+                    Math.round(
+                      (dividerPieces.clearance +
+                        delta * DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP) *
+                        100
+                    ) / 100
+                  )
+                ),
+              })
+            }
+            min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE}
+            max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE}
+            step={DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP}
+            variant="desktop"
+            ariaLabel={t('binDesigner.dividerClearance')}
+          />
+        </div>
       </div>
 
       {/* Calculated divider dimensions */}

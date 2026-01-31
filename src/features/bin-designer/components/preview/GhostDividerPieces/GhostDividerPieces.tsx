@@ -52,7 +52,9 @@ export function GhostDividerPieces() {
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = totalH - GRIDFINITY.SOCKET_HEIGHT;
-  const floorZ = GRIDFINITY.BASE_HEIGHT;
+  // In preview space, the bin is translated up by SOCKET_HEIGHT, so the
+  // cavity floor (inner surface after shelling) is at SOCKET_HEIGHT + wallThickness.
+  const floorZ = GRIDFINITY.SOCKET_HEIGHT + wallThickness;
   const hasLip = params.base.stackingLip;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;

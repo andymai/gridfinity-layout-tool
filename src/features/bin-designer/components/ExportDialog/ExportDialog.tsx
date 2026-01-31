@@ -295,7 +295,7 @@ export function ExportDialog() {
             <button
               onClick={async () => {
                 try {
-                  await downloadDividersSTL(designName);
+                  await downloadDividersSTL(exportFileNameConfig, designName);
                   addToast({
                     message: t('binDesigner.downloadDividersSTL') + ' ✓',
                     type: 'success',

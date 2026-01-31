@@ -12,7 +12,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { getActiveBridge } from '@/shared/generation/bridge';
-import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
+import {
+  generateFileName,
+  generateDividerFileName,
+} from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import type { ExportFileNameConfig } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
@@ -27,7 +30,10 @@ interface UseExportReturn {
   /** Trigger high-quality STL download via worker */
   readonly downloadSTL: (config: ExportFileNameConfig, designName?: string) => Promise<void>;
   /** Trigger divider pieces STL download (slotted bins only) */
-  readonly downloadDividersSTL: (designName?: string) => Promise<void>;
+  readonly downloadDividersSTL: (
+    config: ExportFileNameConfig,
+    designName?: string
+  ) => Promise<void>;
   /** Whether divider export is available */
   readonly canExportDividers: boolean;
 }
@@ -95,7 +101,7 @@ export function useExport(): UseExportReturn {
    * Download divider pieces as a combined STL via worker bridge.
    */
   const downloadDividersSTL = useCallback(
-    async (designName?: string) => {
+    async (config: ExportFileNameConfig, designName?: string) => {
       const bridge = getActiveBridge();
       if (!bridge) return;
 
@@ -106,7 +112,7 @@ export function useExport(): UseExportReturn {
       try {
         const result = await bridge.exportDividers(params);
 
-        const fileName = designName ? `${designName}-divider.stl` : result.fileName;
+        const fileName = generateDividerFileName(params, config, designName);
 
         const blob = new Blob([result.data], { type: 'application/sla' });
         url = URL.createObjectURL(blob);

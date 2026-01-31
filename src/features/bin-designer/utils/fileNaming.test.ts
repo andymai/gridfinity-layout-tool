@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { generateFileName, sanitizeFileName, DEFAULT_EXPORT_FILE_NAME_CONFIG } from './fileNaming';
+import {
+  generateFileName,
+  generateDividerFileName,
+  sanitizeFileName,
+  DEFAULT_EXPORT_FILE_NAME_CONFIG,
+} from './fileNaming';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams, ExportFileNameConfig } from '../types';
 
@@ -253,6 +258,92 @@ describe('sanitizeFileName', () => {
 
   it('should leave safe characters untouched', () => {
     expect(sanitizeFileName('my-bin_v2 (copy).txt')).toBe('my-bin_v2 (copy).txt');
+  });
+});
+
+describe('generateDividerFileName', () => {
+  function makeSlottedParams(overrides: Partial<BinParams> = {}): BinParams {
+    return makeParams({
+      style: 'slotted',
+      slotConfig: {
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: false, pitch: 20 },
+        width: 2.0,
+        depth: 1.0,
+      },
+      dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.15 },
+      ...overrides,
+    });
+  }
+
+  it('should generate descriptive name with direction and piece dimensions', () => {
+    const name = generateDividerFileName(makeSlottedParams());
+    expect(name).toMatch(/^gridfinity_2x2x3_divider-horizontal_[\d.]+x[\d.]+mm\.stl$/);
+  });
+
+  it('should label vertical when y-axis is enabled', () => {
+    const name = generateDividerFileName(
+      makeSlottedParams({
+        slotConfig: {
+          x: { enabled: false, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+          width: 2.0,
+          depth: 1.0,
+        },
+      })
+    );
+    expect(name).toContain('divider-vertical');
+  });
+
+  it('should label dividers (plural) when both axes are enabled', () => {
+    const name = generateDividerFileName(
+      makeSlottedParams({
+        slotConfig: {
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+          width: 2.0,
+          depth: 1.0,
+        },
+      })
+    );
+    expect(name).toContain('dividers');
+    // Should have two dimensions joined with +
+    expect(name).toMatch(/[\d.]+x[\d.]+\+[\d.]+x[\d.]+mm/);
+  });
+
+  it('should use design name as prefix when provided', () => {
+    const name = generateDividerFileName(makeSlottedParams(), 'descriptive', 'My Screws');
+    expect(name).toMatch(/^My Screws_2x2x3_divider/);
+  });
+
+  it('should generate compact name without piece dimensions', () => {
+    const name = generateDividerFileName(makeSlottedParams(), makeConfig({ style: 'compact' }));
+    expect(name).toMatch(/^gf_2x2x3_divider-horizontal\.stl$/);
+  });
+
+  it('should use design name prefix in compact mode', () => {
+    const name = generateDividerFileName(
+      makeSlottedParams(),
+      makeConfig({ style: 'compact' }),
+      'Tools'
+    );
+    expect(name).toBe('Tools_2x2x3_divider-horizontal.stl');
+  });
+
+  it('should handle custom naming with dividers suffix', () => {
+    const name = generateDividerFileName(
+      makeSlottedParams(),
+      makeConfig({ style: 'custom', customName: 'my-parts' })
+    );
+    expect(name).toBe('my-parts_dividers.stl');
+  });
+
+  it('should fallback custom name when empty', () => {
+    const name = generateDividerFileName(
+      makeSlottedParams(),
+      makeConfig({ style: 'custom', customName: '' })
+    );
+    expect(name).toBe('gridfinity-dividers_dividers.stl');
   });
 });
 
