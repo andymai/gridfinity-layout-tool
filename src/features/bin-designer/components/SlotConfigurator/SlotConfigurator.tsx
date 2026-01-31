@@ -45,29 +45,32 @@ export function SlotConfigurator() {
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = totalH - GRIDFINITY.SOCKET_HEIGHT;
 
+  const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
+  const lipOverhang = stackingLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;
+
   // ── Slot direction / count ──────────────────────────────────────────
-  const activeDirection: SlotDirection = slotConfig.y.enabled ? 'horizontal' : 'vertical';
-  const activeAxis = activeDirection === 'vertical' ? 'x' : 'y';
+  const activeDirection: SlotDirection = slotConfig.y.enabled ? 'vertical' : 'horizontal';
+  const activeAxis = activeDirection === 'vertical' ? 'y' : 'x';
   const activePitch = slotConfig[activeAxis].pitch;
   const activeInnerDim = activeAxis === 'x' ? innerD : innerW;
 
   const slotCount = useMemo(() => {
-    return calculateSlotPositions(activeInnerDim, activePitch).length;
-  }, [activeInnerDim, activePitch]);
+    return calculateSlotPositions(activeInnerDim, activePitch, lipOverhang).length;
+  }, [activeInnerDim, activePitch, lipOverhang]);
 
   const setDirection = useCallback(
     (direction: SlotDirection) => {
       if (direction === 'vertical') {
         setParam('slotConfig', {
           ...slotConfig,
-          x: { ...slotConfig.x, enabled: true },
-          y: { ...slotConfig.y, enabled: false },
+          x: { ...slotConfig.x, enabled: false },
+          y: { ...slotConfig.y, enabled: true },
         });
       } else {
         setParam('slotConfig', {
           ...slotConfig,
-          x: { ...slotConfig.x, enabled: false },
-          y: { ...slotConfig.y, enabled: true },
+          x: { ...slotConfig.x, enabled: true },
+          y: { ...slotConfig.y, enabled: false },
         });
       }
     },
@@ -103,6 +106,14 @@ export function SlotConfigurator() {
     () => calculateDividerHeight(dividerPieces, wallHeight, stackingLip),
     [dividerPieces, wallHeight, stackingLip]
   );
+
+  // Maximum height when set to 'auto' — used for the stepper max bound
+  // so the up button stays enabled when height is below auto.
+  const maxDividerHeight = useMemo(
+    () => calculateDividerHeight({ height: 'auto' }, wallHeight, stackingLip),
+    [wallHeight, stackingLip]
+  );
+  const maxHeightRounded = Math.round(maxDividerHeight * 10) / 10;
 
   const effectiveSlotDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
 
@@ -168,7 +179,7 @@ export function SlotConfigurator() {
           max={DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH}
           step={DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP}
           variant="desktop"
-          ariaLabel="Compartment width"
+          ariaLabel={t('binDesigner.slotSpacing')}
         />
       </div>
 
@@ -180,15 +191,15 @@ export function SlotConfigurator() {
           {t('binDesigner.dividerHeight')}
         </span>
         <StepperControl
-          value={dividerPieces.height === 'auto' ? dividerHeight : dividerPieces.height}
+          value={dividerPieces.height === 'auto' ? maxDividerHeight : dividerPieces.height}
           displayValue={
             dividerPieces.height === 'auto'
-              ? `${t('binDesigner.dividerAutoHeight')} (${Math.round(dividerHeight * 10) / 10}mm)`
+              ? `${t('binDesigner.dividerAutoHeight')} (${maxHeightRounded}mm)`
               : undefined
           }
           onChange={(v) => {
             const rounded = Math.round(v * 10) / 10;
-            if (rounded >= Math.round(dividerHeight * 10) / 10) {
+            if (rounded >= maxHeightRounded) {
               updateDividerPieces({ height: 'auto' });
             } else {
               updateDividerPieces({ height: Math.max(5, rounded) });
@@ -198,13 +209,12 @@ export function SlotConfigurator() {
             if (dividerPieces.height === 'auto') {
               if (delta < 0) {
                 updateDividerPieces({
-                  height: Math.round((dividerHeight + delta) * 10) / 10,
+                  height: Math.round((maxDividerHeight + delta) * 10) / 10,
                 });
               }
             } else {
               const next = Math.round((dividerPieces.height + delta) * 10) / 10;
-              const maxRounded = Math.round(dividerHeight * 10) / 10;
-              if (next >= maxRounded) {
+              if (next >= maxHeightRounded) {
                 updateDividerPieces({ height: 'auto' });
               } else {
                 updateDividerPieces({ height: Math.max(5, next) });
@@ -212,10 +222,10 @@ export function SlotConfigurator() {
             }
           }}
           min={5}
-          max={Math.round(dividerHeight * 10) / 10}
+          max={maxHeightRounded}
           step={1}
           variant="desktop"
-          ariaLabel="Divider height"
+          ariaLabel={t('binDesigner.dividerHeight')}
         />
       </div>
 
@@ -253,7 +263,7 @@ export function SlotConfigurator() {
           max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS}
           step={DESIGNER_CONSTRAINTS.DIVIDER_THICKNESS_STEP}
           variant="desktop"
-          ariaLabel="Divider thickness"
+          ariaLabel={t('binDesigner.dividerThickness')}
         />
       </div>
 
@@ -291,7 +301,7 @@ export function SlotConfigurator() {
           max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE}
           step={DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP}
           variant="desktop"
-          ariaLabel="Divider fit tolerance"
+          ariaLabel={t('binDesigner.dividerClearance')}
         />
       </div>
 
