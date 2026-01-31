@@ -10,7 +10,6 @@ import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { DimensionsIcon } from '../SectionIllustrations';
 import { useDimensionsSection } from './useDimensionsSection';
 
 export function DimensionsSection() {
@@ -20,7 +19,6 @@ export function DimensionsSection() {
     <CollapsibleSection
       title={t('binDesigner.dimensions')}
       defaultExpanded={true}
-      illustration={<DimensionsIcon />}
       summary={meta.summary}
     >
       <div className="space-y-3">

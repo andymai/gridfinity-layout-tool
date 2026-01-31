@@ -8,7 +8,6 @@
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
-import { InteriorIcon } from '../SectionIllustrations';
 import type { BinStyle } from '../../../types';
 import { useInteriorSection } from './useInteriorSection';
 
@@ -21,7 +20,6 @@ export function InteriorSection() {
     <CollapsibleSection
       title={t('binDesigner.interior')}
       defaultExpanded={true}
-      illustration={<InteriorIcon />}
       summary={meta.summary}
     >
       <div className="space-y-3">

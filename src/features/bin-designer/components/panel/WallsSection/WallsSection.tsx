@@ -7,7 +7,6 @@
 
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { SnappingSlider } from '../../controls/SnappingSlider';
-import { WallsIcon } from '../SectionIllustrations';
 import { useWallsSection } from './useWallsSection';
 
 export function WallsSection() {
@@ -17,7 +16,6 @@ export function WallsSection() {
     <CollapsibleSection
       title={t('binDesigner.walls')}
       defaultExpanded={true}
-      illustration={<WallsIcon />}
       summary={meta.summary}
     >
       <SnappingSlider

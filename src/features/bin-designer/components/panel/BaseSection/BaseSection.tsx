@@ -9,7 +9,6 @@ import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { SliderInput } from '../../controls/SliderInput';
 import { FeatureToggle } from '../FeatureToggle';
-import { BaseIcon } from '../SectionIllustrations';
 import { useTranslation } from '@/i18n';
 import { useBaseSection } from './useBaseSection';
 
@@ -18,12 +17,7 @@ export function BaseSection() {
   const t = useTranslation();
 
   return (
-    <CollapsibleSection
-      title={t('binDesigner.base')}
-      defaultExpanded={true}
-      illustration={<BaseIcon />}
-      summary={meta.summary}
-    >
+    <CollapsibleSection title={t('binDesigner.base')} defaultExpanded={true} summary={meta.summary}>
       <div className="space-y-1">
         <FeatureToggle
           label="Stacking lip"

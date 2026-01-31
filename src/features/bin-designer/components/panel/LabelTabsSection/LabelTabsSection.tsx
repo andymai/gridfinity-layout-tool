@@ -8,7 +8,6 @@
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { LabelTabsIcon } from '../SectionIllustrations';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
 import { useLabelTabsSection } from './useLabelTabsSection';
@@ -20,12 +19,7 @@ export function LabelTabsSection() {
   const { state, handlers, meta, t } = useLabelTabsSection();
 
   return (
-    <CollapsibleSection
-      title={t('binDesigner.labelTabs')}
-      defaultExpanded
-      illustration={<LabelTabsIcon />}
-      summary={meta.summary}
-    >
+    <CollapsibleSection title={t('binDesigner.labelTabs')} defaultExpanded summary={meta.summary}>
       <FeatureToggle
         label={t('binDesigner.labelTabs')}
         checked={state.label.enabled}
