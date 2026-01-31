@@ -79,6 +79,13 @@ export function buildSlotCuts(
 
   const slots: Shape3D[] = [];
 
+  // The bin floor plate extends from Z=0 to Z=wallThickness (shell thickness).
+  // Wall slots must start at the floor surface, not Z=0, to avoid cutting
+  // through the floor into the socket below.
+  const floorZ = params.wallThickness;
+  const slotHeight = wallHeight - floorZ;
+  if (slotHeight <= 0) return null;
+
   // Lip overhang: the lip taper extends inward past the inner wall surface.
   // Only cut the interior overhang — leave the outer rim intact.
   // overhang = lipTaperWidth - wallThickness (e.g. 2.6 - 0.95 = 1.65mm)
@@ -96,16 +103,16 @@ export function buildSlotCuts(
   if (slotConfig.x.enabled) {
     const positions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
     for (const yPos of positions) {
-      // Wall slots (narrow, for tab engagement)
+      // Wall slots (narrow, for tab engagement) — start at floor surface
       const leftSlot = (
         drawRectangle(slotDepth, slotWidth).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(wallHeight) as Shape3D;
-      slots.push(leftSlot.translate([-innerW / 2 - slotDepth / 2, yPos, 0]));
+      ).extrude(slotHeight) as Shape3D;
+      slots.push(leftSlot.translate([-innerW / 2 - slotDepth / 2, yPos, floorZ]));
 
       const rightSlot = (
         drawRectangle(slotDepth, slotWidth).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(wallHeight) as Shape3D;
-      slots.push(rightSlot.translate([innerW / 2 + slotDepth / 2, yPos, 0]));
+      ).extrude(slotHeight) as Shape3D;
+      slots.push(rightSlot.translate([innerW / 2 + slotDepth / 2, yPos, floorZ]));
 
       // Lip cutouts: remove the interior overhang above AND below wallHeight.
       // The lip profile extends below wallHeight (wall-replacement extension),
@@ -128,16 +135,16 @@ export function buildSlotCuts(
   if (slotConfig.y.enabled) {
     const positions = calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang);
     for (const xPos of positions) {
-      // Wall slots (narrow)
+      // Wall slots (narrow) — start at floor surface
       const frontSlot = (
         drawRectangle(slotWidth, slotDepth).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(wallHeight) as Shape3D;
-      slots.push(frontSlot.translate([xPos, -innerD / 2 - slotDepth / 2, 0]));
+      ).extrude(slotHeight) as Shape3D;
+      slots.push(frontSlot.translate([xPos, -innerD / 2 - slotDepth / 2, floorZ]));
 
       const backSlot = (
         drawRectangle(slotWidth, slotDepth).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(wallHeight) as Shape3D;
-      slots.push(backSlot.translate([xPos, innerD / 2 + slotDepth / 2, 0]));
+      ).extrude(slotHeight) as Shape3D;
+      slots.push(backSlot.translate([xPos, innerD / 2 + slotDepth / 2, floorZ]));
 
       // Lip cutouts: remove the interior overhang (same Z range as X-axis)
       if (lipInfo && lipOverhang > 0) {
