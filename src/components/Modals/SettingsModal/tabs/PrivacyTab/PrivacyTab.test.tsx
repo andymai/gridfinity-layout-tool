@@ -39,10 +39,4 @@ describe('PrivacyTab', () => {
     render(<PrivacyTab />);
     expect(screen.getByText('settings.helpImprove')).toBeInTheDocument();
   });
-
-  it('renders legal links', () => {
-    render(<PrivacyTab />);
-    expect(screen.getByText('settings.privacyPolicy')).toBeInTheDocument();
-    expect(screen.getByText('settings.termsOfService')).toBeInTheDocument();
-  });
 });

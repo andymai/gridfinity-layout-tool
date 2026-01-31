@@ -90,4 +90,10 @@ describe('SettingsModal', () => {
     render(<SettingsModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByText('settings.resetTabDefaults')).toBeInTheDocument();
   });
+
+  it('renders legal links in footer', () => {
+    render(<SettingsModal isOpen={true} onClose={vi.fn()} />);
+    expect(screen.getByText('settings.privacyPolicy')).toBeInTheDocument();
+    expect(screen.getByText('settings.termsOfService')).toBeInTheDocument();
+  });
 });

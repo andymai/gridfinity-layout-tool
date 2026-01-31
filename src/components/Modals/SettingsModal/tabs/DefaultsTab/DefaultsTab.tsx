@@ -4,6 +4,8 @@ import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORIES } from '@/core/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { useTranslation } from '@/i18n';
@@ -45,117 +47,111 @@ export function DefaultsTab() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Dimension Defaults */}
       <section>
-        <h3 className="text-base font-semibold text-content mb-3">
+        <h3 className="text-base font-semibold text-content mb-1">
           {t('settings.defaultPreferences')}
         </h3>
-        <p className="text-sm text-content-tertiary mb-4">{t('settings.defaultPreferencesHint')}</p>
+        <p className="text-xs text-content-tertiary mb-3">{t('settings.defaultPreferencesHint')}</p>
 
-        <div className="space-y-4">
-          {/* Width */}
-          <div>
-            <label className="block text-sm text-content-secondary mb-1">
-              {t('settings.defaultDrawerWidth')}
-            </label>
-            <StepperControl
-              value={settings.defaultDrawerWidth}
-              onStep={(delta) =>
-                updateSetting(
-                  'defaultDrawerWidth',
-                  Math.max(
-                    CONSTRAINTS.GRID_MIN,
-                    Math.min(CONSTRAINTS.GRID_MAX, settings.defaultDrawerWidth + delta * 0.5)
+        <div className="text-xs text-content-secondary space-y-3">
+          {/* Width / Depth / Height in compact 3-column grid */}
+          <div className="grid grid-cols-3 gap-1.5">
+            <div>
+              <label className="block text-content-tertiary mb-1">
+                {t('settings.defaultDrawerWidth')}
+              </label>
+              <StepperControl
+                value={settings.defaultDrawerWidth}
+                onChange={(value) =>
+                  updateSetting(
+                    'defaultDrawerWidth',
+                    Math.max(CONSTRAINTS.GRID_MIN, Math.min(CONSTRAINTS.GRID_MAX, value))
                   )
-                )
-              }
-              onChange={(value) =>
-                updateSetting(
-                  'defaultDrawerWidth',
-                  Math.max(CONSTRAINTS.GRID_MIN, Math.min(CONSTRAINTS.GRID_MAX, value))
-                )
-              }
-              min={CONSTRAINTS.GRID_MIN}
-              max={CONSTRAINTS.GRID_MAX}
-              step={0.5}
-              variant="desktop"
-              ariaLabel={t('settings.defaultDrawerWidth')}
-              displayValue={`${settings.defaultDrawerWidth}u`}
-            />
-          </div>
-
-          {/* Depth */}
-          <div>
-            <label className="block text-sm text-content-secondary mb-1">
-              {t('settings.defaultDrawerDepth')}
-            </label>
-            <StepperControl
-              value={settings.defaultDrawerDepth}
-              onStep={(delta) =>
-                updateSetting(
-                  'defaultDrawerDepth',
-                  Math.max(
-                    CONSTRAINTS.GRID_MIN,
-                    Math.min(CONSTRAINTS.GRID_MAX, settings.defaultDrawerDepth + delta * 0.5)
+                }
+                onStep={(delta) =>
+                  updateSetting(
+                    'defaultDrawerWidth',
+                    Math.max(
+                      CONSTRAINTS.GRID_MIN,
+                      Math.min(CONSTRAINTS.GRID_MAX, settings.defaultDrawerWidth + delta * 0.5)
+                    )
                   )
-                )
-              }
-              onChange={(value) =>
-                updateSetting(
-                  'defaultDrawerDepth',
-                  Math.max(CONSTRAINTS.GRID_MIN, Math.min(CONSTRAINTS.GRID_MAX, value))
-                )
-              }
-              min={CONSTRAINTS.GRID_MIN}
-              max={CONSTRAINTS.GRID_MAX}
-              step={0.5}
-              variant="desktop"
-              ariaLabel={t('settings.defaultDrawerDepth')}
-              displayValue={`${settings.defaultDrawerDepth}u`}
-            />
+                }
+                min={CONSTRAINTS.GRID_MIN}
+                max={CONSTRAINTS.GRID_MAX}
+                step={0.5}
+                variant="compact"
+                ariaLabel={t('settings.defaultDrawerWidth')}
+              />
+            </div>
+            <div>
+              <label className="block text-content-tertiary mb-1">
+                {t('settings.defaultDrawerDepth')}
+              </label>
+              <StepperControl
+                value={settings.defaultDrawerDepth}
+                onChange={(value) =>
+                  updateSetting(
+                    'defaultDrawerDepth',
+                    Math.max(CONSTRAINTS.GRID_MIN, Math.min(CONSTRAINTS.GRID_MAX, value))
+                  )
+                }
+                onStep={(delta) =>
+                  updateSetting(
+                    'defaultDrawerDepth',
+                    Math.max(
+                      CONSTRAINTS.GRID_MIN,
+                      Math.min(CONSTRAINTS.GRID_MAX, settings.defaultDrawerDepth + delta * 0.5)
+                    )
+                  )
+                }
+                min={CONSTRAINTS.GRID_MIN}
+                max={CONSTRAINTS.GRID_MAX}
+                step={0.5}
+                variant="compact"
+                ariaLabel={t('settings.defaultDrawerDepth')}
+              />
+            </div>
+            <div>
+              <label className="block text-content-tertiary mb-1">
+                {t('settings.defaultDrawerHeight')}
+              </label>
+              <StepperControl
+                value={settings.defaultDrawerHeight}
+                onChange={(value) =>
+                  updateSetting(
+                    'defaultDrawerHeight',
+                    Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, value))
+                  )
+                }
+                onStep={(delta) =>
+                  updateSetting(
+                    'defaultDrawerHeight',
+                    Math.max(
+                      1,
+                      Math.min(CONSTRAINTS.GRID_MAX, settings.defaultDrawerHeight + delta)
+                    )
+                  )
+                }
+                min={1}
+                max={CONSTRAINTS.GRID_MAX}
+                variant="compact"
+                ariaLabel={t('settings.defaultDrawerHeight')}
+              />
+            </div>
           </div>
 
-          {/* Height */}
-          <div>
-            <label className="block text-sm text-content-secondary mb-1">
-              {t('settings.defaultDrawerHeight')}
-            </label>
-            <StepperControl
-              value={settings.defaultDrawerHeight}
-              onStep={(delta) =>
-                updateSetting(
-                  'defaultDrawerHeight',
-                  Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, settings.defaultDrawerHeight + delta))
-                )
-              }
-              onChange={(value) =>
-                updateSetting(
-                  'defaultDrawerHeight',
-                  Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, value))
-                )
-              }
-              min={1}
-              max={CONSTRAINTS.GRID_MAX}
-              variant="desktop"
-              ariaLabel={t('settings.defaultDrawerHeight')}
-              displayValue={`${settings.defaultDrawerHeight}u`}
-            />
-          </div>
-
-          {/* Layer Height */}
-          <div>
-            <label className="block text-sm text-content-secondary mb-1">
-              {t('settings.defaultLayerHeight')}
-            </label>
-            <StepperControl
+          {/* Layer Height / Print Bed / Grid Unit as SettingsRow */}
+          <SettingsRow
+            label={t('settings.defaultLayerHeight')}
+            htmlFor="defaultLayerHeight"
+            unit="u"
+          >
+            <DeferredNumberInput
+              id="defaultLayerHeight"
               value={settings.defaultLayerHeight}
-              onStep={(delta) =>
-                updateSetting(
-                  'defaultLayerHeight',
-                  Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, settings.defaultLayerHeight + delta))
-                )
-              }
               onChange={(value) =>
                 updateSetting(
                   'defaultLayerHeight',
@@ -164,60 +160,38 @@ export function DefaultsTab() {
               }
               min={1}
               max={CONSTRAINTS.GRID_MAX}
-              variant="desktop"
-              ariaLabel={t('settings.defaultLayerHeight')}
-              displayValue={`${settings.defaultLayerHeight}u`}
+              className="input w-14 py-0.5 px-1 text-xs text-right"
             />
-          </div>
-
-          {/* Print Bed */}
-          <div>
-            <label className="block text-sm text-content-secondary mb-1">
-              {t('settings.defaultPrintBedSize')}
-            </label>
-            <StepperControl
+          </SettingsRow>
+          <SettingsRow
+            label={t('settings.defaultPrintBedSize')}
+            htmlFor="defaultPrintBed"
+            unit="mm"
+          >
+            <DeferredNumberInput
+              id="defaultPrintBed"
               value={settings.defaultPrintBedSize}
-              onStep={(delta) =>
-                updateSetting(
-                  'defaultPrintBedSize',
-                  Math.max(42, Math.min(500, settings.defaultPrintBedSize + delta * 10))
-                )
-              }
               onChange={(value) =>
                 updateSetting('defaultPrintBedSize', Math.max(42, Math.min(500, value)))
               }
               min={42}
               max={500}
               step={10}
-              variant="desktop"
-              ariaLabel={t('settings.defaultPrintBedSize')}
-              displayValue={`${settings.defaultPrintBedSize}mm`}
+              className="input w-14 py-0.5 px-1 text-xs text-right"
             />
-          </div>
-
-          {/* Grid Unit */}
-          <div>
-            <label className="block text-sm text-content-secondary mb-1">
-              {t('settings.defaultGridUnit')}
-            </label>
-            <StepperControl
+          </SettingsRow>
+          <SettingsRow label={t('settings.defaultGridUnit')} htmlFor="defaultGridUnit" unit="mm">
+            <DeferredNumberInput
+              id="defaultGridUnit"
               value={settings.defaultGridUnitMm}
-              onStep={(delta) =>
-                updateSetting(
-                  'defaultGridUnitMm',
-                  Math.max(1, Math.min(200, settings.defaultGridUnitMm + delta))
-                )
-              }
               onChange={(value) =>
                 updateSetting('defaultGridUnitMm', Math.max(1, Math.min(200, value)))
               }
               min={1}
               max={200}
-              variant="desktop"
-              ariaLabel={t('settings.defaultGridUnit')}
-              displayValue={`${settings.defaultGridUnitMm}mm`}
+              className="input w-14 py-0.5 px-1 text-xs text-right"
             />
-          </div>
+          </SettingsRow>
         </div>
 
         {/* Copy from current layout */}
@@ -234,10 +208,10 @@ export function DefaultsTab() {
 
       {/* Default Categories Section */}
       <section>
-        <h3 className="text-base font-semibold text-content mb-3">
+        <h3 className="text-base font-semibold text-content mb-1">
           {t('settings.defaultCategories')}
         </h3>
-        <p className="text-sm text-content-tertiary mb-3">{t('settings.defaultCategoriesHint')}</p>
+        <p className="text-xs text-content-tertiary mb-3">{t('settings.defaultCategoriesHint')}</p>
         <div className="text-sm text-content-secondary mb-4 p-3 rounded-lg bg-surface-elevated border border-stroke-subtle">
           <div className="text-xs text-content-tertiary mb-2">
             {hasCustomCategoryDefaults

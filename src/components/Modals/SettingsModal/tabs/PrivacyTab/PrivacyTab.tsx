@@ -54,32 +54,6 @@ export function PrivacyTab() {
           <Checkbox checked={analyticsEnabled} variant="desktop" />
         </div>
       </section>
-
-      {/* Divider */}
-      <hr className="border-stroke-subtle" />
-
-      {/* Legal Links */}
-      <section>
-        <div className="text-xs text-content-disabled space-x-3">
-          <a
-            href="/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-content-tertiary transition-colors"
-          >
-            {t('settings.privacyPolicy')}
-          </a>
-          <span>·</span>
-          <a
-            href="/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-content-tertiary transition-colors"
-          >
-            {t('settings.termsOfService')}
-          </a>
-        </div>
-      </section>
     </div>
   );
 }

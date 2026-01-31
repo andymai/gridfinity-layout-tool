@@ -137,14 +137,33 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
           </div>
         </div>
 
-        {/* Footer with reset */}
-        <div className="px-6 py-3 border-t border-stroke-subtle">
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-3 border-t border-stroke-subtle">
           <button
             onClick={() => setShowResetConfirm(true)}
-            className="text-sm text-content-tertiary hover:text-content transition-colors"
+            className="text-xs text-content-tertiary hover:text-content transition-colors"
           >
             {t('settings.resetTabDefaults')}
           </button>
+          <div className="text-xs text-content-disabled space-x-3">
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-content-tertiary transition-colors"
+            >
+              {t('settings.privacyPolicy')}
+            </a>
+            <span>·</span>
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-content-tertiary transition-colors"
+            >
+              {t('settings.termsOfService')}
+            </a>
+          </div>
         </div>
 
         <ConfirmDialog
