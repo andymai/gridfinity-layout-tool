@@ -89,7 +89,7 @@ export function GhostDividers() {
   const material = useMemo(() => {
     if (!shouldShow || (cols <= 1 && rows <= 1)) return null;
 
-    const mat = new LineMaterial({
+    return new LineMaterial({
       color: new THREE.Color(GHOST_COLOR).getHex(),
       linewidth: LINE_WIDTH,
       transparent: true,
@@ -97,9 +97,12 @@ export function GhostDividers() {
       depthTest: true,
       resolution: new THREE.Vector2(canvasWidth, canvasHeight),
     });
-    materialRef.current = mat;
-    return mat;
   }, [shouldShow, cols, rows, canvasWidth, canvasHeight]);
+
+  // Sync material ref after render (not during render)
+  useEffect(() => {
+    materialRef.current = material;
+  }, [material]);
 
   // Update resolution on resize
   useFrame(() => {
