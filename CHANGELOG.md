@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.11.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.10.1...gridfinity-layout-tool-v2.11.0) (2026-01-31)
+
+
+### Features
+
+* improve divider export with descriptive filenames ([fd78b59](https://github.com/andymai/gridfinity-layout-tool/commit/fd78b5931edc64e8b3ac1790b12b72a5db1399df))
+* show disabled label tabs with explanation instead of hiding ([72b3779](https://github.com/andymai/gridfinity-layout-tool/commit/72b3779048b3da4cc7829111a71fd212e5ade6cb))
+* slotted bin style with removable dividers and reference preview ([52fa740](https://github.com/andymai/gridfinity-layout-tool/commit/52fa740c708817c0a8116810835032daa7bd36be))
+
+
+### Bug Fixes
+
+* address PR review comments ([ef7e21b](https://github.com/andymai/gridfinity-layout-tool/commit/ef7e21b288d863559085f70e7aa08f64c58911e2))
+* divider height stepper stuck after decreasing from auto ([36815f9](https://github.com/andymai/gridfinity-layout-tool/commit/36815f922bfff88e0e4250411b9ff5c928eaa717))
+* make direction toggle compact and inline ([2f4cc14](https://github.com/andymai/gridfinity-layout-tool/commit/2f4cc14c245f54067ee0b2e643e56cb3e69467f2))
+* orient divider STL flat for FDM printing ([7cfb643](https://github.com/andymai/gridfinity-layout-tool/commit/7cfb643f8a44475eb48aa6aad2050096d62fad6b))
+* rename slot spacing to compartment width for clarity ([1cf2b3b](https://github.com/andymai/gridfinity-layout-tool/commit/1cf2b3b328cb9b014b776682b1d2149b95913178))
+* start wall slot cuts at floor surface, not socket interface ([d006f59](https://github.com/andymai/gridfinity-layout-tool/commit/d006f59c8a1ec28c66e397a2f851987040110bff))
+
 ## [2.10.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.10.0...gridfinity-layout-tool-v2.10.1) (2026-01-31)
 
 
