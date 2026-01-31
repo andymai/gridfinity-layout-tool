@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.8.0...gridfinity-layout-tool-v2.9.0) (2026-01-31)
+
+
+### Features
+
+* rename Grid Editor to Grid Planner and localize help modal ([#538](https://github.com/andymai/gridfinity-layout-tool/issues/538)) ([34e8484](https://github.com/andymai/gridfinity-layout-tool/commit/34e848446af3e3e2a655458df6b699c959f80e04))
+
 ## [2.8.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.7.1...gridfinity-layout-tool-v2.8.0) (2026-01-31)
 
 
