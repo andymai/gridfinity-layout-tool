@@ -41,7 +41,7 @@ export function DefaultsTab() {
     updateSetting('defaultPrintBedSize', printBedSize);
     updateSetting('defaultGridUnitMm', gridUnitMm);
     setShowCopyConfirm(false);
-    addToast(t('settings.resetDefaults'), 'success');
+    addToast(t('settings.copiedFromLayout'), 'success');
   };
 
   return (
@@ -129,6 +129,12 @@ export function DefaultsTab() {
                   Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, settings.defaultDrawerHeight + delta))
                 )
               }
+              onChange={(value) =>
+                updateSetting(
+                  'defaultDrawerHeight',
+                  Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, value))
+                )
+              }
               min={1}
               max={CONSTRAINTS.GRID_MAX}
               variant="desktop"
@@ -148,6 +154,12 @@ export function DefaultsTab() {
                 updateSetting(
                   'defaultLayerHeight',
                   Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, settings.defaultLayerHeight + delta))
+                )
+              }
+              onChange={(value) =>
+                updateSetting(
+                  'defaultLayerHeight',
+                  Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, value))
                 )
               }
               min={1}
@@ -171,6 +183,9 @@ export function DefaultsTab() {
                   Math.max(42, Math.min(500, settings.defaultPrintBedSize + delta * 10))
                 )
               }
+              onChange={(value) =>
+                updateSetting('defaultPrintBedSize', Math.max(42, Math.min(500, value)))
+              }
               min={42}
               max={500}
               step={10}
@@ -192,6 +207,9 @@ export function DefaultsTab() {
                   'defaultGridUnitMm',
                   Math.max(1, Math.min(200, settings.defaultGridUnitMm + delta))
                 )
+              }
+              onChange={(value) =>
+                updateSetting('defaultGridUnitMm', Math.max(1, Math.min(200, value)))
               }
               min={1}
               max={200}

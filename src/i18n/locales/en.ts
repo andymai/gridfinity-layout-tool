@@ -681,6 +681,7 @@ const en: Record<string, string> = {
   'settings.defaultPrintBedSize': 'Print Bed',
   'settings.defaultGridUnit': 'Grid Unit',
   'settings.resetGeneral': 'Language reset to auto',
+  'settings.copiedFromLayout': 'Defaults copied from current layout',
   'settings.resetDefaults': 'Default dimensions reset',
   'settings.resetIntegrations': 'Search sites restored',
   'settings.resetPrivacy': 'Analytics re-enabled',
