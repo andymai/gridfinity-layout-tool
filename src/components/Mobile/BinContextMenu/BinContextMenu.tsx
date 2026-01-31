@@ -196,7 +196,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
                 />
               </svg>
             }
-            label={t('mobile.binMenu.duplicate')}
+            label={t('common.duplicate')}
             onClick={handleDuplicate}
           />
         )}

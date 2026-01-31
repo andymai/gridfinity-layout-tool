@@ -434,7 +434,7 @@ export function LayersTab() {
           name: layerToDelete?.name || '',
           count: binsInLayer,
         })}
-        confirmText={t('layers.confirmDelete.confirm')}
+        confirmText={t('common.delete')}
         destructive
         onConfirm={confirmDeleteLayer}
         onCancel={cancelDeleteLayer}

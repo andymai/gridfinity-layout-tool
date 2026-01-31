@@ -59,9 +59,7 @@ export function DefaultsTab() {
           {/* Width / Depth / Height in compact 3-column grid */}
           <div className="grid grid-cols-3 gap-1.5">
             <div>
-              <label className="block text-content-tertiary mb-1">
-                {t('settings.defaultDrawerWidth')}
-              </label>
+              <label className="block text-content-tertiary mb-1">{t('common.width')}</label>
               <StepperControl
                 value={settings.defaultDrawerWidth}
                 onChange={(value) =>
@@ -83,13 +81,11 @@ export function DefaultsTab() {
                 max={CONSTRAINTS.GRID_MAX}
                 step={0.5}
                 variant="compact"
-                ariaLabel={t('settings.defaultDrawerWidth')}
+                ariaLabel={t('common.width')}
               />
             </div>
             <div>
-              <label className="block text-content-tertiary mb-1">
-                {t('settings.defaultDrawerDepth')}
-              </label>
+              <label className="block text-content-tertiary mb-1">{t('common.depth')}</label>
               <StepperControl
                 value={settings.defaultDrawerDepth}
                 onChange={(value) =>
@@ -111,13 +107,11 @@ export function DefaultsTab() {
                 max={CONSTRAINTS.GRID_MAX}
                 step={0.5}
                 variant="compact"
-                ariaLabel={t('settings.defaultDrawerDepth')}
+                ariaLabel={t('common.depth')}
               />
             </div>
             <div>
-              <label className="block text-content-tertiary mb-1">
-                {t('settings.defaultDrawerHeight')}
-              </label>
+              <label className="block text-content-tertiary mb-1">{t('common.height')}</label>
               <StepperControl
                 value={settings.defaultDrawerHeight}
                 onChange={(value) =>
@@ -138,7 +132,7 @@ export function DefaultsTab() {
                 min={1}
                 max={CONSTRAINTS.GRID_MAX}
                 variant="compact"
-                ariaLabel={t('settings.defaultDrawerHeight')}
+                ariaLabel={t('common.height')}
               />
             </div>
           </div>
@@ -278,7 +272,7 @@ export function DefaultsTab() {
         message={`${t('settings.confirmSaveCategories.message', {
           count: currentCategories.length,
         })}\n\n${currentCategories.map((c) => c.name).join(', ')}`}
-        confirmText={t('settings.confirmSaveCategories.confirm')}
+        confirmText={t('common.save')}
         onConfirm={handleSaveCategoriesAsDefaults}
         onCancel={() => setShowSaveCategoriesConfirm(false)}
       />

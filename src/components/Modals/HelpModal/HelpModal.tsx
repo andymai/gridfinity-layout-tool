@@ -96,8 +96,8 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     icon: <CommandIcon />,
     shortcuts: [
       { keys: 'K', descriptionKey: 'help.shortcut.commandPalette', modifier: true },
-      { keys: formatKey(SHORTCUTS.UNDO), descriptionKey: 'help.shortcut.undo', modifier: true },
-      { keys: formatKey(SHORTCUTS.REDO), descriptionKey: 'help.shortcut.redo', modifier: true },
+      { keys: formatKey(SHORTCUTS.UNDO), descriptionKey: 'common.undo', modifier: true },
+      { keys: formatKey(SHORTCUTS.REDO), descriptionKey: 'common.redo', modifier: true },
       { keys: formatKey(SHORTCUTS.HELP), descriptionKey: 'help.shortcut.showHelp' },
       { keys: formatKey(SHORTCUTS.ESCAPE), descriptionKey: 'help.shortcut.cancelDeselect' },
       { keys: SHORTCUTS.TOOL_SWITCH, descriptionKey: 'help.shortcut.toolSwitch', shift: true },

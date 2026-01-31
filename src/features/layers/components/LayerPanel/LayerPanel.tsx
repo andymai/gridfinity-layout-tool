@@ -272,7 +272,7 @@ export function LayerPanel() {
 
   return (
     <div>
-      <CollapsibleSection title={t('layers.title')} variant="default" actions={addLayerButton}>
+      <CollapsibleSection title={t('common.layers')} variant="default" actions={addLayerButton}>
         {/* Height capacity indicator - only show for multiple layers */}
         {hasMultipleLayers && (
           <div className="flex items-center gap-2 mb-3">
@@ -530,7 +530,7 @@ export function LayerPanel() {
           name: layerToDelete?.name || '',
           count: binsInDeleteLayer,
         })}
-        confirmText={t('layers.confirmDelete.confirm')}
+        confirmText={t('common.delete')}
         destructive
         onConfirm={handleDeleteLayer}
         onCancel={() => setDeleteLayerId(null)}

@@ -329,7 +329,7 @@ export function MobileSettingsPanel() {
           printBed: printBedSize,
           gridUnit: gridUnitMm,
         })}
-        confirmText={t('settings.confirmSaveDefaults.confirm')}
+        confirmText={t('common.save')}
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />

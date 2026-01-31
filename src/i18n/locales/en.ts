@@ -56,6 +56,7 @@ const en: Record<string, string> = {
   'common.add': 'Add',
   'common.moreOptions': 'More options',
   'common.category': 'Category',
+  'common.categories': 'Categories',
   'common.color': 'Color',
   'common.depth': 'Depth',
   'common.empty': 'empty',
@@ -175,7 +176,6 @@ const en: Record<string, string> = {
   'sidebar.physicalUnits': 'Physical Units',
   'sidebar.bottom': 'Bottom',
   'sidebar.collapseLeftPanel': 'Collapse left panel',
-  'sidebar.depth5': 'Depth',
   'sidebar.expandLeftPanel': 'Expand left panel',
   'sidebar.gridfinityBy': 'Gridfinity by',
   'sidebar.halfUnitEdgePosition': 'Half-unit edge position',
@@ -187,7 +187,6 @@ const en: Record<string, string> = {
   'sidebar.toggleHalfBinMode': 'Toggle half-bin mode',
   'sidebar.toolBy': 'Tool by',
   'sidebar.top': 'Top',
-  'sidebar.width5': 'Width',
 
   // ===========================================================================
   // Right Panel (Bin List)
@@ -223,9 +222,6 @@ const en: Record<string, string> = {
   'inspector.category': 'Category',
   'inspector.label': 'Label',
   'inspector.notes': 'Notes',
-  'inspector.width': 'Width',
-  'inspector.depth': 'Depth',
-  'inspector.height': 'Height',
   'inspector.clearance': 'Clearance',
   'inspector.clearanceTooltip': 'Extra blocked space above for tall contents',
   'inspector.swapDimensions': 'Swap width ↔ depth (R)',
@@ -293,14 +289,12 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Layers
   // ===========================================================================
-  'layers.title': 'Layers',
   'layers.addLayer': 'Add Layer',
   'layers.heightTooltip': 'Height for new bins placed on this layer',
   'layers.deleteTooltip': 'Delete this layer',
   'layers.confirmDelete.title': 'Delete Layer',
   'layers.confirmDelete.message':
     'Delete "{name}"? The {count} bin(s) on this layer will be moved to the Stash.',
-  'layers.confirmDelete.confirm': 'Delete',
   'layers.clearLayer.title': 'Clear Layer',
   'layers.clearLayer.message': 'Move all {count} bin(s) on this layer to the stash?',
   'layers.clearLayer.confirm': 'Clear',
@@ -347,7 +341,6 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Categories
   // ===========================================================================
-  'categories.title': 'Categories',
   'categories.addCategory': 'Add category',
   'categories.deleteCategory': 'Delete category',
   'categories.editCategory': 'Edit category',
@@ -402,11 +395,8 @@ const en: Record<string, string> = {
   'print.printNow': 'Print Now',
   'print.options': 'Options',
   'print.binDisplay': 'Bin Display',
-  'print.showLabel': 'Label',
   'print.showCategoryColor': 'Category color',
   'print.showSize': 'Size',
-  'print.showHeight': 'Height',
-  'print.showNotes': 'Notes',
   'print.showCustomProperties': 'Custom properties',
   'print.headerOptions': 'Header',
   'print.showHeader': 'Show header',
@@ -456,7 +446,6 @@ const en: Record<string, string> = {
   'print.binDetails': 'Bin details',
   'print.selectLayer': 'Select {layer}',
   'print.bins': 'bins',
-  'print.categories': 'Categories',
   'print.coordinates': '({x}, {y})',
   'print.countParens': '({count})',
   'print.customProperties': 'Custom properties',
@@ -502,7 +491,6 @@ const en: Record<string, string> = {
   'share.json.description': 'Copy raw JSON to clipboard.',
   'share.json.copy': 'Copy JSON',
   'share.json.copied': 'JSON copied!',
-  'share.button.share': 'Share',
   'share.button.shared': 'Shared',
   'share.button.shareLayout': 'Share layout',
   'share.button.manageShare': 'Manage shared layout',
@@ -565,7 +553,6 @@ const en: Record<string, string> = {
   'layouts.binsWillBeDeleted': '{count} bins will be deleted',
   'layouts.browseFiles': 'Browse files',
   'layouts.canEdit': 'Can edit',
-  'layouts.clear': 'Clear',
   'layouts.clearSearch': 'Clear search',
   'layouts.backToLayouts': 'Back to layouts',
   'layouts.closeLayoutsDialog': 'Close layouts dialog',
@@ -628,7 +615,6 @@ const en: Record<string, string> = {
   'settings.confirmSaveDefaults.title': 'Save as Defaults',
   'settings.confirmSaveDefaults.message':
     'Save current settings as defaults for new layouts?\n\nDrawer: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
-  'settings.confirmSaveDefaults.confirm': 'Save',
   'settings.stlSearch': 'STL Search',
   'settings.stlSearchHint': 'Choose which sites to search for Gridfinity STL files:',
   'settings.toggleSite': 'Toggle {name}',
@@ -660,7 +646,6 @@ const en: Record<string, string> = {
   'settings.confirmSaveCategories.title': 'Save Categories as Defaults',
   'settings.confirmSaveCategories.message':
     'Save these {count} categories as defaults for new layouts?',
-  'settings.confirmSaveCategories.confirm': 'Save',
 
   // Settings tabs
   'settings.tabs.general': 'General',
@@ -674,9 +659,6 @@ const en: Record<string, string> = {
   'settings.confirmCopyFromLayout.message':
     'Replace all default values with your current layout settings?\n\nCurrent layout: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
   'settings.confirmCopyFromLayout.confirm': 'Copy',
-  'settings.defaultDrawerWidth': 'Width',
-  'settings.defaultDrawerDepth': 'Depth',
-  'settings.defaultDrawerHeight': 'Height',
   'settings.defaultLayerHeight': 'Bin Height',
   'settings.defaultPrintBedSize': 'Print Bed',
   'settings.defaultGridUnit': 'Grid Unit',
@@ -718,8 +700,6 @@ const en: Record<string, string> = {
 
   // Shortcut descriptions
   'help.shortcut.commandPalette': 'Open command palette',
-  'help.shortcut.undo': 'Undo',
-  'help.shortcut.redo': 'Redo',
   'help.shortcut.showHelp': 'Show this help',
   'help.shortcut.cancelDeselect': 'Cancel / Deselect',
   'help.shortcut.duplicate': 'Duplicate selected bins',
@@ -819,17 +799,13 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Mobile
   // ===========================================================================
-  'mobile.nav.layers': 'Layers',
   'mobile.nav.bin': 'Bin',
-  'mobile.nav.categories': 'Categories',
   'mobile.nav.list': 'List',
   'mobile.help': 'Help',
   'mobile.settings': 'Settings',
   'mobile.binMenu.editProperties': 'Edit Properties',
-  'mobile.binMenu.duplicate': 'Duplicate',
   'mobile.binMenu.rotate': 'Rotate',
   'mobile.binMenu.toStash': 'To Stash',
-  'mobile.binMenu.delete': 'Delete',
   'mobile.tools.instructions': 'Select a size, then tap or drag on grid to place bins.',
   'mobile.tools.squares': 'Squares',
   'mobile.tools.rectangles': 'Rectangles',
@@ -862,7 +838,6 @@ const en: Record<string, string> = {
   'mobile.contextMenu.stashAndGrid': '{stash} in stash, {grid} on grid',
   'mobile.deleteLayer': 'Delete layer',
   'mobile.header.binList': 'Bin List',
-  'mobile.header.categories': 'Categories',
   'mobile.header.helpAndGestures': 'Help and gestures',
   'mobile.header.inspector': 'Inspector',
   'mobile.header.nothingToRedo': 'Nothing to redo',
@@ -1039,8 +1014,6 @@ const en: Record<string, string> = {
   'grid.collision': 'Collides with existing bin',
   'grid.invalidLayer': 'Invalid layer',
   'grid.outOfBounds': 'Out of bounds',
-  'grid.cancel': 'Cancel',
-  'grid.clear': 'Clear',
   'grid.collapse': 'Collapse',
   'grid.dragToAddRemoveColumns': 'Drag to add/remove columns',
   'grid.dragToAddRemoveRows': 'Drag to add/remove rows',
@@ -1063,7 +1036,6 @@ const en: Record<string, string> = {
   'grid.preview.collapse': 'Collapse preview',
   'grid.preview.expand': 'Expand preview',
   'grid.resizeGrid': 'Resize grid',
-  'grid.save': 'Save',
   'grid.side': 'Side',
   'grid.sideView': 'Side view',
   'grid.split': 'Split',
@@ -1096,9 +1068,6 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Drawer Settings
   // ===========================================================================
-  'drawer.width': 'Width',
-  'drawer.depth': 'Depth',
-  'drawer.height': 'Height',
 
   // ===========================================================================
   // Half-Bin Mode Blocked
@@ -1169,7 +1138,6 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Bin Designer
   // ===========================================================================
-  'binDesigner.export': 'Export',
   'binDesigner.exportBin': 'Export bin',
   'binDesigner.exportSTL': 'Export bin as STL',
   'binDesigner.formatSTL': 'STL',
@@ -1339,7 +1307,6 @@ const en: Record<string, string> = {
   'binList.binList': 'Bin List',
   'binList.binTypes': 'Bin Types',
   'binList.byCategory': 'By Category',
-  'binList.categories': 'Categories',
   'binList.categoryCount': '{count} ({pct}%)',
   'binList.clearClose': 'Clear/Close',
   'binList.clearSearch': 'Clear search',
@@ -1431,7 +1398,6 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Mobile Tabs
   // ===========================================================================
-  'mobile.tabs.layers': 'Layers',
   'mobile.tabs.tools': 'Tools',
 
   // ===========================================================================
@@ -1528,7 +1494,6 @@ const en: Record<string, string> = {
   'commandPalette.openPrint': 'Open Print Preview',
 
   // Edit commands
-  'commandPalette.undo': 'Undo',
   'commandPalette.redo': 'Redo',
   'commandPalette.deleteSelected': 'Delete Selected',
   'commandPalette.duplicateSelected': 'Duplicate Selected',
@@ -1597,7 +1562,6 @@ const en: Record<string, string> = {
   // Footer
   'commandPalette.footer.run': 'Run',
   'commandPalette.footer.navigate': 'Navigate',
-  'commandPalette.footer.close': 'Close',
   'commandPalette.footer.commandCount': '{count} commands',
 
   // ===========================================================================
@@ -1626,7 +1590,6 @@ const en: Record<string, string> = {
   'designLinking.inspector.designDeleted': 'Design deleted',
   'designLinking.inspector.editDesign': 'Edit Design',
   'designLinking.inspector.unlink': 'Unlink',
-  'designLinking.inspector.export': 'Export',
   'designLinking.inspector.syncDimensions': 'Sync Dimensions',
   'designLinking.inspector.createDesign': 'Create',
   'designLinking.inspector.linkExisting': 'Link',

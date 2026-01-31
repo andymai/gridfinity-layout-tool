@@ -106,7 +106,7 @@ export function ExportDialog() {
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <h2 id="export-dialog-title" className="text-lg font-semibold text-content">
-            {t('binDesigner.export')}
+            {t('common.export')}
           </h2>
           <button
             onClick={() => setExportDialogOpen(false)}
@@ -126,8 +126,11 @@ export function ExportDialog() {
 
         {/* Section 1: Design File (.json) */}
         <div className="mb-5">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <h3 className="mb-1 text-sm font-semibold text-content">{t('binDesigner.designFile')} (.json)</h3>
+          {/* eslint-disable i18next/no-literal-string */}
+          <h3 className="mb-1 text-sm font-semibold text-content">
+            {t('binDesigner.designFile')} (.json)
+          </h3>
+          {/* eslint-enable i18next/no-literal-string */}
           <p className="mb-3 text-xs text-content-secondary">
             {t('binDesigner.designFileDescription')}
           </p>
@@ -142,8 +145,19 @@ export function ExportDialog() {
             }}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-stroke-subtle bg-surface px-4 py-2.5 text-sm font-medium text-content transition-colors hover:bg-surface-hover"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
             </svg>
             {t('binDesigner.downloadJSON')}
           </button>
@@ -154,15 +168,20 @@ export function ExportDialog() {
 
         {/* Section 2: 3D Model (.stl) */}
         <div>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <h3 className="mb-1 text-sm font-semibold text-content">{t('binDesigner.threeDModel')} (.stl)</h3>
+          {/* eslint-disable i18next/no-literal-string */}
+          <h3 className="mb-1 text-sm font-semibold text-content">
+            {t('binDesigner.threeDModel')} (.stl)
+          </h3>
+          {/* eslint-enable i18next/no-literal-string */}
           <p className="mb-4 text-xs text-content-secondary">
             {t('binDesigner.threeDModelDescription')}
           </p>
 
           {/* File Name */}
           <div className="mb-4">
-            <label className="mb-2 block text-sm font-medium text-content-secondary">{t('binDesigner.fileName')}</label>
+            <label className="mb-2 block text-sm font-medium text-content-secondary">
+              {t('binDesigner.fileName')}
+            </label>
             <div className="flex items-center rounded-md border border-stroke-subtle bg-surface">
               {exportFileNameConfig.style === 'custom' ? (
                 <input
@@ -206,7 +225,9 @@ export function ExportDialog() {
 
           {/* Print Estimates */}
           <div className="mb-5 rounded-lg border border-stroke-subtle bg-surface p-3">
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">{t('binDesigner.printEstimatesPla')}</h3>
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">
+              {t('binDesigner.printEstimatesPla')}
+            </h3>
             <div className="grid grid-cols-2 gap-y-1.5 text-sm">
               <EstimateRow label="Filament" value={formatFilament(estimates.metersFilament)} />
               <EstimateRow label="Weight" value={`${estimates.gramsFilament}g`} />
@@ -269,7 +290,9 @@ export function ExportDialog() {
           </button>
 
           {!canExport && (
-            <p className="mt-2 text-center text-xs text-warning">{t('binDesigner.generateAMeshFirstToEnableExport')}</p>
+            <p className="mt-2 text-center text-xs text-warning">
+              {t('binDesigner.generateAMeshFirstToEnableExport')}
+            </p>
           )}
         </div>
       </div>

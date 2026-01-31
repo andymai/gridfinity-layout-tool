@@ -391,7 +391,11 @@ export function PrintLayout({
               <div className="print-header-group">
                 <span className="print-header-label">{t('common.height')}</span>
                 <span className="print-header-value">
-                  {t('print.heightValue', { height: drawer.height, mm: drawer.height * layout.heightUnitMm })}</span>
+                  {t('print.heightValue', {
+                    height: drawer.height,
+                    mm: drawer.height * layout.heightUnitMm,
+                  })}
+                </span>
               </div>
               <div className="print-header-group">
                 <span className="print-header-label">{t('print.bins')}</span>
@@ -425,7 +429,7 @@ export function PrintLayout({
       {/* Category Legend with Counts */}
       {settings.showLegend && usedCategories.length > 0 && (
         <div className="print-legend">
-          <div className="print-legend-title">{t('print.categories')}</div>
+          <div className="print-legend-title">{t('common.categories')}</div>
           <div className="print-legend-items">
             {usedCategories.map((category) => {
               const count = binsByCategory.get(category.id) ?? 0;
@@ -493,9 +497,7 @@ export function PrintLayout({
                           {category?.name || '—'}
                         </td>
                         {visibleLayers.length > 1 && <td>{layer?.name || '—'}</td>}
-                        <td>
-                          {t('print.coordinates', { x: bin.x + 1, y: bin.y + 1 })}
-                        </td>
+                        <td>{t('print.coordinates', { x: bin.x + 1, y: bin.y + 1 })}</td>
                         {hasAnyNotes && (
                           <td className="print-bin-table-notes">
                             {bin.notes || <span className="print-bin-table-empty">—</span>}
@@ -506,7 +508,9 @@ export function PrintLayout({
                             {customPropEntries.length > 0 ? (
                               customPropEntries.map(([key, value]) => (
                                 <div key={key} className="print-bin-table-prop">
-                                  <span className="print-bin-table-prop-key">{t('print.propEntry', { key, value })}</span>
+                                  <span className="print-bin-table-prop-key">
+                                    {t('print.propEntry', { key, value })}
+                                  </span>
                                 </div>
                               ))
                             ) : (

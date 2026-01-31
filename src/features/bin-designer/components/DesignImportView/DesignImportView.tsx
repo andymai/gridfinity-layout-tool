@@ -200,7 +200,7 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
               onClick={handleClear}
               className="text-xs text-content-tertiary hover:text-content"
             >
-              {t('layouts.clear')}
+              {t('common.clear')}
             </button>
           )}
         </div>

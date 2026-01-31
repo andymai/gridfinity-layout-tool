@@ -16,7 +16,7 @@ import type { MobileLayersTab } from '@/core/store/ui';
 export function MobileLayersPanel() {
   const t = useTranslation();
   const TABS: { id: MobileLayersTab; label: string }[] = [
-    { id: 'layers', label: t('mobile.tabs.layers') },
+    { id: 'layers', label: t('common.layers') },
     { id: 'tools', label: t('mobile.tabs.tools') },
   ];
 

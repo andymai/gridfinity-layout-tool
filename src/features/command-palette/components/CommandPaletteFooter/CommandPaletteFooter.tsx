@@ -35,7 +35,7 @@ export function CommandPaletteFooter({ selectedCommand, matchCount }: CommandPal
         </span>
         <span className="hidden sm:flex items-center gap-1">
           <kbd className={footerKeyClasses}>esc</kbd>
-          <span>{t('commandPalette.footer.close')}</span>
+          <span>{t('common.close')}</span>
         </span>
       </div>
 

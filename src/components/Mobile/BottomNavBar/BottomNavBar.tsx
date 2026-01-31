@@ -74,11 +74,11 @@ export function BottomNavBar() {
   const getLabel = (panelId: 'layers' | 'inspector' | 'categories' | 'print'): string => {
     switch (panelId) {
       case 'layers':
-        return t('mobile.nav.layers');
+        return t('common.layers');
       case 'inspector':
         return t('mobile.nav.bin');
       case 'categories':
-        return t('mobile.nav.categories');
+        return t('common.categories');
       case 'print':
         return t('mobile.nav.list');
     }

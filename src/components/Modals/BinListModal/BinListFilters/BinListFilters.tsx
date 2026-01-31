@@ -129,7 +129,9 @@ export function BinListFilters({
           <button
             onClick={onResetFilters}
             className="text-sm text-accent hover:text-accent-hover transition-colors"
-          >{t('binList.resetFilters')}</button>
+          >
+            {t('binList.resetFilters')}
+          </button>
         )}
       </div>
 
@@ -137,7 +139,7 @@ export function BinListFilters({
       <div className="flex items-center gap-4 flex-wrap">
         {/* Category toggles */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-content-tertiary">{t('binList.categories')}</span>
+          <span className="text-xs text-content-tertiary">{t('common.categories')}</span>
           {categories.map((category) => {
             const isHidden = filters.hiddenCategoryIds.has(category.id);
             return (
@@ -195,7 +197,9 @@ export function BinListFilters({
         >
           <span
             className={`text-sm ${filters.groupByCategory ? 'text-content' : 'text-content-secondary'}`}
-          >{t('binList.groupByCategory')}</span>
+          >
+            {t('binList.groupByCategory')}
+          </span>
           <Checkbox checked={filters.groupByCategory} variant="desktop" />
         </div>
       </div>

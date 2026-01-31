@@ -104,7 +104,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           {/* Width control */}
           <div className="flex-1">
             <label className={`block ${labelSize} text-content-tertiary`}>
-              {t('inspector.width')}
+              {t('common.width')}
             </label>
             <StepperControl
               value={bin.width}
@@ -148,7 +148,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           {/* Depth control */}
           <div className="flex-1">
             <label className={`block ${labelSize} text-content-tertiary`}>
-              {t('inspector.depth')}
+              {t('common.depth')}
             </label>
             <StepperControl
               value={bin.depth}
@@ -192,7 +192,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           {/* Height control */}
           <div>
             <label className={`block ${labelSize} text-content-tertiary`}>
-              {t('inspector.height')}
+              {t('common.height')}
             </label>
             <StepperControl
               value={bin.height}
