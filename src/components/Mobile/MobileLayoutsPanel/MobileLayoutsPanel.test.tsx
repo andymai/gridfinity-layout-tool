@@ -506,6 +506,25 @@ describe('MobileLayoutsPanel', () => {
       reset: mockReset,
     };
 
+    /** Opens the cloud share dialog via Share menu → Share to Cloud */
+    async function openCloudSharePanel() {
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+    }
+
     beforeEach(() => {
       vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue(mockCloudShareIdle);
       mockShare.mockResolvedValue(true);
@@ -543,49 +562,18 @@ describe('MobileLayoutsPanel', () => {
 
     it('has proper accessibility attributes on dialog', async () => {
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        const dialog = screen.getByRole('dialog');
-        expect(dialog).toHaveAttribute('aria-modal', 'true');
-        expect(dialog).toHaveAttribute('aria-labelledby', 'mobile-cloud-share-title');
-        expect(screen.getByText('Cloud Share')).toHaveAttribute('id', 'mobile-cloud-share-title');
-      });
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
+      expect(dialog).toHaveAttribute('aria-labelledby', 'mobile-cloud-share-title');
+      expect(screen.getByText('Cloud Share')).toHaveAttribute('id', 'mobile-cloud-share-title');
     });
 
     it('creates a share with default permission', async () => {
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-      // Click share button
       act(() => {
         fireEvent.click(screen.getByRole('button', { name: /share to cloud/i }));
       });
@@ -597,23 +585,7 @@ describe('MobileLayoutsPanel', () => {
 
     it('creates a share with edit permission', async () => {
       render(<MobileLayoutsPanel />);
-
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
+      await openCloudSharePanel();
 
       // Change permission to edit
       const select = screen.getByLabelText(/permission/i);
@@ -646,28 +618,13 @@ describe('MobileLayoutsPanel', () => {
       });
 
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText(/shared on/i)).toBeInTheDocument();
-        // Look for permission display - use more specific selector to avoid matching option element
-        const paragraphs = screen.getAllByText(/Anyone can view/i);
-        expect(paragraphs.length).toBeGreaterThan(0);
-        expect(paragraphs[0].tagName).toBe('P');
-      });
+      expect(screen.getByText(/shared on/i)).toBeInTheDocument();
+      // Look for permission display - use more specific selector to avoid matching option element
+      const paragraphs = screen.getAllByText(/Anyone can view/i);
+      expect(paragraphs.length).toBeGreaterThan(0);
+      expect(paragraphs[0].tagName).toBe('P');
     });
 
     it('copies link for existing share', async () => {
@@ -685,25 +642,8 @@ describe('MobileLayoutsPanel', () => {
       });
 
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-      // Click copy link button
       act(() => {
         fireEvent.click(screen.getByRole('button', { name: /copy link/i }));
       });
@@ -730,23 +670,7 @@ describe('MobileLayoutsPanel', () => {
       });
 
       render(<MobileLayoutsPanel />);
-
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
+      await openCloudSharePanel();
 
       // Change permission to edit
       const select = screen.getByLabelText(/permission/i);
@@ -774,25 +698,8 @@ describe('MobileLayoutsPanel', () => {
       });
 
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-      // Click delete button
       act(() => {
         fireEvent.click(screen.getByText(/delete share/i));
       });
@@ -809,24 +716,9 @@ describe('MobileLayoutsPanel', () => {
       });
 
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText(/uploading layout/i)).toBeInTheDocument();
-      });
+      expect(screen.getByText(/uploading layout/i)).toBeInTheDocument();
     });
 
     it('shows success state after share', async () => {
@@ -842,24 +734,9 @@ describe('MobileLayoutsPanel', () => {
       });
 
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText(/shared successfully/i)).toBeInTheDocument();
-      });
+      expect(screen.getByText(/shared successfully/i)).toBeInTheDocument();
     });
 
     it('shows error state on failure', async () => {
@@ -873,48 +750,16 @@ describe('MobileLayoutsPanel', () => {
       });
 
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText(/failed to share/i)).toBeInTheDocument();
-        expect(screen.getByText('Network error')).toBeInTheDocument();
-      });
+      expect(screen.getByText(/failed to share/i)).toBeInTheDocument();
+      expect(screen.getByText('Network error')).toBeInTheDocument();
     });
 
     it('closes panel on Escape key', async () => {
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-      // Press Escape
       act(() => {
         fireEvent.keyDown(window, { key: 'Escape' });
       });
@@ -926,30 +771,16 @@ describe('MobileLayoutsPanel', () => {
 
     it('closes panel on backdrop click', async () => {
       render(<MobileLayoutsPanel />);
+      await openCloudSharePanel();
 
-      // Open cloud share panel
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
-      });
-
-      await waitFor(() => {
-        const dialog = screen.getByRole('dialog');
-        expect(dialog).toBeInTheDocument();
-
-        // Click backdrop (the fixed overlay)
-        const backdrop = dialog.parentElement;
-        if (backdrop) {
+      const dialog = screen.getByRole('dialog');
+      // Click backdrop (the fixed overlay)
+      const backdrop = dialog.parentElement;
+      if (backdrop) {
+        act(() => {
           fireEvent.click(backdrop);
-        }
-      });
+        });
+      }
 
       await waitFor(() => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

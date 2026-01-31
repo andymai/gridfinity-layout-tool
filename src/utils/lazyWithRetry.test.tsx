@@ -104,6 +104,14 @@ describe('lazyWithRetry', () => {
   });
 
   describe('retry behavior', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('retries on failure and succeeds', async () => {
       const importFn = vi
         .fn()
@@ -118,13 +126,12 @@ describe('lazyWithRetry', () => {
         </Suspense>
       );
 
-      // Wait for retries and success
-      await waitFor(
-        () => {
-          expect(screen.getByTestId('mock-component')).toBeInTheDocument();
-        },
-        { timeout: 2000 }
-      );
+      // Advance past the first retry backoff (100ms * 2^0 = 100ms)
+      await vi.advanceTimersByTimeAsync(200);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('mock-component')).toBeInTheDocument();
+      });
 
       // Should have retried
       expect(importFn).toHaveBeenCalledTimes(2);
@@ -145,12 +152,12 @@ describe('lazyWithRetry', () => {
         </Suspense>
       );
 
-      await waitFor(
-        () => {
-          expect(screen.getByTestId('mock-component')).toBeInTheDocument();
-        },
-        { timeout: 3000 }
-      );
+      // Advance past both retry backoffs (100ms + 200ms)
+      await vi.advanceTimersByTimeAsync(400);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('mock-component')).toBeInTheDocument();
+      });
 
       // 3 attempts: initial + 2 retries
       expect(importFn).toHaveBeenCalledTimes(3);
@@ -170,12 +177,12 @@ describe('lazyWithRetry', () => {
         </Suspense>
       );
 
-      await waitFor(
-        () => {
-          expect(screen.getByTestId('mock-component')).toBeInTheDocument();
-        },
-        { timeout: 2000 }
-      );
+      // Advance past the first retry backoff
+      await vi.advanceTimersByTimeAsync(200);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('mock-component')).toBeInTheDocument();
+      });
 
       expect(console.warn).toHaveBeenCalledWith(
         expect.stringMatching(/Dynamic import failed \(attempt 1\/3\)/),
@@ -185,6 +192,14 @@ describe('lazyWithRetry', () => {
   });
 
   describe('final failure with reload', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('reloads page when all retries exhausted', async () => {
       const importFn = vi.fn().mockRejectedValue(new Error('Chunk permanently unavailable'));
 
@@ -196,22 +211,17 @@ describe('lazyWithRetry', () => {
         </Suspense>
       );
 
-      // Wait for all retries to be exhausted
-      await waitFor(
-        () => {
-          // Should have tried initial + 1 retry = 2 attempts
-          expect(importFn).toHaveBeenCalledTimes(2);
-        },
-        { timeout: 2000 }
-      );
+      // Advance past the retry backoff (100ms * 2^0 = 100ms)
+      await vi.advanceTimersByTimeAsync(200);
 
-      // Wait a bit more for reload to be triggered
-      await waitFor(
-        () => {
-          expect(mockReload).toHaveBeenCalled();
-        },
-        { timeout: 1000 }
-      );
+      await waitFor(() => {
+        // Should have tried initial + 1 retry = 2 attempts
+        expect(importFn).toHaveBeenCalledTimes(2);
+      });
+
+      await waitFor(() => {
+        expect(mockReload).toHaveBeenCalled();
+      });
     });
 
     it('sets sessionStorage flag before reload', async () => {
@@ -225,12 +235,11 @@ describe('lazyWithRetry', () => {
         </Suspense>
       );
 
-      await waitFor(
-        () => {
-          expect(mockReload).toHaveBeenCalled();
-        },
-        { timeout: 1000 }
-      );
+      await vi.advanceTimersByTimeAsync(100);
+
+      await waitFor(() => {
+        expect(mockReload).toHaveBeenCalled();
+      });
 
       // Check that session flag was set
       const keys = Object.keys(sessionStorage);
@@ -256,12 +265,11 @@ describe('lazyWithRetry', () => {
         </ErrorBoundary>
       );
 
-      await waitFor(
-        () => {
-          expect(screen.getByTestId('error')).toBeInTheDocument();
-        },
-        { timeout: 1000 }
-      );
+      await vi.advanceTimersByTimeAsync(100);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('error')).toBeInTheDocument();
+      });
 
       // Should NOT reload since session flag exists
       expect(mockReload).not.toHaveBeenCalled();
@@ -283,12 +291,11 @@ describe('lazyWithRetry', () => {
         </ErrorBoundary>
       );
 
-      await waitFor(
-        () => {
-          expect(screen.getByTestId('error')).toBeInTheDocument();
-        },
-        { timeout: 1000 }
-      );
+      await vi.advanceTimersByTimeAsync(100);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('error')).toBeInTheDocument();
+      });
 
       // Session flag should be cleared for next time
       expect(sessionStorage.getItem(sessionKey)).toBeNull();
@@ -296,6 +303,14 @@ describe('lazyWithRetry', () => {
   });
 
   describe('final failure without reload', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('throws error when reloadOnFinalFailure is false', async () => {
       const importFn = vi.fn().mockRejectedValue(new Error('Chunk unavailable'));
 
@@ -309,12 +324,11 @@ describe('lazyWithRetry', () => {
         </ErrorBoundary>
       );
 
-      await waitFor(
-        () => {
-          expect(screen.getByTestId('error')).toBeInTheDocument();
-        },
-        { timeout: 1000 }
-      );
+      await vi.advanceTimersByTimeAsync(100);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('error')).toBeInTheDocument();
+      });
 
       // Reload should not have been called
       expect(mockReload).not.toHaveBeenCalled();
