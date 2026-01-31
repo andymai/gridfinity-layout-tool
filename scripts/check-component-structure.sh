@@ -11,7 +11,7 @@ set -e
 # Get staged .tsx/.ts files inside any components/ directory under src/
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | \
   grep -E '\.(tsx?)$' | \
-  grep -E '^src/(.*/)?components/' || true)
+  grep -E '^src(/[^/]*)*/components/' || true)
 
 if [ -z "$STAGED_FILES" ]; then
   exit 0
@@ -56,9 +56,9 @@ while IFS= read -r FILE; do
   DIR=$(dirname "$FILE")
   DIRNAME=$(basename "$DIR")
 
-  # Check Rule 1: Component must live in a matching named folder
-  # e.g., Foo.tsx must be in Foo/Foo.tsx — catches bare files at ANY depth
-  if [ "$DIRNAME" != "$BASENAME" ]; then
+  # Check Rule 1: Component must not be bare at a components/ root
+  # A bare file has its parent directory literally named "components"
+  if [ "$DIRNAME" = "components" ]; then
     VIOLATIONS="${VIOLATIONS}  ${FILE} (must be in a named folder, e.g., ${DIR}/${BASENAME}/${FILENAME})\n"
     VIOLATION_COUNT=$((VIOLATION_COUNT + 1))
     continue
@@ -76,8 +76,8 @@ if [ "$VIOLATION_COUNT" -gt 0 ]; then
   echo "Component structure violations ($VIOLATION_COUNT):"
   echo ""
   echo -e "$VIOLATIONS"
-  echo "  All component .tsx files under any components/ directory must:"
-  echo "    1. Live inside a matching named folder (e.g., Foo/Foo.tsx)"
+  echo "  All component .ts/.tsx files under any components/ directory must:"
+  echo "    1. Live inside a named folder (not bare at the components/ root)"
   echo "    2. Have a sibling test file (e.g., MyComponent.test.tsx)"
   echo ""
   exit 1
