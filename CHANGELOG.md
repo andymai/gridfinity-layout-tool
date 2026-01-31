@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.15.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.15.0...gridfinity-layout-tool-v2.15.1) (2026-01-31)
+
+
+### Bug Fixes
+
+* shorten divider length to prevent bowing and align lip with gridfinity spec ([e55dc1c](https://github.com/andymai/gridfinity-layout-tool/commit/e55dc1c4666c5e4b0dd3da2cf0a7c612cd6bbba5))
+* shorten divider length to prevent bowing, align lip with gridfinity spec ([#569](https://github.com/andymai/gridfinity-layout-tool/issues/569)) ([002d1c5](https://github.com/andymai/gridfinity-layout-tool/commit/002d1c5dd563d5a4ba1b1f47d7dfdadf8590e936))
+
 ## [2.15.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.14.1...gridfinity-layout-tool-v2.15.0) (2026-01-31)
 
 
