@@ -22,6 +22,7 @@ import {
   useCrossTabSync,
   usePWAUpdate,
   usePrefetchChunks,
+  useDocumentMeta,
 } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
@@ -254,6 +255,9 @@ export default function App() {
 
   // Prefetch lazy-loaded chunks during idle time (desktop only)
   usePrefetchChunks();
+
+  // Dynamic document meta tags (title, description, OG, Twitter)
+  useDocumentMeta();
 
   // Only fade in on initial app load, not when switching between tools
   const entranceClass = hasRenderedInitialLayout ? '' : 'animate-fade-in';
