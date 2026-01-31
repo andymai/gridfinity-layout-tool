@@ -89,7 +89,7 @@ const en: Record<string, string> = {
   // App
   // ===========================================================================
   'app.clearDataReload': 'Clear Data & Reload',
-  'app.skipToGridEditor': 'Skip to grid editor',
+  'app.skipToGridEditor': 'Skip to grid planner',
   'app.unableToLoadApp': 'Unable to load app',
 
   // ===========================================================================
@@ -742,7 +742,7 @@ const en: Record<string, string> = {
   'help.shortcut.rotate': 'Rotate selected bin',
   'help.shortcut.selectAll': 'Select all bins on layer',
   'help.shortcut.togglePaintMode': 'Toggle paint mode',
-  'help.shortcut.toolSwitch': 'Switch Grid Editor / Bin Designer',
+  'help.shortcut.toolSwitch': 'Switch Grid Planner / Bin Designer',
   'help.shortcut.toggleHalfBin': 'Toggle half-bin mode',
 
   // Mouse interactions
@@ -761,6 +761,7 @@ const en: Record<string, string> = {
   'help.mouse.duplicateBins': 'Duplicate bins',
   'help.mouse.resizeBin': 'Resize bin',
   'help.mouse.contextMenu': 'Context menu',
+  'help.mouse.quickLabelEdit': 'Quick label edit',
 
   // Mobile gestures
   'help.gesture.tapBin': 'Tap bin',
@@ -789,6 +790,31 @@ const en: Record<string, string> = {
   'help.gesture.closeBottomSheet': 'Close bottom sheet',
   'help.gesture.switchLayers': 'Switch layers',
   'help.gesture.jumpToBlocking': 'Jump to blocking bin',
+  'help.gesture.select': 'Select',
+  'help.gesture.resize': 'Resize',
+
+  // Tips
+  'help.tip.binPalette': 'Use the Bin Palette to select a size, then click or drag to paint bins',
+  'help.tip.autoSplit': 'Bins that exceed the max print size will be automatically split',
+  'help.tip.dragLayers': 'Drag layers in the sidebar to reorder them vertically',
+  'help.tip.renameLayers': 'Double-click layer names to rename them',
+  'help.tip.autoSave': 'Your layout is automatically saved to your browser',
+  'help.tip.quickOpen': 'Use Ctrl/{cmd}+O to quickly open the layout manager',
+  'help.tip.halfBin': 'Press H to toggle half-bin mode for 0.5 unit precision',
+
+  // Blocked zones explanation
+  'help.blockedZonesDescription':
+    'When a bin is taller than its layer height, it extends into layers above. These areas appear as striped cells and cannot have new bins placed on them.',
+  'help.blockedZonesExample':
+    'A 5u tall bin on Layer 1 (3u) extends 2u into Layer 2. Those cells on Layer 2 are blocked because the physical bin occupies that space.',
+
+  // Bin clearance explanation
+  'help.clearanceDescription':
+    'Clearance reserves empty space above a bin for tall contents that stick out, like scissors handles or tool grips. This space blocks bins on layers above without adding physical bin height.',
+  'help.clearanceExample':
+    'A 2u tall bin with 1u clearance will block 3u total of vertical space, but only prints as a 2u bin.',
+  'help.clearanceHowTo':
+    'Set clearance in the bin inspector (right panel) when you have multiple layers. The 3D preview shows clearance as a translucent red zone above the bin.',
 
   // ===========================================================================
   // Mobile
@@ -1132,12 +1158,12 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Tool Switcher
   // ===========================================================================
-  'toolSwitcher.gridEditor': 'Grid Editor',
+  'toolSwitcher.gridEditor': 'Grid Planner',
   'toolSwitcher.binDesigner': 'Bin Designer',
   'toolSwitcher.activeTool': 'Active tool',
   'toolSwitcher.gridfinityLayoutTool': 'Gridfinity Layout Tool',
   'toolSwitcher.toolSwitcher': 'Tool Switcher',
-  'toolSwitcher.switchToPlanner': 'Switch to Grid Editor (Shift+D)',
+  'toolSwitcher.switchToPlanner': 'Switch to Grid Planner (Shift+D)',
   'toolSwitcher.switchToDesigner': 'Switch to Bin Designer (Shift+D)',
 
   // ===========================================================================
