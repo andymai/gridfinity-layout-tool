@@ -8,6 +8,7 @@ import type {
   SharedWithMeEntry,
   SharePermission,
   NameSuggestionState,
+  LayoutId,
 } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { generateUUID, generateLayoutId } from '@/shared/utils';
@@ -23,7 +24,7 @@ export { computePreview } from '@/core/storage';
  * Create a default empty library with one default layout entry.
  */
 export function createDefaultLibrary(
-  initialLayoutId: string,
+  initialLayoutId: LayoutId,
   initialLayoutName: string
 ): LayoutLibrary {
   return {
@@ -62,28 +63,28 @@ interface LibraryState {
 
   createEntry: (
     name: string,
-    layoutId: string,
+    layoutId: LayoutId,
     preview: LayoutPreview,
     author?: string
   ) => LayoutEntry;
-  deleteEntry: (id: string) => Result<Unit, LayoutError>;
-  updateEntry: (id: string, updates: Partial<Omit<LayoutEntry, 'id'>>) => void;
-  duplicateEntry: (sourceEntry: LayoutEntry, newLayoutId: string) => LayoutEntry;
+  deleteEntry: (id: LayoutId) => Result<Unit, LayoutError>;
+  updateEntry: (id: LayoutId, updates: Partial<Omit<LayoutEntry, 'id'>>) => void;
+  duplicateEntry: (sourceEntry: LayoutEntry, newLayoutId: LayoutId) => LayoutEntry;
 
-  getEntry: (id: string) => LayoutEntry | undefined;
+  getEntry: (id: LayoutId) => LayoutEntry | undefined;
   getRecentEntries: (count: number) => LayoutEntry[];
 
-  setActiveLayoutId: (id: string) => void;
+  setActiveLayoutId: (id: LayoutId) => void;
 
   setAuthorName: (name: string) => void;
 
-  setCloudShare: (layoutId: string, share: CloudShareInfo) => void;
-  clearCloudShare: (layoutId: string) => void;
+  setCloudShare: (layoutId: LayoutId, share: CloudShareInfo) => void;
+  clearCloudShare: (layoutId: LayoutId) => void;
 
   // Name suggestion state actions
-  setNameSuggestionDismissed: (layoutId: string, dismissed: boolean) => void;
-  clearNameSuggestionState: (layoutId: string) => void;
-  getNameSuggestionState: (layoutId: string) => NameSuggestionState | undefined;
+  setNameSuggestionDismissed: (layoutId: LayoutId, dismissed: boolean) => void;
+  clearNameSuggestionState: (layoutId: LayoutId) => void;
+  getNameSuggestionState: (layoutId: LayoutId) => NameSuggestionState | undefined;
 
   setShowLayoutManager: (show: boolean) => void;
 

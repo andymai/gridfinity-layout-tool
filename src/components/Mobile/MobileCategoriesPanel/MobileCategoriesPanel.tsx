@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
+import type { CategoryId } from '@/core/types';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk } from '@/core/result';
@@ -13,8 +14,8 @@ import { useTranslation } from '@/i18n';
  */
 export function MobileCategoriesPanel() {
   const t = useTranslation();
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [editingId, setEditingId] = useState<CategoryId | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: CategoryId; name: string } | null>(null);
 
   const { categories, bins, addCategory, updateCategory, deleteCategory, updateBin } =
     useLayoutStore(
@@ -49,7 +50,7 @@ export function MobileCategoriesPanel() {
     return counts;
   }, [bins]);
 
-  const handleSelectCategory = (id: string, name: string) => {
+  const handleSelectCategory = (id: CategoryId, name: string) => {
     // Always set active category for new bins
     setActiveCategory(id);
 
@@ -77,19 +78,19 @@ export function MobileCategoriesPanel() {
     });
   };
 
-  const handleUpdateColor = (id: string, color: string) => {
+  const handleUpdateColor = (id: CategoryId, color: string) => {
     execute(() => {
       updateCategory(id, { color });
     });
   };
 
-  const handleUpdateName = (id: string, name: string) => {
+  const handleUpdateName = (id: CategoryId, name: string) => {
     execute(() => {
       updateCategory(id, { name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
     });
   };
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = (id: CategoryId, name: string) => {
     const binCount = binCounts.get(id) || 0;
 
     // Show helpful message if category is in use

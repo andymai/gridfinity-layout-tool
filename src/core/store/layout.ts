@@ -1,9 +1,21 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { Layout, Bin, Layer, Category, Drawer } from '@/core/types';
+import type {
+  Layout,
+  Bin,
+  Layer,
+  Category,
+  Drawer,
+  BinId,
+  LayerId,
+  CategoryId,
+  LayoutId,
+} from '@/core/types';
 import {
   createDefaultLayout,
-  generateId,
+  generateBinId,
+  generateLayerId,
+  generateCategoryId,
   STAGING_ID,
   CONSTRAINTS,
   calcMaxGridUnits,
@@ -32,7 +44,7 @@ import {
 export interface FillMeta {
   type: 'uniform' | 'gaps';
   count: number;
-  layerId: string;
+  layerId: LayerId;
   width?: number;
   depth?: number;
   layerHeight?: number;
@@ -43,54 +55,54 @@ export type EditSource = 'local' | 'remote' | 'init' | null;
 
 interface LayoutState {
   layout: Layout;
-  activeLayoutId: string | null; // ID of the layout in the library (null for unsaved)
+  activeLayoutId: LayoutId | null; // ID of the layout in the library (null for unsaved)
   lastEditSource: EditSource; // Tracks whether last change was local, remote, or initial load
   _fillMeta: FillMeta | null; // Transient metadata for analytics subscriber (cleared after read)
 
   // Bin operations - all return Result for consistent error handling
-  addBin: (bin: Omit<Bin, 'id'>) => Result<string, ValidationError>;
-  updateBin: (id: string, updates: Partial<Bin>) => Result<void, LayoutError>;
-  deleteBin: (id: string) => Result<void, LayoutError>;
-  deleteBins: (ids: string[]) => Result<void, LayoutError>;
-  duplicateBin: (id: string) => Result<string, ValidationError | LayoutError>;
-  moveBinToStaging: (id: string) => Result<void, LayoutError>;
+  addBin: (bin: Omit<Bin, 'id'>) => Result<BinId, ValidationError>;
+  updateBin: (id: BinId, updates: Partial<Bin>) => Result<void, LayoutError>;
+  deleteBin: (id: BinId) => Result<void, LayoutError>;
+  deleteBins: (ids: BinId[]) => Result<void, LayoutError>;
+  duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
+  moveBinToStaging: (id: BinId) => Result<void, LayoutError>;
   moveBinFromStaging: (
-    id: string,
-    layerId: string,
+    id: BinId,
+    layerId: LayerId,
     x: number,
     y: number
   ) => Result<void, ValidationError | LayoutError>;
 
   // Layer operations
-  addLayer: () => Result<string, LayoutError>;
-  updateLayer: (id: string, updates: Partial<Layer>) => Result<void, LayoutError>;
-  deleteLayer: (id: string) => Result<void, LayoutError>;
+  addLayer: () => Result<LayerId, LayoutError>;
+  updateLayer: (id: LayerId, updates: Partial<Layer>) => Result<void, LayoutError>;
+  deleteLayer: (id: LayerId) => Result<void, LayoutError>;
   reorderLayers: (fromIndex: number, toIndex: number) => Result<void, LayoutError>;
 
   // Drawer operations
   updateDrawer: (updates: Partial<Drawer>) => void;
 
   // Category operations
-  addCategory: (category: Omit<Category, 'id'>) => Result<string, LayoutError>;
-  updateCategory: (id: string, updates: Partial<Category>) => Result<void, LayoutError>;
-  deleteCategory: (id: string) => Result<void, LayoutError>;
+  addCategory: (category: Omit<Category, 'id'>) => Result<CategoryId, LayoutError>;
+  updateCategory: (id: CategoryId, updates: Partial<Category>) => Result<void, LayoutError>;
+  deleteCategory: (id: CategoryId) => Result<void, LayoutError>;
 
   // Bulk operations
   fillLayer: (
-    layerId: string,
+    layerId: LayerId,
     width: number,
     depth: number,
-    categoryId: string,
+    categoryId: CategoryId,
     halfBinMode?: boolean
   ) => number;
-  fillLayerGaps: (layerId: string, categoryId: string, halfBinMode?: boolean) => number;
-  clearLayer: (layerId: string) => number;
+  fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfBinMode?: boolean) => number;
+  clearLayer: (layerId: LayerId) => number;
 
   // I/O
-  importLayout: (layout: Layout, layoutId?: string, source?: EditSource) => void;
+  importLayout: (layout: Layout, layoutId?: LayoutId, source?: EditSource) => void;
 
   // Layout library integration
-  setActiveLayoutId: (id: string | null) => void;
+  setActiveLayoutId: (id: LayoutId | null) => void;
 
   // Name
   setName: (name: string) => void;
@@ -110,7 +122,7 @@ export const useLayoutStore = create<LayoutState>()(
 
     addBin: (binData) => {
       const { layout } = get();
-      const id = generateId();
+      const id = generateBinId();
       const bin: Bin = { ...binData, id };
 
       if (bin.layerId !== STAGING_ID) {
@@ -202,7 +214,7 @@ export const useLayoutStore = create<LayoutState>()(
         return err(layoutInvalidOperation('duplicateBin', `Bin ${id} not found`));
       }
 
-      const copyProps = (overrides: { layerId: string; x: number; y: number }) => ({
+      const copyProps = (overrides: { layerId: LayerId; x: number; y: number }) => ({
         width: bin.width,
         depth: bin.depth,
         height: bin.height,
@@ -341,7 +353,7 @@ export const useLayoutStore = create<LayoutState>()(
       // Get default layer height from settings
       const defaultLayerHeight = useSettingsStore.getState().settings.defaultLayerHeight;
 
-      const id = generateId();
+      const id = generateLayerId();
       const newLayer: Layer = {
         id,
         name: `Layer ${layout.layers.length + 1}`,
@@ -474,7 +486,7 @@ export const useLayoutStore = create<LayoutState>()(
         return err(layoutCategoryLimit(layout.categories.length, CONSTRAINTS.CATEGORIES_MAX));
       }
 
-      const id = generateId();
+      const id = generateCategoryId();
       set((state) => {
         state.layout.categories.push({ ...categoryData, id });
         state.lastEditSource = 'local';

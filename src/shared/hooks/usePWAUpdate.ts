@@ -9,6 +9,8 @@ import {
   loadEphemeralState,
   type EphemeralState,
 } from '@/utils/ephemeralState';
+import { binId, layerId, categoryId } from '@/core/types';
+import type { BinId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 // Toast duration for update notification
@@ -167,27 +169,31 @@ function restoreEphemeralState(): boolean {
   const layout = useLayoutStore.getState().layout;
 
   // Validate and restore activeLayerId
-  const layerExists = layout.layers.some((l) => l.id === state.activeLayerId);
+  const activeLayer = layerId(state.activeLayerId);
+  const layerExists = layout.layers.some((l) => l.id === activeLayer);
   if (layerExists && state.activeLayerId) {
-    ui.setActiveLayer(state.activeLayerId);
+    ui.setActiveLayer(activeLayer);
   }
 
   // Validate and restore selected bins (filter out any that no longer exist)
-  const existingBinIds = new Set(layout.bins.map((b) => b.id));
-  const validSelectedIds = state.selectedBinIds.filter((id) => existingBinIds.has(id));
+  const existingBinIds = new Set<BinId>(layout.bins.map((b) => b.id));
+  const validSelectedIds = state.selectedBinIds
+    .map((id) => binId(id))
+    .filter((id) => existingBinIds.has(id));
   if (validSelectedIds.length > 0) {
     ui.setSelectedBins(validSelectedIds);
   }
 
   // Restore active category (categories might have changed, but IDs are stable)
-  const categoryExists = layout.categories.some((c) => c.id === state.activeCategoryId);
+  const activeCategory = categoryId(state.activeCategoryId);
+  const categoryExists = layout.categories.some((c) => c.id === activeCategory);
   if (categoryExists) {
-    ui.setActiveCategory(state.activeCategoryId);
+    ui.setActiveCategory(activeCategory);
   }
 
   // Restore focused bin if it still exists
-  if (state.focusedBinId && existingBinIds.has(state.focusedBinId)) {
-    ui.setFocusedBin(state.focusedBinId);
+  if (state.focusedBinId && existingBinIds.has(binId(state.focusedBinId))) {
+    ui.setFocusedBin(binId(state.focusedBinId));
   }
 
   // Restore view settings (these don't need validation)

@@ -5,7 +5,7 @@
  */
 
 import { STAGING_ID } from '@/core/constants';
-import type { Bin } from '@/core/types';
+import type { Bin, LayerId } from '@/core/types';
 
 /**
  * Options for filtering visible bins.
@@ -15,7 +15,7 @@ export interface VisibleBinsOptions {
    * If provided, only include bins on these specific layer IDs.
    * Always excludes staging bins regardless of whether STAGING_ID is in the array.
    */
-  layerIds?: string[];
+  layerIds?: LayerId[];
 
   /**
    * If true, include staging bins in results.
@@ -115,7 +115,7 @@ export function getStagingBins(bins: Bin[]): Bin[] {
  * @example
  * const layerBins = getLayerBins(layout.bins, activeLayerId);
  */
-export function getLayerBins(bins: Bin[], layerId: string): Bin[] {
+export function getLayerBins(bins: Bin[], layerId: LayerId): Bin[] {
   return bins.filter((bin) => bin.layerId === layerId && bin.layerId !== STAGING_ID);
 }
 

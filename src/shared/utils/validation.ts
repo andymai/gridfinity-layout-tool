@@ -1,5 +1,8 @@
-import type { Bin, Layout, ValidationResult, Rect, OperationResult } from '@/core/types';
+import type { Bin, Layout, ValidationResult, Rect, BinId, LayerId } from '@/core/types';
+import { binId as toBinId, layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '@/core/constants';
+import type { Result, ValidationError } from '@/core/result';
+import { ok, err, validationImportFailed } from '@/core/result';
 import {
   binsCollideResult,
   getLayerZStartResult,
@@ -122,10 +125,10 @@ export function isValidCategory(value: unknown): value is CategoryShape {
  */
 export function canPlaceBin(
   rect: Rect & { height: number; clearanceHeight?: number },
-  layerId: string,
+  layerId: LayerId,
   layout: Layout,
-  excludeBinId?: string,
-  excludeBinIds?: Set<string>
+  excludeBinId?: BinId,
+  excludeBinIds?: Set<BinId>
 ): ValidationResult {
   const { drawer, layers, bins } = layout;
 
@@ -175,7 +178,7 @@ export function canPlaceBin(
 
   // Collision check with other bins
   const testBin: Bin = {
-    id: excludeBinId || '__test__',
+    id: excludeBinId ?? toBinId('__test__'),
     layerId,
     x: rect.x,
     y: rect.y,
@@ -183,7 +186,7 @@ export function canPlaceBin(
     depth: rect.depth,
     height: rect.height,
     clearanceHeight: rect.clearanceHeight,
-    category: '',
+    category: toCategoryId(''),
     label: '',
     notes: '',
   };
@@ -302,7 +305,7 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
 
       const placementResult = canPlaceBin(
         { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
-        bin.layerId,
+        toLayerId(bin.layerId),
         partialLayout
       );
 
@@ -316,21 +319,21 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
           blocked_zone: 'overlaps with blocked zone from upper layer',
           collision: 'collides with another bin',
         };
-        const message = reasonMap[placementResult.reason || ''] || 'has invalid placement';
+        const message = reasonMap[placementResult.reason] || 'has invalid placement';
         errors.push(`Bin ${i} ${message}`);
       }
     }
 
     // Add to validated bins for subsequent collision checks
     validatedBins.push({
-      id: bin.id,
-      layerId: bin.layerId,
+      id: toBinId(bin.id),
+      layerId: toLayerId(bin.layerId),
       x: bin.x,
       y: bin.y,
       width: bin.width,
       depth: bin.depth,
       height: bin.height,
-      category: bin.category || '',
+      category: toCategoryId(bin.category || ''),
       label: bin.label || '',
       notes: bin.notes || '',
       customProperties: bin.customProperties,
@@ -338,9 +341,14 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
 
     // Validate custom properties if present
     if (bin.customProperties) {
-      const result = validateCustomProperties(bin.customProperties);
-      if (!result.success) {
-        errors.push(`Bin ${i}: ${result.error}`);
+      const propsResult = validateCustomProperties(bin.customProperties);
+      if (!isOk(propsResult)) {
+        const errObj = propsResult.error;
+        const detail =
+          errObj.code === 'VALIDATION_IMPORT_FAILED'
+            ? errObj.errors[0] || errObj.message
+            : errObj.message;
+        errors.push(`Bin ${i}: ${detail}`);
       }
     }
   });
@@ -404,72 +412,72 @@ export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error
  * Checks property count, key/value lengths, and reserved keys.
  *
  * @param props - Custom properties object to validate
- * @returns OperationResult with success status and error message if invalid
+ * @returns Result with void on success or ValidationError on failure
  */
-export function validateCustomProperties(props: Record<string, string>): OperationResult {
+export function validateCustomProperties(
+  props: Record<string, string>
+): Result<void, ValidationError> {
   if (!props) {
-    return { success: true }; // undefined/null is valid (no custom properties)
+    return ok(undefined); // undefined/null is valid (no custom properties)
   }
 
   if (typeof props !== 'object' || Array.isArray(props)) {
-    return {
-      success: false,
-      error: 'Custom properties must be provided as a plain object',
-    };
+    return err(validationImportFailed(['Custom properties must be provided as a plain object']));
   }
 
   const keys = Object.keys(props);
 
   // Check property count
   if (keys.length > CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT) {
-    return {
-      success: false,
-      error: `Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} custom properties allowed per bin`,
-    };
+    return err(
+      validationImportFailed([
+        `Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} custom properties allowed per bin`,
+      ])
+    );
   }
 
   // Validate each property
   for (const key of keys) {
     // Check key is not empty
     if (!key.trim()) {
-      return { success: false, error: 'Custom property key cannot be empty' };
+      return err(validationImportFailed(['Custom property key cannot be empty']));
     }
 
     // Check key length
     if (key.length > CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH) {
-      return {
-        success: false,
-        error: `Custom property key "${key}" exceeds maximum length of ${CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH} characters`,
-      };
+      return err(
+        validationImportFailed([
+          `Custom property key "${key}" exceeds maximum length of ${CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH} characters`,
+        ])
+      );
     }
 
     // Check reserved keys
     if (RESERVED_PROPERTY_KEYS.includes(key as (typeof RESERVED_PROPERTY_KEYS)[number])) {
-      return {
-        success: false,
-        error: `"${key}" is a reserved field name and cannot be used as a custom property`,
-      };
+      return err(
+        validationImportFailed([
+          `"${key}" is a reserved field name and cannot be used as a custom property`,
+        ])
+      );
     }
 
     // Check value type
     const value = props[key];
     if (typeof value !== 'string') {
-      return {
-        success: false,
-        error: `Custom property value for "${key}" must be a string`,
-      };
+      return err(validationImportFailed([`Custom property value for "${key}" must be a string`]));
     }
 
     // Check value length
     if (value.length > CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH) {
-      return {
-        success: false,
-        error: `Custom property value for "${key}" exceeds maximum length of ${CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH} characters`,
-      };
+      return err(
+        validationImportFailed([
+          `Custom property value for "${key}" exceeds maximum length of ${CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH} characters`,
+        ])
+      );
     }
   }
 
-  return { success: true };
+  return ok(undefined);
 }
 
 /**

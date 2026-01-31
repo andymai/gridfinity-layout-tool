@@ -1,4 +1,12 @@
-import type { Bin, PrintPiece, PrintRow, EnhancedPrintRow, PrintListConfig } from '@/core/types';
+import type {
+  Bin,
+  PrintPiece,
+  PrintRow,
+  EnhancedPrintRow,
+  PrintListConfig,
+  BinId,
+  CategoryId,
+} from '@/core/types';
 import { getGridBins } from '@/shared/utils';
 import {
   calcFilamentCost,
@@ -196,10 +204,10 @@ export function generatePrintList(
       depth: number;
       height: number;
       count: number;
-      categoryId: string;
+      categoryId: CategoryId;
       label: string;
       notesList: string[]; // Collect all notes for merging
-      binIds: string[];
+      binIds: BinId[];
       customPropertiesList: Array<Record<string, string> | undefined>; // Collect for merging
     }
   >();

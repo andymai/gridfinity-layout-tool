@@ -1,4 +1,4 @@
-import type { Bin, Layer, Rect3D, BlockedZone } from '@/core/types';
+import type { Bin, Layer, Rect3D, BlockedZone, LayerId } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, isOk, validationInvalidLayer } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
@@ -17,7 +17,7 @@ export function getDisplayLayers<T>(layers: T[]): T[] {
  * Use this when layer existence is not guaranteed (e.g., during user interactions).
  */
 export function getLayerZStartResult(
-  layerId: string,
+  layerId: LayerId,
   layers: Layer[]
 ): Result<number, ValidationError> {
   let z = 0;
@@ -104,7 +104,7 @@ export function binsCollideResult(
 // Simple cache for getBlockedZones - avoids recomputation when called repeatedly
 // with same inputs (common during drag/resize interactions)
 let blockedZonesCache: {
-  targetLayerId: string;
+  targetLayerId: LayerId;
   bins: Bin[];
   layers: Layer[];
   result: BlockedZone[];
@@ -116,7 +116,7 @@ let blockedZonesCache: {
  * Results are cached by reference equality for performance during interactions.
  */
 export function getBlockedZones(
-  targetLayerId: string,
+  targetLayerId: LayerId,
   bins: Bin[],
   layers: Layer[]
 ): BlockedZone[] {

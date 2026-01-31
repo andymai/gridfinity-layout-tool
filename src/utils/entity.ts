@@ -1,4 +1,4 @@
-import type { Layout, Bin } from '@/core/types';
+import type { Layout, Bin, BinId } from '@/core/types';
 
 /**
  * Find a bin by ID in the layout.
@@ -6,7 +6,7 @@ import type { Layout, Bin } from '@/core/types';
  * @param id - The bin ID to find
  * @returns The bin if found, undefined otherwise
  */
-export function findBinById(layout: Layout, id: string): Bin | undefined {
+export function findBinById(layout: Layout, id: BinId): Bin | undefined {
   return layout.bins.find((b) => b.id === id);
 }
 
@@ -17,7 +17,7 @@ export function findBinById(layout: Layout, id: string): Bin | undefined {
  * @param ids - Array of bin IDs to find
  * @returns Array of found bins (in the same order as input IDs, excluding missing)
  */
-export function findBinsByIds(layout: Layout, ids: string[]): Bin[] {
+export function findBinsByIds(layout: Layout, ids: BinId[]): Bin[] {
   return ids
     .map((id) => layout.bins.find((b) => b.id === id))
     .filter((b): b is Bin => b !== undefined);

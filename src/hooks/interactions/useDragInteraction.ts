@@ -10,7 +10,7 @@ import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { InteractionContext, ModeHandlers, DragStartArgs } from './types';
-import type { Coord, SwapTarget, ValidationReason, BlockingInfo } from '@/core/types';
+import type { BinId, Coord, SwapTarget, ValidationReason, BlockingInfo } from '@/core/types';
 
 /**
  * Hook for drag mode interactions: moving bins by clicking and dragging.
@@ -66,7 +66,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
    */
   const start = useCallback(
     (
-      binId: string,
+      binId: BinId,
       clientX: number,
       clientY: number,
       pointerId?: number,
@@ -114,7 +114,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
 
       // If clicked bin is already in selection, drag all selected bins
       // Otherwise, select only this bin and drag it
-      let binIds: string[];
+      let binIds: BinId[];
       if (selectedBinIds.includes(binId)) {
         binIds = selectedBinIds;
       } else {
@@ -357,7 +357,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
       if (deltaX !== 0 || deltaY !== 0) {
         if (interaction.duplicate) {
           // Duplicate mode: create copies at new position, keep originals in place
-          const newBinIds: string[] = [];
+          const newBinIds: BinId[] = [];
           execute(() => {
             for (const binId of interaction.binIds) {
               const bin = findBinById(layout, binId);

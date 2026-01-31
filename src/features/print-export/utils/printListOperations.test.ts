@@ -273,7 +273,7 @@ describe('printListOperations', () => {
       const groups = groupByCategory(rows, testCategories);
 
       expect(groups).toHaveLength(1);
-      expect(groups[0].categoryId).toBe('uncategorized');
+      expect(groups[0].categoryId).toBe('');
       expect(groups[0].categoryName).toBe('Uncategorized');
     });
 

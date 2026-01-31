@@ -9,6 +9,8 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
+import { categoryId as toCategoryId } from '@/core/types';
+import type { CategoryId } from '@/core/types';
 
 interface ColorPaletteGridProps {
   selectedColor: string;
@@ -127,22 +129,23 @@ export function CategoriesPanel() {
   }, [editingId, colorPickerId]);
 
   // Handle category selection: applies to selected bins if any, always sets active category
-  const handleCategorySelect = (categoryId: string, categoryName: string) => {
+  const handleCategorySelect = (rawCategoryId: string, categoryName: string) => {
+    const catId: CategoryId = toCategoryId(rawCategoryId);
     // Always set active category for new bins
-    setActiveCategory(categoryId);
+    setActiveCategory(catId);
 
     // If bins are selected, update their categories
     if (selectedBinIds.length > 0) {
       // Filter to only bins that actually change
       const binsToUpdate = selectedBinIds
         .map((id) => bins.find((b) => b.id === id))
-        .filter((bin): bin is (typeof bins)[number] => !!bin && bin.category !== categoryId);
+        .filter((bin): bin is (typeof bins)[number] => !!bin && bin.category !== catId);
       if (binsToUpdate.length === 0) return;
 
       const binCount = binsToUpdate.length;
       execute(() => {
         for (const bin of binsToUpdate) {
-          updateBin(bin.id, { category: categoryId });
+          if (isErr(updateBin(bin.id, { category: catId }))) break;
         }
       });
 
@@ -162,11 +165,10 @@ export function CategoriesPanel() {
   };
 
   const handleUpdateCategory = (id: string, field: 'name' | 'color', value: string) => {
-    const result = execute(() =>
-      updateCategory(id, {
-        [field]: field === 'name' ? value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) : value,
-      })
-    );
+    const updates = {
+      [field]: field === 'name' ? value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) : value,
+    };
+    const result = execute(() => updateCategory(toCategoryId(id), updates));
     if (isErr(result)) {
       addToast(getUserMessage(result.error), 'error');
     }
@@ -198,7 +200,7 @@ export function CategoriesPanel() {
     if (!deleteConfirm) return;
     const { id } = deleteConfirm;
     const result = execute(() => {
-      const deleteResult = deleteCategory(id);
+      const deleteResult = deleteCategory(toCategoryId(id));
       if (isOk(deleteResult)) {
         // Access fresh state to avoid stale closure issues
         const currentCategories = useLayoutStore.getState().layout.categories;

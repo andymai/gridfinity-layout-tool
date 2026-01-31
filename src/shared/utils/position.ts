@@ -1,4 +1,4 @@
-import type { Bin, Layout, Coord } from '@/core/types';
+import type { Bin, Layout, Coord, LayerId, BinId } from '@/core/types';
 import { canPlaceBin } from './validation';
 
 /**
@@ -82,9 +82,9 @@ export function findNearbyValidPosition(
   width: number,
   depth: number,
   height: number,
-  layerId: string,
+  layerId: LayerId,
   layout: Layout,
-  excludeBinId: string,
+  excludeBinId: BinId,
   maxDistance = 3,
   clearanceHeight?: number
 ): NearbyPosition | null {

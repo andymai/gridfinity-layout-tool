@@ -1,4 +1,5 @@
 import type { Layout, Bin, Layer, Category } from '@/core/types';
+import { binId, layerId, categoryId } from '@/core/types';
 import type { InspirationLayout, InspirationTheme } from '../types';
 import { computePreview } from '@/core/storage';
 
@@ -25,14 +26,14 @@ export function createBin(
   }
 ): Bin {
   return {
-    id: genId(),
+    id: binId(genId()),
     x,
     y,
     width,
     depth,
     height: options.height ?? 3,
-    layerId: options.layerId,
-    category: options.categoryId,
+    layerId: layerId(options.layerId),
+    category: categoryId(options.categoryId),
     label: options.label ?? '',
     notes: options.notes ?? '',
     ...(options.clearanceHeight !== undefined && { clearanceHeight: options.clearanceHeight }),
@@ -44,7 +45,7 @@ export function createBin(
  */
 export function createLayer(name: string, height: number): Layer {
   return {
-    id: genId(),
+    id: layerId(genId()),
     name,
     height,
   };
@@ -55,7 +56,7 @@ export function createLayer(name: string, height: number): Layer {
  */
 export function createCategory(name: string, color: string): Category {
   return {
-    id: genId(),
+    id: categoryId(genId()),
     name,
     color,
   };

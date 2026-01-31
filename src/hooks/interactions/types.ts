@@ -1,5 +1,15 @@
 import type { RefObject } from 'react';
-import type { Bin, Coord, Layout, Rect, ResizeHandle, Interaction } from '@/core/types';
+import type {
+  Bin,
+  BinId,
+  LayerId,
+  CategoryId,
+  Coord,
+  Layout,
+  Rect,
+  ResizeHandle,
+  Interaction,
+} from '@/core/types';
 import type { Result } from '@/core/result';
 import type { ValidationError, LayoutError } from '@/core/result';
 
@@ -27,21 +37,21 @@ export interface InteractionContext {
 
   // Store state (stable references)
   layout: Layout;
-  activeLayerId: string;
-  activeCategoryId: string;
+  activeLayerId: LayerId;
+  activeCategoryId: CategoryId;
   paintSize: PaintSize | null;
-  selectedBinIds: string[];
+  selectedBinIds: BinId[];
 
   // Store actions (from useInteractionStore and useSelectionStore)
   setInteraction: (interaction: Interaction | null) => void;
   setDropTarget: (target: 'trash' | 'staging' | null) => void;
-  setSelectedBin: (id: string) => void;
-  setSelectedBins: (ids: string[]) => void;
+  setSelectedBin: (id: BinId | null) => void;
+  setSelectedBins: (ids: BinId[]) => void;
 
   // Mutations (from MutationsContext, wrapped for collaborative mode)
-  addBin: (params: AddBinParams) => Result<string, ValidationError | LayoutError>;
-  updateBin: (id: string, updates: Partial<Bin>) => void;
-  deleteBin: (id: string) => void;
+  addBin: (params: AddBinParams) => Result<BinId, ValidationError | LayoutError>;
+  updateBin: (id: BinId, updates: Partial<Bin>) => void;
+  deleteBin: (id: BinId) => void;
 
   // Undo/redo wrapper
   execute: (fn: () => void) => void;
@@ -55,13 +65,13 @@ export interface InteractionContext {
  * Parameters for adding a new bin.
  */
 export interface AddBinParams {
-  layerId: string;
+  layerId: LayerId;
   x: number;
   y: number;
   width: number;
   depth: number;
   height: number;
-  category: string;
+  category: CategoryId;
   label: string;
   notes: string;
   clearanceHeight?: number;
@@ -98,7 +108,7 @@ export type DrawStartArgs = [coord: Coord, pointerId?: number];
  * Drag mode start parameters.
  */
 export type DragStartArgs = [
-  binId: string,
+  binId: BinId,
   clientX: number,
   clientY: number,
   pointerId?: number,
@@ -109,12 +119,12 @@ export type DragStartArgs = [
 /**
  * Resize mode start parameters.
  */
-export type ResizeStartArgs = [binId: string, handle: ResizeHandle, pointerId?: number];
+export type ResizeStartArgs = [binId: BinId, handle: ResizeHandle, pointerId?: number];
 
 /**
  * Staging drag mode start parameters.
  */
-export type StagingDragStartArgs = [binId: string, pointerId?: number];
+export type StagingDragStartArgs = [binId: BinId, pointerId?: number];
 
 // Re-export types that mode hooks need
 export type { Bin, Coord, Layout, Rect, ResizeHandle, Interaction };

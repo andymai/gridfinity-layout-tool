@@ -23,6 +23,10 @@ import { useLayoutSwitcher } from '@/hooks';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
 import { getStagingBins } from '@/shared/utils';
 import { findBinById } from '@/utils/entity';
+import { STAGING_ID } from '@/core/constants';
+import { isOk, isErr } from '@/core/result';
+import type { BinId } from '@/core/types';
+import { binId } from '@/core/types';
 import type { CommandDefinition } from '../../commands';
 import { useRecentCommandsStore } from '../../store/recentStore';
 import { ShortcutBadge } from '../ShortcutBadge';
@@ -144,11 +148,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return selectedBinIds.length > 0
             ? () => {
                 execute(() => {
-                  const newIds: string[] = [];
-                  for (const binId of selectedBinIds) {
-                    const result = duplicateBin(binId);
+                  const newIds: BinId[] = [];
+                  for (const id of selectedBinIds) {
+                    const result = duplicateBin(id);
                     if (result && 'value' in result) {
-                      newIds.push(result.value);
+                      newIds.push(binId(result.value));
                     }
                   }
                   if (newIds.length > 0) {
@@ -282,7 +286,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             ? () => {
                 execute(() => {
                   for (const binId of selectedBinIds) {
-                    updateBin(binId, { layerId: '__staging__' });
+                    if (isErr(updateBin(binId, { layerId: STAGING_ID }))) break;
                   }
                 });
                 addToast(t('toast.movedToStash', { count: selectedBinIds.length }), 'info');
@@ -294,7 +298,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         case 'toggle-half-bin':
           return () => {
             const result = toggleHalfBinMode();
-            if (!result.success) {
+            if (!isOk(result)) {
               addToast(t('halfBinBlocked.title'), 'error');
             }
           };

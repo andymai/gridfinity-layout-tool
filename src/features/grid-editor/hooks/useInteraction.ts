@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
-import type { Coord, ResizeHandle } from '@/core/types';
+import type { BinId, Coord, ResizeHandle } from '@/core/types';
 import {
   useLayoutStore,
   useUndoableAction,
@@ -188,7 +188,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   // Set duplicate=true for Alt+drag to duplicate bins instead of moving them
   // Uses ref to always access current dragMode handlers
   const startDrag = useCallback(
-    (binId: string, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => {
+    (binId: BinId, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => {
       dragModeRef.current.start(binId, clientX, clientY, pointerId, duplicate);
     },
     []
@@ -196,7 +196,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
   // Start resizing bins (single or multiple)
   // Uses ref to always access current resizeMode handlers
-  const startResize = useCallback((binId: string, handle: ResizeHandle, pointerId?: number) => {
+  const startResize = useCallback((binId: BinId, handle: ResizeHandle, pointerId?: number) => {
     resizeModeRef.current.start(binId, handle, pointerId);
   }, []);
 

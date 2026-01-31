@@ -117,7 +117,5 @@ export function mapInteractionToHint(interaction: Interaction | null): Interacti
     case 'stagingDrag':
       // Don't broadcast staging drags (too ephemeral/confusing for remote users)
       return { type: 'idle' };
-    default:
-      return { type: 'idle' };
   }
 }

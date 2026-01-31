@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { Category } from '@/core/types';
+import type { Category, CategoryId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 interface BulkActionsProps {
@@ -10,7 +10,7 @@ interface BulkActionsProps {
   /** Callback to delete selected items */
   onDelete: () => void;
   /** Callback to change category of selected items */
-  onChangeCategory: (categoryId: string) => void;
+  onChangeCategory: (categoryId: CategoryId) => void;
   /** Callback to clear selection */
   onClearSelection: () => void;
   /** Callback to update label for selected items */
@@ -55,7 +55,7 @@ export function BulkActions({
   }, [openDropdown]);
 
   const handleCategorySelect = useCallback(
-    (categoryId: string) => {
+    (categoryId: CategoryId) => {
       onChangeCategory(categoryId);
       setOpenDropdown(null);
     },
@@ -92,7 +92,9 @@ export function BulkActions({
   return (
     <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 border-y border-accent/20">
       {/* Selection count */}
-      <span className="text-sm font-medium text-content">{t('binList.selected', { count: selectionCount })}</span>
+      <span className="text-sm font-medium text-content">
+        {t('binList.selected', { count: selectionCount })}
+      </span>
 
       {/* Clear selection */}
       <button
@@ -185,7 +187,9 @@ export function BulkActions({
 
             {openDropdown === 'label' && (
               <div className="absolute top-full left-0 mt-1 w-64 p-3 bg-surface-elevated border border-stroke rounded-lg shadow-lg z-50">
-                <label className="block text-xs text-content-secondary mb-1">{t('binList.setLabelForCount', { count: selectionCount })}</label>
+                <label className="block text-xs text-content-secondary mb-1">
+                  {t('binList.setLabelForCount', { count: selectionCount })}
+                </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -231,7 +235,9 @@ export function BulkActions({
 
             {openDropdown === 'notes' && (
               <div className="absolute top-full left-0 mt-1 w-72 p-3 bg-surface-elevated border border-stroke rounded-lg shadow-lg z-50">
-                <label className="block text-xs text-content-secondary mb-1">{t('binList.setNotesForCount', { count: selectionCount })}</label>
+                <label className="block text-xs text-content-secondary mb-1">
+                  {t('binList.setNotesForCount', { count: selectionCount })}
+                </label>
                 <div className="flex flex-col gap-2">
                   <textarea
                     value={notesValue}

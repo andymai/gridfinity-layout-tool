@@ -1,3 +1,21 @@
+// === Branded ID Types ===
+// Nominal types that prevent accidentally mixing different ID domains.
+// Use constructor helpers (binId, layerId, etc.) at system boundaries.
+
+export type BinId = string & { readonly __brand: 'BinId' };
+export type LayerId = string & { readonly __brand: 'LayerId' };
+export type CategoryId = string & { readonly __brand: 'CategoryId' };
+export type LayoutId = string & { readonly __brand: 'LayoutId' };
+
+/** Brand a raw string as a BinId. Use at system boundaries (deserialization, user input). */
+export const binId = (id: string): BinId => id as BinId;
+/** Brand a raw string as a LayerId. Use at system boundaries (deserialization, user input). */
+export const layerId = (id: string): LayerId => id as LayerId;
+/** Brand a raw string as a CategoryId. Use at system boundaries (deserialization, user input). */
+export const categoryId = (id: string): CategoryId => id as CategoryId;
+/** Brand a raw string as a LayoutId. Use at system boundaries (deserialization, user input). */
+export const layoutId = (id: string): LayoutId => id as LayoutId;
+
 // === Core Data Model (from PRD 05-technical-reference.md) ===
 
 export interface Layout {
@@ -25,27 +43,27 @@ export interface Drawer {
 }
 
 export interface Category {
-  id: string;
+  id: CategoryId;
   name: string; // max 24 chars, unique (case-insensitive)
   color: string; // hex color
 }
 
 export interface Layer {
-  id: string;
+  id: LayerId;
   name: string; // max 24 chars
   height: number; // >= 1
 }
 
 export interface Bin {
-  id: string;
-  layerId: string; // base layer ID or STAGING_ID
+  id: BinId;
+  layerId: LayerId; // base layer ID or STAGING_ID
   x: number; // 0-based, from left
   y: number; // 0-based, from bottom
   width: number; // >= 1
   depth: number; // >= 1
   height: number; // >= base layer height, <= space to drawer top
   clearanceHeight?: number; // additional blocked space above bin (for tall contents)
-  category: string; // references Category.id
+  category: CategoryId; // references Category.id
   label: string; // max 24 chars
   notes: string; // max 256 chars
   customProperties?: Record<string, string>; // custom key-value properties for user-defined metadata
@@ -109,7 +127,7 @@ export interface HandleVisualConfig {
  */
 export interface SwapTarget {
   /** ID of the target bin that would be swapped */
-  binId: string;
+  binId: BinId;
   /** True if swap requires rotating the dragged bin (e.g., 2×3 onto 3×2) */
   requiresRotation: boolean;
   /** Mobile countdown state (only set on touch devices during long-press) */
@@ -125,7 +143,7 @@ export type Interaction =
   | { type: 'draw'; start: Coord; current: Coord }
   | {
       type: 'drag';
-      binIds: string[];
+      binIds: BinId[];
       startCoord: Coord;
       currentCoord: Coord;
       valid: boolean;
@@ -143,10 +161,10 @@ export type Interaction =
     }
   | {
       type: 'resize';
-      binIds: string[];
+      binIds: BinId[];
       handle: ResizeHandle;
-      startRects: Map<string, Rect>;
-      currentRects: Map<string, Rect>;
+      startRects: Map<BinId, Rect>;
+      currentRects: Map<BinId, Rect>;
       valid: boolean;
       /** Why resize is invalid (for user feedback) */
       invalidReason?: ValidationReason;
@@ -155,7 +173,7 @@ export type Interaction =
     }
   | {
       type: 'stagingDrag';
-      binId: string;
+      binId: BinId;
       currentCoord: Coord | null;
       valid: boolean;
       /** Why placement is invalid (for user feedback) */
@@ -168,9 +186,9 @@ export type Interaction =
 // === UI State ===
 
 export interface UIState {
-  activeLayerId: string;
-  selectedBinIds: string[];
-  activeCategoryId: string;
+  activeLayerId: LayerId;
+  selectedBinIds: BinId[];
+  activeCategoryId: CategoryId;
   zoom: number; // 0.5 - 2.0
   showOtherLayers: boolean;
 }
@@ -190,37 +208,16 @@ export type ValidationReason =
 /** Info about what's blocking a placement (for user feedback) */
 export interface BlockingInfo {
   /** ID of the bin causing the block */
-  binId: string;
+  binId: BinId;
   /** ID of the layer containing the blocking bin */
-  layerId: string;
+  layerId: LayerId;
   /** Name of the layer (for display) */
   layerName: string;
 }
 
-export interface ValidationResult {
-  valid: boolean;
-  reason?: ValidationReason;
-  /** Details about what's blocking (for blocked_zone and collision) */
-  blockingInfo?: BlockingInfo;
-}
-
-/**
- * Standardized result type for store operations.
- * Use this pattern for operations that can fail with a user-facing error message.
- *
- * @example
- * // Success with data
- * return { success: true, data: newBin };
- *
- * // Success without data
- * return { success: true };
- *
- * // Failure
- * return { success: false, error: 'Cannot delete the last layer' };
- */
-export type OperationResult<T = void> =
-  | { success: true; data?: T }
-  | { success: false; error: string };
+export type ValidationResult =
+  | { valid: true }
+  | { valid: false; reason: ValidationReason; blockingInfo?: BlockingInfo };
 
 // === Print List ===
 
@@ -238,10 +235,10 @@ export interface PrintRow {
   totalPieces: number;
   needsSplit: boolean;
   filament: number; // Estimated filament in meters
-  categoryIds: string[]; // Category IDs for bins of this size (for color display)
+  categoryIds: CategoryId[]; // Category IDs for bins of this size (for color display)
   labels: string[]; // Non-empty labels from bins of this size
   notes: string; // Notes (only for labeled/individual bins)
-  binIds: string[]; // Original bin IDs for click-to-select
+  binIds: BinId[]; // Original bin IDs for click-to-select
   customProperties?: Record<string, string>; // Custom properties (only for individual bins)
 }
 
@@ -259,7 +256,7 @@ export interface EnhancedPrintRow extends PrintRow {
 }
 
 export interface PrintListGroup {
-  categoryId: string;
+  categoryId: CategoryId;
   categoryName: string;
   categoryColor: string;
   rows: EnhancedPrintRow[];
@@ -272,7 +269,7 @@ export type PrintListSortKey = 'default' | 'area' | 'height' | 'filament';
 export type PrintListSortOrder = 'asc' | 'desc';
 
 export interface PrintListFilters {
-  hiddenCategoryIds: Set<string>;
+  hiddenCategoryIds: Set<CategoryId>;
   sortKey: PrintListSortKey;
   sortOrder: PrintListSortOrder;
   groupByCategory: boolean;
@@ -285,8 +282,8 @@ export interface BlockedZone {
   y: number;
   width: number;
   depth: number;
-  sourceBinId: string;
-  sourceLayerId: string;
+  sourceBinId: BinId;
+  sourceLayerId: LayerId;
 }
 
 // === Layout Library (Multi-Layout Management) ===
@@ -369,7 +366,7 @@ export interface NameSuggestionState {
 }
 
 export interface LayoutEntry {
-  id: string; // UUID for identification and future sharing
+  id: LayoutId; // UUID for identification and future sharing
   name: string; // Display name (max 64 chars)
   createdAt: number; // Unix timestamp
   modifiedAt: number; // Unix timestamp
@@ -405,7 +402,7 @@ export interface LayoutFolder {
  */
 export interface LayoutLibrary {
   version: '1.0';
-  activeLayoutId: string; // Currently active layout ID
+  activeLayoutId: LayoutId; // Currently active layout ID
   settings: {
     authorName?: string; // Default author name for new layouts
   };

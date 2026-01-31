@@ -7,6 +7,7 @@ import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { createLayoutEntry, initializeLayoutLibrary } from '@/core/storage';
 import { isErr, getUserMessage } from '@/core/result';
+import { layoutId as toLayoutId } from '@/core/types';
 import { ConfirmDialog } from '@/shared/components';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { useTranslation } from '@/i18n';
@@ -85,11 +86,12 @@ export function SharedLayoutBanner() {
       return;
     }
 
-    const { layoutId, library: updatedLibrary } = result.value;
+    const { layoutId: rawLayoutId, library: updatedLibrary } = result.value;
+    const brandedLayoutId = toLayoutId(rawLayoutId);
 
     // Update the layout store with the proper ID (not __shared_preview__)
-    importLayout(savedLayout, layoutId, 'init');
-    setActiveLayoutId(layoutId);
+    importLayout(savedLayout, brandedLayoutId, 'init');
+    setActiveLayoutId(brandedLayoutId);
 
     // Sync library store with updated library from atomic operation
     setLibrary(updatedLibrary);

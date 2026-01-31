@@ -9,6 +9,9 @@ import { getBinTextColors, clamp, getStagingBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
+import type { BinId, CategoryId } from '@/core/types';
+import { binId as toBinId } from '@/core/types';
+import { isErr } from '@/core/result';
 
 /** Default max height for the stash panel (33% of viewport) */
 const DEFAULT_STASH_MAX_HEIGHT_VH = 33;
@@ -25,13 +28,13 @@ const MOVEMENT_THRESHOLD = 10;
 const formatDim = (val: number): string => (val % 1 === 0 ? val.toString() : val.toFixed(1));
 
 interface PackedBin {
-  id: string;
+  id: BinId;
   x: number; // Position in staging grid
   y: number;
   width: number;
   depth: number;
   height: number;
-  category: string;
+  category: CategoryId;
   label: string;
 }
 
@@ -167,7 +170,7 @@ export function Staging() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const addToast = useToastStore((state) => state.addToast);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hoveredBinId, setHoveredBinId] = useState<string | null>(null);
+  const [hoveredBinId, setHoveredBinId] = useState<BinId | null>(null);
   const isTouchDevice = useResponsive().isTouchDevice;
 
   // Collapse state with persistence
@@ -264,25 +267,28 @@ export function Staging() {
 
   const getCategory = (categoryId: string) => layout.categories.find((c) => c.id === categoryId);
 
-  const handleBinClick = (binId: string, e: React.MouseEvent) => {
+  const handleBinClick = (rawBinId: string, e: React.MouseEvent) => {
     // Don't select if we're in the middle of a drag
     if (interaction?.type === 'stagingDrag') return;
 
     e.preventDefault();
     e.stopPropagation();
 
+    const brandedBinId: BinId = toBinId(rawBinId);
     const isMultiSelectKey = e.ctrlKey || e.metaKey;
     if (isMultiSelectKey) {
-      toggleSelection(binId);
+      toggleSelection(brandedBinId);
     } else {
-      setSelectedBin(binId);
+      setSelectedBin(brandedBinId);
     }
   };
 
-  const handleBinPointerDown = (binId: string, e: React.PointerEvent) => {
+  const handleBinPointerDown = (rawBinId: string, e: React.PointerEvent) => {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
+
+    const brandedBinId: BinId = toBinId(rawBinId);
 
     // Reset long-press state
     longPressTriggeredRef.current = false;
@@ -298,20 +304,20 @@ export function Staging() {
           navigator.vibrate(50);
         }
         // Show context menu
-        showContextMenu([binId], { x: e.clientX, y: e.clientY }, 'staging');
+        showContextMenu([brandedBinId], { x: e.clientX, y: e.clientY }, 'staging');
       }, LONG_PRESS_DURATION);
     }
 
     // Ensure bin is selected before dragging (consistency with grid drag behavior)
-    if (!selectedBinIds.includes(binId)) {
-      setSelectedBin(binId);
+    if (!selectedBinIds.includes(brandedBinId)) {
+      setSelectedBin(brandedBinId);
     }
 
     // Don't start drag if long-press menu triggered
     if (!longPressTriggeredRef.current) {
       setInteraction({
         type: 'stagingDrag',
-        binId,
+        binId: brandedBinId,
         currentCoord: null,
         valid: false,
       });
@@ -335,23 +341,25 @@ export function Staging() {
     pointerStartRef.current = null;
   };
 
-  const handleBinContextMenu = (binId: string, e: React.MouseEvent) => {
+  const handleBinContextMenu = (rawBinId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const brandedBinId: BinId = toBinId(rawBinId);
     // Select the bin if not already selected
-    if (!selectedBinIds.includes(binId)) {
-      setSelectedBin(binId);
+    if (!selectedBinIds.includes(brandedBinId)) {
+      setSelectedBin(brandedBinId);
     }
-    showContextMenu([binId], { x: e.clientX, y: e.clientY }, 'staging');
+    showContextMenu([brandedBinId], { x: e.clientX, y: e.clientY }, 'staging');
   };
 
   const handleRotate = useCallback(
-    (binId: string) => {
-      const bin = stagingBins.find((b) => b.id === binId);
+    (rawBinId: string) => {
+      const brandedBinId: BinId = toBinId(rawBinId);
+      const bin = stagingBins.find((b) => b.id === brandedBinId);
       if (!bin) return;
 
       execute(() => {
-        updateBin(binId, { width: bin.depth, depth: bin.width });
+        if (isErr(updateBin(brandedBinId, { width: bin.depth, depth: bin.width }))) return;
       });
 
       addToast(t('toast.binRotated'), 'success');

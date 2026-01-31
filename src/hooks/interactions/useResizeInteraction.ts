@@ -5,7 +5,7 @@ import { calculateResizeRect, capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';
-import type { Coord, Rect, ValidationReason, BlockingInfo } from '@/core/types';
+import type { BinId, Coord, Rect, ValidationReason, BlockingInfo } from '@/core/types';
 
 /**
  * Hook for resize mode interactions: resizing bins via corner/edge handles.
@@ -46,7 +46,7 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
    * @param pointerId - Pointer ID for capture
    */
   const start = useCallback(
-    (binId: string, handle: ResizeStartArgs[1], pointerId?: number) => {
+    (binId: BinId, handle: ResizeStartArgs[1], pointerId?: number) => {
       const bin = findBinById(layout, binId);
       if (!bin) return;
 
@@ -54,7 +54,7 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
       capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
       // If clicked bin is in selection, resize all selected bins
-      let binIds: string[];
+      let binIds: BinId[];
       if (selectedBinIds.includes(binId)) {
         binIds = selectedBinIds;
       } else {
@@ -63,8 +63,8 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
       }
 
       // Store start rects for all bins being resized
-      const startRects = new Map<string, Rect>();
-      const currentRects = new Map<string, Rect>();
+      const startRects = new Map<BinId, Rect>();
+      const currentRects = new Map<BinId, Rect>();
       for (const id of binIds) {
         const b = findBinById(layout, id);
         if (b) {
@@ -97,7 +97,7 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
       if (!interaction || interaction.type !== 'resize') return;
 
       // Resize all selected bins by same delta
-      const newRects = new Map<string, Rect>();
+      const newRects = new Map<BinId, Rect>();
       let allValid = true;
       let invalidReason: ValidationReason | undefined;
       let blockingInfo: BlockingInfo | undefined;

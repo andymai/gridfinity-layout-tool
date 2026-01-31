@@ -11,7 +11,7 @@
  */
 
 import type { PostHog } from 'posthog-js';
-import type { Layout } from '@/core/types';
+import type { Layout, CategoryId } from '@/core/types';
 import {
   DEFAULT_CATEGORIES,
   calcMaxGridUnits,
@@ -374,7 +374,7 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
   const topCategories = [...categoryCount.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
-    .map(([id, count]) => ({ name: categoryIdToName.get(id) || 'Unknown', count }));
+    .map(([id, count]) => ({ name: categoryIdToName.get(id as CategoryId) || 'Unknown', count }));
 
   // Custom categories (not matching default names)
   const customCategoryCount = layout.categories.filter(

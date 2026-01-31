@@ -16,6 +16,7 @@ import {
 } from '@/core/storage';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
 import type { LayoutEntry, SharePermission } from '@/core/types';
+import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation, useFormatting } from '@/i18n';
 
@@ -78,11 +79,11 @@ export function MobileLayoutsPanel() {
   );
 
   const handleSelectLayout = useCallback(
-    async (layoutId: string) => {
-      if (layoutId === activeLayoutId) return;
+    async (id: string) => {
+      if (id === activeLayoutId) return;
 
-      const entry = library.entries.find((e) => e.id === layoutId);
-      const result = await switchLayout(layoutId);
+      const entry = library.entries.find((e) => e.id === id);
+      const result = await switchLayout(layoutId(id));
       if (isOk(result)) {
         announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
         closeMobilePanel();
@@ -100,9 +101,9 @@ export function MobileLayoutsPanel() {
   }, [createNewLayout, announceToScreenReader, closeMobilePanel]);
 
   const handleDuplicate = useCallback(
-    async (layoutId: string) => {
-      const entry = library.entries.find((e) => e.id === layoutId);
-      const result = await duplicateLayout(layoutId);
+    async (id: string) => {
+      const entry = library.entries.find((e) => e.id === id);
+      const result = await duplicateLayout(layoutId(id));
       if (isOk(result)) {
         announceToScreenReader(`Duplicated ${entry?.name || 'layout'}`);
       }
@@ -133,7 +134,7 @@ export function MobileLayoutsPanel() {
     if (!renameLayoutId) return;
     const trimmed = renameValue.trim();
     if (trimmed) {
-      renameLayout(renameLayoutId, trimmed);
+      renameLayout(layoutId(renameLayoutId), trimmed);
       announceToScreenReader(`Renamed to ${trimmed}`);
     }
     setRenameLayoutId(null);
@@ -195,7 +196,7 @@ export function MobileLayoutsPanel() {
   const confirmDelete = useCallback(() => {
     if (!deleteLayoutId) return;
     const entry = library.entries.find((e) => e.id === deleteLayoutId);
-    deleteLayout(deleteLayoutId);
+    deleteLayout(layoutId(deleteLayoutId));
     announceToScreenReader(`${entry?.name || 'Layout'} deleted`);
     setDeleteLayoutId(null);
   }, [deleteLayoutId, deleteLayout, library.entries, announceToScreenReader]);
@@ -346,7 +347,9 @@ export function MobileLayoutsPanel() {
                           {entry.name}
                         </span>
                         {isActive && (
-                          <span className="text-xs px-2 py-0.5 bg-accent text-on-dark rounded flex-shrink-0">{t('mobile.layouts.active')}</span>
+                          <span className="text-xs px-2 py-0.5 bg-accent text-on-dark rounded flex-shrink-0">
+                            {t('mobile.layouts.active')}
+                          </span>
                         )}
                       </div>
 
@@ -360,7 +363,9 @@ export function MobileLayoutsPanel() {
 
                       {/* Forked from info */}
                       {entry.forkedFrom && (
-                        <div className="text-xs text-content-disabled">{t('mobile.layouts.forkedFrom')}{entry.forkedFrom.name}
+                        <div className="text-xs text-content-disabled">
+                          {t('mobile.layouts.forkedFrom')}
+                          {entry.forkedFrom.name}
                         </div>
                       )}
                     </div>
@@ -386,7 +391,9 @@ export function MobileLayoutsPanel() {
                           strokeWidth={2}
                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                         />
-                      </svg>{t('common.rename')}</button>
+                      </svg>
+                      {t('common.rename')}
+                    </button>
                     <button
                       onClick={() => handleShare(entry.id)}
                       className="btn btn-secondary flex-1 h-11"
@@ -403,7 +410,9 @@ export function MobileLayoutsPanel() {
                           strokeWidth={2}
                           d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                         />
-                      </svg>{t('common.share')}</button>
+                      </svg>
+                      {t('common.share')}
+                    </button>
                     <button
                       onClick={() => handleDuplicate(entry.id)}
                       className="btn btn-secondary flex-1 h-11"
@@ -420,7 +429,9 @@ export function MobileLayoutsPanel() {
                           strokeWidth={2}
                           d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                         />
-                      </svg>{t('common.duplicate')}</button>
+                      </svg>
+                      {t('common.duplicate')}
+                    </button>
                   </div>
                 )}
               </div>
@@ -464,8 +475,12 @@ export function MobileLayoutsPanel() {
           </svg>
         </div>
         <div className="flex-1 text-left">
-          <div className="text-sm font-medium text-content">{t('mobile.layouts.inspirationGallery')}</div>
-          <div className="text-xs text-content-tertiary">{t('mobile.layouts.getIdeasForYourDrawer')}</div>
+          <div className="text-sm font-medium text-content">
+            {t('mobile.layouts.inspirationGallery')}
+          </div>
+          <div className="text-xs text-content-tertiary">
+            {t('mobile.layouts.getIdeasForYourDrawer')}
+          </div>
         </div>
         <svg
           className="w-4 h-4 text-content-tertiary"
@@ -481,7 +496,9 @@ export function MobileLayoutsPanel() {
       <button onClick={handleCreateNew} className="btn btn-secondary w-full mt-3 h-12">
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>{t('mobile.layouts.newLayout')}</button>
+        </svg>
+        {t('mobile.layouts.newLayout')}
+      </button>
 
       {/* Delete confirmation dialog */}
       <ConfirmDialog
@@ -506,7 +523,9 @@ export function MobileLayoutsPanel() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-content mb-4">{t('layouts.shareLayout')}</h3>
+              <h3 className="text-lg font-semibold text-content mb-4">
+                {t('layouts.shareLayout')}
+              </h3>
               <div className="space-y-2">
                 <button
                   onClick={() => handleCloudShare(shareMenuId)}
@@ -529,7 +548,9 @@ export function MobileLayoutsPanel() {
                   </div>
                   <div className="text-left">
                     <div className="font-medium text-content">{t('share.shareToCloud')}</div>
-                    <div className="text-sm text-content-secondary">{t('mobile.layouts.createExpiringShareLink')}</div>
+                    <div className="text-sm text-content-secondary">
+                      {t('mobile.layouts.createExpiringShareLink')}
+                    </div>
                   </div>
                 </button>
                 <button
@@ -553,7 +574,9 @@ export function MobileLayoutsPanel() {
                   </div>
                   <div className="text-left">
                     <div className="font-medium text-content">{t('share.copyLink')}</div>
-                    <div className="text-sm text-content-secondary">{t('share.link.urlEncoded')}</div>
+                    <div className="text-sm text-content-secondary">
+                      {t('share.link.urlEncoded')}
+                    </div>
                   </div>
                 </button>
                 <button
@@ -577,14 +600,18 @@ export function MobileLayoutsPanel() {
                   </div>
                   <div className="text-left">
                     <div className="font-medium text-content">{t('share.file.download')}</div>
-                    <div className="text-sm text-content-secondary">{t('share.file.saveAsFile')}</div>
+                    <div className="text-sm text-content-secondary">
+                      {t('share.file.saveAsFile')}
+                    </div>
                   </div>
                 </button>
               </div>
               <button
                 onClick={() => setShareMenuId(null)}
                 className="w-full mt-4 py-3 text-content-secondary font-medium"
-              >{t('common.cancel')}</button>
+              >
+                {t('common.cancel')}
+              </button>
             </div>
           </div>,
           document.body
@@ -605,7 +632,9 @@ export function MobileLayoutsPanel() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-content mb-4">{t('mobile.layouts.renameLayout')}</h3>
+              <h3 className="text-lg font-semibold text-content mb-4">
+                {t('mobile.layouts.renameLayout')}
+              </h3>
               <input
                 ref={renameInputRef}
                 type="text"
@@ -631,12 +660,16 @@ export function MobileLayoutsPanel() {
                     setRenameValue('');
                   }}
                   className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
-                >{t('common.cancel')}</button>
+                >
+                  {t('common.cancel')}
+                </button>
                 <button
                   onClick={handleRenameConfirm}
                   disabled={!renameValue.trim()}
                   className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
-                >{t('common.rename')}</button>
+                >
+                  {t('common.rename')}
+                </button>
               </div>
             </div>
           </div>,
@@ -769,7 +802,9 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
               />
             </svg>
           </div>
-          <h3 id="mobile-cloud-share-title" className="text-lg font-semibold text-content">{t('mobile.layouts.cloudShare')}</h3>
+          <h3 id="mobile-cloud-share-title" className="text-lg font-semibold text-content">
+            {t('mobile.layouts.cloudShare')}
+          </h3>
         </div>
 
         {/* Loading states */}
@@ -823,7 +858,9 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             <button
               onClick={reset}
               className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
-            >{t('mobile.layouts.tryAgain')}</button>
+            >
+              {t('mobile.layouts.tryAgain')}
+            </button>
           </div>
         )}
 
@@ -843,7 +880,9 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             </div>
 
             <div className="bg-surface rounded-lg p-3">
-              <p className="text-sm text-content-secondary mb-2">{t('mobile.layouts.linkCopiedToClipboard')}</p>
+              <p className="text-sm text-content-secondary mb-2">
+                {t('mobile.layouts.linkCopiedToClipboard')}
+              </p>
               <p className="text-xs text-content-tertiary break-all font-mono">{result.url}</p>
             </div>
 
@@ -863,7 +902,9 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
               <button
                 onClick={onClose}
                 className="flex-1 py-3 bg-surface text-content font-medium rounded-lg"
-              >{t('common.done')}</button>
+              >
+                {t('common.done')}
+              </button>
             </div>
           </div>
         )}
@@ -879,7 +920,9 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
               <label
                 htmlFor="mobile-permission"
                 className="text-sm text-content-secondary whitespace-nowrap"
-              >{t('mobile.layouts.permission')}</label>
+              >
+                {t('mobile.layouts.permission')}
+              </label>
               <select
                 id="mobile-permission"
                 value={permission}
@@ -894,7 +937,9 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             <button
               onClick={handleShare}
               className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
-            >{t('mobile.layouts.shareToCloud')}</button>
+            >
+              {t('mobile.layouts.shareToCloud')}
+            </button>
           </div>
         )}
 
@@ -902,7 +947,9 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
         {status === 'idle' && hasActiveShare && existingShare && (
           <div className="space-y-4">
             <div className="bg-surface rounded-lg p-3">
-              <p className="text-sm text-content-secondary">{t('mobile.layouts.sharedOn')}{formatShareDate(existingShare.sharedAt)}
+              <p className="text-sm text-content-secondary">
+                {t('mobile.layouts.sharedOn')}
+                {formatShareDate(existingShare.sharedAt)}
               </p>
               <p className="text-sm text-content">
                 {existingShare.permission === 'edit'
@@ -933,13 +980,17 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             <button
               onClick={handleDelete}
               className="w-full py-2 text-sm text-content-tertiary hover:text-error transition-colors"
-            >{t('mobile.layouts.deleteShare')}</button>
+            >
+              {t('mobile.layouts.deleteShare')}
+            </button>
           </div>
         )}
 
         {/* Cancel button */}
         {status !== 'success' && (
-          <button onClick={onClose} className="w-full mt-4 py-3 text-content-secondary font-medium">{t('common.cancel')}</button>
+          <button onClick={onClose} className="w-full mt-4 py-3 text-content-secondary font-medium">
+            {t('common.cancel')}
+          </button>
         )}
       </div>
     </div>
@@ -972,7 +1023,9 @@ function LayoutPreviewInfo({ entry }: { entry: LayoutEntry }) {
       <span>{t('mobile.layouts.previewBins', { count: preview.binCount })}</span>
 
       {/* Layer count */}
-      {preview.layerCount > 1 && <span>{t('mobile.layouts.previewLayers', { count: preview.layerCount })}</span>}
+      {preview.layerCount > 1 && (
+        <span>{t('mobile.layouts.previewLayers', { count: preview.layerCount })}</span>
+      )}
     </div>
   );
 }

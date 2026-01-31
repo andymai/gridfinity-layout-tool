@@ -4,6 +4,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useUIStore } from '@/core/store/ui';
 import { useShallow } from 'zustand/shallow';
 import { isOk } from '@/core/result';
+import { layoutId } from '@/core/types';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
@@ -116,7 +117,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
         );
 
         if (isOk(result)) {
-          const switchResult = await switchLayout(result.value);
+          const switchResult = await switchLayout(layoutId(result.value));
           if (isOk(switchResult)) {
             addToast(t('toast.galleryAdded', { name: layout.name }), 'success');
             announceToScreenReader(t('toast.galleryAdded', { name: layout.name }));

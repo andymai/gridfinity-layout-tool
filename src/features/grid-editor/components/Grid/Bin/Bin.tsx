@@ -1,7 +1,7 @@
 import type { PointerEvent } from 'react';
 import { memo, useRef, useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import type { Bin as BinType, Category, Layer, Drawer, ResizeHandle } from '@/core/types';
+import type { Bin as BinType, BinId, Category, Layer, Drawer, ResizeHandle } from '@/core/types';
 import {
   useLayoutStore,
   useSelectionStore,
@@ -31,14 +31,14 @@ interface BinProps {
   isGhost: boolean;
   isSelected: boolean;
   onStartDrag: (
-    binId: string,
+    binId: BinId,
     clientX: number,
     clientY: number,
     pointerId?: number,
     duplicate?: boolean,
     swapMode?: boolean
   ) => void;
-  onStartResize: (binId: string, handle: ResizeHandle, pointerId?: number) => void;
+  onStartResize: (binId: BinId, handle: ResizeHandle, pointerId?: number) => void;
 }
 
 /**

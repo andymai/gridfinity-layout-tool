@@ -8,6 +8,7 @@ import {
   LABS_STORAGE_KEY,
 } from '@/core/store';
 import { loadLayoutAsync, loadLibrary } from '@/core/storage';
+import { layoutId as toLayoutId } from '@/core/types';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import { createDefaultLabsPreferences } from '@/core/labs';
 
@@ -61,7 +62,7 @@ export function useCrossTabSync() {
                 const validation = validateLayoutIntegrity(newLayout);
                 if (validation.valid) {
                   // Update layout store (from another tab, treat as remote)
-                  useLayoutStore.getState().importLayout(newLayout, layoutId, 'remote');
+                  useLayoutStore.getState().importLayout(newLayout, toLayoutId(layoutId), 'remote');
 
                   // Clear undo history since we're syncing external changes
                   useHistoryStore.getState().clear();

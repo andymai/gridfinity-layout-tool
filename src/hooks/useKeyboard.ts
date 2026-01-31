@@ -15,11 +15,12 @@ import { useMutations } from '@/shared/contexts';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
+import type { BinId } from '@/core/types';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useLabsStore } from '@/core/store';
 import { useGridNavigation } from '@/features/grid-editor';
-import { isOk } from '@/core/result';
+import { isOk, isErr } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById, findBinsByIds } from '@/utils/entity';
 import { useTranslation } from '@/i18n';
@@ -201,7 +202,7 @@ export function useKeyboard() {
       if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.DUPLICATE && selectedBinIds.length > 0) {
         e.preventDefault();
         execute(() => {
-          const newIds: string[] = [];
+          const newIds: BinId[] = [];
           for (const binId of selectedBinIds) {
             const result = duplicateBin(binId);
             if (isOk(result)) {
@@ -382,7 +383,7 @@ export function useKeyboard() {
 
         const result = toggleHalfBinMode();
 
-        if (!result.success) {
+        if (isErr(result)) {
           // Validation failed - show toast notification
           const validationResult = validateHalfBinModeToggle(layout, false);
           if (validationResult.violation) {

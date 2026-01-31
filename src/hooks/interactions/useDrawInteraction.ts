@@ -7,7 +7,7 @@ import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { trackBinCreated, trackPaintMode } from '@/shared/analytics/posthog';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
-import type { Coord, Bin } from '@/core/types';
+import type { BinId, Coord, Bin } from '@/core/types';
 
 /**
  * Hook for draw mode interactions: creating new bins by dragging a rectangle.
@@ -221,7 +221,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
 
         if (binsAcross > 0 && binsDown > 0) {
           const currentLayout = useLayoutStore.getState().layout;
-          const placedBinIds: string[] = [];
+          const placedBinIds: BinId[] = [];
           const placedBins: Bin[] = [];
 
           execute(() => {

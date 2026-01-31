@@ -7,6 +7,7 @@ import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import type {
   EnhancedPrintRow,
   Category,
+  BinId,
   PrintListSortKey,
   PrintListSortOrder,
 } from '@/core/types';
@@ -25,8 +26,8 @@ interface BinListTableProps {
   onRowClick: (row: EnhancedPrintRow) => void;
   hasAnySplits: boolean;
   /** Edit handlers for inline editing */
-  onEditLabel?: (binIds: string[], label: string) => void;
-  onEditNotes?: (binIds: string[], notes: string) => void;
+  onEditLabel?: (binIds: BinId[], label: string) => void;
+  onEditNotes?: (binIds: BinId[], notes: string) => void;
 }
 
 interface EditingState {
@@ -221,7 +222,10 @@ export function BinListTable({
               onSort={onSort}
               title={t('print.sort.sortBySize')}
             />
-            <th className="w-8 px-1 py-2 sticky top-0 bg-surface-elevated" title={t('stlSearch.findSTL')} />
+            <th
+              className="w-8 px-1 py-2 sticky top-0 bg-surface-elevated"
+              title={t('stlSearch.findSTL')}
+            />
             <SortHeader
               label="H"
               sortKeyValue="height"
@@ -292,7 +296,10 @@ export function BinListTable({
                   <div
                     className="flex gap-0.5"
                     title={(row.categoryIds ?? [])
-                      .map((catId) => categories.find((c) => c.id === catId)?.name || t('common.unknown'))
+                      .map(
+                        (catId) =>
+                          categories.find((c) => c.id === catId)?.name || t('common.unknown')
+                      )
                       .join(LIST_SEPARATOR)}
                   >
                     {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
@@ -307,7 +314,9 @@ export function BinListTable({
                     })}
                     {(row.categoryIds ?? []).length > 3 && (
                       <span className="text-[9px] text-content-disabled">
-                        {t('rightPanel.moreCategories', { count: (row.categoryIds ?? []).length - 3 })}
+                        {t('rightPanel.moreCategories', {
+                          count: (row.categoryIds ?? []).length - 3,
+                        })}
                       </span>
                     )}
                   </div>
@@ -366,7 +375,9 @@ export function BinListTable({
                   }
                   aria-label={
                     onEditLabel
-                      ? t('binList.labelAriaEdit', { label: (row.labels ?? [])[0] || t('common.empty') })
+                      ? t('binList.labelAriaEdit', {
+                          label: (row.labels ?? [])[0] || t('common.empty'),
+                        })
                       : undefined
                   }
                 >
@@ -402,7 +413,9 @@ export function BinListTable({
                   onDoubleClick={() => handleDoubleClick(index, 'notes', row.notes || '')}
                   onKeyDown={(e) => handleCellKeyDown(e, index, 'notes', row.notes || '')}
                   aria-label={
-                    onEditNotes ? t('binList.notesAriaEdit', { notes: row.notes || t('common.empty') }) : undefined
+                    onEditNotes
+                      ? t('binList.notesAriaEdit', { notes: row.notes || t('common.empty') })
+                      : undefined
                   }
                 >
                   {editing?.rowIndex === index && editing.field === 'notes' ? (
@@ -432,10 +445,14 @@ export function BinListTable({
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                       strokeWidth={2}
-                      aria-label={t('binList.customPropertiesCount', { count: Object.keys(row.customProperties).length })}
+                      aria-label={t('binList.customPropertiesCount', {
+                        count: Object.keys(row.customProperties).length,
+                      })}
                     >
                       <title>
-                        {t('binList.customPropertiesCount', { count: Object.keys(row.customProperties).length })}
+                        {t('binList.customPropertiesCount', {
+                          count: Object.keys(row.customProperties).length,
+                        })}
                       </title>
                       <path
                         strokeLinecap="round"
@@ -475,7 +492,11 @@ export function BinListTable({
                     pieces={rows[expandedSplitRow].pieces}
                   />
                   <div className="text-xs text-content-secondary">
-                    <div className="font-medium mb-1">{t('binList.splitInto')}{rows[expandedSplitRow].totalPieces}{t('binList.pieces')}</div>
+                    <div className="font-medium mb-1">
+                      {t('binList.splitInto')}
+                      {rows[expandedSplitRow].totalPieces}
+                      {t('binList.pieces')}
+                    </div>
                     {rows[expandedSplitRow].pieces.map((piece) => (
                       <div key={`${piece.width}x${piece.depth}`} className="text-content-tertiary">
                         {piece.count}× {piece.width}×{piece.depth}

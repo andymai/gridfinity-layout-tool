@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import type { BinId, LayerId, CategoryId } from '@/core/types';
+import { layerId, categoryId } from '@/core/types';
 
 /**
  * Selection Store
@@ -15,37 +17,37 @@ import { create } from 'zustand';
 
 interface SelectionState {
   // Bin selection
-  selectedBinIds: string[];
+  selectedBinIds: BinId[];
 
   // Active context
-  activeLayerId: string;
-  activeCategoryId: string;
+  activeLayerId: LayerId;
+  activeCategoryId: CategoryId;
 
   // Keyboard navigation focus (separate from selection)
-  focusedBinId: string | null;
+  focusedBinId: BinId | null;
 
   // Quick label popover (desktop double-click or L key)
-  quickLabelBinId: string | null;
+  quickLabelBinId: BinId | null;
 }
 
 interface SelectionActions {
   // Bin selection
-  setSelectedBin: (id: string | null) => void;
-  setSelectedBins: (ids: string[]) => void;
-  addToSelection: (id: string) => void;
-  removeFromSelection: (id: string) => void;
-  toggleSelection: (id: string) => void;
+  setSelectedBin: (id: BinId | null) => void;
+  setSelectedBins: (ids: BinId[]) => void;
+  addToSelection: (id: BinId) => void;
+  removeFromSelection: (id: BinId) => void;
+  toggleSelection: (id: BinId) => void;
   clearSelection: () => void;
 
   // Active context
-  setActiveLayer: (id: string) => void;
-  setActiveCategory: (id: string) => void;
+  setActiveLayer: (id: LayerId) => void;
+  setActiveCategory: (id: CategoryId) => void;
 
   // Keyboard focus
-  setFocusedBin: (binId: string | null) => void;
+  setFocusedBin: (binId: BinId | null) => void;
 
   // Quick label
-  showQuickLabel: (binId: string) => void;
+  showQuickLabel: (binId: BinId) => void;
   hideQuickLabel: () => void;
 }
 
@@ -54,8 +56,8 @@ export type SelectionStore = SelectionState & SelectionActions;
 export const useSelectionStore = create<SelectionStore>((set) => ({
   // Initial state
   selectedBinIds: [],
-  activeLayerId: '',
-  activeCategoryId: 'coral',
+  activeLayerId: layerId(''),
+  activeCategoryId: categoryId('coral'),
   focusedBinId: null,
   quickLabelBinId: null,
 

@@ -16,6 +16,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { isFractional } from '@/core/constants';
 import { isOk } from '@/core/result';
+import { binId } from '@/core/types';
 import { saveDesign, setActiveDesignId } from '@/features/bin-designer/storage/DesignerStorage';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
@@ -182,7 +183,7 @@ export function useCreateFromBin(): void {
         });
 
         // Link the bin to the new design
-        const linkResult = updateBin(urlParams.linkBin, { linkedDesignId: design.id });
+        const linkResult = updateBin(binId(urlParams.linkBin), { linkedDesignId: design.id });
         if (isOk(linkResult)) {
           addToast({
             message: t('binDesigner.designCreatedAndLinked'),

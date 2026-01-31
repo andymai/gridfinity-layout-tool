@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { BinId, CategoryId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 
@@ -18,7 +19,7 @@ import { clamp } from '@/shared/utils/validation';
  */
 
 export interface ContextMenuState {
-  binIds: string[];
+  binIds: BinId[];
   position: { x: number; y: number };
   source: 'grid' | 'staging';
 }
@@ -38,7 +39,7 @@ interface ViewState {
   contextMenu: ContextMenuState | null;
 
   // Highlighting (for hover preview)
-  highlightedCategoryId: string | null;
+  highlightedCategoryId: CategoryId | null;
   highlightedRowLabel: number | null; // 1-indexed row number
   highlightedColLabel: number | null; // 1-indexed column number
 
@@ -61,14 +62,14 @@ interface ViewActions {
 
   // Context menu (backwards compatible - accepts single ID or array)
   showContextMenu: (
-    binIdsOrId: string | string[],
+    binIdsOrId: BinId | BinId[],
     position: { x: number; y: number },
     source?: 'grid' | 'staging'
   ) => void;
   hideContextMenu: () => void;
 
   // Highlighting
-  setHighlightedCategoryId: (categoryId: string | null) => void;
+  setHighlightedCategoryId: (categoryId: CategoryId | null) => void;
   setHighlightedRowLabel: (row: number | null) => void;
   setHighlightedColLabel: (col: number | null) => void;
 

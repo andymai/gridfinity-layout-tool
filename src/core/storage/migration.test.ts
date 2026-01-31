@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { expectOk, expectErr } from '@/test/testUtils';
+import { ok } from '@/core/result';
 
 // Mock all dependencies before importing the module under test
 vi.mock('@/core/storage/backend', () => ({
@@ -103,7 +104,7 @@ describe('migration.ts', () => {
 
   describe('migrateLayoutToIndexedDB', () => {
     it('returns error if layout not found in localStorage', async () => {
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(null);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(null));
 
       const result = await migrateLayoutToIndexedDB('missing-layout');
 
@@ -113,7 +114,7 @@ describe('migration.ts', () => {
 
     it('successfully migrates layout to IndexedDB', async () => {
       const testLayout = createTestLayout();
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(testLayout);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(testLayout));
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateLayoutToIndexedDB('layout-123');
@@ -124,7 +125,7 @@ describe('migration.ts', () => {
 
     it('returns error if IndexedDB save fails', async () => {
       const testLayout = createTestLayout();
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(testLayout);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(testLayout));
       vi.mocked(indexedDBBackend.saveLayout).mockRejectedValue(new Error('IndexedDB write failed'));
 
       const result = await migrateLayoutToIndexedDB('layout-123');
@@ -161,7 +162,7 @@ describe('migration.ts', () => {
       vi.mocked(backend.isIndexedDBAvailable).mockResolvedValue(true);
       vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
       vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue(['layout-1']);
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(createTestLayout());
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(createTestLayout()));
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateAllLayoutsToIndexedDB();
@@ -179,7 +180,7 @@ describe('migration.ts', () => {
         'layout-3',
       ]);
       vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue([]);
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(createTestLayout());
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(createTestLayout()));
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateAllLayoutsToIndexedDB();
@@ -196,8 +197,8 @@ describe('migration.ts', () => {
       vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
       vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue([]);
       vi.mocked(localStorageBackend.loadLayout)
-        .mockReturnValueOnce(null) // layout-1 fails
-        .mockReturnValueOnce(createTestLayout()); // layout-2 succeeds
+        .mockReturnValueOnce(ok(null)) // layout-1 fails (not found)
+        .mockReturnValueOnce(ok(createTestLayout())); // layout-2 succeeds
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateAllLayoutsToIndexedDB();
@@ -257,7 +258,7 @@ describe('migration.ts', () => {
   describe('migrateLayoutToIndexedDBResult', () => {
     it('returns Ok on successful migration', async () => {
       const testLayout = createTestLayout();
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(testLayout);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(testLayout));
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateLayoutToIndexedDBResult('layout-123');
@@ -266,7 +267,7 @@ describe('migration.ts', () => {
     });
 
     it('returns Err with NOT_FOUND when layout missing', async () => {
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(null);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(null));
 
       const result = await migrateLayoutToIndexedDBResult('missing');
 
@@ -276,7 +277,7 @@ describe('migration.ts', () => {
 
     it('returns Err with NETWORK_ERROR on IndexedDB failure', async () => {
       const testLayout = createTestLayout();
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(testLayout);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(testLayout));
       vi.mocked(indexedDBBackend.saveLayout).mockRejectedValue(new Error('Write failed'));
 
       const result = await migrateLayoutToIndexedDBResult('layout-123');
@@ -300,7 +301,7 @@ describe('migration.ts', () => {
       vi.mocked(backend.isIndexedDBAvailable).mockResolvedValue(true);
       vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
       vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue(['layout-1']);
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(createTestLayout());
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(createTestLayout()));
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateAllLayoutsToIndexedDBResult();
@@ -326,8 +327,8 @@ describe('migration.ts', () => {
       vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
       vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue([]);
       vi.mocked(localStorageBackend.loadLayout)
-        .mockReturnValueOnce(null) // layout-1 fails (not found)
-        .mockReturnValueOnce(createTestLayout()); // layout-2 succeeds
+        .mockReturnValueOnce(ok(null)) // layout-1 fails (not found)
+        .mockReturnValueOnce(ok(createTestLayout())); // layout-2 succeeds
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateAllLayoutsToIndexedDBResult();

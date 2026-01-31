@@ -9,7 +9,8 @@ import {
   useSelectionStore,
 } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import type { Layout } from '@/core/types';
+import type { Layout, LayoutId } from '@/core/types';
+import { layoutId, layerId, categoryId } from '@/core/types';
 import { isErr, isOk } from '@/core/result';
 import {
   saveLayoutWithMetadata,
@@ -97,7 +98,9 @@ export function useLayoutSwitcher() {
    * Switch to a different layout.
    */
   const switchLayout = useCallback(
-    async (targetId: string): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
+    async (
+      targetId: LayoutId
+    ): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
       // 1. Validate target exists
       const targetEntry = getEntry(targetId);
       if (!targetEntry) {
@@ -138,8 +141,8 @@ export function useLayoutSwitcher() {
 
         // 6. Reset UI state
         clearSelection();
-        setActiveLayer(result.value.targetLayout.layers[0]?.id ?? '');
-        setActiveCategory(result.value.targetLayout.categories[0]?.id ?? '');
+        setActiveLayer(result.value.targetLayout.layers[0]?.id ?? layerId(''));
+        setActiveCategory(result.value.targetLayout.categories[0]?.id ?? categoryId(''));
 
         // 7. Clear undo history
         clearHistory();
@@ -211,21 +214,22 @@ export function useLayoutSwitcher() {
 
         // Update stores
         setLibrary(result.value.library);
-        importLayout(result.value.layout, result.value.layoutId, 'init');
+        const newLayoutId = layoutId(result.value.layoutId);
+        importLayout(result.value.layout, newLayoutId, 'init');
 
         // Reset UI state
         clearSelection();
-        setActiveLayer(result.value.layout.layers[0]?.id ?? '');
-        setActiveCategory(result.value.layout.categories[0]?.id ?? '');
+        setActiveLayer(result.value.layout.layers[0]?.id ?? layerId(''));
+        setActiveCategory(result.value.layout.categories[0]?.id ?? categoryId(''));
 
         clearHistory();
 
-        setLayoutURL(result.value.layoutId, result.value.layout.name, true);
+        setLayoutURL(newLayoutId, result.value.layout.name, true);
 
         trackLayoutAction('created');
 
         addToast(t('toast.layoutCreated'), 'success');
-        return ok(result.value.layoutId);
+        return ok(newLayoutId);
       } catch (error) {
         addToast(t('toast.layoutCreateFailed'), 'error');
         return err(fromUnknown(error));
@@ -250,7 +254,7 @@ export function useLayoutSwitcher() {
    * Delete a layout.
    */
   const deleteLayout = useCallback(
-    async (id: string): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
+    async (id: LayoutId): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
       // Get fresh library state to avoid stale closure issues
       const currentLibrary = useLibraryStore.getState().library;
 
@@ -273,7 +277,7 @@ export function useLayoutSwitcher() {
 
         // If deleted the active layout, switch to the new active
         if (result.value.newActiveId) {
-          const switchResult = await switchLayout(result.value.newActiveId);
+          const switchResult = await switchLayout(layoutId(result.value.newActiveId));
           if (isErr(switchResult)) {
             return switchResult;
           }
@@ -297,7 +301,7 @@ export function useLayoutSwitcher() {
    * Duplicate a layout.
    */
   const duplicateLayout = useCallback(
-    async (id: string): Promise<Result<string, LayoutError | StorageError | UnknownError>> => {
+    async (id: LayoutId): Promise<Result<string, LayoutError | StorageError | UnknownError>> => {
       const sourceEntry = getEntry(id);
       if (!sourceEntry) {
         return err(layoutInvalidOperation('duplicateLayout', 'Layout not found'));
@@ -336,7 +340,7 @@ export function useLayoutSwitcher() {
    * Rename a layout.
    */
   const renameLayout = useCallback(
-    (id: string, newName: string): void => {
+    (id: LayoutId, newName: string): void => {
       // Get fresh library state to avoid stale closure
       const currentLibrary = useLibraryStore.getState().library;
       const currentActiveId = useLayoutStore.getState().activeLayoutId;

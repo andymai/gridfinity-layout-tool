@@ -305,16 +305,8 @@ describe('mapInteractionToHint', () => {
     });
   });
 
-  describe('unknown interaction type', () => {
-    it('returns idle hint for unknown type (defensive fallback)', () => {
-      // Force an unknown type to test the default case
-      const interaction = {
-        type: 'unknown_type',
-      } as unknown as Interaction;
-      const result = mapInteractionToHint(interaction);
-      expect(result).toEqual({ type: 'idle' });
-    });
-  });
+  // Note: unknown interaction types are now a compile error due to exhaustive
+  // switch. No runtime test needed.
 });
 
 describe('capturePointer', () => {

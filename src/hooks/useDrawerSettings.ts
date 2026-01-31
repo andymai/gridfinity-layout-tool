@@ -14,6 +14,8 @@ import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
 import type { Category } from '@/core/types';
+import { binId as toBinId } from '@/core/types';
+import { isOk, isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -289,7 +291,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const handleHalfBinToggle = useCallback(() => {
     const result = toggleHalfBinMode();
 
-    if (!result.success) {
+    if (!isOk(result)) {
       // Validation failed - show blocking modal
       const validationResult = validateHalfBinModeToggle(layout, false);
       if (validationResult.violation) {
@@ -305,9 +307,9 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
     await execute(() => {
       // Move all fractional bins to staging
-      halfBinViolation.binIds.forEach((binId) => {
-        updateBin(binId, { layerId: STAGING_ID });
-      });
+      for (const id of halfBinViolation.binIds) {
+        if (isErr(updateBin(toBinId(id), { layerId: STAGING_ID }))) break;
+      }
     });
 
     // Now disable half-bin mode (forced, bypassing validation)

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Layout, Layer } from '@/core/types';
+import type { Layout, Layer, LayerId } from '@/core/types';
 import type { PrintViewSettings } from '@/core/store/settings';
 import { PrintBin } from '../PrintBin';
 import {
@@ -25,7 +25,7 @@ const DEFAULT_GAP = 1;
 
 interface PrintLayoutProps {
   layout: Layout;
-  selectedLayerIds: string[];
+  selectedLayerIds: LayerId[];
   settings: PrintViewSettings;
   /** Available width in pixels. If not provided, uses default print width. */
   availableWidth?: number;

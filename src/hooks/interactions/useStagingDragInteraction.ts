@@ -5,7 +5,7 @@ import { capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
-import type { Coord, ValidationReason, BlockingInfo } from '@/core/types';
+import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types';
 
 /**
  * Hook for staging drag mode interactions: dragging bins from the stash onto the grid.
@@ -55,7 +55,7 @@ export function useStagingDragInteraction(
    * @param pointerId - Pointer ID for capture
    */
   const start = useCallback(
-    (binId: string, pointerId?: number) => {
+    (binId: BinId, pointerId?: number) => {
       const bin = findBinById(layout, binId);
       if (!bin) return;
 

@@ -22,7 +22,7 @@
  */
 
 import { create } from 'zustand';
-import type { Interaction, Layout, OperationResult } from '@/core/types';
+import type { Interaction, Layout, BinId, LayerId, CategoryId } from '@/core/types';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { useSelectionStore } from './selection';
 import { useViewStore, type ContextMenuState } from './view';
@@ -48,11 +48,11 @@ export type {
 
 interface UIState {
   // Selection (delegated to useSelectionStore)
-  activeLayerId: string;
-  selectedBinIds: string[];
-  activeCategoryId: string;
-  focusedBinId: string | null;
-  quickLabelBinId: string | null;
+  activeLayerId: LayerId;
+  selectedBinIds: BinId[];
+  activeCategoryId: CategoryId;
+  focusedBinId: BinId | null;
+  quickLabelBinId: BinId | null;
 
   // View (delegated to useViewStore)
   zoom: number;
@@ -60,7 +60,7 @@ interface UIState {
   leftPanelCollapsed: boolean;
   rightPanelCollapsed: boolean;
   contextMenu: ContextMenuState | null;
-  highlightedCategoryId: string | null;
+  highlightedCategoryId: CategoryId | null;
   highlightedRowLabel: number | null;
   highlightedColLabel: number | null;
   printModalOpen: boolean;
@@ -92,16 +92,16 @@ interface UIState {
   sharedLayoutPermission: 'view' | 'edit' | null;
 
   // Selection actions
-  setActiveLayer: (id: string) => void;
-  setSelectedBin: (id: string | null) => void;
-  setSelectedBins: (ids: string[]) => void;
-  addToSelection: (id: string) => void;
-  removeFromSelection: (id: string) => void;
-  toggleSelection: (id: string) => void;
-  setActiveCategory: (id: string) => void;
+  setActiveLayer: (id: LayerId) => void;
+  setSelectedBin: (id: BinId | null) => void;
+  setSelectedBins: (ids: BinId[]) => void;
+  addToSelection: (id: BinId) => void;
+  removeFromSelection: (id: BinId) => void;
+  toggleSelection: (id: BinId) => void;
+  setActiveCategory: (id: CategoryId) => void;
   clearSelection: () => void;
-  setFocusedBin: (binId: string | null) => void;
-  showQuickLabel: (binId: string) => void;
+  setFocusedBin: (binId: BinId | null) => void;
+  showQuickLabel: (binId: BinId) => void;
   hideQuickLabel: () => void;
 
   // View actions
@@ -112,12 +112,12 @@ interface UIState {
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
   showContextMenu: (
-    binIdsOrId: string | string[],
+    binIdsOrId: BinId | BinId[],
     position: { x: number; y: number },
     source?: 'grid' | 'staging'
   ) => void;
   hideContextMenu: () => void;
-  setHighlightedCategoryId: (categoryId: string | null) => void;
+  setHighlightedCategoryId: (categoryId: CategoryId | null) => void;
   setHighlightedRowLabel: (row: number | null) => void;
   setHighlightedColLabel: (col: number | null) => void;
   setPrintModalOpen: (open: boolean) => void;
@@ -144,8 +144,7 @@ interface UIState {
   setMobileLayersTab: (tab: MobileLayersTab) => void;
 
   // Half-bin mode actions
-  toggleHalfBinMode: () => OperationResult<void>;
-  toggleHalfBinModeResult: () => Result<Unit, LayoutError>;
+  toggleHalfBinMode: () => Result<Unit, LayoutError>;
   setHalfBinMode: (enabled: boolean) => void;
 
   // Shared preview actions
@@ -205,7 +204,6 @@ function getCombinedState(): Omit<
   | 'toggleMobilePanel'
   | 'setMobileLayersTab'
   | 'toggleHalfBinMode'
-  | 'toggleHalfBinModeResult'
   | 'setHalfBinMode'
   | 'setSharedLayoutPreview'
   | 'clearSharedLayoutPreview'
@@ -403,9 +401,6 @@ export const useUIStore = create<UIState>((_set) => ({
   // Half-bin mode actions (delegate to useHalfBinModeStore)
   toggleHalfBinMode: () => {
     return useHalfBinModeStore.getState().toggleHalfBinMode();
-  },
-  toggleHalfBinModeResult: () => {
-    return useHalfBinModeStore.getState().toggleHalfBinModeResult();
   },
   setHalfBinMode: (enabled) => {
     useHalfBinModeStore.getState().setHalfBinMode(enabled);

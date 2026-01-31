@@ -1,3 +1,5 @@
+import type { LayoutId } from '@/core/types';
+
 /**
  * Generate a UUID v4 for layout identification.
  * Uses crypto.randomUUID() when available, falls back to manual generation.
@@ -35,7 +37,7 @@ export const LAYOUT_ID_LENGTH = 12;
  *
  * Uses crypto.getRandomValues for secure randomness.
  */
-export function generateLayoutId(): string {
+export function generateLayoutId(): LayoutId {
   const bytes = new Uint8Array(LAYOUT_ID_LENGTH);
   crypto.getRandomValues(bytes);
 
@@ -43,7 +45,7 @@ export function generateLayoutId(): string {
   for (let i = 0; i < LAYOUT_ID_LENGTH; i++) {
     id += ID_CHARS[bytes[i] % ID_CHARS.length];
   }
-  return id;
+  return id as LayoutId;
 }
 
 /**

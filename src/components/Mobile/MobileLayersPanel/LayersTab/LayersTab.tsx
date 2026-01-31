@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore, useUndoableAction } from '@/core/store';
+import type { LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
@@ -18,9 +19,9 @@ import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoEx
  */
 export function LayersTab() {
   const t = useTranslation();
-  const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
+  const [deleteLayerId, setDeleteLayerId] = useState<LayerId | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
-  const [renameLayerId, setRenameLayerId] = useState<string | null>(null);
+  const [renameLayerId, setRenameLayerId] = useState<LayerId | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,10 +60,10 @@ export function LayersTab() {
   const { execute } = useUndoableAction();
   const addToast = useToastStore((state) => state.addToast);
 
-  const handleRenameRequest = (layerId: string) => {
-    const layer = layers.find((l) => l.id === layerId);
+  const handleRenameRequest = (id: LayerId) => {
+    const layer = layers.find((l) => l.id === id);
     setRenameValue(layer?.name || '');
-    setRenameLayerId(layerId);
+    setRenameLayerId(id);
   };
 
   const handleRenameConfirm = () => {
@@ -153,11 +154,11 @@ export function LayersTab() {
   };
 
   // Selection behavior: select only, don't close panel
-  const handleSelectLayer = (layerId: string) => {
-    setActiveLayer(layerId);
+  const handleSelectLayer = (id: LayerId) => {
+    setActiveLayer(id);
   };
 
-  const handleDeleteLayer = (id: string) => {
+  const handleDeleteLayer = (id: LayerId) => {
     if (layers.length <= CONSTRAINTS.LAYERS_MIN) return;
     setDeleteLayerId(id);
   };
@@ -176,7 +177,7 @@ export function LayersTab() {
     setDeleteLayerId(null);
   };
 
-  const handleHeightChange = (id: string, delta: number) => {
+  const handleHeightChange = (id: LayerId, delta: number) => {
     const layer = layers.find((l) => l.id === id);
     if (!layer) return;
     const newHeight = Math.max(1, layer.height + delta);
