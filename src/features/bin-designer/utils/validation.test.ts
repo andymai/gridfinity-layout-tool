@@ -151,7 +151,7 @@ describe('validateBinParams', () => {
     it('should reject label tab depth out of range', () => {
       const result = validateBinParams(
         makeParams({
-          label: { enabled: true, style: 'bracket', depth: 25, width: 100, alignment: 'left' },
+          label: { enabled: true, support: 'bracket', depth: 25, width: 100, alignment: 'left' },
         })
       );
       const error = expectErr(result);
@@ -161,7 +161,7 @@ describe('validateBinParams', () => {
     it('should reject label tab width out of range', () => {
       const result = validateBinParams(
         makeParams({
-          label: { enabled: true, style: 'bracket', depth: 12, width: 110, alignment: 'left' },
+          label: { enabled: true, support: 'bracket', depth: 12, width: 110, alignment: 'left' },
         })
       );
       const error = expectErr(result);
@@ -171,27 +171,27 @@ describe('validateBinParams', () => {
     it('should accept valid label tab config', () => {
       const result = validateBinParams(
         makeParams({
-          label: { enabled: true, style: 'bracket', depth: 12, width: 100, alignment: 'left' },
+          label: { enabled: true, support: 'bracket', depth: 12, width: 100, alignment: 'left' },
         })
       );
       expectOk(result);
     });
 
-    it('should accept solid label tab style', () => {
+    it('should accept solid label tab support', () => {
       const result = validateBinParams(
         makeParams({
-          label: { enabled: true, style: 'solid', depth: 12, width: 100, alignment: 'left' },
+          label: { enabled: true, support: 'solid', depth: 12, width: 100, alignment: 'left' },
         })
       );
       expectOk(result);
     });
 
-    it('should reject invalid label tab style', () => {
+    it('should reject invalid label tab support', () => {
       const result = validateBinParams(
         makeParams({
           label: {
             enabled: true,
-            style: 'invalid' as any,
+            support: 'invalid' as any,
             depth: 12,
             width: 100,
             alignment: 'left',
@@ -199,13 +199,29 @@ describe('validateBinParams', () => {
         })
       );
       const error = expectErr(result);
-      expect(error.code).toBe('LABEL_TAB_STYLE_INVALID');
+      expect(error.code).toBe('LABEL_TAB_SUPPORT_INVALID');
+    });
+
+    it('should reject invalid label alignment', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: {
+            enabled: true,
+            support: 'bracket',
+            depth: 12,
+            width: 100,
+            alignment: 'top' as any,
+          },
+        })
+      );
+      const error = expectErr(result);
+      expect(error.code).toBe('LABEL_ALIGNMENT_INVALID');
     });
 
     it('should skip validation when label disabled', () => {
       const result = validateBinParams(
         makeParams({
-          label: { enabled: false, style: 'bracket', depth: 12, width: 100, alignment: 'left' },
+          label: { enabled: false, support: 'bracket', depth: 12, width: 100, alignment: 'left' },
         })
       );
       expectOk(result);

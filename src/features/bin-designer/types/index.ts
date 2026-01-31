@@ -70,14 +70,14 @@ export interface ScoopConfig {
 /** Horizontal alignment of each label tab within its compartment column */
 export type LabelTabAlignment = 'left' | 'center' | 'right';
 
-/** Visual style of the label tab support structure */
-export type LabelTabStyle = 'bracket' | 'solid';
+/** Support structure style for the label tab */
+export type LabelTabSupport = 'bracket' | 'solid';
 
 /** Label tab configuration for back-wall identification shelf */
 export interface LabelTabConfig {
   readonly enabled: boolean;
-  /** Support style: 'bracket' = open gussets, 'solid' = filled triangle */
-  readonly style: LabelTabStyle;
+  /** Support structure: 'bracket' = open gussets, 'solid' = filled triangle */
+  readonly support: LabelTabSupport;
   /** Depth of tab from inner back wall (horizontal inward), in mm */
   readonly depth: number;
   /** Width of each tab as percentage of compartment column width (1-100) */

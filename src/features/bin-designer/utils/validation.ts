@@ -172,11 +172,11 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
 
   // Label tab validation
   if (params.label.enabled) {
-    if (params.label.style !== 'bracket' && params.label.style !== 'solid') {
+    if (params.label.support !== 'bracket' && params.label.support !== 'solid') {
       return err({
-        code: 'LABEL_TAB_STYLE_INVALID',
-        message: 'Label tab style must be "bracket" or "solid"',
-        field: 'label.style',
+        code: 'LABEL_TAB_SUPPORT_INVALID',
+        message: 'Label tab support must be "bracket" or "solid"',
+        field: 'label.support',
       });
     }
     if (
@@ -197,6 +197,17 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
         code: 'LABEL_TAB_WIDTH_OUT_OF_RANGE',
         message: `Label tab width must be between ${DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}% and ${DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}%`,
         field: 'label.width',
+      });
+    }
+    if (
+      params.label.alignment !== 'left' &&
+      params.label.alignment !== 'center' &&
+      params.label.alignment !== 'right'
+    ) {
+      return err({
+        code: 'LABEL_ALIGNMENT_INVALID',
+        message: 'Label alignment must be "left", "center", or "right"',
+        field: 'label.alignment',
       });
     }
   }

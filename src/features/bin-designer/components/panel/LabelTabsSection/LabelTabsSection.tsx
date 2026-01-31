@@ -11,13 +11,13 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { InsertsIcon } from '../SectionIllustrations';
+import { LabelTabsIcon } from '../SectionIllustrations';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
-import type { LabelTabAlignment, LabelTabStyle } from '../../../types';
+import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
 
 const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
-const STYLE_OPTIONS: LabelTabStyle[] = ['bracket', 'solid'];
+const SUPPORT_OPTIONS: LabelTabSupport[] = ['bracket', 'solid'];
 
 export function LabelTabsSection() {
   const { compartments, label, style, width, wallThickness, setParam } = useDesignerStore(
@@ -38,9 +38,9 @@ export function LabelTabsSection() {
     setParam('label', { ...label, enabled: !label.enabled });
   }, [label, setParam]);
 
-  const setTabStyle = useCallback(
-    (tabStyle: LabelTabStyle) => {
-      setParam('label', { ...label, style: tabStyle });
+  const setTabSupport = useCallback(
+    (support: LabelTabSupport) => {
+      setParam('label', { ...label, support });
     },
     [label, setParam]
   );
@@ -72,8 +72,12 @@ export function LabelTabsSection() {
     const innerW = outerW - 2 * wallThickness;
     const cellW = innerW / compartments.cols;
     let availableWidth = cellW;
-    if (compartments.cols > 1) {
+    if (compartments.cols === 2) {
+      // Two columns: edge columns only, subtract half divider thickness
       availableWidth -= compartments.thickness / 2;
+    } else if (compartments.cols >= 3) {
+      // Three or more columns: middle columns subtract full divider thickness
+      availableWidth -= compartments.thickness;
     }
     return Math.round(((availableWidth * label.width) / 100) * 10) / 10;
   }, [width, wallThickness, compartments.cols, compartments.thickness, label.width]);
@@ -81,13 +85,13 @@ export function LabelTabsSection() {
   // Summary for the collapsed section header
   const sectionSummary = useMemo(() => {
     if (!label.enabled) return undefined;
-    const styleName = t(`binDesigner.tabStyle.${label.style}`);
-    const parts = [styleName, `${label.width}%`];
+    const supportName = t(`binDesigner.tabSupport.${label.support}`);
+    const parts = [supportName, `${label.width}%`];
     if (label.alignment !== 'left') {
       parts.push(t(`binDesigner.alignment.${label.alignment}`));
     }
     return parts.join(' · ');
-  }, [label.enabled, label.style, label.width, label.alignment, t]);
+  }, [label.enabled, label.support, label.width, label.alignment, t]);
 
   if (isSolid) return null;
 
@@ -95,7 +99,7 @@ export function LabelTabsSection() {
     <CollapsibleSection
       title={t('binDesigner.labelTabs')}
       defaultExpanded
-      illustration={<InsertsIcon />}
+      illustration={<LabelTabsIcon />}
       summary={sectionSummary}
     >
       <FeatureToggle
@@ -201,24 +205,24 @@ export function LabelTabsSection() {
               </div>
             </div>
 
-            {/* Style picker */}
+            {/* Support picker */}
             <div>
               <label className="text-xs font-medium text-content-secondary mb-1 block">
-                {t('binDesigner.tabStyle')}
+                {t('binDesigner.tabSupport')}
               </label>
               <div className="flex gap-1">
-                {STYLE_OPTIONS.map((option) => (
+                {SUPPORT_OPTIONS.map((option) => (
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setTabStyle(option)}
+                    onClick={() => setTabSupport(option)}
                     className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                      label.style === option
+                      label.support === option
                         ? 'bg-accent text-white'
                         : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
                     }`}
                   >
-                    {t(`binDesigner.tabStyle.${option}`)}
+                    {t(`binDesigner.tabSupport.${option}`)}
                   </button>
                 ))}
               </div>

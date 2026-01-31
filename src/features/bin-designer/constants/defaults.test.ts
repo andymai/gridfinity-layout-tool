@@ -28,7 +28,7 @@ describe('DEFAULT_BIN_PARAMS', () => {
     expect(DEFAULT_BIN_PARAMS.compartments.rows).toBe(1);
     expect(DEFAULT_BIN_PARAMS.scoop.enabled).toBe(false);
     expect(DEFAULT_BIN_PARAMS.label.enabled).toBe(false);
-    expect(DEFAULT_BIN_PARAMS.label.style).toBe('bracket');
+    expect(DEFAULT_BIN_PARAMS.label.support).toBe('bracket');
     expect(DEFAULT_BIN_PARAMS.label.depth).toBe(12);
     expect(DEFAULT_BIN_PARAMS.label.width).toBe(100);
     expect(DEFAULT_BIN_PARAMS.label.alignment).toBe('left');
@@ -112,7 +112,7 @@ describe('migrateParams', () => {
     const result = migrateParams({ label: { enabled: true, depth: 15 } as any });
     expect(result.label).toEqual({
       enabled: true,
-      style: 'bracket',
+      support: 'bracket',
       depth: 15,
       width: 100,
       alignment: 'left',

@@ -561,9 +561,9 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
 /**
  * Build label tabs for every compartment.
  *
- * Each tab is a flat shelf supported by thin 45° triangular gussets (bracket
- * style). This uses far less filament than a solid triangle while remaining
- * strong and FDM-printable.
+ * Each tab is a flat shelf with support structure. Bracket style uses thin 45°
+ * triangular gussets (less filament, still strong). Solid style uses a
+ * continuous 45° triangle prism (maximum strength, still FDM-printable).
  *
  * Structure per compartment:
  *   - Flat shelf plate: tabWidth × tabDepth × wallThickness at the top
@@ -695,9 +695,9 @@ function buildLabelTabs(
 
       let tabSolid: Shape3D = shelf;
 
-      const labelStyle = params.label.style ?? 'bracket';
+      const labelSupport = params.label.support ?? 'bracket';
 
-      if (labelStyle === 'solid') {
+      if (labelSupport === 'solid') {
         // Solid style: single continuous 45° right-triangle prism under the shelf
         const gussetLegSolid = tabHeight - wt;
         if (gussetLegSolid > 0) {
@@ -706,8 +706,7 @@ function buildLabelTabs(
             .lineTo([0, 0])
             .close();
           const solidSketch = solidProfile.sketchOnPlane('YZ', 0) as unknown as Sketch;
-          let solidSupport = solidSketch.extrude(tabWidth) as Shape3D;
-          solidSupport = solidSupport.translateX(0);
+          const solidSupport = solidSketch.extrude(tabWidth) as Shape3D;
           tabSolid = tabSolid.fuse(solidSupport);
         }
       } else {

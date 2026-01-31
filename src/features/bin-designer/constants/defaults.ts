@@ -40,7 +40,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   },
   label: {
     enabled: false,
-    style: 'bracket',
+    support: 'bracket',
     depth: 12,
     width: 100,
     alignment: 'left',

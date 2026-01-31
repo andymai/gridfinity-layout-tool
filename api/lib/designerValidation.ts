@@ -8,7 +8,7 @@
 // Type-safe enum validation
 const VALID_BIN_STYLES = ['standard', 'lite', 'solid'] as const;
 const VALID_BASE_STYLES = ['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted'] as const;
-const VALID_LABEL_TAB_STYLES = ['bracket', 'solid'] as const;
+const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 
@@ -200,29 +200,32 @@ function validateLabel(label: unknown): string | null {
   if (!isObject(label)) return 'label must be an object';
   if (!isBoolean(label.enabled)) return 'label.enabled must be boolean';
 
-  if (
-    !isNumber(label.depth) ||
-    !inRange(label.depth, CONSTRAINTS.MIN_LABEL_TAB_DEPTH, CONSTRAINTS.MAX_LABEL_TAB_DEPTH)
-  ) {
-    return `label.depth must be ${CONSTRAINTS.MIN_LABEL_TAB_DEPTH}-${CONSTRAINTS.MAX_LABEL_TAB_DEPTH}`;
-  }
-  if (
-    !isNumber(label.width) ||
-    !inRange(label.width, CONSTRAINTS.MIN_LABEL_TAB_WIDTH, CONSTRAINTS.MAX_LABEL_TAB_WIDTH)
-  ) {
-    return `label.width must be ${CONSTRAINTS.MIN_LABEL_TAB_WIDTH}-${CONSTRAINTS.MAX_LABEL_TAB_WIDTH}`;
-  }
-  if (
-    label.style !== undefined &&
-    !VALID_LABEL_TAB_STYLES.includes(label.style as (typeof VALID_LABEL_TAB_STYLES)[number])
-  ) {
-    return `label.style must be one of: ${VALID_LABEL_TAB_STYLES.join(', ')}`;
-  }
-  if (
-    label.alignment !== undefined &&
-    !['left', 'center', 'right'].includes(label.alignment as string)
-  ) {
-    return 'label.alignment must be "left", "center", or "right"';
+  // Only validate detail fields when the feature is enabled (matches client-side logic)
+  if (label.enabled) {
+    if (
+      !isNumber(label.depth) ||
+      !inRange(label.depth, CONSTRAINTS.MIN_LABEL_TAB_DEPTH, CONSTRAINTS.MAX_LABEL_TAB_DEPTH)
+    ) {
+      return `label.depth must be ${CONSTRAINTS.MIN_LABEL_TAB_DEPTH}-${CONSTRAINTS.MAX_LABEL_TAB_DEPTH}`;
+    }
+    if (
+      !isNumber(label.width) ||
+      !inRange(label.width, CONSTRAINTS.MIN_LABEL_TAB_WIDTH, CONSTRAINTS.MAX_LABEL_TAB_WIDTH)
+    ) {
+      return `label.width must be ${CONSTRAINTS.MIN_LABEL_TAB_WIDTH}-${CONSTRAINTS.MAX_LABEL_TAB_WIDTH}`;
+    }
+    if (
+      label.support !== undefined &&
+      !VALID_LABEL_TAB_SUPPORTS.includes(label.support as (typeof VALID_LABEL_TAB_SUPPORTS)[number])
+    ) {
+      return `label.support must be one of: ${VALID_LABEL_TAB_SUPPORTS.join(', ')}`;
+    }
+    if (
+      label.alignment !== undefined &&
+      !['left', 'center', 'right'].includes(label.alignment as string)
+    ) {
+      return 'label.alignment must be "left", "center", or "right"';
+    }
   }
   return null;
 }
