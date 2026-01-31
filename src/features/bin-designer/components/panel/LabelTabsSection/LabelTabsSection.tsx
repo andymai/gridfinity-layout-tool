@@ -32,7 +32,7 @@ export function LabelTabsSection() {
   );
   const t = useTranslation();
 
-  const isSolid = style === 'solid';
+  const isSlotted = style === 'slotted';
 
   const toggleLabelTabs = useCallback(() => {
     setParam('label', { ...label, enabled: !label.enabled });
@@ -93,19 +93,20 @@ export function LabelTabsSection() {
     return parts.join(' · ');
   }, [label.enabled, label.support, label.width, label.alignment, t]);
 
-  if (isSolid) return null;
+  const disabledReason = isSlotted ? t('binDesigner.labelTabsUnavailableSlotted') : undefined;
 
   return (
     <CollapsibleSection
       title={t('binDesigner.labelTabs')}
       defaultExpanded
       illustration={<LabelTabsIcon />}
-      summary={sectionSummary}
+      summary={isSlotted ? undefined : sectionSummary}
     >
       <FeatureToggle
         label={t('binDesigner.labelTabs')}
         checked={label.enabled}
         onChange={toggleLabelTabs}
+        disabledReason={disabledReason}
         primaryControls={
           <>
             {/* Width + Depth steppers side by side */}

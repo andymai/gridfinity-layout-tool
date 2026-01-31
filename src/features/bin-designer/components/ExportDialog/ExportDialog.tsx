@@ -36,7 +36,8 @@ export function ExportDialog() {
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const setExportFileNameConfig = useDesignerStore((s) => s.setExportFileNameConfig);
 
-  const { canExport, estimates, isExporting, downloadSTL } = useExport();
+  const { canExport, canExportDividers, estimates, isExporting, downloadSTL, downloadDividersSTL } =
+    useExport();
   const addToast = useToastStore((s) => s.addToast);
 
   const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
@@ -288,6 +289,32 @@ export function ExportDialog() {
             )}
             {isExporting ? t('binDesigner.exporting') : t('binDesigner.downloadSTL')}
           </button>
+
+          {/* Download Dividers STL Button (slotted bins only) */}
+          {canExportDividers && (
+            <button
+              onClick={async () => {
+                try {
+                  await downloadDividersSTL(exportFileNameConfig, designName);
+                  addToast({
+                    message: t('binDesigner.downloadDividersSTL') + ' ✓',
+                    type: 'success',
+                    duration: 3000,
+                  });
+                } catch {
+                  addToast({
+                    message: t('binDesigner.exportFailed'),
+                    type: 'error',
+                    duration: 5000,
+                  });
+                }
+              }}
+              disabled={isExporting}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-blue-600 bg-transparent px-4 py-2.5 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:border-stroke-subtle disabled:text-content-disabled dark:hover:bg-blue-950"
+            >
+              {t('binDesigner.downloadDividersSTL')}
+            </button>
+          )}
 
           {!canExport && (
             <p className="mt-2 text-center text-xs text-warning">

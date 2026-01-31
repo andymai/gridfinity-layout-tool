@@ -16,6 +16,9 @@ export type {
   LabelTabAlignment,
   WallCutout,
   WallConfig,
+  SlotConfig,
+  AxisSlotConfig,
+  DividerPieceConfig,
   Insert,
   InsertShape,
 } from '@/features/bin-designer/types';

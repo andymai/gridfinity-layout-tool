@@ -7,7 +7,7 @@ import {
   formatDimensionChange,
 } from './syncOperations';
 import type { Bin } from '@/core/types';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/shared/types/bin';
 import type { SyncableDimensions } from '../types';
 
 // Test helpers
@@ -101,7 +101,7 @@ describe('syncOperations', () => {
         width: 2,
         depth: 3,
         height: 4,
-        style: 'solid',
+        style: 'slotted',
         magnetHoles: true,
       });
       const result = extractDesignDimensions(params);

@@ -100,12 +100,11 @@ describe('migrateParams', () => {
       width: 4,
       depth: 5,
       height: 8,
-      style: 'solid',
     });
     expect(result.width).toBe(4);
     expect(result.depth).toBe(5);
     expect(result.height).toBe(8);
-    expect(result.style).toBe('solid');
+    expect(result.style).toBe('standard');
   });
 
   it('should merge label params with defaults', () => {

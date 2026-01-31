@@ -9,7 +9,24 @@ import type {
   DesignerHistory,
   WallCutout,
   WallConfig,
+  SlotConfig,
+  DividerPieceConfig,
 } from '../types';
+
+/** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
+export const DEFAULT_SLOT_CONFIG: SlotConfig = {
+  x: { enabled: true, pitch: 20 },
+  y: { enabled: false, pitch: 20 },
+  width: 2.0,
+  depth: 1.0,
+} as const;
+
+/** Default divider piece configuration */
+export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
+  height: 'auto',
+  thickness: 1.6,
+  clearance: 0.15,
+} as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
 export const DEFAULT_BIN_PARAMS: BinParams = {
@@ -52,6 +69,8 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     right: { width: 0, depth: 0 },
     interior: { width: 0, depth: 0 },
   },
+  slotConfig: DEFAULT_SLOT_CONFIG,
+  dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
   inserts: [],
 } as const;
 
@@ -164,17 +183,35 @@ export function migrateParams(
     }
   }
 
+  const style = params.style ?? DEFAULT_BIN_PARAMS.style;
+
+  // Backfill slot config and divider pieces
+  const slotConfig: SlotConfig = {
+    ...DEFAULT_SLOT_CONFIG,
+    ...((params.slotConfig as Partial<SlotConfig> | undefined) ?? {}),
+    x: { ...DEFAULT_SLOT_CONFIG.x, ...((params.slotConfig?.x as Partial<SlotConfig['x']>) ?? {}) },
+    y: { ...DEFAULT_SLOT_CONFIG.y, ...((params.slotConfig?.y as Partial<SlotConfig['y']>) ?? {}) },
+  };
+
+  const dividerPieces: DividerPieceConfig = {
+    ...DEFAULT_DIVIDER_PIECE_CONFIG,
+    ...((params.dividerPieces as Partial<DividerPieceConfig> | undefined) ?? {}),
+  };
+
   // Remove legacy dividers field from spread
   const { dividers: _legacyDividers, ...rest } = params as Record<string, unknown>;
 
   return {
     ...DEFAULT_BIN_PARAMS,
     ...rest,
+    style,
     base: { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) },
     compartments: compartmentsConfig,
     scoop: scoopConfig,
     label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
     walls: wallsConfig,
+    slotConfig,
+    dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
   } as BinParams;
 }

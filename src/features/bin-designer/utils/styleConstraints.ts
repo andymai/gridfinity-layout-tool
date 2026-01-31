@@ -14,6 +14,8 @@ export type ConstrainedFeature = 'dividers' | 'label';
 export interface StyleConstraints {
   /** Features disabled by this style */
   readonly disabledFeatures: readonly ConstrainedFeature[];
+  /** i18n keys explaining why each feature is disabled */
+  readonly disabledReasons: Partial<Record<ConstrainedFeature, string>>;
   /** Warning messages to show in the UI */
   readonly warnings: readonly string[];
   /** Extra gusset reinforcement available */
@@ -23,18 +25,17 @@ export interface StyleConstraints {
 const STYLE_CONSTRAINTS: Record<BinStyle, StyleConstraints> = {
   standard: {
     disabledFeatures: [],
+    disabledReasons: {},
     warnings: [],
     hasGussets: false,
   },
-  lite: {
-    disabledFeatures: [],
-    warnings: ['Thinner walls may reduce structural integrity with heavy items'],
-    hasGussets: false,
-  },
-  solid: {
-    disabledFeatures: [],
+  slotted: {
+    disabledFeatures: ['dividers', 'label'],
+    disabledReasons: {
+      label: 'binDesigner.labelTabsUnavailableSlotted',
+    },
     warnings: [],
-    hasGussets: true,
+    hasGussets: false,
   },
 };
 

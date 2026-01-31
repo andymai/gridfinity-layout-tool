@@ -10,3 +10,5 @@ export { GhostDividers } from './GhostDividers';
 export { GhostWireframe } from './GhostWireframe';
 export { GhostCompartmentPreview } from './GhostCompartmentPreview';
 export { GhostLabelTabs } from './GhostLabelTabs';
+export { GhostSlotLines } from './GhostSlotLines/GhostSlotLines';
+export { GhostDividerPieces } from './GhostDividerPieces/GhostDividerPieces';

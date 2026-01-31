@@ -58,8 +58,7 @@ export const GRIDFINITY = {
 /** Wall thickness per bin style (mm) */
 export const STYLE_WALL_THICKNESS: Record<string, number> = {
   standard: 0.95,
-  lite: 0.65,
-  solid: 1.6,
+  slotted: 0.95,
 } as const;
 
 /** Dimension constraints for bin parameters */
@@ -100,6 +99,23 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_SCREW_RADIUS: 1.0, // mm (diameter 2mm)
   MAX_SCREW_RADIUS: 3.0, // mm (diameter 6mm)
   SCREW_RADIUS_STEP: 0.25, // mm
+  // Slot configuration (slotted style)
+  MIN_SLOT_PITCH: 10, // mm between slot centers
+  MAX_SLOT_PITCH: 50, // mm
+  SLOT_PITCH_STEP: 1, // mm
+  MIN_SLOT_WIDTH: 1.8, // mm slot opening
+  MAX_SLOT_WIDTH: 3.0, // mm
+  SLOT_WIDTH_STEP: 0.1, // mm
+  MIN_SLOT_DEPTH: 0.5, // mm cut depth into wall
+  MAX_SLOT_DEPTH: 2.0, // mm
+  SLOT_DEPTH_STEP: 0.1, // mm
+  // Divider piece configuration
+  MIN_DIVIDER_THICKNESS: 0.8, // mm
+  MAX_DIVIDER_THICKNESS: 2.4, // mm
+  DIVIDER_THICKNESS_STEP: 0.1, // mm
+  MIN_DIVIDER_CLEARANCE: 0.0, // mm
+  MAX_DIVIDER_CLEARANCE: 0.3, // mm
+  DIVIDER_CLEARANCE_STEP: 0.05, // mm
 } as const;
 
 /**

@@ -33,9 +33,9 @@ describe('a11y utilities', () => {
     it('includes bin style when non-standard', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
-        style: 'solid',
+        style: 'slotted',
       };
-      expect(describeBin(params)).toContain('solid walls');
+      expect(describeBin(params)).toContain('slotted walls');
     });
 
     it('describes compartments count', () => {

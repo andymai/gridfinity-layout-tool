@@ -133,7 +133,7 @@ describe('validateDesignerShare', () => {
     });
 
     it('accepts all valid bin styles', () => {
-      for (const style of ['standard', 'lite', 'solid']) {
+      for (const style of ['standard', 'slotted']) {
         const payload = validPayload();
         (payload.params as Record<string, unknown>).style = style;
         const result = validateDesignerShare(payload, JSON.stringify(payload).length);
