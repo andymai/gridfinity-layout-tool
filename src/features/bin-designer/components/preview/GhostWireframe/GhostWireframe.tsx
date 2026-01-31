@@ -60,26 +60,86 @@ export function GhostWireframe() {
 
     // Bottom rectangle (Z = 0)
     positions.push(
-      -halfW, -halfD, 0, halfW, -halfD, 0,
-      halfW, -halfD, 0, halfW, halfD, 0,
-      halfW, halfD, 0, -halfW, halfD, 0,
-      -halfW, halfD, 0, -halfW, -halfD, 0
+      -halfW,
+      -halfD,
+      0,
+      halfW,
+      -halfD,
+      0,
+      halfW,
+      -halfD,
+      0,
+      halfW,
+      halfD,
+      0,
+      halfW,
+      halfD,
+      0,
+      -halfW,
+      halfD,
+      0,
+      -halfW,
+      halfD,
+      0,
+      -halfW,
+      -halfD,
+      0
     );
 
     // Top rectangle (Z = totalH)
     positions.push(
-      -halfW, -halfD, totalH, halfW, -halfD, totalH,
-      halfW, -halfD, totalH, halfW, halfD, totalH,
-      halfW, halfD, totalH, -halfW, halfD, totalH,
-      -halfW, halfD, totalH, -halfW, -halfD, totalH
+      -halfW,
+      -halfD,
+      totalH,
+      halfW,
+      -halfD,
+      totalH,
+      halfW,
+      -halfD,
+      totalH,
+      halfW,
+      halfD,
+      totalH,
+      halfW,
+      halfD,
+      totalH,
+      -halfW,
+      halfD,
+      totalH,
+      -halfW,
+      halfD,
+      totalH,
+      -halfW,
+      -halfD,
+      totalH
     );
 
     // Vertical edges (corners)
     positions.push(
-      -halfW, -halfD, 0, -halfW, -halfD, totalH,
-      halfW, -halfD, 0, halfW, -halfD, totalH,
-      halfW, halfD, 0, halfW, halfD, totalH,
-      -halfW, halfD, 0, -halfW, halfD, totalH
+      -halfW,
+      -halfD,
+      0,
+      -halfW,
+      -halfD,
+      totalH,
+      halfW,
+      -halfD,
+      0,
+      halfW,
+      -halfD,
+      totalH,
+      halfW,
+      halfD,
+      0,
+      halfW,
+      halfD,
+      totalH,
+      -halfW,
+      halfD,
+      0,
+      -halfW,
+      halfD,
+      totalH
     );
 
     const geo = new LineSegmentsGeometry();
@@ -91,7 +151,7 @@ export function GhostWireframe() {
   const material = useMemo(() => {
     if (!shouldShow) return null;
 
-    const mat = new LineMaterial({
+    return new LineMaterial({
       color: new THREE.Color(GHOST_COLOR).getHex(),
       linewidth: LINE_WIDTH,
       transparent: true,
@@ -99,9 +159,12 @@ export function GhostWireframe() {
       depthTest: true,
       resolution: new THREE.Vector2(canvasWidth, canvasHeight),
     });
-    materialRef.current = mat;
-    return mat;
   }, [shouldShow, canvasWidth, canvasHeight]);
+
+  // Sync material ref after render (not during render)
+  useEffect(() => {
+    materialRef.current = material;
+  }, [material]);
 
   // Update resolution on resize
   useFrame(() => {

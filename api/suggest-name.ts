@@ -22,7 +22,9 @@ const SUPPORTED_LOCALES = ['en', 'de', 'es', 'fr', 'nl', 'pt-BR'];
 /**
  * Validate the request body.
  */
-function validateRequest(body: unknown): { valid: true; request: NameSuggestionRequest } | { valid: false; error: string } {
+function validateRequest(
+  body: unknown
+): { valid: true; request: NameSuggestionRequest } | { valid: false; error: string } {
   if (!body || typeof body !== 'object') {
     return { valid: false, error: 'Request body is required' };
   }
@@ -104,7 +106,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+    return res
+      .status(405)
+      .json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
   }
 
   // Check origin to prevent abuse from unauthorized sites
@@ -182,7 +186,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error) {
     // Handle LLM-specific errors
     if (error instanceof APICallError) {
-      // eslint-disable-next-line no-console
       console.error('LLM API error:', error.message, error.statusCode);
 
       if (error.statusCode === 429) {
@@ -193,7 +196,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (error.statusCode === 401 || error.statusCode === 403) {
-        // eslint-disable-next-line no-console
         console.error('LLM authentication error - check OPENAI_API_KEY');
         return res.status(503).json({
           error: 'AI service configuration error.',
@@ -203,8 +205,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Log error for debugging (avoid logging user data)
-    // eslint-disable-next-line no-console
-    console.error('Name suggestion error:', error instanceof Error ? error.message : 'Unknown error');
+    console.error(
+      'Name suggestion error:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
 
     return res.status(500).json({
       error: 'Failed to generate name suggestions',

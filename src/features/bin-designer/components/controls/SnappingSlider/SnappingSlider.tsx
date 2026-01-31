@@ -235,12 +235,13 @@ export function SnappingSlider({
             const isActive = Math.abs(option.value - value) < 0.001;
             const isBehindThumb = option.value <= thumbPosition;
             // Ticks on the filled track need to contrast with accent color
-            // eslint-disable-next-line i18next/no-literal-string
+            /* eslint-disable i18next/no-literal-string -- CSS class names, not user-facing text */
             const tickColor = isActive
               ? 'bg-accent'
               : isBehindThumb
                 ? 'bg-surface'
                 : 'bg-content-secondary';
+            /* eslint-enable i18next/no-literal-string */
             return (
               <div
                 key={option.value}
