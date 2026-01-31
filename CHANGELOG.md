@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.12.0...gridfinity-layout-tool-v2.13.0) (2026-01-31)
+
+
+### Features
+
+* prefetch lazy-loaded chunks during browser idle time ([#553](https://github.com/andymai/gridfinity-layout-tool/issues/553)) ([fcf2790](https://github.com/andymai/gridfinity-layout-tool/commit/fcf279085bd877e8e1b265fc22dc4fd7c8869342))
+
 ## [2.12.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.11.1...gridfinity-layout-tool-v2.12.0) (2026-01-31)
 
 
