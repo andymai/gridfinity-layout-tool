@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.7.0...gridfinity-layout-tool-v2.7.1) (2026-01-31)
+
+
+### Bug Fixes
+
+* tighten component structure hook regex and folder rule ([#529](https://github.com/andymai/gridfinity-layout-tool/issues/529)) ([6073aa8](https://github.com/andymai/gridfinity-layout-tool/commit/6073aa834f3cc044e39174afc65b9236627d3fc6))
+
 ## [2.7.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.6.0...gridfinity-layout-tool-v2.7.0) (2026-01-31)
 
 
