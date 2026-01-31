@@ -57,7 +57,6 @@ interface UIState {
   // View (delegated to useViewStore)
   zoom: number;
   showOtherLayers: boolean;
-  showLabels: boolean;
   leftPanelCollapsed: boolean;
   rightPanelCollapsed: boolean;
   contextMenu: ContextMenuState | null;
@@ -110,7 +109,6 @@ interface UIState {
   zoomIn: () => void;
   zoomOut: () => void;
   toggleShowOtherLayers: () => void;
-  toggleShowLabels: () => void;
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
   showContextMenu: (
@@ -181,7 +179,6 @@ function getCombinedState(): Omit<
   | 'zoomIn'
   | 'zoomOut'
   | 'toggleShowOtherLayers'
-  | 'toggleShowLabels'
   | 'toggleLeftPanel'
   | 'toggleRightPanel'
   | 'showContextMenu'
@@ -230,7 +227,6 @@ function getCombinedState(): Omit<
     // View
     zoom: view.zoom,
     showOtherLayers: view.showOtherLayers,
-    showLabels: view.showLabels,
     leftPanelCollapsed: view.leftPanelCollapsed,
     rightPanelCollapsed: view.rightPanelCollapsed,
     contextMenu: view.contextMenu,
@@ -323,9 +319,6 @@ export const useUIStore = create<UIState>((_set) => ({
   },
   toggleShowOtherLayers: () => {
     useViewStore.getState().toggleShowOtherLayers();
-  },
-  toggleShowLabels: () => {
-    useViewStore.getState().toggleShowLabels();
   },
   toggleLeftPanel: () => {
     useViewStore.getState().toggleLeftPanel();

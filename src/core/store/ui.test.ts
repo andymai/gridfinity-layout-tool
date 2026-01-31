@@ -185,14 +185,6 @@ describe('ui store', () => {
       expect(getViewState().showOtherLayers).toBe(true);
     });
 
-    it('toggleShowLabels toggles state', () => {
-      const { toggleShowLabels } = useUIStore.getState();
-
-      expect(getViewState().showLabels).toBe(true);
-      toggleShowLabels();
-      expect(getViewState().showLabels).toBe(false);
-    });
-
     it('toggleLeftPanel toggles collapsed state', () => {
       const { toggleLeftPanel } = useUIStore.getState();
 

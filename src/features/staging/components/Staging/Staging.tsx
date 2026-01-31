@@ -149,7 +149,6 @@ export function Staging() {
     selectedBinIds,
     setSelectedBin,
     toggleSelection,
-    showLabels,
     showContextMenu,
   } = useUIStore(
     useShallow((state) => ({
@@ -161,7 +160,6 @@ export function Staging() {
       selectedBinIds: state.selectedBinIds,
       setSelectedBin: state.setSelectedBin,
       toggleSelection: state.toggleSelection,
-      showLabels: state.showLabels,
       showContextMenu: state.showContextMenu,
     }))
   );
@@ -807,7 +805,7 @@ export function Staging() {
 
                 // ========== ADAPTIVE LABEL SYSTEM (matches Grid/Bin.tsx) ==========
                 const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
-                const hasLabel = showLabels && bin.label;
+                const hasLabel = !!bin.label;
 
                 // Smart rotation: use taller dimension for text if significantly taller
                 const shouldRotate = bin.depth > bin.width * 1.5;

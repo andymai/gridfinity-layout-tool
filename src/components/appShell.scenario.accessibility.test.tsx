@@ -47,7 +47,6 @@ beforeEach(() => {
     activeCategoryId: defaultLayout.categories[0].id,
     zoom: 1,
     showOtherLayers: true,
-    showLabels: true,
     leftPanelCollapsed: false,
     rightPanelCollapsed: false,
     interaction: null,

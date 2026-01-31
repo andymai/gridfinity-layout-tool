@@ -129,13 +129,9 @@ describe('Staging', () => {
       expect(screen.getByText('3×2')).toBeInTheDocument();
     });
 
-    it('renders bin label when showLabels is true and label fits', () => {
+    it('renders bin label when label fits', () => {
       // Use a large bin so label fits
       addStagedBins([{ label: 'Test', width: 4, depth: 4 }]);
-      // Ensure showLabels is enabled
-      if (!useUIStore.getState().showLabels) {
-        useUIStore.getState().toggleShowLabels();
-      }
 
       render(<Staging />);
 

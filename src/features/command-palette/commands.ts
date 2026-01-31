@@ -198,12 +198,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['reset zoom', 'center'],
   },
   {
-    id: 'toggle-labels',
-    labelKey: 'commandPalette.toggleLabels',
-    category: 'view',
-    keywords: ['show', 'hide', 'text'],
-  },
-  {
     id: 'toggle-other-layers',
     labelKey: 'commandPalette.toggleOtherLayers',
     category: 'view',

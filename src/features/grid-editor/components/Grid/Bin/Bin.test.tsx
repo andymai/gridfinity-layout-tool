@@ -116,7 +116,6 @@ describe('Bin', () => {
       focusedBinId: null,
     });
     useViewStore.setState({
-      showLabels: true,
       highlightedCategoryId: null,
       highlightedRowLabel: null,
       highlightedColLabel: null,
@@ -171,7 +170,7 @@ describe('Bin', () => {
   });
 
   describe('labels', () => {
-    it('displays label when provided and showLabels is true', () => {
+    it('displays label when provided', () => {
       const binWithLabel = { ...defaultBin, label: 'My Label' };
       render(<Bin {...defaultProps} bin={binWithLabel} />);
       expect(screen.getByText('My Label')).toBeInTheDocument();

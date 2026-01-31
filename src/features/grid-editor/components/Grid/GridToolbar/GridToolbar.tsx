@@ -24,8 +24,6 @@ export interface GridToolbarProps {
   layers: Layer[];
   /** Currently active layer */
   activeLayer: Layer | undefined;
-  /** Number of placed bins (non-staging) */
-  placedBinsCount: number;
   /** Whether toolbar is narrow (show overflow menu) */
   isNarrowToolbar: boolean;
   /** Whether paint hint should pulse */
@@ -37,7 +35,6 @@ export const GridToolbar = memo(function GridToolbar({
   toolbarRef,
   layers,
   activeLayer,
-  placedBinsCount,
   isNarrowToolbar,
   shouldPulsePaintHint,
 }: GridToolbarProps) {
@@ -45,23 +42,15 @@ export const GridToolbar = memo(function GridToolbar({
   const { zoom, canZoomIn, canZoomOut, zoomIn, zoomOut, fitToScreen } = zoomState;
 
   // View store
-  const {
-    showOtherLayers,
-    toggleShowOtherLayers,
-    showLabels,
-    toggleShowLabels,
-    leftPanelCollapsed,
-    toggleLeftPanel,
-  } = useViewStore(
-    useShallow((state) => ({
-      showOtherLayers: state.showOtherLayers,
-      toggleShowOtherLayers: state.toggleShowOtherLayers,
-      showLabels: state.showLabels,
-      toggleShowLabels: state.toggleShowLabels,
-      leftPanelCollapsed: state.leftPanelCollapsed,
-      toggleLeftPanel: state.toggleLeftPanel,
-    }))
-  );
+  const { showOtherLayers, toggleShowOtherLayers, leftPanelCollapsed, toggleLeftPanel } =
+    useViewStore(
+      useShallow((state) => ({
+        showOtherLayers: state.showOtherLayers,
+        toggleShowOtherLayers: state.toggleShowOtherLayers,
+        leftPanelCollapsed: state.leftPanelCollapsed,
+        toggleLeftPanel: state.toggleLeftPanel,
+      }))
+    );
 
   // Interaction store
   const {
@@ -282,27 +271,6 @@ export const GridToolbar = memo(function GridToolbar({
       {/* Right: View controls */}
       <div className="flex items-center gap-4">
         {/* View toggles - only show inline when not narrow */}
-        {!isNarrowToolbar && placedBinsCount > 0 && (
-          <div
-            className="flex items-center gap-2 cursor-pointer select-none text-sm"
-            onClick={toggleShowLabels}
-            role="checkbox"
-            aria-checked={showLabels}
-            aria-label={t('toolbar.labels')}
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === ' ' || e.key === 'Enter') {
-                e.preventDefault();
-                toggleShowLabels();
-              }
-            }}
-          >
-            <span className={showLabels ? 'text-content' : 'text-content-secondary'}>
-              {t('toolbar.labels')}
-            </span>
-            <Checkbox checked={showLabels} variant="desktop" />
-          </div>
-        )}
         {!isNarrowToolbar && layers.length > 1 && (
           <div
             className="flex items-center gap-2 cursor-pointer select-none text-sm"
@@ -401,7 +369,7 @@ export const GridToolbar = memo(function GridToolbar({
         </button>
 
         {/* Overflow menu button - only when narrow */}
-        {isNarrowToolbar && (placedBinsCount > 0 || layers.length > 1) && (
+        {isNarrowToolbar && layers.length > 1 && (
           <div className="relative" ref={overflowMenuRef}>
             <button
               onClick={() => setOverflowMenuOpen(!overflowMenuOpen)}
@@ -427,27 +395,6 @@ export const GridToolbar = memo(function GridToolbar({
                 className="absolute right-0 top-full mt-1 py-2 px-1 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg z-50 min-w-[160px]"
                 role="menu"
               >
-                {placedBinsCount > 0 && (
-                  <div
-                    className="flex items-center justify-between px-3 py-2 cursor-pointer select-none text-sm hover:bg-surface-hover rounded-md"
-                    onClick={toggleShowLabels}
-                    role="menuitemcheckbox"
-                    aria-checked={showLabels}
-                    aria-label={t('toolbar.labels')}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault();
-                        toggleShowLabels();
-                      }
-                    }}
-                  >
-                    <span className={showLabels ? 'text-content' : 'text-content-secondary'}>
-                      {t('toolbar.labels')}
-                    </span>
-                    <Checkbox checked={showLabels} variant="desktop" />
-                  </div>
-                )}
                 {layers.length > 1 && (
                   <div
                     className="flex items-center justify-between px-3 py-2 cursor-pointer select-none text-sm hover:bg-surface-hover rounded-md"

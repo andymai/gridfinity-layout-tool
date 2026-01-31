@@ -52,7 +52,6 @@ export function resetAllStores(): void {
   useViewStore.setState({
     zoom: 1,
     showOtherLayers: true,
-    showLabels: true,
     leftPanelCollapsed: false,
     rightPanelCollapsed: false,
     contextMenu: null,

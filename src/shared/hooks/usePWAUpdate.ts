@@ -137,7 +137,6 @@ function gatherEphemeralState(): Omit<EphemeralState, 'savedAt'> {
     // View settings
     zoom: ui.zoom,
     showOtherLayers: ui.showOtherLayers,
-    showLabels: ui.showLabels,
 
     // Panel state
     leftPanelCollapsed: ui.leftPanelCollapsed,
@@ -198,10 +197,6 @@ function restoreEphemeralState(): boolean {
   if (state.showOtherLayers !== ui.showOtherLayers) {
     ui.toggleShowOtherLayers();
   }
-  if (state.showLabels !== ui.showLabels) {
-    ui.toggleShowLabels();
-  }
-
   // Restore panel state
   if (state.leftPanelCollapsed !== ui.leftPanelCollapsed) {
     ui.toggleLeftPanel();

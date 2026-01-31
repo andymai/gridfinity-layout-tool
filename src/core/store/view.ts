@@ -29,7 +29,6 @@ interface ViewState {
 
   // Visibility toggles
   showOtherLayers: boolean;
-  showLabels: boolean;
 
   // Desktop panel states
   leftPanelCollapsed: boolean;
@@ -55,7 +54,6 @@ interface ViewActions {
 
   // Visibility
   toggleShowOtherLayers: () => void;
-  toggleShowLabels: () => void;
 
   // Panels
   toggleLeftPanel: () => void;
@@ -84,7 +82,6 @@ export const useViewStore = create<ViewStore>((set) => ({
   // Initial state
   zoom: 1,
   showOtherLayers: true,
-  showLabels: true,
   leftPanelCollapsed: false,
   rightPanelCollapsed: false,
   contextMenu: null,
@@ -113,11 +110,6 @@ export const useViewStore = create<ViewStore>((set) => ({
   toggleShowOtherLayers: () =>
     set((state) => ({
       showOtherLayers: !state.showOtherLayers,
-    })),
-
-  toggleShowLabels: () =>
-    set((state) => ({
-      showLabels: !state.showLabels,
     })),
 
   // Panel actions

@@ -71,9 +71,6 @@ function BinComponent({
     }))
   );
 
-  // View state - from useViewStore
-  const showLabels = useViewStore((state) => state.showLabels);
-
   // Interaction state - from useInteractionStore
   const interaction = useInteractionStore((state) => state.interaction);
 
@@ -322,7 +319,7 @@ function BinComponent({
     offsetY,
   } = layoutCalcs;
 
-  const hasLabel = showLabels && bin.label;
+  const hasLabel = !!bin.label;
   const hasNotes = bin.notes && bin.notes.trim().length > 0;
   const hasCustomProps = bin.customProperties && Object.keys(bin.customProperties).length > 0;
   const hasLinkedDesign = !!bin.linkedDesignId;

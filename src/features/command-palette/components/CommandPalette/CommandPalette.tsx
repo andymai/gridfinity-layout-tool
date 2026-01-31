@@ -68,16 +68,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       setActiveCategory: s.setActiveCategory,
     }))
   );
-  const { zoomIn, zoomOut, toggleShowLabels, toggleShowOtherLayers, setPrintModalOpen } =
-    useViewStore(
-      useShallow((s) => ({
-        zoomIn: s.zoomIn,
-        zoomOut: s.zoomOut,
-        toggleShowLabels: s.toggleShowLabels,
-        toggleShowOtherLayers: s.toggleShowOtherLayers,
-        setPrintModalOpen: s.setPrintModalOpen,
-      }))
-    );
+  const { zoomIn, zoomOut, toggleShowOtherLayers, setPrintModalOpen } = useViewStore(
+    useShallow((s) => ({
+      zoomIn: s.zoomIn,
+      zoomOut: s.zoomOut,
+      toggleShowOtherLayers: s.toggleShowOtherLayers,
+      setPrintModalOpen: s.setPrintModalOpen,
+    }))
+  );
   const { toggleHalfBinMode, halfBinMode } = useHalfBinModeStore(
     useShallow((s) => ({
       toggleHalfBinMode: s.toggleHalfBinMode,
@@ -212,8 +210,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => zoomOut();
         case 'fit-to-screen':
           return () => window.dispatchEvent(new CustomEvent('fit-to-screen'));
-        case 'toggle-labels':
-          return () => toggleShowLabels();
         case 'toggle-other-layers':
           return () => toggleShowOtherLayers();
 
@@ -458,7 +454,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       setPrintModalOpen,
       toggleIsometricPreview,
       togglePreviewExpanded,
-      toggleShowLabels,
       toggleShowOtherLayers,
       showQuickLabel,
       toggleHalfBinMode,
