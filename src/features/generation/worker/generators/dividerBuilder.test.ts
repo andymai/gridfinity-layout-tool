@@ -24,10 +24,10 @@ function makeSlottedParams(overrides: Partial<BinParams> = {}): BinParams {
 }
 
 describe('buildDividerPiece', () => {
-  it('calls replicad to create a single extrusion', () => {
+  it('extrudes by thickness (flat orientation for printing)', () => {
     const result = buildDividerPiece(80, 1.2, 20);
     expect(result).toBeDefined();
-    expect(mockExtrude).toHaveBeenCalledWith(20);
+    expect(mockExtrude).toHaveBeenCalledWith(1.2);
   });
 });
 

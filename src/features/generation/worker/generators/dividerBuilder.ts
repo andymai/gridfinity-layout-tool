@@ -16,21 +16,20 @@ import { getEffectiveSlotDimensions } from './slotBuilder';
 export { calculateDividerHeight, calculateDividerLength };
 
 /**
- * Build a single divider piece as a flat rectangular wall.
+ * Build a single divider piece laid flat for FDM printing.
  *
- * The divider length already includes tab engagement depth on each end
- * (via calculateDividerLength), and tabThickness simplifies to exactly
- * `thickness` (slotWidth - 2*clearance = thickness + 2*clearance - 2*clearance).
- * So the tab volumes are contained within the wall — a single extrusion
- * produces the correct geometry without expensive BREP boolean fuse ops.
+ * The divider is oriented with its largest face (length × height) on the
+ * XY build plate and extruded upward by wall thickness. This gives the
+ * strongest layer orientation — lines run along the wall rather than
+ * across the thin dimension.
  *
  * @param length Total divider length in mm (including tab engagement)
  * @param thickness Divider wall thickness in mm
- * @param height Divider height in mm
+ * @param height Divider height in mm (becomes Y in flat orientation)
  */
 export function buildDividerPiece(length: number, thickness: number, height: number): Shape3D {
-  return (drawRectangle(length, thickness).sketchOnPlane('XY') as unknown as Sketch).extrude(
-    height
+  return (drawRectangle(length, height).sketchOnPlane('XY') as unknown as Sketch).extrude(
+    thickness
   ) as Shape3D;
 }
 
@@ -66,11 +65,11 @@ export function buildUniqueDividerPieces(
     pieces.push(buildDividerPiece(length, thickness, dividerHeight));
   }
 
-  // One Y-axis divider (spans depth) — offset if both axes enabled
+  // One Y-axis divider (spans depth) — offset in Y if both axes enabled
   if (slotConfig.y.enabled) {
     const length = calculateDividerLength(innerD, slotDepth, clearance);
     const piece = buildDividerPiece(length, thickness, dividerHeight);
-    const yOffset = pieces.length > 0 ? thickness + 5 : 0;
+    const yOffset = pieces.length > 0 ? dividerHeight + 5 : 0;
     pieces.push(piece.translate([0, yOffset, 0]));
   }
 
