@@ -226,6 +226,98 @@ describe('validateBinParams', () => {
       );
       expectOk(result);
     });
+
+    it('should accept label tab at boundary depth values', () => {
+      expectOk(
+        validateBinParams(
+          makeParams({
+            label: {
+              enabled: true,
+              support: 'bracket',
+              depth: DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH,
+              width: 100,
+              alignment: 'left',
+            },
+          })
+        )
+      );
+      expectOk(
+        validateBinParams(
+          makeParams({
+            label: {
+              enabled: true,
+              support: 'bracket',
+              depth: DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH,
+              width: 100,
+              alignment: 'left',
+            },
+          })
+        )
+      );
+    });
+
+    it('should accept label tab at boundary width values', () => {
+      expectOk(
+        validateBinParams(
+          makeParams({
+            label: {
+              enabled: true,
+              support: 'bracket',
+              depth: 12,
+              width: DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH,
+              alignment: 'center',
+            },
+          })
+        )
+      );
+      expectOk(
+        validateBinParams(
+          makeParams({
+            label: {
+              enabled: true,
+              support: 'bracket',
+              depth: 12,
+              width: DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH,
+              alignment: 'right',
+            },
+          })
+        )
+      );
+    });
+
+    it('should reject depth just beyond boundary', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: {
+            enabled: true,
+            support: 'bracket',
+            depth: DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH + 1,
+            width: 100,
+            alignment: 'left',
+          },
+        })
+      );
+      const error = expectErr(result);
+      expect(error.code).toBe('LABEL_TAB_DEPTH_OUT_OF_RANGE');
+      expect(error.field).toBe('label.depth');
+    });
+
+    it('should reject width just beyond boundary', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: {
+            enabled: true,
+            support: 'bracket',
+            depth: 12,
+            width: DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH + 1,
+            alignment: 'left',
+          },
+        })
+      );
+      const error = expectErr(result);
+      expect(error.code).toBe('LABEL_TAB_WIDTH_OUT_OF_RANGE');
+      expect(error.field).toBe('label.width');
+    });
   });
 
   describe('magnet depth constraints', () => {
