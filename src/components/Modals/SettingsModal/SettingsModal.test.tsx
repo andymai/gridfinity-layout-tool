@@ -1,6 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SettingsModal } from './SettingsModal';
+
+const mockOnClose = vi.hoisted(() => vi.fn());
 
 vi.mock('@/shared/hooks', () => ({
   useResponsive: () => ({ isMobile: false, isTablet: false, isDesktop: true }),
@@ -63,6 +65,7 @@ vi.mock('@/features/onboarding/hooks/useOnboarding', () => ({
 describe('SettingsModal', () => {
   beforeEach(() => {
     sessionStorage.clear();
+    mockOnClose.mockClear();
   });
 
   it('renders nothing when closed', () => {
@@ -104,5 +107,26 @@ describe('SettingsModal', () => {
   it('renders reset onboarding button in footer', () => {
     render(<SettingsModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByText('settings.resetOnboarding')).toBeInTheDocument();
+  });
+
+  it('Escape key calls onClose', () => {
+    render(<SettingsModal isOpen={true} onClose={mockOnClose} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it('clicking overlay calls onClose', () => {
+    render(<SettingsModal isOpen={true} onClose={mockOnClose} />);
+    // The overlay is the outermost div with the fixed class
+    const overlay = screen.getByRole('dialog').parentElement!;
+    fireEvent.click(overlay);
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it('clicking modal content does NOT call onClose', () => {
+    render(<SettingsModal isOpen={true} onClose={mockOnClose} />);
+    const dialog = screen.getByRole('dialog');
+    fireEvent.click(dialog);
+    expect(mockOnClose).not.toHaveBeenCalled();
   });
 });

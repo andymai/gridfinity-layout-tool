@@ -162,6 +162,48 @@ describe('validateBinParams', () => {
       );
       expectOk(result);
     });
+
+    it('should accept empty label text', () => {
+      const result = validateBinParams(
+        makeParams({ label: { enabled: true, text: '', fontSize: 'auto' } })
+      );
+      expectOk(result);
+    });
+
+    it('should accept label with numeric fontSize', () => {
+      const result = validateBinParams(
+        makeParams({ label: { enabled: true, text: 'Hello', fontSize: 12 } })
+      );
+      expectOk(result);
+    });
+
+    it('should reject label at boundary+1 (MAX_LABEL_LENGTH + 1)', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: {
+            enabled: true,
+            text: 'a'.repeat(DESIGNER_CONSTRAINTS.MAX_LABEL_LENGTH + 1),
+            fontSize: 'auto',
+          },
+        })
+      );
+      const error = expectErr(result);
+      expect(error.code).toBe('LABEL_TOO_LONG');
+      expect(error.field).toBe('label.text');
+    });
+
+    it('should accept label at exact boundary (MAX_LABEL_LENGTH)', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: {
+            enabled: true,
+            text: 'a'.repeat(DESIGNER_CONSTRAINTS.MAX_LABEL_LENGTH),
+            fontSize: 'auto',
+          },
+        })
+      );
+      expectOk(result);
+    });
   });
 
   describe('magnet depth constraints', () => {
