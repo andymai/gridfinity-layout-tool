@@ -1138,8 +1138,6 @@
   "rightPanel.splitInto": "Splitsen in",
   "rightPanel.unknownCategory": "Onbekende categorie",
   "seo.description": "Plan en visualiseer Gridfinity lade-indelingen voor 3D-printen. Aangepaste bins, multi-layer ondersteuning en 3D-preview.",
-  "seo.layoutDescription": "{width}×{depth} Gridfinity lade-indeling met {binCount} bins over {layerCount} lagen.",
-  "seo.layoutTitle": "{name} | Gridfinity Layout Tool",
   "seo.title": "Gridfinity Layout Tool | Plan je 3D-geprinte lade-organizers",
   "settings.autoDetect": "Automatisch (browserstandaard)",
   "settings.confirmCopyFromLayout.confirm": "Kopiëren",

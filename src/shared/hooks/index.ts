@@ -19,5 +19,3 @@ export type { SharedWithMeStatus } from './useSharedWithMe';
 export { useInlineEdit } from './useInlineEdit';
 
 export { usePrefetchChunks } from './usePrefetchChunks';
-
-export { useDocumentMeta, buildLayoutDescription } from './useDocumentMeta';

@@ -1138,8 +1138,6 @@
   "rightPanel.splitInto": "Del i",
   "rightPanel.unknownCategory": "Ukjent kategori",
   "seo.description": "Planlegg og visualiser Gridfinity skuffeoppsett for 3D-printing. Tilpassede bins, flerlags støtte og 3D-forhåndsvisning.",
-  "seo.layoutDescription": "{width}×{depth} Gridfinity skuffeoppsett med {binCount} bins over {layerCount} lag.",
-  "seo.layoutTitle": "{name} | Gridfinity Layout Tool",
   "seo.title": "Gridfinity Layout Tool | Planlegg dine 3D-printede skufforganisatorer",
   "settings.autoDetect": "Auto (nettleserstandard)",
   "settings.confirmCopyFromLayout.confirm": "Kopier",

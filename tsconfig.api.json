@@ -24,6 +24,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "include": ["api/**/*.ts", "middleware.ts", "middleware-utils.ts"],
+  "include": ["api/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]
 }
