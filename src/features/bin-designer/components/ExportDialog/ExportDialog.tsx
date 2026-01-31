@@ -12,7 +12,6 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
-import { downloadDesignAsFile } from '@/features/bin-designer/utils/designJson';
 import type { FileNameStyle } from '@/features/bin-designer/types';
 import { getSTLFileSize } from '@/shared/generation/export';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
@@ -125,49 +124,7 @@ export function ExportDialog() {
           </button>
         </div>
 
-        {/* Section 1: Design File (.json) */}
-        <div className="mb-5">
-          {/* eslint-disable i18next/no-literal-string */}
-          <h3 className="mb-1 text-sm font-semibold text-content">
-            {t('binDesigner.designFile')} (.json)
-          </h3>
-          {/* eslint-enable i18next/no-literal-string */}
-          <p className="mb-3 text-xs text-content-secondary">
-            {t('binDesigner.designFileDescription')}
-          </p>
-          <button
-            onClick={() => {
-              downloadDesignAsFile(designName, params);
-              addToast({
-                message: t('binDesigner.downloadDesignJson') + ' ✓',
-                type: 'success',
-                duration: 2000,
-              });
-            }}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-stroke-subtle bg-surface px-4 py-2.5 text-sm font-medium text-content transition-colors hover:bg-surface-hover"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            {t('binDesigner.downloadJSON')}
-          </button>
-        </div>
-
-        {/* Visual Divider */}
-        <div className="mb-5 border-t border-stroke-subtle" />
-
-        {/* Section 2: 3D Model (.stl) */}
+        {/* 3D Model (.stl) */}
         <div>
           {/* eslint-disable i18next/no-literal-string */}
           <h3 className="mb-1 text-sm font-semibold text-content">
