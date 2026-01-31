@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.10.0...gridfinity-layout-tool-v2.10.1) (2026-01-31)
+
+
+### Bug Fixes
+
+* add explicit permissions to release workflow ([#544](https://github.com/andymai/gridfinity-layout-tool/issues/544)) ([b62ed09](https://github.com/andymai/gridfinity-layout-tool/commit/b62ed0911f232520619056f0fec7d6a9e8470b00))
+
 ## [2.10.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.9.0...gridfinity-layout-tool-v2.10.0) (2026-01-31)
 
 
