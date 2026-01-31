@@ -2,24 +2,21 @@
 
 ## [2.14.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.14.0...gridfinity-layout-tool-v2.14.1) (2026-01-31)
 
-
 ### Bug Fixes
 
-* resolve ESLint errors and add missing tests ([#563](https://github.com/andymai/gridfinity-layout-tool/issues/563)) ([485f776](https://github.com/andymai/gridfinity-layout-tool/commit/485f776c0e2cd4ffc7ae20189e8d51c9c267f472))
+- resolve ESLint errors and add missing tests ([#563](https://github.com/andymai/gridfinity-layout-tool/issues/563)) ([485f776](https://github.com/andymai/gridfinity-layout-tool/commit/485f776c0e2cd4ffc7ae20189e8d51c9c267f472))
 
 ## [2.14.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.13.1...gridfinity-layout-tool-v2.14.0) (2026-01-31)
 
-
 ### Features
 
-* **seo:** dynamic meta tags + server-side bot OG injection ([#559](https://github.com/andymai/gridfinity-layout-tool/issues/559)) ([f765bdb](https://github.com/andymai/gridfinity-layout-tool/commit/f765bdb5f6e59b41472df350ebb8ec59a25b6cd1))
+- **seo:** dynamic meta tags + server-side bot OG injection ([#559](https://github.com/andymai/gridfinity-layout-tool/issues/559)) ([f765bdb](https://github.com/andymai/gridfinity-layout-tool/commit/f765bdb5f6e59b41472df350ebb8ec59a25b6cd1))
 
 ## [2.13.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.13.0...gridfinity-layout-tool-v2.13.1) (2026-01-31)
 
-
 ### Bug Fixes
 
-* **seo:** shorten meta descriptions to 100-130 characters ([#556](https://github.com/andymai/gridfinity-layout-tool/issues/556)) ([8cba243](https://github.com/andymai/gridfinity-layout-tool/commit/8cba2432429538042cb7822a82431db57f970033))
+- **seo:** shorten meta descriptions to 100-130 characters ([#556](https://github.com/andymai/gridfinity-layout-tool/issues/556)) ([8cba243](https://github.com/andymai/gridfinity-layout-tool/commit/8cba2432429538042cb7822a82431db57f970033))
 
 ## [2.13.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.12.0...gridfinity-layout-tool-v2.13.0) (2026-01-31)
 

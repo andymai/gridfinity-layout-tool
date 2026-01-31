@@ -1,8 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, beforeEach, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { MobileBinList } from './MobileBinList';
+import { resetAllStores } from '@/test/testUtils';
+
+vi.mock('../BinListFilters', () => ({
+  BinListFilters: () => <div data-testid="bin-list-filters" />,
+}));
+
+vi.mock('@/i18n', () => ({
+  useTranslation: () => (key: string) => key,
+}));
 
 describe('MobileBinList', () => {
-  it('should be defined', async () => {
-    const mod = await import('./MobileBinList');
-    expect(mod.MobileBinList).toBeDefined();
+  beforeEach(() => {
+    resetAllStores();
+    vi.clearAllMocks();
+  });
+
+  it('renders without crashing', () => {
+    render(<MobileBinList />);
   });
 });
