@@ -234,7 +234,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
               {/* Layer Selection */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 style={STYLES.sectionHeader}>{t('layers.title')}</h3>
+                  <h3 style={STYLES.sectionHeader}>{t('common.layers')}</h3>
                   {layout.layers.length > 1 && (
                     <button
                       onClick={selectAllLayers}
@@ -293,7 +293,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                   </div>
                   <div className="space-y-2">
                     <CheckboxOption
-                      label={t('print.showLabel')}
+                      label={t('common.label')}
                       checked={printViewSettings.showLabel}
                       onChange={(v) => updatePrintSetting('showLabel', v)}
                     />
@@ -308,12 +308,12 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                       onChange={(v) => updatePrintSetting('showSize', v)}
                     />
                     <CheckboxOption
-                      label={t('print.showHeight')}
+                      label={t('common.height')}
                       checked={printViewSettings.showHeight}
                       onChange={(v) => updatePrintSetting('showHeight', v)}
                     />
                     <CheckboxOption
-                      label={t('print.showNotes')}
+                      label={t('common.notes')}
                       checked={printViewSettings.showNotes}
                       onChange={(v) => updatePrintSetting('showNotes', v)}
                     />

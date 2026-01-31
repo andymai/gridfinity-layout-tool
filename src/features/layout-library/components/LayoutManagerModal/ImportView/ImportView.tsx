@@ -178,7 +178,9 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
             strokeWidth={2}
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
-        </svg>{t('layouts.importedLayoutsAreSavedToMyLayouts')}</p>
+        </svg>
+        {t('layouts.importedLayoutsAreSavedToMyLayouts')}
+      </p>
 
       {/* Drop Zone */}
       <div
@@ -219,7 +221,9 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         <button
           onClick={() => fileInputRef.current?.click()}
           className="px-4 py-2 bg-surface-secondary hover:bg-surface border border-stroke text-content text-sm rounded-lg transition-colors"
-        >{t('layouts.browseFiles')}</button>
+        >
+          {t('layouts.browseFiles')}
+        </button>
       </div>
 
       {/* Divider */}
@@ -232,12 +236,16 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
       {/* Textarea */}
       <div className="flex-1 flex flex-col min-h-0 mb-4 p-0.5">
         <div className="flex items-center justify-between mb-2">
-          <label htmlFor="import-json-input" className="text-sm text-content-secondary">{t('layouts.layoutJson')}</label>
+          <label htmlFor="import-json-input" className="text-sm text-content-secondary">
+            {t('layouts.layoutJson')}
+          </label>
           {jsonText && (
             <button
               onClick={handleClear}
               className="text-xs text-content-tertiary hover:text-content"
-            >{t('layouts.clear')}</button>
+            >
+              {t('common.clear')}
+            </button>
           )}
         </div>
         <textarea
@@ -261,7 +269,9 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
                 strokeWidth={2}
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
-            </svg>{t('layouts.validationErrors')}</div>
+            </svg>
+            {t('layouts.validationErrors')}
+          </div>
           <ul className="text-sm text-danger/80 space-y-1 ml-6">
             {errors.map((error, index) => (
               <li key={index}>• {error}</li>
@@ -281,7 +291,9 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
                 strokeWidth={2}
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
-            </svg>{t('layouts.readyToImport')}</div>
+            </svg>
+            {t('layouts.readyToImport')}
+          </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-success/80">
             <div>{t('layouts.name')}</div>
             <div className="font-medium">{preview.name}</div>
@@ -307,11 +319,15 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
           onClick={handleImport}
           disabled={!validLayout}
           className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
-        >{t('layouts.importLayout')}</button>
+        >
+          {t('layouts.importLayout')}
+        </button>
         <button
           onClick={onCancel}
           className="py-2.5 px-4 bg-surface-secondary hover:bg-surface border border-stroke text-content rounded-lg transition-colors text-sm"
-        >{t('common.cancel')}</button>
+        >
+          {t('common.cancel')}
+        </button>
       </div>
     </div>
   );

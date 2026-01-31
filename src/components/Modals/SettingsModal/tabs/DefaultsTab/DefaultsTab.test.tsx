@@ -111,8 +111,8 @@ describe('DefaultsTab', () => {
 
   it('renders stepper controls for dimensions', () => {
     render(<DefaultsTab />);
-    expect(screen.getByTestId('stepper-settings.defaultDrawerWidth')).toBeInTheDocument();
-    expect(screen.getByTestId('stepper-settings.defaultDrawerDepth')).toBeInTheDocument();
+    expect(screen.getByTestId('stepper-common.width')).toBeInTheDocument();
+    expect(screen.getByTestId('stepper-common.depth')).toBeInTheDocument();
   });
 
   it('renders copy from layout button', () => {

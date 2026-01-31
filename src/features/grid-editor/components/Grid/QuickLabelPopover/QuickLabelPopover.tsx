@@ -154,7 +154,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
                 type="button"
                 onClick={handleClear}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
-                aria-label={t('grid.clear')}
+                aria-label={t('common.clear')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -177,7 +177,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
               >
                 Enter
               </kbd>
-              <span className="ml-1">{t('grid.save')}</span>
+              <span className="ml-1">{t('common.save')}</span>
             </span>
             <span>
               <kbd
@@ -186,7 +186,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
               >
                 Esc
               </kbd>
-              <span className="ml-1">{t('grid.cancel')}</span>
+              <span className="ml-1">{t('common.cancel')}</span>
             </span>
           </div>
         </div>

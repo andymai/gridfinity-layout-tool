@@ -259,7 +259,7 @@ export function CategoriesPanel() {
 
   return (
     <div>
-      <CollapsibleSection title={t('categories.title')} variant="default" actions={actionButtons}>
+      <CollapsibleSection title={t('common.categories')} variant="default" actions={actionButtons}>
         <div className="space-y-1">
           {categories.map((category) => {
             const isActive = category.id === activeCategoryId;
@@ -481,7 +481,7 @@ export function CategoriesPanel() {
         isOpen={showSaveCategoriesConfirm}
         title={t('settings.confirmSaveCategories.title')}
         message={`${t('settings.confirmSaveCategories.message', { count: categories.length })}\n\n${categories.map((c) => c.name).join(', ')}`}
-        confirmText={t('settings.confirmSaveCategories.confirm')}
+        confirmText={t('common.save')}
         onConfirm={handleSaveCategoriesAsDefaults}
         onCancel={() => setShowSaveCategoriesConfirm(false)}
       />

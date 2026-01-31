@@ -312,7 +312,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               />
             </svg>
           )}
-          {t('designLinking.inspector.export')}
+          {t('common.export')}
         </button>
 
         {/* Overflow menu button */}

@@ -119,7 +119,7 @@ export function ShareButton() {
             />
           </svg>
         )}
-        {showSharedIndicator ? t('share.button.shared') : t('share.button.share')}
+        {showSharedIndicator ? t('share.button.shared') : t('common.share')}
       </button>
 
       {isPopoverOpen && (

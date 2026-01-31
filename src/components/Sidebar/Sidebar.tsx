@@ -248,7 +248,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={`Width in grid units (step: ${widthStep})`}
                       >
-                        {t('drawer.width')}
+                        {t('common.width')}
                       </label>
                       <StepperControl
                         value={drawer.width}
@@ -266,7 +266,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={`Depth in grid units (step: ${depthStep})`}
                       >
-                        {t('drawer.depth')}
+                        {t('common.depth')}
                       </label>
                       <StepperControl
                         value={drawer.depth}
@@ -284,7 +284,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={t('sidebar.maxHeight')}
                       >
-                        {t('drawer.height')}
+                        {t('common.height')}
                       </label>
                       <StepperControl
                         value={drawer.height}
@@ -357,7 +357,7 @@ export function Sidebar() {
                       </div>
                       {hasFractionalWidth && (
                         <div className="flex items-center justify-between">
-                          <span className="text-content-tertiary">{t('sidebar.width5')}</span>
+                          <span className="text-content-tertiary">{t('common.width')}</span>
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
                               onClick={() => handleFractionalEdgeChange('x', 'start')}
@@ -386,7 +386,7 @@ export function Sidebar() {
                       )}
                       {hasFractionalDepth && (
                         <div className="flex items-center justify-between">
-                          <span className="text-content-tertiary">{t('sidebar.depth5')}</span>
+                          <span className="text-content-tertiary">{t('common.depth')}</span>
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
                               onClick={() => handleFractionalEdgeChange('y', 'start')}

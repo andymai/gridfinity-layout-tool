@@ -158,7 +158,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           <button
             onClick={() => handleLandscapeNav('categories')}
             className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label={t('mobile.header.categories')}
+            aria-label={t('common.categories')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

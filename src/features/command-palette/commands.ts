@@ -102,7 +102,7 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
   // === Edit ===
   {
     id: 'undo',
-    labelKey: 'commandPalette.undo',
+    labelKey: 'common.undo',
     category: 'edit',
     shortcut: { keys: SHORTCUTS.UNDO.toUpperCase(), modifier: true },
   },
