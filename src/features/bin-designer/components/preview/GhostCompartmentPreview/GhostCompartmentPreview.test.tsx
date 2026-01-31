@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { GhostDividers } from './GhostDividers';
+import { GhostCompartmentPreview } from './GhostCompartmentPreview';
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
@@ -23,6 +23,15 @@ vi.mock('@react-three/fiber', () => ({
 }));
 
 vi.mock('three', () => {
+  class MockPlaneGeometry {
+    translate = vi.fn();
+    dispose = vi.fn();
+  }
+
+  class MockMeshBasicMaterial {
+    dispose = vi.fn();
+  }
+
   class Vector3 {
     x: number;
     y: number;
@@ -33,6 +42,7 @@ vi.mock('three', () => {
       this.z = z;
     }
     set = vi.fn().mockReturnThis();
+    clone = vi.fn().mockReturnThis();
   }
 
   class Vector2 {
@@ -46,13 +56,20 @@ vi.mock('three', () => {
   }
 
   class Color {
-    getHex = vi.fn(() => 0xfbbf24);
+    r = 0.5;
+    g = 0.5;
+    b = 0.5;
+    set = vi.fn().mockReturnThis();
+    getHex = vi.fn(() => 0xcccccc);
   }
 
   return {
     Vector2,
     Vector3,
     Color,
+    PlaneGeometry: MockPlaneGeometry,
+    MeshBasicMaterial: MockMeshBasicMaterial,
+    DoubleSide: 2,
   };
 });
 
@@ -74,64 +91,54 @@ vi.mock('three/examples/jsm/lines/LineSegmentsGeometry.js', () => ({
   },
 }));
 
-describe('GhostDividers', () => {
+describe('GhostCompartmentPreview', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useDesignerStore.setState({
       params: DEFAULT_BIN_PARAMS,
-      generation: {
-        status: 'idle',
-        mesh: null,
-        progress: 0,
-        epoch: 0,
+      ui: {
+        previewCompartments: null,
+        previewSelection: null,
+        designListOpen: false,
+        exportDialogOpen: false,
       },
     });
   });
 
-  it('renders nothing when not generating', () => {
-    const { container } = render(<GhostDividers />);
+  it('renders nothing when no preview selection', () => {
+    const { container } = render(<GhostCompartmentPreview />);
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders nothing when 1x1 grid during generation', () => {
+  it('renders nothing with null preview selection', () => {
     useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        compartments: {
-          ...DEFAULT_BIN_PARAMS.compartments,
-          cols: 1,
-          rows: 1,
-        },
-      },
-      generation: {
-        status: 'generating',
-        mesh: null,
-        progress: 0,
-        epoch: 0,
+      ui: {
+        previewCompartments: null,
+        previewSelection: null,
+        designListOpen: false,
+        exportDialogOpen: false,
       },
     });
-    const { container } = render(<GhostDividers />);
+    const { container } = render(<GhostCompartmentPreview />);
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders when generating with dividers', () => {
+  it('renders merge preview when preview selection is set for merge', () => {
     useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        compartments: {
-          ...DEFAULT_BIN_PARAMS.compartments,
-          cols: 2,
-          rows: 2,
+      ui: {
+        previewCompartments: null,
+        previewSelection: {
+          action: 'merge',
+          minCol: 0,
+          maxCol: 1,
+          minRow: 0,
+          maxRow: 1,
         },
-      },
-      generation: {
-        status: 'generating',
-        mesh: null,
-        progress: 0,
-        epoch: 0,
+        designListOpen: false,
+        exportDialogOpen: false,
       },
     });
-    const { container } = render(<GhostDividers />);
+    const { container } = render(<GhostCompartmentPreview />);
     expect(container.firstChild).not.toBeNull();
   });
 });

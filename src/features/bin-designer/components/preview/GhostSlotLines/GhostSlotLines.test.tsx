@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { GhostDividers } from './GhostDividers';
+import { GhostSlotLines } from './GhostSlotLines';
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
@@ -74,11 +74,14 @@ vi.mock('three/examples/jsm/lines/LineSegmentsGeometry.js', () => ({
   },
 }));
 
-describe('GhostDividers', () => {
+describe('GhostSlotLines', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useDesignerStore.setState({
-      params: DEFAULT_BIN_PARAMS,
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        style: 'standard',
+      },
       generation: {
         status: 'idle',
         mesh: null,
@@ -88,19 +91,40 @@ describe('GhostDividers', () => {
     });
   });
 
+  it('renders nothing when style is not slotted', () => {
+    const { container } = render(<GhostSlotLines />);
+    expect(container.firstChild).toBeNull();
+  });
+
   it('renders nothing when not generating', () => {
-    const { container } = render(<GhostDividers />);
-    expect(container.firstChild).toBeNull();
-  });
-
-  it('renders nothing when 1x1 grid during generation', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        compartments: {
-          ...DEFAULT_BIN_PARAMS.compartments,
-          cols: 1,
-          rows: 1,
+        style: 'slotted',
+        slotConfig: {
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: false, pitch: 20 },
+        },
+      },
+      generation: {
+        status: 'idle',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    const { container } = render(<GhostSlotLines />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders when slotted style and generating with slots enabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        style: 'slotted',
+        slotConfig: {
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: false, pitch: 20 },
         },
       },
       generation: {
@@ -110,28 +134,7 @@ describe('GhostDividers', () => {
         epoch: 0,
       },
     });
-    const { container } = render(<GhostDividers />);
-    expect(container.firstChild).toBeNull();
-  });
-
-  it('renders when generating with dividers', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        compartments: {
-          ...DEFAULT_BIN_PARAMS.compartments,
-          cols: 2,
-          rows: 2,
-        },
-      },
-      generation: {
-        status: 'generating',
-        mesh: null,
-        progress: 0,
-        epoch: 0,
-      },
-    });
-    const { container } = render(<GhostDividers />);
+    const { container } = render(<GhostSlotLines />);
     expect(container.firstChild).not.toBeNull();
   });
 });
