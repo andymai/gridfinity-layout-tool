@@ -581,35 +581,30 @@ function TouchHint() {
   );
 }
 
-/** Nostalgic loading messages inspired by SimCity/Maxis games */
-const LOADING_MESSAGES = [
-  'Reticulating splines...',
-  'Tessellating surfaces...',
-  'Calibrating geometry...',
-  'Computing topology...',
-  'Refining edges...',
-  'Optimizing vertices...',
-  'Calculating normals...',
-  'Subdividing mesh...',
-  'Extruding polygons...',
-  'Filleting corners...',
-  'Lofting profiles...',
-  'Projecting curves...',
-];
+/** Number of nostalgic loading messages (SimCity/Maxis-inspired) available in i18n */
+const LOADING_MESSAGE_COUNT = 12;
 
 /**
  * Nostalgic loading indicator that cycles through SimCity-style messages.
  * Shows at the bottom center of the 3D preview during mesh regeneration.
  */
 function GeneratingIndicator() {
+  const t = useTranslation();
+
+  const loadingMessages = useMemo(
+    () =>
+      Array.from({ length: LOADING_MESSAGE_COUNT }, (_, i) => t(`binDesigner.loadingMessage.${i}`)),
+    [t]
+  );
+
   const [messageIndex, setMessageIndex] = useState(() =>
-    Math.floor(Math.random() * LOADING_MESSAGES.length)
+    Math.floor(Math.random() * LOADING_MESSAGE_COUNT)
   );
 
   // Cycle through messages every 1.5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGE_COUNT);
     }, 1500);
     return () => clearInterval(interval);
   }, []);
@@ -641,7 +636,7 @@ function GeneratingIndicator() {
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
           />
         </svg>
-        <span className="text-content-secondary">{LOADING_MESSAGES[messageIndex]}</span>
+        <span className="text-content-secondary">{loadingMessages[messageIndex]}</span>
       </div>
     </div>
   );
