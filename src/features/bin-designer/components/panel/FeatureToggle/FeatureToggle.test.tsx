@@ -76,6 +76,51 @@ describe('FeatureToggle', () => {
     expect(screen.getByRole('switch')).toBeDisabled();
   });
 
+  it('disables switch and shows reason text when disabledReason is set', () => {
+    render(
+      <FeatureToggle
+        label="Test Feature"
+        checked={true}
+        onChange={vi.fn()}
+        disabledReason="Not available for slotted bins"
+      />
+    );
+    expect(screen.getByRole('switch')).toBeDisabled();
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByText('Not available for slotted bins')).toBeInTheDocument();
+  });
+
+  it('hides primary controls and children when disabledReason is set', () => {
+    render(
+      <FeatureToggle
+        label="Test Feature"
+        checked={true}
+        onChange={vi.fn()}
+        disabledReason="Unavailable"
+        primaryControls={<div>Primary</div>}
+      >
+        <div>Details</div>
+      </FeatureToggle>
+    );
+    expect(screen.queryByText('Primary')).not.toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.customize')).not.toBeInTheDocument();
+  });
+
+  it('disabledReason takes precedence over comingSoon', () => {
+    render(
+      <FeatureToggle
+        label="Test Feature"
+        checked={false}
+        onChange={vi.fn()}
+        disabledReason="Style incompatible"
+        comingSoon={true}
+      />
+    );
+    expect(screen.getByText('Style incompatible')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.soon')).not.toBeInTheDocument();
+    expect(screen.getByRole('switch')).toBeDisabled();
+  });
+
   it('shows valueSummary when checked and customize is closed', () => {
     render(
       <FeatureToggle

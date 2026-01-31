@@ -92,6 +92,7 @@
   "binDesigner.interiorSummary": "{count} compartimento(s)",
   "binDesigner.invalidDesignFile": "Archivo de diseño no válido",
   "binDesigner.labelTabs": "Pestañas de etiqueta",
+  "binDesigner.labelTabsUnavailableSlotted": "No disponible para contenedores ranurados",
   "binDesigner.layout": "Diseño",
   "binDesigner.listView": "List view",
   "binDesigner.load": "Cargar",

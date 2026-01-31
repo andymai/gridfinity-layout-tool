@@ -92,6 +92,7 @@
   "binDesigner.interiorSummary": "{count} Fach/Fächer",
   "binDesigner.invalidDesignFile": "Ungültige Design-Datei",
   "binDesigner.labelTabs": "Etikettenhalter",
+  "binDesigner.labelTabsUnavailableSlotted": "Nicht verfügbar für Schlitz-Bins",
   "binDesigner.layout": "Layout",
   "binDesigner.listView": "List view",
   "binDesigner.load": "Laden",
