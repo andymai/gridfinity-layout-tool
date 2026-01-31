@@ -415,7 +415,7 @@ describe('Migration Result functions', () => {
 
   describe('migrateLayoutToIndexedDBResult', () => {
     it('returns Ok on successful migration', async () => {
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(defaultLayout);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(defaultLayout));
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateLayoutToIndexedDBResult('test-id');
@@ -425,7 +425,7 @@ describe('Migration Result functions', () => {
     });
 
     it('returns Err with not found when layout missing from localStorage', async () => {
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(null);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(null));
 
       const result = await migrateLayoutToIndexedDBResult('missing-id');
 
@@ -433,7 +433,7 @@ describe('Migration Result functions', () => {
     });
 
     it('returns Err when IndexedDB save fails', async () => {
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(defaultLayout);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(defaultLayout));
       vi.mocked(indexedDBBackend.saveLayout).mockRejectedValue(new Error('IndexedDB error'));
 
       const result = await migrateLayoutToIndexedDBResult('test-id');
@@ -447,7 +447,7 @@ describe('Migration Result functions', () => {
       vi.mocked(backend.isIndexedDBAvailable).mockResolvedValue(true);
       vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['id1', 'id2']);
       vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue([]);
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(defaultLayout);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(defaultLayout));
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateAllLayoutsToIndexedDBResult();
@@ -472,7 +472,7 @@ describe('Migration Result functions', () => {
       vi.mocked(backend.isIndexedDBAvailable).mockResolvedValue(true);
       vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['id1', 'id2']);
       vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue(['id1']); // id1 already exists
-      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(defaultLayout);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(defaultLayout));
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
 
       const result = await migrateAllLayoutsToIndexedDBResult();

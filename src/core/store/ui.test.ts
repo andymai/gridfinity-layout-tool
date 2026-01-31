@@ -663,7 +663,7 @@ describe('ui store', () => {
       expect(getHalfBinModeState().halfBinMode).toBe(false);
 
       const result = toggleHalfBinMode();
-      expect(result.success).toBe(true);
+      expectOk(result);
       expect(getHalfBinModeState().halfBinMode).toBe(true);
     });
 
@@ -676,7 +676,7 @@ describe('ui store', () => {
 
       // Should be able to turn off since no fractional bins exist
       const result = toggleHalfBinMode();
-      expect(result.success).toBe(true);
+      expectOk(result);
       expect(getHalfBinModeState().halfBinMode).toBe(false);
     });
 
@@ -689,37 +689,9 @@ describe('ui store', () => {
       setHalfBinMode(false);
       expect(getHalfBinModeState().halfBinMode).toBe(false);
     });
-  });
-
-  describe('toggleHalfBinModeResult', () => {
-    it('returns Ok when enabling half-bin mode', () => {
-      const { toggleHalfBinModeResult, setHalfBinMode } = useUIStore.getState();
-
-      // Ensure off first
-      setHalfBinMode(false);
-      expect(getHalfBinModeState().halfBinMode).toBe(false);
-
-      const result = toggleHalfBinModeResult();
-
-      expectOk(result);
-      expect(getHalfBinModeState().halfBinMode).toBe(true);
-    });
-
-    it('returns Ok when disabling half-bin mode with no fractional bins', () => {
-      const { toggleHalfBinModeResult, setHalfBinMode } = useUIStore.getState();
-
-      // Enable first
-      setHalfBinMode(true);
-      expect(getHalfBinModeState().halfBinMode).toBe(true);
-
-      const result = toggleHalfBinModeResult();
-
-      expectOk(result);
-      expect(getHalfBinModeState().halfBinMode).toBe(false);
-    });
 
     it('returns Err with LAYOUT_INVALID_OPERATION when fractional bins exist', () => {
-      const { toggleHalfBinModeResult, setHalfBinMode } = useUIStore.getState();
+      const { toggleHalfBinMode, setHalfBinMode } = useUIStore.getState();
 
       // Enable half-bin mode
       setHalfBinMode(true);
@@ -736,7 +708,7 @@ describe('ui store', () => {
         category: useLayoutStore.getState().layout.categories[0].id,
       });
 
-      const result = toggleHalfBinModeResult();
+      const result = toggleHalfBinMode();
 
       const error = expectErr(result);
       expect(error.code).toBe('LAYOUT_INVALID_OPERATION');

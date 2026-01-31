@@ -16,7 +16,7 @@ import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
 import type { Layout } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
-import { isErr } from '@/core/result';
+import { isErr, isOk } from '@/core/result';
 
 // Cache the backend determination for async operations
 let cachedBackend: 'indexeddb' | 'localstorage' | null = null;
@@ -88,13 +88,15 @@ export async function loadAsync(key: string): Promise<Layout | null> {
 
     // Fall back to localStorage if not in IndexedDB
     if (!layout) {
-      layout = localStorage.loadLayout(key);
+      const result = localStorage.loadLayout(key);
+      layout = isOk(result) ? result.value : null;
     }
 
     return layout;
   } else {
     // localStorage only
-    return localStorage.loadLayout(key);
+    const result = localStorage.loadLayout(key);
+    return isOk(result) ? result.value : null;
   }
 }
 
@@ -129,7 +131,8 @@ export function saveSync(key: string, layout: Layout): Result<void, StorageError
  * Used only during initialization.
  */
 export function loadSync(key: string): Layout | null {
-  return localStorage.loadLayout(key);
+  const result = localStorage.loadLayout(key);
+  return isOk(result) ? result.value : null;
 }
 
 /**
@@ -153,7 +156,8 @@ export function saveSyncGeneric<T>(key: string, data: T): Result<void, StorageEr
  * Load arbitrary data synchronously from localStorage.
  */
 export function loadSyncGeneric<T>(key: string): T | null {
-  return localStorage.loadFromLocalStorage<T>(key);
+  const result = localStorage.loadFromLocalStorage<T>(key);
+  return isOk(result) ? result.value : null;
 }
 
 // === Utility Exports ===

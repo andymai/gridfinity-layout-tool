@@ -11,20 +11,34 @@ import type { Layout } from '@/core/types';
  * Extracted from ui.ts as part of the god object decomposition.
  */
 
-interface SharedPreviewState {
-  /** The layout being previewed (null if not in preview mode) */
-  sharedLayoutPreview: Layout | null;
-
+/** Consolidated shared preview data — all fields set together, cleared together. */
+export interface SharedPreviewData {
+  /** The layout being previewed */
+  layout: Layout;
   /** Original name of the shared layout (for forkedFrom metadata) */
-  sharedLayoutOriginalName: string | null;
-
+  originalName: string;
   /** Author name of the cloud-shared layout */
-  sharedLayoutAuthorName: string | null;
-
+  authorName: string | null;
   /** Cloud share ID for collaborative editing */
-  sharedLayoutCloudShareId: string | null;
-
+  cloudShareId: string | null;
   /** Permission level of the shared layout */
+  permission: 'view' | 'edit' | null;
+}
+
+interface SharedPreviewState {
+  /** The shared preview data, or null if not in preview mode */
+  sharedPreview: SharedPreviewData | null;
+
+  // Legacy accessors for backward compatibility
+  /** @deprecated Access via sharedPreview?.layout */
+  sharedLayoutPreview: Layout | null;
+  /** @deprecated Access via sharedPreview?.originalName */
+  sharedLayoutOriginalName: string | null;
+  /** @deprecated Access via sharedPreview?.authorName */
+  sharedLayoutAuthorName: string | null;
+  /** @deprecated Access via sharedPreview?.cloudShareId */
+  sharedLayoutCloudShareId: string | null;
+  /** @deprecated Access via sharedPreview?.permission */
   sharedLayoutPermission: 'view' | 'edit' | null;
 }
 
@@ -52,6 +66,7 @@ export type SharedPreviewStore = SharedPreviewState & SharedPreviewActions;
 
 export const useSharedPreviewStore = create<SharedPreviewStore>((set) => ({
   // Initial state
+  sharedPreview: null,
   sharedLayoutPreview: null,
   sharedLayoutOriginalName: null,
   sharedLayoutAuthorName: null,
@@ -59,17 +74,39 @@ export const useSharedPreviewStore = create<SharedPreviewStore>((set) => ({
   sharedLayoutPermission: null,
 
   // Actions
-  setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) =>
-    set({
-      sharedLayoutPreview: layout,
-      sharedLayoutOriginalName: originalName ?? layout?.name ?? null,
-      sharedLayoutAuthorName: authorName ?? null,
-      sharedLayoutCloudShareId: cloudShareId ?? null,
-      sharedLayoutPermission: permission ?? null,
-    }),
+  setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) => {
+    if (layout) {
+      const data: SharedPreviewData = {
+        layout,
+        originalName: originalName ?? layout.name,
+        authorName: authorName ?? null,
+        cloudShareId: cloudShareId ?? null,
+        permission: permission ?? null,
+      };
+      set({
+        sharedPreview: data,
+        // Keep legacy fields in sync
+        sharedLayoutPreview: data.layout,
+        sharedLayoutOriginalName: data.originalName,
+        sharedLayoutAuthorName: data.authorName,
+        sharedLayoutCloudShareId: data.cloudShareId,
+        sharedLayoutPermission: data.permission,
+      });
+    } else {
+      set({
+        sharedPreview: null,
+        sharedLayoutPreview: null,
+        sharedLayoutOriginalName: null,
+        sharedLayoutAuthorName: null,
+        sharedLayoutCloudShareId: null,
+        sharedLayoutPermission: null,
+      });
+    }
+  },
 
   clearSharedLayoutPreview: () =>
     set({
+      sharedPreview: null,
       sharedLayoutPreview: null,
       sharedLayoutOriginalName: null,
       sharedLayoutAuthorName: null,

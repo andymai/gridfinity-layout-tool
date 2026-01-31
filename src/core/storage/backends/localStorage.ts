@@ -25,13 +25,17 @@ export function saveToLocalStorage<T>(key: string, data: T): Result<void, Storag
 
 /**
  * Load and parse JSON data from localStorage.
- * @returns Parsed data or null if not found
- * @throws Error if JSON parsing fails (caller should handle)
+ * Returns Result to avoid throwing on parse errors.
+ * @returns Ok with parsed data (or null if key not found), or Err on parse failure
  */
-export function loadFromLocalStorage<T>(key: string): T | null {
-  const stored = localStorage.getItem(key);
-  if (!stored) return null;
-  return JSON.parse(stored) as T;
+export function loadFromLocalStorage<T>(key: string): Result<T | null, StorageError> {
+  try {
+    const stored = localStorage.getItem(key);
+    if (!stored) return ok(null);
+    return ok(JSON.parse(stored) as T);
+  } catch (cause) {
+    return err(storageQuotaExceeded(undefined, undefined, cause));
+  }
 }
 
 /**
@@ -104,7 +108,7 @@ export function saveLayout(key: string, layout: Layout): Result<void, StorageErr
 /**
  * Load a layout from localStorage.
  */
-export function loadLayout(key: string): Layout | null {
+export function loadLayout(key: string): Result<Layout | null, StorageError> {
   return loadFromLocalStorage<Layout>(key);
 }
 
@@ -118,6 +122,6 @@ export function saveLibraryIndex(key: string, library: LayoutLibrary): Result<vo
 /**
  * Load the library index from localStorage.
  */
-export function loadLibraryIndex(key: string): LayoutLibrary | null {
+export function loadLibraryIndex(key: string): Result<LayoutLibrary | null, StorageError> {
   return loadFromLocalStorage<LayoutLibrary>(key);
 }

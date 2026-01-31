@@ -7,7 +7,8 @@ import { useShallow } from 'zustand/shallow';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore } from '@/core/store/ui';
-import type { SharePermission, CloudShareInfo } from '@/core/types';
+import type { SharePermission, CloudShareInfo, LayoutId } from '@/core/types';
+import { layoutId as toLayoutId } from '@/core/types';
 import {
   createShare,
   updatePermission as updateSharePermission,
@@ -83,7 +84,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   const layout = useLayoutStore((state) => state.layout);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
 
-  const targetLayoutId = layoutId ?? activeLayoutId;
+  const targetLayoutId: LayoutId = layoutId ? toLayoutId(layoutId) : activeLayoutId;
 
   const existingShare = useMemo(() => {
     const entry = entries.find((e) => e.id === targetLayoutId);

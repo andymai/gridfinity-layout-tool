@@ -17,7 +17,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
-import type { Bin, Layer, Category, Drawer } from '@/core/types';
+import type { Bin, Layer, Category, Drawer, BinId, LayerId, CategoryId } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 
 /**
@@ -26,42 +26,42 @@ import type { Result, ValidationError, LayoutError } from '@/core/result';
  */
 export interface Mutations {
   // Bin operations
-  addBin: (bin: Omit<Bin, 'id'>) => Result<string, ValidationError>;
-  updateBin: (id: string, updates: Partial<Bin>) => Result<void, LayoutError>;
-  deleteBin: (id: string) => Result<void, LayoutError>;
-  deleteBins: (ids: string[]) => Result<void, LayoutError>;
-  duplicateBin: (id: string) => Result<string, ValidationError | LayoutError>;
-  moveBinToStaging: (id: string) => Result<void, LayoutError>;
+  addBin: (bin: Omit<Bin, 'id'>) => Result<BinId, ValidationError>;
+  updateBin: (id: BinId, updates: Partial<Bin>) => Result<void, LayoutError>;
+  deleteBin: (id: BinId) => Result<void, LayoutError>;
+  deleteBins: (ids: BinId[]) => Result<void, LayoutError>;
+  duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
+  moveBinToStaging: (id: BinId) => Result<void, LayoutError>;
   moveBinFromStaging: (
-    id: string,
-    layerId: string,
+    id: BinId,
+    layerId: LayerId,
     x: number,
     y: number
   ) => Result<void, ValidationError | LayoutError>;
 
   // Layer operations
-  addLayer: () => Result<string, LayoutError>;
-  updateLayer: (id: string, updates: Partial<Layer>) => Result<void, LayoutError>;
-  deleteLayer: (id: string) => Result<void, LayoutError>;
+  addLayer: () => Result<LayerId, LayoutError>;
+  updateLayer: (id: LayerId, updates: Partial<Layer>) => Result<void, LayoutError>;
+  deleteLayer: (id: LayerId) => Result<void, LayoutError>;
   reorderLayers: (fromIndex: number, toIndex: number) => Result<void, LayoutError>;
 
   // Drawer operations
   updateDrawer: (updates: Partial<Drawer>) => void;
 
   // Category operations
-  addCategory: (category: Omit<Category, 'id'>) => Result<string, LayoutError>;
-  updateCategory: (id: string, updates: Partial<Category>) => Result<void, LayoutError>;
-  deleteCategory: (id: string) => Result<void, LayoutError>;
+  addCategory: (category: Omit<Category, 'id'>) => Result<CategoryId, LayoutError>;
+  updateCategory: (id: CategoryId, updates: Partial<Category>) => Result<void, LayoutError>;
+  deleteCategory: (id: CategoryId) => Result<void, LayoutError>;
 
   // Bulk operations
   fillLayer: (
-    layerId: string,
+    layerId: LayerId,
     width: number,
     depth: number,
-    categoryId: string,
+    categoryId: CategoryId,
     halfBinMode?: boolean
   ) => number;
-  clearLayer: (layerId: string) => number;
+  clearLayer: (layerId: LayerId) => number;
 
   // Layout metadata
   setName: (name: string) => void;

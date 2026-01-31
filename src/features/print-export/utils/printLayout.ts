@@ -1,4 +1,4 @@
-import type { Bin, Layer, Category, Drawer } from '@/core/types';
+import type { Bin, Layer, Category, Drawer, LayerId } from '@/core/types';
 import type { BinListSortOrder, BinSortField } from '@/core/store/settings';
 import { getVisibleBins, getGridBins } from '@/shared/utils';
 
@@ -6,7 +6,7 @@ import { getVisibleBins, getGridBins } from '@/shared/utils';
  * Filter bins to only include those on the specified layers.
  * Excludes staging bins.
  */
-export function getVisibleBinsForPrint(bins: Bin[], layerIds: string[]): Bin[] {
+export function getVisibleBinsForPrint(bins: Bin[], layerIds: LayerId[]): Bin[] {
   return getVisibleBins(bins, { layerIds });
 }
 

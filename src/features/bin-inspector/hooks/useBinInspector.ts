@@ -3,11 +3,12 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
-import { isOk } from '@/core/result';
+import { isOk, isErr } from '@/core/result';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { Bin, Category, Layer, Layout } from '@/core/types';
+import type { Bin, Category, Layer, Layout, LayerId, CategoryId } from '@/core/types';
+import { layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 export type BinField =
@@ -215,7 +216,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           updateBin(bin.id, { label: value as string });
           mlTracking.trackLabel(bin, oldLabel, value as string);
         } else if (field === 'category') {
-          const newCategoryId = value as string;
+          const newCategoryId = toCategoryId(value as string);
           // Skip no-op updates
           if (bin.category === newCategoryId) return;
           updateBin(bin.id, { category: newCategoryId });
@@ -246,8 +247,8 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       // Validate properties before updating
       const validation = validateCustomProperties(properties);
-      if (!validation.success) {
-        addToast(validation.error ?? 'Invalid custom properties', 'error');
+      if (isErr(validation)) {
+        addToast(validation.error.message ?? 'Invalid custom properties', 'error');
         return;
       }
 
@@ -259,19 +260,20 @@ export function useBinInspector(): UseBinInspectorReturn {
   );
 
   const updateMultiCategory = useCallback(
-    (categoryId: string) => {
+    (rawCategoryId: string) => {
       if (selectedBins.length === 0) return;
+      const brandedCategoryId: CategoryId = toCategoryId(rawCategoryId);
 
       // Filter to only bins whose category actually changes
-      const binsToUpdate = selectedBins.filter((b) => b.category !== categoryId);
+      const binsToUpdate = selectedBins.filter((b) => b.category !== brandedCategoryId);
       if (binsToUpdate.length === 0) return;
 
       const batchSize = binsToUpdate.length;
-      const category = layout.categories.find((c) => c.id === categoryId);
+      const category = layout.categories.find((c) => c.id === brandedCategoryId);
 
       execute(() => {
         for (const b of binsToUpdate) {
-          updateBin(b.id, { category: categoryId });
+          if (isErr(updateBin(b.id, { category: brandedCategoryId }))) break;
         }
       });
 
@@ -357,7 +359,8 @@ export function useBinInspector(): UseBinInspectorReturn {
 
   // Move single bin to a different layer
   const moveToLayer = useCallback(
-    (targetLayerId: string) => {
+    (rawTargetLayerId: string) => {
+      const targetLayerId: LayerId = toLayerId(rawTargetLayerId);
       if (!bin || bin.layerId === targetLayerId) return;
       if (bin.layerId === STAGING_ID) {
         addToast(t('toast.dragFromStash'), 'info');
@@ -405,8 +408,9 @@ export function useBinInspector(): UseBinInspectorReturn {
 
   // Move multiple bins to a different layer
   const updateMultiLayer = useCallback(
-    (targetLayerId: string) => {
+    (rawTargetLayerId: string) => {
       if (selectedBins.length === 0) return;
+      const targetLayerId: LayerId = toLayerId(rawTargetLayerId);
 
       const targetLayer = layout.layers.find((l) => l.id === targetLayerId);
       if (!targetLayer) return;

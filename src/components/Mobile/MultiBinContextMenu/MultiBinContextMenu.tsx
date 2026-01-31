@@ -10,10 +10,11 @@ import { useContextMenu } from '@/hooks/useContextMenu';
 import { splitBinsByLocation } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinsByIds } from '@/utils/entity';
+import type { BinId, CategoryId, LayerId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 interface MultiBinContextMenuProps {
-  binIds: string[];
+  binIds: BinId[];
   position: { x: number; y: number };
   onClose: () => void;
   source?: 'grid' | 'staging';
@@ -81,7 +82,7 @@ export function MultiBinContextMenu({
     onClose();
   };
 
-  const handleChangeCategory = (categoryId: string) => {
+  const handleChangeCategory = (categoryId: CategoryId) => {
     // Filter to only bins that actually change
     const binsToUpdate = bins.filter((b) => b.category !== categoryId);
     if (binsToUpdate.length === 0) {
@@ -107,15 +108,15 @@ export function MultiBinContextMenu({
     onClose();
   };
 
-  const handleMoveToLayer = (layerId: string) => {
-    const layer = layout.layers.find((l) => l.id === layerId);
+  const handleMoveToLayer = (targetLayerId: LayerId) => {
+    const layer = layout.layers.find((l) => l.id === targetLayerId);
     if (!layer) return;
 
     execute(() => {
       stagingBins.forEach((b) => {
         // Move to layer - keep original height (don't auto-adjust to layer minimum)
         updateBin(b.id, {
-          layerId,
+          layerId: targetLayerId,
           x: 0,
           y: 0,
         });

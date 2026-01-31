@@ -109,14 +109,12 @@ describe('storage error handling', () => {
       expect(result?.name).toBe(defaultLayout.name);
     });
 
-    it('returns null and logs error for corrupted JSON', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('returns null for corrupted JSON', () => {
       const layoutId = 'corrupted-layout';
       localStorageMock.setItem(getLayoutStorageKey(layoutId), 'not valid json{{{[[');
 
       const result = loadLayoutSync(layoutId);
       expect(result).toBeNull();
-      expect(consoleSpy).toHaveBeenCalled();
     });
 
     it('returns null and logs warning for invalid layout structure', () => {
@@ -208,12 +206,10 @@ describe('storage error handling', () => {
     });
 
     it('returns null for corrupted library JSON', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       localStorageMock.setItem('gridfinity-library-v1', 'invalid json{{{');
 
       const result = loadLibrary();
       expect(result).toBeNull();
-      expect(consoleSpy).toHaveBeenCalled();
     });
 
     it('returns null for invalid library structure', () => {

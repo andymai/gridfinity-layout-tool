@@ -5,6 +5,7 @@ import { useLayoutSwitcher } from '@/hooks';
 import { useUIStore } from '@/core/store/ui';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
+import { layoutId } from '@/core/types';
 import {
   trackEvent,
   trackBinCreated,
@@ -185,7 +186,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       );
 
       if (isOk(result)) {
-        const switchResult = await switchLayout(result.value);
+        const switchResult = await switchLayout(layoutId(result.value));
         if (isOk(switchResult)) {
           setTemplateApplied(true);
           addToast(t('toast.galleryAdded', { name: previewLayout.name }), 'success');

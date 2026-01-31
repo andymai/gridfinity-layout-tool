@@ -7,7 +7,7 @@ import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';
 import { Bin } from '../Bin';
 import { getBlockedZones } from '@/shared/utils/collision';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import type { Coord, ResizeHandle } from '@/core/types';
+import type { Coord, ResizeHandle, BinId, LayerId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 interface GridCanvasProps {
@@ -15,8 +15,15 @@ interface GridCanvasProps {
   cellSize: number;
   gap: number;
   onStartDraw: (coord: Coord, pointerId?: number) => void;
-  onStartDrag: (binId: string, clientX: number, clientY: number) => void;
-  onStartResize: (binId: string, handle: ResizeHandle) => void;
+  onStartDrag: (
+    binId: BinId,
+    clientX: number,
+    clientY: number,
+    pointerId?: number,
+    duplicate?: boolean,
+    swapMode?: boolean
+  ) => void;
+  onStartResize: (binId: BinId, handle: ResizeHandle, pointerId?: number) => void;
 }
 
 /**
@@ -126,9 +133,9 @@ export function GridCanvas({
     }
   };
 
-  const handleBlockedZoneClick = (binId: string, layerId: string) => {
-    setActiveLayer(layerId);
-    setSelectedBin(binId);
+  const handleBlockedZoneClick = (id: BinId, layer: LayerId) => {
+    setActiveLayer(layer);
+    setSelectedBin(id);
   };
 
   // Use shared hook for grid template computation

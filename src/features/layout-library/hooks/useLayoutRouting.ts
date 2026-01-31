@@ -17,6 +17,12 @@ import {
   getCanonicalRedirect,
 } from '@/utils/url';
 import { useTranslation } from '@/i18n';
+import {
+  layoutId as toLayoutId,
+  layerId as toLayerId,
+  categoryId as toCategoryId,
+} from '@/core/types';
+import type { LayoutId } from '@/core/types';
 
 const SHARED_PREVIEW_ID = '__shared_preview__';
 
@@ -79,7 +85,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
       if (options.skip || sharedLayoutPreview) return true;
       if (checkUrl) {
         const urlInfo = parseLayoutFromURL();
-        if (urlInfo && !getEntry(urlInfo.layoutId)) return true;
+        if (urlInfo && !getEntry(toLayoutId(urlInfo.layoutId))) return true;
       }
       return false;
     },
@@ -98,7 +104,8 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
    * Returns true if successful, false if layout not found.
    */
   const navigateToLayout = useCallback(
-    async (layoutId: string, addToHistory = false): Promise<boolean> => {
+    async (rawId: string, addToHistory = false): Promise<boolean> => {
+      const layoutId: LayoutId = toLayoutId(rawId);
       // Check if layout exists in library
       const entry = getEntry(layoutId);
       if (!entry) {
@@ -123,8 +130,8 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
 
       // Reset UI state
       clearSelection();
-      setActiveLayer(loadedLayout.layers[0]?.id ?? '');
-      setActiveCategory(loadedLayout.categories[0]?.id ?? '');
+      setActiveLayer(loadedLayout.layers[0]?.id ?? toLayerId(''));
+      setActiveCategory(loadedLayout.categories[0]?.id ?? toCategoryId(''));
 
       // Clear undo history
       clearHistory();
@@ -178,7 +185,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
       return;
     }
 
-    const { layoutId } = urlInfo;
+    const layoutId = toLayoutId(urlInfo.layoutId);
     const localEntry = getEntry(layoutId);
 
     if (layoutId === activeLayoutId) {

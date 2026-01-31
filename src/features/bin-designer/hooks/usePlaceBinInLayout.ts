@@ -11,6 +11,8 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
+import { categoryId } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 /**
  * Open the Layout Planner with a preselected bin described by dimensions and an optional name.
@@ -86,7 +88,7 @@ export function usePlaceBinFromURL(): void {
           depth: d,
           height: h,
           layerId,
-          category: '',
+          category: categoryId(''),
           label: binName ?? '',
           notes: '',
         });
@@ -111,8 +113,8 @@ export function usePlaceBinFromURL(): void {
         width: w,
         depth: d,
         height: h,
-        layerId: '__staging__',
-        category: '',
+        layerId: STAGING_ID,
+        category: categoryId(''),
         label: binName ?? '',
         notes: '',
       });

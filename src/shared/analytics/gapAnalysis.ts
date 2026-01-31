@@ -6,7 +6,7 @@
  * the internal grid by 2x for accurate measurements.
  */
 
-import type { Layout, Bin } from '@/core/types';
+import type { Layout, Bin, LayerId } from '@/core/types';
 import { isFractional } from '@/core/constants';
 import { getLayerBins } from '@/shared/utils/bins';
 
@@ -137,7 +137,7 @@ function findLargestEmptyRect(
  */
 export function analyzeGaps(
   layout: Layout,
-  layerId: string,
+  layerId: LayerId,
   placedBinSize?: { width: number; depth: number }
 ): GapAnalysis {
   const { drawer } = layout;
@@ -197,7 +197,7 @@ export function analyzeGaps(
  *
  * Handles half-bin mode by using actual bin dimensions rather than rounding.
  */
-export function calculateFillPercentage(layout: Layout, layerId: string): number {
+export function calculateFillPercentage(layout: Layout, layerId: LayerId): number {
   const { drawer } = layout;
   const totalArea = drawer.width * drawer.depth;
 

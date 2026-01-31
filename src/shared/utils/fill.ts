@@ -1,5 +1,5 @@
-import type { Bin, Layout } from '@/core/types';
-import { generateId, CONSTRAINTS } from '@/core/constants';
+import type { Bin, Layout, LayerId, CategoryId } from '@/core/types';
+import { generateBinId, CONSTRAINTS } from '@/core/constants';
 import { getBlockedZones } from './collision';
 
 /**
@@ -9,7 +9,7 @@ import { getBlockedZones } from './collision';
  */
 function createOccupiedCellSet(
   bins: Bin[],
-  layerId: string,
+  layerId: LayerId,
   layout: Layout,
   step: number = 1
 ): Set<string> {
@@ -87,10 +87,10 @@ function markOccupied(
  */
 export function fillAllWithSize(
   layout: Layout,
-  layerId: string,
+  layerId: LayerId,
   binWidth: number,
   binDepth: number,
-  categoryId: string,
+  categoryId: CategoryId,
   halfBinMode: boolean = false
 ): { bins: Bin[]; skippedCells: number } {
   const layer = layout.layers.find((l) => l.id === layerId);
@@ -122,7 +122,7 @@ export function fillAllWithSize(
       // O(1) check for each cell in the bin footprint
       if (canPlaceRect(x, y, binWidth, binDepth, occupied, step)) {
         const newBin: Bin = {
-          id: generateId(),
+          id: generateBinId(),
           layerId,
           x,
           y,
@@ -153,8 +153,8 @@ export function fillAllWithSize(
  */
 export function fillGaps(
   layout: Layout,
-  layerId: string,
-  categoryId: string,
+  layerId: LayerId,
+  categoryId: CategoryId,
   maxPrintSize: number,
   halfBinMode: boolean = false
 ): { bins: Bin[]; addedCount: number } {
@@ -208,7 +208,7 @@ export function fillGaps(
           // O(1) check for each cell in the bin footprint
           if (canPlaceRect(x, y, size.w, size.d, occupied, step)) {
             newBins.push({
-              id: generateId(),
+              id: generateBinId(),
               layerId,
               x,
               y,

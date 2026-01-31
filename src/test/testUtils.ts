@@ -1,7 +1,8 @@
 import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { expect } from 'vitest';
-import type { Bin, Layout, LayoutLibrary } from '@/core/types';
+import type { Bin, Layout, LayoutLibrary, BinId, LayoutId } from '@/core/types';
+import { binId, layerId, categoryId, layoutId } from '@/core/types';
 import type { Result } from '@/core/result/types';
 import { isOk, isErr } from '@/core/result';
 import { createDefaultLayout } from '@/core/constants';
@@ -42,8 +43,8 @@ export function resetAllStores(): void {
   // Selection store
   useSelectionStore.setState({
     selectedBinIds: [],
-    activeLayerId: '',
-    activeCategoryId: 'coral',
+    activeLayerId: layerId(''),
+    activeCategoryId: categoryId('coral'),
     focusedBinId: null,
     quickLabelBinId: null,
   });
@@ -130,7 +131,7 @@ export function resetAllStores(): void {
  * @example
  * const binId = getBinId(addBin({ layerId, x: 0, y: 0, ... }));
  */
-export function getBinId(result: Result<string, unknown>): string {
+export function getBinId(result: Result<BinId, unknown>): BinId {
   if (!isOk(result)) throw new Error('addBin failed');
   return result.value;
 }
@@ -148,14 +149,14 @@ export function getBinId(result: Result<string, unknown>): string {
  */
 export function createTestBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: 'test-bin',
-    layerId: 'layer1',
+    id: binId('test-bin'),
+    layerId: layerId('layer1'),
     x: 0,
     y: 0,
     width: 1,
     depth: 1,
     height: 3,
-    category: 'cat1',
+    category: categoryId('cat1'),
     label: '',
     notes: '',
     ...overrides,
@@ -203,15 +204,15 @@ export function expectErr<E>(result: Result<unknown, E>): E {
  * @param layoutId - Optional layout ID (generates one if not provided)
  * @returns A valid LayoutLibrary structure
  */
-export function createTestLibrary(layoutId?: string): LayoutLibrary {
-  const id = layoutId || 'test-layout-id';
+export function createTestLibrary(id?: LayoutId): LayoutLibrary {
+  const resolvedId = id || layoutId('test-layout-id');
   return {
     version: '1.0',
-    activeLayoutId: id,
+    activeLayoutId: resolvedId,
     settings: {},
     entries: [
       {
-        id,
+        id: resolvedId,
         name: 'Test Layout',
         createdAt: Date.now(),
         modifiedAt: Date.now(),
@@ -249,8 +250,8 @@ export function createTestLayout(overrides?: Partial<Layout>): Layout {
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
-    categories: [{ id: 'cat1', name: 'General', color: '#3b82f6' }],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    categories: [{ id: categoryId('cat1'), name: 'General', color: '#3b82f6' }],
+    layers: [{ id: layerId('layer1'), name: 'Layer 1', height: 3 }],
     bins: [],
   };
 

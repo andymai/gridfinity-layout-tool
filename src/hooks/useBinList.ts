@@ -11,6 +11,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import type { LayoutError } from '@/core/result';
+import type { Category } from '@/core/types';
 import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { isErr, getUserMessage } from '@/core/result';
 import { findBinsByIds } from '@/utils/entity';
@@ -28,7 +29,7 @@ import {
 } from '@/shared/utils/binListOperations';
 import { exportPrintListTSV } from '@/core/storage';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { EnhancedPrintRow } from '@/core/types';
+import type { BinId, CategoryId, EnhancedPrintRow } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {
@@ -44,7 +45,7 @@ export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {
   // Selection
   selectedIndices: Set<number>;
   lastSelectedIndex: number | null;
-  selectedBinIds: string[];
+  selectedBinIds: BinId[];
   toggleRowSelection: (index: number, shiftKey?: boolean) => void;
   selectAllRows: () => void;
   clearSelection: () => void;
@@ -53,13 +54,13 @@ export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {
 
   // Bulk actions (operate on selected bins)
   deleteBulkSelection: () => void;
-  changeBulkCategory: (categoryId: string) => void;
+  changeBulkCategory: (categoryId: CategoryId) => void;
   updateBulkLabel: (label: string) => void;
   updateBulkNotes: (notes: string) => void;
 
   // Inline editing (operate on specific bin IDs)
-  updateBinLabel: (binIds: string[], label: string) => void;
-  updateBinNotes: (binIds: string[], notes: string) => void;
+  updateBinLabel: (binIds: BinId[], label: string) => void;
+  updateBinNotes: (binIds: BinId[], notes: string) => void;
 
   // Export
   exportToTSV: () => string;
@@ -105,14 +106,16 @@ export function useBinList(): UseBinListReturn {
     return filterBySearch(printList.rows, searchQuery);
   }, [printList.rows, searchQuery]);
 
-  // Get selected bin IDs
+  // Get selected bin IDs (getSelectedBinIds extracts from EnhancedPrintRow.binIds which are already BinId)
   const selectedBinIds = useMemo(() => {
-    return getSelectedBinIds(filteredRows, selectedIndices);
+    return getSelectedBinIds(filteredRows, selectedIndices) as BinId[];
   }, [filteredRows, selectedIndices]);
 
   // Category breakdown for visualization
+  // printList.categories comes from layout.categories which are already branded, but the
+  // UsePrintListReturn type widens them to { id: string; ... }[] for simplicity
   const categoryBreakdown = useMemo(() => {
-    return calculateCategoryBreakdown(filteredRows, printList.categories);
+    return calculateCategoryBreakdown(filteredRows, printList.categories as Category[]);
   }, [filteredRows, printList.categories]);
 
   // Selection handlers
@@ -196,7 +199,7 @@ export function useBinList(): UseBinListReturn {
   ]);
 
   const changeBulkCategory = useCallback(
-    (categoryId: string) => {
+    (categoryId: CategoryId) => {
       if (selectedBinIds.length === 0) return;
 
       // Filter to only bins that actually change
@@ -323,7 +326,7 @@ export function useBinList(): UseBinListReturn {
 
   // Inline editing handlers (for specific bin IDs, not selection-based)
   const updateBinLabel = useCallback(
-    (binIds: string[], label: string) => {
+    (binIds: BinId[], label: string) => {
       if (binIds.length === 0) return;
 
       let successCount = 0;
@@ -359,7 +362,7 @@ export function useBinList(): UseBinListReturn {
   );
 
   const updateBinNotes = useCallback(
-    (binIds: string[], notes: string) => {
+    (binIds: BinId[], notes: string) => {
       if (binIds.length === 0) return;
 
       let successCount = 0;

@@ -15,7 +15,7 @@
 
 import * as backend from './backend';
 import { validateImport } from '@/shared/utils/validation';
-import { generateId } from '@/core/constants';
+import { generateCategoryId, generateLayerId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from './LayoutManager';
 import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
@@ -561,13 +561,13 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
       gridUnitMm: 42,
       heightUnitMm: 7,
       categories: [
-        { id: generateId(), name: 'Coral', color: '#f87171' },
-        { id: generateId(), name: 'Sky', color: '#38bdf8' },
-        { id: generateId(), name: 'Green', color: '#4ade80' },
-        { id: generateId(), name: 'Cloud', color: '#e2e8f0' },
-        { id: generateId(), name: 'Charcoal', color: '#334155' },
+        { id: generateCategoryId(), name: 'Coral', color: '#f87171' },
+        { id: generateCategoryId(), name: 'Sky', color: '#38bdf8' },
+        { id: generateCategoryId(), name: 'Green', color: '#4ade80' },
+        { id: generateCategoryId(), name: 'Cloud', color: '#e2e8f0' },
+        { id: generateCategoryId(), name: 'Charcoal', color: '#334155' },
       ],
-      layers: [{ id: generateId(), name: 'Layer 1', height: 3 }],
+      layers: [{ id: generateLayerId(), name: 'Layer 1', height: 3 }],
       bins: [],
     };
 
@@ -615,35 +615,36 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
     // If still nothing, create a fresh default
     if (!activeLayout) {
       const layoutId = generateLayoutId();
-      activeLayout = {
+      const recoveredLayout: Layout = {
         version: '1.0',
         name: 'Recovered layout',
         drawer: { width: 10, depth: 8, height: 12 },
         printBedSize: 256,
         gridUnitMm: 42,
         heightUnitMm: 7,
-        categories: [{ id: generateId(), name: 'Default', color: '#6b7280' }],
-        layers: [{ id: generateId(), name: 'Layer 1', height: 3 }],
+        categories: [{ id: generateCategoryId(), name: 'Default', color: '#6b7280' }],
+        layers: [{ id: generateLayerId(), name: 'Layer 1', height: 3 }],
         bins: [],
       };
 
+      activeLayout = recoveredLayout;
       library.activeLayoutId = layoutId;
       library.entries = [
         {
           id: layoutId,
-          name: activeLayout.name,
+          name: recoveredLayout.name,
           createdAt: Date.now(),
           modifiedAt: Date.now(),
-          preview: computeLayoutPreview(activeLayout),
+          preview: computeLayoutPreview(recoveredLayout),
         },
       ];
 
       // Save to localStorage (sync)
-      saveLayoutSync(layoutId, activeLayout);
+      saveLayoutSync(layoutId, recoveredLayout);
       saveLibrary(library);
 
       // Also save to IndexedDB (async, fire-and-forget)
-      saveLayoutAsync(layoutId, activeLayout).catch(() => {
+      saveLayoutAsync(layoutId, recoveredLayout).catch(() => {
         // Ignore errors - localStorage save is sufficient for now
       });
     }

@@ -13,6 +13,7 @@ import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import type { SharedWithMeEntry } from '@/core/types';
+import { layoutId as toLayoutId } from '@/core/types';
 import { fetchShare } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
 
@@ -130,7 +131,7 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
       });
 
       // Load the layout into preview mode
-      importLayout(layout, '__shared_preview__', 'init');
+      importLayout(layout, toLayoutId('__shared_preview__'), 'init');
 
       // Set preview state so the banner shows
       setSharedLayoutPreview(

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { useBinList } from '@/hooks/useBinList';
 import { SplitPreview } from '@/components/Print/SplitPreview';
-import type { EnhancedPrintRow, Category, PrintListSortKey } from '@/core/types';
+import type { EnhancedPrintRow, Category, CategoryId, PrintListSortKey } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 interface MobileBinListProps {
@@ -39,7 +39,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
   const {
     rows,
     unfilteredRows,
-    categories,
+    categories: rawCategories,
     totalBins,
     totalPieces,
     totalFilament,
@@ -70,6 +70,9 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
     downloadExport,
     copyToClipboard,
   } = useBinList();
+
+  // usePrintList returns categories with { id: string } but the data is branded from the store
+  const categories = rawCategories as Category[];
 
   const handleRowTap = useCallback(
     (row: EnhancedPrintRow, index: number) => {
@@ -113,7 +116,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
   }, [editingField, editValue, updateBulkLabel, updateBulkNotes, clearSelection]);
 
   const handleCategorySelect = useCallback(
-    (categoryId: string) => {
+    (categoryId: CategoryId) => {
       changeBulkCategory(categoryId);
       clearSelection();
       setEditingField(null);

@@ -8,6 +8,7 @@ import {
   type BinListSortOrder,
 } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
+import type { LayerId } from '@/core/types';
 import { PrintLayout } from '../PrintLayout';
 import { SortOrderConfig } from '../SortOrderConfig';
 import { Checkbox } from '@/shared/components/Checkbox';
@@ -62,7 +63,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
   // Local state for layer selection (not persisted)
   // Initialize with all layers selected.
-  const [selectedLayerIds, setSelectedLayerIds] = useState<string[]>(() =>
+  const [selectedLayerIds, setSelectedLayerIds] = useState<LayerId[]>(() =>
     layout.layers.map((l) => l.id)
   );
 
@@ -156,7 +157,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
   );
 
   // Handle layer selection
-  const toggleLayer = useCallback((layerId: string) => {
+  const toggleLayer = useCallback((layerId: LayerId) => {
     setSelectedLayerIds((prev) => {
       if (prev.includes(layerId)) {
         return prev.filter((id) => id !== layerId);

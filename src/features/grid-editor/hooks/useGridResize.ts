@@ -5,6 +5,8 @@ import { useUndoableAction } from '@/core/store';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { binId as toBinId } from '@/core/types';
+import { isErr } from '@/core/result';
 
 /**
  * Grid Resize Hook
@@ -221,8 +223,8 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
 
     execute(() => {
       // Move clipped bins to staging
-      for (const binId of pendingResize.clippedBinIds) {
-        updateBin(binId, { layerId: STAGING_ID });
+      for (const id of pendingResize.clippedBinIds) {
+        if (isErr(updateBin(toBinId(id), { layerId: STAGING_ID }))) break;
       }
       // Apply the resize
       updateDrawer({ width: pendingResize.newWidth, depth: pendingResize.newDepth });

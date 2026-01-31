@@ -8,6 +8,7 @@ import type {
   PrintListSortKey,
   PrintListSortOrder,
   Category,
+  CategoryId,
 } from '@/core/types';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 
@@ -17,7 +18,7 @@ import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
  */
 export function filterByCategory(
   rows: EnhancedPrintRow[],
-  hiddenCategoryIds: Set<string>
+  hiddenCategoryIds: Set<CategoryId>
 ): EnhancedPrintRow[] {
   if (hiddenCategoryIds.size === 0) return rows;
   return rows.filter((row) => !row.categoryIds.every((id) => hiddenCategoryIds.has(id)));
@@ -58,10 +59,10 @@ export function groupByCategory(
   rows: EnhancedPrintRow[],
   categories: Category[]
 ): PrintListGroup[] {
-  const groups = new Map<string, EnhancedPrintRow[]>();
+  const groups = new Map<CategoryId, EnhancedPrintRow[]>();
 
   for (const row of rows) {
-    const catId = row.categoryIds[0] || 'uncategorized';
+    const catId = row.categoryIds[0] || ('' as CategoryId);
     const existing = groups.get(catId);
     if (existing) {
       existing.push(row);
@@ -98,7 +99,7 @@ export function groupByCategory(
  */
 export function applyFiltersAndSort(
   rows: EnhancedPrintRow[],
-  hiddenCategoryIds: Set<string>,
+  hiddenCategoryIds: Set<CategoryId>,
   sortKey: PrintListSortKey,
   sortOrder: PrintListSortOrder
 ): EnhancedPrintRow[] {

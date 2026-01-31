@@ -70,7 +70,8 @@ function getLocalStorageLayoutIds(): string[] {
  */
 function loadLayoutFromLocalStorage(layoutId: string): Layout | null {
   const key = `${LAYOUT_KEY_PREFIX}${layoutId}`;
-  return localStorage.loadLayout(key);
+  const result = localStorage.loadLayout(key);
+  return result.ok ? result.value : null;
 }
 
 /**

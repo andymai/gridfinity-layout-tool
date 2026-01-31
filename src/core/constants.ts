@@ -1,4 +1,5 @@
-import type { Layout, Category } from './types';
+import type { Layout, Category, BinId, LayerId, CategoryId } from './types';
+import { binId, layerId, categoryId } from './types';
 
 // === Constraints (from PRD) ===
 
@@ -62,7 +63,7 @@ export function calcMaxGridUnits(printBedSizeMm: number, gridUnitMm: number): nu
 
 // === Staging ===
 
-export const STAGING_ID = '__staging__';
+export const STAGING_ID = '__staging__' as LayerId;
 
 // === Half-bin Mode ===
 
@@ -149,11 +150,11 @@ export const DEFAULT_LAYOUT_NAME = 'Untitled layout';
 // === Default Categories ===
 
 export const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'coral', name: 'Coral', color: '#f87171' },
-  { id: 'sky', name: 'Sky', color: '#38bdf8' },
-  { id: 'green', name: 'Green', color: '#4ade80' },
-  { id: 'cloud', name: 'Cloud', color: '#e2e8f0' },
-  { id: 'charcoal', name: 'Charcoal', color: '#334155' },
+  { id: categoryId('coral'), name: 'Coral', color: '#f87171' },
+  { id: categoryId('sky'), name: 'Sky', color: '#38bdf8' },
+  { id: categoryId('green'), name: 'Green', color: '#4ade80' },
+  { id: categoryId('cloud'), name: 'Cloud', color: '#e2e8f0' },
+  { id: categoryId('charcoal'), name: 'Charcoal', color: '#334155' },
 ];
 
 // === ID Generation ===
@@ -163,6 +164,21 @@ export function generateId(): string {
   globalThis.crypto.getRandomValues(bytes);
   const rand = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
   return `${Date.now().toString(36)}-${rand}`;
+}
+
+/** Generate a branded BinId. */
+export function generateBinId(): BinId {
+  return binId(generateId());
+}
+
+/** Generate a branded LayerId. */
+export function generateLayerId(): LayerId {
+  return layerId(generateId());
+}
+
+/** Generate a branded CategoryId. */
+export function generateCategoryId(): CategoryId {
+  return categoryId(generateId());
 }
 
 // === Default Layout ===
@@ -175,7 +191,7 @@ export const createDefaultLayout = (): Layout => ({
   gridUnitMm: 42,
   heightUnitMm: 7,
   categories: [...DEFAULT_CATEGORIES],
-  layers: [{ id: generateId(), name: 'Layer 1', height: 3 }],
+  layers: [{ id: generateLayerId(), name: 'Layer 1', height: 3 }],
   bins: [],
 });
 
@@ -215,7 +231,7 @@ export const createLayoutWithSettings = (settings: LayoutSettings): Layout => {
     categories,
     layers: [
       {
-        id: generateId(),
+        id: generateLayerId(),
         name: 'Layer 1',
         height: Math.min(settings.defaultDrawerHeight, settings.defaultLayerHeight),
       },

@@ -8,6 +8,7 @@ import * as backend from '@/core/storage/backend';
 import * as localStorage from '@/core/storage/backends/localStorage';
 import * as indexedDB from '@/core/storage/backends/indexedDB';
 import { createTestLayout } from '@/test/testUtils';
+import { isOk, isErr } from '@/core/result';
 
 // Mock IndexedDB module
 vi.mock('@/core/storage/backends/indexedDB', () => ({
@@ -96,10 +97,11 @@ describe('storage backend', () => {
       expect(result).toBeNull();
     });
 
-    it('throws on invalid JSON', () => {
+    it('returns null on invalid JSON', () => {
       localStorageMock._store['test-key'] = 'not valid json{{{';
 
-      expect(() => backend.loadSync('test-key')).toThrow();
+      const result = backend.loadSync('test-key');
+      expect(result).toBeNull();
     });
   });
 
@@ -291,19 +293,26 @@ describe('localStorage backend', () => {
 
       const result = localStorage.loadFromLocalStorage('key');
 
-      expect(result).toEqual({ foo: 'bar' });
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value).toEqual({ foo: 'bar' });
+      }
     });
 
     it('returns null for missing key', () => {
       const result = localStorage.loadFromLocalStorage('missing');
 
-      expect(result).toBeNull();
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value).toBeNull();
+      }
     });
 
-    it('throws on invalid JSON', () => {
+    it('returns Err on invalid JSON', () => {
       localStorageMock._store['key'] = 'not json';
 
-      expect(() => localStorage.loadFromLocalStorage('key')).toThrow();
+      const result = localStorage.loadFromLocalStorage('key');
+      expect(isErr(result)).toBe(true);
     });
   });
 

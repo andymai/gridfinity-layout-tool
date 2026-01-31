@@ -11,6 +11,7 @@ import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
+import { layerId as toLayerId } from '@/core/types';
 
 // Drop position indicator for drag-and-drop reordering
 type DropPosition = { index: number; position: 'above' | 'below' } | null;
@@ -121,7 +122,7 @@ export function LayerPanel() {
   const handleDeleteLayer = useCallback(() => {
     if (!deleteLayerId) return;
     execute(() => {
-      const result = deleteLayer(deleteLayerId);
+      const result = deleteLayer(toLayerId(deleteLayerId));
       if (isOk(result) && activeLayerId === deleteLayerId && layers.length > 0) {
         const remaining = layers.filter((l) => l.id !== deleteLayerId);
         if (remaining.length > 0) {
@@ -134,7 +135,9 @@ export function LayerPanel() {
 
   const handleNameChange = (layerId: string, name: string) => {
     execute(() => {
-      const result = updateLayer(layerId, { name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
+      const result = updateLayer(toLayerId(layerId), {
+        name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH),
+      });
       if (isErr(result)) {
         addToast(getUserMessage(result.error), 'error');
       }
@@ -146,7 +149,7 @@ export function LayerPanel() {
     if (!layer) return;
     const newHeight = Math.max(1, layer.height + delta);
     execute(() => {
-      const result = updateLayer(layerId, { height: newHeight });
+      const result = updateLayer(toLayerId(layerId), { height: newHeight });
       if (isErr(result)) {
         addToast(getUserMessage(result.error), 'error');
       }
@@ -246,7 +249,9 @@ export function LayerPanel() {
   const handleDragEnd = resetDragState;
 
   const layerToDelete = deleteLayerId ? layers.find((l) => l.id === deleteLayerId) : null;
-  const binsInDeleteLayer = deleteLayerId ? getLayerBins(layout.bins, deleteLayerId).length : 0;
+  const deletedLayerBinCount = !deleteLayerId
+    ? 0
+    : getLayerBins(layout.bins, toLayerId(deleteLayerId)).length;
 
   if (!activeLayer) return null;
 
@@ -528,7 +533,7 @@ export function LayerPanel() {
         title={t('layers.confirmDelete.title')}
         message={t('layers.confirmDelete.message', {
           name: layerToDelete?.name || '',
-          count: binsInDeleteLayer,
+          count: deletedLayerBinCount,
         })}
         confirmText={t('common.delete')}
         destructive

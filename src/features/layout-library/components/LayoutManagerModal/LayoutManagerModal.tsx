@@ -8,6 +8,7 @@ import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import type { ViewMode } from './ViewModeToggle';
 import type { Layout } from '@/core/types';
+import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 
@@ -124,7 +125,7 @@ function LayoutManagerModalContent({
   const handleSwitch = useCallback(
     async (id: string) => {
       const entry = library.entries.find((e) => e.id === id);
-      const result = await switchLayout(id);
+      const result = await switchLayout(layoutId(id));
       if (isOk(result)) {
         announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
         onClose();
@@ -143,7 +144,7 @@ function LayoutManagerModalContent({
 
   const handleDelete = useCallback(
     async (id: string) => {
-      const result = await deleteLayout(id);
+      const result = await deleteLayout(layoutId(id));
       // Result error is already shown via toast internally
       return isOk(result);
     },
@@ -152,7 +153,7 @@ function LayoutManagerModalContent({
 
   const handleDuplicate = useCallback(
     async (id: string) => {
-      const result = await duplicateLayout(id);
+      const result = await duplicateLayout(layoutId(id));
       // Result error is already shown via toast internally
       return isOk(result);
     },
@@ -161,7 +162,7 @@ function LayoutManagerModalContent({
 
   const handleRename = useCallback(
     (id: string, newName: string) => {
-      renameLayout(id, newName);
+      renameLayout(layoutId(id), newName);
     },
     [renameLayout]
   );
@@ -175,7 +176,7 @@ function LayoutManagerModalContent({
 
       if (isOk(result)) {
         // Switch to the imported layout
-        await switchLayout(result.value);
+        await switchLayout(layoutId(result.value));
         announceToScreenReader(`Imported ${layout.name}`);
         onClose();
       }
@@ -221,7 +222,12 @@ function LayoutManagerModalContent({
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
               </button>
             )}

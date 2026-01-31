@@ -8,8 +8,9 @@
 /** Unique identifier for a saved design (from bin-designer IndexedDB) */
 export type DesignId = string;
 
-/** Unique identifier for a bin in the layout */
-export type BinId = string;
+/** Re-export branded BinId from core types for type safety */
+import type { BinId } from '@/core/types';
+export type { BinId };
 
 // =============================================================================
 // Dimension Types

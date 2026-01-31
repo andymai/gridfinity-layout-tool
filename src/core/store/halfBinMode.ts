@@ -4,7 +4,6 @@ import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useLayoutStore } from './layout';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutInvalidOperation, OK } from '@/core/result';
-import type { OperationResult } from '@/core/types';
 
 /**
  * Half-Bin Mode Store
@@ -51,21 +50,12 @@ interface HalfBinModeState {
 interface HalfBinModeActions {
   /**
    * Toggle half-bin mode with validation.
-   * Returns OperationResult for legacy compatibility.
-   *
-   * When turning OFF, validates that no bins have fractional dimensions.
-   * If validation fails, returns { success: false, error: string }.
-   */
-  toggleHalfBinMode: () => OperationResult<void>;
-
-  /**
-   * Toggle half-bin mode with validation.
-   * Returns Result<Unit, LayoutError> for modern error handling.
+   * Returns Result<Unit, LayoutError> for type-safe error handling.
    *
    * When turning OFF, validates that no bins have fractional dimensions.
    * If validation fails, returns Err with details.
    */
-  toggleHalfBinModeResult: () => Result<Unit, LayoutError>;
+  toggleHalfBinMode: () => Result<Unit, LayoutError>;
 
   /**
    * Set half-bin mode directly without validation.
@@ -80,34 +70,6 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
   halfBinMode: loadFromStorage(),
 
   toggleHalfBinMode: () => {
-    const state = useHalfBinModeStore.getState();
-    const targetState = !state.halfBinMode;
-
-    // Turning ON: no validation needed
-    if (targetState === true) {
-      saveToStorage(true);
-      set({ halfBinMode: true });
-      markFeatureUsed('half_bins');
-      return { success: true };
-    }
-
-    // Turning OFF: validate layout for fractional bins
-    const layout = useLayoutStore.getState().layout;
-    const result = validateHalfBinModeToggle(layout, false);
-
-    if (!result.canDisable) {
-      return {
-        success: false,
-        error: 'Cannot disable half-bin mode while bins with fractional dimensions exist',
-      };
-    }
-
-    saveToStorage(false);
-    set({ halfBinMode: false });
-    return { success: true };
-  },
-
-  toggleHalfBinModeResult: () => {
     const state = useHalfBinModeStore.getState();
     const targetState = !state.halfBinMode;
 

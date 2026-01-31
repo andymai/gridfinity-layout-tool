@@ -25,6 +25,7 @@ import { validateImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins } from '@/shared/utils/bins';
+import { layoutId } from '@/core/types';
 import type {
   Layout,
   LayoutEntry,
@@ -540,7 +541,7 @@ export async function switchActiveLayout(
   // 4. Update active layout ID
   updatedLibrary = {
     ...updatedLibrary,
-    activeLayoutId: toId,
+    activeLayoutId: layoutId(toId),
   };
 
   // 5. Save library with new active ID

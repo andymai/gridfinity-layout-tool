@@ -7,6 +7,7 @@
 
 import { create } from 'zustand';
 import { useLibraryStore } from '@/core/store/library';
+import { layoutId as toLayoutId } from '@/core/types';
 import type { SuggestionResult, SuggestionStatus } from '../types';
 
 interface NameSuggestionState {
@@ -59,7 +60,9 @@ export const useNameSuggestionStore = create<NameSuggestionState>()((set, get) =
     // Don't auto-show if permanently dismissed for this layout
     // (but allow manual triggers like command palette to bypass)
     if (triggerSource === 'auto') {
-      const persistedState = useLibraryStore.getState().getNameSuggestionState(layoutId);
+      const persistedState = useLibraryStore
+        .getState()
+        .getNameSuggestionState(toLayoutId(layoutId));
       if (persistedState?.dismissed) {
         return; // Layout was dismissed, don't auto-show
       }
@@ -89,7 +92,7 @@ export const useNameSuggestionStore = create<NameSuggestionState>()((set, get) =
 
     // Persist dismissal to library store (survives page refresh)
     if (layoutId) {
-      useLibraryStore.getState().setNameSuggestionDismissed(layoutId, true);
+      useLibraryStore.getState().setNameSuggestionDismissed(toLayoutId(layoutId), true);
     }
 
     set({
@@ -137,7 +140,7 @@ export const useNameSuggestionStore = create<NameSuggestionState>()((set, get) =
     const state = get();
 
     // Check persisted dismissal state from library store (survives page refresh)
-    const persistedState = useLibraryStore.getState().getNameSuggestionState(layoutId);
+    const persistedState = useLibraryStore.getState().getNameSuggestionState(toLayoutId(layoutId));
     if (persistedState?.dismissed) {
       return false; // Permanently dismissed for this layout
     }

@@ -10,8 +10,8 @@
  */
 
 import { validateImport } from '@/shared/utils/validation';
-import { generateId, STAGING_ID } from '@/core/constants';
-import type { Layout } from '@/core/types';
+import { generateBinId, generateLayerId, generateCategoryId, STAGING_ID } from '@/core/constants';
+import type { Layout, LayerId, CategoryId } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
 import type { BinParams } from '@/features/bin-designer/types';
@@ -101,28 +101,30 @@ export function importLayoutJSON(json: string): { layout: Layout | null; errors:
 
     // Regenerate all IDs
     const layout = parsed as Layout;
-    const idMap = new Map<string, string>();
+    const layerIdMap = new Map<string, LayerId>();
+    const categoryIdMap = new Map<string, CategoryId>();
 
     // Regenerate layer IDs
     layout.layers = layout.layers.map((layer) => {
-      const newId = generateId();
-      idMap.set(layer.id, newId);
+      const newId = generateLayerId();
+      layerIdMap.set(layer.id, newId);
       return { ...layer, id: newId };
     });
 
     // Regenerate category IDs
     layout.categories = layout.categories.map((cat) => {
-      const newId = generateId();
-      idMap.set(cat.id, newId);
+      const newId = generateCategoryId();
+      categoryIdMap.set(cat.id, newId);
       return { ...cat, id: newId };
     });
 
     // Regenerate bin IDs and update references
     layout.bins = layout.bins.map((bin) => ({
       ...bin,
-      id: generateId(),
-      layerId: bin.layerId === STAGING_ID ? STAGING_ID : idMap.get(bin.layerId) || bin.layerId,
-      category: idMap.get(bin.category) || bin.category,
+      id: generateBinId(),
+      layerId:
+        bin.layerId === STAGING_ID ? STAGING_ID : (layerIdMap.get(bin.layerId) ?? bin.layerId),
+      category: categoryIdMap.get(bin.category) ?? bin.category,
     }));
 
     return { layout, errors: [] };

@@ -9,6 +9,7 @@ import { BinListFilters } from './BinListFilters';
 import { BinListDashboard } from './BinListDashboard';
 import { BulkActions } from './BulkActions';
 import { MobileBinList } from './MobileBinList';
+import type { BinId, Category } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 interface BinListModalProps {
@@ -91,9 +92,11 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
     // Actions
     selectBinsByRow,
 
-    // Categories
-    categories,
+    // Categories (usePrintList returns { id: string } but the data is branded from the store)
+    categories: rawCategories,
   } = useBinList();
+
+  const typedCategories = rawCategories as Category[];
 
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
 
@@ -155,7 +158,7 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
 
   // Handler for inline label editing (updates specific bins in the row)
   const handleEditLabel = useCallback(
-    (binIds: string[], label: string) => {
+    (binIds: BinId[], label: string) => {
       updateBinLabel(binIds, label);
       if (label.trim()) {
         markFeatureUsed('labels');
@@ -166,7 +169,7 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
 
   // Handler for inline notes editing (updates specific bins in the row)
   const handleEditNotes = useCallback(
-    (binIds: string[], notes: string) => {
+    (binIds: BinId[], notes: string) => {
       updateBinNotes(binIds, notes);
     },
     [updateBinNotes]
@@ -274,7 +277,7 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
           <BinListFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            categories={categories}
+            categories={typedCategories}
             filters={filters}
             onToggleCategoryVisibility={toggleCategoryVisibility}
             onToggleGroupByCategory={toggleGroupByCategory}
@@ -287,7 +290,7 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
         {/* Bulk actions toolbar (shown when selection active) */}
         <BulkActions
           selectionCount={selectionCount}
-          categories={categories}
+          categories={typedCategories}
           onDelete={deleteBulkSelection}
           onChangeCategory={changeBulkCategory}
           onClearSelection={clearSelection}
@@ -299,7 +302,7 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
         <div className="flex-1 overflow-hidden">
           <BinListTable
             rows={rows}
-            categories={categories}
+            categories={typedCategories}
             selectedIndices={selectedIndices}
             onToggleSelection={toggleRowSelection}
             onSelectAll={selectAllRows}

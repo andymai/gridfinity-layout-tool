@@ -38,6 +38,7 @@ import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
 import type { SaveStatus } from '@/features/bin-designer/types';
+import { binId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 interface DesignerPageProps {
@@ -258,7 +259,9 @@ export function DesignerPage(_props: DesignerPageProps) {
 
           // Auto-link design to source bin if this was created from a bin
           if (pendingBinLink) {
-            const linkResult = updateBin(pendingBinLink, { linkedDesignId: result.value.id });
+            const linkResult = updateBin(binId(pendingBinLink), {
+              linkedDesignId: result.value.id,
+            });
             clearPendingBinLink();
             if (isOk(linkResult)) {
               addToast({

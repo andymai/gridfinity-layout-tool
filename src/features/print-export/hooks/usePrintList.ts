@@ -25,10 +25,12 @@ import type {
   PrintListFilters,
   PrintListSortKey,
   PrintListConfig,
+  CategoryId,
 } from '@/core/types';
+import { categoryId as toCategoryId } from '@/core/types';
 
 const DEFAULT_FILTERS: PrintListFilters = {
-  hiddenCategoryIds: new Set(),
+  hiddenCategoryIds: new Set<CategoryId>(),
   sortKey: 'default',
   sortOrder: 'desc',
   groupByCategory: false,
@@ -143,13 +145,14 @@ export function usePrintList(): UsePrintListReturn {
     setFilters((f) => ({ ...f, sortOrder: f.sortOrder === 'asc' ? 'desc' : 'asc' }));
   }, []);
 
-  const toggleCategoryVisibility = useCallback((categoryId: string) => {
+  const toggleCategoryVisibility = useCallback((rawCategoryId: string) => {
+    const catId: CategoryId = toCategoryId(rawCategoryId);
     setFilters((f) => {
       const next = new Set(f.hiddenCategoryIds);
-      if (next.has(categoryId)) {
-        next.delete(categoryId);
+      if (next.has(catId)) {
+        next.delete(catId);
       } else {
-        next.add(categoryId);
+        next.add(catId);
       }
       return { ...f, hiddenCategoryIds: next };
     });
