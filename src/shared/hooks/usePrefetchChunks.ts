@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
 import { useResponsive } from './useResponsive';
+import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils/idle';
 
 /** How long to wait after mount before starting prefetch (ms) */
 const PREFETCH_DELAY_MS = 3000;
-
-/** Fallback delay for browsers without requestIdleCallback (ms) */
-const IDLE_FALLBACK_MS = 200;
 
 /**
  * Connection info from the Network Information API.
@@ -16,31 +14,16 @@ interface NetworkInformation {
   effectiveType?: string;
 }
 
-/** requestIdleCallback shim type */
-type IdleRequestCallback = (deadline: { timeRemaining: () => number }) => void;
-
 /**
  * Returns true when the browser signals it wants to conserve bandwidth
  * (data-saver enabled or very slow connection).
  */
 function shouldSkipForNetwork(): boolean {
-  const connection = (navigator as unknown as { connection?: NetworkInformation }).connection;
+  const connection = (navigator as { connection?: NetworkInformation }).connection;
   if (!connection) return false;
   if (connection.saveData) return true;
   if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') return true;
   return false;
-}
-
-/**
- * Schedules `cb` during browser idle time, falling back to `setTimeout`
- * for browsers without `requestIdleCallback` (older Safari).
- */
-function scheduleIdle(cb: IdleRequestCallback): void {
-  if (typeof window.requestIdleCallback === 'function') {
-    window.requestIdleCallback(cb);
-  } else {
-    setTimeout(() => cb({ timeRemaining: () => IDLE_FALLBACK_MS }), IDLE_FALLBACK_MS);
-  }
 }
 
 /** Fire-and-forget dynamic import — errors are silently swallowed. */
@@ -55,6 +38,7 @@ function prefetch(importFn: () => Promise<unknown>): void {
  *
  * Runs once after mount with a delay, then uses `requestIdleCallback`
  * to load chunks in prioritized tiers without blocking the main thread.
+ * Tiers are chained so each waits for the previous tier's idle slot.
  *
  * Skips prefetching on:
  * - Mobile and tablet devices (limited resources)
@@ -70,28 +54,39 @@ export function usePrefetchChunks(): void {
     // Skip on data-saver or very slow connections
     if (shouldSkipForNetwork()) return;
 
+    const idleHandles: number[] = [];
+
     const timer = setTimeout(() => {
       // High priority — features most users reach quickly
-      scheduleIdle(() => {
-        prefetch(() => import('@/features/print-export/components/PrintModal'));
-        prefetch(() => import('@/features/layout-library/components/LayoutManagerModal'));
-        prefetch(() => import('@/features/bin-designer/components/DesignerPage'));
-        prefetch(() => import('@/components/Modals/SettingsModal'));
-      });
+      idleHandles.push(
+        scheduleIdleCallback(() => {
+          prefetch(() => import('@/features/print-export/components/PrintModal'));
+          prefetch(() => import('@/features/layout-library/components/LayoutManagerModal'));
+          prefetch(() => import('@/features/bin-designer/components/DesignerPage'));
+          prefetch(() => import('@/components/Modals/SettingsModal'));
 
-      // Medium priority — commonly used but not immediately
-      scheduleIdle(() => {
-        prefetch(() => import('@/features/inspiration-gallery'));
-        prefetch(() => import('@/components/Modals/HelpModal'));
-      });
+          // Medium priority — commonly used but not immediately
+          idleHandles.push(
+            scheduleIdleCallback(() => {
+              prefetch(() => import('@/features/inspiration-gallery'));
+              prefetch(() => import('@/components/Modals/HelpModal'));
 
-      // Low priority — rarely needed on desktop
-      scheduleIdle(() => {
-        prefetch(() => import('@/features/labs/components/LabsDrawer'));
-        prefetch(() => import('@/components/Collab/CollabProvider'));
-      });
+              // Low priority — rarely needed on desktop
+              idleHandles.push(
+                scheduleIdleCallback(() => {
+                  prefetch(() => import('@/features/labs/components/LabsDrawer'));
+                  prefetch(() => import('@/components/Collab/CollabProvider'));
+                })
+              );
+            })
+          );
+        })
+      );
     }, PREFETCH_DELAY_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      idleHandles.forEach((handle) => cancelIdleCallback(handle));
+    };
   }, [isMobile, isTablet]);
 }

@@ -16,24 +16,48 @@ vi.mock('./useResponsive', () => ({
   })),
 }));
 
-// Grab the mocked module so we can change return values per-test
+// Mock the idle utility to control scheduling behavior
+vi.mock('@/shared/utils/idle', () => ({
+  scheduleIdleCallback: vi.fn(
+    (cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void) => {
+      cb({ didTimeout: false, timeRemaining: () => 50 });
+      return Math.random();
+    }
+  ),
+  cancelIdleCallback: vi.fn(),
+}));
+
+// Grab mocked modules for per-test control
 import { useResponsive } from './useResponsive';
+import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils/idle';
 const mockUseResponsive = vi.mocked(useResponsive);
+const mockScheduleIdle = vi.mocked(scheduleIdleCallback);
+const mockCancelIdle = vi.mocked(cancelIdleCallback);
 
 describe('usePrefetchChunks', () => {
-  let originalRIC: typeof window.requestIdleCallback;
   let originalConnection: unknown;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    originalRIC = window.requestIdleCallback;
     originalConnection = (navigator as unknown as Record<string, unknown>).connection;
+    // Reset to desktop defaults — tests that need mobile/tablet override this
+    mockUseResponsive.mockReturnValue({
+      isMobile: false,
+      isTablet: false,
+      isDesktop: true,
+      isTouchDevice: false,
+      layoutMode: 'desktop' as const,
+      viewportWidth: 1200,
+      viewportHeight: 800,
+      isLandscape: true,
+    });
+    mockScheduleIdle.mockClear();
+    mockCancelIdle.mockClear();
   });
 
   afterEach(() => {
     vi.useRealTimers();
-    vi.restoreAllMocks();
-    window.requestIdleCallback = originalRIC;
+    vi.clearAllMocks();
     Object.defineProperty(navigator, 'connection', {
       value: originalConnection,
       configurable: true,
@@ -41,20 +65,23 @@ describe('usePrefetchChunks', () => {
     });
   });
 
-  it('calls requestIdleCallback after delay on desktop', () => {
-    const mockRIC = vi.fn();
-    window.requestIdleCallback = mockRIC as unknown as typeof window.requestIdleCallback;
-
+  it('schedules idle callback after delay on desktop', () => {
     renderHook(() => usePrefetchChunks());
 
     // Before delay — no idle callbacks yet
-    expect(mockRIC).not.toHaveBeenCalled();
+    expect(mockScheduleIdle).not.toHaveBeenCalled();
 
-    // After 3s delay
+    // After 3s delay — schedules idle callbacks (chained: high → medium → low)
+    vi.advanceTimersByTime(3000);
+    expect(mockScheduleIdle).toHaveBeenCalled();
+  });
+
+  it('chains all three priority tiers via nested idle callbacks', () => {
+    renderHook(() => usePrefetchChunks());
     vi.advanceTimersByTime(3000);
 
-    // Should have scheduled 3 idle callbacks (high, medium, low tiers)
-    expect(mockRIC).toHaveBeenCalledTimes(3);
+    // With synchronous execution mock, all 3 tiers chain: high → medium → low
+    expect(mockScheduleIdle).toHaveBeenCalledTimes(3);
   });
 
   it('skips prefetch on mobile', () => {
@@ -69,13 +96,10 @@ describe('usePrefetchChunks', () => {
       isLandscape: false,
     });
 
-    const mockRIC = vi.fn();
-    window.requestIdleCallback = mockRIC as unknown as typeof window.requestIdleCallback;
-
     renderHook(() => usePrefetchChunks());
     vi.advanceTimersByTime(5000);
 
-    expect(mockRIC).not.toHaveBeenCalled();
+    expect(mockScheduleIdle).not.toHaveBeenCalled();
   });
 
   it('skips prefetch on tablet', () => {
@@ -90,13 +114,10 @@ describe('usePrefetchChunks', () => {
       isLandscape: false,
     });
 
-    const mockRIC = vi.fn();
-    window.requestIdleCallback = mockRIC as unknown as typeof window.requestIdleCallback;
-
     renderHook(() => usePrefetchChunks());
     vi.advanceTimersByTime(5000);
 
-    expect(mockRIC).not.toHaveBeenCalled();
+    expect(mockScheduleIdle).not.toHaveBeenCalled();
   });
 
   it('skips prefetch when saveData is enabled', () => {
@@ -106,13 +127,10 @@ describe('usePrefetchChunks', () => {
       writable: true,
     });
 
-    const mockRIC = vi.fn();
-    window.requestIdleCallback = mockRIC as unknown as typeof window.requestIdleCallback;
-
     renderHook(() => usePrefetchChunks());
     vi.advanceTimersByTime(5000);
 
-    expect(mockRIC).not.toHaveBeenCalled();
+    expect(mockScheduleIdle).not.toHaveBeenCalled();
   });
 
   it('skips prefetch on slow connections', () => {
@@ -122,37 +140,16 @@ describe('usePrefetchChunks', () => {
       writable: true,
     });
 
-    const mockRIC = vi.fn();
-    window.requestIdleCallback = mockRIC as unknown as typeof window.requestIdleCallback;
-
     renderHook(() => usePrefetchChunks());
     vi.advanceTimersByTime(5000);
 
-    expect(mockRIC).not.toHaveBeenCalled();
-  });
-
-  it('falls back to setTimeout when requestIdleCallback is unavailable', () => {
-    // Remove requestIdleCallback to trigger fallback path
-
-    delete (window as unknown as Record<string, unknown>).requestIdleCallback;
-
-    // Should not throw — the fallback path uses setTimeout instead
-    expect(() => {
-      renderHook(() => usePrefetchChunks());
-      // Advance past the initial 3s delay + fallback 200ms delays
-      vi.advanceTimersByTime(3500);
-    }).not.toThrow();
+    expect(mockScheduleIdle).not.toHaveBeenCalled();
   });
 
   it('does not throw when dynamic imports fail', () => {
-    // Mock requestIdleCallback to execute callbacks immediately
-    window.requestIdleCallback = ((cb: (deadline: { timeRemaining: () => number }) => void) => {
-      cb({ timeRemaining: () => 50 });
-      return 0;
-    }) as unknown as typeof window.requestIdleCallback;
-
-    // This should not throw even though the dynamic imports will fail
-    // in the test environment (modules don't exist)
+    // The default mock executes callbacks synchronously, which triggers
+    // the dynamic imports. These fail in test (modules don't exist)
+    // but errors are caught silently.
     expect(() => {
       renderHook(() => usePrefetchChunks());
       vi.advanceTimersByTime(3000);
@@ -160,9 +157,6 @@ describe('usePrefetchChunks', () => {
   });
 
   it('cleans up timer on unmount before it fires', () => {
-    const mockRIC = vi.fn();
-    window.requestIdleCallback = mockRIC as unknown as typeof window.requestIdleCallback;
-
     const { unmount } = renderHook(() => usePrefetchChunks());
 
     // Unmount before the 3s delay elapses
@@ -170,6 +164,26 @@ describe('usePrefetchChunks', () => {
 
     // Advance time — the idle callbacks should NOT have been scheduled
     vi.advanceTimersByTime(5000);
-    expect(mockRIC).not.toHaveBeenCalled();
+    expect(mockScheduleIdle).not.toHaveBeenCalled();
+  });
+
+  it('cancels idle callback handles on unmount', () => {
+    const { unmount } = renderHook(() => usePrefetchChunks());
+
+    // Before timer fires — no cancellations
+    expect(mockCancelIdle).not.toHaveBeenCalled();
+
+    // Let the timer fire — mock executes callbacks synchronously,
+    // collecting 3 handles (one per priority tier)
+    vi.advanceTimersByTime(3000);
+    const handles = mockScheduleIdle.mock.results.map((r) => r.value);
+    expect(handles).toHaveLength(3);
+
+    // Unmount — should cancel all collected idle handles
+    unmount();
+    expect(mockCancelIdle).toHaveBeenCalledTimes(3);
+    handles.forEach((handle) => {
+      expect(mockCancelIdle).toHaveBeenCalledWith(handle);
+    });
   });
 });
