@@ -83,17 +83,28 @@ describe('calculateDividerHeight', () => {
 });
 
 describe('calculateDividerLength', () => {
-  it('adds slot depth minus clearance on each side', () => {
-    // innerDim + 2 * (slotDepth - clearance)
-    expect(calculateDividerLength(80, 1.0, 0.1)).toBeCloseTo(81.8);
+  it('subtracts length clearance (0.3mm) from each tab', () => {
+    // tabDepth = max(0.3, 1.0 - 0.1 - 0.3) = 0.6
+    // length = 80 + 2 * 0.6 = 81.2
+    expect(calculateDividerLength(80, 1.0, 0.1)).toBeCloseTo(81.2);
   });
 
-  it('returns innerDim when slotDepth equals clearance', () => {
-    expect(calculateDividerLength(80, 0.5, 0.5)).toBe(80);
+  it('clamps tab depth to minimum 0.3mm when clearance exceeds slot depth', () => {
+    // tabDepth = max(0.3, 0.5 - 0.5 - 0.3) = 0.3 (clamped)
+    // length = 80 + 2 * 0.3 = 80.6
+    expect(calculateDividerLength(80, 0.5, 0.5)).toBeCloseTo(80.6);
   });
 
-  it('returns less than innerDim when clearance exceeds slot depth', () => {
-    expect(calculateDividerLength(80, 0.3, 0.5)).toBeCloseTo(79.6);
+  it('clamps tab depth to minimum when clearance far exceeds slot depth', () => {
+    // tabDepth = max(0.3, 0.3 - 0.5 - 0.3) = 0.3 (clamped)
+    // length = 80 + 2 * 0.3 = 80.6
+    expect(calculateDividerLength(80, 0.3, 0.5)).toBeCloseTo(80.6);
+  });
+
+  it('handles deep slots with zero clearance', () => {
+    // tabDepth = max(0.3, 1.5 - 0 - 0.3) = 1.2
+    // length = 80 + 2 * 1.2 = 82.4
+    expect(calculateDividerLength(80, 1.5, 0)).toBeCloseTo(82.4);
   });
 });
 

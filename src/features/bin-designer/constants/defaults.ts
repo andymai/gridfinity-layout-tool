@@ -25,7 +25,7 @@ export const DEFAULT_SLOT_CONFIG: SlotConfig = {
 export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
   height: 'auto',
   thickness: 1.6,
-  clearance: 0.15,
+  clearance: 0.25,
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */

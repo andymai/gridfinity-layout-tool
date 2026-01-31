@@ -34,7 +34,6 @@ const SOCKET_SMALL_TAPER = GRIDFINITY.SOCKET_SMALL_TAPER;
 const SOCKET_BIG_TAPER = GRIDFINITY.SOCKET_BIG_TAPER;
 const SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER;
 const SOCKET_TAPER_WIDTH = SOCKET_SMALL_TAPER + SOCKET_BIG_TAPER;
-const AXIS_CLEARANCE = (CLEARANCE * Math.sqrt(2)) / 4;
 const TOP_FILLET = GRIDFINITY.TOP_FILLET;
 
 // ─── Stacking Lip Constants (per spec v5) ─────────────────────────────────────
@@ -158,7 +157,7 @@ function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
 
   // Ruled loft through all sections — straight-line connections between
   // corresponding points, matching the angular profile exactly
-  return s1.loftWith([s2, s3, s4, s5], { ruled: true }) as Shape3D;
+  return s1.loftWith([s2, s3, s4, s5], { ruled: true });
 }
 
 /**
@@ -188,7 +187,7 @@ function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): Shape3D 
   const s1 = sectionAt(Z1, INSET_TOP);
   const s3 = sectionAt(Z3, INSET_BOT);
 
-  return s1.loftWith([s3], { ruled: true }) as Shape3D;
+  return s1.loftWith([s3], { ruled: true });
 }
 
 /**
@@ -239,14 +238,10 @@ function buildBaseSocket(
     const HOLE_OFFSET = 13; // mm from cell center to hole center
 
     const magnetCutout = withMagnet
-      ? ((drawCircle(magnetRadius).sketchOnPlane() as unknown as Sketch).extrude(
-          magnetDepth
-        ) as Shape3D)
+      ? (drawCircle(magnetRadius).sketchOnPlane() as unknown as Sketch).extrude(magnetDepth)
       : null;
     const screwCutout = withScrew
-      ? ((drawCircle(screwRadius).sketchOnPlane() as unknown as Sketch).extrude(
-          SOCKET_HEIGHT
-        ) as Shape3D)
+      ? (drawCircle(screwRadius).sketchOnPlane() as unknown as Sketch).extrude(SOCKET_HEIGHT)
       : null;
 
     const cutout: Shape3D =
@@ -295,7 +290,7 @@ function buildBinBox(
 
   const box = (
     drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as unknown as Sketch
-  ).extrude(wallHeight) as Shape3D;
+  ).extrude(wallHeight);
 
   return box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight));
 }
@@ -342,15 +337,12 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
 
     const basicShape = sketcher.close();
 
-    // Apply clearance shifts and clip to valid region
-    const shiftedShape = basicShape
-      .translate(AXIS_CLEARANCE, -AXIS_CLEARANCE)
-      .intersect(drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5));
-
-    // Shave off the clearance
-    let topProfileShape = shiftedShape
-      .translate(CLEARANCE / 2, 0)
-      .intersect(drawRoundedRectangle(10, 10).translate(-5, 0));
+    // Per Gridfinity spec, the 0.5mm clearance is already applied to the outer
+    // dimensions (SIZE - CLEARANCE). The lip profile itself needs no additional
+    // clearance transforms — only a clip to the valid region.
+    let topProfileShape = basicShape.intersect(
+      drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5)
+    );
 
     if (includeLip) {
       // Remove the wall portion that the lip replaces
@@ -393,9 +385,7 @@ function addWallSegment(
   x: number,
   y: number
 ): Shape3D {
-  const wall = (drawRectangle(w, d).sketchOnPlane('XY') as unknown as Sketch).extrude(
-    height
-  ) as Shape3D;
+  const wall = (drawRectangle(w, d).sketchOnPlane('XY') as unknown as Sketch).extrude(height);
   const positioned = wall.translate([x, y, 0]);
   return dividers ? dividers.fuse(positioned) : positioned;
 }
@@ -508,7 +498,7 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
       case 'circle': {
         solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as unknown as Sketch).extrude(
           insert.cutDepth
-        ) as Shape3D;
+        );
         break;
       }
       case 'rounded-rect': {
@@ -516,14 +506,14 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
           drawRoundedRectangle(insert.width, insert.depth, insert.cornerRadius).sketchOnPlane(
             'XY'
           ) as unknown as Sketch
-        ).extrude(insert.cutDepth) as Shape3D;
+        ).extrude(insert.cutDepth);
         break;
       }
       case 'hexagon': {
         // Approximate hexagon with circle (Replicad polygon support TBD)
         solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as unknown as Sketch).extrude(
           insert.cutDepth
-        ) as Shape3D;
+        );
         break;
       }
       case 'slot': {
@@ -533,14 +523,14 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
             insert.depth,
             Math.min(insert.width, insert.depth) / 2
           ).sketchOnPlane('XY') as unknown as Sketch
-        ).extrude(insert.cutDepth) as Shape3D;
+        ).extrude(insert.cutDepth);
         break;
       }
       case 'rectangle':
       default: {
         solid = (
           drawRectangle(insert.width, insert.depth).sketchOnPlane('XY') as unknown as Sketch
-        ).extrude(insert.cutDepth) as Shape3D;
+        ).extrude(insert.cutDepth);
         break;
       }
     }
@@ -664,7 +654,7 @@ function buildLabelTabs(
       pen = pen.lineTo([0, -tabDepth]);
       if (!touchesLeft) pen = pen.customCorner(cornerR);
       const shelfSketch = pen.close().sketchOnPlane('XY', tabHeight - wt) as unknown as Sketch;
-      const shelf = shelfSketch.extrude(wt) as Shape3D;
+      const shelf = shelfSketch.extrude(wt);
 
       // ── Gussets: 45° triangular supports under the shelf ──
       // Free ends get edge gussets for structural support.
@@ -702,7 +692,7 @@ function buildLabelTabs(
             .lineTo([0, 0])
             .close();
           const solidSketch = solidProfile.sketchOnPlane('YZ', 0) as unknown as Sketch;
-          const solidSupport = solidSketch.extrude(tabWidth) as Shape3D;
+          const solidSupport = solidSketch.extrude(tabWidth);
           tabSolid = tabSolid.fuse(solidSupport);
         }
       } else {
@@ -716,7 +706,7 @@ function buildLabelTabs(
           let gussets: Shape3D | null = null;
           for (const gx of gussetPositions) {
             const gussetSketch = gussetProfile.sketchOnPlane('YZ', 0) as unknown as Sketch;
-            let gusset = gussetSketch.extrude(gt) as Shape3D;
+            let gusset = gussetSketch.extrude(gt);
             gusset = gusset.translateX(gx);
             gussets = gussets ? gussets.fuse(gusset) : gusset;
           }

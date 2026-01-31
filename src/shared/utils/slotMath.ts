@@ -10,6 +10,24 @@ import { GRIDFINITY } from '@/shared/constants/bin';
 const LIP_SMALL_TAPER = GRIDFINITY.LIP_SMALL_TAPER;
 
 /**
+ * Extra per-side clearance subtracted from divider length (not from slot width).
+ * Divider length and slot width have different tolerance needs:
+ * - Slot width clearance controls side-to-side rattle (tight is fine)
+ * - Length clearance prevents bowing when the divider spans the full interior
+ *
+ * FDM printers typically over-extrude interior dimensions by 0.1–0.3mm,
+ * making the divider effectively longer than modeled.
+ */
+const DIVIDER_LENGTH_CLEARANCE = 0.3;
+
+/**
+ * Minimum tab engagement depth per side (mm).
+ * Ensures the divider tab always has enough material in the slot
+ * to resist lateral forces, even with generous clearance values.
+ */
+const MIN_TAB_ENGAGEMENT = 0.3;
+
+/**
  * Calculate evenly-distributed slot center positions along a dimension.
  * Returns positions relative to the center of the dimension (0 = center).
  *
@@ -58,15 +76,22 @@ export function calculateDividerHeight(
 
 /**
  * Calculate the divider length for a given axis.
- * The divider spans the interior dimension plus slot depth on each side
- * (minus clearance) so the tabs engage with the wall slots.
+ *
+ * The divider spans the interior dimension plus tab engagement on each side.
+ * Tab engagement = slotDepth − widthClearance − lengthClearance, clamped to
+ * a minimum of MIN_TAB_ENGAGEMENT so the divider always locks into the slots.
+ *
+ * @param innerDim Interior dimension in mm (wall-to-wall)
+ * @param slotDepth How deep the slot is cut into the wall (mm)
+ * @param clearance Fit tolerance for slot width (mm) — also subtracted from tab length
  */
 export function calculateDividerLength(
   innerDim: number,
   slotDepth: number,
   clearance: number
 ): number {
-  return innerDim + 2 * (slotDepth - clearance);
+  const tabDepth = Math.max(MIN_TAB_ENGAGEMENT, slotDepth - clearance - DIVIDER_LENGTH_CLEARANCE);
+  return innerDim + 2 * tabDepth;
 }
 
 /**
