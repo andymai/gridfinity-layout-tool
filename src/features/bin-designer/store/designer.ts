@@ -202,8 +202,7 @@ export const useDesignerStore = create<DesignerState>()(
     loadDesign: (design: SavedDesign) => {
       // Check if thumbnail needs regeneration (missing or outdated version)
       const needsNewThumbnail =
-        design.thumbnail !== null &&
-        (design.thumbnailVersion === undefined || design.thumbnailVersion < THUMBNAIL_VERSION);
+        !design.thumbnail || (design.thumbnailVersion ?? 0) < THUMBNAIL_VERSION;
 
       set((state) => {
         state.params = migrateParams(design.params);

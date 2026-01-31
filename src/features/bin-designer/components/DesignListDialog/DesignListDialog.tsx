@@ -390,10 +390,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         {/* Design list or import view */}
         <div className="flex-1 min-h-0 overflow-hidden px-5 py-3" aria-busy={loading}>
           {showImport ? (
-            <DesignImportView
-              onImport={handleImportDesign}
-              onCancel={() => setShowImport(false)}
-            />
+            <DesignImportView onImport={handleImportDesign} onCancel={() => setShowImport(false)} />
           ) : loading ? (
             <div className="space-y-2 py-2">
               {[1, 2, 3].map((i) => (
@@ -482,7 +479,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                   ref={gridRef}
                   role="listbox"
                   aria-label={t('binDesigner.savedDesigns')}
-                  className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3 content-start"
+                  className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 content-start"
                 >
                   {items.map((design, index) => (
                     <DesignGridItem
