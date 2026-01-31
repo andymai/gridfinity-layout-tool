@@ -662,6 +662,33 @@ const en: Record<string, string> = {
     'Save these {count} categories as defaults for new layouts?',
   'settings.confirmSaveCategories.confirm': 'Save',
 
+  // Settings tabs
+  'settings.tabs.general': 'General',
+  'settings.tabs.defaults': 'Defaults',
+  'settings.tabs.integrations': 'STL Search',
+  'settings.tabs.privacy': 'Privacy',
+  'settings.tabs.labs': 'Labs',
+  'settings.resetTabDefaults': 'Reset all settings',
+  'settings.copyFromCurrentLayout': 'Copy from Current Layout',
+  'settings.confirmCopyFromLayout.title': 'Copy from Current Layout',
+  'settings.confirmCopyFromLayout.message':
+    'Replace all default values with your current layout settings?\n\nCurrent layout: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
+  'settings.confirmCopyFromLayout.confirm': 'Copy',
+  'settings.defaultDrawerWidth': 'Width',
+  'settings.defaultDrawerDepth': 'Depth',
+  'settings.defaultDrawerHeight': 'Height',
+  'settings.defaultLayerHeight': 'Bin Height',
+  'settings.defaultPrintBedSize': 'Print Bed',
+  'settings.defaultGridUnit': 'Grid Unit',
+  'settings.resetGeneral': 'Language reset to auto',
+  'settings.copiedFromLayout': 'Defaults copied from current layout',
+  'settings.resetDefaults': 'Default dimensions reset',
+  'settings.resetIntegrations': 'Search sites restored',
+  'settings.resetPrivacy': 'Analytics re-enabled',
+  'settings.confirmResetPrivacy': 'This will re-enable anonymous analytics. Continue?',
+  'settings.confirmResetAll': 'Reset all settings to their defaults? This cannot be undone.',
+  'settings.resetAllConfirmed': 'All settings reset',
+
   // ===========================================================================
   // Help
   // ===========================================================================
@@ -888,6 +915,7 @@ const en: Record<string, string> = {
   'mobile.settings.toggleUsageDataCollection': 'Toggle usage data collection',
   'mobile.settings.toolBy': 'Tool by ',
   'mobile.settings.tryExperimentalFeatures': 'Try experimental features',
+  'mobile.settings.openAppSettings': 'Language, defaults, privacy & more',
   'mobile.toolbar.defaultLayer': 'Default layer',
 
   // ===========================================================================

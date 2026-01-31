@@ -1,11 +1,6 @@
-import { useMemo } from 'react';
+import { useState, Suspense } from 'react';
 // Import stores directly to avoid circular dependency via barrel export
-import { useSettingsStore } from '@/core/store/settings';
-import { useLabsStore } from '@/core/store/labs';
-import { getFeature } from '@/core/labs';
-import { useShallow } from 'zustand/shallow';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
-import { SparklesIcon, ChevronRightIcon } from '@/features/labs/components/icons';
 import { CONSTRAINTS } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '@/components/Modals';
@@ -14,72 +9,26 @@ import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
-import type { STLSearchSite } from '@/core/store/settings';
+import { LoadingFallback } from '@/shared/components/LoadingFallback';
+import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
-import { optInAnalytics, optOutAnalytics } from '@/shared/analytics/posthog';
+import type { SettingsTabId } from '@/components/Modals/SettingsModal/types';
+
+// Lazy load SettingsModal — only loaded when user taps the button
+const SettingsModal = lazyWithRetry(() =>
+  import('@/components/Modals/SettingsModal').then(namedExport('SettingsModal'))
+);
 
 /**
- * Privacy settings section for mobile.
- */
-function MobilePrivacySection() {
-  const t = useTranslation();
-  const { analyticsEnabled, updateSetting } = useSettingsStore(
-    useShallow((state) => ({
-      analyticsEnabled: state.settings.analyticsEnabled,
-      updateSetting: state.updateSetting,
-    }))
-  );
-
-  const handleToggle = () => {
-    const newValue = !analyticsEnabled;
-    updateSetting('analyticsEnabled', newValue);
-    // Apply the change to PostHog immediately
-    if (newValue) {
-      optInAnalytics();
-    } else {
-      optOutAnalytics();
-    }
-  };
-
-  return (
-    <section>
-      <SectionHeader title={t('settings.privacy')} />
-      <div
-        className="flex items-center justify-between py-2 cursor-pointer"
-        onClick={handleToggle}
-        role="checkbox"
-        aria-checked={analyticsEnabled}
-        aria-label={t('mobile.settings.toggleUsageDataCollection')}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            handleToggle();
-          }
-        }}
-      >
-        <div>
-          <span
-            className={`text-sm ${analyticsEnabled ? 'text-content' : 'text-content-secondary'}`}
-          >
-            {t('mobile.settings.helpImproveSuggestions')}
-          </span>
-          <p className="text-xs text-content-tertiary">
-            {t('mobile.settings.shareBinSizesAndPlacementPatternsNo')}
-          </p>
-        </div>
-        <Checkbox checked={analyticsEnabled} variant="mobile" />
-      </div>
-    </section>
-  );
-}
-
-/**
- * Mobile settings panel with grid configuration and app actions.
+ * Mobile settings panel with per-layout drawer/grid controls.
+ * App-wide settings (privacy, STL search, labs, defaults) are in the unified SettingsModal.
  */
 export function MobileSettingsPanel() {
   const t = useTranslation();
-  // Use consolidated drawer settings hook
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsTabId | undefined>(
+    undefined
+  );
   const {
     drawer,
     widthStep,
@@ -90,7 +39,6 @@ export function MobileSettingsPanel() {
     heightUnitMm,
     printBedSize,
     halfBinMode,
-    settings,
     activeLayerHeight,
     handleDrawerWidthChange,
     handleDrawerDepthChange,
@@ -103,7 +51,6 @@ export function MobileSettingsPanel() {
     setGridUnitMm,
     setHeightUnitMm,
     setPrintBedSize,
-    toggleSTLSite,
     showSaveDefaultsConfirm,
     setShowSaveDefaultsConfirm,
     showHalfBinBlockedModal,
@@ -111,17 +58,10 @@ export function MobileSettingsPanel() {
     halfBinViolation,
   } = useDrawerSettings();
 
-  const openLabsDrawer = useLabsStore((state) => state.openDrawer);
-  const enabledFeatures = useLabsStore((state) => state.preferences.enabledFeatures);
-
-  // Compute enabled count from raw state (only experimental/preview features)
-  const labsEnabledCount = useMemo(() => {
-    return Object.entries(enabledFeatures).filter(([id, enabled]) => {
-      if (!enabled) return false;
-      const feature = getFeature(id);
-      return feature?.status === 'experimental' || feature?.status === 'preview';
-    }).length;
-  }, [enabledFeatures]);
+  const openSettingsModal = (tab?: SettingsTabId) => {
+    setSettingsInitialTab(tab);
+    setShowSettingsModal(true);
+  };
 
   return (
     <div className="pb-4 space-y-6">
@@ -268,106 +208,46 @@ export function MobileSettingsPanel() {
         </div>
       </section>
 
-      {/* STL Search */}
+      {/* App Settings Link */}
       <section>
-        <SectionHeader title={t('settings.stlSearch')} />
-        <div className="space-y-2">
-          {settings.stlSearchSites.map((site: STLSearchSite) => (
-            <div
-              key={site.id}
-              className="flex items-center justify-between py-2 cursor-pointer"
-              onClick={() => toggleSTLSite(site.id)}
-              role="checkbox"
-              aria-checked={site.enabled}
-              aria-label={`Toggle ${site.name}`}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === ' ' || e.key === 'Enter') {
-                  e.preventDefault();
-                  toggleSTLSite(site.id);
-                }
-              }}
-            >
-              <span
-                className={`text-sm ${site.enabled ? 'text-content' : 'text-content-tertiary'}`}
-              >
-                {site.name}
-              </span>
-              <Checkbox checked={site.enabled} variant="mobile" />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Preferences */}
-      <section>
-        <SectionHeader title={t('settings.defaultPreferences')} />
-
-        <div className="bg-surface-elevated rounded-lg p-3 space-y-2">
-          <div className="text-xs text-content-tertiary">
-            {t('mobile.settings.newLayoutsWillUseTheseDefaults')}
-          </div>
-          <div className="text-sm text-content-secondary">
-            {t('mobile.settings.drawer')}
-            {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×
-            {settings.defaultDrawerHeight}u
-          </div>
-          <div className="text-sm text-content-secondary">
-            {t('mobile.settings.layerHeight')}
-            {settings.defaultLayerHeight}u
-          </div>
-          <div className="text-sm text-content-secondary">
-            {t('mobile.settings.printBed')}
-            {settings.defaultPrintBedSize}mm
-          </div>
-          <div className="text-sm text-content-secondary">
-            {t('mobile.settings.gridUnit')}
-            {settings.defaultGridUnitMm}mm
-          </div>
-          <button
-            onClick={() => setShowSaveDefaultsConfirm(true)}
-            className="btn btn-secondary w-full mt-3"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-              />
-            </svg>
-            {t('mobile.settings.saveCurrentAsDefaults')}
-          </button>
-        </div>
-      </section>
-
-      {/* Privacy */}
-      <MobilePrivacySection />
-
-      {/* Labs */}
-      <section>
-        <SectionHeader title={t('settings.experimental')} />
         <button
-          onClick={openLabsDrawer}
+          onClick={() => openSettingsModal()}
           className="w-full flex items-center justify-between px-4 py-3 bg-surface-elevated rounded-lg hover:bg-surface-hover transition-colors"
         >
           <div className="flex items-center gap-3">
-            <SparklesIcon className="w-5 h-5 text-accent" />
+            <svg
+              className="w-5 h-5 text-content-tertiary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
             <div className="text-left">
-              <div className="text-sm font-medium text-content">{t('mobile.settings.labs')}</div>
+              <div className="text-sm font-medium text-content">{t('settings.title')}</div>
               <div className="text-xs text-content-tertiary">
-                {t('mobile.settings.tryExperimentalFeatures')}
+                {t('mobile.settings.openAppSettings')}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {labsEnabledCount > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-on-dark bg-accent rounded-full">
-                {labsEnabledCount > 9 ? t('common.overflowCount') : labsEnabledCount}
-              </span>
-            )}
-            <ChevronRightIcon className="w-5 h-5 text-content-tertiary" />
-          </div>
+          <svg
+            className="w-5 h-5 text-content-tertiary"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </button>
       </section>
 
@@ -423,6 +303,20 @@ export function MobileSettingsPanel() {
           </a>
         </div>
       </section>
+
+      {/* Settings Modal — rendered locally so it works on mobile (Sidebar not mounted) */}
+      {showSettingsModal && (
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('settings.title')} />}>
+          <SettingsModal
+            isOpen={showSettingsModal}
+            onClose={() => {
+              setShowSettingsModal(false);
+              setSettingsInitialTab(undefined);
+            }}
+            initialTab={settingsInitialTab}
+          />
+        </Suspense>
+      )}
 
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}

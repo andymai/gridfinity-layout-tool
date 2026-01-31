@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '@/core/store';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
+import type { SettingsTabId } from '@/components/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
@@ -38,6 +39,9 @@ export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsTabId | undefined>(
+    undefined
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
 
@@ -86,9 +90,13 @@ export function Sidebar() {
   // Onboarding — sidebar gallery pulse for low-engagement users
   const { shouldPulseGallery, dismissGalleryPulse } = useOnboarding();
 
-  // Listen for command palette open-settings-modal event
+  // Listen for command palette open-settings-modal event (supports optional tab)
   useEffect(() => {
-    const handleOpenSettings = () => setShowSettingsModal(true);
+    const handleOpenSettings = (e: Event) => {
+      const detail = (e as CustomEvent<{ tab?: SettingsTabId }>).detail;
+      setSettingsInitialTab(detail?.tab);
+      setShowSettingsModal(true);
+    };
     window.addEventListener('open-settings-modal', handleOpenSettings);
     return () => window.removeEventListener('open-settings-modal', handleOpenSettings);
   }, []);
@@ -540,7 +548,14 @@ export function Sidebar() {
 
       {showSettingsModal && (
         <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.settings')} />}>
-          <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+          <SettingsModal
+            isOpen={showSettingsModal}
+            onClose={() => {
+              setShowSettingsModal(false);
+              setSettingsInitialTab(undefined);
+            }}
+            initialTab={settingsInitialTab}
+          />
         </Suspense>
       )}
     </aside>
