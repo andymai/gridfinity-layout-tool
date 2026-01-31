@@ -119,30 +119,6 @@ export function LabelTabsIcon() {
   );
 }
 
-/** Removable divider pieces with edge tabs */
-export function DividersIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {/* Bin walls */}
-      <rect x="2" y="3" width="12" height="10" rx="0.5" />
-      {/* Vertical divider with tabs */}
-      <line x1="8" y1="3" x2="8" y2="13" strokeDasharray="2 1" />
-      {/* Tab notches on walls */}
-      <line x1="2" y1="7" x2="3.5" y2="7" />
-      <line x1="12.5" y1="7" x2="14" y2="7" />
-    </svg>
-  );
-}
-
 /** Circle cut into bin floor representing inserts */
 export function InsertsIcon() {
   return (

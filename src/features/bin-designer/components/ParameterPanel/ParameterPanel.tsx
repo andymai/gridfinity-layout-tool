@@ -16,7 +16,6 @@
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { BaseSection } from '../panel/BaseSection';
 import { InteriorSection } from '../panel/InteriorSection';
-import { DividersSection } from '../panel/DividersSection/DividersSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
@@ -39,9 +38,6 @@ export function ParameterPanel() {
         </div>
         <div className="px-4 py-4 border-b border-stroke-subtle">
           <InteriorSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <DividersSection />
         </div>
         <div className="px-4 py-4 border-b border-stroke-subtle">
           <BaseSection />
