@@ -87,24 +87,27 @@ export function SlotConfigurator() {
 
   return (
     <div className="space-y-3">
-      {/* Direction toggle */}
-      <div className="flex gap-1">
-        {directions.map((direction) => (
-          <button
-            key={direction}
-            type="button"
-            onClick={() => setDirection(direction)}
-            className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-              activeDirection === direction
-                ? 'bg-accent text-white'
-                : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-            }`}
-          >
-            {direction === 'vertical'
-              ? t('binDesigner.slotVertical')
-              : t('binDesigner.slotHorizontal')}
-          </button>
-        ))}
+      {/* Direction toggle (compact inline) */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-content-tertiary">{t('binDesigner.slotDirection')}</span>
+        <div className="flex gap-0.5">
+          {directions.map((direction) => (
+            <button
+              key={direction}
+              type="button"
+              onClick={() => setDirection(direction)}
+              className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                activeDirection === direction
+                  ? 'bg-accent text-white'
+                  : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+              }`}
+            >
+              {direction === 'vertical'
+                ? t('binDesigner.slotVertical')
+                : t('binDesigner.slotHorizontal')}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Slot count summary */}

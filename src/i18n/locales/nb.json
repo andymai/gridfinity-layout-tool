@@ -135,6 +135,7 @@
   "binDesigner.slotCount": "{count} divider slots",
   "binDesigner.slotHorizontal": "Horizontal",
   "binDesigner.slotSpacing": "Spacing",
+  "binDesigner.slotDirection": "Direction",
   "binDesigner.slotVertical": "Vertical",
   "binDesigner.slottedInteriorSummary": "Removable dividers",
   "binDesigner.soon": "Snart",

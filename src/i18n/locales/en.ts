@@ -1167,6 +1167,7 @@ const en: Record<string, string> = {
   'binDesigner.interiorFixed': 'Fixed',
   'binDesigner.interiorRemovable': 'Removable',
   'binDesigner.slottedInteriorSummary': 'Removable dividers',
+  'binDesigner.slotDirection': 'Direction',
   'binDesigner.slotVertical': 'Vertical',
   'binDesigner.slotHorizontal': 'Horizontal',
   'binDesigner.slotSpacing': 'Spacing',
