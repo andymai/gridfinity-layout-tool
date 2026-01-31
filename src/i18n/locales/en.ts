@@ -20,9 +20,6 @@ const en: Record<string, string> = {
   'seo.title': 'Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers',
   'seo.description':
     'Plan and visualize Gridfinity drawer layouts for 3D printing. Custom bins, multi-layer support, and 3D preview.',
-  'seo.layoutTitle': '{name} | Gridfinity Layout Tool',
-  'seo.layoutDescription':
-    '{width}×{depth} Gridfinity drawer layout with {binCount} bins across {layerCount} layers.',
 
   // ===========================================================================
   // Common / Shared

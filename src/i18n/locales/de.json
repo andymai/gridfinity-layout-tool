@@ -1138,8 +1138,6 @@
   "rightPanel.splitInto": "Teilen in",
   "rightPanel.unknownCategory": "Unbekannte Kategorie",
   "seo.description": "Plane und visualisiere Gridfinity Schubladen-Layouts für den 3D-Druck. Individuelle Bins, Multi-Layer und 3D-Vorschau.",
-  "seo.layoutDescription": "{width}×{depth} Gridfinity Schubladen-Layout mit {binCount} Bins auf {layerCount} Layern.",
-  "seo.layoutTitle": "{name} | Gridfinity Layout Tool",
   "seo.title": "Gridfinity Layout Tool | Plane deine 3D-gedruckten Schubladen-Organizer",
   "settings.autoDetect": "Auto (Browser-Standard)",
   "settings.confirmCopyFromLayout.confirm": "Kopieren",

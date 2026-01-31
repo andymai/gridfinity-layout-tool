@@ -1138,8 +1138,6 @@
   "rightPanel.splitInto": "Dividir em",
   "rightPanel.unknownCategory": "Categoria desconhecida",
   "seo.description": "Planeje e visualize layouts de gavetas Gridfinity para impressão 3D. Bins personalizados, suporte multicamadas e prévia 3D.",
-  "seo.layoutDescription": "{width}×{depth} layout de gaveta Gridfinity com {binCount} bins em {layerCount} camadas.",
-  "seo.layoutTitle": "{name} | Gridfinity Layout Tool",
   "seo.title": "Gridfinity Layout Tool | Planeje seus organizadores de gavetas impressos em 3D",
   "settings.autoDetect": "Automático (padrão do navegador)",
   "settings.confirmCopyFromLayout.confirm": "Copiar",
