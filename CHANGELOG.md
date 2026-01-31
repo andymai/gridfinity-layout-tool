@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.6.0...gridfinity-layout-tool-v2.7.0) (2026-01-31)
+
+
+### Features
+
+* redesign Settings Modal with tabbed navigation ([#530](https://github.com/andymai/gridfinity-layout-tool/issues/530)) ([2a98a33](https://github.com/andymai/gridfinity-layout-tool/commit/2a98a333ec7bee54ab2193078bfc8830673ba911))
+
 ## [2.6.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.5.0...gridfinity-layout-tool-v2.6.0) (2026-01-31)
 
 
