@@ -12,7 +12,6 @@ import {
   useFormatting,
   getStaticTranslation,
 } from '@/i18n/context';
-import en from '@/i18n/locales/en';
 
 describe('getStaticTranslation', () => {
   it('returns translated string for valid key', () => {
@@ -549,33 +548,14 @@ describe('LocaleProvider document updates', () => {
   beforeEach(() => {
     // Mock document structure for testing
     document.documentElement.lang = 'en';
-    document.title = '';
 
-    const metaTags = [
-      { name: 'description' },
-      { property: 'og:locale' },
-      { property: 'og:title' },
-      { property: 'og:description' },
-      { name: 'twitter:title' },
-      { name: 'twitter:description' },
-    ];
-
-    metaTags.forEach((tag) => {
-      const existing = tag.name
-        ? document.querySelector(`meta[name="${tag.name}"]`)
-        : document.querySelector(`meta[property="${tag.property}"]`);
-
-      if (!existing) {
-        const meta = document.createElement('meta');
-        if (tag.name) {
-          meta.setAttribute('name', tag.name);
-        } else if (tag.property) {
-          meta.setAttribute('property', tag.property);
-        }
-        meta.setAttribute('content', '');
-        document.head.appendChild(meta);
-      }
-    });
+    // Ensure og:locale meta tag exists
+    if (!document.querySelector('meta[property="og:locale"]')) {
+      const meta = document.createElement('meta');
+      meta.setAttribute('property', 'og:locale');
+      meta.setAttribute('content', '');
+      document.head.appendChild(meta);
+    }
   });
 
   it('updates document lang attribute', () => {
@@ -588,27 +568,6 @@ describe('LocaleProvider document updates', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
-  it('updates document title with SEO title', () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    expect(document.title).toBe(en['seo.title']);
-  });
-
-  it('updates meta description', () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    const meta = document.querySelector('meta[name="description"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.description']);
-  });
-
   it('updates OG locale meta tag', () => {
     render(
       <LocaleProvider initialLocale="en">
@@ -618,49 +577,5 @@ describe('LocaleProvider document updates', () => {
 
     const meta = document.querySelector('meta[property="og:locale"]');
     expect(meta?.getAttribute('content')).toBe('en_US');
-  });
-
-  it('updates OG title meta tag', () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    const meta = document.querySelector('meta[property="og:title"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.title']);
-  });
-
-  it('updates OG description meta tag', () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    const meta = document.querySelector('meta[property="og:description"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.description']);
-  });
-
-  it('updates Twitter title meta tag', () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    const meta = document.querySelector('meta[name="twitter:title"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.title']);
-  });
-
-  it('updates Twitter description meta tag', () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    const meta = document.querySelector('meta[name="twitter:description"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.description']);
   });
 });

@@ -176,31 +176,16 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     [loadLocale, onLocaleChange]
   );
 
-  // Sync SEO meta tags when locale/translations change
+  // Sync locale-dependent document attributes (lang + OG locale).
+  // Title, description, OG, and Twitter tags are managed by useDocumentMeta.
   useEffect(() => {
     if (isLoading || typeof document === 'undefined') return;
 
-    // HTML lang attribute (screen readers, SEO)
     document.documentElement.lang = locale;
-
-    // Page title and meta description
-    const seoTitle = translations['seo.title'] ?? en['seo.title'];
-    const seoDesc = translations['seo.description'] ?? en['seo.description'];
-
-    document.title = seoTitle;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', seoDesc);
-
-    // Open Graph tags
     document
       .querySelector('meta[property="og:locale"]')
       ?.setAttribute('content', OG_LOCALE_MAP[locale]);
-    document.querySelector('meta[property="og:title"]')?.setAttribute('content', seoTitle);
-    document.querySelector('meta[property="og:description"]')?.setAttribute('content', seoDesc);
-
-    // Twitter Card tags
-    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', seoTitle);
-    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', seoDesc);
-  }, [locale, translations, isLoading]);
+  }, [locale, isLoading]);
 
   const t: TFunction = useCallback(
     (key: string, vars?: TranslationVars): string => {
