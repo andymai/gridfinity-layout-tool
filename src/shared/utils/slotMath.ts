@@ -83,7 +83,8 @@ export function calculateDividerHeight(
  *
  * @param innerDim Interior dimension in mm (wall-to-wall)
  * @param slotDepth How deep the slot is cut into the wall (mm)
- * @param clearance Fit tolerance for slot width (mm) — also subtracted from tab length
+ * @param clearance Fit tolerance for slot width (mm). Both this clearance and
+ *   DIVIDER_LENGTH_CLEARANCE are subtracted when computing tab engagement depth.
  */
 export function calculateDividerLength(
   innerDim: number,
