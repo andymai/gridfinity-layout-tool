@@ -13,6 +13,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { calculateSlotPositions } from '@/shared/utils/slotMath';
 import { useTranslation } from '@/i18n';
 
 type SlotDirection = 'vertical' | 'horizontal';
@@ -40,8 +41,10 @@ export function SlotConfigurator() {
   const activePitch = slotConfig[activeAxis].pitch;
   const activeInnerDim = activeAxis === 'x' ? innerD : innerW;
 
+  // Derive count from the same function used by geometry builders so the
+  // displayed count always matches the actual number of generated slots.
   const slotCount = useMemo(() => {
-    return Math.floor(activeInnerDim / activePitch);
+    return calculateSlotPositions(activeInnerDim, activePitch).length;
   }, [activeInnerDim, activePitch]);
 
   const setDirection = useCallback(

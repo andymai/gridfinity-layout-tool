@@ -183,11 +183,7 @@ export function migrateParams(
     }
   }
 
-  // Migrate legacy bin styles ('lite' and 'solid') to 'standard'
-  let style = params.style ?? DEFAULT_BIN_PARAMS.style;
-  if (style === ('lite' as string) || style === ('solid' as string)) {
-    style = 'standard';
-  }
+  const style = params.style ?? DEFAULT_BIN_PARAMS.style;
 
   // Backfill slot config and divider pieces
   const slotConfig: SlotConfig = {

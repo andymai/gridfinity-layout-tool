@@ -79,8 +79,11 @@ export function GhostDividerPieces() {
   }, []);
 
   // ── Ghost linger: show in-bin ghosts briefly after param changes ──────
-  // The geometry useMemo returns a new object ref on every param change.
-  // We track which geometry ref has been "timed out" to hide the ghost.
+  // The geometry useMemo returns a new object ref when any dependency changes,
+  // and a *stable* ref when deps are unchanged (React memoization guarantee).
+  // We track which geometry ref has been "timed out" — comparing by reference
+  // identity (===) is intentional and reliable here because useMemo creates
+  // exactly one BufferGeometry per unique set of inputs.
   const [hiddenGeometry, setHiddenGeometry] = useState<THREE.BufferGeometry | null>(null);
   const lingerTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 

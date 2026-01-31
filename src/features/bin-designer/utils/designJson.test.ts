@@ -305,9 +305,6 @@ describe('validateBinParams', () => {
   it('should accept valid style values', () => {
     expect(validateBinParams({ ...DEFAULT_BIN_PARAMS, style: 'standard' }).valid).toBe(true);
     expect(validateBinParams({ ...DEFAULT_BIN_PARAMS, style: 'slotted' }).valid).toBe(true);
-    // Legacy styles still accepted by validation (migrated at load time)
-    expect(validateBinParams({ ...DEFAULT_BIN_PARAMS, style: 'lite' }).valid).toBe(true);
-    expect(validateBinParams({ ...DEFAULT_BIN_PARAMS, style: 'solid' }).valid).toBe(true);
   });
 
   it('should validate compartments structure', () => {

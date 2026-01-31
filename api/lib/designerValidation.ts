@@ -6,7 +6,7 @@
  */
 
 // Type-safe enum validation
-const VALID_BIN_STYLES = ['standard', 'lite', 'solid'] as const;
+const VALID_BIN_STYLES = ['standard', 'slotted'] as const;
 const VALID_BASE_STYLES = ['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted'] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;

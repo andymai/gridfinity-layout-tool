@@ -251,10 +251,7 @@ export function validateBinParams(params: unknown): ValidateBinParamsResult {
   }
 
   // Validate style
-  if (
-    typeof p.style !== 'string' ||
-    !['standard', 'slotted', 'lite', 'solid'].includes(p.style as string)
-  ) {
+  if (typeof p.style !== 'string' || !['standard', 'slotted'].includes(p.style as string)) {
     errors.push('style must be one of: standard, slotted');
   }
 
