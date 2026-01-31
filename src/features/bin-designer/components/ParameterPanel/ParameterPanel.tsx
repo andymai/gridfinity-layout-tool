@@ -1,50 +1,79 @@
 /**
  * Parameter panel for the bin designer.
  *
- * Scrollable container composing collapsible sections for all bin parameters.
- * Sections are independently subscribed to the store for minimal re-renders.
+ * Scrollable container composing collapsible sections for all bin parameters,
+ * organized into three groups: Shape, Interior, and Base.
  *
- * Layout:
- * - Dimensions (expanded) — Width, Depth, Height
- * - Walls (expanded) — Wall thickness
- * - Interior (expanded) — Compartments
- * - Label Tabs — Shelf tabs on back wall
- * - Base (expanded) — Magnets, Screws, Stacking lip
- * - Physical Units — Grid unit size (mm)
+ * Groups:
+ * - Shape: Dimensions, Walls
+ * - Interior: Interior Dividers (lazy), Label Tabs
+ * - Base: Base attachments, Physical Units
  */
 
+import { Suspense, lazy } from 'react';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { BaseSection } from '../panel/BaseSection';
-import { InteriorSection } from '../panel/InteriorSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
+import { SectionGroup } from '../panel/SectionGroup';
+import { useShapeGroupSummary } from './useShapeGroupSummary';
+import { useInteriorGroupSummary } from './useInteriorGroupSummary';
+import { useBaseGroupSummary } from './useBaseGroupSummary';
 import { useTranslation } from '@/i18n';
+
+const LazyInteriorSection = lazy(() =>
+  import('../panel/InteriorSection').then((m) => ({ default: m.InteriorSection }))
+);
+
+function InteriorFallback() {
+  return <div className="px-4 py-6 text-xs text-content-tertiary animate-pulse">Loading...</div>;
+}
 
 export function ParameterPanel() {
   const t = useTranslation();
+  const shapeSummary = useShapeGroupSummary();
+  const interiorSummary = useInteriorGroupSummary();
+  const baseSummary = useBaseGroupSummary();
 
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <DimensionsSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <WallsSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <LabelTabsSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <InteriorSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <BaseSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <PhysicalUnitsSection />
-        </div>
+        {/* Shape group */}
+        <SectionGroup title={t('binDesigner.group.shape')} defaultExpanded summary={shapeSummary}>
+          <div className="px-4 py-4 border-b border-stroke-subtle/50">
+            <DimensionsSection />
+          </div>
+          <div className="px-4 py-4">
+            <WallsSection />
+          </div>
+        </SectionGroup>
+
+        {/* Interior group */}
+        <SectionGroup
+          title={t('binDesigner.group.interior')}
+          defaultExpanded
+          summary={interiorSummary}
+        >
+          <div className="px-4 py-4 border-b border-stroke-subtle/50">
+            <Suspense fallback={<InteriorFallback />}>
+              <LazyInteriorSection />
+            </Suspense>
+          </div>
+          <div className="px-4 py-4">
+            <LabelTabsSection />
+          </div>
+        </SectionGroup>
+
+        {/* Base group */}
+        <SectionGroup title={t('binDesigner.group.base')} defaultExpanded summary={baseSummary}>
+          <div className="px-4 py-4 border-b border-stroke-subtle/50">
+            <BaseSection />
+          </div>
+          <div className="px-4 py-4">
+            <PhysicalUnitsSection />
+          </div>
+        </SectionGroup>
 
         {/* Attribution */}
         <div className="px-4 py-4 text-content-disabled text-[10px] leading-relaxed">
