@@ -47,7 +47,7 @@
     "check:component-structure": "./scripts/check-component-structure.sh",
     "knip": "knip",
     "knip:fix": "knip --fix",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b --noEmit",
     "quality": "npm run typecheck && npm run lint && npm run knip"
   },
   "size-limit": [
