@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.5.0...gridfinity-layout-tool-v2.6.0) (2026-01-31)
+
+
+### Features
+
+* add label tab style choice (bracket/solid) and redesign panel ([#531](https://github.com/andymai/gridfinity-layout-tool/issues/531)) ([2d8aa6d](https://github.com/andymai/gridfinity-layout-tool/commit/2d8aa6d09b5a86fab594fa290d59c231ecc50475))
+
 ## [2.5.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.4.0...gridfinity-layout-tool-v2.5.0) (2026-01-30)
 
 
