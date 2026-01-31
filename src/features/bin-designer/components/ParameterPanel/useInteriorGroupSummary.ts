@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { getCompartmentCount } from '../../utils/compartments';
@@ -14,15 +15,17 @@ export function useInteriorGroupSummary(): string {
   );
   const t = useTranslation();
 
-  const isSlotted = style === 'slotted';
-  const interiorPart = isSlotted
-    ? t('binDesigner.slottedInteriorSummary')
-    : t('binDesigner.interiorSummary', { count: getCompartmentCount(compartments) });
+  return useMemo(() => {
+    const isSlotted = style === 'slotted';
+    const interiorPart = isSlotted
+      ? t('binDesigner.slottedInteriorSummary')
+      : t('binDesigner.interiorSummary', { count: getCompartmentCount(compartments) });
 
-  const parts = [interiorPart];
-  if (label.enabled && !isSlotted) {
-    parts.push(t('binDesigner.labelTabs'));
-  }
+    const parts = [interiorPart];
+    if (label.enabled && !isSlotted) {
+      parts.push(t('binDesigner.labelTabs'));
+    }
 
-  return parts.join(' \u00b7 ');
+    return parts.join(' \u00b7 ');
+  }, [compartments, style, label.enabled, t]);
 }

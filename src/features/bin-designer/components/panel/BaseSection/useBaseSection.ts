@@ -59,14 +59,15 @@ export function useBaseSection() {
     [updateBase]
   );
 
-  const summaryParts: string[] = [];
-  if (hasMagnet) summaryParts.push(`${base.magnetDiameter}mm magnets`);
-  if (hasScrew) summaryParts.push(`M${base.screwDiameter} screws`);
-  if (base.stackingLip) summaryParts.push('Lip');
-  const summary =
-    summaryParts.length > 0 ? summaryParts.join(' \u2022 ') : 'Standard (no attachment)';
-
-  const meta: SectionMeta = useMemo(() => ({ summary }), [summary]);
+  const meta: SectionMeta = useMemo(() => {
+    const summaryParts: string[] = [];
+    if (hasMagnet) summaryParts.push(`${base.magnetDiameter}mm magnets`);
+    if (hasScrew) summaryParts.push(`M${base.screwDiameter} screws`);
+    if (base.stackingLip) summaryParts.push('Lip');
+    const summary =
+      summaryParts.length > 0 ? summaryParts.join(' \u2022 ') : 'Standard (no attachment)';
+    return { summary };
+  }, [hasMagnet, hasScrew, base.magnetDiameter, base.screwDiameter, base.stackingLip]);
 
   return {
     state: { base, hasMagnet, hasScrew },

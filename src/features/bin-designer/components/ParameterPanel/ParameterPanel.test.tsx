@@ -25,8 +25,8 @@ describe('ParameterPanel', () => {
 
     expect(screen.getByText('Shape')).toBeInTheDocument();
     expect(screen.getByText('Interior')).toBeInTheDocument();
-    // "Base" appears as both a group header and a section header
-    expect(screen.getAllByText('Base').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('Base')).toBeInTheDocument();
+    expect(screen.getByText('Mounting')).toBeInTheDocument();
   });
 
   it('renders section headers', () => {
@@ -325,17 +325,11 @@ describe('ParameterPanel', () => {
 
       const shapeBtn = screen.getByText('Shape').closest('button');
       const interiorBtn = screen.getByText('Interior').closest('button');
-      // Base group — get the group-level button (uppercase text)
-      const baseBtns = screen.getAllByText('Base');
-      const baseGroupBtn = baseBtns
-        .find((el) => el.closest('button')?.querySelector('.uppercase'))
-        ?.closest('button');
+      const baseGroupBtn = screen.getByText('Base').closest('button');
 
       expect(shapeBtn).toHaveAttribute('aria-expanded', 'true');
       expect(interiorBtn).toHaveAttribute('aria-expanded', 'true');
-      if (baseGroupBtn) {
-        expect(baseGroupBtn).toHaveAttribute('aria-expanded', 'true');
-      }
+      expect(baseGroupBtn).toHaveAttribute('aria-expanded', 'true');
     });
   });
 });
