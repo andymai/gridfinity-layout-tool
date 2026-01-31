@@ -16,7 +16,13 @@ import {
   useTabletPanels,
   useKeyboard,
 } from './hooks';
-import { useAutoSave, useResponsive, useCrossTabSync, usePWAUpdate } from './shared/hooks';
+import {
+  useAutoSave,
+  useResponsive,
+  useCrossTabSync,
+  usePWAUpdate,
+  usePrefetchChunks,
+} from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
 import { initializeLayoutLibrary, loadSharedWithMe, downloadLayoutAsFile } from '@/core/storage';
@@ -245,6 +251,9 @@ export default function App() {
 
   // Storage migration (localStorage → IndexedDB)
   useStorageMigration();
+
+  // Prefetch lazy-loaded chunks during idle time (desktop only)
+  usePrefetchChunks();
 
   // Only fade in on initial app load, not when switching between tools
   const entranceClass = hasRenderedInitialLayout ? '' : 'animate-fade-in';
