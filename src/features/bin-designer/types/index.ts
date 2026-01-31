@@ -328,10 +328,6 @@ export interface DesignerState {
   // Scoped updaters (merge partial into nested config, push history)
   updateBase: (partial: Partial<BaseConfig>) => void;
   updateLabel: (partial: Partial<LabelTabConfig>) => void;
-  updateScoop: (partial: Partial<ScoopConfig>) => void;
-  updateWalls: (partial: Partial<WallConfig>) => void;
-  updateSlotConfig: (partial: Partial<SlotConfig>) => void;
-  updateDividerPieces: (partial: Partial<DividerPieceConfig>) => void;
 
   // History actions
   undo: () => void;

@@ -799,7 +799,7 @@ describe('RightPanel', () => {
     it('does not show shadow initially', () => {
       const { container } = render(<RightPanel />);
 
-      const header = container.querySelector('[class*="flex items-center gap-3 px-4 py-3"]');
+      const header = container.querySelector('[class*="flex items-center gap-3 px-4 py-2"]');
       expect(header).not.toHaveClass('shadow-[0_2px_8px_rgba(0,0,0,0.5)]');
     });
 
@@ -813,7 +813,7 @@ describe('RightPanel', () => {
       }
 
       // Check that isScrolled state was updated - the header should have shadow class
-      const header = container.querySelector('[class*="flex items-center gap-3 px-4 py-3"]');
+      const header = container.querySelector('[class*="flex items-center gap-3 px-4 py-2"]');
       expect(header?.className).toContain('shadow');
     });
   });

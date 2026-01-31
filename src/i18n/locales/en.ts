@@ -142,7 +142,6 @@ const en: Record<string, string> = {
   'toolbar.toApply': 'to apply',
   'toolbar.exitResizeMode': 'Exit resize mode',
   'toolbar.exitResizeModeEsc': 'Exit resize mode (Esc)',
-  'toolbar.labels': 'Labels',
   'toolbar.showLayersBelow': 'Show layers below',
   'toolbar.zoomControls': 'Zoom controls',
   'toolbar.zoomOut': 'Zoom out',
@@ -1546,7 +1545,6 @@ const en: Record<string, string> = {
   'commandPalette.zoomIn': 'Zoom In',
   'commandPalette.zoomOut': 'Zoom Out',
   'commandPalette.fitToScreen': 'Fit to Screen',
-  'commandPalette.toggleLabels': 'Toggle Labels',
   'commandPalette.toggleOtherLayers': 'Toggle Other Layers',
 
   // 3D Preview commands

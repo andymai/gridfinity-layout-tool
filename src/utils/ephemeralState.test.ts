@@ -44,7 +44,6 @@ describe('ephemeralState', () => {
     focusedBinId: 'bin-1',
     zoom: 1.5,
     showOtherLayers: true,
-    showLabels: false,
     leftPanelCollapsed: false,
     rightPanelCollapsed: true,
     showIsometricPreview: true,
@@ -102,7 +101,6 @@ describe('ephemeralState', () => {
       expect(savedData).toHaveProperty('focusedBinId');
       expect(savedData).toHaveProperty('zoom');
       expect(savedData).toHaveProperty('showOtherLayers');
-      expect(savedData).toHaveProperty('showLabels');
       expect(savedData).toHaveProperty('leftPanelCollapsed');
       expect(savedData).toHaveProperty('rightPanelCollapsed');
       expect(savedData).toHaveProperty('showIsometricPreview');
@@ -250,7 +248,6 @@ describe('ephemeralState', () => {
       expect(loaded?.focusedBinId).toBe(null);
       expect(loaded?.zoom).toBe(stateWithNulls.zoom);
       expect(loaded?.showOtherLayers).toBe(stateWithNulls.showOtherLayers);
-      expect(loaded?.showLabels).toBe(stateWithNulls.showLabels);
       expect(loaded?.leftPanelCollapsed).toBe(stateWithNulls.leftPanelCollapsed);
       expect(loaded?.rightPanelCollapsed).toBe(stateWithNulls.rightPanelCollapsed);
       expect(loaded?.showIsometricPreview).toBe(stateWithNulls.showIsometricPreview);

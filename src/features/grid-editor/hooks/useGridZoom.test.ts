@@ -21,7 +21,6 @@ describe('useGridZoom', () => {
     useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
-      showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,

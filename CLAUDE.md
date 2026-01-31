@@ -115,7 +115,7 @@ Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`.
 - **Unit:** Vitest + jsdom. Use `createTestLayout()` from `@/test/testUtils`
 - **E2E:** Playwright in `e2e/`. `npm run test:e2e`
 - **Infrastructure (`src/test/`):** `setup.ts`, `testUtils.ts`, `mocks/` — shared test utilities (stays centralized)
-- Pre-commit warns if edited source file has no sibling test (non-blocking)
+- Pre-commit **blocks** if edited component file has no sibling test
 - Run `npm run test:coverage` before commit
 
 ## Scripts
