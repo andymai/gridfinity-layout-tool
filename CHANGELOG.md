@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.14.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.13.1...gridfinity-layout-tool-v2.14.0) (2026-01-31)
+
+
+### Features
+
+* **seo:** dynamic meta tags + server-side bot OG injection ([#559](https://github.com/andymai/gridfinity-layout-tool/issues/559)) ([f765bdb](https://github.com/andymai/gridfinity-layout-tool/commit/f765bdb5f6e59b41472df350ebb8ec59a25b6cd1))
+
 ## [2.13.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.13.0...gridfinity-layout-tool-v2.13.1) (2026-01-31)
 
 
