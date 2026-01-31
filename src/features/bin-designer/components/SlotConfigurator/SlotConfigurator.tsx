@@ -132,7 +132,7 @@ export function SlotConfigurator() {
           max={DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH}
           step={DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP}
           variant="desktop"
-          ariaLabel="Divider spacing"
+          ariaLabel="Compartment width"
         />
       </div>
     </div>
