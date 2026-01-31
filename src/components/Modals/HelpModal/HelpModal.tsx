@@ -498,14 +498,35 @@ function MouseInteractionsSection() {
         <h3 style={STYLES.sectionHeader}>{t('help.mouse')}</h3>
       </div>
       <div className="grid gap-2">
-        <InteractionRow action="Click + drag on empty" description="Draw new bin" />
-        <InteractionRow action="Click bin" description="Select bin" />
-        <InteractionRow action="Shift + click" description="Add to selection" />
-        <InteractionRow action="Drag selected" description="Move bins" />
-        <InteractionRow action="Alt + drag selected" description="Duplicate bins" />
-        <InteractionRow action="Drag edges/corners" description="Resize bin" />
-        <InteractionRow action="Double-click bin" description="Quick label edit" />
-        <InteractionRow action="Right-click bin" description="Context menu" />
+        <InteractionRow
+          action={t('help.mouse.clickDragEmpty')}
+          description={t('help.mouse.drawNewBin')}
+        />
+        <InteractionRow action={t('help.mouse.clickBin')} description={t('help.mouse.selectBin')} />
+        <InteractionRow
+          action={t('help.mouse.shiftClick')}
+          description={t('help.mouse.addToSelection')}
+        />
+        <InteractionRow
+          action={t('help.mouse.dragSelected')}
+          description={t('help.mouse.moveBins')}
+        />
+        <InteractionRow
+          action={t('help.mouse.altDragSelected')}
+          description={t('help.mouse.duplicateBins')}
+        />
+        <InteractionRow
+          action={t('help.mouse.dragEdges')}
+          description={t('help.mouse.resizeBin')}
+        />
+        <InteractionRow
+          action={t('help.mouse.doubleClickBin')}
+          description={t('help.mouse.quickLabelEdit')}
+        />
+        <InteractionRow
+          action={t('help.mouse.rightClickBin')}
+          description={t('help.mouse.contextMenu')}
+        />
       </div>
     </section>
   );
@@ -523,11 +544,26 @@ function TouchGesturesSection() {
         <h3 style={STYLES.sectionHeader}>{t('help.touchGestures')}</h3>
       </div>
       <div className="grid gap-2">
-        <InteractionRow action="Tap bin" description="Select" />
-        <InteractionRow action="Drag on empty" description="Draw new bin" />
-        <InteractionRow action="Drag selected" description="Move bin" />
-        <InteractionRow action="Long-press bin" description="Context menu" />
-        <InteractionRow action="Drag edge" description="Resize" />
+        <InteractionRow
+          action={t('help.gesture.tapBin')}
+          description={t('help.gesture.selectBin')}
+        />
+        <InteractionRow
+          action={t('help.gesture.dragEmpty')}
+          description={t('help.gesture.drawNewBin')}
+        />
+        <InteractionRow
+          action={t('help.gesture.dragSelected')}
+          description={t('help.gesture.moveBin')}
+        />
+        <InteractionRow
+          action={t('help.gesture.longPress')}
+          description={t('help.gesture.openContextMenu')}
+        />
+        <InteractionRow
+          action={t('help.gesture.dragEdge')}
+          description={t('help.gesture.resizeBin')}
+        />
       </div>
     </section>
   );
@@ -545,17 +581,18 @@ function InteractionRow({ action, description }: { action: string; description: 
 }
 
 // Tips section
+const TIP_KEYS = [
+  'help.tip.binPalette',
+  'help.tip.autoSplit',
+  'help.tip.dragLayers',
+  'help.tip.renameLayers',
+  'help.tip.autoSave',
+  'help.tip.quickOpen',
+  'help.tip.halfBin',
+] as const;
+
 function TipsSection() {
   const t = useTranslation();
-  const tips = [
-    'Use the Bin Palette to select a size, then click or drag to paint bins',
-    'Bins that exceed the max print size will be automatically split',
-    'Drag layers in the sidebar to reorder them vertically',
-    'Double-click layer names to rename them',
-    'Your layout is automatically saved to your browser',
-    'Use Ctrl/⌘+O to quickly open the layout manager',
-    'Press H to toggle half-bin mode for 0.5 unit precision',
-  ];
 
   return (
     <section>
@@ -563,10 +600,10 @@ function TipsSection() {
         {t('help.tips')}
       </h3>
       <ul className="space-y-2 p-4 rounded-lg" style={STYLES.tipsList}>
-        {tips.map((tip, index) => (
-          <li key={index} className="flex items-start gap-2">
+        {TIP_KEYS.map((key) => (
+          <li key={key} className="flex items-start gap-2">
             <span style={STYLES.colorPrimary}>•</span>
-            <span>{tip}</span>
+            <span>{t(key)}</span>
           </li>
         ))}
       </ul>
@@ -586,14 +623,10 @@ function BlockedZonesSection() {
         <p className="mb-3">
           <strong style={STYLES.textPrimary}>{t('help.whatAreBlockedZones')}</strong>
         </p>
-        <p className="mb-3">
-          When a bin is taller than its layer height, it extends into layers above. These areas
-          appear as striped cells and cannot have new bins placed on them.
-        </p>
+        <p className="mb-3">{t('help.blockedZonesDescription')}</p>
         <p>
-          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 5u tall bin on Layer 1
-          (3u) extends 2u into Layer 2. Those cells on Layer 2 are blocked because the physical bin
-          occupies that space.
+          <strong style={STYLES.textPrimary}>{t('help.example')}</strong>{' '}
+          {t('help.blockedZonesExample')}
         </p>
       </div>
     </section>
@@ -612,19 +645,12 @@ function BinClearanceSection() {
         <p className="mb-3">
           <strong style={STYLES.textPrimary}>{t('help.whatIsClearance')}</strong>
         </p>
+        <p className="mb-3">{t('help.clearanceDescription')}</p>
         <p className="mb-3">
-          Clearance reserves empty space above a bin for tall contents that stick out, like scissors
-          handles or tool grips. This space blocks bins on layers above without adding physical bin
-          height.
+          <strong style={STYLES.textPrimary}>{t('help.example')}</strong>{' '}
+          {t('help.clearanceExample')}
         </p>
-        <p className="mb-3">
-          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 2u tall bin with 1u
-          clearance will block 3u total of vertical space, but only prints as a 2u bin.
-        </p>
-        <p>
-          Set clearance in the bin inspector (right panel) when you have multiple layers. The 3D
-          preview shows clearance as a translucent red zone above the bin.
-        </p>
+        <p>{t('help.clearanceHowTo')}</p>
       </div>
     </section>
   );
