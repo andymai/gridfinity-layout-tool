@@ -81,10 +81,14 @@ function getJsonTranslations(filename: string): Record<string, string> {
   }
 }
 
+/** Escape all regex special characters in a string. */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function findSourceReferences(key: string): string[] {
   const results: string[] = [];
-  const escapedKey = key.replace(/\./g, '\\.');
-  const regex = new RegExp(`['"]${escapedKey}['"]`);
+  const regex = new RegExp(`['"]${escapeRegex(key)}['"]`);
 
   function scanDir(dir: string): void {
     for (const entry of readdirSync(dir)) {
@@ -172,7 +176,7 @@ if (!allMatch) {
 if (!dryRun) {
   // Remove from en.ts
   const enContent = readFileSync(join(LOCALES_DIR, 'en.ts'), 'utf-8');
-  const lineRegex = new RegExp(`^\\s*'${from.replace(/\./g, '\\.')}':\\s*.+\\n`, 'gm');
+  const lineRegex = new RegExp(`^\\s*'${escapeRegex(from)}':\\s*.+\\n`, 'gm');
   const newEnContent = enContent.replace(lineRegex, '');
   writeFileSync(join(LOCALES_DIR, 'en.ts'), newEnContent);
   console.log(`\n📝 Removed '${from}' from en.ts`);
