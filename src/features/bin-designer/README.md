@@ -40,6 +40,7 @@ graph TB
 - **Epoch pattern**: `store.setParam()` increments epoch → triggers regeneration
 - **Mesh cache**: 100MB budget, attached to history for instant undo
 - **Custom bin registry**: Syncs to localStorage for Layout Planner palette
+- **Ghost overlays**: Lightweight Three.js primitives (`GhostDividers`, `GhostWireframe`, `GhostCompartmentPreview`, `GhostLabelTabs`) render during `generationStatus === 'generating'` for instant visual feedback before BREP mesh completes
 
 ## Gotchas
 
@@ -48,6 +49,7 @@ graph TB
 3. **Auto-save only for saved designs** - "Untitled" bins don't persist
 4. **Half-cells get no magnet holes** - only full 1×1 unit cells
 5. **Solid style skips shell** - `keepFull` bypasses `.shell()`, so wallThickness is irrelevant
+6. **Label tabs skip solid bins** - both generation and ghost overlay guard against `style === 'solid'`
 
 ## Integration
 

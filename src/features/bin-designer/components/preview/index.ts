@@ -9,3 +9,4 @@ export { FootprintGrid } from './FootprintGrid';
 export { GhostDividers } from './GhostDividers';
 export { GhostWireframe } from './GhostWireframe';
 export { GhostCompartmentPreview } from './GhostCompartmentPreview';
+export { GhostLabelTabs } from './GhostLabelTabs';
