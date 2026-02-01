@@ -30,6 +30,8 @@
   "binDesigner.eco.autoSize": "Auto",
   "binDesigner.eco.exclusiveWithWave": "Désactivé lorsque les parois ondulées sont actives",
   "binDesigner.eco.exclusiveWithHoneycomb": "Désactivé lorsque les parois en nid d'abeille sont actives",
+  "binDesigner.eco.allWallsSlotted": "Toutes les parois ont des fentes pour séparateurs",
+  "binDesigner.eco.someWallsSlotted": "Ignoré sur les parois avec des fentes pour séparateurs",
   "binDesigner.cart.cost": "{amount}$",
   "binDesigner.cart.filament": "{amount}g de filament",
   "binDesigner.cart.grams": "{amount}g",

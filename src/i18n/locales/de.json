@@ -30,6 +30,8 @@
   "binDesigner.eco.autoSize": "Auto",
   "binDesigner.eco.exclusiveWithWave": "Deaktiviert wenn Wellenwände aktiv sind",
   "binDesigner.eco.exclusiveWithHoneycomb": "Deaktiviert wenn Wabenwände aktiv sind",
+  "binDesigner.eco.allWallsSlotted": "Alle Wände haben Trennschlitze",
+  "binDesigner.eco.someWallsSlotted": "Bei Wänden mit Trennschlitzen übersprungen",
   "binDesigner.cart.cost": "${amount}",
   "binDesigner.cart.filament": "{amount}g Filament",
   "binDesigner.cart.grams": "{amount}g",

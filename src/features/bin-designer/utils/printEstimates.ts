@@ -398,6 +398,8 @@ function computeHoneycombFloorReduction(
  *
  * For each wall, computes the pattern zone area and applies packing density.
  * Pocketed mode: 60% of wall thickness. Perforated: full wall thickness.
+ *
+ * Walls with divider slot grooves are excluded — honeycomb would weaken them.
  */
 function computeHoneycombWallReduction(
   params: BinParams,
@@ -418,18 +420,31 @@ function computeHoneycombWallReduction(
 
   const packingDensity = Math.PI / (2 * Math.sqrt(3));
 
-  // Two width-axis walls + two depth-axis walls
-  const totalPatternArea = 2 * innerW * patternHeight + 2 * innerD * patternHeight;
+  // Count only slot-free walls (slotted bins skip walls with divider grooves)
+  const slotFreeWidthWalls = countSlotFreeWalls(params, 'width');
+  const slotFreeDepthWalls = countSlotFreeWalls(params, 'depth');
+  const totalPatternArea =
+    slotFreeWidthWalls * innerW * patternHeight + slotFreeDepthWalls * innerD * patternHeight;
   return totalPatternArea * packingDensity * cutDepth;
+}
+
+/**
+ * Count how many walls along a given axis are free of slot grooves.
+ *
+ * 'width' axis = front + back walls (affected by slotConfig.y)
+ * 'depth' axis = left + right walls (affected by slotConfig.x)
+ */
+function countSlotFreeWalls(params: BinParams, axis: 'width' | 'depth'): number {
+  if (params.style !== 'slotted') return 2;
+  if (axis === 'width') return params.slotConfig.y.enabled ? 0 : 2;
+  return params.slotConfig.x.enabled ? 0 : 2;
 }
 
 /**
  * Volume of sinusoidal wave walls (replaces hollow box volume).
  *
- * Each wave wall is approximated as a rectangular slab with the
- * cross-sectional area of the sine wave membrane.
- * Sine wave average thickness ≈ baseThickness (the wave adds lateral
- * displacement but doesn't change the cross-section volume significantly).
+ * Wave walls use thin sine membrane (baseThickness). Walls with divider
+ * slot grooves get standard flat walls (wallThickness) instead.
  */
 function computeSinusoidalWallVolume(
   params: BinParams,
@@ -439,24 +454,33 @@ function computeSinusoidalWallVolume(
 ): number {
   const { sinusoidalWall } = params.eco;
   const baseThickness = sinusoidalWall.baseThickness;
+  const wallThickness = params.wallThickness;
 
   // Floor plate (same as standard)
-  const floorVolume = outerW * outerD * params.wallThickness;
+  const floorVolume = outerW * outerD * wallThickness;
 
-  // Four walls: wall length × wall height × membrane thickness
-  // Sine wave path is longer than straight line by factor ~√(1 + (2πfA/L)²)
-  // but cross-section is baseThickness, so volume ≈ length × height × baseThickness
-  const wallVolume = 2 * (outerW + outerD) * wallHeight * baseThickness;
+  // Slot-free walls get wave (thin), slotted walls get flat (standard thickness)
+  const waveWidthWalls = countSlotFreeWalls(params, 'width');
+  const waveDepthWalls = countSlotFreeWalls(params, 'depth');
+  const flatWidthWalls = 2 - waveWidthWalls;
+  const flatDepthWalls = 2 - waveDepthWalls;
+
+  const waveVolume =
+    waveWidthWalls * outerW * wallHeight * baseThickness +
+    waveDepthWalls * outerD * wallHeight * baseThickness;
+  const flatVolume =
+    flatWidthWalls * outerW * wallHeight * wallThickness +
+    flatDepthWalls * outerD * wallHeight * wallThickness;
 
   // Corner posts
   const postSize = Math.max(
     2,
-    params.wallThickness +
-      (sinusoidalWall.amplitude === 'auto' ? params.wallThickness * 1.5 : sinusoidalWall.amplitude)
+    wallThickness +
+      (sinusoidalWall.amplitude === 'auto' ? wallThickness * 1.5 : sinusoidalWall.amplitude)
   );
   const cornerVolume = 4 * postSize * postSize * wallHeight;
 
-  return floorVolume + wallVolume + cornerVolume;
+  return floorVolume + waveVolume + flatVolume + cornerVolume;
 }
 
 /**

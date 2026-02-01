@@ -28,6 +28,38 @@ const AUTO_WAVE_FREQUENCY = 2;
 /** Corner post size for sinusoidal wall corners (mm) */
 const CORNER_POST_SIZE = 2; // mm
 
+// ─── Slot-Free Wall Detection ────────────────────────────────────────────────
+
+/**
+ * Which walls are free of divider slot grooves.
+ *
+ * Slotted bins cut grooves into specific walls based on axis config:
+ * - slotConfig.x → grooves on left + right walls
+ * - slotConfig.y → grooves on front + back walls
+ *
+ * Eco wall features (honeycomb, wave) skip walls with slots to avoid
+ * weakening the thin material between grooves.
+ */
+export interface SlotFreeWalls {
+  readonly front: boolean;
+  readonly back: boolean;
+  readonly left: boolean;
+  readonly right: boolean;
+}
+
+/** Determine which walls are free of slot grooves. */
+export function getSlotFreeWalls(params: BinParams): SlotFreeWalls {
+  if (params.style !== 'slotted') {
+    return { front: true, back: true, left: true, right: true };
+  }
+  return {
+    front: !params.slotConfig.y.enabled,
+    back: !params.slotConfig.y.enabled,
+    left: !params.slotConfig.x.enabled,
+    right: !params.slotConfig.x.enabled,
+  };
+}
+
 // ─── Floor Honeycomb ─────────────────────────────────────────────────────────
 
 /**
@@ -141,23 +173,28 @@ export function buildHoneycombWallCuts(
     wallCuts.push(positioned);
   };
 
+  // Skip walls that have divider slot grooves — honeycomb would weaken them
+  const slotFree = getSlotFreeWalls(params);
+
   // Front wall (Y = -outerD/2, looking inward = +Y direction)
-  addWallHexes(
-    innerW, // wall length
-    0, // x
-    -innerD / 2 - cutDepth / 2, // y: interior face of front wall
-    0, // z
-    0 // no rotation
-  );
+  if (slotFree.front) {
+    addWallHexes(innerW, 0, -innerD / 2 - cutDepth / 2, 0, 0);
+  }
 
   // Back wall (Y = +outerD/2, looking inward = -Y direction)
-  addWallHexes(innerW, 0, innerD / 2 + cutDepth / 2, 0, 180);
+  if (slotFree.back) {
+    addWallHexes(innerW, 0, innerD / 2 + cutDepth / 2, 0, 180);
+  }
 
   // Left wall (X = -outerW/2, looking inward = +X direction)
-  addWallHexes(innerD, -innerW / 2 - cutDepth / 2, 0, 0, 90);
+  if (slotFree.left) {
+    addWallHexes(innerD, -innerW / 2 - cutDepth / 2, 0, 0, 90);
+  }
 
   // Right wall (X = +outerW/2, looking inward = -X direction)
-  addWallHexes(innerD, innerW / 2 + cutDepth / 2, 0, 0, -90);
+  if (slotFree.right) {
+    addWallHexes(innerD, innerW / 2 + cutDepth / 2, 0, 0, -90);
+  }
 
   if (wallCuts.length === 0) return null;
 
@@ -242,6 +279,17 @@ export function buildSinusoidalWallBox(
     body = body.fuse(post);
   }
 
+  // Skip wave walls on sides with slot grooves — use flat walls instead
+  const slotFree = getSlotFreeWalls(params);
+
+  // Build a flat (standard) wall slab for sides that have slots
+  const buildFlatWall = (wallLength: number): Shape3D => {
+    const sketch = drawRectangle(wallLength, wallThickness).sketchOnPlane(
+      'XY'
+    ) as unknown as Sketch;
+    return sketch.extrude(postHeight);
+  };
+
   // Build each wave wall
   const buildWaveWall = (wallLength: number): Shape3D => {
     const totalCycles = frequency * (wallLength / gridSize);
@@ -279,26 +327,29 @@ export function buildSinusoidalWallBox(
   };
 
   // Front wall: along X axis at Y = -outerD/2
-  const frontWall = buildWaveWall(outerW - 2 * postSize)
-    .rotate(90, [0, 0, 0], [1, 0, 0]) // XY plane -> XZ plane
+  const widthWallLen = outerW - 2 * postSize;
+  const depthWallLen = outerD - 2 * postSize;
+
+  const frontWall = (slotFree.front ? buildWaveWall(widthWallLen) : buildFlatWall(widthWallLen))
+    .rotate(90, [0, 0, 0], [1, 0, 0])
     .translate([0, -halfD + wallThickness / 2, wallHeight / 2]);
   body = body.fuse(frontWall);
 
   // Back wall: along X axis at Y = +outerD/2
-  const backWall = buildWaveWall(outerW - 2 * postSize)
+  const backWall = (slotFree.back ? buildWaveWall(widthWallLen) : buildFlatWall(widthWallLen))
     .rotate(90, [0, 0, 0], [1, 0, 0])
     .translate([0, halfD - wallThickness / 2, wallHeight / 2]);
   body = body.fuse(backWall);
 
   // Left wall: along Y axis at X = -outerW/2
-  const leftWall = buildWaveWall(outerD - 2 * postSize)
+  const leftWall = (slotFree.left ? buildWaveWall(depthWallLen) : buildFlatWall(depthWallLen))
     .rotate(90, [0, 0, 0], [1, 0, 0])
     .rotate(90, [0, 0, 0], [0, 0, 1])
     .translate([-halfW + wallThickness / 2, 0, wallHeight / 2]);
   body = body.fuse(leftWall);
 
   // Right wall: along Y axis at X = +outerW/2
-  const rightWall = buildWaveWall(outerD - 2 * postSize)
+  const rightWall = (slotFree.right ? buildWaveWall(depthWallLen) : buildFlatWall(depthWallLen))
     .rotate(90, [0, 0, 0], [1, 0, 0])
     .rotate(90, [0, 0, 0], [0, 0, 1])
     .translate([halfW - wallThickness / 2, 0, wallHeight / 2]);

@@ -30,6 +30,8 @@
   "binDesigner.eco.autoSize": "Auto",
   "binDesigner.eco.exclusiveWithWave": "Deaktivert når bølgevegger er aktive",
   "binDesigner.eco.exclusiveWithHoneycomb": "Deaktivert når bikubevegger er aktive",
+  "binDesigner.eco.allWallsSlotted": "Alle vegger har skillespor",
+  "binDesigner.eco.someWallsSlotted": "Hoppet over på vegger med skillespor",
   "binDesigner.cart.cost": "${amount}",
   "binDesigner.cart.filament": "{amount}g filament",
   "binDesigner.cart.grams": "{amount}g",

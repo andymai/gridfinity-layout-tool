@@ -1237,6 +1237,8 @@ const en: Record<string, string> = {
   'binDesigner.eco.autoSize': 'Auto',
   'binDesigner.eco.exclusiveWithWave': 'Disabled when wave walls are active',
   'binDesigner.eco.exclusiveWithHoneycomb': 'Disabled when honeycomb walls are active',
+  'binDesigner.eco.allWallsSlotted': 'All walls have divider slots',
+  'binDesigner.eco.someWallsSlotted': 'Skipped on walls with divider slots',
   'binDesigner.resetView': 'Reset view (R)',
   'binDesigner.toggleWireframe': 'Toggle wireframe (W)',
   'binDesigner.changeColor': 'Change preview color',

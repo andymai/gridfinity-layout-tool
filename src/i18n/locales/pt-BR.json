@@ -30,6 +30,8 @@
   "binDesigner.eco.autoSize": "Auto",
   "binDesigner.eco.exclusiveWithWave": "Desativado quando as paredes onduladas estão ativas",
   "binDesigner.eco.exclusiveWithHoneycomb": "Desativado quando as paredes colmeia estão ativas",
+  "binDesigner.eco.allWallsSlotted": "Todas as paredes têm ranhuras para divisórias",
+  "binDesigner.eco.someWallsSlotted": "Ignorado em paredes com ranhuras para divisórias",
   "binDesigner.cart.cost": "${amount}",
   "binDesigner.cart.filament": "{amount}g de filamento",
   "binDesigner.cart.grams": "{amount}g",

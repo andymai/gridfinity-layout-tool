@@ -30,6 +30,8 @@
   "binDesigner.eco.autoSize": "Auto",
   "binDesigner.eco.exclusiveWithWave": "Uitgeschakeld wanneer golfwanden actief zijn",
   "binDesigner.eco.exclusiveWithHoneycomb": "Uitgeschakeld wanneer honingraatwanden actief zijn",
+  "binDesigner.eco.allWallsSlotted": "Alle wanden hebben verdelingssleuven",
+  "binDesigner.eco.someWallsSlotted": "Overgeslagen op wanden met verdelingssleuven",
   "binDesigner.cart.cost": "${amount}",
   "binDesigner.cart.filament": "{amount}g filament",
   "binDesigner.cart.grams": "{amount}g",

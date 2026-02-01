@@ -11,8 +11,11 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import type { WallHoneycombMode } from '@/features/bin-designer/types';
 import type { SectionMeta } from '../types';
 import { calculateEcoSavings } from '@/features/bin-designer/utils/printEstimates';
+import { useTranslation } from '@/i18n';
 
 export function useEcoSection() {
+  const t = useTranslation();
+
   const {
     eco,
     params,
@@ -30,6 +33,17 @@ export function useEcoSection() {
       applyEcoPreset: s.applyEcoPreset,
     }))
   );
+
+  // Determine which walls have slot grooves (eco walls skip those)
+  const allWallsSlotted = useMemo(() => {
+    if (params.style !== 'slotted') return false;
+    return params.slotConfig.x.enabled && params.slotConfig.y.enabled;
+  }, [params.style, params.slotConfig.x.enabled, params.slotConfig.y.enabled]);
+
+  const someWallsSlotted = useMemo(() => {
+    if (params.style !== 'slotted') return false;
+    return params.slotConfig.x.enabled || params.slotConfig.y.enabled;
+  }, [params.style, params.slotConfig.x.enabled, params.slotConfig.y.enabled]);
 
   // Derive active feature count and eco savings
   const { activeCount, savingsPercent } = useMemo(() => {
@@ -149,11 +163,25 @@ export function useEcoSection() {
     return { summary };
   }, [activeCount, eco, savingsPercent]);
 
+  // Disabled reason for wall eco features when all walls have slots
+  const wallEcoDisabledReason = useMemo(() => {
+    if (allWallsSlotted) return t('binDesigner.eco.allWallsSlotted');
+    return undefined;
+  }, [allWallsSlotted, t]);
+
+  // Informational note when some (but not all) walls have slots
+  const wallEcoPartialNote = useMemo(() => {
+    if (someWallsSlotted && !allWallsSlotted) return t('binDesigner.eco.someWallsSlotted');
+    return undefined;
+  }, [someWallsSlotted, allWallsSlotted, t]);
+
   return {
     state: {
       eco,
       activeCount,
       savingsPercent,
+      wallEcoDisabledReason,
+      wallEcoPartialNote,
     },
     handlers: {
       toggleHoneycombFloor,

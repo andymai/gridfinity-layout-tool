@@ -186,7 +186,13 @@ export const useDesignerStore = create<DesignerState>()(
         pushHistoryEntry(state);
         state.params.wallThickness = 0.8;
         state.params.eco.honeycombFloor.enabled = true;
-        state.params.eco.honeycombWall.mode = 'pocketed';
+        // Only enable wall eco if at least some walls are slot-free
+        const isSlotted = state.params.style === 'slotted';
+        const allWallsSlotted =
+          isSlotted && state.params.slotConfig.x.enabled && state.params.slotConfig.y.enabled;
+        if (!allWallsSlotted) {
+          state.params.eco.honeycombWall.mode = 'pocketed';
+        }
         // Wave walls are mutually exclusive with honeycomb walls
         state.params.eco.sinusoidalWall.enabled = false;
       });

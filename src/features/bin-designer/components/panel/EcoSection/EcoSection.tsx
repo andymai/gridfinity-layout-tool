@@ -82,7 +82,8 @@ export function EcoSection() {
           checked={state.eco.honeycombWall.mode !== 'none'}
           onChange={handlers.toggleHoneycombWall}
           disabledReason={
-            state.eco.sinusoidalWall.enabled ? t('binDesigner.eco.exclusiveWithWave') : undefined
+            state.wallEcoDisabledReason ??
+            (state.eco.sinusoidalWall.enabled ? t('binDesigner.eco.exclusiveWithWave') : undefined)
           }
           primaryControls={
             state.eco.honeycombWall.mode !== 'none' ? (
@@ -124,15 +125,24 @@ export function EcoSection() {
           />
         </FeatureToggle>
 
+        {/* Partial slot note — shown when some walls are skipped */}
+        {state.wallEcoPartialNote &&
+          (state.eco.honeycombWall.mode !== 'none' || state.eco.sinusoidalWall.enabled) && (
+            <p className="text-[11px] text-content-tertiary -mt-0.5 mb-1">
+              {state.wallEcoPartialNote}
+            </p>
+          )}
+
         {/* Wave walls */}
         <FeatureToggle
           label={t('binDesigner.eco.waveWalls')}
           checked={state.eco.sinusoidalWall.enabled}
           onChange={handlers.toggleSinusoidalWall}
           disabledReason={
-            state.eco.honeycombWall.mode !== 'none'
+            state.wallEcoDisabledReason ??
+            (state.eco.honeycombWall.mode !== 'none'
               ? t('binDesigner.eco.exclusiveWithHoneycomb')
-              : undefined
+              : undefined)
           }
           valueSummary={
             state.eco.sinusoidalWall.amplitude === 'auto'
