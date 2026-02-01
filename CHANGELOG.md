@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.17.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.16.0...gridfinity-layout-tool-v2.17.0) (2026-02-01)
+
+
+### Features
+
+* improve print time/filament estimates with enhanced volume calc and user settings ([#573](https://github.com/andymai/gridfinity-layout-tool/issues/573)) ([6ed6c13](https://github.com/andymai/gridfinity-layout-tool/commit/6ed6c13eb5c139644188afedc134269374058143))
+
 ## [2.16.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.15.1...gridfinity-layout-tool-v2.16.0) (2026-02-01)
 
 
