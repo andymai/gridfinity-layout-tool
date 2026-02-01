@@ -4,7 +4,8 @@
 # Zero-config: adding a README anywhere automatically includes it
 # Non-blocking: always exits 0 (reminds but does not fail commit)
 
-set -e
+# ERR trap ensures script never blocks a commit, even on unexpected failures
+trap 'exit 0' ERR
 
 # Single git call — cache all staged files
 STAGED=$(git diff --cached --name-only --diff-filter=ACMR || true)
@@ -21,6 +22,7 @@ while IFS= read -r FILE; do
   case "$FILE" in *.test.*|*.spec.*|*.d.ts) continue ;; esac
 
   DIR="${FILE%/*}"
+  [ "$DIR" = "$FILE" ] && DIR="."
   DIR_FILE_COUNTS["$DIR"]=$(( ${DIR_FILE_COUNTS["$DIR"]:-0} + 1 ))
   HAS_SOURCE=true
 done <<< "$STAGED"

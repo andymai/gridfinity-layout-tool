@@ -51,15 +51,15 @@ test.describe('Feature', () => {
 
 ## Core Selectors
 
-| Element      | Selector                    | Helper                     |
-| ------------ | --------------------------- | -------------------------- |
-| Grid         | `[role="application"]`      | `getGrid()`                |
-| Bins         | `[data-bin-id]`             | `waitForBinCount()`        |
-| Staging bins | `[data-staging-bin-id]`     | `waitForStagingBinCount()` |
-| Inspector    | `[data-inspector]`          | `getInspector()`           |
-| Sidebar      | `[data-sidebar]`            | `getSidebar()`             |
-| Dialogs      | `[role="dialog"]:not(Labs)` | `getActiveDialog()`        |
-| Mobile nav   | `[data-bottom-nav]`         | `getBottomNav()`           |
+| Element      | Selector                                                         | Helper                     |
+| ------------ | ---------------------------------------------------------------- | -------------------------- |
+| Grid         | `[role="application"]`                                           | `getGrid()`                |
+| Bins         | `[data-bin-id]`                                                  | `waitForBinCount()`        |
+| Staging bins | `[data-staging-bin-id]`                                          | `waitForStagingBinCount()` |
+| Inspector    | `[data-inspector]`                                               | `getInspector()`           |
+| Sidebar      | `[data-sidebar]`                                                 | `getSidebar()`             |
+| Dialogs      | `[role="dialog"]:not([aria-label="Labs experimental features"])` | `getActiveDialog()`        |
+| Mobile nav   | `[data-bottom-nav]`                                              | `getBottomNav()`           |
 
 ## Grid Coordinates
 
