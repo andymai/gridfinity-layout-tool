@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.16.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.15.1...gridfinity-layout-tool-v2.16.0) (2026-02-01)
+
+
+### Features
+
+* add i18n untranslated values check and translate ~1,200 locale strings ([#571](https://github.com/andymai/gridfinity-layout-tool/issues/571)) ([78407b4](https://github.com/andymai/gridfinity-layout-tool/commit/78407b4de0ff9eaef4b55d97c67369891b20f2bb))
+
 ## [2.15.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.15.0...gridfinity-layout-tool-v2.15.1) (2026-01-31)
 
 
