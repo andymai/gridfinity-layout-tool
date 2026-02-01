@@ -176,24 +176,28 @@ export function buildHoneycombWallCuts(
   // Skip walls that have divider slot grooves — honeycomb would weaken them
   const slotFree = getSlotFreeWalls(params);
 
-  // Front wall (Y = -outerD/2, looking inward = +Y direction)
+  // Front wall (Y = -outerD/2, cutting from interior face into wall)
+  // After X-rotation, extrusion spans Y ∈ [0, -cutDepth]; align Y=0 with interior face
   if (slotFree.front) {
-    addWallHexes(innerW, 0, -innerD / 2 - cutDepth / 2, 0, 0);
+    addWallHexes(innerW, 0, -innerD / 2, 0, 0);
   }
 
-  // Back wall (Y = +outerD/2, looking inward = -Y direction)
+  // Back wall (Y = +outerD/2, cutting from interior face into wall)
+  // After X-rotation + rotateZ(180), extrusion flips to Y ∈ [0, +cutDepth]
   if (slotFree.back) {
-    addWallHexes(innerW, 0, innerD / 2 + cutDepth / 2, 0, 180);
+    addWallHexes(innerW, 0, innerD / 2, 0, 180);
   }
 
-  // Left wall (X = -outerW/2, looking inward = +X direction)
+  // Left wall (X = -outerW/2, cutting from interior face into wall)
+  // After X-rotation + rotateZ(90), extrusion maps to X ∈ [0, +cutDepth]
   if (slotFree.left) {
-    addWallHexes(innerD, -innerW / 2 - cutDepth / 2, 0, 0, 90);
+    addWallHexes(innerD, -innerW / 2 - cutDepth, 0, 0, 90);
   }
 
-  // Right wall (X = +outerW/2, looking inward = -X direction)
+  // Right wall (X = +outerW/2, cutting from interior face into wall)
+  // After X-rotation + rotateZ(-90), extrusion maps to X ∈ [-cutDepth, 0]
   if (slotFree.right) {
-    addWallHexes(innerD, innerW / 2 + cutDepth / 2, 0, 0, -90);
+    addWallHexes(innerD, innerW / 2 + cutDepth, 0, 0, -90);
   }
 
   if (wallCuts.length === 0) return null;
@@ -326,33 +330,33 @@ export function buildSinusoidalWallBox(
     return profile.extrude(postHeight);
   };
 
-  // Front wall: along X axis at Y = -outerD/2
+  // Wall profile is built in XY (X=length, Y=sine displacement) and extruded
+  // along Z (=wall height). No X-axis rotation needed — Z is already vertical.
   const widthWallLen = outerW - 2 * postSize;
   const depthWallLen = outerD - 2 * postSize;
 
-  const frontWall = (slotFree.front ? buildWaveWall(widthWallLen) : buildFlatWall(widthWallLen))
-    .rotate(90, [0, 0, 0], [1, 0, 0])
-    .translate([0, -halfD + wallThickness / 2, wallHeight / 2]);
+  // Front wall: along X axis at Y = -outerD/2
+  const frontWall = (
+    slotFree.front ? buildWaveWall(widthWallLen) : buildFlatWall(widthWallLen)
+  ).translate([0, -halfD + wallThickness / 2, 0]);
   body = body.fuse(frontWall);
 
   // Back wall: along X axis at Y = +outerD/2
-  const backWall = (slotFree.back ? buildWaveWall(widthWallLen) : buildFlatWall(widthWallLen))
-    .rotate(90, [0, 0, 0], [1, 0, 0])
-    .translate([0, halfD - wallThickness / 2, wallHeight / 2]);
+  const backWall = (
+    slotFree.back ? buildWaveWall(widthWallLen) : buildFlatWall(widthWallLen)
+  ).translate([0, halfD - wallThickness / 2, 0]);
   body = body.fuse(backWall);
 
-  // Left wall: along Y axis at X = -outerW/2
+  // Left wall: along Y axis at X = -outerW/2 (rotate 90° around Z to reorient)
   const leftWall = (slotFree.left ? buildWaveWall(depthWallLen) : buildFlatWall(depthWallLen))
-    .rotate(90, [0, 0, 0], [1, 0, 0])
     .rotate(90, [0, 0, 0], [0, 0, 1])
-    .translate([-halfW + wallThickness / 2, 0, wallHeight / 2]);
+    .translate([-halfW + wallThickness / 2, 0, 0]);
   body = body.fuse(leftWall);
 
-  // Right wall: along Y axis at X = +outerW/2
+  // Right wall: along Y axis at X = +outerW/2 (rotate 90° around Z to reorient)
   const rightWall = (slotFree.right ? buildWaveWall(depthWallLen) : buildFlatWall(depthWallLen))
-    .rotate(90, [0, 0, 0], [1, 0, 0])
     .rotate(90, [0, 0, 0], [0, 0, 1])
-    .translate([halfW - wallThickness / 2, 0, wallHeight / 2]);
+    .translate([halfW - wallThickness / 2, 0, 0]);
   body = body.fuse(rightWall);
 
   return body;

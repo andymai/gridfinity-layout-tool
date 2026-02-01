@@ -11,7 +11,7 @@
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
-import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
 import {
   PLA_DENSITY,
@@ -104,7 +104,9 @@ export function formatFilament(meters: number): string {
  * 7. Scoops (if enabled, negative — removes material)
  */
 function computeBinVolume(params: BinParams): number {
-  const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
+  // Use params.wallThickness (user-configurable, matches the generator) rather than
+  // the per-style default. Eco preset changes this to 0.8mm, so accuracy matters.
+  const wallThickness = params.wallThickness;
   const constraints = getStyleConstraints(params.style);
 
   // Outer dimensions in mm

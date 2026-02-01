@@ -222,21 +222,26 @@ export function migrateParams(
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
-    eco: {
-      ...DEFAULT_ECO_CONFIG,
-      ...((params.eco as Partial<EcoConfig> | undefined) ?? {}),
-      honeycombFloor: {
+    eco: (() => {
+      const honeycombFloor = {
         ...DEFAULT_ECO_CONFIG.honeycombFloor,
         ...((params.eco?.honeycombFloor as Partial<EcoConfig['honeycombFloor']>) ?? {}),
-      },
-      honeycombWall: {
+      };
+      const honeycombWall = {
         ...DEFAULT_ECO_CONFIG.honeycombWall,
         ...((params.eco?.honeycombWall as Partial<EcoConfig['honeycombWall']>) ?? {}),
-      },
-      sinusoidalWall: {
+      };
+      const sinusoidalWall = {
         ...DEFAULT_ECO_CONFIG.sinusoidalWall,
         ...((params.eco?.sinusoidalWall as Partial<EcoConfig['sinusoidalWall']>) ?? {}),
-      },
-    },
+      };
+
+      // Enforce mutual exclusivity: wave walls win if both are enabled (from corrupted save)
+      if (sinusoidalWall.enabled && honeycombWall.mode !== 'none') {
+        honeycombWall.mode = 'none';
+      }
+
+      return { honeycombFloor, honeycombWall, sinusoidalWall };
+    })(),
   } as BinParams;
 }

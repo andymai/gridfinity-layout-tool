@@ -6,7 +6,7 @@
  * honeycomb cutout generation.
  *
  * Hex orientation: flat-top (pointy sides on left/right).
- * Row spacing = cellSize × 0.75, col spacing = cellSize.
+ * Row spacing = cellSize × √3/2 (~0.866×cellSize), col spacing = cellSize.
  * Odd rows are staggered by cellSize / 2.
  */
 
@@ -100,11 +100,11 @@ export function calculateHexCenters(config: HexGridConfig): HexCenter[] {
 // ─── Compound Builder ────────────────────────────────────────────────────────
 
 /**
- * Build a fused compound of hex cylinders for boolean cutting.
+ * Build a fused compound of circular cutouts on a hex grid for boolean cutting.
  *
- * Approximates hexes as circles (cellSize/2 radius) which produces
- * visually identical results after tessellation and is significantly
- * faster for boolean operations.
+ * Each hex cell is approximated with a circular cutout (radius = cellSize / 2),
+ * which closely matches the honeycomb pattern in practice and is significantly
+ * faster for boolean operations than true hex prisms.
  *
  * Returns null if no hexes fit within the bounds.
  */
