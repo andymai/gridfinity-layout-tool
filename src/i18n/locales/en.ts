@@ -636,6 +636,14 @@ const en: Record<string, string> = {
   'settings.drawerDimensions': 'Drawer Dimensions',
   'settings.gridSettings': 'Grid Settings',
 
+  // Print Estimates
+  'settings.printEstimates': 'Print Estimates',
+  'settings.printEstimatesHint':
+    'Adjust these to match your printer profile for more accurate estimates:',
+  'settings.filamentCostPerKg': 'Filament cost',
+  'settings.printLayerHeight': 'Layer height',
+  'settings.infillPercent': 'Infill',
+
   // Default Categories
   'settings.defaultCategories': 'Default Categories',
   'settings.defaultCategoriesHint': 'Categories used when creating new layouts:',
@@ -1283,6 +1291,8 @@ const en: Record<string, string> = {
   'binDesigner.powerFeatures': 'Power Features',
   'binDesigner.previewColorOptions': 'Preview color options',
   'binDesigner.printEstimatesPla': 'Print Estimates (PLA)',
+  'binDesigner.printEstimatesDisclaimer':
+    'Approximate values based on {infill}% infill, {layerHeight}mm layers. Actual results depend on slicer settings.',
   'binDesigner.radius': 'Radius',
   'binDesigner.resetCameraViewKeyboardShortcutR': 'Reset camera view, keyboard shortcut R',
   'binDesigner.resetCompartmentLayoutToUniformGrid': 'Reset compartment layout to uniform grid',

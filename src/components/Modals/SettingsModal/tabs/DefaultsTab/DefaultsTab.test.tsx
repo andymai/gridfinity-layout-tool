@@ -29,6 +29,11 @@ vi.mock('@/core/store', () => ({
         defaultPrintBedSize: 256,
         defaultGridUnitMm: 42,
         defaultCategories: null,
+        printSettings: {
+          filamentCostPerKg: 20,
+          layerHeightMm: 0.2,
+          infillPercent: 15,
+        },
       },
       updateSetting: mockUpdateSetting,
     }),

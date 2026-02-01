@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { Locale } from '@/i18n/types';
 import type { Category } from '@/core/types';
+import type { PrintSettings } from '@/shared/printSettings';
+import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 // Storage key for settings
 const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
@@ -214,6 +216,12 @@ export interface UserSettings {
    * Show a banana model in the 3D preview as a real-world scale reference.
    */
   showBananaScale: boolean;
+
+  /**
+   * Print estimation settings (filament cost, layer height, infill %).
+   * Used by both bin designer and print export for time/cost estimates.
+   */
+  printSettings: PrintSettings;
 }
 
 /**
@@ -256,6 +264,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // 3D preview - banana for scale
   showBananaScale: false,
+
+  // Print estimation settings
+  printSettings: { ...DEFAULT_PRINT_SETTINGS },
 };
 
 /**
@@ -366,6 +377,11 @@ function loadSettings(): UserSettings {
         parsed.designListViewMode,
         DEFAULT_SETTINGS.designListViewMode
       );
+      // Normalize print settings
+      const printSettings: PrintSettings = {
+        ...DEFAULT_PRINT_SETTINGS,
+        ...parsed.printSettings,
+      };
       // Merge with defaults to handle any missing fields
       return {
         ...DEFAULT_SETTINGS,
@@ -375,6 +391,7 @@ function loadSettings(): UserSettings {
         defaultCategories,
         layoutManagerViewMode,
         designListViewMode,
+        printSettings,
       };
     }
   } catch (e) {

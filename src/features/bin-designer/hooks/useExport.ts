@@ -11,6 +11,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { useSettingsStore } from '@/core/store';
 import { getActiveBridge } from '@/shared/generation/bridge';
 import {
   generateFileName,
@@ -46,6 +47,8 @@ export function useExport(): UseExportReturn {
     }))
   );
 
+  const printSettings = useSettingsStore((s) => s.settings.printSettings);
+
   const [isExporting, setIsExporting] = useState(false);
 
   // Export requires both a preview mesh (to show UI) and an active bridge (to regenerate)
@@ -57,7 +60,7 @@ export function useExport(): UseExportReturn {
     params.style === 'slotted' &&
     (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
 
-  const estimates = useMemo(() => estimatePrint(params), [params]);
+  const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
 
   /**
    * Download high-quality STL via worker bridge.

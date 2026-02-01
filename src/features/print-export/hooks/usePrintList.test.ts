@@ -276,7 +276,7 @@ describe('usePrintList', () => {
     it('allows setting filament cost per kg', () => {
       const { result } = renderHook(() => usePrintList());
 
-      expect(result.current.config.filamentCostPerKg).toBe(15); // default
+      expect(result.current.config.filamentCostPerKg).toBe(20); // default from global print settings
 
       act(() => {
         result.current.setFilamentCostPerKg(25);
