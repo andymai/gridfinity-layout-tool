@@ -133,6 +133,47 @@ export interface WallConfig {
   readonly interior: WallCutout;
 }
 
+/** Honeycomb floor pattern configuration */
+export interface HoneycombFloorConfig {
+  readonly enabled: boolean;
+  /** Hex cell flat-to-flat size in mm ('auto' = ~8mm) */
+  readonly cellSize: number | 'auto';
+  /** Solid margin from interior edges in mm */
+  readonly margin: number;
+}
+
+/** Wall honeycomb mode */
+export type WallHoneycombMode = 'none' | 'pocketed' | 'perforated';
+
+/** Honeycomb wall pattern configuration */
+export interface HoneycombWallConfig {
+  readonly mode: WallHoneycombMode;
+  /** Hex cell flat-to-flat size in mm ('auto' = ~6mm) */
+  readonly cellSize: number | 'auto';
+  /** Solid zone at top in mm (stacking lip clearance) */
+  readonly topMargin: number;
+  /** Solid zone at bottom in mm (structural strength) */
+  readonly bottomMargin: number;
+}
+
+/** Sinusoidal wave wall configuration */
+export interface SinusoidalWallConfig {
+  readonly enabled: boolean;
+  /** Wave amplitude in mm ('auto' = wallThickness × 1.5) */
+  readonly amplitude: number | 'auto';
+  /** Number of full wave cycles per grid unit ('auto' = 2) */
+  readonly frequency: number | 'auto';
+  /** Base membrane thickness in mm */
+  readonly baseThickness: number;
+}
+
+/** Eco mode feature collection — stored per design in BinParams */
+export interface EcoConfig {
+  readonly honeycombFloor: HoneycombFloorConfig;
+  readonly honeycombWall: HoneycombWallConfig;
+  readonly sinusoidalWall: SinusoidalWallConfig;
+}
+
 /** Complete bin parameter set for generation */
 export interface BinParams {
   readonly width: number;
@@ -153,6 +194,7 @@ export interface BinParams {
   readonly slotConfig: SlotConfig;
   readonly dividerPieces: DividerPieceConfig;
   readonly inserts: Insert[];
+  readonly eco: EcoConfig;
 }
 
 // =============================================================================
@@ -328,6 +370,10 @@ export interface DesignerState {
   // Scoped updaters (merge partial into nested config, push history)
   updateBase: (partial: Partial<BaseConfig>) => void;
   updateLabel: (partial: Partial<LabelTabConfig>) => void;
+  updateHoneycombFloor: (partial: Partial<HoneycombFloorConfig>) => void;
+  updateHoneycombWall: (partial: Partial<HoneycombWallConfig>) => void;
+  updateSinusoidalWall: (partial: Partial<SinusoidalWallConfig>) => void;
+  applyEcoPreset: () => void;
 
   // History actions
   undo: () => void;

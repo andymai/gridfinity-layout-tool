@@ -11,6 +11,7 @@ import type {
   WallConfig,
   SlotConfig,
   DividerPieceConfig,
+  EcoConfig,
 } from '../types';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -26,6 +27,13 @@ export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
   height: 'auto',
   thickness: 1.6,
   clearance: 0.25,
+} as const;
+
+/** Default eco configuration: all features disabled */
+export const DEFAULT_ECO_CONFIG: EcoConfig = {
+  honeycombFloor: { enabled: false, cellSize: 'auto', margin: 2.5 },
+  honeycombWall: { mode: 'none', cellSize: 'auto', topMargin: 3, bottomMargin: 3 },
+  sinusoidalWall: { enabled: false, amplitude: 'auto', frequency: 'auto', baseThickness: 0.5 },
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -72,6 +80,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   slotConfig: DEFAULT_SLOT_CONFIG,
   dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
   inserts: [],
+  eco: DEFAULT_ECO_CONFIG,
 } as const;
 
 /** Default generation state */
@@ -213,5 +222,21 @@ export function migrateParams(
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
+    eco: {
+      ...DEFAULT_ECO_CONFIG,
+      ...((params.eco as Partial<EcoConfig> | undefined) ?? {}),
+      honeycombFloor: {
+        ...DEFAULT_ECO_CONFIG.honeycombFloor,
+        ...((params.eco?.honeycombFloor as Partial<EcoConfig['honeycombFloor']>) ?? {}),
+      },
+      honeycombWall: {
+        ...DEFAULT_ECO_CONFIG.honeycombWall,
+        ...((params.eco?.honeycombWall as Partial<EcoConfig['honeycombWall']>) ?? {}),
+      },
+      sinusoidalWall: {
+        ...DEFAULT_ECO_CONFIG.sinusoidalWall,
+        ...((params.eco?.sinusoidalWall as Partial<EcoConfig['sinusoidalWall']>) ?? {}),
+      },
+    },
   } as BinParams;
 }

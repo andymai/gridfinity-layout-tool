@@ -116,6 +116,23 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_DIVIDER_CLEARANCE: 0.0, // mm
   MAX_DIVIDER_CLEARANCE: 0.3, // mm
   DIVIDER_CLEARANCE_STEP: 0.05, // mm
+  // Eco mode: Honeycomb
+  MIN_HONEYCOMB_CELL_SIZE: 3, // mm
+  MAX_HONEYCOMB_CELL_SIZE: 15, // mm
+  HONEYCOMB_CELL_SIZE_STEP: 0.5, // mm
+  MIN_HONEYCOMB_MARGIN: 1, // mm
+  MAX_HONEYCOMB_MARGIN: 10, // mm
+  HONEYCOMB_MARGIN_STEP: 0.5, // mm
+  // Eco mode: Sinusoidal walls
+  MIN_WAVE_AMPLITUDE: 0.5, // mm
+  MAX_WAVE_AMPLITUDE: 4, // mm
+  WAVE_AMPLITUDE_STEP: 0.1, // mm
+  MIN_WAVE_FREQUENCY: 1, // cycles per grid unit
+  MAX_WAVE_FREQUENCY: 6, // cycles per grid unit
+  WAVE_FREQUENCY_STEP: 0.5,
+  MIN_WAVE_BASE_THICKNESS: 0.4, // mm
+  MAX_WAVE_BASE_THICKNESS: 1.2, // mm
+  WAVE_BASE_THICKNESS_STEP: 0.2, // mm
 } as const;
 
 /**

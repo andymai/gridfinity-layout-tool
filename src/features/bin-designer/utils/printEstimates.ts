@@ -152,6 +152,36 @@ function computeBinVolume(params: BinParams): number {
     volume -= computeScoopVolume(params, outerW, outerD, wallThickness);
   }
 
+  // Eco: Honeycomb floor (removes material from floor)
+  if (params.eco.honeycombFloor.enabled && !params.eco.sinusoidalWall.enabled) {
+    volume -= computeHoneycombFloorReduction(params, outerW, outerD, wallThickness);
+  }
+
+  // Eco: Honeycomb walls (removes material from outer walls)
+  if (params.eco.honeycombWall.mode !== 'none' && !params.eco.sinusoidalWall.enabled) {
+    volume -= computeHoneycombWallReduction(
+      params,
+      outerW,
+      outerD,
+      totalH - bottomH,
+      wallThickness
+    );
+  }
+
+  // Eco: Sinusoidal walls (replace hollow box shell with wave walls)
+  if (params.eco.sinusoidalWall.enabled) {
+    // Subtract the standard shell volume and add wave wall volume instead
+    const standardShellVolume = computeHollowBoxVolume(
+      outerW,
+      outerD,
+      totalH,
+      wallThickness,
+      bottomH
+    );
+    const waveVolume = computeSinusoidalWallVolume(params, outerW, outerD, totalH - bottomH);
+    volume = volume - standardShellVolume + waveVolume;
+  }
+
   // Volume cannot be negative (scoops on tiny bins)
   return Math.max(0, volume);
 }
@@ -330,4 +360,139 @@ function computeScoopVolume(
   const volumePerScoop = (Math.PI / 4) * scoopRadius * scoopRadius * colWidth;
 
   return numScoops * volumePerScoop;
+}
+
+// ─── Eco Mode Volume ────────────────────────────────────────────────────────
+
+/**
+ * Volume removed by honeycomb floor pattern.
+ *
+ * Approximates as hex packing density (~90.7%) of the usable floor area,
+ * minus margins, times floor thickness.
+ */
+function computeHoneycombFloorReduction(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  wallThickness: number
+): number {
+  const { honeycombFloor } = params.eco;
+  const innerW = outerW - 2 * wallThickness;
+  const innerD = outerD - 2 * wallThickness;
+  const margin = honeycombFloor.margin;
+
+  const usableW = innerW - 2 * margin;
+  const usableD = innerD - 2 * margin;
+  if (usableW <= 0 || usableD <= 0) return 0;
+
+  // Circle packing density ≈ π/(2√3) ≈ 0.9069
+  const packingDensity = Math.PI / (2 * Math.sqrt(3));
+  // Each circle area = π × (cellSize/2)²; packing fills ~90.7% of usable area
+  const removalArea = usableW * usableD * packingDensity;
+  // Floor thickness = wall thickness
+  return removalArea * wallThickness;
+}
+
+/**
+ * Volume removed by honeycomb wall pattern.
+ *
+ * For each wall, computes the pattern zone area and applies packing density.
+ * Pocketed mode: 60% of wall thickness. Perforated: full wall thickness.
+ */
+function computeHoneycombWallReduction(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  wallHeight: number,
+  wallThickness: number
+): number {
+  const { honeycombWall } = params.eco;
+  if (honeycombWall.mode === 'none') return 0;
+
+  const innerW = outerW - 2 * wallThickness;
+  const innerD = outerD - 2 * wallThickness;
+  const patternHeight = wallHeight - honeycombWall.topMargin - honeycombWall.bottomMargin;
+  if (patternHeight <= 0) return 0;
+
+  const cutDepth = honeycombWall.mode === 'pocketed' ? wallThickness * 0.6 : wallThickness;
+
+  const packingDensity = Math.PI / (2 * Math.sqrt(3));
+
+  // Two width-axis walls + two depth-axis walls
+  const totalPatternArea = 2 * innerW * patternHeight + 2 * innerD * patternHeight;
+  return totalPatternArea * packingDensity * cutDepth;
+}
+
+/**
+ * Volume of sinusoidal wave walls (replaces hollow box volume).
+ *
+ * Each wave wall is approximated as a rectangular slab with the
+ * cross-sectional area of the sine wave membrane.
+ * Sine wave average thickness ≈ baseThickness (the wave adds lateral
+ * displacement but doesn't change the cross-section volume significantly).
+ */
+function computeSinusoidalWallVolume(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  wallHeight: number
+): number {
+  const { sinusoidalWall } = params.eco;
+  const baseThickness = sinusoidalWall.baseThickness;
+
+  // Floor plate (same as standard)
+  const floorVolume = outerW * outerD * params.wallThickness;
+
+  // Four walls: wall length × wall height × membrane thickness
+  // Sine wave path is longer than straight line by factor ~√(1 + (2πfA/L)²)
+  // but cross-section is baseThickness, so volume ≈ length × height × baseThickness
+  const wallVolume = 2 * (outerW + outerD) * wallHeight * baseThickness;
+
+  // Corner posts
+  const postSize = Math.max(
+    2,
+    params.wallThickness +
+      (sinusoidalWall.amplitude === 'auto' ? params.wallThickness * 1.5 : sinusoidalWall.amplitude)
+  );
+  const cornerVolume = 4 * postSize * postSize * wallHeight;
+
+  return floorVolume + wallVolume + cornerVolume;
+}
+
+/**
+ * Calculate eco savings compared to standard bin.
+ *
+ * @param params Current bin parameters (with eco config)
+ * @param printSettings User print settings
+ * @returns Savings percentage and both estimates
+ */
+export function calculateEcoSavings(
+  params: BinParams,
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
+): {
+  savingsPercent: number;
+  ecoEstimate: PrintEstimate;
+  standardEstimate: PrintEstimate;
+} {
+  const ecoEstimate = estimatePrint(params, printSettings);
+
+  // Build standard params (eco disabled) for comparison
+  const standardParams: BinParams = {
+    ...params,
+    eco: {
+      honeycombFloor: { ...params.eco.honeycombFloor, enabled: false },
+      honeycombWall: { ...params.eco.honeycombWall, mode: 'none' },
+      sinusoidalWall: { ...params.eco.sinusoidalWall, enabled: false },
+    },
+  };
+  const standardEstimate = estimatePrint(standardParams, printSettings);
+
+  const savingsPercent =
+    standardEstimate.volumeMm3 > 0
+      ? Math.round(
+          ((standardEstimate.volumeMm3 - ecoEstimate.volumeMm3) / standardEstimate.volumeMm3) * 100
+        )
+      : 0;
+
+  return { savingsPercent, ecoEstimate, standardEstimate };
 }

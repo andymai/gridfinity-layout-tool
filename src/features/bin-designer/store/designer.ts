@@ -13,6 +13,9 @@ import type {
   BinParams,
   BaseConfig,
   LabelTabConfig,
+  HoneycombFloorConfig,
+  HoneycombWallConfig,
+  SinusoidalWallConfig,
   Insert,
   ExportFileNameConfig,
   GenerationStatus,
@@ -154,6 +157,38 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params.label, partial);
+      });
+    },
+
+    updateHoneycombFloor: (partial: Partial<HoneycombFloorConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        Object.assign(state.params.eco.honeycombFloor, partial);
+      });
+    },
+
+    updateHoneycombWall: (partial: Partial<HoneycombWallConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        Object.assign(state.params.eco.honeycombWall, partial);
+      });
+    },
+
+    updateSinusoidalWall: (partial: Partial<SinusoidalWallConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        Object.assign(state.params.eco.sinusoidalWall, partial);
+      });
+    },
+
+    applyEcoPreset: () => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.wallThickness = 0.8;
+        state.params.eco.honeycombFloor.enabled = true;
+        state.params.eco.honeycombWall.mode = 'pocketed';
+        // Wave walls are mutually exclusive with honeycomb walls
+        state.params.eco.sinusoidalWall.enabled = false;
       });
     },
 

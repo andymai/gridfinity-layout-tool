@@ -20,6 +20,11 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
+import {
+  buildHoneycombFloorCuts,
+  buildHoneycombWallCuts,
+  buildSinusoidalWallBox,
+} from './ecoBuilder';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -875,8 +880,12 @@ export function generateBin(
   );
 
   // Stage 2: Build bin box (walls + floor)
+  // Sinusoidal wave walls replace the standard shell entirely
   onProgress?.('shell', 0.3);
-  const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness);
+  const useWaveWalls = params.eco.sinusoidalWall.enabled;
+  const box = useWaveWalls
+    ? buildSinusoidalWallBox(params, params.width, params.depth, wallHeight, forExport)
+    : buildBinBox(params.width, params.depth, wallHeight, wallThickness);
 
   // Stage 3: Assemble base + shell + stacking lip
   onProgress?.('features', 0.4);
@@ -958,6 +967,30 @@ export function generateBin(
           '[BinGen] Label tab fusion failed, skipping:',
           e instanceof Error ? e.message : e
         );
+      }
+    }
+  }
+
+  // Eco: Honeycomb floor cuts (only with standard shell, not wave walls)
+  if (!useWaveWalls) {
+    const floorCuts = buildHoneycombFloorCuts(params, innerW, innerD);
+    if (floorCuts) {
+      try {
+        bin = bin.cut(floorCuts);
+      } catch (e) {
+        console.warn('[BinGen] Honeycomb floor failed:', e instanceof Error ? e.message : e);
+      }
+    }
+  }
+
+  // Eco: Honeycomb wall cuts (only with standard shell, not wave walls)
+  if (!useWaveWalls) {
+    const wallCuts = buildHoneycombWallCuts(params, innerW, innerD, wallHeight);
+    if (wallCuts) {
+      try {
+        bin = bin.cut(wallCuts);
+      } catch (e) {
+        console.warn('[BinGen] Honeycomb walls failed:', e instanceof Error ? e.message : e);
       }
     }
   }

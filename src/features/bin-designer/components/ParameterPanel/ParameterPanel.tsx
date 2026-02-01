@@ -16,10 +16,12 @@ import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
+import { EcoSection } from '../panel/EcoSection';
 import { SectionGroup } from '../panel/SectionGroup';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
+import { useEcoGroupSummary } from './useEcoGroupSummary';
 import { useTranslation } from '@/i18n';
 
 export function ParameterPanel() {
@@ -27,6 +29,7 @@ export function ParameterPanel() {
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
+  const ecoSummary = useEcoGroupSummary();
 
   return (
     <div className="flex h-full flex-col">
@@ -62,6 +65,13 @@ export function ParameterPanel() {
           </div>
           <div className="px-4 py-4">
             <PhysicalUnitsSection />
+          </div>
+        </SectionGroup>
+
+        {/* Eco group */}
+        <SectionGroup title={t('binDesigner.group.eco')} defaultExpanded summary={ecoSummary}>
+          <div className="px-4 py-4">
+            <EcoSection />
           </div>
         </SectionGroup>
 
