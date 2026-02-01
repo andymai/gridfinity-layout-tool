@@ -1,18 +1,31 @@
 /**
  * Filament cost, time, and spool percentage calculation utilities.
+ *
+ * Used by the print-export feature for batch estimation of layout bins.
+ * Shares constants and time scaling with the bin-designer estimator
+ * via the shared printSettings module.
  */
 
-// Constants
-export const DEFAULT_METERS_PER_KG = 330; // 1.75mm PLA
-export const DEFAULT_COST_PER_KG = 15; // $15/kg baseline
+import {
+  METERS_PER_KG,
+  OVERHEAD_MINUTES,
+  MINUTES_PER_METER,
+  DEFAULT_PRINT_SETTINGS,
+  scalePrintTime,
+  type PrintSettings,
+} from '@/shared/printSettings';
+
+// Re-export for backward compatibility
+export const DEFAULT_METERS_PER_KG = METERS_PER_KG;
+export const DEFAULT_COST_PER_KG = DEFAULT_PRINT_SETTINGS.filamentCostPerKg;
 
 /**
  * Calculate cost estimate from filament meters.
  */
 export function calcFilamentCost(
   filamentMeters: number,
-  costPerKg: number = DEFAULT_COST_PER_KG,
-  metersPerKg: number = DEFAULT_METERS_PER_KG
+  costPerKg: number = DEFAULT_PRINT_SETTINGS.filamentCostPerKg,
+  metersPerKg: number = METERS_PER_KG
 ): number {
   const kgUsed = filamentMeters / metersPerKg;
   return Math.round(kgUsed * costPerKg * 100) / 100; // Round to cents
@@ -23,7 +36,7 @@ export function calcFilamentCost(
  */
 export function calcSpoolPercentage(
   filamentMeters: number,
-  metersPerKg: number = DEFAULT_METERS_PER_KG
+  metersPerKg: number = METERS_PER_KG
 ): number {
   return Math.round((filamentMeters / metersPerKg) * 1000) / 10; // 1 decimal, e.g., 15.2%
 }
@@ -37,19 +50,19 @@ export function calcSpoolPercentage(
  * - 2×2×3u (5.6m) = 35 min
  * - 3×3×3u (9.9m) = 52 min
  *
- * Model: time = (numJobs × 16 min overhead) + (filament × 3.6 min/m)
- * - Overhead: bed heating, first layer, cooling pauses
- * - Rate: extrusion time, travel moves, retractions
- *
- * Max error: ~1 min per bin across calibration data.
+ * Model: time = (numJobs × overhead) + (filament × rate)
+ * Then scaled by user's layer height and infill settings.
  *
  * Returns hours.
  */
-export function calcPrintTimeHours(filamentMeters: number, numPrintJobs: number = 1): number {
-  const overheadMinutesPerJob = 16;
-  const minutesPerMeter = 3.6;
-  const totalMinutes = numPrintJobs * overheadMinutesPerJob + filamentMeters * minutesPerMeter;
-  return Math.round((totalMinutes / 60) * 10) / 10; // 1 decimal hour
+export function calcPrintTimeHours(
+  filamentMeters: number,
+  numPrintJobs: number = 1,
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
+): number {
+  const baseMinutes = numPrintJobs * OVERHEAD_MINUTES + filamentMeters * MINUTES_PER_METER;
+  const scaledMinutes = scalePrintTime(baseMinutes, printSettings);
+  return Math.round((scaledMinutes / 60) * 10) / 10; // 1 decimal hour
 }
 
 /**

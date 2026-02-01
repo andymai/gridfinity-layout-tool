@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORIES } from '@/core/constants';
+import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
+import type { PrintSettings } from '@/shared/printSettings';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
@@ -34,6 +36,13 @@ export function DefaultsTab() {
     handleSaveCategoriesAsDefaults,
     hasCustomCategoryDefaults,
   } = useDrawerSettings();
+
+  const updatePrintSetting = useCallback(
+    <K extends keyof PrintSettings>(key: K, value: PrintSettings[K]) => {
+      updateSetting('printSettings', { ...settings.printSettings, [key]: value });
+    },
+    [settings.printSettings, updateSetting]
+  );
 
   const handleCopyFromLayout = () => {
     updateSetting('defaultDrawerWidth', drawer.width);
@@ -195,6 +204,81 @@ export function DefaultsTab() {
         >
           {t('settings.copyFromCurrentLayout')}
         </button>
+      </section>
+
+      {/* Divider */}
+      <hr className="border-stroke-subtle" />
+
+      {/* Print Estimates Section */}
+      <section>
+        <h3 className="text-base font-semibold text-content mb-1">
+          {t('settings.printEstimates')}
+        </h3>
+        <p className="text-xs text-content-tertiary mb-3">{t('settings.printEstimatesHint')}</p>
+
+        <div className="text-xs text-content-secondary space-y-3">
+          <SettingsRow
+            label={t('settings.filamentCostPerKg')}
+            htmlFor="filamentCostPerKg"
+            unit="$/kg"
+          >
+            <DeferredNumberInput
+              id="filamentCostPerKg"
+              value={settings.printSettings.filamentCostPerKg}
+              onChange={(value) =>
+                updatePrintSetting(
+                  'filamentCostPerKg',
+                  Math.max(
+                    PRINT_SETTINGS_CONSTRAINTS.COST_MIN,
+                    Math.min(PRINT_SETTINGS_CONSTRAINTS.COST_MAX, value)
+                  )
+                )
+              }
+              min={PRINT_SETTINGS_CONSTRAINTS.COST_MIN}
+              max={PRINT_SETTINGS_CONSTRAINTS.COST_MAX}
+              step={PRINT_SETTINGS_CONSTRAINTS.COST_STEP}
+              className="input w-14 py-0.5 px-1 text-xs text-right"
+            />
+          </SettingsRow>
+          <SettingsRow label={t('settings.printLayerHeight')} htmlFor="printLayerHeight" unit="mm">
+            <DeferredNumberInput
+              id="printLayerHeight"
+              value={settings.printSettings.layerHeightMm}
+              onChange={(value) =>
+                updatePrintSetting(
+                  'layerHeightMm',
+                  Math.max(
+                    PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MIN,
+                    Math.min(PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX, value)
+                  )
+                )
+              }
+              min={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MIN}
+              max={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX}
+              step={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_STEP}
+              className="input w-14 py-0.5 px-1 text-xs text-right"
+            />
+          </SettingsRow>
+          <SettingsRow label={t('settings.infillPercent')} htmlFor="infillPercent" unit="%">
+            <DeferredNumberInput
+              id="infillPercent"
+              value={settings.printSettings.infillPercent}
+              onChange={(value) =>
+                updatePrintSetting(
+                  'infillPercent',
+                  Math.max(
+                    PRINT_SETTINGS_CONSTRAINTS.INFILL_MIN,
+                    Math.min(PRINT_SETTINGS_CONSTRAINTS.INFILL_MAX, value)
+                  )
+                )
+              }
+              min={PRINT_SETTINGS_CONSTRAINTS.INFILL_MIN}
+              max={PRINT_SETTINGS_CONSTRAINTS.INFILL_MAX}
+              step={PRINT_SETTINGS_CONSTRAINTS.INFILL_STEP}
+              className="input w-14 py-0.5 px-1 text-xs text-right"
+            />
+          </SettingsRow>
+        </div>
       </section>
 
       {/* Divider */}

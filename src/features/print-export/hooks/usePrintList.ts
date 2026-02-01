@@ -5,7 +5,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore, useUIStore, useSettingsStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
 import { generateEnhancedPrintList } from '@/features/print-export/utils/split';
 import {
@@ -16,7 +16,6 @@ import {
   calcFilamentCost,
   calcSpoolPercentage,
   calcPrintTimeHours,
-  DEFAULT_COST_PER_KG,
   DEFAULT_METERS_PER_KG,
 } from '@/features/print-export/utils/printEstimates';
 import type {
@@ -34,11 +33,6 @@ const DEFAULT_FILTERS: PrintListFilters = {
   sortKey: 'default',
   sortOrder: 'desc',
   groupByCategory: false,
-};
-
-const DEFAULT_CONFIG: PrintListConfig = {
-  filamentCostPerKg: DEFAULT_COST_PER_KG,
-  metersPerKg: DEFAULT_METERS_PER_KG,
 };
 
 export interface UsePrintListReturn {
@@ -77,7 +71,18 @@ export interface UsePrintListReturn {
 
 export function usePrintList(): UsePrintListReturn {
   const [filters, setFilters] = useState<PrintListFilters>(DEFAULT_FILTERS);
-  const [config, setConfig] = useState<PrintListConfig>(DEFAULT_CONFIG);
+
+  const printSettings = useSettingsStore((s) => s.settings.printSettings);
+
+  // Derive config from global print settings
+  const [configOverrides, setConfigOverrides] = useState<Partial<PrintListConfig>>({});
+  const config: PrintListConfig = useMemo(
+    () => ({
+      filamentCostPerKg: configOverrides.filamentCostPerKg ?? printSettings.filamentCostPerKg,
+      metersPerKg: configOverrides.metersPerKg ?? DEFAULT_METERS_PER_KG,
+    }),
+    [printSettings.filamentCostPerKg, configOverrides]
+  );
 
   const { layout } = useLayoutStore(
     useShallow((state) => ({
@@ -124,12 +129,12 @@ export function usePrintList(): UsePrintListReturn {
       totalPieces,
       totalFilament,
       totalCost: calcFilamentCost(totalFilament, config.filamentCostPerKg, config.metersPerKg),
-      totalPrintTimeHours: calcPrintTimeHours(totalFilament, rows.length),
+      totalPrintTimeHours: calcPrintTimeHours(totalFilament, rows.length, printSettings),
       spoolEstimate: Math.ceil((totalFilament / config.metersPerKg) * 10) / 10,
       spoolPercentage: calcSpoolPercentage(totalFilament, config.metersPerKg),
       hasAnySplits,
     };
-  }, [rows, config.filamentCostPerKg, config.metersPerKg]);
+  }, [rows, config.filamentCostPerKg, config.metersPerKg, printSettings]);
 
   // Actions
   const setSort = useCallback((key: PrintListSortKey) => {
@@ -167,7 +172,7 @@ export function usePrintList(): UsePrintListReturn {
   }, []);
 
   const setFilamentCostPerKg = useCallback((cost: number) => {
-    setConfig((c) => ({ ...c, filamentCostPerKg: Math.max(0, cost) }));
+    setConfigOverrides((c) => ({ ...c, filamentCostPerKg: Math.max(0, cost) }));
   }, []);
 
   const selectBinsByRow = useCallback(

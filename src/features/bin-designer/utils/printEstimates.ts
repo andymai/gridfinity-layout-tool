@@ -4,28 +4,24 @@
  * Analytically computes material volume from bin parameters,
  * then derives filament usage and print time estimates.
  *
- * Volume is computed as: outer shell + dividers + gussets (minus cavity).
+ * Volume is computed as:
+ *   shell + base socket + stacking lip + dividers + gussets + label tabs − scoops
+ *
  * This avoids expensive mesh-based volume integration.
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
-
-// ─── Material Constants ──────────────────────────────────────────────────────
-
-/** PLA density in g/cm³ */
-const PLA_DENSITY = 1.24;
-
-/** 1.75mm filament cross-section area in mm² */
-const FILAMENT_AREA_MM2 = Math.PI * (1.75 / 2) ** 2;
-
-/** Default cost per kg of filament (USD) */
-const DEFAULT_COST_PER_KG = 25;
-
-/** Print speed constants (calibrated for 0.4mm nozzle, 0.2mm layer, 15% infill) */
-const OVERHEAD_MINUTES = 16; // Bed heat, first layer
-const MINUTES_PER_METER = 3.6; // Extrusion + travel
+import {
+  PLA_DENSITY,
+  FILAMENT_AREA_MM2,
+  OVERHEAD_MINUTES,
+  MINUTES_PER_METER,
+  DEFAULT_PRINT_SETTINGS,
+  scalePrintTime,
+  type PrintSettings,
+} from '@/shared/printSettings';
 
 // ─── Result Type ─────────────────────────────────────────────────────────────
 
@@ -48,19 +44,23 @@ export interface PrintEstimate {
  * Computes print estimates from bin parameters.
  *
  * @param params - Complete bin parameter set
- * @param costPerKg - Filament cost in USD/kg (default $25)
+ * @param printSettings - User print settings (cost, layer height, infill)
  * @returns Print estimates including volume, mass, filament length, time, and cost
  */
 export function estimatePrint(
   params: BinParams,
-  costPerKg: number = DEFAULT_COST_PER_KG
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
 ): PrintEstimate {
   const volumeMm3 = computeBinVolume(params);
   const volumeCm3 = volumeMm3 / 1000; // mm³ → cm³
   const gramsFilament = volumeCm3 * PLA_DENSITY;
   const metersFilament = volumeMm3 / FILAMENT_AREA_MM2 / 1000; // mm³ → mm length → m
-  const printTimeMinutes = OVERHEAD_MINUTES + metersFilament * MINUTES_PER_METER;
-  const costUSD = (gramsFilament / 1000) * costPerKg; // g → kg × $/kg
+
+  // Base time at calibration settings, then scale for user's layer height / infill
+  const baseTimeMinutes = OVERHEAD_MINUTES + metersFilament * MINUTES_PER_METER;
+  const printTimeMinutes = scalePrintTime(baseTimeMinutes, printSettings);
+
+  const costUSD = (gramsFilament / 1000) * printSettings.filamentCostPerKg; // g → kg × $/kg
 
   return {
     volumeMm3: Math.round(volumeMm3),
@@ -96,11 +96,12 @@ export function formatFilament(meters: number): string {
  *
  * Components:
  * 1. Outer shell (walls + bottom)
- * 2. Divider walls
- * 3. Corner gussets (solid style)
- *
- * Label tabs are small relative to the bin volume
- * and are included as minor additions rather than subtractions.
+ * 2. Base socket (per-cell baseplate interface)
+ * 3. Stacking lip (top perimeter profile)
+ * 4. Divider walls
+ * 5. Corner gussets (solid style)
+ * 6. Label tabs (if enabled)
+ * 7. Scoops (if enabled, negative — removes material)
  */
 function computeBinVolume(params: BinParams): number {
   const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
@@ -120,6 +121,14 @@ function computeBinVolume(params: BinParams): number {
   // Shell volume (outer walls + bottom)
   volume += computeHollowBoxVolume(outerW, outerD, totalH, wallThickness, bottomH);
 
+  // Base socket (per grid cell, tapered profile that slides onto baseplate)
+  volume += computeBaseSocketVolume(params.width, params.depth);
+
+  // Stacking lip (sits on top of bin body)
+  if (params.base.stackingLip) {
+    volume += computeStackingLipVolume(outerW, outerD);
+  }
+
   // Divider volumes
   if (!constraints.disabledFeatures.includes('dividers')) {
     volume += computeDividerVolume(params, outerW, outerD, totalH, wallThickness, bottomH);
@@ -133,8 +142,21 @@ function computeBinVolume(params: BinParams): number {
     volume += 4 * 0.5 * gussetSize * gussetSize * gussetHeight;
   }
 
-  return volume;
+  // Label tabs (shelf + support structure)
+  if (params.label.enabled && !constraints.disabledFeatures.includes('label')) {
+    volume += computeLabelTabVolume(params, outerW, wallThickness);
+  }
+
+  // Scoops (remove material from compartment front walls)
+  if (params.scoop.enabled) {
+    volume -= computeScoopVolume(params, outerW, outerD, wallThickness);
+  }
+
+  // Volume cannot be negative (scoops on tiny bins)
+  return Math.max(0, volume);
 }
+
+// ─── Shell & Structure ───────────────────────────────────────────────────────
 
 /**
  * Volume of a hollow box (outer - inner cavity).
@@ -157,6 +179,41 @@ function computeHollowBoxVolume(
 
   return outerVol - innerW * innerD * innerH;
 }
+
+/**
+ * Volume of base socket structure (per-cell interface to baseplate).
+ *
+ * Each full grid cell has a tapered socket (~5mm deep). The socket is a
+ * thin-walled shell approximately 3.5mm thick around the cell perimeter.
+ * Half-cells share proportional socket volume.
+ */
+function computeBaseSocketVolume(widthUnits: number, depthUnits: number): number {
+  // Each 1×1 cell: ~42×42mm footprint, socket shell ~3.5mm thick, 5mm deep
+  const cellSize = GRIDFINITY.GRID_SIZE;
+  const shellThickness = 3.5; // approximate average socket shell thickness
+  const outerArea = cellSize * cellSize;
+  const innerSide = cellSize - 2 * shellThickness;
+  const innerArea = innerSide * innerSide;
+  const shellArea = outerArea - innerArea;
+  const volumePerFullCell = shellArea * GRIDFINITY.SOCKET_HEIGHT;
+
+  // Scale by actual grid area (handles fractional cells like 1.5×2)
+  return volumePerFullCell * widthUnits * depthUnits;
+}
+
+/**
+ * Volume of stacking lip (4.4mm tall perimeter profile on top of bin).
+ *
+ * The lip is a thin-walled band around the bin perimeter. We approximate
+ * it as a rectangular ring with average width ~2mm.
+ */
+function computeStackingLipVolume(outerW: number, outerD: number): number {
+  const lipThickness = 2; // mm average wall thickness of lip profile
+  const perimeter = 2 * (outerW + outerD);
+  return perimeter * lipThickness * GRIDFINITY.LIP_HEIGHT;
+}
+
+// ─── Dividers ────────────────────────────────────────────────────────────────
 
 /**
  * Volume of all divider walls inside the cavity.
@@ -204,4 +261,73 @@ function computeDividerVolume(
 
   // Volume = total wall length × thickness × height
   return totalLength * thickness * dividerH;
+}
+
+// ─── Interior Features ───────────────────────────────────────────────────────
+
+/**
+ * Volume of label tabs (one per compartment column, back wall).
+ *
+ * Each tab consists of:
+ * - Shelf: horizontal plate (depth × width × wallThickness)
+ * - Support: bracket gussets or solid triangle underneath
+ */
+function computeLabelTabVolume(params: BinParams, outerW: number, wallThickness: number): number {
+  const { cols } = params.compartments;
+  const { depth: tabDepth, width: widthPercent, support } = params.label;
+
+  const innerW = outerW - 2 * wallThickness;
+  const colWidth = innerW / cols;
+  const tabWidth = (colWidth * widthPercent) / 100;
+
+  // Shelf: horizontal plate
+  const shelfThickness = wallThickness;
+  const shelfVolume = tabDepth * tabWidth * shelfThickness;
+
+  // Support structure beneath the shelf
+  let supportVolume = 0;
+  if (support === 'bracket') {
+    // Two triangular gussets per tab
+    const gussetSize = tabDepth;
+    supportVolume = 2 * 0.5 * gussetSize * gussetSize * wallThickness;
+  } else {
+    // Solid triangular fill
+    supportVolume = 0.5 * tabDepth * tabDepth * wallThickness;
+  }
+
+  return cols * (shelfVolume + supportVolume);
+}
+
+/**
+ * Volume removed by scoop ramp (negative contribution).
+ *
+ * Each scoop is approximated as a quarter-cylinder carved from
+ * the front of a compartment.
+ */
+function computeScoopVolume(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  wallThickness: number
+): number {
+  const { rows, cols } = params.compartments;
+
+  const innerW = outerW - 2 * wallThickness;
+  const innerD = outerD - 2 * wallThickness;
+  const colWidth = innerW / cols;
+  const rowDepth = innerD / rows;
+
+  // Resolve 'auto' radius
+  const scoopRadius =
+    params.scoop.radius === 'auto'
+      ? Math.min(Math.min(colWidth, rowDepth) / 3, 15)
+      : params.scoop.radius;
+
+  // Count scooped compartments: front row only, or all rows
+  const numScoops = params.scoop.allRows ? cols * rows : cols;
+
+  // Quarter-cylinder: π/4 × r² × width (across compartment)
+  const volumePerScoop = (Math.PI / 4) * scoopRadius * scoopRadius * colWidth;
+
+  return numScoops * volumePerScoop;
 }

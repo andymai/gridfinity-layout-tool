@@ -8,27 +8,28 @@ import {
   DEFAULT_METERS_PER_KG,
   DEFAULT_COST_PER_KG,
 } from '@/features/print-export/utils/printEstimates';
+import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 describe('printEstimates', () => {
   describe('calcFilamentCost', () => {
     it('calculates cost correctly with default values', () => {
-      // 330m @ $15/kg = 1kg = $15
-      expect(calcFilamentCost(330)).toBe(15);
+      // 330m @ $20/kg = 1kg = $20
+      expect(calcFilamentCost(330)).toBe(20);
     });
 
     it('calculates cost with custom cost per kg', () => {
-      // 330m @ $20/kg = 1kg = $20
+      // 330m @ $20/kg = 1kg = $20 (explicit)
       expect(calcFilamentCost(330, 20)).toBe(20);
     });
 
     it('calculates cost with custom meters per kg', () => {
-      // 400m @ $15/kg with 400m/kg = 1kg = $15
-      expect(calcFilamentCost(400, 15, 400)).toBe(15);
+      // 400m @ $20/kg with 400m/kg = 1kg = $20
+      expect(calcFilamentCost(400, 20, 400)).toBe(20);
     });
 
     it('rounds to cents (2 decimal places)', () => {
-      // 100m @ $15/kg with 330m/kg = 0.303kg × $15 = $4.545 → $4.55
-      expect(calcFilamentCost(100)).toBe(4.55);
+      // 100m @ $20/kg with 330m/kg = 0.303kg × $20 = $6.060 → $6.06
+      expect(calcFilamentCost(100)).toBe(6.06);
     });
 
     it('handles 0 filament', () => {
@@ -36,24 +37,24 @@ describe('printEstimates', () => {
     });
 
     it('handles very small amounts', () => {
-      // 1m @ $15/kg = 0.003kg × $15 = $0.045 → $0.05
-      expect(calcFilamentCost(1)).toBe(0.05);
+      // 1m @ $20/kg = 0.003kg × $20 = $0.060 → $0.06
+      expect(calcFilamentCost(1)).toBe(0.06);
     });
 
     it('handles very large amounts', () => {
-      // 10000m = ~30.3kg × $15 = $454.55
+      // 10000m = ~30.3kg × $20 = $606.06
       const cost = calcFilamentCost(10000);
-      expect(cost).toBeCloseTo(454.55, 2);
+      expect(cost).toBeCloseTo(606.06, 2);
     });
 
     it('preserves precision for exact values', () => {
-      // 165m = 0.5kg × $15 = $7.50
-      expect(calcFilamentCost(165)).toBe(7.5);
+      // 165m = 0.5kg × $20 = $10.00
+      expect(calcFilamentCost(165)).toBe(10);
     });
 
     it('uses default constants correctly', () => {
       expect(DEFAULT_METERS_PER_KG).toBe(330);
-      expect(DEFAULT_COST_PER_KG).toBe(15);
+      expect(DEFAULT_COST_PER_KG).toBe(DEFAULT_PRINT_SETTINGS.filamentCostPerKg);
     });
   });
 
@@ -93,7 +94,7 @@ describe('printEstimates', () => {
   });
 
   describe('calcPrintTimeHours', () => {
-    it('calculates time for single job', () => {
+    it('calculates time for single job at baseline settings', () => {
       // Model: time = (1 × 16 min) + (0 × 3.6 min/m) = 16 min = 0.3h
       expect(calcPrintTimeHours(0, 1)).toBe(0.3);
     });
@@ -117,7 +118,6 @@ describe('printEstimates', () => {
 
     it('calibrates correctly against real print data (3x3x3u)', () => {
       // 3×3×3u (9.9m) = ~52 min according to calibration
-      // Actual: (16 + 9.9*3.6) = 51.64 min, rounds to 0.9h = 54min due to 1-decimal rounding
       const hours = calcPrintTimeHours(9.9);
       expect(hours * 60).toBeCloseTo(54, 0); // Allow for rounding
     });
@@ -140,6 +140,26 @@ describe('printEstimates', () => {
       // Should be rounded, not showing many decimal places
       const time = calcPrintTimeHours(5);
       expect(time.toString()).toMatch(/^\d+(\.\d)?$/);
+    });
+
+    it('scales time for thinner layer height', () => {
+      // 0.1mm layers = 2× baseline (0.2mm), so time should roughly double
+      const baseTime = calcPrintTimeHours(10, 1);
+      const thinTime = calcPrintTimeHours(10, 1, {
+        ...DEFAULT_PRINT_SETTINGS,
+        layerHeightMm: 0.1,
+      });
+      expect(thinTime).toBeGreaterThan(baseTime * 1.5);
+    });
+
+    it('scales time for higher infill', () => {
+      // Higher infill should take longer
+      const baseTime = calcPrintTimeHours(10, 1);
+      const denseTime = calcPrintTimeHours(10, 1, {
+        ...DEFAULT_PRINT_SETTINGS,
+        infillPercent: 100,
+      });
+      expect(denseTime).toBeGreaterThan(baseTime);
     });
   });
 

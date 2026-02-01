@@ -5,6 +5,7 @@ import {
   formatFilament,
 } from '@/features/bin-designer/utils/printEstimates';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 import type { BinParams } from '@/features/bin-designer/types';
 
 describe('printEstimates', () => {
@@ -84,8 +85,10 @@ describe('printEstimates', () => {
     });
 
     it('cost scales with filament usage', () => {
-      const cheapCost = estimatePrint(DEFAULT_BIN_PARAMS, 10);
-      const expensiveCost = estimatePrint(DEFAULT_BIN_PARAMS, 50);
+      const cheapSettings = { ...DEFAULT_PRINT_SETTINGS, filamentCostPerKg: 10 };
+      const expensiveSettings = { ...DEFAULT_PRINT_SETTINGS, filamentCostPerKg: 50 };
+      const cheapCost = estimatePrint(DEFAULT_BIN_PARAMS, cheapSettings);
+      const expensiveCost = estimatePrint(DEFAULT_BIN_PARAMS, expensiveSettings);
       expect(expensiveCost.costUSD).toBeGreaterThan(cheapCost.costUSD);
       // Cost should scale linearly
       expect(expensiveCost.costUSD / cheapCost.costUSD).toBeCloseTo(5, 0);
@@ -99,10 +102,10 @@ describe('printEstimates', () => {
 
     it('volume is reasonable for a 2x2x3 standard bin', () => {
       const est = estimatePrint(DEFAULT_BIN_PARAMS);
-      // A 2x2x3 bin is about 83.5 × 83.5 × 26 mm
-      // Shell volume should be between 10,000 and 100,000 mm³
+      // A 2x2x3 bin with base socket and lip: should be more material than before
+      // Shell + socket + lip volume between 10,000 and 150,000 mm³
       expect(est.volumeMm3).toBeGreaterThan(10000);
-      expect(est.volumeMm3).toBeLessThan(100000);
+      expect(est.volumeMm3).toBeLessThan(150000);
     });
 
     it('returns rounded values', () => {
@@ -120,6 +123,107 @@ describe('printEstimates', () => {
       const est = estimatePrint(params);
       expect(est.volumeMm3).toBeGreaterThan(0);
       expect(est.gramsFilament).toBeGreaterThan(0);
+    });
+
+    // ─── New tests for enhanced volume calculation ───────────────────────
+
+    it('stacking lip adds volume when enabled', () => {
+      const withLip = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      });
+      const withoutLip = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      });
+      expect(withLip.volumeMm3).toBeGreaterThan(withoutLip.volumeMm3);
+    });
+
+    it('label tabs add volume when enabled', () => {
+      const withLabel = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      });
+      const withoutLabel = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: false },
+      });
+      expect(withLabel.volumeMm3).toBeGreaterThan(withoutLabel.volumeMm3);
+    });
+
+    it('scoop removes volume when enabled', () => {
+      const withScoop = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      });
+      const withoutScoop = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: false },
+      });
+      expect(withScoop.volumeMm3).toBeLessThan(withoutScoop.volumeMm3);
+    });
+
+    // ─── New tests for parametric time scaling ───────────────────────────
+
+    it('thinner layers increase print time', () => {
+      const baseline = estimatePrint(DEFAULT_BIN_PARAMS);
+      const thinLayers = estimatePrint(DEFAULT_BIN_PARAMS, {
+        ...DEFAULT_PRINT_SETTINGS,
+        layerHeightMm: 0.12,
+      });
+      expect(thinLayers.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes);
+    });
+
+    it('thicker layers decrease print time', () => {
+      const baseline = estimatePrint(DEFAULT_BIN_PARAMS);
+      const thickLayers = estimatePrint(DEFAULT_BIN_PARAMS, {
+        ...DEFAULT_PRINT_SETTINGS,
+        layerHeightMm: 0.28,
+      });
+      expect(thickLayers.printTimeMinutes).toBeLessThan(baseline.printTimeMinutes);
+    });
+
+    it('higher infill increases print time', () => {
+      const baseline = estimatePrint(DEFAULT_BIN_PARAMS);
+      const highInfill = estimatePrint(DEFAULT_BIN_PARAMS, {
+        ...DEFAULT_PRINT_SETTINGS,
+        infillPercent: 80,
+      });
+      expect(highInfill.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes);
+    });
+
+    it('solid label support uses less volume than bracket', () => {
+      const bracket = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
+      });
+      const solid = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'solid' },
+      });
+      // Solid = 1 triangle per tab, bracket = 2 gussets per tab → bracket uses more
+      expect(solid.volumeMm3).toBeLessThan(bracket.volumeMm3);
+      expect(solid.volumeMm3).toBeGreaterThan(0);
+    });
+
+    it('lower infill decreases print time', () => {
+      const baseline = estimatePrint(DEFAULT_BIN_PARAMS);
+      const lowInfill = estimatePrint(DEFAULT_BIN_PARAMS, {
+        ...DEFAULT_PRINT_SETTINGS,
+        infillPercent: 5,
+      });
+      expect(lowInfill.printTimeMinutes).toBeLessThan(baseline.printTimeMinutes);
+    });
+
+    it('combined thin layers and high infill compounds time increase', () => {
+      const baseline = estimatePrint(DEFAULT_BIN_PARAMS);
+      const extreme = estimatePrint(DEFAULT_BIN_PARAMS, {
+        ...DEFAULT_PRINT_SETTINGS,
+        layerHeightMm: 0.1,
+        infillPercent: 100,
+      });
+      // 0.1mm layers (2×) × 100% infill (1.425×) ≈ 2.85×
+      expect(extreme.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes * 2);
     });
   });
 

@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
@@ -20,6 +21,7 @@ import { useTranslation } from '@/i18n';
 
 export function ExportDialog() {
   const t = useTranslation();
+  const printSettings = useSettingsStore((s) => s.settings.printSettings);
   const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
     useDesignerStore(
       useShallow((state) => ({
@@ -40,7 +42,7 @@ export function ExportDialog() {
   const addToast = useToastStore((s) => s.addToast);
 
   const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
-  const dialogRef = useFocusTrap<HTMLDivElement>({
+  const dialogRef = useFocusTrap({
     active: exportDialogOpen,
     onEscape: closeDialog,
   });
@@ -195,8 +197,10 @@ export function ExportDialog() {
               <EstimateRow label="File Size" value={fileSizeLabel} />
             </div>
             <p className="mt-2 text-[10px] text-content-disabled">
-              Approximate values based on 15% infill, 0.2mm layers. Actual results depend on slicer
-              settings.
+              {t('binDesigner.printEstimatesDisclaimer', {
+                infill: printSettings.infillPercent,
+                layerHeight: printSettings.layerHeightMm,
+              })}
             </p>
           </div>
 
