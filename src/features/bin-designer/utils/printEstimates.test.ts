@@ -191,6 +191,40 @@ describe('printEstimates', () => {
       });
       expect(highInfill.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes);
     });
+
+    it('solid label support uses less volume than bracket', () => {
+      const bracket = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
+      });
+      const solid = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'solid' },
+      });
+      // Solid = 1 triangle per tab, bracket = 2 gussets per tab → bracket uses more
+      expect(solid.volumeMm3).toBeLessThan(bracket.volumeMm3);
+      expect(solid.volumeMm3).toBeGreaterThan(0);
+    });
+
+    it('lower infill decreases print time', () => {
+      const baseline = estimatePrint(DEFAULT_BIN_PARAMS);
+      const lowInfill = estimatePrint(DEFAULT_BIN_PARAMS, {
+        ...DEFAULT_PRINT_SETTINGS,
+        infillPercent: 5,
+      });
+      expect(lowInfill.printTimeMinutes).toBeLessThan(baseline.printTimeMinutes);
+    });
+
+    it('combined thin layers and high infill compounds time increase', () => {
+      const baseline = estimatePrint(DEFAULT_BIN_PARAMS);
+      const extreme = estimatePrint(DEFAULT_BIN_PARAMS, {
+        ...DEFAULT_PRINT_SETTINGS,
+        layerHeightMm: 0.1,
+        infillPercent: 100,
+      });
+      // 0.1mm layers (2×) × 100% infill (1.425×) ≈ 2.85×
+      expect(extreme.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes * 2);
+    });
   });
 
   describe('formatPrintTime', () => {

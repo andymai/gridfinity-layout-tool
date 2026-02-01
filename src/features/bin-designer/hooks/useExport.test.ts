@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { useSettingsStore } from '@/core/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 // Mock the bridge module
 const mockExportBin = vi.fn();
@@ -219,5 +221,37 @@ describe('useExport', () => {
 
     rerender();
     expect(result.current.estimates.volumeMm3).toBeGreaterThan(initialVolume);
+  });
+
+  it('estimates cost updates when print settings change', () => {
+    const { result, rerender } = renderHook(() => useExport());
+    const initialCost = result.current.estimates.costUSD;
+
+    // Double the filament cost
+    act(() => {
+      useSettingsStore.getState().updateSetting('printSettings', {
+        ...DEFAULT_PRINT_SETTINGS,
+        filamentCostPerKg: 40,
+      });
+    });
+
+    rerender();
+    expect(result.current.estimates.costUSD).toBeGreaterThan(initialCost);
+  });
+
+  it('estimates print time updates when layer height changes', () => {
+    const { result, rerender } = renderHook(() => useExport());
+    const baselineTime = result.current.estimates.printTimeMinutes;
+
+    // Use thinner layers → should increase time
+    act(() => {
+      useSettingsStore.getState().updateSetting('printSettings', {
+        ...DEFAULT_PRINT_SETTINGS,
+        layerHeightMm: 0.1,
+      });
+    });
+
+    rerender();
+    expect(result.current.estimates.printTimeMinutes).toBeGreaterThan(baselineTime);
   });
 });
