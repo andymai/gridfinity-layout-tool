@@ -730,9 +730,9 @@ function buildLabelTabs(
  */
 function indexedMeshToFlat(
   mesh: {
-    vertices: number[];
-    normals: number[];
-    triangles: number[];
+    vertices: ArrayLike<number>;
+    normals: ArrayLike<number>;
+    triangles: ArrayLike<number>;
   },
   skipNormals = false
 ): MeshData {
