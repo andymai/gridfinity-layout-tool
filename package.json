@@ -86,8 +86,7 @@
     "posthog-js": "^1.334.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "replicad": "^0.20.5",
-    "replicad-opencascadejs": "^0.20.2",
+    "brepjs-opencascade": "^0.1.0",
     "three": "^0.182.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.9"
@@ -131,6 +130,7 @@
     "@vitest/coverage-v8": "^4.0.17",
     "@vitest/ui": "^4.0.16",
     "axe-core": "^4.11.1",
+    "brepjs": "^1.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-i18next": "^6.1.3",
     "eslint-plugin-jsx-a11y": "^6.10.2",

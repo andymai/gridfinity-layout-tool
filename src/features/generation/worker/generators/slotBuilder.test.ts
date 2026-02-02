@@ -3,17 +3,22 @@ import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { getEffectiveSlotDimensions, buildSlotCuts } from './slotBuilder';
 
-// Mock replicad — slotBuilder imports it at module level.
+// Mock brepjs — slotBuilder imports it at module level.
 // Vitest hoists vi.mock calls above imports automatically.
-vi.mock('replicad', () => ({
+vi.mock('brepjs', () => ({
   drawRectangle: vi.fn(() => ({
     sketchOnPlane: vi.fn(() => ({
       extrude: vi.fn(() => ({
         translate: vi.fn(),
-        fuse: vi.fn(),
+        fuse: vi.fn(() => ({ value: { translate: vi.fn(), fuse: vi.fn() } })),
       })),
     })),
   })),
+  unwrap: vi.fn((result: unknown) =>
+    result && typeof result === 'object' && 'value' in result
+      ? (result as { value: unknown }).value
+      : result
+  ),
 }));
 
 function makeSlottedParams(overrides: Partial<BinParams> = {}): BinParams {

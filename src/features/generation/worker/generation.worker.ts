@@ -11,15 +11,15 @@
  * - CANCEL → (silently aborts current generation)
  */
 
-import { setOC } from 'replicad';
+import { setOC, registerQueryModule, EdgeFinder, FaceFinder } from 'brepjs';
 import type { WorkerMessage, WorkerResponse } from '../bridge/types';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportPayload, ExportDividersPayload } from '../bridge/types';
 import { generateBin, exportBin } from './generators/replicadBin';
 import { exportDividers } from './generators/dividerExport';
 
-import opencascade from 'replicad-opencascadejs/src/replicad_single.js';
-import opencascadeWasm from 'replicad-opencascadejs/src/replicad_single.wasm?url';
+import opencascade from 'brepjs-opencascade/src/brepjs_single.js';
+import opencascadeWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 
 /** Currently active generation request ID (for cancellation) */
 let activeRequestId: string | null = null;
@@ -63,6 +63,7 @@ async function initOpenCascade(): Promise<void> {
   });
 
   setOC(OC);
+  registerQueryModule({ EdgeFinder, FaceFinder });
   ocInitialized = true;
 }
 
@@ -196,39 +197,41 @@ async function handleExportDividers(payload: ExportDividersPayload): Promise<voi
 
 // ─── Message Handler ─────────────────────────────────────────────────────────
 
-self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
-  const message = event.data;
+self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+  void (async () => {
+    const message = event.data;
 
-  switch (message.type) {
-    case 'INIT':
-      try {
-        await initOpenCascade();
-        respond({ type: 'INIT_READY' });
-      } catch (e) {
-        respond({
-          type: 'ERROR',
-          requestId: '__init__',
-          error: `OpenCascade init failed: ${e instanceof Error ? e.message : String(e)}`,
-        });
-      }
-      break;
+    switch (message.type) {
+      case 'INIT':
+        try {
+          await initOpenCascade();
+          respond({ type: 'INIT_READY' });
+        } catch (e) {
+          respond({
+            type: 'ERROR',
+            requestId: '__init__',
+            error: `OpenCascade init failed: ${e instanceof Error ? e.message : String(e)}`,
+          });
+        }
+        break;
 
-    case 'GENERATE':
-      generate(message.payload.params, message.payload.requestId);
-      break;
+      case 'GENERATE':
+        generate(message.payload.params, message.payload.requestId);
+        break;
 
-    case 'EXPORT':
-      await handleExport(message.payload);
-      break;
+      case 'EXPORT':
+        await handleExport(message.payload);
+        break;
 
-    case 'EXPORT_DIVIDERS':
-      await handleExportDividers(message.payload);
-      break;
+      case 'EXPORT_DIVIDERS':
+        await handleExportDividers(message.payload);
+        break;
 
-    case 'CANCEL':
-      if (activeRequestId === message.requestId) {
-        activeRequestId = null;
-      }
-      break;
-  }
+      case 'CANCEL':
+        if (activeRequestId === message.requestId) {
+          activeRequestId = null;
+        }
+        break;
+    }
+  })();
 });

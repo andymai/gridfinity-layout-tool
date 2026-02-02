@@ -14,7 +14,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     // Exclude WASM module from Vite's dependency pre-bundling
-    exclude: ['replicad-opencascadejs'],
+    exclude: ['brepjs-opencascade'],
   },
   worker: {
     format: 'es',

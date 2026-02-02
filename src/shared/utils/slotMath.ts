@@ -2,7 +2,7 @@
  * Pure math helpers for slotted bin calculations.
  *
  * Shared between bin-designer (preview/UI) and generation (BREP).
- * No dependencies on replicad or Three.js.
+ * No dependencies on brepjs or Three.js.
  */
 
 import { GRIDFINITY } from '@/shared/constants/bin';

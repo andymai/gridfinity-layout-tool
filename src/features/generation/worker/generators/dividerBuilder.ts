@@ -6,8 +6,8 @@
  * the wall cuts. Single extrusion per piece (no boolean fuse needed).
  */
 
-import { drawRectangle } from 'replicad';
-import type { Shape3D, Sketch } from 'replicad';
+import { drawRectangle } from 'brepjs';
+import type { Shape3D, SketchInterface } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { calculateDividerHeight, calculateDividerLength } from '@/shared/utils/slotMath';
 import { getEffectiveSlotDimensions } from './slotBuilder';
@@ -28,9 +28,7 @@ export { calculateDividerHeight, calculateDividerLength };
  * @param height Divider height in mm (becomes Y in flat orientation)
  */
 export function buildDividerPiece(length: number, thickness: number, height: number): Shape3D {
-  return (drawRectangle(length, height).sketchOnPlane('XY') as unknown as Sketch).extrude(
-    thickness
-  ) as Shape3D;
+  return (drawRectangle(length, height).sketchOnPlane('XY') as SketchInterface).extrude(thickness);
 }
 
 /**

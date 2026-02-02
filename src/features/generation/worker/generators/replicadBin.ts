@@ -1,7 +1,7 @@
 /**
- * Gridfinity bin generator using Replicad (OpenCascade WASM).
+ * Gridfinity bin generator using brepjs (OpenCascade WASM).
  *
- * Architecture follows the official Replicad Gridfinity example:
+ * Architecture:
  * 1. buildBaseSocket() — Per-cell segmented sockets (full 42mm + half 21mm cells)
  * 2. buildBinBox() — Rounded rect extruded + shelled (walls + floor)
  * 3. buildTopShape() — Swept stacking lip profile around perimeter
@@ -14,8 +14,8 @@
  * - Final mesh translated up by SOCKET_HEIGHT so Z=0 = absolute bottom
  */
 
-import { draw, drawRoundedRectangle, drawCircle, drawRectangle } from 'replicad';
-import type { Solid, Shape3D, Sketch, Plane, Point } from 'replicad';
+import { draw, drawRoundedRectangle, drawCircle, drawRectangle, unwrap } from 'brepjs';
+import type { Shape3D, Solid, Plane, Point, Sketch, SketchInterface } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
@@ -145,7 +145,7 @@ function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
     const w = cellW_mm - 2 * inset;
     const d = cellD_mm - 2 * inset;
     const r = Math.max(cornerR - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as unknown as Sketch;
+    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
   // Build 5 cross-sections matching the socket profile breakpoints
@@ -181,7 +181,7 @@ function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): Shape3D 
     const w = cellW_mm - 2 * inset;
     const d = cellD_mm - 2 * inset;
     const r = Math.max(cornerR - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as unknown as Sketch;
+    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
   const s1 = sectionAt(Z1, INSET_TOP);
@@ -224,7 +224,7 @@ function buildBaseSocket(
         ? buildSingleCellSocket(cellW_mm, cellD_mm)
         : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
     ).translate([cell.centerX, cell.centerY, 0]);
-    baseSocket = baseSocket ? baseSocket.fuse(cellSocket) : cellSocket;
+    baseSocket = baseSocket ? unwrap(baseSocket.fuse(cellSocket)) : cellSocket;
   });
 
   // baseSocket is guaranteed to be defined for valid grid dimensions (gridW >= 1, gridD >= 1)
@@ -238,15 +238,15 @@ function buildBaseSocket(
     const HOLE_OFFSET = 13; // mm from cell center to hole center
 
     const magnetCutout = withMagnet
-      ? (drawCircle(magnetRadius).sketchOnPlane() as unknown as Sketch).extrude(magnetDepth)
+      ? (drawCircle(magnetRadius).sketchOnPlane() as SketchInterface).extrude(magnetDepth)
       : null;
     const screwCutout = withScrew
-      ? (drawCircle(screwRadius).sketchOnPlane() as unknown as Sketch).extrude(SOCKET_HEIGHT)
+      ? (drawCircle(screwRadius).sketchOnPlane() as SketchInterface).extrude(SOCKET_HEIGHT)
       : null;
 
     const cutout: Shape3D =
       magnetCutout && screwCutout
-        ? magnetCutout.fuse(screwCutout)
+        ? unwrap(magnetCutout.fuse(screwCutout))
         : ((magnetCutout || screwCutout) as Shape3D);
 
     // 4 holes per full cell at ±HOLE_OFFSET from center (hoisted to avoid repeated allocation)
@@ -262,8 +262,10 @@ function buildBaseSocket(
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
       for (const [dx, dy] of holeOffsets) {
-        result = result.cut(
-          cutout.clone().translate([cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
+        result = unwrap(
+          result.cut(
+            cutout.clone().translate([cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
+          )
         );
       }
     });
@@ -289,10 +291,10 @@ function buildBinBox(
   const outerD = gridD * SIZE - CLEARANCE;
 
   const box = (
-    drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as unknown as Sketch
+    drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as SketchInterface
   ).extrude(wallHeight);
 
-  return box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight));
+  return unwrap(box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight)));
 }
 
 // ─── Top Shape (Stacking Lip) Builder ─────────────────────────────────────────
@@ -314,7 +316,7 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  const topProfile = (_plane: Plane, _startPoint: Point): Sketch => {
+  const topProfile = (plane: Plane, _startPoint: Point): Sketch => {
     // Draw the lip profile (going upward from the sweep path)
     // Per spec: 0.7mm bottom chamfer, 1.8mm vertical, 1.9mm top chamfer
     let sketcher = draw([-LIP_TAPER_WIDTH, 0])
@@ -352,24 +354,23 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
       );
     }
 
-    return topProfileShape.sketchOnPlane('XZ', _startPoint) as unknown as Sketch;
+    // Pass the plane object directly — brepjs Drawing.sketchOnPlane accepts Plane
+    return topProfileShape.sketchOnPlane(plane) as Sketch;
   };
 
   // Sweep around the bin perimeter (built at Z=0, caller translates)
-  const boxSketch = drawRoundedRectangle(
-    outerW,
-    outerD,
-    CORNER_RADIUS
-  ).sketchOnPlane() as unknown as Sketch;
+  const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
 
-  return boxSketch
-    .sweepSketch(topProfile, { withContact: true })
-    .fillet(TOP_FILLET, (e) =>
-      e.inBox(
-        [-gridW * SIZE, -gridD * SIZE, LIP_HEIGHT],
-        [gridW * SIZE, gridD * SIZE, LIP_HEIGHT - 1]
+  return unwrap(
+    boxSketch
+      .sweepSketch(topProfile, { withContact: true })
+      .fillet(TOP_FILLET, (e) =>
+        e.inBox(
+          [-gridW * SIZE, -gridD * SIZE, LIP_HEIGHT],
+          [gridW * SIZE, gridD * SIZE, LIP_HEIGHT - 1]
+        )
       )
-    );
+  );
 }
 
 // ─── Feature Builders ─────────────────────────────────────────────────────────
@@ -385,9 +386,9 @@ function addWallSegment(
   x: number,
   y: number
 ): Shape3D {
-  const wall = (drawRectangle(w, d).sketchOnPlane('XY') as unknown as Sketch).extrude(height);
+  const wall = (drawRectangle(w, d).sketchOnPlane('XY') as SketchInterface).extrude(height);
   const positioned = wall.translate([x, y, 0]);
-  return dividers ? dividers.fuse(positioned) : positioned;
+  return dividers ? unwrap(dividers.fuse(positioned)) : positioned;
 }
 
 /**
@@ -496,7 +497,7 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
 
     switch (insert.shape) {
       case 'circle': {
-        solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as unknown as Sketch).extrude(
+        solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as SketchInterface).extrude(
           insert.cutDepth
         );
         break;
@@ -505,13 +506,13 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
         solid = (
           drawRoundedRectangle(insert.width, insert.depth, insert.cornerRadius).sketchOnPlane(
             'XY'
-          ) as unknown as Sketch
+          ) as SketchInterface
         ).extrude(insert.cutDepth);
         break;
       }
       case 'hexagon': {
-        // Approximate hexagon with circle (Replicad polygon support TBD)
-        solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as unknown as Sketch).extrude(
+        // Approximate hexagon with circle (polygon support TBD)
+        solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as SketchInterface).extrude(
           insert.cutDepth
         );
         break;
@@ -522,21 +523,21 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
             insert.width,
             insert.depth,
             Math.min(insert.width, insert.depth) / 2
-          ).sketchOnPlane('XY') as unknown as Sketch
+          ).sketchOnPlane('XY') as SketchInterface
         ).extrude(insert.cutDepth);
         break;
       }
       case 'rectangle':
       default: {
         solid = (
-          drawRectangle(insert.width, insert.depth).sketchOnPlane('XY') as unknown as Sketch
+          drawRectangle(insert.width, insert.depth).sketchOnPlane('XY') as SketchInterface
         ).extrude(insert.cutDepth);
         break;
       }
     }
 
     const positioned = solid.translate([insert.x, insert.y, 0]);
-    cuts = cuts ? cuts.fuse(positioned) : positioned;
+    cuts = cuts ? unwrap(cuts.fuse(positioned)) : positioned;
   }
 
   return cuts;
@@ -653,7 +654,7 @@ function buildLabelTabs(
       if (!touchesRight) pen = pen.customCorner(cornerR);
       pen = pen.lineTo([0, -tabDepth]);
       if (!touchesLeft) pen = pen.customCorner(cornerR);
-      const shelfSketch = pen.close().sketchOnPlane('XY', tabHeight - wt) as unknown as Sketch;
+      const shelfSketch = pen.close().sketchOnPlane('XY', tabHeight - wt) as SketchInterface;
       const shelf = shelfSketch.extrude(wt);
 
       // ── Gussets: 45° triangular supports under the shelf ──
@@ -691,9 +692,9 @@ function buildLabelTabs(
             .lineTo([-gussetLegSolid, gussetLegSolid])
             .lineTo([0, 0])
             .close();
-          const solidSketch = solidProfile.sketchOnPlane('YZ', 0) as unknown as Sketch;
+          const solidSketch = solidProfile.sketchOnPlane('YZ', 0) as SketchInterface;
           const solidSupport = solidSketch.extrude(tabWidth);
-          tabSolid = tabSolid.fuse(solidSupport);
+          tabSolid = unwrap(tabSolid.fuse(solidSupport));
         }
       } else {
         // Bracket style: discrete triangular gussets at edges + every ≤10mm
@@ -705,14 +706,14 @@ function buildLabelTabs(
 
           let gussets: Shape3D | null = null;
           for (const gx of gussetPositions) {
-            const gussetSketch = gussetProfile.sketchOnPlane('YZ', 0) as unknown as Sketch;
+            const gussetSketch = gussetProfile.sketchOnPlane('YZ', 0) as SketchInterface;
             let gusset = gussetSketch.extrude(gt);
             gusset = gusset.translateX(gx);
-            gussets = gussets ? gussets.fuse(gusset) : gusset;
+            gussets = gussets ? unwrap(gussets.fuse(gusset)) : gusset;
           }
 
           if (gussets) {
-            tabSolid = tabSolid.fuse(gussets);
+            tabSolid = unwrap(tabSolid.fuse(gussets));
           }
         }
       }
@@ -720,7 +721,7 @@ function buildLabelTabs(
       // Position: X at alignment offset, Y at compartment back edge, Z at tab base
       tabSolid = tabSolid.translate([tabXStart, backEdgeY, wallHeight - tabHeight]);
 
-      tabs = tabs ? tabs.fuse(tabSolid) : tabSolid;
+      tabs = tabs ? unwrap(tabs.fuse(tabSolid)) : tabSolid;
     }
   }
 
@@ -810,17 +811,19 @@ export async function exportBin(
   const name = `gridfinity-${params.width}x${params.depth}x${params.height}`;
 
   if (format === 'step') {
-    const blob = (solid as unknown as Shape3D).blobSTEP();
+    const blob = unwrap((solid as unknown as Shape3D).blobSTEP());
     const data = await blob.arrayBuffer();
     return { data, fileName: `${name}.step` };
   }
 
   // STL with configurable quality
-  const blob = (solid as unknown as Shape3D).blobSTL({
-    tolerance,
-    angularTolerance,
-    binary: true,
-  });
+  const blob = unwrap(
+    (solid as unknown as Shape3D).blobSTL({
+      tolerance,
+      angularTolerance,
+      binary: true,
+    })
+  );
   const data = await blob.arrayBuffer();
   return { data, fileName: `${name}.stl` };
 }
@@ -884,17 +887,19 @@ export function generateBin(
   if (params.base.stackingLip) {
     try {
       const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
-      bin = base
-        .fuse(box, { optimisation: 'commonFace' })
-        .fuse(top, { optimisation: 'commonFace' });
+      bin = unwrap(
+        unwrap(base.fuse(box, { optimisation: 'commonFace' })).fuse(top, {
+          optimisation: 'commonFace',
+        })
+      );
     } catch (e) {
       console.warn('[BinGen] Stacking lip failed, skipping:', e instanceof Error ? e.message : e, {
         wallThickness,
       });
-      bin = base.fuse(box, { optimisation: 'commonFace' });
+      bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
     }
   } else {
-    bin = base.fuse(box, { optimisation: 'commonFace' });
+    bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
   }
 
   // Stage 4: Features (dividers, inserts)
@@ -912,7 +917,7 @@ export function generateBin(
     const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
     if (compartmentWalls) {
       try {
-        bin = bin.fuse(compartmentWalls);
+        bin = unwrap(bin.fuse(compartmentWalls));
       } catch (e) {
         console.warn(
           '[BinGen] Divider fusion failed, skipping:',
@@ -925,7 +930,7 @@ export function generateBin(
   const insertCuts = buildInsertCuts(params);
   if (insertCuts) {
     try {
-      bin = bin.cut(insertCuts);
+      bin = unwrap(bin.cut(insertCuts));
     } catch (e) {
       console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
     }
@@ -941,7 +946,7 @@ export function generateBin(
     const slotCuts = buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo);
     if (slotCuts) {
       try {
-        bin = bin.cut(slotCuts);
+        bin = unwrap(bin.cut(slotCuts));
       } catch (e) {
         console.warn('[BinGen] Slot cut failed, skipping:', e instanceof Error ? e.message : e);
       }
@@ -952,7 +957,7 @@ export function generateBin(
     const labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
     if (labelTabs) {
       try {
-        bin = bin.fuse(labelTabs);
+        bin = unwrap(bin.fuse(labelTabs));
       } catch (e) {
         console.warn(
           '[BinGen] Label tab fusion failed, skipping:',
