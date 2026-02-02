@@ -8,10 +8,20 @@ import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 // Mock the bridge module
 const mockExportBin = vi.fn();
+const mockExportSplitBin = vi.fn();
 vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => ({
     exportBin: mockExportBin,
+    exportSplitBin: mockExportSplitBin,
   }),
+}));
+
+// Mock JSZip used by splitExport
+vi.mock('jszip', () => ({
+  default: class MockJSZip {
+    file = vi.fn();
+    generateAsync = vi.fn().mockResolvedValue(new Blob(['zip']));
+  },
 }));
 
 // Mock URL.createObjectURL and URL.revokeObjectURL
@@ -23,6 +33,7 @@ describe('useExport', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExportBin.mockReset();
+    mockExportSplitBin.mockReset();
     // Apply URL mock before each test
     Object.defineProperty(globalThis, 'URL', {
       value: {
@@ -253,5 +264,101 @@ describe('useExport', () => {
 
     rerender();
     expect(result.current.estimates.printTimeMinutes).toBeGreaterThan(baselineTime);
+  });
+
+  // ─── Split export tests ──────────────────────────────────────────────────
+
+  it('needsSplit is false when bin fits print bed', () => {
+    const { result } = renderHook(() => useExport());
+    expect(result.current.needsSplit).toBe(false);
+    expect(result.current.splitPieceCount).toBe(1);
+  });
+
+  it('needsSplit is true when width exceeds maxGridUnits', () => {
+    act(() => {
+      useDesignerStore.getState().setParams({ width: 8 });
+    });
+
+    const { result } = renderHook(() => useExport());
+    expect(result.current.needsSplit).toBe(true);
+    expect(result.current.splitPieceCount).toBeGreaterThan(1);
+  });
+
+  it('needsSplit is true when depth exceeds maxGridUnits', () => {
+    act(() => {
+      useDesignerStore.getState().setParams({ depth: 8 });
+    });
+
+    const { result } = renderHook(() => useExport());
+    expect(result.current.needsSplit).toBe(true);
+  });
+
+  it('maxGridUnits derives from settings', () => {
+    // Default: 256mm / 42mm = 6 grid units
+    const { result } = renderHook(() => useExport());
+    expect(result.current.maxGridUnits).toBe(6);
+  });
+
+  it('provides downloadSplitSTL function', () => {
+    const { result } = renderHook(() => useExport());
+    expect(result.current.downloadSplitSTL).toBeTypeOf('function');
+  });
+
+  it('downloadSplitSTL calls bridge.exportSplitBin and creates ZIP', async () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },
+      generation: {
+        status: 'complete',
+        mesh: {
+          vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          error: null,
+          timingMs: 10,
+        },
+        progress: 1,
+      },
+    });
+
+    mockExportSplitBin.mockResolvedValue({
+      pieces: [
+        { data: new ArrayBuffer(50), label: 'piece-1x1', col: 1, row: 1 },
+        { data: new ArrayBuffer(50), label: 'piece-2x1', col: 2, row: 1 },
+      ],
+    });
+
+    const mockAnchor = { href: '', download: '', click: vi.fn() };
+    const originalCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation((tag: string) => {
+        if (tag === 'a') return mockAnchor as unknown as HTMLAnchorElement;
+        return originalCreateElement(tag);
+      });
+    const appendChildSpy = vi
+      .spyOn(document.body, 'appendChild')
+      .mockImplementation((node) => node);
+    const removeChildSpy = vi
+      .spyOn(document.body, 'removeChild')
+      .mockImplementation((node) => node);
+
+    const { result } = renderHook(() => useExport());
+
+    await act(async () => {
+      await result.current.downloadSplitSTL({ style: 'descriptive', customName: '' });
+    });
+
+    expect(mockExportSplitBin).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Array),
+      expect.any(Array)
+    );
+    expect(mockCreateObjectURL).toHaveBeenCalled();
+    expect(mockAnchor.download).toContain('_split.zip');
+    expect(mockAnchor.click).toHaveBeenCalled();
+    expect(mockRevokeObjectURL).toHaveBeenCalled();
+
+    createElementSpy.mockRestore();
+    appendChildSpy.mockRestore();
+    removeChildSpy.mockRestore();
   });
 });

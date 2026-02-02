@@ -48,6 +48,21 @@ export function PhysicalUnitsSection() {
             aria-label={t('binDesigner.heightUnit')}
           />
         </SettingsRow>
+        <SettingsRow
+          label={t('settings.printBed')}
+          tooltip={t('binDesigner.printBedTooltip')}
+          unit="mm"
+        >
+          <DeferredNumberInput
+            value={state.printBedSize}
+            onChange={handlers.handlePrintBedChange}
+            min={42}
+            max={500}
+            step={10}
+            className="input w-14 py-0.5 px-1 text-xs text-right"
+            aria-label={t('settings.printBed')}
+          />
+        </SettingsRow>
       </div>
     </CollapsibleSection>
   );

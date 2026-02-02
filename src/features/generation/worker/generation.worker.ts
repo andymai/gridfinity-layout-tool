@@ -14,8 +14,8 @@
 import { setOC, registerQueryModule, EdgeFinder, FaceFinder } from 'brepjs';
 import type { WorkerMessage, WorkerResponse } from '../bridge/types';
 import type { BinParams } from '@/shared/types/bin';
-import type { ExportPayload, ExportDividersPayload } from '../bridge/types';
-import { generateBin, exportBin } from './generators/binGenerator';
+import type { ExportPayload, ExportDividersPayload, ExportSplitPayload } from '../bridge/types';
+import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
 
 import opencascade from 'brepjs-opencascade/src/brepjs_single.js';
@@ -35,7 +35,7 @@ function respond(response: WorkerResponse): void {
 /** Post a progress update */
 function reportProgress(
   requestId: string,
-  stage: 'base' | 'shell' | 'features' | 'merge',
+  stage: 'base' | 'shell' | 'features' | 'merge' | 'splitting',
   progress: number
 ): void {
   respond({
@@ -195,6 +195,50 @@ async function handleExportDividers(payload: ExportDividersPayload): Promise<voi
   }
 }
 
+/**
+ * Export pipeline for split bin — generates one STL per piece via boolean cuts.
+ */
+async function handleExportSplit(payload: ExportSplitPayload): Promise<void> {
+  if (!ocInitialized) {
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: 'OpenCascade not initialized',
+    });
+    return;
+  }
+
+  try {
+    reportProgress(payload.requestId, 'splitting', 0);
+
+    const result = await exportSplitBin(
+      payload.params,
+      payload.cutPlanesX,
+      payload.cutPlanesY,
+      payload.tolerance,
+      payload.angularTolerance
+    );
+
+    reportProgress(payload.requestId, 'splitting', 1);
+
+    const response = {
+      type: 'SPLIT_EXPORT_RESULT' as const,
+      requestId: payload.requestId,
+      pieces: result.pieces,
+    };
+
+    // Transfer all ArrayBuffers for zero-copy
+    const transferables = result.pieces.map((p) => p.data);
+    self.postMessage(response, { transfer: transferables });
+  } catch (e) {
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: `Split export failed: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
+}
+
 // ─── Message Handler ─────────────────────────────────────────────────────────
 
 self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
@@ -225,6 +269,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'EXPORT_DIVIDERS':
         await handleExportDividers(message.payload);
+        break;
+
+      case 'EXPORT_SPLIT':
+        await handleExportSplit(message.payload);
         break;
 
       case 'CANCEL':

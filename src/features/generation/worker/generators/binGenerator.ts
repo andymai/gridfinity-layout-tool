@@ -1078,3 +1078,93 @@ export function generateBin(
   // Skip normals for large bin preview (GPU flat shading is faster)
   return indexedMeshToFlat(shapeMesh, !useHighQuality);
 }
+
+/** Result of a split export: array of piece buffers with grid labels */
+export interface SplitExportResult {
+  readonly pieces: Array<{
+    readonly data: ArrayBuffer;
+    readonly label: string;
+    readonly col: number;
+    readonly row: number;
+  }>;
+}
+
+/**
+ * Export the cached (or regenerated) bin solid, split into pieces via boolean cuts.
+ *
+ * For each rectangular region defined by the cut planes, the full solid is cloned
+ * and intersected with a bounding box to extract just that piece. Each piece is
+ * independently tessellated to STL.
+ *
+ * @param params Bin parameters (used to regenerate if no cached solid)
+ * @param cutPlanesX Sorted X-axis cut plane positions in mm, relative to bin center
+ * @param cutPlanesY Sorted Y-axis cut plane positions in mm, relative to bin center
+ * @param tolerance STL tessellation tolerance (default 0.01)
+ * @param angularTolerance STL angular tolerance in degrees (default 5)
+ */
+export async function exportSplitBin(
+  params: BinParams,
+  cutPlanesX: readonly number[],
+  cutPlanesY: readonly number[],
+  tolerance = 0.01,
+  angularTolerance = 5
+): Promise<SplitExportResult> {
+  // Ensure we have a solid to work with
+  if (!lastSolid) {
+    generateBin(params, undefined, true);
+  }
+
+  const solid = lastSolid;
+  if (!solid) {
+    throw new Error('Failed to generate solid for split export');
+  }
+
+  const outerW = params.width * SIZE - CLEARANCE;
+  const outerD = params.depth * SIZE - CLEARANCE;
+
+  // Build sorted boundary arrays: [left edge, ...cut planes, right edge]
+  const xBounds = [-outerW / 2, ...cutPlanesX, outerW / 2];
+  const yBounds = [-outerD / 2, ...cutPlanesY, outerD / 2];
+
+  // Large box height for cutting (much taller than any bin)
+  const boxH = 500;
+
+  const pieces: SplitExportResult['pieces'] = [];
+
+  // Process each piece region sequentially to limit memory
+  for (let col = 0; col < xBounds.length - 1; col++) {
+    for (let row = 0; row < yBounds.length - 1; row++) {
+      const xMin = xBounds[col];
+      const xMax = xBounds[col + 1];
+      const yMin = yBounds[row];
+      const yMax = yBounds[row + 1];
+
+      // Create a bounding box for this piece's region
+      const pieceW = xMax - xMin;
+      const pieceD = yMax - yMin;
+      const centerX = (xMin + xMax) / 2;
+      const centerY = (yMin + yMax) / 2;
+
+      const cuttingBox = sketch(drawRectangle(pieceW, pieceD), 'XY', -boxH / 2).extrude(boxH);
+      const translatedBox = cuttingBox.translate([centerX, centerY, 0]);
+
+      // Intersect the full solid with this box to get just this piece
+      const piece = unwrap(solid.clone().intersect(translatedBox));
+
+      // Tessellate to binary STL
+      const blob = unwrap(
+        piece.blobSTL({
+          tolerance,
+          angularTolerance,
+          binary: true,
+        })
+      );
+      const data = await blob.arrayBuffer();
+
+      const label = `piece-${col + 1}x${row + 1}`;
+      pieces.push({ data, label, col: col + 1, row: row + 1 });
+    }
+  }
+
+  return { pieces };
+}

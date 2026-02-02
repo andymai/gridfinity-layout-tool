@@ -30,5 +30,7 @@ export {
   setPreviewCanvas,
   clearPreviewCanvas,
 } from './thumbnail';
+export { getSplitPositions, getSplitPieceCount, getSplitPlanePositionsMm } from './splitPositions';
+export { packageSplitPiecesAsZip } from './splitExport';
 export { validateBinParams, computeMinCellSize, validateCompartmentSizes } from './validation';
 export type { DesignerValidationError, MinCellSize } from './validation';

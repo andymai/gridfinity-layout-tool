@@ -1290,6 +1290,8 @@ const en: Record<string, string> = {
   'binDesigner.pinchToZoom': 'Pinch to zoom',
   'binDesigner.powerFeatures': 'Power Features',
   'binDesigner.previewColorOptions': 'Preview color options',
+  'binDesigner.printBedTooltip':
+    'Your printer bed size. Bins larger than this will offer split export.',
   'binDesigner.printEstimatesPla': 'Print Estimates (PLA)',
   'binDesigner.printEstimatesDisclaimer':
     'Approximate values based on {infill}% infill, {layerHeight}mm layers. Actual results depend on slicer settings.',
@@ -1312,6 +1314,11 @@ const en: Record<string, string> = {
   'binDesigner.specFeatures': 'Spec Features',
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.stlExportedSuccessfully': 'STL exported successfully',
+  'binDesigner.splitExport.exceedsPrintBed':
+    'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
+  'binDesigner.splitExport.enableSplit': 'Split into pieces',
+  'binDesigner.splitExport.downloadSplitSTL': 'Download Split STL (ZIP)',
+  'binDesigner.splitExport.success': 'Split STL exported successfully ({count} pieces)',
   'binDesigner.toggleWireframeModeKeyboardShortcut': 'Toggle wireframe mode, keyboard shortcut W',
   'binDesigner.touchGestureHints': 'Touch gesture hints',
   'binDesigner.updating': 'Updating',

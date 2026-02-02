@@ -12,12 +12,18 @@ import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
+import { calcMaxGridUnits } from '@/core/constants';
 import { getActiveBridge } from '@/shared/generation/bridge';
 import {
   generateFileName,
   generateDividerFileName,
 } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
+import {
+  getSplitPieceCount,
+  getSplitPlanePositionsMm,
+} from '@/features/bin-designer/utils/splitPositions';
+import { packageSplitPiecesAsZip } from '@/features/bin-designer/utils/splitExport';
 import type { ExportFileNameConfig } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 
@@ -37,6 +43,14 @@ interface UseExportReturn {
   ) => Promise<void>;
   /** Whether divider export is available */
   readonly canExportDividers: boolean;
+  /** Whether the bin exceeds print bed and needs splitting */
+  readonly needsSplit: boolean;
+  /** Number of pieces the bin would be split into */
+  readonly splitPieceCount: number;
+  /** Maximum grid units that fit on the print bed */
+  readonly maxGridUnits: number;
+  /** Trigger split STL download as ZIP via worker bridge */
+  readonly downloadSplitSTL: (config: ExportFileNameConfig, designName?: string) => Promise<void>;
 }
 
 export function useExport(): UseExportReturn {
@@ -47,7 +61,13 @@ export function useExport(): UseExportReturn {
     }))
   );
 
-  const printSettings = useSettingsStore((s) => s.settings.printSettings);
+  const { printSettings, defaultPrintBedSize, defaultGridUnitMm } = useSettingsStore(
+    useShallow((s) => ({
+      printSettings: s.settings.printSettings,
+      defaultPrintBedSize: s.settings.defaultPrintBedSize,
+      defaultGridUnitMm: s.settings.defaultGridUnitMm,
+    }))
+  );
 
   const [isExporting, setIsExporting] = useState(false);
 
@@ -61,6 +81,19 @@ export function useExport(): UseExportReturn {
     (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
 
   const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
+
+  // Split detection
+  const maxGridUnits = useMemo(
+    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm),
+    [defaultPrintBedSize, defaultGridUnitMm]
+  );
+
+  const needsSplit = params.width > maxGridUnits || params.depth > maxGridUnits;
+
+  const splitPieceCount = useMemo(
+    () => (needsSplit ? getSplitPieceCount(params.width, params.depth, maxGridUnits) : 1),
+    [params.width, params.depth, maxGridUnits, needsSplit]
+  );
 
   /**
    * Download high-quality STL via worker bridge.
@@ -133,6 +166,46 @@ export function useExport(): UseExportReturn {
     [params]
   );
 
+  /**
+   * Download split STL as ZIP via worker bridge.
+   * Computes cut planes, sends to worker for boolean splitting,
+   * then packages results into a ZIP archive.
+   */
+  const downloadSplitSTL = useCallback(
+    async (config: ExportFileNameConfig, designName?: string) => {
+      const bridge = getActiveBridge();
+      if (!bridge) return;
+
+      setIsExporting(true);
+
+      let url: string | null = null;
+      let anchor: HTMLAnchorElement | null = null;
+      try {
+        const gridSizeMm = params.gridUnitMm;
+        const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGridUnits, gridSizeMm);
+        const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGridUnits, gridSizeMm);
+
+        const result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY);
+
+        // Generate base filename (without extension)
+        const baseName = generateFileName(params, 'stl', config, designName).replace(/\.stl$/, '');
+
+        const blob = await packageSplitPiecesAsZip(result.pieces, baseName);
+        url = URL.createObjectURL(blob);
+        anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `${baseName}_split.zip`;
+        document.body.appendChild(anchor);
+        anchor.click();
+      } finally {
+        if (anchor?.parentNode) anchor.parentNode.removeChild(anchor);
+        if (url) URL.revokeObjectURL(url);
+        setIsExporting(false);
+      }
+    },
+    [params, maxGridUnits]
+  );
+
   return {
     isExporting,
     canExport,
@@ -140,5 +213,9 @@ export function useExport(): UseExportReturn {
     estimates,
     downloadSTL,
     downloadDividersSTL,
+    needsSplit,
+    splitPieceCount,
+    maxGridUnits,
+    downloadSplitSTL,
   };
 }

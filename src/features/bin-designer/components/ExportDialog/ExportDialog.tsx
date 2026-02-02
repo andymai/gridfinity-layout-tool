@@ -6,7 +6,7 @@
  * The filename preference is persisted per-design via the designer store.
  */
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
@@ -21,7 +21,12 @@ import { useTranslation } from '@/i18n';
 
 export function ExportDialog() {
   const t = useTranslation();
-  const printSettings = useSettingsStore((s) => s.settings.printSettings);
+  const { printSettings, defaultPrintBedSize } = useSettingsStore(
+    useShallow((s) => ({
+      printSettings: s.settings.printSettings,
+      defaultPrintBedSize: s.settings.defaultPrintBedSize,
+    }))
+  );
   const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
     useDesignerStore(
       useShallow((state) => ({
@@ -37,8 +42,18 @@ export function ExportDialog() {
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const setExportFileNameConfig = useDesignerStore((s) => s.setExportFileNameConfig);
 
-  const { canExport, canExportDividers, estimates, isExporting, downloadSTL, downloadDividersSTL } =
-    useExport();
+  const {
+    canExport,
+    canExportDividers,
+    estimates,
+    isExporting,
+    downloadSTL,
+    downloadDividersSTL,
+    needsSplit,
+    splitPieceCount,
+    downloadSplitSTL,
+  } = useExport();
+  const [splitEnabled, setSplitEnabled] = useState(true);
   const addToast = useToastStore((s) => s.addToast);
 
   const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
@@ -128,11 +143,10 @@ export function ExportDialog() {
 
         {/* 3D Model (.stl) */}
         <div>
-          {/* eslint-disable i18next/no-literal-string */}
           <h3 className="mb-1 text-sm font-semibold text-content">
+            {/* eslint-disable-next-line i18next/no-literal-string -- file extension is not translatable */}
             {t('binDesigner.threeDModel')} (.stl)
           </h3>
-          {/* eslint-enable i18next/no-literal-string */}
           <p className="mb-4 text-xs text-content-secondary">
             {t('binDesigner.threeDModelDescription')}
           </p>
@@ -159,9 +173,9 @@ export function ExportDialog() {
                   {fileNameWithoutExt}
                 </span>
               )}
-              {/* eslint-disable-next-line i18next/no-literal-string */}
               <span className="shrink-0 border-l border-stroke-subtle px-2 py-2 text-sm text-content-tertiary">
-                .stl
+                {/* eslint-disable-next-line i18next/no-literal-string -- file extensions are not translatable */}
+                {needsSplit && splitEnabled ? '.zip' : '.stl'}
               </span>
             </div>
             <div className="mt-2 flex gap-2">
@@ -182,6 +196,29 @@ export function ExportDialog() {
               />
             </div>
           </div>
+
+          {/* Split Export Banner */}
+          {needsSplit && (
+            <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/30">
+              <p className="mb-2 text-xs text-amber-800 dark:text-amber-200">
+                {t('binDesigner.splitExport.exceedsPrintBed', {
+                  size: defaultPrintBedSize,
+                  count: splitPieceCount,
+                })}
+              </p>
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={splitEnabled}
+                  onChange={(e) => setSplitEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                />
+                <span className="text-xs font-medium text-amber-800 dark:text-amber-200">
+                  {t('binDesigner.splitExport.enableSplit')}
+                </span>
+              </label>
+            </div>
+          )}
 
           {/* Print Estimates */}
           <div className="mb-5 rounded-lg border border-stroke-subtle bg-surface p-3">
@@ -204,16 +241,25 @@ export function ExportDialog() {
             </p>
           </div>
 
-          {/* Download STL Button */}
+          {/* Download STL / Split ZIP Button */}
           <button
             onClick={async () => {
               try {
-                await downloadSTL(exportFileNameConfig, designName);
-                addToast({
-                  message: t('binDesigner.stlExportedSuccessfully'),
-                  type: 'success',
-                  duration: 3000,
-                });
+                if (needsSplit && splitEnabled) {
+                  await downloadSplitSTL(exportFileNameConfig, designName);
+                  addToast({
+                    message: t('binDesigner.splitExport.success', { count: splitPieceCount }),
+                    type: 'success',
+                    duration: 3000,
+                  });
+                } else {
+                  await downloadSTL(exportFileNameConfig, designName);
+                  addToast({
+                    message: t('binDesigner.stlExportedSuccessfully'),
+                    type: 'success',
+                    duration: 3000,
+                  });
+                }
                 closeDialog();
               } catch {
                 addToast({
@@ -248,7 +294,11 @@ export function ExportDialog() {
                 />
               </svg>
             )}
-            {isExporting ? t('binDesigner.exporting') : t('binDesigner.downloadSTL')}
+            {isExporting
+              ? t('binDesigner.exporting')
+              : needsSplit && splitEnabled
+                ? t('binDesigner.splitExport.downloadSplitSTL')
+                : t('binDesigner.downloadSTL')}
           </button>
 
           {/* Download Dividers STL Button (slotted bins only) */}
