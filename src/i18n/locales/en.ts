@@ -1290,6 +1290,8 @@ const en: Record<string, string> = {
   'binDesigner.pinchToZoom': 'Pinch to zoom',
   'binDesigner.powerFeatures': 'Power Features',
   'binDesigner.previewColorOptions': 'Preview color options',
+  'binDesigner.printBedTooltip':
+    'Your printer bed size. Bins larger than this will offer split export.',
   'binDesigner.printEstimatesPla': 'Print Estimates (PLA)',
   'binDesigner.printEstimatesDisclaimer':
     'Approximate values based on {infill}% infill, {layerHeight}mm layers. Actual results depend on slicer settings.',

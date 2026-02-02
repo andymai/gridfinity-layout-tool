@@ -127,6 +127,7 @@
   "binDesigner.pinchToZoom": "Knijp om te zoomen",
   "binDesigner.powerFeatures": "Geavanceerde functies",
   "binDesigner.previewColorOptions": "Voorbeeldkleur opties",
+  "binDesigner.printBedTooltip": "Grootte van het printbed. Bins groter dan dit bieden gesplitste export aan.",
   "binDesigner.printEstimatesPla": "Print schattingen (PLA)",
   "binDesigner.printEstimatesDisclaimer": "Geschatte waarden op basis van {infill}% vulling, {layerHeight}mm lagen. Werkelijke resultaten zijn afhankelijk van slicer-instellingen.",
   "binDesigner.radius": "Radius",

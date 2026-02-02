@@ -127,6 +127,7 @@
   "binDesigner.pinchToZoom": "Pincer pour zoomer",
   "binDesigner.powerFeatures": "Fonctionnalités avancées",
   "binDesigner.previewColorOptions": "Options de couleur d'aperçu",
+  "binDesigner.printBedTooltip": "Taille du plateau d'impression. Les bins plus grands proposeront une exportation découpée.",
   "binDesigner.printEstimatesPla": "Estimations d'impression (PLA)",
   "binDesigner.printEstimatesDisclaimer": "Valeurs approximatives basées sur {infill}% de remplissage, couches de {layerHeight}mm. Les résultats réels dépendent des paramètres du slicer.",
   "binDesigner.radius": "Rayon",

@@ -17,4 +17,9 @@ describe('PhysicalUnitsSection', () => {
     expect(screen.getByLabelText('Grid unit')).toBeInTheDocument();
     expect(screen.getByLabelText('Height unit')).toBeInTheDocument();
   });
+
+  it('renders print bed input', () => {
+    render(<PhysicalUnitsSection />);
+    expect(screen.getByLabelText('Print bed')).toBeInTheDocument();
+  });
 });

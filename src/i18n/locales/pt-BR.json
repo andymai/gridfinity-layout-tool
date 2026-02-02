@@ -127,6 +127,7 @@
   "binDesigner.pinchToZoom": "Pinça para zoom",
   "binDesigner.powerFeatures": "Recursos Avançados",
   "binDesigner.previewColorOptions": "Opções de cor de pré-visualização",
+  "binDesigner.printBedTooltip": "Tamanho da mesa de impressão. Bins maiores que isso oferecerão exportação dividida.",
   "binDesigner.printEstimatesPla": "Estimativas de Impressão (PLA)",
   "binDesigner.printEstimatesDisclaimer": "Valores aproximados baseados em {infill}% de preenchimento, camadas de {layerHeight}mm. Resultados reais dependem das configurações do fatiador.",
   "binDesigner.radius": "Raio",

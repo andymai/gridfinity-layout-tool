@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { usePhysicalUnitsSection } from './usePhysicalUnitsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 
 describe('usePhysicalUnitsSection', () => {
@@ -42,5 +43,35 @@ describe('usePhysicalUnitsSection', () => {
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     expect(result.current.meta.summary).toBe('42mm grid, 7mm height');
+  });
+
+  it('returns print bed size from settings store', () => {
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    expect(result.current.state.printBedSize).toBe(256);
+  });
+
+  it('handlePrintBedChange updates settings store', () => {
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    act(() => {
+      result.current.handlers.handlePrintBedChange(300);
+    });
+
+    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(300);
+  });
+
+  it('handlePrintBedChange clamps to valid range', () => {
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    act(() => {
+      result.current.handlers.handlePrintBedChange(10);
+    });
+    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(42);
+
+    act(() => {
+      result.current.handlers.handlePrintBedChange(999);
+    });
+    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(500);
   });
 });

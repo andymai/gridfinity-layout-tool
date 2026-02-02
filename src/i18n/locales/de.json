@@ -127,6 +127,7 @@
   "binDesigner.pinchToZoom": "Kneifen zum Zoomen",
   "binDesigner.powerFeatures": "Power-Funktionen",
   "binDesigner.previewColorOptions": "Vorschau-Farboptionen",
+  "binDesigner.printBedTooltip": "Druckbettgröße. Bins, die größer sind, bieten geteilten Export an.",
   "binDesigner.printEstimatesPla": "Druckschätzungen (PLA)",
   "binDesigner.printEstimatesDisclaimer": "Ungefähre Werte basierend auf {infill}% Füllung, {layerHeight}mm Schichten. Tatsächliche Ergebnisse hängen von Slicer-Einstellungen ab.",
   "binDesigner.radius": "Radius",

@@ -127,6 +127,7 @@
   "binDesigner.pinchToZoom": "Pellizca para hacer zoom",
   "binDesigner.powerFeatures": "Funciones Avanzadas",
   "binDesigner.previewColorOptions": "Opciones de color de vista previa",
+  "binDesigner.printBedTooltip": "Tamaño de la cama de impresión. Los bins más grandes ofrecerán exportación dividida.",
   "binDesigner.printEstimatesPla": "Estimaciones de Impresión (PLA)",
   "binDesigner.printEstimatesDisclaimer": "Valores aproximados basados en {infill}% de relleno, capas de {layerHeight}mm. Los resultados reales dependen de la configuración del slicer.",
   "binDesigner.radius": "Radio",
