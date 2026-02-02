@@ -68,7 +68,7 @@ async function initOpenCascade(): Promise<void> {
 }
 
 /**
- * Main generation pipeline using Replicad BREP operations.
+ * Main generation pipeline using brepjs BREP operations.
  */
 function generate(params: BinParams, requestId: string): void {
   if (!ocInitialized) {

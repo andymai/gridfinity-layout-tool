@@ -723,9 +723,9 @@ function buildLabelTabs(
 // ─── Mesh Conversion ────────────────────────────────────────────────────────
 
 /**
- * Convert Replicad's indexed mesh to flat triangle arrays (our MeshData format).
+ * Convert brepjs indexed mesh to flat triangle arrays (our MeshData format).
  *
- * @param mesh Replicad mesh with indexed vertices/normals/triangles
+ * @param mesh brepjs mesh with indexed vertices/normals/triangles
  * @param skipNormals If true, returns empty normals array (GPU will use flat shading)
  */
 function indexedMeshToFlat(
