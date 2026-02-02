@@ -12,6 +12,7 @@ import type {
   MeshData,
   GenerationStage,
   ExportFormat,
+  SplitExportPiece,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 
@@ -35,6 +36,11 @@ export interface ExportResult {
 export interface DividersExportResult {
   readonly data: ArrayBuffer;
   readonly fileName: string;
+}
+
+/** Result from a successful split export */
+export interface SplitExportResult {
+  readonly pieces: readonly SplitExportPiece[];
 }
 
 /**
@@ -61,6 +67,9 @@ export class GenerationBridge {
   private pendingDividersResolve: ((result: DividersExportResult) => void) | null = null;
   private pendingDividersReject: ((error: Error) => void) | null = null;
   private dividersRequestId: string | null = null;
+  private pendingSplitResolve: ((result: SplitExportResult) => void) | null = null;
+  private pendingSplitReject: ((error: Error) => void) | null = null;
+  private splitRequestId: string | null = null;
   private adaptiveDebounce = new AdaptiveDebounce();
 
   /**
@@ -189,6 +198,12 @@ export class GenerationBridge {
       this.pendingDividersReject = null;
       this.dividersRequestId = null;
     }
+    if (this.pendingSplitReject) {
+      this.pendingSplitReject(new Error('Bridge destroyed'));
+      this.pendingSplitResolve = null;
+      this.pendingSplitReject = null;
+      this.splitRequestId = null;
+    }
 
     if (this.worker) {
       this.worker.terminate();
@@ -276,6 +291,49 @@ export class GenerationBridge {
     });
   }
 
+  /**
+   * Export the current bin solid split into pieces via boolean cuts.
+   * Returns a Promise resolving with an array of STL ArrayBuffers, one per piece.
+   */
+  async exportSplitBin(
+    params: BinParams,
+    cutPlanesX: readonly number[],
+    cutPlanesY: readonly number[],
+    options?: { tolerance?: number; angularTolerance?: number }
+  ): Promise<SplitExportResult> {
+    if (this.destroyed) {
+      throw new Error('Bridge has been destroyed');
+    }
+
+    await this.init();
+
+    // Reject any pending split export
+    if (this.pendingSplitReject) {
+      this.pendingSplitReject(new Error('Split export superseded'));
+      this.pendingSplitResolve = null;
+      this.pendingSplitReject = null;
+    }
+
+    const requestId = this.nextRequestId();
+    this.splitRequestId = requestId;
+
+    return new Promise<SplitExportResult>((resolve, reject) => {
+      this.pendingSplitResolve = resolve;
+      this.pendingSplitReject = reject;
+      this.postMessage({
+        type: 'EXPORT_SPLIT',
+        payload: {
+          params,
+          requestId,
+          cutPlanesX,
+          cutPlanesY,
+          tolerance: options?.tolerance,
+          angularTolerance: options?.angularTolerance,
+        },
+      });
+    });
+  }
+
   /** Whether the bridge has been destroyed */
   get isDestroyed(): boolean {
     return this.destroyed;
@@ -339,6 +397,12 @@ export class GenerationBridge {
             this.pendingDividersReject = null;
             this.dividersRequestId = null;
             reject(new Error(response.error));
+          } else if (response.requestId === this.splitRequestId && this.pendingSplitReject) {
+            const reject = this.pendingSplitReject;
+            this.pendingSplitResolve = null;
+            this.pendingSplitReject = null;
+            this.splitRequestId = null;
+            reject(new Error(response.error));
           }
           break;
 
@@ -365,6 +429,18 @@ export class GenerationBridge {
             resolve({
               data: response.data,
               fileName: response.fileName,
+            });
+          }
+          break;
+
+        case 'SPLIT_EXPORT_RESULT':
+          if (response.requestId === this.splitRequestId && this.pendingSplitResolve) {
+            const resolve = this.pendingSplitResolve;
+            this.pendingSplitResolve = null;
+            this.pendingSplitReject = null;
+            this.splitRequestId = null;
+            resolve({
+              pieces: response.pieces,
             });
           }
           break;

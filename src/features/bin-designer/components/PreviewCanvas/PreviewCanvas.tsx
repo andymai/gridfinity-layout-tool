@@ -27,6 +27,7 @@ import {
   GhostLabelTabs,
   GhostSlotLines,
   GhostDividerPieces,
+  BinSplitLines,
   type CameraPreset,
 } from '../preview';
 import { GradientBackground } from '../preview/GradientBackground';
@@ -463,6 +464,9 @@ export function PreviewCanvas() {
             <GhostLabelTabs />
             <GhostSlotLines />
             <GhostDividerPieces />
+
+            {/* Split lines for oversized bins */}
+            <BinSplitLines />
 
             {/* Footprint grid */}
             <FootprintGrid width={width} depth={depth} />

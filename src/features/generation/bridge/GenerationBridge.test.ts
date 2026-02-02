@@ -316,6 +316,74 @@ describe('GenerationBridge', () => {
     });
   });
 
+  describe('exportSplitBin', () => {
+    it('sends EXPORT_SPLIT message and resolves with pieces', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      // Start the async export (it awaits init internally, which is already done)
+      const splitPromise = bridge.exportSplitBin(DEFAULT_BIN_PARAMS, [21], []);
+
+      // Let the microtask queue flush so the message is posted
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Find the EXPORT_SPLIT message
+      const splitMsg = mockWorkerInstance!.messages.find(
+        (m) => (m as { type: string }).type === 'EXPORT_SPLIT'
+      ) as {
+        type: string;
+        payload: { requestId: string; cutPlanesX: number[]; cutPlanesY: number[] };
+      };
+      expect(splitMsg).toBeDefined();
+      expect(splitMsg.payload.cutPlanesX).toEqual([21]);
+      expect(splitMsg.payload.cutPlanesY).toEqual([]);
+
+      // Simulate worker response
+      mockWorkerInstance!.simulateResponse({
+        type: 'SPLIT_EXPORT_RESULT',
+        requestId: splitMsg.payload.requestId,
+        pieces: [
+          { data: new ArrayBuffer(100), label: 'piece-1x1', col: 1, row: 1 },
+          { data: new ArrayBuffer(100), label: 'piece-2x1', col: 2, row: 1 },
+        ],
+      });
+
+      const result = await splitPromise;
+      expect(result.pieces).toHaveLength(2);
+      expect(result.pieces[0].label).toBe('piece-1x1');
+    });
+
+    it('rejects on error', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const splitPromise = bridge.exportSplitBin(DEFAULT_BIN_PARAMS, [21], []);
+
+      await vi.advanceTimersByTimeAsync(0);
+
+      const splitMsg = mockWorkerInstance!.messages.find(
+        (m) => (m as { type: string }).type === 'EXPORT_SPLIT'
+      ) as { type: string; payload: { requestId: string } };
+
+      mockWorkerInstance!.simulateResponse({
+        type: 'ERROR',
+        requestId: splitMsg.payload.requestId,
+        error: 'Split failed',
+      });
+
+      await expect(splitPromise).rejects.toThrow('Split failed');
+    });
+
+    it('rejects when bridge is destroyed', async () => {
+      bridge.destroy();
+      await expect(bridge.exportSplitBin(DEFAULT_BIN_PARAMS, [], [])).rejects.toThrow(
+        'Bridge has been destroyed'
+      );
+    });
+  });
+
   describe('destroy', () => {
     it('terminates the worker', async () => {
       const initPromise = bridge.init();

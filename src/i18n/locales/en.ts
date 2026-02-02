@@ -1312,6 +1312,11 @@ const en: Record<string, string> = {
   'binDesigner.specFeatures': 'Spec Features',
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.stlExportedSuccessfully': 'STL exported successfully',
+  'binDesigner.splitExport.exceedsPrintBed':
+    'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
+  'binDesigner.splitExport.enableSplit': 'Split into pieces',
+  'binDesigner.splitExport.downloadSplitSTL': 'Download Split STL (ZIP)',
+  'binDesigner.splitExport.success': 'Split STL exported successfully ({count} pieces)',
   'binDesigner.toggleWireframeModeKeyboardShortcut': 'Toggle wireframe mode, keyboard shortcut W',
   'binDesigner.touchGestureHints': 'Touch gesture hints',
   'binDesigner.updating': 'Updating',
