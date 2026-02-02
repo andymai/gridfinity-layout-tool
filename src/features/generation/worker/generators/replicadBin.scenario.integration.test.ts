@@ -16,10 +16,7 @@ beforeAll(async () => {
   const { readFileSync } = await import('fs');
   const { join } = await import('path');
 
-  const wasmPath = join(
-    process.cwd(),
-    'node_modules/brepjs/node_modules/brepjs-opencascade/src/brepjs_single.wasm'
-  );
+  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
   const wasmBinary = readFileSync(wasmPath);
   const OC = await opencascade({ wasmBinary });
   setOC(OC);
