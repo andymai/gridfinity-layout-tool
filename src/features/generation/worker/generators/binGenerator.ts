@@ -318,7 +318,7 @@ function buildBinBox(
   wallHeight: number,
   wallThickness: number
 ): Shape3D {
-  const boxKey = `${gridW},${gridD},${wallHeight},${wallThickness}`;
+  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}`;
   if (boxCache?.key === boxKey) {
     return boxCache.shape.clone();
   }
@@ -349,7 +349,7 @@ function buildBinBox(
  * Built at Z=0 locally, caller translates to wallHeight.
  */
 function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape3D {
-  const lipKey = `${gridW},${gridD},${includeLip}`;
+  const lipKey = `${gridW}|${gridD}|${includeLip}`;
   if (lipCache?.key === lipKey) {
     return lipCache.shape.clone();
   }
@@ -817,7 +817,7 @@ function socketCacheKey(
   screwRadius: number,
   forExport: boolean
 ): string {
-  return `${gridW},${gridD},${withMagnet},${withScrew},${magnetRadius},${magnetDepth},${screwRadius},${forExport}`;
+  return `${gridW}|${gridD}|${withMagnet}|${withScrew}|${magnetRadius}|${magnetDepth}|${screwRadius}|${forExport}`;
 }
 
 // ─── Main Entry Point ───────────────────────────────────────────────────────
