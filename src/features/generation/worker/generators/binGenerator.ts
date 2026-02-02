@@ -229,6 +229,21 @@ function buildBaseSocket(
   screwRadius: number,
   forExport = false
 ): Shape3D {
+  // Check socket cache — skip entire build if params haven't changed
+  const key = socketCacheKey(
+    gridW,
+    gridD,
+    withMagnet,
+    withScrew,
+    magnetRadius,
+    magnetDepth,
+    screwRadius,
+    forExport
+  );
+  if (socketCache?.key === key) {
+    return socketCache.shape.clone();
+  }
+
   // Build and position each cell socket
   const cellSockets: Shape3D[] = [];
 
@@ -286,7 +301,8 @@ function buildBaseSocket(
     }
   }
 
-  return result;
+  socketCache = { key, shape: result };
+  return result.clone();
 }
 
 // ─── Box Body Builder ─────────────────────────────────────────────────────────
@@ -759,6 +775,32 @@ function indexedMeshToFlat(
     normals: flatNormals,
     triangleCount: triCount,
   };
+}
+
+// ─── Socket Cache ──────────────────────────────────────────────────────────
+
+/**
+ * Cache for the base socket solid. The socket is the most expensive single
+ * build stage (lofts + fuseAll + cutAll holes) but only depends on grid
+ * dimensions and base style — not height, compartments, labels, or wall
+ * thickness. Caching it lets us skip ~30% of CAD time when only features change.
+ *
+ * Single-entry cache: stores the last built socket and its cache key.
+ * Invalidated whenever any socket parameter changes.
+ */
+let socketCache: { key: string; shape: Shape3D } | null = null;
+
+function socketCacheKey(
+  gridW: number,
+  gridD: number,
+  withMagnet: boolean,
+  withScrew: boolean,
+  magnetRadius: number,
+  magnetDepth: number,
+  screwRadius: number,
+  forExport: boolean
+): string {
+  return `${gridW},${gridD},${withMagnet},${withScrew},${magnetRadius},${magnetDepth},${screwRadius},${forExport}`;
 }
 
 // ─── Main Entry Point ───────────────────────────────────────────────────────
