@@ -14,8 +14,16 @@
  * - Final mesh translated up by SOCKET_HEIGHT so Z=0 = absolute bottom
  */
 
-import { draw, drawRoundedRectangle, drawCircle, drawRectangle, unwrap } from 'brepjs';
-import type { Shape3D, Solid, Plane, Point, Sketch, SketchInterface } from 'brepjs';
+import {
+  draw,
+  drawRoundedRectangle,
+  drawCircle,
+  drawRectangle,
+  unwrap,
+  fuseAll,
+  cutAll,
+} from 'brepjs';
+import type { Shape3D, Plane, PlaneName, Point, Sketch, SketchInterface, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
@@ -23,6 +31,15 @@ import { buildSlotCuts } from './slotBuilder';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
+
+/**
+ * Sketch a drawing on a plane, narrowing to SketchInterface.
+ * All our drawings are single closed wires, so SketchInterface is always the
+ * correct runtime type. This eliminates repeated `as SketchInterface` casts.
+ */
+function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
+  return drawing.sketchOnPlane(plane, origin) as SketchInterface;
+}
 
 // ─── Gridfinity Socket Constants ──────────────────────────────────────────────
 
@@ -213,7 +230,7 @@ function buildBaseSocket(
   forExport = false
 ): Shape3D {
   // Build and position each cell socket
-  let baseSocket: Shape3D | null = null;
+  const cellSockets: Shape3D[] = [];
 
   forEachCell(gridW, gridD, (cell) => {
     const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
@@ -224,25 +241,20 @@ function buildBaseSocket(
         ? buildSingleCellSocket(cellW_mm, cellD_mm)
         : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
     ).translate([cell.centerX, cell.centerY, 0]);
-    baseSocket = baseSocket ? unwrap(baseSocket.fuse(cellSocket)) : cellSocket;
+    cellSockets.push(cellSocket);
   });
 
-  // baseSocket is guaranteed to be defined for valid grid dimensions (gridW >= 1, gridD >= 1)
-  if (!baseSocket) {
+  if (cellSockets.length === 0) {
     throw new Error('Invalid grid dimensions: at least one cell required');
   }
-  let result: Shape3D = baseSocket;
+  let result: Shape3D = unwrap(fuseAll(cellSockets, { optimisation: 'commonFace' }));
 
   // Cut magnet/screw holes only in full-size (1.0 × 1.0 unit) cells
   if (withScrew || withMagnet) {
     const HOLE_OFFSET = 13; // mm from cell center to hole center
 
-    const magnetCutout = withMagnet
-      ? (drawCircle(magnetRadius).sketchOnPlane() as SketchInterface).extrude(magnetDepth)
-      : null;
-    const screwCutout = withScrew
-      ? (drawCircle(screwRadius).sketchOnPlane() as SketchInterface).extrude(SOCKET_HEIGHT)
-      : null;
+    const magnetCutout = withMagnet ? sketch(drawCircle(magnetRadius)).extrude(magnetDepth) : null;
+    const screwCutout = withScrew ? sketch(drawCircle(screwRadius)).extrude(SOCKET_HEIGHT) : null;
 
     const cutout: Shape3D =
       magnetCutout && screwCutout
@@ -257,18 +269,21 @@ function buildBaseSocket(
       [HOLE_OFFSET, -HOLE_OFFSET],
     ];
 
+    const holeTools: Shape3D[] = [];
     forEachCell(gridW, gridD, (cell) => {
       // Only cut holes in full-size cells
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
       for (const [dx, dy] of holeOffsets) {
-        result = unwrap(
-          result.cut(
-            cutout.clone().translate([cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
-          )
+        holeTools.push(
+          cutout.clone().translate([cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
         );
       }
     });
+
+    if (holeTools.length > 0) {
+      result = unwrap(cutAll(result, holeTools));
+    }
   }
 
   return result;
@@ -290,9 +305,7 @@ function buildBinBox(
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  const box = (
-    drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as SketchInterface
-  ).extrude(wallHeight);
+  const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
 
   return unwrap(box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight)));
 }
@@ -375,20 +388,10 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
 
 // ─── Feature Builders ─────────────────────────────────────────────────────────
 
-/**
- * Add a wall segment to the dividers, fusing if needed.
- */
-function addWallSegment(
-  dividers: Shape3D | null,
-  w: number,
-  d: number,
-  height: number,
-  x: number,
-  y: number
-): Shape3D {
-  const wall = (drawRectangle(w, d).sketchOnPlane('XY') as SketchInterface).extrude(height);
-  const positioned = wall.translate([x, y, 0]);
-  return dividers ? unwrap(dividers.fuse(positioned)) : positioned;
+/** Build a positioned wall segment solid. */
+function buildWallSegment(w: number, d: number, height: number, x: number, y: number): Shape3D {
+  const wall = sketch(drawRectangle(w, d), 'XY').extrude(height);
+  return wall.translate([x, y, 0]);
 }
 
 /**
@@ -447,7 +450,7 @@ function buildCompartmentWalls(
   // Safety net: skip wall generation if cells are too small for viable geometry
   if (effectiveCellW < thickness * 2 || effectiveCellD < thickness * 2) return null;
 
-  let dividers: Shape3D | null = null;
+  const wallSegments: Shape3D[] = [];
 
   // Vertical walls: between column boundaries
   for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
@@ -461,7 +464,7 @@ function buildCompartmentWalls(
     for (const [start, end] of segments) {
       const segLength = (end - start) * cellD;
       const yCenter = -innerD / 2 + (start + (end - start) / 2) * cellD;
-      dividers = addWallSegment(dividers, thickness, segLength, wallHeight, xPos, yCenter);
+      wallSegments.push(buildWallSegment(thickness, segLength, wallHeight, xPos, yCenter));
     }
   }
 
@@ -477,11 +480,12 @@ function buildCompartmentWalls(
     for (const [start, end] of segments) {
       const segLength = (end - start) * cellW;
       const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;
-      dividers = addWallSegment(dividers, segLength, thickness, wallHeight, xCenter, yPos);
+      wallSegments.push(buildWallSegment(segLength, thickness, wallHeight, xCenter, yPos));
     }
   }
 
-  return dividers;
+  if (wallSegments.length === 0) return null;
+  return unwrap(fuseAll(wallSegments));
 }
 
 /**
@@ -490,57 +494,50 @@ function buildCompartmentWalls(
 function buildInsertCuts(params: BinParams): Shape3D | null {
   if (params.inserts.length === 0) return null;
 
-  let cuts: Shape3D | null = null;
+  const insertShapes: Shape3D[] = [];
 
   for (const insert of params.inserts) {
     let solid: Shape3D;
 
     switch (insert.shape) {
       case 'circle': {
-        solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as SketchInterface).extrude(
-          insert.cutDepth
-        );
+        solid = sketch(drawCircle(insert.width / 2), 'XY').extrude(insert.cutDepth);
         break;
       }
       case 'rounded-rect': {
-        solid = (
-          drawRoundedRectangle(insert.width, insert.depth, insert.cornerRadius).sketchOnPlane(
-            'XY'
-          ) as SketchInterface
+        solid = sketch(
+          drawRoundedRectangle(insert.width, insert.depth, insert.cornerRadius),
+          'XY'
         ).extrude(insert.cutDepth);
         break;
       }
       case 'hexagon': {
         // Approximate hexagon with circle (polygon support TBD)
-        solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as SketchInterface).extrude(
-          insert.cutDepth
-        );
+        solid = sketch(drawCircle(insert.width / 2), 'XY').extrude(insert.cutDepth);
         break;
       }
       case 'slot': {
-        solid = (
+        solid = sketch(
           drawRoundedRectangle(
             insert.width,
             insert.depth,
             Math.min(insert.width, insert.depth) / 2
-          ).sketchOnPlane('XY') as SketchInterface
+          ),
+          'XY'
         ).extrude(insert.cutDepth);
         break;
       }
       case 'rectangle':
       default: {
-        solid = (
-          drawRectangle(insert.width, insert.depth).sketchOnPlane('XY') as SketchInterface
-        ).extrude(insert.cutDepth);
+        solid = sketch(drawRectangle(insert.width, insert.depth), 'XY').extrude(insert.cutDepth);
         break;
       }
     }
 
-    const positioned = solid.translate([insert.x, insert.y, 0]);
-    cuts = cuts ? unwrap(cuts.fuse(positioned)) : positioned;
+    insertShapes.push(solid.translate([insert.x, insert.y, 0]));
   }
 
-  return cuts;
+  return unwrap(fuseAll(insertShapes));
 }
 
 // ─── Label Tab Builder ───────────────────────────────────────────────────────
@@ -595,7 +592,7 @@ function buildLabelTabs(
 
   const cellW = innerW / cols;
   const cellD = innerD / rows;
-  let tabs: Shape3D | null = null;
+  const allTabs: Shape3D[] = [];
 
   for (let col = 0; col < cols; col++) {
     // Available width within this column (accounting for divider walls)
@@ -654,8 +651,7 @@ function buildLabelTabs(
       if (!touchesRight) pen = pen.customCorner(cornerR);
       pen = pen.lineTo([0, -tabDepth]);
       if (!touchesLeft) pen = pen.customCorner(cornerR);
-      const shelfSketch = pen.close().sketchOnPlane('XY', tabHeight - wt) as SketchInterface;
-      const shelf = shelfSketch.extrude(wt);
+      const shelf = sketch(pen.close(), 'XY', tabHeight - wt).extrude(wt);
 
       // ── Gussets: 45° triangular supports under the shelf ──
       // Free ends get edge gussets for structural support.
@@ -692,8 +688,7 @@ function buildLabelTabs(
             .lineTo([-gussetLegSolid, gussetLegSolid])
             .lineTo([0, 0])
             .close();
-          const solidSketch = solidProfile.sketchOnPlane('YZ', 0) as SketchInterface;
-          const solidSupport = solidSketch.extrude(tabWidth);
+          const solidSupport = sketch(solidProfile, 'YZ', 0).extrude(tabWidth);
           tabSolid = unwrap(tabSolid.fuse(solidSupport));
         }
       } else {
@@ -704,28 +699,25 @@ function buildLabelTabs(
             .lineTo([0, 0])
             .close();
 
-          let gussets: Shape3D | null = null;
+          const gussetShapes: Shape3D[] = [];
           for (const gx of gussetPositions) {
-            const gussetSketch = gussetProfile.sketchOnPlane('YZ', 0) as SketchInterface;
-            let gusset = gussetSketch.extrude(gt);
-            gusset = gusset.translateX(gx);
-            gussets = gussets ? unwrap(gussets.fuse(gusset)) : gusset;
+            const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
+            gussetShapes.push(gusset.translateX(gx));
           }
 
-          if (gussets) {
-            tabSolid = unwrap(tabSolid.fuse(gussets));
-          }
+          tabSolid = unwrap(tabSolid.fuse(unwrap(fuseAll(gussetShapes))));
         }
       }
 
       // Position: X at alignment offset, Y at compartment back edge, Z at tab base
       tabSolid = tabSolid.translate([tabXStart, backEdgeY, wallHeight - tabHeight]);
 
-      tabs = tabs ? unwrap(tabs.fuse(tabSolid)) : tabSolid;
+      allTabs.push(tabSolid);
     }
   }
 
-  return tabs;
+  if (allTabs.length === 0) return null;
+  return unwrap(fuseAll(allTabs));
 }
 
 // ─── Mesh Conversion ────────────────────────────────────────────────────────
@@ -772,10 +764,10 @@ function indexedMeshToFlat(
 // ─── Main Entry Point ───────────────────────────────────────────────────────
 
 /** Last generated solid — cached for instant export without re-generation. */
-let lastSolid: Solid | null = null;
+let lastSolid: Shape3D | null = null;
 
 /** Get the last generated solid for export operations. */
-export function getLastSolid(): Solid | null {
+export function getLastSolid(): Shape3D | null {
   return lastSolid;
 }
 
@@ -811,14 +803,14 @@ export async function exportBin(
   const name = `gridfinity-${params.width}x${params.depth}x${params.height}`;
 
   if (format === 'step') {
-    const blob = unwrap((solid as unknown as Shape3D).blobSTEP());
+    const blob = unwrap(solid.blobSTEP());
     const data = await blob.arrayBuffer();
     return { data, fileName: `${name}.step` };
   }
 
   // STL with configurable quality
   const blob = unwrap(
-    (solid as unknown as Shape3D).blobSTL({
+    solid.blobSTL({
       tolerance,
       angularTolerance,
       binary: true,
@@ -973,7 +965,7 @@ export function generateBin(
 
   // Stage 6: Tessellate to triangle mesh
   onProgress?.('merge', 0.9);
-  lastSolid = bin as unknown as Solid;
+  lastSolid = bin;
 
   // Dynamic tessellation: export gets fine quality, preview adapts to bin size
   const maxDimension = Math.max(params.width, params.depth) * SIZE;

@@ -7,13 +7,18 @@
  */
 
 import { drawRectangle } from 'brepjs';
-import type { Shape3D, SketchInterface } from 'brepjs';
+import type { Shape3D, PlaneName, SketchInterface, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { calculateDividerHeight, calculateDividerLength } from '@/shared/utils/slotMath';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 
 // Re-export shared math so existing imports from generation internals still work
 export { calculateDividerHeight, calculateDividerLength };
+
+/** Narrow Drawing.sketchOnPlane to SketchInterface (single closed wire). */
+function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
+  return drawing.sketchOnPlane(plane, origin) as SketchInterface;
+}
 
 /**
  * Build a single divider piece laid flat for FDM printing.
@@ -28,7 +33,7 @@ export { calculateDividerHeight, calculateDividerLength };
  * @param height Divider height in mm (becomes Y in flat orientation)
  */
 export function buildDividerPiece(length: number, thickness: number, height: number): Shape3D {
-  return (drawRectangle(length, height).sketchOnPlane('XY') as SketchInterface).extrude(thickness);
+  return sketch(drawRectangle(length, height), 'XY').extrude(thickness);
 }
 
 /**
