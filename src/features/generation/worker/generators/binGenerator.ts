@@ -802,10 +802,12 @@ function indexedMeshToFlat(
  * - socketCache: lofts + fuseAll + cutAll holes (~30% of CAD time)
  * - lipCache: sweep + fillet (~10-15% of CAD time)
  * - boxCache: extrude + shell (~10% of CAD time)
+ * - shellCache: assembled base + box + lip (~15% of CAD time for the 2-3 fuses)
  */
 let socketCache: { key: string; shape: Shape3D } | null = null;
 let lipCache: { key: string; shape: Shape3D } | null = null;
 let boxCache: { key: string; shape: Shape3D } | null = null;
+let shellCache: { key: string; shape: Shape3D } | null = null;
 
 function socketCacheKey(
   gridW: number,
@@ -915,42 +917,67 @@ export function generateBin(
   const isSmallBin = cellCount < 16; // 4x4 = 16 cells threshold
   const useHighQuality = forExport || isSmallBin;
 
-  // Stage 1: Build base socket
+  // Stages 1-3: Build base socket + box + lip, then assemble.
+  // The assembled shell is cached — only features (compartments, inserts, tabs)
+  // need to rebuild when those params change.
   onProgress?.('base', 0.1);
-  const base = buildBaseSocket(
+  const shellKey = [
     params.width,
     params.depth,
     withMagnet,
     withScrew,
-    params.base.magnetDiameter / 2,
+    params.base.magnetDiameter,
     params.base.magnetDepth,
-    params.base.screwDiameter / 2,
-    useHighQuality
-  );
+    params.base.screwDiameter,
+    useHighQuality,
+    wallHeight,
+    wallThickness,
+    params.base.stackingLip,
+  ].join('|');
 
-  // Stage 2: Build bin box (walls + floor)
-  onProgress?.('shell', 0.3);
-  const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness);
-
-  // Stage 3: Assemble base + shell + stacking lip
-  onProgress?.('features', 0.4);
   let bin: Shape3D;
-  if (params.base.stackingLip) {
-    try {
-      const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
-      bin = unwrap(
-        unwrap(base.fuse(box, { optimisation: 'commonFace' })).fuse(top, {
-          optimisation: 'commonFace',
-        })
-      );
-    } catch (e) {
-      console.warn('[BinGen] Stacking lip failed, skipping:', e instanceof Error ? e.message : e, {
-        wallThickness,
-      });
+  if (shellCache?.key === shellKey) {
+    bin = shellCache.shape.clone();
+  } else {
+    const base = buildBaseSocket(
+      params.width,
+      params.depth,
+      withMagnet,
+      withScrew,
+      params.base.magnetDiameter / 2,
+      params.base.magnetDepth,
+      params.base.screwDiameter / 2,
+      useHighQuality
+    );
+
+    onProgress?.('shell', 0.3);
+    const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness);
+
+    onProgress?.('features', 0.4);
+    if (params.base.stackingLip) {
+      try {
+        const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
+        bin = unwrap(
+          unwrap(base.fuse(box, { optimisation: 'commonFace' })).fuse(top, {
+            optimisation: 'commonFace',
+          })
+        );
+      } catch (e) {
+        console.warn(
+          '[BinGen] Stacking lip failed, skipping:',
+          e instanceof Error ? e.message : e,
+          {
+            wallThickness,
+          }
+        );
+        bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
+      }
+    } else {
       bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
     }
-  } else {
-    bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
+
+    shellCache = { key: shellKey, shape: bin };
+    bin = bin.clone();
   }
 
   // Stage 4: Features (dividers, inserts)
