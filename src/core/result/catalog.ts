@@ -11,12 +11,14 @@
  * with translation keys in the future without changing error handling code.
  */
 
+import type { ErrorCode } from './errors';
+
 /**
  * Entry in the error catalog.
  */
 export interface ErrorCatalogEntry {
   /** Unique error code */
-  code: string;
+  code: ErrorCode;
   /** Default message for logging/debugging */
   defaultMessage: string;
   /** User-friendly message (if different from default) */
@@ -39,7 +41,7 @@ export interface ErrorCatalogEntry {
  * - API_*: Cloud API errors
  * - UNKNOWN_*: Fallback errors
  */
-export const ERROR_CATALOG: Record<string, ErrorCatalogEntry> = {
+export const ERROR_CATALOG: Record<ErrorCode, ErrorCatalogEntry> = {
   // ===========================================================================
   // Storage Errors
   // ===========================================================================
@@ -154,7 +156,7 @@ export const ERROR_CATALOG: Record<string, ErrorCatalogEntry> = {
   LAYOUT_LAYER_LIMIT: {
     code: 'LAYOUT_LAYER_LIMIT',
     defaultMessage: 'Maximum layer count reached',
-    userMessage: 'Cannot add more layers (max 10)',
+    userMessage: 'Cannot add more layers ({currentCount}/{maxCount})',
     recoveryHint: 'Remove unused layers',
     retryable: false,
     severity: 'warning',
@@ -163,7 +165,7 @@ export const ERROR_CATALOG: Record<string, ErrorCatalogEntry> = {
   LAYOUT_CATEGORY_LIMIT: {
     code: 'LAYOUT_CATEGORY_LIMIT',
     defaultMessage: 'Maximum category count reached',
-    userMessage: 'Cannot add more categories (max 20)',
+    userMessage: 'Cannot add more categories ({currentCount}/{maxCount})',
     recoveryHint: 'Remove unused categories',
     retryable: false,
     severity: 'warning',
@@ -172,7 +174,7 @@ export const ERROR_CATALOG: Record<string, ErrorCatalogEntry> = {
   LAYOUT_LIBRARY_LIMIT: {
     code: 'LAYOUT_LIBRARY_LIMIT',
     defaultMessage: 'Maximum layout count reached',
-    userMessage: 'Cannot add more layouts (max 100)',
+    userMessage: 'Cannot add more layouts ({currentCount}/{maxCount})',
     recoveryHint: 'Delete unused layouts',
     retryable: false,
     severity: 'warning',
@@ -329,8 +331,8 @@ export const ERROR_CATALOG: Record<string, ErrorCatalogEntry> = {
  * @param code - The error code to look up
  * @returns The catalog entry for this error
  */
-export function getErrorInfo(code: string): ErrorCatalogEntry {
-  return ERROR_CATALOG[code] || ERROR_CATALOG.UNKNOWN_ERROR;
+export function getErrorInfo(code: ErrorCode): ErrorCatalogEntry {
+  return ERROR_CATALOG[code];
 }
 
 /**
@@ -373,7 +375,7 @@ export function formatErrorMessage(
  * ```
  */
 export function getUserMessage(error: {
-  code: string;
+  code: ErrorCode;
   metadata?: Record<string, unknown>;
 }): string {
   const info = getErrorInfo(error.code);
@@ -400,7 +402,7 @@ export function getUserMessage(error: {
  * ```
  */
 export function getRecoveryHint(error: {
-  code: string;
+  code: ErrorCode;
   metadata?: Record<string, unknown>;
 }): string | undefined {
   const info = getErrorInfo(error.code);
@@ -420,7 +422,7 @@ export function getRecoveryHint(error: {
  * @param code - The error code to check
  * @returns Whether the operation can be retried
  */
-export function isRetryable(code: string): boolean {
+export function isRetryable(code: ErrorCode): boolean {
   return getErrorInfo(code).retryable;
 }
 
@@ -430,6 +432,6 @@ export function isRetryable(code: string): boolean {
  * @param code - The error code to check
  * @returns Severity level ('error', 'warning', or 'info')
  */
-export function getSeverity(code: string): 'error' | 'warning' | 'info' {
+export function getSeverity(code: ErrorCode): 'error' | 'warning' | 'info' {
   return getErrorInfo(code).severity;
 }

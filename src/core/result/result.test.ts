@@ -24,14 +24,19 @@ import {
   storageNotFound,
   storageQuotaExceeded,
   storageCorrupted,
+  storageUnavailable,
   validationCollision,
   validationOutOfBounds,
+  validationHeightExceeded,
   layoutLayerLimit,
+  layoutCategoryLimit,
   layoutLibraryLimit,
   layoutLastEntity,
   apiRateLimited,
   apiNetworkError,
   apiServerError,
+  apiSizeLimit,
+  apiBinLimit,
   apiInvalidExpiration,
   unknownError,
   fromUnknown,
@@ -316,12 +321,13 @@ describe('Result utilities', () => {
 
 describe('Error constructors', () => {
   describe('Storage errors', () => {
-    it('creates storageNotFound with key', () => {
+    it('creates storageNotFound with key and metadata', () => {
       const error = storageNotFound('test-key');
       expect(error.kind).toBe('StorageError');
       expect(error.code).toBe('STORAGE_NOT_FOUND');
       expect(error.key).toBe('test-key');
       expect(error.timestamp).toBeGreaterThan(0);
+      expect(error.metadata).toEqual({ key: 'test-key' });
     });
 
     it('creates storageQuotaExceeded with usage info', () => {
@@ -335,6 +341,13 @@ describe('Error constructors', () => {
       const error = storageCorrupted('key', ['invalid field', 'missing data']);
       expect(error.code).toBe('STORAGE_CORRUPTED');
       expect(error.validationErrors).toEqual(['invalid field', 'missing data']);
+    });
+
+    it('creates storageUnavailable with backend metadata', () => {
+      const error = storageUnavailable('localStorage');
+      expect(error.code).toBe('STORAGE_UNAVAILABLE');
+      expect(error.backend).toBe('localStorage');
+      expect(error.metadata).toEqual({ backend: 'localStorage' });
     });
   });
 
@@ -352,15 +365,32 @@ describe('Error constructors', () => {
       expect(error.reason).toBe('exceeds_width');
       expect(error.binData).toEqual({ x: 5, y: 0, width: 10, depth: 2 });
     });
+
+    it('creates validationHeightExceeded with metadata', () => {
+      const error = validationHeightExceeded(15, 10);
+      expect(error.code).toBe('VALIDATION_HEIGHT_EXCEEDED');
+      expect(error.requested).toBe(15);
+      expect(error.max).toBe(10);
+      expect(error.metadata).toEqual({ requested: 15, max: 10 });
+    });
   });
 
   describe('Layout errors', () => {
-    it('creates layoutLayerLimit with counts', () => {
+    it('creates layoutLayerLimit with counts and metadata', () => {
       const error = layoutLayerLimit(10, 10);
       expect(error.kind).toBe('LayoutError');
       expect(error.code).toBe('LAYOUT_LAYER_LIMIT');
       expect(error.currentCount).toBe(10);
       expect(error.maxCount).toBe(10);
+      expect(error.metadata).toEqual({ currentCount: 10, maxCount: 10 });
+    });
+
+    it('creates layoutCategoryLimit with counts and metadata', () => {
+      const error = layoutCategoryLimit(20, 20);
+      expect(error.code).toBe('LAYOUT_CATEGORY_LIMIT');
+      expect(error.currentCount).toBe(20);
+      expect(error.maxCount).toBe(20);
+      expect(error.metadata).toEqual({ currentCount: 20, maxCount: 20 });
     });
 
     it('creates layoutLastEntity with entity type and metadata', () => {
@@ -370,23 +400,30 @@ describe('Error constructors', () => {
       expect(error.metadata).toEqual({ entityType: 'layer' });
     });
 
-    it('creates layoutLibraryLimit with counts', () => {
+    it('creates layoutLibraryLimit with counts and metadata', () => {
       const error = layoutLibraryLimit(100, 100);
       expect(error.kind).toBe('LayoutError');
       expect(error.code).toBe('LAYOUT_LIBRARY_LIMIT');
       expect(error.currentCount).toBe(100);
       expect(error.maxCount).toBe(100);
       expect(error.timestamp).toBeGreaterThan(0);
+      expect(error.metadata).toEqual({ currentCount: 100, maxCount: 100 });
     });
   });
 
   describe('API errors', () => {
-    it('creates apiRateLimited with retry info', () => {
+    it('creates apiRateLimited with retry info and metadata', () => {
       const error = apiRateLimited(60);
       expect(error.kind).toBe('ApiError');
       expect(error.code).toBe('API_RATE_LIMITED');
       expect(error.retryAfter).toBe(60);
       expect(error.metadata).toEqual({ retryAfter: 60 });
+    });
+
+    it('creates apiRateLimited without retryAfter omits metadata', () => {
+      const error = apiRateLimited();
+      expect(error.code).toBe('API_RATE_LIMITED');
+      expect(error.metadata).toBeUndefined();
     });
 
     it('creates apiNetworkError with cause', () => {
@@ -411,6 +448,22 @@ describe('Error constructors', () => {
       expect(error.code).toBe('API_SERVER_ERROR');
       expect(error.status).toBeUndefined();
       expect(error.cause).toBeUndefined();
+    });
+
+    it('creates apiSizeLimit with metadata', () => {
+      const error = apiSizeLimit(600000, 500000);
+      expect(error.code).toBe('API_SIZE_LIMIT');
+      expect(error.sizeBytes).toBe(600000);
+      expect(error.maxBytes).toBe(500000);
+      expect(error.metadata).toEqual({ sizeBytes: 600000, maxBytes: 500000 });
+    });
+
+    it('creates apiBinLimit with metadata', () => {
+      const error = apiBinLimit(3000, 2500);
+      expect(error.code).toBe('API_BIN_LIMIT');
+      expect(error.binCount).toBe(3000);
+      expect(error.maxBins).toBe(2500);
+      expect(error.metadata).toEqual({ binCount: 3000, maxBins: 2500 });
     });
 
     it('creates apiInvalidExpiration with provided value', () => {
@@ -443,6 +496,22 @@ describe('Error constructors', () => {
       expect(error.cause).toBe('string error');
     });
   });
+
+  describe('createError helper (via constructors)', () => {
+    it('auto-populates kind, code, message, and timestamp', () => {
+      const error = storageNotFound('test-key');
+      expect(error.kind).toBe('StorageError');
+      expect(error.code).toBe('STORAGE_NOT_FOUND');
+      expect(error.message).toBe('Layout not found in storage');
+      expect(error.timestamp).toBeGreaterThan(0);
+      expect(error.timestamp).toBeLessThanOrEqual(Date.now());
+    });
+
+    it('message comes from the error catalog', () => {
+      const error = layoutLayerLimit(10, 10);
+      expect(error.message).toBe('Maximum layer count reached');
+    });
+  });
 });
 
 // =============================================================================
@@ -457,9 +526,10 @@ describe('Error catalog', () => {
       expect(info.userMessage).toBe('Layout not found');
     });
 
-    it('returns UNKNOWN_ERROR for unknown code', () => {
-      const info = getErrorInfo('TOTALLY_FAKE_CODE');
+    it('returns entry for every ErrorCode', () => {
+      const info = getErrorInfo('UNKNOWN_ERROR');
       expect(info.code).toBe('UNKNOWN_ERROR');
+      expect(info.userMessage).toBe('Something went wrong');
     });
   });
 
@@ -474,6 +544,24 @@ describe('Error catalog', () => {
       const error = layoutLastEntity('layer');
       const message = getUserMessage(error);
       expect(message).toBe('Cannot delete the only layer');
+    });
+
+    it('interpolates limit metadata for layer limit', () => {
+      const error = layoutLayerLimit(10, 10);
+      const message = getUserMessage(error);
+      expect(message).toBe('Cannot add more layers (10/10)');
+    });
+
+    it('interpolates limit metadata for category limit', () => {
+      const error = layoutCategoryLimit(20, 20);
+      const message = getUserMessage(error);
+      expect(message).toBe('Cannot add more categories (20/20)');
+    });
+
+    it('interpolates limit metadata for library limit', () => {
+      const error = layoutLibraryLimit(100, 100);
+      const message = getUserMessage(error);
+      expect(message).toBe('Cannot add more layouts (100/100)');
     });
   });
 
