@@ -1,6 +1,6 @@
 # Bin Designer
 
-Parametric 3D Gridfinity bin generator with Replicad geometry engine.
+Parametric 3D Gridfinity bin generator with brepjs geometry engine.
 
 ```mermaid
 graph TB

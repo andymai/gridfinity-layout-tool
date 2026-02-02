@@ -13,8 +13,8 @@
  * boolean cut operation on the bin — critical for performance.
  */
 
-import { drawRectangle } from 'replicad';
-import type { Shape3D, Sketch } from 'replicad';
+import { drawRectangle, unwrap, fuseAll } from 'brepjs';
+import type { Shape3D, PlaneName, SketchInterface, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import {
   calculateSlotPositions,
@@ -23,6 +23,11 @@ import {
 
 // Re-export shared math for generation-internal consumers
 export { calculateSlotPositions };
+
+/** Narrow Drawing.sketchOnPlane to SketchInterface (single closed wire). */
+function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
+  return drawing.sketchOnPlane(plane, origin) as SketchInterface;
+}
 
 /**
  * Compute effective slot dimensions from BinParams.
@@ -104,28 +109,20 @@ export function buildSlotCuts(
     const positions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
     for (const yPos of positions) {
       // Wall slots (narrow, for tab engagement) — start at floor surface
-      const leftSlot = (
-        drawRectangle(slotDepth, slotWidth).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(slotHeight) as Shape3D;
+      const leftSlot = sketch(drawRectangle(slotDepth, slotWidth), 'XY').extrude(slotHeight);
       slots.push(leftSlot.translate([-innerW / 2 - slotDepth / 2, yPos, floorZ]));
 
-      const rightSlot = (
-        drawRectangle(slotDepth, slotWidth).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(slotHeight) as Shape3D;
+      const rightSlot = sketch(drawRectangle(slotDepth, slotWidth), 'XY').extrude(slotHeight);
       slots.push(rightSlot.translate([innerW / 2 + slotDepth / 2, yPos, floorZ]));
 
       // Lip cutouts: remove the interior overhang above AND below wallHeight.
       // The lip profile extends below wallHeight (wall-replacement extension),
       // so the cutout must reach down to wallHeight - lipTaperWidth.
       if (lipInfo && lipOverhang > 0) {
-        const leftLip = (
-          drawRectangle(lipOverhang, slotWidth).sketchOnPlane('XY') as unknown as Sketch
-        ).extrude(lipCutHeight) as Shape3D;
+        const leftLip = sketch(drawRectangle(lipOverhang, slotWidth), 'XY').extrude(lipCutHeight);
         slots.push(leftLip.translate([-(innerW / 2 - lipOverhang / 2), yPos, lipCutStartZ]));
 
-        const rightLip = (
-          drawRectangle(lipOverhang, slotWidth).sketchOnPlane('XY') as unknown as Sketch
-        ).extrude(lipCutHeight) as Shape3D;
+        const rightLip = sketch(drawRectangle(lipOverhang, slotWidth), 'XY').extrude(lipCutHeight);
         slots.push(rightLip.translate([innerW / 2 - lipOverhang / 2, yPos, lipCutStartZ]));
       }
     }
@@ -136,26 +133,18 @@ export function buildSlotCuts(
     const positions = calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang);
     for (const xPos of positions) {
       // Wall slots (narrow) — start at floor surface
-      const frontSlot = (
-        drawRectangle(slotWidth, slotDepth).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(slotHeight) as Shape3D;
+      const frontSlot = sketch(drawRectangle(slotWidth, slotDepth), 'XY').extrude(slotHeight);
       slots.push(frontSlot.translate([xPos, -innerD / 2 - slotDepth / 2, floorZ]));
 
-      const backSlot = (
-        drawRectangle(slotWidth, slotDepth).sketchOnPlane('XY') as unknown as Sketch
-      ).extrude(slotHeight) as Shape3D;
+      const backSlot = sketch(drawRectangle(slotWidth, slotDepth), 'XY').extrude(slotHeight);
       slots.push(backSlot.translate([xPos, innerD / 2 + slotDepth / 2, floorZ]));
 
       // Lip cutouts: remove the interior overhang (same Z range as X-axis)
       if (lipInfo && lipOverhang > 0) {
-        const frontLip = (
-          drawRectangle(slotWidth, lipOverhang).sketchOnPlane('XY') as unknown as Sketch
-        ).extrude(lipCutHeight) as Shape3D;
+        const frontLip = sketch(drawRectangle(slotWidth, lipOverhang), 'XY').extrude(lipCutHeight);
         slots.push(frontLip.translate([xPos, -(innerD / 2 - lipOverhang / 2), lipCutStartZ]));
 
-        const backLip = (
-          drawRectangle(slotWidth, lipOverhang).sketchOnPlane('XY') as unknown as Sketch
-        ).extrude(lipCutHeight) as Shape3D;
+        const backLip = sketch(drawRectangle(slotWidth, lipOverhang), 'XY').extrude(lipCutHeight);
         slots.push(backLip.translate([xPos, innerD / 2 - lipOverhang / 2, lipCutStartZ]));
       }
     }
@@ -163,11 +152,6 @@ export function buildSlotCuts(
 
   if (slots.length === 0) return null;
 
-  // Pre-fuse all slots into a single compound for one boolean cut
-  let compound = slots[0];
-  for (let i = 1; i < slots.length; i++) {
-    compound = compound.fuse(slots[i]);
-  }
-
-  return compound;
+  // Batch-fuse all slots into a single compound for one boolean cut
+  return unwrap(fuseAll(slots));
 }

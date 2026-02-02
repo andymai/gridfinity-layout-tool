@@ -6,7 +6,7 @@
  * in their slicer as needed.
  */
 
-import type { Shape3D } from 'replicad';
+import { unwrap } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
@@ -42,14 +42,16 @@ export async function exportDividers(
   // Fuse unique pieces into a single solid
   let combined = pieces[0];
   for (let i = 1; i < pieces.length; i++) {
-    combined = combined.fuse(pieces[i]);
+    combined = unwrap(combined.fuse(pieces[i]));
   }
 
-  const blob = (combined as unknown as Shape3D).blobSTL({
-    tolerance: 0.01,
-    angularTolerance: 5,
-    binary: true,
-  });
+  const blob = unwrap(
+    combined.blobSTL({
+      tolerance: 0.01,
+      angularTolerance: 5,
+      binary: true,
+    })
+  );
   const data = await blob.arrayBuffer();
 
   const name = `gridfinity-${params.width}x${params.depth}-divider`;

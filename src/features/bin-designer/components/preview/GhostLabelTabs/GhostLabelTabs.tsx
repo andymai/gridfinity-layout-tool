@@ -5,7 +5,7 @@
  * label tabs will appear. Provides immediate visual feedback when the user changes
  * label tab width, depth, alignment, or support style.
  *
- * Position math mirrors replicadBin.ts buildLabelTabs (lines 609-641).
+ * Position math mirrors binGenerator.ts buildLabelTabs.
  */
 
 import { useMemo, useEffect } from 'react';

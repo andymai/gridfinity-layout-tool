@@ -3,11 +3,11 @@ import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { buildDividerPiece, buildUniqueDividerPieces } from './dividerBuilder';
 
-// Mock replicad — dividerBuilder imports it at module level.
+// Mock brepjs — dividerBuilder imports it at module level.
 // Vitest hoists vi.mock calls above imports automatically.
 const mockTranslate = vi.fn().mockReturnThis();
 const mockExtrude = vi.fn(() => ({ translate: mockTranslate }));
-vi.mock('replicad', () => ({
+vi.mock('brepjs', () => ({
   drawRectangle: vi.fn(() => ({
     sketchOnPlane: vi.fn(() => ({
       extrude: mockExtrude,

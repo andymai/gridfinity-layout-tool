@@ -1,12 +1,12 @@
 /// <reference types="vite/client" />
 
-// Type declaration for OpenCascade Emscripten module factory
-declare module 'replicad-opencascadejs/src/replicad_single.js' {
-  import type { OpenCascadeInstance } from 'replicad-opencascadejs/src/replicad_single';
+// Type declaration for OpenCascade Emscripten module factory (brepjs-opencascade)
+declare module 'brepjs-opencascade/src/brepjs_single.js' {
   interface OpenCascadeConfig {
     locateFile?: (fileName: string) => string;
   }
-  type OpenCascadeFactory = (config?: OpenCascadeConfig) => Promise<OpenCascadeInstance>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TECH-DEBT: OpenCascade WASM factory returns untyped Emscripten module
+  type OpenCascadeFactory = (config?: OpenCascadeConfig) => Promise<any>;
   const factory: OpenCascadeFactory;
   export default factory;
 }

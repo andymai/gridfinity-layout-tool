@@ -11,24 +11,22 @@ type GenerateFn = (
 let generateBin: GenerateFn;
 
 beforeAll(async () => {
-  const { setOC } = await import('replicad');
-  const opencascade = (await import('replicad-opencascadejs/src/replicad_single.js')).default;
+  const { setOC, registerQueryModule, EdgeFinder, FaceFinder } = await import('brepjs');
+  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
   const { readFileSync } = await import('fs');
   const { join } = await import('path');
 
-  const wasmPath = join(
-    process.cwd(),
-    'node_modules/replicad-opencascadejs/src/replicad_single.wasm'
-  );
+  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
   const wasmBinary = readFileSync(wasmPath);
   const OC = await opencascade({ wasmBinary });
   setOC(OC);
+  registerQueryModule({ EdgeFinder, FaceFinder });
 
-  const mod = await import('@/features/generation/worker/generators/replicadBin');
+  const mod = await import('@/features/generation/worker/generators/binGenerator');
   generateBin = mod.generateBin as GenerateFn;
 }, 30000);
 
-describe('replicad bin generation', () => {
+describe('brepjs bin generation', () => {
   it('generates a 1x1 bin without lip', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
