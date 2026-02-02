@@ -229,6 +229,21 @@ function buildBaseSocket(
   screwRadius: number,
   forExport = false
 ): Shape3D {
+  // Check socket cache — skip entire build if params haven't changed
+  const key = socketCacheKey(
+    gridW,
+    gridD,
+    withMagnet,
+    withScrew,
+    magnetRadius,
+    magnetDepth,
+    screwRadius,
+    forExport
+  );
+  if (socketCache?.key === key) {
+    return socketCache.shape.clone();
+  }
+
   // Build and position each cell socket
   const cellSockets: Shape3D[] = [];
 
@@ -286,7 +301,8 @@ function buildBaseSocket(
     }
   }
 
-  return result;
+  socketCache = { key, shape: result };
+  return result.clone();
 }
 
 // ─── Box Body Builder ─────────────────────────────────────────────────────────
@@ -302,12 +318,19 @@ function buildBinBox(
   wallHeight: number,
   wallThickness: number
 ): Shape3D {
+  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}`;
+  if (boxCache?.key === boxKey) {
+    return boxCache.shape.clone();
+  }
+
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
   const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
 
-  return unwrap(box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight)));
+  const result = unwrap(box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight)));
+  boxCache = { key: boxKey, shape: result };
+  return result.clone();
 }
 
 // ─── Top Shape (Stacking Lip) Builder ─────────────────────────────────────────
@@ -326,6 +349,11 @@ function buildBinBox(
  * Built at Z=0 locally, caller translates to wallHeight.
  */
 function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape3D {
+  const lipKey = `${gridW}|${gridD}|${includeLip}`;
+  if (lipCache?.key === lipKey) {
+    return lipCache.shape.clone();
+  }
+
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
@@ -374,7 +402,7 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
   // Sweep around the bin perimeter (built at Z=0, caller translates)
   const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
 
-  return unwrap(
+  const result = unwrap(
     boxSketch
       .sweepSketch(topProfile, { withContact: true })
       .fillet(TOP_FILLET, (e) =>
@@ -384,6 +412,9 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
         )
       )
   );
+
+  lipCache = { key: lipKey, shape: result };
+  return result.clone();
 }
 
 // ─── Feature Builders ─────────────────────────────────────────────────────────
@@ -759,6 +790,34 @@ function indexedMeshToFlat(
     normals: flatNormals,
     triangleCount: triCount,
   };
+}
+
+// ─── Shape Caches ──────────────────────────────────────────────────────────
+
+/**
+ * Single-entry caches for expensive intermediate shapes. Each stores the last
+ * built result and its cache key, returning a clone on hit. This avoids
+ * rebuilding shapes whose parameters haven't changed between generation calls.
+ *
+ * - socketCache: lofts + fuseAll + cutAll holes (~30% of CAD time)
+ * - lipCache: sweep + fillet (~10-15% of CAD time)
+ * - boxCache: extrude + shell (~10% of CAD time)
+ */
+let socketCache: { key: string; shape: Shape3D } | null = null;
+let lipCache: { key: string; shape: Shape3D } | null = null;
+let boxCache: { key: string; shape: Shape3D } | null = null;
+
+function socketCacheKey(
+  gridW: number,
+  gridD: number,
+  withMagnet: boolean,
+  withScrew: boolean,
+  magnetRadius: number,
+  magnetDepth: number,
+  screwRadius: number,
+  forExport: boolean
+): string {
+  return `${gridW}|${gridD}|${withMagnet}|${withScrew}|${magnetRadius}|${magnetDepth}|${screwRadius}|${forExport}`;
 }
 
 // ─── Main Entry Point ───────────────────────────────────────────────────────
