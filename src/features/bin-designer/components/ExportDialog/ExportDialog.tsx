@@ -173,7 +173,6 @@ export function ExportDialog() {
                   {fileNameWithoutExt}
                 </span>
               )}
-              {}
               <span className="shrink-0 border-l border-stroke-subtle px-2 py-2 text-sm text-content-tertiary">
                 {/* eslint-disable-next-line i18next/no-literal-string -- file extensions are not translatable */}
                 {needsSplit && splitEnabled ? '.zip' : '.stl'}
