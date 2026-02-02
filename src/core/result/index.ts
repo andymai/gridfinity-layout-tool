@@ -62,19 +62,42 @@
  */
 
 // =============================================================================
-// Core Types
+// Primary API (used in production)
 // =============================================================================
 
 export type { Result, Ok, Err, Unit } from './types';
 export { ok, err, isOk, isErr, OK } from './types';
+
+export { getUserMessage, isRetryable, getErrorInfo, formatErrorMessage } from './catalog';
+
+export { tryCatchAsync, unwrapOr } from './utils';
+
+// =============================================================================
+// Extended API (available, not currently used in production)
+// =============================================================================
+
+export {
+  map,
+  mapErr,
+  flatMap,
+  andThen,
+  match,
+  unwrap,
+  unwrapErr,
+  unwrapOrElse,
+  tryCatch,
+} from './utils';
+
+export { getRecoveryHint, getSeverity, ERROR_CATALOG } from './catalog';
 
 // =============================================================================
 // Domain Error Types
 // =============================================================================
 
 export type {
-  // Base type
+  // Base type + error code union
   AppError,
+  ErrorCode,
   ValidationFailureReason,
 
   // Storage errors
@@ -122,6 +145,8 @@ export type {
   DomainError,
 } from './errors';
 
+export type { ErrorCatalogEntry } from './catalog';
+
 // =============================================================================
 // Error Constructors
 // =============================================================================
@@ -167,43 +192,3 @@ export {
   unknownError,
   fromUnknown,
 } from './constructors';
-
-// =============================================================================
-// Error Catalog
-// =============================================================================
-
-export type { ErrorCatalogEntry } from './catalog';
-export {
-  ERROR_CATALOG,
-  getErrorInfo,
-  formatErrorMessage,
-  getUserMessage,
-  getRecoveryHint,
-  isRetryable,
-  getSeverity,
-} from './catalog';
-
-// =============================================================================
-// Utility Functions
-// =============================================================================
-
-export {
-  // Transformations
-  map,
-  mapErr,
-  flatMap,
-  andThen,
-
-  // Extraction
-  unwrap,
-  unwrapOr,
-  unwrapOrElse,
-  unwrapErr,
-
-  // Pattern matching
-  match,
-
-  // Try-catch wrappers
-  tryCatch,
-  tryCatchAsync,
-} from './utils';

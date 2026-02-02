@@ -20,6 +20,50 @@
  * Reason codes for validation failures.
  * Matches the existing ValidationResult.reason type.
  */
+/**
+ * Union of all error codes used across domain error types.
+ * Derived from the `code` field of each error interface.
+ */
+export type ErrorCode =
+  // Storage
+  | 'STORAGE_QUOTA_EXCEEDED'
+  | 'STORAGE_NOT_FOUND'
+  | 'STORAGE_CORRUPTED'
+  | 'STORAGE_UNAVAILABLE'
+  | 'STORAGE_NETWORK_ERROR'
+  // Validation
+  | 'VALIDATION_OUT_OF_BOUNDS'
+  | 'VALIDATION_COLLISION'
+  | 'VALIDATION_INVALID_LAYER'
+  | 'VALIDATION_HEIGHT_EXCEEDED'
+  | 'VALIDATION_BLOCKED_ZONE'
+  | 'VALIDATION_IMPORT_FAILED'
+  // Layout
+  | 'LAYOUT_LAYER_LIMIT'
+  | 'LAYOUT_CATEGORY_LIMIT'
+  | 'LAYOUT_LIBRARY_LIMIT'
+  | 'LAYOUT_LAST_ENTITY'
+  | 'LAYOUT_INVALID_OPERATION'
+  // API
+  | 'API_RATE_LIMITED'
+  | 'API_UNAUTHORIZED'
+  | 'API_NOT_FOUND'
+  | 'API_SERVER_ERROR'
+  | 'API_NETWORK_ERROR'
+  | 'API_TIMEOUT'
+  | 'API_VALIDATION_ERROR'
+  | 'API_CONTENT_BLOCKED'
+  | 'API_SIZE_LIMIT'
+  | 'API_BIN_LIMIT'
+  | 'API_EXPIRED'
+  | 'API_INVALID_EXPIRATION'
+  // Generic
+  | 'UNKNOWN_ERROR';
+
+/**
+ * Reason codes for validation failures.
+ * Matches the existing ValidationResult.reason type.
+ */
 export type ValidationFailureReason =
   | 'out_of_bounds'
   | 'exceeds_width'
@@ -37,7 +81,7 @@ export interface AppError {
   /** Discriminant for the error domain (StorageError, ValidationError, etc.) */
   readonly kind: string;
   /** Unique error code from the error catalog */
-  readonly code: string;
+  readonly code: ErrorCode;
   /** Default message for logging/debugging */
   readonly message: string;
   /** Unix timestamp when the error occurred */
