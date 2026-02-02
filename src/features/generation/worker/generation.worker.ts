@@ -1,5 +1,5 @@
 /**
- * Web Worker entry point for bin geometry generation using Replicad (OpenCascade WASM).
+ * Web Worker entry point for bin geometry generation using brepjs (OpenCascade WASM).
  *
  * Receives messages from GenerationBridge, initializes the OCCT kernel,
  * runs BREP geometry generation, and posts tessellated mesh results back.
@@ -15,7 +15,7 @@ import { setOC, registerQueryModule, EdgeFinder, FaceFinder } from 'brepjs';
 import type { WorkerMessage, WorkerResponse } from '../bridge/types';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportPayload, ExportDividersPayload } from '../bridge/types';
-import { generateBin, exportBin } from './generators/replicadBin';
+import { generateBin, exportBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
 
 import opencascade from 'brepjs-opencascade/src/brepjs_single.js';

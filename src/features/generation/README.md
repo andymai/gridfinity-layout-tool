@@ -1,6 +1,6 @@
 # Generation
 
-Replicad-based 3D geometry engine running in Web Worker.
+brepjs-based 3D geometry engine running in Web Worker.
 
 ```mermaid
 graph TB
@@ -10,13 +10,13 @@ graph TB
     end
     subgraph Worker
         AD -->|debounced| GW[generation.worker]
-        GW --> RB[replicadBin]
-        RB --> WASM[Replicad WASM]
+        GW --> BG[binGenerator]
+        BG --> WASM[brepjs WASM]
     end
     subgraph Export
         MD[MeshData] --> STL
     end
-    RB -->|tessellate| MD -->|transfer| GB
+    BG -->|tessellate| MD -->|transfer| GB
 ```
 
 ## Key Files
@@ -24,7 +24,7 @@ graph TB
 - `bridge/GenerationBridge.ts` — main thread API, manages worker lifecycle
 - `bridge/adaptiveDebounce.ts` — dynamic debounce based on generation speed
 - `worker/generation.worker.ts` — Web Worker entry point
-- `worker/generators/replicadBin.ts` — Replicad geometry pipeline
+- `worker/generators/binGenerator.ts` — brepjs geometry pipeline
 - `export/stlExporter.ts` — STL file export
 - `export/threemfExporter.ts` — 3MF file export
 
@@ -51,7 +51,7 @@ Requests tagged with `requestId`; cancelled requests ignored.
 1. **Half-cells decompose separately** - 1.5 width = [1.0, 0.5] cells
 2. **Magnet holes only in full cells** - half cells remain solid
 3. **Features fail silently** - tiny cells → feature skipped
-4. **WASM objects are ephemeral** - replicad GC invalidates refs unpredictably
+4. **WASM objects are ephemeral** - brepjs GC invalidates refs unpredictably
 
 ## Adaptive Debounce
 

@@ -22,7 +22,7 @@ beforeAll(async () => {
   setOC(OC);
   registerQueryModule({ EdgeFinder, FaceFinder });
 
-  const mod = await import('@/features/generation/worker/generators/replicadBin');
+  const mod = await import('@/features/generation/worker/generators/binGenerator');
   generateBin = mod.generateBin as GenerateFn;
 }, 30000);
 
