@@ -6,7 +6,8 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 type GenerateFn = (
   params: BinParams,
-  onProgress?: (stage: string, progress: number) => void
+  onProgress?: (stage: string, progress: number) => void,
+  forExport?: boolean
 ) => MeshData;
 let generateBin: GenerateFn;
 
