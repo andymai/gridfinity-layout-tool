@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.18.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.2...gridfinity-layout-tool-v2.18.3) (2026-02-03)
+
+
+### Bug Fixes
+
+* honeycomb wall pattern for 3u bins ([#595](https://github.com/andymai/gridfinity-layout-tool/issues/595)) ([0c80a95](https://github.com/andymai/gridfinity-layout-tool/commit/0c80a958f62922d886059c0bbeeb35f4fcfc8aae))
+
 ## [2.18.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.1...gridfinity-layout-tool-v2.18.2) (2026-02-03)
 
 
