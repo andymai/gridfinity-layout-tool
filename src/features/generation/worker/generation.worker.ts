@@ -98,9 +98,11 @@ function detectThreadingSupport(): boolean {
  * Automatically selects multi-threaded build when browser supports it.
  */
 async function initOpenCascade(): Promise<void> {
-  // Detect hardware concurrency
+  // Detect hardware concurrency with robust validation
   hardwareConcurrency =
-    typeof navigator !== 'undefined' && navigator.hardwareConcurrency > 0
+    typeof navigator !== 'undefined' &&
+    Number.isFinite(navigator.hardwareConcurrency) &&
+    navigator.hardwareConcurrency > 0
       ? navigator.hardwareConcurrency
       : 4;
 

@@ -43,14 +43,6 @@ export interface SplitExportResult {
   readonly pieces: readonly SplitExportPiece[];
 }
 
-/**
- * GenerationBridge manages a single Web Worker instance for geometry generation.
- *
- * Key behaviors:
- * - Debounces rapid generate() calls (200ms)
- * - Cancels in-flight requests when a new one arrives
- * - Provides Promise-based API over the message-passing protocol
- */
 /** Information about the WASM threading capabilities */
 export interface ThreadingInfo {
   /** Whether multi-threaded WASM is being used */
@@ -59,6 +51,14 @@ export interface ThreadingInfo {
   readonly hardwareConcurrency: number;
 }
 
+/**
+ * GenerationBridge manages a single Web Worker instance for geometry generation.
+ *
+ * Key behaviors:
+ * - Debounces rapid generate() calls (200ms)
+ * - Cancels in-flight requests when a new one arrives
+ * - Provides Promise-based API over the message-passing protocol
+ */
 export class GenerationBridge {
   private worker: Worker | null = null;
   private initPromise: Promise<void> | null = null;
@@ -103,10 +103,14 @@ export class GenerationBridge {
         const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
           if (event.data.type === 'INIT_READY') {
             this.worker?.removeEventListener('message', onInitMessage);
-            this.threadingInfo = {
-              isThreaded: event.data.isThreaded,
-              hardwareConcurrency: event.data.hardwareConcurrency,
-            };
+            // Defensive validation for backward compatibility
+            const isThreaded =
+              typeof event.data.isThreaded === 'boolean' ? event.data.isThreaded : false;
+            const hardwareConcurrency =
+              Number.isFinite(event.data.hardwareConcurrency) && event.data.hardwareConcurrency > 0
+                ? event.data.hardwareConcurrency
+                : 4;
+            this.threadingInfo = { isThreaded, hardwareConcurrency };
             this.setupMessageHandler();
             resolve();
           }

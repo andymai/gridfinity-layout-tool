@@ -32,7 +32,9 @@ export function detectWasmCapabilities(): WasmCapabilities {
     typeof Atomics !== 'undefined';
 
   const hardwareConcurrency =
-    typeof navigator !== 'undefined' && navigator.hardwareConcurrency > 0
+    typeof navigator !== 'undefined' &&
+    Number.isFinite(navigator.hardwareConcurrency) &&
+    navigator.hardwareConcurrency > 0
       ? navigator.hardwareConcurrency
       : 4;
 

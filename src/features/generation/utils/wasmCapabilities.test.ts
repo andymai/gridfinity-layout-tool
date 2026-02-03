@@ -56,6 +56,25 @@ describe('wasmCapabilities', () => {
       expect(caps.supportsThreads).toBe(false);
     });
 
+    it('returns false when SharedArrayBuffer unavailable despite cross-origin isolation', async () => {
+      vi.stubGlobal('crossOriginIsolated', true);
+      // SharedArrayBuffer not defined - delete it
+      const originalSAB = globalThis.SharedArrayBuffer;
+      // @ts-expect-error - intentionally deleting for test
+      delete globalThis.SharedArrayBuffer;
+      vi.stubGlobal('Atomics', {});
+      vi.stubGlobal('navigator', { hardwareConcurrency: 4 });
+
+      const { detectWasmCapabilities } = await import('./wasmCapabilities');
+      const caps = detectWasmCapabilities();
+
+      // Restore SharedArrayBuffer
+      globalThis.SharedArrayBuffer = originalSAB;
+
+      expect(caps.supportsThreads).toBe(false);
+      expect(caps.crossOriginIsolated).toBe(true);
+    });
+
     it('defaults hardwareConcurrency to 4 when unavailable', async () => {
       vi.stubGlobal('crossOriginIsolated', false);
       vi.stubGlobal('navigator', {});
