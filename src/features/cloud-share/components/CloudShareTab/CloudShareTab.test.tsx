@@ -103,7 +103,7 @@ describe('CloudShareTab', () => {
     it('displays permission options', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const select = screen.getByLabelText('Permissions') as HTMLSelectElement;
+      const select = screen.getByLabelText('Permissions');
       expect(select.options.length).toBe(2); // view and edit
     });
 
@@ -304,7 +304,7 @@ describe('CloudShareTab', () => {
     it('selects URL on input click', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const input = screen.getByDisplayValue('https://example.com/s/abc123') as HTMLInputElement;
+      const input = screen.getByDisplayValue('https://example.com/s/abc123');
       const selectSpy = vi.spyOn(input, 'select');
 
       fireEvent.click(input);
@@ -356,7 +356,7 @@ describe('CloudShareTab', () => {
     it('has permission select element', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const select = screen.getByLabelText('Permissions') as HTMLSelectElement;
+      const select = screen.getByLabelText('Permissions');
       expect(select).toBeInTheDocument();
       // Should have view and edit options
       expect(select.options.length).toBe(2);

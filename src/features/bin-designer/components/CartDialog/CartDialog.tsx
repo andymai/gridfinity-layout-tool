@@ -44,7 +44,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const dialogRef = useFocusTrap<HTMLDivElement>({
+  const dialogRef = useFocusTrap({
     active: open,
     onEscape: onClose,
   });

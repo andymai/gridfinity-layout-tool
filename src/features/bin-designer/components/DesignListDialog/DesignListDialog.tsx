@@ -74,7 +74,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   // Force list view on mobile
   const effectiveViewMode = isMobile ? 'list' : viewMode;
 
-  const dialogRef = useFocusTrap<HTMLDivElement>({
+  const dialogRef = useFocusTrap({
     active: open,
     onEscape: onClose,
   });
@@ -109,7 +109,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    listDesigns().then((result) => {
+    void listDesigns().then((result) => {
       if (cancelled) return;
       if (isOk(result)) {
         setDesigns(result.value);

@@ -183,7 +183,7 @@ function validateCompartments(compartments: unknown): string | null {
     return `compartments.thickness must be ${CONSTRAINTS.MIN_COMPARTMENT_THICKNESS}-${CONSTRAINTS.MAX_COMPARTMENT_THICKNESS}`;
   }
   if (!Array.isArray(compartments.cells)) return 'compartments.cells must be an array';
-  const expectedLength = (compartments.cols as number) * (compartments.rows as number);
+  const expectedLength = compartments.cols * compartments.rows;
   if (compartments.cells.length !== expectedLength) {
     return `compartments.cells length must be cols × rows (${expectedLength})`;
   }
@@ -391,7 +391,7 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     payload: {
       type: 'designer',
       version: 1,
-      params: params as Record<string, unknown>,
+      params: params,
     },
   };
 }

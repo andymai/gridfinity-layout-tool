@@ -27,7 +27,7 @@ describe('useFocusTrap', () => {
     container.appendChild(button1);
     container.appendChild(button2);
 
-    const { result } = renderHook(() => useFocusTrap<HTMLDivElement>({ active: true }));
+    const { result } = renderHook(() => useFocusTrap({ active: true }));
 
     // Attach the ref manually
     act(() => {
@@ -35,7 +35,7 @@ describe('useFocusTrap', () => {
     });
 
     // Re-render to trigger the effect with the ref set
-    const { result: result2 } = renderHook(() => useFocusTrap<HTMLDivElement>({ active: true }));
+    const { result: result2 } = renderHook(() => useFocusTrap({ active: true }));
 
     act(() => {
       (result2.current as { current: HTMLDivElement | null }).current = container;
@@ -53,7 +53,7 @@ describe('useFocusTrap', () => {
   it('calls onEscape when Escape is pressed', () => {
     const onEscape = vi.fn();
 
-    const { result } = renderHook(() => useFocusTrap<HTMLDivElement>({ active: true, onEscape }));
+    const { result } = renderHook(() => useFocusTrap({ active: true, onEscape }));
 
     // Attach ref to container (simulates dialog render)
     act(() => {
@@ -82,7 +82,7 @@ describe('useFocusTrap', () => {
   it('does not fire onEscape for non-Escape keys', () => {
     const onEscape = vi.fn();
 
-    const { result } = renderHook(() => useFocusTrap<HTMLDivElement>({ active: true, onEscape }));
+    const { result } = renderHook(() => useFocusTrap({ active: true, onEscape }));
 
     // Attach ref
     act(() => {
@@ -123,7 +123,7 @@ describe('useFocusTrap', () => {
     container.appendChild(btn1);
     container.appendChild(btn2);
 
-    const { result } = renderHook(() => useFocusTrap<HTMLDivElement>({ active: true }));
+    const { result } = renderHook(() => useFocusTrap({ active: true }));
 
     // Set ref
     act(() => {
@@ -153,7 +153,7 @@ describe('useFocusTrap', () => {
     container.appendChild(btn1);
     container.appendChild(btn2);
 
-    const { result } = renderHook(() => useFocusTrap<HTMLDivElement>({ active: true }));
+    const { result } = renderHook(() => useFocusTrap({ active: true }));
 
     // Set ref
     act(() => {

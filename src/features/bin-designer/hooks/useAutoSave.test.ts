@@ -166,7 +166,7 @@ describe('useAutoSave', () => {
     vi.mocked(DesignerStorage.updateDesignParams).mockReturnValue(
       new Promise((resolve) => {
         resolvePromise = resolve;
-      }) as ReturnType<typeof DesignerStorage.updateDesignParams>
+      })
     );
     useDesignerStore.setState({ currentDesignId: 'existing-id' });
 

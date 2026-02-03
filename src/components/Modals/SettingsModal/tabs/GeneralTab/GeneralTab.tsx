@@ -1,7 +1,6 @@
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } from '@/i18n';
-import type { Locale } from '@/i18n';
 
 export function GeneralTab() {
   const t = useTranslation();
@@ -65,7 +64,7 @@ export function GeneralTab() {
               className={`flex items-center justify-between text-sm cursor-pointer group rounded-md p-2 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent ${locale === loc.code && settingsLocale !== 'auto' ? 'bg-surface-elevated border border-accent/30' : 'hover:bg-surface-hover'}`}
               onClick={() => {
                 updateSetting('locale', loc.code);
-                setLocale(loc.code as Locale);
+                setLocale(loc.code);
               }}
               role="radio"
               tabIndex={0}
@@ -74,7 +73,7 @@ export function GeneralTab() {
                 if (e.key === ' ' || e.key === 'Enter') {
                   e.preventDefault();
                   updateSetting('locale', loc.code);
-                  setLocale(loc.code as Locale);
+                  setLocale(loc.code);
                 }
               }}
             >

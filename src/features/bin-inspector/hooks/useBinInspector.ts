@@ -189,9 +189,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           updateBin(bin.id, { [field]: Math.max(0.5, numValue) });
         } else if (field === 'height') {
           const newHeight = clamp(
-            typeof value === 'number'
-              ? value
-              : parseInt(value as string, 10) || constraints.minHeight,
+            typeof value === 'number' ? value : parseInt(value, 10) || constraints.minHeight,
             constraints.minHeight,
             constraints.maxHeight
           );
@@ -206,7 +204,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           }
         } else if (field === 'clearanceHeight') {
           const newClearance = clamp(
-            typeof value === 'number' ? value : parseInt(value as string, 10) || 0,
+            typeof value === 'number' ? value : parseInt(value, 10) || 0,
             0,
             constraints.maxClearance
           );

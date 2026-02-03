@@ -120,7 +120,7 @@ export async function fetchDesignerShare(
       });
     }
 
-    return ok(layout.params as BinParams);
+    return ok(layout.params);
   } catch {
     return err({
       code: 'NETWORK_ERROR',

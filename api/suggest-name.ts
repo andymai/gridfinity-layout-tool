@@ -76,7 +76,7 @@ function validateRequest(
     valid: true,
     request: {
       labels: labels as string[],
-      drawerSize: { w: w as number, d: d as number, h: h as number },
+      drawerSize: { w: w, d: d, h: h },
       locale: normalizedLocale,
       purpose: validPurpose,
     },
@@ -112,7 +112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Check origin to prevent abuse from unauthorized sites
-  const origin = req.headers.origin as string | undefined;
+  const origin = req.headers.origin;
   if (!isAllowedOrigin(origin)) {
     return res.status(403).json({ error: 'Forbidden', code: ErrorCode.VALIDATION_ERROR });
   }

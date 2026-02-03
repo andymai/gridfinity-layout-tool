@@ -90,7 +90,7 @@ export function validateHalfBinModeToggle(
   targetState: boolean
 ): HalfBinConstraintResult {
   // Enabling half-bin mode is always allowed
-  if (targetState === true) {
+  if (targetState) {
     return { canDisable: true };
   }
 

@@ -45,7 +45,7 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width') as HTMLInputElement;
+    const input = screen.getByLabelText('Width');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '8' } });
     fireEvent.blur(input);
@@ -57,7 +57,7 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width') as HTMLInputElement;
+    const input = screen.getByLabelText('Width');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '9' } });
     fireEvent.keyDown(input, { key: 'Enter' });
@@ -69,7 +69,7 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width') as HTMLInputElement;
+    const input = screen.getByLabelText('Width');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '99' } });
     fireEvent.keyDown(input, { key: 'Escape' });
@@ -81,7 +81,7 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} max={10} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width') as HTMLInputElement;
+    const input = screen.getByLabelText('Width');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '15' } });
     fireEvent.blur(input);
@@ -93,7 +93,7 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} min={1} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width') as HTMLInputElement;
+    const input = screen.getByLabelText('Width');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '0' } });
     fireEvent.blur(input);
@@ -105,7 +105,7 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width') as HTMLInputElement;
+    const input = screen.getByLabelText('Width');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: 'abc' } });
     fireEvent.blur(input);
@@ -117,7 +117,7 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} step={0.5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width') as HTMLInputElement;
+    const input = screen.getByLabelText('Width');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '7.3' } });
     fireEvent.blur(input);

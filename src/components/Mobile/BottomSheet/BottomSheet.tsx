@@ -33,7 +33,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
   // Handle swipe down to dismiss
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     // Only track drags on the header area
-    const headerEl = (e.target as HTMLElement).closest('[data-sheet-header]') as HTMLElement | null;
+    const headerEl = (e.target as HTMLElement).closest('[data-sheet-header]');
     if (!headerEl) return;
 
     setIsDragging(true);
@@ -146,7 +146,9 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
               height: isDragging ? 'auto' : 0,
             }}
           >
-            {dragY > 80 ? t('mobile.bottomSheet.releaseToClose') : t('mobile.bottomSheet.swipeToClose')}
+            {dragY > 80
+              ? t('mobile.bottomSheet.releaseToClose')
+              : t('mobile.bottomSheet.swipeToClose')}
           </div>
 
           {/* Title row */}

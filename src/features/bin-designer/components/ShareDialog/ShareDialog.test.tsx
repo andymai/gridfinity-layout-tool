@@ -21,7 +21,7 @@ vi.mock('@/features/bin-designer/hooks/useDesignerSharing', () => ({
 }));
 
 vi.mock('@/features/bin-designer/constants/defaults', async (importOriginal) => {
-  const orig = (await importOriginal()) as { DEFAULT_BIN_PARAMS: typeof DEFAULT_BIN_PARAMS };
+  const orig = await importOriginal();
   return {
     ...orig,
     migrateParams: (params: unknown) => ({ ...orig.DEFAULT_BIN_PARAMS, ...(params as object) }),

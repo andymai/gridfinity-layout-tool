@@ -76,8 +76,8 @@ describe('ParameterPanel', () => {
     });
     render(<ParameterPanel />);
 
-    const widthInput = screen.getByLabelText('Width') as HTMLInputElement;
-    const depthInput = screen.getByLabelText('Depth') as HTMLInputElement;
+    const widthInput = screen.getByLabelText('Width');
+    const depthInput = screen.getByLabelText('Depth');
     expect(widthInput.value).toBe('2');
     expect(depthInput.value).toBe('4');
 

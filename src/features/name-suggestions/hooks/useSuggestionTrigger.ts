@@ -244,7 +244,7 @@ function buildSuggestionInput(
   existingNames?: string[]
 ): SuggestionInput {
   // Extract labels from on-grid bins
-  const labels = getLabeledBins(getGridBins(layout.bins)).map((b) => b.label as string);
+  const labels = getLabeledBins(getGridBins(layout.bins)).map((b) => b.label);
 
   // Count bins per category
   const categoryCountMap = new Map<string, number>();

@@ -369,7 +369,7 @@ export function CompartmentEditor() {
     () =>
       WALL_THICKNESS_OPTIONS.map((value) => ({
         value,
-        description: t(`binDesigner.wallThickness.${value}` as Parameters<typeof t>[0]),
+        description: t(`binDesigner.wallThickness.${value}`),
       })),
     [t]
   );

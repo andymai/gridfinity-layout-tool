@@ -149,14 +149,14 @@ describe('useInteraction', () => {
       );
 
       // Select both bins
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
 
       // Drag the first bin (which is in selection)
       act(() => {
-        result.current.startDrag(binId1!, 34, 34);
+        result.current.startDrag(binId1, 34, 34);
       });
 
       const interaction = useUIStore.getState().interaction;
@@ -202,14 +202,14 @@ describe('useInteraction', () => {
       );
 
       // Select only first bin
-      useUIStore.getState().setSelectedBins([binId1!]);
+      useUIStore.getState().setSelectedBins([binId1]);
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
 
       // Drag the second bin (not in selection)
       act(() => {
-        result.current.startDrag(binId2!, 100, 34);
+        result.current.startDrag(binId2, 100, 34);
       });
 
       const interaction = useUIStore.getState().interaction;
@@ -308,13 +308,13 @@ describe('useInteraction', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
 
       act(() => {
-        result.current.startResize(binId1!, 'ne');
+        result.current.startResize(binId1, 'ne');
       });
 
       const interaction = useUIStore.getState().interaction;
@@ -1398,14 +1398,14 @@ describe('duplicate drag (Alt+drag)', () => {
     expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
 
     // Select both bins
-    useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+    useUIStore.getState().setSelectedBins([binId1, binId2]);
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
 
     // Start duplicate drag on first bin
     act(() => {
-      result.current.startDrag(binId1!, 34, 34, undefined, true);
+      result.current.startDrag(binId1, 34, 34, undefined, true);
     });
 
     // Set up valid drop with delta
@@ -1414,7 +1414,7 @@ describe('duplicate drag (Alt+drag)', () => {
         ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
-          binIds: [binId1!, binId2!],
+          binIds: [binId1, binId2],
           startCoord: { x: 0, y: 0 },
           currentCoord: { x: 0, y: 3 }, // Delta: move 3 units up
           valid: true,
@@ -1759,7 +1759,7 @@ describe('drag completion with movement', () => {
         ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
-          binIds: [binId1!, binId2!],
+          binIds: [binId1, binId2],
           startCoord: { x: 0, y: 0 },
           currentCoord: { x: 0, y: 3 }, // Move delta: (0, 3)
           valid: true,
@@ -1887,16 +1887,16 @@ describe('resize completion with changes', () => {
         ...useInteractionStore.getState(),
         interaction: {
           type: 'resize',
-          binIds: [binId1!, binId2!],
+          binIds: [binId1, binId2],
           handle: 'n',
           valid: true,
           startRects: new Map([
-            [binId1!, { x: 0, y: 0, width: 2, depth: 2 }],
-            [binId2!, { x: 5, y: 0, width: 2, depth: 2 }],
+            [binId1, { x: 0, y: 0, width: 2, depth: 2 }],
+            [binId2, { x: 5, y: 0, width: 2, depth: 2 }],
           ]),
           currentRects: new Map([
-            [binId1!, { x: 0, y: 0, width: 2, depth: 4 }],
-            [binId2!, { x: 5, y: 0, width: 2, depth: 4 }],
+            [binId1, { x: 0, y: 0, width: 2, depth: 4 }],
+            [binId2, { x: 5, y: 0, width: 2, depth: 4 }],
           ]),
         },
       });

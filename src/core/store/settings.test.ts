@@ -378,7 +378,7 @@ describe('settings store', () => {
       // Missing fields added at end, disabled
       const addedFields = result.slice(4);
       expect(addedFields.length).toBe(2);
-      expect(addedFields.every((f) => f.enabled === false)).toBe(true);
+      expect(addedFields.every((f) => !f.enabled)).toBe(true);
       expect(addedFields.map((f) => f.field).sort()).toEqual(['height', 'size']);
     });
 

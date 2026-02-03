@@ -218,7 +218,7 @@ describe('DeferredNumberInput', () => {
     it('selects all text on focus', () => {
       render(<DeferredNumberInput {...defaultProps} />);
 
-      const input = screen.getByRole('spinbutton') as HTMLInputElement;
+      const input = screen.getByRole('spinbutton');
 
       // Mock select method
       const selectSpy = vi.spyOn(input, 'select');

@@ -74,7 +74,7 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
     const targetState = !state.halfBinMode;
 
     // Turning ON: no validation needed
-    if (targetState === true) {
+    if (targetState) {
       saveToStorage(true);
       set({ halfBinMode: true });
       markFeatureUsed('half_bins');

@@ -89,7 +89,7 @@ export function BinDesignThumbnail({ params, size = 48, className = '' }: BinDes
       width={svgWidth}
       height={svgHeight}
       viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-      className={`${className}`}
+      className={className}
       aria-hidden="true"
     >
       {/* Back faces (visible in isometric) */}

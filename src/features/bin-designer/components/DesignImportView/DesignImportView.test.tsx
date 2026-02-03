@@ -151,7 +151,7 @@ describe('DesignImportView', () => {
 
     render(<DesignImportView {...defaultProps} />);
 
-    const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+    const textarea = screen.getByRole('textbox');
     fireEvent.change(textarea, { target: { value: validJSON } });
 
     // Verify preview is shown

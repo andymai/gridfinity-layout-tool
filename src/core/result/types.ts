@@ -61,7 +61,7 @@ export type Result<T, E = Error> = Ok<T> | Err<E>;
  * ```
  */
 export function isOk<T, E>(result: Result<T, E>): result is Ok<T> {
-  return result.ok === true;
+  return result.ok;
 }
 
 /**
@@ -78,7 +78,7 @@ export function isOk<T, E>(result: Result<T, E>): result is Ok<T> {
  * ```
  */
 export function isErr<T, E>(result: Result<T, E>): result is Err<E> {
-  return result.ok === false;
+  return !result.ok;
 }
 
 /**
