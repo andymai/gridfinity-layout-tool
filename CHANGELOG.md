@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.19.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.4...gridfinity-layout-tool-v2.19.0) (2026-02-03)
+
+
+### Features
+
+* **generation:** add multi-threaded WASM support for OpenCascade ([#600](https://github.com/andymai/gridfinity-layout-tool/issues/600)) ([0a3487b](https://github.com/andymai/gridfinity-layout-tool/commit/0a3487bb9acbd65a7967c164b78041a368780354))
+
 ## [2.18.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.3...gridfinity-layout-tool-v2.18.4) (2026-02-03)
 
 
