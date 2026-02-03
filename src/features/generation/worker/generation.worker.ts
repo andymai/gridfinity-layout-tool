@@ -23,23 +23,22 @@ import { detectWasmCapabilities } from '../utils/wasmCapabilities';
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
 import opencascadeSingleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 
-// Multi-threaded WASM (conditionally loaded)
-import opencascadeThreadedInit from 'brepjs-opencascade/src/brepjs_threaded.js';
+// Multi-threaded WASM URLs (loaded dynamically to support pthread workers)
+// The ?url imports tell Vite to emit these as separate files and give us their URLs
+import opencascadeThreadedUrl from 'brepjs-opencascade/src/brepjs_threaded.js?url';
 import opencascadeThreadedWasm from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
 import opencascadeThreadedWorker from 'brepjs-opencascade/src/brepjs_threaded.worker.js?url';
 
 // Emscripten module factory options (not reflected in the .d.ts)
 interface EmscriptenModuleConfig {
   locateFile?: (path: string) => string;
+  mainScriptUrlOrBlob?: string | Blob;
 }
 
 // Type assertion for Emscripten factory functions that accept config
 const opencascadeSingle = opencascadeSingleInit as unknown as (
   config?: EmscriptenModuleConfig
 ) => ReturnType<typeof opencascadeSingleInit>;
-const opencascadeThreaded = opencascadeThreadedInit as unknown as (
-  config?: EmscriptenModuleConfig
-) => ReturnType<typeof opencascadeThreadedInit>;
 
 /** Currently active generation request ID (for cancellation) */
 let activeRequestId: string | null = null;
@@ -106,7 +105,19 @@ async function initOpenCascade(): Promise<void> {
 
   let OC: Awaited<ReturnType<typeof opencascadeSingleInit>>;
   if (isThreaded) {
+    // Dynamically import the threaded module at runtime.
+    // We use ?url import and dynamic import() so that:
+    // 1. Vite emits the JS as a separate file (not bundled inline)
+    // 2. We can pass mainScriptUrlOrBlob so pthread workers know where to load from
+    const threadedModule = await import(/* @vite-ignore */ opencascadeThreadedUrl);
+    const opencascadeThreaded = threadedModule.default as (
+      config?: EmscriptenModuleConfig
+    ) => ReturnType<typeof opencascadeSingleInit>;
+
     OC = await opencascadeThreaded({
+      // mainScriptUrlOrBlob tells pthread workers where to load the main module from.
+      // Without this, workers try import("./brepjs_threaded.js") which fails after bundling.
+      mainScriptUrlOrBlob: opencascadeThreadedUrl,
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
           return opencascadeThreadedWasm;
