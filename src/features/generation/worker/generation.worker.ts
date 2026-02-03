@@ -109,18 +109,24 @@ async function initOpenCascade(): Promise<void> {
     // We use ?url import and dynamic import() so that:
     // 1. Vite emits the JS as a separate file (not bundled inline)
     // 2. We can pass mainScriptUrlOrBlob so pthread workers know where to load from
-    const threadedModule = await import(/* @vite-ignore */ opencascadeThreadedUrl);
+    //
+    // IMPORTANT: Pthread workers run from a data URL, so they can't resolve
+    // relative paths like "/assets/...". We must provide full absolute URLs.
+    const origin = self.location.origin;
+    const threadedModuleFullUrl = new URL(opencascadeThreadedUrl, origin).href;
+
+    const threadedModule = await import(/* @vite-ignore */ threadedModuleFullUrl);
     const opencascadeThreaded = threadedModule.default as (
       config?: EmscriptenModuleConfig
     ) => ReturnType<typeof opencascadeSingleInit>;
 
     OC = await opencascadeThreaded({
       // mainScriptUrlOrBlob tells pthread workers where to load the main module from.
-      // Without this, workers try import("./brepjs_threaded.js") which fails after bundling.
-      mainScriptUrlOrBlob: opencascadeThreadedUrl,
+      // Must be a full URL since pthread workers run from data URLs.
+      mainScriptUrlOrBlob: threadedModuleFullUrl,
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
-          return opencascadeThreadedWasm;
+          return new URL(opencascadeThreadedWasm, origin).href;
         }
         if (fileName.endsWith('.worker.js')) {
           return opencascadeThreadedWorker;
