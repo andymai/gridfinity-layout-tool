@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.18.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.3...gridfinity-layout-tool-v2.18.4) (2026-02-03)
+
+
+### Bug Fixes
+
+* patch undici security vulnerabilities in @vercel/node ([#598](https://github.com/andymai/gridfinity-layout-tool/issues/598)) ([f254646](https://github.com/andymai/gridfinity-layout-tool/commit/f2546466675e6b36fae3eb334b7a80be13033055))
+
 ## [2.18.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.2...gridfinity-layout-tool-v2.18.3) (2026-02-03)
 
 
