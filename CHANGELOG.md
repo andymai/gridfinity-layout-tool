@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.18.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.17.0...gridfinity-layout-tool-v2.18.0) (2026-02-03)
+
+
+### Features
+
+* add honeycomb wall cutouts to bin designer ([#589](https://github.com/andymai/gridfinity-layout-tool/issues/589)) ([b5fe8a2](https://github.com/andymai/gridfinity-layout-tool/commit/b5fe8a2a2144eb60e3716b080c9c3759b6ec23c6))
+* split export for oversized bins in Bin Designer ([#582](https://github.com/andymai/gridfinity-layout-tool/issues/582)) ([0283639](https://github.com/andymai/gridfinity-layout-tool/commit/028363925ff3e93581a7e5eb3e7f9633ca3de0cc))
+
+
+### Performance
+
+* cache assembled shell (base + box + lip) across generation calls ([#581](https://github.com/andymai/gridfinity-layout-tool/issues/581)) ([966d6b2](https://github.com/andymai/gridfinity-layout-tool/commit/966d6b2cb9f6aec0465ae604f5c11271d0bc0e5b))
+* cache intermediate shapes across generation calls ([#580](https://github.com/andymai/gridfinity-layout-tool/issues/580)) ([ac6bdfb](https://github.com/andymai/gridfinity-layout-tool/commit/ac6bdfb52df256ff6a34aff42e130f1b2069e276))
+
 ## [2.17.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.16.0...gridfinity-layout-tool-v2.17.0) (2026-02-01)
 
 
