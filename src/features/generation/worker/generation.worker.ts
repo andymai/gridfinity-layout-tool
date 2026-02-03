@@ -17,7 +17,6 @@ import type { BinParams } from '@/shared/types/bin';
 import type { ExportPayload, ExportDividersPayload, ExportSplitPayload } from '../bridge/types';
 import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
-import { detectWasmCapabilities } from '../utils/wasmCapabilities';
 
 // Single-threaded WASM (always available)
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
@@ -73,15 +72,13 @@ function reportProgress(
 
 /**
  * Detect if multi-threaded WASM is supported in this worker context.
- * Disabled in development mode due to Vite dev server limitations with pthread workers.
+ * Currently disabled - threaded OpenCascade causes geometry errors that need investigation.
  */
 function detectThreadingSupport(): boolean {
-  // Disable threading in development - Vite dev server can't handle pthread workers
-  // correctly (the worker.js uses dynamic import() which fails in non-module context)
-  if (import.meta.env.DEV) {
-    return false;
-  }
-  return detectWasmCapabilities().supportsThreads;
+  // TODO: Re-enable threading once geometry errors are resolved
+  // The threaded build loads but geometry operations fail with "unwrap() on Err"
+  // See: https://github.com/andymai/gridfinity-layout-tool/pull/602
+  return false;
 }
 
 /**
