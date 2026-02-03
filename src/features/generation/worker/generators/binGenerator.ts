@@ -1052,25 +1052,34 @@ export function generateBin(
   // Eco: Honeycomb wall cutouts — optimized with template cloning + single cutAll.
   //
   // Performance strategy:
-  // 1. Build ONE hex prism template, clone() for each center (skip N × drawPolysides)
-  // 2. Collect ALL wall hexes into one array
+  // 1. Preview uses larger hexes (fewer cuts, ~75% less boolean work)
+  // 2. Build ONE hex prism template, clone() for each center
   // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
-  //    (no expensive fuseAll; cutAll does compound grouping near-free)
-  // 4. Cache the hex template between generations (only depends on cutDepth)
+  // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
+  // 5. Cache the hex template between generations
   if (params.eco.honeycombWall.enabled) {
-    const wallDescriptors = getHoneycombWallDescriptors(params, innerW, innerD, interiorHeight);
+    // Preview: larger hexes = fewer boolean intersections (quadratic reduction)
+    const previewHexRadius = HEX_RADIUS * 2;
+    const hexRadius = forExport ? HEX_RADIUS : previewHexRadius;
+    const wallDescriptors = getHoneycombWallDescriptors(
+      params,
+      innerW,
+      innerD,
+      interiorHeight,
+      forExport ? undefined : previewHexRadius
+    );
     if (wallDescriptors) {
       try {
         const cutDepth = params.wallThickness * 4;
         const halfDepth = cutDepth / 2;
 
-        // Reuse cached hex template if cutDepth hasn't changed
-        const templateKey = `${HEX_RADIUS}|${cutDepth}`;
+        // Reuse cached hex template if params haven't changed
+        const templateKey = `${hexRadius}|${cutDepth}`;
         let hexTemplate: Shape3D;
         if (hexTemplateCache?.key === templateKey) {
           hexTemplate = hexTemplateCache.shape;
         } else {
-          hexTemplate = sketch(drawPolysides(HEX_RADIUS, 6), 'XY')
+          hexTemplate = sketch(drawPolysides(hexRadius, 6), 'XY')
             .extrude(cutDepth)
             .rotate(30, [0, 0, 0], [0, 0, 1]);
           hexTemplateCache = { key: templateKey, shape: hexTemplate };
@@ -1093,7 +1102,8 @@ export function generateBin(
         }
 
         if (allHexTools.length > 0) {
-          bin = unwrap(cutAll(bin, allHexTools));
+          // Preview: skip SimplifyResult — shape is meshed and discarded
+          bin = unwrap(cutAll(bin, allHexTools, { simplify: forExport }));
         }
       } catch (e) {
         console.warn('[BinGen] Honeycomb walls failed:', e instanceof Error ? e.message : e);

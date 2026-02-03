@@ -74,7 +74,8 @@ export function getHoneycombWallDescriptors(
   params: BinParams,
   innerW: number,
   innerD: number,
-  wallHeight: number
+  wallHeight: number,
+  hexRadiusOverride?: number
 ): WallHexDescriptor[] | null {
   if (!params.eco.honeycombWall.enabled) {
     return null;
@@ -92,8 +93,9 @@ export function getHoneycombWallDescriptors(
 
   const patternCenterZ = BOTTOM_KEEP_OUT + patternHeight / 2;
 
+  const radius = hexRadiusOverride ?? HEX_RADIUS;
   const hexConfig = {
-    hexRadius: HEX_RADIUS,
+    hexRadius: radius,
     webThickness: WEB_THICKNESS,
   };
 
