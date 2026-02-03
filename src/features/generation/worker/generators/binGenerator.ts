@@ -1121,9 +1121,10 @@ export function generateBin(
     tolerance = 0.01;
     angularTolerance = 5;
   } else if (hasHoneycomb) {
-    // Honeycomb preview: coarser to compensate for many hex faces
-    tolerance = Math.min(2, Math.max(0.5, maxDimension / 200));
-    angularTolerance = 30;
+    // Honeycomb preview: aggressively coarse — hex prism faces are flat so
+    // high tolerance doesn't degrade visual quality, just reduces triangle count
+    tolerance = Math.min(5, Math.max(2, maxDimension / 50));
+    angularTolerance = 45;
   } else if (isSmallBin) {
     // Small bin preview: moderate quality (fast but still smooth)
     tolerance = Math.min(0.5, Math.max(0.2, maxDimension / 500));
@@ -1137,8 +1138,8 @@ export function generateBin(
   const shapeMesh = bin.mesh({ tolerance, angularTolerance });
 
   onProgress?.('merge', 1.0);
-  // Skip normals for large bin preview (GPU flat shading is faster)
-  return indexedMeshToFlat(shapeMesh, !useHighQuality);
+  // Skip normals for large bin / honeycomb preview (GPU flat shading is faster)
+  return indexedMeshToFlat(shapeMesh, !useHighQuality || hasHoneycomb);
 }
 
 /** Result of a split export: array of piece buffers with grid labels */
