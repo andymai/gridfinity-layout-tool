@@ -106,24 +106,31 @@ async function initOpenCascade(): Promise<void> {
   let OC: Awaited<ReturnType<typeof opencascadeSingleInit>>;
   if (isThreaded) {
     // Dynamically import the threaded module at runtime.
-    // We use ?url import and dynamic import() so that:
-    // 1. Vite emits the JS as a separate file (not bundled inline)
-    // 2. We can pass mainScriptUrlOrBlob so pthread workers know where to load from
-    //
-    // IMPORTANT: Pthread workers run from a data URL, so they can't resolve
-    // relative paths like "/assets/...". We must provide full absolute URLs.
+    // We fetch as text and create a Blob URL so that:
+    // 1. The main worker fetches with auth cookies (works with Vercel Deployment Protection)
+    // 2. Pthread workers can load from the Blob URL without needing auth
     const origin = self.location.origin;
     const threadedModuleFullUrl = new URL(opencascadeThreadedUrl, origin).href;
 
-    const threadedModule = await import(/* @vite-ignore */ threadedModuleFullUrl);
+    // Fetch the module source - this request has auth cookies
+    const moduleResponse = await fetch(threadedModuleFullUrl);
+    if (!moduleResponse.ok) {
+      throw new Error(`Failed to fetch threaded module: ${moduleResponse.status}`);
+    }
+    const moduleSource = await moduleResponse.text();
+
+    // Create a Blob URL that pthread workers can access without auth
+    const moduleBlob = new Blob([moduleSource], { type: 'application/javascript' });
+    const moduleBlobUrl = URL.createObjectURL(moduleBlob);
+
+    const threadedModule = await import(/* @vite-ignore */ moduleBlobUrl);
     const opencascadeThreaded = threadedModule.default as (
       config?: EmscriptenModuleConfig
     ) => ReturnType<typeof opencascadeSingleInit>;
 
     OC = await opencascadeThreaded({
-      // mainScriptUrlOrBlob tells pthread workers where to load the main module from.
-      // Must be a full URL since pthread workers run from data URLs.
-      mainScriptUrlOrBlob: threadedModuleFullUrl,
+      // Pass Blob URL so pthread workers can load without auth
+      mainScriptUrlOrBlob: moduleBlobUrl,
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
           return new URL(opencascadeThreadedWasm, origin).href;
