@@ -74,8 +74,15 @@ function reportProgress(
 /**
  * Detect if multi-threaded WASM is supported in this worker context.
  * Requires cross-origin isolation, SharedArrayBuffer, and Atomics.
+ * Disabled in development mode due to Vite dev server limitations with pthread workers.
  */
 function detectThreadingSupport(): boolean {
+  // Disable threading in development - Vite dev server can't handle pthread workers
+  // correctly (the worker.js uses dynamic import() which fails in non-module context)
+  if (import.meta.env.DEV) {
+    return false;
+  }
+
   const crossOriginIsolated =
     typeof self !== 'undefined' && 'crossOriginIsolated' in self && self.crossOriginIsolated;
 
