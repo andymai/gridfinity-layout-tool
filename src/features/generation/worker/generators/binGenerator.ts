@@ -810,6 +810,8 @@ let socketCache: { key: string; shape: Shape3D } | null = null;
 let lipCache: { key: string; shape: Shape3D } | null = null;
 let boxCache: { key: string; shape: Shape3D } | null = null;
 let shellCache: { key: string; shape: Shape3D } | null = null;
+/** Cache for the hex prism template (single hex, reused via clone). */
+let hexTemplateCache: { key: string; shape: Shape3D } | null = null;
 
 function socketCacheKey(
   gridW: number,
@@ -1047,39 +1049,54 @@ export function generateBin(
     }
   }
 
-  // Eco: Honeycomb wall cutouts — build hex prisms inline to avoid WASM GC
-  // scope issues (brepjs shapes can't safely cross function boundaries).
-  // Process one wall at a time: fuseAll hexes into a single solid per wall,
-  // then cut from bin. This keeps each boolean operation manageable.
+  // Eco: Honeycomb wall cutouts — optimized with template cloning + single cutAll.
+  //
+  // Performance strategy:
+  // 1. Build ONE hex prism template, clone() for each center (skip N × drawPolysides)
+  // 2. Collect ALL wall hexes into one array
+  // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
+  //    (no expensive fuseAll; cutAll does compound grouping near-free)
+  // 4. Cache the hex template between generations (only depends on cutDepth)
   if (params.eco.honeycombWall.enabled) {
     const wallDescriptors = getHoneycombWallDescriptors(params, innerW, innerD, interiorHeight);
     if (wallDescriptors) {
-      const cutDepth = params.wallThickness * 4;
-      const halfDepth = cutDepth / 2;
+      try {
+        const cutDepth = params.wallThickness * 4;
+        const halfDepth = cutDepth / 2;
 
-      for (const wall of wallDescriptors) {
-        try {
-          const hexes: Shape3D[] = [];
+        // Reuse cached hex template if cutDepth hasn't changed
+        const templateKey = `${HEX_RADIUS}|${cutDepth}`;
+        let hexTemplate: Shape3D;
+        if (hexTemplateCache?.key === templateKey) {
+          hexTemplate = hexTemplateCache.shape;
+        } else {
+          hexTemplate = sketch(drawPolysides(HEX_RADIUS, 6), 'XY')
+            .extrude(cutDepth)
+            .rotate(30, [0, 0, 0], [0, 0, 1]);
+          hexTemplateCache = { key: templateKey, shape: hexTemplate };
+        }
+
+        const allHexTools: Shape3D[] = [];
+
+        for (const wall of wallDescriptors) {
           for (const center of wall.centers) {
-            let hex: Shape3D = sketch(drawPolysides(HEX_RADIUS, 6), 'XY')
-              .extrude(cutDepth)
-              .rotate(30, [0, 0, 0], [0, 0, 1])
+            let hex: Shape3D = hexTemplate
+              .clone()
               .translate([center.x, center.y, -halfDepth])
               .rotate(90, [0, 0, 0], [1, 0, 0]);
             if (wall.zRotation !== undefined) {
               hex = hex.rotate(wall.zRotation, [0, 0, 0], [0, 0, 1]);
             }
             hex = hex.translate([wall.translateX, wall.translateY, wall.translateZ]);
-            hexes.push(hex);
+            allHexTools.push(hex);
           }
-
-          if (hexes.length > 0) {
-            const wallCutter = unwrap(fuseAll(hexes));
-            bin = unwrap(bin.cut(wallCutter));
-          }
-        } catch (e) {
-          console.warn('[BinGen] Honeycomb wall cut failed:', e instanceof Error ? e.message : e);
         }
+
+        if (allHexTools.length > 0) {
+          bin = unwrap(cutAll(bin, allHexTools));
+        }
+      } catch (e) {
+        console.warn('[BinGen] Honeycomb walls failed:', e instanceof Error ? e.message : e);
       }
     }
   }
