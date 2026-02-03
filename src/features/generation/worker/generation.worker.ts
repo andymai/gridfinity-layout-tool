@@ -17,6 +17,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { ExportPayload, ExportDividersPayload, ExportSplitPayload } from '../bridge/types';
 import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
+import { detectWasmCapabilities } from '../utils/wasmCapabilities';
 
 // Single-threaded WASM (always available)
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
@@ -73,7 +74,6 @@ function reportProgress(
 
 /**
  * Detect if multi-threaded WASM is supported in this worker context.
- * Requires cross-origin isolation, SharedArrayBuffer, and Atomics.
  * Disabled in development mode due to Vite dev server limitations with pthread workers.
  */
 function detectThreadingSupport(): boolean {
@@ -82,15 +82,7 @@ function detectThreadingSupport(): boolean {
   if (import.meta.env.DEV) {
     return false;
   }
-
-  const crossOriginIsolated =
-    typeof self !== 'undefined' && 'crossOriginIsolated' in self && self.crossOriginIsolated;
-
-  return (
-    crossOriginIsolated &&
-    typeof SharedArrayBuffer !== 'undefined' &&
-    typeof Atomics !== 'undefined'
-  );
+  return detectWasmCapabilities().supportsThreads;
 }
 
 /**
