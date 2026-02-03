@@ -13,6 +13,7 @@ import type {
   BinParams,
   BaseConfig,
   LabelTabConfig,
+  WallPatternConfig,
   Insert,
   ExportFileNameConfig,
   GenerationStatus,
@@ -154,6 +155,14 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params.label, partial);
+      });
+    },
+
+    // Wall pattern actions
+    updateWallPattern: (partial: Partial<WallPatternConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.wallPattern = { ...state.params.wallPattern, ...partial };
       });
     },
 

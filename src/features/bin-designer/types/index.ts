@@ -133,6 +133,19 @@ export interface WallConfig {
   readonly interior: WallCutout;
 }
 
+// =============================================================================
+// Wall Pattern Types
+// =============================================================================
+
+/** Supported wall pattern types */
+export type WallPatternType = 'honeycomb';
+
+/** Wall pattern configuration — stored per design in BinParams */
+export interface WallPatternConfig {
+  readonly enabled: boolean;
+  readonly pattern: WallPatternType;
+}
+
 /** Complete bin parameter set for generation */
 export interface BinParams {
   readonly width: number;
@@ -153,6 +166,7 @@ export interface BinParams {
   readonly slotConfig: SlotConfig;
   readonly dividerPieces: DividerPieceConfig;
   readonly inserts: Insert[];
+  readonly wallPattern: WallPatternConfig;
 }
 
 // =============================================================================
@@ -350,6 +364,9 @@ export interface DesignerState {
   mergeCells: (cellIndices: readonly number[]) => void;
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;
+
+  // Wall pattern actions
+  updateWallPattern: (partial: Partial<WallPatternConfig>) => void;
 
   // Insert actions
   addInsert: (insert: Insert) => void;

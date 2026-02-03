@@ -11,6 +11,7 @@ import type {
   WallConfig,
   SlotConfig,
   DividerPieceConfig,
+  WallPatternConfig,
 } from '../types';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -26,6 +27,12 @@ export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
   height: 'auto',
   thickness: 1.6,
   clearance: 0.25,
+} as const;
+
+/** Default wall pattern configuration: disabled */
+export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
+  enabled: false,
+  pattern: 'honeycomb',
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -72,6 +79,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   slotConfig: DEFAULT_SLOT_CONFIG,
   dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
   inserts: [],
+  wallPattern: DEFAULT_WALL_PATTERN_CONFIG,
 } as const;
 
 /** Default generation state */
@@ -198,8 +206,35 @@ export function migrateParams(
     ...((params.dividerPieces as Partial<DividerPieceConfig> | undefined) ?? {}),
   };
 
-  // Remove legacy dividers field from spread
-  const { dividers: _legacyDividers, ...rest } = params as Record<string, unknown>;
+  // Migrate wallPattern config, handling 3 cases:
+  // 1. New `wallPattern` field → merge with defaults
+  // 2. Legacy `eco` field → map eco.honeycombWall.enabled / legacy mode string → wallPattern
+  // 3. Neither → fresh default
+  // Fresh object each time — avoid returning shared DEFAULT_WALL_PATTERN_CONFIG reference
+  let wallPatternConfig: WallPatternConfig = { enabled: false, pattern: 'honeycomb' };
+  const rawParams = params as unknown as Record<string, unknown>;
+  if (params.wallPattern !== undefined) {
+    wallPatternConfig = { ...wallPatternConfig, ...params.wallPattern };
+  } else if (rawParams.eco !== undefined) {
+    const rawEco = rawParams.eco as Record<string, unknown>;
+    if (rawEco.honeycombWall && typeof rawEco.honeycombWall === 'object') {
+      const rawWall = rawEco.honeycombWall as Record<string, unknown>;
+      // Legacy format had mode: 'none' | 'pocketed' | 'perforated'; new format uses enabled boolean only
+      const hadMode = typeof rawWall.mode === 'string';
+      const hadEnabled = typeof rawWall.enabled === 'boolean';
+      wallPatternConfig = {
+        enabled: hadEnabled
+          ? (rawWall.enabled as boolean)
+          : hadMode
+            ? rawWall.mode !== 'none'
+            : false,
+        pattern: 'honeycomb',
+      };
+    }
+  }
+
+  // Remove legacy dividers and eco fields from spread
+  const { dividers: _legacyDividers, eco: _legacyEco, ...rest } = params as Record<string, unknown>;
 
   return {
     ...DEFAULT_BIN_PARAMS,
@@ -213,5 +248,6 @@ export function migrateParams(
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
+    wallPattern: wallPatternConfig,
   } as BinParams;
 }

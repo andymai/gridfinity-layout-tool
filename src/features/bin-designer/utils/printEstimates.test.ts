@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   estimatePrint,
+  calculateWallPatternSavings,
   formatPrintTime,
   formatFilament,
 } from '@/features/bin-designer/utils/printEstimates';
@@ -224,6 +225,87 @@ describe('printEstimates', () => {
       });
       // 0.1mm layers (2×) × 100% infill (1.425×) ≈ 2.85×
       expect(extreme.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes * 2);
+    });
+
+    // ─── Honeycomb wall reduction ─────────────────────────────────────
+
+    it('honeycomb walls reduce volume', () => {
+      const standard = estimatePrint(DEFAULT_BIN_PARAMS);
+      const honeycomb = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        height: 6,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      });
+      expect(honeycomb.volumeMm3).toBeLessThan(standard.volumeMm3);
+    });
+
+    it('honeycomb walls have no effect on short bins', () => {
+      const params: BinParams = { ...DEFAULT_BIN_PARAMS, height: 1 };
+      const standard = estimatePrint(params);
+      const honeycomb = estimatePrint({
+        ...params,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      });
+      expect(honeycomb.volumeMm3).toBe(standard.volumeMm3);
+    });
+
+    it('honeycomb walls skip slotted walls correctly', () => {
+      const baseParams: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        height: 6,
+        style: 'slotted' as BinParams['style'],
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      };
+      const bothAxes = estimatePrint({
+        ...baseParams,
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+        },
+      });
+      const oneAxis = estimatePrint({
+        ...baseParams,
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: false, pitch: 20 },
+        },
+      });
+      const noSlots = estimatePrint({
+        ...baseParams,
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: false, pitch: 20 },
+          y: { enabled: false, pitch: 20 },
+        },
+      });
+      // All walls slotted = no reduction; partial slots = less reduction; no slots = most
+      const standard = estimatePrint({
+        ...baseParams,
+        wallPattern: { enabled: false, pattern: 'honeycomb' as const },
+      });
+      expect(bothAxes.volumeMm3).toBe(standard.volumeMm3);
+      expect(oneAxis.volumeMm3).toBeLessThan(standard.volumeMm3);
+      expect(noSlots.volumeMm3).toBeLessThan(oneAxis.volumeMm3);
+    });
+  });
+
+  describe('calculateWallPatternSavings', () => {
+    it('returns zero savings when wall pattern disabled', () => {
+      const savings = calculateWallPatternSavings(DEFAULT_BIN_PARAMS);
+      expect(savings.savingsPercent).toBe(0);
+    });
+
+    it('returns positive savings when honeycomb enabled on tall bin', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        height: 6,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      };
+      const savings = calculateWallPatternSavings(params);
+      expect(savings.savingsPercent).toBeGreaterThan(0);
+      expect(savings.patternEstimate.volumeMm3).toBeLessThan(savings.standardEstimate.volumeMm3);
     });
   });
 

@@ -6,6 +6,7 @@
  */
 
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { FeatureToggle } from '../FeatureToggle';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 
@@ -26,6 +27,19 @@ export function WallsSection() {
         unit="mm"
         tip={t('binDesigner.wallThickness.nozzleTip')}
       />
+      <div className="mt-3 pt-3 border-t border-stroke-subtle/50">
+        <FeatureToggle
+          label={t('binDesigner.walls.pattern.honeycomb')}
+          checked={state.honeycombEnabled}
+          onChange={handlers.toggleHoneycomb}
+          disabledReason={state.honeycombDisabledReason}
+        />
+        {state.honeycombPartialNote && state.honeycombEnabled && (
+          <p className="text-[11px] text-content-tertiary -mt-0.5 mb-1">
+            {state.honeycombPartialNote}
+          </p>
+        )}
+      </div>
     </CollapsibleSection>
   );
 }

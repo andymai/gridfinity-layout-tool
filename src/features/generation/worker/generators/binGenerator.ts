@@ -19,6 +19,7 @@ import {
   drawRoundedRectangle,
   drawCircle,
   drawRectangle,
+  drawPolysides,
   unwrap,
   fuseAll,
   cutAll,
@@ -28,6 +29,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
+import { getHoneycombWallDescriptors, HEX_RADIUS } from './wallPatterns';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -808,6 +810,8 @@ let socketCache: { key: string; shape: Shape3D } | null = null;
 let lipCache: { key: string; shape: Shape3D } | null = null;
 let boxCache: { key: string; shape: Shape3D } | null = null;
 let shellCache: { key: string; shape: Shape3D } | null = null;
+/** Cache for the hex prism template (single hex, reused via clone). */
+let hexTemplateCache: { key: string; shape: Shape3D } | null = null;
 
 function socketCacheKey(
   gridW: number,
@@ -1041,6 +1045,68 @@ export function generateBin(
           '[BinGen] Label tab fusion failed, skipping:',
           e instanceof Error ? e.message : e
         );
+      }
+    }
+  }
+
+  // Wall pattern: Honeycomb wall cutouts — optimized with template cloning + single cutAll.
+  //
+  // Performance strategy:
+  // 1. Preview uses larger hexes (fewer cuts, ~75% less boolean work)
+  // 2. Build ONE hex prism template, clone() for each center
+  // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
+  // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
+  // 5. Cache the hex template between generations
+  if (params.wallPattern.enabled && params.wallPattern.pattern === 'honeycomb') {
+    // Preview: larger hexes = fewer boolean intersections (quadratic reduction)
+    const previewHexRadius = HEX_RADIUS * 2;
+    const hexRadius = forExport ? HEX_RADIUS : previewHexRadius;
+    const wallDescriptors = getHoneycombWallDescriptors(
+      params,
+      innerW,
+      innerD,
+      interiorHeight,
+      forExport ? undefined : previewHexRadius
+    );
+    if (wallDescriptors) {
+      try {
+        const cutDepth = params.wallThickness * 4;
+        const halfDepth = cutDepth / 2;
+
+        // Reuse cached hex template if params haven't changed
+        const templateKey = `${hexRadius}|${cutDepth}`;
+        let hexTemplate: Shape3D;
+        if (hexTemplateCache?.key === templateKey) {
+          hexTemplate = hexTemplateCache.shape;
+        } else {
+          hexTemplate = sketch(drawPolysides(hexRadius, 6), 'XY')
+            .extrude(cutDepth)
+            .rotate(30, [0, 0, 0], [0, 0, 1]);
+          hexTemplateCache = { key: templateKey, shape: hexTemplate };
+        }
+
+        const allHexTools: Shape3D[] = [];
+
+        for (const wall of wallDescriptors) {
+          for (const center of wall.centers) {
+            let hex: Shape3D = hexTemplate
+              .clone()
+              .translate([center.x, center.y, -halfDepth])
+              .rotate(90, [0, 0, 0], [1, 0, 0]);
+            if (wall.zRotation !== undefined) {
+              hex = hex.rotate(wall.zRotation, [0, 0, 0], [0, 0, 1]);
+            }
+            hex = hex.translate([wall.translateX, wall.translateY, wall.translateZ]);
+            allHexTools.push(hex);
+          }
+        }
+
+        if (allHexTools.length > 0) {
+          // Preview: skip SimplifyResult — shape is meshed and discarded
+          bin = unwrap(cutAll(bin, allHexTools, { simplify: forExport }));
+        }
+      } catch (e) {
+        console.warn('[BinGen] Honeycomb walls failed:', e instanceof Error ? e.message : e);
       }
     }
   }

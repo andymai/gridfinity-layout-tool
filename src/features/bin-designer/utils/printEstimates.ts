@@ -152,6 +152,11 @@ function computeBinVolume(params: BinParams): number {
     volume -= computeScoopVolume(params, outerW, outerD, wallThickness);
   }
 
+  // Wall pattern: honeycomb wall reduction
+  if (params.wallPattern.enabled && params.wallPattern.pattern === 'honeycomb') {
+    volume -= computeHoneycombWallReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
+  }
+
   // Volume cannot be negative (scoops on tiny bins)
   return Math.max(0, volume);
 }
@@ -330,4 +335,91 @@ function computeScoopVolume(
   const volumePerScoop = (Math.PI / 4) * scoopRadius * scoopRadius * colWidth;
 
   return numScoops * volumePerScoop;
+}
+
+// ─── Wall Pattern Features ────────────────────────────────────────────────────
+
+/**
+ * Volume removed by honeycomb wall cutouts.
+ *
+ * Approximation: hex grid packing density ~90.7% of the wall face area,
+ * cut to a fraction of wall thickness (pocketed) or full thickness (perforated).
+ */
+function computeHoneycombWallReduction(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  totalH: number,
+  wallThickness: number,
+  bottomH: number
+): number {
+  // Must match wallPatterns.ts constants (cross-feature import not allowed)
+  const HEX_RADIUS = 1.8;
+  const WEB_THICKNESS = 0.8;
+  const TOP_KEEP_OUT = 1.5;
+  const MIN_BOTTOM_KEEP_OUT = 1.0;
+
+  const wallHeight = totalH - bottomH;
+  const bottomKeepOut = Math.max(MIN_BOTTOM_KEEP_OUT, wallThickness);
+  const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
+  const minPatternH = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
+  if (patternHeight < minPatternH) return 0;
+
+  const innerW = outerW - 2 * wallThickness;
+  const innerD = outerD - 2 * wallThickness;
+
+  // Compute actual slot-free wall length based on which axes have slots
+  let slotFreeWallLength = 0;
+  if (params.style !== 'slotted' || !params.slotConfig.y.enabled) {
+    slotFreeWallLength += 2 * innerW; // front + back
+  }
+  if (params.style !== 'slotted' || !params.slotConfig.x.enabled) {
+    slotFreeWallLength += 2 * innerD; // left + right
+  }
+  if (slotFreeWallLength === 0) return 0;
+
+  const wallFaceArea = slotFreeWallLength * patternHeight;
+
+  // Hex packing coverage ~90.7% (theoretical max; actual is lower due to web + keep-outs)
+  const hexCoverage = wallFaceArea * 0.907;
+
+  // Material removed per unit area = wall thickness (hex prisms cut through wall)
+  const cutDepth = wallThickness;
+
+  return hexCoverage * cutDepth;
+}
+
+// ─── Wall Pattern Savings ─────────────────────────────────────────────────────
+
+export interface WallPatternSavings {
+  readonly savingsPercent: number;
+  readonly patternEstimate: PrintEstimate;
+  readonly standardEstimate: PrintEstimate;
+}
+
+/**
+ * Compare wall-pattern-enabled vs standard bin to calculate material savings.
+ */
+export function calculateWallPatternSavings(
+  params: BinParams,
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
+): WallPatternSavings {
+  const patternEstimate = estimatePrint(params, printSettings);
+
+  // Compute standard estimate with wall pattern disabled
+  const standardParams: BinParams = {
+    ...params,
+    wallPattern: { enabled: false, pattern: 'honeycomb' },
+  };
+  const standardEstimate = estimatePrint(standardParams, printSettings);
+
+  const savingsPercent =
+    standardEstimate.volumeMm3 > 0
+      ? Math.round(
+          ((standardEstimate.volumeMm3 - patternEstimate.volumeMm3) / standardEstimate.volumeMm3) *
+            100
+        )
+      : 0;
+
+  return { savingsPercent, patternEstimate, standardEstimate };
 }
