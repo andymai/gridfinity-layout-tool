@@ -17,15 +17,41 @@ import type { BinParams } from '@/shared/types/bin';
 import type { ExportPayload, ExportDividersPayload, ExportSplitPayload } from '../bridge/types';
 import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
+import { detectWasmCapabilities } from '../utils/wasmCapabilities';
 
-import opencascade from 'brepjs-opencascade/src/brepjs_single.js';
-import opencascadeWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
+// Single-threaded WASM (always available)
+import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
+import opencascadeSingleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
+
+// Multi-threaded WASM (conditionally loaded)
+import opencascadeThreadedInit from 'brepjs-opencascade/src/brepjs_threaded.js';
+import opencascadeThreadedWasm from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
+import opencascadeThreadedWorker from 'brepjs-opencascade/src/brepjs_threaded.worker.js?url';
+
+// Emscripten module factory options (not reflected in the .d.ts)
+interface EmscriptenModuleConfig {
+  locateFile?: (path: string) => string;
+}
+
+// Type assertion for Emscripten factory functions that accept config
+const opencascadeSingle = opencascadeSingleInit as unknown as (
+  config?: EmscriptenModuleConfig
+) => ReturnType<typeof opencascadeSingleInit>;
+const opencascadeThreaded = opencascadeThreadedInit as unknown as (
+  config?: EmscriptenModuleConfig
+) => ReturnType<typeof opencascadeThreadedInit>;
 
 /** Currently active generation request ID (for cancellation) */
 let activeRequestId: string | null = null;
 
 /** Whether OCCT has been initialized */
 let ocInitialized = false;
+
+/** Whether multi-threaded WASM is being used */
+let isThreaded = false;
+
+/** Number of CPU cores */
+let hardwareConcurrency = 4;
 
 /** Post a typed response to the main thread */
 function respond(response: WorkerResponse): void {
@@ -47,20 +73,60 @@ function reportProgress(
 }
 
 /**
+ * Detect if multi-threaded WASM is supported in this worker context.
+ * Disabled in development mode due to Vite dev server limitations with pthread workers.
+ */
+function detectThreadingSupport(): boolean {
+  // Disable threading in development - Vite dev server can't handle pthread workers
+  // correctly (the worker.js uses dynamic import() which fails in non-module context)
+  if (import.meta.env.DEV) {
+    return false;
+  }
+  return detectWasmCapabilities().supportsThreads;
+}
+
+/**
  * Initialize OpenCascade WASM kernel.
- * This loads ~11MB of WASM and takes 2-4 seconds.
+ * Automatically selects multi-threaded build when browser supports it.
  */
 async function initOpenCascade(): Promise<void> {
+  // Detect hardware concurrency with robust validation
+  hardwareConcurrency =
+    typeof navigator !== 'undefined' &&
+    Number.isFinite(navigator.hardwareConcurrency) &&
+    navigator.hardwareConcurrency > 0
+      ? navigator.hardwareConcurrency
+      : 4;
+
+  // Check if we can use multi-threaded WASM
+  isThreaded = detectThreadingSupport();
+
   // The Emscripten factory accepts a config object with locateFile
   // to resolve the WASM binary URL relative to the worker
-  const OC = await opencascade({
-    locateFile: (fileName: string) => {
-      if (fileName.endsWith('.wasm')) {
-        return opencascadeWasm;
-      }
-      return fileName;
-    },
-  });
+
+  let OC: Awaited<ReturnType<typeof opencascadeSingleInit>>;
+  if (isThreaded) {
+    OC = await opencascadeThreaded({
+      locateFile: (fileName: string) => {
+        if (fileName.endsWith('.wasm')) {
+          return opencascadeThreadedWasm;
+        }
+        if (fileName.endsWith('.worker.js')) {
+          return opencascadeThreadedWorker;
+        }
+        return fileName;
+      },
+    });
+  } else {
+    OC = await opencascadeSingle({
+      locateFile: (fileName: string) => {
+        if (fileName.endsWith('.wasm')) {
+          return opencascadeSingleWasm;
+        }
+        return fileName;
+      },
+    });
+  }
 
   setOC(OC);
   registerQueryModule({ EdgeFinder, FaceFinder });
@@ -249,7 +315,7 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
       case 'INIT':
         try {
           await initOpenCascade();
-          respond({ type: 'INIT_READY' });
+          respond({ type: 'INIT_READY', isThreaded, hardwareConcurrency });
         } catch (e) {
           respond({
             type: 'ERROR',

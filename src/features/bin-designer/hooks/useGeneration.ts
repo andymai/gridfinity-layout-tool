@@ -17,6 +17,7 @@ import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
 import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
 import { validateCompartmentSizes } from '../utils/validation';
+import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
 import type { BinParams } from '../types';
 
 /**
@@ -115,12 +116,19 @@ export function useGeneration(): void {
       .then(() => {
         setWasmStatus('ready');
         initializedRef.current = true;
+
+        // Track WASM threading capabilities for analytics
+        const threadingInfo = bridge.getThreadingInfo();
+        if (threadingInfo) {
+          trackWasmThreadingStatus(threadingInfo.isThreaded, threadingInfo.hardwareConcurrency);
+        }
+
         // Trigger initial generation
         const currentState = useDesignerStore.getState();
         prevEpochRef.current = currentState.generation.epoch;
         void runGeneration(currentState.params);
       })
-      .catch((_e) => {
+      .catch((_e: unknown) => {
         setWasmStatus('error');
       });
 

@@ -43,6 +43,14 @@ export interface SplitExportResult {
   readonly pieces: readonly SplitExportPiece[];
 }
 
+/** Information about the WASM threading capabilities */
+export interface ThreadingInfo {
+  /** Whether multi-threaded WASM is being used */
+  readonly isThreaded: boolean;
+  /** Number of CPU cores available */
+  readonly hardwareConcurrency: number;
+}
+
 /**
  * GenerationBridge manages a single Web Worker instance for geometry generation.
  *
@@ -71,6 +79,7 @@ export class GenerationBridge {
   private pendingSplitReject: ((error: Error) => void) | null = null;
   private splitRequestId: string | null = null;
   private adaptiveDebounce = new AdaptiveDebounce();
+  private threadingInfo: ThreadingInfo | null = null;
 
   /**
    * Initialize the worker. Resolves when the worker signals INIT_READY.
@@ -94,6 +103,14 @@ export class GenerationBridge {
         const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
           if (event.data.type === 'INIT_READY') {
             this.worker?.removeEventListener('message', onInitMessage);
+            // Defensive validation for backward compatibility
+            const isThreaded =
+              typeof event.data.isThreaded === 'boolean' ? event.data.isThreaded : false;
+            const hardwareConcurrency =
+              Number.isFinite(event.data.hardwareConcurrency) && event.data.hardwareConcurrency > 0
+                ? event.data.hardwareConcurrency
+                : 4;
+            this.threadingInfo = { isThreaded, hardwareConcurrency };
             this.setupMessageHandler();
             resolve();
           }
@@ -337,6 +354,14 @@ export class GenerationBridge {
   /** Whether the bridge has been destroyed */
   get isDestroyed(): boolean {
     return this.destroyed;
+  }
+
+  /**
+   * Get threading information after initialization.
+   * Returns null if not yet initialized.
+   */
+  getThreadingInfo(): ThreadingInfo | null {
+    return this.threadingInfo;
   }
 
   // ─── Private ────────────────────────────────────────────────────────────────
