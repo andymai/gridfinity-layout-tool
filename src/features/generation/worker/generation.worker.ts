@@ -105,32 +105,20 @@ async function initOpenCascade(): Promise<void> {
 
   let OC: Awaited<ReturnType<typeof opencascadeSingleInit>>;
   if (isThreaded) {
-    // Dynamically import the threaded module at runtime.
-    // We fetch as text and create a Blob URL so that:
-    // 1. The main worker fetches with auth cookies (works with Vercel Deployment Protection)
-    // 2. Pthread workers can load from the Blob URL without needing auth
+    // Fetch module source and convert to data URL for pthread workers
+    // (bypasses Vercel Deployment Protection auth requirements)
     const origin = self.location.origin;
-    const threadedModuleFullUrl = new URL(opencascadeThreadedUrl, origin).href;
+    const moduleUrl = new URL(opencascadeThreadedUrl, origin).href;
+    const moduleSource = await (await fetch(moduleUrl)).text();
+    const moduleDataUrl = `data:application/javascript;base64,${btoa(moduleSource)}`;
 
-    // Fetch the module source - this request has auth cookies
-    const moduleResponse = await fetch(threadedModuleFullUrl);
-    if (!moduleResponse.ok) {
-      throw new Error(`Failed to fetch threaded module: ${moduleResponse.status}`);
-    }
-    const moduleSource = await moduleResponse.text();
-
-    // Create a Blob URL that pthread workers can access without auth
-    const moduleBlob = new Blob([moduleSource], { type: 'application/javascript' });
-    const moduleBlobUrl = URL.createObjectURL(moduleBlob);
-
-    const threadedModule = await import(/* @vite-ignore */ moduleBlobUrl);
+    const threadedModule = await import(/* @vite-ignore */ moduleDataUrl);
     const opencascadeThreaded = threadedModule.default as (
       config?: EmscriptenModuleConfig
     ) => ReturnType<typeof opencascadeSingleInit>;
 
     OC = await opencascadeThreaded({
-      // Pass Blob URL so pthread workers can load without auth
-      mainScriptUrlOrBlob: moduleBlobUrl,
+      mainScriptUrlOrBlob: moduleDataUrl,
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
           return new URL(opencascadeThreadedWasm, origin).href;
