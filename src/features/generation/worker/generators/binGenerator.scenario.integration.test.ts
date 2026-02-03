@@ -6,7 +6,8 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 type GenerateFn = (
   params: BinParams,
-  onProgress?: (stage: string, progress: number) => void
+  onProgress?: (stage: string, progress: number) => void,
+  forExport?: boolean
 ) => MeshData;
 let generateBin: GenerateFn;
 
@@ -137,6 +138,55 @@ describe('brepjs bin generation', () => {
 
       expect(result.vertices.length).toBeGreaterThan(0);
       // More triangles than without magnets due to hole geometry in full cells
+      expect(result.triangleCount).toBeGreaterThan(100);
+    }, 60000);
+  });
+
+  describe('honeycomb walls', () => {
+    it('generates a 1x1x3 bin with honeycomb walls (export mode)', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 1,
+        depth: 1,
+        height: 3,
+        wallPattern: { enabled: true, pattern: 'honeycomb' },
+      };
+
+      // Test export mode (forExport = true)
+      const result = generateBin(params, undefined, true);
+
+      expect(result.vertices.length).toBeGreaterThan(0);
+      expect(result.triangleCount).toBeGreaterThan(100);
+    }, 120000);
+
+    it('generates a 1x1x3 bin with honeycomb walls (preview mode)', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 1,
+        depth: 1,
+        height: 3,
+        wallPattern: { enabled: true, pattern: 'honeycomb' },
+      };
+
+      // Test preview mode (forExport = false)
+      const result = generateBin(params, undefined, false);
+
+      expect(result.vertices.length).toBeGreaterThan(0);
+      expect(result.triangleCount).toBeGreaterThan(100);
+    }, 120000);
+
+    it('generates a 1x1x3 bin WITHOUT honeycomb walls', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 1,
+        depth: 1,
+        height: 3,
+        wallPattern: { enabled: false, pattern: 'honeycomb' },
+      };
+
+      const result = generateBin(params);
+
+      expect(result.vertices.length).toBeGreaterThan(0);
       expect(result.triangleCount).toBeGreaterThan(100);
     }, 60000);
   });
