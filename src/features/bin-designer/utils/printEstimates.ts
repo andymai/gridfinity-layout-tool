@@ -152,6 +152,11 @@ function computeBinVolume(params: BinParams): number {
     volume -= computeScoopVolume(params, outerW, outerD, wallThickness);
   }
 
+  // Eco: honeycomb wall reduction
+  if (params.eco.honeycombWall.enabled) {
+    volume -= computeHoneycombWallReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
+  }
+
   // Volume cannot be negative (scoops on tiny bins)
   return Math.max(0, volume);
 }
@@ -330,4 +335,92 @@ function computeScoopVolume(
   const volumePerScoop = (Math.PI / 4) * scoopRadius * scoopRadius * colWidth;
 
   return numScoops * volumePerScoop;
+}
+
+// ─── Eco Features ─────────────────────────────────────────────────────────────
+
+/** Count how many outer walls are free of divider slot grooves. */
+function countSlotFreeWalls(params: BinParams): number {
+  if (params.style !== 'slotted') return 4;
+  let count = 0;
+  if (!params.slotConfig.y.enabled) count += 2; // front + back
+  if (!params.slotConfig.x.enabled) count += 2; // left + right
+  return count;
+}
+
+/**
+ * Volume removed by honeycomb wall cutouts.
+ *
+ * Approximation: hex grid packing density ~90.7% of the wall face area,
+ * cut to a fraction of wall thickness (pocketed) or full thickness (perforated).
+ */
+function computeHoneycombWallReduction(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  totalH: number,
+  wallThickness: number,
+  bottomH: number
+): number {
+  const HEX_RADIUS = 1.8;
+  const WEB_THICKNESS = 0.8;
+  const TOP_KEEP_OUT = 1.5;
+  const BOTTOM_KEEP_OUT = 1.0;
+
+  const wallHeight = totalH - bottomH;
+  const patternHeight = wallHeight - TOP_KEEP_OUT - BOTTOM_KEEP_OUT;
+  const minPatternH = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
+  if (patternHeight < minPatternH) return 0;
+
+  const innerW = outerW - 2 * wallThickness;
+  const innerD = outerD - 2 * wallThickness;
+  const freeWalls = countSlotFreeWalls(params);
+  if (freeWalls === 0) return 0;
+
+  // Approximate wall face area covered by hex pattern
+  // Average wall length weighted by free wall count
+  const avgWallLength = ((innerW * 2 + innerD * 2) / 4) * (freeWalls / 4);
+  const wallFaceArea = avgWallLength * patternHeight * freeWalls;
+
+  // Hex packing coverage ~90.7%
+  const hexCoverage = wallFaceArea * 0.907;
+
+  // Cut depth: perforated (through wall)
+  const cutDepth = wallThickness;
+
+  return hexCoverage * cutDepth;
+}
+
+// ─── Eco Savings ──────────────────────────────────────────────────────────────
+
+export interface EcoSavings {
+  readonly savingsPercent: number;
+  readonly ecoEstimate: PrintEstimate;
+  readonly standardEstimate: PrintEstimate;
+}
+
+/**
+ * Compare eco-enabled vs standard bin to calculate material savings.
+ */
+export function calculateEcoSavings(
+  params: BinParams,
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
+): EcoSavings {
+  const ecoEstimate = estimatePrint(params, printSettings);
+
+  // Compute standard estimate with eco disabled
+  const standardParams: BinParams = {
+    ...params,
+    eco: { honeycombWall: { enabled: false } },
+  };
+  const standardEstimate = estimatePrint(standardParams, printSettings);
+
+  const savingsPercent =
+    standardEstimate.volumeMm3 > 0
+      ? Math.round(
+          ((standardEstimate.volumeMm3 - ecoEstimate.volumeMm3) / standardEstimate.volumeMm3) * 100
+        )
+      : 0;
+
+  return { savingsPercent, ecoEstimate, standardEstimate };
 }

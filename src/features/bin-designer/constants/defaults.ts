@@ -11,6 +11,7 @@ import type {
   WallConfig,
   SlotConfig,
   DividerPieceConfig,
+  EcoConfig,
 } from '../types';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -26,6 +27,11 @@ export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
   height: 'auto',
   thickness: 1.6,
   clearance: 0.25,
+} as const;
+
+/** Default eco mode configuration: all features disabled */
+export const DEFAULT_ECO_CONFIG: EcoConfig = {
+  honeycombWall: { enabled: false },
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -72,6 +78,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   slotConfig: DEFAULT_SLOT_CONFIG,
   dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
   inserts: [],
+  eco: DEFAULT_ECO_CONFIG,
 } as const;
 
 /** Default generation state */
@@ -198,6 +205,27 @@ export function migrateParams(
     ...((params.dividerPieces as Partial<DividerPieceConfig> | undefined) ?? {}),
   };
 
+  // Migrate eco config: strip legacy honeycombFloor/sinusoidalWall/mode, backfill defaults
+  let ecoConfig: EcoConfig = DEFAULT_ECO_CONFIG;
+  if (params.eco !== undefined) {
+    const rawEco = params.eco as unknown as Record<string, unknown>;
+    if (rawEco.honeycombWall && typeof rawEco.honeycombWall === 'object') {
+      const rawWall = rawEco.honeycombWall as Record<string, unknown>;
+      // Legacy format had mode: 'none' | 'pocketed' | 'perforated'; new format uses enabled boolean only
+      const hadMode = typeof rawWall.mode === 'string';
+      const hadEnabled = typeof rawWall.enabled === 'boolean';
+      ecoConfig = {
+        honeycombWall: {
+          enabled: hadEnabled
+            ? (rawWall.enabled as boolean)
+            : hadMode
+              ? rawWall.mode !== 'none'
+              : false,
+        },
+      };
+    }
+  }
+
   // Remove legacy dividers field from spread
   const { dividers: _legacyDividers, ...rest } = params as Record<string, unknown>;
 
@@ -213,5 +241,6 @@ export function migrateParams(
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
+    eco: ecoConfig,
   } as BinParams;
 }

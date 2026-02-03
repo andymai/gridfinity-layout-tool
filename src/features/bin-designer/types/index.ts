@@ -133,6 +133,20 @@ export interface WallConfig {
   readonly interior: WallCutout;
 }
 
+// =============================================================================
+// Eco Mode Types
+// =============================================================================
+
+/** Honeycomb wall pattern configuration */
+export interface HoneycombWallConfig {
+  readonly enabled: boolean;
+}
+
+/** Eco mode feature configuration — stored per design in BinParams */
+export interface EcoConfig {
+  readonly honeycombWall: HoneycombWallConfig;
+}
+
 /** Complete bin parameter set for generation */
 export interface BinParams {
   readonly width: number;
@@ -153,6 +167,7 @@ export interface BinParams {
   readonly slotConfig: SlotConfig;
   readonly dividerPieces: DividerPieceConfig;
   readonly inserts: Insert[];
+  readonly eco: EcoConfig;
 }
 
 // =============================================================================
@@ -350,6 +365,9 @@ export interface DesignerState {
   mergeCells: (cellIndices: readonly number[]) => void;
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;
+
+  // Eco actions
+  updateHoneycombWall: (partial: Partial<HoneycombWallConfig>) => void;
 
   // Insert actions
   addInsert: (insert: Insert) => void;

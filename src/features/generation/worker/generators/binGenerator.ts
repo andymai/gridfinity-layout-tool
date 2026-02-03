@@ -19,6 +19,7 @@ import {
   drawRoundedRectangle,
   drawCircle,
   drawRectangle,
+  drawPolysides,
   unwrap,
   fuseAll,
   cutAll,
@@ -28,6 +29,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
+import { getHoneycombWallDescriptors, HEX_RADIUS } from './ecoBuilder';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -1041,6 +1043,43 @@ export function generateBin(
           '[BinGen] Label tab fusion failed, skipping:',
           e instanceof Error ? e.message : e
         );
+      }
+    }
+  }
+
+  // Eco: Honeycomb wall cutouts — build hex prisms inline to avoid WASM GC
+  // scope issues (brepjs shapes can't safely cross function boundaries).
+  // Process one wall at a time: fuseAll hexes into a single solid per wall,
+  // then cut from bin. This keeps each boolean operation manageable.
+  if (params.eco.honeycombWall.enabled) {
+    const wallDescriptors = getHoneycombWallDescriptors(params, innerW, innerD, interiorHeight);
+    if (wallDescriptors) {
+      const cutDepth = params.wallThickness * 4;
+      const halfDepth = cutDepth / 2;
+
+      for (const wall of wallDescriptors) {
+        try {
+          const hexes: Shape3D[] = [];
+          for (const center of wall.centers) {
+            let hex: Shape3D = sketch(drawPolysides(HEX_RADIUS, 6), 'XY')
+              .extrude(cutDepth)
+              .rotate(30, [0, 0, 0], [0, 0, 1])
+              .translate([center.x, center.y, -halfDepth])
+              .rotate(90, [0, 0, 0], [1, 0, 0]);
+            if (wall.zRotation !== undefined) {
+              hex = hex.rotate(wall.zRotation, [0, 0, 0], [0, 0, 1]);
+            }
+            hex = hex.translate([wall.translateX, wall.translateY, wall.translateZ]);
+            hexes.push(hex);
+          }
+
+          if (hexes.length > 0) {
+            const wallCutter = unwrap(fuseAll(hexes));
+            bin = unwrap(bin.cut(wallCutter));
+          }
+        } catch (e) {
+          console.warn('[BinGen] Honeycomb wall cut failed:', e instanceof Error ? e.message : e);
+        }
       }
     }
   }

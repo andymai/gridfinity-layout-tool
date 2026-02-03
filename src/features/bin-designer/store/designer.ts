@@ -13,6 +13,7 @@ import type {
   BinParams,
   BaseConfig,
   LabelTabConfig,
+  HoneycombWallConfig,
   Insert,
   ExportFileNameConfig,
   GenerationStatus,
@@ -154,6 +155,14 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params.label, partial);
+      });
+    },
+
+    // Eco actions
+    updateHoneycombWall: (partial: Partial<HoneycombWallConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        Object.assign(state.params.eco.honeycombWall, partial);
       });
     },
 
