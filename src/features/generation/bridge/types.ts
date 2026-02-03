@@ -95,6 +95,10 @@ export type WorkerResponse =
 
 export interface InitReadyResponse {
   readonly type: 'INIT_READY';
+  /** Whether multi-threaded WASM is being used */
+  readonly isThreaded: boolean;
+  /** Number of CPU cores available */
+  readonly hardwareConcurrency: number;
 }
 
 export interface ProgressResponse {

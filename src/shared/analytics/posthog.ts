@@ -873,6 +873,21 @@ export function trackTemplateLoadError(templateId: string, errorMessage: string)
 }
 
 // ============================================
+// WASM THREADING TRACKING
+// ============================================
+
+/**
+ * Track WASM threading status when generation bridge initializes.
+ * This helps understand hardware capabilities across our user base.
+ */
+export function trackWasmThreadingStatus(isThreaded: boolean, hardwareConcurrency: number): void {
+  trackEvent('wasm_threading_status', {
+    is_threaded: isThreaded,
+    hardware_concurrency: hardwareConcurrency,
+  });
+}
+
+// ============================================
 // GALLERY TRACKING
 // ============================================
 
