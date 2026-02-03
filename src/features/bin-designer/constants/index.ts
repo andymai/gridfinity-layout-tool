@@ -11,5 +11,6 @@ export {
   DEFAULT_GENERATION_STATE,
   DEFAULT_UI_STATE,
   DEFAULT_HISTORY,
+  DEFAULT_WALL_PATTERN_CONFIG,
   migrateParams,
 } from './defaults';

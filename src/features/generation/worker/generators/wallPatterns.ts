@@ -1,5 +1,5 @@
 /**
- * Eco mode wall configuration for brepjs.
+ * Wall pattern configuration for brepjs.
  *
  * Pure data module — determines which walls get honeycomb cuts and calculates
  * hex center positions + wall transforms. No brepjs imports; the caller
@@ -62,7 +62,7 @@ const BOTTOM_KEEP_OUT = 1.0;
 const MIN_PATTERN_HEIGHT = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
 
 /**
- * Calculate honeycomb wall descriptors for eco mode.
+ * Calculate honeycomb wall descriptors for wall pattern mode.
  *
  * Returns pure data describing hex positions and wall transforms.
  * The caller builds brepjs shapes inline (same scope as the cut operation)
@@ -77,7 +77,7 @@ export function getHoneycombWallDescriptors(
   wallHeight: number,
   hexRadiusOverride?: number
 ): WallHexDescriptor[] | null {
-  if (!params.eco.honeycombWall.enabled) {
+  if (!params.wallPattern.enabled) {
     return null;
   }
 

@@ -29,7 +29,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
-import { getHoneycombWallDescriptors, HEX_RADIUS } from './ecoBuilder';
+import { getHoneycombWallDescriptors, HEX_RADIUS } from './wallPatterns';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -1049,7 +1049,7 @@ export function generateBin(
     }
   }
 
-  // Eco: Honeycomb wall cutouts — optimized with template cloning + single cutAll.
+  // Wall pattern: Honeycomb wall cutouts — optimized with template cloning + single cutAll.
   //
   // Performance strategy:
   // 1. Preview uses larger hexes (fewer cuts, ~75% less boolean work)
@@ -1057,7 +1057,7 @@ export function generateBin(
   // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
   // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
   // 5. Cache the hex template between generations
-  if (params.eco.honeycombWall.enabled) {
+  if (params.wallPattern.enabled && params.wallPattern.pattern === 'honeycomb') {
     // Preview: larger hexes = fewer boolean intersections (quadratic reduction)
     const previewHexRadius = HEX_RADIUS * 2;
     const hexRadius = forExport ? HEX_RADIUS : previewHexRadius;

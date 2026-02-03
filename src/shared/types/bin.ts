@@ -21,6 +21,6 @@ export type {
   DividerPieceConfig,
   Insert,
   InsertShape,
-  EcoConfig,
-  HoneycombWallConfig,
+  WallPatternConfig,
+  WallPatternType,
 } from '@/features/bin-designer/types';

@@ -7,13 +7,13 @@ import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 import type { SectionMeta } from '../types';
 
 export function useWallsSection() {
-  const { wallThickness, eco, params, setParam, updateHoneycombWall } = useDesignerStore(
+  const { wallThickness, wallPattern, params, setParam, updateWallPattern } = useDesignerStore(
     useShallow((s) => ({
       wallThickness: s.params.wallThickness,
-      eco: s.params.eco,
+      wallPattern: s.params.wallPattern,
       params: s.params,
       setParam: s.setParam,
-      updateHoneycombWall: s.updateHoneycombWall,
+      updateWallPattern: s.updateWallPattern,
     }))
   );
   const t = useTranslation();
@@ -30,8 +30,8 @@ export function useWallsSection() {
   const handleChange = useMemo(() => (v: number) => setParam('wallThickness', v), [setParam]);
 
   const toggleHoneycomb = useCallback(() => {
-    updateHoneycombWall({ enabled: !eco.honeycombWall.enabled });
-  }, [eco.honeycombWall.enabled, updateHoneycombWall]);
+    updateWallPattern({ enabled: !wallPattern.enabled });
+  }, [wallPattern.enabled, updateWallPattern]);
 
   // Slot detection
   const allWallsSlotted = useMemo(() => {
@@ -45,12 +45,12 @@ export function useWallsSection() {
   }, [params.style, params.slotConfig.x.enabled, params.slotConfig.y.enabled]);
 
   const honeycombDisabledReason = useMemo(() => {
-    if (allWallsSlotted) return t('binDesigner.walls.honeycomb.allSlotted');
+    if (allWallsSlotted) return t('binDesigner.walls.pattern.allSlotted');
     return undefined;
   }, [allWallsSlotted, t]);
 
   const honeycombPartialNote = useMemo(() => {
-    if (someWallsSlotted && !allWallsSlotted) return t('binDesigner.walls.honeycomb.someSlotted');
+    if (someWallsSlotted && !allWallsSlotted) return t('binDesigner.walls.pattern.someSlotted');
     return undefined;
   }, [someWallsSlotted, allWallsSlotted, t]);
 
@@ -60,7 +60,7 @@ export function useWallsSection() {
     state: {
       wallThickness,
       options,
-      honeycombEnabled: eco.honeycombWall.enabled,
+      honeycombEnabled: wallPattern.enabled,
       honeycombDisabledReason,
       honeycombPartialNote,
     },

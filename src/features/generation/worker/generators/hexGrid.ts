@@ -1,5 +1,5 @@
 /**
- * Hexagonal grid geometry for eco mode.
+ * Hexagonal grid geometry for wall patterns.
  *
  * Pure math module — calculates hex center positions for a honeycomb pattern.
  * No brepjs imports; the caller (binGenerator) builds actual 3D shapes.

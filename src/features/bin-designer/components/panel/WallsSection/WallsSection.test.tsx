@@ -26,7 +26,7 @@ describe('WallsSection', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        eco: { honeycombWall: { enabled: true } },
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
         style: 'slotted',
         slotConfig: {
           ...DEFAULT_BIN_PARAMS.slotConfig,

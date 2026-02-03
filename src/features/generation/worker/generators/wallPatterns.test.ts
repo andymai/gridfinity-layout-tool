@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { getSlotFreeWalls, getHoneycombWallDescriptors } from './ecoBuilder';
+import { getSlotFreeWalls, getHoneycombWallDescriptors } from './wallPatterns';
 import type { BinParams } from '@/shared/types/bin';
 
-/** Minimal BinParams stub for testing ecoBuilder functions. */
+/** Minimal BinParams stub for testing wallPatterns functions. */
 const BASE_PARAMS: BinParams = {
   width: 1,
   depth: 1,
@@ -20,7 +20,7 @@ const BASE_PARAMS: BinParams = {
   label: { enabled: false, width: 12, angle: 45, overhangAngle: 60 },
   compartments: { enabled: false, rows: 1, cols: 1, thickness: 1.2, cells: [true] },
   inserts: [],
-  eco: { honeycombWall: { enabled: false } },
+  wallPattern: { enabled: false, pattern: 'honeycomb' as const },
   exportFileName: { template: 'gridfinity_{w}x{d}x{h}', separator: '_' },
 } as BinParams;
 
@@ -80,19 +80,19 @@ describe('getSlotFreeWalls', () => {
 });
 
 describe('getHoneycombWallDescriptors', () => {
-  it('returns null when eco disabled', () => {
-    const params = makeParams({ eco: { honeycombWall: { enabled: false } } });
+  it('returns null when wall pattern disabled', () => {
+    const params = makeParams({ wallPattern: { enabled: false, pattern: 'honeycomb' as const } });
     expect(getHoneycombWallDescriptors(params, 80, 80, 20)).toBeNull();
   });
 
   it('returns null when wall height too short', () => {
-    const params = makeParams({ eco: { honeycombWall: { enabled: true } } });
+    const params = makeParams({ wallPattern: { enabled: true, pattern: 'honeycomb' as const } });
     expect(getHoneycombWallDescriptors(params, 80, 80, 3)).toBeNull();
   });
 
   it('returns null when all walls have slot grooves', () => {
     const params = makeParams({
-      eco: { honeycombWall: { enabled: true } },
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
       style: 'slotted',
       slotConfig: {
         ...DEFAULT_SLOT_CONFIG,
@@ -104,7 +104,7 @@ describe('getHoneycombWallDescriptors', () => {
   });
 
   it('returns 4 wall descriptors for standard bin', () => {
-    const params = makeParams({ eco: { honeycombWall: { enabled: true } } });
+    const params = makeParams({ wallPattern: { enabled: true, pattern: 'honeycomb' as const } });
     const result = getHoneycombWallDescriptors(params, 80, 80, 20);
     expect(result).not.toBeNull();
     expect(result).toHaveLength(4);
@@ -112,7 +112,7 @@ describe('getHoneycombWallDescriptors', () => {
 
   it('returns 2 wall descriptors when one axis has slots', () => {
     const params = makeParams({
-      eco: { honeycombWall: { enabled: true } },
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
       style: 'slotted',
       slotConfig: {
         ...DEFAULT_SLOT_CONFIG,
@@ -126,7 +126,7 @@ describe('getHoneycombWallDescriptors', () => {
   });
 
   it('each descriptor has hex centers and wall transform', () => {
-    const params = makeParams({ eco: { honeycombWall: { enabled: true } } });
+    const params = makeParams({ wallPattern: { enabled: true, pattern: 'honeycomb' as const } });
     const result = getHoneycombWallDescriptors(params, 40, 40, 20);
     expect(result).not.toBeNull();
     for (const desc of result!) {

@@ -50,12 +50,15 @@ describe('useWallsSection', () => {
       result.current.handlers.toggleHoneycomb();
     });
 
-    expect(useDesignerStore.getState().params.eco.honeycombWall.enabled).toBe(true);
+    expect(useDesignerStore.getState().params.wallPattern.enabled).toBe(true);
   });
 
   it('toggleHoneycomb disables when already enabled', () => {
     useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, eco: { honeycombWall: { enabled: true } } },
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      },
     });
 
     const { result } = renderHook(() => useWallsSection());
@@ -64,7 +67,7 @@ describe('useWallsSection', () => {
       result.current.handlers.toggleHoneycomb();
     });
 
-    expect(useDesignerStore.getState().params.eco.honeycombWall.enabled).toBe(false);
+    expect(useDesignerStore.getState().params.wallPattern.enabled).toBe(false);
   });
 
   it('honeycombDisabledReason set when all walls slotted', () => {

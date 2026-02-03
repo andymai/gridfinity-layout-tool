@@ -157,6 +157,50 @@ describe('migrateParams', () => {
     const result = migrateParams({ walls: { front: 50, back: 80, left: 0, right: 100 } } as any);
     expectOk(validateBinParams(result));
   });
+
+  it('should migrate legacy eco mode string to wallPattern enabled', () => {
+    const result = migrateParams({
+      eco: { honeycombWall: { mode: 'pocketed' } },
+    } as any);
+    expect(result.wallPattern.enabled).toBe(true);
+    expect(result.wallPattern.pattern).toBe('honeycomb');
+  });
+
+  it('should migrate legacy eco mode "none" to wallPattern disabled', () => {
+    const result = migrateParams({
+      eco: { honeycombWall: { mode: 'none' } },
+    } as any);
+    expect(result.wallPattern.enabled).toBe(false);
+    expect(result.wallPattern.pattern).toBe('honeycomb');
+  });
+
+  it('should migrate legacy eco enabled boolean to wallPattern', () => {
+    const result = migrateParams({
+      eco: { honeycombWall: { enabled: true } },
+    } as any);
+    expect(result.wallPattern.enabled).toBe(true);
+    expect(result.wallPattern.pattern).toBe('honeycomb');
+  });
+
+  it('should preserve new wallPattern field when present', () => {
+    const result = migrateParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb' },
+    });
+    expect(result.wallPattern.enabled).toBe(true);
+    expect(result.wallPattern.pattern).toBe('honeycomb');
+  });
+
+  it('should default wallPattern to disabled when neither wallPattern nor eco field is present', () => {
+    const result = migrateParams({});
+    expect(result.wallPattern.enabled).toBe(false);
+    expect(result.wallPattern.pattern).toBe('honeycomb');
+  });
+
+  it('should not share wallPattern reference with DEFAULT_WALL_PATTERN_CONFIG', () => {
+    const result1 = migrateParams({});
+    const result2 = migrateParams({});
+    expect(result1.wallPattern).not.toBe(result2.wallPattern);
+  });
 });
 
 describe('GRIDFINITY constants', () => {

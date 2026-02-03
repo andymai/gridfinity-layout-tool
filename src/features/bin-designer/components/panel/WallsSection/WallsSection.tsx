@@ -29,7 +29,7 @@ export function WallsSection() {
       />
       <div className="mt-3 pt-3 border-t border-stroke-subtle/50">
         <FeatureToggle
-          label={t('binDesigner.walls.honeycomb')}
+          label={t('binDesigner.walls.pattern.honeycomb')}
           checked={state.honeycombEnabled}
           onChange={handlers.toggleHoneycomb}
           disabledReason={state.honeycombDisabledReason}

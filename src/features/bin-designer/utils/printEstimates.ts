@@ -152,8 +152,8 @@ function computeBinVolume(params: BinParams): number {
     volume -= computeScoopVolume(params, outerW, outerD, wallThickness);
   }
 
-  // Eco: honeycomb wall reduction
-  if (params.eco.honeycombWall.enabled) {
+  // Wall pattern: honeycomb wall reduction
+  if (params.wallPattern.enabled && params.wallPattern.pattern === 'honeycomb') {
     volume -= computeHoneycombWallReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
   }
 
@@ -337,16 +337,7 @@ function computeScoopVolume(
   return numScoops * volumePerScoop;
 }
 
-// ─── Eco Features ─────────────────────────────────────────────────────────────
-
-/** Count how many outer walls are free of divider slot grooves. */
-function countSlotFreeWalls(params: BinParams): number {
-  if (params.style !== 'slotted') return 4;
-  let count = 0;
-  if (!params.slotConfig.y.enabled) count += 2; // front + back
-  if (!params.slotConfig.x.enabled) count += 2; // left + right
-  return count;
-}
+// ─── Wall Pattern Features ────────────────────────────────────────────────────
 
 /**
  * Volume removed by honeycomb wall cutouts.
@@ -362,6 +353,7 @@ function computeHoneycombWallReduction(
   wallThickness: number,
   bottomH: number
 ): number {
+  // Must match wallPatterns.ts constants (cross-feature import not allowed)
   const HEX_RADIUS = 1.8;
   const WEB_THICKNESS = 0.8;
   const TOP_KEEP_OUT = 1.5;
@@ -374,53 +366,59 @@ function computeHoneycombWallReduction(
 
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const freeWalls = countSlotFreeWalls(params);
-  if (freeWalls === 0) return 0;
 
-  // Approximate wall face area covered by hex pattern
-  // Average wall length weighted by free wall count
-  const avgWallLength = ((innerW * 2 + innerD * 2) / 4) * (freeWalls / 4);
-  const wallFaceArea = avgWallLength * patternHeight * freeWalls;
+  // Compute actual slot-free wall length based on which axes have slots
+  let slotFreeWallLength = 0;
+  if (params.style !== 'slotted' || !params.slotConfig.y.enabled) {
+    slotFreeWallLength += 2 * innerW; // front + back
+  }
+  if (params.style !== 'slotted' || !params.slotConfig.x.enabled) {
+    slotFreeWallLength += 2 * innerD; // left + right
+  }
+  if (slotFreeWallLength === 0) return 0;
 
-  // Hex packing coverage ~90.7%
+  const wallFaceArea = slotFreeWallLength * patternHeight;
+
+  // Hex packing coverage ~90.7% (theoretical max; actual is lower due to web + keep-outs)
   const hexCoverage = wallFaceArea * 0.907;
 
-  // Cut depth: perforated (through wall)
+  // Material removed per unit area = wall thickness (hex prisms cut through wall)
   const cutDepth = wallThickness;
 
   return hexCoverage * cutDepth;
 }
 
-// ─── Eco Savings ──────────────────────────────────────────────────────────────
+// ─── Wall Pattern Savings ─────────────────────────────────────────────────────
 
-export interface EcoSavings {
+export interface WallPatternSavings {
   readonly savingsPercent: number;
-  readonly ecoEstimate: PrintEstimate;
+  readonly patternEstimate: PrintEstimate;
   readonly standardEstimate: PrintEstimate;
 }
 
 /**
- * Compare eco-enabled vs standard bin to calculate material savings.
+ * Compare wall-pattern-enabled vs standard bin to calculate material savings.
  */
-export function calculateEcoSavings(
+export function calculateWallPatternSavings(
   params: BinParams,
   printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
-): EcoSavings {
-  const ecoEstimate = estimatePrint(params, printSettings);
+): WallPatternSavings {
+  const patternEstimate = estimatePrint(params, printSettings);
 
-  // Compute standard estimate with eco disabled
+  // Compute standard estimate with wall pattern disabled
   const standardParams: BinParams = {
     ...params,
-    eco: { honeycombWall: { enabled: false } },
+    wallPattern: { enabled: false, pattern: 'honeycomb' },
   };
   const standardEstimate = estimatePrint(standardParams, printSettings);
 
   const savingsPercent =
     standardEstimate.volumeMm3 > 0
       ? Math.round(
-          ((standardEstimate.volumeMm3 - ecoEstimate.volumeMm3) / standardEstimate.volumeMm3) * 100
+          ((standardEstimate.volumeMm3 - patternEstimate.volumeMm3) / standardEstimate.volumeMm3) *
+            100
         )
       : 0;
 
-  return { savingsPercent, ecoEstimate, standardEstimate };
+  return { savingsPercent, patternEstimate, standardEstimate };
 }
