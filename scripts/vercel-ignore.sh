@@ -42,12 +42,8 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   fi
 fi
 
-# Always build preview deployments for PRs
-if [ -n "$VERCEL_GIT_PULL_REQUEST_ID" ]; then
-  echo "PR preview deployment. Proceeding with build."
-  exit 1
-fi
-
-# Skip other branch deploys (feature branches without PRs)
-echo "Non-main branch without PR. Skipping build."
-exit 0
+# Build all non-main branches (preview deployments)
+# Note: We can't rely on VERCEL_GIT_PULL_REQUEST_ID because the branch
+# is typically pushed before the PR is created, so the variable is empty.
+echo "Preview deployment for branch: $VERCEL_GIT_COMMIT_REF. Proceeding with build."
+exit 1
