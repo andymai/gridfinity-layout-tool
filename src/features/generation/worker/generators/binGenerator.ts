@@ -29,7 +29,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
-import { getHoneycombWallDescriptors, HEX_RADIUS } from './wallPatterns';
+import { getHoneycombWallDescriptors } from './wallPatterns';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -1058,15 +1058,15 @@ export function generateBin(
   // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
   // 5. Cache the hex template between generations
   if (params.wallPattern.enabled && params.wallPattern.pattern === 'honeycomb') {
-    // Preview: larger hexes = fewer boolean intersections (quadratic reduction)
-    const previewHexRadius = HEX_RADIUS * 2;
-    const hexRadius = forExport ? HEX_RADIUS : previewHexRadius;
+    // Use smaller hexes at 3u for proper honeycomb pattern (3 rows + 2 rows).
+    // Larger bins use bigger hexes for performance (fewer boolean ops).
+    const hexRadius = params.height <= 3 ? 2.1 : 3.6;
     const wallDescriptors = getHoneycombWallDescriptors(
       params,
       innerW,
       innerD,
       interiorHeight,
-      forExport ? undefined : previewHexRadius
+      hexRadius
     );
     if (wallDescriptors) {
       try {
