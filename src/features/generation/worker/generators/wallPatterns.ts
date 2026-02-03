@@ -56,8 +56,12 @@ export const HEX_RADIUS = 1.8;
 export const WEB_THICKNESS = 0.8;
 /** Keep-out from wall top edge (stacking lip interface). */
 const TOP_KEEP_OUT = 1.5;
-/** Keep-out from wall bottom edge (base/floor junction). */
-const BOTTOM_KEEP_OUT = 1.0;
+/**
+ * Minimum keep-out from wall bottom edge (base/floor junction).
+ * Actual keep-out uses max(this, wallThickness) so hex prisms never
+ * cut into the floor at the wall-floor junction.
+ */
+const MIN_BOTTOM_KEEP_OUT = 1.0;
 /** Minimum usable pattern height (need at least one full hex row). */
 const MIN_PATTERN_HEIGHT = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
 
@@ -81,7 +85,11 @@ export function getHoneycombWallDescriptors(
     return null;
   }
 
-  const patternHeight = wallHeight - TOP_KEEP_OUT - BOTTOM_KEEP_OUT;
+  // Keep-out from bottom must clear the floor (shell thickness = wallThickness)
+  // so hex prisms don't cut into the floor-wall junction.
+  const bottomKeepOut = Math.max(MIN_BOTTOM_KEEP_OUT, params.wallThickness);
+
+  const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
   if (patternHeight < MIN_PATTERN_HEIGHT) {
     return null;
   }
@@ -91,7 +99,7 @@ export function getHoneycombWallDescriptors(
     return null;
   }
 
-  const patternCenterZ = BOTTOM_KEEP_OUT + patternHeight / 2;
+  const patternCenterZ = bottomKeepOut + patternHeight / 2;
 
   const radius = hexRadiusOverride ?? HEX_RADIUS;
   const hexConfig = {
