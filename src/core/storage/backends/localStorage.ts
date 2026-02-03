@@ -8,7 +8,7 @@
 
 import type { Layout, LayoutLibrary } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
-import { ok, err, storageQuotaExceeded } from '@/core/result';
+import { ok, err, storageQuotaExceeded, storageCorrupted } from '@/core/result';
 
 /**
  * Save data to localStorage as JSON.
@@ -34,7 +34,8 @@ export function loadFromLocalStorage<T>(key: string): Result<T | null, StorageEr
     if (!stored) return ok(null);
     return ok(JSON.parse(stored) as T);
   } catch (cause) {
-    return err(storageQuotaExceeded(undefined, undefined, cause));
+    // JSON parse errors indicate corrupted data, not quota issues
+    return err(storageCorrupted(key, ['Failed to parse JSON data'], cause));
   }
 }
 

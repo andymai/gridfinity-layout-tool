@@ -18,6 +18,9 @@ import type { Interaction } from '@/core/types';
 
 export type DropTarget = 'trash' | 'staging' | null;
 
+// Module-level timeout ID for screen reader announcements
+let liveMessageTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
 export interface PaintSize {
   width: number;
   depth: number;
@@ -96,9 +99,7 @@ export const useInteractionStore = create<InteractionStore>((set) => ({
   togglePaintSize: (size) => {
     set((state) => ({
       paintSize:
-        state.paintSize?.width === size.width && state.paintSize?.depth === size.depth
-          ? null
-          : size,
+        state.paintSize?.width === size.width && state.paintSize.depth === size.depth ? null : size,
     }));
   },
 
@@ -118,10 +119,15 @@ export const useInteractionStore = create<InteractionStore>((set) => ({
 
   // Accessibility actions
   announceToScreenReader: (message) => {
+    // Clear existing timeout to prevent queued timeouts from accumulating
+    if (liveMessageTimeoutId) {
+      clearTimeout(liveMessageTimeoutId);
+    }
     set({ liveMessage: message });
     // Clear after 1 second to allow repeat announcements of the same message
-    setTimeout(() => {
+    liveMessageTimeoutId = setTimeout(() => {
       set({ liveMessage: null });
+      liveMessageTimeoutId = null;
     }, 1000);
   },
 

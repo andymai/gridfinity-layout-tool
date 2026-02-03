@@ -6,7 +6,7 @@
  * - Load: Loads a shared design from a URL or ID
  */
 
-import { useState, useCallback, useLayoutEffect, useRef } from 'react';
+import { useState, useCallback, useLayoutEffect, useRef, useEffect } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useDesignerSharing } from '@/features/bin-designer/hooks/useDesignerSharing';
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
@@ -35,8 +35,9 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
   const [loadInput, setLoadInput] = useState('');
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const dialogRef = useFocusTrap<HTMLDivElement>({
+  const dialogRef = useFocusTrap({
     active: open,
     onEscape: onClose,
   });
@@ -52,10 +53,19 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
   }, [open, reset]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  // Cleanup copy timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const addToast = useToastStore((s) => s.addToast);
 
   const handleShare = useCallback(() => {
-    share(params);
+    void share(params);
   }, [share, params]);
 
   const handleCopy = useCallback(async () => {
@@ -64,7 +74,14 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       addToast({ message: 'Share link copied to clipboard', type: 'success', duration: 2000 });
-      setTimeout(() => setCopied(false), 2000);
+      // Clear existing timeout before setting a new one
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
     } catch {
       // Fallback: select the input text
       inputRef.current?.select();
@@ -265,7 +282,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                 className="flex-1 rounded-md border border-stroke-subtle bg-surface-secondary px-3 py-2 text-xs text-content placeholder:text-content-tertiary focus:border-accent focus:outline-none"
                 aria-label={t('binDesigner.shareUrlOrId')}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleLoad();
+                  if (e.key === 'Enter') void handleLoad();
                 }}
               />
               <button
