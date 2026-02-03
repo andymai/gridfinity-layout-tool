@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.18.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.0...gridfinity-layout-tool-v2.18.1) (2026-02-03)
+
+
+### Bug Fixes
+
+* code review cleanup - memory leaks and error handling ([#592](https://github.com/andymai/gridfinity-layout-tool/issues/592)) ([d9ecfd4](https://github.com/andymai/gridfinity-layout-tool/commit/d9ecfd4227f2ecc5fee2a70ce6e9e86bc82f4d66))
+
 ## [2.18.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.17.0...gridfinity-layout-tool-v2.18.0) (2026-02-03)
 
 
