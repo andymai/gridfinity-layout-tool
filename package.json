@@ -103,6 +103,9 @@
     ]
   },
   "overrides": {
+    "@vercel/node": {
+      "undici": "5.29.0"
+    },
     "path-to-regexp": "6.3.0",
     "workbox-build": {
       "@rollup/plugin-replace": {
