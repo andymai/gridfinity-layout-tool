@@ -1109,8 +1109,10 @@ export function generateBin(
   onProgress?.('merge', 0.9);
   lastSolid = bin;
 
-  // Dynamic tessellation: export gets fine quality, preview adapts to bin size
+  // Dynamic tessellation: export gets fine quality, preview adapts to bin size.
+  // Honeycomb adds hundreds of flat-sided hex faces — coarsen preview to compensate.
   const maxDimension = Math.max(params.width, params.depth) * SIZE;
+  const hasHoneycomb = !forExport && params.eco.honeycombWall.enabled;
   let tolerance: number;
   let angularTolerance: number;
 
@@ -1118,6 +1120,10 @@ export function generateBin(
     // Export: fine tessellation for smooth curves
     tolerance = 0.01;
     angularTolerance = 5;
+  } else if (hasHoneycomb) {
+    // Honeycomb preview: coarser to compensate for many hex faces
+    tolerance = Math.min(2, Math.max(0.5, maxDimension / 200));
+    angularTolerance = 30;
   } else if (isSmallBin) {
     // Small bin preview: moderate quality (fast but still smooth)
     tolerance = Math.min(0.5, Math.max(0.2, maxDimension / 500));
