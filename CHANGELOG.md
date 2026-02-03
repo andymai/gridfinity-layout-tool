@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.18.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.1...gridfinity-layout-tool-v2.18.2) (2026-02-03)
+
+
+### Bug Fixes
+
+* **deps:** update brepjs to v2 and fix undici peer dependency ([89fd031](https://github.com/andymai/gridfinity-layout-tool/commit/89fd031541f32eacc1a0a55a9c7ee74f41078578))
+
 ## [2.18.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.0...gridfinity-layout-tool-v2.18.1) (2026-02-03)
 
 
