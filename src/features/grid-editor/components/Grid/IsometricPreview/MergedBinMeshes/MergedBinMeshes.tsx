@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useDeferredValue, useRef } from 'react';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { createBinGeometry } from '@/hooks/useBinGeometry';
+import { clearGeometryCache, getCachedGeometry } from './geometryCache';
 
 interface BinData {
   bin: {
@@ -19,45 +19,6 @@ interface BinData {
 
 interface MergedBinMeshesProps {
   bins: BinData[];
-}
-
-/**
- * Geometry cache for reusing identical bin geometries.
- * Key format: "width|depth|height|color"
- * This avoids recreating the same geometry multiple times when bins have identical dimensions.
- */
-const geometryCache = new Map<string, THREE.BufferGeometry>();
-const MAX_CACHE_SIZE = 100;
-
-function getCacheKey(width: number, depth: number, height: number, color: string): string {
-  // Round to 2 decimal places to handle floating point precision
-  return `${width.toFixed(2)}|${depth.toFixed(2)}|${height.toFixed(2)}|${color}`;
-}
-
-function getCachedGeometry(
-  width: number,
-  depth: number,
-  height: number,
-  color: string
-): THREE.BufferGeometry {
-  const key = getCacheKey(width, depth, height, color);
-  let geo = geometryCache.get(key);
-
-  if (!geo) {
-    geo = createBinGeometry({ width, depth, height, baseColor: color });
-    // Evict oldest entry if cache is full (simple LRU-like behavior)
-    if (geometryCache.size >= MAX_CACHE_SIZE) {
-      const firstKey = geometryCache.keys().next().value;
-      if (firstKey !== undefined) {
-        const oldGeo = geometryCache.get(firstKey);
-        oldGeo?.dispose();
-        geometryCache.delete(firstKey);
-      }
-    }
-    geometryCache.set(key, geo);
-  }
-
-  return geo;
 }
 
 /**
@@ -129,9 +90,21 @@ export function MergedBinMeshes({ bins }: MergedBinMeshesProps) {
     prevGeometryRef.current = geometry;
 
     return () => {
-      geometry?.dispose();
+      // Clear ref on unmount to prevent double-disposal if component remounts
+      if (prevGeometryRef.current) {
+        prevGeometryRef.current.dispose();
+        prevGeometryRef.current = null;
+      }
     };
   }, [geometry]);
+
+  // Clear geometry cache when component unmounts (e.g., layout switch)
+  // This prevents memory accumulation across layout changes
+  useEffect(() => {
+    return () => {
+      clearGeometryCache();
+    };
+  }, []);
 
   if (!geometry || deferredBins.length === 0) return null;
 
