@@ -18,6 +18,8 @@ export type {
   ProcessingOptions,
   ProcessingError,
   ProcessingErrorType,
+  StorageError,
+  StorageErrorType,
   OpenCVLoadProgress,
   OpenCVLoadStage,
   NormalizedPoint,
@@ -33,6 +35,7 @@ export {
   MIN_CLEARANCE_MM,
   MAX_CLEARANCE_MM,
   processingError,
+  storageError,
 } from './types';
 
 // =============================================================================
@@ -55,6 +58,21 @@ export {
   getImageDimensions,
   estimateDataUrlSize,
 } from './services/thumbnailGenerator';
+
+// =============================================================================
+// Storage
+// =============================================================================
+
+export {
+  saveCutoutTemplate,
+  loadCutoutTemplates,
+  loadCutoutTemplate,
+  deleteCutoutTemplate,
+  updateCutoutTemplate,
+  generateUniqueName,
+  type CutoutTemplateInput,
+  type CutoutTemplateUpdate,
+} from './storage';
 
 // =============================================================================
 // Assets

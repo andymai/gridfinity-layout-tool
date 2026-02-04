@@ -128,6 +128,40 @@ export const processingError = {
 };
 
 // =============================================================================
+// Storage Error Types
+// =============================================================================
+
+/**
+ * Storage error types for cutout library operations.
+ */
+export type StorageErrorType = 'validation_error' | 'storage_full' | 'not_found' | 'storage_failed';
+
+export interface StorageError {
+  readonly type: StorageErrorType;
+  readonly message: string;
+}
+
+/** Storage error constructor helpers */
+export const storageError = {
+  validationError: (message: string): StorageError => ({
+    type: 'validation_error',
+    message,
+  }),
+  storageFull: (maxCount: number): StorageError => ({
+    type: 'storage_full',
+    message: `Library is full (maximum ${maxCount} templates)`,
+  }),
+  notFound: (id: string): StorageError => ({
+    type: 'not_found',
+    message: `Template not found: ${id}`,
+  }),
+  storageFailed: (message: string): StorageError => ({
+    type: 'storage_failed',
+    message,
+  }),
+};
+
+// =============================================================================
 // OpenCV Loading Types
 // =============================================================================
 
