@@ -153,6 +153,7 @@ function processWithOpenCV(
     cv.findContours(binary, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
     // 6. Find largest contour by area
+    // NOTE: Each contours.get(i) returns a new Mat that must be deleted
     let largestContourIndex = -1;
     let largestArea = options.minContourArea;
 
@@ -163,6 +164,8 @@ function processWithOpenCV(
         largestArea = area;
         largestContourIndex = i;
       }
+      // Clean up each contour Mat immediately after measuring area
+      contour.delete();
     }
 
     if (largestContourIndex === -1) {
@@ -173,8 +176,9 @@ function processWithOpenCV(
       );
     }
 
-    // 7. Get largest contour and simplify
+    // 7. Get largest contour again for processing (we deleted it during area comparison)
     const largestContour = contours.get(largestContourIndex);
+    mats.push(largestContour); // Track for cleanup
 
     // Approximate polygon to reduce points
     const approx = new cv.Mat();

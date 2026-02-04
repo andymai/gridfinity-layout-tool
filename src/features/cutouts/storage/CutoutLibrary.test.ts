@@ -100,9 +100,12 @@ describe('CutoutLibrary', () => {
       if (!result.ok) return;
 
       const loaded = await loadCutoutTemplate(result.value);
-      expect(loaded?.createdAt).toBeDefined();
-      expect(loaded?.updatedAt).toBeDefined();
-      expect(new Date(loaded!.createdAt).getTime()).toBeLessThanOrEqual(Date.now());
+      expect(loaded).not.toBeNull();
+      if (!loaded) return;
+
+      expect(loaded.createdAt).toBeDefined();
+      expect(loaded.updatedAt).toBeDefined();
+      expect(new Date(loaded.createdAt).getTime()).toBeLessThanOrEqual(Date.now());
     });
 
     it('rejects template with too many contour points', async () => {
@@ -115,7 +118,7 @@ describe('CutoutLibrary', () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.type).toBe('validation_error');
-        expect(result.error.message).toContain('contour points');
+        expect(result.error.message).toContain('too complex');
       }
     });
 
@@ -258,7 +261,9 @@ describe('CutoutLibrary', () => {
       if (!result.ok) return;
 
       const original = await loadCutoutTemplate(result.value);
-      const originalUpdatedAt = original?.updatedAt;
+      expect(original).not.toBeNull();
+      if (!original) return;
+      const originalUpdatedAt = original.updatedAt;
 
       // Small delay
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -266,8 +271,11 @@ describe('CutoutLibrary', () => {
       await updateCutoutTemplate(result.value, { name: 'Changed' });
 
       const updated = await loadCutoutTemplate(result.value);
-      expect(new Date(updated!.updatedAt).getTime()).toBeGreaterThan(
-        new Date(originalUpdatedAt!).getTime()
+      expect(updated).not.toBeNull();
+      if (!updated) return;
+
+      expect(new Date(updated.updatedAt).getTime()).toBeGreaterThan(
+        new Date(originalUpdatedAt).getTime()
       );
     });
 

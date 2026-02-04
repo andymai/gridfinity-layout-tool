@@ -24,6 +24,9 @@ const CUTOUTS_STORE = 'cutouts';
 // Database instance cache
 let dbInstance: IDBPDatabase | null = null;
 
+// Promise-based mutex to prevent race conditions during clear operations
+let clearInProgress: Promise<void> | null = null;
+
 /**
  * Generate a unique ID for a new template.
  */
@@ -34,8 +37,14 @@ function generateId(): string {
 /**
  * Open and return the cutout database.
  * Creates the database and object stores if they don't exist.
+ * Waits for any pending clear operation to complete first.
  */
 async function openCutoutDatabase(): Promise<IDBPDatabase> {
+  // Wait for any pending clear operation to complete
+  if (clearInProgress) {
+    await clearInProgress;
+  }
+
   if (dbInstance) {
     return dbInstance;
   }
@@ -68,7 +77,8 @@ function validateContour(contour: TracedContour): Result<void, StorageError> {
   if (contour.points.length > MAX_CONTOUR_POINTS) {
     return err(
       storageError.validationError(
-        `Contour has too many points (${contour.points.length} > ${MAX_CONTOUR_POINTS} max contour points)`
+        `The traced shape is too complex (${contour.points.length} points). ` +
+          `Try using a simpler image or adjusting the threshold settings. Maximum: ${MAX_CONTOUR_POINTS} points.`
       )
     );
   }
@@ -237,21 +247,38 @@ export async function generateUniqueName(baseName: string): Promise<string> {
 /**
  * Clear all templates from the library.
  * Useful for testing and data reset.
+ * Uses a mutex to prevent race conditions with concurrent database access.
  */
 export async function clearCutoutLibrary(): Promise<void> {
-  // Close existing connection first
-  closeCutoutDatabase();
+  // If a clear is already in progress, wait for it
+  if (clearInProgress) {
+    await clearInProgress;
+    return;
+  }
 
-  // Delete and recreate the database for a clean slate
-  await new Promise<void>((resolve, reject) => {
-    const request = indexedDB.deleteDatabase(DB_NAME);
-    request.onsuccess = () => resolve();
-    request.onerror = () =>
-      reject(new Error(request.error?.message ?? 'Failed to delete database'));
-  });
+  // Create the clear operation and store the promise
+  clearInProgress = (async () => {
+    try {
+      // Close existing connection first
+      closeCutoutDatabase();
 
-  // Reset instance so next getDb() creates fresh connection
-  dbInstance = null;
+      // Delete and recreate the database for a clean slate
+      await new Promise<void>((resolve, reject) => {
+        const request = indexedDB.deleteDatabase(DB_NAME);
+        request.onsuccess = () => resolve();
+        request.onerror = () =>
+          reject(new Error(request.error?.message ?? 'Failed to delete database'));
+      });
+
+      // Reset instance so next getDb() creates fresh connection
+      dbInstance = null;
+    } finally {
+      // Always clear the mutex when done
+      clearInProgress = null;
+    }
+  })();
+
+  await clearInProgress;
 }
 
 /**

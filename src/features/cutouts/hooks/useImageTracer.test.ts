@@ -141,8 +141,10 @@ describe('useImageTracer', () => {
       });
 
       expect(traceResult).not.toBeNull();
-      expect(traceResult!.contour.points).toHaveLength(4);
-      expect(traceResult!.thumbnail).toBe('data:image/jpeg;base64,thumbnail');
+      if (!traceResult) return;
+
+      expect(traceResult.contour.points).toHaveLength(4);
+      expect(traceResult.thumbnail).toBe('data:image/jpeg;base64,thumbnail');
     });
 
     it('sets isProcessing during trace', async () => {

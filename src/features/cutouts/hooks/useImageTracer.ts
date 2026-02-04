@@ -97,6 +97,9 @@ export function useImageTracer(): UseImageTracerReturn {
           return null;
         }
 
+        // Extract value immediately after narrowing to preserve type safety across async boundaries
+        const contour = traceResult.value;
+
         // 4. Generate thumbnail from original file
         const reader = new FileReader();
         const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -108,7 +111,7 @@ export function useImageTracer(): UseImageTracerReturn {
         const thumbnail = await generateThumbnail(dataUrl);
 
         return {
-          contour: traceResult.value,
+          contour,
           thumbnail,
         };
       } catch (err) {

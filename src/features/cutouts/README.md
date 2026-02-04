@@ -85,9 +85,9 @@ OpenCV.js (~8MB) is loaded lazily:
 ```typescript
 import { loadOpenCV, isOpenCVReady } from '@/features/cutouts';
 
-// Load with progress callback
+// Load with progress callback (typically updates React state)
 const result = await loadOpenCV((progress) => {
-  console.log(`${progress.stage}: ${progress.progress}%`);
+  setLoadingProgress(progress); // e.g., { stage: 'loading', progress: 45 }
 });
 
 if (result.ok && isOpenCVReady()) {
