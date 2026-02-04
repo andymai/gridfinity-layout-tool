@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.21.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.20.1...gridfinity-layout-tool-v2.21.0) (2026-02-04)
+
+
+### Features
+
+* **generation:** rotate honeycomb hex cutouts to pointy-top orientation ([#606](https://github.com/andymai/gridfinity-layout-tool/issues/606)) ([de4a067](https://github.com/andymai/gridfinity-layout-tool/commit/de4a067183884f9ab1a8df674759668d660fa740))
+
 ## [2.20.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.20.0...gridfinity-layout-tool-v2.20.1) (2026-02-04)
 
 
