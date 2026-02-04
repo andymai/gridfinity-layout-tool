@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.22.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.22.0...gridfinity-layout-tool-v2.22.1) (2026-02-04)
+
+
+### Bug Fixes
+
+* inset focus rings, pattern registry fallback, and honeycomb icon ([#616](https://github.com/andymai/gridfinity-layout-tool/issues/616)) ([01bcd00](https://github.com/andymai/gridfinity-layout-tool/commit/01bcd0049799c16d613c0e7e04901f43f75f9b13))
+
 ## [2.22.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.21.2...gridfinity-layout-tool-v2.22.0) (2026-02-04)
 
 
