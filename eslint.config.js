@@ -129,6 +129,16 @@ export default defineConfig([
       }],
     },
   },
+  // Design system: compound components are valid exports, and English
+  // accessibility defaults (aria-labels) don't go through i18n — consumers
+  // pass translated labels via props when needed.
+  {
+    files: ['src/design-system/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'i18next/no-literal-string': 'off',
+    },
+  },
   // Test files: relax TypeScript strictness and disable i18n rule
   {
     files: ['**/*.test.{ts,tsx}', '**/test/**/*.{ts,tsx}'],

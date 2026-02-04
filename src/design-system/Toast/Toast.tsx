@@ -182,7 +182,6 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
         size="sm"
         variant="ghost"
         onClick={handleDismiss}
-        // eslint-disable-next-line i18next/no-literal-string -- Design system component
         aria-label="Dismiss notification"
         className="flex-shrink-0 -mr-1 -mt-1 hover:bg-white/10"
       >

@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components -- Compound component pattern requires exporting multiple functions */
 import {
   useEffect,
   useRef,
@@ -362,14 +361,7 @@ function DialogHeader({ title, showCloseButton = true, children }: DialogHeaderP
       <div className="flex items-center gap-2">
         {children}
         {showCloseButton && (
-          <Button
-            iconOnly
-            size="sm"
-            variant="ghost"
-            onClick={onClose}
-            // eslint-disable-next-line i18next/no-literal-string -- Design system component
-            aria-label="Close dialog"
-          >
+          <Button iconOnly size="sm" variant="ghost" onClick={onClose} aria-label="Close dialog">
             <XIcon size="sm" />
           </Button>
         )}

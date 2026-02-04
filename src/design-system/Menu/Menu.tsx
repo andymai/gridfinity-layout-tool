@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components -- Compound component pattern requires exporting multiple functions */
 import {
   useEffect,
   useLayoutEffect,
