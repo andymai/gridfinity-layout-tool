@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Exclude .claude/ config directory from Tailwind's class detection */
+@source not "../.claude";
+
 /* Extend Tailwind with CSS variable mappings using semantic naming */
 @theme {
   /* Font families - include fallback fonts with size-adjust for CLS prevention */

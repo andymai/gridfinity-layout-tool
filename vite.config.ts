@@ -187,10 +187,8 @@ export default defineConfig({
           if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
             return 'react-vendor';
           }
-          // Analytics - lazy loaded, keep separate
-          if (id.includes('node_modules/posthog-js/')) {
-            return 'analytics';
-          }
+          // Note: posthog-js is dynamically imported in src/shared/analytics/posthog.ts
+          // so it automatically gets its own chunk without needing manualChunks config
         },
       },
     },
