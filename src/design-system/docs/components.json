@@ -1,0 +1,414 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gridfinity Design System Components",
+  "description": "Machine-readable component definitions for the design system",
+  "components": {
+    "Button": {
+      "description": "Interactive element for triggering actions",
+      "category": "primitive",
+      "file": "Button/Button.tsx",
+      "props": {
+        "variant": {
+          "type": "enum",
+          "values": ["primary", "secondary", "ghost", "danger"],
+          "default": "secondary",
+          "description": "Visual style"
+        },
+        "size": {
+          "type": "enum",
+          "values": ["sm", "md", "lg"],
+          "default": "md",
+          "description": "Size variant"
+        },
+        "loading": {
+          "type": "boolean",
+          "default": false,
+          "description": "Shows spinner, disables interaction"
+        },
+        "leftIcon": {
+          "type": "ReactNode",
+          "description": "Icon before children"
+        },
+        "rightIcon": {
+          "type": "ReactNode",
+          "description": "Icon after children"
+        },
+        "iconOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "Square button for icon-only use"
+        },
+        "fullWidth": {
+          "type": "boolean",
+          "default": false,
+          "description": "Expand to full container width"
+        },
+        "disabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable interaction"
+        }
+      },
+      "accessibility": {
+        "role": "button",
+        "keyboardNav": ["Enter", "Space"],
+        "requirements": ["aria-label required for iconOnly"]
+      }
+    },
+    "Checkbox": {
+      "description": "Toggle control for boolean values",
+      "category": "primitive",
+      "file": "Checkbox/Checkbox.tsx",
+      "props": {
+        "checked": {
+          "type": "boolean",
+          "description": "Controlled checked state"
+        },
+        "defaultChecked": {
+          "type": "boolean",
+          "description": "Uncontrolled initial state"
+        },
+        "onChange": {
+          "type": "(checked: boolean) => void",
+          "description": "Change handler"
+        },
+        "indeterminate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show indeterminate state"
+        },
+        "label": {
+          "type": "string",
+          "description": "Visible label text"
+        },
+        "size": {
+          "type": "enum",
+          "values": ["sm", "md", "lg"],
+          "default": "md"
+        },
+        "disabled": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "accessibility": {
+        "role": "checkbox",
+        "keyboardNav": ["Space", "Enter"],
+        "requirements": ["aria-label or label required"]
+      }
+    },
+    "Input": {
+      "description": "Text input with optional icons",
+      "category": "primitive",
+      "file": "Input/Input.tsx",
+      "props": {
+        "size": {
+          "type": "enum",
+          "values": ["sm", "md", "lg"],
+          "default": "md"
+        },
+        "leftIcon": {
+          "type": "ReactNode",
+          "description": "Icon at input start"
+        },
+        "rightIcon": {
+          "type": "ReactNode",
+          "description": "Icon/button at input end"
+        },
+        "error": {
+          "type": "boolean",
+          "default": false,
+          "description": "Error state styling"
+        },
+        "wrapperClassName": {
+          "type": "string",
+          "description": "Classes for wrapper element"
+        }
+      },
+      "accessibility": {
+        "requirements": ["aria-label or associated label required"]
+      }
+    },
+    "Select": {
+      "description": "Native dropdown with consistent styling",
+      "category": "primitive",
+      "file": "Select/Select.tsx",
+      "props": {
+        "options": {
+          "type": "SelectOption[]",
+          "required": true,
+          "description": "List of options"
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Placeholder text"
+        },
+        "colorSwatch": {
+          "type": "string | null",
+          "description": "Color indicator"
+        },
+        "size": {
+          "type": "enum",
+          "values": ["sm", "md", "lg"],
+          "default": "md"
+        },
+        "fullWidth": {
+          "type": "boolean",
+          "default": false
+        },
+        "error": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "Stepper": {
+      "description": "Numeric input with increment/decrement buttons",
+      "category": "composite",
+      "file": "Stepper/Stepper.tsx",
+      "props": {
+        "value": {
+          "type": "number",
+          "required": true,
+          "description": "Current value"
+        },
+        "onChange": {
+          "type": "(value: number) => void",
+          "description": "Input change handler"
+        },
+        "onStep": {
+          "type": "(delta: number) => void",
+          "required": true,
+          "description": "Button click handler (+1/-1)"
+        },
+        "min": {
+          "type": "number",
+          "required": true
+        },
+        "max": {
+          "type": "number",
+          "required": true
+        },
+        "step": {
+          "type": "number",
+          "default": 1
+        },
+        "displayValue": {
+          "type": "ReactNode",
+          "description": "Static display (disables input)"
+        },
+        "size": {
+          "type": "enum",
+          "values": ["sm", "md", "lg"],
+          "default": "md"
+        },
+        "aria-label": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "accessibility": {
+        "keyboardNav": ["Enter (commit)", "Escape (cancel)"],
+        "requirements": ["aria-label required"]
+      }
+    },
+    "Collapsible": {
+      "description": "Expandable section with animated transition",
+      "category": "composite",
+      "file": "Collapsible/Collapsible.tsx",
+      "props": {
+        "title": {
+          "type": "string",
+          "required": true
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": true
+        },
+        "defaultExpanded": {
+          "type": "boolean",
+          "default": true
+        },
+        "expanded": {
+          "type": "boolean",
+          "description": "Controlled state"
+        },
+        "onExpandedChange": {
+          "type": "(expanded: boolean) => void",
+          "description": "Controlled change handler"
+        },
+        "badge": {
+          "type": "ReactNode"
+        },
+        "actions": {
+          "type": "ReactNode"
+        },
+        "icon": {
+          "type": "ReactNode"
+        },
+        "summary": {
+          "type": "ReactNode",
+          "description": "Shown when collapsed"
+        },
+        "size": {
+          "type": "enum",
+          "values": ["sm", "md"],
+          "default": "md"
+        }
+      },
+      "accessibility": {
+        "role": "region",
+        "keyboardNav": ["Enter/Space (toggle)"],
+        "ariaAttributes": ["aria-expanded", "aria-controls"]
+      }
+    },
+    "Dialog": {
+      "description": "Modal dialog with focus management",
+      "category": "composite",
+      "file": "Dialog/Dialog.tsx",
+      "compound": true,
+      "subcomponents": ["Dialog.Root", "Dialog.Header", "Dialog.Body", "Dialog.Footer"],
+      "props": {
+        "open": {
+          "type": "boolean",
+          "required": true
+        },
+        "onClose": {
+          "type": "() => void",
+          "required": true
+        },
+        "size": {
+          "type": "enum",
+          "values": ["sm", "md", "lg", "xl", "full"],
+          "default": "md"
+        },
+        "position": {
+          "type": "enum",
+          "values": ["center", "top"],
+          "default": "center"
+        },
+        "closeOnOverlayClick": {
+          "type": "boolean",
+          "default": true
+        },
+        "closeOnEscape": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "accessibility": {
+        "role": "dialog",
+        "features": ["focus trap", "escape to close", "focus restoration"],
+        "ariaAttributes": ["aria-modal", "aria-labelledby", "aria-describedby"]
+      }
+    },
+    "Menu": {
+      "description": "Context menu with keyboard navigation",
+      "category": "composite",
+      "file": "Menu/Menu.tsx",
+      "compound": true,
+      "subcomponents": ["Menu.Root", "Menu.Item", "Menu.Divider"],
+      "props": {
+        "open": {
+          "type": "boolean",
+          "required": true
+        },
+        "onClose": {
+          "type": "() => void",
+          "required": true
+        },
+        "position": {
+          "type": "{ x: number; y: number }",
+          "required": true
+        }
+      },
+      "accessibility": {
+        "role": "menu",
+        "keyboardNav": ["ArrowUp/Down", "Home/End", "Escape", "Enter/Space"],
+        "ariaAttributes": ["aria-orientation"]
+      }
+    },
+    "ToastContainer": {
+      "description": "Container for toast notifications",
+      "category": "composite",
+      "file": "Toast/Toast.tsx",
+      "props": {
+        "toasts": {
+          "type": "ToastData[]",
+          "required": true
+        },
+        "onDismiss": {
+          "type": "(id: string) => void",
+          "required": true
+        },
+        "position": {
+          "type": "enum",
+          "values": ["top-center", "bottom-right", "bottom-center"],
+          "default": "bottom-right"
+        }
+      },
+      "accessibility": {
+        "role": "alert",
+        "ariaAttributes": ["aria-live"]
+      }
+    },
+    "Spinner": {
+      "description": "Loading indicator",
+      "category": "primitive",
+      "file": "Spinner/Spinner.tsx",
+      "props": {
+        "size": {
+          "type": "enum",
+          "values": ["sm", "md", "lg"],
+          "default": "md"
+        },
+        "label": {
+          "type": "string",
+          "default": "Loading",
+          "description": "Screen reader label"
+        }
+      },
+      "accessibility": {
+        "role": "status",
+        "ariaAttributes": ["aria-label"]
+      }
+    },
+    "Icon": {
+      "description": "Base SVG icon component",
+      "category": "primitive",
+      "file": "Icon/Icon.tsx",
+      "props": {
+        "size": {
+          "type": "enum",
+          "values": ["xs", "sm", "md", "lg", "xl"],
+          "default": "md"
+        },
+        "label": {
+          "type": "string",
+          "description": "Accessible label (if meaningful)"
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": true,
+          "description": "SVG paths"
+        }
+      },
+      "availableIcons": [
+        "ChevronDownIcon",
+        "CheckIcon",
+        "XIcon",
+        "PlusIcon",
+        "MinusIcon",
+        "SearchIcon",
+        "TrashIcon",
+        "AlertTriangleIcon",
+        "InfoIcon"
+      ]
+    }
+  },
+  "tokens": {
+    "sizes": ["sm", "md", "lg"],
+    "variants": ["primary", "secondary", "ghost", "danger"],
+    "intents": ["success", "warning", "error", "info"]
+  }
+}
