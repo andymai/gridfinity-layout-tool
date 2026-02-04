@@ -104,7 +104,7 @@
   },
   "overrides": {
     "@vercel/node": {
-      "undici": "5.29.0"
+      "undici": "^7.20.0"
     },
     "path-to-regexp": "6.3.0",
     "workbox-build": {
@@ -113,7 +113,12 @@
       },
       "@surma/rollup-plugin-off-main-thread": {
         "magic-string": "0.30.21"
-      }
+      },
+      "@rollup/plugin-node-resolve": "^16.0.0",
+      "@rollup/plugin-terser": "^0.4.4"
+    },
+    "@apideck/better-ajv-errors": {
+      "ajv": "^8.17.1"
     }
   },
   "devDependencies": {

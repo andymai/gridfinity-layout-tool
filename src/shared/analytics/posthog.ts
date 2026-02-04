@@ -18,7 +18,10 @@ import {
   hasFractionalDimensions,
   BREAKPOINTS,
 } from '@/core/constants';
-import { useLabsStore, useInteractionStore, useLayoutStore, useSettingsStore } from '@/core/store';
+import { useLabsStore } from '@/core/store/labs';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useLayoutStore } from '@/core/store/layout';
+import { useSettingsStore } from '@/core/store/settings';
 import { getFeature } from '@/core/labs';
 import { generateUUID, splitBinsByLocation, getGridBins } from '@/shared/utils';
 
