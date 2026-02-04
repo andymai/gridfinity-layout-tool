@@ -1,5 +1,6 @@
 npx lint-staged
 npm run check:boundaries:staged
+npm run check:design-system:staged
 npm run check:i18n
 npm run check:i18n:values
 npm run check:i18n:interpolation
