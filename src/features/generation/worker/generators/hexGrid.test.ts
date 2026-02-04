@@ -25,9 +25,10 @@ describe('calculateHexCenters', () => {
     const R = config.hexRadius;
     const inradius = (Math.sqrt(3) / 2) * R;
 
+    // Pointy-top: horizontal extent is inradius, vertical extent is R
     for (const c of centers) {
-      expect(Math.abs(c.x) + R).toBeLessThanOrEqual(config.fillW / 2 + 0.001);
-      expect(Math.abs(c.y) + inradius).toBeLessThanOrEqual(config.fillH / 2 + 0.001);
+      expect(Math.abs(c.x) + inradius).toBeLessThanOrEqual(config.fillW / 2 + 0.001);
+      expect(Math.abs(c.y) + R).toBeLessThanOrEqual(config.fillH / 2 + 0.001);
     }
   });
 
@@ -48,26 +49,26 @@ describe('calculateHexCenters', () => {
     expect(large.length).toBeLessThan(small.length);
   });
 
-  it('odd columns are staggered vertically', () => {
+  it('odd rows are staggered horizontally (pointy-top pattern)', () => {
     const config = makeConfig();
     const centers = calculateHexCenters(config);
     const R = config.hexRadius;
     const web = config.webThickness;
-    const rowSpacing = Math.sqrt(3) * R + web;
+    const colSpacing = Math.sqrt(3) * R + web;
 
-    const cols = new Map<number, number[]>();
+    const rows = new Map<number, number[]>();
     for (const c of centers) {
-      const key = Math.round(c.x * 100);
-      if (!cols.has(key)) cols.set(key, []);
-      cols.get(key)!.push(c.y);
+      const key = Math.round(c.y * 100);
+      if (!rows.has(key)) rows.set(key, []);
+      rows.get(key)!.push(c.x);
     }
 
-    const colKeys = Array.from(cols.keys()).sort((a, b) => a - b);
-    if (colKeys.length >= 2) {
-      const col0 = cols.get(colKeys[0])!.sort((a, b) => a - b);
-      const col1 = cols.get(colKeys[1])!.sort((a, b) => a - b);
-      const offset = Math.abs(col1[0] - col0[0]);
-      expect(offset).toBeCloseTo(rowSpacing / 2, 1);
+    const rowKeys = Array.from(rows.keys()).sort((a, b) => a - b);
+    if (rowKeys.length >= 2) {
+      const row0 = rows.get(rowKeys[0])!.sort((a, b) => a - b);
+      const row1 = rows.get(rowKeys[1])!.sort((a, b) => a - b);
+      const offset = Math.abs(row1[0] - row0[0]);
+      expect(offset).toBeCloseTo(colSpacing / 2, 1);
     }
   });
 

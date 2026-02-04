@@ -1079,9 +1079,8 @@ export function generateBin(
         if (hexTemplateCache?.key === templateKey) {
           hexTemplate = hexTemplateCache.shape;
         } else {
-          hexTemplate = sketch(drawPolysides(hexRadius, 6), 'XY')
-            .extrude(cutDepth)
-            .rotate(30, [0, 0, 0], [0, 0, 1]);
+          // Pointy-top hex: no Z rotation needed (default drawPolysides orientation)
+          hexTemplate = sketch(drawPolysides(hexRadius, 6), 'XY').extrude(cutDepth);
           hexTemplateCache = { key: templateKey, shape: hexTemplate };
         }
 
