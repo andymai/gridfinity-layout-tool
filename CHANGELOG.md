@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.23.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.22.1...gridfinity-layout-tool-v2.23.0) (2026-02-04)
+
+
+### Features
+
+* add design system with CVA-based component architecture ([#618](https://github.com/andymai/gridfinity-layout-tool/issues/618)) ([91ae9a3](https://github.com/andymai/gridfinity-layout-tool/commit/91ae9a3c2619dab3bf178686eefbb43772e66668))
+
 ## [2.22.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.22.0...gridfinity-layout-tool-v2.22.1) (2026-02-04)
 
 
