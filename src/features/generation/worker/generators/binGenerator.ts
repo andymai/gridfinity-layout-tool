@@ -817,13 +817,13 @@ let patternTemplateCache: { key: string; shape: Shape3D } | null = null;
 /**
  * Build a Gothic (lancet) arch template shape.
  *
- * Creates a pointed ogive shape that resembles a Gothic arch.
+ * Creates a true ogival arch using two circular arcs that meet at a pointed apex.
  * The shape is oriented with the point facing up (positive Y) for vertical placement.
  *
  * Geometry:
  * - Width at base controlled by calculator.getArchWidth()
  * - Height to apex controlled by calculator.getArchHeight()
- * - Symmetric pointed shape (isoceles triangle with curved base)
+ * - Two arcs curving outward, meeting at the apex (true gothic arch)
  *
  * FDM printing note: The pointed top creates natural ~45-60° bridging angles,
  * making this pattern self-supporting during printing.
@@ -834,13 +834,23 @@ function buildGothicArchTemplate(calculator: GothicPatternCalculator, cutDepth: 
   const halfWidth = archWidth / 2;
   const halfHeight = archHeight / 2;
 
-  // Build Gothic arch as a pointed shape using line segments
-  // This creates a symmetric ogive (pointed arch) profile
-  // Shape: pointed at top, flat at bottom
+  // Build Gothic arch using circular arcs for true ogival shape.
+  // Each arc passes through a midpoint that bulges outward from the straight line.
+  // The bulge factor controls how curved vs pointed the arch appears.
+  const bulgeFactor = 0.18;
+
+  // Left arc: from bottom-left to apex, curving outward (left)
+  const leftMidX = -halfWidth * (0.5 + bulgeFactor);
+  const leftMidY = 0;
+
+  // Right arc: from apex to bottom-right, curving outward (right)
+  const rightMidX = halfWidth * (0.5 + bulgeFactor);
+  const rightMidY = 0;
+
   const archProfile = draw([-halfWidth, -halfHeight])
-    .lineTo([0, halfHeight]) // Left edge to apex
-    .lineTo([halfWidth, -halfHeight]) // Right edge from apex
-    .close(); // Close bottom edge
+    .threePointsArcTo([0, halfHeight], [leftMidX, leftMidY]) // Left arc to apex
+    .threePointsArcTo([halfWidth, -halfHeight], [rightMidX, rightMidY]) // Right arc from apex
+    .close(); // Flat bottom edge
 
   return sketch(archProfile, 'XY').extrude(cutDepth);
 }
