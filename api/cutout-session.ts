@@ -94,7 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       status: 'pending',
       createdAt: new Date().toISOString(),
       clientIPHash: hashIP(clientIP),
-      secretHash: hashSessionSecret(sessionSecret),
+      secretHash: await hashSessionSecret(sessionSecret),
     };
 
     await redis.setex(
@@ -122,21 +122,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 /**
- * Hash session secret for storage (SHA-256).
+ * Hash session secret for storage using SHA-256.
  * We store the hash, not the plaintext, so Redis compromise doesn't leak secrets.
  */
-function hashSessionSecret(secret: string): string {
+async function hashSessionSecret(secret: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(secret);
-  // Use SubtleCrypto for SHA-256 - sync version for simplicity
-  // In production, consider async crypto.subtle.digest
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    const char = data[i];
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash).toString(16).padStart(8, '0');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**

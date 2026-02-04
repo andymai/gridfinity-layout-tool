@@ -142,7 +142,7 @@ describe('cutout-session handler', () => {
     expect(body.uploadUrl).toContain('/api/cutout-session/');
   });
 
-  it('stores session with hashed IP and secret hash', async () => {
+  it('stores session with hashed IP and SHA-256 secret hash', async () => {
     const req = createMockRequest();
     const res = createMockResponse();
 
@@ -155,8 +155,12 @@ describe('cutout-session handler', () => {
     );
 
     // Verify raw IP is not stored
-    const storedData = mockRedis.setex.mock.calls[0][2];
+    const storedData = mockRedis.setex.mock.calls[0][2] as string;
     expect(storedData).not.toContain('"clientIP"');
     expect(storedData).toContain('"secretHash"');
+
+    // Verify secretHash is SHA-256 (64 hex chars)
+    const sessionData = JSON.parse(storedData) as { secretHash: string };
+    expect(sessionData.secretHash).toMatch(/^[a-f0-9]{64}$/);
   });
 });

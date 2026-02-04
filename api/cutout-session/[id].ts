@@ -81,19 +81,15 @@ function isValidSecret(secret: unknown): secret is string {
 }
 
 /**
- * Hash session secret for comparison.
+ * Hash session secret for comparison using SHA-256.
  * Must match the hash function in cutout-session.ts
  */
-function hashSessionSecret(secret: string): string {
+async function hashSessionSecret(secret: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(secret);
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    const char = data[i];
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(16).padStart(8, '0');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**
@@ -208,7 +204,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, sessionId: str
     }
 
     // Verify session secret (constant-time comparison)
-    const providedHash = hashSessionSecret(secret);
+    const providedHash = await hashSessionSecret(secret);
     if (!constantTimeCompare(providedHash, session.secretHash)) {
       return res.status(403).json({
         error: 'Invalid session secret',
@@ -427,7 +423,7 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, sessionId: 
     }
 
     // Verify session secret (constant-time comparison)
-    const providedHash = hashSessionSecret(secret);
+    const providedHash = await hashSessionSecret(secret);
     if (!constantTimeCompare(providedHash, session.secretHash)) {
       return res.status(403).json({
         error: 'Invalid session secret',
