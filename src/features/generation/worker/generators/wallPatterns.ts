@@ -62,8 +62,9 @@ const TOP_KEEP_OUT = 1.5;
  * cut into the floor at the wall-floor junction.
  */
 const MIN_BOTTOM_KEEP_OUT = 1.0;
-/** Minimum usable pattern height (need at least one full hex row). */
-const MIN_PATTERN_HEIGHT = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
+/** Minimum usable pattern height (need at least one full hex row).
+ * Pointy-top: vertex-to-vertex height = 2R, plus web for spacing. */
+const MIN_PATTERN_HEIGHT = 2 * HEX_RADIUS + WEB_THICKNESS;
 
 /**
  * Calculate honeycomb wall descriptors for wall pattern mode.

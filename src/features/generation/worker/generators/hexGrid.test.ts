@@ -25,9 +25,10 @@ describe('calculateHexCenters', () => {
     const R = config.hexRadius;
     const inradius = (Math.sqrt(3) / 2) * R;
 
+    // Pointy-top: horizontal extent is inradius, vertical extent is R
     for (const c of centers) {
-      expect(Math.abs(c.x) + R).toBeLessThanOrEqual(config.fillW / 2 + 0.001);
-      expect(Math.abs(c.y) + inradius).toBeLessThanOrEqual(config.fillH / 2 + 0.001);
+      expect(Math.abs(c.x) + inradius).toBeLessThanOrEqual(config.fillW / 2 + 0.001);
+      expect(Math.abs(c.y) + R).toBeLessThanOrEqual(config.fillH / 2 + 0.001);
     }
   });
 
