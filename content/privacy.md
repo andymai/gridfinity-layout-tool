@@ -50,9 +50,13 @@ Shared layouts are accessible to anyone with the link. You can delete a shared l
 
 When you use the collaboration feature, your presence data (cursor position, anonymous display name) is shared with other participants via [Liveblocks](https://liveblocks.io). This data is only transmitted while you're actively collaborating and is not stored permanently.
 
-### Mobile Photo Uploads
+### Custom Cutout Photos
 
-When creating custom cutouts, you can photograph tools on your phone and transfer them to the desktop app by scanning a QR code. Here's how it works:
+When creating custom cutouts, you can upload tool photos in two ways:
+
+**Desktop upload (drag-and-drop or file picker):** Your photos are processed entirely in your browser using OpenCV.js. They never leave your device and are not uploaded to any server.
+
+**Mobile photo transfer (QR code):** You can also photograph tools on your phone and transfer them to the desktop app by scanning a QR code. This method temporarily uses our servers:
 
 **What we store temporarily:**
 
