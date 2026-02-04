@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.20.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.19.0...gridfinity-layout-tool-v2.20.0) (2026-02-04)
+
+
+### Features
+
+* **generation:** upgrade to brepjs 4.0.3 with minification-safe isShape3D ([7b540d8](https://github.com/andymai/gridfinity-layout-tool/commit/7b540d8389a5aee713596ddd1fcd12b4da199572))
+
 ## [2.19.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.18.4...gridfinity-layout-tool-v2.19.0) (2026-02-03)
 
 
