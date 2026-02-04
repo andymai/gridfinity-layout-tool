@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.20.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.20.0...gridfinity-layout-tool-v2.20.1) (2026-02-04)
+
+
+### Bug Fixes
+
+* **generation:** add mainScriptUrlOrBlob for threaded WASM module resolution ([#604](https://github.com/andymai/gridfinity-layout-tool/issues/604)) ([cc29444](https://github.com/andymai/gridfinity-layout-tool/commit/cc294444ef52a795a982a6ae02f607a306a244a6))
+
 ## [2.20.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.19.0...gridfinity-layout-tool-v2.20.0) (2026-02-04)
 
 
