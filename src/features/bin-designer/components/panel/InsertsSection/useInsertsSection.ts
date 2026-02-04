@@ -109,7 +109,8 @@ export function useInsertsSection() {
         rotation: 0,
         cornerRadius: 0,
         label: template.name,
-        contour: template.contour,
+        // Spread to create mutable copy (Insert.contour is mutable for Immer)
+        contour: [...template.contour],
       };
 
       addInsert(newInsert);

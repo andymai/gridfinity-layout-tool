@@ -207,8 +207,9 @@ export interface Insert {
    * Custom contour points for 'custom' shape type.
    * Coordinates are normalized 0-1 within the insert's bounding box.
    * Points are scaled by width/depth when generating the cut.
+   * Note: Array is mutable for Immer compatibility, but property is readonly.
    */
-  readonly contour?: readonly InsertContourPoint[];
+  readonly contour?: InsertContourPoint[];
 }
 
 // =============================================================================

@@ -577,13 +577,13 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
           }));
 
           // Build polygon path
-          let drawing = draw([scaledPoints[0].x, scaledPoints[0].y]);
+          let drawingPen = draw([scaledPoints[0].x, scaledPoints[0].y]);
           for (let i = 1; i < scaledPoints.length; i++) {
-            drawing = drawing.lineTo([scaledPoints[i].x, scaledPoints[i].y]);
+            drawingPen = drawingPen.lineTo([scaledPoints[i].x, scaledPoints[i].y]);
           }
-          drawing = drawing.close();
+          const closedDrawing = drawingPen.close();
 
-          solid = sketch(drawing, 'XY').extrude(insert.cutDepth);
+          solid = sketch(closedDrawing, 'XY').extrude(insert.cutDepth);
         }
         break;
       }
@@ -595,7 +595,7 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
     }
 
     // Apply rotation around center if non-zero
-    if (insert.rotation && insert.rotation !== 0) {
+    if (insert.rotation) {
       const centerX = insert.width / 2;
       const centerY = insert.depth / 2;
       // Translate to origin, rotate, translate back

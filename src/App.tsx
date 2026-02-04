@@ -79,6 +79,11 @@ const WelcomeModal = lazyWithRetry(() =>
 const DesignerPage = lazyWithRetry(() =>
   import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
+
+// Lazy load Mobile Upload page - only loaded for QR code scanned mobile users
+const MobileUploadPage = lazyWithRetry(() =>
+  import('./features/cutouts/components/MobileUploadPage').then(namedExport('MobileUploadPage'))
+);
 import { useDesignerRouting } from './hooks/useDesignerRouting';
 import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';
 import { SHORTCUTS } from './core/constants';
@@ -293,10 +298,10 @@ export default function App() {
 
   // Download layout command palette action
   useEffect(() => {
-    const handleDownloadLayout = async () => {
+    const handleDownloadLayout = () => {
       const layout = useLayoutStore.getState().layout;
       const filename = `${layout.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
-      await downloadLayoutAsFile(layout, filename);
+      void downloadLayoutAsFile(layout, filename);
     };
     window.addEventListener('download-layout', handleDownloadLayout);
     return () => window.removeEventListener('download-layout', handleDownloadLayout);
@@ -376,8 +381,21 @@ export default function App() {
     );
   }
 
+  // Check for cutout upload route (QR code scanned from mobile)
+  const isCutoutUploadRoute = window.location.pathname === '/cutout-upload';
+
   // Route-specific content (shared overlays rendered once below)
   const routeContent = (() => {
+    // Mobile Upload page - lightweight page for QR code mobile uploads
+    // Renders before other routes to avoid loading heavy main app code
+    if (isCutoutUploadRoute) {
+      return (
+        <Suspense fallback={<LoadingFallback label={t('common.loading')} />}>
+          <MobileUploadPage />
+        </Suspense>
+      );
+    }
+
     // Bin Designer route - lazy loaded, behind feature flag
     if (isDesignerRoute && isDesignerEnabled) {
       return (

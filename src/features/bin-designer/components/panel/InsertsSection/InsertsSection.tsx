@@ -198,7 +198,7 @@ interface InsertItemProps {
   onSizeChange: (width: number, depth: number) => void;
   onRotationChange: (rotation: 0 | 90 | 180 | 270) => void;
   onCutDepthChange: (depth: number) => void;
-  t: (key: string, params?: Record<string, unknown>) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 function InsertItem({

@@ -31,6 +31,7 @@ const en: Record<string, string> = {
   'common.deleteBins': 'Delete {count} bin(s)',
   'common.close': 'Close',
   'common.loading': 'Loading...',
+  'common.retry': 'Retry',
 
   // Error boundary (used via getStaticTranslation, not hooks)
   'errorBoundary.heading': 'Something went wrong',
@@ -1373,6 +1374,29 @@ const en: Record<string, string> = {
   'binDesigner.confirmDelete': 'Click again to delete',
   'binDesigner.moreActionsForDesign': 'More actions for {name}',
   'binDesigner.compartmentsShort': '{count} comp.',
+
+  // ===========================================================================
+  // Cutouts (Photo-based tool cutouts)
+  // ===========================================================================
+  'cutouts.qrBridge.title': 'Scan from Phone',
+  'cutouts.qrBridge.creating': 'Creating session...',
+  'cutouts.qrBridge.qrCodeAlt': 'QR code for mobile upload',
+  'cutouts.qrBridge.scanInstructions': 'Scan this QR code with your phone to upload a photo',
+  'cutouts.qrBridge.expiresIn': 'Session expires in {time}',
+  'cutouts.qrBridge.waitingForUpload': 'Waiting for photo...',
+  'cutouts.qrBridge.unknownError': 'An unknown error occurred',
+  'cutouts.qrBridge.sessionExpired': 'Session has expired',
+  'cutouts.qrBridge.createNew': 'Create New Session',
+  'cutouts.upload.title': 'Upload Cutout Photo',
+  'cutouts.upload.imagePreview': 'Image preview',
+  'cutouts.upload.selectPhoto': 'Select a photo',
+  'cutouts.upload.takePhoto': 'Take a photo',
+  'cutouts.upload.dragDrop': 'or drag & drop an image here',
+  'cutouts.upload.uploading': 'Uploading...',
+  'cutouts.upload.success': 'Photo uploaded successfully!',
+  'cutouts.upload.returnToDesktop': 'You can now return to your desktop browser.',
+  'cutouts.upload.invalidSession': 'Invalid or expired session',
+  'cutouts.upload.uploadFailed': 'Upload failed. Please try again.',
 
   // ===========================================================================
   // Bin List Modal

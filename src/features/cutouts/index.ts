@@ -81,8 +81,12 @@ export {
 export {
   useImageTracer,
   useCutoutLibrary,
+  useQRBridge,
   type UseImageTracerReturn,
   type UseCutoutLibraryReturn,
+  type UseQRBridgeReturn,
+  type QRBridgeState,
+  type SessionStatus,
   type TraceResult,
 } from './hooks';
 
@@ -91,6 +95,18 @@ export {
 // =============================================================================
 
 export { ImageUploader } from './components';
+export { QRBridgeModal, type QRBridgeModalProps } from './components';
+export { MobileUploadPage } from './components';
+
+// =============================================================================
+// Services (QR Bridge)
+// =============================================================================
+
+export {
+  generateQRCodeUrl,
+  generateQRCodeDataUrl,
+  type QRCodeSize,
+} from './services/qrCodeGenerator';
 
 // =============================================================================
 // Assets

@@ -1,0 +1,1 @@
+export { MobileUploadPage } from './MobileUploadPage';
