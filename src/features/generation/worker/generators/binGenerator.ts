@@ -24,7 +24,7 @@ import {
   fuseAll,
   cutAll,
 } from 'brepjs';
-import type { Shape3D, Plane, PlaneName, Point, Sketch, SketchInterface, Drawing } from 'brepjs';
+import type { Shape3D, FnPlane, PlaneName, Vec3, Sketch, SketchInterface, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
@@ -359,7 +359,7 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  const topProfile = (plane: Plane, _startPoint: Point): Sketch => {
+  const topProfile = (plane: FnPlane, _origin: Vec3): Sketch => {
     // Draw the lip profile (going upward from the sweep path)
     // Per spec: 0.7mm bottom chamfer, 1.8mm vertical, 1.9mm top chamfer
     let sketcher = draw([-LIP_TAPER_WIDTH, 0])

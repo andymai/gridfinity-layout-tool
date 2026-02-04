@@ -148,6 +148,9 @@ export default defineConfig({
     // This prevents browsers from exposing source maps publicly while still allowing
     // manual upload to PostHog for error stack trace resolution
     sourcemap: 'hidden',
+    // Disable asset inlining to ensure pthread worker files are emitted as separate files
+    // (required for Emscripten multi-threaded WASM to work with dynamic imports)
+    assetsInlineLimit: 0,
     // Three.js is ~720KB minified, which is expected for a 3D library
     chunkSizeWarningLimit: 750,
     rollupOptions: {
