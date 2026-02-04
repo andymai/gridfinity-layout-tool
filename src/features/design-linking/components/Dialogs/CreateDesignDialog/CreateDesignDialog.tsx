@@ -120,7 +120,7 @@ export function CreateDesignDialog() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('designLinking.createDialog.namePlaceholder')}
-                className="input flex-1 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="input flex-1"
                 maxLength={64}
                 autoFocus
               />

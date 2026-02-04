@@ -1057,7 +1057,8 @@ export function generateBin(
   // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
   // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
   // 5. Cache the shape template between generations
-  if (params.wallPattern.enabled) {
+  // Runtime guard: wallPattern may be missing from old saved data
+  if (params.wallPattern?.enabled) {
     const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
     if (patternResult) {
       const { descriptors: wallDescriptors, calculator } = patternResult;

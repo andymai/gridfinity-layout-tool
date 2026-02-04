@@ -12,7 +12,7 @@
   "binDesigner.group.interior": "Interior",
   "binDesigner.group.base": "Base",
   "binDesigner.walls.pattern.label": "Patrón de pared",
-  "binDesigner.walls.pattern.none": "Paredes sólidas",
+  "binDesigner.walls.pattern.none": "Sólido",
   "binDesigner.walls.pattern.honeycomb": "Panal",
   "binDesigner.walls.pattern.allSlotted": "Todas las paredes tienen ranuras divisoras",
   "binDesigner.walls.pattern.someSlotted": "Las paredes con ranuras mantendrán paredes sólidas",

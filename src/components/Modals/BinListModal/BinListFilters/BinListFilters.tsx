@@ -79,7 +79,7 @@ export function BinListFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={t('common.search')}
-            className="w-full pl-9 pr-8 py-2 text-sm bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+            className="w-full pl-9 pr-8 py-2 text-sm bg-surface border border-stroke rounded-lg"
             aria-label={t('common.search')}
           />
           {/* Search icon */}

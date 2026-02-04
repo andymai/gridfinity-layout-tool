@@ -12,7 +12,7 @@
   "binDesigner.group.interior": "Intérieur",
   "binDesigner.group.base": "Base",
   "binDesigner.walls.pattern.label": "Motif de mur",
-  "binDesigner.walls.pattern.none": "Murs pleins",
+  "binDesigner.walls.pattern.none": "Plein",
   "binDesigner.walls.pattern.honeycomb": "Alvéoles",
   "binDesigner.walls.pattern.allSlotted": "Tous les murs ont des fentes de séparation",
   "binDesigner.walls.pattern.someSlotted": "Les murs avec des fentes garderont des murs pleins",

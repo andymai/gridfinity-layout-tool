@@ -480,10 +480,12 @@ body {
 
 /* ===========================================
    FOCUS STATES
+   Use negative outline-offset to keep focus rings inside element borders,
+   preventing clipping in overflow:hidden containers
    =========================================== */
 :focus-visible {
   outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 button:focus-visible,
@@ -491,13 +493,13 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
+  outline-offset: -2px;
 }
 
 /* Custom control focus states */
 [role='button']:focus-visible {
   outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 /* Remove focus for mouse users */
@@ -1109,7 +1111,7 @@ input[type='range']:hover::-moz-range-thumb {
 
   .input:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-muted);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
     outline: none;
   }
 
@@ -1145,7 +1147,7 @@ input[type='range']:hover::-moz-range-thumb {
 
   input[type='checkbox']:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-muted);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
     outline: none;
   }
 

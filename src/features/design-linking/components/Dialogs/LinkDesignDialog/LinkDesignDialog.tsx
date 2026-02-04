@@ -169,7 +169,7 @@ export function LinkDesignDialog() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('designLinking.linkDialog.searchPlaceholder')}
-                className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface border border-stroke rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-colors"
+                className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface border border-stroke rounded-md transition-colors"
               />
               {searchQuery && (
                 <button

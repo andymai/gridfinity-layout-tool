@@ -96,7 +96,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
             id="permission"
             value={localPermission}
             onChange={(e) => setLocalPermission(e.target.value as SharePermission)}
-            className="bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
+            className="bg-surface text-content px-3 py-2 rounded border border-stroke"
           >
             <option value="view">{t('share.cloud.viewOnly')}</option>
             <option value="edit">{t('share.cloud.canEdit')}</option>
@@ -235,7 +235,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
               value={result.url}
               readOnly
               onClick={() => urlInputRef.current?.select()}
-              className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm"
             />
             <button onClick={handleCopyUrl} className="btn btn-primary px-4">
               {urlCopied ? t('share.cloud.linkCopied') : t('common.copy')}

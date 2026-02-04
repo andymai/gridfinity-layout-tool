@@ -455,7 +455,7 @@ function SharePopover({
             <select
               value={localPermission}
               onChange={(e) => setLocalPermission(e.target.value as SharePermission)}
-              className="flex-1 bg-surface text-content text-sm px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
+              className="flex-1 bg-surface text-content text-sm px-3 py-2 rounded border border-stroke"
             >
               <option value="view">{t('share.anyoneWithLinkCanView')}</option>
               <option value="edit">{t('share.anyoneWithLinkCanEdit')}</option>
@@ -515,7 +515,7 @@ function SharePopover({
             <select
               value={localPermission}
               onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
-              className="w-full bg-surface text-content text-sm px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-surface text-content text-sm px-3 py-2 rounded border border-stroke"
             >
               <option value="view">{t('share.anyoneWithLinkCanView')}</option>
               <option value="edit">{t('share.anyoneWithLinkCanEdit')}</option>
