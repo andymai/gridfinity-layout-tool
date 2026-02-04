@@ -1,4 +1,4 @@
-import { forwardRef, useId, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { forwardRef, useId, useState, useCallback, type ReactNode } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
 import { PlusIcon, MinusIcon } from '../Icon';
@@ -110,6 +110,9 @@ type StepperVariantProps = VariantProps<typeof containerVariants>;
 /**
  * Hook for deferred number input - allows users to clear and retype
  * without triggering onChange until blur or Enter.
+ *
+ * Uses computed display value during render (no effects) to avoid
+ * React anti-patterns with setState in useEffect.
  */
 function useDeferredValue(
   externalValue: number,
@@ -118,23 +121,20 @@ function useDeferredValue(
   max: number,
   step: number
 ) {
-  const [localValue, setLocalValue] = useState(formatNumber(externalValue));
+  // localValue only stores user's typed input while focused
+  const [localValue, setLocalValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
-  // Sync local value when external changes (and not focused)
-  /* eslint-disable react-hooks/set-state-in-effect -- Necessary to sync controlled input with external value */
-  useEffect(() => {
-    if (!isFocused) {
-      setLocalValue(formatNumber(externalValue));
-    }
-  }, [externalValue, isFocused]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  // Compute display value during render - no effect needed
+  const displayValue = isFocused ? localValue : formatNumber(externalValue);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalValue(e.target.value);
   };
 
   const handleFocus = () => {
+    // Initialize local value with current external value when focusing
+    setLocalValue(formatNumber(externalValue));
     setIsFocused(true);
   };
 
@@ -144,7 +144,7 @@ function useDeferredValue(
 
     const parsed = parseFloat(localValue);
     if (isNaN(parsed)) {
-      setLocalValue(formatNumber(externalValue));
+      // Invalid input - just unfocus, displayValue will show externalValue
       return;
     }
 
@@ -153,8 +153,7 @@ function useDeferredValue(
     const clamped = Math.max(min, Math.min(max, snapped));
 
     onChange(clamped);
-    setLocalValue(formatNumber(clamped));
-  }, [localValue, externalValue, onChange, min, max, step]);
+  }, [localValue, onChange, min, max, step]);
 
   const handleBlur = () => {
     commit();
@@ -165,14 +164,14 @@ function useDeferredValue(
       commit();
       (e.target as HTMLInputElement).blur();
     } else if (e.key === 'Escape') {
-      setLocalValue(formatNumber(externalValue));
+      // Cancel edit - unfocus and displayValue will revert to externalValue
       setIsFocused(false);
       (e.target as HTMLInputElement).blur();
     }
   };
 
   return {
-    value: localValue,
+    value: displayValue,
     onChange: handleChange,
     onFocus: handleFocus,
     onBlur: handleBlur,

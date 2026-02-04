@@ -166,12 +166,13 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
     };
   }, []);
 
-  // Focus first item when menu opens
-  /* eslint-disable react-hooks/set-state-in-effect -- Necessary to sync focus state with open prop */
+  // Focus first item when menu opens, reset when closed
+  // Note: setState in useEffect is intentional here - this is a controlled component
+  // that must sync internal focus state with the external open prop
+  /* eslint-disable react-hooks/set-state-in-effect -- Controlled component syncing with open prop */
   useEffect(() => {
     if (open) {
       setFocusedIndex(0);
-      // Focus the first item after a brief delay for animation
       requestAnimationFrame(() => {
         itemsRef.current[0]?.focus();
       });
@@ -181,6 +182,37 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
     }
   }, [open]);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Adjust position imperatively (no state needed, no extra renders)
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    const menu = menuRef.current;
+    if (!menu) return;
+
+    const rect = menu.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let x = position.x;
+    let y = position.y;
+
+    // Adjust horizontal position
+    if (x + rect.width > viewportWidth - 8) {
+      x = viewportWidth - rect.width - 8;
+    }
+    if (x < 8) x = 8;
+
+    // Adjust vertical position
+    if (y + rect.height > viewportHeight - 8) {
+      y = viewportHeight - rect.height - 8;
+    }
+    if (y < 8) y = 8;
+
+    // Apply directly to DOM (no re-render needed)
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+  }, [open, position]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback(
@@ -231,9 +263,6 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
     onClose();
   }, [onClose]);
 
-  // Adjust position to stay within viewport
-  const adjustedPosition = useAdjustedPosition(menuRef, position, open);
-
   if (!open) return null;
 
   return createPortal(
@@ -245,11 +274,12 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
       <div
         ref={menuRef}
         role="menu"
+        tabIndex={-1}
         aria-orientation="vertical"
         className={cn(contentVariants(), className)}
         style={{
-          left: adjustedPosition.x,
-          top: adjustedPosition.y,
+          left: position.x,
+          top: position.y,
         }}
         onKeyDown={handleKeyDown}
       >
@@ -258,51 +288,6 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
     </MenuContext.Provider>,
     document.body
   );
-}
-
-// Hook to adjust menu position to stay within viewport
-function useAdjustedPosition(
-  menuRef: React.RefObject<HTMLDivElement | null>,
-  position: { x: number; y: number },
-  open: boolean
-) {
-  const [adjusted, setAdjusted] = useState(position);
-
-  // Use useLayoutEffect to measure and adjust position synchronously before paint
-  /* eslint-disable react-hooks/set-state-in-effect -- Necessary to sync position with DOM measurements */
-  useLayoutEffect(() => {
-    if (!open) return;
-
-    const menu = menuRef.current;
-    if (!menu) {
-      setAdjusted(position);
-      return;
-    }
-
-    const rect = menu.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    let x = position.x;
-    let y = position.y;
-
-    // Adjust horizontal position
-    if (x + rect.width > viewportWidth - 8) {
-      x = viewportWidth - rect.width - 8;
-    }
-    if (x < 8) x = 8;
-
-    // Adjust vertical position
-    if (y + rect.height > viewportHeight - 8) {
-      y = viewportHeight - rect.height - 8;
-    }
-    if (y < 8) y = 8;
-
-    setAdjusted({ x, y });
-  }, [menuRef, position, open]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  return adjusted;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
