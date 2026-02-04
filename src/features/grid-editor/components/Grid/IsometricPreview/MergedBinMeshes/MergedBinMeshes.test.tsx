@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import type { ReactNode } from 'react';
 import { MergedBinMeshes } from './MergedBinMeshes';
+import { clearGeometryCache } from './geometryCache';
 
 // Mock React Three Fiber
 vi.mock('@react-three/fiber', () => ({
@@ -108,11 +109,20 @@ vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
 
 // Mock useBinGeometry hook
 vi.mock('@/hooks/useBinGeometry', () => ({
-  createBinGeometry: vi.fn(() => ({
-    setAttribute: vi.fn(),
-    dispose: vi.fn(),
-    translate: vi.fn(),
-  })),
+  createBinGeometry: vi.fn(() => {
+    const mockGeometry = {
+      setAttribute: vi.fn(),
+      dispose: vi.fn(),
+      translate: vi.fn(),
+      clone: vi.fn(() => ({
+        setAttribute: vi.fn(),
+        dispose: vi.fn(),
+        translate: vi.fn(),
+        clone: vi.fn(),
+      })),
+    };
+    return mockGeometry;
+  }),
 }));
 
 describe('MergedBinMeshes', () => {
@@ -220,5 +230,100 @@ describe('MergedBinMeshes', () => {
     ];
     const { container } = render(<MergedBinMeshes bins={bins} />);
     expect(container).toBeTruthy();
+  });
+});
+
+describe('clearGeometryCache', () => {
+  it('is exported and callable', () => {
+    expect(typeof clearGeometryCache).toBe('function');
+    // Should not throw when called
+    expect(() => clearGeometryCache()).not.toThrow();
+  });
+
+  it('clears cache on component unmount', () => {
+    const bins = [
+      {
+        bin: { id: 'bin-1', width: 2, depth: 2 },
+        x: 0,
+        y: 0,
+        z: 0,
+        height: 3,
+        color: '#ff0000',
+        opacity: 1,
+      },
+    ];
+    render(<MergedBinMeshes bins={bins} />);
+    // Unmount should not throw (cache cleanup happens internally)
+    expect(() => cleanup()).not.toThrow();
+  });
+});
+
+describe('geometry caching', () => {
+  beforeEach(() => {
+    clearGeometryCache();
+  });
+
+  it('reuses geometry for bins with identical dimensions', async () => {
+    const { createBinGeometry } = vi.mocked(await import('@/hooks/useBinGeometry'));
+
+    // Two bins with same dimensions and color
+    const bins = [
+      {
+        bin: { id: 'bin-1', width: 2, depth: 2 },
+        x: 0,
+        y: 0,
+        z: 0,
+        height: 3,
+        color: '#ff0000',
+        opacity: 1,
+      },
+      {
+        bin: { id: 'bin-2', width: 2, depth: 2 },
+        x: 3,
+        y: 0,
+        z: 0,
+        height: 3,
+        color: '#ff0000',
+        opacity: 1,
+      },
+    ];
+
+    createBinGeometry.mockClear();
+    render(<MergedBinMeshes bins={bins} />);
+
+    // Should only create geometry once due to caching
+    expect(createBinGeometry).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates separate geometries for different dimensions', async () => {
+    const { createBinGeometry } = vi.mocked(await import('@/hooks/useBinGeometry'));
+
+    // Two bins with different dimensions
+    const bins = [
+      {
+        bin: { id: 'bin-1', width: 2, depth: 2 },
+        x: 0,
+        y: 0,
+        z: 0,
+        height: 3,
+        color: '#ff0000',
+        opacity: 1,
+      },
+      {
+        bin: { id: 'bin-2', width: 3, depth: 1 },
+        x: 3,
+        y: 0,
+        z: 0,
+        height: 5,
+        color: '#00ff00',
+        opacity: 1,
+      },
+    ];
+
+    createBinGeometry.mockClear();
+    render(<MergedBinMeshes bins={bins} />);
+
+    // Should create geometry twice for different dimensions
+    expect(createBinGeometry).toHaveBeenCalledTimes(2);
   });
 });

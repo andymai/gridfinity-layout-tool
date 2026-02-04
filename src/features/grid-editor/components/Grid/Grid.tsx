@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect, Suspense } from 'react';
+import { useRef, useState, useCallback, useEffect, Suspense, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
@@ -211,9 +211,12 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
     paintSize,
   });
 
-  // Get active layer info
-  const activeLayer = layers.find((l) => l.id === activeLayerId);
-  const layerBins = getLayerBins(bins, activeLayerId);
+  // Get active layer info (memoized to prevent recalculation on every render)
+  const activeLayer = useMemo(
+    () => layers.find((l) => l.id === activeLayerId),
+    [layers, activeLayerId]
+  );
+  const layerBins = useMemo(() => getLayerBins(bins, activeLayerId), [bins, activeLayerId]);
   const isEmpty = layerBins.length === 0;
   const isFirstLayer = layers.length > 0 && activeLayerId === layers[0]?.id;
 
