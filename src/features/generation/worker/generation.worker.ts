@@ -105,19 +105,21 @@ async function initOpenCascade(): Promise<void> {
 
   let OC: Awaited<ReturnType<typeof opencascadeSingleInit>>;
   if (isThreaded) {
-    // Fetch module source and convert to data URL for pthread workers
-    // (bypasses Vercel Deployment Protection auth requirements)
     const origin = self.location.origin;
     const moduleUrl = new URL(opencascadeThreadedUrl, origin).href;
+
+    // Fetch module source for data URL (pthread workers can't auth)
     const moduleSource = await (await fetch(moduleUrl)).text();
     const moduleDataUrl = `data:application/javascript;base64,${btoa(moduleSource)}`;
 
-    const threadedModule = await import(/* @vite-ignore */ moduleDataUrl);
+    // Import from regular URL (main worker has auth cookies)
+    const threadedModule = await import(/* @vite-ignore */ moduleUrl);
     const opencascadeThreaded = threadedModule.default as (
       config?: EmscriptenModuleConfig
     ) => ReturnType<typeof opencascadeSingleInit>;
 
     OC = await opencascadeThreaded({
+      // Data URL for pthread workers (no auth needed)
       mainScriptUrlOrBlob: moduleDataUrl,
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
