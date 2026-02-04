@@ -81,12 +81,11 @@ When creating custom cutouts, you can photograph tools on your phone and transfe
 
 ## Third-Party Services
 
-| Service    | Purpose                   | Privacy Policy                                                             |
-| ---------- | ------------------------- | -------------------------------------------------------------------------- |
-| PostHog    | Analytics                 | [posthog.com/privacy](https://posthog.com/privacy)                         |
-| Vercel     | Hosting & storage         | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy) |
-| Liveblocks | Real-time collaboration   | [liveblocks.io/privacy](https://liveblocks.io/privacy)                     |
-| Upstash    | Temporary session storage | [upstash.com/privacy](https://upstash.com/privacy)                         |
+| Service    | Purpose                 | Privacy Policy                                                             |
+| ---------- | ----------------------- | -------------------------------------------------------------------------- |
+| PostHog    | Analytics               | [posthog.com/privacy](https://posthog.com/privacy)                         |
+| Vercel     | Hosting & storage       | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy) |
+| Liveblocks | Real-time collaboration | [liveblocks.io/privacy](https://liveblocks.io/privacy)                     |
 
 ## Your Rights
 
