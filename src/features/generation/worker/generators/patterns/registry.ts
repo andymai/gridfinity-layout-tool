@@ -46,7 +46,12 @@ export function getPatternCalculator(
   pattern: WallPatternType,
   binHeight: number
 ): PatternCalculator {
-  const entry = PATTERN_REGISTRY[pattern];
+  // Runtime guard: pattern may come from saved data that doesn't match current types
+  const entry = (PATTERN_REGISTRY as Record<string, PatternRegistryEntry | undefined>)[pattern];
+  if (!entry) {
+    const available = Object.keys(PATTERN_REGISTRY).join(', ');
+    throw new Error(`Unknown wall pattern type: "${pattern}". Available patterns: ${available}`);
+  }
   return entry.createCalculator(binHeight);
 }
 

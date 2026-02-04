@@ -1219,7 +1219,7 @@ const en: Record<string, string> = {
   'binDesigner.group.interior': 'Interior',
   'binDesigner.group.base': 'Base',
   'binDesigner.walls.pattern.label': 'Wall pattern',
-  'binDesigner.walls.pattern.none': 'Solid walls',
+  'binDesigner.walls.pattern.none': 'Solid',
   'binDesigner.walls.pattern.honeycomb': 'Honeycomb',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',
   'binDesigner.walls.pattern.someSlotted': 'Walls with divider slots will keep solid walls',

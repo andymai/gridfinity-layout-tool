@@ -197,7 +197,7 @@ export function BulkActions({
                     onChange={(e) => setLabelValue(e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, handleLabelSubmit)}
                     placeholder={t('binList.enterLabel')}
-                    className="flex-1 px-2 py-1.5 text-sm bg-surface border border-stroke rounded focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="flex-1 px-2 py-1.5 text-sm bg-surface border border-stroke rounded"
                     maxLength={24}
                     autoFocus
                   />
@@ -252,7 +252,7 @@ export function BulkActions({
                       }
                     }}
                     placeholder={t('binList.enterNotesShortcut', { mod: '⌘' })}
-                    className="w-full px-2 py-1.5 text-sm bg-surface border border-stroke rounded focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                    className="w-full px-2 py-1.5 text-sm bg-surface border border-stroke rounded resize-none"
                     rows={2}
                     maxLength={256}
                     autoFocus

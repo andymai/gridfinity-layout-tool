@@ -350,7 +350,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('binList.searchPlaceholder')}
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-surface border border-stroke rounded-lg"
           />
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
@@ -632,7 +632,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               placeholder={t('binList.enterLabel')}
-              className="w-full px-4 py-3 text-base bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-4 py-3 text-base bg-surface border border-stroke rounded-lg"
               maxLength={24}
               autoFocus
             />
@@ -658,7 +658,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               placeholder={t('binList.enterNotes')}
-              className="w-full px-4 py-3 text-base bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+              className="w-full px-4 py-3 text-base bg-surface border border-stroke rounded-lg resize-none"
               rows={3}
               maxLength={256}
               autoFocus

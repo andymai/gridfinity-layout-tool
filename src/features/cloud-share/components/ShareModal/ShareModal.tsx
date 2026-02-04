@@ -213,7 +213,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                   value={shareURL}
                   readOnly
                   onClick={() => urlInputRef.current?.select()}
-                  className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm"
                 />
                 <button onClick={handleCopyURL} className="btn btn-primary px-4">
                   {copied ? t('common.copied') : t('common.copy')}
@@ -271,7 +271,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 value={jsonText}
                 readOnly
                 onClick={() => jsonTextareaRef.current?.select()}
-                className="flex-1 bg-surface text-content p-3 rounded font-mono text-xs resize-none focus:outline-none focus:ring-2 focus:ring-accent min-h-[200px]"
+                className="flex-1 bg-surface text-content p-3 rounded font-mono text-xs resize-none min-h-[200px]"
               />
               <button onClick={handleCopyJSON} className="btn btn-primary self-start">
                 {copied ? t('share.json.copied') : t('share.json.copy')}

@@ -210,7 +210,7 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
           value={jsonText}
           onChange={handleTextChange}
           placeholder={t('binDesigner.pasteDesignJson')}
-          className="flex-1 bg-surface text-content p-3 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent border border-stroke min-h-[120px]"
+          className="flex-1 bg-surface text-content p-3 rounded-lg font-mono text-sm resize-none border border-stroke min-h-[120px]"
         />
       </div>
 

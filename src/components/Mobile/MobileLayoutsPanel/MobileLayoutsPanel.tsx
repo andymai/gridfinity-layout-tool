@@ -927,7 +927,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
                 id="mobile-permission"
                 value={permission}
                 onChange={(e) => setPermission(e.target.value as SharePermission)}
-                className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
+                className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke"
               >
                 <option value="view">{t('mobile.layouts.anyoneCanView')}</option>
                 <option value="edit">{t('mobile.layouts.anyoneCanEdit')}</option>

@@ -10,6 +10,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { PatternCenter, PatternCalculator } from './patterns';
 import {
   getPatternCalculator,
+  PATTERN_REGISTRY,
   HoneycombPatternCalculator,
   DEFAULT_HEX_WEB_THICKNESS,
 } from './patterns';
@@ -168,7 +169,9 @@ export function getHoneycombWallDescriptors(
   wallHeight: number,
   hexRadiusOverride?: number
 ): WallPatternDescriptor[] | null {
-  if (!params.wallPattern.enabled || params.wallPattern.pattern !== 'honeycomb') {
+  // Runtime guard: wallPattern may be missing from old saved data
+  const wallPattern = params.wallPattern as typeof params.wallPattern | undefined;
+  if (!wallPattern?.enabled || wallPattern.pattern !== 'honeycomb') {
     return null;
   }
 
@@ -201,11 +204,20 @@ export function getPatternDescriptors(
   innerD: number,
   wallHeight: number
 ): { descriptors: WallPatternDescriptor[]; calculator: PatternCalculator } | null {
-  if (!params.wallPattern.enabled) {
+  // Runtime guard: wallPattern may be missing from old saved data
+  const wallPattern = params.wallPattern as typeof params.wallPattern | undefined;
+
+  // No pattern config, disabled, or no pattern type = solid walls (no pattern)
+  if (!wallPattern?.enabled || !wallPattern.pattern) {
     return null;
   }
 
-  const calculator = getPatternCalculator(params.wallPattern.pattern, params.height);
+  // Unknown pattern type = fallback to solid walls
+  if (!(wallPattern.pattern in PATTERN_REGISTRY)) {
+    return null;
+  }
+
+  const calculator = getPatternCalculator(wallPattern.pattern, params.height);
   const descriptors = getWallPatternDescriptors(params, innerW, innerD, wallHeight, calculator);
 
   if (!descriptors) {

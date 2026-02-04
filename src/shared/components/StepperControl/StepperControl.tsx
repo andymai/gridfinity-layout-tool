@@ -150,11 +150,12 @@ export function StepperControl({
   const heightClass = isCompact ? 'h-6' : isMobile ? '' : 'h-8';
 
   // Input/display styles
+  // Focus styles handled by global CSS (inset outline to prevent clipping)
   const inputClass = isMobile
     ? 'input flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none'
     : isCompact
-      ? 'flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs focus:outline-none focus:ring-1 focus:ring-accent'
-      : 'flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-sm focus:outline-none focus:ring-1 focus:ring-accent';
+      ? 'flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs'
+      : 'flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-sm';
 
   const displayClass = isMobile
     ? 'flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content'

@@ -17,20 +17,11 @@ function SolidIcon({ className }: { className?: string }) {
   );
 }
 
-/** SVG icon for honeycomb pattern (hexagonal grid) */
+/** SVG icon for honeycomb pattern (single hexagon) */
 function HoneycombIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      {/* Center hexagon */}
-      <polygon points="12,5 16,8 16,13 12,16 8,13 8,8" />
-      {/* Top-left partial hex */}
-      <polygon points="4,5 8,8 8,3 4,0" opacity="0.6" />
-      {/* Top-right partial hex */}
-      <polygon points="20,5 16,8 16,3 20,0" opacity="0.6" />
-      {/* Bottom-left partial hex */}
-      <polygon points="4,16 8,13 8,18 4,21" opacity="0.6" />
-      {/* Bottom-right partial hex */}
-      <polygon points="20,16 16,13 16,18 20,21" opacity="0.6" />
+      <polygon points="12,3 20,7.5 20,16.5 12,21 4,16.5 4,7.5" />
     </svg>
   );
 }
@@ -90,7 +81,7 @@ export function PatternSelector({
           value={selectedPattern ?? 'none'}
           onChange={handleChange}
           disabled={disabled}
-          className="w-full appearance-none rounded-md bg-surface-secondary text-content-primary text-sm py-2 pl-9 pr-8 border border-stroke-subtle focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed"
+          className="w-full appearance-none rounded-md bg-surface-secondary text-content-primary text-sm py-2 pl-9 pr-8 border border-stroke-subtle disabled:cursor-not-allowed"
         >
           {PATTERN_OPTIONS.map(({ value, labelKey }) => (
             <option key={value ?? 'none'} value={value ?? 'none'}>

@@ -12,7 +12,7 @@
   "binDesigner.group.interior": "Interiør",
   "binDesigner.group.base": "Base",
   "binDesigner.walls.pattern.label": "Veggmønster",
-  "binDesigner.walls.pattern.none": "Solide vegger",
+  "binDesigner.walls.pattern.none": "Solid",
   "binDesigner.walls.pattern.honeycomb": "Bikube",
   "binDesigner.walls.pattern.allSlotted": "Alle vegger har skillesporene",
   "binDesigner.walls.pattern.someSlotted": "Vegger med skillespor beholder solide vegger",

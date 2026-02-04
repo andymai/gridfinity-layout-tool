@@ -200,7 +200,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               value={jsonText}
               onChange={handleTextChange}
               placeholder='{"version": "1.0", "name": "My Layout", ...} or https://...#share=...'
-              className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent"
+              className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm resize-none"
             />
           </div>
 
@@ -211,7 +211,9 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               aria-live="assertive"
               className="bg-error/10 border border-error rounded p-3 max-h-32 overflow-y-auto"
             >
-              <div className="text-sm font-semibold text-error mb-1">{t('layouts.import.validationErrors')}</div>
+              <div className="text-sm font-semibold text-error mb-1">
+                {t('layouts.import.validationErrors')}
+              </div>
               <ul className="text-sm text-error/80 space-y-1">
                 {errors.map((error) => (
                   <li key={error}>• {error}</li>
@@ -223,7 +225,9 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           {/* Preview */}
           {preview && (
             <div aria-live="polite" className="bg-success/10 border border-success rounded p-3">
-              <div className="text-sm font-semibold text-success mb-2">{t('layouts.import.preview')}</div>
+              <div className="text-sm font-semibold text-success mb-2">
+                {t('layouts.import.preview')}
+              </div>
               <div className="text-sm text-success/80 space-y-1">
                 <div>{t('layouts.import.drawerSize', { size: preview.drawerSize })}</div>
                 <div>{t('layouts.import.layers', { count: preview.layerCount })}</div>
