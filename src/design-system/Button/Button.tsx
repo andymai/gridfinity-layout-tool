@@ -77,12 +77,6 @@ export interface ButtonProps
    * Icon displayed after children.
    */
   rightIcon?: React.ReactNode;
-
-  /**
-   * Render as a different element.
-   * Use `asChild` for composition with Radix or other libraries.
-   */
-  asChild?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

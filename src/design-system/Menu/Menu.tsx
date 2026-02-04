@@ -3,7 +3,6 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-  useState,
   useCallback,
   createContext,
   useContext,
@@ -22,8 +21,6 @@ import { focusRing, interactiveTransition } from '../variants';
 interface MenuContextValue {
   onClose: () => void;
   registerItem: (element: HTMLElement) => () => void;
-  focusedIndex: number;
-  setFocusedIndex: (index: number) => void;
 }
 
 const MenuContext = createContext<MenuContextValue | null>(null);
@@ -156,7 +153,9 @@ export interface MenuRootProps {
 function MenuRoot({ open, onClose, position, children, className }: MenuRootProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<HTMLElement[]>([]);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
+  // Use ref for focusedIndex - it only tracks position for keyboard nav calculations
+  // and doesn't need to trigger re-renders (actual focus is managed imperatively)
+  const focusedIndexRef = useRef(-1);
 
   // Register menu items for keyboard navigation
   const registerItem = useCallback((element: HTMLElement) => {
@@ -167,21 +166,17 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
   }, []);
 
   // Focus first item when menu opens, reset when closed
-  // Note: setState in useEffect is intentional here - this is a controlled component
-  // that must sync internal focus state with the external open prop
-  /* eslint-disable react-hooks/set-state-in-effect -- Controlled component syncing with open prop */
   useEffect(() => {
     if (open) {
-      setFocusedIndex(0);
+      focusedIndexRef.current = 0;
       requestAnimationFrame(() => {
         itemsRef.current[0]?.focus();
       });
     } else {
-      setFocusedIndex(-1);
+      focusedIndexRef.current = -1;
       itemsRef.current = [];
     }
   }, [open]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Adjust position imperatively (no state needed, no extra renders)
   useLayoutEffect(() => {
@@ -223,28 +218,30 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
       switch (e.key) {
         case 'ArrowDown': {
           e.preventDefault();
-          const nextIndex = focusedIndex < items.length - 1 ? focusedIndex + 1 : 0;
-          setFocusedIndex(nextIndex);
+          const currentIndex = focusedIndexRef.current;
+          const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+          focusedIndexRef.current = nextIndex;
           items[nextIndex]?.focus();
           break;
         }
         case 'ArrowUp': {
           e.preventDefault();
-          const prevIndex = focusedIndex > 0 ? focusedIndex - 1 : items.length - 1;
-          setFocusedIndex(prevIndex);
+          const currentIndex = focusedIndexRef.current;
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+          focusedIndexRef.current = prevIndex;
           items[prevIndex]?.focus();
           break;
         }
         case 'Home': {
           e.preventDefault();
-          setFocusedIndex(0);
+          focusedIndexRef.current = 0;
           items[0]?.focus();
           break;
         }
         case 'End': {
           e.preventDefault();
           const lastIndex = items.length - 1;
-          setFocusedIndex(lastIndex);
+          focusedIndexRef.current = lastIndex;
           items[lastIndex]?.focus();
           break;
         }
@@ -255,7 +252,7 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
         }
       }
     },
-    [focusedIndex, onClose]
+    [onClose]
   );
 
   // Close on click outside
@@ -266,7 +263,7 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
   if (!open) return null;
 
   return createPortal(
-    <MenuContext.Provider value={{ onClose, registerItem, focusedIndex, setFocusedIndex }}>
+    <MenuContext.Provider value={{ onClose, registerItem }}>
       {/* Invisible overlay to catch clicks outside */}
       <div className={overlayVariants()} onClick={handleOverlayClick} aria-hidden="true" />
 

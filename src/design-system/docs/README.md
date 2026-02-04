@@ -120,17 +120,6 @@ Complex components use the compound pattern:
 </Menu.Root>
 ```
 
-### Polymorphic Components
-
-Some components accept `as` prop for semantic HTML:
-
-```tsx
-// Button rendered as link
-<Button as="a" href="/settings">
-  Settings
-</Button>
-```
-
 ### Controlled vs Uncontrolled
 
 Components support both patterns where applicable:

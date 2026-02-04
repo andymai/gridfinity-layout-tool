@@ -43,11 +43,6 @@
           "default": false,
           "description": "Expand to full container width"
         },
-        "as": {
-          "type": "ElementType",
-          "default": "button",
-          "description": "Polymorphic element type"
-        },
         "disabled": {
           "type": "boolean",
           "default": false,

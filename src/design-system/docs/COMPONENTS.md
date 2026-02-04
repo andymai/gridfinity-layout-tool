@@ -19,7 +19,6 @@ Interactive element for triggering actions.
 | `rightIcon` | `ReactNode`                                       | -             | Icon after children                 |
 | `iconOnly`  | `boolean`                                         | `false`       | Square button for icon-only use     |
 | `fullWidth` | `boolean`                                         | `false`       | Expand to full container width      |
-| `as`        | `ElementType`                                     | `'button'`    | Polymorphic element type            |
 | `disabled`  | `boolean`                                         | `false`       | Disable interaction                 |
 
 ### Examples
@@ -35,9 +34,6 @@ Interactive element for triggering actions.
 <Button iconOnly variant="ghost" aria-label="Close">
   <XIcon />
 </Button>
-
-// As link
-<Button as="a" href="/settings">Settings</Button>
 
 // Loading state
 <Button loading variant="primary">Saving...</Button>

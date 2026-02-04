@@ -1,4 +1,4 @@
-import { forwardRef, useId } from 'react';
+import { forwardRef, useId, useState, useEffect, useRef, useImperativeHandle } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
 import { focusRing, disabledStyles } from '../variants';
@@ -164,15 +164,33 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       value,
       className,
     },
-    ref
+    forwardedRef
   ) => {
     const generatedId = useId();
     const id = name ?? generatedId;
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Forward ref while keeping local ref for indeterminate sync
+    useImperativeHandle(forwardedRef, () => inputRef.current as HTMLInputElement);
+
+    // Track internal state for uncontrolled mode
+    const isControlled = checked !== undefined;
+    const [internalChecked, setInternalChecked] = useState(defaultChecked ?? false);
 
     const isDisplayOnly = !onChange && checked !== undefined;
-    const isChecked = checked ?? false;
+    const isChecked = isControlled ? checked : internalChecked;
+
+    // Sync indeterminate property to DOM (not controllable via attribute)
+    useEffect(() => {
+      if (inputRef.current) {
+        inputRef.current.indeterminate = indeterminate;
+      }
+    }, [indeterminate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!isControlled) {
+        setInternalChecked(e.target.checked);
+      }
       onChange?.(e.target.checked);
     };
 
@@ -225,16 +243,17 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       >
         {/* Hidden native checkbox for form integration and accessibility */}
         <input
-          ref={ref}
+          ref={inputRef}
           type="checkbox"
           id={id}
           name={name}
           value={value}
-          checked={checked}
-          defaultChecked={defaultChecked}
+          checked={isControlled ? checked : undefined}
+          defaultChecked={isControlled ? undefined : defaultChecked}
           onChange={handleChange}
           disabled={disabled}
           aria-label={ariaLabel}
+          aria-checked={indeterminate ? 'mixed' : undefined}
           className="sr-only peer"
         />
 
