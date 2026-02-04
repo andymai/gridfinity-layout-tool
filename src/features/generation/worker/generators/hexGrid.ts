@@ -7,12 +7,15 @@
  * Both axes are strictly bounded: no hex protrudes past the fill area.
  * This protects wall corners (X) and stacking lip / base (Y).
  *
- * Flat-top hex geometry (circumradius R):
- *   vertex-to-vertex width = 2R
- *   flat-to-flat height   = √3 × R
- *   column spacing         = 1.5R + web
- *   row spacing            = √3R + web
- *   odd columns offset     = rowSpacing / 2
+ * Pointy-top hex geometry (circumradius R):
+ *   flat-to-flat width    = √3 × R
+ *   vertex-to-vertex height = 2R
+ *   column spacing         = √3R + web
+ *   row spacing            = 1.5R + web
+ *   odd rows offset        = colSpacing / 2
+ *
+ * Pointy-top orientation improves 3D printing bridging (printer bridges
+ * across a point, not a flat edge).
  */
 
 /** Configuration for hex grid generation (all dimensions in mm). */
@@ -34,7 +37,7 @@ export interface HexCenter {
 }
 
 /**
- * Calculate flat-top hex center positions.
+ * Calculate pointy-top hex center positions.
  *
  * Both axes are strictly bounded — no hex protrudes past ±fillW/2 or ±fillH/2.
  */
@@ -45,30 +48,34 @@ export function calculateHexCenters(config: HexGridConfig): HexCenter[] {
 
   const R = hexRadius;
   const inradius = (Math.sqrt(3) / 2) * R;
-  const colSpacing = 1.5 * R + webThickness;
-  const rowSpacing = Math.sqrt(3) * R + webThickness;
 
-  const maxX = fillW / 2 - R;
-  const maxY = fillH / 2 - inradius;
+  // Pointy-top: flat-to-flat width is horizontal (inradius), vertex-to-vertex is vertical (R)
+  const colSpacing = Math.sqrt(3) * R + webThickness;
+  const rowSpacing = 1.5 * R + webThickness;
+
+  // maxX bounded by inradius (horizontal flat-to-flat), maxY by R (vertical vertex)
+  const maxX = fillW / 2 - inradius;
+  const maxY = fillH / 2 - R;
 
   if (maxX < 0 || maxY < 0) return [];
 
   const centers: HexCenter[] = [];
 
-  const startCol = Math.floor(-maxX / colSpacing);
-  const endCol = Math.ceil(maxX / colSpacing);
+  const startRow = Math.floor(-maxY / rowSpacing);
+  const endRow = Math.ceil(maxY / rowSpacing);
 
-  for (let col = startCol; col <= endCol; col++) {
-    const x = col * colSpacing;
-    if (Math.abs(x) > maxX) continue;
+  for (let row = startRow; row <= endRow; row++) {
+    const y = row * rowSpacing;
+    if (Math.abs(y) > maxY) continue;
 
-    const yOffset = (col & 1) === 1 ? rowSpacing / 2 : 0;
+    // Odd rows offset horizontally (pointy-top stagger pattern)
+    const xOffset = (row & 1) === 1 ? colSpacing / 2 : 0;
 
-    const startRow = Math.ceil((-maxY - yOffset) / rowSpacing);
-    const endRow = Math.floor((maxY - yOffset) / rowSpacing);
+    const startCol = Math.ceil((-maxX - xOffset) / colSpacing);
+    const endCol = Math.floor((maxX - xOffset) / colSpacing);
 
-    for (let row = startRow; row <= endRow; row++) {
-      const y = row * rowSpacing + yOffset;
+    for (let col = startCol; col <= endCol; col++) {
+      const x = col * colSpacing + xOffset;
       centers.push({ x, y });
     }
   }
