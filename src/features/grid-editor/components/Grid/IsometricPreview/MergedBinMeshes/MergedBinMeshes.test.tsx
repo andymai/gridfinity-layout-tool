@@ -108,11 +108,20 @@ vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
 
 // Mock useBinGeometry hook
 vi.mock('@/hooks/useBinGeometry', () => ({
-  createBinGeometry: vi.fn(() => ({
-    setAttribute: vi.fn(),
-    dispose: vi.fn(),
-    translate: vi.fn(),
-  })),
+  createBinGeometry: vi.fn(() => {
+    const mockGeometry = {
+      setAttribute: vi.fn(),
+      dispose: vi.fn(),
+      translate: vi.fn(),
+      clone: vi.fn(() => ({
+        setAttribute: vi.fn(),
+        dispose: vi.fn(),
+        translate: vi.fn(),
+        clone: vi.fn(),
+      })),
+    };
+    return mockGeometry;
+  }),
 }));
 
 describe('MergedBinMeshes', () => {
