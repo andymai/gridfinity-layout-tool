@@ -16,7 +16,7 @@ Gridfinity Layout Tool is a free, open-source web application maintained by Andy
 - We collect **anonymous analytics** to improve the app (you can opt out)
 - Layouts you create are stored **locally in your browser** unless you choose to share them
 - When you share a layout, it's stored on our servers with a shareable link
-- **Photo uploads** via QR Bridge are temporarily stored (10 minutes) then automatically deleted
+- **Photo uploads** via phone-to-desktop transfer are temporarily stored (10 minutes) then automatically deleted
 - We don't sell your data or use it for advertising
 
 ## Data We Collect
@@ -50,9 +50,9 @@ Shared layouts are accessible to anyone with the link. You can delete a shared l
 
 When you use the collaboration feature, your presence data (cursor position, anonymous display name) is shared with other participants via [Liveblocks](https://liveblocks.io). This data is only transmitted while you're actively collaborating and is not stored permanently.
 
-### QR Bridge Photo Uploads
+### Mobile Photo Uploads
 
-The QR Bridge feature lets you photograph tools on your phone and transfer them to the desktop app for cutout tracing. Here's how it works:
+When creating custom cutouts, you can photograph tools on your phone and transfer them to the desktop app by scanning a QR code. Here's how it works:
 
 **What we store temporarily:**
 
@@ -81,12 +81,12 @@ The QR Bridge feature lets you photograph tools on your phone and transfer them 
 
 ## Third-Party Services
 
-| Service    | Purpose                     | Privacy Policy                                                             |
-| ---------- | --------------------------- | -------------------------------------------------------------------------- |
-| PostHog    | Analytics                   | [posthog.com/privacy](https://posthog.com/privacy)                         |
-| Vercel     | Hosting & storage           | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy) |
-| Liveblocks | Real-time collaboration     | [liveblocks.io/privacy](https://liveblocks.io/privacy)                     |
-| Upstash    | Session storage (QR Bridge) | [upstash.com/privacy](https://upstash.com/privacy)                         |
+| Service    | Purpose                   | Privacy Policy                                                             |
+| ---------- | ------------------------- | -------------------------------------------------------------------------- |
+| PostHog    | Analytics                 | [posthog.com/privacy](https://posthog.com/privacy)                         |
+| Vercel     | Hosting & storage         | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy) |
+| Liveblocks | Real-time collaboration   | [liveblocks.io/privacy](https://liveblocks.io/privacy)                     |
+| Upstash    | Temporary session storage | [upstash.com/privacy](https://upstash.com/privacy)                         |
 
 ## Your Rights
 
@@ -100,7 +100,7 @@ You can:
 
 - **Local data:** Stored indefinitely until you clear it
 - **Shared layouts:** Stored until you delete them (or we may remove inactive shares after 12 months)
-- **QR Bridge sessions:** Automatically deleted after 10 minutes (including uploaded images)
+- **Photo transfer sessions:** Automatically deleted after 10 minutes (including uploaded images)
 - **Analytics:** Retained by PostHog per their data retention policy
 
 ## Children's Privacy
