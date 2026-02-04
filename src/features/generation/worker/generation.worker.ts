@@ -27,10 +27,12 @@ import opencascadeSingleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url
 import opencascadeThreadedInit from 'brepjs-opencascade/src/brepjs_threaded.js';
 import opencascadeThreadedWasm from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
 import opencascadeThreadedWorker from 'brepjs-opencascade/src/brepjs_threaded.worker.js?url';
+import opencascadeThreadedJs from 'brepjs-opencascade/src/brepjs_threaded.js?url';
 
 // Emscripten module factory options (not reflected in the .d.ts)
 interface EmscriptenModuleConfig {
   locateFile?: (path: string) => string;
+  mainScriptUrlOrBlob?: string;
 }
 
 // Type assertion for Emscripten factory functions that accept config
@@ -107,6 +109,7 @@ async function initOpenCascade(): Promise<void> {
   let OC: Awaited<ReturnType<typeof opencascadeSingleInit>>;
   if (isThreaded) {
     OC = await opencascadeThreaded({
+      mainScriptUrlOrBlob: opencascadeThreadedJs,
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
           return opencascadeThreadedWasm;
