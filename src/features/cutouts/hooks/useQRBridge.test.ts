@@ -1,5 +1,8 @@
 /**
  * Tests for the QR Bridge hook.
+ *
+ * SECURITY: These tests verify the session secret is properly included
+ * in Authorization headers for polling and cleanup operations.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -9,6 +12,10 @@ import { useQRBridge } from './useQRBridge';
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
+
+// Test session data with 128-bit IDs
+const TEST_SESSION_ID = 'a1b2c3d4e5f6789012345678abcdef01';
+const TEST_SESSION_SECRET = 'fedcba9876543210fedcba9876543210';
 
 describe('useQRBridge', () => {
   beforeEach(() => {
@@ -32,9 +39,10 @@ describe('useQRBridge', () => {
 
   it('creates a session and enters pending state', async () => {
     const sessionResponse = {
-      sessionId: 'test1234567890ab',
+      sessionId: TEST_SESSION_ID,
+      sessionSecret: TEST_SESSION_SECRET,
       expiresAt: new Date(Date.now() + 600000).toISOString(),
-      uploadUrl: '/api/cutout-session/test1234567890ab',
+      uploadUrl: `/api/cutout-session/${TEST_SESSION_ID}`,
     };
 
     // Create session
@@ -56,9 +64,40 @@ describe('useQRBridge', () => {
     });
 
     expect(result.current.status).toBe('pending');
-    expect(result.current.sessionId).toBe('test1234567890ab');
-    expect(result.current.uploadUrl).toContain('test1234567890ab');
+    expect(result.current.sessionId).toBe(TEST_SESSION_ID);
+    expect(result.current.uploadUrl).toContain(TEST_SESSION_ID);
     expect(result.current.isPolling).toBe(true);
+  });
+
+  it('includes session secret in Authorization header when polling', async () => {
+    const sessionResponse = {
+      sessionId: TEST_SESSION_ID,
+      sessionSecret: TEST_SESSION_SECRET,
+      expiresAt: new Date(Date.now() + 600000).toISOString(),
+      uploadUrl: `/api/cutout-session/${TEST_SESSION_ID}`,
+    };
+
+    // Create session
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(sessionResponse),
+    });
+
+    // Initial poll
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ status: 'pending' }),
+    });
+
+    const { result } = renderHook(() => useQRBridge());
+
+    await act(async () => {
+      await result.current.startSession();
+    });
+
+    // Verify poll request includes Authorization header
+    const pollCall = mockFetch.mock.calls[1];
+    expect(pollCall[1]?.headers?.Authorization).toBe(`Bearer ${TEST_SESSION_SECRET}`);
   });
 
   it('handles session creation error', async () => {
@@ -81,9 +120,10 @@ describe('useQRBridge', () => {
 
   it('transitions to ready when image is uploaded', async () => {
     const sessionResponse = {
-      sessionId: 'test1234567890ab',
+      sessionId: TEST_SESSION_ID,
+      sessionSecret: TEST_SESSION_SECRET,
       expiresAt: new Date(Date.now() + 600000).toISOString(),
-      uploadUrl: '/api/cutout-session/test1234567890ab',
+      uploadUrl: `/api/cutout-session/${TEST_SESSION_ID}`,
     };
 
     // First call: create session
@@ -116,11 +156,12 @@ describe('useQRBridge', () => {
     expect(result.current.isPolling).toBe(false);
   });
 
-  it('cancels session and cleans up', async () => {
+  it('cancels session with authenticated DELETE', async () => {
     const sessionResponse = {
-      sessionId: 'test1234567890ab',
+      sessionId: TEST_SESSION_ID,
+      sessionSecret: TEST_SESSION_SECRET,
       expiresAt: new Date(Date.now() + 600000).toISOString(),
-      uploadUrl: '/api/cutout-session/test1234567890ab',
+      uploadUrl: `/api/cutout-session/${TEST_SESSION_ID}`,
     };
 
     // Create session
@@ -156,13 +197,19 @@ describe('useQRBridge', () => {
     expect(result.current.status).toBe('idle');
     expect(result.current.sessionId).toBeNull();
     expect(result.current.isPolling).toBe(false);
+
+    // Verify DELETE request includes Authorization header
+    const deleteCall = mockFetch.mock.calls[2];
+    expect(deleteCall[1]?.method).toBe('DELETE');
+    expect(deleteCall[1]?.headers?.Authorization).toBe(`Bearer ${TEST_SESSION_SECRET}`);
   });
 
   it('resets state without cleanup', async () => {
     const sessionResponse = {
-      sessionId: 'test1234567890ab',
+      sessionId: TEST_SESSION_ID,
+      sessionSecret: TEST_SESSION_SECRET,
       expiresAt: new Date(Date.now() + 600000).toISOString(),
-      uploadUrl: '/api/cutout-session/test1234567890ab',
+      uploadUrl: `/api/cutout-session/${TEST_SESSION_ID}`,
     };
 
     // Create session

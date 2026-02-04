@@ -3,6 +3,10 @@
  *
  * Creates a session, generates QR code URL, and polls for uploaded images.
  * Enables users to photograph tools on mobile and transfer them to desktop.
+ *
+ * SECURITY: Session secret is stored in memory only and included in
+ * Authorization headers for polling and cleanup. This prevents attackers
+ * from hijacking or deleting sessions even if they enumerate session IDs.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -13,7 +17,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 export type SessionStatus = 'idle' | 'pending' | 'ready' | 'error' | 'expired';
 
 /**
- * Session data returned by the API.
+ * Session data returned by polling.
  */
 interface SessionResponse {
   status: 'pending' | 'ready';
@@ -26,6 +30,7 @@ interface SessionResponse {
  */
 interface CreateSessionResponse {
   sessionId: string;
+  sessionSecret: string; // Private token for authentication
   expiresAt: string;
   uploadUrl: string;
 }
@@ -95,6 +100,8 @@ export function useQRBridge(): UseQRBridgeReturn {
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Store session secret in ref (not state) to avoid exposing in renders
+  const sessionSecretRef = useRef<string | null>(null);
 
   /**
    * Stop polling.
@@ -144,8 +151,15 @@ export function useQRBridge(): UseQRBridgeReturn {
       try {
         abortControllerRef.current = new AbortController();
 
+        // SECURITY: Include session secret in Authorization header
+        const headers: HeadersInit = {};
+        if (sessionSecretRef.current) {
+          headers['Authorization'] = `Bearer ${sessionSecretRef.current}`;
+        }
+
         const response = await fetch(`/api/cutout-session/${sessionId}`, {
           signal: abortControllerRef.current.signal,
+          headers,
         });
 
         if (!response.ok) {
@@ -156,6 +170,16 @@ export function useQRBridge(): UseQRBridgeReturn {
               status: 'expired',
               isPolling: false,
               error: 'Session not found or expired',
+            }));
+            return;
+          }
+          if (response.status === 401 || response.status === 403) {
+            stopPolling();
+            setState((prev) => ({
+              ...prev,
+              status: 'error',
+              isPolling: false,
+              error: 'Session authentication failed',
             }));
             return;
           }
@@ -192,6 +216,7 @@ export function useQRBridge(): UseQRBridgeReturn {
   const startSession = useCallback(async () => {
     // Cleanup any existing session
     stopPolling();
+    sessionSecretRef.current = null;
 
     setState((prev) => ({
       ...prev,
@@ -207,14 +232,18 @@ export function useQRBridge(): UseQRBridgeReturn {
       });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || `HTTP ${response.status}`);
+        const data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+        throw new Error((data.error as string) || `HTTP ${response.status}`);
       }
 
       const data = (await response.json()) as CreateSessionResponse;
       const expiresAt = new Date(data.expiresAt);
 
+      // Store session secret securely in ref (not in state or localStorage)
+      sessionSecretRef.current = data.sessionSecret;
+
       // Build upload page URL (relative path that mobile can access)
+      // Note: Only session ID in URL, secret never exposed to mobile
       const baseUrl = window.location.origin;
       const uploadPageUrl = `${baseUrl}/cutout-upload?session=${data.sessionId}`;
 
@@ -254,18 +283,24 @@ export function useQRBridge(): UseQRBridgeReturn {
   const cancelSession = useCallback(
     async (cleanup = true) => {
       const { sessionId } = state;
+      const secret = sessionSecretRef.current;
       stopPolling();
 
-      if (cleanup && sessionId) {
+      if (cleanup && sessionId && secret) {
         try {
+          // SECURITY: Include secret for authenticated deletion
           await fetch(`/api/cutout-session/${sessionId}`, {
             method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${secret}`,
+            },
           });
         } catch {
           // Ignore cleanup errors
         }
       }
 
+      sessionSecretRef.current = null;
       setState({
         status: 'idle',
         sessionId: null,
@@ -286,6 +321,7 @@ export function useQRBridge(): UseQRBridgeReturn {
    */
   const reset = useCallback(() => {
     stopPolling();
+    sessionSecretRef.current = null;
     setState({
       status: 'idle',
       sessionId: null,

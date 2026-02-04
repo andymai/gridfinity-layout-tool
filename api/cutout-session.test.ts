@@ -52,6 +52,7 @@ describe('cutout-session handler', () => {
       checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
       getClientIP: vi.fn().mockReturnValue('127.0.0.1'),
       getRedis: vi.fn().mockReturnValue(mockRedis),
+      hashIP: vi.fn().mockReturnValue('hashedip123'),
     }));
 
     const mod = await import('./cutout-session');
@@ -78,6 +79,7 @@ describe('cutout-session handler', () => {
       checkRateLimit: vi.fn().mockResolvedValue({ allowed: false, retryAfterSeconds: 30 }),
       getClientIP: vi.fn().mockReturnValue('127.0.0.1'),
       getRedis: vi.fn().mockReturnValue(mockRedis),
+      hashIP: vi.fn().mockReturnValue('hashedip123'),
     }));
 
     const mod = await import('./cutout-session');
@@ -103,6 +105,7 @@ describe('cutout-session handler', () => {
       checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
       getClientIP: vi.fn().mockReturnValue('127.0.0.1'),
       getRedis: vi.fn().mockReturnValue(null),
+      hashIP: vi.fn().mockReturnValue('hashedip123'),
     }));
 
     const mod = await import('./cutout-session');
@@ -117,32 +120,43 @@ describe('cutout-session handler', () => {
     expect(res._body).toEqual(expect.objectContaining({ code: 'SERVICE_UNAVAILABLE' }));
   });
 
-  it('creates a session successfully', async () => {
+  it('creates a session with 128-bit session ID and secret', async () => {
     const req = createMockRequest();
     const res = createMockResponse();
 
     await handler(req, res);
 
     expect(res._status).toBe(201);
-    expect(res._body).toEqual(
-      expect.objectContaining({
-        sessionId: expect.stringMatching(/^[a-z0-9]{16}$/),
-        expiresAt: expect.any(String),
-        uploadUrl: expect.stringContaining('/api/cutout-session/'),
-      })
-    );
+    const body = res._body as {
+      sessionId: string;
+      sessionSecret: string;
+      expiresAt: string;
+      uploadUrl: string;
+    };
+
+    // Verify 128-bit (32 hex char) session ID
+    expect(body.sessionId).toMatch(/^[a-f0-9]{32}$/);
+    // Verify 128-bit session secret
+    expect(body.sessionSecret).toMatch(/^[a-f0-9]{32}$/);
+    expect(body.expiresAt).toBeDefined();
+    expect(body.uploadUrl).toContain('/api/cutout-session/');
   });
 
-  it('stores session in Redis with TTL', async () => {
+  it('stores session with hashed IP and secret hash', async () => {
     const req = createMockRequest();
     const res = createMockResponse();
 
     await handler(req, res);
 
     expect(mockRedis.setex).toHaveBeenCalledWith(
-      expect.stringMatching(/^cutout:session:[a-z0-9]{16}$/),
+      expect.stringMatching(/^cutout:session:[a-f0-9]{32}$/),
       600, // 10 minute TTL
-      expect.any(String)
+      expect.stringContaining('"clientIPHash"') // Should contain hashed IP, not raw IP
     );
+
+    // Verify raw IP is not stored
+    const storedData = mockRedis.setex.mock.calls[0][2];
+    expect(storedData).not.toContain('"clientIP"');
+    expect(storedData).toContain('"secretHash"');
   });
 });

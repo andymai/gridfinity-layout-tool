@@ -42,8 +42,11 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   report: { limit: 10, windowSeconds: 3600 }, // 10/hour
   telemetry: { limit: 100, windowSeconds: 60 }, // 100/minute (ML telemetry)
   suggest: { limit: 20, windowSeconds: 3600 }, // 20/hour (LLM calls are expensive)
-  'cutout-session': { limit: 20, windowSeconds: 60 }, // 20/minute (session creation)
-  'cutout-upload': { limit: 30, windowSeconds: 60 }, // 30/minute (image uploads)
+  // Cutout session limits - restrictive for public deployment
+  // Session creation: 5/hour prevents enumeration and storage abuse
+  // Upload: 10/hour limits blob storage costs from attackers
+  'cutout-session': { limit: 5, windowSeconds: 3600 }, // 5/hour (prevent abuse)
+  'cutout-upload': { limit: 10, windowSeconds: 3600 }, // 10/hour (limit storage costs)
 };
 
 interface RateLimitResult {
@@ -129,9 +132,8 @@ export async function checkRateLimit(
       remaining: config.limit - count - 1,
       resetAt: now + config.windowSeconds,
     };
-  } catch (error) {
-    // If Redis is unavailable, deny the request (fail-closed)
-    console.error('Rate limit check failed:', error);
+  } catch {
+    // If Redis is unavailable, deny the request (fail-closed for security)
     return {
       allowed: false,
       remaining: 0,
@@ -144,7 +146,7 @@ export async function checkRateLimit(
  * Hash IP address for privacy (don't store raw IPs).
  * Uses SHA-256 truncated to 16 hex chars for Redis key use.
  */
-function hashIP(ip: string): string {
+export function hashIP(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16);
 }
 
