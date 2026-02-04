@@ -1,10 +1,11 @@
 # API
 
-Vercel serverless endpoints for cloud sharing, collaborative editing auth, LLM name suggestions, and ML telemetry.
+Vercel serverless endpoints for cloud sharing, collaborative editing auth, LLM name suggestions, ML telemetry, and cutout photo transfer.
 
 ```mermaid
 graph TB
     Client[Client Browser]
+    Mobile[Mobile Browser]
 
     subgraph "Endpoints"
         POST_S["POST /api/share"]
@@ -15,6 +16,8 @@ graph TB
         NAME["POST /api/suggest-name"]
         AUTH["POST /api/liveblocks-auth"]
         ML["POST /api/ml-telemetry"]
+        CUT_C["POST /api/cutout-session"]
+        CUT_R["GET/POST/DEL /api/cutout-session/[id]"]
     end
 
     subgraph "Validation (lib/)"
@@ -28,7 +31,8 @@ graph TB
         REDIS[(Redis KV)]
     end
 
-    Client --> POST_S & GET_S & PUT_S & DEL_S & REPORT & NAME & AUTH & ML
+    Client --> POST_S & GET_S & PUT_S & DEL_S & REPORT & NAME & AUTH & ML & CUT_C & CUT_R
+    Mobile --> CUT_R
     POST_S & PUT_S --> VAL & CF
     POST_S --> DVAL
     RL --> REDIS
@@ -36,20 +40,26 @@ graph TB
     NAME --> REDIS
     ML --> REDIS
     AUTH -->|Liveblocks SDK| BLOB
+    CUT_C & CUT_R --> REDIS
+    CUT_R --> BLOB
 ```
 
 ## Endpoints
 
-| Endpoint               | Method | Rate Limit | Purpose                                  |
-| ---------------------- | ------ | ---------- | ---------------------------------------- |
-| `/api/share`           | POST   | 100/min    | Create layout or designer share          |
-| `/api/share/[id]`      | GET    | 100/min    | Fetch share with metadata                |
-| `/api/share/[id]`      | PUT    | 100/min    | Update share (requires delete token)     |
-| `/api/share/[id]`      | DELETE | 100/min    | Delete share (requires delete token)     |
-| `/api/report/[id]`     | POST   | 10/hr      | Report inappropriate share               |
-| `/api/suggest-name`    | POST   | 20/hr      | LLM-generated layout names (GPT-4o-mini) |
-| `/api/liveblocks-auth` | POST   | 100/min    | Collaborative editing session auth       |
-| `/api/ml-telemetry`    | POST   | 100/min    | Aggregated ML training data              |
+| Endpoint                   | Method | Rate Limit | Purpose                                  |
+| -------------------------- | ------ | ---------- | ---------------------------------------- |
+| `/api/share`               | POST   | 100/min    | Create layout or designer share          |
+| `/api/share/[id]`          | GET    | 100/min    | Fetch share with metadata                |
+| `/api/share/[id]`          | PUT    | 100/min    | Update share (requires delete token)     |
+| `/api/share/[id]`          | DELETE | 100/min    | Delete share (requires delete token)     |
+| `/api/report/[id]`         | POST   | 10/hr      | Report inappropriate share               |
+| `/api/suggest-name`        | POST   | 20/hr      | LLM-generated layout names (GPT-4o-mini) |
+| `/api/liveblocks-auth`     | POST   | 100/min    | Collaborative editing session auth       |
+| `/api/ml-telemetry`        | POST   | 100/min    | Aggregated ML training data              |
+| `/api/cutout-session`      | POST   | 20/min     | Create mobile→desktop transfer session   |
+| `/api/cutout-session/[id]` | GET    | 100/min    | Poll session status (desktop)            |
+| `/api/cutout-session/[id]` | POST   | 30/min     | Upload image to session (mobile)         |
+| `/api/cutout-session/[id]` | DELETE | 100/min    | Clean up session and blob                |
 
 ## Validation Library (`lib/`)
 
@@ -111,3 +121,43 @@ graph TB
 8. **Content filter minimal** — ~30 term blocklist; production should supplement with external service
 9. **LLM cache degrades gracefully** — name suggestions continue without cache if Redis fails
 10. **IP hashing for privacy** — rate limiter hashes IP with SHA-256 before using as Redis key
+
+## Cutout Session System
+
+Mobile-to-desktop photo transfer via QR code scanning:
+
+```
+1. Desktop creates session      → POST /api/cutout-session
+2. Desktop displays QR code     → URL to /cutout-upload?session={id}
+3. Desktop polls for status     → GET /api/cutout-session/{id} (2s interval)
+4. Mobile scans QR, uploads     → POST /api/cutout-session/{id} (base64 image)
+5. Desktop receives ready       → imageUrl in poll response
+6. Desktop cleans up            → DELETE /api/cutout-session/{id}
+```
+
+**Session data (Redis):**
+
+```json
+{
+  "status": "pending" | "ready",
+  "createdAt": "2024-01-01T00:00:00Z",
+  "clientIP": "hashed",
+  "imageUrl": "https://blob.vercel-storage.com/...",
+  "imageName": "photo.jpg"
+}
+```
+
+**Constraints:**
+
+| Resource        | Limit           |
+| --------------- | --------------- |
+| Session TTL     | 10 min          |
+| Image size      | 5 MB            |
+| Allowed formats | JPEG, PNG, WebP |
+
+**Cutout session gotchas:**
+
+1. **Session IDs are 16-char alphanumeric** — validated with regex `/^[a-z0-9]{16}$/`
+2. **Images stored temporarily** — in Vercel Blob at `cutouts/{sessionId}.{ext}`
+3. **One image per session** — re-upload blocked after `status: ready`
+4. **Cleanup is fire-and-forget** — DELETE tries all common extensions

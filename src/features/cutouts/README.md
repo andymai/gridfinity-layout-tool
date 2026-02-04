@@ -167,3 +167,76 @@ The `binGenerator` handles `'traced'` shape in `buildInsertCuts()`:
 3. Apply rotation transformation
 4. Build path with brepjs `draw()`
 5. Extrude to cutDepth
+
+## QR Bridge (Mobile Upload)
+
+Transfer photos from mobile devices to desktop via QR code scanning:
+
+```mermaid
+sequenceDiagram
+    participant D as Desktop
+    participant API as Server (Redis + Blob)
+    participant M as Mobile
+
+    D->>API: POST /api/cutout-session
+    API-->>D: sessionId, uploadUrl
+    D->>D: Display QR code (uploadUrl)
+    D->>API: GET /api/cutout-session/{id} (polling)
+    M->>M: Scan QR code
+    M->>API: POST /api/cutout-session/{id} (image)
+    API-->>M: success
+    API-->>D: status: ready, imageUrl
+    D->>API: DELETE /api/cutout-session/{id}
+```
+
+### Key Files
+
+| File                   | Purpose                                    |
+| ---------------------- | ------------------------------------------ |
+| `hooks/useQRBridge.ts` | Session management, polling, state machine |
+| `QRBridgeModal.tsx`    | QR code display with countdown timer       |
+| `MobileUploadPage.tsx` | Lightweight upload page for mobile users   |
+| `qrCodeGenerator.ts`   | External QR code URL generation            |
+
+### Usage
+
+```typescript
+import { QRBridgeModal } from '@/features/cutouts';
+
+function CutoutsTab() {
+  const [showQR, setShowQR] = useState(false);
+
+  const handleImageReceived = (imageUrl: string, imageName: string) => {
+    // Process the received image for tracing
+    processImage(imageUrl);
+  };
+
+  return (
+    <>
+      <button onClick={() => setShowQR(true)}>Scan from Phone</button>
+      <QRBridgeModal
+        isOpen={showQR}
+        onClose={() => setShowQR(false)}
+        onImageReceived={handleImageReceived}
+      />
+    </>
+  );
+}
+```
+
+### Session States
+
+| State     | Description                         |
+| --------- | ----------------------------------- |
+| `idle`    | No active session                   |
+| `pending` | Session created, waiting for upload |
+| `ready`   | Image uploaded, URL available       |
+| `expired` | Session TTL exceeded (10 minutes)   |
+| `error`   | Creation or polling failed          |
+
+### QR Bridge Gotchas
+
+1. **Sessions expire in 10 minutes** — Timer shown in modal UI
+2. **External QR service** — Uses api.qrserver.com (no bundle bloat)
+3. **Polling stops automatically** — On ready, expired, error, or unmount
+4. **Mobile route is lightweight** — `/cutout-upload` loads minimal code
