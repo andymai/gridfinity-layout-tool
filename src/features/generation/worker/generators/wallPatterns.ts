@@ -1,18 +1,25 @@
 /**
  * Wall pattern configuration for brepjs.
  *
- * Pure data module — determines which walls get honeycomb cuts and calculates
- * hex center positions + wall transforms. No brepjs imports; the caller
+ * Pure data module — determines which walls get pattern cuts and calculates
+ * element center positions + wall transforms. No brepjs imports; the caller
  * (binGenerator) builds actual 3D shapes to avoid WASM GC scope issues.
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { calculateHexCenters } from './hexGrid';
-import type { HexCenter } from './hexGrid';
+import type { PatternCenter, PatternCalculator } from './patterns';
+import {
+  getPatternCalculator,
+  HoneycombPatternCalculator,
+  DEFAULT_HEX_WEB_THICKNESS,
+} from './patterns';
+
+// Re-export for backward compatibility
+export { calculateHexCenters, type HexCenter, type HexGridConfig } from './hexGrid';
 
 /**
  * Identifies which walls are free of divider slot grooves.
- * Honeycomb patterns can only be applied to slot-free walls.
+ * Patterns can only be applied to slot-free walls.
  */
 export interface SlotFreeWalls {
   readonly front: boolean;
@@ -21,17 +28,20 @@ export interface SlotFreeWalls {
   readonly right: boolean;
 }
 
-/** Descriptor for a single wall's honeycomb hex positions + transform. */
-export interface WallHexDescriptor {
-  /** Hex center positions on the flat XY grid (before wall rotation) */
-  readonly centers: HexCenter[];
-  /** Translation to position hex panel on wall face */
+/** Descriptor for a single wall's pattern element positions + transform. */
+export interface WallPatternDescriptor {
+  /** Element center positions on the flat XY grid (before wall rotation) */
+  readonly centers: PatternCenter[];
+  /** Translation to position pattern panel on wall face */
   readonly translateX: number;
   readonly translateY: number;
   readonly translateZ: number;
   /** Optional Z-axis rotation (degrees) for wall orientation */
   readonly zRotation?: number;
 }
+
+/** @deprecated Use WallPatternDescriptor instead */
+export type WallHexDescriptor = WallPatternDescriptor;
 
 /**
  * Determine which walls are free of slot grooves.
@@ -50,48 +60,62 @@ export function getSlotFreeWalls(params: BinParams): SlotFreeWalls {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/** Circumradius of each hex hole (center to vertex). ~3.1mm flat-to-flat. */
+/** @deprecated Use DEFAULT_HEX_RADIUS from patterns/honeycombPattern instead */
 export const HEX_RADIUS = 1.8;
-/** Solid web between adjacent hex edges. */
+/** @deprecated Use DEFAULT_HEX_WEB_THICKNESS from patterns/honeycombPattern instead */
 export const WEB_THICKNESS = 0.8;
+
 /** Keep-out from wall top edge (stacking lip interface). */
-const TOP_KEEP_OUT = 1.5;
-/**
- * Minimum keep-out from wall bottom edge (base/floor junction).
- * Actual keep-out uses max(this, wallThickness) so hex prisms never
- * cut into the floor at the wall-floor junction.
- */
-const MIN_BOTTOM_KEEP_OUT = 1.0;
-/** Minimum usable pattern height (need at least one full hex row).
- * Pointy-top: vertex-to-vertex height = 2R, plus web for spacing. */
-const MIN_PATTERN_HEIGHT = 2 * HEX_RADIUS + WEB_THICKNESS;
+export const TOP_KEEP_OUT = 1.5;
 
 /**
- * Calculate honeycomb wall descriptors for wall pattern mode.
+ * Minimum keep-out from wall bottom edge (base/floor junction).
+ * Actual keep-out uses max(this, wallThickness) so pattern prisms never
+ * cut into the floor at the wall-floor junction.
+ */
+export const MIN_BOTTOM_KEEP_OUT = 1.0;
+
+/**
+ * Calculate minimum pattern height for a given calculator.
+ * Delegates to the calculator's own method for pattern-specific calculations.
+ */
+function getMinPatternHeight(calculator: PatternCalculator): number {
+  return calculator.getMinPatternHeight();
+}
+
+/**
+ * Calculate wall pattern descriptors for any pattern type.
  *
- * Returns pure data describing hex positions and wall transforms.
+ * Returns pure data describing element positions and wall transforms.
  * The caller builds brepjs shapes inline (same scope as the cut operation)
  * to avoid WASM GC issues with shapes crossing function boundaries.
  *
+ * @param params - Bin parameters including wall pattern config
+ * @param innerW - Interior width of bin (mm)
+ * @param innerD - Interior depth of bin (mm)
+ * @param wallHeight - Wall height available for pattern (mm)
+ * @param calculator - Pattern calculator instance (from registry)
  * @returns Array of wall descriptors, or null if disabled/no valid walls
  */
-export function getHoneycombWallDescriptors(
+export function getWallPatternDescriptors(
   params: BinParams,
   innerW: number,
   innerD: number,
   wallHeight: number,
-  hexRadiusOverride?: number
-): WallHexDescriptor[] | null {
+  calculator: PatternCalculator
+): WallPatternDescriptor[] | null {
   if (!params.wallPattern.enabled) {
     return null;
   }
 
   // Keep-out from bottom must clear the floor (shell thickness = wallThickness)
-  // so hex prisms don't cut into the floor-wall junction.
+  // so pattern prisms don't cut into the floor-wall junction.
   const bottomKeepOut = Math.max(MIN_BOTTOM_KEEP_OUT, params.wallThickness);
 
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
-  if (patternHeight < MIN_PATTERN_HEIGHT) {
+  const minHeight = getMinPatternHeight(calculator);
+
+  if (patternHeight < minHeight) {
     return null;
   }
 
@@ -102,13 +126,7 @@ export function getHoneycombWallDescriptors(
 
   const patternCenterZ = bottomKeepOut + patternHeight / 2;
 
-  const radius = hexRadiusOverride ?? HEX_RADIUS;
-  const hexConfig = {
-    hexRadius: radius,
-    webThickness: WEB_THICKNESS,
-  };
-
-  const descriptors: WallHexDescriptor[] = [];
+  const descriptors: WallPatternDescriptor[] = [];
 
   const addWall = (
     fillW: number,
@@ -116,7 +134,7 @@ export function getHoneycombWallDescriptors(
     translateY: number,
     zRotation?: number
   ): void => {
-    const centers = calculateHexCenters({ ...hexConfig, fillW, fillH: patternHeight });
+    const centers = calculator.calculateCenters({ fillW, fillH: patternHeight });
     if (centers.length === 0) return;
     descriptors.push({
       centers,
@@ -133,4 +151,66 @@ export function getHoneycombWallDescriptors(
   if (slotFree.right) addWall(innerD, innerW / 2, 0, -90);
 
   return descriptors.length > 0 ? descriptors : null;
+}
+
+/**
+ * Calculate honeycomb wall descriptors for wall pattern mode.
+ *
+ * @deprecated Use getWallPatternDescriptors with getPatternCalculator instead.
+ * This function is kept for backward compatibility.
+ *
+ * @returns Array of wall descriptors, or null if disabled/no valid walls
+ */
+export function getHoneycombWallDescriptors(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  hexRadiusOverride?: number
+): WallPatternDescriptor[] | null {
+  if (!params.wallPattern.enabled || params.wallPattern.pattern !== 'honeycomb') {
+    return null;
+  }
+
+  // Use legacy path with override support
+  const calculator = hexRadiusOverride
+    ? getPatternCalculator('honeycomb', 1) // Base calculator, radius ignored
+    : getPatternCalculator('honeycomb', params.height);
+
+  // If override provided, create custom calculator with that radius
+  if (hexRadiusOverride) {
+    const customCalculator = new HoneycombPatternCalculator(
+      hexRadiusOverride,
+      DEFAULT_HEX_WEB_THICKNESS
+    );
+    return getWallPatternDescriptors(params, innerW, innerD, wallHeight, customCalculator);
+  }
+
+  return getWallPatternDescriptors(params, innerW, innerD, wallHeight, calculator);
+}
+
+/**
+ * Get wall pattern descriptors for any enabled pattern type.
+ *
+ * Convenience function that automatically selects the appropriate calculator
+ * based on the pattern type in params.
+ */
+export function getPatternDescriptors(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): { descriptors: WallPatternDescriptor[]; calculator: PatternCalculator } | null {
+  if (!params.wallPattern.enabled) {
+    return null;
+  }
+
+  const calculator = getPatternCalculator(params.wallPattern.pattern, params.height);
+  const descriptors = getWallPatternDescriptors(params, innerW, innerD, wallHeight, calculator);
+
+  if (!descriptors) {
+    return null;
+  }
+
+  return { descriptors, calculator };
 }

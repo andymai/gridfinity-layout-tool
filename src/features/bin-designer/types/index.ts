@@ -138,7 +138,7 @@ export interface WallConfig {
 // =============================================================================
 
 /** Supported wall pattern types */
-export type WallPatternType = 'honeycomb';
+export type WallPatternType = 'honeycomb' | 'gothic';
 
 /** Wall pattern configuration — stored per design in BinParams */
 export interface WallPatternConfig {

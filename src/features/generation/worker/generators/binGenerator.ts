@@ -29,7 +29,8 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
-import { getHoneycombWallDescriptors } from './wallPatterns';
+import { getPatternDescriptors } from './wallPatterns';
+import { isGothicCalculator, type GothicPatternCalculator } from './patterns';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -78,7 +79,7 @@ const LIP_TAPER_WIDTH = LIP_SMALL_TAPER + LIP_BIG_TAPER; // 2.6mm horizontal ins
 function decomposeCells(gridUnits: number): number[] {
   const fullCells = Math.floor(gridUnits);
   const hasHalf = gridUnits - fullCells >= 0.5 - 1e-10;
-  const cells: number[] = Array(fullCells).fill(1);
+  const cells: number[] = Array<number>(fullCells).fill(1);
   if (hasHalf) cells.push(0.5);
   return cells;
 }
@@ -810,8 +811,39 @@ let socketCache: { key: string; shape: Shape3D } | null = null;
 let lipCache: { key: string; shape: Shape3D } | null = null;
 let boxCache: { key: string; shape: Shape3D } | null = null;
 let shellCache: { key: string; shape: Shape3D } | null = null;
-/** Cache for the hex prism template (single hex, reused via clone). */
-let hexTemplateCache: { key: string; shape: Shape3D } | null = null;
+/** Cache for pattern shape templates (keyed by pattern type + dimensions). */
+let patternTemplateCache: { key: string; shape: Shape3D } | null = null;
+
+/**
+ * Build a Gothic (lancet) arch template shape.
+ *
+ * Creates a pointed ogive shape that resembles a Gothic arch.
+ * The shape is oriented with the point facing up (positive Y) for vertical placement.
+ *
+ * Geometry:
+ * - Width at base controlled by calculator.getArchWidth()
+ * - Height to apex controlled by calculator.getArchHeight()
+ * - Symmetric pointed shape (isoceles triangle with curved base)
+ *
+ * FDM printing note: The pointed top creates natural ~45-60° bridging angles,
+ * making this pattern self-supporting during printing.
+ */
+function buildGothicArchTemplate(calculator: GothicPatternCalculator, cutDepth: number): Shape3D {
+  const archWidth = calculator.getArchWidth();
+  const archHeight = calculator.getArchHeight();
+  const halfWidth = archWidth / 2;
+  const halfHeight = archHeight / 2;
+
+  // Build Gothic arch as a pointed shape using line segments
+  // This creates a symmetric ogive (pointed arch) profile
+  // Shape: pointed at top, flat at bottom
+  const archProfile = draw([-halfWidth, -halfHeight])
+    .lineTo([0, halfHeight]) // Left edge to apex
+    .lineTo([halfWidth, -halfHeight]) // Right edge from apex
+    .close(); // Close bottom edge
+
+  return sketch(archProfile, 'XY').extrude(cutDepth);
+}
 
 function socketCacheKey(
   gridW: number,
@@ -1049,63 +1081,68 @@ export function generateBin(
     }
   }
 
-  // Wall pattern: Honeycomb wall cutouts — optimized with template cloning + single cutAll.
+  // Wall patterns: Pattern cutouts (honeycomb, gothic, etc.) — optimized with template cloning + single cutAll.
   //
   // Performance strategy:
-  // 1. Preview uses larger hexes (fewer cuts, ~75% less boolean work)
-  // 2. Build ONE hex prism template, clone() for each center
+  // 1. Pattern calculators adapt size based on bin height (fewer cuts for large bins)
+  // 2. Build ONE shape template, clone() for each center position
   // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
   // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
-  // 5. Cache the hex template between generations
-  if (params.wallPattern.enabled && params.wallPattern.pattern === 'honeycomb') {
-    // Use smaller hexes at 3u for proper honeycomb pattern (3 rows + 2 rows).
-    // Larger bins use bigger hexes for performance (fewer boolean ops).
-    const hexRadius = params.height <= 3 ? 2.1 : 3.6;
-    const wallDescriptors = getHoneycombWallDescriptors(
-      params,
-      innerW,
-      innerD,
-      interiorHeight,
-      hexRadius
-    );
-    if (wallDescriptors) {
+  // 5. Cache the shape template between generations
+  if (params.wallPattern.enabled) {
+    const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
+    if (patternResult) {
+      const { descriptors: wallDescriptors, calculator } = patternResult;
       try {
         const cutDepth = params.wallThickness * 4;
         const halfDepth = cutDepth / 2;
+        const patternType = calculator.getPatternType();
+        const shapeRadius = calculator.getShapeRadius();
 
-        // Reuse cached hex template if params haven't changed
-        const templateKey = `${hexRadius}|${cutDepth}`;
-        let hexTemplate: Shape3D;
-        if (hexTemplateCache?.key === templateKey) {
-          hexTemplate = hexTemplateCache.shape;
+        // Build or reuse cached shape template
+        const templateKey = `${patternType}|${shapeRadius}|${cutDepth}`;
+        let shapeTemplate: Shape3D;
+
+        if (patternTemplateCache?.key === templateKey) {
+          shapeTemplate = patternTemplateCache.shape;
         } else {
-          // Pointy-top hex: no Z rotation needed (default drawPolysides orientation)
-          hexTemplate = sketch(drawPolysides(hexRadius, 6), 'XY').extrude(cutDepth);
-          hexTemplateCache = { key: templateKey, shape: hexTemplate };
+          // Create shape based on pattern type
+          if (isGothicCalculator(calculator)) {
+            // Gothic arch: lancet (pointed) arch profile
+            shapeTemplate = buildGothicArchTemplate(calculator, cutDepth);
+          } else {
+            // Polygonal patterns (honeycomb uses 6 sides)
+            const sides = calculator.getSidesCount();
+            shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
+          }
+          patternTemplateCache = { key: templateKey, shape: shapeTemplate };
         }
 
-        const allHexTools: Shape3D[] = [];
+        const allPatternTools: Shape3D[] = [];
 
         for (const wall of wallDescriptors) {
           for (const center of wall.centers) {
-            let hex: Shape3D = hexTemplate
+            let shape: Shape3D = shapeTemplate
               .clone()
               .translate([center.x, center.y, -halfDepth])
               .rotate(90, [0, 0, 0], [1, 0, 0]);
             if (wall.zRotation !== undefined) {
-              hex = hex.rotate(wall.zRotation, [0, 0, 0], [0, 0, 1]);
+              shape = shape.rotate(wall.zRotation, [0, 0, 0], [0, 0, 1]);
             }
-            hex = hex.translate([wall.translateX, wall.translateY, wall.translateZ]);
-            allHexTools.push(hex);
+            shape = shape.translate([wall.translateX, wall.translateY, wall.translateZ]);
+            allPatternTools.push(shape);
           }
         }
 
-        if (allHexTools.length > 0) {
+        if (allPatternTools.length > 0) {
           // Preview: skip SimplifyResult — shape is meshed and discarded
-          bin = unwrap(cutAll(bin, allHexTools, { simplify: forExport }));
+          bin = unwrap(cutAll(bin, allPatternTools, { simplify: forExport }));
         }
       } catch (e) {
-        console.warn('[BinGen] Honeycomb walls failed:', e instanceof Error ? e.message : e);
+        console.warn(
+          `[BinGen] ${params.wallPattern.pattern} wall pattern failed:`,
+          e instanceof Error ? e.message : e
+        );
       }
     }
   }
