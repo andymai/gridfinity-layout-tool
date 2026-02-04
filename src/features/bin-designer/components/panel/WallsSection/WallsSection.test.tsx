@@ -20,7 +20,7 @@ describe('WallsSection', () => {
   it('renders pattern selector with all options', () => {
     render(<WallsSection />);
     expect(screen.getByText('Wall pattern')).toBeInTheDocument();
-    expect(screen.getByText('Solid walls')).toBeInTheDocument();
+    expect(screen.getByText('Solid')).toBeInTheDocument();
     expect(screen.getByText('Honeycomb')).toBeInTheDocument();
   });
 
