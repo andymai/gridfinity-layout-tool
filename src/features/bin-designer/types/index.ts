@@ -174,7 +174,13 @@ export interface BinParams {
 // =============================================================================
 
 /** Shape of a cavity cut into the bin floor */
-export type InsertShape = 'rectangle' | 'circle' | 'hexagon' | 'rounded-rect' | 'slot';
+export type InsertShape = 'rectangle' | 'circle' | 'hexagon' | 'rounded-rect' | 'slot' | 'custom';
+
+/** Normalized 2D point (0-1 coordinates within bounding box) */
+export interface InsertContourPoint {
+  readonly x: number;
+  readonly y: number;
+}
 
 /** A placed insert instance on the bin floor */
 export interface Insert {
@@ -197,6 +203,12 @@ export interface Insert {
   readonly cornerRadius: number;
   /** Optional label for the insert */
   readonly label: string;
+  /**
+   * Custom contour points for 'custom' shape type.
+   * Coordinates are normalized 0-1 within the insert's bounding box.
+   * Points are scaled by width/depth when generating the cut.
+   */
+  readonly contour?: readonly InsertContourPoint[];
 }
 
 // =============================================================================
