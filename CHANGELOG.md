@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.22.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.21.2...gridfinity-layout-tool-v2.22.0) (2026-02-04)
+
+
+### Features
+
+* **bin-designer:** pattern registry architecture and dropdown UI ([#614](https://github.com/andymai/gridfinity-layout-tool/issues/614)) ([d68158b](https://github.com/andymai/gridfinity-layout-tool/commit/d68158b1f37aed1e858418f0fa9ac5ae6b7e11e5))
+
 ## [2.21.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.21.1...gridfinity-layout-tool-v2.21.2) (2026-02-04)
 
 
