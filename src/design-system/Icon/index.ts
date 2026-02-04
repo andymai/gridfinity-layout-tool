@@ -1,5 +1,5 @@
 // Base icon component
-export { Icon, iconVariants } from './Icon';
+export { Icon } from './Icon';
 export type { IconProps } from './Icon';
 
 // Individual icons

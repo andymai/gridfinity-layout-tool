@@ -50,19 +50,19 @@ export type { Size, Variant, Intent } from './variants';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Button
-export { Button, buttonVariants } from './Button';
+export { Button } from './Button';
 export type { ButtonProps } from './Button';
 
 // Checkbox
-export { Checkbox, checkboxVariants } from './Checkbox';
+export { Checkbox } from './Checkbox';
 export type { CheckboxProps } from './Checkbox';
 
 // Input
-export { Input, inputWrapperVariants, inputVariants } from './Input';
+export { Input } from './Input';
 export type { InputProps } from './Input';
 
 // Select
-export { Select, selectVariants } from './Select';
+export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 
 // Spinner
@@ -74,11 +74,11 @@ export type { SpinnerProps } from './Spinner';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Stepper
-export { Stepper, stepperContainerVariants } from './Stepper';
+export { Stepper } from './Stepper';
 export type { StepperProps } from './Stepper';
 
 // Collapsible
-export { Collapsible, collapsibleHeaderVariants } from './Collapsible';
+export { Collapsible } from './Collapsible';
 export type { CollapsibleProps } from './Collapsible';
 
 // Dialog (compound: Dialog.Root, Dialog.Header, Dialog.Body, Dialog.Footer)
@@ -90,7 +90,7 @@ export { Menu } from './Menu';
 export type { MenuProps, MenuItemProps } from './Menu';
 
 // Toast
-export { ToastContainer, toastVariants, toastContainerVariants } from './Toast';
+export { ToastContainer } from './Toast';
 export type { ToastContainerProps, ToastData, ToastType } from './Toast';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,7 +99,6 @@ export type { ToastContainerProps, ToastData, ToastType } from './Toast';
 export {
   // Base icon component
   Icon,
-  iconVariants,
   // Individual icons
   ChevronDownIcon,
   CheckIcon,

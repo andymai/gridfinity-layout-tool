@@ -1,2 +1,2 @@
-export { Collapsible, collapsibleHeaderVariants } from './Collapsible';
+export { Collapsible } from './Collapsible';
 export type { CollapsibleProps } from './Collapsible';
