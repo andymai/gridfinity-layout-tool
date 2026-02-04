@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.21.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.21.1...gridfinity-layout-tool-v2.21.2) (2026-02-04)
+
+
+### Performance
+
+* optimize 3D preview rendering and grid computations ([#612](https://github.com/andymai/gridfinity-layout-tool/issues/612)) ([f1c0e63](https://github.com/andymai/gridfinity-layout-tool/commit/f1c0e63dd7d10e644283b094a8af915d08d0c4ea))
+
 ## [2.21.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.21.0...gridfinity-layout-tool-v2.21.1) (2026-02-04)
 
 
