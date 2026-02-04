@@ -2,6 +2,7 @@
  * Pattern system public API.
  *
  * Re-exports all pattern-related types, calculators, and utilities.
+ * The registry-based architecture allows easy addition of new patterns.
  */
 
 // Types
@@ -19,18 +20,10 @@ export {
   DEFAULT_HEX_WEB_THICKNESS,
 } from './honeycombPattern';
 
-export {
-  GothicPatternCalculator,
-  createGothicCalculator,
-  DEFAULT_GOTHIC_RADIUS,
-  DEFAULT_GOTHIC_WEB_THICKNESS,
-} from './gothicPattern';
-
 // Registry
 export {
   PATTERN_REGISTRY,
   getPatternCalculator,
   isHoneycombCalculator,
-  isGothicCalculator,
   getAvailablePatterns,
 } from './registry';

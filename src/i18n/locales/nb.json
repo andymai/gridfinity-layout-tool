@@ -14,7 +14,6 @@
   "binDesigner.walls.pattern.label": "Veggmønster",
   "binDesigner.walls.pattern.none": "Solide vegger",
   "binDesigner.walls.pattern.honeycomb": "Bikube",
-  "binDesigner.walls.pattern.gothic": "Gotiske buer",
   "binDesigner.walls.pattern.allSlotted": "Alle vegger har skillesporene",
   "binDesigner.walls.pattern.someSlotted": "Vegger med skillespor beholder solide vegger",
   "binDesigner.cart.cost": "${amount}",

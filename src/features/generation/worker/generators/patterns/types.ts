@@ -44,7 +44,6 @@ export interface PatternCalculator {
   /**
    * Get the number of sides for polygonal patterns.
    * Used with drawPolysides() for hex patterns.
-   * Returns 0 for non-polygonal patterns (e.g., gothic arches).
    */
   getSidesCount(): number;
 

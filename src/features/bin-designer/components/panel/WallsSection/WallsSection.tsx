@@ -4,7 +4,7 @@
  * Shows discrete wall thickness options (multiples of common FDM nozzle sizes)
  * using a snapping slider with tick marks and helpful descriptions.
  *
- * Also allows selection of wall patterns (honeycomb, gothic, etc.) via radio buttons.
+ * Also allows selection of wall patterns (honeycomb, etc.) via dropdown.
  */
 
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';

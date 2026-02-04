@@ -22,7 +22,6 @@ describe('WallsSection', () => {
     expect(screen.getByText('Wall pattern')).toBeInTheDocument();
     expect(screen.getByText('Solid walls')).toBeInTheDocument();
     expect(screen.getByText('Honeycomb')).toBeInTheDocument();
-    expect(screen.getByText('Gothic arches')).toBeInTheDocument();
   });
 
   it('shows partial slot note when some walls slotted and pattern enabled', () => {
@@ -43,16 +42,16 @@ describe('WallsSection', () => {
     expect(screen.getByText('Walls with divider slots will keep solid walls')).toBeInTheDocument();
   });
 
-  it('renders with gothic pattern selected', () => {
+  it('renders with honeycomb pattern selected', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        wallPattern: { enabled: true, pattern: 'gothic' as const },
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
       },
     });
 
     render(<WallsSection />);
-    const gothicRadio = screen.getByRole('radio', { name: /gothic arches/i });
-    expect(gothicRadio).toBeChecked();
+    const select = screen.getByRole('combobox');
+    expect(select.value).toBe('honeycomb');
   });
 });

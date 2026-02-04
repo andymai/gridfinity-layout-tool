@@ -54,17 +54,6 @@ describe('useWallsSection', () => {
     expect(useDesignerStore.getState().params.wallPattern.pattern).toBe('honeycomb');
   });
 
-  it('handlePatternChange enables gothic pattern', () => {
-    const { result } = renderHook(() => useWallsSection());
-
-    act(() => {
-      result.current.handlers.handlePatternChange('gothic');
-    });
-
-    expect(useDesignerStore.getState().params.wallPattern.enabled).toBe(true);
-    expect(useDesignerStore.getState().params.wallPattern.pattern).toBe('gothic');
-  });
-
   it('handlePatternChange with null disables pattern', () => {
     useDesignerStore.setState({
       params: {
@@ -122,12 +111,12 @@ describe('useWallsSection', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        wallPattern: { enabled: true, pattern: 'gothic' as const },
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
       },
     });
 
     const { result } = renderHook(() => useWallsSection());
-    expect(result.current.state.pattern).toBe('gothic');
+    expect(result.current.state.pattern).toBe('honeycomb');
     expect(result.current.state.patternEnabled).toBe(true);
   });
 });

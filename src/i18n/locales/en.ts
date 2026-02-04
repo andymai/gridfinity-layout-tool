@@ -1221,7 +1221,6 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.label': 'Wall pattern',
   'binDesigner.walls.pattern.none': 'Solid walls',
   'binDesigner.walls.pattern.honeycomb': 'Honeycomb',
-  'binDesigner.walls.pattern.gothic': 'Gothic arches',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',
   'binDesigner.walls.pattern.someSlotted': 'Walls with divider slots will keep solid walls',
   'binDesigner.resetView': 'Reset view (R)',

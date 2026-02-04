@@ -30,7 +30,6 @@ import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
 import { getPatternDescriptors } from './wallPatterns';
-import { isGothicCalculator, type GothicPatternCalculator } from './patterns';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -814,47 +813,6 @@ let shellCache: { key: string; shape: Shape3D } | null = null;
 /** Cache for pattern shape templates (keyed by pattern type + dimensions). */
 let patternTemplateCache: { key: string; shape: Shape3D } | null = null;
 
-/**
- * Build a Gothic (lancet) arch template shape.
- *
- * Creates a true ogival arch using two circular arcs that meet at a pointed apex.
- * The shape is oriented with the point facing up (positive Y) for vertical placement.
- *
- * Geometry:
- * - Width at base controlled by calculator.getArchWidth()
- * - Height to apex controlled by calculator.getArchHeight()
- * - Two arcs curving outward, meeting at the apex (true gothic arch)
- *
- * FDM printing note: The pointed top creates natural ~45-60° bridging angles,
- * making this pattern self-supporting during printing.
- */
-function buildGothicArchTemplate(calculator: GothicPatternCalculator, cutDepth: number): Shape3D {
-  const archWidth = calculator.getArchWidth();
-  const archHeight = calculator.getArchHeight();
-  const halfWidth = archWidth / 2;
-  const halfHeight = archHeight / 2;
-
-  // Build Gothic arch using circular arcs for true ogival shape.
-  // Each arc passes through a midpoint that bulges outward from the straight line.
-  // The bulge factor controls how curved vs pointed the arch appears.
-  const bulgeFactor = 0.18;
-
-  // Left arc: from bottom-left to apex, curving outward (left)
-  const leftMidX = -halfWidth * (0.5 + bulgeFactor);
-  const leftMidY = 0;
-
-  // Right arc: from apex to bottom-right, curving outward (right)
-  const rightMidX = halfWidth * (0.5 + bulgeFactor);
-  const rightMidY = 0;
-
-  const archProfile = draw([-halfWidth, -halfHeight])
-    .threePointsArcTo([0, halfHeight], [leftMidX, leftMidY]) // Left arc to apex
-    .threePointsArcTo([halfWidth, -halfHeight], [rightMidX, rightMidY]) // Right arc from apex
-    .close(); // Flat bottom edge
-
-  return sketch(archProfile, 'XY').extrude(cutDepth);
-}
-
 function socketCacheKey(
   gridW: number,
   gridD: number,
@@ -1091,7 +1049,7 @@ export function generateBin(
     }
   }
 
-  // Wall patterns: Pattern cutouts (honeycomb, gothic, etc.) — optimized with template cloning + single cutAll.
+  // Wall patterns: Pattern cutouts — optimized with template cloning + single cutAll.
   //
   // Performance strategy:
   // 1. Pattern calculators adapt size based on bin height (fewer cuts for large bins)
@@ -1116,15 +1074,9 @@ export function generateBin(
         if (patternTemplateCache?.key === templateKey) {
           shapeTemplate = patternTemplateCache.shape;
         } else {
-          // Create shape based on pattern type
-          if (isGothicCalculator(calculator)) {
-            // Gothic arch: lancet (pointed) arch profile
-            shapeTemplate = buildGothicArchTemplate(calculator, cutDepth);
-          } else {
-            // Polygonal patterns (honeycomb uses 6 sides)
-            const sides = calculator.getSidesCount();
-            shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
-          }
+          // Create polygonal shape based on pattern type (honeycomb = 6 sides)
+          const sides = calculator.getSidesCount();
+          shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
           patternTemplateCache = { key: templateKey, shape: shapeTemplate };
         }
 

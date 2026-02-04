@@ -9,49 +9,50 @@ vi.mock('@/i18n', () => ({
       'binDesigner.walls.pattern.label': 'Wall pattern',
       'binDesigner.walls.pattern.none': 'Solid walls',
       'binDesigner.walls.pattern.honeycomb': 'Honeycomb',
-      'binDesigner.walls.pattern.gothic': 'Gothic arches',
     };
     return translations[key] ?? key;
   },
 }));
 
 describe('PatternSelector', () => {
-  it('renders all pattern options', () => {
+  it('renders the label and dropdown', () => {
     render(<PatternSelector selectedPattern={null} onChange={() => {}} />);
 
     expect(screen.getByText('Wall pattern')).toBeInTheDocument();
-    expect(screen.getByText('Solid walls')).toBeInTheDocument();
-    expect(screen.getByText('Honeycomb')).toBeInTheDocument();
-    expect(screen.getByText('Gothic arches')).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+  });
+
+  it('renders all pattern options in dropdown', () => {
+    render(<PatternSelector selectedPattern={null} onChange={() => {}} />);
+
+    const select = screen.getByRole('combobox');
+    const options = select.querySelectorAll('option');
+
+    expect(options).toHaveLength(2);
+    expect(options[0]).toHaveTextContent('Solid walls');
+    expect(options[1]).toHaveTextContent('Honeycomb');
   });
 
   it('shows "none" as selected when pattern is null', () => {
     render(<PatternSelector selectedPattern={null} onChange={() => {}} />);
 
-    const noneRadio = screen.getByRole('radio', { name: /solid walls/i });
-    expect(noneRadio).toBeChecked();
+    const select = screen.getByRole('combobox');
+    expect(select.value).toBe('none');
   });
 
   it('shows honeycomb as selected when pattern is honeycomb', () => {
     render(<PatternSelector selectedPattern="honeycomb" onChange={() => {}} />);
 
-    const honeycombRadio = screen.getByRole('radio', { name: /honeycomb/i });
-    expect(honeycombRadio).toBeChecked();
-  });
-
-  it('shows gothic as selected when pattern is gothic', () => {
-    render(<PatternSelector selectedPattern="gothic" onChange={() => {}} />);
-
-    const gothicRadio = screen.getByRole('radio', { name: /gothic arches/i });
-    expect(gothicRadio).toBeChecked();
+    const select = screen.getByRole('combobox');
+    expect(select.value).toBe('honeycomb');
   });
 
   it('calls onChange with null when "none" is selected', () => {
     const onChange = vi.fn();
     render(<PatternSelector selectedPattern="honeycomb" onChange={onChange} />);
 
-    const noneRadio = screen.getByRole('radio', { name: /solid walls/i });
-    fireEvent.click(noneRadio);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'none' } });
 
     expect(onChange).toHaveBeenCalledWith(null);
   });
@@ -60,29 +61,17 @@ describe('PatternSelector', () => {
     const onChange = vi.fn();
     render(<PatternSelector selectedPattern={null} onChange={onChange} />);
 
-    const honeycombRadio = screen.getByRole('radio', { name: /honeycomb/i });
-    fireEvent.click(honeycombRadio);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'honeycomb' } });
 
     expect(onChange).toHaveBeenCalledWith('honeycomb');
   });
 
-  it('calls onChange with gothic when gothic is selected', () => {
-    const onChange = vi.fn();
-    render(<PatternSelector selectedPattern={null} onChange={onChange} />);
-
-    const gothicRadio = screen.getByRole('radio', { name: /gothic arches/i });
-    fireEvent.click(gothicRadio);
-
-    expect(onChange).toHaveBeenCalledWith('gothic');
-  });
-
-  it('disables all options when disabled prop is true', () => {
+  it('disables the dropdown when disabled prop is true', () => {
     render(<PatternSelector selectedPattern={null} onChange={() => {}} disabled />);
 
-    const radios = screen.getAllByRole('radio');
-    radios.forEach((radio) => {
-      expect(radio).toBeDisabled();
-    });
+    const select = screen.getByRole('combobox');
+    expect(select).toBeDisabled();
   });
 
   it('shows disabled reason when provided', () => {

@@ -14,7 +14,6 @@
   "binDesigner.walls.pattern.label": "Wandpatroon",
   "binDesigner.walls.pattern.none": "Massieve wanden",
   "binDesigner.walls.pattern.honeycomb": "Honingraat",
-  "binDesigner.walls.pattern.gothic": "Gotische bogen",
   "binDesigner.walls.pattern.allSlotted": "Alle wanden hebben verdeelsleuven",
   "binDesigner.walls.pattern.someSlotted": "Wanden met verdeelsleuven blijven massief",
   "binDesigner.cart.cost": "${amount}",
