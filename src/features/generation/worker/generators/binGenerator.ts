@@ -1140,7 +1140,8 @@ export function generateBin(
         }
       } catch (e) {
         console.warn(
-          `[BinGen] ${params.wallPattern.pattern} wall pattern failed:`,
+          '[BinGen] Wall pattern failed:',
+          params.wallPattern.pattern,
           e instanceof Error ? e.message : e
         );
       }
