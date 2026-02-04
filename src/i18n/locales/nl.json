@@ -1419,5 +1419,12 @@
   "toolbar.zoomIn": "Inzoomen",
   "toolbar.zoomInKey": "Inzoomen (+)",
   "toolbar.zoomOut": "Uitzoomen",
-  "toolbar.zoomOutKey": "Uitzoomen (−)"
+  "toolbar.zoomOutKey": "Uitzoomen (−)",
+  "cutouts.imageUploader.label": "Gereedschapsfoto uploaden",
+  "cutouts.imageUploader.dropHint": "Afbeelding hier neerzetten",
+  "cutouts.imageUploader.clickHint": "Klik of sleep om gereedschapsfoto te uploaden",
+  "cutouts.imageUploader.fileTypes": "PNG, JPEG of WebP tot 10 MB",
+  "cutouts.imageUploader.processing": "Afbeelding verwerken...",
+  "cutouts.imageUploader.errorInvalidType": "Upload een PNG-, JPEG- of WebP-afbeelding",
+  "cutouts.imageUploader.errorTooLarge": "Afbeelding moet kleiner zijn dan {maxMb} MB"
 }

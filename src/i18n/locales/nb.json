@@ -1419,5 +1419,12 @@
   "toolbar.zoomIn": "Zoom inn",
   "toolbar.zoomInKey": "Zoom inn (+)",
   "toolbar.zoomOut": "Zoom ut",
-  "toolbar.zoomOutKey": "Zoom ut (−)"
+  "toolbar.zoomOutKey": "Zoom ut (−)",
+  "cutouts.imageUploader.label": "Last opp verktøybilde",
+  "cutouts.imageUploader.dropHint": "Slipp bildet her",
+  "cutouts.imageUploader.clickHint": "Klikk eller dra for å laste opp verktøyfoto",
+  "cutouts.imageUploader.fileTypes": "PNG, JPEG eller WebP opptil 10 MB",
+  "cutouts.imageUploader.processing": "Behandler bilde...",
+  "cutouts.imageUploader.errorInvalidType": "Vennligst last opp et PNG-, JPEG- eller WebP-bilde",
+  "cutouts.imageUploader.errorTooLarge": "Bildet må være mindre enn {maxMb} MB"
 }

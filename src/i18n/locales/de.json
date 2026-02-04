@@ -1419,5 +1419,12 @@
   "toolbar.zoomIn": "Vergrößern",
   "toolbar.zoomInKey": "Vergrößern (+)",
   "toolbar.zoomOut": "Verkleinern",
-  "toolbar.zoomOutKey": "Verkleinern (−)"
+  "toolbar.zoomOutKey": "Verkleinern (−)",
+  "cutouts.imageUploader.label": "Werkzeugbild hochladen",
+  "cutouts.imageUploader.dropHint": "Bild hier ablegen",
+  "cutouts.imageUploader.clickHint": "Klicken oder Werkzeugfoto hierher ziehen",
+  "cutouts.imageUploader.fileTypes": "PNG, JPEG oder WebP bis 10 MB",
+  "cutouts.imageUploader.processing": "Bild wird verarbeitet...",
+  "cutouts.imageUploader.errorInvalidType": "Bitte ein PNG-, JPEG- oder WebP-Bild hochladen",
+  "cutouts.imageUploader.errorTooLarge": "Bild muss kleiner als {maxMb} MB sein"
 }

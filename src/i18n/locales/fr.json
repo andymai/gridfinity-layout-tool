@@ -1419,5 +1419,12 @@
   "toolbar.zoomIn": "Zoomer",
   "toolbar.zoomInKey": "Zoomer (+)",
   "toolbar.zoomOut": "Dézoomer",
-  "toolbar.zoomOutKey": "Dézoomer (−)"
+  "toolbar.zoomOutKey": "Dézoomer (−)",
+  "cutouts.imageUploader.label": "Télécharger l'image de l'outil",
+  "cutouts.imageUploader.dropHint": "Déposer l'image ici",
+  "cutouts.imageUploader.clickHint": "Cliquez ou glissez pour télécharger la photo de l'outil",
+  "cutouts.imageUploader.fileTypes": "PNG, JPEG ou WebP jusqu'à 10 Mo",
+  "cutouts.imageUploader.processing": "Traitement de l'image...",
+  "cutouts.imageUploader.errorInvalidType": "Veuillez télécharger une image PNG, JPEG ou WebP",
+  "cutouts.imageUploader.errorTooLarge": "L'image doit être inférieure à {maxMb} Mo"
 }

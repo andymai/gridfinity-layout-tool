@@ -1719,6 +1719,17 @@ const en: Record<string, string> = {
   'designLinking.toast.exportFailed': 'Failed to export bin design',
   'designLinking.toast.deleted': 'Deleted "{name}"',
   'designLinking.toast.deleteFailed': 'Failed to delete bin design',
+
+  // ===========================================================================
+  // Cutouts Feature
+  // ===========================================================================
+  'cutouts.imageUploader.label': 'Upload tool image',
+  'cutouts.imageUploader.dropHint': 'Drop image here',
+  'cutouts.imageUploader.clickHint': 'Click or drag to upload tool photo',
+  'cutouts.imageUploader.fileTypes': 'PNG, JPEG, or WebP up to 10MB',
+  'cutouts.imageUploader.processing': 'Processing image...',
+  'cutouts.imageUploader.errorInvalidType': 'Please upload a PNG, JPEG, or WebP image',
+  'cutouts.imageUploader.errorTooLarge': 'Image must be smaller than {maxMb}MB',
 };
 
 export default en;

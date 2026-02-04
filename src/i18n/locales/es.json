@@ -1419,5 +1419,12 @@
   "toolbar.zoomIn": "Acercar",
   "toolbar.zoomInKey": "Acercar (+)",
   "toolbar.zoomOut": "Alejar",
-  "toolbar.zoomOutKey": "Alejar (−)"
+  "toolbar.zoomOutKey": "Alejar (−)",
+  "cutouts.imageUploader.label": "Subir imagen de herramienta",
+  "cutouts.imageUploader.dropHint": "Soltar imagen aquí",
+  "cutouts.imageUploader.clickHint": "Clic o arrastra para subir foto de herramienta",
+  "cutouts.imageUploader.fileTypes": "PNG, JPEG o WebP hasta 10 MB",
+  "cutouts.imageUploader.processing": "Procesando imagen...",
+  "cutouts.imageUploader.errorInvalidType": "Por favor sube una imagen PNG, JPEG o WebP",
+  "cutouts.imageUploader.errorTooLarge": "La imagen debe ser menor de {maxMb} MB"
 }
