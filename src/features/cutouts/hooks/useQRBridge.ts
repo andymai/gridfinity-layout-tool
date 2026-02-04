@@ -175,12 +175,12 @@ export function useQRBridge(): UseQRBridgeReturn {
           }));
         }
       } catch (error) {
-        // Ignore abort errors
+        // Ignore abort errors - these happen when polling is cancelled
         if (error instanceof Error && error.name === 'AbortError') {
           return;
         }
-        // Don't stop polling on network errors, just log
-        console.warn('Poll error:', error);
+        // Don't stop polling on transient network errors
+        // The poll will retry on the next interval
       }
     },
     [stopPolling]

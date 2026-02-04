@@ -117,8 +117,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, sessionId: str
       imageUrl: session.imageUrl,
       imageName: session.imageName,
     });
-  } catch (error) {
-    console.error('Session poll error:', error);
+  } catch {
     return res.status(500).json({
       error: 'Failed to check session',
       code: ErrorCode.SERVER_ERROR,
@@ -249,8 +248,7 @@ async function handlePost(req: VercelRequest, res: VercelResponse, sessionId: st
       success: true,
       message: 'Image uploaded successfully',
     });
-  } catch (error) {
-    console.error('Session upload error:', error);
+  } catch {
     return res.status(500).json({
       error: 'Failed to upload image',
       code: ErrorCode.SERVER_ERROR,
@@ -318,8 +316,7 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, sessionId: 
       success: true,
       message: 'Session deleted',
     });
-  } catch (error) {
-    console.error('Session delete error:', error);
+  } catch {
     return res.status(500).json({
       error: 'Failed to delete session',
       code: ErrorCode.SERVER_ERROR,

@@ -86,8 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       expiresAt: expiresAt.toISOString(),
       uploadUrl,
     });
-  } catch (error) {
-    console.error('Cutout session creation error:', error);
+  } catch {
     return res.status(500).json({
       error: 'Failed to create session',
       code: ErrorCode.SERVER_ERROR,
