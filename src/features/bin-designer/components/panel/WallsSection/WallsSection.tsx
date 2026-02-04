@@ -1,14 +1,16 @@
 /**
- * Walls section: Wall thickness selector.
+ * Walls section: Wall thickness and pattern selection.
  *
  * Shows discrete wall thickness options (multiples of common FDM nozzle sizes)
  * using a snapping slider with tick marks and helpful descriptions.
+ *
+ * Also allows selection of wall patterns (honeycomb, etc.) via dropdown.
  */
 
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
-import { FeatureToggle } from '../FeatureToggle';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
+import { PatternSelector } from './PatternSelector';
 
 export function WallsSection() {
   const { state, handlers, meta, t } = useWallsSection();
@@ -28,16 +30,14 @@ export function WallsSection() {
         tip={t('binDesigner.wallThickness.nozzleTip')}
       />
       <div className="mt-3 pt-3 border-t border-stroke-subtle/50">
-        <FeatureToggle
-          label={t('binDesigner.walls.pattern.honeycomb')}
-          checked={state.honeycombEnabled}
-          onChange={handlers.toggleHoneycomb}
-          disabledReason={state.honeycombDisabledReason}
+        <PatternSelector
+          selectedPattern={state.patternEnabled ? state.pattern : null}
+          onChange={handlers.handlePatternChange}
+          disabled={state.allWallsSlotted}
+          disabledReason={state.patternDisabledReason}
         />
-        {state.honeycombPartialNote && state.honeycombEnabled && (
-          <p className="text-[11px] text-content-tertiary -mt-0.5 mb-1">
-            {state.honeycombPartialNote}
-          </p>
+        {state.patternPartialNote && state.patternEnabled && (
+          <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
         )}
       </div>
     </CollapsibleSection>

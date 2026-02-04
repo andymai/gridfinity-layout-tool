@@ -38,22 +38,23 @@ describe('useWallsSection', () => {
     expect(result.current.state.options[0]).toHaveProperty('description');
   });
 
-  it('initial state has honeycomb disabled', () => {
+  it('initial state has pattern disabled', () => {
     const { result } = renderHook(() => useWallsSection());
-    expect(result.current.state.honeycombEnabled).toBe(false);
+    expect(result.current.state.patternEnabled).toBe(false);
   });
 
-  it('toggleHoneycomb enables honeycomb walls', () => {
+  it('handlePatternChange enables honeycomb pattern', () => {
     const { result } = renderHook(() => useWallsSection());
 
     act(() => {
-      result.current.handlers.toggleHoneycomb();
+      result.current.handlers.handlePatternChange('honeycomb');
     });
 
     expect(useDesignerStore.getState().params.wallPattern.enabled).toBe(true);
+    expect(useDesignerStore.getState().params.wallPattern.pattern).toBe('honeycomb');
   });
 
-  it('toggleHoneycomb disables when already enabled', () => {
+  it('handlePatternChange with null disables pattern', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -64,13 +65,13 @@ describe('useWallsSection', () => {
     const { result } = renderHook(() => useWallsSection());
 
     act(() => {
-      result.current.handlers.toggleHoneycomb();
+      result.current.handlers.handlePatternChange(null);
     });
 
     expect(useDesignerStore.getState().params.wallPattern.enabled).toBe(false);
   });
 
-  it('honeycombDisabledReason set when all walls slotted', () => {
+  it('patternDisabledReason set when all walls slotted', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -84,10 +85,10 @@ describe('useWallsSection', () => {
     });
 
     const { result } = renderHook(() => useWallsSection());
-    expect(result.current.state.honeycombDisabledReason).toBe('All walls have divider slots');
+    expect(result.current.state.patternDisabledReason).toBe('All walls have divider slots');
   });
 
-  it('honeycombPartialNote set when some walls slotted', () => {
+  it('patternPartialNote set when some walls slotted', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -101,8 +102,21 @@ describe('useWallsSection', () => {
     });
 
     const { result } = renderHook(() => useWallsSection());
-    expect(result.current.state.honeycombPartialNote).toBe(
+    expect(result.current.state.patternPartialNote).toBe(
       'Walls with divider slots will keep solid walls'
     );
+  });
+
+  it('returns current pattern type', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      },
+    });
+
+    const { result } = renderHook(() => useWallsSection());
+    expect(result.current.state.pattern).toBe('honeycomb');
+    expect(result.current.state.patternEnabled).toBe(true);
   });
 });

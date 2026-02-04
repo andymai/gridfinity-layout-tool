@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
+import type { WallPatternType } from '@/features/bin-designer/types';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 import type { SectionMeta } from '../types';
 
@@ -27,13 +28,21 @@ export function useWallsSection() {
     [t]
   );
 
-  const handleChange = useMemo(() => (v: number) => setParam('wallThickness', v), [setParam]);
+  const handleChange = useCallback((v: number) => setParam('wallThickness', v), [setParam]);
 
-  const toggleHoneycomb = useCallback(() => {
-    updateWallPattern({ enabled: !wallPattern.enabled });
-  }, [wallPattern.enabled, updateWallPattern]);
+  // Pattern selection handler
+  const handlePatternChange = useCallback(
+    (pattern: WallPatternType | null) => {
+      if (pattern === null) {
+        updateWallPattern({ enabled: false });
+      } else {
+        updateWallPattern({ enabled: true, pattern });
+      }
+    },
+    [updateWallPattern]
+  );
 
-  // Slot detection
+  // Slot detection — patterns cannot be applied to slotted walls
   const allWallsSlotted = useMemo(() => {
     if (params.style !== 'slotted') return false;
     return params.slotConfig.x.enabled && params.slotConfig.y.enabled;
@@ -44,12 +53,12 @@ export function useWallsSection() {
     return params.slotConfig.x.enabled || params.slotConfig.y.enabled;
   }, [params.style, params.slotConfig.x.enabled, params.slotConfig.y.enabled]);
 
-  const honeycombDisabledReason = useMemo(() => {
+  const patternDisabledReason = useMemo(() => {
     if (allWallsSlotted) return t('binDesigner.walls.pattern.allSlotted');
     return undefined;
   }, [allWallsSlotted, t]);
 
-  const honeycombPartialNote = useMemo(() => {
+  const patternPartialNote = useMemo(() => {
     if (someWallsSlotted && !allWallsSlotted) return t('binDesigner.walls.pattern.someSlotted');
     return undefined;
   }, [someWallsSlotted, allWallsSlotted, t]);
@@ -60,11 +69,13 @@ export function useWallsSection() {
     state: {
       wallThickness,
       options,
-      honeycombEnabled: wallPattern.enabled,
-      honeycombDisabledReason,
-      honeycombPartialNote,
+      patternEnabled: wallPattern.enabled,
+      pattern: wallPattern.pattern,
+      allWallsSlotted,
+      patternDisabledReason,
+      patternPartialNote,
     },
-    handlers: { handleChange, toggleHoneycomb },
+    handlers: { handleChange, handlePatternChange },
     meta,
     t,
   };

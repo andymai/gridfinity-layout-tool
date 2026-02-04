@@ -17,12 +17,14 @@ describe('WallsSection', () => {
     expect(container.querySelector('div[role="slider"]')).toBeInTheDocument();
   });
 
-  it('renders honeycomb walls toggle', () => {
+  it('renders pattern selector with all options', () => {
     render(<WallsSection />);
-    expect(screen.getByText('Honeycomb walls')).toBeInTheDocument();
+    expect(screen.getByText('Wall pattern')).toBeInTheDocument();
+    expect(screen.getByText('Solid walls')).toBeInTheDocument();
+    expect(screen.getByText('Honeycomb')).toBeInTheDocument();
   });
 
-  it('shows partial slot note when some walls slotted and honeycomb enabled', () => {
+  it('shows partial slot note when some walls slotted and pattern enabled', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -38,5 +40,18 @@ describe('WallsSection', () => {
 
     render(<WallsSection />);
     expect(screen.getByText('Walls with divider slots will keep solid walls')).toBeInTheDocument();
+  });
+
+  it('renders with honeycomb pattern selected', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      },
+    });
+
+    render(<WallsSection />);
+    const select = screen.getByRole('combobox');
+    expect(select.value).toBe('honeycomb');
   });
 });
