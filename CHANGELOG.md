@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.21.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.21.0...gridfinity-layout-tool-v2.21.1) (2026-02-04)
+
+
+### Bug Fixes
+
+* **build:** resolve npm vulnerabilities and build warnings ([#608](https://github.com/andymai/gridfinity-layout-tool/issues/608)) ([e01c9b5](https://github.com/andymai/gridfinity-layout-tool/commit/e01c9b589699d4ae8aefbb9e162273ed0992f067))
+
 ## [2.21.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.20.1...gridfinity-layout-tool-v2.21.0) (2026-02-04)
 
 
