@@ -523,6 +523,10 @@ function buildCompartmentWalls(
 
 /**
  * Build insert cavity cuts.
+ *
+ * Supports primitive shapes (rectangle, circle, etc.) and custom contours
+ * traced from photos. Custom contours use normalized 0-1 coordinates that
+ * are scaled to the insert's width/depth dimensions.
  */
 function buildInsertCuts(params: BinParams): Shape3D | null {
   if (params.inserts.length === 0) return null;
@@ -545,8 +549,8 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
         break;
       }
       case 'hexagon': {
-        // Approximate hexagon with circle (polygon support TBD)
-        solid = sketch(drawCircle(insert.width / 2), 'XY').extrude(insert.cutDepth);
+        // Regular hexagon using polysides
+        solid = sketch(drawPolysides(insert.width / 2, 6), 'XY').extrude(insert.cutDepth);
         break;
       }
       case 'slot': {
@@ -560,6 +564,29 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
         ).extrude(insert.cutDepth);
         break;
       }
+      case 'custom': {
+        // Custom contour from photo tracing
+        if (!insert.contour || insert.contour.length < 3) {
+          // Fall back to rectangle if no valid contour
+          solid = sketch(drawRectangle(insert.width, insert.depth), 'XY').extrude(insert.cutDepth);
+        } else {
+          // Scale normalized points (0-1) to actual dimensions
+          const scaledPoints = insert.contour.map((p) => ({
+            x: p.x * insert.width,
+            y: p.y * insert.depth,
+          }));
+
+          // Build polygon path
+          let drawing = draw([scaledPoints[0].x, scaledPoints[0].y]);
+          for (let i = 1; i < scaledPoints.length; i++) {
+            drawing = drawing.lineTo([scaledPoints[i].x, scaledPoints[i].y]);
+          }
+          drawing = drawing.close();
+
+          solid = sketch(drawing, 'XY').extrude(insert.cutDepth);
+        }
+        break;
+      }
       case 'rectangle':
       default: {
         solid = sketch(drawRectangle(insert.width, insert.depth), 'XY').extrude(insert.cutDepth);
@@ -567,6 +594,18 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
       }
     }
 
+    // Apply rotation around center if non-zero
+    if (insert.rotation && insert.rotation !== 0) {
+      const centerX = insert.width / 2;
+      const centerY = insert.depth / 2;
+      // Translate to origin, rotate, translate back
+      solid = solid
+        .translate([-centerX, -centerY, 0])
+        .rotate(insert.rotation, [0, 0, 0], [0, 0, 1])
+        .translate([centerX, centerY, 0]);
+    }
+
+    // Position the insert in the bin
     insertShapes.push(solid.translate([insert.x, insert.y, 0]));
   }
 

@@ -154,4 +154,96 @@ describe('edge case generation', () => {
       60000
     );
   });
+
+  describe('custom contour inserts', () => {
+    testParams('2x2 with custom triangle contour', {
+      width: 2,
+      depth: 2,
+      inserts: [
+        {
+          id: 'custom-1',
+          templateId: 'test-template',
+          shape: 'custom',
+          width: 30,
+          depth: 30,
+          cutDepth: 3,
+          x: 10,
+          y: 10,
+          rotation: 0,
+          cornerRadius: 0,
+          label: 'Triangle',
+          // Triangle contour (normalized 0-1 coordinates)
+          contour: [
+            { x: 0.5, y: 0 },
+            { x: 1, y: 1 },
+            { x: 0, y: 1 },
+          ],
+        },
+      ],
+    });
+
+    testParams('2x2 with rotated custom shape', {
+      width: 2,
+      depth: 2,
+      inserts: [
+        {
+          id: 'custom-2',
+          templateId: 'test-template',
+          shape: 'custom',
+          width: 25,
+          depth: 40,
+          cutDepth: 4,
+          x: 15,
+          y: 10,
+          rotation: 90,
+          cornerRadius: 0,
+          label: 'L-Shape',
+          // L-shape contour
+          contour: [
+            { x: 0, y: 0 },
+            { x: 0.4, y: 0 },
+            { x: 0.4, y: 0.6 },
+            { x: 1, y: 0.6 },
+            { x: 1, y: 1 },
+            { x: 0, y: 1 },
+          ],
+        },
+      ],
+    });
+
+    testParams('2x2 with complex tool contour', {
+      width: 2,
+      depth: 2,
+      inserts: [
+        {
+          id: 'custom-3',
+          templateId: 'screwdriver-template',
+          shape: 'custom',
+          width: 20,
+          depth: 60,
+          cutDepth: 5,
+          x: 20,
+          y: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: 'Screwdriver',
+          // Screwdriver-like contour (simplified)
+          contour: [
+            { x: 0.3, y: 0 },
+            { x: 0.7, y: 0 },
+            { x: 0.7, y: 0.7 },
+            { x: 0.6, y: 0.7 },
+            { x: 0.6, y: 0.75 },
+            { x: 0.8, y: 0.75 },
+            { x: 0.8, y: 1 },
+            { x: 0.2, y: 1 },
+            { x: 0.2, y: 0.75 },
+            { x: 0.4, y: 0.75 },
+            { x: 0.4, y: 0.7 },
+            { x: 0.3, y: 0.7 },
+          ],
+        },
+      ],
+    });
+  });
 });
