@@ -19,9 +19,6 @@ GEOMETRY_FILES=(
   "dividerBuilder"
   "hexGrid"
   "wallPatterns"
-  "baseBuilder"
-  "insertBuilder"
-  "lidBuilder"
 )
 
 # Check if the edited file matches any geometry-critical pattern

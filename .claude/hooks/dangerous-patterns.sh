@@ -137,11 +137,12 @@ for file in "${TS_FILES[@]}"; do
   fi
 
   # Check 9: Mock/fake/stub implementations in production code
-  # Catches patterns like mockFoo, fakeFoo, stubFoo, class MockFoo, createMockFoo
+  # Catches declarations like const mockFoo, class MockFoo, function createMockFoo
   # Excludes test framework calls (vi.mock, jest.mock) and test files (already filtered above)
-  if echo "$ADDED_LINES" | grep -qiE '\b(mock[A-Z]\w+|fake[A-Z]\w+|stub[A-Z]\w+|class\s+Mock\w+|class\s+Fake\w+|class\s+Stub\w+|create(Mock|Fake|Stub)\w+)'; then
+  # Focuses on declarations to avoid false positives with .mockReturnValue(), .mockImplementation(), etc.
+  if echo "$ADDED_LINES" | grep -qE '\b(const|let|var)\s+(mock|fake|stub)[A-Z]\w+|class\s+(Mock|Fake|Stub)\w+|function\s+(mock|fake|stub)[A-Z]\w+|create(Mock|Fake|Stub)[A-Z]\w+\s*\('; then
     # Exclude test framework calls
-    NON_FRAMEWORK=$(echo "$ADDED_LINES" | grep -iE '\b(mock[A-Z]\w+|fake[A-Z]\w+|stub[A-Z]\w+|class\s+Mock\w+|class\s+Fake\w+|class\s+Stub\w+|create(Mock|Fake|Stub)\w+)' | grep -viE '(vi|jest|vitest)\.(mock|fn|spyOn)' 2>/dev/null || true)
+    NON_FRAMEWORK=$(echo "$ADDED_LINES" | grep -E '\b(const|let|var)\s+(mock|fake|stub)[A-Z]\w+|class\s+(Mock|Fake|Stub)\w+|function\s+(mock|fake|stub)[A-Z]\w+|create(Mock|Fake|Stub)[A-Z]\w+\s*\(' | grep -vE '(vi|jest|vitest)\.(mock|fn|spyOn)' 2>/dev/null || true)
     if [[ -n "$NON_FRAMEWORK" ]]; then
       ISSUES+="  $file: Mock/fake/stub implementation in production code\n"
       ISSUES+="    Use real dependencies, not mocks. Mocks belong in test files only.\n"
