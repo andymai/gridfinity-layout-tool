@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.27.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.26.0...gridfinity-layout-tool-v2.27.0) (2026-02-05)
+
+
+### Features
+
+* increase max bin dimensions from 8x8 to 16x16 ([#630](https://github.com/andymai/gridfinity-layout-tool/issues/630)) ([06b4a1a](https://github.com/andymai/gridfinity-layout-tool/commit/06b4a1ac55d9943c64ff6d9d5977c934c8715058))
+
 ## [2.26.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.25.0...gridfinity-layout-tool-v2.26.0) (2026-02-05)
 
 
