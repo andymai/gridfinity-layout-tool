@@ -51,6 +51,8 @@ export interface BaseConfig {
   readonly magnetDepth: number;
   readonly screwDiameter: number;
   readonly stackingLip: boolean;
+  /** When true, the bin body is a solid block (no cavity). Used by cutouts feature. */
+  readonly solid: boolean;
 }
 
 /** Divider configuration for compartment splitting (legacy — use CompartmentConfig) */
