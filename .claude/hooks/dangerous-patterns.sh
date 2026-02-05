@@ -136,6 +136,19 @@ for file in "${TS_FILES[@]}"; do
     ISSUES+="    Use async: true or fetch API\n"
   fi
 
+  # Check 9: Mock/fake/stub implementations in production code
+  # Catches declarations like const mockFoo, class MockFoo, function createMockFoo
+  # Excludes test framework calls (vi.mock, jest.mock) and test files (already filtered above)
+  # Focuses on declarations to avoid false positives with .mockReturnValue(), .mockImplementation(), etc.
+  if echo "$ADDED_LINES" | grep -qE '\b(const|let|var)\s+(mock|fake|stub)[A-Z]\w+|class\s+(Mock|Fake|Stub)\w+|function\s+(mock|fake|stub)[A-Z]\w+|create(Mock|Fake|Stub)[A-Z]\w+\s*\('; then
+    # Exclude test framework calls
+    NON_FRAMEWORK=$(echo "$ADDED_LINES" | grep -E '\b(const|let|var)\s+(mock|fake|stub)[A-Z]\w+|class\s+(Mock|Fake|Stub)\w+|function\s+(mock|fake|stub)[A-Z]\w+|create(Mock|Fake|Stub)[A-Z]\w+\s*\(' | grep -vE '(vi|jest|vitest)\.(mock|fn|spyOn)' 2>/dev/null || true)
+    if [[ -n "$NON_FRAMEWORK" ]]; then
+      ISSUES+="  $file: Mock/fake/stub implementation in production code\n"
+      ISSUES+="    Use real dependencies, not mocks. Mocks belong in test files only.\n"
+    fi
+  fi
+
 done
 
 if [[ -n "$ISSUES" ]]; then

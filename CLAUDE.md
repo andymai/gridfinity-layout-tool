@@ -118,6 +118,18 @@ Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`.
 - Pre-commit **blocks** if edited component file has no sibling test
 - Run `npm run test:coverage` before commit
 
+## Debugging & Bug Fixing
+
+- **Real dependencies only** — never substitute mocks/stubs for runtime libraries (brepjs, Three.js) to bypass setup issues. Fix the loading problem instead.
+- **Reproduce first** — write or run a failing test before changing code.
+- **Fix all layers** — bugs spanning UI → store → computation must be verified at each layer. Don't stop at the first fix that silences the visible symptom.
+- **Geometry/math validation** — after any generation change, verify: output > 0, no NaN/Infinity, correct coordinate system (grid origin bottom-left, Y-up). Run scenario tests:
+  ```bash
+  npm run test:run -- src/features/generation/worker/generators/binGenerator.scenario
+  ```
+- **Coordinate transforms** — grid units ↔ mm conversions use `gridUnitMm` (42mm). Height units use `heightUnitMm` (7mm). Never mix unit systems.
+- **Common traps**: stale closures in hooks (missing deps), `useShallow` omitted on multi-select, `layers[0]` = bottom (UI reverses display).
+
 ## Scripts
 
 ```bash
