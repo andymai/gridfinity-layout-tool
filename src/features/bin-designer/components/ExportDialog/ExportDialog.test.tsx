@@ -207,6 +207,26 @@ describe('ExportDialog', () => {
     expect(screen.getByText('Custom')).toBeInTheDocument();
   });
 
+  it('switches to custom mode when clicking the file name display', () => {
+    render(<ExportDialog />);
+
+    // In descriptive mode, the file name display should be clickable
+    const nameDisplay = screen.getByRole('textbox', { name: 'Custom file name' });
+    expect(nameDisplay.tagName).toBe('SPAN');
+
+    // Click the display name
+    fireEvent.click(nameDisplay);
+
+    // Should switch to custom mode with pre-filled name
+    const config = useDesignerStore.getState().exportFileNameConfig;
+    expect(config.style).toBe('custom');
+    expect(config.customName).toBe('gridfinity_2x2x3');
+
+    // Should now show editable input
+    const input = screen.getByLabelText('Custom file name');
+    expect(input.tagName).toBe('INPUT');
+  });
+
   it('shows 3D Model section with STL export', () => {
     render(<ExportDialog />);
 

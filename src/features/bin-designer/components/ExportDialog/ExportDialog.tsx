@@ -169,7 +169,15 @@ export function ExportDialog() {
                   maxLength={128}
                 />
               ) : (
-                <span className="flex-1 truncate px-3 py-2 text-sm text-content">
+                <span
+                  className="flex-1 cursor-text truncate px-3 py-2 text-sm text-content"
+                  onClick={() => handleStyleChange('custom')}
+                  onFocus={() => handleStyleChange('custom')}
+                  role="textbox"
+                  tabIndex={0}
+                  aria-readonly="true"
+                  aria-label={t('binDesigner.customFileName')}
+                >
                   {fileNameWithoutExt}
                 </span>
               )}
