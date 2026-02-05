@@ -7,7 +7,7 @@ interface HalfBinModeBlockedModalProps {
   isOpen: boolean;
   violation: HalfBinConstraintViolation;
   onClose: () => void;
-  onRemediate: () => Promise<void>;
+  onRemediate: () => void | Promise<void>;
 }
 
 /**
