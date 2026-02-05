@@ -257,7 +257,7 @@ export function Sidebar() {
                         min={0.5}
                         max={CONSTRAINTS.GRID_MAX}
                         step={widthStep}
-                        size="sm"
+                        size="xs"
                         aria-label="Drawer width in grid units"
                       />
                     </div>
@@ -275,7 +275,7 @@ export function Sidebar() {
                         min={0.5}
                         max={CONSTRAINTS.GRID_MAX}
                         step={depthStep}
-                        size="sm"
+                        size="xs"
                         aria-label="Drawer depth in grid units"
                       />
                     </div>
@@ -291,7 +291,7 @@ export function Sidebar() {
                         onStep={handleDrawerHeightChange}
                         min={1}
                         max={CONSTRAINTS.GRID_MAX}
-                        size="sm"
+                        size="xs"
                         aria-label="Drawer height in units"
                         displayValue={`${drawer.height}u`}
                       />
