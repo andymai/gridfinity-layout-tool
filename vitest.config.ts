@@ -14,7 +14,7 @@ export default defineConfig({
     // Use threads pool for faster jsdom tests
     pool: 'threads',
     // CI runners have limited cores, local dev can use more
-    maxWorkers: process.env.CI ? 4 : 32,
+    maxWorkers: process.env.CI ? '50%' : '75%',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html'],
