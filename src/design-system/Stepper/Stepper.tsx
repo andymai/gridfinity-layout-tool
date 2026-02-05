@@ -55,6 +55,7 @@ const buttonVariants = cva(
 const inputVariants = cva(
   [
     'flex-1',
+    'min-w-0',
     'h-full',
     'bg-surface',
     'border-y border-stroke-subtle',
