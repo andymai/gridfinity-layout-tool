@@ -15,8 +15,6 @@ graph TB
     KB[useKeyboard] -->|shortcuts| LAY[(layout store)]
     DS[useDrawerSettings] -->|dimensions, half-bin| LAY
     LS[useLayoutSwitcher] -->|CRUD, switch| LIB[(library store)] & LAY
-    BL[useBinList] -->|search, bulk ops| LAY
-
     subgraph "Collaborative"
         CM[useCollabMode] --> CL[useCollabLayout]
         CM --> CS[useCollabSync]
@@ -32,7 +30,6 @@ graph TB
 | `useKeyboard.ts`        | 40+ global shortcuts (delete, undo, nudge, rotate, zoom, layer nav)      |
 | `useDrawerSettings.ts`  | Drawer dimensions, half-bin toggle/remediation, physical units, defaults |
 | `useLayoutSwitcher.ts`  | Atomic layout CRUD: switch, create, delete, duplicate, import            |
-| `useBinList.ts`         | Bin list with search, multi-select, bulk category/label/notes, export    |
 | `useBinGeometry.ts`     | Three.js geometry generation for 3D bin preview                          |
 | `useContextMenu.ts`     | Right-click menu lifecycle (position, outside-click, escape)             |
 | `useDesignerRouting.ts` | Bin Designer URL navigation with history integration                     |

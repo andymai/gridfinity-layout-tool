@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { RightPanel } from '@/components/RightPanel';
 import { useUIStore, useLayoutStore, useViewStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -80,16 +80,6 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
         <div data-testid="confirm-message">{message}</div>
         <button onClick={onConfirm}>Confirm Delete</button>
         <button onClick={onCancel}>Cancel Delete</button>
-      </div>
-    ) : null,
-}));
-
-// Mock BinListModal
-vi.mock('@/components/Modals/BinListModal', () => ({
-  BinListModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
-    isOpen ? (
-      <div data-testid="bin-list-modal">
-        <button onClick={onClose}>Close Modal</button>
       </div>
     ) : null,
 }));
@@ -391,11 +381,10 @@ describe('RightPanel', () => {
       expect(screen.queryByText('0')).not.toBeInTheDocument();
     });
 
-    it('hides copy and expand buttons when empty', () => {
+    it('hides copy button when empty', () => {
       render(<RightPanel />);
 
       expect(screen.queryByLabelText('Copy bin list as TSV')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Expand bin list to full view')).not.toBeInTheDocument();
     });
   });
 
@@ -470,33 +459,6 @@ describe('RightPanel', () => {
       fireEvent.click(screen.getByText('2×2'));
 
       expect(mockSelectBinsByRow).toHaveBeenCalledWith(printRow);
-    });
-
-    it('shows expand button', () => {
-      render(<RightPanel />);
-
-      expect(screen.getByLabelText('Expand bin list to full view')).toBeInTheDocument();
-    });
-
-    it('opens BinListModal when expand button clicked', async () => {
-      render(<RightPanel />);
-
-      fireEvent.click(screen.getByLabelText('Expand bin list to full view'));
-
-      expect(
-        await screen.findByTestId('bin-list-modal', {}, { timeout: 5000 })
-      ).toBeInTheDocument();
-    }, 15000);
-
-    it('closes BinListModal when close clicked', async () => {
-      render(<RightPanel />);
-
-      fireEvent.click(screen.getByLabelText('Expand bin list to full view'));
-      fireEvent.click(await screen.findByText('Close Modal'));
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('bin-list-modal')).not.toBeInTheDocument();
-      });
     });
   });
 
@@ -867,33 +829,6 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByRole('button', { name: 'Copy bin list as TSV' })).toBeInTheDocument();
-    });
-
-    it('expand modal button has proper aria-label', () => {
-      mockPrintListReturn = createMockPrintList({
-        rows: [
-          {
-            size: '2×2',
-            height: 3,
-            binCount: 1,
-            binIds: ['bin1'],
-            labels: [],
-            notes: '',
-            needsSplit: false,
-            pieces: [],
-            totalPieces: 1,
-            filament: 0.8,
-            categoryIds: ['coral'],
-          },
-        ],
-        totalBins: 1,
-      });
-
-      render(<RightPanel />);
-
-      expect(
-        screen.getByRole('button', { name: 'Expand bin list to full view' })
-      ).toBeInTheDocument();
     });
   });
 });

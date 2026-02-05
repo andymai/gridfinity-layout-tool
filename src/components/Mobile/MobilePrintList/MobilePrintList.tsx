@@ -1,18 +1,12 @@
-import React, { useState, useCallback, Suspense } from 'react';
+import React, { useState } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
-import { useUIStore } from '@/core/store/ui';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '@/components/Print/SplitPreview';
-import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 
 const OVERFLOW_PREFIX = '+';
-
-const BinListModal = lazyWithRetry(() =>
-  import('@/components/Modals/BinListModal').then(namedExport('BinListModal'))
-);
 
 /**
  * Mobile-optimized print list matching desktop functionality.
@@ -23,20 +17,12 @@ export function MobilePrintList() {
   const t = useTranslation();
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
-  const [isExpandedModalOpen, setIsExpandedModalOpen] = useState(false);
 
   const printList = usePrintList();
-  const closeMobilePanel = useUIStore((state) => state.closeMobilePanel);
-
-  // Close bottom sheet when expanding to full screen modal
-  const handleExpand = useCallback(() => {
-    closeMobilePanel();
-    setIsExpandedModalOpen(true);
-  }, [closeMobilePanel]);
 
   const handleCopy = () => {
     const tsv = exportPrintListTSV(printList.rows);
-    navigator.clipboard.writeText(tsv);
+    void navigator.clipboard.writeText(tsv);
     setCopyFeedback(true);
     setTimeout(() => setCopyFeedback(false), 2000);
   };
@@ -56,22 +42,6 @@ export function MobilePrintList() {
           })}
         </span>
         <div className="flex items-center gap-2">
-          {/* Expand button */}
-          <button
-            onClick={handleExpand}
-            className="btn btn-ghost btn-sm gap-1.5"
-            aria-label={t('mobile.printList.expandBinList')}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-              />
-            </svg>
-            {t('mobile.printList.expand')}
-          </button>
           {/* Copy button */}
           <button onClick={handleCopy} className="btn btn-ghost btn-sm gap-1.5">
             {copyFeedback ? (
@@ -272,16 +242,6 @@ export function MobilePrintList() {
           compact
         />
       </div>
-
-      {/* Expanded bin list modal */}
-      {isExpandedModalOpen && (
-        <Suspense fallback={null}>
-          <BinListModal
-            isOpen={isExpandedModalOpen}
-            onClose={() => setIsExpandedModalOpen(false)}
-          />
-        </Suspense>
-      )}
     </div>
   );
 }
