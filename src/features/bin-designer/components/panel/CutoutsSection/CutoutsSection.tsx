@@ -12,15 +12,12 @@ import { CutoutEditor } from './CutoutEditor';
 
 export function CutoutsSection() {
   const t = useTranslation();
-  const { isSolid, cutoutCount, clearCutouts } = useDesignerStore(
+  const { cutoutCount, clearCutouts } = useDesignerStore(
     useShallow((s) => ({
-      isSolid: s.params.base.solid,
       cutoutCount: s.params.cutouts.length,
       clearCutouts: s.clearCutouts,
     }))
   );
-
-  if (!isSolid) return null;
 
   return (
     <div className="space-y-3">

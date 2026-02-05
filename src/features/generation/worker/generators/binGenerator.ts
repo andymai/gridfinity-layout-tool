@@ -18,6 +18,7 @@ import {
   draw,
   drawRoundedRectangle,
   drawCircle,
+  drawEllipse,
   drawRectangle,
   drawPolysides,
   unwrap,
@@ -610,10 +611,22 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
  * All cutout shapes are unioned into a single solid, then boolean-cut from the bin.
  *
  * @param params - Bin configuration (reads cutouts array)
+ * @param innerW - Interior width in mm (outer - 2*wall)
+ * @param innerD - Interior depth in mm (outer - 2*wall)
  * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
  */
-function buildCutoutCuts(params: BinParams, wallHeight: number): Shape3D | null {
+function buildCutoutCuts(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): Shape3D | null {
   if (params.cutouts.length === 0) return null;
+
+  // Cutout x,y are relative to interior bottom-left corner (0,0).
+  // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
+  const originX = -innerW / 2;
+  const originY = -innerD / 2;
 
   const cutoutShapes: Shape3D[] = [];
 
@@ -622,7 +635,14 @@ function buildCutoutCuts(params: BinParams, wallHeight: number): Shape3D | null 
 
     switch (cutout.shape) {
       case 'circle': {
-        shape = sketch(drawCircle(cutout.width / 2), 'XY').extrude(cutout.cutDepth);
+        // True ellipse: independent width (X) and depth (Y) radii
+        const rx = cutout.width / 2;
+        const ry = cutout.depth / 2;
+        if (Math.abs(rx - ry) < 0.01) {
+          shape = sketch(drawCircle(rx), 'XY').extrude(cutout.cutDepth);
+        } else {
+          shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
+        }
         break;
       }
       case 'rectangle':
@@ -639,13 +659,19 @@ function buildCutoutCuts(params: BinParams, wallHeight: number): Shape3D | null 
       }
     }
 
-    // Position: x,y from UI are bottom-left corner; convert to center for brepjs shapes.
+    // Apply rotation around Z axis (at origin, before translation)
+    if (cutout.rotation !== 0) {
+      shape = shape.rotate(cutout.rotation, [0, 0, 0], [0, 0, 1]);
+    }
+
+    // Position: x,y from UI are bottom-left corner of cutout relative to interior origin.
+    // brepjs shapes are centered at origin, so add half-size to get center.
+    // Then offset by interior origin to convert to model-centered coordinates.
     // Z: top of cut sits at wallHeight, extends downward by cutDepth.
-    const effectiveD = cutout.shape === 'circle' ? cutout.width : cutout.depth;
     cutoutShapes.push(
       shape.translate([
-        cutout.x + cutout.width / 2,
-        cutout.y + effectiveD / 2,
+        originX + cutout.x + cutout.width / 2,
+        originY + cutout.y + cutout.depth / 2,
         wallHeight - cutout.cutDepth,
       ])
     );
@@ -1224,7 +1250,7 @@ export function generateBin(
     }
   } else {
     // Solid mode: apply cutouts (top-down cavity cuts into the solid block)
-    const cutoutCuts = buildCutoutCuts(params, wallHeight);
+    const cutoutCuts = buildCutoutCuts(params, innerW, innerD, wallHeight);
     if (cutoutCuts) {
       try {
         bin = unwrap(bin.cut(cutoutCuts));

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import { useDesignerStore, useCutoutSelection } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { GhostCutouts } from './GhostCutouts';
 
@@ -34,7 +34,7 @@ vi.mock('three', () => {
   }
 
   class Color {
-    getHex = vi.fn(() => 0x22d3ee);
+    getHex = vi.fn(() => 0xfbbf24);
   }
 
   return { Vector2, Color };
@@ -58,6 +58,20 @@ vi.mock('three/examples/jsm/lines/LineSegmentsGeometry.js', () => ({
   },
 }));
 
+const SOLID_CUTOUT = {
+  id: 'c1',
+  shape: 'rectangle' as const,
+  x: 10,
+  y: 10,
+  width: 20,
+  depth: 15,
+  cutDepth: 5,
+  rotation: 0,
+  cornerRadius: 0,
+  label: '',
+  groupId: null,
+};
+
 describe('GhostCutouts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,9 +84,10 @@ describe('GhostCutouts', () => {
         epoch: 0,
       },
     });
+    useCutoutSelection.setState({ selectedIds: new Set() });
   });
 
-  it('renders nothing when not generating', () => {
+  it('renders nothing when not generating and no selection', () => {
     const { container } = render(<GhostCutouts />);
     expect(container.firstChild).toBeNull();
   });
@@ -82,21 +97,7 @@ describe('GhostCutouts', () => {
       params: {
         ...DEFAULT_BIN_PARAMS,
         base: { ...DEFAULT_BIN_PARAMS.base, solid: false },
-        cutouts: [
-          {
-            id: 'c1',
-            shape: 'rectangle',
-            x: 10,
-            y: 10,
-            width: 20,
-            depth: 15,
-            cutDepth: 5,
-            rotation: 0,
-            cornerRadius: 0,
-            label: '',
-            groupId: null,
-          },
-        ],
+        cutouts: [SOLID_CUTOUT],
       },
       generation: {
         status: 'generating',
@@ -132,21 +133,7 @@ describe('GhostCutouts', () => {
       params: {
         ...DEFAULT_BIN_PARAMS,
         base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
-        cutouts: [
-          {
-            id: 'c1',
-            shape: 'rectangle',
-            x: 10,
-            y: 10,
-            width: 20,
-            depth: 15,
-            cutDepth: 5,
-            rotation: 0,
-            cornerRadius: 0,
-            label: '',
-            groupId: null,
-          },
-        ],
+        cutouts: [SOLID_CUTOUT],
       },
       generation: {
         status: 'generating',
@@ -157,5 +144,45 @@ describe('GhostCutouts', () => {
     });
     const { container } = render(<GhostCutouts />);
     expect(container.firstChild).not.toBeNull();
+  });
+
+  it('renders when a cutout is selected even without generating', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [SOLID_CUTOUT],
+      },
+      generation: {
+        status: 'complete',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    useCutoutSelection.setState({ selectedIds: new Set(['c1']) });
+
+    const { container } = render(<GhostCutouts />);
+    expect(container.firstChild).not.toBeNull();
+  });
+
+  it('renders nothing when selection has no matching cutouts', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [SOLID_CUTOUT],
+      },
+      generation: {
+        status: 'complete',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    useCutoutSelection.setState({ selectedIds: new Set(['nonexistent']) });
+
+    const { container } = render(<GhostCutouts />);
+    expect(container.firstChild).toBeNull();
   });
 });

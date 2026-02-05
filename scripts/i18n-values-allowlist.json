@@ -13,6 +13,8 @@
     "binDesigner.formatSTL",
     "binDesigner.cutouts.addRectangle",
     "binDesigner.cutouts.label",
+    "binDesigner.cutouts.rotation",
+    "binDesigner.interiorSolid",
     "binDesigner.group.base",
     "binDesigner.group.interior",
     "binDesigner.layout",

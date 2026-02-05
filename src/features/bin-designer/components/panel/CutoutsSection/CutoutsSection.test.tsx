@@ -21,26 +21,7 @@ describe('CutoutsSection', () => {
     useDesignerStore.setState(useDesignerStore.getInitialState());
   });
 
-  it('renders nothing when not in solid mode', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        base: { ...DEFAULT_BIN_PARAMS.base, solid: false },
-      },
-    });
-
-    const { container } = render(<CutoutsSection />);
-    expect(container.firstChild).toBeNull();
-  });
-
-  it('renders instructions and editor in solid mode', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
-      },
-    });
-
+  it('renders instructions and editor', () => {
     render(<CutoutsSection />);
     expect(screen.getByText('binDesigner.cutouts.instructions')).toBeInTheDocument();
     expect(screen.getByTestId('cutout-editor')).toBeInTheDocument();

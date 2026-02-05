@@ -78,11 +78,11 @@ describe('CutoutPropertyPanel', () => {
     expect(screen.getByTestId('slider-binDesigner.cutouts.cornerRadius')).toBeInTheDocument();
   });
 
-  it('hides depth and cornerRadius sliders for circle', () => {
+  it('shows width and depth but hides cornerRadius for circle', () => {
     render(<CutoutPropertyPanel {...defaultProps} cutout={createCutout({ shape: 'circle' })} />);
 
     expect(screen.getByTestId('slider-binDesigner.cutouts.width')).toBeInTheDocument();
-    expect(screen.queryByTestId('slider-binDesigner.cutouts.depth')).not.toBeInTheDocument();
+    expect(screen.getByTestId('slider-binDesigner.cutouts.depth')).toBeInTheDocument();
     expect(screen.queryByTestId('slider-binDesigner.cutouts.cornerRadius')).not.toBeInTheDocument();
   });
 

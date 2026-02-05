@@ -17,7 +17,6 @@ import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
-import { CutoutsSection } from '../panel/CutoutsSection';
 import { SectionGroup } from '../panel/SectionGroup';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
@@ -30,15 +29,7 @@ export function ParameterPanel() {
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
-  const { isSolid, cutoutCount } = useDesignerStore(
-    useShallow((s) => ({
-      isSolid: s.params.base.solid,
-      cutoutCount: s.params.cutouts.length,
-    }))
-  );
-  const cutoutsSummary =
-    cutoutCount > 0 ? t('binDesigner.cutouts.summary', { count: cutoutCount }) : undefined;
-
+  const showLabelTabs = useDesignerStore(useShallow((s) => s.params.style === 'standard'));
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
@@ -58,12 +49,14 @@ export function ParameterPanel() {
           defaultExpanded
           summary={interiorSummary}
         >
-          <div className="px-4 py-4 border-b border-stroke-subtle/50">
+          <div className="px-4 py-4">
             <InteriorSection />
           </div>
-          <div className="px-4 py-4">
-            <LabelTabsSection />
-          </div>
+          {showLabelTabs && (
+            <div className="px-4 py-4 border-t border-stroke-subtle/50">
+              <LabelTabsSection />
+            </div>
+          )}
         </SectionGroup>
 
         {/* Base group */}
@@ -75,19 +68,6 @@ export function ParameterPanel() {
             <PhysicalUnitsSection />
           </div>
         </SectionGroup>
-
-        {/* Cutouts group (solid mode only) */}
-        {isSolid && (
-          <SectionGroup
-            title={t('binDesigner.group.cutouts')}
-            defaultExpanded
-            summary={cutoutsSummary}
-          >
-            <div className="px-4 py-4">
-              <CutoutsSection />
-            </div>
-          </SectionGroup>
-        )}
 
         {/* Attribution */}
         <div className="px-4 py-4 text-content-disabled text-[10px] leading-relaxed">

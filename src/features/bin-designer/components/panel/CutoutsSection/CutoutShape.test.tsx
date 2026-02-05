@@ -25,6 +25,7 @@ const renderShape = (props: Partial<React.ComponentProps<typeof CutoutShape>> = 
     binDepth: 50,
     isSelected: false,
     isGrouped: false,
+    isDragging: false,
     onSelect: vi.fn(),
   };
   return render(
@@ -66,39 +67,41 @@ describe('CutoutShape', () => {
     expect(rect?.getAttribute('ry')).toBe('6');
   });
 
-  it('renders a circle element for circle cutout', () => {
-    const cutout = createCutout({ shape: 'circle', width: 20 });
+  it('renders an ellipse element for circle cutout', () => {
+    const cutout = createCutout({ shape: 'circle', width: 20, depth: 15 });
     const { container } = renderShape({ cutout, scale: 2, binDepth: 50 });
-    const circle = container.querySelector('circle');
-    expect(circle).not.toBeNull();
+    const ellipse = container.querySelector('ellipse');
+    expect(ellipse).not.toBeNull();
     expect(container.querySelector('rect')).toBeNull();
   });
 
-  it('positions circle correctly', () => {
-    const cutout = createCutout({ shape: 'circle', x: 10, y: 10, width: 20 });
+  it('positions ellipse correctly', () => {
+    const cutout = createCutout({ shape: 'circle', x: 10, y: 10, width: 20, depth: 16 });
     const { container } = renderShape({ cutout, scale: 2, binDepth: 50 });
-    const circle = container.querySelector('circle');
+    const ellipse = container.querySelector('ellipse');
 
     // cx = (cutout.x + cutout.width / 2) * scale = (10 + 10) * 2 = 40
-    expect(circle?.getAttribute('cx')).toBe('40');
-    // cy = (binDepth - cutout.y - cutout.width / 2) * scale = (50 - 10 - 10) * 2 = 60
-    expect(circle?.getAttribute('cy')).toBe('60');
-    // r = (cutout.width * scale) / 2 = (20 * 2) / 2 = 20
-    expect(circle?.getAttribute('r')).toBe('20');
+    expect(ellipse?.getAttribute('cx')).toBe('40');
+    // cy = (binDepth - cutout.y - cutout.depth / 2) * scale = (50 - 10 - 8) * 2 = 64
+    expect(ellipse?.getAttribute('cy')).toBe('64');
+    // rx = (cutout.width / 2) * scale = 10 * 2 = 20
+    expect(ellipse?.getAttribute('rx')).toBe('20');
+    // ry = (cutout.depth / 2) * scale = 8 * 2 = 16
+    expect(ellipse?.getAttribute('ry')).toBe('16');
   });
 
   it('uses accent stroke when selected', () => {
     const { container } = renderShape({ isSelected: true });
     const rect = container.querySelector('rect');
     expect(rect?.getAttribute('stroke')).toBe('var(--color-accent)');
-    expect(rect?.getAttribute('stroke-width')).toBe('2');
+    expect(rect?.getAttribute('stroke-width')).toBe('1.5');
   });
 
   it('uses subtle stroke when not selected', () => {
     const { container } = renderShape({ isSelected: false });
     const rect = container.querySelector('rect');
     expect(rect?.getAttribute('stroke')).toBe('var(--color-stroke-subtle)');
-    expect(rect?.getAttribute('stroke-width')).toBe('1');
+    expect(rect?.getAttribute('stroke-width')).toBe('1.5');
   });
 
   it('uses dashed stroke when grouped', () => {
@@ -121,5 +124,51 @@ describe('CutoutShape', () => {
 
     rect?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     expect(onSelect).toHaveBeenCalledWith('my-cutout', false);
+  });
+
+  it('reduces opacity when isDragging is true', () => {
+    const { container } = renderShape({ isDragging: true });
+    const rect = container.querySelector('rect');
+    expect(rect?.getAttribute('fill-opacity')).toBe('0.5');
+  });
+
+  it('uses selected opacity when selected but not dragging', () => {
+    const { container } = renderShape({ isSelected: true, isDragging: false });
+    const rect = container.querySelector('rect');
+    expect(rect?.getAttribute('fill-opacity')).toBe('0.3');
+  });
+
+  it('uses unselected opacity when not selected and not dragging', () => {
+    const { container } = renderShape({ isSelected: false, isDragging: false });
+    const rect = container.querySelector('rect');
+    expect(rect?.getAttribute('fill-opacity')).toBe('0.15');
+  });
+
+  it('applies previewOverrides to rendered position', () => {
+    const cutout = createCutout({ x: 10, y: 10, width: 20, depth: 15 });
+    const { container } = renderShape({
+      cutout,
+      previewOverrides: { x: 30, y: 20 },
+      scale: 2,
+      binDepth: 50,
+    });
+    const rect = container.querySelector('rect');
+
+    // With preview: px = 30 * 2 = 60
+    expect(rect?.getAttribute('x')).toBe('60');
+    // py = (50 - 20 - 15) * 2 = 30
+    expect(rect?.getAttribute('y')).toBe('30');
+  });
+
+  it('uses grab cursor when selected', () => {
+    const { container } = renderShape({ isSelected: true });
+    const rect = container.querySelector('rect');
+    expect(rect?.style.cursor).toBe('grab');
+  });
+
+  it('uses pointer cursor when not selected', () => {
+    const { container } = renderShape({ isSelected: false });
+    const rect = container.querySelector('rect');
+    expect(rect?.style.cursor).toBe('pointer');
   });
 });

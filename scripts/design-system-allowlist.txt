@@ -76,6 +76,7 @@ src/features/bin-designer/components/panel/SectionGroup/SectionGroup.tsx
 src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
 src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.tsx
 src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
+src/features/bin-designer/components/panel/CutoutsSection/CutoutContextMenu.tsx
 src/features/bin-designer/components/panel/CutoutsSection/CutoutsSection.tsx
 src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
 src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx

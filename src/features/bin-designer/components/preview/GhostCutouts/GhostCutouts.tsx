@@ -1,9 +1,11 @@
 /**
- * Renders ghost cutout outlines in the 3D preview during mesh regeneration.
+ * Renders ghost cutout outlines in the 3D preview.
  *
  * Shows translucent shape outlines at the top surface and at the cut depth
- * of each cutout, providing instant visual feedback for cutout placement
- * and depth while the mesh is being regenerated.
+ * of cutouts, providing instant visual feedback for placement and depth.
+ *
+ * - Selected cutouts: always visible (amber, x-ray through walls)
+ * - During generation: all cutouts visible as ghost outlines
  *
  * Uses Line2 for proper line width support across WebGL implementations.
  */
@@ -15,23 +17,114 @@ import { useShallow } from 'zustand/react/shallow';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import { useDesignerStore, useCutoutSelection } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import type { Cutout } from '@/features/bin-designer/types';
 
-/** Ghost line color (cyan for cutouts — distinct from amber dividers) */
-const GHOST_COLOR = '#22d3ee';
+/** Ghost line color (amber — matches other ghost previews) */
+const GHOST_COLOR = '#fbbf24';
 const GHOST_OPACITY = 0.6;
 const LINE_WIDTH = 2;
 /** Number of segments for circle approximation */
 const CIRCLE_SEGMENTS = 24;
+
+function buildCutoutGeometry(
+  cutoutsToRender: readonly Cutout[],
+  originX: number,
+  originY: number,
+  floorZ: number,
+  wallHeight: number
+): LineSegmentsGeometry | null {
+  const positions: number[] = [];
+
+  for (const cutout of cutoutsToRender) {
+    const cx = originX + cutout.x + cutout.width / 2;
+    const cy = originY + cutout.y + cutout.depth / 2;
+    const topZ = floorZ + wallHeight;
+    const bottomZ = floorZ + wallHeight - cutout.cutDepth;
+
+    if (cutout.shape === 'circle') {
+      const rx = cutout.width / 2;
+      const ry = cutout.depth / 2;
+      const rad = (cutout.rotation * Math.PI) / 180;
+      const cosR = Math.cos(rad);
+      const sinR = Math.sin(rad);
+      for (let z = 0; z < 2; z++) {
+        const zVal = z === 0 ? topZ : bottomZ;
+        for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
+          const a1 = (i / CIRCLE_SEGMENTS) * Math.PI * 2;
+          const a2 = ((i + 1) / CIRCLE_SEGMENTS) * Math.PI * 2;
+          // Parametric ellipse points, then rotate
+          const ex1 = Math.cos(a1) * rx;
+          const ey1 = Math.sin(a1) * ry;
+          const ex2 = Math.cos(a2) * rx;
+          const ey2 = Math.sin(a2) * ry;
+          positions.push(
+            cx + ex1 * cosR - ey1 * sinR,
+            cy + ex1 * sinR + ey1 * cosR,
+            zVal,
+            cx + ex2 * cosR - ey2 * sinR,
+            cy + ex2 * sinR + ey2 * cosR,
+            zVal
+          );
+        }
+      }
+      // Vertical lines connecting top and bottom ellipses (4 cardinal points)
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2;
+        const ex = Math.cos(a) * rx;
+        const ey = Math.sin(a) * ry;
+        const px = cx + ex * cosR - ey * sinR;
+        const py = cy + ex * sinR + ey * cosR;
+        positions.push(px, py, topZ, px, py, bottomZ);
+      }
+    } else {
+      const hw = cutout.width / 2;
+      const hd = cutout.depth / 2;
+      // Unrotated corners relative to center
+      const rawCorners: [number, number][] = [
+        [-hw, -hd],
+        [hw, -hd],
+        [hw, hd],
+        [-hw, hd],
+      ];
+      // Apply rotation around center
+      const rad = (cutout.rotation * Math.PI) / 180;
+      const cosR = Math.cos(rad);
+      const sinR = Math.sin(rad);
+      const corners = rawCorners.map(([rx, ry]) => [
+        cx + rx * cosR - ry * sinR,
+        cy + rx * sinR + ry * cosR,
+      ]);
+
+      for (let z = 0; z < 2; z++) {
+        const zVal = z === 0 ? topZ : bottomZ;
+        for (let i = 0; i < 4; i++) {
+          const [x1, y1] = corners[i];
+          const [x2, y2] = corners[(i + 1) % 4];
+          positions.push(x1, y1, zVal, x2, y2, zVal);
+        }
+      }
+      for (const [px, py] of corners) {
+        positions.push(px, py, topZ, px, py, bottomZ);
+      }
+    }
+  }
+
+  if (positions.length === 0) return null;
+
+  const geo = new LineSegmentsGeometry();
+  geo.setPositions(positions);
+  return geo;
+}
 
 export function GhostCutouts() {
   const { invalidate, size } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
   const materialRef = useRef<LineMaterial | null>(null);
 
-  const canvasWidth = size?.width ?? 800;
-  const canvasHeight = size?.height ?? 600;
+  const canvasWidth = size.width;
+  const canvasHeight = size.height;
 
   const { params, generationStatus } = useDesignerStore(
     useShallow((s) => ({
@@ -40,6 +133,8 @@ export function GhostCutouts() {
     }))
   );
 
+  const selectedIds = useCutoutSelection((s) => s.selectedIds);
+
   const { cutouts, base } = params;
   const isSolid = base.solid;
   const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
@@ -47,78 +142,32 @@ export function GhostCutouts() {
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.BASE_HEIGHT;
   const floorZ = isFlat ? 0 : GRIDFINITY.BASE_HEIGHT;
 
-  const shouldShow = isSolid && cutouts.length > 0 && generationStatus === 'generating';
+  const outerW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const innerW = outerW - 2 * params.wallThickness;
+  const innerD = outerD - 2 * params.wallThickness;
+  const originX = -innerW / 2;
+  const originY = -innerD / 2;
+
+  const hasSelection = selectedIds.size > 0;
+  const isGenerating = generationStatus === 'generating';
+
+  // Determine which cutouts to render:
+  // - Selected cutouts: always shown (when solid + has cutouts)
+  // - All cutouts: shown during generation
+  const cutoutsToRender = useMemo(() => {
+    if (!isSolid || cutouts.length === 0) return [];
+    if (isGenerating) return cutouts;
+    if (hasSelection) return cutouts.filter((c) => selectedIds.has(c.id));
+    return [];
+  }, [isSolid, cutouts, isGenerating, hasSelection, selectedIds]);
+
+  const shouldShow = cutoutsToRender.length > 0;
 
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
-
-    const positions: number[] = [];
-
-    for (const cutout of cutouts) {
-      // Positions in model space (same as inserts)
-      const cx = cutout.x;
-      const cy = cutout.y;
-      const topZ = floorZ + wallHeight;
-      const bottomZ = floorZ + wallHeight - cutout.cutDepth;
-
-      if (cutout.shape === 'circle') {
-        const r = cutout.width / 2;
-        // Draw circle outline at top and bottom
-        for (let z = 0; z < 2; z++) {
-          const zVal = z === 0 ? topZ : bottomZ;
-          for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
-            const a1 = (i / CIRCLE_SEGMENTS) * Math.PI * 2;
-            const a2 = ((i + 1) / CIRCLE_SEGMENTS) * Math.PI * 2;
-            positions.push(
-              cx + Math.cos(a1) * r,
-              cy + Math.sin(a1) * r,
-              zVal,
-              cx + Math.cos(a2) * r,
-              cy + Math.sin(a2) * r,
-              zVal
-            );
-          }
-        }
-        // Vertical lines connecting top and bottom circles (4 points)
-        for (let i = 0; i < 4; i++) {
-          const a = (i / 4) * Math.PI * 2;
-          const px = cx + Math.cos(a) * r;
-          const py = cy + Math.sin(a) * r;
-          positions.push(px, py, topZ, px, py, bottomZ);
-        }
-      } else {
-        // Rectangle
-        const hw = cutout.width / 2;
-        const hd = cutout.depth / 2;
-        const corners = [
-          [cx - hw, cy - hd],
-          [cx + hw, cy - hd],
-          [cx + hw, cy + hd],
-          [cx - hw, cy + hd],
-        ];
-
-        // Draw rectangle outline at top and bottom
-        for (let z = 0; z < 2; z++) {
-          const zVal = z === 0 ? topZ : bottomZ;
-          for (let i = 0; i < 4; i++) {
-            const [x1, y1] = corners[i];
-            const [x2, y2] = corners[(i + 1) % 4];
-            positions.push(x1, y1, zVal, x2, y2, zVal);
-          }
-        }
-        // Vertical lines at corners
-        for (const [px, py] of corners) {
-          positions.push(px, py, topZ, px, py, bottomZ);
-        }
-      }
-    }
-
-    if (positions.length === 0) return null;
-
-    const geo = new LineSegmentsGeometry();
-    geo.setPositions(positions);
-    return geo;
-  }, [shouldShow, cutouts, floorZ, wallHeight]);
+    return buildCutoutGeometry(cutoutsToRender, originX, originY, floorZ, wallHeight);
+  }, [shouldShow, cutoutsToRender, floorZ, wallHeight, originX, originY]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;
@@ -128,7 +177,10 @@ export function GhostCutouts() {
       linewidth: LINE_WIDTH,
       transparent: true,
       opacity: GHOST_OPACITY,
-      depthTest: true,
+      // Disable depth test so ghost lines render on top of bin walls,
+      // making cutout depth clearly visible from any angle.
+      depthTest: false,
+      depthWrite: false,
       resolution: new THREE.Vector2(canvasWidth, canvasHeight),
     });
   }, [shouldShow, canvasWidth, canvasHeight]);

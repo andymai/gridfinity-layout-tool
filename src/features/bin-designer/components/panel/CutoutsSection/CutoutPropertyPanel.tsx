@@ -8,6 +8,7 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '../../controls/SliderInput';
+import { clampRotationToBounds } from './geometry';
 
 interface CutoutPropertyPanelProps {
   readonly cutout: Cutout;
@@ -47,7 +48,7 @@ export function CutoutPropertyPanel({
           value={cutout.y}
           onChange={(y) => onUpdate(cutout.id, { y })}
           min={0}
-          max={maxDepth - (cutout.shape === 'circle' ? cutout.width : cutout.depth)}
+          max={maxDepth - cutout.depth}
           step={0.5}
           unit="mm"
         />
@@ -60,17 +61,15 @@ export function CutoutPropertyPanel({
           step={0.5}
           unit="mm"
         />
-        {cutout.shape === 'rectangle' && (
-          <SliderInput
-            label={t('binDesigner.cutouts.depth')}
-            value={cutout.depth}
-            onChange={(depth) => onUpdate(cutout.id, { depth })}
-            min={2}
-            max={maxDepth}
-            step={0.5}
-            unit="mm"
-          />
-        )}
+        <SliderInput
+          label={t('binDesigner.cutouts.depth')}
+          value={cutout.depth}
+          onChange={(depth) => onUpdate(cutout.id, { depth })}
+          min={2}
+          max={maxDepth}
+          step={0.5}
+          unit="mm"
+        />
         <SliderInput
           label={t('binDesigner.cutouts.cutDepth')}
           value={cutout.cutDepth}
@@ -91,6 +90,18 @@ export function CutoutPropertyPanel({
             unit="mm"
           />
         )}
+        <SliderInput
+          label={t('binDesigner.cutouts.rotation')}
+          value={cutout.rotation}
+          onChange={(rotation) => {
+            const clamped = clampRotationToBounds(cutout, rotation, maxWidth, maxDepth);
+            onUpdate(cutout.id, { rotation: clamped });
+          }}
+          min={0}
+          max={359}
+          step={1}
+          unit="°"
+        />
       </div>
 
       <div className="flex gap-2">

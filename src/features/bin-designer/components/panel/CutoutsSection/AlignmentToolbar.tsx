@@ -8,7 +8,14 @@
 import { useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { computeBounds, getEffectiveBounds, getEffectiveDepth } from './geometry';
+import {
+  computeBounds,
+  getEffectiveBounds,
+  getEffectiveDepth,
+  distributeHorizontally,
+  distributeVertically,
+  centerInBin,
+} from './geometry';
 import { autoArrangeCutouts } from './autoArrange';
 
 interface AlignmentToolbarProps {
@@ -24,13 +31,93 @@ interface AlignmentToolbarProps {
 
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v';
 
-const ALIGN_ICONS: Record<AlignType, string> = {
-  left: '⫷',
-  'center-h': '⫿',
-  right: '⫸',
-  top: '⤒',
-  'center-v': '⫾',
-  bottom: '⤓',
+const AlignIcon = ({ type }: { type: AlignType }) => {
+  switch (type) {
+    case 'left':
+      return (
+        <svg
+          className="h-3.5 w-3.5"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <line x1="2" y1="1" x2="2" y2="13" />
+          <line x1="2" y1="4" x2="10" y2="4" />
+          <line x1="2" y1="10" x2="7" y2="10" />
+        </svg>
+      );
+    case 'center-h':
+      return (
+        <svg
+          className="h-3.5 w-3.5"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <line x1="7" y1="1" x2="7" y2="13" strokeDasharray="2 1" />
+          <line x1="3" y1="4" x2="11" y2="4" />
+          <line x1="4" y1="10" x2="10" y2="10" />
+        </svg>
+      );
+    case 'right':
+      return (
+        <svg
+          className="h-3.5 w-3.5"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <line x1="12" y1="1" x2="12" y2="13" />
+          <line x1="4" y1="4" x2="12" y2="4" />
+          <line x1="7" y1="10" x2="12" y2="10" />
+        </svg>
+      );
+    case 'top':
+      return (
+        <svg
+          className="h-3.5 w-3.5"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <line x1="1" y1="2" x2="13" y2="2" />
+          <line x1="4" y1="2" x2="4" y2="10" />
+          <line x1="10" y1="2" x2="10" y2="7" />
+        </svg>
+      );
+    case 'center-v':
+      return (
+        <svg
+          className="h-3.5 w-3.5"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <line x1="1" y1="7" x2="13" y2="7" strokeDasharray="2 1" />
+          <line x1="4" y1="3" x2="4" y2="11" />
+          <line x1="10" y1="4" x2="10" y2="10" />
+        </svg>
+      );
+    case 'bottom':
+      return (
+        <svg
+          className="h-3.5 w-3.5"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <line x1="1" y1="12" x2="13" y2="12" />
+          <line x1="4" y1="4" x2="4" y2="12" />
+          <line x1="10" y1="7" x2="10" y2="12" />
+        </svg>
+      );
+  }
 };
 
 export function AlignmentToolbar({
@@ -96,7 +183,28 @@ export function AlignmentToolbar({
     }
   };
 
-  const alignButton = (type: AlignType, label: string, icon: string) => (
+  const handleDistributeH = () => {
+    const positions = distributeHorizontally(selected, binWidth);
+    for (const [id, pos] of Object.entries(positions)) {
+      onUpdate(id, pos);
+    }
+  };
+
+  const handleDistributeV = () => {
+    const positions = distributeVertically(selected, binDepth);
+    for (const [id, pos] of Object.entries(positions)) {
+      onUpdate(id, pos);
+    }
+  };
+
+  const handleCenterInBin = () => {
+    const positions = centerInBin(selected, binWidth, binDepth);
+    for (const [id, pos] of Object.entries(positions)) {
+      onUpdate(id, pos);
+    }
+  };
+
+  const alignButton = (type: AlignType, label: string) => (
     <button
       type="button"
       className="rounded p-1.5 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors"
@@ -104,7 +212,7 @@ export function AlignmentToolbar({
       title={label}
       aria-label={label}
     >
-      <span className="text-[10px] leading-none">{icon}</span>
+      <AlignIcon type={type} />
     </button>
   );
 
@@ -116,12 +224,56 @@ export function AlignmentToolbar({
 
       {/* Alignment buttons */}
       <div className="flex flex-wrap gap-0.5">
-        {alignButton('left', t('binDesigner.cutouts.alignLeft'), ALIGN_ICONS.left)}
-        {alignButton('center-h', t('binDesigner.cutouts.alignCenterH'), ALIGN_ICONS['center-h'])}
-        {alignButton('right', t('binDesigner.cutouts.alignRight'), ALIGN_ICONS.right)}
-        {alignButton('top', t('binDesigner.cutouts.alignTop'), ALIGN_ICONS.top)}
-        {alignButton('center-v', t('binDesigner.cutouts.alignCenterV'), ALIGN_ICONS['center-v'])}
-        {alignButton('bottom', t('binDesigner.cutouts.alignBottom'), ALIGN_ICONS.bottom)}
+        {alignButton('left', t('binDesigner.cutouts.alignLeft'))}
+        {alignButton('center-h', t('binDesigner.cutouts.alignCenterH'))}
+        {alignButton('right', t('binDesigner.cutouts.alignRight'))}
+        {alignButton('top', t('binDesigner.cutouts.alignTop'))}
+        {alignButton('center-v', t('binDesigner.cutouts.alignCenterV'))}
+        {alignButton('bottom', t('binDesigner.cutouts.alignBottom'))}
+      </div>
+
+      {/* Distribution buttons */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleDistributeH}
+          disabled={selectedIds.length < 3}
+          title={t('binDesigner.cutouts.distributeH')}
+        >
+          <svg
+            className="h-3.5 w-3.5"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <line x1="1" y1="1" x2="1" y2="13" />
+            <line x1="7" y1="3" x2="7" y2="11" />
+            <line x1="13" y1="1" x2="13" y2="13" />
+          </svg>
+          {t('binDesigner.cutouts.distributeH')}
+        </button>
+        <button
+          type="button"
+          className="flex items-center gap-1.5 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleDistributeV}
+          disabled={selectedIds.length < 3}
+          title={t('binDesigner.cutouts.distributeV')}
+        >
+          <svg
+            className="h-3.5 w-3.5"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <line x1="1" y1="1" x2="13" y2="1" />
+            <line x1="3" y1="7" x2="11" y2="7" />
+            <line x1="1" y1="13" x2="13" y2="13" />
+          </svg>
+          {t('binDesigner.cutouts.distributeV')}
+        </button>
       </div>
 
       {/* Auto-arrange */}
@@ -149,7 +301,14 @@ export function AlignmentToolbar({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
+          onClick={handleCenterInBin}
+        >
+          {t('binDesigner.cutouts.centerInBin')}
+        </button>
         <button
           type="button"
           className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"

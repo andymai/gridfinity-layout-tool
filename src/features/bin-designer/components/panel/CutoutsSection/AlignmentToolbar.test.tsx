@@ -122,4 +122,92 @@ describe('AlignmentToolbar', () => {
     expect(gapInput).toBeInTheDocument();
     expect(gapInput).toHaveValue(2);
   });
+
+  it('renders distribute H button', () => {
+    render(<AlignmentToolbar {...defaultProps} />);
+    expect(screen.getByText('binDesigner.cutouts.distributeH')).toBeInTheDocument();
+  });
+
+  it('renders distribute V button', () => {
+    render(<AlignmentToolbar {...defaultProps} />);
+    expect(screen.getByText('binDesigner.cutouts.distributeV')).toBeInTheDocument();
+  });
+
+  it('disables distribute buttons when less than 3 cutouts selected', () => {
+    const singleCutout = [createCutout('a')];
+    render(<AlignmentToolbar {...defaultProps} cutouts={singleCutout} selectedIds={['a']} />);
+    const distributeHBtn = screen.getByText('binDesigner.cutouts.distributeH').closest('button');
+    const distributeVBtn = screen.getByText('binDesigner.cutouts.distributeV').closest('button');
+    expect(distributeHBtn).toBeDisabled();
+    expect(distributeVBtn).toBeDisabled();
+  });
+
+  it('enables distribute buttons when 3+ cutouts selected', () => {
+    const threeCutouts = [
+      createCutout('a', { x: 10 }),
+      createCutout('b', { x: 30 }),
+      createCutout('c', { x: 50 }),
+    ];
+    render(
+      <AlignmentToolbar {...defaultProps} cutouts={threeCutouts} selectedIds={['a', 'b', 'c']} />
+    );
+    const distributeHBtn = screen.getByText('binDesigner.cutouts.distributeH').closest('button');
+    const distributeVBtn = screen.getByText('binDesigner.cutouts.distributeV').closest('button');
+    expect(distributeHBtn).not.toBeDisabled();
+    expect(distributeVBtn).not.toBeDisabled();
+  });
+
+  it('calls onUpdate for each cutout when distributing horizontally', () => {
+    const threeCutouts = [
+      createCutout('a', { x: 10, width: 10 }),
+      createCutout('b', { x: 50, width: 10 }),
+      createCutout('c', { x: 30, width: 10 }),
+    ];
+    render(
+      <AlignmentToolbar {...defaultProps} cutouts={threeCutouts} selectedIds={['a', 'b', 'c']} />
+    );
+    fireEvent.click(screen.getByText('binDesigner.cutouts.distributeH'));
+
+    expect(onUpdate).toHaveBeenCalledTimes(3);
+    expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ x: expect.any(Number) }));
+    expect(onUpdate).toHaveBeenCalledWith('b', expect.objectContaining({ x: expect.any(Number) }));
+    expect(onUpdate).toHaveBeenCalledWith('c', expect.objectContaining({ x: expect.any(Number) }));
+  });
+
+  it('calls onUpdate for each cutout when distributing vertically', () => {
+    const threeCutouts = [
+      createCutout('a', { y: 10, depth: 10 }),
+      createCutout('b', { y: 60, depth: 10 }),
+      createCutout('c', { y: 35, depth: 10 }),
+    ];
+    render(
+      <AlignmentToolbar {...defaultProps} cutouts={threeCutouts} selectedIds={['a', 'b', 'c']} />
+    );
+    fireEvent.click(screen.getByText('binDesigner.cutouts.distributeV'));
+
+    expect(onUpdate).toHaveBeenCalledTimes(3);
+    expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ y: expect.any(Number) }));
+    expect(onUpdate).toHaveBeenCalledWith('b', expect.objectContaining({ y: expect.any(Number) }));
+    expect(onUpdate).toHaveBeenCalledWith('c', expect.objectContaining({ y: expect.any(Number) }));
+  });
+
+  it('renders center-in-bin button', () => {
+    render(<AlignmentToolbar {...defaultProps} />);
+    expect(screen.getByText('binDesigner.cutouts.centerInBin')).toBeInTheDocument();
+  });
+
+  it('calls onUpdate for each cutout when centering in bin', () => {
+    render(<AlignmentToolbar {...defaultProps} />);
+    fireEvent.click(screen.getByText('binDesigner.cutouts.centerInBin'));
+
+    expect(onUpdate).toHaveBeenCalledTimes(2);
+    expect(onUpdate).toHaveBeenCalledWith(
+      'a',
+      expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
+    );
+    expect(onUpdate).toHaveBeenCalledWith(
+      'b',
+      expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
+    );
+  });
 });

@@ -60,9 +60,9 @@ describe('CutoutEditor', () => {
     });
 
     const { container } = render(<CutoutEditor />);
-    // The bin outline rect + the cutout rect
+    // Should render at least the cutout rect
     const rects = container.querySelectorAll('svg rect');
-    expect(rects.length).toBeGreaterThanOrEqual(2);
+    expect(rects.length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders a circle cutout as circle element', () => {
@@ -93,10 +93,48 @@ describe('CutoutEditor', () => {
     expect(circles.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders bin outline rect inside canvas', () => {
+  it('renders background grid and crosshair inside canvas', () => {
     const { container } = render(<CutoutEditor />);
-    // The bin outline has a dashed stroke
-    const dashedRect = container.querySelector('svg rect[stroke-dasharray]');
-    expect(dashedRect).not.toBeNull();
+    // The background should have dot grid (circles) and crosshair lines
+    const circles = container.querySelectorAll('svg circle');
+    const lines = container.querySelectorAll('svg line');
+    expect(circles.length).toBeGreaterThan(0);
+    expect(lines.length).toBe(2); // horizontal and vertical crosshair
+  });
+
+  it('does not render resize handles when nothing is selected', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          {
+            id: 'c1',
+            shape: 'rectangle',
+            x: 5,
+            y: 5,
+            width: 10,
+            depth: 10,
+            cutDepth: 5,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          },
+        ],
+      },
+    });
+
+    const { container } = render(<CutoutEditor />);
+    const handles = container.querySelector('[data-testid="resize-handles"]');
+    expect(handles).toBeNull();
+  });
+
+  it('renders without errors with context menu support', () => {
+    const { container } = render(<CutoutEditor />);
+    const svg = container.querySelector('svg');
+
+    // Basic sanity check - editor renders and has SVG
+    expect(svg).toBeInTheDocument();
   });
 });

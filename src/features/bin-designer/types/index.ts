@@ -13,7 +13,7 @@
 export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted' | 'flat';
 
 /** Bin wall/style variant */
-export type BinStyle = 'standard' | 'slotted';
+export type BinStyle = 'standard' | 'slotted' | 'solid';
 
 /** Slot configuration for one axis */
 export interface AxisSlotConfig {
@@ -223,8 +223,8 @@ export interface Cutout {
   readonly depth: number;
   /** Cavity depth in mm (how deep the cut goes from top surface) */
   readonly cutDepth: number;
-  /** Rotation in degrees (0, 90, 180, 270) */
-  readonly rotation: 0 | 90 | 180 | 270;
+  /** Rotation in degrees (0-359) */
+  readonly rotation: number;
   /** Corner radius for rectangle shape (mm) */
   readonly cornerRadius: number;
   /** Optional label for the cutout */

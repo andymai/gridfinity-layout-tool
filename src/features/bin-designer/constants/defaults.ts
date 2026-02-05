@@ -193,7 +193,12 @@ export function migrateParams(
     }
   }
 
-  const style = params.style ?? DEFAULT_BIN_PARAMS.style;
+  // Migrate legacy base.solid=true → style='solid'
+  const baseConfig = { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) };
+  let style = params.style ?? DEFAULT_BIN_PARAMS.style;
+  if (baseConfig.solid && style !== 'solid') {
+    style = 'solid';
+  }
 
   // Backfill slot config and divider pieces
   const slotConfig: SlotConfig = {
@@ -242,7 +247,7 @@ export function migrateParams(
     ...DEFAULT_BIN_PARAMS,
     ...rest,
     style,
-    base: { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) },
+    base: baseConfig,
     compartments: compartmentsConfig,
     scoop: scoopConfig,
     label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
