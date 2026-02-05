@@ -8,6 +8,8 @@
   "binDesigner.alignment.left": "Links",
   "binDesigner.alignment.right": "Rechts",
   "binDesigner.base": "Montage",
+  "binDesigner.flatFloor": "Platte bodem (zonder socket)",
+  "binDesigner.flatFloorDisablesAttachment": "Niet beschikbaar met platte bodem",
   "binDesigner.group.shape": "Vorm",
   "binDesigner.group.interior": "Interieur",
   "binDesigner.group.base": "Basis",

@@ -139,6 +139,34 @@ describe('edge case generation', () => {
     });
   });
 
+  describe('flat floor (no socket)', () => {
+    testParams('2x2x3 flat floor', {
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+    });
+    testParams('1x1x2 flat floor', {
+      width: 1,
+      depth: 1,
+      height: 2,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+    });
+    testParams('2x2x3 flat floor with stacking lip', {
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: true },
+    });
+    testParams('2x2x3 flat floor without stacking lip', {
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: false },
+    });
+    testParams('2x2x3 flat floor with compartments', {
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+      compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
+    });
+    testParams('0.5x0.5x2 flat floor (half-bin)', {
+      width: 0.5,
+      depth: 0.5,
+      height: 2,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+    });
+  });
+
   describe('stress tests - all features combined', () => {
     testParams(
       '4x4 with everything enabled',

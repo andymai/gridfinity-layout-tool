@@ -111,4 +111,112 @@ describe('useBaseSection', () => {
 
     expect(result.current.meta.summary).toBe('Standard (no attachment)');
   });
+
+  describe('flat floor', () => {
+    it('derives isFlat from base style', () => {
+      const { result } = renderHook(() => useBaseSection());
+
+      // Default: standard style, not flat
+      expect(result.current.state.isFlat).toBe(false);
+    });
+
+    it('toggleFlat sets style to flat', () => {
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.toggleFlat();
+      });
+
+      expect(useDesignerStore.getState().params.base.style).toBe('flat');
+      expect(result.current.state.isFlat).toBe(true);
+    });
+
+    it('toggleFlat off reverts to standard', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+        },
+      });
+
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.toggleFlat();
+      });
+
+      expect(useDesignerStore.getState().params.base.style).toBe('standard');
+      expect(result.current.state.isFlat).toBe(false);
+    });
+
+    it('flat disables magnet and screw', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+        },
+      });
+
+      const { result } = renderHook(() => useBaseSection());
+
+      expect(result.current.state.hasMagnet).toBe(false);
+      expect(result.current.state.hasScrew).toBe(false);
+      expect(result.current.handlers.flatDisabledReason).toBeDefined();
+    });
+
+    it('toggleMagnet is a no-op when flat', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+        },
+      });
+
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.toggleMagnet();
+      });
+
+      expect(useDesignerStore.getState().params.base.style).toBe('flat');
+    });
+
+    it('toggleScrew is a no-op when flat', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+        },
+      });
+
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.toggleScrew();
+      });
+
+      expect(useDesignerStore.getState().params.base.style).toBe('flat');
+    });
+
+    it('flatDisabledReason is undefined when not flat', () => {
+      const { result } = renderHook(() => useBaseSection());
+
+      expect(result.current.handlers.flatDisabledReason).toBeUndefined();
+    });
+
+    it('summary shows flat floor when enabled', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: true },
+        },
+      });
+
+      const { result } = renderHook(() => useBaseSection());
+
+      expect(result.current.meta.summary).toContain('Flat floor');
+      expect(result.current.meta.summary).toContain('Lip');
+      expect(result.current.meta.summary).not.toContain('magnets');
+    });
+  });
 });
