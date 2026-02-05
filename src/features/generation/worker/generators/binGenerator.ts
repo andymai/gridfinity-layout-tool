@@ -607,7 +607,7 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
 /**
  * Build cutout cavity cuts for solid bins.
  * Cutouts cut down from the top surface with configurable depth.
- * Cutouts with the same groupId are unioned before the boolean cut.
+ * All cutout shapes are unioned into a single solid, then boolean-cut from the bin.
  *
  * @param params - Bin configuration (reads cutouts array)
  * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
@@ -639,9 +639,16 @@ function buildCutoutCuts(params: BinParams, wallHeight: number): Shape3D | null 
       }
     }
 
-    // Position: x,y are center coordinates in bin model space (same convention as inserts).
+    // Position: x,y from UI are bottom-left corner; convert to center for brepjs shapes.
     // Z: top of cut sits at wallHeight, extends downward by cutDepth.
-    cutoutShapes.push(shape.translate([cutout.x, cutout.y, wallHeight - cutout.cutDepth]));
+    const effectiveD = cutout.shape === 'circle' ? cutout.width : cutout.depth;
+    cutoutShapes.push(
+      shape.translate([
+        cutout.x + cutout.width / 2,
+        cutout.y + effectiveD / 2,
+        wallHeight - cutout.cutDepth,
+      ])
+    );
   }
 
   return unwrap(fuseAll(cutoutShapes));

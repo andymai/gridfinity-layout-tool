@@ -125,13 +125,15 @@ export function useCutoutInteraction({
         case 'ArrowUp':
           if (selection.size > 0) {
             e.preventDefault();
-            nudgeSelected(0, -NUDGE_AMOUNT);
+            // Increase model Y → shape moves up visually (SVG Y is inverted)
+            nudgeSelected(0, NUDGE_AMOUNT);
           }
           break;
         case 'ArrowDown':
           if (selection.size > 0) {
             e.preventDefault();
-            nudgeSelected(0, NUDGE_AMOUNT);
+            // Decrease model Y → shape moves down visually (SVG Y is inverted)
+            nudgeSelected(0, -NUDGE_AMOUNT);
           }
           break;
       }

@@ -184,6 +184,28 @@ describe('useCutoutInteraction', () => {
       expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ x: 10.5 }));
     });
 
+    it('nudges selected up on ArrowUp (increases model Y)', () => {
+      const { result } = renderHook(() => useCutoutInteraction(defaultOpts));
+      act(() => result.current.selectCutout('a', false));
+
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+      });
+
+      expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ y: 10.5 }));
+    });
+
+    it('nudges selected down on ArrowDown (decreases model Y)', () => {
+      const { result } = renderHook(() => useCutoutInteraction(defaultOpts));
+      act(() => result.current.selectCutout('a', false));
+
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      });
+
+      expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ y: 9.5 }));
+    });
+
     it('does not fire when typing in input', () => {
       const { result } = renderHook(() => useCutoutInteraction(defaultOpts));
       act(() => result.current.selectCutout('a', false));

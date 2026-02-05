@@ -213,9 +213,9 @@ export type CutoutShape = 'rectangle' | 'circle';
 export interface Cutout {
   readonly id: string;
   readonly shape: CutoutShape;
-  /** X position in mm from bin interior left edge */
+  /** X position of left edge in mm from bin interior left edge */
   readonly x: number;
-  /** Y position in mm from bin interior front edge */
+  /** Y position of bottom edge in mm from bin interior front edge */
   readonly y: number;
   /** Width in mm (or diameter for circle) */
   readonly width: number;
