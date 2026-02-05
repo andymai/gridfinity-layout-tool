@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store';
+import { useUIStore, useToastStore, useHalfBinModeStore } from '@/core/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
@@ -182,7 +182,7 @@ describe('useDrawerSettings', () => {
       expect(result.current.halfBinViolation).not.toBeNull();
     });
 
-    it('handleRemediate moves fractional bins to staging', async () => {
+    it('handleRemediate moves fractional bins to staging', () => {
       // Enable half-bin mode
       useUIStore.getState().setHalfBinMode(true);
 
@@ -206,8 +206,8 @@ describe('useDrawerSettings', () => {
       });
 
       // Now remediate
-      await act(async () => {
-        await result.current.handleRemediate();
+      act(() => {
+        result.current.handleRemediate();
       });
 
       // Check bins were moved to staging
@@ -216,6 +216,76 @@ describe('useDrawerSettings', () => {
       expect(fractionalBin?.layerId).toBe(STAGING_ID);
       expect(result.current.halfBinMode).toBe(false);
       expect(result.current.showHalfBinBlockedModal).toBe(false);
+    });
+
+    it('handleDrawerWidthInput auto-enables half-bin mode for fractional value', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      expect(result.current.halfBinMode).toBe(false);
+
+      act(() => {
+        result.current.handleDrawerWidthInput(5.5);
+      });
+
+      expect(result.current.drawer.width).toBe(5.5);
+      expect(result.current.halfBinMode).toBe(true);
+      expect(useToastStore.getState().toasts).toHaveLength(1);
+    });
+
+    it('handleDrawerDepthInput auto-enables half-bin mode for fractional value', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      expect(result.current.halfBinMode).toBe(false);
+
+      act(() => {
+        result.current.handleDrawerDepthInput(4.5);
+      });
+
+      expect(result.current.drawer.depth).toBe(4.5);
+      expect(result.current.halfBinMode).toBe(true);
+      expect(useToastStore.getState().toasts).toHaveLength(1);
+    });
+
+    it('handleDrawerWidthInput snaps non-half fractional to nearest 0.5', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.handleDrawerWidthInput(5.3);
+      });
+
+      expect(result.current.drawer.width).toBe(5.5);
+
+      // Reset for next assertion
+      act(() => {
+        result.current.handleDrawerWidthInput(5.8);
+      });
+
+      expect(result.current.drawer.width).toBe(6);
+    });
+
+    it('handleDrawerWidthInput does not show toast if half-bin mode already enabled', () => {
+      useHalfBinModeStore.getState().setHalfBinMode(true);
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.handleDrawerWidthInput(5.5);
+      });
+
+      expect(result.current.drawer.width).toBe(5.5);
+      expect(result.current.halfBinMode).toBe(true);
+      expect(useToastStore.getState().toasts).toHaveLength(0);
+    });
+
+    it('handleDrawerWidthInput does not enable half-bin mode for whole number', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.handleDrawerWidthInput(5);
+      });
+
+      expect(result.current.drawer.width).toBe(5);
+      expect(result.current.halfBinMode).toBe(false);
+      expect(useToastStore.getState().toasts).toHaveLength(0);
     });
   });
 

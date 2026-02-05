@@ -1272,6 +1272,7 @@
   "toast.fillWithSize": "{count} bins {width}×{depth} ajoutés",
   "toast.galleryAddFailed": "Échec de l'ajout du layout",
   "toast.galleryAdded": "« {name} » ajouté",
+  "toast.halfBinModeAutoEnabled": "Mode demi-bac activé",
   "toast.jsonCopied": "JSON copié dans le presse-papiers",
   "toast.layerFilled": "Calque rempli de bins",
   "toast.layoutCreateFailed": "Échec de la création du layout",

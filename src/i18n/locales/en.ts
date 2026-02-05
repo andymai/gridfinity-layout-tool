@@ -994,6 +994,7 @@ const en: Record<string, string> = {
   'toast.selectedByCategory': 'Selected {count} {name} bin(s)',
   'toast.categoriesSavedAsDefaults': 'Categories saved as defaults',
   'toast.categoriesResetToBuiltIn': 'Reset to built-in categories',
+  'toast.halfBinModeAutoEnabled': 'Half-bin mode enabled',
 
   // ===========================================================================
   // Grid Editor

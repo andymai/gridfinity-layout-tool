@@ -9,7 +9,13 @@ import {
 } from '@/core/store';
 import { useUndoableAction } from '@/core/store/history';
 import { useMutations } from '@/shared/contexts';
-import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import {
+  calcMaxGridUnits,
+  CONSTRAINTS,
+  STAGING_ID,
+  snapToHalf,
+  isFractional,
+} from '@/core/constants';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
@@ -72,7 +78,7 @@ export interface UseDrawerSettingsReturn {
 
   // Half-bin mode handlers
   handleHalfBinToggle: () => void;
-  handleRemediate: () => Promise<void>;
+  handleRemediate: () => void;
 
   // Save defaults handler
   handleSaveDefaults: () => void;
@@ -263,16 +269,26 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // Direct input handlers (for number inputs)
   const handleDrawerWidthInput = useCallback(
     (width: number) => {
-      execute(() => updateDrawer({ width: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width)) }));
+      const snapped = snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width)));
+      execute(() => updateDrawer({ width: snapped }));
+      if (isFractional(snapped) && !halfBinMode) {
+        setHalfBinMode(true);
+        addToast(t('toast.halfBinModeAutoEnabled'), 'info');
+      }
     },
-    [execute, updateDrawer]
+    [execute, updateDrawer, halfBinMode, setHalfBinMode, addToast, t]
   );
 
   const handleDrawerDepthInput = useCallback(
     (depth: number) => {
-      execute(() => updateDrawer({ depth: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth)) }));
+      const snapped = snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth)));
+      execute(() => updateDrawer({ depth: snapped }));
+      if (isFractional(snapped) && !halfBinMode) {
+        setHalfBinMode(true);
+        addToast(t('toast.halfBinModeAutoEnabled'), 'info');
+      }
     },
-    [execute, updateDrawer]
+    [execute, updateDrawer, halfBinMode, setHalfBinMode, addToast, t]
   );
 
   // Fractional edge position handler
@@ -302,10 +318,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   }, [toggleHalfBinMode, layout]);
 
   // Remediate fractional bins by moving them to staging
-  const handleRemediate = useCallback(async () => {
+  const handleRemediate = useCallback(() => {
     if (!halfBinViolation) return;
 
-    await execute(() => {
+    execute(() => {
       // Move all fractional bins to staging
       for (const id of halfBinViolation.binIds) {
         if (isErr(updateBin(toBinId(id), { layerId: STAGING_ID }))) break;
