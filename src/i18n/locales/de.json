@@ -1272,6 +1272,7 @@
   "toast.fillWithSize": "{count} {width}×{depth} Bins hinzugefügt",
   "toast.galleryAddFailed": "Layout konnte nicht hinzugefügt werden",
   "toast.galleryAdded": "\"{name}\" hinzugefügt",
+  "toast.halfBinModeAutoEnabled": "Halbbehälter-Modus aktiviert",
   "toast.jsonCopied": "JSON in Zwischenablage kopiert",
   "toast.layerFilled": "Ebene mit Bins gefüllt",
   "toast.layoutCreateFailed": "Layout-Erstellung fehlgeschlagen",

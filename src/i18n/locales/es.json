@@ -1272,6 +1272,7 @@
   "toast.fillWithSize": "Se agregaron {count} bins {width}×{depth}",
   "toast.galleryAddFailed": "Error al agregar diseño",
   "toast.galleryAdded": "\"{name}\" agregado",
+  "toast.halfBinModeAutoEnabled": "Modo medio contenedor activado",
   "toast.jsonCopied": "JSON copiado al portapapeles",
   "toast.layerFilled": "Capa rellenada con bins",
   "toast.layoutCreateFailed": "Error al crear diseño",

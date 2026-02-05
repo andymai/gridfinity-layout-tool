@@ -986,6 +986,7 @@ const en: Record<string, string> = {
   'toast.notifications': 'Notifications',
   'toast.selectedAll': 'Selected {count} bin(s)',
   'toast.paintModeEnabled': 'Paint mode enabled. Click to place bins.',
+  'toast.halfBinModeAutoEnabled': 'Half-bin mode enabled',
   'toast.layerFilled': 'Layer filled with bins',
   'toast.movedToStash': 'Moved {count} bin(s) to stash',
   'toast.stagingCleared': 'Cleared {count} bin(s) from stash',

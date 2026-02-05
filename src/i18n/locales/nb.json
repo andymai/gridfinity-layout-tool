@@ -1272,6 +1272,7 @@
   "toast.fillWithSize": "Lagt til {count} {width}×{depth} bins",
   "toast.galleryAddFailed": "Kunne ikke legge til layout",
   "toast.galleryAdded": "Lagt til \"{name}\"",
+  "toast.halfBinModeAutoEnabled": "Halvboks-modus aktivert",
   "toast.jsonCopied": "JSON kopiert til utklippstavle",
   "toast.layerFilled": "Lag fylt med bins",
   "toast.layoutCreateFailed": "Kunne ikke opprette layout",

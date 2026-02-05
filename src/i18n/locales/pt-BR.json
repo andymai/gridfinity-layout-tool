@@ -1272,6 +1272,7 @@
   "toast.fillWithSize": "{count} bins {width}×{depth} adicionados",
   "toast.galleryAddFailed": "Falha ao adicionar layout",
   "toast.galleryAdded": "\"{name}\" adicionado",
+  "toast.halfBinModeAutoEnabled": "Modo meio compartimento ativado",
   "toast.jsonCopied": "JSON copiado para a área de transferência",
   "toast.layerFilled": "Camada preenchida com bins",
   "toast.layoutCreateFailed": "Falha ao criar layout",

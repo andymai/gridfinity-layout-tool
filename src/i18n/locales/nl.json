@@ -1272,6 +1272,7 @@
   "toast.fillWithSize": "{count} {width}×{depth} bins toegevoegd",
   "toast.galleryAddFailed": "Toevoegen van layout mislukt",
   "toast.galleryAdded": "\"{name}\" toegevoegd",
+  "toast.halfBinModeAutoEnabled": "Halfbak-modus ingeschakeld",
   "toast.jsonCopied": "JSON gekopieerd naar klembord",
   "toast.layerFilled": "Laag gevuld met bins",
   "toast.layoutCreateFailed": "Aanmaken van layout mislukt",
