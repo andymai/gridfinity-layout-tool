@@ -80,6 +80,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   slotConfig: DEFAULT_SLOT_CONFIG,
   dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
   inserts: [],
+  cutouts: [],
   wallPattern: DEFAULT_WALL_PATTERN_CONFIG,
 } as const;
 
@@ -249,6 +250,7 @@ export function migrateParams(
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
+    cutouts: params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts,
     wallPattern: wallPatternConfig,
   } as BinParams;
 }

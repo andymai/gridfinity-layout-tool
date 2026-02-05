@@ -10,23 +10,34 @@
  * - Base: Base attachments, Physical Units
  */
 
+import { useShallow } from 'zustand/react/shallow';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { InteriorSection } from '../panel/InteriorSection';
 import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
+import { CutoutsSection } from '../panel/CutoutsSection';
 import { SectionGroup } from '../panel/SectionGroup';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
 import { useTranslation } from '@/i18n';
+import { useDesignerStore } from '@/features/bin-designer/store';
 
 export function ParameterPanel() {
   const t = useTranslation();
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
+  const { isSolid, cutoutCount } = useDesignerStore(
+    useShallow((s) => ({
+      isSolid: s.params.base.solid,
+      cutoutCount: s.params.cutouts.length,
+    }))
+  );
+  const cutoutsSummary =
+    cutoutCount > 0 ? t('binDesigner.cutouts.summary', { count: cutoutCount }) : undefined;
 
   return (
     <div className="flex h-full flex-col">
@@ -64,6 +75,19 @@ export function ParameterPanel() {
             <PhysicalUnitsSection />
           </div>
         </SectionGroup>
+
+        {/* Cutouts group (solid mode only) */}
+        {isSolid && (
+          <SectionGroup
+            title={t('binDesigner.group.cutouts')}
+            defaultExpanded
+            summary={cutoutsSummary}
+          >
+            <div className="px-4 py-4">
+              <CutoutsSection />
+            </div>
+          </SectionGroup>
+        )}
 
         {/* Attribution */}
         <div className="px-4 py-4 text-content-disabled text-[10px] leading-relaxed">

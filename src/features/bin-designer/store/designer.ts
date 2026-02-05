@@ -15,6 +15,7 @@ import type {
   LabelTabConfig,
   WallPatternConfig,
   Insert,
+  Cutout,
   ExportFileNameConfig,
   GenerationStatus,
   GenerationResult,
@@ -448,6 +449,73 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         state.params.inserts = [];
+      });
+    },
+
+    // Cutout actions
+    addCutout: (cutout: Cutout) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cutouts = [...state.params.cutouts, cutout];
+      });
+    },
+
+    removeCutout: (id: string) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.filter((c) => c.id !== id);
+      });
+    },
+
+    updateCutout: (id: string, updates: Partial<Cutout>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          c.id === id ? { ...c, ...updates } : c
+        );
+      });
+    },
+
+    clearCutouts: () => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cutouts = [];
+      });
+    },
+
+    duplicateCutouts: (cutoutIds: readonly string[]) => {
+      if (cutoutIds.length === 0) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        const toDuplicate = state.params.cutouts.filter((c) => cutoutIds.includes(c.id));
+        const duplicated = toDuplicate.map((c) => ({
+          ...c,
+          id: crypto.randomUUID(),
+          x: c.x + 5,
+          y: c.y + 5,
+          groupId: null,
+        }));
+        state.params.cutouts = [...state.params.cutouts, ...duplicated];
+      });
+    },
+
+    groupCutouts: (cutoutIds: readonly string[]) => {
+      if (cutoutIds.length < 2) return;
+      const groupId = crypto.randomUUID();
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          cutoutIds.includes(c.id) ? { ...c, groupId } : c
+        );
+      });
+    },
+
+    ungroupCutouts: (cutoutIds: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          cutoutIds.includes(c.id) ? { ...c, groupId: null } : c
+        );
       });
     },
 

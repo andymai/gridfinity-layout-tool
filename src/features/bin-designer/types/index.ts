@@ -168,6 +168,7 @@ export interface BinParams {
   readonly slotConfig: SlotConfig;
   readonly dividerPieces: DividerPieceConfig;
   readonly inserts: Insert[];
+  readonly cutouts: Cutout[];
   readonly wallPattern: WallPatternConfig;
 }
 
@@ -199,6 +200,37 @@ export interface Insert {
   readonly cornerRadius: number;
   /** Optional label for the insert */
   readonly label: string;
+}
+
+// =============================================================================
+// Cutout Types (Top-Down Cavity Cuts for Solid Bins)
+// =============================================================================
+
+/** Shape of a top-down cutout into solid bin body */
+export type CutoutShape = 'rectangle' | 'circle';
+
+/** A positioned cutout instance on the bin top surface */
+export interface Cutout {
+  readonly id: string;
+  readonly shape: CutoutShape;
+  /** X position in mm from bin interior left edge */
+  readonly x: number;
+  /** Y position in mm from bin interior front edge */
+  readonly y: number;
+  /** Width in mm (or diameter for circle) */
+  readonly width: number;
+  /** Depth in mm (ignored for circle) */
+  readonly depth: number;
+  /** Cavity depth in mm (how deep the cut goes from top surface) */
+  readonly cutDepth: number;
+  /** Rotation in degrees (0, 90, 180, 270) */
+  readonly rotation: 0 | 90 | 180 | 270;
+  /** Corner radius for rectangle shape (mm) */
+  readonly cornerRadius: number;
+  /** Optional label for the cutout */
+  readonly label: string;
+  /** Group ID for boolean union (null = ungrouped) */
+  readonly groupId: string | null;
 }
 
 // =============================================================================
@@ -377,6 +409,15 @@ export interface DesignerState {
   removeInsert: (id: string) => void;
   updateInsert: (id: string, updates: Partial<Insert>) => void;
   clearInserts: () => void;
+
+  // Cutout actions
+  addCutout: (cutout: Cutout) => void;
+  removeCutout: (id: string) => void;
+  updateCutout: (id: string, updates: Partial<Cutout>) => void;
+  clearCutouts: () => void;
+  duplicateCutouts: (cutoutIds: readonly string[]) => void;
+  groupCutouts: (cutoutIds: readonly string[]) => void;
+  ungroupCutouts: (cutoutIds: readonly string[]) => void;
 
   // Generation actions
   setGenerationStatus: (status: GenerationStatus) => void;

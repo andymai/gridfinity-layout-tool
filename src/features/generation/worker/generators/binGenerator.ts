@@ -602,6 +602,51 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
   return unwrap(fuseAll(insertShapes));
 }
 
+// ─── Cutout Builder (Solid Mode Only) ────────────────────────────────────────
+
+/**
+ * Build cutout cavity cuts for solid bins.
+ * Cutouts cut down from the top surface with configurable depth.
+ * Cutouts with the same groupId are unioned before the boolean cut.
+ *
+ * @param params - Bin configuration (reads cutouts array)
+ * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
+ */
+function buildCutoutCuts(params: BinParams, wallHeight: number): Shape3D | null {
+  if (params.cutouts.length === 0) return null;
+
+  const cutoutShapes: Shape3D[] = [];
+
+  for (const cutout of params.cutouts) {
+    let shape: Shape3D;
+
+    switch (cutout.shape) {
+      case 'circle': {
+        shape = sketch(drawCircle(cutout.width / 2), 'XY').extrude(cutout.cutDepth);
+        break;
+      }
+      case 'rectangle':
+      default: {
+        if (cutout.cornerRadius > 0) {
+          shape = sketch(
+            drawRoundedRectangle(cutout.width, cutout.depth, cutout.cornerRadius),
+            'XY'
+          ).extrude(cutout.cutDepth);
+        } else {
+          shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+        }
+        break;
+      }
+    }
+
+    // Position: x,y are center coordinates in bin model space (same convention as inserts).
+    // Z: top of cut sits at wallHeight, extends downward by cutDepth.
+    cutoutShapes.push(shape.translate([cutout.x, cutout.y, wallHeight - cutout.cutDepth]));
+  }
+
+  return unwrap(fuseAll(cutoutShapes));
+}
+
 // ─── Label Tab Builder ───────────────────────────────────────────────────────
 
 /**
@@ -1168,6 +1213,16 @@ export function generateBin(
             e instanceof Error ? e.message : e
           );
         }
+      }
+    }
+  } else {
+    // Solid mode: apply cutouts (top-down cavity cuts into the solid block)
+    const cutoutCuts = buildCutoutCuts(params, wallHeight);
+    if (cutoutCuts) {
+      try {
+        bin = unwrap(bin.cut(cutoutCuts));
+      } catch (e) {
+        console.warn('[BinGen] Cutout cut failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
   }

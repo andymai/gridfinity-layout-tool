@@ -11,6 +11,8 @@
     "binDesigner.format",
     "binDesigner.format3MF",
     "binDesigner.formatSTL",
+    "binDesigner.cutouts.addRectangle",
+    "binDesigner.cutouts.label",
     "binDesigner.group.base",
     "binDesigner.group.interior",
     "binDesigner.layout",
