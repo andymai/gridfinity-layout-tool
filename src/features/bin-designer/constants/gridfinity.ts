@@ -64,7 +64,7 @@ export const STYLE_WALL_THICKNESS: Record<string, number> = {
 /** Dimension constraints for bin parameters */
 export const DESIGNER_CONSTRAINTS = {
   MIN_DIMENSION: 0.5, // grid units
-  MAX_DIMENSION: 8, // grid units (expanded: standard Gridfinity supports large bins)
+  MAX_DIMENSION: 16, // grid units (expanded: standard Gridfinity supports large bins)
   DIMENSION_STEP: 0.5, // grid units
   MIN_HEIGHT: 2, // height units (1U = base only, 2U minimum for usable cavity)
   MAX_HEIGHT: 20, // height units (expanded: tall bins for tools/bottles)

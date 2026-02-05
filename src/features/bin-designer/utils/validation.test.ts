@@ -28,7 +28,7 @@ describe('validateBinParams', () => {
     });
 
     it('should reject width above maximum', () => {
-      const result = validateBinParams(makeParams({ width: 9 }));
+      const result = validateBinParams(makeParams({ width: 17 }));
       const error = expectErr(result);
       expect(error.code).toBe('DIMENSION_OUT_OF_RANGE');
     });
@@ -39,7 +39,7 @@ describe('validateBinParams', () => {
     });
 
     it('should reject depth above maximum', () => {
-      const result = validateBinParams(makeParams({ depth: 9 }));
+      const result = validateBinParams(makeParams({ depth: 17 }));
       expectErr(result);
     });
 
@@ -492,8 +492,8 @@ describe('validateBinParams', () => {
       expectOk(validateBinParams(makeParams({ width: 7 })));
     });
 
-    it('should accept 8-unit width (new maximum)', () => {
-      expectOk(validateBinParams(makeParams({ width: 8 })));
+    it('should accept 16-unit width (maximum)', () => {
+      expectOk(validateBinParams(makeParams({ width: 16 })));
     });
 
     it('should accept height 15', () => {
@@ -508,8 +508,8 @@ describe('validateBinParams', () => {
       expectErr(validateBinParams(makeParams({ height: 21 })));
     });
 
-    it('should reject width 8.5', () => {
-      expectErr(validateBinParams(makeParams({ width: 8.5 })));
+    it('should reject width 16.5', () => {
+      expectErr(validateBinParams(makeParams({ width: 16.5 })));
     });
   });
 });
