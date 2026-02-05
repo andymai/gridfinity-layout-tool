@@ -7,6 +7,7 @@ import { PrintListSummary, PrintListEmpty } from '@/features/print-export/compon
 import { SplitPreview } from '@/components/Print/SplitPreview';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 const OVERFLOW_PREFIX = '+';
 
@@ -57,9 +58,11 @@ export function MobilePrintList() {
         </span>
         <div className="flex items-center gap-2">
           {/* Expand button */}
-          <button
+          <Button
             onClick={handleExpand}
-            className="btn btn-ghost btn-sm gap-1.5"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5"
             aria-label={t('mobile.printList.expandBinList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,9 +74,9 @@ export function MobilePrintList() {
               />
             </svg>
             {t('mobile.printList.expand')}
-          </button>
+          </Button>
           {/* Copy button */}
-          <button onClick={handleCopy} className="btn btn-ghost btn-sm gap-1.5">
+          <Button onClick={handleCopy} variant="ghost" size="sm" className="gap-1.5">
             {copyFeedback ? (
               <>
                 <svg
@@ -104,7 +107,7 @@ export function MobilePrintList() {
                 {t('common.copy')}
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
 

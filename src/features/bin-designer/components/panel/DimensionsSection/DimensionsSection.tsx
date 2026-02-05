@@ -7,8 +7,7 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Collapsible, Stepper } from '@/design-system';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { useDimensionsSection } from './useDimensionsSection';
 
@@ -16,26 +15,21 @@ export function DimensionsSection() {
   const { state, handlers, meta, t } = useDimensionsSection();
 
   return (
-    <CollapsibleSection
-      title={t('binDesigner.dimensions')}
-      defaultExpanded={true}
-      summary={meta.summary}
-    >
+    <Collapsible title={t('binDesigner.dimensions')} defaultExpanded={true} summary={meta.summary}>
       <div className="space-y-3">
         {/* Width and Depth on same row with swap button */}
         <div className="flex items-end gap-2">
           {/* Width */}
           <div className="flex-1 min-w-0">
             <span className="mb-1 block text-xs text-content-tertiary">{t('common.width')}</span>
-            <StepperControl
+            <Stepper
               value={state.width}
               onChange={(v) => handlers.setParam('width', v)}
               onStep={handlers.handleWidthStep}
               min={state.minDimension}
               max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
               step={state.dimensionStep}
-              variant="desktop"
-              ariaLabel="Width"
+              aria-label="Width"
             />
           </div>
 
@@ -65,15 +59,14 @@ export function DimensionsSection() {
           {/* Depth */}
           <div className="flex-1 min-w-0">
             <span className="mb-1 block text-xs text-content-tertiary">{t('common.depth')}</span>
-            <StepperControl
+            <Stepper
               value={state.depth}
               onChange={(v) => handlers.setParam('depth', v)}
               onStep={handlers.handleDepthStep}
               min={state.minDimension}
               max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
               step={state.dimensionStep}
-              variant="desktop"
-              ariaLabel="Depth"
+              aria-label="Depth"
             />
           </div>
         </div>
@@ -104,15 +97,14 @@ export function DimensionsSection() {
             <span className="text-xs text-content-tertiary">{t('common.height')}</span>
             <span className="text-[11px] tabular-nums text-content-tertiary">{state.height}u</span>
           </div>
-          <StepperControl
+          <Stepper
             value={state.height}
             onChange={(v) => handlers.setParam('height', v)}
             onStep={handlers.handleHeightStep}
             min={DESIGNER_CONSTRAINTS.MIN_HEIGHT}
             max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
             step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
-            variant="desktop"
-            ariaLabel="Height"
+            aria-label="Height"
           />
         </div>
 
@@ -139,6 +131,6 @@ export function DimensionsSection() {
           <Checkbox checked={state.halfBinMode} variant="desktop" />
         </div>
       </div>
-    </CollapsibleSection>
+    </Collapsible>
   );
 }

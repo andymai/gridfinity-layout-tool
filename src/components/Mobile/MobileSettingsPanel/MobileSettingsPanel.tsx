@@ -5,7 +5,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '@/components/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Stepper } from '@/design-system';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
@@ -73,30 +73,30 @@ export function MobileSettingsPanel() {
           {/* Width */}
           <div>
             <label className="block text-sm mb-1 text-content-tertiary">{t('common.width')}</label>
-            <StepperControl
+            <Stepper
               value={drawer.width}
               onChange={handleDrawerWidthInput}
               onStep={handleDrawerWidthChange}
               min={0.5}
               max={CONSTRAINTS.GRID_MAX}
               step={widthStep}
-              variant="mobile"
-              ariaLabel="Drawer width in grid units"
+              size="lg"
+              aria-label="Drawer width in grid units"
             />
           </div>
 
           {/* Depth */}
           <div>
             <label className="block text-sm mb-1 text-content-tertiary">{t('common.depth')}</label>
-            <StepperControl
+            <Stepper
               value={drawer.depth}
               onChange={handleDrawerDepthInput}
               onStep={handleDrawerDepthChange}
               min={0.5}
               max={CONSTRAINTS.GRID_MAX}
               step={depthStep}
-              variant="mobile"
-              ariaLabel="Drawer depth in grid units"
+              size="lg"
+              aria-label="Drawer depth in grid units"
             />
           </div>
         </div>
@@ -104,13 +104,13 @@ export function MobileSettingsPanel() {
         {/* Height */}
         <div>
           <label className="block text-sm mb-1 text-content-tertiary">{t('common.height')}</label>
-          <StepperControl
+          <Stepper
             value={drawer.height}
             onStep={handleDrawerHeightChange}
             min={1}
             max={CONSTRAINTS.GRID_MAX}
-            variant="mobile"
-            ariaLabel="Drawer height in units"
+            size="lg"
+            aria-label="Drawer height in units"
             displayValue={`${drawer.height}u`}
           />
         </div>
@@ -161,7 +161,7 @@ export function MobileSettingsPanel() {
               {t('mobile.settings.allow05UnitPrecision')}
             </p>
           </div>
-          <Checkbox checked={halfBinMode} variant="mobile" />
+          <Checkbox checked={halfBinMode} />
         </div>
       </section>
 

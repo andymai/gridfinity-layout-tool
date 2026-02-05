@@ -5,7 +5,7 @@ import { useToastStore } from '@/core/store/toast';
 import { STAGING_ID } from '@/core/constants';
 import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Collapsible, Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 // Square sizes
@@ -190,7 +190,7 @@ export function ActiveLayerPanel() {
 
   return (
     <div>
-      <CollapsibleSection title={t('layers.binPalette')} variant="default">
+      <Collapsible title={t('layers.binPalette')}>
         <p className="text-xs text-content-tertiary mb-3">
           {t('layers.binPaletteInstruction')}{' '}
           <span className="text-content-disabled">{t('layers.binPaletteHint')}</span>
@@ -233,22 +233,23 @@ export function ActiveLayerPanel() {
 
         {/* Fill button when size selected */}
         {paintSize && (
-          <button
+          <Button
             onClick={() => handleFill(paintSize.width, paintSize.depth)}
-            className="btn btn-primary w-full justify-center mt-3 text-sm"
+            variant="primary"
+            className="w-full justify-center mt-3 text-sm"
             title={`Fill empty space with ${paintSize.width}×${paintSize.depth} bins`}
             aria-label={`Fill layer with ${paintSize.width} by ${paintSize.depth} bins`}
           >
             {t('layers.fillWith')}
             {paintSize.width}×{paintSize.depth}
-          </button>
+          </Button>
         )}
 
         {/* Fill gaps button */}
-        <button
+        <Button
           onClick={handleFillGaps}
           disabled={emptyCells === 0}
-          className="btn btn-secondary w-full justify-center mt-2 text-sm"
+          className="w-full justify-center mt-2 text-sm"
           title={
             emptyCells > 0
               ? t('layers.fillGapsTitle', { count: emptyCells })
@@ -264,13 +265,14 @@ export function ActiveLayerPanel() {
             />
           </svg>
           {emptyCells > 0 ? t('layers.fillGaps', { count: emptyCells }) : t('layers.noGaps')}
-        </button>
+        </Button>
 
         {/* Clear layer button */}
-        <button
+        <Button
           onClick={() => setShowClearConfirm(true)}
           disabled={layerBins.length === 0}
-          className="btn btn-ghost w-full justify-center mt-2 text-sm text-error hover:bg-error/10"
+          variant="ghost"
+          className="w-full justify-center mt-2 text-sm text-error hover:bg-error/10"
           title={
             layerBins.length > 0
               ? t('layers.clearBinsTitle', { count: layerBins.length })
@@ -288,8 +290,8 @@ export function ActiveLayerPanel() {
           {layerBins.length > 0
             ? t('layers.clearBins', { count: layerBins.length })
             : t('layers.noBins')}
-        </button>
-      </CollapsibleSection>
+        </Button>
+      </Collapsible>
 
       {/* Clear confirmation dialog */}
       <ConfirmDialog

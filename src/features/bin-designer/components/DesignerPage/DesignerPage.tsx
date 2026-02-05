@@ -40,6 +40,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import type { SaveStatus } from '@/features/bin-designer/types';
 import { binId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface DesignerPageProps {
   /** Unused - navigation is handled by ToolSwitcher */
@@ -407,9 +408,11 @@ export function DesignerPage(_props: DesignerPageProps) {
           </button>
 
           {/* Designs button (icon only, for mobile) */}
-          <button
+          <Button
             onClick={() => setDesignListOpen(true)}
-            className="sm:hidden btn btn-ghost btn-icon"
+            variant="ghost"
+            iconOnly
+            className="sm:hidden"
             title={t('binDesigner.savedDesigns')}
             aria-label={t('binDesigner.openDesignList')}
           >
@@ -421,7 +424,7 @@ export function DesignerPage(_props: DesignerPageProps) {
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
-          </button>
+          </Button>
 
           {/* Export button */}
           <button
@@ -449,10 +452,11 @@ export function DesignerPage(_props: DesignerPageProps) {
 
           {/* Undo/Redo buttons */}
           <div className="flex items-center">
-            <button
+            <Button
               onClick={undo}
               disabled={!canUndo}
-              className="btn btn-ghost btn-icon"
+              variant="ghost"
+              iconOnly
               title={`Undo (${modKey}+Z)`}
               aria-label={`Undo (${modKey}+Z)`}
             >
@@ -464,11 +468,12 @@ export function DesignerPage(_props: DesignerPageProps) {
                   d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
                 />
               </svg>
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={redo}
               disabled={!canRedo}
-              className="btn btn-ghost btn-icon"
+              variant="ghost"
+              iconOnly
               title={`Redo (${modKey}+Y)`}
               aria-label={`Redo (${modKey}+Y)`}
             >
@@ -480,7 +485,7 @@ export function DesignerPage(_props: DesignerPageProps) {
                   d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       </header>

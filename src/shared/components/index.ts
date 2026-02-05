@@ -2,12 +2,9 @@
 // Reusable UI primitives with no domain coupling
 
 export { Checkbox } from './Checkbox';
-export { CollapsibleSection } from './CollapsibleSection';
 export { ConfirmDialog } from './ConfirmDialog';
 export { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from './ContextMenu';
 export { DeferredNumberInput } from './DeferredNumberInput';
-export { StepperControl } from './StepperControl';
-export type { StepperVariant } from './StepperControl';
 export { ToastContainer } from './Toast';
 
 export { LoadingFallback } from './LoadingFallback';
@@ -15,11 +12,10 @@ export { LoadingFallback } from './LoadingFallback';
 // Layout primitives
 export { SectionHeader } from './SectionHeader';
 export { SettingsRow } from './SettingsRow';
-export { SelectDropdown } from './SelectDropdown';
 export { BulkIncrementControl } from './BulkIncrementControl';
 export { ToolSwitcher } from './ToolSwitcher';
 export { ViewModeToggle } from './ViewModeToggle';
 export type { ViewMode } from './ViewModeToggle';
 export { TwoClickDeleteButton, useTwoClickDelete } from './TwoClickDeleteButton';
-export { ItemListShell, ItemSearch, SortDropdown } from './ItemListShell';
+export { ItemListShell, ItemSearch } from './ItemListShell';
 export type { ItemListShellProps, SortOption } from './ItemListShell';

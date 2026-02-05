@@ -400,7 +400,6 @@
    LANDSCAPE MOBILE OPTIMIZATION
    =========================================== */
 /* Default: hide landscape nav buttons (shown only in landscape mode) */
-/* Use higher specificity to override .btn styles */
 .mobile-header .landscape-nav-button {
   display: none;
 }
@@ -1007,89 +1006,6 @@ input[type='range']:hover::-moz-range-thumb {
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-elevated);
-  }
-
-  /* Button base with tactile feel */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 16px;
-    border-radius: var(--radius-md);
-    font-weight: var(--font-medium);
-    font-size: var(--text-sm);
-    transition: all var(--transition-fast);
-    cursor: pointer;
-    border: 1px solid transparent;
-  }
-
-  .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-    filter: grayscale(0.2);
-  }
-
-  /* Button variants */
-  .btn-secondary {
-    background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-elevated) 100%);
-    border-color: var(--border-default);
-    color: var(--text-primary);
-    box-shadow:
-      var(--shadow-sm),
-      inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: linear-gradient(180deg, var(--bg-active) 0%, var(--bg-hover) 100%);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
-
-  .btn-secondary:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .btn-primary {
-    background: linear-gradient(180deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
-    color: #000;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
-
-  .btn-danger {
-    background: linear-gradient(180deg, #ef4444 0%, var(--color-danger) 100%);
-    color: #fff;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .btn-danger:hover:not(:disabled) {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-secondary);
-  }
-
-  .btn-ghost:hover:not(:disabled) {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-  }
-
-  /* Icon button */
-  .btn-icon {
-    padding: 8px;
-    min-width: var(--touch-target);
-    min-height: var(--touch-target);
   }
 
   /* Input styles */

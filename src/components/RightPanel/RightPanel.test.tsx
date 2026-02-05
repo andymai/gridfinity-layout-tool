@@ -49,13 +49,16 @@ vi.mock('@/features/print-export/components', () => ({
   PrintListEmpty: () => <div data-testid="print-list-empty">No bins to print</div>,
 }));
 
-// Mock CollapsibleSection
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ title, children }: { title: string; children: React.ReactNode }) => (
+// Mock design-system
+vi.mock('@/design-system', () => ({
+  Collapsible: ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div data-testid="collapsible-section">
       <div data-testid="collapsible-title">{title}</div>
       {children}
     </div>
+  ),
+  Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button {...props}>{children}</button>
   ),
 }));
 

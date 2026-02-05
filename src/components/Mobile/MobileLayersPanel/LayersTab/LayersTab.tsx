@@ -12,6 +12,7 @@ import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
+import { Button } from '@/design-system';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.
@@ -421,12 +422,12 @@ export function LayersTab() {
       </div>
 
       {/* Add layer button */}
-      <button onClick={handleAddLayer} disabled={!canAddLayer} className="btn btn-primary w-full">
+      <Button onClick={handleAddLayer} disabled={!canAddLayer} variant="primary" className="w-full">
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         {t('layers.addLayer')}
-      </button>
+      </Button>
 
       <ConfirmDialog
         isOpen={deleteLayerId !== null}

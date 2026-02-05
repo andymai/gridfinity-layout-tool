@@ -19,6 +19,7 @@ import type { LayoutEntry, SharePermission } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation, useFormatting } from '@/i18n';
+import { Button } from '@/design-system';
 
 /**
  * Mobile-optimized layouts panel with larger touch targets and swipe gestures.
@@ -375,10 +376,7 @@ export function MobileLayoutsPanel() {
                 {/* Action buttons for active layout */}
                 {isActive && (
                   <div className="flex items-center gap-2 px-4 pb-4">
-                    <button
-                      onClick={() => handleRenameRequest(entry.id)}
-                      className="btn btn-secondary flex-1 h-11"
-                    >
+                    <Button onClick={() => handleRenameRequest(entry.id)} className="flex-1 h-11">
                       <svg
                         className="w-4 h-4 mr-1.5"
                         fill="none"
@@ -393,11 +391,8 @@ export function MobileLayoutsPanel() {
                         />
                       </svg>
                       {t('common.rename')}
-                    </button>
-                    <button
-                      onClick={() => handleShare(entry.id)}
-                      className="btn btn-secondary flex-1 h-11"
-                    >
+                    </Button>
+                    <Button onClick={() => handleShare(entry.id)} className="flex-1 h-11">
                       <svg
                         className="w-4 h-4 mr-1.5"
                         fill="none"
@@ -412,11 +407,8 @@ export function MobileLayoutsPanel() {
                         />
                       </svg>
                       {t('common.share')}
-                    </button>
-                    <button
-                      onClick={() => handleDuplicate(entry.id)}
-                      className="btn btn-secondary flex-1 h-11"
-                    >
+                    </Button>
+                    <Button onClick={() => handleDuplicate(entry.id)} className="flex-1 h-11">
                       <svg
                         className="w-4 h-4 mr-1.5"
                         fill="none"
@@ -431,7 +423,7 @@ export function MobileLayoutsPanel() {
                         />
                       </svg>
                       {t('common.duplicate')}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -493,12 +485,12 @@ export function MobileLayoutsPanel() {
       </button>
 
       {/* Create new button */}
-      <button onClick={handleCreateNew} className="btn btn-secondary w-full mt-3 h-12">
+      <Button onClick={handleCreateNew} className="w-full mt-3 h-12">
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         {t('mobile.layouts.newLayout')}
-      </button>
+      </Button>
 
       {/* Delete confirmation dialog */}
       <ConfirmDialog

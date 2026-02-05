@@ -3,6 +3,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface MobileGridToolbarProps {
   onFitToScreen: () => void;
@@ -96,10 +97,13 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
       {/* Right: 3D preview + Zoom controls */}
       <div className="flex items-center gap-1 flex-shrink-0">
         {/* 3D Preview toggle */}
-        <button
+        <Button
           onClick={toggleIsometricPreview}
-          className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-secondary'} w-10 h-10 p-0`}
-          aria-label={showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')}
+          variant={showIsometricPreview ? 'primary' : 'secondary'}
+          className="w-10 h-10 p-0"
+          aria-label={
+            showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')
+          }
           title={showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -110,34 +114,30 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
               d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
             />
           </svg>
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={zoomOut}
           disabled={!canZoomOut}
-          className="btn btn-secondary w-10 h-10 p-0"
+          className="w-10 h-10 p-0"
           aria-label={t('toolbar.zoomOut')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
           </svg>
-        </button>
-        <button
-          onClick={onFitToScreen}
-          className="btn btn-secondary px-3 h-10"
-          aria-label={t('toolbar.fitToScreen')}
-        >
+        </Button>
+        <Button onClick={onFitToScreen} className="px-3 h-10" aria-label={t('toolbar.fitToScreen')}>
           <span className="text-sm font-medium">{Math.round(zoom * 100)}%</span>
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={zoomIn}
           disabled={!canZoomIn}
-          className="btn btn-secondary w-10 h-10 p-0"
+          className="w-10 h-10 p-0"
           aria-label={t('toolbar.zoomIn')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-        </button>
+        </Button>
       </div>
     </div>
   );

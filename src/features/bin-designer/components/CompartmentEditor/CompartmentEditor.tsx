@@ -16,7 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Stepper } from '@/design-system';
 import { SnappingSlider } from '../controls/SnappingSlider';
 import type { SnappingSliderOption } from '../controls/SnappingSlider';
 import {
@@ -394,30 +394,28 @@ export function CompartmentEditor() {
             <span className="mb-1 block text-xs text-content-tertiary">
               {t('binDesigner.columns')}
             </span>
-            <StepperControl
+            <Stepper
               value={cols}
               onChange={handleColsChange}
               onStep={handleColsStep}
               min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
               max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
               step={1}
-              variant="desktop"
-              ariaLabel="Columns"
+              aria-label="Columns"
             />
           </div>
           <div>
             <span className="mb-1 block text-xs text-content-tertiary">
               {t('binDesigner.rows')}
             </span>
-            <StepperControl
+            <Stepper
               value={rows}
               onChange={handleRowsChange}
               onStep={handleRowsStep}
               min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
               max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
               step={1}
-              variant="desktop"
-              ariaLabel="Rows"
+              aria-label="Rows"
             />
           </div>
         </div>

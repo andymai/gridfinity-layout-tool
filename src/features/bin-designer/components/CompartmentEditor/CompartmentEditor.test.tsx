@@ -22,7 +22,7 @@ describe('CompartmentEditor', () => {
 
   it('shows grid controls for columns and rows', () => {
     render(<CompartmentEditor />);
-    const steppers = screen.getAllByRole('spinbutton');
+    const steppers = screen.getAllByRole('textbox');
     expect(steppers.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -81,7 +81,7 @@ describe('CompartmentEditor', () => {
       setCompartmentGrid,
     });
     render(<CompartmentEditor />);
-    const steppers = screen.getAllByRole('spinbutton');
+    const steppers = screen.getAllByRole('textbox');
     fireEvent.change(steppers[0], { target: { value: '3' } });
     fireEvent.blur(steppers[0]);
     expect(setCompartmentGrid).toHaveBeenCalledWith(3, DEFAULT_BIN_PARAMS.compartments.rows);

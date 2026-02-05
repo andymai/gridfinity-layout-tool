@@ -26,9 +26,9 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-// Mock CollapsibleSection to show content directly
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({
+// Mock design-system to show content directly
+vi.mock('@/design-system', () => ({
+  Collapsible: ({
     children,
     title,
     actions,
@@ -44,6 +44,9 @@ vi.mock('@/shared/components/CollapsibleSection', () => ({
       </div>
       {children}
     </div>
+  ),
+  Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button {...props}>{children}</button>
   ),
 }));
 

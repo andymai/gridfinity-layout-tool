@@ -6,7 +6,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Collapsible, Button } from '@/design-system';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
@@ -256,10 +256,12 @@ export function LayerPanel() {
   if (!activeLayer) return null;
 
   const addLayerButton = (
-    <button
+    <Button
       onClick={handleAddLayer}
       disabled={!canAddLayer}
-      className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+      variant="ghost"
+      iconOnly
+      className="w-7 h-7 p-0 min-w-0 min-h-0"
       title={
         !canAddLayer
           ? heightFull
@@ -272,12 +274,12 @@ export function LayerPanel() {
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
       </svg>
-    </button>
+    </Button>
   );
 
   return (
     <div>
-      <CollapsibleSection title={t('common.layers')} variant="default" actions={addLayerButton}>
+      <Collapsible title={t('common.layers')} actions={addLayerButton}>
         {/* Height capacity indicator - only show for multiple layers */}
         {hasMultipleLayers && (
           <div className="flex items-center gap-2 mb-3">
@@ -525,7 +527,7 @@ export function LayerPanel() {
             }}
           />
         </div>
-      </CollapsibleSection>
+      </Collapsible>
 
       {/* Delete layer confirmation */}
       <ConfirmDialog

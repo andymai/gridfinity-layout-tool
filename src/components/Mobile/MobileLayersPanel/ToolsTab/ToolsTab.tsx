@@ -6,6 +6,7 @@ import { useToastStore } from '@/core/store/toast';
 import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 // Square sizes (matching desktop ActiveLayerPanel)
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
@@ -222,19 +223,20 @@ export function ToolsTab() {
       <div className="mt-6 space-y-2">
         {/* Fill with selected size (conditional) */}
         {paintSize && (
-          <button
+          <Button
             onClick={() => handleFill(paintSize.width, paintSize.depth)}
-            className="btn btn-primary w-full h-11 justify-center"
+            variant="primary"
+            className="w-full h-11 justify-center"
           >
             {t('mobile.tools.fillWithSize', { width: paintSize.width, depth: paintSize.depth })}
-          </button>
+          </Button>
         )}
 
         {/* Fill Gaps */}
-        <button
+        <Button
           onClick={handleFillGaps}
           disabled={emptyCells === 0}
-          className="btn btn-secondary w-full h-11 justify-center"
+          className="w-full h-11 justify-center"
         >
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -247,13 +249,14 @@ export function ToolsTab() {
           {emptyCells > 0
             ? t('mobile.tools.fillGaps', { count: emptyCells })
             : t('mobile.tools.noGaps')}
-        </button>
+        </Button>
 
         {/* Clear Layer */}
-        <button
+        <Button
           onClick={() => setShowClearConfirm(true)}
           disabled={layerBins.length === 0}
-          className="btn btn-ghost w-full h-11 justify-center text-error hover:bg-error/10"
+          variant="ghost"
+          className="w-full h-11 justify-center text-error hover:bg-error/10"
         >
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -266,7 +269,7 @@ export function ToolsTab() {
           {layerBins.length > 0
             ? t('mobile.tools.clearBins', { count: layerBins.length })
             : t('mobile.tools.noBins')}
-        </button>
+        </Button>
       </div>
 
       {/* Clear confirmation dialog */}

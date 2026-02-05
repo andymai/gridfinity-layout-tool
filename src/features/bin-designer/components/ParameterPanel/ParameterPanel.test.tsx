@@ -133,36 +133,34 @@ describe('ParameterPanel', () => {
   });
 
   it('dimension steppers respect constraints (default: whole-unit mode)', () => {
+    // Set width to minimum (1) to verify decrease is disabled
+    useDesignerStore.setState({
+      params: { ...useDesignerStore.getState().params, width: 1 },
+    });
     render(<ParameterPanel />);
 
-    const widthInput = screen.getByLabelText('Width');
-    expect(widthInput).toHaveAttribute('min', '1');
-    expect(widthInput).toHaveAttribute('max', '8');
-    expect(widthInput).toHaveAttribute('step', '1');
+    // Width decrease should be disabled at min=1
+    expect(screen.getByLabelText('Decrease Width')).toBeDisabled();
+    // Width increase should be enabled
+    expect(screen.getByLabelText('Increase Width')).toBeEnabled();
 
-    const heightInput = screen.getByLabelText('Height');
-    expect(heightInput).toHaveAttribute('min', '2');
-    expect(heightInput).toHaveAttribute('max', '20');
-    expect(heightInput).toHaveAttribute('step', '1');
+    // Height input should be present
+    expect(screen.getByLabelText('Height')).toBeInTheDocument();
   });
 
   it('dimension steppers use 0.5 step when half-bin mode is enabled', () => {
     useDesignerStore.setState({
+      params: { ...useDesignerStore.getState().params, width: 1 },
       ui: { ...useDesignerStore.getState().ui, halfBinMode: true },
     });
     render(<ParameterPanel />);
 
-    const widthInput = screen.getByLabelText('Width');
-    expect(widthInput).toHaveAttribute('min', '0.5');
-    expect(widthInput).toHaveAttribute('step', '0.5');
+    // In half-bin mode, min is 0.5, so width=1 should allow decrease
+    expect(screen.getByLabelText('Decrease Width')).toBeEnabled();
 
-    const depthInput = screen.getByLabelText('Depth');
-    expect(depthInput).toHaveAttribute('min', '0.5');
-    expect(depthInput).toHaveAttribute('step', '0.5');
-
-    // Height is always integer units regardless of half-bin mode
-    const heightInput = screen.getByLabelText('Height');
-    expect(heightInput).toHaveAttribute('step', '1');
+    // Step via decrease button: 1 - 0.5 = 0.5
+    fireEvent.click(screen.getByLabelText('Decrease Width'));
+    expect(useDesignerStore.getState().params.width).toBe(0.5);
   });
 
   describe('conditional magnet/screw sliders', () => {

@@ -15,6 +15,7 @@ import { BatchedCornerMarkers } from './BatchedCornerMarkers';
 import { MergedBinMeshes } from './MergedBinMeshes';
 import { useTranslation } from '@/i18n';
 import { useSettingsStore } from '@/core/store/settings';
+import { Button } from '@/design-system';
 
 const PREVIEW_SIZE_SMALL = 280; // Default small preview
 
@@ -441,14 +442,13 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         }`}
       >
         {/* Isometric view - 3D cube */}
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             sceneRef.current?.setPreset('isometric');
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          variant="ghost"
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={t('grid.isometricView')}
         >
           <svg
@@ -465,16 +465,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             />
           </svg>
           {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">3D</span>}
-        </button>
+        </Button>
         {/* Front view - rectangle wider than tall */}
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             sceneRef.current?.setPreset('front');
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          variant="ghost"
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={t('grid.frontView')}
         >
           <svg
@@ -490,16 +489,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('grid.front')}</span>
           )}
-        </button>
+        </Button>
         {/* Side view - rectangle taller than wide */}
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             sceneRef.current?.setPreset('side');
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          variant="ghost"
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={t('grid.sideView')}
         >
           <svg
@@ -515,14 +513,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('grid.side')}</span>
           )}
-        </button>
+        </Button>
         {/* Banana for scale toggle */}
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             updateSetting('showBananaScale', !showBananaScale);
           }}
-          className={`btn btn-ghost ${
+          variant="ghost"
+          className={`${
             isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
           } ${showBananaScale ? 'text-yellow-400' : ''}`}
           title={t('grid.bananaForScale')}
@@ -532,7 +531,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('grid.bananaForScale')}</span>
           )}
-        </button>
+        </Button>
       </div>
       {/* Layer view mode selector - segmented control, only show when multiple layers */}
       {layers.length > 1 && (
@@ -551,7 +550,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'focus' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'focus' ? 'bg-gradient-to-b from-accent-hover to-accent text-on-dark shadow-sm' : 'bg-transparent text-content-secondary hover:bg-surface-hover hover:text-content'}`
                 : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.focusShowOnlyActiveLayer')}
@@ -578,7 +577,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'stack' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'stack' ? 'bg-gradient-to-b from-accent-hover to-accent text-on-dark shadow-sm' : 'bg-transparent text-content-secondary hover:bg-surface-hover hover:text-content'}`
                 : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.stackShowActiveLayerAndBelow')}
@@ -606,7 +605,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'all' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'all' ? 'bg-gradient-to-b from-accent-hover to-accent text-on-dark shadow-sm' : 'bg-transparent text-content-secondary hover:bg-surface-hover hover:text-content'}`
                 : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.allShowAllLayers')}
@@ -636,14 +635,13 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         }`}
       >
         {/* Expand/Collapse button */}
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             togglePreviewExpanded();
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          variant="ghost"
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={isPreviewExpanded ? t('grid.preview.collapse') : t('grid.preview.expand')}
         >
           {isPreviewExpanded ? (
@@ -673,9 +671,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               />
             </svg>
           )}
-        </button>
+        </Button>
         {/* Close button */}
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             if (isPreviewExpanded) {
@@ -684,9 +682,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               useUIStore.getState().toggleIsometricPreview();
             }
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          variant="ghost"
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={isPreviewExpanded ? t('grid.preview.collapse') : t('grid.preview.close')}
         >
           <svg
@@ -705,7 +702,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('common.close')}</span>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Keyboard shortcuts indicator - only shown in expanded mode on desktop */}

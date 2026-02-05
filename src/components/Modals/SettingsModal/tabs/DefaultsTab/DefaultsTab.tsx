@@ -5,7 +5,7 @@ import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORIES } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import type { PrintSettings } from '@/shared/printSettings';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Stepper } from '@/design-system';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -69,7 +69,7 @@ export function DefaultsTab() {
           <div className="grid grid-cols-3 gap-1.5">
             <div>
               <label className="block text-content-tertiary mb-1">{t('common.width')}</label>
-              <StepperControl
+              <Stepper
                 value={settings.defaultDrawerWidth}
                 onChange={(value) =>
                   updateSetting(
@@ -89,13 +89,13 @@ export function DefaultsTab() {
                 min={CONSTRAINTS.GRID_MIN}
                 max={CONSTRAINTS.GRID_MAX}
                 step={0.5}
-                variant="compact"
-                ariaLabel={t('common.width')}
+                size="sm"
+                aria-label={t('common.width')}
               />
             </div>
             <div>
               <label className="block text-content-tertiary mb-1">{t('common.depth')}</label>
-              <StepperControl
+              <Stepper
                 value={settings.defaultDrawerDepth}
                 onChange={(value) =>
                   updateSetting(
@@ -115,13 +115,13 @@ export function DefaultsTab() {
                 min={CONSTRAINTS.GRID_MIN}
                 max={CONSTRAINTS.GRID_MAX}
                 step={0.5}
-                variant="compact"
-                ariaLabel={t('common.depth')}
+                size="sm"
+                aria-label={t('common.depth')}
               />
             </div>
             <div>
               <label className="block text-content-tertiary mb-1">{t('common.height')}</label>
-              <StepperControl
+              <Stepper
                 value={settings.defaultDrawerHeight}
                 onChange={(value) =>
                   updateSetting(
@@ -140,8 +140,8 @@ export function DefaultsTab() {
                 }
                 min={1}
                 max={CONSTRAINTS.GRID_MAX}
-                variant="compact"
-                ariaLabel={t('common.height')}
+                size="sm"
+                aria-label={t('common.height')}
               />
             </div>
           </div>

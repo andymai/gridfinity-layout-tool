@@ -4,7 +4,8 @@ import { useUIStore, useLayoutStore } from '@/core/store';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/shared/analytics/posthog';
-import { ConfirmDialog, CollapsibleSection, LoadingFallback } from '@/shared/components';
+import { ConfirmDialog, LoadingFallback } from '@/shared/components';
+import { Collapsible, Button } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 
@@ -68,9 +69,10 @@ export function RightPanel() {
         style={{ width: '48px' }}
       >
         <div className="flex flex-col items-center py-2">
-          <button
+          <Button
             onClick={toggle}
-            className="btn btn-ghost btn-icon"
+            variant="ghost"
+            iconOnly
             title={t('rightPanel.expandPanel')}
             aria-label={t('rightPanel.expandRightPanel')}
           >
@@ -82,7 +84,7 @@ export function RightPanel() {
                 d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
               />
             </svg>
-          </button>
+          </Button>
         </div>
       </aside>
     );
@@ -132,7 +134,7 @@ export function RightPanel() {
       >
         {/* Selection Panel - Collapsible */}
         <div className="px-4 py-3 border-b border-stroke-subtle">
-          <CollapsibleSection
+          <Collapsible
             title={
               isMultiSelect
                 ? t('rightPanel.multiSelection')
@@ -140,7 +142,6 @@ export function RightPanel() {
                   ? t('rightPanel.binProperties')
                   : t('rightPanel.selection')
             }
-            variant="default"
           >
             {isMultiSelect ? (
               <MultiBinInspector inspector={inspector} variant="desktop" onClose={clearSelection} />
@@ -153,7 +154,7 @@ export function RightPanel() {
             ) : (
               <EmptyState variant="desktop" />
             )}
-          </CollapsibleSection>
+          </Collapsible>
         </div>
 
         {/* Print List - Collapsible */}
@@ -187,12 +188,13 @@ export function RightPanel() {
             {printList.rows.length > 0 && (
               <div className="flex items-center gap-1">
                 {/* Expand button */}
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     setBinListModalOpen(true);
                   }}
-                  className="btn btn-ghost p-1.5 min-w-0 min-h-0"
+                  variant="ghost"
+                  className="p-1.5 min-w-0 min-h-0"
                   title={t('rightPanel.expandBinList')}
                   aria-label={t('rightPanel.expandBinListToFullView')}
                 >
@@ -204,9 +206,9 @@ export function RightPanel() {
                       d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
                     />
                   </svg>
-                </button>
+                </Button>
                 {/* Copy button */}
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     const tsv = exportPrintListTSV(printList.rows, {
@@ -218,7 +220,8 @@ export function RightPanel() {
                     trackLayoutSnapshot(useLayoutStore.getState().layout, 'export_tsv');
                     setTimeout(() => setCopyFeedback(false), 2000);
                   }}
-                  className="btn btn-ghost p-1.5 min-w-0 min-h-0"
+                  variant="ghost"
+                  className="p-1.5 min-w-0 min-h-0"
                   title={t('rightPanel.copyTSV')}
                   aria-label={t('rightPanel.copyBinListAsTsv')}
                 >
@@ -246,7 +249,7 @@ export function RightPanel() {
                       />
                     </svg>
                   )}
-                </button>
+                </Button>
               </div>
             )}
           </div>

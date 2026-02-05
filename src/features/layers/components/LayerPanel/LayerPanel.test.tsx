@@ -5,9 +5,9 @@ import { useLayoutStore, useUIStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import type { Layer } from '@/core/types';
 
-// Mock CollapsibleSection to simplify testing
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({
+// Mock design-system to simplify testing
+vi.mock('@/design-system', () => ({
+  Collapsible: ({
     children,
     title,
     actions,
@@ -23,6 +23,9 @@ vi.mock('@/shared/components/CollapsibleSection', () => ({
       </div>
       <div data-testid="section-content">{children}</div>
     </div>
+  ),
+  Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button {...props}>{children}</button>
   ),
 }));
 

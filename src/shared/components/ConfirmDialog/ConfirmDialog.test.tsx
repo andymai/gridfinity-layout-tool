@@ -52,13 +52,13 @@ describe('ConfirmDialog', () => {
     it('applies destructive styling when destructive prop is true', () => {
       render(<ConfirmDialog {...defaultProps} destructive />);
       const confirmButton = screen.getByText('Confirm');
-      expect(confirmButton.className).toContain('btn-danger');
+      expect(confirmButton.className).toContain('from-error');
     });
 
     it('applies primary styling when not destructive', () => {
       render(<ConfirmDialog {...defaultProps} />);
       const confirmButton = screen.getByText('Confirm');
-      expect(confirmButton.className).toContain('btn-primary');
+      expect(confirmButton.className).toContain('from-accent');
     });
   });
 

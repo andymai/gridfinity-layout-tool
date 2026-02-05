@@ -14,6 +14,7 @@ import { IntegrationsTab } from './tabs/IntegrationsTab/IntegrationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab/PrivacyTab';
 import { LabsTab } from './tabs/LabsTab/LabsTab';
 import type { SettingsModalProps, SettingsTabId } from './types';
+import { Button } from '@/design-system';
 
 const STYLES = {
   overlay: { backgroundColor: 'var(--overlay-dark)' } as CSSProperties,
@@ -105,11 +106,11 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
           <h2 id="settings-title" style={STYLES.title}>
             {t('settings.title')}
           </h2>
-          <button
+          <Button
             ref={closeButtonRef}
             onClick={onClose}
-            className="btn btn-ghost btn-icon"
-            style={{ minWidth: 'auto', minHeight: 'auto' }}
+            variant="ghost"
+            iconOnly
             aria-label={t('common.close')}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,7 +121,7 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Tab layout */}

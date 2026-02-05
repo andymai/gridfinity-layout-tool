@@ -4,6 +4,7 @@ import { validateImport } from '@/shared/utils/validation';
 import { decodeLayoutFromURL } from '@/core/storage';
 import type { Layout } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -181,12 +182,9 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               className="hidden"
               aria-label={t('layouts.import.selectJsonFileToImport')}
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-surface-hover hover:bg-surface-active text-content rounded transition-colors"
-            >
+            <Button onClick={() => fileInputRef.current?.click()} variant="secondary">
               {t('layouts.import.browseFiles')}
-            </button>
+            </Button>
           </div>
 
           {/* Textarea */}
@@ -239,16 +237,14 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-6">
-          <button
+          <Button
             onClick={handleImport}
             disabled={!!errors.length || !jsonText.trim()}
-            className="btn btn-primary"
+            variant="primary"
           >
             {t('common.import')}
-          </button>
-          <button onClick={onClose} className="btn btn-secondary">
-            {t('common.cancel')}
-          </button>
+          </Button>
+          <Button onClick={onClose}>{t('common.cancel')}</Button>
         </div>
       </div>
     </div>

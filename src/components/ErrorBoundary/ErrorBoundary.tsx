@@ -2,6 +2,7 @@ import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { captureException, track3DRenderError } from '@/shared/analytics/posthog';
 import { getStaticTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface Props {
   children: ReactNode;
@@ -83,12 +84,12 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
             {/* eslint-disable i18next/no-literal-string -- translation keys */}
             <div className="flex gap-3 justify-center">
-              <button onClick={this.handleReset} className="btn btn-secondary">
+              <Button onClick={this.handleReset}>
                 {getStaticTranslation('errorBoundary.tryAgain')}
-              </button>
-              <button onClick={this.handleClearStorage} className="btn btn-danger">
+              </Button>
+              <Button onClick={this.handleClearStorage} variant="danger">
                 {getStaticTranslation('errorBoundary.resetAppData')}
-              </button>
+              </Button>
             </div>
             {/* eslint-enable i18next/no-literal-string */}
           </div>

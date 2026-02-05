@@ -8,9 +8,8 @@ import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel'
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
-import { StepperControl } from '@/shared/components/StepperControl';
 import { HalfBinModeBlockedModal } from '@/components/Modals';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Collapsible, Stepper, Button } from '@/design-system';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
 import { Checkbox } from '@/shared/components/Checkbox';
@@ -110,9 +109,10 @@ export function Sidebar() {
       {collapsed ? (
         // Collapsed state - just show expand button
         <div className="flex flex-col items-center py-2">
-          <button
+          <Button
             onClick={toggle}
-            className="btn btn-ghost btn-icon"
+            variant="ghost"
+            iconOnly
             title={t('sidebar.expandPanel')}
             aria-label={t('sidebar.expandLeftPanel')}
           >
@@ -124,7 +124,7 @@ export function Sidebar() {
                 d="M13 5l7 7-7 7M5 5l7 7-7 7"
               />
             </svg>
-          </button>
+          </Button>
         </div>
       ) : (
         // Expanded state
@@ -239,7 +239,7 @@ export function Sidebar() {
 
             {/* Grid Size */}
             <div data-grid-size-panel className="mt-auto px-4 py-4">
-              <CollapsibleSection title={t('sidebar.gridSize')} variant="default">
+              <Collapsible title={t('sidebar.gridSize')}>
                 <div className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
                   <div className="grid grid-cols-3 gap-1.5">
@@ -250,15 +250,15 @@ export function Sidebar() {
                       >
                         {t('common.width')}
                       </label>
-                      <StepperControl
+                      <Stepper
                         value={drawer.width}
                         onChange={handleDrawerWidthInput}
                         onStep={handleDrawerWidthChange}
                         min={0.5}
                         max={CONSTRAINTS.GRID_MAX}
                         step={widthStep}
-                        variant="compact"
-                        ariaLabel="Drawer width in grid units"
+                        size="sm"
+                        aria-label="Drawer width in grid units"
                       />
                     </div>
                     <div>
@@ -268,15 +268,15 @@ export function Sidebar() {
                       >
                         {t('common.depth')}
                       </label>
-                      <StepperControl
+                      <Stepper
                         value={drawer.depth}
                         onChange={handleDrawerDepthInput}
                         onStep={handleDrawerDepthChange}
                         min={0.5}
                         max={CONSTRAINTS.GRID_MAX}
                         step={depthStep}
-                        variant="compact"
-                        ariaLabel="Drawer depth in grid units"
+                        size="sm"
+                        aria-label="Drawer depth in grid units"
                       />
                     </div>
                     <div>
@@ -286,13 +286,13 @@ export function Sidebar() {
                       >
                         {t('common.height')}
                       </label>
-                      <StepperControl
+                      <Stepper
                         value={drawer.height}
                         onStep={handleDrawerHeightChange}
                         min={1}
                         max={CONSTRAINTS.GRID_MAX}
-                        variant="compact"
-                        ariaLabel="Drawer height in units"
+                        size="sm"
+                        aria-label="Drawer height in units"
                         displayValue={`${drawer.height}u`}
                       />
                     </div>
@@ -416,16 +416,12 @@ export function Sidebar() {
                     </div>
                   )}
                 </div>
-              </CollapsibleSection>
+              </Collapsible>
             </div>
 
             {/* Physical Units */}
             <div data-units-panel className="px-4 py-4 border-t border-stroke-subtle">
-              <CollapsibleSection
-                title={t('sidebar.physicalUnits')}
-                variant="default"
-                defaultExpanded={isDesktop}
-              >
+              <Collapsible title={t('sidebar.physicalUnits')} defaultExpanded={isDesktop}>
                 <div className="text-xs text-content-secondary space-y-2">
                   <SettingsRow
                     label="Grid unit"
@@ -474,7 +470,7 @@ export function Sidebar() {
                     />
                   </SettingsRow>
                 </div>
-              </CollapsibleSection>
+              </Collapsible>
             </div>
 
             {/* Attribution */}

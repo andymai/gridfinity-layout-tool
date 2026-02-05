@@ -12,6 +12,7 @@ import { listDesigns } from '@/features/bin-designer/storage/DesignerStorage';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import type { SavedDesign } from '@/features/bin-designer/types';
 
 export function LinkDesignDialog() {
@@ -363,9 +364,9 @@ export function LinkDesignDialog() {
 
         {/* Footer - compact */}
         <div className="flex justify-end gap-2 border-t border-stroke-subtle px-4 py-3 flex-shrink-0">
-          <button onClick={handleCancel} className="btn btn-secondary h-8 text-sm px-3">
+          <Button onClick={handleCancel} className="h-8 text-sm px-3">
             {t('common.cancel')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>,

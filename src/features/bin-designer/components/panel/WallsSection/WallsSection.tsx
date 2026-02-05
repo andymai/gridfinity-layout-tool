@@ -7,7 +7,7 @@
  * Also allows selection of wall patterns (honeycomb, etc.) via dropdown.
  */
 
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Collapsible } from '@/design-system';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
@@ -16,11 +16,7 @@ export function WallsSection() {
   const { state, handlers, meta, t } = useWallsSection();
 
   return (
-    <CollapsibleSection
-      title={t('binDesigner.walls')}
-      defaultExpanded={true}
-      summary={meta.summary}
-    >
+    <Collapsible title={t('binDesigner.walls')} defaultExpanded={true} summary={meta.summary}>
       <SnappingSlider
         label={t('binDesigner.wallThickness')}
         value={state.wallThickness}
@@ -40,6 +36,6 @@ export function WallsSection() {
           <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
         )}
       </div>
-    </CollapsibleSection>
+    </Collapsible>
   );
 }

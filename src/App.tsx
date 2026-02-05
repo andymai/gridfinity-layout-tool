@@ -26,6 +26,7 @@ import {
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
 import { initializeLayoutLibrary, loadSharedWithMe, downloadLayoutAsFile } from '@/core/storage';
+import { Button } from '@/design-system';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './features/grid-editor';
 import { Sidebar } from './components/Sidebar';
@@ -358,7 +359,7 @@ export default function App() {
           <pre className="text-left text-xs rounded-lg p-3 mb-4 overflow-auto max-h-24 text-error bg-surface-elevated border border-stroke-subtle">
             {initialLoadError.message}
           </pre>
-          <button
+          <Button
             onClick={() => {
               try {
                 localStorage.clear();
@@ -367,10 +368,10 @@ export default function App() {
               }
               window.location.reload();
             }}
-            className="btn btn-primary"
+            variant="primary"
           >
             {t('app.clearDataReload')}
-          </button>
+          </Button>
         </div>
       </div>
     );

@@ -14,7 +14,7 @@ describe('LabelTabsSection', () => {
 
   it('renders label tabs toggle', () => {
     render(<LabelTabsSection />);
-    // There will be 2 matches: one for CollapsibleSection title, one for FeatureToggle label
+    // There will be 2 matches: one for Collapsible title, one for FeatureToggle label
     const labelTabs = screen.getAllByText('Label tabs');
     expect(labelTabs.length).toBeGreaterThanOrEqual(1);
   });

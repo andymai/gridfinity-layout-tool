@@ -10,6 +10,7 @@ import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { formatDimensions } from '../../../domain';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 export function SyncDimensionsDialog() {
   const t = useTranslation();
@@ -146,18 +147,19 @@ export function SyncDimensionsDialog() {
 
         {/* Actions */}
         <div className="flex gap-2 justify-end">
-          <button
+          <Button
             onClick={handleCancel}
-            className="btn btn-secondary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+            className="h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
           >
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => void handleSync()}
-            className="btn btn-primary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+            variant="primary"
+            className="h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
           >
             {t('designLinking.syncDialog.sync')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>,

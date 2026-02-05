@@ -4,8 +4,7 @@ import { useUIStore } from '@/core/store';
 import { getBinLocationContext } from '@/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
-import { StepperControl } from '@/shared/components/StepperControl';
-import { SelectDropdown } from '@/shared/components/SelectDropdown';
+import { Stepper, Select, Button } from '@/design-system';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
@@ -80,10 +79,11 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           {t('inspector.bin', { width: formatDim(bin.width), depth: formatDim(bin.depth) })}
         </h2>
         {onClose && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            iconOnly
             onClick={onClose || clearSelection}
-            className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+            className="w-7 h-7 p-0 min-w-0 min-h-0"
             aria-label={t('inspector.deselectBin')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,7 +94,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </Button>
         )}
       </div>
 
@@ -106,59 +106,78 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.width')}
             </label>
-            <StepperControl
+            <Stepper
               value={bin.width}
               onChange={(val) => updateField('width', val)}
               onStep={(delta) => updateField('width', bin.width + delta * stepSize)}
               min={minSize}
               max={layout.drawer.width}
               step={stepSize}
-              variant={variant}
-              ariaLabel="Bin width"
+              size={variant === 'mobile' ? 'lg' : 'md'}
+              aria-label="Bin width"
             />
           </div>
 
           {/* Flip button */}
-          <button
-            type="button"
-            onClick={rotateBin}
-            className={
-              isMobile
-                ? 'btn btn-secondary w-12 h-12 p-0 flex-shrink-0'
-                : 'flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors'
-            }
-            title={t('inspector.swapDimensions')}
-            aria-label={t('inspector.swapWidthAndDepth')}
-          >
-            <svg
-              className={isMobile ? 'w-5 h-5' : 'w-3 h-3'}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={isMobile ? 2 : 2.5}
+          {isMobile ? (
+            <Button
+              onClick={rotateBin}
+              className="w-12 h-12 p-0 flex-shrink-0"
+              title={t('inspector.swapDimensions')}
+              aria-label={t('inspector.swapWidthAndDepth')}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-              />
-            </svg>
-          </button>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                />
+              </svg>
+            </Button>
+          ) : (
+            <button
+              type="button"
+              onClick={rotateBin}
+              className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+              title={t('inspector.swapDimensions')}
+              aria-label={t('inspector.swapWidthAndDepth')}
+            >
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                />
+              </svg>
+            </button>
+          )}
 
           {/* Depth control */}
           <div className="flex-1">
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.depth')}
             </label>
-            <StepperControl
+            <Stepper
               value={bin.depth}
               onChange={(val) => updateField('depth', val)}
               onStep={(delta) => updateField('depth', bin.depth + delta * stepSize)}
               min={minSize}
               max={layout.drawer.depth}
               step={stepSize}
-              variant={variant}
-              ariaLabel="Bin depth"
+              size={variant === 'mobile' ? 'lg' : 'md'}
+              aria-label="Bin depth"
             />
           </div>
         </div>
@@ -194,13 +213,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.height')}
             </label>
-            <StepperControl
+            <Stepper
               value={bin.height}
               onStep={(delta) => updateField('height', bin.height + delta)}
               min={constraints.minHeight}
               max={constraints.maxHeight}
-              variant={variant}
-              ariaLabel="Bin height"
+              size={variant === 'mobile' ? 'lg' : 'md'}
+              aria-label="Bin height"
               displayValue={`${bin.height}u`}
             />
             <div className="text-center mt-1 text-[10px] text-content-disabled">
@@ -217,15 +236,15 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               >
                 {t('inspector.clearance')}
               </label>
-              <StepperControl
+              <Stepper
                 value={bin.clearanceHeight || 0}
                 onStep={(delta) =>
                   updateField('clearanceHeight', (bin.clearanceHeight || 0) + delta)
                 }
                 min={0}
                 max={constraints.maxClearance}
-                variant={variant}
-                ariaLabel="Bin clearance"
+                size={variant === 'mobile' ? 'lg' : 'md'}
+                aria-label="Bin clearance"
                 displayValue={`${bin.clearanceHeight || 0}u`}
               />
               <div className="text-center mt-1 text-[10px] text-content-disabled">
@@ -252,13 +271,14 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           <label className={`block ${labelSize} text-content-tertiary`}>
             {t('inspector.category')}
           </label>
-          <SelectDropdown
+          <Select
             value={bin.category}
-            onChange={(value) => updateField('category', value)}
-            options={categories.map((c) => ({ id: c.id, name: c.name }))}
+            onChange={(e) => updateField('category', e.target.value)}
+            options={categories.map((c) => ({ value: c.id, label: c.name }))}
             colorSwatch={category?.color || DEFAULT_CATEGORY_COLOR}
-            ariaLabel="Bin category"
-            variant={variant}
+            aria-label="Bin category"
+            size={variant === 'mobile' ? 'lg' : 'md'}
+            fullWidth
           />
         </div>
 
@@ -268,16 +288,16 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('inspector.layer')}
             </label>
-            <SelectDropdown
+            <Select
               value={bin.layerId}
-              onChange={moveToLayer}
+              onChange={(e) => moveToLayer(e.target.value)}
               options={layout.layers.map((l) => ({
-                id: l.id,
-                name: l.name,
-                suffix: l.id === layer?.id ? ' (current)' : '',
+                value: l.id,
+                label: l.name + (l.id === layer?.id ? ' (current)' : ''),
               }))}
-              ariaLabel="Bin layer"
-              variant={variant}
+              aria-label="Bin layer"
+              size={variant === 'mobile' ? 'lg' : 'md'}
+              fullWidth
             />
           </div>
         )}
@@ -347,21 +367,17 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         {/* Actions */}
         <div className="flex gap-2">
           {canMoveToStaging && (
-            <button
-              type="button"
-              onClick={moveToStaging}
-              className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
-            >
+            <Button onClick={moveToStaging} className={`flex-1 ${isMobile ? 'h-12' : ''}`}>
               {t('inspector.toStash')}
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
+          <Button
+            variant="danger"
             onClick={requestDelete}
-            className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
+            className={`flex-1 ${isMobile ? 'h-12' : ''}`}
           >
             {t('common.delete')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

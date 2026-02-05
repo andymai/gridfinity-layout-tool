@@ -20,12 +20,42 @@ vi.mock('../../features/categories/components/CategoriesPanel', () => ({
   CategoriesPanel: () => <div data-testid="categories-panel">CategoriesPanel</div>,
 }));
 
-vi.mock('../../shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ children, title }: { children: React.ReactNode; title: string }) => (
+vi.mock('@/design-system', () => ({
+  Collapsible: ({ children, title }: { children: React.ReactNode; title: string }) => (
     <div data-testid={`collapsible-${title.toLowerCase().replace(/\s+/g, '-')}`}>
       <div>{title}</div>
       <div>{children}</div>
     </div>
+  ),
+  Stepper: ({
+    'aria-label': ariaLabel,
+    value,
+    onStep,
+    min,
+    max,
+  }: {
+    'aria-label': string;
+    value: number;
+    onStep?: (delta: number) => void;
+    min?: number;
+    max?: number;
+  }) => (
+    <div data-testid={`stepper-${ariaLabel}`}>
+      <button
+        aria-label={`Decrease ${ariaLabel}`}
+        disabled={min !== undefined && value <= min}
+        onClick={() => onStep?.(-1)}
+      />
+      <span>{value}</span>
+      <button
+        aria-label={`Increase ${ariaLabel}`}
+        disabled={max !== undefined && value >= max}
+        onClick={() => onStep?.(1)}
+      />
+    </div>
+  ),
+  Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button {...props}>{children}</button>
   ),
 }));
 

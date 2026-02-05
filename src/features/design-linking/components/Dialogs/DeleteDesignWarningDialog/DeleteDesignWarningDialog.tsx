@@ -8,6 +8,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useLinkingStore } from '../../../store';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 export function DeleteDesignWarningDialog() {
   const t = useTranslation();
@@ -108,19 +109,20 @@ export function DeleteDesignWarningDialog() {
 
         {/* Actions */}
         <div className="flex gap-2 justify-end">
-          <button
+          <Button
             ref={cancelButtonRef}
             onClick={handleCancel}
-            className="btn btn-secondary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+            className="h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
           >
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleConfirm}
-            className="btn btn-danger h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+            variant="danger"
+            className="h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
           >
             {t('designLinking.deleteWarning.confirm')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>,

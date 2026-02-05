@@ -12,6 +12,7 @@ import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import type { Bin } from '@/core/types';
 
 interface LinkedDesignSectionProps {
@@ -111,9 +112,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           </span>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={() => showCreateDesignDialog(bin.id)}
-            className={`btn btn-secondary flex-1 ${buttonHeight} flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
+            className={`flex-1 ${buttonHeight} flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -124,10 +125,10 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               />
             </svg>
             {t('designLinking.inspector.createDesign')}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => showLinkDesignDialog(bin.id, bin.width, bin.depth, bin.height)}
-            className={`btn btn-secondary flex-1 ${buttonHeight} flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
+            className={`flex-1 ${buttonHeight} flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
             title={t('designLinking.inspector.linkExistingTooltip')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,7 +140,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               />
             </svg>
             {t('designLinking.inspector.linkExisting')}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -176,12 +177,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               {t('designLinking.inspector.designDeleted')}
             </span>
           </div>
-          <button
-            onClick={() => unlinkBin(bin.id)}
-            className={`btn btn-secondary w-full ${buttonHeight} text-sm`}
-          >
+          <Button onClick={() => unlinkBin(bin.id)} className={`w-full ${buttonHeight} text-sm`}>
             {t('designLinking.inspector.unlink')}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -265,9 +263,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
       {/* Action buttons - icon + label */}
       <div className="flex items-center gap-2">
         {/* Edit button with label */}
-        <button
+        <Button
           onClick={() => editLinkedDesign(linkedDesign.id)}
-          className={`btn btn-secondary flex-1 ${actionButtonClass} flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
+          className={`flex-1 ${actionButtonClass} flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
         >
           <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -278,13 +276,13 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
             />
           </svg>
           {t('designLinking.inspector.editDesign')}
-        </button>
+        </Button>
 
         {/* Export button with label */}
-        <button
+        <Button
           onClick={handleExport}
           disabled={isExporting}
-          className={`btn btn-secondary flex-1 ${actionButtonClass} flex items-center justify-center gap-1.5 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
+          className={`flex-1 ${actionButtonClass} flex items-center justify-center gap-1.5 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
         >
           {isExporting ? (
             <svg className={`${iconSize} animate-spin`} fill="none" viewBox="0 0 24 24">
@@ -313,14 +311,14 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
             </svg>
           )}
           {t('common.export')}
-        </button>
+        </Button>
 
         {/* Overflow menu button */}
         <div className="relative">
-          <button
+          <Button
             ref={menuButtonRef}
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`btn btn-secondary ${isMobile ? 'h-9 w-9' : 'h-7 w-7'} p-0 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
+            className={`${isMobile ? 'h-9 w-9' : 'h-7 w-7'} p-0 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
             title={t('common.moreOptions')}
             aria-haspopup="true"
             aria-expanded={menuOpen}
@@ -333,7 +331,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
                 d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
               />
             </svg>
-          </button>
+          </Button>
 
           {/* Dropdown menu */}
           {menuOpen && (

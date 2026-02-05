@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useUIStore } from '@/core/store/ui';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface BottomSheetProps {
   children: React.ReactNode;
@@ -154,9 +155,10 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
           {/* Title row */}
           <div className="w-full flex items-center justify-between px-4">
             <h2 className="text-base font-medium text-content">{title}</h2>
-            <button
+            <Button
               onClick={closeMobilePanel}
-              className="btn btn-ghost btn-icon"
+              variant="ghost"
+              iconOnly
               aria-label={t('mobile.bottomSheet.closePanel')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,7 +169,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
 

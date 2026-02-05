@@ -7,6 +7,7 @@ import { useResponsive } from '@/shared/hooks';
 import { BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getBinTextColors, clamp, getStagingBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components';
+import { Button } from '@/design-system';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { BinId, CategoryId } from '@/core/types';
@@ -719,9 +720,10 @@ export function Staging() {
           </span>
         </button>
 
-        <button
+        <Button
           onClick={() => setShowClearConfirm(true)}
-          className="btn btn-ghost flex items-center gap-1.5 px-2 py-1.5 text-xs text-content-tertiary"
+          variant="ghost"
+          className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-content-tertiary"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -732,7 +734,7 @@ export function Staging() {
             />
           </svg>
           {t('staging.clearAll')}
-        </button>
+        </Button>
       </div>
 
       {/* Collapsible staging grid content */}

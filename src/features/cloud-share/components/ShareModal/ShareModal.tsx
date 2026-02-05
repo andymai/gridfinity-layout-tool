@@ -10,6 +10,7 @@ import { trackLayoutSnapshot, trackEvent } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { CloudShareTab } from '../CloudShareTab';
+import { Button } from '@/design-system';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -215,9 +216,9 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                   onClick={() => urlInputRef.current?.select()}
                   className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm"
                 />
-                <button onClick={handleCopyURL} className="btn btn-primary px-4">
+                <Button onClick={handleCopyURL} variant="primary" className="px-4">
                   {copied ? t('common.copied') : t('common.copy')}
-                </button>
+                </Button>
               </div>
               <div className="text-xs text-content-tertiary">{t('share.link.longUrlNote')}</div>
             </div>
@@ -255,9 +256,9 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                       })}
                     </div>
                   </div>
-                  <button onClick={handleDownload} className="btn btn-primary">
+                  <Button onClick={handleDownload} variant="primary">
                     {t('common.download')}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -273,9 +274,9 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 onClick={() => jsonTextareaRef.current?.select()}
                 className="flex-1 bg-surface text-content p-3 rounded font-mono text-xs resize-none min-h-[200px]"
               />
-              <button onClick={handleCopyJSON} className="btn btn-primary self-start">
+              <Button onClick={handleCopyJSON} variant="primary" className="self-start">
                 {copied ? t('share.json.copied') : t('share.json.copy')}
-              </button>
+              </Button>
             </div>
           )}
         </div>

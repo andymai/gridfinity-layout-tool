@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, type CSSProperties } from 'react';
 import { SHORTCUTS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -245,12 +246,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
           <h2 id="help-title" style={STYLES.title}>
             {t('help.title')}
           </h2>
-          <button
-            onClick={onClose}
-            className="btn btn-ghost btn-icon"
-            style={STYLES.buttonCompact}
-            aria-label={t('common.close')}
-          >
+          <Button onClick={onClose} variant="ghost" iconOnly aria-label={t('common.close')}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -259,7 +255,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Tab bar and search */}

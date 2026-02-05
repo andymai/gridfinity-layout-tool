@@ -11,6 +11,7 @@ import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { formatDimensions } from '../../../domain';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 export function CreateDesignDialog() {
   const t = useTranslation();
@@ -125,14 +126,14 @@ export function CreateDesignDialog() {
                 autoFocus
               />
               {binLabel && (
-                <button
+                <Button
                   type="button"
                   onClick={handleUseBinLabel}
-                  className="btn btn-secondary text-sm whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+                  className="text-sm whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
                   title={t('designLinking.createDialog.useLabelTooltip', { label: binLabel })}
                 >
                   {t('designLinking.createDialog.useLabel')}
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -153,20 +154,21 @@ export function CreateDesignDialog() {
 
           {/* Actions */}
           <div className="flex gap-2 justify-end">
-            <button
+            <Button
               type="button"
               onClick={handleCancel}
-              className="btn btn-secondary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+              className="h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
             >
               {t('common.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn btn-primary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+              variant="primary"
+              className="h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
               disabled={!name.trim()}
             >
               {t('designLinking.createDialog.create')}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

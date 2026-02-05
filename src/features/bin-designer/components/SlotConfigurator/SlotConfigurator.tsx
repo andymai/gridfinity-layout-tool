@@ -10,7 +10,7 @@ import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '@/features/bin-designer/constants';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Stepper } from '@/design-system';
 import {
   calculateSlotPositions,
   calculateDividerLength,
@@ -167,7 +167,7 @@ export function SlotConfigurator() {
         <span className="mb-1 block text-xs text-content-tertiary">
           {t('binDesigner.slotSpacing')}
         </span>
-        <StepperControl
+        <Stepper
           value={activePitch}
           onChange={(v) => updateActivePitch(clampPitch(v))}
           onStep={(delta) =>
@@ -178,8 +178,7 @@ export function SlotConfigurator() {
           min={DESIGNER_CONSTRAINTS.MIN_SLOT_PITCH}
           max={DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH}
           step={DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP}
-          variant="desktop"
-          ariaLabel={t('binDesigner.slotSpacing')}
+          aria-label={t('binDesigner.slotSpacing')}
         />
       </div>
 
@@ -190,7 +189,7 @@ export function SlotConfigurator() {
         <span className="mb-1 block text-xs text-content-tertiary">
           {t('binDesigner.dividerHeight')}
         </span>
-        <StepperControl
+        <Stepper
           value={dividerPieces.height === 'auto' ? maxDividerHeight : dividerPieces.height}
           displayValue={
             dividerPieces.height === 'auto'
@@ -224,8 +223,7 @@ export function SlotConfigurator() {
           min={5}
           max={maxHeightRounded}
           step={1}
-          variant="desktop"
-          ariaLabel={t('binDesigner.dividerHeight')}
+          aria-label={t('binDesigner.dividerHeight')}
         />
       </div>
 
@@ -235,7 +233,7 @@ export function SlotConfigurator() {
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.dividerThickness')}
           </span>
-          <StepperControl
+          <Stepper
             value={dividerPieces.thickness}
             onChange={(v) =>
               updateDividerPieces({
@@ -263,15 +261,14 @@ export function SlotConfigurator() {
             min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS}
             max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS}
             step={DESIGNER_CONSTRAINTS.DIVIDER_THICKNESS_STEP}
-            variant="desktop"
-            ariaLabel={t('binDesigner.dividerThickness')}
+            aria-label={t('binDesigner.dividerThickness')}
           />
         </div>
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.dividerClearance')}
           </span>
-          <StepperControl
+          <Stepper
             value={dividerPieces.clearance}
             onChange={(v) =>
               updateDividerPieces({
@@ -299,8 +296,7 @@ export function SlotConfigurator() {
             min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE}
             max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE}
             step={DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP}
-            variant="desktop"
-            ariaLabel={t('binDesigner.dividerClearance')}
+            aria-label={t('binDesigner.dividerClearance')}
           />
         </div>
       </div>

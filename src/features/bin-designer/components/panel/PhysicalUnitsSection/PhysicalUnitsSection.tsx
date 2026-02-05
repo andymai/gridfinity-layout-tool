@@ -5,7 +5,7 @@
  * so this section is collapsed by default, placed near the bottom of the panel.
  */
 
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Collapsible } from '@/design-system';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { usePhysicalUnitsSection } from './usePhysicalUnitsSection';
@@ -14,7 +14,7 @@ export function PhysicalUnitsSection() {
   const { state, handlers, meta, t } = usePhysicalUnitsSection();
 
   return (
-    <CollapsibleSection
+    <Collapsible
       title={t('binDesigner.physicalUnits')}
       defaultExpanded={false}
       summary={meta.summary}
@@ -64,6 +64,6 @@ export function PhysicalUnitsSection() {
           />
         </SettingsRow>
       </div>
-    </CollapsibleSection>
+    </Collapsible>
   );
 }

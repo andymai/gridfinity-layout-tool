@@ -7,6 +7,7 @@
 
 import type { WallPatternType } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { Select } from '@/design-system';
 
 /** SVG icon for solid walls (filled rectangle) */
 function SolidIcon({ className }: { className?: string }) {
@@ -73,36 +74,21 @@ export function PatternSelector({
         {t('binDesigner.walls.pattern.label')}
       </label>
       <div className="relative">
-        <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+        <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
           <SelectedIcon className="w-4 h-4 text-content-primary" />
         </div>
-        <select
+        <Select
           id="pattern-selector"
           value={selectedPattern ?? 'none'}
           onChange={handleChange}
           disabled={disabled}
-          className="w-full appearance-none rounded-md bg-surface-secondary text-content-primary text-sm py-2 pl-9 pr-8 border border-stroke-subtle disabled:cursor-not-allowed"
-        >
-          {PATTERN_OPTIONS.map(({ value, labelKey }) => (
-            <option key={value ?? 'none'} value={value ?? 'none'}>
-              {t(labelKey)}
-            </option>
-          ))}
-        </select>
-        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-          <svg
-            className="w-4 h-4 text-content-secondary"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
+          options={PATTERN_OPTIONS.map(({ value, labelKey }) => ({
+            value: value ?? 'none',
+            label: t(labelKey),
+          }))}
+          className="pl-9"
+          size="sm"
+        />
       </div>
       {disabled && disabledReason && (
         <p className="text-[11px] text-content-tertiary mt-1.5">{disabledReason}</p>

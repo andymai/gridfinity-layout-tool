@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor, within } from '@testing-library/react';
 import { SharedLayoutBanner } from '@/features/cloud-share/components/SharedLayoutBanner';
 import { useUIStore } from '@/core/store/ui';
 import { useLayoutStore } from '@/core/store/layout';
@@ -346,10 +346,9 @@ describe('SharedLayoutBanner', () => {
 
       // Click discard to show dialog
       fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
-      // Confirm in dialog (the btn-danger button inside the dialog)
+      // Confirm in dialog — find the "Discard" button scoped within the dialog
       const dialog = screen.getByRole('dialog');
-      const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
-      fireEvent.click(confirmButton);
+      fireEvent.click(within(dialog).getByRole('button', { name: /Discard/i }));
 
       const state = useUIStore.getState();
       expect(state.sharedLayoutPreview).toBeNull();
@@ -363,8 +362,7 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
       // Confirm in dialog
       const dialog = screen.getByRole('dialog');
-      const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
-      fireEvent.click(confirmButton);
+      fireEvent.click(within(dialog).getByRole('button', { name: /Discard/i }));
 
       const toasts = useToastStore.getState().toasts;
       expect(toasts.length).toBeGreaterThan(0);
@@ -378,8 +376,7 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
       // Confirm in dialog
       const dialog = screen.getByRole('dialog');
-      const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
-      fireEvent.click(confirmButton);
+      fireEvent.click(within(dialog).getByRole('button', { name: /Discard/i }));
 
       // Check that layout store was updated
       const layoutState = useLayoutStore.getState();

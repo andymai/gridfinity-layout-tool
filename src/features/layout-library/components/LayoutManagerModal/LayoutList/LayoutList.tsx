@@ -9,6 +9,7 @@ import { useTranslation } from '@/i18n';
 import { ViewModeToggle } from '../ViewModeToggle';
 import type { ViewMode } from '../ViewModeToggle';
 import type { SortOption } from '../index';
+import { Select } from '@/design-system';
 
 /** Threshold for showing search bar */
 const SEARCH_THRESHOLD = 6;
@@ -394,31 +395,19 @@ export function LayoutList({
       <div className="mt-4 pt-4 border-t border-stroke text-sm text-content-tertiary flex items-center justify-between">
         <span>{t('layouts.layoutCount', { count: entries.length })}</span>
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => onSortChange(e.target.value as SortOption)}
-              className="appearance-none pl-3 pr-8 py-1.5 bg-surface border border-stroke rounded-lg text-sm text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent cursor-pointer"
-              aria-label={t('layouts.sortBy')}
-            >
-              <option value="recent">{t('layouts.sortRecent')}</option>
-              <option value="name">{t('layouts.sortName')}</option>
-              <option value="size">{t('layouts.sortSize')}</option>
-              <option value="binCount">{t('layouts.sortBinCount')}</option>
-            </select>
-            <svg
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary pointer-events-none"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          {showViewToggle && (
-            <ViewModeToggle value={viewMode} onChange={onViewModeChange} />
-          )}
+          <Select
+            value={sortBy}
+            onChange={(e) => onSortChange(e.target.value as SortOption)}
+            options={[
+              { value: 'recent', label: t('layouts.sortRecent') },
+              { value: 'name', label: t('layouts.sortName') },
+              { value: 'size', label: t('layouts.sortSize') },
+              { value: 'binCount', label: t('layouts.sortBinCount') },
+            ]}
+            aria-label={t('layouts.sortBy')}
+            size="sm"
+          />
+          {showViewToggle && <ViewModeToggle value={viewMode} onChange={onViewModeChange} />}
         </div>
       </div>
     </div>

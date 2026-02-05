@@ -7,6 +7,7 @@ import { PresenceAvatars } from '@/components/Collab';
 import type { MobilePanel } from '@/core/store/ui';
 import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface MobileHeaderProps {
   onMenuClick: () => void;
@@ -103,9 +104,10 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
       {/* Action bar */}
       <header className="mobile-header h-12 flex items-center justify-between px-3 bg-surface-secondary border-b border-stroke-subtle">
         {/* Left: Settings button */}
-        <button
+        <Button
           onClick={onMenuClick}
-          className="btn btn-ghost btn-icon"
+          variant="ghost"
+          iconOnly
           aria-label={t('mobile.header.openSettings')}
           title={t('mobile.settings')}
         >
@@ -123,13 +125,15 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
               d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-        </button>
+        </Button>
 
         {/* Landscape nav buttons (shown when bottom nav is hidden) */}
         <div className="flex items-center gap-1">
-          <button
+          <Button
             onClick={() => handleLandscapeNav('layers')}
-            className="landscape-nav-button btn btn-ghost btn-icon"
+            className="landscape-nav-button"
+            variant="ghost"
+            iconOnly
             aria-label={t('common.layers')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,10 +144,12 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => handleLandscapeNav('inspector')}
-            className="landscape-nav-button btn btn-ghost btn-icon"
+            className="landscape-nav-button"
+            variant="ghost"
+            iconOnly
             aria-label={t('mobile.header.inspector')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -154,10 +160,12 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
                 d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => handleLandscapeNav('categories')}
-            className="landscape-nav-button btn btn-ghost btn-icon"
+            className="landscape-nav-button"
+            variant="ghost"
+            iconOnly
             aria-label={t('common.categories')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -168,10 +176,12 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
                 d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => handleLandscapeNav('print')}
-            className="landscape-nav-button btn btn-ghost btn-icon"
+            className="landscape-nav-button"
+            variant="ghost"
+            iconOnly
             aria-label={t('mobile.header.binList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -182,7 +192,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Center: Layout name - tap to open layouts panel, long press to edit */}
@@ -253,10 +263,11 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
               </svg>
             </div>
           )}
-          <button
+          <Button
             onClick={undo}
             disabled={!canUndo}
-            className="btn btn-ghost btn-icon"
+            variant="ghost"
+            iconOnly
             aria-label={canUndo ? t('common.undo') : t('mobile.header.nothingToUndo')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -267,11 +278,12 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
                 d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={redo}
             disabled={!canRedo}
-            className="btn btn-ghost btn-icon"
+            variant="ghost"
+            iconOnly
             aria-label={canRedo ? t('common.redo') : t('mobile.header.nothingToRedo')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -282,10 +294,11 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
                 d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onHelpClick}
-            className="btn btn-ghost btn-icon"
+            variant="ghost"
+            iconOnly
             aria-label={t('mobile.header.helpAndGestures')}
             title={t('mobile.help')}
           >
@@ -297,7 +310,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
                 d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-          </button>
+          </Button>
         </div>
       </header>
     </div>

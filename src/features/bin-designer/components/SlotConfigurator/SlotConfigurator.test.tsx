@@ -100,7 +100,7 @@ describe('SlotConfigurator', () => {
     useDesignerStore.setState({ setParam });
 
     render(<SlotConfigurator />);
-    const spinbuttons = screen.getAllByRole('spinbutton');
+    const spinbuttons = screen.getAllByRole('textbox');
     const thicknessControl = spinbuttons.find((el) =>
       el.getAttribute('aria-label')?.includes('thickness')
     );
@@ -117,7 +117,7 @@ describe('SlotConfigurator', () => {
     useDesignerStore.setState({ setParam });
 
     render(<SlotConfigurator />);
-    const spinbuttons = screen.getAllByRole('spinbutton');
+    const spinbuttons = screen.getAllByRole('textbox');
     const pitchControl = spinbuttons.find((el) => el.getAttribute('aria-label')?.includes('width'));
 
     if (pitchControl) {

@@ -1,5 +1,6 @@
 import { useEffect, type CSSProperties } from 'react';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -96,7 +97,13 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           <h2 id="mobile-help-title" style={STYLES.title}>
             {t('mobile.help')}
           </h2>
-          <button onClick={onClose} className="btn btn-ghost w-10 h-10 p-0" aria-label={t('common.close')}>
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            iconOnly
+            className="w-10 h-10"
+            aria-label={t('common.close')}
+          >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -105,21 +112,31 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-5">
           {/* Drawing & Selection */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.drawingSelection')}</h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>
+              {t('mobile.help.drawingSelection')}
+            </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-              <GestureRow icon={<TapIcon />} gesture={t('help.gesture.tapBin')} description={t('help.gesture.selectBin')} />
+              <GestureRow
+                icon={<TapIcon />}
+                gesture={t('help.gesture.tapBin')}
+                description={t('help.gesture.selectBin')}
+              />
               <GestureRow
                 icon={<DragIcon />}
                 gesture={t('help.gesture.dragEmpty')}
                 description={t('help.gesture.drawNewBin')}
               />
-              <GestureRow icon={<DragIcon />} gesture={t('help.gesture.dragSelected')} description={t('help.gesture.moveBin')} />
+              <GestureRow
+                icon={<DragIcon />}
+                gesture={t('help.gesture.dragSelected')}
+                description={t('help.gesture.moveBin')}
+              />
               <GestureRow
                 icon={<LongPressIcon />}
                 gesture={t('help.gesture.longPress')}
@@ -130,7 +147,9 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
           {/* Editing */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.editing')}</h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>
+              {t('mobile.help.editing')}
+            </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<DragEdgeIcon />}
@@ -152,7 +171,9 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
           {/* Paint Mode */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.paintMode')}</h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>
+              {t('mobile.help.paintMode')}
+            </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<TapIcon />}
@@ -164,13 +185,19 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                 gesture={t('help.gesture.dragGrid')}
                 description={t('help.gesture.fillArea')}
               />
-              <GestureRow icon={<TapIcon />} gesture={t('help.gesture.tapClose', { button: t('common.close') })} description={t('help.gesture.exitPaintMode')} />
+              <GestureRow
+                icon={<TapIcon />}
+                gesture={t('help.gesture.tapClose', { button: t('common.close') })}
+                description={t('help.gesture.exitPaintMode')}
+              />
             </div>
           </section>
 
           {/* Navigation */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.navigation')}</h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>
+              {t('mobile.help.navigation')}
+            </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<SwipeDownIcon />}
@@ -192,7 +219,9 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
           {/* Tips */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.tips')}</h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>
+              {t('mobile.help.tips')}
+            </h3>
             <ul className="space-y-2 p-3 rounded-lg" style={STYLES.tipsList}>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>

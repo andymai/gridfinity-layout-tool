@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { Checkbox } from '@/shared/components/Checkbox';
+import { Button } from '@/design-system';
 import { track3DPreview, markFeatureUsed } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 import type { Layer } from '@/core/types';
@@ -299,24 +300,26 @@ export const GridToolbar = memo(function GridToolbar({
           role="group"
           aria-label={t('toolbar.zoomControls')}
         >
-          <button
+          <Button
             onClick={zoomOut}
             disabled={!canZoomOut}
-            className="btn btn-ghost p-1.5"
+            variant="ghost"
+            className="p-1.5"
             aria-label={t('toolbar.zoomOut')}
             title={t('toolbar.zoomOutKey')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
             </svg>
-          </button>
+          </Button>
           <span className="min-w-[44px] text-center text-sm text-content-secondary tabular-nums">
             {Math.round(zoom * 100)}%
           </span>
-          <button
+          <Button
             onClick={zoomIn}
             disabled={!canZoomIn}
-            className="btn btn-ghost p-1.5"
+            variant="ghost"
+            className="p-1.5"
             aria-label={t('toolbar.zoomIn')}
             title={t('toolbar.zoomInKey')}
           >
@@ -328,19 +331,20 @@ export const GridToolbar = memo(function GridToolbar({
                 d="M12 4v16m8-8H4"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={fitToScreen}
-            className="btn btn-ghost px-2.5 py-1.5 text-sm"
+            variant="ghost"
+            className="px-2.5 py-1.5 text-sm"
             aria-label={t('toolbar.fitGridToScreen')}
             title={t('toolbar.fitToScreen')}
           >
             {t('toolbar.fit')}
-          </button>
+          </Button>
         </div>
 
         {/* 3D Preview toggle */}
-        <button
+        <Button
           onClick={() => {
             if (!showIsometricPreview) {
               track3DPreview('opened');
@@ -348,7 +352,8 @@ export const GridToolbar = memo(function GridToolbar({
             }
             toggleIsometricPreview();
           }}
-          className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-ghost'} px-2.5 py-1.5 flex items-center gap-1.5`}
+          variant={showIsometricPreview ? 'primary' : 'ghost'}
+          className="px-2.5 py-1.5 flex items-center gap-1.5"
           aria-label={t(showIsometricPreview ? 'toolbar.hide3dPreview' : 'toolbar.show3dPreview')}
           title={t(showIsometricPreview ? 'toolbar.hide3dPreview' : 'toolbar.show3dPreview')}
         >
@@ -366,14 +371,16 @@ export const GridToolbar = memo(function GridToolbar({
             <path d="M12 22V12" />
           </svg>
           {!isNarrowToolbar && <span className="text-sm">{t('toolbar.3dView')}</span>}
-        </button>
+        </Button>
 
         {/* Overflow menu button - only when narrow */}
         {isNarrowToolbar && layers.length > 1 && (
           <div className="relative" ref={overflowMenuRef}>
-            <button
+            <Button
               onClick={() => setOverflowMenuOpen(!overflowMenuOpen)}
-              className={`btn ${overflowMenuOpen ? 'btn-primary' : 'btn-ghost'} p-1.5`}
+              variant={overflowMenuOpen ? 'primary' : 'ghost'}
+              iconOnly
+              className="p-1.5"
               aria-label={t('toolbar.moreOptions')}
               aria-expanded={overflowMenuOpen}
               aria-haspopup="menu"
@@ -387,7 +394,7 @@ export const GridToolbar = memo(function GridToolbar({
                   d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
                 />
               </svg>
-            </button>
+            </Button>
 
             {/* Overflow dropdown */}
             {overflowMenuOpen && (

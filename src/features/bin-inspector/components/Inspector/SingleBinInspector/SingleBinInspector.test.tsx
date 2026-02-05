@@ -108,8 +108,8 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByLabelText('Bin width')).toHaveValue(2);
-      expect(screen.getByLabelText('Bin depth')).toHaveValue(3);
+      expect(screen.getByLabelText('Bin width')).toHaveValue('2');
+      expect(screen.getByLabelText('Bin depth')).toHaveValue('3');
     });
 
     it('renders real-world dimensions', () => {
@@ -203,7 +203,10 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.change(screen.getByLabelText('Bin width'), { target: { value: '4' } });
+      const input = screen.getByLabelText('Bin width');
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: '4' } });
+      fireEvent.blur(input);
 
       expect(inspector.updateField).toHaveBeenCalledWith('width', 4);
     });
@@ -212,7 +215,10 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.change(screen.getByLabelText('Bin depth'), { target: { value: '5' } });
+      const input = screen.getByLabelText('Bin depth');
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: '5' } });
+      fireEvent.blur(input);
 
       expect(inspector.updateField).toHaveBeenCalledWith('depth', 5);
     });

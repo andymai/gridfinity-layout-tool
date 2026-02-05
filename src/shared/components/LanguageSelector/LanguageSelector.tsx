@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useLocale, SUPPORTED_LOCALES, useTranslation } from '@/i18n';
 import type { Locale } from '@/i18n';
 import { useSettingsStore } from '@/core/store';
+import { Button } from '@/design-system';
 
 /** Globe icon component */
 function GlobeIcon({ className }: { className?: string }) {
@@ -87,10 +88,11 @@ export function LanguageSelector() {
 
   return (
     <div className="relative">
-      <button
+      <Button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="btn btn-ghost px-2 py-1.5 text-sm gap-1 text-content-secondary hover:text-content flex items-center"
+        variant="ghost"
+        className="px-2 py-1.5 text-sm gap-1 text-content-secondary hover:text-content flex items-center"
         title={t('header.changeLanguage')}
         aria-label={t('header.changeLanguage')}
         aria-expanded={isOpen}
@@ -108,7 +110,7 @@ export function LanguageSelector() {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
-      </button>
+      </Button>
 
       {isOpen && (
         <div

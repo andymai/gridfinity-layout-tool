@@ -61,8 +61,8 @@ vi.mock('@/hooks/useDrawerSettings', () => ({
   }),
 }));
 
-vi.mock('@/shared/components/StepperControl', () => ({
-  StepperControl: ({ ariaLabel }: { ariaLabel: string }) => (
+vi.mock('@/design-system', () => ({
+  Stepper: ({ 'aria-label': ariaLabel }: { 'aria-label': string }) => (
     <div data-testid={`stepper-${ariaLabel}`}>{ariaLabel}</div>
   ),
 }));

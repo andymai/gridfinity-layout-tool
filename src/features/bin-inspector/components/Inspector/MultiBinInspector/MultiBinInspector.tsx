@@ -3,7 +3,7 @@ import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '@/core/constant
 import { getGridBins } from '@/shared/utils';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import type { Layer } from '@/core/types';
-import { SelectDropdown } from '@/shared/components/SelectDropdown';
+import { Select, Button } from '@/design-system';
 import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
 import { useTranslation } from '@/i18n';
 
@@ -121,10 +121,11 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         </div>
         <h2 className="flex-1 text-lg font-semibold text-content">{t('inspector.binsSelected')}</h2>
         {onClose && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            iconOnly
             onClick={onClose || clearSelection}
-            className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+            className="w-7 h-7 p-0 min-w-0 min-h-0"
             aria-label={t('inspector.deselectAllBins')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -135,7 +136,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </Button>
         )}
       </div>
 
@@ -149,16 +150,15 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
           <label className={`block ${labelSize} text-content-tertiary`}>
             {t('common.category')}
           </label>
-          <SelectDropdown
+          <Select
             value={commonCategory || ''}
-            onChange={updateMultiCategory}
-            options={categories.map((c) => ({ id: c.id, name: c.name }))}
-            placeholder={
-              !commonCategory ? { value: '', label: getMixedLabel(), disabled: true } : undefined
-            }
+            onChange={(e) => updateMultiCategory(e.target.value)}
+            options={categories.map((c) => ({ value: c.id, label: c.name }))}
+            placeholder={!commonCategory ? getMixedLabel() : undefined}
             colorSwatch={categoryColor}
-            ariaLabel="Category for selected bins"
-            variant={variant}
+            aria-label="Category for selected bins"
+            size={variant === 'mobile' ? 'lg' : 'md'}
+            fullWidth
           />
         </div>
 
@@ -168,21 +168,17 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('inspector.layer')}
             </label>
-            <SelectDropdown
+            <Select
               value={commonLayer?.id || ''}
-              onChange={updateMultiLayer}
+              onChange={(e) => updateMultiLayer(e.target.value)}
               options={layout.layers.map((l) => ({
-                id: l.id,
-                name: l.name,
-                suffix: l.id === commonLayer?.id ? ' (current)' : '',
+                value: l.id,
+                label: l.name + (l.id === commonLayer?.id ? ' (current)' : ''),
               }))}
-              placeholder={
-                !commonLayer
-                  ? { value: '', label: getMixedLayerLabel(), disabled: true }
-                  : undefined
-              }
-              ariaLabel="Layer for selected bins"
-              variant={variant}
+              placeholder={!commonLayer ? getMixedLayerLabel() : undefined}
+              aria-label="Layer for selected bins"
+              size={variant === 'mobile' ? 'lg' : 'md'}
+              fullWidth
             />
           </div>
         )}
@@ -267,8 +263,8 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                 aria-label={t('inspector.propertyValue')}
               />
               <div className="flex gap-2">
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
                   onClick={() => {
                     if (propertyKey.trim()) {
                       updateMultiCustomProperty(propertyKey, propertyValue);
@@ -278,21 +274,21 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                     }
                   }}
                   disabled={!propertyKey.trim()}
-                  className={`btn btn-primary flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
+                  className={`flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
                 >
                   {t('inspector.setOnAll')}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     setPropertyKey('');
                     setPropertyValue('');
                     setShowPropertyForm(false);
                   }}
-                  className={`btn btn-ghost flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
+                  className={`flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
                 >
                   {t('common.cancel')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -305,21 +301,17 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         {/* Actions */}
         <div className="flex gap-2">
           {canMoveToStaging && (
-            <button
-              type="button"
-              onClick={moveToStaging}
-              className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
-            >
+            <Button onClick={moveToStaging} className={`flex-1 ${isMobile ? 'h-12' : ''}`}>
               {t('inspector.toStash')}
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
+          <Button
+            variant="danger"
             onClick={requestDelete}
-            className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
+            className={`flex-1 ${isMobile ? 'h-12' : ''}`}
           >
             {t('inspector.deleteAll')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@
  * and Slotted (removable divider slots) interior styles.
  */
 
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Collapsible } from '@/design-system';
 import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
 import type { BinStyle } from '../../../types';
@@ -17,11 +17,7 @@ export function InteriorSection() {
   const { state, handlers, meta, t } = useInteriorSection();
 
   return (
-    <CollapsibleSection
-      title={t('binDesigner.interior')}
-      defaultExpanded={true}
-      summary={meta.summary}
-    >
+    <Collapsible title={t('binDesigner.interior')} defaultExpanded={true} summary={meta.summary}>
       <div className="space-y-3">
         {/* Style selector */}
         <div className="flex gap-1">
@@ -46,6 +42,6 @@ export function InteriorSection() {
         {/* Conditional content */}
         {state.isSlotted ? <SlotConfigurator /> : <CompartmentEditor />}
       </div>
-    </CollapsibleSection>
+    </Collapsible>
   );
 }

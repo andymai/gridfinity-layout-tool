@@ -6,6 +6,7 @@ import { useTranslation } from '@/i18n';
 import { ContextMenuContainer, ContextMenuItem } from '@/shared/components/ContextMenu';
 import { openSTLSearch, formatDimension } from '@/utils/stlSearch';
 import type { STLSearchSite } from '@/core/store/settings';
+import { Button } from '@/design-system';
 
 interface STLSearchDropdownProps {
   /** Bin width in grid units */
@@ -144,11 +145,12 @@ export function STLSearchDropdown({
     <>
       {/* Trigger button */}
       {variant === 'button' && (
-        <button
+        <Button
           ref={triggerRef}
           type="button"
           onClick={handleClick}
-          className={`btn btn-ghost gap-1.5 text-content-secondary hover:text-content ${className}`}
+          variant="ghost"
+          className={`gap-1.5 text-content-secondary hover:text-content ${className}`}
           aria-label={t('stlSearch.searchFor', {
             width: formatDimension(width),
             depth: formatDimension(depth),
@@ -161,22 +163,23 @@ export function STLSearchDropdown({
             ? t('stlSearch.findOnSite', { site: enabledSites[0].name })
             : t('stlSearch.findSTL')}
           {!isSingleSite && <ChevronIcon className="w-3 h-3" isOpen={isOpen} />}
-        </button>
+        </Button>
       )}
 
       {variant === 'icon' && (
-        <button
+        <Button
           ref={triggerRef}
           type="button"
           onClick={handleClick}
-          className={`btn btn-ghost p-1.5 text-content-tertiary hover:text-content ${className}`}
+          variant="ghost"
+          className={`p-1.5 text-content-tertiary hover:text-content ${className}`}
           aria-label={iconTooltip}
           aria-expanded={isSingleSite ? undefined : isOpen}
           aria-haspopup={isSingleSite ? undefined : 'menu'}
           title={iconTooltip}
         >
           <SearchIcon className="w-4 h-4" />
-        </button>
+        </Button>
       )}
 
       {variant === 'menu-item' && (

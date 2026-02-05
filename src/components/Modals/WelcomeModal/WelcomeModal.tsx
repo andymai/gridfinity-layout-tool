@@ -12,6 +12,7 @@ import { INSPIRATION_LAYOUTS } from '@/features/inspiration-gallery/data';
 import { LayoutThumbnailWithLabels } from '@/features/inspiration-gallery/components/LayoutThumbnailWithLabels';
 import { THEME_CONFIG } from '@/features/inspiration-gallery/types';
 import type { InspirationLayout } from '@/features/inspiration-gallery/types';
+import { Button } from '@/design-system';
 
 // ============================================================================
 // Curated templates — hand-picked for diversity and visual impact
@@ -219,14 +220,15 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
             {t('onboarding.welcome.title')}
           </h1>
           <p className="text-sm text-content-secondary mb-6">{t('onboarding.welcome.subtitle')}</p>
-          <button
+          <Button
             onClick={() => onClose('blank')}
-            className="btn btn-primary px-8 py-2.5 text-sm font-semibold rounded-lg"
+            variant="primary"
+            className="px-8 py-2.5 text-sm font-semibold rounded-lg"
             disabled={isImporting}
             autoFocus
           >
             {t('onboarding.welcome.startBlank')}
-          </button>
+          </Button>
         </div>
 
         {/* Showcase — "here's what people build" */}

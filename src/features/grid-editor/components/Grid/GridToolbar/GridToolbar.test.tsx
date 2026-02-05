@@ -370,7 +370,8 @@ describe('GridToolbar', () => {
 
       const cubeIcon = container.querySelector('path[d*="M21 8a2 2 0"]');
       const button = cubeIcon?.closest('button');
-      expect(button).toHaveClass('btn-primary');
+      // Button uses CVA 'primary' variant which includes accent gradient
+      expect(button?.className).toContain('from-accent');
     });
 
     it('applies ghost button styling when preview is hidden', () => {
@@ -380,7 +381,8 @@ describe('GridToolbar', () => {
 
       const cubeIcon = container.querySelector('path[d*="M21 8a2 2 0"]');
       const button = cubeIcon?.closest('button');
-      expect(button).toHaveClass('btn-ghost');
+      // Button uses CVA 'ghost' variant which includes transparent bg
+      expect(button?.className).toContain('bg-transparent');
     });
   });
 

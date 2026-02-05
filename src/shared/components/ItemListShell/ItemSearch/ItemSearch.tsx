@@ -1,3 +1,5 @@
+import { Button } from '@/design-system';
+
 interface ItemSearchProps {
   value: string;
   onChange: (value: string) => void;
@@ -45,11 +47,13 @@ export function ItemSearch({
         aria-label={ariaLabel}
       />
       {value && (
-        <button
+        <Button
+          variant="ghost"
+          iconOnly
+          size="sm"
           onClick={() => onChange('')}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2"
           aria-label={clearAriaLabel}
-          type="button"
         >
           <svg
             className="w-4 h-4"
@@ -65,7 +69,7 @@ export function ItemSearch({
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-        </button>
+        </Button>
       )}
     </div>
   );

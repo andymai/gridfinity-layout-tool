@@ -15,6 +15,7 @@ import { useTranslation } from '@/i18n';
 import type { SaveStatus } from '@/shared/hooks';
 import type { ShareModalRenderProps } from '@/features/layout-library/components/LayoutManagerModal';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
+import { Button } from '@/design-system';
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const LayoutManagerModal = lazyWithRetry(() =>
@@ -226,9 +227,11 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         {/* Tablet panel toggle buttons */}
         {isTablet && (
           <div className="flex items-center mr-2 border-r border-stroke-subtle pr-2">
-            <button
+            <Button
               onClick={toggleLeftPanel}
-              className={`btn btn-ghost btn-icon ${!leftPanelCollapsed ? 'bg-surface-hover' : ''}`}
+              variant="ghost"
+              iconOnly
+              className={!leftPanelCollapsed ? 'bg-surface-hover' : ''}
               title={t('header.toggleSidebar')}
               aria-label={t('header.toggleSidebar')}
               aria-pressed={!leftPanelCollapsed}
@@ -241,10 +244,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
                   d="M4 6h16M4 12h16M4 18h7"
                 />
               </svg>
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={toggleRightPanel}
-              className={`btn btn-ghost btn-icon ${!rightPanelCollapsed ? 'bg-surface-hover' : ''}`}
+              variant="ghost"
+              iconOnly
+              className={!rightPanelCollapsed ? 'bg-surface-hover' : ''}
               title={t('header.toggleInspector')}
               aria-label={t('header.toggleInspector')}
               aria-pressed={!rightPanelCollapsed}
@@ -257,7 +262,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
         )}
 
@@ -317,10 +322,11 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
 
         {/* Undo/Redo buttons */}
         <div className="flex items-center">
-          <button
+          <Button
             onClick={undo}
             disabled={!canUndo}
-            className="btn btn-ghost btn-icon"
+            variant="ghost"
+            iconOnly
             title={t('header.undoAction', { mod: modKey })}
             aria-label={t('header.undo', { mod: modKey })}
           >
@@ -332,11 +338,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
                 d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={redo}
             disabled={!canRedo}
-            className="btn btn-ghost btn-icon"
+            variant="ghost"
+            iconOnly
             title={t('header.redoAction', { mod: modKey })}
             aria-label={t('header.redo', { mod: modKey })}
           >
@@ -348,7 +355,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
                 d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Share button and presence avatars (only visible when collaborative_editing flag is enabled) */}
@@ -364,9 +371,10 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         {/* Language selector */}
         <LanguageSelector />
 
-        <button
+        <Button
           onClick={onHelpClick}
-          className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary"
+          variant="ghost"
+          className="px-2.5 py-1.5 text-sm text-content-secondary"
           title={t('header.showHelp')}
           aria-label={t('header.helpAndShortcuts')}
         >
@@ -395,13 +403,13 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             </svg>
             <span className="hidden lg:inline">{t('header.help')}</span>
           </span>
-        </button>
+        </Button>
 
         <a
           href="https://github.com/andymai/gridfinity-layout-tool"
           target="_blank"
           rel="noopener noreferrer"
-          className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary flex items-center gap-1.5"
+          className="inline-flex items-center justify-center rounded-md bg-transparent text-content-secondary hover:bg-surface-hover hover:text-content transition-all px-2.5 py-1.5 text-sm gap-1.5"
           title={t('header.starOnGithub')}
         >
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">

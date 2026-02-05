@@ -5,7 +5,7 @@ import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useToastStore } from '@/core/store/toast';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Collapsible, Button } from '@/design-system';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
@@ -228,9 +228,11 @@ export function CategoriesPanel() {
 
   const actionButtons = (
     <div className="flex items-center gap-1">
-      <button
+      <Button
         onClick={() => setShowSaveCategoriesConfirm(true)}
-        className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+        variant="ghost"
+        iconOnly
+        className="w-7 h-7 p-0 min-w-0 min-h-0"
         title={t('categories.saveAsDefaultsTitle')}
         aria-label={t('categories.saveAsDefaults')}
       >
@@ -244,24 +246,26 @@ export function CategoriesPanel() {
         >
           <path d="M12 17v5M9 3h6v2l-1 1v4l3 3v2H7v-2l3-3V6L9 5V3z" />
         </svg>
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={handleAddCategory}
         disabled={!canAddCategory}
-        className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+        variant="ghost"
+        iconOnly
+        className="w-7 h-7 p-0 min-w-0 min-h-0"
         title={t('categories.addCategory')}
         aria-label={t('categories.addCategory')}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-      </button>
+      </Button>
     </div>
   );
 
   return (
     <div>
-      <CollapsibleSection title={t('common.categories')} variant="default" actions={actionButtons}>
+      <Collapsible title={t('common.categories')} actions={actionButtons}>
         <div className="space-y-1">
           {categories.map((category) => {
             const isActive = category.id === activeCategoryId;
@@ -467,7 +471,7 @@ export function CategoriesPanel() {
             );
           })}
         </div>
-      </CollapsibleSection>
+      </Collapsible>
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}

@@ -29,13 +29,16 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-// Mock CollapsibleSection
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ children, title }: { children: React.ReactNode; title: string }) => (
+// Mock design-system
+vi.mock('@/design-system', () => ({
+  Collapsible: ({ children, title }: { children: React.ReactNode; title: string }) => (
     <div>
       <span>{title}</span>
       {children}
     </div>
+  ),
+  Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button {...props}>{children}</button>
   ),
 }));
 
