@@ -137,7 +137,7 @@ describe('ParameterPanel', () => {
 
     const widthInput = screen.getByLabelText('Width');
     expect(widthInput).toHaveAttribute('min', '1');
-    expect(widthInput).toHaveAttribute('max', '8');
+    expect(widthInput).toHaveAttribute('max', '16');
     expect(widthInput).toHaveAttribute('step', '1');
 
     const heightInput = screen.getByLabelText('Height');

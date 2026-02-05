@@ -75,7 +75,7 @@ describe('useDimensionsSection', () => {
 
   it('clamps width to max dimension', () => {
     useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
+      params: { ...DEFAULT_BIN_PARAMS, width: 16 },
     });
 
     const { result } = renderHook(() => useDimensionsSection());
@@ -84,7 +84,7 @@ describe('useDimensionsSection', () => {
       result.current.handlers.handleWidthStep(1);
     });
 
-    // Should stay at 8 (MAX_DIMENSION)
-    expect(useDesignerStore.getState().params.width).toBe(8);
+    // Should stay at 16 (MAX_DIMENSION)
+    expect(useDesignerStore.getState().params.width).toBe(16);
   });
 });
