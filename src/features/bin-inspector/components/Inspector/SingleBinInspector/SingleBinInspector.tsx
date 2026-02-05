@@ -141,10 +141,12 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               </svg>
             </Button>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={rotateBin}
-              className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+              variant="secondary"
+              iconOnly
+              className="flex-shrink-0 h-8 w-8"
               title={t('inspector.swapDimensions')}
               aria-label={t('inspector.swapWidthAndDepth')}
             >
@@ -161,7 +163,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                   d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
                 />
               </svg>
-            </button>
+            </Button>
           )}
 
           {/* Depth control */}
