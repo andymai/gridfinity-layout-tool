@@ -318,9 +318,10 @@ function buildBinBox(
   gridW: number,
   gridD: number,
   wallHeight: number,
-  wallThickness: number
+  wallThickness: number,
+  solid: boolean
 ): Shape3D {
-  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}`;
+  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}|${solid}`;
   if (boxCache?.key === boxKey) {
     return boxCache.shape.clone();
   }
@@ -329,6 +330,12 @@ function buildBinBox(
   const outerD = gridD * SIZE - CLEARANCE;
 
   const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
+
+  // Solid mode: return the raw extrusion without hollowing
+  if (solid) {
+    boxCache = { key: boxKey, shape: box };
+    return box.clone();
+  }
 
   const result = unwrap(box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight)));
   boxCache = { key: boxKey, shape: result };
@@ -855,9 +862,9 @@ export async function exportBin(
   tolerance = 0.01,
   angularTolerance = 5
 ): Promise<ExportResult> {
-  // Regenerate if no cached solid
+  // Regenerate if no cached solid (with forExport=true for full-fidelity geometry)
   if (!lastSolid) {
-    generateBin(params);
+    generateBin(params, undefined, true);
   }
 
   const solid = lastSolid;
@@ -903,6 +910,7 @@ export function generateBin(
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
+  const solid = params.base.solid;
   // Wall extends from socket top to bin top. Per Gridfinity spec, base is 1u (7mm),
   // but the physical socket structure is 5mm deep. Wall = total - socket depth.
   // Flat floor: no socket, so the full height is available for the box body.
@@ -942,6 +950,7 @@ export function generateBin(
     wallHeight,
     wallThickness,
     params.base.stackingLip,
+    solid,
   ].join('|');
 
   let bin: Shape3D;
@@ -949,7 +958,7 @@ export function generateBin(
     bin = shellCache.shape.clone();
   } else {
     onProgress?.('shell', 0.3);
-    const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness);
+    const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, solid);
 
     if (isFlat) {
       // Flat floor: no socket, box body is the entire base
@@ -1013,124 +1022,128 @@ export function generateBin(
   // When only feature params changed, assembly is reused as starting point.
   onProgress?.('features', 0.5);
 
-  // Interior features (dividers, tabs) must clear the stacking lip zone.
-  // The lip's bottom taper extends LIP_SMALL_TAPER (0.7mm) inward from the
-  // outer wall at wallHeight. Dividers and tabs stop short to avoid interference.
-  const hasLip = params.base.stackingLip;
-  const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
+  // Solid mode: skip all interior features — the bin is a solid block.
+  // Cutouts will later carve into this solid to create shaped cavities.
+  if (!solid) {
+    // Interior features (dividers, tabs) must clear the stacking lip zone.
+    // The lip's bottom taper extends LIP_SMALL_TAPER (0.7mm) inward from the
+    // outer wall at wallHeight. Dividers and tabs stop short to avoid interference.
+    const hasLip = params.base.stackingLip;
+    const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
 
-  if (!isSlotted) {
-    const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
-    if (compartmentWalls) {
-      try {
-        bin = unwrap(bin.fuse(compartmentWalls));
-      } catch (e) {
-        console.warn(
-          '[BinGen] Divider fusion failed, skipping:',
-          e instanceof Error ? e.message : e
-        );
-      }
-    }
-  }
-
-  const insertCuts = buildInsertCuts(params);
-  if (insertCuts) {
-    try {
-      bin = unwrap(bin.cut(insertCuts));
-    } catch (e) {
-      console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
-    }
-  }
-
-  if (isSlotted) {
-    // Wall slots use interiorHeight (below lip taper zone).
-    // Lip cutouts are wider rectangles that cut through the full lip profile
-    // so dividers can slide in from the top.
-    const lipInfo = hasLip
-      ? { wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
-      : undefined;
-    const slotCuts = buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo);
-    if (slotCuts) {
-      try {
-        bin = unwrap(bin.cut(slotCuts));
-      } catch (e) {
-        console.warn('[BinGen] Slot cut failed, skipping:', e instanceof Error ? e.message : e);
-      }
-    }
-  }
-
-  if (!isSlotted) {
-    const labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
-    if (labelTabs) {
-      try {
-        bin = unwrap(bin.fuse(labelTabs));
-      } catch (e) {
-        console.warn(
-          '[BinGen] Label tab fusion failed, skipping:',
-          e instanceof Error ? e.message : e
-        );
-      }
-    }
-  }
-
-  // Wall patterns: Pattern cutouts — optimized with template cloning + single cutAll.
-  //
-  // Performance strategy:
-  // 1. Pattern calculators adapt size based on bin height (fewer cuts for large bins)
-  // 2. Build ONE shape template, clone() for each center position
-  // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
-  // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
-  // 5. Cache the shape template between generations
-  // Runtime guard: wallPattern may be missing from old saved data
-  if (params.wallPattern?.enabled) {
-    const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
-    if (patternResult) {
-      const { descriptors: wallDescriptors, calculator } = patternResult;
-      try {
-        const cutDepth = params.wallThickness * 4;
-        const halfDepth = cutDepth / 2;
-        const patternType = calculator.getPatternType();
-        const shapeRadius = calculator.getShapeRadius();
-
-        // Build or reuse cached shape template
-        const templateKey = `${patternType}|${shapeRadius}|${cutDepth}`;
-        let shapeTemplate: Shape3D;
-
-        if (patternTemplateCache?.key === templateKey) {
-          shapeTemplate = patternTemplateCache.shape;
-        } else {
-          // Create polygonal shape based on pattern type (honeycomb = 6 sides)
-          const sides = calculator.getSidesCount();
-          shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
-          patternTemplateCache = { key: templateKey, shape: shapeTemplate };
+    if (!isSlotted) {
+      const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
+      if (compartmentWalls) {
+        try {
+          bin = unwrap(bin.fuse(compartmentWalls));
+        } catch (e) {
+          console.warn(
+            '[BinGen] Divider fusion failed, skipping:',
+            e instanceof Error ? e.message : e
+          );
         }
+      }
+    }
 
-        const allPatternTools: Shape3D[] = [];
+    const insertCuts = buildInsertCuts(params);
+    if (insertCuts) {
+      try {
+        bin = unwrap(bin.cut(insertCuts));
+      } catch (e) {
+        console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
+      }
+    }
 
-        for (const wall of wallDescriptors) {
-          for (const center of wall.centers) {
-            let shape: Shape3D = shapeTemplate
-              .clone()
-              .translate([center.x, center.y, -halfDepth])
-              .rotate(90, [0, 0, 0], [1, 0, 0]);
-            if (wall.zRotation !== undefined) {
-              shape = shape.rotate(wall.zRotation, [0, 0, 0], [0, 0, 1]);
-            }
-            shape = shape.translate([wall.translateX, wall.translateY, wall.translateZ]);
-            allPatternTools.push(shape);
+    if (isSlotted) {
+      // Wall slots use interiorHeight (below lip taper zone).
+      // Lip cutouts are wider rectangles that cut through the full lip profile
+      // so dividers can slide in from the top.
+      const lipInfo = hasLip
+        ? { wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
+        : undefined;
+      const slotCuts = buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo);
+      if (slotCuts) {
+        try {
+          bin = unwrap(bin.cut(slotCuts));
+        } catch (e) {
+          console.warn('[BinGen] Slot cut failed, skipping:', e instanceof Error ? e.message : e);
+        }
+      }
+    }
+
+    if (!isSlotted) {
+      const labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
+      if (labelTabs) {
+        try {
+          bin = unwrap(bin.fuse(labelTabs));
+        } catch (e) {
+          console.warn(
+            '[BinGen] Label tab fusion failed, skipping:',
+            e instanceof Error ? e.message : e
+          );
+        }
+      }
+    }
+
+    // Wall patterns: Pattern cutouts — optimized with template cloning + single cutAll.
+    //
+    // Performance strategy:
+    // 1. Pattern calculators adapt size based on bin height (fewer cuts for large bins)
+    // 2. Build ONE shape template, clone() for each center position
+    // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
+    // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
+    // 5. Cache the shape template between generations
+    // Runtime guard: wallPattern may be missing from old saved data
+    if (params.wallPattern?.enabled) {
+      const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
+      if (patternResult) {
+        const { descriptors: wallDescriptors, calculator } = patternResult;
+        try {
+          const cutDepth = params.wallThickness * 4;
+          const halfDepth = cutDepth / 2;
+          const patternType = calculator.getPatternType();
+          const shapeRadius = calculator.getShapeRadius();
+
+          // Build or reuse cached shape template
+          const templateKey = `${patternType}|${shapeRadius}|${cutDepth}`;
+          let shapeTemplate: Shape3D;
+
+          if (patternTemplateCache?.key === templateKey) {
+            shapeTemplate = patternTemplateCache.shape;
+          } else {
+            // Create polygonal shape based on pattern type (honeycomb = 6 sides)
+            const sides = calculator.getSidesCount();
+            shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
+            patternTemplateCache = { key: templateKey, shape: shapeTemplate };
           }
-        }
 
-        if (allPatternTools.length > 0) {
-          // Preview: skip SimplifyResult — shape is meshed and discarded
-          bin = unwrap(cutAll(bin, allPatternTools, { simplify: forExport }));
+          const allPatternTools: Shape3D[] = [];
+
+          for (const wall of wallDescriptors) {
+            for (const center of wall.centers) {
+              let shape: Shape3D = shapeTemplate
+                .clone()
+                .translate([center.x, center.y, -halfDepth])
+                .rotate(90, [0, 0, 0], [1, 0, 0]);
+              if (wall.zRotation !== undefined) {
+                shape = shape.rotate(wall.zRotation, [0, 0, 0], [0, 0, 1]);
+              }
+              shape = shape.translate([wall.translateX, wall.translateY, wall.translateZ]);
+              allPatternTools.push(shape);
+            }
+          }
+
+          if (allPatternTools.length > 0) {
+            // Preview: skip SimplifyResult — shape is meshed and discarded
+            bin = unwrap(cutAll(bin, allPatternTools, { simplify: forExport }));
+          }
+        } catch (e) {
+          console.warn(
+            '[BinGen] Wall pattern failed:',
+            params.wallPattern.pattern,
+            e instanceof Error ? e.message : e
+          );
         }
-      } catch (e) {
-        console.warn(
-          '[BinGen] Wall pattern failed:',
-          params.wallPattern.pattern,
-          e instanceof Error ? e.message : e
-        );
       }
     }
   }
