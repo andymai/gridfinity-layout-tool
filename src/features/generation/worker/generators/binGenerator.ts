@@ -902,10 +902,12 @@ export function generateBin(
 ): MeshData {
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const isFlat = params.base.style === 'flat';
   // Wall extends from socket top to bin top. Per Gridfinity spec, base is 1u (7mm),
   // but the physical socket structure is 5mm deep. Wall = total - socket depth.
+  // Flat floor: no socket, so the full height is available for the box body.
   // Total height: e.g., 3u + lip = 21 + 4.4 = 25.4mm
-  const wallHeight = totalHeight - SOCKET_HEIGHT;
+  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
   const outerW = params.width * SIZE - CLEARANCE;
   const outerD = params.depth * SIZE - CLEARANCE;
@@ -913,8 +915,10 @@ export function generateBin(
   const innerD = outerD - 2 * wallThickness;
   const isSlotted = params.style === 'slotted';
 
-  const withMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
-  const withScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
+  const withMagnet =
+    !isFlat && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
+  const withScrew =
+    !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
   // Dynamic quality: small bins (< 4x4) get higher fidelity preview
   const cellCount = params.width * params.depth;
@@ -928,6 +932,7 @@ export function generateBin(
   const shellKey = [
     params.width,
     params.depth,
+    isFlat,
     withMagnet,
     withScrew,
     params.base.magnetDiameter,
@@ -943,41 +948,60 @@ export function generateBin(
   if (shellCache?.key === shellKey) {
     bin = shellCache.shape.clone();
   } else {
-    const base = buildBaseSocket(
-      params.width,
-      params.depth,
-      withMagnet,
-      withScrew,
-      params.base.magnetDiameter / 2,
-      params.base.magnetDepth,
-      params.base.screwDiameter / 2,
-      useHighQuality
-    );
-
     onProgress?.('shell', 0.3);
     const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness);
 
-    onProgress?.('features', 0.4);
-    if (params.base.stackingLip) {
-      try {
-        const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
-        bin = unwrap(
-          unwrap(base.fuse(box, { optimisation: 'commonFace' })).fuse(top, {
-            optimisation: 'commonFace',
-          })
-        );
-      } catch (e) {
-        console.warn(
-          '[BinGen] Stacking lip failed, skipping:',
-          e instanceof Error ? e.message : e,
-          {
-            wallThickness,
-          }
-        );
-        bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
+    if (isFlat) {
+      // Flat floor: no socket, box body is the entire base
+      onProgress?.('features', 0.4);
+      if (params.base.stackingLip) {
+        try {
+          const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
+          bin = unwrap(box.fuse(top, { optimisation: 'commonFace' }));
+        } catch (e) {
+          console.warn(
+            '[BinGen] Stacking lip failed, skipping:',
+            e instanceof Error ? e.message : e,
+            { wallThickness }
+          );
+          bin = box;
+        }
+      } else {
+        bin = box;
       }
     } else {
-      bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
+      // Socket style: build base socket and fuse with box
+      const base = buildBaseSocket(
+        params.width,
+        params.depth,
+        withMagnet,
+        withScrew,
+        params.base.magnetDiameter / 2,
+        params.base.magnetDepth,
+        params.base.screwDiameter / 2,
+        useHighQuality
+      );
+
+      onProgress?.('features', 0.4);
+      if (params.base.stackingLip) {
+        try {
+          const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
+          bin = unwrap(
+            unwrap(base.fuse(box, { optimisation: 'commonFace' })).fuse(top, {
+              optimisation: 'commonFace',
+            })
+          );
+        } catch (e) {
+          console.warn(
+            '[BinGen] Stacking lip failed, skipping:',
+            e instanceof Error ? e.message : e,
+            { wallThickness }
+          );
+          bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
+        }
+      } else {
+        bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
+      }
     }
 
     shellCache = { key: shellKey, shape: bin };
@@ -1111,9 +1135,12 @@ export function generateBin(
     }
   }
 
-  // Stage 5: Translate so Z=0 = absolute bottom (socket bottom)
+  // Stage 5: Translate so Z=0 = absolute bottom (socket bottom).
+  // Flat floor bins are already at Z=0 — no translation needed.
   onProgress?.('merge', 0.8);
-  bin = bin.translateZ(SOCKET_HEIGHT);
+  if (!isFlat) {
+    bin = bin.translateZ(SOCKET_HEIGHT);
+  }
 
   // Stage 6: Tessellate to triangle mesh
   onProgress?.('merge', 0.9);

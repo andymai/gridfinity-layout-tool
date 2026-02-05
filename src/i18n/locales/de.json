@@ -8,6 +8,8 @@
   "binDesigner.alignment.left": "Links",
   "binDesigner.alignment.right": "Rechts",
   "binDesigner.base": "Montage",
+  "binDesigner.flatFloor": "Flacher Boden (ohne Sockel)",
+  "binDesigner.flatFloorDisablesAttachment": "Nicht verfügbar mit flachem Boden",
   "binDesigner.group.shape": "Form",
   "binDesigner.group.interior": "Innenraum",
   "binDesigner.group.base": "Sockel",

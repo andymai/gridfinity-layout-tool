@@ -8,6 +8,8 @@
   "binDesigner.alignment.left": "Venstre",
   "binDesigner.alignment.right": "Høyre",
   "binDesigner.base": "Montering",
+  "binDesigner.flatFloor": "Flat bunn (uten sokkel)",
+  "binDesigner.flatFloorDisablesAttachment": "Ikke tilgjengelig med flat bunn",
   "binDesigner.group.shape": "Form",
   "binDesigner.group.interior": "Interiør",
   "binDesigner.group.base": "Base",

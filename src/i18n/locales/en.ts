@@ -1214,6 +1214,8 @@ const en: Record<string, string> = {
   'binDesigner.wallThickness.nozzleTip':
     'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
   'binDesigner.base': 'Mounting',
+  'binDesigner.flatFloor': 'Flat floor (no socket)',
+  'binDesigner.flatFloorDisablesAttachment': 'Not available with flat floor',
   'binDesigner.physicalUnits': 'Physical Units',
   'binDesigner.group.shape': 'Shape',
   'binDesigner.group.interior': 'Interior',

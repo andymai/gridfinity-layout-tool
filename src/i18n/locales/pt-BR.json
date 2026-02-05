@@ -8,6 +8,8 @@
   "binDesigner.alignment.left": "Esquerda",
   "binDesigner.alignment.right": "Direita",
   "binDesigner.base": "Montagem",
+  "binDesigner.flatFloor": "Fundo plano (sem encaixe)",
+  "binDesigner.flatFloorDisablesAttachment": "Não disponível com fundo plano",
   "binDesigner.group.shape": "Forma",
   "binDesigner.group.interior": "Interior",
   "binDesigner.group.base": "Base",

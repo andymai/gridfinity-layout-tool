@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Base attachment style for bin-to-baseplate connection */
-export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted';
+export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted' | 'flat';
 
 /** Bin wall/style variant */
 export type BinStyle = 'standard' | 'slotted';

@@ -17,5 +17,23 @@ describe('BaseSection', () => {
     expect(screen.getByText('Magnet holes')).toBeInTheDocument();
     expect(screen.getByText('Screw holes')).toBeInTheDocument();
     expect(screen.getByText('Stacking lip')).toBeInTheDocument();
+    expect(screen.getByText('Flat floor (no socket)')).toBeInTheDocument();
+  });
+
+  it('disables magnet and screw toggles when flat floor is active', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+      },
+    });
+
+    render(<BaseSection />);
+
+    const magnetToggle = screen.getByRole('switch', { name: 'Magnet holes' });
+    const screwToggle = screen.getByRole('switch', { name: 'Screw holes' });
+
+    expect(magnetToggle).toBeDisabled();
+    expect(screwToggle).toBeDisabled();
   });
 });
