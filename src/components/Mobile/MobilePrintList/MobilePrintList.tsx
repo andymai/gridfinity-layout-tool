@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
+import { useLayoutStore } from '@/core/store';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '@/components/Print/SplitPreview';
 import { useTranslation } from '@/i18n';
@@ -19,9 +20,13 @@ export function MobilePrintList() {
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
   const printList = usePrintList();
+  const gridUnitMm = useLayoutStore((state) => state.layout.gridUnitMm);
 
   const handleCopy = () => {
-    const tsv = exportPrintListTSV(printList.rows);
+    const tsv = exportPrintListTSV(printList.rows, {
+      gridUnitMm,
+      categories: printList.categories,
+    });
     void navigator.clipboard.writeText(tsv);
     setCopyFeedback(true);
     setTimeout(() => setCopyFeedback(false), 2000);
