@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.26.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.25.0...gridfinity-layout-tool-v2.26.0) (2026-02-05)
+
+
+### Features
+
+* remove expanded bin list modal feature ([bfa0c08](https://github.com/andymai/gridfinity-layout-tool/commit/bfa0c0859b8fbff573e7ec1f17d53e3c537b7f92))
+* remove expanded bin list modal feature ([#626](https://github.com/andymai/gridfinity-layout-tool/issues/626)) ([1c1a321](https://github.com/andymai/gridfinity-layout-tool/commit/1c1a321158b543e40435c386407525a73f83f375))
+
+
+### Bug Fixes
+
+* pass gridUnitMm and categories to mobile TSV export ([6d86076](https://github.com/andymai/gridfinity-layout-tool/commit/6d86076a26ce58bc42cd7b4b33cd6c11caa68baa))
+
 ## [2.25.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.24.0...gridfinity-layout-tool-v2.25.0) (2026-02-05)
 
 
