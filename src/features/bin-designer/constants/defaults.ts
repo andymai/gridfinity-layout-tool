@@ -49,6 +49,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     magnetDepth: 2,
     screwDiameter: 3,
     stackingLip: true,
+    solid: false,
   },
   style: 'standard',
   compartments: {
