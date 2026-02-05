@@ -401,6 +401,7 @@ export function CompartmentEditor() {
               min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
               max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
               step={1}
+              size="sm"
               aria-label="Columns"
             />
           </div>
@@ -415,6 +416,7 @@ export function CompartmentEditor() {
               min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
               max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
               step={1}
+              size="sm"
               aria-label="Rows"
             />
           </div>

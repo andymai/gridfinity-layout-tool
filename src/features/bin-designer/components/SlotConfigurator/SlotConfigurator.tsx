@@ -178,6 +178,7 @@ export function SlotConfigurator() {
           min={DESIGNER_CONSTRAINTS.MIN_SLOT_PITCH}
           max={DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH}
           step={DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP}
+          size="sm"
           aria-label={t('binDesigner.slotSpacing')}
         />
       </div>
@@ -223,6 +224,7 @@ export function SlotConfigurator() {
           min={5}
           max={maxHeightRounded}
           step={1}
+          size="sm"
           aria-label={t('binDesigner.dividerHeight')}
         />
       </div>
@@ -261,6 +263,7 @@ export function SlotConfigurator() {
             min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS}
             max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS}
             step={DESIGNER_CONSTRAINTS.DIVIDER_THICKNESS_STEP}
+            size="sm"
             aria-label={t('binDesigner.dividerThickness')}
           />
         </div>
@@ -296,6 +299,7 @@ export function SlotConfigurator() {
             min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE}
             max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE}
             step={DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP}
+            size="sm"
             aria-label={t('binDesigner.dividerClearance')}
           />
         </div>

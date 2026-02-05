@@ -29,6 +29,7 @@ export function DimensionsSection() {
               min={state.minDimension}
               max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
               step={state.dimensionStep}
+              size="sm"
               aria-label="Width"
             />
           </div>
@@ -66,6 +67,7 @@ export function DimensionsSection() {
               min={state.minDimension}
               max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
               step={state.dimensionStep}
+              size="sm"
               aria-label="Depth"
             />
           </div>
@@ -104,6 +106,7 @@ export function DimensionsSection() {
             min={DESIGNER_CONSTRAINTS.MIN_HEIGHT}
             max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
             step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
+            size="sm"
             aria-label="Height"
           />
         </div>

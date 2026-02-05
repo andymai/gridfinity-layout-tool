@@ -49,6 +49,7 @@ export function LabelTabsSection() {
                   min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}
                   max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}
                   step={DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP}
+                  size="sm"
                   aria-label="Tab width"
                 />
               </div>
@@ -73,6 +74,7 @@ export function LabelTabsSection() {
                   min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH}
                   max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH}
                   step={DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP}
+                  size="sm"
                   aria-label="Tab depth"
                 />
               </div>

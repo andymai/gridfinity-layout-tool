@@ -103,6 +103,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
             value={localPermission}
             onChange={(e) => setLocalPermission(e.target.value as SharePermission)}
             options={permissionOptions}
+            size="sm"
           />
         </div>
 
@@ -147,6 +148,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
             onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
             options={permissionOptions}
             aria-label={t('share.cloud.permissions')}
+            size="sm"
           />
         </div>
 

@@ -113,7 +113,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               min={minSize}
               max={layout.drawer.width}
               step={stepSize}
-              size={variant === 'mobile' ? 'lg' : 'md'}
+              size={variant === 'mobile' ? 'lg' : 'sm'}
               aria-label="Bin width"
             />
           </div>
@@ -178,7 +178,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               min={minSize}
               max={layout.drawer.depth}
               step={stepSize}
-              size={variant === 'mobile' ? 'lg' : 'md'}
+              size={variant === 'mobile' ? 'lg' : 'sm'}
               aria-label="Bin depth"
             />
           </div>
@@ -220,7 +220,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               onStep={(delta) => updateField('height', bin.height + delta)}
               min={constraints.minHeight}
               max={constraints.maxHeight}
-              size={variant === 'mobile' ? 'lg' : 'md'}
+              size={variant === 'mobile' ? 'lg' : 'sm'}
               aria-label="Bin height"
               displayValue={`${bin.height}u`}
             />
@@ -245,7 +245,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 }
                 min={0}
                 max={constraints.maxClearance}
-                size={variant === 'mobile' ? 'lg' : 'md'}
+                size={variant === 'mobile' ? 'lg' : 'sm'}
                 aria-label="Bin clearance"
                 displayValue={`${bin.clearanceHeight || 0}u`}
               />
@@ -279,7 +279,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             options={categories.map((c) => ({ value: c.id, label: c.name }))}
             colorSwatch={category?.color || DEFAULT_CATEGORY_COLOR}
             aria-label="Bin category"
-            size={variant === 'mobile' ? 'lg' : 'md'}
+            size={variant === 'mobile' ? 'lg' : 'sm'}
             fullWidth
           />
         </div>
@@ -298,7 +298,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 label: l.name + (l.id === layer?.id ? ' (current)' : ''),
               }))}
               aria-label="Bin layer"
-              size={variant === 'mobile' ? 'lg' : 'md'}
+              size={variant === 'mobile' ? 'lg' : 'sm'}
               fullWidth
             />
           </div>

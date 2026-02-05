@@ -316,7 +316,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
     const isDecreaseDisabled = disabled || value <= min;
     const isIncreaseDisabled = disabled || value >= max;
 
-    const iconSize = size === 'xs' ? 'xs' : size === 'sm' ? 'sm' : 'md';
+    const iconSize = size === 'xs' || size === 'sm' ? 'xs' : size === 'lg' ? 'md' : 'sm';
 
     const showInput = displayValue === undefined && onChange;
 

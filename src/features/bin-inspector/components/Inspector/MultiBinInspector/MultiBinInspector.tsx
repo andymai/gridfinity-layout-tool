@@ -157,7 +157,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
             placeholder={!commonCategory ? getMixedLabel() : undefined}
             colorSwatch={categoryColor}
             aria-label="Category for selected bins"
-            size={variant === 'mobile' ? 'lg' : 'md'}
+            size={variant === 'mobile' ? 'lg' : 'sm'}
             fullWidth
           />
         </div>
@@ -177,7 +177,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
               }))}
               placeholder={!commonLayer ? getMixedLayerLabel() : undefined}
               aria-label="Layer for selected bins"
-              size={variant === 'mobile' ? 'lg' : 'md'}
+              size={variant === 'mobile' ? 'lg' : 'sm'}
               fullWidth
             />
           </div>

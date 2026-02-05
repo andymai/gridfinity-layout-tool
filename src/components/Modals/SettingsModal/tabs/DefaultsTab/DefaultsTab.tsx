@@ -89,7 +89,7 @@ export function DefaultsTab() {
                 min={CONSTRAINTS.GRID_MIN}
                 max={CONSTRAINTS.GRID_MAX}
                 step={0.5}
-                size="sm"
+                size="xs"
                 aria-label={t('common.width')}
               />
             </div>
@@ -115,7 +115,7 @@ export function DefaultsTab() {
                 min={CONSTRAINTS.GRID_MIN}
                 max={CONSTRAINTS.GRID_MAX}
                 step={0.5}
-                size="sm"
+                size="xs"
                 aria-label={t('common.depth')}
               />
             </div>
@@ -140,7 +140,7 @@ export function DefaultsTab() {
                 }
                 min={1}
                 max={CONSTRAINTS.GRID_MAX}
-                size="sm"
+                size="xs"
                 aria-label={t('common.height')}
               />
             </div>
