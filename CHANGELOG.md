@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.25.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.24.0...gridfinity-layout-tool-v2.25.0) (2026-02-05)
+
+
+### Features
+
+* add solid parameter to BaseConfig for future cutouts support ([#624](https://github.com/andymai/gridfinity-layout-tool/issues/624)) ([9a9ecad](https://github.com/andymai/gridfinity-layout-tool/commit/9a9ecade822cf58ff8087c93898bc2b89a02d77a))
+
 ## [2.24.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.23.0...gridfinity-layout-tool-v2.24.0) (2026-02-05)
 
 
