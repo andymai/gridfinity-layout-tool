@@ -8,7 +8,7 @@ import { focusRing, disabledStyles, interactiveTransition } from '../variants';
 // Variants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const containerVariants = cva(['inline-flex items-center'], {
+const containerVariants = cva(['flex items-center'], {
   variants: {
     size: {
       xs: 'h-6',
@@ -68,7 +68,7 @@ const inputVariants = cva(
   {
     variants: {
       size: {
-        xs: 'text-xs min-w-[32px]',
+        xs: 'text-xs text-content-secondary',
         sm: 'text-xs min-w-[48px]',
         md: 'text-sm min-w-[56px]',
         lg: 'text-base font-semibold min-w-[64px]',
@@ -93,7 +93,7 @@ const displayVariants = cva(
   {
     variants: {
       size: {
-        xs: 'text-xs text-content-secondary min-w-[32px]',
+        xs: 'text-xs text-content-secondary',
         sm: 'text-xs text-content-secondary min-w-[48px]',
         md: 'text-sm text-content-secondary min-w-[56px]',
         lg: 'text-base font-semibold text-content min-w-[64px]',
@@ -316,7 +316,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
     const isDecreaseDisabled = disabled || value <= min;
     const isIncreaseDisabled = disabled || value >= max;
 
-    const iconSize = size === 'xs' || size === 'sm' ? 'sm' : 'md';
+    const iconSize = size === 'xs' ? 'xs' : size === 'sm' ? 'sm' : 'md';
 
     const showInput = displayValue === undefined && onChange;
 
