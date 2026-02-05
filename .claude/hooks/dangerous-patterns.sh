@@ -136,6 +136,18 @@ for file in "${TS_FILES[@]}"; do
     ISSUES+="    Use async: true or fetch API\n"
   fi
 
+  # Check 9: Mock/fake/stub implementations in production code
+  # Catches patterns like mockFoo, fakeFoo, stubFoo, class MockFoo, createMockFoo
+  # Excludes test framework calls (vi.mock, jest.mock) and test files (already filtered above)
+  if echo "$ADDED_LINES" | grep -qiE '\b(mock[A-Z]\w+|fake[A-Z]\w+|stub[A-Z]\w+|class\s+Mock\w+|class\s+Fake\w+|class\s+Stub\w+|create(Mock|Fake|Stub)\w+)'; then
+    # Exclude test framework calls
+    NON_FRAMEWORK=$(echo "$ADDED_LINES" | grep -iE '\b(mock[A-Z]\w+|fake[A-Z]\w+|stub[A-Z]\w+|class\s+Mock\w+|class\s+Fake\w+|class\s+Stub\w+|create(Mock|Fake|Stub)\w+)' | grep -viE '(vi|jest|vitest)\.(mock|fn|spyOn)' 2>/dev/null || true)
+    if [[ -n "$NON_FRAMEWORK" ]]; then
+      ISSUES+="  $file: Mock/fake/stub implementation in production code\n"
+      ISSUES+="    Use real dependencies, not mocks. Mocks belong in test files only.\n"
+    fi
+  fi
+
 done
 
 if [[ -n "$ISSUES" ]]; then

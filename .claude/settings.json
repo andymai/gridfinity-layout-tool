@@ -23,6 +23,11 @@
             "type": "command",
             "command": ".claude/hooks/auto-format.sh",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/geometry-sanity-check.sh",
+            "timeout": 10
           }
         ]
       }
