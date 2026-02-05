@@ -1,18 +1,13 @@
-import React, { useState, useRef, useCallback, Suspense } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '@/core/store';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/shared/analytics/posthog';
-import { ConfirmDialog, CollapsibleSection, LoadingFallback } from '@/shared/components';
-import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
 import { useTranslation } from '@/i18n';
 
 const LIST_SEPARATOR = ', ';
-
-const BinListModal = lazyWithRetry(() =>
-  import('../Modals/BinListModal').then(namedExport('BinListModal'))
-);
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '../Print/SplitPreview';
@@ -28,7 +23,6 @@ export function RightPanel() {
   const [printListExpanded, setPrintListExpanded] = useState(true);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedSplitRow, setExpandedSplitRow] = useState<number | null>(null);
-  const [binListModalOpen, setBinListModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -186,25 +180,6 @@ export function RightPanel() {
             </button>
             {printList.rows.length > 0 && (
               <div className="flex items-center gap-1">
-                {/* Expand button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setBinListModalOpen(true);
-                  }}
-                  className="btn btn-ghost p-1.5 min-w-0 min-h-0"
-                  title={t('rightPanel.expandBinList')}
-                  aria-label={t('rightPanel.expandBinListToFullView')}
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                    />
-                  </svg>
-                </button>
                 {/* Copy button */}
                 <button
                   onClick={(e) => {
@@ -213,7 +188,7 @@ export function RightPanel() {
                       gridUnitMm: layout.gridUnitMm,
                       categories: layout.categories,
                     });
-                    navigator.clipboard.writeText(tsv);
+                    void navigator.clipboard.writeText(tsv);
                     setCopyFeedback(true);
                     trackLayoutSnapshot(useLayoutStore.getState().layout, 'export_tsv');
                     setTimeout(() => setCopyFeedback(false), 2000);
@@ -492,13 +467,6 @@ export function RightPanel() {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
-
-      {/* Expanded Bin List Modal */}
-      {binListModalOpen && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.binList')} />}>
-          <BinListModal isOpen={binListModalOpen} onClose={() => setBinListModalOpen(false)} />
-        </Suspense>
-      )}
     </aside>
   );
 }

@@ -66,7 +66,6 @@ graph TB
 | `compression.ts`          | LZ-string compression for layout storage                                                      |
 | `color.ts`                | `getContrastColor()`, `getBinTextColors()` for bin rendering                                  |
 | `uuid.ts`                 | Layout ID generation and validation                                                           |
-| `binListOperations.ts`    | Search, selection, CSV/JSON export for bin lists                                              |
 | `throttle.ts` / `idle.ts` | RAF throttle, idle scheduling utilities                                                       |
 
 ## Contexts (`contexts/`)
