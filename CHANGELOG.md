@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.27.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.27.0...gridfinity-layout-tool-v2.27.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* allow clicking export file name to edit it directly ([#632](https://github.com/andymai/gridfinity-layout-tool/issues/632)) ([4d99a1b](https://github.com/andymai/gridfinity-layout-tool/commit/4d99a1b16673337abd28b45535ddc314fc5d42c3))
+
 ## [2.27.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.26.0...gridfinity-layout-tool-v2.27.0) (2026-02-05)
 
 
