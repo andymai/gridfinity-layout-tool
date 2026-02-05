@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.24.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.23.0...gridfinity-layout-tool-v2.24.0) (2026-02-05)
+
+
+### Features
+
+* add flat floor (no socket) base option to bin designer ([#621](https://github.com/andymai/gridfinity-layout-tool/issues/621)) ([f3bdaa6](https://github.com/andymai/gridfinity-layout-tool/commit/f3bdaa6e80d5e4a4ef3640109e4a31e7f8add50e))
+
 ## [2.23.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.22.1...gridfinity-layout-tool-v2.23.0) (2026-02-04)
 
 
