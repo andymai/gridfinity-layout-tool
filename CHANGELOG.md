@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.28.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.27.1...gridfinity-layout-tool-v2.28.0) (2026-02-05)
+
+
+### Features
+
+* auto-enable half-bin mode on fractional grid input ([#634](https://github.com/andymai/gridfinity-layout-tool/issues/634)) ([908cc5b](https://github.com/andymai/gridfinity-layout-tool/commit/908cc5bee1649ebb9f6f86769c158808284b58ac))
+
+
+### Bug Fixes
+
+* widen onRemediate prop type to accept sync callbacks ([#637](https://github.com/andymai/gridfinity-layout-tool/issues/637)) ([df0ece3](https://github.com/andymai/gridfinity-layout-tool/commit/df0ece38a421326c5515ce67c2314f424a754d29))
+
 ## [2.27.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.27.0...gridfinity-layout-tool-v2.27.1) (2026-02-05)
 
 
