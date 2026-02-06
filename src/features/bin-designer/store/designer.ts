@@ -41,6 +41,7 @@ import { isFractional } from '@/core/constants';
 import { isRectangularSelection, normalizeIds } from '../utils/compartments';
 import { validateCompartmentSizes } from '../utils/validation';
 import { createCachedMesh, evictIfNeeded } from './meshCacheManager';
+import { generateUUID } from '@/shared/utils/uuid';
 
 /**
  * Pending mesh cache: stores the mesh generated for the current params,
@@ -509,13 +510,13 @@ export const useDesignerStore = create<DesignerState>()(
           let newGroupId: string | null = null;
           if (c.groupId) {
             if (!groupMap.has(c.groupId)) {
-              groupMap.set(c.groupId, crypto.randomUUID());
+              groupMap.set(c.groupId, generateUUID());
             }
             newGroupId = groupMap.get(c.groupId) ?? null;
           }
           return {
             ...c,
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             x: c.x + 5,
             y: c.y + 5,
             groupId: newGroupId,
@@ -533,7 +534,7 @@ export const useDesignerStore = create<DesignerState>()(
         const existingGroupId = state.params.cutouts.find(
           (c) => cutoutIds.includes(c.id) && c.groupId !== null
         )?.groupId;
-        const groupId = existingGroupId ?? crypto.randomUUID();
+        const groupId = existingGroupId ?? generateUUID();
         // Include all existing members of the reused group
         const idsToGroup = new Set(cutoutIds);
         if (existingGroupId) {

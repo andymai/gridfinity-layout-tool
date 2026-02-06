@@ -8,6 +8,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import { useCutoutSelection } from '@/features/bin-designer/store';
+import { generateUUID } from '@/shared/utils/uuid';
 import {
   calculateCutoutResize,
   constrainGroupDrag,
@@ -17,6 +18,7 @@ import {
   findAlignmentGuides,
   rotatePoint,
   clampRotationToBounds,
+  getRotatedBounds,
   type StartRect,
   type AlignmentGuide,
 } from './geometry';
@@ -244,25 +246,29 @@ export function useCutoutInteraction({
       // Block nudge if any selected cutout is locked
       const anyLocked = cutouts.some((c) => selection.has(c.id) && c.locked);
       if (anyLocked) return;
+      const updates = new Map<string, Partial<Cutout>>();
+      for (const id of selection) {
+        const cutout = cutouts.find((c) => c.id === id);
+        if (!cutout) continue;
+        // Use rotation-aware AABB for clamping — rotated shapes extend
+        // beyond their unrotated box, so x must stay further from edges
+        const rb = getRotatedBounds(cutout);
+        const overhangX = (rb.maxX - rb.minX - cutout.width) / 2;
+        const overhangY = (rb.maxY - rb.minY - cutout.depth) / 2;
+        const minX = overhangX;
+        const minY = overhangY;
+        const maxX = binWidth - cutout.width - overhangX;
+        const maxY = binDepth - cutout.depth - overhangY;
+        updates.set(id, {
+          x: Math.max(minX, Math.min(cutout.x + dx, maxX)),
+          y: Math.max(minY, Math.min(cutout.y + dy, maxY)),
+        });
+      }
       if (onUpdateBatch) {
-        const updates = new Map<string, Partial<Cutout>>();
-        for (const id of selection) {
-          const cutout = cutouts.find((c) => c.id === id);
-          if (!cutout) continue;
-          updates.set(id, {
-            x: Math.max(0, Math.min(cutout.x + dx, binWidth - cutout.width)),
-            y: Math.max(0, Math.min(cutout.y + dy, binDepth - cutout.depth)),
-          });
-        }
         onUpdateBatch(updates);
       } else {
-        for (const id of selection) {
-          const cutout = cutouts.find((c) => c.id === id);
-          if (!cutout) continue;
-          onUpdate(id, {
-            x: Math.max(0, Math.min(cutout.x + dx, binWidth - cutout.width)),
-            y: Math.max(0, Math.min(cutout.y + dy, binDepth - cutout.depth)),
-          });
+        for (const [id, partial] of updates) {
+          onUpdate(id, partial);
         }
       }
     },
@@ -286,12 +292,12 @@ export function useCutoutInteraction({
     const groupMap = new Map<string, string>();
     const newIds: string[] = [];
     for (const original of clipboard) {
-      const newId = crypto.randomUUID();
+      const newId = generateUUID();
       newIds.push(newId);
       let newGroupId: string | null = null;
       if (original.groupId) {
         if (!groupMap.has(original.groupId)) {
-          groupMap.set(original.groupId, crypto.randomUUID());
+          groupMap.set(original.groupId, generateUUID());
         }
         newGroupId = groupMap.get(original.groupId) ?? null;
       }
@@ -314,12 +320,12 @@ export function useCutoutInteraction({
     const groupMap = new Map<string, string>();
     const newIds: string[] = [];
     for (const original of selected) {
-      const newId = crypto.randomUUID();
+      const newId = generateUUID();
       newIds.push(newId);
       let newGroupId: string | null = null;
       if (original.groupId) {
         if (!groupMap.has(original.groupId)) {
-          groupMap.set(original.groupId, crypto.randomUUID());
+          groupMap.set(original.groupId, generateUUID());
         }
         newGroupId = groupMap.get(original.groupId) ?? null;
       }
@@ -380,12 +386,12 @@ export function useCutoutInteraction({
         for (const selectedId of effectiveSelection) {
           const original = cutouts.find((c) => c.id === selectedId);
           if (!original) continue;
-          const newId = crypto.randomUUID();
+          const newId = generateUUID();
           newIds.push(newId);
           let newGroupId: string | null = null;
           if (original.groupId) {
             if (!groupMap.has(original.groupId)) {
-              groupMap.set(original.groupId, crypto.randomUUID());
+              groupMap.set(original.groupId, generateUUID());
             }
             newGroupId = groupMap.get(original.groupId) ?? null;
           }
@@ -761,7 +767,7 @@ export function useCutoutInteraction({
       const defaultD = mode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
       const x = Math.max(0, Math.min(snap(mode.startMmX - defaultW / 2), binWidth - defaultW));
       const y = Math.max(0, Math.min(snap(mode.startMmY - defaultD / 2), binDepth - defaultD));
-      const newId = crypto.randomUUID();
+      const newId = generateUUID();
       onAdd({
         id: newId,
         shape: mode.shape,
@@ -807,7 +813,7 @@ export function useCutoutInteraction({
         drawingPreview.width >= MIN_CUTOUT_SIZE &&
         drawingPreview.depth >= MIN_CUTOUT_SIZE
       ) {
-        const newId = crypto.randomUUID();
+        const newId = generateUUID();
         onAdd({
           id: newId,
           shape: drawingPreview.shape,

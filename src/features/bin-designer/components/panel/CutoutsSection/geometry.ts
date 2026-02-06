@@ -74,37 +74,35 @@ export function clampRotationToBounds(
   binWidth: number,
   binDepth: number
 ): number {
-  // Check if proposed angle fits
-  const test = { ...cutout, rotation: proposedAngle };
-  const bounds = getRotatedBounds(test);
-  if (
-    bounds.minX >= -0.01 &&
-    bounds.minY >= -0.01 &&
-    bounds.maxX <= binWidth + 0.01 &&
-    bounds.maxY <= binDepth + 0.01
-  ) {
-    return proposedAngle;
+  const normalize = (a: number) => ((a % 360) + 360) % 360;
+  const fitsInBounds = (angle: number) => {
+    const b = getRotatedBounds({ ...cutout, rotation: normalize(angle) });
+    return (
+      b.minX >= -0.01 && b.minY >= -0.01 && b.maxX <= binWidth + 0.01 && b.maxY <= binDepth + 0.01
+    );
+  };
+
+  if (fitsInBounds(proposedAngle)) {
+    return normalize(proposedAngle);
   }
 
-  // Binary search between current rotation and proposed
+  // Unwrap proposed angle relative to current rotation so the binary search
+  // follows the shortest arc (handles 350° → 10° wrap-around correctly)
+  let delta = proposedAngle - cutout.rotation;
+  if (delta > 180) delta -= 360;
+  if (delta < -180) delta += 360;
+
   let lo = cutout.rotation;
-  let hi = proposedAngle;
+  let hi = cutout.rotation + delta;
   for (let i = 0; i < 12; i++) {
     const mid = (lo + hi) / 2;
-    const midTest = { ...cutout, rotation: mid };
-    const midBounds = getRotatedBounds(midTest);
-    if (
-      midBounds.minX >= -0.01 &&
-      midBounds.minY >= -0.01 &&
-      midBounds.maxX <= binWidth + 0.01 &&
-      midBounds.maxY <= binDepth + 0.01
-    ) {
+    if (fitsInBounds(mid)) {
       lo = mid;
     } else {
       hi = mid;
     }
   }
-  return lo;
+  return normalize(lo);
 }
 
 /** Minimum cutout dimension in mm */
