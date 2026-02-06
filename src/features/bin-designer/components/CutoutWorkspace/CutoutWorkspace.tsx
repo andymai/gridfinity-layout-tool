@@ -4,8 +4,8 @@
  * Replaces the sidebar when cutoutEditorOpen is true, providing a larger
  * canvas area for editing cutouts alongside the 3D preview.
  *
- * Composes: WorkspaceHeader, CutoutCanvas (from CutoutsSection), and
- * wires useCutoutInteraction + useCanvasViewport.
+ * Composes: WorkspaceHeader, CutoutCanvas3D (WebGL renderer), and
+ * wires useCutoutInteraction for the interaction state machine.
  */
 
 import { useCallback, useState, useRef, useMemo, useEffect } from 'react';
@@ -14,9 +14,14 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { centerInBin } from '../panel/CutoutsSection/geometry';
 import { useCutoutInteraction } from '../panel/CutoutsSection/useCutoutInteraction';
-import { useCanvasViewport } from './useCanvasViewport';
+import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
+import {
+  MIN_ZOOM,
+  MAX_ZOOM,
+  ZOOM_STEP,
+  FIT_PADDING,
+} from '../panel/CutoutsSection/renderer/constants';
 import { WorkspaceHeader } from './WorkspaceHeader';
-import { CutoutCanvas } from '../panel/CutoutsSection/CutoutCanvas';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { InspectorPanel } from './InspectorPanel';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
@@ -24,6 +29,16 @@ import type { ContextMenuAction } from '../panel/CutoutsSection/CutoutContextMen
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
 import { useTranslation } from '@/i18n';
 
+/**
+ * Placeholder zoom/pan state for the workspace mode.
+ *
+ * In the WebGL renderer, zoom/pan is managed by the OrthographicCamera
+ * inside the R3F Canvas via useViewportCamera. Since the camera lives
+ * inside the Canvas tree, we manage a lightweight mirror for the rulers
+ * and header. The R3F SceneContent uses useViewportCamera internally.
+ *
+ * TODO: Connect ruler sync once useViewportCamera exposes state via ref/context.
+ */
 export function CutoutWorkspace() {
   const {
     params,
@@ -61,7 +76,6 @@ export function CutoutWorkspace() {
   // Measure canvas container dynamically
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 600, height: 400 });
-  const needsAutoFit = useRef(true);
 
   useEffect(() => {
     const el = canvasContainerRef.current;
@@ -79,30 +93,51 @@ export function CutoutWorkspace() {
     return () => observer.disconnect();
   }, []);
 
-  // Canvas fills the container; scale maps mm → SVG pixels
-  const { canvasWidth, canvasHeight, scale } = useMemo(() => {
-    const cw = containerSize.width;
-    const ch = containerSize.height;
-    // Scale: fit the bin within the container (whichever axis is tighter)
-    const s = Math.min(cw / binWidth, ch / binDepth);
-    return { canvasWidth: cw, canvasHeight: ch, scale: s };
-  }, [binWidth, binDepth, containerSize]);
+  const canvasWidth = containerSize.width;
+  const canvasHeight = containerSize.height;
 
-  const viewport = useCanvasViewport({
-    canvasWidth,
-    canvasHeight,
-    scale,
-    binWidth,
-    binDepth,
-  });
+  // Lightweight zoom state for rulers & header (mirrors camera zoom)
+  const defaultZoom = useMemo(() => {
+    const pad = 1 - 2 * FIT_PADDING;
+    return Math.min((canvasWidth * pad) / binWidth, (canvasHeight * pad) / binDepth, MAX_ZOOM);
+  }, [canvasWidth, canvasHeight, binWidth, binDepth]);
 
-  // Auto-fit on first meaningful container measurement
+  const [zoom, setZoom] = useState(defaultZoom);
+  const [cameraCenter, setCameraCenter] = useState({ x: binWidth / 2, y: binDepth / 2 });
+
+  // Re-fit camera when bin dimensions or container size change
+  /* eslint-disable react-hooks/set-state-in-effect -- syncing camera to external bin dimension changes from designer store */
   useEffect(() => {
-    if (needsAutoFit.current && containerSize.width > 100 && containerSize.height > 100) {
-      needsAutoFit.current = false;
-      requestAnimationFrame(() => viewport.fitToView());
-    }
-  }, [containerSize, viewport]);
+    setZoom(defaultZoom);
+    setCameraCenter({ x: binWidth / 2, y: binDepth / 2 });
+  }, [defaultZoom, binWidth, binDepth]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const fitToView = useCallback(() => {
+    const pad = 1 - 2 * FIT_PADDING;
+    const newZoom = Math.min(
+      (canvasWidth * pad) / binWidth,
+      (canvasHeight * pad) / binDepth,
+      MAX_ZOOM
+    );
+    setZoom(newZoom);
+    setCameraCenter({ x: binWidth / 2, y: binDepth / 2 });
+  }, [canvasWidth, canvasHeight, binWidth, binDepth]);
+
+  const zoomIn = useCallback(() => {
+    setZoom((z) => Math.min(MAX_ZOOM, z * ZOOM_STEP));
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    setZoom((z) => Math.max(MIN_ZOOM, z / ZOOM_STEP));
+  }, []);
+
+  const zoomPercent = Math.round(zoom * 100);
+
+  // Ruler sync: scale=1 for WebGL (world units = mm), zoom from camera
+  const scale = 1;
+  const rulerPanX = -(cameraCenter.x - canvasWidth / (2 * zoom));
+  const rulerPanY = cameraCenter.y + canvasHeight / (2 * zoom) - binDepth;
 
   const {
     mode,
@@ -113,7 +148,6 @@ export function CutoutWorkspace() {
     deselectAll,
     selectAll,
     deleteSelected,
-    containerRef,
     preview,
     drawingPreview,
     startDrag,
@@ -143,7 +177,7 @@ export function CutoutWorkspace() {
     binDepth,
   });
 
-  // Marquee state
+  // Marquee state — now in mm world coordinates (no SVG pixel conversion needed)
   const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(
     null
   );
@@ -166,7 +200,7 @@ export function CutoutWorkspace() {
       }
       if (e.key === '0' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        viewport.fitToView();
+        fitToView();
       }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -181,74 +215,53 @@ export function CutoutWorkspace() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [viewport]);
+  }, [fitToView]);
 
-  const svgToMm = useCallback(
-    (clientX: number, clientY: number, svg: SVGSVGElement) => {
-      // Use getScreenCTM for zoom-safe coordinate conversion
-      const ctm = svg.getScreenCTM();
-      if (ctm) {
-        const point = svg.createSVGPoint();
-        point.x = clientX;
-        point.y = clientY;
-        const svgPoint = point.matrixTransform(ctm.inverse());
-        const mmX = svgPoint.x / scale;
-        const mmY = binDepth - svgPoint.y / scale;
-        return { mmX, mmY, svgX: svgPoint.x, svgY: svgPoint.y };
-      }
-      // Fallback
-      const rect = svg.getBoundingClientRect();
-      const svgX = clientX - rect.left;
-      const svgY = clientY - rect.top;
-      const mmX = svgX / scale;
-      const mmY = binDepth - svgY / scale;
-      return { mmX, mmY, svgX, svgY };
-    },
-    [scale, binDepth]
-  );
-
-  const handleCanvasPointerDown = useCallback(
-    (e: React.PointerEvent<SVGSVGElement>) => {
+  // Background click handler — receives world-space mm coords from R3F
+  const handleBackgroundPointerDown = useCallback(
+    (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
       // Middle-click starts pan
-      if (e.button === 1) {
-        e.preventDefault();
+      if (nativeEvent.button === 1) {
+        nativeEvent.preventDefault();
         isPanningRef.current = true;
-        panStartRef.current = { x: e.clientX, y: e.clientY };
+        panStartRef.current = { x: nativeEvent.clientX, y: nativeEvent.clientY };
         return;
       }
 
       // Space+click starts pan
-      if (spaceHeld && e.button === 0) {
-        e.preventDefault();
+      if (spaceHeld && nativeEvent.button === 0) {
+        nativeEvent.preventDefault();
         spacePanRef.current = true;
-        panStartRef.current = { x: e.clientX, y: e.clientY };
+        panStartRef.current = { x: nativeEvent.clientX, y: nativeEvent.clientY };
         return;
       }
 
-      const svg = containerRef.current;
-      if (!svg) return;
-      const { mmX, mmY, svgX, svgY } = svgToMm(e.clientX, e.clientY, svg);
-
       if (mode.type === 'placing') {
-        setMode({ type: 'drawing', shape: mode.shape, startMmX: mmX, startMmY: mmY });
+        setMode({ type: 'drawing', shape: mode.shape, startMmX: worldX, startMmY: worldY });
         return;
       }
 
       deselectAll();
-      marqueeStartRef.current = { x: svgX, y: svgY };
-      setMarquee({ x: svgX, y: svgY, w: 0, h: 0 });
+      // Marquee in mm world coords
+      marqueeStartRef.current = { x: worldX, y: worldY };
+      setMarquee({ x: worldX, y: worldY, w: 0, h: 0 });
     },
-    [mode, setMode, deselectAll, svgToMm, containerRef, spaceHeld]
+    [mode, setMode, deselectAll, spaceHeld]
   );
 
+  // Pointer move — receives world-space mm coords from R3F
   const handleCanvasPointerMove = useCallback(
-    (e: React.PointerEvent<SVGSVGElement>) => {
+    (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
       // Handle middle-click or space pan
       if (isPanningRef.current || spacePanRef.current) {
-        const dx = e.clientX - panStartRef.current.x;
-        const dy = e.clientY - panStartRef.current.y;
-        panStartRef.current = { x: e.clientX, y: e.clientY };
-        viewport.panBy(dx, dy);
+        const dx = nativeEvent.clientX - panStartRef.current.x;
+        const dy = nativeEvent.clientY - panStartRef.current.y;
+        panStartRef.current = { x: nativeEvent.clientX, y: nativeEvent.clientY };
+        // Pan: adjust camera center
+        setCameraCenter((prev) => ({
+          x: prev.x - dx / zoom,
+          y: prev.y + dy / zoom,
+        }));
         return;
       }
 
@@ -260,24 +273,20 @@ export function CutoutWorkspace() {
         mode.type === 'group-scaling' ||
         mode.type === 'drawing'
       ) {
-        const svg = containerRef.current;
-        if (!svg) return;
-        const { mmX, mmY } = svgToMm(e.clientX, e.clientY, svg);
-        handlePointerMove(mmX, mmY, e.shiftKey, e.altKey);
+        handlePointerMove(worldX, worldY, nativeEvent.shiftKey, nativeEvent.altKey);
         return;
       }
 
-      if (!marqueeStartRef.current || !containerRef.current) return;
-      const svg = containerRef.current;
-      const { svgX, svgY } = svgToMm(e.clientX, e.clientY, svg);
+      // Marquee update — in mm world coords
+      if (!marqueeStartRef.current) return;
       setMarquee({
         x: marqueeStartRef.current.x,
         y: marqueeStartRef.current.y,
-        w: svgX - marqueeStartRef.current.x,
-        h: svgY - marqueeStartRef.current.y,
+        w: worldX - marqueeStartRef.current.x,
+        h: worldY - marqueeStartRef.current.y,
       });
     },
-    [containerRef, mode, svgToMm, handlePointerMove, viewport]
+    [mode, handlePointerMove, zoom]
   );
 
   const handleCanvasPointerUp = useCallback(() => {
@@ -302,24 +311,21 @@ export function CutoutWorkspace() {
       return;
     }
 
+    // Marquee selection — coordinates are already in mm world space
     if (marquee && marqueeStartRef.current) {
-      const mx = Math.min(marquee.x, marquee.x + marquee.w);
-      const my = Math.min(marquee.y, marquee.y + marquee.h);
-      const mw = Math.abs(marquee.w);
-      const mh = Math.abs(marquee.h);
+      const mmLeft = Math.min(marquee.x, marquee.x + marquee.w);
+      const mmRight = Math.max(marquee.x, marquee.x + marquee.w);
+      const mmBottom = Math.min(marquee.y, marquee.y + marquee.h);
+      const mmTop = Math.max(marquee.y, marquee.y + marquee.h);
 
-      if (mw + mh > 5) {
-        const mmLeft = mx / scale;
-        const mmRight = (mx + mw) / scale;
-        const mmTop = binDepth - my / scale;
-        const mmBottom = binDepth - (my + mh) / scale;
-        const minY = Math.min(mmBottom, mmTop);
-        const maxY = Math.max(mmBottom, mmTop);
+      const mw = mmRight - mmLeft;
+      const mh = mmTop - mmBottom;
 
+      if (mw + mh > 2) {
         for (const cutout of cutouts) {
           const cRight = cutout.x + cutout.width;
           const cTop = cutout.y + cutout.depth;
-          if (cutout.x < mmRight && cRight > mmLeft && cutout.y < maxY && cTop > minY) {
+          if (cutout.x < mmRight && cRight > mmLeft && cutout.y < mmTop && cTop > mmBottom) {
             selectCutout(cutout.id, true);
           }
         }
@@ -328,10 +334,10 @@ export function CutoutWorkspace() {
 
     marqueeStartRef.current = null;
     setMarquee(null);
-  }, [mode, handlePointerUp, marquee, scale, binDepth, cutouts, selectCutout]);
+  }, [mode, handlePointerUp, marquee, cutouts, selectCutout]);
 
   const handleContextMenu = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
+    (e: React.MouseEvent) => {
       e.preventDefault();
       openContextMenu(e.clientX, e.clientY);
     },
@@ -344,6 +350,33 @@ export function CutoutWorkspace() {
     mode.type === 'rotating' ||
     mode.type === 'group-rotating' ||
     mode.type === 'group-scaling';
+
+  // Wheel zoom handler on the container div
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
+      if (newZoom === zoom) return;
+
+      // Cursor position in screen pixels relative to the container
+      const rect = e.currentTarget.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+
+      // Cursor in world coordinates (before zoom change)
+      const worldX = cameraCenter.x + (cx - canvasWidth / 2) / zoom;
+      const worldY = cameraCenter.y - (cy - canvasHeight / 2) / zoom;
+
+      // After zoom, same screen pixel should map to same world point
+      setCameraCenter({
+        x: worldX - (cx - canvasWidth / 2) / newZoom,
+        y: worldY + (cy - canvasHeight / 2) / newZoom,
+      });
+      setZoom(newZoom);
+    },
+    [zoom, cameraCenter, canvasWidth, canvasHeight]
+  );
 
   // Build context menu actions
   const contextMenuActions = useMemo((): ContextMenuAction[] => {
@@ -419,10 +452,10 @@ export function CutoutWorkspace() {
   return (
     <div className="flex h-full flex-col bg-surface-secondary">
       <WorkspaceHeader
-        zoomPercent={viewport.zoomPercent}
-        onZoomIn={viewport.zoomIn}
-        onZoomOut={viewport.zoomOut}
-        onFitToView={viewport.fitToView}
+        zoomPercent={zoomPercent}
+        onZoomIn={zoomIn}
+        onZoomOut={zoomOut}
+        onFitToView={fitToView}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -443,12 +476,12 @@ export function CutoutWorkspace() {
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Top ruler row */}
           <div className="flex flex-shrink-0">
-            <RulerCorner onDoubleClick={viewport.fitToView} />
+            <RulerCorner onDoubleClick={fitToView} />
             <TopRuler
               extent={binWidth}
               scale={scale}
-              zoom={viewport.zoom}
-              panOffset={viewport.rulerPanX}
+              zoom={zoom}
+              panOffset={rulerPanX}
               length={containerSize.width}
             />
           </div>
@@ -457,34 +490,31 @@ export function CutoutWorkspace() {
             <LeftRuler
               extent={binDepth}
               scale={scale}
-              zoom={viewport.zoom}
-              panOffset={viewport.rulerPanY}
+              zoom={zoom}
+              panOffset={rulerPanY}
               length={containerSize.height}
             />
             <div
               ref={canvasContainerRef}
               className={`flex-1 overflow-hidden bg-surface ${spaceHeld ? 'cursor-grab' : ''}`}
-              onWheel={viewport.handleWheel}
+              onWheel={handleWheel}
+              onContextMenu={handleContextMenu}
             >
-              <CutoutCanvas
+              <CutoutCanvas3D
                 cutouts={cutouts}
                 binWidth={binWidth}
                 binDepth={binDepth}
                 canvasWidth={canvasWidth}
                 canvasHeight={canvasHeight}
-                scale={scale}
-                viewBox={viewport.viewBox}
                 selection={selection}
                 preview={preview}
                 mode={mode}
                 drawingPreview={drawingPreview}
                 activeGuides={activeGuides}
                 marquee={marquee}
-                onCanvasPointerDown={handleCanvasPointerDown}
-                onCanvasPointerMove={handleCanvasPointerMove}
-                onCanvasPointerUp={handleCanvasPointerUp}
-                onContextMenu={handleContextMenu}
-                svgRef={containerRef}
+                onBackgroundPointerDown={handleBackgroundPointerDown}
+                onPointerMove={handleCanvasPointerMove}
+                onPointerUp={handleCanvasPointerUp}
                 onSelectCutout={selectCutout}
                 onDoubleClickCutout={selectIndividual}
                 onDragStart={startDrag}
@@ -492,6 +522,8 @@ export function CutoutWorkspace() {
                 onRotateStart={startRotation}
                 onGroupRotateStart={startGroupRotation}
                 onGroupScaleStart={startGroupScale}
+                externalZoom={zoom}
+                externalCameraCenter={cameraCenter}
               />
             </div>
           </div>

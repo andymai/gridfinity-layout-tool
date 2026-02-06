@@ -109,7 +109,8 @@ export function useCutoutInteraction({
   const [preview, setPreview] = useState<PreviewMap>(new Map());
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [activeGuides, setActiveGuides] = useState<AlignmentGuide[]>([]);
-  const containerRef = useRef<SVGSVGElement | null>(null);
+  /** Container ref — kept for potential external use but no longer needed for coordinate conversion */
+  const containerRef = useRef<HTMLElement | null>(null);
   /** Track whether the dead zone has been exceeded during this drag/resize */
   const pastDeadZoneRef = useRef(false);
   /** Clipboard for copy/paste operations */

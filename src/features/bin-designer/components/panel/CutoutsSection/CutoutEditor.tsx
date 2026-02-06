@@ -1,8 +1,8 @@
 /**
- * Sidebar cutout editor — thin wrapper around CutoutCanvas.
+ * Sidebar cutout editor — thin wrapper around CutoutCanvas3D.
  *
  * Wires store state, interaction hook, and UI chrome (toolbar, property panel,
- * alignment toolbar, context menu) around the reusable CutoutCanvas SVG.
+ * alignment toolbar, context menu) around the reusable CutoutCanvas3D WebGL canvas.
  */
 
 import { useCallback, useState, useRef, useMemo } from 'react';
@@ -12,7 +12,7 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { centerInBin } from './geometry';
 import { useCutoutInteraction } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
-import { CutoutCanvas } from './CutoutCanvas';
+import { CutoutCanvas3D } from './renderer';
 import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
@@ -52,8 +52,7 @@ export function CutoutEditor() {
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
 
-  const scale = CANVAS_WIDTH / binWidth;
-  const canvasHeight = binDepth * scale;
+  const canvasHeight = (CANVAS_WIDTH * binDepth) / binWidth;
 
   const {
     mode,
@@ -64,7 +63,6 @@ export function CutoutEditor() {
     deselectAll,
     selectAll,
     deleteSelected,
-    containerRef,
     preview,
     drawingPreview,
     startDrag,
@@ -96,44 +94,30 @@ export function CutoutEditor() {
 
   const t = useTranslation();
 
-  // Marquee state
+  // Marquee state — in mm world coordinates
   const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(
     null
   );
   const marqueeStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  const svgToMm = useCallback(
-    (clientX: number, clientY: number, svg: SVGSVGElement) => {
-      const rect = svg.getBoundingClientRect();
-      const svgX = clientX - rect.left;
-      const svgY = clientY - rect.top;
-      const mmX = svgX / scale;
-      const mmY = binDepth - svgY / scale;
-      return { mmX, mmY, svgX, svgY };
-    },
-    [scale, binDepth]
-  );
-
-  const handleCanvasPointerDown = useCallback(
-    (e: React.PointerEvent<SVGSVGElement>) => {
-      const svg = containerRef.current;
-      if (!svg) return;
-      const { mmX, mmY, svgX, svgY } = svgToMm(e.clientX, e.clientY, svg);
-
+  // Background click — receives mm world coords from R3F
+  const handleBackgroundPointerDown = useCallback(
+    (worldX: number, worldY: number, _nativeEvent: PointerEvent) => {
       if (mode.type === 'placing') {
-        setMode({ type: 'drawing', shape: mode.shape, startMmX: mmX, startMmY: mmY });
+        setMode({ type: 'drawing', shape: mode.shape, startMmX: worldX, startMmY: worldY });
         return;
       }
 
       deselectAll();
-      marqueeStartRef.current = { x: svgX, y: svgY };
-      setMarquee({ x: svgX, y: svgY, w: 0, h: 0 });
+      marqueeStartRef.current = { x: worldX, y: worldY };
+      setMarquee({ x: worldX, y: worldY, w: 0, h: 0 });
     },
-    [mode, setMode, deselectAll, svgToMm, containerRef]
+    [mode, setMode, deselectAll]
   );
 
+  // Pointer move — receives mm world coords from R3F
   const handleCanvasPointerMove = useCallback(
-    (e: React.PointerEvent<SVGSVGElement>) => {
+    (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
       if (
         mode.type === 'dragging' ||
         mode.type === 'resizing' ||
@@ -142,26 +126,19 @@ export function CutoutEditor() {
         mode.type === 'group-scaling' ||
         mode.type === 'drawing'
       ) {
-        const svg = containerRef.current;
-        if (!svg) return;
-        const { mmX, mmY } = svgToMm(e.clientX, e.clientY, svg);
-        handlePointerMove(mmX, mmY, e.shiftKey, e.altKey);
+        handlePointerMove(worldX, worldY, nativeEvent.shiftKey, nativeEvent.altKey);
         return;
       }
 
-      if (!marqueeStartRef.current || !containerRef.current) return;
-      const svg = containerRef.current;
-      const rect = svg.getBoundingClientRect();
-      const svgX = e.clientX - rect.left;
-      const svgY = e.clientY - rect.top;
+      if (!marqueeStartRef.current) return;
       setMarquee({
         x: marqueeStartRef.current.x,
         y: marqueeStartRef.current.y,
-        w: svgX - marqueeStartRef.current.x,
-        h: svgY - marqueeStartRef.current.y,
+        w: worldX - marqueeStartRef.current.x,
+        h: worldY - marqueeStartRef.current.y,
       });
     },
-    [containerRef, mode, svgToMm, handlePointerMove]
+    [mode, handlePointerMove]
   );
 
   const handleCanvasPointerUp = useCallback(() => {
@@ -178,23 +155,19 @@ export function CutoutEditor() {
     }
 
     if (marquee && marqueeStartRef.current) {
-      const mx = Math.min(marquee.x, marquee.x + marquee.w);
-      const my = Math.min(marquee.y, marquee.y + marquee.h);
-      const mw = Math.abs(marquee.w);
-      const mh = Math.abs(marquee.h);
+      const mmLeft = Math.min(marquee.x, marquee.x + marquee.w);
+      const mmRight = Math.max(marquee.x, marquee.x + marquee.w);
+      const mmBottom = Math.min(marquee.y, marquee.y + marquee.h);
+      const mmTop = Math.max(marquee.y, marquee.y + marquee.h);
 
-      if (mw + mh > 5) {
-        const mmLeft = mx / scale;
-        const mmRight = (mx + mw) / scale;
-        const mmTop = binDepth - my / scale;
-        const mmBottom = binDepth - (my + mh) / scale;
-        const minY = Math.min(mmBottom, mmTop);
-        const maxY = Math.max(mmBottom, mmTop);
+      const mw = mmRight - mmLeft;
+      const mh = mmTop - mmBottom;
 
+      if (mw + mh > 2) {
         for (const cutout of cutouts) {
           const cRight = cutout.x + cutout.width;
           const cTop = cutout.y + cutout.depth;
-          if (cutout.x < mmRight && cRight > mmLeft && cutout.y < maxY && cTop > minY) {
+          if (cutout.x < mmRight && cRight > mmLeft && cutout.y < mmTop && cTop > mmBottom) {
             selectCutout(cutout.id, true);
           }
         }
@@ -203,10 +176,10 @@ export function CutoutEditor() {
 
     marqueeStartRef.current = null;
     setMarquee(null);
-  }, [mode, handlePointerUp, marquee, scale, binDepth, cutouts, selectCutout]);
+  }, [mode, handlePointerUp, marquee, cutouts, selectCutout]);
 
   const handleContextMenu = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
+    (e: React.MouseEvent) => {
       e.preventDefault();
       openContextMenu(e.clientX, e.clientY);
     },
@@ -304,26 +277,26 @@ export function CutoutEditor() {
         onSnapToggle={setSnapEnabled}
       />
 
-      {/* SVG Canvas */}
-      <div className="rounded border border-stroke-subtle bg-surface-secondary overflow-hidden">
-        <CutoutCanvas
+      {/* WebGL Canvas */}
+      <div
+        className="rounded border border-stroke-subtle bg-surface-secondary overflow-hidden"
+        onContextMenu={handleContextMenu}
+      >
+        <CutoutCanvas3D
           cutouts={cutouts}
           binWidth={binWidth}
           binDepth={binDepth}
           canvasWidth={CANVAS_WIDTH}
           canvasHeight={canvasHeight}
-          scale={scale}
           selection={selection}
           preview={preview}
           mode={mode}
           drawingPreview={drawingPreview}
           activeGuides={activeGuides}
           marquee={marquee}
-          onCanvasPointerDown={handleCanvasPointerDown}
-          onCanvasPointerMove={handleCanvasPointerMove}
-          onCanvasPointerUp={handleCanvasPointerUp}
-          onContextMenu={handleContextMenu}
-          svgRef={containerRef}
+          onBackgroundPointerDown={handleBackgroundPointerDown}
+          onPointerMove={handleCanvasPointerMove}
+          onPointerUp={handleCanvasPointerUp}
           onSelectCutout={selectCutout}
           onDoubleClickCutout={selectIndividual}
           onDragStart={startDrag}

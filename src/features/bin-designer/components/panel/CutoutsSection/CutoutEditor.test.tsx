@@ -12,6 +12,18 @@ vi.mock('../../controls/SliderInput', () => ({
   SliderInput: ({ label }: { label: string }) => <div data-testid={`slider-${label}`} />,
 }));
 
+// Mock the renderer module — WebGL is not available in jsdom
+vi.mock('./renderer', () => ({
+  CutoutCanvas3D: (props: Record<string, unknown>) => (
+    <div
+      data-testid="cutout-canvas-3d"
+      data-bin-width={props.binWidth}
+      data-bin-depth={props.binDepth}
+      data-cutout-count={Array.isArray(props.cutouts) ? props.cutouts.length : 0}
+    />
+  ),
+}));
+
 describe('CutoutEditor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -24,10 +36,9 @@ describe('CutoutEditor', () => {
     });
   });
 
-  it('renders the SVG canvas', () => {
-    const { container } = render(<CutoutEditor />);
-    const svg = container.querySelector('svg');
-    expect(svg).not.toBeNull();
+  it('renders the WebGL canvas', () => {
+    render(<CutoutEditor />);
+    expect(screen.getByTestId('cutout-canvas-3d')).toBeInTheDocument();
   });
 
   it('renders the shape toolbar', () => {
@@ -36,7 +47,7 @@ describe('CutoutEditor', () => {
     expect(screen.getByTitle('binDesigner.cutouts.addCircle')).toBeInTheDocument();
   });
 
-  it('renders cutout shapes in the SVG', () => {
+  it('renders without errors with cutouts present', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -59,13 +70,13 @@ describe('CutoutEditor', () => {
       },
     });
 
-    const { container } = render(<CutoutEditor />);
-    // Should render at least the cutout rect
-    const rects = container.querySelectorAll('svg rect');
-    expect(rects.length).toBeGreaterThanOrEqual(1);
+    render(<CutoutEditor />);
+    const canvas = screen.getByTestId('cutout-canvas-3d');
+    expect(canvas).toBeInTheDocument();
+    expect(canvas.getAttribute('data-cutout-count')).toBe('1');
   });
 
-  it('renders a circle cutout as circle element', () => {
+  it('renders without errors with circle cutouts', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -88,18 +99,8 @@ describe('CutoutEditor', () => {
       },
     });
 
-    const { container } = render(<CutoutEditor />);
-    const circles = container.querySelectorAll('svg circle');
-    expect(circles.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('renders background grid and crosshair inside canvas', () => {
-    const { container } = render(<CutoutEditor />);
-    // The background should have dot grid (circles) and crosshair lines
-    const circles = container.querySelectorAll('svg circle');
-    const lines = container.querySelectorAll('svg line');
-    expect(circles.length).toBeGreaterThan(0);
-    expect(lines.length).toBe(2); // horizontal and vertical crosshair
+    render(<CutoutEditor />);
+    expect(screen.getByTestId('cutout-canvas-3d')).toBeInTheDocument();
   });
 
   it('does not render resize handles when nothing is selected', () => {
@@ -126,15 +127,13 @@ describe('CutoutEditor', () => {
     });
 
     const { container } = render(<CutoutEditor />);
+    // No handles in the DOM (they would be inside the 3D canvas, which is mocked)
     const handles = container.querySelector('[data-testid="resize-handles"]');
     expect(handles).toBeNull();
   });
 
   it('renders without errors with context menu support', () => {
-    const { container } = render(<CutoutEditor />);
-    const svg = container.querySelector('svg');
-
-    // Basic sanity check - editor renders and has SVG
-    expect(svg).toBeInTheDocument();
+    render(<CutoutEditor />);
+    expect(screen.getByTestId('cutout-canvas-3d')).toBeInTheDocument();
   });
 });
