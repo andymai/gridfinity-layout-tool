@@ -12,6 +12,8 @@ import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
 import { CutoutsSection } from '../CutoutsSection';
 import type { BinStyle } from '../../../types';
 import { useInteriorSection } from './useInteriorSection';
+import { useDesignerStore } from '@/features/bin-designer/store';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 
 const STYLE_OPTIONS: BinStyle[] = ['standard', 'slotted', 'solid'];
 
@@ -29,6 +31,8 @@ const SECTION_TITLE_KEYS: Record<BinStyle, string> = {
 
 export function InteriorSection() {
   const { state, handlers, meta, t } = useInteriorSection();
+  const setCutoutEditorOpen = useDesignerStore((s) => s.setCutoutEditorOpen);
+  const { isDesktop } = useResponsive();
 
   return (
     <div className="space-y-3">
@@ -77,6 +81,15 @@ export function InteriorSection() {
           defaultExpanded
           summary={meta.summary}
         >
+          {isDesktop && (
+            <button
+              type="button"
+              onClick={() => setCutoutEditorOpen(true)}
+              className="mb-3 w-full rounded border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
+            >
+              {t('binDesigner.editCutouts')}
+            </button>
+          )}
           <CutoutsSection />
         </CollapsibleSection>
       )}

@@ -78,6 +78,8 @@ src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.ts
 src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
 src/features/bin-designer/components/panel/CutoutsSection/CutoutContextMenu.tsx
 src/features/bin-designer/components/panel/CutoutsSection/CutoutsSection.tsx
+src/features/bin-designer/components/CutoutWorkspace/InspectorPanel.tsx
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
 src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
 src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx
 src/features/bin-designer/components/preview/PreviewSkeleton/PreviewSkeleton.tsx
@@ -150,6 +152,7 @@ src/features/staging/components/Staging/Staging.tsx
 src/i18n/context.tsx
 
 # Shared components
+src/shared/components/CompactNumberInput/CompactNumberInput.tsx
 src/shared/components/BulkIncrementControl/BulkIncrementControl.tsx
 src/shared/components/CollapsibleSection/CollapsibleSection.tsx
 src/shared/components/ConfirmDialog/ConfirmDialog.tsx

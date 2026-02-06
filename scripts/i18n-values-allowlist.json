@@ -14,6 +14,7 @@
     "binDesigner.cutouts.addRectangle",
     "binDesigner.cutouts.label",
     "binDesigner.cutouts.rotation",
+    "binDesigner.cutoutEditor.actions",
     "binDesigner.interiorSolid",
     "binDesigner.group.base",
     "binDesigner.group.interior",

@@ -84,6 +84,7 @@ interface UseCutoutInteractionOptions {
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onRemove: (id: string) => void;
   readonly onAdd: (cutout: Cutout) => void;
+  readonly onGroup?: (cutoutIds: readonly string[]) => void;
   readonly binWidth: number;
   readonly binDepth: number;
 }
@@ -99,6 +100,7 @@ export function useCutoutInteraction({
   onUpdate,
   onRemove,
   onAdd,
+  onGroup,
   binWidth,
   binDepth,
 }: UseCutoutInteractionOptions) {
@@ -141,6 +143,14 @@ export function useCutoutInteraction({
           } else {
             next.add(id);
           }
+          // Auto-join: if the clicked cutout is ungrouped and the selection
+          // contains a group, auto-add the clicked cutout to that group
+          if (onGroup && next.has(id) && !cutout.groupId) {
+            const selectedWithGroup = cutouts.find((c) => next.has(c.id) && c.groupId !== null);
+            if (selectedWithGroup) {
+              onGroup([...next]);
+            }
+          }
           return next;
         }
 
@@ -153,7 +163,7 @@ export function useCutoutInteraction({
         return new Set([id]);
       });
     },
-    [cutouts]
+    [cutouts, onGroup]
   );
 
   /** Double-click: select only the individual cutout (bypasses group) */
@@ -250,15 +260,27 @@ export function useCutoutInteraction({
 
   const startDrag = useCallback(
     (id: string, mmX: number, mmY: number) => {
-      // Ensure the clicked cutout is selected
-      const currentSelection = selection.has(id) ? selection : new Set([id]);
-      if (!selection.has(id)) {
-        setSelection(new Set([id]));
+      // Determine effective selection, handling stale closure for grouped cutouts.
+      // When clicking a grouped cutout, selectCutout runs first and sets selection
+      // to the whole group, but React batches updates so `selection` here may still
+      // be the old value. Compute the correct set eagerly.
+      let effectiveSelection: ReadonlySet<string>;
+      if (selection.has(id)) {
+        effectiveSelection = selection;
+      } else {
+        const cutout = cutouts.find((c) => c.id === id);
+        if (cutout?.groupId) {
+          const groupIds = cutouts.filter((c) => c.groupId === cutout.groupId).map((c) => c.id);
+          effectiveSelection = new Set(groupIds);
+        } else {
+          effectiveSelection = new Set([id]);
+        }
+        setSelection(effectiveSelection);
       }
 
       // Store offset from cursor to each selected cutout's origin
       const offsets = new Map<string, { dx: number; dy: number }>();
-      for (const selectedId of currentSelection) {
+      for (const selectedId of effectiveSelection) {
         const cutout = cutouts.find((c) => c.id === selectedId);
         if (cutout) {
           offsets.set(selectedId, { dx: cutout.x - mmX, dy: cutout.y - mmY });
@@ -356,7 +378,7 @@ export function useCutoutInteraction({
   // ── Pointer move (drag, resize, or rotate) ─────────────────────────
 
   const handlePointerMove = useCallback(
-    (mmX: number, mmY: number, shiftKey?: boolean) => {
+    (mmX: number, mmY: number, shiftKey?: boolean, altKey?: boolean) => {
       if (mode.type === 'dragging') {
         // Dead zone check
         if (!pastDeadZoneRef.current) {
@@ -375,9 +397,12 @@ export function useCutoutInteraction({
 
         const nextPreview = new Map<string, Partial<Cutout>>();
         for (const [id, offset] of mode.offsets) {
+          const cutout = cutouts.find((c) => c.id === id);
+          if (!cutout) continue;
+          // Snap, then clamp to bin bounds (snap can round past non-integer edges)
           nextPreview.set(id, {
-            x: snap(mode.startX + dx + offset.dx),
-            y: snap(mode.startY + dy + offset.dy),
+            x: Math.max(0, Math.min(snap(mode.startX + dx + offset.dx), binWidth - cutout.width)),
+            y: Math.max(0, Math.min(snap(mode.startY + dy + offset.dy), binDepth - cutout.depth)),
           });
         }
         setPreview(nextPreview);
@@ -427,18 +452,22 @@ export function useCutoutInteraction({
           binDepth,
           cutout.shape,
           cutout.rotation,
-          shiftKey
+          shiftKey,
+          altKey
         );
 
+        // Snap, then clamp to bin bounds (snap can round past non-integer edges)
+        const snappedW = Math.max(MIN_CUTOUT_SIZE, snap(resized.width));
+        const snappedD = Math.max(MIN_CUTOUT_SIZE, snap(resized.depth));
         setPreview(
           new Map([
             [
               mode.cutoutId,
               {
-                x: snap(resized.x),
-                y: snap(resized.y),
-                width: Math.max(MIN_CUTOUT_SIZE, snap(resized.width)),
-                depth: Math.max(MIN_CUTOUT_SIZE, snap(resized.depth)),
+                x: Math.max(0, Math.min(snap(resized.x), binWidth - snappedW)),
+                y: Math.max(0, Math.min(snap(resized.y), binDepth - snappedD)),
+                width: snappedW,
+                depth: snappedD,
               },
             ],
           ])
@@ -463,7 +492,7 @@ export function useCutoutInteraction({
         const cy = cutout.y + cutout.depth / 2;
         const currentAngle = Math.atan2(mmY - cy, mmX - cx) * (180 / Math.PI);
         const delta = currentAngle - mode.startAngle;
-        let newRotation = (((mode.initialRotation + delta) % 360) + 360) % 360;
+        let newRotation = (((mode.initialRotation - delta) % 360) + 360) % 360;
 
         // Snap to 15° increments when Shift is held
         if (shiftKey) {
@@ -495,11 +524,11 @@ export function useCutoutInteraction({
           // Rotate position around group center
           const cxI = initial.x + cutout.width / 2;
           const cyI = initial.y + cutout.depth / 2;
-          const rotated = rotatePoint(cxI, cyI, mode.center.x, mode.center.y, delta);
+          const rotated = rotatePoint(cxI, cyI, mode.center.x, mode.center.y, -delta);
           nextPreview.set(id, {
             x: rotated.x - cutout.width / 2,
             y: rotated.y - cutout.depth / 2,
-            rotation: (((initial.rotation + delta) % 360) + 360) % 360,
+            rotation: (((initial.rotation - delta) % 360) + 360) % 360,
           });
         }
         setPreview(nextPreview);
@@ -712,10 +741,16 @@ export function useCutoutInteraction({
     useCutoutSelection.getState().setSelectedIds(effectiveSelection);
   }, [effectiveSelection]);
 
+  // Sync preview overrides to shared store so 3D preview updates during interactions
+  useEffect(() => {
+    useCutoutSelection.getState().setPreviewOverrides(preview);
+  }, [preview]);
+
   // Clear shared selection on unmount (e.g. switching away from solid mode)
   useEffect(() => {
     return () => {
       useCutoutSelection.getState().setSelectedIds(new Set());
+      useCutoutSelection.getState().setPreviewOverrides(new Map());
     };
   }, []);
 

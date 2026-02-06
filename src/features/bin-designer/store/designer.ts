@@ -501,11 +501,22 @@ export const useDesignerStore = create<DesignerState>()(
 
     groupCutouts: (cutoutIds: readonly string[]) => {
       if (cutoutIds.length < 2) return;
-      const groupId = crypto.randomUUID();
       set((state) => {
         pushHistoryEntry(state);
+        // Reuse an existing groupId if any selected cutout already belongs to a group
+        const existingGroupId = state.params.cutouts.find(
+          (c) => cutoutIds.includes(c.id) && c.groupId !== null
+        )?.groupId;
+        const groupId = existingGroupId ?? crypto.randomUUID();
+        // Include all existing members of the reused group
+        const idsToGroup = new Set(cutoutIds);
+        if (existingGroupId) {
+          for (const c of state.params.cutouts) {
+            if (c.groupId === existingGroupId) idsToGroup.add(c.id);
+          }
+        }
         state.params.cutouts = state.params.cutouts.map((c) =>
-          cutoutIds.includes(c.id) ? { ...c, groupId } : c
+          idsToGroup.has(c.id) ? { ...c, groupId } : c
         );
       });
     },
@@ -573,6 +584,12 @@ export const useDesignerStore = create<DesignerState>()(
     setWireframeMode: (enabled: boolean) => {
       set((state) => {
         state.ui.wireframeMode = enabled;
+      });
+    },
+
+    setCutoutEditorOpen: (open: boolean) => {
+      set((state) => {
+        state.ui.cutoutEditorOpen = open;
       });
     },
 

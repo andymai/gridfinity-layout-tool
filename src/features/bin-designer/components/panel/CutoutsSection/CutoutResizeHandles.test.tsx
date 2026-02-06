@@ -62,20 +62,22 @@ describe('CutoutResizeHandles', () => {
     // cutout: x=10, y=10, width=20, depth=15, scale=2, binDepth=50
     // left = 10*2 = 20, right = 30*2 = 60
     // top = (50 - 10 - 15)*2 = 50, bottom = (50 - 10)*2 = 80
+    // Corner handles are 8px → half = 4
     const { getByTestId } = renderHandles();
     const nw = getByTestId('resize-handle-nw');
-    // x = svgX - 3 = 20 - 3 = 17
-    expect(nw.getAttribute('x')).toBe('17');
-    // y = svgY - 3 = 50 - 3 = 47
-    expect(nw.getAttribute('y')).toBe('47');
+    // x = svgX - 4 = 20 - 4 = 16
+    expect(nw.getAttribute('x')).toBe('16');
+    // y = svgY - 4 = 50 - 4 = 46
+    expect(nw.getAttribute('y')).toBe('46');
 
     const se = getByTestId('resize-handle-se');
-    expect(se.getAttribute('x')).toBe('57'); // 60 - 3
-    expect(se.getAttribute('y')).toBe('77'); // 80 - 3
+    expect(se.getAttribute('x')).toBe('56'); // 60 - 4
+    expect(se.getAttribute('y')).toBe('76'); // 80 - 4
   });
 
   it('positions edge midpoint handles correctly', () => {
     // midX = (20 + 60) / 2 = 40, midY = (50 + 80) / 2 = 65
+    // Edge handles are 6px → half = 3
     const { getByTestId } = renderHandles();
     const n = getByTestId('resize-handle-n');
     expect(n.getAttribute('x')).toBe('37'); // 40 - 3
@@ -91,7 +93,7 @@ describe('CutoutResizeHandles', () => {
     const { getByTestId } = renderHandles({ cutout });
     const group = getByTestId('resize-handles');
     const transform = group.getAttribute('transform');
-    expect(transform).toContain('rotate(-45');
+    expect(transform).toContain('rotate(45');
   });
 
   it('has no rotation transform when rotation is 0', () => {
@@ -115,10 +117,10 @@ describe('CutoutResizeHandles', () => {
     );
   });
 
-  it('has accent fill and white stroke', () => {
+  it('has amber fill and white stroke', () => {
     const { getByTestId } = renderHandles();
     const handle = getByTestId('resize-handle-nw');
-    expect(handle.getAttribute('fill')).toBe('var(--color-accent)');
+    expect(handle.getAttribute('fill')).toBe('#fbbf24');
     expect(handle.getAttribute('stroke')).toBe('white');
   });
 

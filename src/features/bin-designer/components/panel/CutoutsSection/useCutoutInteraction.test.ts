@@ -432,6 +432,50 @@ describe('useCutoutInteraction', () => {
     });
   });
 
+  describe('group drag', () => {
+    it('computes offsets for all group members when clicking a grouped cutout', () => {
+      const groupedCutouts = [
+        createCutout('a', { x: 10, y: 10, groupId: 'g1' }),
+        createCutout('b', { x: 30, y: 30, groupId: 'g1' }),
+        createCutout('c', { x: 50, y: 50 }),
+      ];
+      const opts = { ...defaultOpts, cutouts: groupedCutouts };
+      const { result } = renderHook(() => useCutoutInteraction(opts));
+
+      // Click cutout 'a' (non-additive), which should select both 'a' and 'b' (group)
+      act(() => result.current.selectCutout('a', false));
+      // Then start drag on 'a' — but selection state may be stale in the closure
+      act(() => result.current.startDrag('a', 15, 15));
+
+      expect(result.current.mode.type).toBe('dragging');
+      if (result.current.mode.type === 'dragging') {
+        // Both group members should have offsets
+        expect(result.current.mode.offsets.has('a')).toBe(true);
+        expect(result.current.mode.offsets.has('b')).toBe(true);
+        // Non-group member should not
+        expect(result.current.mode.offsets.has('c')).toBe(false);
+      }
+    });
+
+    it('handles stale closure: startDrag computes group selection eagerly', () => {
+      const groupedCutouts = [
+        createCutout('a', { x: 10, y: 10, groupId: 'g1' }),
+        createCutout('b', { x: 30, y: 30, groupId: 'g1' }),
+      ];
+      const opts = { ...defaultOpts, cutouts: groupedCutouts };
+      const { result } = renderHook(() => useCutoutInteraction(opts));
+
+      // Don't pre-select; startDrag should detect the group and include both members
+      act(() => result.current.startDrag('a', 15, 15));
+
+      expect(result.current.mode.type).toBe('dragging');
+      if (result.current.mode.type === 'dragging') {
+        expect(result.current.mode.offsets.has('a')).toBe(true);
+        expect(result.current.mode.offsets.has('b')).toBe(true);
+      }
+    });
+  });
+
   describe('copy/paste/duplicate', () => {
     it('Ctrl+C copies selected cutouts to clipboard', () => {
       const { result } = renderHook(() => useCutoutInteraction(defaultOpts));

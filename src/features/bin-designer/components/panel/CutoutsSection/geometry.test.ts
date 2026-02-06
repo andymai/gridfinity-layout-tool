@@ -174,6 +174,69 @@ describe('geometry', () => {
       const result = calculateCutoutResize(circleStart, 'e', 50, 10, 20, 20, 'circle');
       expect(result.x + result.width).toBeLessThanOrEqual(20);
     });
+
+    describe('alt-constrain (resize from center)', () => {
+      it('resizes E handle symmetrically around center', () => {
+        const start = { x: 10, y: 10, width: 20, depth: 15 };
+        // Center at (20, 17.5). Cursor at x=35, width each side = |35-20| = 15
+        const result = calculateCutoutResize(
+          start,
+          'e',
+          35,
+          17.5,
+          100,
+          100,
+          'rectangle',
+          0,
+          false,
+          true
+        );
+        expect(result.width).toBe(30); // 15 * 2
+        expect(result.x).toBe(5); // 20 - 15
+        expect(result.depth).toBe(15); // unchanged
+      });
+
+      it('resizes SE corner symmetrically around center', () => {
+        const start = { x: 10, y: 10, width: 20, depth: 20 };
+        // Center at (20, 20). Cursor at (30, 10)
+        const result = calculateCutoutResize(
+          start,
+          'se',
+          30,
+          10,
+          100,
+          100,
+          'rectangle',
+          0,
+          false,
+          true
+        );
+        expect(result.width).toBe(20); // |30-20| * 2
+        expect(result.depth).toBe(20); // |10-20| * 2
+        expect(result.x).toBe(10); // 20 - 10
+        expect(result.y).toBe(10); // 20 - 10
+      });
+
+      it('resizes N handle symmetrically around center', () => {
+        const start = { x: 10, y: 10, width: 20, depth: 15 };
+        // Center at (20, 17.5). Cursor at y=27.5 → halfD = 10
+        const result = calculateCutoutResize(
+          start,
+          'n',
+          20,
+          27.5,
+          100,
+          100,
+          'rectangle',
+          0,
+          false,
+          true
+        );
+        expect(result.depth).toBe(20); // 10 * 2
+        expect(result.y).toBe(7.5); // 17.5 - 10
+        expect(result.width).toBe(20); // unchanged
+      });
+    });
   });
 
   describe('constrainGroupDrag', () => {

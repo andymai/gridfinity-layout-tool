@@ -61,7 +61,7 @@ export function RotationHandle({ cutout, scale, binDepth, onRotateStart }: Rotat
         y1={centerSvgY}
         x2={handleX}
         y2={handleY}
-        stroke="var(--color-accent)"
+        stroke="#fbbf24"
         strokeWidth={1}
         opacity={0.5}
       />
@@ -71,10 +71,13 @@ export function RotationHandle({ cutout, scale, binDepth, onRotateStart }: Rotat
         cx={handleX}
         cy={handleY}
         r={4}
-        fill="var(--color-accent)"
+        fill="#fbbf24"
         stroke="white"
         strokeWidth={1.5}
-        style={{ cursor: 'grab' }}
+        style={{
+          cursor: 'grab',
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
+        }}
         onPointerDown={handlePointerDown}
       />
     </g>

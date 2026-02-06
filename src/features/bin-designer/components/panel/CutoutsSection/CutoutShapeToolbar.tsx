@@ -14,6 +14,8 @@ interface CutoutShapeToolbarProps {
   readonly onSelectShape: (mode: InteractionMode) => void;
   readonly snapEnabled: boolean;
   readonly onSnapToggle: (enabled: boolean) => void;
+  /** Render as vertical icon-only strip (for workspace mode) */
+  readonly vertical?: boolean;
 }
 
 export function CutoutShapeToolbar({
@@ -21,6 +23,7 @@ export function CutoutShapeToolbar({
   onSelectShape,
   snapEnabled,
   onSnapToggle,
+  vertical = false,
 }: CutoutShapeToolbarProps) {
   const t = useTranslation();
   const isPlacing = mode.type === 'placing';
@@ -35,20 +38,24 @@ export function CutoutShapeToolbar({
     }
   };
 
+  const btnBase = vertical
+    ? 'flex items-center justify-center rounded p-1.5 transition-colors'
+    : 'flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors';
+  const btnActive = 'bg-accent text-white';
+  const btnInactive =
+    'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover';
+  const iconSize = vertical ? 'h-4 w-4' : 'h-3.5 w-3.5';
+
   return (
-    <div className="flex items-center gap-2">
+    <div className={vertical ? 'flex flex-col items-center gap-1' : 'flex items-center gap-2'}>
       <button
         type="button"
-        className={`flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
-          isIdle
-            ? 'bg-accent text-white'
-            : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-        }`}
+        className={`${btnBase} ${isIdle ? btnActive : btnInactive}`}
         onClick={() => onSelectShape({ type: 'idle' })}
         title={t('binDesigner.cutouts.pointerTool')}
       >
         <svg
-          className="h-3.5 w-3.5"
+          className={iconSize}
           viewBox="0 0 14 14"
           fill="none"
           stroke="currentColor"
@@ -56,21 +63,17 @@ export function CutoutShapeToolbar({
         >
           <path d="M3 1l8 5.5-3.5.5L5 11z" />
         </svg>
-        {t('binDesigner.cutouts.pointerTool')}
+        {!vertical && t('binDesigner.cutouts.pointerTool')}
       </button>
 
       <button
         type="button"
-        className={`flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
-          activeShape === 'rectangle'
-            ? 'bg-accent text-white'
-            : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-        }`}
+        className={`${btnBase} ${activeShape === 'rectangle' ? btnActive : btnInactive}`}
         onClick={() => handleClick('rectangle')}
         title={t('binDesigner.cutouts.addRectangle')}
       >
         <svg
-          className="h-3.5 w-3.5"
+          className={iconSize}
           viewBox="0 0 14 14"
           fill="none"
           stroke="currentColor"
@@ -78,21 +81,17 @@ export function CutoutShapeToolbar({
         >
           <rect x="1" y="2" width="12" height="10" rx="1" />
         </svg>
-        {t('binDesigner.cutouts.addRectangle')}
+        {!vertical && t('binDesigner.cutouts.addRectangle')}
       </button>
 
       <button
         type="button"
-        className={`flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
-          activeShape === 'circle'
-            ? 'bg-accent text-white'
-            : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-        }`}
+        className={`${btnBase} ${activeShape === 'circle' ? btnActive : btnInactive}`}
         onClick={() => handleClick('circle')}
         title={t('binDesigner.cutouts.addCircle')}
       >
         <svg
-          className="h-3.5 w-3.5"
+          className={iconSize}
           viewBox="0 0 14 14"
           fill="none"
           stroke="currentColor"
@@ -100,23 +99,23 @@ export function CutoutShapeToolbar({
         >
           <circle cx="7" cy="7" r="6" />
         </svg>
-        {t('binDesigner.cutouts.addCircle')}
+        {!vertical && t('binDesigner.cutouts.addCircle')}
       </button>
 
-      <div className="h-4 w-px bg-stroke-subtle" />
+      <div
+        className={
+          vertical ? 'w-5 border-t border-stroke-subtle my-0.5' : 'h-4 w-px bg-stroke-subtle'
+        }
+      />
 
       <button
         type="button"
-        className={`flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
-          snapEnabled
-            ? 'bg-accent text-white'
-            : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-        }`}
+        className={`${btnBase} ${snapEnabled ? btnActive : btnInactive}`}
         onClick={() => onSnapToggle(!snapEnabled)}
         title={t('binDesigner.cutouts.snapToGrid')}
       >
         <svg
-          className="h-3.5 w-3.5"
+          className={iconSize}
           viewBox="0 0 14 14"
           fill="none"
           stroke="currentColor"
@@ -124,10 +123,10 @@ export function CutoutShapeToolbar({
         >
           <path d="M1 1h4v4H1zM9 1h4v4H9zM1 9h4v4H1zM9 9h4v4H9z" />
         </svg>
-        {t('binDesigner.cutouts.snapToGrid')}
+        {!vertical && t('binDesigner.cutouts.snapToGrid')}
       </button>
 
-      {isPlacing && (
+      {isPlacing && !vertical && (
         <span className="text-[11px] text-content-tertiary">
           {t('binDesigner.cutouts.dragToDraw')}
         </span>

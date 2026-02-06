@@ -661,7 +661,7 @@ function buildCutoutCuts(
 
     // Apply rotation around Z axis (at origin, before translation)
     if (cutout.rotation !== 0) {
-      shape = shape.rotate(cutout.rotation, [0, 0, 0], [0, 0, 1]);
+      shape = shape.rotate(-cutout.rotation, [0, 0, 0], [0, 0, 1]);
     }
 
     // Position: x,y from UI are bottom-left corner of cutout relative to interior origin.

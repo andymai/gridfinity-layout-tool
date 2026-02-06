@@ -1,32 +1,25 @@
 /**
- * SVG-based 2D editor for placing and editing cutouts.
+ * Sidebar cutout editor — thin wrapper around CutoutCanvas.
  *
- * Renders a top-down view of the bin interior with cutout shapes.
- * Supports click-to-place, selection, marquee selection, drag-to-move,
- * and drag-to-resize via corner handles.
+ * Wires store state, interaction hook, and UI chrome (toolbar, property panel,
+ * alignment toolbar, context menu) around the reusable CutoutCanvas SVG.
  */
 
 import { useCallback, useState, useRef, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { getResizeCursor, centerInBin } from './geometry';
+import { centerInBin } from './geometry';
 import { useCutoutInteraction } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
-import { EditorBackground } from './EditorBackground';
-import { CutoutShape } from './CutoutShape';
-import { CutoutResizeHandles } from './CutoutResizeHandles';
-import { RotationHandle } from './RotationHandle';
+import { CutoutCanvas } from './CutoutCanvas';
 import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
-import { MarqueeBox } from './MarqueeBox';
-import { SmartGuides } from './SmartGuides';
-import { DimensionTooltip } from './DimensionTooltip';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import type { ContextMenuAction } from './CutoutContextMenu';
 
-/** Canvas width in CSS pixels */
+/** Canvas width in CSS pixels (fits 288px sidebar) */
 const CANVAS_WIDTH = 248;
 
 export function CutoutEditor() {
@@ -77,6 +70,8 @@ export function CutoutEditor() {
     startDrag,
     startResize,
     startRotation,
+    startGroupRotation,
+    startGroupScale,
     handlePointerMove,
     handlePointerUp,
     snapEnabled,
@@ -94,6 +89,7 @@ export function CutoutEditor() {
     onUpdate: updateCutout,
     onRemove: removeCutout,
     onAdd: addCutout,
+    onGroup: groupCutouts,
     binWidth,
     binDepth,
   });
@@ -105,36 +101,6 @@ export function CutoutEditor() {
     null
   );
   const marqueeStartRef = useRef<{ x: number; y: number } | null>(null);
-
-  // Compute tooltip info from mode and preview
-  const tooltipInfo = useMemo(() => {
-    if (mode.type === 'dragging' && preview.size > 0) {
-      // Get first previewed cutout's position
-      const [firstId, firstUpdates] = [...preview.entries()][0];
-      const orig = cutouts.find((c) => c.id === firstId);
-      if (!orig) return null;
-      const effective = { ...orig, ...firstUpdates };
-      const x = effective.x;
-      const y = effective.y;
-      const svgX = x * scale + 10;
-      const svgY = (binDepth - y) * scale - 10;
-      return { type: 'drag' as const, x, y, svgX, svgY };
-    }
-    if (mode.type === 'resizing' && preview.size > 0) {
-      const [id, updates] = [...preview.entries()][0];
-      const orig = cutouts.find((c) => c.id === id);
-      if (!orig) return null;
-      const effective = { ...orig, ...updates };
-      const width = effective.width;
-      const depth = effective.depth;
-      const x = effective.x;
-      const y = effective.y;
-      const svgX = (x + width) * scale + 5;
-      const svgY = (binDepth - y - depth) * scale;
-      return { type: 'resize' as const, width, depth, svgX, svgY };
-    }
-    return null;
-  }, [mode, preview, cutouts, scale, binDepth]);
 
   const svgToMm = useCallback(
     (clientX: number, clientY: number, svg: SVGSVGElement) => {
@@ -155,12 +121,10 @@ export function CutoutEditor() {
       const { mmX, mmY, svgX, svgY } = svgToMm(e.clientX, e.clientY, svg);
 
       if (mode.type === 'placing') {
-        // Start drag-to-draw: record corner, switch to drawing mode
         setMode({ type: 'drawing', shape: mode.shape, startMmX: mmX, startMmY: mmY });
         return;
       }
 
-      // Start marquee if clicking empty space
       deselectAll();
       marqueeStartRef.current = { x: svgX, y: svgY };
       setMarquee({ x: svgX, y: svgY, w: 0, h: 0 });
@@ -170,7 +134,6 @@ export function CutoutEditor() {
 
   const handleCanvasPointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
-      // Handle drag/resize/rotate/group/drawing pointer move
       if (
         mode.type === 'dragging' ||
         mode.type === 'resizing' ||
@@ -182,11 +145,10 @@ export function CutoutEditor() {
         const svg = containerRef.current;
         if (!svg) return;
         const { mmX, mmY } = svgToMm(e.clientX, e.clientY, svg);
-        handlePointerMove(mmX, mmY, e.shiftKey);
+        handlePointerMove(mmX, mmY, e.shiftKey, e.altKey);
         return;
       }
 
-      // Handle marquee
       if (!marqueeStartRef.current || !containerRef.current) return;
       const svg = containerRef.current;
       const rect = svg.getBoundingClientRect();
@@ -215,7 +177,6 @@ export function CutoutEditor() {
       return;
     }
 
-    // Marquee selection: select all cutouts whose bounds intersect the marquee box
     if (marquee && marqueeStartRef.current) {
       const mx = Math.min(marquee.x, marquee.x + marquee.w);
       const my = Math.min(marquee.y, marquee.y + marquee.h);
@@ -223,7 +184,6 @@ export function CutoutEditor() {
       const mh = Math.abs(marquee.h);
 
       if (mw + mh > 5) {
-        // Convert marquee from SVG px to mm
         const mmLeft = mx / scale;
         const mmRight = (mx + mw) / scale;
         const mmTop = binDepth - my / scale;
@@ -234,8 +194,6 @@ export function CutoutEditor() {
         for (const cutout of cutouts) {
           const cRight = cutout.x + cutout.width;
           const cTop = cutout.y + cutout.depth;
-
-          // Check AABB intersection
           if (cutout.x < mmRight && cRight > mmLeft && cutout.y < maxY && cTop > minY) {
             selectCutout(cutout.id, true);
           }
@@ -255,33 +213,21 @@ export function CutoutEditor() {
     [openContextMenu]
   );
 
-  // Derive cursor class based on current mode
-  const getCursorClass = (): string => {
-    if (mode.type === 'placing' || mode.type === 'drawing') return 'cursor-crosshair';
-    if (mode.type === 'dragging') return 'cursor-grabbing';
-    if (mode.type === 'resizing') return '';
-    return 'cursor-default';
-  };
+  const isInteracting =
+    mode.type === 'dragging' ||
+    mode.type === 'resizing' ||
+    mode.type === 'rotating' ||
+    mode.type === 'group-rotating' ||
+    mode.type === 'group-scaling';
 
-  // Inline cursor style for resize (CSS cursor classes don't cover nwse-resize etc.)
-  const getCursorStyle = (): React.CSSProperties | undefined => {
-    if (mode.type === 'resizing') {
-      return { cursor: getResizeCursor(mode.handle) };
-    }
-    return undefined;
-  };
-
-  const isDragging = mode.type === 'dragging';
-  const isResizing = mode.type === 'resizing';
   const selectedCutout =
-    selection.size === 1 && !isDragging ? cutouts.find((c) => selection.has(c.id)) : null;
+    selection.size === 1 ? (cutouts.find((c) => selection.has(c.id)) ?? null) : null;
   const selectedIds = [...selection];
 
-  // Build context menu actions based on current state
+  // Build context menu actions
   const contextMenuActions = useMemo((): ContextMenuAction[] => {
     const hasSelection = selection.size > 0;
     const hasClipboard = clipboard.length > 0;
-
     const actions: ContextMenuAction[] = [];
 
     if (hasSelection) {
@@ -360,110 +306,32 @@ export function CutoutEditor() {
 
       {/* SVG Canvas */}
       <div className="rounded border border-stroke-subtle bg-surface-secondary overflow-hidden">
-        <svg
-          ref={containerRef}
-          width={CANVAS_WIDTH}
-          height={canvasHeight}
-          viewBox={`0 0 ${CANVAS_WIDTH} ${canvasHeight}`}
-          className={`block ${getCursorClass()}`}
-          style={getCursorStyle()}
-          onPointerDown={handleCanvasPointerDown}
-          onPointerMove={handleCanvasPointerMove}
-          onPointerUp={handleCanvasPointerUp}
+        <CutoutCanvas
+          cutouts={cutouts}
+          binWidth={binWidth}
+          binDepth={binDepth}
+          canvasWidth={CANVAS_WIDTH}
+          canvasHeight={canvasHeight}
+          scale={scale}
+          selection={selection}
+          preview={preview}
+          mode={mode}
+          drawingPreview={drawingPreview}
+          activeGuides={activeGuides}
+          marquee={marquee}
+          onCanvasPointerDown={handleCanvasPointerDown}
+          onCanvasPointerMove={handleCanvasPointerMove}
+          onCanvasPointerUp={handleCanvasPointerUp}
           onContextMenu={handleContextMenu}
-        >
-          {/* Background grid and crosshair */}
-          <EditorBackground
-            binWidth={binWidth}
-            binDepth={binDepth}
-            scale={scale}
-            canvasWidth={CANVAS_WIDTH}
-            canvasHeight={canvasHeight}
-          />
-
-          {/* Cutout shapes */}
-          {cutouts.map((cutout) => (
-            <CutoutShape
-              key={cutout.id}
-              cutout={cutout}
-              scale={scale}
-              binDepth={binDepth}
-              isSelected={selection.has(cutout.id)}
-              isGrouped={cutout.groupId !== null}
-              isDragging={isDragging && selection.has(cutout.id)}
-              previewOverrides={preview.get(cutout.id)}
-              onSelect={selectCutout}
-              onDoubleClick={selectIndividual}
-              onDragStart={mode.type === 'idle' ? startDrag : undefined}
-            />
-          ))}
-
-          {/* Smart guides during drag */}
-          {isDragging && (
-            <SmartGuides
-              guides={activeGuides}
-              scale={scale}
-              canvasWidth={CANVAS_WIDTH}
-              canvasHeight={canvasHeight}
-              binDepth={binDepth}
-            />
-          )}
-
-          {/* Dimension tooltip during drag or resize */}
-          {tooltipInfo && (
-            <DimensionTooltip
-              type={tooltipInfo.type}
-              width={tooltipInfo.type === 'resize' ? tooltipInfo.width : undefined}
-              depth={tooltipInfo.type === 'resize' ? tooltipInfo.depth : undefined}
-              x={tooltipInfo.type === 'drag' ? tooltipInfo.x : undefined}
-              y={tooltipInfo.type === 'drag' ? tooltipInfo.y : undefined}
-              svgX={tooltipInfo.svgX}
-              svgY={tooltipInfo.svgY}
-            />
-          )}
-
-          {/* Resize handles on single selected cutout (not during drag/resize/rotate) */}
-          {selectedCutout && !isDragging && !isResizing && mode.type !== 'rotating' && (
-            <CutoutResizeHandles
-              cutout={selectedCutout}
-              scale={scale}
-              binDepth={binDepth}
-              onResizeStart={startResize}
-            />
-          )}
-
-          {/* Rotation handle for all shapes (not during drag/resize/rotate) */}
-          {selectedCutout && !isDragging && !isResizing && mode.type !== 'rotating' && (
-            <RotationHandle
-              cutout={selectedCutout}
-              scale={scale}
-              binDepth={binDepth}
-              onRotateStart={startRotation}
-            />
-          )}
-
-          {/* Drawing preview (corner-to-corner) */}
-          {drawingPreview && (
-            <rect
-              x={drawingPreview.x * scale}
-              y={(binDepth - drawingPreview.y - drawingPreview.depth) * scale}
-              width={drawingPreview.width * scale}
-              height={drawingPreview.depth * scale}
-              rx={drawingPreview.shape === 'circle' ? (drawingPreview.width * scale) / 2 : 0}
-              ry={drawingPreview.shape === 'circle' ? (drawingPreview.depth * scale) / 2 : 0}
-              fill="none"
-              stroke="var(--color-accent)"
-              strokeWidth={1.5}
-              strokeDasharray="4 2"
-              opacity={0.6}
-            />
-          )}
-
-          {/* Marquee selection box */}
-          {marquee && Math.abs(marquee.w) + Math.abs(marquee.h) > 5 && (
-            <MarqueeBox x={marquee.x} y={marquee.y} width={marquee.w} height={marquee.h} />
-          )}
-        </svg>
+          svgRef={containerRef}
+          onSelectCutout={selectCutout}
+          onDoubleClickCutout={selectIndividual}
+          onDragStart={startDrag}
+          onResizeStart={startResize}
+          onRotateStart={startRotation}
+          onGroupRotateStart={startGroupRotation}
+          onGroupScaleStart={startGroupScale}
+        />
       </div>
 
       {/* Alignment toolbar for multi-select */}
@@ -490,6 +358,7 @@ export function CutoutEditor() {
           onUpdate={updateCutout}
           onRemove={removeCutout}
           onDuplicate={duplicateCutouts}
+          disabled={isInteracting}
         />
       )}
 

@@ -294,6 +294,8 @@ export interface DesignerUIState {
   readonly wireframeMode: boolean;
   /** Whether half-bin mode is enabled (0.5 grid unit increments for width/depth) */
   readonly halfBinMode: boolean;
+  /** Whether the full-workspace cutout editor is open (desktop only) */
+  readonly cutoutEditorOpen: boolean;
   /** Preview compartments during drag-to-merge/split (shown as ghost in 3D view) */
   readonly previewCompartments: CompartmentConfig | null;
   /** Preview selection info for 3D ghost overlay */
@@ -429,6 +431,7 @@ export interface DesignerState {
   setExportDialogOpen: (open: boolean) => void;
   setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
+  setCutoutEditorOpen: (open: boolean) => void;
   setPreviewCompartments: (preview: CompartmentConfig | null) => void;
   setPreviewSelection: (
     selection: {

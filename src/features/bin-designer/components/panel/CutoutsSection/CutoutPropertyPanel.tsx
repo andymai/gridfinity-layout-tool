@@ -18,6 +18,7 @@ interface CutoutPropertyPanelProps {
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onRemove: (id: string) => void;
   readonly onDuplicate: (ids: readonly string[]) => void;
+  readonly disabled?: boolean;
 }
 
 export function CutoutPropertyPanel({
@@ -28,6 +29,7 @@ export function CutoutPropertyPanel({
   onUpdate,
   onRemove,
   onDuplicate,
+  disabled = false,
 }: CutoutPropertyPanelProps) {
   const t = useTranslation();
 
@@ -42,6 +44,7 @@ export function CutoutPropertyPanel({
           max={maxWidth - cutout.width}
           step={0.5}
           unit="mm"
+          disabled={disabled}
         />
         <SliderInput
           label={t('binDesigner.cutouts.positionY')}
@@ -51,6 +54,7 @@ export function CutoutPropertyPanel({
           max={maxDepth - cutout.depth}
           step={0.5}
           unit="mm"
+          disabled={disabled}
         />
         <SliderInput
           label={t('binDesigner.cutouts.width')}
@@ -60,6 +64,7 @@ export function CutoutPropertyPanel({
           max={maxWidth}
           step={0.5}
           unit="mm"
+          disabled={disabled}
         />
         <SliderInput
           label={t('binDesigner.cutouts.depth')}
@@ -69,6 +74,7 @@ export function CutoutPropertyPanel({
           max={maxDepth}
           step={0.5}
           unit="mm"
+          disabled={disabled}
         />
         <SliderInput
           label={t('binDesigner.cutouts.cutDepth')}
@@ -78,6 +84,7 @@ export function CutoutPropertyPanel({
           max={maxCutDepth}
           step={0.5}
           unit="mm"
+          disabled={disabled}
         />
         {cutout.shape === 'rectangle' && (
           <SliderInput
@@ -88,6 +95,7 @@ export function CutoutPropertyPanel({
             max={Math.min(cutout.width, cutout.depth) / 2}
             step={0.5}
             unit="mm"
+            disabled={disabled}
           />
         )}
         <SliderInput
@@ -101,21 +109,24 @@ export function CutoutPropertyPanel({
           max={359}
           step={1}
           unit="°"
+          disabled={disabled}
         />
       </div>
 
       <div className="flex gap-2">
         <button
           type="button"
-          className="flex-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
+          className="flex-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => onDuplicate([cutout.id])}
+          disabled={disabled}
         >
           {t('binDesigner.cutouts.duplicate')}
         </button>
         <button
           type="button"
-          className="rounded border border-red-500/30 bg-surface-elevated px-2 py-1 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+          className="rounded border border-red-500/30 bg-surface-elevated px-2 py-1 text-xs text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => onRemove(cutout.id)}
+          disabled={disabled}
         >
           {t('binDesigner.cutouts.delete')}
         </button>

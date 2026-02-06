@@ -5,7 +5,7 @@
  * with selection highlight, click handling, and drag support.
  */
 
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 
 interface CutoutShapeProps {
@@ -21,7 +21,7 @@ interface CutoutShapeProps {
   readonly onDragStart?: (id: string, mmX: number, mmY: number) => void;
 }
 
-export function CutoutShape({
+export const CutoutShape = memo(function CutoutShape({
   cutout,
   scale,
   binDepth,
@@ -41,6 +41,7 @@ export function CutoutShape({
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     const additive = e.shiftKey;
     onSelect(cutout.id, additive);
 
@@ -75,7 +76,7 @@ export function CutoutShape({
     const rotation = effective.rotation;
 
     return (
-      <g transform={rotation !== 0 ? `rotate(${-rotation} ${cx} ${cy})` : undefined}>
+      <g transform={rotation !== 0 ? `rotate(${rotation} ${cx} ${cy})` : undefined}>
         <ellipse
           cx={cx}
           cy={cy}
@@ -107,7 +108,7 @@ export function CutoutShape({
   const cy = (binDepth - effective.y - effective.depth / 2) * scale;
 
   return (
-    <g transform={rotation !== 0 ? `rotate(${-rotation} ${cx} ${cy})` : undefined}>
+    <g transform={rotation !== 0 ? `rotate(${rotation} ${cx} ${cy})` : undefined}>
       <rect
         x={px}
         y={py}
@@ -126,4 +127,4 @@ export function CutoutShape({
       />
     </g>
   );
-}
+});

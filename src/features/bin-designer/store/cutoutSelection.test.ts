@@ -3,7 +3,7 @@ import { useCutoutSelection } from './cutoutSelection';
 
 describe('cutoutSelection store', () => {
   beforeEach(() => {
-    useCutoutSelection.setState({ selectedIds: new Set() });
+    useCutoutSelection.setState({ selectedIds: new Set(), previewOverrides: new Map() });
   });
 
   it('starts with empty selection', () => {
@@ -28,5 +28,23 @@ describe('cutoutSelection store', () => {
     useCutoutSelection.getState().setSelectedIds(new Set(['a', 'b']));
     useCutoutSelection.getState().setSelectedIds(new Set());
     expect(useCutoutSelection.getState().selectedIds.size).toBe(0);
+  });
+
+  it('starts with empty preview overrides', () => {
+    expect(useCutoutSelection.getState().previewOverrides.size).toBe(0);
+  });
+
+  it('sets preview overrides', () => {
+    const overrides = new Map([['a', { x: 5, y: 10 }]]);
+    useCutoutSelection.getState().setPreviewOverrides(overrides);
+    const result = useCutoutSelection.getState().previewOverrides;
+    expect(result.size).toBe(1);
+    expect(result.get('a')).toEqual({ x: 5, y: 10 });
+  });
+
+  it('clears preview overrides', () => {
+    useCutoutSelection.getState().setPreviewOverrides(new Map([['a', { x: 5 }]]));
+    useCutoutSelection.getState().setPreviewOverrides(new Map());
+    expect(useCutoutSelection.getState().previewOverrides.size).toBe(0);
   });
 });

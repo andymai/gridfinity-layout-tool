@@ -46,7 +46,7 @@ function buildCutoutGeometry(
     if (cutout.shape === 'circle') {
       const rx = cutout.width / 2;
       const ry = cutout.depth / 2;
-      const rad = (cutout.rotation * Math.PI) / 180;
+      const rad = (-cutout.rotation * Math.PI) / 180;
       const cosR = Math.cos(rad);
       const sinR = Math.sin(rad);
       for (let z = 0; z < 2; z++) {
@@ -89,7 +89,7 @@ function buildCutoutGeometry(
         [-hw, hd],
       ];
       // Apply rotation around center
-      const rad = (cutout.rotation * Math.PI) / 180;
+      const rad = (-cutout.rotation * Math.PI) / 180;
       const cosR = Math.cos(rad);
       const sinR = Math.sin(rad);
       const corners = rawCorners.map(([rx, ry]) => [
@@ -134,6 +134,7 @@ export function GhostCutouts() {
   );
 
   const selectedIds = useCutoutSelection((s) => s.selectedIds);
+  const previewOverrides = useCutoutSelection((s) => s.previewOverrides);
 
   const { cutouts, base } = params;
   const isSolid = base.solid;
@@ -155,12 +156,23 @@ export function GhostCutouts() {
   // Determine which cutouts to render:
   // - Selected cutouts: always shown (when solid + has cutouts)
   // - All cutouts: shown during generation
+  // Apply live preview overrides (drag/resize/rotate) for real-time 3D feedback
   const cutoutsToRender = useMemo(() => {
     if (!isSolid || cutouts.length === 0) return [];
-    if (isGenerating) return cutouts;
-    if (hasSelection) return cutouts.filter((c) => selectedIds.has(c.id));
-    return [];
-  }, [isSolid, cutouts, isGenerating, hasSelection, selectedIds]);
+    let result: readonly Cutout[];
+    if (isGenerating) {
+      result = cutouts;
+    } else if (hasSelection) {
+      result = cutouts.filter((c) => selectedIds.has(c.id));
+    } else {
+      return [];
+    }
+    if (previewOverrides.size === 0) return result;
+    return result.map((c) => {
+      const overrides = previewOverrides.get(c.id);
+      return overrides ? { ...c, ...overrides } : c;
+    });
+  }, [isSolid, cutouts, isGenerating, hasSelection, selectedIds, previewOverrides]);
 
   const shouldShow = cutoutsToRender.length > 0;
 

@@ -222,6 +222,48 @@ describe('DesignerStore - cutout actions', () => {
       const { params } = useDesignerStore.getState();
       expect(params.cutouts[2].groupId).toBeNull();
     });
+
+    it('reuses existing groupId when adding to an existing group', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'cutout-1' }));
+      addCutout(createTestCutout({ id: 'cutout-2' }));
+      addCutout(createTestCutout({ id: 'cutout-3' }));
+
+      // Group first two
+      groupCutouts(['cutout-1', 'cutout-2']);
+      const existingGroupId = useDesignerStore.getState().params.cutouts[0].groupId;
+      expect(existingGroupId).not.toBeNull();
+
+      // Add third cutout to the group (includes one already-grouped member)
+      groupCutouts(['cutout-2', 'cutout-3']);
+
+      const { params } = useDesignerStore.getState();
+      // All three should share the same original groupId
+      expect(params.cutouts[0].groupId).toBe(existingGroupId);
+      expect(params.cutouts[1].groupId).toBe(existingGroupId);
+      expect(params.cutouts[2].groupId).toBe(existingGroupId);
+    });
+
+    it('includes all existing group members when reusing groupId', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'cutout-1' }));
+      addCutout(createTestCutout({ id: 'cutout-2' }));
+      addCutout(createTestCutout({ id: 'cutout-3' }));
+      addCutout(createTestCutout({ id: 'cutout-4' }));
+
+      // Group first three
+      groupCutouts(['cutout-1', 'cutout-2', 'cutout-3']);
+      const existingGroupId = useDesignerStore.getState().params.cutouts[0].groupId;
+
+      // Add cutout-4 by grouping with just cutout-1 (rest of group should be auto-included)
+      groupCutouts(['cutout-1', 'cutout-4']);
+
+      const { params } = useDesignerStore.getState();
+      // All four should have the same groupId
+      for (const c of params.cutouts) {
+        expect(c.groupId).toBe(existingGroupId);
+      }
+    });
   });
 
   describe('ungroupCutouts', () => {

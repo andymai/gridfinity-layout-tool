@@ -99,6 +99,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   designListOpen: false,
   wireframeMode: false,
   halfBinMode: false,
+  cutoutEditorOpen: false,
   previewCompartments: null,
   previewSelection: null,
 };

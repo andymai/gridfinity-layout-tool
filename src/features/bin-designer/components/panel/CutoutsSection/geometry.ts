@@ -215,7 +215,8 @@ export function calculateCutoutResize(
   binDepth: number,
   shape: CutoutShape,
   rotation: number = 0,
-  shiftConstrain: boolean = false
+  shiftConstrain: boolean = false,
+  altConstrain: boolean = false
 ): { x: number; y: number; width: number; depth: number } {
   // Transform cursor into local (unrotated) space
   const cx = start.x + start.width / 2;
@@ -234,21 +235,35 @@ export function calculateCutoutResize(
   const hasE = handle.includes('e');
   const hasW = handle.includes('w');
 
-  if (hasE) {
-    width = Math.max(MIN_CUTOUT_SIZE, localX - x);
-  }
-  if (hasW) {
-    const newX = Math.min(localX, right - MIN_CUTOUT_SIZE);
-    width = right - newX;
-    x = newX;
-  }
-  if (hasN) {
-    depth = Math.max(MIN_CUTOUT_SIZE, localY - y);
-  }
-  if (hasS) {
-    const newY = Math.min(localY, top - MIN_CUTOUT_SIZE);
-    depth = top - newY;
-    y = newY;
+  if (altConstrain) {
+    // Alt+resize: mirror around the original center
+    if (hasE || hasW) {
+      const halfW = Math.max(MIN_CUTOUT_SIZE / 2, Math.abs(localX - cx));
+      width = halfW * 2;
+      x = cx - halfW;
+    }
+    if (hasN || hasS) {
+      const halfD = Math.max(MIN_CUTOUT_SIZE / 2, Math.abs(localY - cy));
+      depth = halfD * 2;
+      y = cy - halfD;
+    }
+  } else {
+    if (hasE) {
+      width = Math.max(MIN_CUTOUT_SIZE, localX - x);
+    }
+    if (hasW) {
+      const newX = Math.min(localX, right - MIN_CUTOUT_SIZE);
+      width = right - newX;
+      x = newX;
+    }
+    if (hasN) {
+      depth = Math.max(MIN_CUTOUT_SIZE, localY - y);
+    }
+    if (hasS) {
+      const newY = Math.min(localY, top - MIN_CUTOUT_SIZE);
+      depth = top - newY;
+      y = newY;
+    }
   }
 
   // Shift-constrain: preserve aspect ratio
