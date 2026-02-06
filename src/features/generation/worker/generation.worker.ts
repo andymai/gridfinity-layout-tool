@@ -46,6 +46,9 @@ const opencascadeThreaded = opencascadeThreadedInit as unknown as (
 /** Currently active generation request ID (for cancellation) */
 let activeRequestId: string | null = null;
 
+/** AbortController for mid-operation cancellation of brepjs boolean operations */
+let activeController: AbortController | null = null;
+
 /** Whether OCCT has been initialized */
 let ocInitialized = false;
 
@@ -150,13 +153,20 @@ function generate(params: BinParams, requestId: string): void {
   }
 
   activeRequestId = requestId;
+  activeController = new AbortController();
+  const { signal } = activeController;
   const startTime = performance.now();
 
   try {
-    const meshData = generateBin(params, (stage, progress) => {
-      if (activeRequestId !== requestId) return; // Cancelled
-      reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
-    });
+    const meshData = generateBin(
+      params,
+      (stage, progress) => {
+        if (activeRequestId !== requestId) return; // Cancelled
+        reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
+      },
+      false,
+      signal
+    );
 
     // Check for cancellation before posting result
     if (activeRequestId !== requestId) return;
@@ -179,6 +189,8 @@ function generate(params: BinParams, requestId: string): void {
       ),
     });
   } catch (e) {
+    // AbortError = expected cancellation — silently discard
+    if (e instanceof DOMException && e.name === 'AbortError') return;
     if (activeRequestId !== requestId) return; // Cancelled during generation
     const errorMsg = e instanceof Error ? e.message : String(e);
     // Log detailed error info for debugging
@@ -195,6 +207,7 @@ function generate(params: BinParams, requestId: string): void {
   } finally {
     if (activeRequestId === requestId) {
       activeRequestId = null;
+      activeController = null;
     }
   }
 }
@@ -353,6 +366,8 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'CANCEL':
         if (activeRequestId === message.requestId) {
+          activeController?.abort();
+          activeController = null;
           activeRequestId = null;
         }
         break;
