@@ -39,12 +39,12 @@ export function CutoutShapeToolbar({
   };
 
   const btnBase = vertical
-    ? 'flex items-center justify-center rounded p-1.5 transition-colors'
+    ? 'flex items-center justify-center rounded p-2 transition-colors'
     : 'flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors';
   const btnActive = 'bg-accent text-white';
   const btnInactive =
     'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover';
-  const iconSize = vertical ? 'h-4 w-4' : 'h-3.5 w-3.5';
+  const iconSize = vertical ? 'h-5 w-5' : 'h-3.5 w-3.5';
 
   return (
     <div className={vertical ? 'flex flex-col items-center gap-1' : 'flex items-center gap-2'}>

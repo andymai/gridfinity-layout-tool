@@ -6,8 +6,7 @@ import type { AlignmentGuide } from './geometry';
 describe('SmartGuides', () => {
   const defaultProps = {
     scale: 2,
-    canvasWidth: 200,
-    canvasHeight: 150,
+    binWidth: 100,
     binDepth: 75,
   };
 
@@ -33,7 +32,7 @@ describe('SmartGuides', () => {
     expect(line?.getAttribute('x1')).toBe('20'); // 10 * 2 (scale)
     expect(line?.getAttribute('x2')).toBe('20');
     expect(line?.getAttribute('y1')).toBe('0');
-    expect(line?.getAttribute('y2')).toBe('150'); // canvasHeight
+    expect(line?.getAttribute('y2')).toBe('150'); // binDepth * scale = 75 * 2
   });
 
   it('renders horizontal line for y-axis guide', () => {
@@ -50,7 +49,7 @@ describe('SmartGuides', () => {
     expect(line?.getAttribute('y1')).toBe('100');
     expect(line?.getAttribute('y2')).toBe('100');
     expect(line?.getAttribute('x1')).toBe('0');
-    expect(line?.getAttribute('x2')).toBe('200'); // canvasWidth
+    expect(line?.getAttribute('x2')).toBe('200'); // binWidth * scale = 100 * 2
   });
 
   it('renders multiple guides', () => {

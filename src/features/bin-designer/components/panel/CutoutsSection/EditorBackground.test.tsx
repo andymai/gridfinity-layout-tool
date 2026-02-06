@@ -6,13 +6,7 @@ describe('EditorBackground', () => {
   it('renders dot grid elements', () => {
     const { container } = render(
       <svg>
-        <EditorBackground
-          binWidth={20}
-          binDepth={20}
-          scale={2}
-          canvasWidth={40}
-          canvasHeight={40}
-        />
+        <EditorBackground binWidth={20} binDepth={20} scale={2} />
       </svg>
     );
 
@@ -24,13 +18,7 @@ describe('EditorBackground', () => {
   it('renders center crosshair lines', () => {
     const { container } = render(
       <svg>
-        <EditorBackground
-          binWidth={20}
-          binDepth={20}
-          scale={2}
-          canvasWidth={40}
-          canvasHeight={40}
-        />
+        <EditorBackground binWidth={20} binDepth={20} scale={2} />
       </svg>
     );
 
@@ -41,13 +29,7 @@ describe('EditorBackground', () => {
   it('uses 2mm interval for large bins', () => {
     const { container } = render(
       <svg>
-        <EditorBackground
-          binWidth={120}
-          binDepth={120}
-          scale={2}
-          canvasWidth={240}
-          canvasHeight={240}
-        />
+        <EditorBackground binWidth={120} binDepth={120} scale={2} />
       </svg>
     );
 
@@ -59,13 +41,7 @@ describe('EditorBackground', () => {
   it('positions dots correctly', () => {
     const { container } = render(
       <svg>
-        <EditorBackground
-          binWidth={10}
-          binDepth={10}
-          scale={2}
-          canvasWidth={20}
-          canvasHeight={20}
-        />
+        <EditorBackground binWidth={10} binDepth={10} scale={2} />
       </svg>
     );
 
@@ -73,7 +49,7 @@ describe('EditorBackground', () => {
     const firstCircle = circles[0];
 
     // First dot should be at (0,0) in bin coords, which is bottom-left
-    // In SVG coords: x=0, y=canvasHeight
+    // In SVG coords: x=0, y=binDepth*scale=20
     expect(firstCircle?.getAttribute('cx')).toBe('0');
     expect(firstCircle?.getAttribute('cy')).toBe('20');
   });
@@ -81,13 +57,7 @@ describe('EditorBackground', () => {
   it('positions center crosshair correctly', () => {
     const { container } = render(
       <svg>
-        <EditorBackground
-          binWidth={20}
-          binDepth={20}
-          scale={2}
-          canvasWidth={40}
-          canvasHeight={40}
-        />
+        <EditorBackground binWidth={20} binDepth={20} scale={2} />
       </svg>
     );
 
@@ -96,7 +66,7 @@ describe('EditorBackground', () => {
     const verticalLine = lines[1];
 
     // Center is at (10, 10) in bin coords
-    // In SVG: centerX = 10 * 2 = 20, centerY = 40 - 10 * 2 = 20
+    // In SVG: centerX = 10 * 2 = 20, centerY = 10 * 2 = 20
 
     // Horizontal line at centerY
     expect(horizontalLine?.getAttribute('y1')).toBe('20');
@@ -110,32 +80,20 @@ describe('EditorBackground', () => {
   it('applies correct styling to dots', () => {
     const { container } = render(
       <svg>
-        <EditorBackground
-          binWidth={10}
-          binDepth={10}
-          scale={2}
-          canvasWidth={20}
-          canvasHeight={20}
-        />
+        <EditorBackground binWidth={10} binDepth={10} scale={2} />
       </svg>
     );
 
     const circle = container.querySelector('circle');
-    expect(circle?.getAttribute('r')).toBe('0.5');
-    expect(circle?.getAttribute('fill')).toBe('var(--color-stroke-subtle)');
-    expect(circle?.getAttribute('opacity')).toBe('0.3');
+    expect(circle?.getAttribute('r')).toBe('1');
+    expect(circle?.getAttribute('fill')).toBe('var(--color-content-tertiary)');
+    expect(circle?.getAttribute('opacity')).toBe('0.35');
   });
 
   it('applies correct styling to crosshair lines', () => {
     const { container } = render(
       <svg>
-        <EditorBackground
-          binWidth={10}
-          binDepth={10}
-          scale={2}
-          canvasWidth={20}
-          canvasHeight={20}
-        />
+        <EditorBackground binWidth={10} binDepth={10} scale={2} />
       </svg>
     );
 
@@ -144,5 +102,19 @@ describe('EditorBackground', () => {
     expect(line?.getAttribute('stroke-width')).toBe('0.5');
     expect(line?.getAttribute('stroke-dasharray')).toBe('4 2');
     expect(line?.getAttribute('opacity')).toBe('0.4');
+  });
+
+  it('renders bin background fill rect', () => {
+    const { container } = render(
+      <svg>
+        <EditorBackground binWidth={20} binDepth={20} scale={2} />
+      </svg>
+    );
+
+    const rects = container.querySelectorAll('rect');
+    // Two rects: fill + border
+    expect(rects.length).toBe(2);
+    expect(rects[0]?.getAttribute('fill')).toBe('var(--color-surface-elevated)');
+    expect(rects[1]?.getAttribute('stroke-width')).toBe('2');
   });
 });

@@ -61,6 +61,7 @@ export function CutoutWorkspace() {
   // Measure canvas container dynamically
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 600, height: 400 });
+  const needsAutoFit = useRef(true);
 
   useEffect(() => {
     const el = canvasContainerRef.current;
@@ -78,24 +79,12 @@ export function CutoutWorkspace() {
     return () => observer.disconnect();
   }, []);
 
-  // Compute canvas dimensions to fit bin aspect ratio within container
+  // Canvas fills the container; scale maps mm → SVG pixels
   const { canvasWidth, canvasHeight, scale } = useMemo(() => {
-    const aspectRatio = binWidth / binDepth;
-    const containerAspect = containerSize.width / containerSize.height;
-
-    let cw: number;
-    let ch: number;
-    if (aspectRatio > containerAspect) {
-      // Width-limited
-      cw = containerSize.width;
-      ch = cw / aspectRatio;
-    } else {
-      // Height-limited
-      ch = containerSize.height;
-      cw = ch * aspectRatio;
-    }
-
-    const s = cw / binWidth;
+    const cw = containerSize.width;
+    const ch = containerSize.height;
+    // Scale: fit the bin within the container (whichever axis is tighter)
+    const s = Math.min(cw / binWidth, ch / binDepth);
     return { canvasWidth: cw, canvasHeight: ch, scale: s };
   }, [binWidth, binDepth, containerSize]);
 
@@ -103,7 +92,17 @@ export function CutoutWorkspace() {
     canvasWidth,
     canvasHeight,
     scale,
+    binWidth,
+    binDepth,
   });
+
+  // Auto-fit on first meaningful container measurement
+  useEffect(() => {
+    if (needsAutoFit.current && containerSize.width > 100 && containerSize.height > 100) {
+      needsAutoFit.current = false;
+      requestAnimationFrame(() => viewport.fitToView());
+    }
+  }, [containerSize, viewport]);
 
   const {
     mode,
@@ -428,8 +427,8 @@ export function CutoutWorkspace() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Toolbar */}
-        <div className="flex w-10 flex-shrink-0 flex-col border-r border-stroke-subtle bg-surface-secondary">
-          <div className="p-1">
+        <div className="flex w-11 flex-shrink-0 flex-col border-r border-stroke-subtle bg-surface-secondary">
+          <div className="p-1.5">
             <CutoutShapeToolbar
               mode={mode}
               onSelectShape={setMode}
@@ -449,7 +448,7 @@ export function CutoutWorkspace() {
               extent={binWidth}
               scale={scale}
               zoom={viewport.zoom}
-              panOffset={viewport.panOffset.x}
+              panOffset={viewport.rulerPanX}
               length={containerSize.width}
             />
           </div>
@@ -459,12 +458,12 @@ export function CutoutWorkspace() {
               extent={binDepth}
               scale={scale}
               zoom={viewport.zoom}
-              panOffset={viewport.panOffset.y}
+              panOffset={viewport.rulerPanY}
               length={containerSize.height}
             />
             <div
               ref={canvasContainerRef}
-              className={`flex flex-1 items-center justify-center overflow-hidden bg-surface ${spaceHeld ? 'cursor-grab' : ''}`}
+              className={`flex-1 overflow-hidden bg-surface ${spaceHeld ? 'cursor-grab' : ''}`}
               onWheel={viewport.handleWheel}
             >
               <CutoutCanvas
@@ -499,7 +498,7 @@ export function CutoutWorkspace() {
         </div>
 
         {/* Right: Inspector panel */}
-        <div className="w-56 flex-shrink-0 overflow-y-auto border-l border-stroke-subtle bg-surface-secondary p-3">
+        <div className="w-56 flex-shrink-0 overflow-y-auto border-l-2 border-stroke-subtle bg-surface-secondary p-3">
           <InspectorPanel
             cutouts={cutouts}
             selection={selection}

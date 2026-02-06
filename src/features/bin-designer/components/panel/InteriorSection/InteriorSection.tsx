@@ -81,16 +81,17 @@ export function InteriorSection() {
           defaultExpanded
           summary={meta.summary}
         >
-          {isDesktop && (
+          {isDesktop ? (
             <button
               type="button"
               onClick={() => setCutoutEditorOpen(true)}
-              className="mb-3 w-full rounded border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
+              className="w-full rounded border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
             >
               {t('binDesigner.editCutouts')}
             </button>
+          ) : (
+            <CutoutsSection />
           )}
-          <CutoutsSection />
         </CollapsibleSection>
       )}
     </div>

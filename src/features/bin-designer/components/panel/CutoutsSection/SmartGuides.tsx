@@ -10,19 +10,15 @@ import type { AlignmentGuide } from './geometry';
 interface SmartGuidesProps {
   readonly guides: readonly AlignmentGuide[];
   readonly scale: number;
-  readonly canvasWidth: number;
-  readonly canvasHeight: number;
+  readonly binWidth: number;
   readonly binDepth: number;
 }
 
-export function SmartGuides({
-  guides,
-  scale,
-  canvasWidth,
-  canvasHeight,
-  binDepth,
-}: SmartGuidesProps) {
+export function SmartGuides({ guides, scale, binWidth, binDepth }: SmartGuidesProps) {
   if (guides.length === 0) return null;
+
+  const binPxW = binWidth * scale;
+  const binPxH = binDepth * scale;
 
   return (
     <g>
@@ -36,7 +32,7 @@ export function SmartGuides({
               x1={x}
               y1={0}
               x2={x}
-              y2={canvasHeight}
+              y2={binPxH}
               stroke="var(--color-accent)"
               strokeWidth={0.5}
               strokeDasharray="3 3"
@@ -52,7 +48,7 @@ export function SmartGuides({
             key={`${guide.axis}-${guide.position}-${index}`}
             x1={0}
             y1={y}
-            x2={canvasWidth}
+            x2={binPxW}
             y2={y}
             stroke="var(--color-accent)"
             strokeWidth={0.5}

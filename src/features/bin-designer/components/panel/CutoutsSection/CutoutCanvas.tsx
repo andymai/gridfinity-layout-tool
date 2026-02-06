@@ -182,13 +182,7 @@ export function CutoutCanvas({
       onContextMenu={onContextMenu}
     >
       {/* Background grid and crosshair */}
-      <EditorBackground
-        binWidth={binWidth}
-        binDepth={binDepth}
-        scale={scale}
-        canvasWidth={canvasWidth}
-        canvasHeight={canvasHeight}
-      />
+      <EditorBackground binWidth={binWidth} binDepth={binDepth} scale={scale} />
 
       {/* Cutout shapes */}
       {cutouts.map((cutout) => (
@@ -209,13 +203,7 @@ export function CutoutCanvas({
 
       {/* Smart guides during drag */}
       {isDragging && (
-        <SmartGuides
-          guides={activeGuides}
-          scale={scale}
-          canvasWidth={canvasWidth}
-          canvasHeight={canvasHeight}
-          binDepth={binDepth}
-        />
+        <SmartGuides guides={activeGuides} scale={scale} binWidth={binWidth} binDepth={binDepth} />
       )}
 
       {/* Dimension tooltip during drag or resize */}

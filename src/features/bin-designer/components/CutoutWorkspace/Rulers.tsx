@@ -3,12 +3,15 @@
  *
  * TopRuler (horizontal) and LeftRuler (vertical) render SVG tick marks
  * synchronized with the canvas zoom/pan state.
+ *
+ * The LeftRuler is Y-flipped: 0mm at bottom, extent at top —
+ * matching the bin coordinate system where Y=0 is the front edge.
  */
 
-const RULER_SIZE = 18;
+const RULER_SIZE = 24;
 const MAJOR_INTERVAL = 10; // mm
 const MINOR_INTERVAL = 1; // mm
-const LABEL_FONT_SIZE = 8;
+const LABEL_FONT_SIZE = 10;
 const TICK_COLOR = 'var(--color-content-tertiary)';
 const LABEL_COLOR = 'var(--color-content-secondary)';
 
@@ -98,8 +101,9 @@ export function LeftRuler({ extent, scale, zoom, panOffset, length }: RulerProps
   const effectiveScale = scale * zoom;
   const showMinor = MINOR_INTERVAL * effectiveScale >= 4;
 
-  const mmStart = Math.max(0, -panOffset);
-  const mmEnd = Math.min(extent, length / effectiveScale - panOffset);
+  // Visible range in mm (Y-flipped: 0mm at bottom, extent at top)
+  const mmStart = Math.max(0, extent + panOffset - length / effectiveScale);
+  const mmEnd = Math.min(extent, extent + panOffset);
 
   const ticks: React.ReactElement[] = [];
   const startMajor = Math.floor(mmStart / MAJOR_INTERVAL) * MAJOR_INTERVAL;
@@ -110,7 +114,8 @@ export function LeftRuler({ extent, scale, zoom, panOffset, length }: RulerProps
     mm += showMinor ? MINOR_INTERVAL : MAJOR_INTERVAL
   ) {
     if (mm < 0 || mm > extent) continue;
-    const y = (mm + panOffset) * effectiveScale;
+    // Y-flipped: mm=0 at bottom, mm=extent at top
+    const y = (extent - mm + panOffset) * effectiveScale;
     if (y < 0 || y > length) continue;
 
     const isMajor = mm % MAJOR_INTERVAL === 0;
@@ -133,12 +138,12 @@ export function LeftRuler({ extent, scale, zoom, panOffset, length }: RulerProps
         <text
           key={`l${mm}`}
           x={RULER_SIZE * 0.45}
-          y={y + 2}
+          y={y - 2}
           fill={LABEL_COLOR}
           fontSize={LABEL_FONT_SIZE}
           textAnchor="middle"
-          dominantBaseline="hanging"
-          transform={`rotate(-90, ${RULER_SIZE * 0.45}, ${y + 2})`}
+          dominantBaseline="auto"
+          transform={`rotate(-90, ${RULER_SIZE * 0.45}, ${y - 2})`}
         >
           {mm}
         </text>
@@ -162,7 +167,7 @@ export function LeftRuler({ extent, scale, zoom, panOffset, length }: RulerProps
   );
 }
 
-/** 18×18 dead zone at the intersection of top and left rulers */
+/** Dead zone at the intersection of top and left rulers */
 export function RulerCorner({ onDoubleClick }: { readonly onDoubleClick?: () => void }) {
   return (
     <div

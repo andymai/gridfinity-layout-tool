@@ -1,8 +1,9 @@
 /**
  * Hook managing zoom/pan state for the cutout workspace canvas.
  *
- * Computes a SVG viewBox string from zoom level and pan offset.
- * Zoom is cursor-centered; pan supports middle-click and space-drag.
+ * Uses a viewOrigin model: the viewBox top-left corner is tracked in SVG
+ * pixel coordinates. The bin content lives at (0,0)→(binW×scale, binD×scale)
+ * within the SVG coordinate space, and the viewBox window controls what's visible.
  */
 
 import { useState, useCallback, useMemo } from 'react';
@@ -10,30 +11,57 @@ import { useState, useCallback, useMemo } from 'react';
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 4.0;
 const ZOOM_STEP = 1.25;
+/** Fraction of canvas to leave as padding around the bin */
+const FIT_PADDING = 0.08;
 
 interface UseCanvasViewportOptions {
+  /** Container width in CSS pixels (SVG element fills this) */
   readonly canvasWidth: number;
+  /** Container height in CSS pixels (SVG element fills this) */
   readonly canvasHeight: number;
+  /** Conversion factor: mm → SVG pixels */
   readonly scale: number;
+  readonly binWidth: number;
+  readonly binDepth: number;
 }
 
-export function useCanvasViewport({ canvasWidth, canvasHeight, scale }: UseCanvasViewportOptions) {
+export function useCanvasViewport({
+  canvasWidth,
+  canvasHeight,
+  scale,
+  binWidth,
+  binDepth,
+}: UseCanvasViewportOptions) {
   const [zoom, setZoom] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  /** Top-left corner of the viewBox in SVG pixel coordinates */
+  const [viewOrigin, setViewOrigin] = useState({ x: 0, y: 0 });
 
-  // Compute viewBox from zoom and pan
+  // Compute viewBox from zoom and viewOrigin
   const viewBox = useMemo(() => {
-    const vbWidth = canvasWidth / zoom;
-    const vbHeight = canvasHeight / zoom;
-    const vbX = -panOffset.x * scale;
-    const vbY = -panOffset.y * scale;
-    return `${vbX} ${vbY} ${vbWidth} ${vbHeight}`;
-  }, [zoom, panOffset, canvasWidth, canvasHeight, scale]);
+    const w = canvasWidth / zoom;
+    const h = canvasHeight / zoom;
+    return `${viewOrigin.x} ${viewOrigin.y} ${w} ${h}`;
+  }, [zoom, viewOrigin, canvasWidth, canvasHeight]);
 
   const fitToView = useCallback(() => {
-    setZoom(1);
-    setPanOffset({ x: 0, y: 0 });
-  }, []);
+    const binPxW = binWidth * scale;
+    const binPxH = binDepth * scale;
+    if (binPxW <= 0 || binPxH <= 0) {
+      setZoom(1);
+      setViewOrigin({ x: 0, y: 0 });
+      return;
+    }
+    const pad = 1 - 2 * FIT_PADDING;
+    const z = Math.min((canvasWidth * pad) / binPxW, (canvasHeight * pad) / binPxH, MAX_ZOOM);
+    // Center the bin in the viewBox
+    const vbW = canvasWidth / z;
+    const vbH = canvasHeight / z;
+    setZoom(z);
+    setViewOrigin({
+      x: (binPxW - vbW) / 2,
+      y: (binPxH - vbH) / 2,
+    });
+  }, [binWidth, binDepth, canvasWidth, canvasHeight, scale]);
 
   const zoomIn = useCallback(() => {
     setZoom((z) => Math.min(MAX_ZOOM, z * ZOOM_STEP));
@@ -51,39 +79,45 @@ export function useCanvasViewport({ canvasWidth, canvasHeight, scale }: UseCanva
       const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
       if (newZoom === zoom) return;
 
-      // Zoom toward cursor position
+      // Cursor position in screen pixels relative to the SVG element
       const rect = e.currentTarget.getBoundingClientRect();
-      const cursorX = e.clientX - rect.left;
-      const cursorY = e.clientY - rect.top;
-      // Convert cursor from screen px to mm-space
-      const cursorMmX = cursorX / scale / zoom - panOffset.x;
-      const cursorMmY = cursorY / scale / zoom - panOffset.y;
-      // After zoom, the same cursor position should map to the same mm point
-      const newPanX = cursorX / scale / newZoom - cursorMmX;
-      const newPanY = cursorY / scale / newZoom - cursorMmY;
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
 
+      // Cursor in SVG coordinates (before zoom change)
+      const svgX = viewOrigin.x + cx / zoom;
+      const svgY = viewOrigin.y + cy / zoom;
+
+      // After zoom, the same screen position should map to the same SVG point
       setZoom(newZoom);
-      setPanOffset({ x: newPanX, y: newPanY });
+      setViewOrigin({
+        x: svgX - cx / newZoom,
+        y: svgY - cy / newZoom,
+      });
     },
-    [zoom, panOffset, scale]
+    [zoom, viewOrigin]
   );
 
   /** Pan by delta in screen pixels */
   const panBy = useCallback(
     (dx: number, dy: number) => {
-      setPanOffset((prev) => ({
-        x: prev.x + dx / scale / zoom,
-        y: prev.y + dy / scale / zoom,
+      setViewOrigin((prev) => ({
+        x: prev.x - dx / zoom,
+        y: prev.y - dy / zoom,
       }));
     },
-    [scale, zoom]
+    [zoom]
   );
+
+  // Ruler sync: convert viewOrigin (SVG px) to mm-space offsets
+  const rulerPanX = -viewOrigin.x / scale;
+  const rulerPanY = -viewOrigin.y / scale;
 
   const zoomPercent = Math.round(zoom * 100);
 
   return {
     zoom,
-    panOffset,
+    viewOrigin,
     viewBox,
     zoomPercent,
     fitToView,
@@ -91,5 +125,7 @@ export function useCanvasViewport({ canvasWidth, canvasHeight, scale }: UseCanva
     zoomOut,
     handleWheel,
     panBy,
+    rulerPanX,
+    rulerPanY,
   };
 }

@@ -53,14 +53,20 @@ export function ResizeDivider({ onRatioChange, ratio }: ResizeDividerProps) {
   return (
     <div
       ref={containerRef}
-      className="relative flex-shrink-0 cursor-col-resize select-none"
-      style={{ width: 4 }}
+      className="group relative flex-shrink-0 cursor-col-resize select-none"
+      style={{ width: 6 }}
       onPointerDown={handlePointerDown}
     >
-      {/* Visual bar */}
-      <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-stroke-subtle" />
+      {/* Visual bar — wider on hover */}
+      <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-stroke-subtle group-hover:w-0.5 group-hover:bg-accent/60 transition-all" />
+      {/* Center grip dots */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="h-1 w-1 rounded-full bg-content-tertiary" />
+        <div className="h-1 w-1 rounded-full bg-content-tertiary" />
+        <div className="h-1 w-1 rounded-full bg-content-tertiary" />
+      </div>
       {/* Hit target (wider than visual) */}
-      <div className="absolute inset-y-0 -left-1.5 w-4" />
+      <div className="absolute inset-y-0 -left-2 w-5" />
     </div>
   );
 }

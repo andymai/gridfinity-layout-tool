@@ -74,7 +74,7 @@ export function WorkspaceHeader({
         <button
           type="button"
           onClick={() => setCutoutEditorOpen(false)}
-          className="rounded px-3 py-1 text-xs font-medium bg-accent text-white hover:bg-accent/90 transition-colors"
+          className="rounded-md px-4 py-1.5 text-xs font-semibold bg-accent text-white hover:bg-accent/90 shadow-sm transition-colors"
         >
           {t('binDesigner.cutoutEditor.done')}
         </button>

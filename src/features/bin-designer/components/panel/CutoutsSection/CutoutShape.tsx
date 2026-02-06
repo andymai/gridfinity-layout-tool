@@ -46,15 +46,22 @@ export const CutoutShape = memo(function CutoutShape({
     onSelect(cutout.id, additive);
 
     if (onDragStart && !additive) {
-      // Convert pointer to mm coordinates for drag start
+      // Convert pointer to mm coordinates for drag start (zoom-safe via getScreenCTM)
       const svg = (e.target as SVGElement).closest('svg');
       if (svg) {
-        const rect = svg.getBoundingClientRect();
-        const svgX = e.clientX - rect.left;
-        const svgY = e.clientY - rect.top;
-        const mmX = svgX / scale;
-        const mmY = binDepth - svgY / scale;
-        onDragStart(cutout.id, mmX, mmY);
+        const ctm = svg.getScreenCTM();
+        if (ctm) {
+          const pt = svg.createSVGPoint();
+          pt.x = e.clientX;
+          pt.y = e.clientY;
+          const svgPt = pt.matrixTransform(ctm.inverse());
+          onDragStart(cutout.id, svgPt.x / scale, binDepth - svgPt.y / scale);
+        } else {
+          const rect = svg.getBoundingClientRect();
+          const svgX = e.clientX - rect.left;
+          const svgY = e.clientY - rect.top;
+          onDragStart(cutout.id, svgX / scale, binDepth - svgY / scale);
+        }
       }
     }
   };
