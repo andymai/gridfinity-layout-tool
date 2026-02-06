@@ -24,7 +24,16 @@ import {
   fuseAll,
   cutAll,
 } from 'brepjs';
-import type { Shape3D, FnPlane, PlaneName, Vec3, Sketch, SketchInterface, Drawing } from 'brepjs';
+import type {
+  Shape3D,
+  FnPlane,
+  PlaneName,
+  Vec3,
+  Sketch,
+  SketchInterface,
+  Drawing,
+  BooleanOperationOptions,
+} from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
@@ -42,6 +51,19 @@ export type ProgressFn = (stage: string, progress: number) => void;
 function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
   return drawing.sketchOnPlane(plane, origin) as SketchInterface;
 }
+
+/** Throw if the AbortSignal has been triggered (mid-operation cancellation). */
+function checkCancelled(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new DOMException('Generation cancelled', 'AbortError');
+}
+
+/**
+ * Extend BooleanOperationOptions with AbortSignal.
+ * brepjs 4.14.0 fuseAll/cutAll accept `signal` at runtime but the
+ * re-exported types from `brepjs` (BooleanOperationOptions) omit it.
+ * The underlying booleanFns.ts BooleanOptions does include it.
+ */
+type BooleanOpts = BooleanOperationOptions & { signal?: AbortSignal };
 
 // ─── Gridfinity Socket Constants ──────────────────────────────────────────────
 
@@ -888,7 +910,8 @@ export async function exportBin(
 export function generateBin(
   params: BinParams,
   onProgress?: ProgressFn,
-  forExport = false
+  forExport = false,
+  signal?: AbortSignal
 ): MeshData {
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
@@ -940,17 +963,20 @@ export function generateBin(
   if (shellCache?.key === shellKey) {
     bin = shellCache.shape.clone();
   } else {
+    checkCancelled(signal);
     onProgress?.('shell', 0.3);
     const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, solid);
 
     if (isFlat) {
       // Flat floor: no socket, box body is the entire base
+      checkCancelled(signal);
       onProgress?.('features', 0.4);
       if (params.base.stackingLip) {
         try {
           const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
           bin = unwrap(box.fuse(top, { optimisation: 'commonFace' }));
         } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn(
             '[BinGen] Stacking lip failed, skipping:',
             e instanceof Error ? e.message : e,
@@ -974,6 +1000,7 @@ export function generateBin(
         useHighQuality
       );
 
+      checkCancelled(signal);
       onProgress?.('features', 0.4);
       if (params.base.stackingLip) {
         try {
@@ -984,6 +1011,7 @@ export function generateBin(
             })
           );
         } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn(
             '[BinGen] Stacking lip failed, skipping:',
             e instanceof Error ? e.message : e,
@@ -1003,6 +1031,7 @@ export function generateBin(
   // Stage 4: Features (dividers, inserts)
   // Features always rebuild because they apply boolean cuts to the assembly.
   // When only feature params changed, assembly is reused as starting point.
+  checkCancelled(signal);
   onProgress?.('features', 0.5);
 
   // Solid mode: skip all interior features — the bin is a solid block.
@@ -1015,11 +1044,13 @@ export function generateBin(
     const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
 
     if (!isSlotted) {
+      checkCancelled(signal);
       const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
       if (compartmentWalls) {
         try {
           bin = unwrap(bin.fuse(compartmentWalls));
         } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn(
             '[BinGen] Divider fusion failed, skipping:',
             e instanceof Error ? e.message : e
@@ -1028,16 +1059,19 @@ export function generateBin(
       }
     }
 
+    checkCancelled(signal);
     const insertCuts = buildInsertCuts(params);
     if (insertCuts) {
       try {
         bin = unwrap(bin.cut(insertCuts));
       } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') throw e;
         console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
 
     if (isSlotted) {
+      checkCancelled(signal);
       // Wall slots use interiorHeight (below lip taper zone).
       // Lip cutouts are wider rectangles that cut through the full lip profile
       // so dividers can slide in from the top.
@@ -1049,17 +1083,20 @@ export function generateBin(
         try {
           bin = unwrap(bin.cut(slotCuts));
         } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn('[BinGen] Slot cut failed, skipping:', e instanceof Error ? e.message : e);
         }
       }
     }
 
     if (!isSlotted) {
+      checkCancelled(signal);
       const labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
       if (labelTabs) {
         try {
           bin = unwrap(bin.fuse(labelTabs));
         } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn(
             '[BinGen] Label tab fusion failed, skipping:',
             e instanceof Error ? e.message : e
@@ -1117,10 +1154,14 @@ export function generateBin(
           }
 
           if (allPatternTools.length > 0) {
+            checkCancelled(signal);
             // Preview: skip SimplifyResult — shape is meshed and discarded
-            bin = unwrap(cutAll(bin, allPatternTools, { simplify: forExport }));
+            bin = unwrap(
+              cutAll(bin, allPatternTools, { simplify: forExport, signal } as BooleanOpts)
+            );
           }
         } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn(
             '[BinGen] Wall pattern failed:',
             params.wallPattern.pattern,
@@ -1133,12 +1174,14 @@ export function generateBin(
 
   // Stage 5: Translate so Z=0 = absolute bottom (socket bottom).
   // Flat floor bins are already at Z=0 — no translation needed.
+  checkCancelled(signal);
   onProgress?.('merge', 0.8);
   if (!isFlat) {
     bin = bin.translateZ(SOCKET_HEIGHT);
   }
 
   // Stage 6: Tessellate to triangle mesh
+  checkCancelled(signal);
   onProgress?.('merge', 0.9);
   lastSolid = bin;
 
