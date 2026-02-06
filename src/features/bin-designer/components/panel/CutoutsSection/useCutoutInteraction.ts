@@ -24,9 +24,21 @@ import {
 /** Direction for resize handles */
 export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 
+/** Default sizes for click-to-place (mm) */
+const DEFAULT_RECT_SIZE = 20;
+const DEFAULT_CIRCLE_SIZE = 15;
+/** Minimum drag distance to enter drawing mode vs click-to-place (mm) */
+const PLACE_DRAG_THRESHOLD = 2;
+
 export type InteractionMode =
   | { readonly type: 'idle' }
   | { readonly type: 'placing'; readonly shape: CutoutShape }
+  | {
+      readonly type: 'pending-place';
+      readonly shape: CutoutShape;
+      readonly startMmX: number;
+      readonly startMmY: number;
+    }
   | {
       readonly type: 'drawing';
       readonly shape: CutoutShape;
@@ -85,8 +97,18 @@ interface UseCutoutInteractionOptions {
   readonly onRemove: (id: string) => void;
   readonly onAdd: (cutout: Cutout) => void;
   readonly onGroup?: (cutoutIds: readonly string[]) => void;
+  readonly onUngroup?: (cutoutIds: readonly string[]) => void;
+  readonly onUpdateBatch?: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
+  readonly onRemoveBatch?: (ids: readonly string[]) => void;
+  readonly onUndo?: () => void;
+  readonly onRedo?: () => void;
+  readonly canUndo?: boolean;
+  readonly canRedo?: boolean;
+  readonly onLock?: (ids: readonly string[]) => void;
+  readonly onUnlock?: (ids: readonly string[]) => void;
   readonly binWidth: number;
   readonly binDepth: number;
+  readonly gridSize?: number;
 }
 
 const NUDGE_AMOUNT = 0.5;
@@ -95,14 +117,26 @@ const DEAD_ZONE_MM = 0.5;
 /** Paste offset in mm — each successive paste shifts by this amount */
 const PASTE_OFFSET = 2;
 
+const SHIFT_NUDGE_AMOUNT = 5;
+
 export function useCutoutInteraction({
   cutouts,
   onUpdate,
   onRemove,
   onAdd,
   onGroup,
+  onUngroup,
+  onUpdateBatch,
+  onRemoveBatch,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  onLock,
+  onUnlock,
   binWidth,
   binDepth,
+  gridSize = 1,
 }: UseCutoutInteractionOptions) {
   const [mode, setMode] = useState<InteractionMode>({ type: 'idle' });
   const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
@@ -128,13 +162,18 @@ export function useCutoutInteraction({
     shape: CutoutShape;
   } | null>(null);
 
-  const snap = useCallback((v: number) => (snapEnabled ? snapToGrid(v) : v), [snapEnabled]);
+  const snap = useCallback(
+    (v: number) => (snapEnabled ? snapToGrid(v, gridSize) : v),
+    [snapEnabled, gridSize]
+  );
 
-  /** Select cutout; expands to full group unless additive */
+  /** Select cutout; expands to full group unless additive. Skips hidden cutouts. */
   const selectCutout = useCallback(
     (id: string, additive: boolean) => {
       const cutout = cutouts.find((c) => c.id === id);
       if (!cutout) return;
+      // Hidden cutouts cannot be selected
+      if (cutout.hidden) return;
 
       setSelection((prev) => {
         if (additive) {
@@ -182,24 +221,52 @@ export function useCutoutInteraction({
   }, [cutouts]);
 
   const deleteSelected = useCallback(() => {
-    for (const id of selection) {
-      onRemove(id);
+    if (selection.size === 0) return;
+    // Filter out locked cutouts — only delete unlocked ones
+    const deletable = [...selection].filter((id) => {
+      const c = cutouts.find((cut) => cut.id === id);
+      return c && !c.locked;
+    });
+    if (deletable.length === 0) return;
+    if (onRemoveBatch) {
+      onRemoveBatch(deletable);
+    } else {
+      for (const id of deletable) {
+        onRemove(id);
+      }
     }
     setSelection(new Set());
-  }, [selection, onRemove]);
+  }, [selection, cutouts, onRemove, onRemoveBatch]);
 
   const nudgeSelected = useCallback(
     (dx: number, dy: number) => {
-      for (const id of selection) {
-        const cutout = cutouts.find((c) => c.id === id);
-        if (!cutout) continue;
-        onUpdate(id, {
-          x: Math.max(0, Math.min(cutout.x + dx, binWidth - cutout.width)),
-          y: Math.max(0, Math.min(cutout.y + dy, binDepth - cutout.depth)),
-        });
+      if (selection.size === 0) return;
+      // Block nudge if any selected cutout is locked
+      const anyLocked = cutouts.some((c) => selection.has(c.id) && c.locked);
+      if (anyLocked) return;
+      if (onUpdateBatch) {
+        const updates = new Map<string, Partial<Cutout>>();
+        for (const id of selection) {
+          const cutout = cutouts.find((c) => c.id === id);
+          if (!cutout) continue;
+          updates.set(id, {
+            x: Math.max(0, Math.min(cutout.x + dx, binWidth - cutout.width)),
+            y: Math.max(0, Math.min(cutout.y + dy, binDepth - cutout.depth)),
+          });
+        }
+        onUpdateBatch(updates);
+      } else {
+        for (const id of selection) {
+          const cutout = cutouts.find((c) => c.id === id);
+          if (!cutout) continue;
+          onUpdate(id, {
+            x: Math.max(0, Math.min(cutout.x + dx, binWidth - cutout.width)),
+            y: Math.max(0, Math.min(cutout.y + dy, binDepth - cutout.depth)),
+          });
+        }
       }
     },
-    [selection, cutouts, onUpdate, binWidth, binDepth]
+    [selection, cutouts, onUpdate, onUpdateBatch, binWidth, binDepth]
   );
 
   const copySelected = useCallback(() => {
@@ -215,16 +282,25 @@ export function useCutoutInteraction({
     pasteCountRef.current += 1;
     const offset = PASTE_OFFSET * pasteCountRef.current;
 
+    // Map old groupId → new groupId so groups are preserved
+    const groupMap = new Map<string, string>();
     const newIds: string[] = [];
     for (const original of clipboard) {
       const newId = crypto.randomUUID();
       newIds.push(newId);
+      let newGroupId: string | null = null;
+      if (original.groupId) {
+        if (!groupMap.has(original.groupId)) {
+          groupMap.set(original.groupId, crypto.randomUUID());
+        }
+        newGroupId = groupMap.get(original.groupId) ?? null;
+      }
       onAdd({
         ...original,
         id: newId,
         x: Math.min(original.x + offset, binWidth - original.width),
         y: Math.min(original.y + offset, binDepth - original.depth),
-        groupId: null, // Don't copy group membership
+        groupId: newGroupId,
       });
     }
     // Select the newly pasted cutouts
@@ -234,16 +310,25 @@ export function useCutoutInteraction({
   const duplicateSelected = useCallback(() => {
     const selected = cutouts.filter((c) => selection.has(c.id));
     if (selected.length === 0) return;
+    // Map old groupId → new groupId so groups are preserved
+    const groupMap = new Map<string, string>();
     const newIds: string[] = [];
     for (const original of selected) {
       const newId = crypto.randomUUID();
       newIds.push(newId);
+      let newGroupId: string | null = null;
+      if (original.groupId) {
+        if (!groupMap.has(original.groupId)) {
+          groupMap.set(original.groupId, crypto.randomUUID());
+        }
+        newGroupId = groupMap.get(original.groupId) ?? null;
+      }
       onAdd({
         ...original,
         id: newId,
         x: Math.min(original.x + PASTE_OFFSET, binWidth - original.width),
         y: Math.min(original.y + PASTE_OFFSET, binDepth - original.depth),
-        groupId: null,
+        groupId: newGroupId,
       });
     }
     setSelection(new Set(newIds));
@@ -261,6 +346,10 @@ export function useCutoutInteraction({
 
   const startDrag = useCallback(
     (id: string, mmX: number, mmY: number) => {
+      // Locked cutouts cannot be dragged
+      const target = cutouts.find((c) => c.id === id);
+      if (target?.locked) return;
+
       // Determine effective selection, handling stale closure for grouped cutouts.
       // When clicking a grouped cutout, selectCutout runs first and sets selection
       // to the whole group, but React batches updates so `selection` here may still
@@ -278,6 +367,10 @@ export function useCutoutInteraction({
         }
         setSelection(effectiveSelection);
       }
+
+      // Block drag if any member of the effective selection is locked
+      const anyLocked = cutouts.some((c) => effectiveSelection.has(c.id) && c.locked);
+      if (anyLocked) return;
 
       // Store offset from cursor to each selected cutout's origin
       const offsets = new Map<string, { dx: number; dy: number }>();
@@ -300,6 +393,7 @@ export function useCutoutInteraction({
     (id: string, handle: ResizeHandle, _mmX: number, _mmY: number) => {
       const cutout = cutouts.find((c) => c.id === id);
       if (!cutout) return;
+      if (cutout.locked) return;
 
       pastDeadZoneRef.current = false;
       setMode({
@@ -318,6 +412,7 @@ export function useCutoutInteraction({
     (id: string, startAngle: number) => {
       const cutout = cutouts.find((c) => c.id === id);
       if (!cutout) return;
+      if (cutout.locked) return;
 
       pastDeadZoneRef.current = false;
       setMode({
@@ -380,6 +475,20 @@ export function useCutoutInteraction({
 
   const handlePointerMove = useCallback(
     (mmX: number, mmY: number, shiftKey?: boolean, altKey?: boolean) => {
+      if (mode.type === 'pending-place') {
+        // Check if cursor has moved far enough to enter drawing mode
+        const dist = Math.sqrt((mmX - mode.startMmX) ** 2 + (mmY - mode.startMmY) ** 2);
+        if (dist >= PLACE_DRAG_THRESHOLD) {
+          setMode({
+            type: 'drawing',
+            shape: mode.shape,
+            startMmX: mode.startMmX,
+            startMmY: mode.startMmY,
+          });
+        }
+        return;
+      }
+
       if (mode.type === 'dragging') {
         // Dead zone check
         if (!pastDeadZoneRef.current) {
@@ -525,11 +634,11 @@ export function useCutoutInteraction({
           // Rotate position around group center
           const cxI = initial.x + cutout.width / 2;
           const cyI = initial.y + cutout.depth / 2;
-          const rotated = rotatePoint(cxI, cyI, mode.center.x, mode.center.y, -delta);
+          const rotated = rotatePoint(cxI, cyI, mode.center.x, mode.center.y, delta);
           nextPreview.set(id, {
             x: rotated.x - cutout.width / 2,
             y: rotated.y - cutout.depth / 2,
-            rotation: (((initial.rotation - delta) % 360) + 360) % 360,
+            rotation: (((initial.rotation + delta) % 360) + 360) % 360,
           });
         }
         setPreview(nextPreview);
@@ -582,6 +691,31 @@ export function useCutoutInteraction({
   // ── Pointer up (commit) ─────────────────────────────────────────────
 
   const handlePointerUp = useCallback(() => {
+    if (mode.type === 'pending-place') {
+      // Click-to-place: create default-sized shape centered at click position
+      const defaultW = mode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
+      const defaultD = mode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
+      const x = Math.max(0, Math.min(snap(mode.startMmX - defaultW / 2), binWidth - defaultW));
+      const y = Math.max(0, Math.min(snap(mode.startMmY - defaultD / 2), binDepth - defaultD));
+      const newId = crypto.randomUUID();
+      onAdd({
+        id: newId,
+        shape: mode.shape,
+        x,
+        y,
+        width: defaultW,
+        depth: defaultD,
+        cutDepth: 5,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+      });
+      setSelection(new Set([newId]));
+      setMode({ type: 'idle' });
+      return;
+    }
+
     if (
       mode.type === 'dragging' ||
       mode.type === 'resizing' ||
@@ -591,8 +725,12 @@ export function useCutoutInteraction({
     ) {
       // Only commit if we actually moved past the dead zone
       if (pastDeadZoneRef.current && preview.size > 0) {
-        for (const [id, updates] of preview) {
-          onUpdate(id, updates);
+        if (onUpdateBatch && preview.size > 1) {
+          onUpdateBatch(preview);
+        } else {
+          for (const [id, updates] of preview) {
+            onUpdate(id, updates);
+          }
         }
       }
       setPreview(new Map());
@@ -624,7 +762,7 @@ export function useCutoutInteraction({
       setDrawingPreview(null);
       setMode({ type: 'idle' });
     }
-  }, [mode, preview, drawingPreview, onUpdate, onAdd]);
+  }, [mode, preview, drawingPreview, onUpdate, onUpdateBatch, onAdd, snap, binWidth, binDepth]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -632,6 +770,8 @@ export function useCutoutInteraction({
       // Don't capture when typing in an input
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      const mod = e.metaKey || e.ctrlKey;
 
       switch (e.key) {
         case 'Delete':
@@ -648,58 +788,181 @@ export function useCutoutInteraction({
           setActiveGuides([]);
           setDrawingPreview(null);
           if (mode.type === 'idle') {
+            // Two-stage: if inside a group (single member selected), first re-select whole group
+            if (selection.size === 1) {
+              const selectedId = [...selection][0];
+              const cutout = cutouts.find((c) => c.id === selectedId);
+              if (cutout?.groupId) {
+                const groupIds = cutouts
+                  .filter((c) => c.groupId === cutout.groupId)
+                  .map((c) => c.id);
+                if (groupIds.length > 1) {
+                  setSelection(new Set(groupIds));
+                  break;
+                }
+              }
+            }
             deselectAll();
           }
           setMode({ type: 'idle' });
           break;
+
+        // Undo/redo
+        case 'z':
+          if (mod) {
+            e.preventDefault();
+            if (e.shiftKey) {
+              onRedo?.();
+            } else {
+              onUndo?.();
+            }
+          }
+          break;
+        case 'Z':
+          if (mod && e.shiftKey) {
+            e.preventDefault();
+            onRedo?.();
+          }
+          break;
+        case 'y':
+          if (mod) {
+            e.preventDefault();
+            onRedo?.();
+          }
+          break;
+
         case 'a':
-          if (e.metaKey || e.ctrlKey) {
+          if (mod) {
             e.preventDefault();
             selectAll();
           }
           break;
         case 'c':
-          if (e.metaKey || e.ctrlKey) {
+          if (mod) {
             e.preventDefault();
             copySelected();
           }
           break;
         case 'v':
-          if (e.metaKey || e.ctrlKey) {
+          if (mod) {
             e.preventDefault();
             pasteFromClipboard();
           }
           break;
         case 'd':
-          if (e.metaKey || e.ctrlKey) {
+          if (mod) {
             e.preventDefault();
             duplicateSelected();
           }
           break;
+
+        // Ctrl+G group / Ctrl+Shift+G ungroup
+        case 'g':
+          if (mod) {
+            e.preventDefault();
+            if (e.shiftKey) {
+              onUngroup?.([...selection]);
+            } else if (selection.size >= 2) {
+              onGroup?.([...selection]);
+            }
+          }
+          break;
+        case 'G':
+          if (mod && e.shiftKey) {
+            e.preventDefault();
+            onUngroup?.([...selection]);
+          }
+          break;
+
+        // R to rotate 90°
+        case 'r':
+          if (!mod && selection.size > 0) {
+            e.preventDefault();
+            // Block rotation if any selected cutout is locked
+            if (cutouts.some((c) => selection.has(c.id) && c.locked)) break;
+            if (onUpdateBatch && selection.size > 1) {
+              // Group rotation: rotate each cutout's position around the group center
+              const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
+              const bounds = computeBounds(selectedCutouts);
+              const cx = (bounds.minX + bounds.maxX) / 2;
+              const cy = (bounds.minY + bounds.maxY) / 2;
+              const updates = new Map<string, Partial<Cutout>>();
+              for (const cutout of selectedCutouts) {
+                const cutCx = cutout.x + cutout.width / 2;
+                const cutCy = cutout.y + cutout.depth / 2;
+                const rotated = rotatePoint(cutCx, cutCy, cx, cy, 90);
+                updates.set(cutout.id, {
+                  x: rotated.x - cutout.width / 2,
+                  y: rotated.y - cutout.depth / 2,
+                  rotation: (cutout.rotation + 90) % 360,
+                });
+              }
+              onUpdateBatch(updates);
+            } else {
+              for (const id of selection) {
+                const cutout = cutouts.find((c) => c.id === id);
+                if (!cutout) continue;
+                onUpdate(id, { rotation: (cutout.rotation + 90) % 360 });
+              }
+            }
+          }
+          break;
+
+        // Tab / Shift+Tab to cycle selection
+        case 'Tab':
+          if (cutouts.length > 0) {
+            e.preventDefault();
+            const ids = cutouts.map((c) => c.id);
+            const currentIdx = selection.size === 1 ? ids.indexOf([...selection][0]) : -1;
+            const nextIdx = e.shiftKey
+              ? currentIdx <= 0
+                ? ids.length - 1
+                : currentIdx - 1
+              : (currentIdx + 1) % ids.length;
+            setSelection(new Set([ids[nextIdx]]));
+          }
+          break;
+
         case 'ArrowLeft':
           if (selection.size > 0) {
             e.preventDefault();
-            nudgeSelected(-NUDGE_AMOUNT, 0);
+            const amount = e.shiftKey ? SHIFT_NUDGE_AMOUNT : NUDGE_AMOUNT;
+            nudgeSelected(-amount, 0);
           }
           break;
         case 'ArrowRight':
           if (selection.size > 0) {
             e.preventDefault();
-            nudgeSelected(NUDGE_AMOUNT, 0);
+            const amount = e.shiftKey ? SHIFT_NUDGE_AMOUNT : NUDGE_AMOUNT;
+            nudgeSelected(amount, 0);
           }
           break;
         case 'ArrowUp':
           if (selection.size > 0) {
             e.preventDefault();
-            // Increase model Y → shape moves up visually (SVG Y is inverted)
-            nudgeSelected(0, NUDGE_AMOUNT);
+            const amount = e.shiftKey ? SHIFT_NUDGE_AMOUNT : NUDGE_AMOUNT;
+            nudgeSelected(0, amount);
           }
           break;
         case 'ArrowDown':
           if (selection.size > 0) {
             e.preventDefault();
-            // Decrease model Y → shape moves down visually (SVG Y is inverted)
-            nudgeSelected(0, -NUDGE_AMOUNT);
+            const amount = e.shiftKey ? SHIFT_NUDGE_AMOUNT : NUDGE_AMOUNT;
+            nudgeSelected(0, -amount);
+          }
+          break;
+
+        // Ctrl+L to toggle lock
+        case 'l':
+          if (mod && selection.size > 0) {
+            e.preventDefault();
+            const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
+            const allLocked = selectedCutouts.every((c) => c.locked);
+            if (allLocked) {
+              onUnlock?.([...selection]);
+            } else {
+              onLock?.([...selection]);
+            }
           }
           break;
       }
@@ -709,6 +972,7 @@ export function useCutoutInteraction({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     selection,
+    cutouts,
     deleteSelected,
     deselectAll,
     selectAll,
@@ -716,6 +980,14 @@ export function useCutoutInteraction({
     copySelected,
     pasteFromClipboard,
     duplicateSelected,
+    onUndo,
+    onRedo,
+    onGroup,
+    onUngroup,
+    onUpdate,
+    onUpdateBatch,
+    onLock,
+    onUnlock,
     mode.type,
   ]);
 
@@ -784,5 +1056,7 @@ export function useCutoutInteraction({
     contextMenu,
     openContextMenu,
     closeContextMenu,
+    canUndo: canUndo ?? false,
+    canRedo: canRedo ?? false,
   };
 }

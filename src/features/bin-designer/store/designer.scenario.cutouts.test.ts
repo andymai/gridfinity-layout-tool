@@ -169,14 +169,20 @@ describe('DesignerStore - cutout actions', () => {
       expect(params.cutouts[1].id).not.toBe('cutout-1');
     });
 
-    it('resets groupId on duplicated cutouts', () => {
+    it('preserves group structure on duplicated cutouts with new groupId', () => {
       const { addCutout, duplicateCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'cutout-1', groupId: 'group-1' }));
+      addCutout(createTestCutout({ id: 'cutout-2', groupId: 'group-1', x: 20 }));
 
-      duplicateCutouts(['cutout-1']);
+      duplicateCutouts(['cutout-1', 'cutout-2']);
 
       const { params } = useDesignerStore.getState();
-      expect(params.cutouts[1].groupId).toBeNull();
+      // Duplicated cutouts should share a new groupId (not the original)
+      const dup1 = params.cutouts[2];
+      const dup2 = params.cutouts[3];
+      expect(dup1.groupId).not.toBeNull();
+      expect(dup1.groupId).not.toBe('group-1');
+      expect(dup1.groupId).toBe(dup2.groupId);
     });
 
     it('does nothing for empty array', () => {

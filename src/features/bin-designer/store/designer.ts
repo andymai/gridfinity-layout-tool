@@ -50,9 +50,13 @@ let pendingMeshCache: CachedMesh | null = null;
 
 /**
  * Push current params (with pending mesh) to history past array.
+ * Skips if inside a transaction (already pushed on transaction start).
  * Evicts old caches if memory budget exceeded.
  */
 function pushHistoryEntry(state: Draft<DesignerState>): void {
+  // Inside a transaction, the entry was already pushed at startTransaction
+  if (state.transactionDepth > 0) return;
+
   const entry: HistoryEntry = {
     params: current(state.params),
     mesh: pendingMeshCache,
@@ -81,6 +85,7 @@ export const useDesignerStore = create<DesignerState>()(
     history: { ...DEFAULT_HISTORY },
     wasmStatus: 'unloaded' as WasmStatus,
     ui: { ...DEFAULT_UI_STATE },
+    transactionDepth: 0,
 
     // Persistence state
     currentDesignId: null as string | null,
@@ -464,6 +469,16 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         state.params.cutouts = state.params.cutouts.filter((c) => c.id !== id);
+        // Auto-dissolve singleton groups
+        const groupCounts = new Map<string, number>();
+        for (const c of state.params.cutouts) {
+          if (c.groupId) {
+            groupCounts.set(c.groupId, (groupCounts.get(c.groupId) ?? 0) + 1);
+          }
+        }
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          c.groupId && (groupCounts.get(c.groupId) ?? 0) <= 1 ? { ...c, groupId: null } : c
+        );
       });
     },
 
@@ -488,13 +503,24 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         const toDuplicate = state.params.cutouts.filter((c) => cutoutIds.includes(c.id));
-        const duplicated = toDuplicate.map((c) => ({
-          ...c,
-          id: crypto.randomUUID(),
-          x: c.x + 5,
-          y: c.y + 5,
-          groupId: null,
-        }));
+        // Map old groupId → new groupId so groups are preserved
+        const groupMap = new Map<string, string>();
+        const duplicated = toDuplicate.map((c) => {
+          let newGroupId: string | null = null;
+          if (c.groupId) {
+            if (!groupMap.has(c.groupId)) {
+              groupMap.set(c.groupId, crypto.randomUUID());
+            }
+            newGroupId = groupMap.get(c.groupId) ?? null;
+          }
+          return {
+            ...c,
+            id: crypto.randomUUID(),
+            x: c.x + 5,
+            y: c.y + 5,
+            groupId: newGroupId,
+          };
+        });
         state.params.cutouts = [...state.params.cutouts, ...duplicated];
       });
     },
@@ -526,6 +552,163 @@ export const useDesignerStore = create<DesignerState>()(
         pushHistoryEntry(state);
         state.params.cutouts = state.params.cutouts.map((c) =>
           cutoutIds.includes(c.id) ? { ...c, groupId: null } : c
+        );
+      });
+    },
+
+    // Transaction support — group multiple mutations into one undo step
+    startTransaction: () => {
+      set((state) => {
+        if (state.transactionDepth === 0) {
+          // Push history entry at the start of the transaction (before any mutations)
+          const entry: HistoryEntry = {
+            params: current(state.params),
+            mesh: pendingMeshCache,
+          };
+          state.history.past = [
+            ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+            entry,
+          ];
+          state.history.future = [];
+          state.generation.epoch += 1;
+          const evicted = evictIfNeeded(state.history.past, state.history.future);
+          state.history.past = evicted.past as HistoryEntry[];
+          state.history.future = evicted.future as HistoryEntry[];
+          pendingMeshCache = null;
+        }
+        state.transactionDepth += 1;
+      });
+    },
+
+    commitTransaction: () => {
+      set((state) => {
+        if (state.transactionDepth > 0) {
+          state.transactionDepth -= 1;
+        }
+      });
+    },
+
+    // Batch cutout operations — single undo step for multi-cutout changes
+    updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => {
+      if (updates.size === 0) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.map((c) => {
+          const u = updates.get(c.id);
+          return u ? { ...c, ...u } : c;
+        });
+      });
+    },
+
+    removeCutoutsBatch: (ids: readonly string[]) => {
+      if (ids.length === 0) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        state.params.cutouts = state.params.cutouts.filter((c) => !idSet.has(c.id));
+        // Auto-dissolve singleton groups
+        const groupCounts = new Map<string, number>();
+        for (const c of state.params.cutouts) {
+          if (c.groupId) {
+            groupCounts.set(c.groupId, (groupCounts.get(c.groupId) ?? 0) + 1);
+          }
+        }
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          c.groupId && (groupCounts.get(c.groupId) ?? 0) <= 1 ? { ...c, groupId: null } : c
+        );
+      });
+    },
+
+    // Lock/hide/layer ordering actions
+    lockCutouts: (ids: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          idSet.has(c.id) ? { ...c, locked: true } : c
+        );
+      });
+    },
+
+    unlockCutouts: (ids: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          idSet.has(c.id) ? { ...c, locked: false } : c
+        );
+      });
+    },
+
+    hideCutouts: (ids: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          idSet.has(c.id) ? { ...c, hidden: true } : c
+        );
+      });
+    },
+
+    showCutouts: (ids: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          idSet.has(c.id) ? { ...c, hidden: false } : c
+        );
+      });
+    },
+
+    showAllCutouts: () => {
+      set((state) => {
+        const hasHidden = state.params.cutouts.some((c) => c.hidden);
+        if (!hasHidden) return;
+        pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          c.hidden ? { ...c, hidden: false } : c
+        );
+      });
+    },
+
+    bringForward: (ids: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        const maxZ = Math.max(0, ...state.params.cutouts.map((c) => c.zIndex ?? 0));
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          idSet.has(c.id) ? { ...c, zIndex: Math.min((c.zIndex ?? 0) + 1, maxZ + 1) } : c
+        );
+      });
+    },
+
+    sendBackward: (ids: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          idSet.has(c.id) ? { ...c, zIndex: Math.max((c.zIndex ?? 0) - 1, 0) } : c
+        );
+      });
+    },
+
+    bringToFront: (ids: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        const maxZ = Math.max(0, ...state.params.cutouts.map((c) => c.zIndex ?? 0));
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          idSet.has(c.id) ? { ...c, zIndex: maxZ + 1 } : c
+        );
+      });
+    },
+
+    sendToBack: (ids: readonly string[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const idSet = new Set(ids);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          idSet.has(c.id) ? { ...c, zIndex: 0 } : c
         );
       });
     },
