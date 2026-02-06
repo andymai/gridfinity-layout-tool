@@ -5,13 +5,20 @@
  * camera zoom for constant screen-space size. Rotated with the cutout.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import type { ResizeHandle } from '../useCutoutInteraction';
-import { RENDER_ORDER, CORNER_HANDLE_SIZE, EDGE_HANDLE_SIZE, HANDLE_COLOR } from './constants';
+import {
+  RENDER_ORDER,
+  CORNER_HANDLE_SIZE,
+  EDGE_HANDLE_WIDTH,
+  EDGE_HANDLE_HEIGHT,
+  ACCENT_COLOR_HEX,
+  HANDLE_HOVER_SCALE,
+} from './constants';
 
 interface CutoutHandles3DProps {
   readonly cutout: Cutout;
@@ -44,11 +51,19 @@ function getHandleDefs(width: number, depth: number): HandleDef[] {
   ];
 }
 
-const handleColor = new THREE.Color(HANDLE_COLOR);
+const handleFillColor = new THREE.Color(ACCENT_COLOR_HEX); // Amber fill
+const handleBorderColor = new THREE.Color('#b45309'); // Darker amber border
 
 export function CutoutHandles3D({ cutout, onResizeStart }: CutoutHandles3DProps) {
   const { camera } = useThree();
   const zoom = camera.zoom;
+  const [hoveredHandle, setHoveredHandle] = useState<ResizeHandle | null>(null);
+
+  // Offset handles outward when cutout is too small
+  const smallThresholdW = (CORNER_HANDLE_SIZE * 3) / zoom;
+  const smallThresholdD = (CORNER_HANDLE_SIZE * 3) / zoom;
+  const isSmall = cutout.width < smallThresholdW || cutout.depth < smallThresholdD;
+  const handleOffset = isSmall ? CORNER_HANDLE_SIZE / zoom : 0;
 
   const handles = useMemo(
     () => getHandleDefs(cutout.width, cutout.depth),
@@ -68,22 +83,47 @@ export function CutoutHandles3D({ cutout, onResizeStart }: CutoutHandles3DProps)
     >
       {handles.map(({ handle, localX, localY }) => {
         const corner = isCorner(handle);
-        const screenSize = corner ? CORNER_HANDLE_SIZE : EDGE_HANDLE_SIZE;
         // Convert screen pixels to world units
-        const worldSize = screenSize / zoom;
+        const worldWidth = corner ? CORNER_HANDLE_SIZE / zoom : EDGE_HANDLE_WIDTH / zoom;
+        const worldHeight = corner ? CORNER_HANDLE_SIZE / zoom : EDGE_HANDLE_HEIGHT / zoom;
+        const strokeWidth = 1.5 / zoom; // Dark outline in world units
+        const isHovered = hoveredHandle === handle;
+        const hoverScale = isHovered ? HANDLE_HOVER_SCALE : 1;
+
+        // Offset handle outward for small cutouts
+        let offsetX = localX;
+        let offsetY = localY;
+        if (isSmall && corner) {
+          offsetX += Math.sign(localX) * handleOffset;
+          offsetY += Math.sign(localY) * handleOffset;
+        } else if (isSmall) {
+          // Edge handles
+          if (handle === 'n' || handle === 's') offsetY += Math.sign(localY) * handleOffset;
+          if (handle === 'e' || handle === 'w') offsetX += Math.sign(localX) * handleOffset;
+        }
 
         return (
-          <mesh
-            key={handle}
-            position={[localX, localY, 0]}
-            onPointerDown={(e: ThreeEvent<PointerEvent>) => {
-              e.stopPropagation();
-              onResizeStart(cutout.id, handle, e.point.x, e.point.y);
-            }}
-          >
-            <planeGeometry args={[worldSize, worldSize]} />
-            <meshBasicMaterial color={handleColor} depthTest={false} transparent />
-          </mesh>
+          <group key={handle} position={[offsetX, offsetY, 0]} scale={[hoverScale, hoverScale, 1]}>
+            {/* Amber fill */}
+            <mesh
+              renderOrder={RENDER_ORDER.HANDLES}
+              onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+                if (e.nativeEvent.button !== 0) return;
+                e.stopPropagation();
+                onResizeStart(cutout.id, handle, e.point.x, e.point.y);
+              }}
+              onPointerEnter={() => setHoveredHandle(handle)}
+              onPointerLeave={() => setHoveredHandle(null)}
+            >
+              <planeGeometry args={[worldWidth, worldHeight]} />
+              <meshBasicMaterial color={handleFillColor} depthTest={false} transparent />
+            </mesh>
+            {/* Darker amber border behind */}
+            <mesh renderOrder={RENDER_ORDER.HANDLES} position={[0, 0, -0.001]}>
+              <planeGeometry args={[worldWidth + strokeWidth, worldHeight + strokeWidth]} />
+              <meshBasicMaterial color={handleBorderColor} depthTest={false} transparent />
+            </mesh>
+          </group>
         );
       })}
     </group>

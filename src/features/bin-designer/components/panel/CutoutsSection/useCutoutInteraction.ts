@@ -136,7 +136,7 @@ export function useCutoutInteraction({
   onUnlock,
   binWidth,
   binDepth,
-  gridSize = 1,
+  gridSize = 0.5,
 }: UseCutoutInteractionOptions) {
   const [mode, setMode] = useState<InteractionMode>({ type: 'idle' });
   const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
@@ -345,7 +345,7 @@ export function useCutoutInteraction({
   // ── Drag lifecycle ──────────────────────────────────────────────────
 
   const startDrag = useCallback(
-    (id: string, mmX: number, mmY: number) => {
+    (id: string, mmX: number, mmY: number, altKey?: boolean) => {
       // Locked cutouts cannot be dragged
       const target = cutouts.find((c) => c.id === id);
       if (target?.locked) return;
@@ -372,10 +372,36 @@ export function useCutoutInteraction({
       const anyLocked = cutouts.some((c) => effectiveSelection.has(c.id) && c.locked);
       if (anyLocked) return;
 
+      // Alt+drag: duplicate selected cutouts in-place, then drag the clones
+      let dragSelection = effectiveSelection;
+      if (altKey) {
+        const groupMap = new Map<string, string>();
+        const newIds: string[] = [];
+        for (const selectedId of effectiveSelection) {
+          const original = cutouts.find((c) => c.id === selectedId);
+          if (!original) continue;
+          const newId = crypto.randomUUID();
+          newIds.push(newId);
+          let newGroupId: string | null = null;
+          if (original.groupId) {
+            if (!groupMap.has(original.groupId)) {
+              groupMap.set(original.groupId, crypto.randomUUID());
+            }
+            newGroupId = groupMap.get(original.groupId) ?? null;
+          }
+          onAdd({ ...original, id: newId, groupId: newGroupId });
+        }
+        dragSelection = new Set(newIds);
+        setSelection(dragSelection);
+      }
+
       // Store offset from cursor to each selected cutout's origin
       const offsets = new Map<string, { dx: number; dy: number }>();
-      for (const selectedId of effectiveSelection) {
-        const cutout = cutouts.find((c) => c.id === selectedId);
+      for (const selectedId of dragSelection) {
+        // For alt-clones, look up by original position (clones start at same pos)
+        const cutout = altKey
+          ? cutouts.find((c) => effectiveSelection.has(c.id))
+          : cutouts.find((c) => c.id === selectedId);
         if (cutout) {
           offsets.set(selectedId, { dx: cutout.x - mmX, dy: cutout.y - mmY });
         }
@@ -384,7 +410,7 @@ export function useCutoutInteraction({
       pastDeadZoneRef.current = false;
       setMode({ type: 'dragging', startX: mmX, startY: mmY, offsets });
     },
-    [selection, cutouts]
+    [selection, cutouts, onAdd]
   );
 
   // ── Resize lifecycle ────────────────────────────────────────────────
@@ -501,9 +527,26 @@ export function useCutoutInteraction({
         const rawDx = mmX - mode.startX;
         const rawDy = mmY - mode.startY;
 
+        // Shift: axis-lock — constrain to dominant axis (Figma-style)
+        let constrainedDx = rawDx;
+        let constrainedDy = rawDy;
+        if (shiftKey) {
+          if (Math.abs(rawDx) >= Math.abs(rawDy)) {
+            constrainedDy = 0;
+          } else {
+            constrainedDx = 0;
+          }
+        }
+
         // Get selected cutouts for clamping
         const selectedCutouts = cutouts.filter((c) => mode.offsets.has(c.id));
-        const { dx, dy } = constrainGroupDrag(selectedCutouts, rawDx, rawDy, binWidth, binDepth);
+        const { dx, dy } = constrainGroupDrag(
+          selectedCutouts,
+          constrainedDx,
+          constrainedDy,
+          binWidth,
+          binDepth
+        );
 
         const nextPreview = new Map<string, Partial<Cutout>>();
         for (const [id, offset] of mode.offsets) {
@@ -671,11 +714,32 @@ export function useCutoutInteraction({
         }
         setPreview(nextPreview);
       } else if (mode.type === 'drawing') {
-        // Corner-to-corner drawing
-        const x = Math.max(0, Math.min(mode.startMmX, mmX));
-        const y = Math.max(0, Math.min(mode.startMmY, mmY));
-        const w = Math.min(Math.abs(mmX - mode.startMmX), binWidth - x);
-        const d = Math.min(Math.abs(mmY - mode.startMmY), binDepth - y);
+        // Corner-to-corner drawing with modifiers
+        let w = Math.abs(mmX - mode.startMmX);
+        let d = Math.abs(mmY - mode.startMmY);
+
+        // Shift: constrain to square
+        if (shiftKey) {
+          const maxDim = Math.max(w, d);
+          w = maxDim;
+          d = maxDim;
+        }
+
+        let x: number;
+        let y: number;
+        if (altKey) {
+          // Alt: draw from center
+          x = Math.max(0, mode.startMmX - w);
+          y = Math.max(0, mode.startMmY - d);
+          w = Math.min(w * 2, binWidth - x);
+          d = Math.min(d * 2, binDepth - y);
+        } else {
+          x = Math.max(0, Math.min(mode.startMmX, mmX));
+          y = Math.max(0, Math.min(mode.startMmY, mmY));
+          w = Math.min(w, binWidth - x);
+          d = Math.min(d, binDepth - y);
+        }
+
         setDrawingPreview({
           x: snap(x),
           y: snap(y),
@@ -990,6 +1054,29 @@ export function useCutoutInteraction({
     onUnlock,
     mode.type,
   ]);
+
+  // ── Recovery: reset on lost pointer / visibility change ─────────────
+  useEffect(() => {
+    const reset = () => {
+      if (mode.type !== 'idle' && mode.type !== 'placing' && mode.type !== 'marquee') {
+        setPreview(new Map());
+        setActiveGuides([]);
+        setDrawingPreview(null);
+        setMode({ type: 'idle' });
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') reset();
+    };
+    window.addEventListener('pointercancel', reset);
+    window.addEventListener('blur', reset);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('pointercancel', reset);
+      window.removeEventListener('blur', reset);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [mode.type]);
 
   // Derive effective selection by pruning stale IDs (avoids setState in effect)
   const effectiveSelection = useMemo(() => {

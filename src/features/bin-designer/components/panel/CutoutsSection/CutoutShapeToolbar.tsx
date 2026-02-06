@@ -14,6 +14,8 @@ interface CutoutShapeToolbarProps {
   readonly onSelectShape: (mode: InteractionMode) => void;
   readonly snapEnabled: boolean;
   readonly onSnapToggle: (enabled: boolean) => void;
+  readonly gridSize: number;
+  readonly onGridSizeChange: (size: number) => void;
   /** Render as vertical icon-only strip (for workspace mode) */
   readonly vertical?: boolean;
 }
@@ -23,6 +25,8 @@ export function CutoutShapeToolbar({
   onSelectShape,
   snapEnabled,
   onSnapToggle,
+  gridSize,
+  onGridSizeChange,
   vertical = false,
 }: CutoutShapeToolbarProps) {
   const t = useTranslation();
@@ -36,6 +40,13 @@ export function CutoutShapeToolbar({
     } else {
       onSelectShape({ type: 'placing', shape });
     }
+  };
+
+  const handleGridSizeCycle = () => {
+    const sizes = [0.25, 0.5, 1, 2, 5];
+    const currentIndex = sizes.indexOf(gridSize);
+    const nextIndex = (currentIndex + 1) % sizes.length;
+    onGridSizeChange(sizes[nextIndex]);
   };
 
   const btnBase = vertical
@@ -125,6 +136,19 @@ export function CutoutShapeToolbar({
         </svg>
         {!vertical && t('binDesigner.cutouts.snapToGrid')}
       </button>
+
+      {snapEnabled && (
+        <button
+          type="button"
+          className={`${btnBase} ${btnInactive}`}
+          onClick={handleGridSizeCycle}
+          title={`${t('binDesigner.gridSize')}: ${gridSize}mm`}
+        >
+          <span className={vertical ? 'text-[10px] font-mono' : 'text-xs font-mono'}>
+            {gridSize}mm
+          </span>
+        </button>
+      )}
 
       {isPlacing && !vertical && (
         <span className="text-[11px] text-content-tertiary">

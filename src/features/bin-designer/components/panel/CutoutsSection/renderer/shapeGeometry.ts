@@ -16,7 +16,7 @@ export const sdfVertexShader = /* glsl */ `
   }
 `;
 
-/** Fragment shader for SDF rounded-rect and ellipse shapes */
+/** Fragment shader for SDF rounded-rect and ellipse shapes with depth shading */
 export const sdfFragmentShader = /* glsl */ `
   uniform vec2 u_size;
   uniform float u_cornerRadius;
@@ -48,12 +48,104 @@ export const sdfFragmentShader = /* glsl */ `
 
     float aa = fwidth(d);
     float fill = 1.0 - smoothstep(-aa, aa, d);
-    float strokeMask = 1.0 - smoothstep(-aa, aa, abs(d) - u_strokeWidth * 0.5);
 
-    vec4 fillResult = u_fillColor * fill;
-    gl_FragColor = mix(fillResult, u_strokeColor, strokeMask * u_strokeColor.a);
+    // Depth shading — inner shadow simulates concave cut viewed from top
+    // d < 0 inside shape; innerDist = how far inside (in mm)
+    float innerDist = max(-d, 0.0);
+    float maxInner = min(u_size.x, u_size.y) * 0.5;
+    float depthNorm = clamp(innerDist / maxInner, 0.0, 1.0);
+    // Edge of cutout is darkest (wall shadow), center is lighter (bottom of cut)
+    float shadow = mix(0.55, 0.9, smoothstep(0.0, 0.35, depthNorm));
+    vec4 shadedFill = vec4(u_fillColor.rgb * shadow, u_fillColor.a) * fill;
+
+    // Stroke band shifted fully inside: centered at d = -strokeWidth/2
+    float strokeMask = 1.0 - smoothstep(-aa, aa, abs(d + u_strokeWidth * 0.5) - u_strokeWidth * 0.5);
+
+    gl_FragColor = mix(shadedFill, u_strokeColor, strokeMask * u_strokeColor.a);
 
     // Discard fully transparent pixels for proper hit testing
+    if (gl_FragColor.a < 0.01) discard;
+  }
+`;
+
+/** Fragment shader: fill only (no stroke). Used for stencil fill pass of grouped cutouts. */
+export const sdfFragmentShaderFillOnly = /* glsl */ `
+  uniform vec2 u_size;
+  uniform float u_cornerRadius;
+  uniform vec4 u_fillColor;
+  uniform vec4 u_strokeColor;
+  uniform float u_strokeWidth;
+  uniform int u_shapeType; // 0 = rounded rect, 1 = ellipse
+
+  varying vec2 vUv;
+
+  float sdRoundedBox(vec2 p, vec2 b, float r) {
+    vec2 q = abs(p) - b + r;
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+  }
+
+  float sdEllipse(vec2 p, vec2 ab) {
+    vec2 q = p / ab;
+    return (length(q) - 1.0) * min(ab.x, ab.y);
+  }
+
+  void main() {
+    vec2 p = (vUv - 0.5) * u_size;
+    float d;
+    if (u_shapeType == 1) {
+      d = sdEllipse(p, u_size * 0.5);
+    } else {
+      d = sdRoundedBox(p, u_size * 0.5, u_cornerRadius);
+    }
+
+    float aa = fwidth(d);
+    float fill = 1.0 - smoothstep(-aa, aa, d);
+
+    float innerDist = max(-d, 0.0);
+    float maxInner = min(u_size.x, u_size.y) * 0.5;
+    float depthNorm = clamp(innerDist / maxInner, 0.0, 1.0);
+    float shadow = mix(0.55, 0.9, smoothstep(0.0, 0.35, depthNorm));
+    gl_FragColor = vec4(u_fillColor.rgb * shadow, u_fillColor.a) * fill;
+
+    if (gl_FragColor.a < 0.01) discard;
+  }
+`;
+
+/** Fragment shader: stroke only (no fill). Used for stencil stroke pass of grouped cutouts. */
+export const sdfFragmentShaderStrokeOnly = /* glsl */ `
+  uniform vec2 u_size;
+  uniform float u_cornerRadius;
+  uniform vec4 u_fillColor;
+  uniform vec4 u_strokeColor;
+  uniform float u_strokeWidth;
+  uniform int u_shapeType; // 0 = rounded rect, 1 = ellipse
+
+  varying vec2 vUv;
+
+  float sdRoundedBox(vec2 p, vec2 b, float r) {
+    vec2 q = abs(p) - b + r;
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+  }
+
+  float sdEllipse(vec2 p, vec2 ab) {
+    vec2 q = p / ab;
+    return (length(q) - 1.0) * min(ab.x, ab.y);
+  }
+
+  void main() {
+    vec2 p = (vUv - 0.5) * u_size;
+    float d;
+    if (u_shapeType == 1) {
+      d = sdEllipse(p, u_size * 0.5);
+    } else {
+      d = sdRoundedBox(p, u_size * 0.5, u_cornerRadius);
+    }
+
+    float aa = fwidth(d);
+    float strokeMask = 1.0 - smoothstep(-aa, aa, abs(d + u_strokeWidth * 0.5) - u_strokeWidth * 0.5);
+
+    gl_FragColor = vec4(u_strokeColor.rgb, strokeMask * u_strokeColor.a);
+
     if (gl_FragColor.a < 0.01) discard;
   }
 `;

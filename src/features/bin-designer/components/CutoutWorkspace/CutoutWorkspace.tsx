@@ -23,7 +23,7 @@ import {
 } from '../panel/CutoutsSection/renderer/constants';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
-import { InspectorPanel } from './InspectorPanel';
+import { FloatingInspector } from './FloatingInspector';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import type { ContextMenuAction } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
@@ -49,6 +49,14 @@ export function CutoutWorkspace() {
     duplicateCutouts,
     groupCutouts,
     ungroupCutouts,
+    updateCutoutsBatch,
+    removeCutoutsBatch,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    lockCutouts,
+    unlockCutouts,
   } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -59,6 +67,14 @@ export function CutoutWorkspace() {
       duplicateCutouts: s.duplicateCutouts,
       groupCutouts: s.groupCutouts,
       ungroupCutouts: s.ungroupCutouts,
+      updateCutoutsBatch: s.updateCutoutsBatch,
+      removeCutoutsBatch: s.removeCutoutsBatch,
+      undo: s.undo,
+      redo: s.redo,
+      canUndo: s.history.past.length > 0,
+      canRedo: s.history.future.length > 0,
+      lockCutouts: s.lockCutouts,
+      unlockCutouts: s.unlockCutouts,
     }))
   );
 
@@ -132,12 +148,14 @@ export function CutoutWorkspace() {
     setZoom((z) => Math.max(MIN_ZOOM, z / ZOOM_STEP));
   }, []);
 
-  const zoomPercent = Math.round(zoom * 100);
+  const zoomPercent = Math.round((zoom / defaultZoom) * 100);
 
   // Ruler sync: scale=1 for WebGL (world units = mm), zoom from camera
   const scale = 1;
   const rulerPanX = -(cameraCenter.x - canvasWidth / (2 * zoom));
   const rulerPanY = cameraCenter.y + canvasHeight / (2 * zoom) - binDepth;
+
+  const [gridSize, setGridSize] = useState(0.5);
 
   const {
     mode,
@@ -173,8 +191,18 @@ export function CutoutWorkspace() {
     onRemove: removeCutout,
     onAdd: addCutout,
     onGroup: groupCutouts,
+    onUngroup: ungroupCutouts,
+    onUpdateBatch: updateCutoutsBatch,
+    onRemoveBatch: removeCutoutsBatch,
+    onUndo: undo,
+    onRedo: redo,
+    canUndo,
+    canRedo,
+    onLock: lockCutouts,
+    onUnlock: unlockCutouts,
     binWidth,
     binDepth,
+    gridSize,
   });
 
   // Marquee state — now in mm world coordinates (no SVG pixel conversion needed)
@@ -190,6 +218,9 @@ export function CutoutWorkspace() {
   // Space-to-pan state
   const [spaceHeld, setSpaceHeld] = useState(false);
   const spacePanRef = useRef(false);
+
+  // Cursor world position for coordinate display
+  const [cursorWorldPos, setCursorWorldPos] = useState<{ x: number; y: number } | null>(null);
 
   // Keyboard shortcuts: Space-to-pan, Ctrl+0 fit-to-view
   useEffect(() => {
@@ -237,7 +268,7 @@ export function CutoutWorkspace() {
       }
 
       if (mode.type === 'placing') {
-        setMode({ type: 'drawing', shape: mode.shape, startMmX: worldX, startMmY: worldY });
+        setMode({ type: 'pending-place', shape: mode.shape, startMmX: worldX, startMmY: worldY });
         return;
       }
 
@@ -252,6 +283,9 @@ export function CutoutWorkspace() {
   // Pointer move — receives world-space mm coords from R3F
   const handleCanvasPointerMove = useCallback(
     (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
+      // Track cursor world position for coordinate display
+      setCursorWorldPos({ x: worldX, y: worldY });
+
       // Handle middle-click or space pan
       if (isPanningRef.current || spacePanRef.current) {
         const dx = nativeEvent.clientX - panStartRef.current.x;
@@ -266,6 +300,7 @@ export function CutoutWorkspace() {
       }
 
       if (
+        mode.type === 'pending-place' ||
         mode.type === 'dragging' ||
         mode.type === 'resizing' ||
         mode.type === 'rotating' ||
@@ -300,6 +335,7 @@ export function CutoutWorkspace() {
     }
 
     if (
+      mode.type === 'pending-place' ||
       mode.type === 'dragging' ||
       mode.type === 'resizing' ||
       mode.type === 'rotating' ||
@@ -430,6 +466,22 @@ export function CutoutWorkspace() {
             updateCutout(id, pos);
           }
         },
+        dividerAfter: true,
+      });
+
+      // Lock/hide/layer ordering
+      const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
+      const allLocked = selectedCutouts.every((c) => c.locked);
+
+      actions.push({
+        label: allLocked
+          ? t('binDesigner.cutoutEditor.unlock')
+          : t('binDesigner.cutoutEditor.lock'),
+        onClick: () => {
+          const ids = [...selection];
+          if (allLocked) unlockCutouts(ids);
+          else lockCutouts(ids);
+        },
       });
     }
 
@@ -446,16 +498,34 @@ export function CutoutWorkspace() {
     updateCutout,
     binWidth,
     binDepth,
+    lockCutouts,
+    unlockCutouts,
     t,
   ]);
 
   return (
-    <div className="flex h-full flex-col bg-surface-secondary">
+    <div className="flex h-full flex-col bg-surface-secondary select-none">
       <WorkspaceHeader
         zoomPercent={zoomPercent}
         onZoomIn={zoomIn}
         onZoomOut={zoomOut}
         onFitToView={fitToView}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        cursorWorldPos={cursorWorldPos}
+        cutouts={cutouts}
+        selection={selection}
+        binWidth={binWidth}
+        binDepth={binDepth}
+        onUpdate={updateCutout}
+        onRemove={removeCutout}
+        onDuplicate={duplicateCutouts}
+        onGroup={groupCutouts}
+        onUngroup={ungroupCutouts}
+        onClearAll={clearCutouts}
+        disabled={isInteracting}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -467,6 +537,8 @@ export function CutoutWorkspace() {
               onSelectShape={setMode}
               snapEnabled={snapEnabled}
               onSnapToggle={setSnapEnabled}
+              gridSize={gridSize}
+              onGridSizeChange={setGridSize}
               vertical
             />
           </div>
@@ -496,7 +568,7 @@ export function CutoutWorkspace() {
             />
             <div
               ref={canvasContainerRef}
-              className={`flex-1 overflow-hidden bg-surface ${spaceHeld ? 'cursor-grab' : ''}`}
+              className={`relative flex-1 overflow-hidden bg-surface ${spaceHeld ? 'cursor-grab' : ''}`}
               onWheel={handleWheel}
               onContextMenu={handleContextMenu}
             >
@@ -525,26 +597,25 @@ export function CutoutWorkspace() {
                 externalZoom={zoom}
                 externalCameraCenter={cameraCenter}
               />
+              {/* Floating inspector overlay */}
+              <FloatingInspector
+                cutouts={cutouts}
+                selection={selection}
+                preview={preview}
+                binWidth={binWidth}
+                binDepth={binDepth}
+                maxCutDepth={wallHeight}
+                onUpdate={updateCutout}
+                onUpdateBatch={updateCutoutsBatch}
+                zoom={zoom}
+                cameraCenter={cameraCenter}
+                canvasWidth={canvasWidth}
+                canvasHeight={canvasHeight}
+                hidden={isInteracting}
+                disabled={isInteracting}
+              />
             </div>
           </div>
-        </div>
-
-        {/* Right: Inspector panel */}
-        <div className="w-56 flex-shrink-0 overflow-y-auto border-l-2 border-stroke-subtle bg-surface-secondary p-3">
-          <InspectorPanel
-            cutouts={cutouts}
-            selection={selection}
-            binWidth={binWidth}
-            binDepth={binDepth}
-            maxCutDepth={wallHeight}
-            onUpdate={updateCutout}
-            onRemove={removeCutout}
-            onDuplicate={duplicateCutouts}
-            onGroup={groupCutouts}
-            onUngroup={ungroupCutouts}
-            onClearAll={clearCutouts}
-            disabled={isInteracting}
-          />
         </div>
       </div>
 

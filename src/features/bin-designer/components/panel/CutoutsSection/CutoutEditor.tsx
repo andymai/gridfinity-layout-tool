@@ -31,6 +31,14 @@ export function CutoutEditor() {
     duplicateCutouts,
     groupCutouts,
     ungroupCutouts,
+    updateCutoutsBatch,
+    removeCutoutsBatch,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    lockCutouts,
+    unlockCutouts,
   } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -40,6 +48,14 @@ export function CutoutEditor() {
       duplicateCutouts: s.duplicateCutouts,
       groupCutouts: s.groupCutouts,
       ungroupCutouts: s.ungroupCutouts,
+      updateCutoutsBatch: s.updateCutoutsBatch,
+      removeCutoutsBatch: s.removeCutoutsBatch,
+      undo: s.undo,
+      redo: s.redo,
+      canUndo: s.history.past.length > 0,
+      canRedo: s.history.future.length > 0,
+      lockCutouts: s.lockCutouts,
+      unlockCutouts: s.unlockCutouts,
     }))
   );
 
@@ -53,6 +69,8 @@ export function CutoutEditor() {
   const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
 
   const canvasHeight = (CANVAS_WIDTH * binDepth) / binWidth;
+
+  const [gridSize, setGridSize] = useState(0.5);
 
   const {
     mode,
@@ -88,8 +106,18 @@ export function CutoutEditor() {
     onRemove: removeCutout,
     onAdd: addCutout,
     onGroup: groupCutouts,
+    onUngroup: ungroupCutouts,
+    onUpdateBatch: updateCutoutsBatch,
+    onRemoveBatch: removeCutoutsBatch,
+    onUndo: undo,
+    onRedo: redo,
+    canUndo,
+    canRedo,
+    onLock: lockCutouts,
+    onUnlock: unlockCutouts,
     binWidth,
     binDepth,
+    gridSize,
   });
 
   const t = useTranslation();
@@ -104,7 +132,7 @@ export function CutoutEditor() {
   const handleBackgroundPointerDown = useCallback(
     (worldX: number, worldY: number, _nativeEvent: PointerEvent) => {
       if (mode.type === 'placing') {
-        setMode({ type: 'drawing', shape: mode.shape, startMmX: worldX, startMmY: worldY });
+        setMode({ type: 'pending-place', shape: mode.shape, startMmX: worldX, startMmY: worldY });
         return;
       }
 
@@ -119,6 +147,7 @@ export function CutoutEditor() {
   const handleCanvasPointerMove = useCallback(
     (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
       if (
+        mode.type === 'pending-place' ||
         mode.type === 'dragging' ||
         mode.type === 'resizing' ||
         mode.type === 'rotating' ||
@@ -143,6 +172,7 @@ export function CutoutEditor() {
 
   const handleCanvasPointerUp = useCallback(() => {
     if (
+      mode.type === 'pending-place' ||
       mode.type === 'dragging' ||
       mode.type === 'resizing' ||
       mode.type === 'rotating' ||
@@ -249,6 +279,21 @@ export function CutoutEditor() {
             updateCutout(id, pos);
           }
         },
+        dividerAfter: true,
+      });
+
+      const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
+      const allLocked = selectedCutouts.every((c) => c.locked);
+
+      actions.push({
+        label: allLocked
+          ? t('binDesigner.cutoutEditor.unlock')
+          : t('binDesigner.cutoutEditor.lock'),
+        onClick: () => {
+          const ids = [...selection];
+          if (allLocked) unlockCutouts(ids);
+          else lockCutouts(ids);
+        },
       });
     }
 
@@ -265,16 +310,20 @@ export function CutoutEditor() {
     updateCutout,
     binWidth,
     binDepth,
+    lockCutouts,
+    unlockCutouts,
     t,
   ]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 select-none">
       <CutoutShapeToolbar
         mode={mode}
         onSelectShape={setMode}
         snapEnabled={snapEnabled}
         onSnapToggle={setSnapEnabled}
+        gridSize={gridSize}
+        onGridSizeChange={setGridSize}
       />
 
       {/* WebGL Canvas */}

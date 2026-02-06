@@ -56,6 +56,7 @@ export function RotationHandle3D({ cutout, onRotateStart }: RotationHandle3DProp
   );
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
+    if (e.nativeEvent.button !== 0) return; // Only left-click
     e.stopPropagation();
 
     // Compute starting angle from cutout center to pointer in world coords
@@ -68,13 +69,17 @@ export function RotationHandle3D({ cutout, onRotateStart }: RotationHandle3DProp
 
   return (
     <group renderOrder={RENDER_ORDER.ROTATION_HANDLE}>
-      {/* Connector line */}
-      <lineSegments geometry={lineGeometry}>
-        <lineBasicMaterial color={handleColor} transparent opacity={0.5} depthTest={false} />
+      {/* Connector line — thin and subtle */}
+      <lineSegments geometry={lineGeometry} renderOrder={RENDER_ORDER.ROTATION_HANDLE}>
+        <lineBasicMaterial color={handleColor} transparent opacity={0.3} depthTest={false} />
       </lineSegments>
 
       {/* Handle circle */}
-      <mesh position={[handleX, handleY, 0.05]} onPointerDown={handlePointerDown}>
+      <mesh
+        position={[handleX, handleY, 0.05]}
+        renderOrder={RENDER_ORDER.ROTATION_HANDLE}
+        onPointerDown={handlePointerDown}
+      >
         <primitive object={circleGeometry} attach="geometry" />
         <meshBasicMaterial color={handleColor} depthTest={false} />
       </mesh>

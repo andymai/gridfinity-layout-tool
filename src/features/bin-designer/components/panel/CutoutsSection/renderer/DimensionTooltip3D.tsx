@@ -34,7 +34,7 @@ export function DimensionTooltip3D({
 }: DimensionTooltip3DProps) {
   const text =
     type === 'resize'
-      ? `${width?.toFixed(1)}\u00D7${depth?.toFixed(1)}`
+      ? `${width?.toFixed(1)} \u00D7 ${depth?.toFixed(1)}`
       : `${x?.toFixed(1)}, ${y?.toFixed(1)}`;
 
   return (

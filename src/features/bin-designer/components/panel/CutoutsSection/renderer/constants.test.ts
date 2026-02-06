@@ -8,7 +8,8 @@ import {
   HANDLE_COLOR,
   HANDLE_STROKE_COLOR,
   CORNER_HANDLE_SIZE,
-  EDGE_HANDLE_SIZE,
+  EDGE_HANDLE_WIDTH,
+  EDGE_HANDLE_HEIGHT,
   ROTATION_HANDLE_OFFSET_PX,
   ROTATION_HANDLE_RADIUS_PX,
   LARGE_BIN_THRESHOLD,
@@ -19,6 +20,8 @@ describe('constants', () => {
     it('defines render order layers', () => {
       expect(RENDER_ORDER.BACKGROUND).toBe(0);
       expect(RENDER_ORDER.SHAPES).toBe(10);
+      expect(RENDER_ORDER.GROUP_FILL).toBe(11);
+      expect(RENDER_ORDER.GROUP_STROKE).toBe(12);
       expect(RENDER_ORDER.SMART_GUIDES).toBe(20);
       expect(RENDER_ORDER.DRAWING_PREVIEW).toBe(25);
       expect(RENDER_ORDER.GROUP_BOUNDS).toBe(30);
@@ -58,11 +61,15 @@ describe('constants', () => {
 
   describe('handle size constants', () => {
     it('defines CORNER_HANDLE_SIZE', () => {
-      expect(CORNER_HANDLE_SIZE).toBe(8);
+      expect(CORNER_HANDLE_SIZE).toBe(10);
     });
 
-    it('defines EDGE_HANDLE_SIZE', () => {
-      expect(EDGE_HANDLE_SIZE).toBe(6);
+    it('defines EDGE_HANDLE_WIDTH', () => {
+      expect(EDGE_HANDLE_WIDTH).toBe(8);
+    });
+
+    it('defines EDGE_HANDLE_HEIGHT', () => {
+      expect(EDGE_HANDLE_HEIGHT).toBe(4);
     });
 
     it('defines ROTATION_HANDLE_OFFSET_PX', () => {

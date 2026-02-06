@@ -12,18 +12,46 @@
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { RENDER_ORDER, LARGE_BIN_THRESHOLD } from './constants';
+import { RENDER_ORDER, LARGE_BIN_THRESHOLD, DOT_RADIUS_PX } from './constants';
 
 interface EditorBackground3DProps {
   readonly binWidth: number;
   readonly binDepth: number;
+  readonly zoom: number;
+  readonly binColor: string;
 }
 
-/** Shared tiny circle geometry for instanced dots */
-const DOT_GEOMETRY = new THREE.CircleGeometry(0.3, 8);
+/** Compute dot spacing based on zoom and bin size */
+function getDotInterval(binWidth: number, binDepth: number, zoom: number): number {
+  const area = binWidth * binDepth;
+  const isLarge = area > LARGE_BIN_THRESHOLD;
+  // Adaptive: at very high zoom, thin out dots since rulers show scale
+  if (zoom > 15) return isLarge ? 10 : 5;
+  if (zoom > 8) return isLarge ? 5 : 2;
+  return isLarge ? 2 : 1;
+}
 
-export function EditorBackground3D({ binWidth, binDepth }: EditorBackground3DProps) {
-  const dotInterval = binWidth * binDepth > LARGE_BIN_THRESHOLD ? 2 : 1;
+export function EditorBackground3D({
+  binWidth,
+  binDepth,
+  zoom,
+  binColor,
+}: EditorBackground3DProps) {
+  const dotInterval = getDotInterval(binWidth, binDepth, zoom);
+
+  // Constant screen-size dot radius (convert screen px to world mm)
+  const dotRadius = DOT_RADIUS_PX / zoom;
+
+  // Dots contrast against the bin surface: darken for light surfaces, lighten for dark
+  const binLuminance = useMemo(
+    () => new THREE.Color(binColor).getHSL({ h: 0, s: 0, l: 0 }).l,
+    [binColor]
+  );
+  const dotColor = binLuminance > 0.5 ? '#000000' : '#ffffff';
+  const dotOpacity = binLuminance > 0.5 ? 0.12 : 0.1;
+
+  // Dot geometry recreated when zoom changes (screen-space sizing)
+  const dotGeometry = useMemo(() => new THREE.CircleGeometry(dotRadius, 6), [dotRadius]);
 
   // Build instanced mesh matrices for grid dots
   const { matrices, count } = useMemo(() => {
@@ -77,16 +105,16 @@ export function EditorBackground3D({ binWidth, binDepth }: EditorBackground3DPro
 
   return (
     <group renderOrder={RENDER_ORDER.BACKGROUND}>
-      {/* Bin area fill — elevated surface */}
+      {/* Bin area fill — uses user's selected preview color */}
       <mesh position={[binWidth / 2, binDepth / 2, 0]}>
         <planeGeometry args={[binWidth, binDepth]} />
-        <meshBasicMaterial color="#252530" depthTest={false} />
+        <meshBasicMaterial color={binColor} depthTest={false} />
       </mesh>
 
       {/* Dot grid via InstancedMesh */}
       {count > 0 && (
         <instancedMesh
-          args={[DOT_GEOMETRY, undefined, count]}
+          args={[dotGeometry, undefined, count]}
           ref={(mesh) => {
             if (!mesh) return;
             for (let i = 0; i < matrices.length; i++) {
@@ -95,23 +123,23 @@ export function EditorBackground3D({ binWidth, binDepth }: EditorBackground3DPro
             mesh.instanceMatrix.needsUpdate = true;
           }}
         >
-          <meshBasicMaterial color="#888888" transparent opacity={0.35} depthTest={false} />
+          <meshBasicMaterial color={dotColor} transparent opacity={dotOpacity} depthTest={false} />
         </instancedMesh>
       )}
 
       {/* Bin boundary */}
       <lineLoop geometry={boundaryGeometry}>
-        <lineBasicMaterial color="#555555" linewidth={2} depthTest={false} />
+        <lineBasicMaterial color={dotColor} transparent opacity={0.25} depthTest={false} />
       </lineLoop>
 
-      {/* Center crosshair — dashed */}
+      {/* Center crosshair — very subtle */}
       <lineSegments geometry={crosshairGeometry}>
         <lineDashedMaterial
-          color="#555555"
+          color={dotColor}
           dashSize={2}
-          gapSize={1}
+          gapSize={2}
           transparent
-          opacity={0.4}
+          opacity={0.08}
           depthTest={false}
         />
       </lineSegments>

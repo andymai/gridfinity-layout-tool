@@ -7,7 +7,7 @@
  * World coordinates: mm, Y-up. No SVG Y-inversion needed.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import type { RootState } from '@react-three/fiber';
 import type { Cutout, CutoutShape as CutoutShapeType } from '@/features/bin-designer/types';
@@ -15,6 +15,29 @@ import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInte
 import type { AlignmentGuide } from '../geometry';
 import { computeBounds } from '../geometry';
 import { SceneContent } from './SceneContent';
+
+/** Read the user's selected bin preview color */
+const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
+const DEFAULT_BIN_COLOR = '#d4d8dc';
+
+function useBinPreviewColor(): string {
+  const [color, setColor] = useState(() => {
+    try {
+      return localStorage.getItem(PREVIEW_COLOR_KEY) ?? DEFAULT_BIN_COLOR;
+    } catch {
+      return DEFAULT_BIN_COLOR;
+    }
+  });
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail) setColor(detail);
+    };
+    window.addEventListener('preview-color-change', handler);
+    return () => window.removeEventListener('preview-color-change', handler);
+  }, []);
+  return color;
+}
 
 interface DrawingPreview {
   readonly x: number;
@@ -47,7 +70,7 @@ export interface CutoutCanvas3DProps {
   // Shape callbacks
   readonly onSelectCutout: (id: string, additive: boolean) => void;
   readonly onDoubleClickCutout: (id: string) => void;
-  readonly onDragStart?: (id: string, mmX: number, mmY: number) => void;
+  readonly onDragStart?: (id: string, mmX: number, mmY: number, altKey?: boolean) => void;
   readonly onResizeStart: (id: string, handle: ResizeHandle, mmX: number, mmY: number) => void;
   readonly onRotateStart: (id: string, startAngle: number) => void;
   readonly onGroupRotateStart: (startAngle: number) => void;
@@ -83,6 +106,7 @@ export function CutoutCanvas3D({
   externalZoom,
   externalCameraCenter,
 }: CutoutCanvas3DProps) {
+  const binColor = useBinPreviewColor();
   const isDragging = mode.type === 'dragging';
   const isResizing = mode.type === 'resizing';
   const isInteracting =
@@ -91,6 +115,30 @@ export function CutoutCanvas3D({
     mode.type === 'rotating' ||
     mode.type === 'group-rotating' ||
     mode.type === 'group-scaling';
+
+  // Determine cursor style based on interaction mode
+  const cursorStyle = useMemo(() => {
+    if (mode.type === 'placing' || mode.type === 'pending-place' || mode.type === 'drawing') {
+      return 'crosshair';
+    }
+    if (mode.type === 'dragging') {
+      return 'move';
+    }
+    if (mode.type === 'resizing') {
+      const handle = mode.handle;
+      if (handle === 'nw' || handle === 'se') return 'nwse-resize';
+      if (handle === 'ne' || handle === 'sw') return 'nesw-resize';
+      if (handle === 'n' || handle === 's') return 'ns-resize';
+      if (handle === 'e' || handle === 'w') return 'ew-resize';
+    }
+    if (mode.type === 'rotating' || mode.type === 'group-rotating') {
+      return 'grabbing';
+    }
+    if (mode.type === 'group-scaling') {
+      return 'nwse-resize';
+    }
+    return 'default';
+  }, [mode]);
 
   // Memoize dragStart ref so CutoutShapeMesh (React.memo) doesn't re-render on mode changes
   const memoizedDragStart = useMemo(
@@ -177,14 +225,14 @@ export function CutoutCanvas3D({
     <Canvas
       orthographic
       frameloop="demand"
-      style={{ width: canvasWidth, height: canvasHeight }}
+      style={{ width: canvasWidth, height: canvasHeight, cursor: cursorStyle }}
       camera={{
         position: [binWidth / 2, binDepth / 2, 100],
         zoom: defaultZoom,
         near: 0.1,
         far: 1000,
       }}
-      gl={{ antialias: true }}
+      gl={{ antialias: true, stencil: true }}
       onCreated={handleCreated}
       onContextMenu={(e) => e.preventDefault()}
     >
@@ -192,6 +240,7 @@ export function CutoutCanvas3D({
         cutouts={cutouts}
         binWidth={binWidth}
         binDepth={binDepth}
+        binColor={binColor}
         selection={selection}
         preview={preview}
         mode={mode}

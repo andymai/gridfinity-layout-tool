@@ -6,7 +6,7 @@
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { RENDER_ORDER } from './constants';
+import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
 
 interface MarqueeBox3DProps {
   /** Marquee origin X in mm */
@@ -19,7 +19,7 @@ interface MarqueeBox3DProps {
   readonly depth: number;
 }
 
-const ACCENT_COLOR = new THREE.Color('#6366f1');
+const ACCENT_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
 
 export function MarqueeBox3D({ x, y, width, depth }: MarqueeBox3DProps) {
   // Normalize to positive dimensions

@@ -8,7 +8,7 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { CutoutShape } from '@/features/bin-designer/types';
-import { RENDER_ORDER } from './constants';
+import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
 
 interface DrawingPreview3DProps {
   readonly x: number;
@@ -18,7 +18,7 @@ interface DrawingPreview3DProps {
   readonly shape: CutoutShape;
 }
 
-const ACCENT_COLOR = new THREE.Color('#6366f1');
+const ACCENT_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
 
 export function DrawingPreview3D({ x, y, width, depth, shape }: DrawingPreview3DProps) {
   const lineObj = useMemo(() => {

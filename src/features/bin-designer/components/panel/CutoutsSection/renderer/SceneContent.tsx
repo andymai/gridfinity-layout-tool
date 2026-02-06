@@ -17,6 +17,7 @@ import { CutoutHandles3D } from './CutoutHandles3D';
 import { RotationHandle3D } from './RotationHandle3D';
 import { SmartGuides3D } from './SmartGuides3D';
 import { DimensionTooltip3D } from './DimensionTooltip3D';
+import { DimensionAnnotations3D } from './DimensionAnnotations3D';
 import { DrawingPreview3D } from './DrawingPreview3D';
 import { GroupBounds3D } from './GroupBounds3D';
 import { MarqueeBox3D } from './MarqueeBox3D';
@@ -58,12 +59,13 @@ export interface SceneContentProps {
   readonly cutouts: readonly Cutout[];
   readonly binWidth: number;
   readonly binDepth: number;
+  readonly binColor: string;
   readonly selection: ReadonlySet<string>;
   readonly preview: PreviewMap;
   readonly mode: InteractionMode;
   readonly isDragging: boolean;
   readonly isInteracting: boolean;
-  readonly memoizedDragStart?: (id: string, mmX: number, mmY: number) => void;
+  readonly memoizedDragStart?: (id: string, mmX: number, mmY: number, altKey?: boolean) => void;
   readonly selectedCutout: Cutout | null;
   readonly tooltipInfo: TooltipInfo | null;
   readonly groupBounds: GroupBoundsData | null;
@@ -93,6 +95,7 @@ export function SceneContent({
   cutouts,
   binWidth,
   binDepth,
+  binColor,
   selection,
   preview,
   isDragging,
@@ -144,11 +147,16 @@ export function SceneContent({
 
   return (
     <>
-      {/* Scene clear color — matches --bg-primary */}
-      <color attach="background" args={['#0f0f12']} />
+      {/* Scene clear color — matches 3D preview background */}
+      <color attach="background" args={['#1a1a22']} />
 
-      {/* Background grid and crosshair */}
-      <EditorBackground3D binWidth={binWidth} binDepth={binDepth} />
+      {/* Background grid and bin surface */}
+      <EditorBackground3D
+        binWidth={binWidth}
+        binDepth={binDepth}
+        zoom={camera.zoom}
+        binColor={binColor}
+      />
 
       {/* Interaction plane for background clicks and pointer tracking */}
       <InteractionPlane
@@ -163,36 +171,89 @@ export function SceneContent({
         onPointerUp={onPointerUp}
       />
 
-      {/* Cutout shapes */}
-      {cutouts.map((cutout) => (
-        <CutoutShapeMesh
-          key={cutout.id}
-          cutout={cutout}
-          isSelected={selection.has(cutout.id)}
-          isGrouped={cutout.groupId !== null}
-          isDragging={isDragging && selection.has(cutout.id)}
-          previewOverrides={preview.get(cutout.id)}
-          onSelect={onSelectCutout}
-          onDoubleClick={onDoubleClickCutout}
-          onDragStart={memoizedDragStart}
-        />
-      ))}
+      {/* Ungrouped cutout shapes — normal rendering */}
+      {cutouts
+        .filter((c) => c.groupId === null)
+        .map((cutout) => (
+          <CutoutShapeMesh
+            key={cutout.id}
+            cutout={cutout}
+            isSelected={selection.has(cutout.id)}
+            isGrouped={false}
+            isDragging={isDragging && selection.has(cutout.id)}
+            previewOverrides={preview.get(cutout.id)}
+            binColor={binColor}
+            onSelect={onSelectCutout}
+            onDoubleClick={onDoubleClickCutout}
+            onDragStart={memoizedDragStart}
+          />
+        ))}
+
+      {/* Grouped cutouts — stencil fill pass (interactive, handles pointer events) */}
+      {cutouts
+        .filter((c) => c.groupId !== null)
+        .map((cutout) => (
+          <CutoutShapeMesh
+            key={`${cutout.id}-fill`}
+            cutout={cutout}
+            isSelected={selection.has(cutout.id)}
+            isGrouped={true}
+            isDragging={isDragging && selection.has(cutout.id)}
+            previewOverrides={preview.get(cutout.id)}
+            binColor={binColor}
+            renderMode="fill"
+            onSelect={onSelectCutout}
+            onDoubleClick={onDoubleClickCutout}
+            onDragStart={memoizedDragStart}
+          />
+        ))}
+      {/* Grouped cutouts — stencil stroke pass (visual-only, no interaction) */}
+      {cutouts
+        .filter((c) => c.groupId !== null)
+        .map((cutout) => (
+          <CutoutShapeMesh
+            key={`${cutout.id}-stroke`}
+            cutout={cutout}
+            isSelected={selection.has(cutout.id)}
+            isGrouped={true}
+            isDragging={isDragging && selection.has(cutout.id)}
+            previewOverrides={preview.get(cutout.id)}
+            binColor={binColor}
+            renderMode="stroke"
+            onSelect={onSelectCutout}
+            onDoubleClick={onDoubleClickCutout}
+            onDragStart={memoizedDragStart}
+          />
+        ))}
 
       {/* Smart guides during drag */}
       {isDragging && (
-        <SmartGuides3D guides={activeGuides} binWidth={binWidth} binDepth={binDepth} />
+        <SmartGuides3D
+          guides={activeGuides}
+          binWidth={binWidth}
+          binDepth={binDepth}
+          zoom={camera.zoom}
+        />
       )}
 
-      {/* Dimension tooltip during drag or resize */}
-      {tooltipInfo && (
+      {/* Dimension tooltip during resize (not drag — position shown in inspector) */}
+      {tooltipInfo && tooltipInfo.type === 'resize' && (
         <DimensionTooltip3D
           type={tooltipInfo.type}
-          width={tooltipInfo.type === 'resize' ? tooltipInfo.width : undefined}
-          depth={tooltipInfo.type === 'resize' ? tooltipInfo.depth : undefined}
-          x={tooltipInfo.type === 'drag' ? tooltipInfo.x : undefined}
-          y={tooltipInfo.type === 'drag' ? tooltipInfo.y : undefined}
+          width={tooltipInfo.width}
+          depth={tooltipInfo.depth}
           worldX={tooltipInfo.worldX}
           worldY={tooltipInfo.worldY}
+        />
+      )}
+
+      {/* Dimension annotations for selected cutouts (high zoom only) */}
+      {!isInteracting && (
+        <DimensionAnnotations3D
+          cutouts={cutouts}
+          selection={selection}
+          preview={preview}
+          zoom={camera.zoom}
         />
       )}
 

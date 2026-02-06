@@ -568,8 +568,9 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
         break;
       }
       case 'rounded-rect': {
+        const maxR = Math.min(insert.width, insert.depth) / 2 - 0.01;
         solid = sketch(
-          drawRoundedRectangle(insert.width, insert.depth, insert.cornerRadius),
+          drawRoundedRectangle(insert.width, insert.depth, Math.min(insert.cornerRadius, maxR)),
           'XY'
         ).extrude(insert.cutDepth);
         break;
@@ -605,6 +606,51 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
 
 // ─── Cutout Builder (Solid Mode Only) ────────────────────────────────────────
 
+/** Create an extruded + rotated cutout shape centered at origin (no translation). */
+function buildCutoutShape(cutout: {
+  readonly shape: string;
+  readonly width: number;
+  readonly depth: number;
+  readonly cutDepth: number;
+  readonly rotation: number;
+  readonly cornerRadius: number;
+}): Shape3D {
+  let shape: Shape3D;
+
+  switch (cutout.shape) {
+    case 'circle': {
+      const rx = cutout.width / 2;
+      const ry = cutout.depth / 2;
+      if (Math.abs(rx - ry) < 0.01) {
+        shape = sketch(drawCircle(rx), 'XY').extrude(cutout.cutDepth);
+      } else {
+        shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
+      }
+      break;
+    }
+    case 'rectangle':
+    default: {
+      if (cutout.cornerRadius > 0) {
+        const maxCR = Math.min(cutout.width, cutout.depth) / 2 - 0.01;
+        shape = sketch(
+          drawRoundedRectangle(cutout.width, cutout.depth, Math.min(cutout.cornerRadius, maxCR)),
+          'XY'
+        ).extrude(cutout.cutDepth);
+      } else {
+        shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+      }
+      break;
+    }
+  }
+
+  // Apply rotation around Z axis (at origin, before translation)
+  if (cutout.rotation !== 0) {
+    shape = shape.rotate(-cutout.rotation, [0, 0, 0], [0, 0, 1]);
+  }
+
+  return shape;
+}
+
 /**
  * Build cutout cavity cuts for solid bins.
  * Cutouts cut down from the top surface with configurable depth.
@@ -630,44 +676,37 @@ function buildCutoutCuts(
 
   const cutoutShapes: Shape3D[] = [];
 
+  // Partition cutouts by groupId: null → ungrouped, same groupId → collected
+  const ungrouped: typeof params.cutouts = [];
+  const groups = new Map<string, typeof params.cutouts>();
   for (const cutout of params.cutouts) {
-    let shape: Shape3D;
-
-    switch (cutout.shape) {
-      case 'circle': {
-        // True ellipse: independent width (X) and depth (Y) radii
-        const rx = cutout.width / 2;
-        const ry = cutout.depth / 2;
-        if (Math.abs(rx - ry) < 0.01) {
-          shape = sketch(drawCircle(rx), 'XY').extrude(cutout.cutDepth);
-        } else {
-          shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
-        }
-        break;
-      }
-      case 'rectangle':
-      default: {
-        if (cutout.cornerRadius > 0) {
-          shape = sketch(
-            drawRoundedRectangle(cutout.width, cutout.depth, cutout.cornerRadius),
-            'XY'
-          ).extrude(cutout.cutDepth);
-        } else {
-          shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
-        }
-        break;
+    if (cutout.groupId === null) {
+      ungrouped.push(cutout);
+    } else {
+      const list = groups.get(cutout.groupId);
+      if (list) {
+        list.push(cutout);
+      } else {
+        groups.set(cutout.groupId, [cutout]);
       }
     }
+  }
 
-    // Apply rotation around Z axis (at origin, before translation)
-    if (cutout.rotation !== 0) {
-      shape = shape.rotate(-cutout.rotation, [0, 0, 0], [0, 0, 1]);
+  // --- Process ungrouped cutouts (individual scoop, same as before) ---
+  for (const cutout of ungrouped) {
+    let shape = buildCutoutShape(cutout);
+
+    // Apply scoop radius fillet to bottom edges (before translation, at Z ≈ 0)
+    const maxScoop = Math.min(cutout.cutDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
+    const scoopR = Math.min(cutout.scoopRadius ?? 0, Math.max(0, maxScoop));
+    if (scoopR > 0) {
+      const halfW = cutout.width / 2 + 1;
+      const halfD = cutout.depth / 2 + 1;
+      shape = unwrap(
+        shape.fillet(scoopR, (e) => e.inBox([-halfW, -halfD, -0.01], [halfW, halfD, 0.01]))
+      );
     }
 
-    // Position: x,y from UI are bottom-left corner of cutout relative to interior origin.
-    // brepjs shapes are centered at origin, so add half-size to get center.
-    // Then offset by interior origin to convert to model-centered coordinates.
-    // Z: top of cut sits at wallHeight, extends downward by cutDepth.
     cutoutShapes.push(
       shape.translate([
         originX + cutout.x + cutout.width / 2,
@@ -677,7 +716,69 @@ function buildCutoutCuts(
     );
   }
 
-  return unwrap(fuseAll(cutoutShapes));
+  // --- Process grouped cutouts (fuse first, then single scoop fillet) ---
+  for (const [, groupMembers] of groups) {
+    // Create and translate each member shape (no individual scoop)
+    const memberShapes: Shape3D[] = [];
+    for (const cutout of groupMembers) {
+      const shape = buildCutoutShape(cutout);
+      memberShapes.push(
+        shape.translate([
+          originX + cutout.x + cutout.width / 2,
+          originY + cutout.y + cutout.depth / 2,
+          wallHeight - cutout.cutDepth,
+        ])
+      );
+    }
+
+    let fused = memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes));
+
+    // Determine group scoop radius and cut depth
+    const groupScoopRadius = Math.max(...groupMembers.map((c) => c.scoopRadius ?? 0));
+    const groupCutDepth = Math.min(...groupMembers.map((c) => c.cutDepth));
+    const minDim = Math.min(...groupMembers.map((c) => Math.min(c.width, c.depth)));
+    const maxScoop = Math.min(groupCutDepth, minDim / 2) - 0.01;
+    const scoopR = Math.min(groupScoopRadius, Math.max(0, maxScoop));
+
+    if (scoopR > 0) {
+      // Compute XY bounding box of the fused group for edge selection
+      const groupBounds = {
+        minX: Infinity,
+        minY: Infinity,
+        maxX: -Infinity,
+        maxY: -Infinity,
+      };
+      for (const cutout of groupMembers) {
+        const cx = originX + cutout.x + cutout.width / 2;
+        const cy = originY + cutout.y + cutout.depth / 2;
+        // Account for rotation: use diagonal as safe half-extent
+        const diag = Math.sqrt(cutout.width ** 2 + cutout.depth ** 2) / 2;
+        groupBounds.minX = Math.min(groupBounds.minX, cx - diag);
+        groupBounds.minY = Math.min(groupBounds.minY, cy - diag);
+        groupBounds.maxX = Math.max(groupBounds.maxX, cx + diag);
+        groupBounds.maxY = Math.max(groupBounds.maxY, cy + diag);
+      }
+
+      const zBottom = wallHeight - groupCutDepth;
+      fused = unwrap(
+        fused.fillet(scoopR, (e) =>
+          e.inBox(
+            [groupBounds.minX - 1, groupBounds.minY - 1, zBottom - 0.01],
+            [groupBounds.maxX + 1, groupBounds.maxY + 1, zBottom + 0.01]
+          )
+        )
+      );
+    }
+
+    cutoutShapes.push(fused);
+  }
+
+  const fused = unwrap(fuseAll(cutoutShapes));
+
+  // Clip cutout union to bin interior so cutouts extending past walls don't
+  // cut through them. The clip boundary covers the full Z range of cutouts.
+  const clipBoundary = sketch(drawRectangle(innerW, innerD), 'XY', 0).extrude(wallHeight);
+  return unwrap(fused.intersect(clipBoundary));
 }
 
 // ─── Label Tab Builder ───────────────────────────────────────────────────────

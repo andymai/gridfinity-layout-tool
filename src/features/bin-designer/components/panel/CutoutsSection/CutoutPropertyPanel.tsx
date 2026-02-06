@@ -99,6 +99,16 @@ export function CutoutPropertyPanel({
           />
         )}
         <SliderInput
+          label={t('binDesigner.cutouts.scoopRadius')}
+          value={cutout.scoopRadius ?? 0}
+          onChange={(scoopRadius) => onUpdate(cutout.id, { scoopRadius })}
+          min={0}
+          max={Math.min(cutout.cutDepth, Math.min(cutout.width, cutout.depth) / 2)}
+          step={0.5}
+          unit="mm"
+          disabled={disabled}
+        />
+        <SliderInput
           label={t('binDesigner.cutouts.rotation')}
           value={cutout.rotation}
           onChange={(rotation) => {

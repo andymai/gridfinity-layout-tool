@@ -231,6 +231,14 @@ export interface Cutout {
   readonly label: string;
   /** Group ID for boolean union (null = ungrouped) */
   readonly groupId: string | null;
+  /** Scoop radius in mm — fillets the bottom edges of the cutout for easy access */
+  readonly scoopRadius?: number;
+  /** When true, the cutout cannot be moved, resized, or rotated */
+  readonly locked?: boolean;
+  /** When true, the cutout is not rendered or selectable (faint ghost only) */
+  readonly hidden?: boolean;
+  /** Z-order for rendering layering (higher = rendered on top) */
+  readonly zIndex?: number;
 }
 
 // =============================================================================
@@ -362,6 +370,8 @@ export interface DesignerState {
   history: DesignerHistory;
   wasmStatus: WasmStatus;
   ui: DesignerUIState;
+  /** Transaction nesting depth — when > 0, pushHistoryEntry is suppressed */
+  transactionDepth: number;
 
   // Persistence
   currentDesignId: string | null;
@@ -420,6 +430,23 @@ export interface DesignerState {
   duplicateCutouts: (cutoutIds: readonly string[]) => void;
   groupCutouts: (cutoutIds: readonly string[]) => void;
   ungroupCutouts: (cutoutIds: readonly string[]) => void;
+
+  // Transaction + batch cutout actions
+  startTransaction: () => void;
+  commitTransaction: () => void;
+  updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
+  removeCutoutsBatch: (ids: readonly string[]) => void;
+
+  // Lock/hide/layer ordering actions
+  lockCutouts: (ids: readonly string[]) => void;
+  unlockCutouts: (ids: readonly string[]) => void;
+  hideCutouts: (ids: readonly string[]) => void;
+  showCutouts: (ids: readonly string[]) => void;
+  showAllCutouts: () => void;
+  bringForward: (ids: readonly string[]) => void;
+  sendBackward: (ids: readonly string[]) => void;
+  bringToFront: (ids: readonly string[]) => void;
+  sendToBack: (ids: readonly string[]) => void;
 
   // Generation actions
   setGenerationStatus: (status: GenerationStatus) => void;
