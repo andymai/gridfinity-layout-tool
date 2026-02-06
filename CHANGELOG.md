@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.30.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.29.0...gridfinity-layout-tool-v2.30.0) (2026-02-06)
+
+
+### Features
+
+* add AbortSignal cancellation for mid-operation generation abort ([#640](https://github.com/andymai/gridfinity-layout-tool/issues/640)) ([ac1cb55](https://github.com/andymai/gridfinity-layout-tool/commit/ac1cb550102caf3855985848a286fa7f40e0f242))
+
 ## [2.29.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.28.0...gridfinity-layout-tool-v2.29.0) (2026-02-06)
 
 
