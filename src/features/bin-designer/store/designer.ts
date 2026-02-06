@@ -276,6 +276,7 @@ export const useDesignerStore = create<DesignerState>()(
           state.generation.mesh = {
             vertices: previous.mesh.vertices,
             normals: previous.mesh.normals,
+            indices: previous.mesh.indices,
             error: null,
             timingMs: 0,
           };
@@ -313,6 +314,7 @@ export const useDesignerStore = create<DesignerState>()(
           state.generation.mesh = {
             vertices: next.mesh.vertices,
             normals: next.mesh.normals,
+            indices: next.mesh.indices,
             error: null,
             timingMs: 0,
           };
@@ -463,11 +465,12 @@ export const useDesignerStore = create<DesignerState>()(
       });
 
       // Cache the mesh for the next history push
-      if (result.vertices && result.normals) {
+      if (result.vertices && result.normals && result.indices) {
         pendingMeshCache = createCachedMesh(
           result.vertices,
           result.normals,
-          Math.floor(result.vertices.length / 9) // 3 vertices per triangle, 3 floats each
+          result.indices,
+          result.indices.length / 3
         );
       } else {
         pendingMeshCache = null;

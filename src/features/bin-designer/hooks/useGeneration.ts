@@ -63,6 +63,7 @@ export function useGeneration(): void {
         setGenerationResult({
           vertices: null,
           normals: null,
+          indices: null,
           error: compartmentCheck.error.message,
           timingMs: 0,
         });
@@ -81,6 +82,7 @@ export function useGeneration(): void {
         setGenerationResult({
           vertices: result.mesh.vertices,
           normals: result.mesh.normals,
+          indices: result.mesh.indices,
           error: null,
           timingMs: result.timingMs,
         });
@@ -94,6 +96,7 @@ export function useGeneration(): void {
         setGenerationResult({
           vertices: null,
           normals: null,
+          indices: null,
           error: e instanceof Error ? e.message : String(e),
           timingMs: 0,
         });

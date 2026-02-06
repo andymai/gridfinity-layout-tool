@@ -11,10 +11,14 @@ import type { HistoryEntry, CachedMesh } from '../types';
 const MAX_CACHE_BYTES = 100 * 1024 * 1024; // 100MB
 
 /**
- * Calculate the byte size of a cached mesh (vertices + normals Float32Arrays).
+ * Calculate the byte size of a cached mesh (vertices + normals + indices).
  */
-export function meshByteSize(vertices: Float32Array, normals: Float32Array): number {
-  return vertices.byteLength + normals.byteLength;
+export function meshByteSize(
+  vertices: Float32Array,
+  normals: Float32Array,
+  indices: Uint32Array
+): number {
+  return vertices.byteLength + normals.byteLength + indices.byteLength;
 }
 
 /**
@@ -23,13 +27,15 @@ export function meshByteSize(vertices: Float32Array, normals: Float32Array): num
 export function createCachedMesh(
   vertices: Float32Array,
   normals: Float32Array,
+  indices: Uint32Array,
   triangleCount: number
 ): CachedMesh {
   return {
     vertices,
     normals,
+    indices,
     triangleCount,
-    byteSize: meshByteSize(vertices, normals),
+    byteSize: meshByteSize(vertices, normals, indices),
   };
 }
 

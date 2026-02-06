@@ -7,26 +7,29 @@ function makeEntry(meshSize: number | null): HistoryEntry {
   if (meshSize === null) {
     return { params: { ...DEFAULT_BIN_PARAMS }, mesh: null };
   }
-  // Each float = 4 bytes, meshSize = total bytes, so floats = meshSize / 4
-  // Split evenly between vertices and normals
-  const floatCount = meshSize / 8; // half for each array
+  // Distribute bytes: ~40% vertices, ~40% normals, ~20% indices
+  // vertices + normals each get meshSize * 2/5, indices gets meshSize * 1/5
+  const floatCount = Math.floor((meshSize * 2) / (5 * 4)); // floats for vertices (and normals)
+  const indexCount = Math.floor(meshSize / (5 * 4)); // uint32s for indices
   const vertices = new Float32Array(floatCount);
   const normals = new Float32Array(floatCount);
+  const indices = new Uint32Array(indexCount);
   return {
     params: { ...DEFAULT_BIN_PARAMS },
-    mesh: createCachedMesh(vertices, normals, Math.floor(floatCount / 3)),
+    mesh: createCachedMesh(vertices, normals, indices, Math.floor(indexCount / 3)),
   };
 }
 
 describe('meshByteSize', () => {
-  it('should calculate total byte size of vertices + normals', () => {
+  it('should calculate total byte size of vertices + normals + indices', () => {
     const vertices = new Float32Array(300); // 300 * 4 = 1200 bytes
     const normals = new Float32Array(300); // 300 * 4 = 1200 bytes
-    expect(meshByteSize(vertices, normals)).toBe(2400);
+    const indices = new Uint32Array(100); // 100 * 4 = 400 bytes
+    expect(meshByteSize(vertices, normals, indices)).toBe(2800);
   });
 
   it('should return 0 for empty arrays', () => {
-    expect(meshByteSize(new Float32Array(0), new Float32Array(0))).toBe(0);
+    expect(meshByteSize(new Float32Array(0), new Float32Array(0), new Uint32Array(0))).toBe(0);
   });
 });
 
@@ -34,11 +37,13 @@ describe('createCachedMesh', () => {
   it('should create a CachedMesh with correct byteSize', () => {
     const vertices = new Float32Array(90);
     const normals = new Float32Array(90);
-    const result = createCachedMesh(vertices, normals, 30);
+    const indices = new Uint32Array(90); // 90 indices = 30 triangles
+    const result = createCachedMesh(vertices, normals, indices, 30);
     expect(result.triangleCount).toBe(30);
-    expect(result.byteSize).toBe(720); // 90*4 * 2
+    expect(result.byteSize).toBe(1080); // 90*4 * 3
     expect(result.vertices).toBe(vertices);
     expect(result.normals).toBe(normals);
+    expect(result.indices).toBe(indices);
   });
 });
 
@@ -99,8 +104,9 @@ describe('evictIfNeeded', () => {
     const entry: HistoryEntry = {
       params: customParams,
       mesh: createCachedMesh(
-        new Float32Array((60 * MB) / 8),
-        new Float32Array((60 * MB) / 8),
+        new Float32Array((60 * MB) / 12),
+        new Float32Array((60 * MB) / 12),
+        new Uint32Array((60 * MB) / 12),
         1000
       ),
     };

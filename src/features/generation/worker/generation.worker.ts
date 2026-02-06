@@ -163,13 +163,20 @@ function generate(params: BinParams, requestId: string): void {
 
     const timingMs = performance.now() - startTime;
 
-    respond({
+    const response: WorkerResponse = {
       type: 'MESH_RESULT',
       requestId,
       vertices: meshData.vertices,
       normals: meshData.normals,
+      indices: meshData.indices,
       triangleCount: meshData.triangleCount,
       timingMs,
+    };
+    // Transfer typed array buffers for zero-copy to main thread
+    self.postMessage(response, {
+      transfer: [meshData.vertices.buffer, meshData.normals.buffer, meshData.indices.buffer].filter(
+        (b) => b.byteLength > 0
+      ),
     });
   } catch (e) {
     if (activeRequestId !== requestId) return; // Cancelled during generation

@@ -7,7 +7,7 @@
 
 import { zipSync, strToU8 } from 'fflate';
 import { GenerationBridge } from '@/shared/generation/bridge';
-import { buildSTLBuffer } from '@/shared/generation/export';
+import { buildSTLBufferFromIndexed } from '@/shared/generation/export';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import type { CartItem } from '../types';
@@ -94,8 +94,13 @@ export async function batchExport(
       try {
         const result = await bridge.generateImmediate(item.params);
 
-        // Build binary STL
-        const stlBuffer = buildSTLBuffer(result.mesh.vertices, result.mesh.normals, item.name);
+        // Build binary STL from indexed mesh
+        const stlBuffer = buildSTLBufferFromIndexed(
+          result.mesh.vertices,
+          result.mesh.normals,
+          result.mesh.indices,
+          item.name
+        );
 
         files[fileName] = new Uint8Array(stlBuffer);
 
