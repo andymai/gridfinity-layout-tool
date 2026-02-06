@@ -215,6 +215,7 @@ export type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
 export interface GenerationResult {
   readonly vertices: Float32Array | null;
   readonly normals: Float32Array | null;
+  readonly indices: Uint32Array | null;
   readonly error: string | null;
   readonly timingMs: number;
 }
@@ -232,6 +233,7 @@ export interface GenerationState {
 export interface CachedMesh {
   readonly vertices: Float32Array;
   readonly normals: Float32Array;
+  readonly indices: Uint32Array;
   readonly triangleCount: number;
   readonly byteSize: number;
 }

@@ -32,8 +32,8 @@ export function ExportDialog() {
       useShallow((state) => ({
         exportDialogOpen: state.ui.exportDialogOpen,
         params: state.params,
-        triangleCount: state.generation.mesh?.vertices
-          ? state.generation.mesh.vertices.length / 9
+        triangleCount: state.generation.mesh?.indices
+          ? state.generation.mesh.indices.length / 3
           : 0,
         designName: state.designName,
         exportFileNameConfig: state.exportFileNameConfig,

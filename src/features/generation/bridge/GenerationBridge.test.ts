@@ -133,6 +133,7 @@ describe('GenerationBridge', () => {
         requestId: msg.payload.requestId,
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 0, 1]),
+        indices: new Uint32Array([0]),
         triangleCount: 1,
         timingMs: 42,
       });
@@ -172,6 +173,7 @@ describe('GenerationBridge', () => {
         requestId: msg.payload.requestId,
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 0, 1]),
+        indices: new Uint32Array([0]),
         triangleCount: 1,
         timingMs: 10,
       });
@@ -234,6 +236,7 @@ describe('GenerationBridge', () => {
         requestId: msg.payload.requestId,
         vertices: new Float32Array(9),
         normals: new Float32Array(9),
+        indices: new Uint32Array([0, 1, 2]),
         triangleCount: 1,
         timingMs: 5,
       });
@@ -268,6 +271,7 @@ describe('GenerationBridge', () => {
         requestId: msg.payload.requestId,
         vertices: new Float32Array(9),
         normals: new Float32Array(9),
+        indices: new Uint32Array([0, 1, 2]),
         triangleCount: 1,
         timingMs: 1,
       });

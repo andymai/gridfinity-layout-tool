@@ -113,6 +113,7 @@ export interface MeshResultResponse {
   readonly requestId: string;
   readonly vertices: Float32Array;
   readonly normals: Float32Array;
+  readonly indices: Uint32Array;
   readonly triangleCount: number;
   readonly timingMs: number;
 }
@@ -161,5 +162,6 @@ export type GenerationStage = 'base' | 'shell' | 'features' | 'merge' | 'splitti
 export interface MeshData {
   readonly vertices: Float32Array;
   readonly normals: Float32Array;
+  readonly indices: Uint32Array;
   readonly triangleCount: number;
 }

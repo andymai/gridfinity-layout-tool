@@ -36,6 +36,7 @@ class MockWorker {
           requestId: msg.payload!.requestId,
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
           triangleCount: 1,
           timingMs: 5,
         });

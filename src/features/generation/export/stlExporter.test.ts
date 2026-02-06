@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   exportSTL,
   buildSTLBuffer,
+  buildSTLBufferFromIndexed,
   getSTLFileSize,
 } from '@/features/generation/export/stlExporter';
 
@@ -209,6 +210,91 @@ describe('stlExporter', () => {
       const header = new Uint8Array(buffer, 0, 80);
       const headerText = String.fromCharCode(...header).replace(/\0+$/, '');
       expect(headerText).toContain('gridfinity-bin');
+    });
+  });
+
+  describe('buildSTLBufferFromIndexed', () => {
+    it('produces same output as buildSTLBuffer for equivalent mesh', () => {
+      // Flat mesh: 1 triangle with 3 unique vertices
+      const flatVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const flatNormals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
+
+      // Indexed mesh: same geometry
+      const indexedVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexedNormals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
+      const indices = new Uint32Array([0, 1, 2]);
+
+      const flatBuffer = buildSTLBuffer(flatVerts, flatNormals, 'test');
+      const indexedBuffer = buildSTLBufferFromIndexed(
+        indexedVerts,
+        indexedNormals,
+        indices,
+        'test'
+      );
+
+      expect(indexedBuffer.byteLength).toBe(flatBuffer.byteLength);
+      expect(new Uint8Array(indexedBuffer)).toEqual(new Uint8Array(flatBuffer));
+    });
+
+    it('correctly dereferences shared vertices', () => {
+      // 4 unique vertices, 2 triangles sharing edge
+      const vertices = new Float32Array([
+        0,
+        0,
+        0, // v0
+        1,
+        0,
+        0, // v1
+        0,
+        1,
+        0, // v2
+        1,
+        1,
+        0, // v3
+      ]);
+      const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+      const indices = new Uint32Array([0, 1, 2, 1, 3, 2]);
+
+      const buffer = buildSTLBufferFromIndexed(vertices, normals, indices, 'test');
+      const view = new DataView(buffer);
+
+      // Should have 2 triangles
+      expect(view.getUint32(80, true)).toBe(2);
+      expect(buffer.byteLength).toBe(80 + 4 + 2 * 50);
+
+      // Verify first triangle vertex positions (v0, v1, v2)
+      expect(view.getFloat32(96, true)).toBeCloseTo(0); // v0.x
+      expect(view.getFloat32(108, true)).toBeCloseTo(1); // v1.x
+      expect(view.getFloat32(120, true)).toBeCloseTo(0); // v2.x
+
+      // Verify second triangle vertex positions (v1, v3, v2)
+      expect(view.getFloat32(146, true)).toBeCloseTo(1); // v1.x
+      expect(view.getFloat32(158, true)).toBeCloseTo(1); // v3.x
+      expect(view.getFloat32(170, true)).toBeCloseTo(0); // v2.x
+    });
+
+    it('computes face normals when normals array is empty', () => {
+      const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const normals = new Float32Array(0);
+      const indices = new Uint32Array([0, 1, 2]);
+
+      const buffer = buildSTLBufferFromIndexed(vertices, normals, indices, 'test');
+      const view = new DataView(buffer);
+
+      // Normal should be (0, 0, 1) for a triangle in XY plane
+      expect(view.getFloat32(84, true)).toBeCloseTo(0);
+      expect(view.getFloat32(88, true)).toBeCloseTo(0);
+      expect(view.getFloat32(92, true)).toBeCloseTo(1);
+    });
+
+    it('handles empty mesh', () => {
+      const buffer = buildSTLBufferFromIndexed(
+        new Float32Array(0),
+        new Float32Array(0),
+        new Uint32Array(0),
+        'empty'
+      );
+      expect(buffer.byteLength).toBe(84); // header + count only
     });
   });
 

@@ -137,9 +137,11 @@ describe('useDesignerStore', () => {
       // Simulate a generation result
       const verts = new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9]);
       const norms = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0]);
+      const idxs = new Uint32Array([0, 1, 2]);
       useDesignerStore.getState().setGenerationResult({
         vertices: verts,
         normals: norms,
+        indices: idxs,
         error: null,
         timingMs: 100,
       });
@@ -170,9 +172,11 @@ describe('useDesignerStore', () => {
       useDesignerStore.getState().setParam('width', 5);
       const verts = new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9]);
       const norms = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0]);
+      const idxs = new Uint32Array([0, 1, 2]);
       useDesignerStore.getState().setGenerationResult({
         vertices: verts,
         normals: norms,
+        indices: idxs,
         error: null,
         timingMs: 50,
       });
@@ -197,6 +201,7 @@ describe('useDesignerStore', () => {
       const result = {
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 1, 0]),
+        indices: new Uint32Array([0]),
         error: null,
         timingMs: 42,
       };
@@ -209,6 +214,7 @@ describe('useDesignerStore', () => {
       const result = {
         vertices: null,
         normals: null,
+        indices: null,
         error: 'Generation failed',
         timingMs: 10,
       };

@@ -47,6 +47,12 @@ vi.mock('three', () => {
   BufferGeometry.prototype.setAttribute = function () {
     return this;
   };
+  BufferGeometry.prototype.setIndex = function () {
+    return this;
+  };
+  BufferGeometry.prototype.computeVertexNormals = function () {
+    /* noop */
+  };
   BufferGeometry.prototype.dispose = function () {
     /* noop */
   };
@@ -148,11 +154,16 @@ vi.mock('three', () => {
     return { dispose: vi.fn() };
   }
 
+  function BufferAttribute() {
+    /* mock */
+  }
+
   return {
     Vector2,
     Vector3,
     Spherical,
     BufferGeometry,
+    BufferAttribute,
     Float32BufferAttribute,
     Color,
     ShaderMaterial,
@@ -257,6 +268,7 @@ describe('PreviewCanvas', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
           error: null,
           timingMs: 50,
         },
@@ -278,6 +290,7 @@ describe('PreviewCanvas', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
           error: null,
           timingMs: 50,
         },
@@ -302,6 +315,7 @@ describe('PreviewCanvas', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
           error: null,
           timingMs: 50,
         },
@@ -322,6 +336,7 @@ describe('PreviewCanvas', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
           error: null,
           timingMs: 50,
         },
@@ -350,7 +365,7 @@ describe('PreviewCanvas', () => {
         wasmStatus: 'ready',
         generation: {
           status: 'error',
-          mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
+          mesh: { vertices: null, normals: null, indices: null, error: 'Test error', timingMs: 0 },
           progress: 0,
           epoch: 1,
         },
@@ -370,7 +385,7 @@ describe('PreviewCanvas', () => {
         wasmStatus: 'ready',
         generation: {
           status: 'error',
-          mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
+          mesh: { vertices: null, normals: null, indices: null, error: 'Test error', timingMs: 0 },
           progress: 0,
           epoch: 1,
         },
@@ -393,7 +408,7 @@ describe('PreviewCanvas', () => {
         wasmStatus: 'ready',
         generation: {
           status: 'error',
-          mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
+          mesh: { vertices: null, normals: null, indices: null, error: 'Test error', timingMs: 0 },
           progress: 0,
           epoch: 1,
         },

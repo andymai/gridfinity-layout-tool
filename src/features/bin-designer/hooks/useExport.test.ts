@@ -71,6 +71,7 @@ describe('useExport', () => {
         mesh: {
           vertices: new Float32Array(9),
           normals: new Float32Array(9),
+          indices: new Uint32Array([0, 1, 2]),
           error: null,
           timingMs: 10,
         },
@@ -89,6 +90,7 @@ describe('useExport', () => {
         mesh: {
           vertices: null,
           normals: null,
+          indices: null,
           error: 'Generation failed',
           timingMs: 0,
         },
@@ -125,6 +127,7 @@ describe('useExport', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
           error: null,
           timingMs: 10,
         },
@@ -181,6 +184,7 @@ describe('useExport', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
           error: null,
           timingMs: 10,
         },
@@ -312,6 +316,7 @@ describe('useExport', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
           error: null,
           timingMs: 10,
         },

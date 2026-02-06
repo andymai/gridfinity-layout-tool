@@ -41,7 +41,7 @@ describe('binGenerator — solid mode', () => {
 
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.normals.length).toBe(result.vertices.length);
-    expect(result.vertices.length % 9).toBe(0);
+    expect(result.indices.length).toBe(result.triangleCount * 3);
     expect(result.triangleCount).toBeGreaterThan(10);
   }, 30000);
 

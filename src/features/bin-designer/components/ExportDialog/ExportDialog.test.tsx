@@ -31,8 +31,9 @@ function setupStore(overrides: Record<string, unknown> = {}) {
     generation: {
       status: 'complete',
       mesh: {
-        vertices: new Float32Array(108), // 12 triangles
+        vertices: new Float32Array(108),
         normals: new Float32Array(108),
+        indices: new Uint32Array(36), // 12 triangles
         error: null,
         timingMs: 10,
       },

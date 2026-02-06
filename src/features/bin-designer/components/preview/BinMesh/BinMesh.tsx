@@ -29,10 +29,11 @@ interface BinMeshProps {
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
   const { invalidate } = useThree();
-  const { vertices, normals } = useDesignerStore(
+  const { vertices, normals, indices } = useDesignerStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
       normals: s.generation.mesh?.normals ?? null,
+      indices: s.generation.mesh?.indices ?? null,
     }))
   );
 
@@ -45,6 +46,10 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 
+    if (indices && indices.length > 0) {
+      geo.setIndex(new THREE.BufferAttribute(indices, 1));
+    }
+
     if (hasPrecomputedNormals) {
       geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
     } else {
@@ -53,7 +58,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     }
 
     return geo;
-  }, [vertices, normals, hasPrecomputedNormals]);
+  }, [vertices, normals, indices, hasPrecomputedNormals]);
 
   // Create edge geometry for sketch-like appearance
   const edgesGeometry = useMemo(() => {

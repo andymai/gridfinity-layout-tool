@@ -40,14 +40,10 @@ export function buildSTLBuffer(
   name: string = 'gridfinity-bin'
 ): ArrayBuffer {
   if (vertices.length % 9 !== 0) {
-    throw new Error(
-      `Invalid vertex count: ${vertices.length} is not divisible by 9`
-    );
+    throw new Error(`Invalid vertex count: ${vertices.length} is not divisible by 9`);
   }
   if (normals.length !== vertices.length) {
-    throw new Error(
-      `Normal/vertex length mismatch: ${normals.length} vs ${vertices.length}`
-    );
+    throw new Error(`Normal/vertex length mismatch: ${normals.length} vs ${vertices.length}`);
   }
 
   const triangleCount = vertices.length / 9;
@@ -104,6 +100,76 @@ function writeHeader(view: DataView, name: string): void {
   for (let i = 0; i < 80; i++) {
     view.setUint8(i, i < bytes.length ? bytes[i] : 0);
   }
+}
+
+/**
+ * Builds a binary STL ArrayBuffer from indexed mesh data.
+ *
+ * Dereferences vertices and normals via the index buffer, computing face
+ * normals from the cross product when per-vertex normals are unavailable.
+ */
+export function buildSTLBufferFromIndexed(
+  vertices: Float32Array,
+  normals: Float32Array,
+  indices: Uint32Array,
+  name: string = 'gridfinity-bin'
+): ArrayBuffer {
+  const triangleCount = indices.length / 3;
+  const HEADER_SIZE = 80;
+  const COUNT_SIZE = 4;
+  const TRIANGLE_SIZE = 50;
+  const fileSize = HEADER_SIZE + COUNT_SIZE + triangleCount * TRIANGLE_SIZE;
+
+  const buffer = new ArrayBuffer(fileSize);
+  const view = new DataView(buffer);
+
+  writeHeader(view, name);
+  view.setUint32(HEADER_SIZE, triangleCount, true);
+
+  const hasNormals = normals.length > 0;
+  let offset = HEADER_SIZE + COUNT_SIZE;
+
+  for (let tri = 0; tri < triangleCount; tri++) {
+    const i0 = indices[tri * 3];
+    const i1 = indices[tri * 3 + 1];
+    const i2 = indices[tri * 3 + 2];
+
+    if (hasNormals) {
+      // Use first vertex normal of triangle
+      view.setFloat32(offset, normals[i0 * 3], true);
+      view.setFloat32(offset + 4, normals[i0 * 3 + 1], true);
+      view.setFloat32(offset + 8, normals[i0 * 3 + 2], true);
+    } else {
+      // Compute face normal from cross product
+      const ax = vertices[i1 * 3] - vertices[i0 * 3];
+      const ay = vertices[i1 * 3 + 1] - vertices[i0 * 3 + 1];
+      const az = vertices[i1 * 3 + 2] - vertices[i0 * 3 + 2];
+      const bx = vertices[i2 * 3] - vertices[i0 * 3];
+      const by = vertices[i2 * 3 + 1] - vertices[i0 * 3 + 1];
+      const bz = vertices[i2 * 3 + 2] - vertices[i0 * 3 + 2];
+      const nx = ay * bz - az * by;
+      const ny = az * bx - ax * bz;
+      const nz = ax * by - ay * bx;
+      const len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+      view.setFloat32(offset, nx / len, true);
+      view.setFloat32(offset + 4, ny / len, true);
+      view.setFloat32(offset + 8, nz / len, true);
+    }
+    offset += 12;
+
+    // 3 vertices
+    for (const vi of [i0, i1, i2]) {
+      view.setFloat32(offset, vertices[vi * 3], true);
+      view.setFloat32(offset + 4, vertices[vi * 3 + 1], true);
+      view.setFloat32(offset + 8, vertices[vi * 3 + 2], true);
+      offset += 12;
+    }
+
+    view.setUint16(offset, 0, true);
+    offset += 2;
+  }
+
+  return buffer;
 }
 
 /**

@@ -763,12 +763,12 @@ function buildLabelTabs(
 // ─── Mesh Conversion ────────────────────────────────────────────────────────
 
 /**
- * Convert brepjs indexed mesh to flat triangle arrays (our MeshData format).
+ * Convert brepjs indexed mesh to our MeshData format, keeping indexed representation.
  *
  * @param mesh brepjs mesh with indexed vertices/normals/triangles
- * @param skipNormals If true, returns empty normals array (GPU will use flat shading)
+ * @param skipNormals If true, returns empty normals array (GPU will compute flat shading)
  */
-function indexedMeshToFlat(
+function toIndexedMeshData(
   mesh: {
     vertices: ArrayLike<number>;
     normals: ArrayLike<number>;
@@ -776,28 +776,11 @@ function indexedMeshToFlat(
   },
   skipNormals = false
 ): MeshData {
-  const triCount = mesh.triangles.length / 3;
-  const flatVertices = new Float32Array(mesh.triangles.length * 3);
-  const flatNormals = skipNormals
-    ? new Float32Array(0)
-    : new Float32Array(mesh.triangles.length * 3);
-
-  for (let i = 0; i < mesh.triangles.length; i++) {
-    const vi = mesh.triangles[i];
-    flatVertices[i * 3] = mesh.vertices[vi * 3];
-    flatVertices[i * 3 + 1] = mesh.vertices[vi * 3 + 1];
-    flatVertices[i * 3 + 2] = mesh.vertices[vi * 3 + 2];
-    if (!skipNormals) {
-      flatNormals[i * 3] = mesh.normals[vi * 3];
-      flatNormals[i * 3 + 1] = mesh.normals[vi * 3 + 1];
-      flatNormals[i * 3 + 2] = mesh.normals[vi * 3 + 2];
-    }
-  }
-
   return {
-    vertices: flatVertices,
-    normals: flatNormals,
-    triangleCount: triCount,
+    vertices: new Float32Array(mesh.vertices),
+    normals: skipNormals ? new Float32Array(0) : new Float32Array(mesh.normals),
+    indices: new Uint32Array(mesh.triangles),
+    triangleCount: mesh.triangles.length / 3,
   };
 }
 
@@ -1182,7 +1165,7 @@ export function generateBin(
 
   onProgress?.('merge', 1.0);
   // Skip normals for large bin preview (GPU flat shading is faster)
-  return indexedMeshToFlat(shapeMesh, !useHighQuality);
+  return toIndexedMeshData(shapeMesh, !useHighQuality);
 }
 
 /** Result of a split export: array of piece buffers with grid labels */
