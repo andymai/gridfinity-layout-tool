@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.29.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.28.0...gridfinity-layout-tool-v2.29.0) (2026-02-06)
+
+
+### Features
+
+* indexed mesh wire format ([#639](https://github.com/andymai/gridfinity-layout-tool/issues/639)) ([17de936](https://github.com/andymai/gridfinity-layout-tool/commit/17de9363f10b44ce9516ef2ea9739be867a1b780))
+
 ## [2.28.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.27.1...gridfinity-layout-tool-v2.28.0) (2026-02-05)
 
 
