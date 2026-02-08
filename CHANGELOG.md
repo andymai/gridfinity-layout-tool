@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.0.0...gridfinity-layout-tool-v3.0.1) (2026-02-08)
+
+
+### Bug Fixes
+
+* adjust coverage thresholds to realistic achievable levels ([#648](https://github.com/andymai/gridfinity-layout-tool/issues/648)) ([49d0d13](https://github.com/andymai/gridfinity-layout-tool/commit/49d0d1318105142c6fd7f2b8805818fb0ab556b2))
+
 ## [3.0.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.30.0...gridfinity-layout-tool-v3.0.0) (2026-02-08)
 
 
