@@ -27,6 +27,7 @@
   "binDesigner.cutouts.positionX": "Posición X",
   "binDesigner.cutouts.positionY": "Posición Y",
   "binDesigner.cutouts.cutDepth": "Profundidad de corte",
+  "binDesigner.cutouts.topOffset": "Desplazamiento superior",
   "binDesigner.cutouts.cornerRadius": "Radio de esquina",
   "binDesigner.cutouts.scoopRadius": "Radio de cuchara",
   "binDesigner.cutouts.rotation": "Rotación",

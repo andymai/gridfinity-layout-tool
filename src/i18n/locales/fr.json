@@ -27,6 +27,7 @@
   "binDesigner.cutouts.positionX": "Position X",
   "binDesigner.cutouts.positionY": "Position Y",
   "binDesigner.cutouts.cutDepth": "Profondeur de coupe",
+  "binDesigner.cutouts.topOffset": "Décalage supérieur",
   "binDesigner.cutouts.cornerRadius": "Rayon d'angle",
   "binDesigner.cutouts.scoopRadius": "Rayon de cuillère",
   "binDesigner.cutouts.rotation": "Rotation",

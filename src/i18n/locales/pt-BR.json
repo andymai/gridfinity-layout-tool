@@ -27,6 +27,7 @@
   "binDesigner.cutouts.positionX": "Posição X",
   "binDesigner.cutouts.positionY": "Posição Y",
   "binDesigner.cutouts.cutDepth": "Profundidade de corte",
+  "binDesigner.cutouts.topOffset": "Deslocamento superior",
   "binDesigner.cutouts.cornerRadius": "Raio do canto",
   "binDesigner.cutouts.scoopRadius": "Raio da concha",
   "binDesigner.cutouts.rotation": "Rotação",

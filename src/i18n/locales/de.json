@@ -27,6 +27,7 @@
   "binDesigner.cutouts.positionX": "X-Position",
   "binDesigner.cutouts.positionY": "Y-Position",
   "binDesigner.cutouts.cutDepth": "Schnitttiefe",
+  "binDesigner.cutouts.topOffset": "Oberer Versatz",
   "binDesigner.cutouts.cornerRadius": "Eckenradius",
   "binDesigner.cutouts.scoopRadius": "Schaufelradius",
   "binDesigner.cutouts.rotation": "Drehung",

@@ -1235,6 +1235,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.positionX': 'X Position',
   'binDesigner.cutouts.positionY': 'Y Position',
   'binDesigner.cutouts.cutDepth': 'Cut Depth',
+  'binDesigner.cutouts.topOffset': 'Top Offset',
   'binDesigner.cutouts.cornerRadius': 'Corner Radius',
   'binDesigner.cutouts.scoopRadius': 'Scoop Radius',
   'binDesigner.cutouts.rotation': 'Rotation',

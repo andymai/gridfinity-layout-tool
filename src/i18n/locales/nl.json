@@ -27,6 +27,7 @@
   "binDesigner.cutouts.positionX": "X-positie",
   "binDesigner.cutouts.positionY": "Y-positie",
   "binDesigner.cutouts.cutDepth": "Snijdiepte",
+  "binDesigner.cutouts.topOffset": "Bovenverschuiving",
   "binDesigner.cutouts.cornerRadius": "Hoekradius",
   "binDesigner.cutouts.scoopRadius": "Schepradius",
   "binDesigner.cutouts.rotation": "Rotatie",
