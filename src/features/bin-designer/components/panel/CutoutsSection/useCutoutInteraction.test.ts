@@ -477,6 +477,71 @@ describe('useCutoutInteraction', () => {
     });
   });
 
+  describe('drawing lifecycle', () => {
+    it('creates cutout with topOffset defaulting to 0', () => {
+      const mockOnAdd = vi.fn();
+      const mockOnUpdate = vi.fn();
+      const mockOnUpdateBatch = vi.fn();
+      const mockOnRemove = vi.fn();
+      const mockOnUndo = vi.fn();
+      const mockOnRedo = vi.fn();
+
+      const { result } = renderHook(() =>
+        useCutoutInteraction({
+          cutouts: [],
+          binWidth: 100,
+          binDepth: 80,
+          onAdd: mockOnAdd,
+          onUpdate: mockOnUpdate,
+          onUpdateBatch: mockOnUpdateBatch,
+          onRemove: mockOnRemove,
+          onUndo: mockOnUndo,
+          onRedo: mockOnRedo,
+        })
+      );
+
+      // Set mode to pending-place (simulating pointer down in placing mode)
+      act(() => {
+        result.current.setMode({
+          type: 'pending-place',
+          shape: 'rectangle',
+          startMmX: 10,
+          startMmY: 10,
+        });
+      });
+
+      // Move pointer far enough to exceed threshold and trigger drawing mode (> 2mm)
+      act(() => {
+        result.current.handlePointerMove(15, 15);
+      });
+
+      // Verify mode transitioned to drawing
+      expect(result.current.mode.type).toBe('drawing');
+
+      // Continue dragging to create larger shape
+      act(() => {
+        result.current.handlePointerMove(30, 25);
+      });
+
+      // Verify drawingPreview was created
+      expect(result.current.drawingPreview).toBeDefined();
+      expect(result.current.drawingPreview?.width).toBeGreaterThanOrEqual(2);
+      expect(result.current.drawingPreview?.depth).toBeGreaterThanOrEqual(2);
+
+      // Finish drawing
+      act(() => {
+        result.current.handlePointerUp();
+      });
+
+      expect(mockOnAdd).toHaveBeenCalledWith(
+        expect.objectContaining({
+          shape: 'rectangle',
+          topOffset: 0,
+        })
+      );
+    });
+  });
+
   describe('copy/paste/duplicate', () => {
     it('Ctrl+C copies selected cutouts to clipboard', () => {
       const { result } = renderHook(() => useCutoutInteraction(defaultOpts));
