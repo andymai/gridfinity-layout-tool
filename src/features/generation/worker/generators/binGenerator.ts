@@ -1388,13 +1388,11 @@ export function generateBin(
 
           for (const wall of wallDescriptors) {
             for (const center of wall.centers) {
-              let shape: Shape3D = rotate(
-                translate(clone(shapeTemplate), [center.x, center.y, -halfDepth]),
-                90,
-                { axis: [1, 0, 0] }
-              );
+              let shape: Shape3D = clone(shapeTemplate);
+              shape = translate(shape, [center.x, center.y, -halfDepth]);
+              shape = rotate(shape, 90, { at: [0, 0, 0], axis: [1, 0, 0] });
               if (wall.zRotation !== undefined) {
-                shape = rotate(shape, wall.zRotation, { axis: [0, 0, 1] });
+                shape = rotate(shape, wall.zRotation, { at: [0, 0, 0], axis: [0, 0, 1] });
               }
               shape = translate(shape, [wall.translateX, wall.translateY, wall.translateZ]);
               allPatternTools.push(shape);
