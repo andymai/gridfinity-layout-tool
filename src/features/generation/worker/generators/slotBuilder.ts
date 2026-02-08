@@ -13,7 +13,7 @@
  * boolean cut operation on the bin — critical for performance.
  */
 
-import { drawRectangle, unwrap, fuseAll } from 'brepjs';
+import { drawRectangle, unwrap, fuseAll, translate } from 'brepjs';
 import type { Shape3D, PlaneName, SketchInterface, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import {
@@ -110,20 +110,20 @@ export function buildSlotCuts(
     for (const yPos of positions) {
       // Wall slots (narrow, for tab engagement) — start at floor surface
       const leftSlot = sketch(drawRectangle(slotDepth, slotWidth), 'XY').extrude(slotHeight);
-      slots.push(leftSlot.translate([-innerW / 2 - slotDepth / 2, yPos, floorZ]));
+      slots.push(translate(leftSlot, [-innerW / 2 - slotDepth / 2, yPos, floorZ]));
 
       const rightSlot = sketch(drawRectangle(slotDepth, slotWidth), 'XY').extrude(slotHeight);
-      slots.push(rightSlot.translate([innerW / 2 + slotDepth / 2, yPos, floorZ]));
+      slots.push(translate(rightSlot, [innerW / 2 + slotDepth / 2, yPos, floorZ]));
 
       // Lip cutouts: remove the interior overhang above AND below wallHeight.
       // The lip profile extends below wallHeight (wall-replacement extension),
       // so the cutout must reach down to wallHeight - lipTaperWidth.
       if (lipInfo && lipOverhang > 0) {
         const leftLip = sketch(drawRectangle(lipOverhang, slotWidth), 'XY').extrude(lipCutHeight);
-        slots.push(leftLip.translate([-(innerW / 2 - lipOverhang / 2), yPos, lipCutStartZ]));
+        slots.push(translate(leftLip, [-(innerW / 2 - lipOverhang / 2), yPos, lipCutStartZ]));
 
         const rightLip = sketch(drawRectangle(lipOverhang, slotWidth), 'XY').extrude(lipCutHeight);
-        slots.push(rightLip.translate([innerW / 2 - lipOverhang / 2, yPos, lipCutStartZ]));
+        slots.push(translate(rightLip, [innerW / 2 - lipOverhang / 2, yPos, lipCutStartZ]));
       }
     }
   }
@@ -134,18 +134,18 @@ export function buildSlotCuts(
     for (const xPos of positions) {
       // Wall slots (narrow) — start at floor surface
       const frontSlot = sketch(drawRectangle(slotWidth, slotDepth), 'XY').extrude(slotHeight);
-      slots.push(frontSlot.translate([xPos, -innerD / 2 - slotDepth / 2, floorZ]));
+      slots.push(translate(frontSlot, [xPos, -innerD / 2 - slotDepth / 2, floorZ]));
 
       const backSlot = sketch(drawRectangle(slotWidth, slotDepth), 'XY').extrude(slotHeight);
-      slots.push(backSlot.translate([xPos, innerD / 2 + slotDepth / 2, floorZ]));
+      slots.push(translate(backSlot, [xPos, innerD / 2 + slotDepth / 2, floorZ]));
 
       // Lip cutouts: remove the interior overhang (same Z range as X-axis)
       if (lipInfo && lipOverhang > 0) {
         const frontLip = sketch(drawRectangle(slotWidth, lipOverhang), 'XY').extrude(lipCutHeight);
-        slots.push(frontLip.translate([xPos, -(innerD / 2 - lipOverhang / 2), lipCutStartZ]));
+        slots.push(translate(frontLip, [xPos, -(innerD / 2 - lipOverhang / 2), lipCutStartZ]));
 
         const backLip = sketch(drawRectangle(slotWidth, lipOverhang), 'XY').extrude(lipCutHeight);
-        slots.push(backLip.translate([xPos, innerD / 2 - lipOverhang / 2, lipCutStartZ]));
+        slots.push(translate(backLip, [xPos, innerD / 2 - lipOverhang / 2, lipCutStartZ]));
       }
     }
   }

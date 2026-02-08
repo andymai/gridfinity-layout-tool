@@ -6,7 +6,7 @@
  * in their slicer as needed.
  */
 
-import { unwrap } from 'brepjs';
+import { unwrap, fuse, exportSTL } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
@@ -42,11 +42,11 @@ export async function exportDividers(
   // Fuse unique pieces into a single solid
   let combined = pieces[0];
   for (let i = 1; i < pieces.length; i++) {
-    combined = unwrap(combined.fuse(pieces[i]));
+    combined = unwrap(fuse(combined, pieces[i]));
   }
 
   const blob = unwrap(
-    combined.blobSTL({
+    exportSTL(combined, {
       tolerance: 0.01,
       angularTolerance: 5,
       binary: true,
