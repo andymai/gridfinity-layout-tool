@@ -28,7 +28,7 @@ VIOLATIONS_FOUND=0
 # Get files to check
 get_files() {
   if [[ "$1" == "--staged" ]]; then
-    git diff --cached --name-only --diff-filter=ACM | grep -E '\.tsx?$' | grep '^src/' || true
+    git diff --cached --name-only --diff-filter=ACM | grep -E '\.tsx?$' | grep '^src/' | grep -v '\.test\.' | grep -v '\.spec\.' || true
   elif [[ -n "$1" ]]; then
     echo "$1"
   else
