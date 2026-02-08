@@ -34,13 +34,13 @@ vi.mock('@/features/bin-designer/hooks/useCustomBins', () => ({
   useCustomBins: vi.fn(),
 }));
 
-// Mock window methods
-const mockHistoryPushState = vi.fn();
-const mockDispatchEvent = vi.fn();
+// Mock window methods with proper spies
+let pushStateSpy: ReturnType<typeof vi.spyOn>;
+let dispatchEventSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
-  window.history.pushState = mockHistoryPushState;
-  window.dispatchEvent = mockDispatchEvent;
+  pushStateSpy = vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
+  dispatchEventSpy = vi.spyOn(window, 'dispatchEvent').mockImplementation(() => true);
 });
 
 // Helper to create test bin
@@ -63,17 +63,15 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
 // Helper to create test layout
 function makeLayout(bins: Bin[]): Layout {
   return {
-    id: 'layout-1',
+    version: '1.0',
     name: 'Test Layout',
     drawer: { width: 10, depth: 10, height: 5 },
-    layers: [{ id: 'layer-1', name: 'Layer 1', visible: true }],
+    layers: [{ id: 'layer-1', name: 'Layer 1', height: 1 }],
     categories: [{ id: 'cat-1', name: 'Category 1', color: '#ff0000' }],
     bins,
     gridUnitMm: 42,
     heightUnitMm: 7,
     printBedSize: 256,
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
   };
 }
 
@@ -90,9 +88,14 @@ function setupStores(bins: Bin[]) {
     showCreateDesignDialog: vi.fn(),
     hideCreateDesignDialog: vi.fn(),
     hideSyncDialog: vi.fn(),
-    pendingSyncState: null,
-    pendingCreateDesignState: null,
-    pendingLinkDesignState: null,
+    showDeleteWarning: vi.fn(),
+    hideDeleteWarning: vi.fn(),
+    showLinkDesignDialog: vi.fn(),
+    hideLinkDesignDialog: vi.fn(),
+    pendingSync: null,
+    pendingCreateDesign: null,
+    pendingLinkDesign: null,
+    pendingDeleteWarning: null,
   });
 
   vi.mocked(MutationsContext.useMutations).mockReturnValue({
@@ -108,8 +111,10 @@ function setupStores(bins: Bin[]) {
 describe('useBinLinking', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockHistoryPushState.mockClear();
-    mockDispatchEvent.mockClear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('linkBin', () => {
@@ -254,12 +259,12 @@ describe('useBinLinking', () => {
         result.current.editLinkedDesign('design-1');
       });
 
-      expect(mockHistoryPushState).toHaveBeenCalledWith(
+      expect(pushStateSpy).toHaveBeenCalledWith(
         { designId: 'design-1' },
         '',
         '/designer?id=design-1'
       );
-      expect(mockDispatchEvent).toHaveBeenCalledWith(expect.any(PopStateEvent));
+      expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
     });
 
     it('properly encodes design ID in URL', () => {
@@ -271,7 +276,7 @@ describe('useBinLinking', () => {
         result.current.editLinkedDesign('design with spaces');
       });
 
-      expect(mockHistoryPushState).toHaveBeenCalledWith(
+      expect(pushStateSpy).toHaveBeenCalledWith(
         { designId: 'design with spaces' },
         '',
         '/designer?id=design%20with%20spaces'
@@ -473,8 +478,9 @@ describe('useBinLinking', () => {
 
       const { result } = renderHook(() => useBinLinking());
 
-      const syncResult = await act(async () => {
-        return await result.current.executeSyncFromDesign(['bin-1'], 'design-1');
+      let syncResult: Awaited<ReturnType<typeof result.current.executeSyncFromDesign>>;
+      await act(async () => {
+        syncResult = await result.current.executeSyncFromDesign(['bin-1'], 'design-1');
       });
 
       expect(mockUpdateBin).toHaveBeenCalledWith(
@@ -485,8 +491,8 @@ describe('useBinLinking', () => {
           height: 5,
         })
       );
-      expect(syncResult.synced).toContain('bin-1');
-      expect(syncResult.unlinked).toHaveLength(0);
+      expect(syncResult!.synced).toContain('bin-1');
+      expect(syncResult!.unlinked).toHaveLength(0);
     });
 
     it('unlinks bins that cannot sync due to collision', async () => {
@@ -574,12 +580,8 @@ describe('useBinLinking', () => {
       });
 
       expect(mockHideCreateDialog).toHaveBeenCalled();
-      expect(mockHistoryPushState).toHaveBeenCalledWith(
-        null,
-        '',
-        expect.stringContaining('/designer?')
-      );
-      const callArg = mockHistoryPushState.mock.calls[0][2];
+      expect(pushStateSpy).toHaveBeenCalledWith(null, '', expect.stringContaining('/designer?'));
+      const callArg = pushStateSpy.mock.calls[0][2];
       expect(callArg).toContain('createFrom=bin');
       expect(callArg).toContain('linkBin=bin-1');
       expect(callArg).toContain('name=Test+Design');
@@ -597,7 +599,7 @@ describe('useBinLinking', () => {
         result.current.navigateToCreateDesign('bin-1', 'Test', 2, 3, 4);
       });
 
-      expect(mockDispatchEvent).toHaveBeenCalledWith(expect.any(PopStateEvent));
+      expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
     });
   });
 
@@ -610,8 +612,9 @@ describe('useBinLinking', () => {
 
       const { result } = renderHook(() => useBinLinking());
 
-      const success = await act(async () => {
-        return await result.current.deleteLinkedDesign('bin-1', 'design-1', 'Test Design');
+      let success: boolean;
+      await act(async () => {
+        success = await result.current.deleteLinkedDesign('bin-1', 'design-1', 'Test Design');
       });
 
       expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
@@ -622,7 +625,7 @@ describe('useBinLinking', () => {
         type: 'success',
         duration: 3000,
       });
-      expect(success).toBe(true);
+      expect(success!).toBe(true);
     });
 
     it('shows error toast if deletion fails', async () => {

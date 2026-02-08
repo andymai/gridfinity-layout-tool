@@ -73,7 +73,7 @@ describe('DragPreview', () => {
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('no interaction state', () => {

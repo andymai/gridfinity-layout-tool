@@ -52,16 +52,20 @@ describe('recentStore', () => {
       expect(parsed['command-persistence-test'].lastUsedAt).toBeGreaterThan(0);
     });
 
-    it('migrates from v1 format to v2', () => {
-      // Test that the store can handle v1 data by recording usage
+    it('stores commands in v2 format structure', () => {
+      // Test that recorded commands follow the v2 format structure
       const store = useRecentCommandsStore.getState();
 
-      // Just verify the store works normally (migration happens on init)
-      store.recordUsage('migration-test-cmd');
+      store.recordUsage('v2-format-test');
 
       const { usage } = useRecentCommandsStore.getState();
-      expect(usage['migration-test-cmd']).toBeDefined();
-      expect(usage['migration-test-cmd'].useCount).toBe(1);
+      const command = usage['v2-format-test'];
+
+      // Verify v2 structure: commandId, useCount, lastUsedAt
+      expect(command).toBeDefined();
+      expect(command.commandId).toBe('v2-format-test');
+      expect(command.useCount).toBeGreaterThan(0);
+      expect(command.lastUsedAt).toBeGreaterThan(0);
     });
 
     it('removes v1 storage after clear', () => {
@@ -74,14 +78,20 @@ describe('recentStore', () => {
       expect(localStorage.getItem(STORAGE_KEY_V1)).toBeNull();
     });
 
-    it('handles corrupt localStorage data gracefully', () => {
-      setLocalStorage(STORAGE_KEY_V2, 'invalid json {');
+    it('handles localStorage errors gracefully during save', () => {
+      // Mock localStorage.setItem to throw
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = vi.fn(() => {
+        throw new Error('Storage error');
+      });
 
-      // Should not throw and should return empty state
       const store = useRecentCommandsStore.getState();
 
-      expect(store.usage).toEqual({});
-      expect(store.recentIds).toEqual([]);
+      // Should not throw even when storage fails
+      expect(() => store.recordUsage('test-command')).not.toThrow();
+
+      // Restore
+      localStorage.setItem = originalSetItem;
     });
 
     it('validates and filters invalid command usage entries', () => {
