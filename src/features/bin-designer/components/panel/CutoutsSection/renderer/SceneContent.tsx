@@ -49,6 +49,7 @@ interface GroupBoundsData {
   readonly width: number;
   readonly depth: number;
   readonly cutDepth: number;
+  readonly topOffset: number;
   readonly rotation: number;
   readonly cornerRadius: number;
   readonly label: string;

@@ -223,6 +223,8 @@ export interface Cutout {
   readonly depth: number;
   /** Cavity depth in mm (how deep the cut goes from top surface) */
   readonly cutDepth: number;
+  /** Distance below rim where top surface begins in mm (0 = flush with rim) */
+  readonly topOffset: number;
   /** Rotation in degrees (0-359) */
   readonly rotation: number;
   /** Corner radius for rectangle shape (mm) */

@@ -194,6 +194,7 @@ export function CutoutCanvas3D({
       width: bounds.maxX - bounds.minX,
       depth: bounds.maxY - bounds.minY,
       cutDepth: 0,
+      topOffset: 0,
       rotation: 0,
       cornerRadius: 0,
       label: '',
