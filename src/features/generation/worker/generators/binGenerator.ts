@@ -24,16 +24,30 @@ import {
   unwrap,
   fuseAll,
   cutAll,
+  clone,
+  translate,
+  fuse,
+  cut,
+  shell,
+  fillet,
+  mesh,
+  exportSTL,
+  exportSTEP,
+  rotate,
+  intersect,
+  faceFinder,
+  edgeFinder,
+  getBounds,
 } from 'brepjs';
 import type {
   Shape3D,
-  FnPlane,
+  Plane,
   PlaneName,
   Vec3,
   Sketch,
   SketchInterface,
   Drawing,
-  BooleanOperationOptions,
+  BooleanOptions,
 } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
@@ -59,12 +73,9 @@ function checkCancelled(signal?: AbortSignal): void {
 }
 
 /**
- * Extend BooleanOperationOptions with AbortSignal.
- * brepjs 4.14.0 fuseAll/cutAll accept `signal` at runtime but the
- * re-exported types from `brepjs` (BooleanOperationOptions) omit it.
- * The underlying booleanFns.ts BooleanOptions does include it.
+ * Boolean operation options including AbortSignal for cancellation.
  */
-type BooleanOpts = BooleanOperationOptions & { signal?: AbortSignal };
+type BooleanOpts = BooleanOptions;
 
 // ─── Gridfinity Socket Constants ──────────────────────────────────────────────
 
@@ -266,7 +277,7 @@ function buildBaseSocket(
     forExport
   );
   if (socketCache?.key === key) {
-    return socketCache.shape.clone();
+    return clone(socketCache.shape);
   }
 
   // Build and position each cell socket
@@ -276,11 +287,12 @@ function buildBaseSocket(
     const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
     const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
     // Use simplified 3-section socket for preview, full 5-section for export
-    const cellSocket = (
+    const cellSocket = translate(
       forExport
         ? buildSingleCellSocket(cellW_mm, cellD_mm)
-        : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
-    ).translate([cell.centerX, cell.centerY, 0]);
+        : buildSimplifiedCellSocket(cellW_mm, cellD_mm),
+      [cell.centerX, cell.centerY, 0]
+    );
     cellSockets.push(cellSocket);
   });
 
@@ -298,7 +310,7 @@ function buildBaseSocket(
 
     const cutout: Shape3D =
       magnetCutout && screwCutout
-        ? unwrap(magnetCutout.fuse(screwCutout))
+        ? unwrap(fuse(magnetCutout, screwCutout))
         : ((magnetCutout || screwCutout) as Shape3D);
 
     // 4 holes per full cell at ±HOLE_OFFSET from center (hoisted to avoid repeated allocation)
@@ -316,7 +328,7 @@ function buildBaseSocket(
 
       for (const [dx, dy] of holeOffsets) {
         holeTools.push(
-          cutout.clone().translate([cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
+          translate(clone(cutout), [cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
         );
       }
     });
@@ -327,7 +339,7 @@ function buildBaseSocket(
   }
 
   socketCache = { key, shape: result };
-  return result.clone();
+  return clone(result);
 }
 
 // ─── Box Body Builder ─────────────────────────────────────────────────────────
@@ -346,7 +358,7 @@ function buildBinBox(
 ): Shape3D {
   const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}|${solid}`;
   if (boxCache?.key === boxKey) {
-    return boxCache.shape.clone();
+    return clone(boxCache.shape);
   }
 
   const outerW = gridW * SIZE - CLEARANCE;
@@ -357,12 +369,13 @@ function buildBinBox(
   // Solid mode: return the raw extrusion without hollowing
   if (solid) {
     boxCache = { key: boxKey, shape: box };
-    return box.clone();
+    return clone(box);
   }
 
-  const result = unwrap(box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight)));
+  const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
+  const result = unwrap(shell(box, topFaces, wallThickness));
   boxCache = { key: boxKey, shape: result };
-  return result.clone();
+  return clone(result);
 }
 
 // ─── Top Shape (Stacking Lip) Builder ─────────────────────────────────────────
@@ -383,13 +396,13 @@ function buildBinBox(
 function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape3D {
   const lipKey = `${gridW}|${gridD}|${includeLip}`;
   if (lipCache?.key === lipKey) {
-    return lipCache.shape.clone();
+    return clone(lipCache.shape);
   }
 
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  const topProfile = (plane: FnPlane, _origin: Vec3): Sketch => {
+  const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
     // Draw the lip profile (going upward from the sweep path)
     // Per spec: 0.7mm bottom chamfer, 1.8mm vertical, 1.9mm top chamfer
     let sketcher = draw([-LIP_TAPER_WIDTH, 0])
@@ -434,19 +447,20 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
   // Sweep around the bin perimeter (built at Z=0, caller translates)
   const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
 
-  const result = unwrap(
-    boxSketch
-      .sweepSketch(topProfile, { withContact: true })
-      .fillet(TOP_FILLET, (e) =>
-        e.inBox(
-          [-gridW * SIZE, -gridD * SIZE, LIP_HEIGHT],
-          [gridW * SIZE, gridD * SIZE, LIP_HEIGHT - 1]
-        )
-      )
-  );
+  const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
+  // Find the top edge of the lip at Z=LIP_HEIGHT (4.4mm)
+  // EdgeFinderFn has no box filter, so use .when() predicate (official custom filter API)
+  const lipEdges = edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      // Select edges that overlap the top 1mm slice of the lip (intersection, not containment)
+      return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
+    })
+    .findAll(swept);
+  const result = unwrap(fillet(swept, lipEdges, TOP_FILLET));
 
   lipCache = { key: lipKey, shape: result };
-  return result.clone();
+  return clone(result);
 }
 
 // ─── Feature Builders ─────────────────────────────────────────────────────────
@@ -454,7 +468,7 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
 /** Build a positioned wall segment solid. */
 function buildWallSegment(w: number, d: number, height: number, x: number, y: number): Shape3D {
   const wall = sketch(drawRectangle(w, d), 'XY').extrude(height);
-  return wall.translate([x, y, 0]);
+  return translate(wall, [x, y, 0]);
 }
 
 /**
@@ -598,7 +612,7 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
       }
     }
 
-    insertShapes.push(solid.translate([insert.x, insert.y, 0]));
+    insertShapes.push(translate(solid, [insert.x, insert.y, 0]));
   }
 
   return unwrap(fuseAll(insertShapes));
@@ -645,7 +659,7 @@ function buildCutoutShape(cutout: {
 
   // Apply rotation around Z axis (at origin, before translation)
   if (cutout.rotation !== 0) {
-    shape = shape.rotate(-cutout.rotation, [0, 0, 0], [0, 0, 1]);
+    shape = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
   }
 
   return shape;
@@ -702,13 +716,24 @@ function buildCutoutCuts(
     if (scoopR > 0) {
       const halfW = cutout.width / 2 + 1;
       const halfD = cutout.depth / 2 + 1;
-      shape = unwrap(
-        shape.fillet(scoopR, (e) => e.inBox([-halfW, -halfD, -0.01], [halfW, halfD, 0.01]))
-      );
+      const scoopEdges = edgeFinder()
+        .when((e) => {
+          const bounds = getBounds(e);
+          return (
+            bounds.xMin >= -halfW &&
+            bounds.xMax <= halfW &&
+            bounds.yMin >= -halfD &&
+            bounds.yMax <= halfD &&
+            bounds.zMin >= -0.01 &&
+            bounds.zMax <= 0.01
+          );
+        })
+        .findAll(shape);
+      shape = unwrap(fillet(shape, scoopEdges, scoopR));
     }
 
     cutoutShapes.push(
-      shape.translate([
+      translate(shape, [
         originX + cutout.x + cutout.width / 2,
         originY + cutout.y + cutout.depth / 2,
         wallHeight - cutout.cutDepth,
@@ -723,7 +748,7 @@ function buildCutoutCuts(
     for (const cutout of groupMembers) {
       const shape = buildCutoutShape(cutout);
       memberShapes.push(
-        shape.translate([
+        translate(shape, [
           originX + cutout.x + cutout.width / 2,
           originY + cutout.y + cutout.depth / 2,
           wallHeight - cutout.cutDepth,
@@ -760,14 +785,20 @@ function buildCutoutCuts(
       }
 
       const zBottom = wallHeight - groupCutDepth;
-      fused = unwrap(
-        fused.fillet(scoopR, (e) =>
-          e.inBox(
-            [groupBounds.minX - 1, groupBounds.minY - 1, zBottom - 0.01],
-            [groupBounds.maxX + 1, groupBounds.maxY + 1, zBottom + 0.01]
-          )
-        )
-      );
+      const groupScoopEdges = edgeFinder()
+        .when((e) => {
+          const bounds = getBounds(e);
+          return (
+            bounds.xMin >= groupBounds.minX - 1 &&
+            bounds.xMax <= groupBounds.maxX + 1 &&
+            bounds.yMin >= groupBounds.minY - 1 &&
+            bounds.yMax <= groupBounds.maxY + 1 &&
+            bounds.zMin >= zBottom - 0.01 &&
+            bounds.zMax <= zBottom + 0.01
+          );
+        })
+        .findAll(fused);
+      fused = unwrap(fillet(fused, groupScoopEdges, scoopR));
     }
 
     cutoutShapes.push(fused);
@@ -778,7 +809,7 @@ function buildCutoutCuts(
   // Clip cutout union to bin interior so cutouts extending past walls don't
   // cut through them. The clip boundary covers the full Z range of cutouts.
   const clipBoundary = sketch(drawRectangle(innerW, innerD), 'XY', 0).extrude(wallHeight);
-  return unwrap(fused.intersect(clipBoundary));
+  return unwrap(intersect(fused, clipBoundary));
 }
 
 // ─── Label Tab Builder ───────────────────────────────────────────────────────
@@ -930,7 +961,7 @@ function buildLabelTabs(
             .lineTo([0, 0])
             .close();
           const solidSupport = sketch(solidProfile, 'YZ', 0).extrude(tabWidth);
-          tabSolid = unwrap(tabSolid.fuse(solidSupport));
+          tabSolid = unwrap(fuse(tabSolid, solidSupport));
         }
       } else {
         // Bracket style: discrete triangular gussets at edges + every ≤10mm
@@ -943,15 +974,15 @@ function buildLabelTabs(
           const gussetShapes: Shape3D[] = [];
           for (const gx of gussetPositions) {
             const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
-            gussetShapes.push(gusset.translateX(gx));
+            gussetShapes.push(translate(gusset, [gx, 0, 0]));
           }
 
-          tabSolid = unwrap(tabSolid.fuse(unwrap(fuseAll(gussetShapes))));
+          tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes))));
         }
       }
 
       // Position: X at alignment offset, Y at compartment back edge, Z at tab base
-      tabSolid = tabSolid.translate([tabXStart, backEdgeY, wallHeight - tabHeight]);
+      tabSolid = translate(tabSolid, [tabXStart, backEdgeY, wallHeight - tabHeight]);
 
       allTabs.push(tabSolid);
     }
@@ -1059,14 +1090,14 @@ export async function exportBin(
   const name = `gridfinity-${params.width}x${params.depth}x${params.height}`;
 
   if (format === 'step') {
-    const blob = unwrap(solid.blobSTEP());
+    const blob = unwrap(exportSTEP(solid));
     const data = await blob.arrayBuffer();
     return { data, fileName: `${name}.step` };
   }
 
   // STL with configurable quality
   const blob = unwrap(
-    solid.blobSTL({
+    exportSTL(solid, {
       tolerance,
       angularTolerance,
       binary: true,
@@ -1140,7 +1171,7 @@ export function generateBin(
 
   let bin: Shape3D;
   if (shellCache?.key === shellKey) {
-    bin = shellCache.shape.clone();
+    bin = clone(shellCache.shape);
   } else {
     checkCancelled(signal);
     onProgress?.('shell', 0.3);
@@ -1152,8 +1183,12 @@ export function generateBin(
       onProgress?.('features', 0.4);
       if (params.base.stackingLip) {
         try {
-          const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
-          bin = unwrap(box.fuse(top, { optimisation: 'commonFace' }));
+          const top = translate(buildTopShape(params.width, params.depth, true), [
+            0,
+            0,
+            wallHeight,
+          ]);
+          bin = unwrap(fuse(box, top, { optimisation: 'commonFace' }));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn(
@@ -1183,9 +1218,13 @@ export function generateBin(
       onProgress?.('features', 0.4);
       if (params.base.stackingLip) {
         try {
-          const top = buildTopShape(params.width, params.depth, true).translateZ(wallHeight);
+          const top = translate(buildTopShape(params.width, params.depth, true), [
+            0,
+            0,
+            wallHeight,
+          ]);
           bin = unwrap(
-            unwrap(base.fuse(box, { optimisation: 'commonFace' })).fuse(top, {
+            fuse(unwrap(fuse(base, box, { optimisation: 'commonFace' })), top, {
               optimisation: 'commonFace',
             })
           );
@@ -1196,15 +1235,15 @@ export function generateBin(
             e instanceof Error ? e.message : e,
             { wallThickness }
           );
-          bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
+          bin = unwrap(fuse(base, box, { optimisation: 'commonFace' }));
         }
       } else {
-        bin = unwrap(base.fuse(box, { optimisation: 'commonFace' }));
+        bin = unwrap(fuse(base, box, { optimisation: 'commonFace' }));
       }
     }
 
     shellCache = { key: shellKey, shape: bin };
-    bin = bin.clone();
+    bin = clone(bin);
   }
 
   // Stage 4: Features (dividers, inserts)
@@ -1227,7 +1266,7 @@ export function generateBin(
       const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
       if (compartmentWalls) {
         try {
-          bin = unwrap(bin.fuse(compartmentWalls));
+          bin = unwrap(fuse(bin, compartmentWalls));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn(
@@ -1242,7 +1281,7 @@ export function generateBin(
     const insertCuts = buildInsertCuts(params);
     if (insertCuts) {
       try {
-        bin = unwrap(bin.cut(insertCuts));
+        bin = unwrap(cut(bin, insertCuts));
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') throw e;
         console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
@@ -1260,7 +1299,7 @@ export function generateBin(
       const slotCuts = buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo);
       if (slotCuts) {
         try {
-          bin = unwrap(bin.cut(slotCuts));
+          bin = unwrap(cut(bin, slotCuts));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn('[BinGen] Slot cut failed, skipping:', e instanceof Error ? e.message : e);
@@ -1273,7 +1312,7 @@ export function generateBin(
       const labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
       if (labelTabs) {
         try {
-          bin = unwrap(bin.fuse(labelTabs));
+          bin = unwrap(fuse(bin, labelTabs));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
           console.warn(
@@ -1320,14 +1359,15 @@ export function generateBin(
 
           for (const wall of wallDescriptors) {
             for (const center of wall.centers) {
-              let shape: Shape3D = shapeTemplate
-                .clone()
-                .translate([center.x, center.y, -halfDepth])
-                .rotate(90, [0, 0, 0], [1, 0, 0]);
+              let shape: Shape3D = rotate(
+                translate(clone(shapeTemplate), [center.x, center.y, -halfDepth]),
+                90,
+                { axis: [1, 0, 0] }
+              );
               if (wall.zRotation !== undefined) {
-                shape = shape.rotate(wall.zRotation, [0, 0, 0], [0, 0, 1]);
+                shape = rotate(shape, wall.zRotation, { axis: [0, 0, 1] });
               }
-              shape = shape.translate([wall.translateX, wall.translateY, wall.translateZ]);
+              shape = translate(shape, [wall.translateX, wall.translateY, wall.translateZ]);
               allPatternTools.push(shape);
             }
           }
@@ -1354,7 +1394,7 @@ export function generateBin(
     const cutoutCuts = buildCutoutCuts(params, innerW, innerD, wallHeight);
     if (cutoutCuts) {
       try {
-        bin = unwrap(bin.cut(cutoutCuts));
+        bin = unwrap(cut(bin, cutoutCuts));
       } catch (e) {
         console.warn('[BinGen] Cutout cut failed, skipping:', e instanceof Error ? e.message : e);
       }
@@ -1366,7 +1406,7 @@ export function generateBin(
   checkCancelled(signal);
   onProgress?.('merge', 0.8);
   if (!isFlat) {
-    bin = bin.translateZ(SOCKET_HEIGHT);
+    bin = translate(bin, [0, 0, SOCKET_HEIGHT]);
   }
 
   // Stage 6: Tessellate to triangle mesh
@@ -1393,7 +1433,7 @@ export function generateBin(
     angularTolerance = 30;
   }
 
-  const shapeMesh = bin.mesh({ tolerance, angularTolerance });
+  const shapeMesh = mesh(bin, { tolerance, angularTolerance });
 
   onProgress?.('merge', 1.0);
   // Skip normals for large bin preview (GPU flat shading is faster)
@@ -1467,14 +1507,14 @@ export async function exportSplitBin(
       const centerY = (yMin + yMax) / 2;
 
       const cuttingBox = sketch(drawRectangle(pieceW, pieceD), 'XY', -boxH / 2).extrude(boxH);
-      const translatedBox = cuttingBox.translate([centerX, centerY, 0]);
+      const translatedBox = translate(cuttingBox, [centerX, centerY, 0]);
 
       // Intersect the full solid with this box to get just this piece
-      const piece = unwrap(solid.clone().intersect(translatedBox));
+      const piece = unwrap(intersect(clone(solid), translatedBox));
 
       // Tessellate to binary STL
       const blob = unwrap(
-        piece.blobSTL({
+        exportSTL(piece, {
           tolerance,
           angularTolerance,
           binary: true,
