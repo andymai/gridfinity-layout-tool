@@ -6,7 +6,7 @@
  * the wall cuts. Single extrusion per piece (no boolean fuse needed).
  */
 
-import { drawRectangle } from 'brepjs';
+import { drawRectangle, translate } from 'brepjs';
 import type { Shape3D, PlaneName, SketchInterface, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { calculateDividerHeight, calculateDividerLength } from '@/shared/utils/slotMath';
@@ -73,7 +73,7 @@ export function buildUniqueDividerPieces(
     const length = calculateDividerLength(innerD, slotDepth, clearance);
     const piece = buildDividerPiece(length, thickness, dividerHeight);
     const yOffset = pieces.length > 0 ? dividerHeight + 5 : 0;
-    pieces.push(piece.translate([0, yOffset, 0]));
+    pieces.push(translate(piece, [0, yOffset, 0]));
   }
 
   return pieces;

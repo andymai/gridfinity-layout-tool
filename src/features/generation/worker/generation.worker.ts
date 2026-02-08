@@ -11,7 +11,7 @@
  * - CANCEL → (silently aborts current generation)
  */
 
-import { setOC, registerQueryModule, EdgeFinder, FaceFinder } from 'brepjs';
+import { initFromOC } from 'brepjs';
 import type { WorkerMessage, WorkerResponse } from '../bridge/types';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportPayload, ExportDividersPayload, ExportSplitPayload } from '../bridge/types';
@@ -134,8 +134,7 @@ async function initOpenCascade(): Promise<void> {
     });
   }
 
-  setOC(OC);
-  registerQueryModule({ EdgeFinder, FaceFinder });
+  initFromOC(OC);
   ocInitialized = true;
 }
 

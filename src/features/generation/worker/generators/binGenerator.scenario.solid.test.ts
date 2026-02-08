@@ -12,7 +12,7 @@ type GenerateFn = (
 let generateBin: GenerateFn;
 
 beforeAll(async () => {
-  const { setOC, registerQueryModule, EdgeFinder, FaceFinder } = await import('brepjs');
+  const { initFromOC } = await import('brepjs');
   const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
   const { readFileSync } = await import('fs');
   const { join } = await import('path');
@@ -20,8 +20,7 @@ beforeAll(async () => {
   const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
   const wasmBinary = readFileSync(wasmPath);
   const OC = await opencascade({ wasmBinary });
-  setOC(OC);
-  registerQueryModule({ EdgeFinder, FaceFinder });
+  initFromOC(OC);
 
   const mod = await import('@/features/generation/worker/generators/binGenerator');
   generateBin = mod.generateBin as GenerateFn;
