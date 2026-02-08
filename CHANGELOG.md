@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.30.0...gridfinity-layout-tool-v3.0.0) (2026-02-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* topOffset is now a global setting in cutoutConfig, not per-cutout
+
+### Features
+
+* add shape cutouts for solid bins in bin designer ([#629](https://github.com/andymai/gridfinity-layout-tool/issues/629)) ([f5fb107](https://github.com/andymai/gridfinity-layout-tool/commit/f5fb107a0f9a8e888f6dee004dfe8b5bd1c378f2))
+
 ## [2.30.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v2.29.0...gridfinity-layout-tool-v2.30.0) (2026-02-06)
 
 
