@@ -743,7 +743,7 @@ function buildCutoutCuts(
       translate(shape, [
         originX + cutout.x + cutout.width / 2,
         originY + cutout.y + cutout.depth / 2,
-        wallHeight - cutout.cutDepth,
+        wallHeight - (cutout.topOffset ?? 0) - cutout.cutDepth,
       ])
     );
   }
@@ -758,7 +758,7 @@ function buildCutoutCuts(
         translate(shape, [
           originX + cutout.x + cutout.width / 2,
           originY + cutout.y + cutout.depth / 2,
-          wallHeight - cutout.cutDepth,
+          wallHeight - (cutout.topOffset ?? 0) - cutout.cutDepth,
         ])
       );
     }
@@ -791,7 +791,8 @@ function buildCutoutCuts(
         groupBounds.maxY = Math.max(groupBounds.maxY, cy + diag);
       }
 
-      const zBottom = wallHeight - groupCutDepth;
+      const groupTopOffset = Math.max(...groupMembers.map((c) => c.topOffset ?? 0));
+      const zBottom = wallHeight - groupTopOffset - groupCutDepth;
       // Find horizontal edges near the bottom of the cutout group
       // Use relaxed tolerance for Z-height matching since edges may span multiple Z values
       const groupScoopEdges = edgeFinder()
