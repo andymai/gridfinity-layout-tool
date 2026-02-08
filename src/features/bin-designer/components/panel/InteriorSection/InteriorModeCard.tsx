@@ -9,7 +9,7 @@ import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
-import { Grid3x3Icon, LayersIcon, ScissorsIcon } from './icons';
+import { Grid3x3Icon, DividerIcon, ScissorsIcon } from './icons';
 import type { BinStyle } from '../../../types';
 import type { ReactNode } from 'react';
 
@@ -17,7 +17,6 @@ interface InteriorModeCardProps {
   mode: BinStyle;
   isExpanded: boolean;
   onSelect: () => void;
-  summary?: string;
 }
 
 interface ModeConfig {
@@ -35,7 +34,7 @@ const MODE_CONFIG: Record<BinStyle, ModeConfig> = {
     content: <CompartmentEditor />,
   },
   slotted: {
-    icon: <LayersIcon size={20} className="text-content-secondary" />,
+    icon: <DividerIcon size={20} className="text-content-secondary" />,
     titleKey: 'binDesigner.interior.slotted.title',
     descriptionKey: 'binDesigner.interior.slotted.description',
     content: <SlotConfigurator />,
@@ -63,7 +62,7 @@ function SolidModeContent() {
   );
 }
 
-export function InteriorModeCard({ mode, isExpanded, onSelect, summary }: InteriorModeCardProps) {
+export function InteriorModeCard({ mode, isExpanded, onSelect }: InteriorModeCardProps) {
   const t = useTranslation();
   const config = MODE_CONFIG[mode];
 
@@ -85,10 +84,7 @@ export function InteriorModeCard({ mode, isExpanded, onSelect, summary }: Interi
       <div className="flex items-start gap-3">
         <div className="mt-0.5">{config.icon}</div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <h4 className="text-sm font-medium text-content-primary">{t(config.titleKey)}</h4>
-            {summary && <span className="text-xs text-content-tertiary">{summary}</span>}
-          </div>
+          <h4 className="text-sm font-medium text-content-primary">{t(config.titleKey)}</h4>
           <p className="text-xs text-content-secondary mt-0.5">{t(config.descriptionKey)}</p>
         </div>
       </div>

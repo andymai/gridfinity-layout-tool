@@ -30,7 +30,7 @@ export function Grid3x3Icon({ size = 20, className = '' }: IconProps) {
   );
 }
 
-export function LayersIcon({ size = 20, className = '' }: IconProps) {
+export function DividerIcon({ size = 20, className = '' }: IconProps) {
   return (
     <svg
       width={size}
@@ -43,9 +43,9 @@ export function LayersIcon({ size = 20, className = '' }: IconProps) {
       strokeLinejoin="round"
       className={className}
     >
-      <polygon points="12 2 2 7 12 12 22 7 12 2" />
-      <polyline points="2 17 12 22 22 17" />
-      <polyline points="2 12 12 17 22 12" />
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M9 3v18" />
+      <path d="M15 3v18" />
     </svg>
   );
 }

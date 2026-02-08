@@ -5,7 +5,7 @@ import { InteriorModeCard } from './InteriorModeCard';
 // Mock the icons
 vi.mock('./icons', () => ({
   Grid3x3Icon: () => <div data-testid="grid-icon" />,
-  LayersIcon: () => <div data-testid="layers-icon" />,
+  DividerIcon: () => <div data-testid="divider-icon" />,
   ScissorsIcon: () => <div data-testid="scissors-icon" />,
 }));
 
@@ -35,20 +35,6 @@ describe('InteriorModeCard', () => {
     expect(screen.getByTestId('grid-icon')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.interior.standard.title')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.interior.standard.description')).toBeInTheDocument();
-  });
-
-  it('renders summary when provided', () => {
-    const onSelect = vi.fn();
-    render(
-      <InteriorModeCard
-        mode="standard"
-        isExpanded={false}
-        onSelect={onSelect}
-        summary="3 compartments"
-      />
-    );
-
-    expect(screen.getByText('3 compartments')).toBeInTheDocument();
   });
 
   it('calls onSelect when card is clicked', () => {
@@ -84,7 +70,7 @@ describe('InteriorModeCard', () => {
     expect(screen.getByTestId('grid-icon')).toBeInTheDocument();
 
     rerender(<InteriorModeCard mode="slotted" isExpanded={false} onSelect={onSelect} />);
-    expect(screen.getByTestId('layers-icon')).toBeInTheDocument();
+    expect(screen.getByTestId('divider-icon')).toBeInTheDocument();
 
     rerender(<InteriorModeCard mode="solid" isExpanded={false} onSelect={onSelect} />);
     expect(screen.getByTestId('scissors-icon')).toBeInTheDocument();

@@ -13,7 +13,7 @@ import type { BinStyle } from '../../../types';
 const MODES: BinStyle[] = ['standard', 'slotted', 'solid'];
 
 export function InteriorSection() {
-  const { state, handlers, summaries } = useInteriorSection();
+  const { state, handlers } = useInteriorSection();
 
   return (
     <div className="space-y-2">
@@ -23,7 +23,6 @@ export function InteriorSection() {
           mode={mode}
           isExpanded={state.style === mode}
           onSelect={() => handlers.setStyle(mode)}
-          summary={summaries[mode]}
         />
       ))}
     </div>
