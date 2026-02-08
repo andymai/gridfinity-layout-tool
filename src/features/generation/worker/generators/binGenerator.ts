@@ -758,11 +758,8 @@ function buildCutoutCuts(
       if (scoopEdges.length > 0) {
         try {
           shape = unwrap(fillet(shape, scoopEdges, scoopR));
-        } catch (e) {
-          console.warn(
-            '[BinGen] Cutout scoop fillet failed, skipping:',
-            e instanceof Error ? e.message : e
-          );
+        } catch {
+          // Fillet can fail on complex geometries; skip if it does
         }
       }
     }
@@ -839,12 +836,8 @@ function buildCutoutCuts(
       if (groupScoopEdges.length > 0) {
         try {
           fused = unwrap(fillet(fused, groupScoopEdges, scoopR));
-        } catch (e) {
+        } catch {
           // Fillet can fail on complex geometries; skip if it does
-          console.warn(
-            '[BinGen] Group scoop fillet failed, skipping:',
-            e instanceof Error ? e.message : e
-          );
         }
       }
     }
@@ -1247,11 +1240,6 @@ export function generateBin(
           bin = unwrap(fuse(box, top, { optimisation: 'commonFace' }));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Stacking lip failed, skipping:',
-            e instanceof Error ? e.message : e,
-            { wallThickness }
-          );
           bin = box;
         }
       } else {
@@ -1286,11 +1274,6 @@ export function generateBin(
           );
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Stacking lip failed, skipping:',
-            e instanceof Error ? e.message : e,
-            { wallThickness }
-          );
           bin = unwrap(fuse(base, box, { optimisation: 'commonFace' }));
         }
       } else {
@@ -1325,10 +1308,6 @@ export function generateBin(
           bin = unwrap(fuse(bin, compartmentWalls));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Divider fusion failed, skipping:',
-            e instanceof Error ? e.message : e
-          );
         }
       }
     }
@@ -1340,7 +1319,6 @@ export function generateBin(
         bin = unwrap(cut(bin, insertCuts));
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') throw e;
-        console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
 
@@ -1358,7 +1336,6 @@ export function generateBin(
           bin = unwrap(cut(bin, slotCuts));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn('[BinGen] Slot cut failed, skipping:', e instanceof Error ? e.message : e);
         }
       }
     }
@@ -1371,10 +1348,6 @@ export function generateBin(
           bin = unwrap(fuse(bin, labelTabs));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Label tab fusion failed, skipping:',
-            e instanceof Error ? e.message : e
-          );
         }
       }
     }
@@ -1437,11 +1410,6 @@ export function generateBin(
           }
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Wall pattern failed:',
-            params.wallPattern.pattern,
-            e instanceof Error ? e.message : e
-          );
         }
       }
     }
@@ -1451,8 +1419,8 @@ export function generateBin(
     if (cutoutCuts) {
       try {
         bin = unwrap(cut(bin, cutoutCuts));
-      } catch (e) {
-        console.warn('[BinGen] Cutout cut failed, skipping:', e instanceof Error ? e.message : e);
+      } catch {
+        // Cut operation can fail on complex geometries; skip if it does
       }
     }
   }
