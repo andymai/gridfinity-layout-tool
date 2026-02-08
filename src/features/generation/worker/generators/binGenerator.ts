@@ -36,6 +36,7 @@ import {
   intersect,
   faceFinder,
   edgeFinder,
+  getBounds,
 } from 'brepjs';
 import type {
   Shape3D,
@@ -446,7 +447,15 @@ function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape
   const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
 
   const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
-  const lipEdges = edgeFinder().atDistance(LIP_HEIGHT, [0, 0, LIP_HEIGHT]).findAll(swept);
+  // Find the top edge of the lip at Z=LIP_HEIGHT (4.4mm)
+  // EdgeFinderFn has no box filter, so use .when() predicate (official custom filter API)
+  const lipEdges = edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      // Select edges that overlap the top 1mm slice of the lip (intersection, not containment)
+      return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
+    })
+    .findAll(swept);
   const result = unwrap(fillet(swept, lipEdges, TOP_FILLET));
 
   lipCache = { key: lipKey, shape: result };
