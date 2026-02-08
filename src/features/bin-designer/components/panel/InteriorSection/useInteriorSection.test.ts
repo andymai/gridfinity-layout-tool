@@ -32,7 +32,7 @@ describe('useInteriorSection', () => {
     const { result } = renderHook(() => useInteriorSection());
 
     // Default: 1×1 = 1 compartment
-    expect(result.current.meta.summary).toContain('1');
+    expect(result.current.summaries.standard).toContain('1');
   });
 
   it('summary shows removable text for slotted style', () => {
@@ -42,6 +42,6 @@ describe('useInteriorSection', () => {
 
     const { result } = renderHook(() => useInteriorSection());
 
-    expect(result.current.meta.summary).toContain('Removable');
+    expect(result.current.summaries.slotted).toContain('Removable');
   });
 });
