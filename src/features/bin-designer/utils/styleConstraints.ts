@@ -42,14 +42,17 @@ const STYLE_CONSTRAINTS: Record<BinStyle, StyleConstraints> = {
 /**
  * Returns constraint information for the given style.
  * Used by UI to disable/warn about incompatible features.
+ * Falls back to 'standard' constraints if the style is invalid.
  */
 export function getStyleConstraints(style: BinStyle): StyleConstraints {
-  return STYLE_CONSTRAINTS[style];
+  return STYLE_CONSTRAINTS[style] ?? STYLE_CONSTRAINTS.standard;
 }
 
 /**
  * Checks if a specific feature is disabled for a given style.
+ * Falls back to 'standard' constraints if the style is invalid.
  */
 export function isFeatureDisabled(style: BinStyle, feature: ConstrainedFeature): boolean {
-  return STYLE_CONSTRAINTS[style].disabledFeatures.includes(feature);
+  const constraints = STYLE_CONSTRAINTS[style] ?? STYLE_CONSTRAINTS.standard;
+  return constraints.disabledFeatures.includes(feature);
 }
