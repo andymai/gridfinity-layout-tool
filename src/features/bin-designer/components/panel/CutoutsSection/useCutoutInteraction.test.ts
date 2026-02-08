@@ -11,7 +11,6 @@ const createCutout = (id: string, overrides: Partial<Cutout> = {}): Cutout => ({
   width: 20,
   depth: 15,
   cutDepth: 5,
-  topOffset: 0,
   rotation: 0,
   cornerRadius: 0,
   label: '',
@@ -478,7 +477,7 @@ describe('useCutoutInteraction', () => {
   });
 
   describe('drawing lifecycle', () => {
-    it('creates cutout with topOffset defaulting to 0', () => {
+    it('creates cutout with required properties', () => {
       const mockOnAdd = vi.fn();
       const mockOnUpdate = vi.fn();
       const mockOnUpdateBatch = vi.fn();
@@ -536,7 +535,7 @@ describe('useCutoutInteraction', () => {
       expect(mockOnAdd).toHaveBeenCalledWith(
         expect.objectContaining({
           shape: 'rectangle',
-          topOffset: 0,
+          cutDepth: 5,
         })
       );
     });

@@ -37,11 +37,13 @@ describe('binGenerator - cutout top offset scenarios', () => {
     height: 5, // 35mm interior
     style: 'solid',
     cutouts: [],
+    cutoutConfig: { topOffset: 0 },
   };
 
   it('positions cutout with zero offset flush with rim', () => {
     const params: BinParams = {
       ...baseParams,
+      cutoutConfig: { topOffset: 0 }, // flush
       cutouts: [
         {
           id: 'test-1',
@@ -51,7 +53,6 @@ describe('binGenerator - cutout top offset scenarios', () => {
           width: 20,
           depth: 15,
           cutDepth: 10,
-          topOffset: 0, // flush
           rotation: 0,
           cornerRadius: 0,
           label: '',
@@ -71,6 +72,7 @@ describe('binGenerator - cutout top offset scenarios', () => {
   it('positions cutout with 5mm offset below rim', () => {
     const params: BinParams = {
       ...baseParams,
+      cutoutConfig: { topOffset: 5 }, // recessed platform
       cutouts: [
         {
           id: 'test-2',
@@ -80,7 +82,6 @@ describe('binGenerator - cutout top offset scenarios', () => {
           width: 25,
           depth: 25,
           cutDepth: 10,
-          topOffset: 5, // recessed platform
           rotation: 0,
           cornerRadius: 0,
           label: '',
@@ -100,6 +101,7 @@ describe('binGenerator - cutout top offset scenarios', () => {
   it('handles maximum offset (near floor)', () => {
     const params: BinParams = {
       ...baseParams,
+      cutoutConfig: { topOffset: 34.5 }, // 35mm - 0.5mm
       cutouts: [
         {
           id: 'test-3',
@@ -109,7 +111,6 @@ describe('binGenerator - cutout top offset scenarios', () => {
           width: 15,
           depth: 15,
           cutDepth: 0.5, // minimal depth
-          topOffset: 34.5, // 35mm - 0.5mm
           rotation: 0,
           cornerRadius: 2,
           label: '',

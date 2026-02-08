@@ -81,17 +81,7 @@ export function CutoutPropertyPanel({
           value={cutout.cutDepth}
           onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
           min={0.5}
-          max={maxCutDepth - (cutout.topOffset ?? 0)}
-          step={0.5}
-          unit="mm"
-          disabled={disabled}
-        />
-        <SliderInput
-          label={t('binDesigner.cutouts.topOffset')}
-          value={cutout.topOffset ?? 0}
-          onChange={(topOffset) => onUpdate(cutout.id, { topOffset })}
-          min={0}
-          max={maxCutDepth - 0.5}
+          max={maxCutDepth}
           step={0.5}
           unit="mm"
           disabled={disabled}

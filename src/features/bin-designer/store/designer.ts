@@ -14,6 +14,7 @@ import type {
   BaseConfig,
   LabelTabConfig,
   WallPatternConfig,
+  CutoutConfig,
   Insert,
   Cutout,
   ExportFileNameConfig,
@@ -170,6 +171,14 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         state.params.wallPattern = { ...state.params.wallPattern, ...partial };
+      });
+    },
+
+    // Cutout configuration actions
+    updateCutoutConfig: (partial: Partial<CutoutConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cutoutConfig = { ...state.params.cutoutConfig, ...partial };
       });
     },
 

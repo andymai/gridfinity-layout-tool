@@ -18,6 +18,7 @@ import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import type { ContextMenuAction } from './CutoutContextMenu';
+import { SliderInput } from '../../controls/SliderInput';
 
 /** Canvas width in CSS pixels (fits 288px sidebar) */
 const CANVAS_WIDTH = 248;
@@ -33,6 +34,7 @@ export function CutoutEditor() {
     ungroupCutouts,
     updateCutoutsBatch,
     removeCutoutsBatch,
+    updateCutoutConfig,
     undo,
     redo,
     canUndo,
@@ -50,6 +52,7 @@ export function CutoutEditor() {
       ungroupCutouts: s.ungroupCutouts,
       updateCutoutsBatch: s.updateCutoutsBatch,
       removeCutoutsBatch: s.removeCutoutsBatch,
+      updateCutoutConfig: s.updateCutoutConfig,
       undo: s.undo,
       redo: s.redo,
       canUndo: s.history.past.length > 0,
@@ -325,6 +328,19 @@ export function CutoutEditor() {
         gridSize={gridSize}
         onGridSizeChange={setGridSize}
       />
+
+      {/* Global top offset control */}
+      <div className="rounded border border-stroke-subtle bg-surface-elevated p-3">
+        <SliderInput
+          label={t('binDesigner.cutouts.topOffset')}
+          value={params.cutoutConfig.topOffset}
+          onChange={(topOffset) => updateCutoutConfig({ topOffset })}
+          min={0}
+          max={wallHeight - 0.5}
+          step={0.5}
+          unit="mm"
+        />
+      </div>
 
       {/* WebGL Canvas */}
       <div

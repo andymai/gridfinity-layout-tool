@@ -49,7 +49,6 @@ const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   width: 20,
   depth: 20,
   cutDepth: 5,
-  topOffset: 0,
   rotation: 0,
   cornerRadius: 2,
   label: '',

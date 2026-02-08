@@ -41,7 +41,6 @@ const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   width: 20,
   depth: 15,
   cutDepth: 5,
-  topOffset: 0,
   rotation: 0,
   cornerRadius: 0,
   label: '',
@@ -104,21 +103,5 @@ describe('CutoutPropertyPanel', () => {
     render(<CutoutPropertyPanel {...defaultProps} />);
     fireEvent.click(screen.getByText('binDesigner.cutouts.delete'));
     expect(onRemove).toHaveBeenCalledWith('test-cutout');
-  });
-
-  it('renders topOffset slider between cutDepth and cornerRadius', () => {
-    render(<CutoutPropertyPanel {...defaultProps} />);
-
-    expect(screen.getByTestId('slider-binDesigner.cutouts.topOffset')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.topOffset')).toBeInTheDocument();
-  });
-
-  it('calls onUpdate when topOffset changes', () => {
-    render(<CutoutPropertyPanel {...defaultProps} />);
-
-    const topOffsetInput = screen.getByLabelText('binDesigner.cutouts.topOffset');
-    fireEvent.change(topOffsetInput, { target: { value: '5' } });
-
-    expect(onUpdate).toHaveBeenCalledWith('test-cutout', { topOffset: 5 });
   });
 });

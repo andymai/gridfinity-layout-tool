@@ -169,6 +169,7 @@ export interface BinParams {
   readonly dividerPieces: DividerPieceConfig;
   readonly inserts: Insert[];
   readonly cutouts: Cutout[];
+  readonly cutoutConfig: CutoutConfig;
   readonly wallPattern: WallPatternConfig;
 }
 
@@ -209,6 +210,12 @@ export interface Insert {
 /** Shape of a top-down cutout into solid bin body */
 export type CutoutShape = 'rectangle' | 'circle';
 
+/** Global cutout configuration for solid bins */
+export interface CutoutConfig {
+  /** Global top offset: lowers the solid fill surface below the rim (0 = flush with rim) */
+  readonly topOffset: number;
+}
+
 /** A positioned cutout instance on the bin top surface */
 export interface Cutout {
   readonly id: string;
@@ -223,8 +230,6 @@ export interface Cutout {
   readonly depth: number;
   /** Cavity depth in mm (how deep the cut goes from top surface) */
   readonly cutDepth: number;
-  /** Distance below rim where top surface begins in mm (0 = flush with rim) */
-  readonly topOffset: number;
   /** Rotation in degrees (0-359) */
   readonly rotation: number;
   /** Corner radius for rectangle shape (mm) */
@@ -417,6 +422,9 @@ export interface DesignerState {
 
   // Wall pattern actions
   updateWallPattern: (partial: Partial<WallPatternConfig>) => void;
+
+  // Cutout configuration actions
+  updateCutoutConfig: (partial: Partial<CutoutConfig>) => void;
 
   // Insert actions
   addInsert: (insert: Insert) => void;

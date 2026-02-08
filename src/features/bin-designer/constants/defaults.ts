@@ -12,6 +12,7 @@ import type {
   SlotConfig,
   DividerPieceConfig,
   WallPatternConfig,
+  CutoutConfig,
 } from '../types';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -33,6 +34,11 @@ export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
 export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
   enabled: false,
   pattern: 'honeycomb',
+} as const;
+
+/** Default cutout configuration: flush with rim (no offset) */
+export const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
+  topOffset: 0,
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -81,6 +87,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
   inserts: [],
   cutouts: [],
+  cutoutConfig: DEFAULT_CUTOUT_CONFIG,
   wallPattern: DEFAULT_WALL_PATTERN_CONFIG,
 } as const;
 
@@ -241,6 +248,12 @@ export function migrateParams(
     }
   }
 
+  // Migrate cutoutConfig and handle legacy per-cutout topOffset
+  const cutoutConfig: CutoutConfig = {
+    ...DEFAULT_CUTOUT_CONFIG,
+    ...((params.cutoutConfig as Partial<CutoutConfig> | undefined) ?? {}),
+  };
+
   // Remove legacy dividers and eco fields from spread
   const { dividers: _legacyDividers, eco: _legacyEco, ...rest } = params as Record<string, unknown>;
 
@@ -257,6 +270,7 @@ export function migrateParams(
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
     cutouts: params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts,
+    cutoutConfig,
     wallPattern: wallPatternConfig,
   } as BinParams;
 }

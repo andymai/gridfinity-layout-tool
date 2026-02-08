@@ -15,7 +15,6 @@ describe('DesignerStore - cutout actions', () => {
     width: 20,
     depth: 15,
     cutDepth: 5,
-    topOffset: 0,
     rotation: 0,
     cornerRadius: 0,
     label: 'Test Cutout',

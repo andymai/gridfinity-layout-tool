@@ -10,7 +10,6 @@ const createCutout = (id: string, width: number, depth: number): Cutout => ({
   width,
   depth,
   cutDepth: 5,
-  topOffset: 0,
   rotation: 0,
   cornerRadius: 0,
   label: '',

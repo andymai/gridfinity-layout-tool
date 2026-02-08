@@ -348,15 +348,18 @@ function buildBaseSocket(
  * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
  * The box starts at Z=0 (socket interface) and goes up to wallHeight.
  * Shell removes the top face, leaving walls + solid floor.
+ *
+ * @param cutoutTopOffset - For solid mode: lowers the interior fill by this amount (mm)
  */
 function buildBinBox(
   gridW: number,
   gridD: number,
   wallHeight: number,
   wallThickness: number,
-  solid: boolean
+  solid: boolean,
+  cutoutTopOffset: number = 0
 ): Shape3D {
-  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}|${solid}`;
+  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}|${solid}|${cutoutTopOffset}`;
   if (boxCache?.key === boxKey) {
     return clone(boxCache.shape);
   }
@@ -366,10 +369,31 @@ function buildBinBox(
 
   const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
 
-  // Solid mode: return the raw extrusion without hollowing
+  // Solid mode: return the raw extrusion, optionally with lowered interior fill
   if (solid) {
-    boxCache = { key: boxKey, shape: box };
-    return clone(box);
+    if (cutoutTopOffset > 0) {
+      // Build hollow walls extending to full wallHeight
+      const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
+      const hollowWalls = unwrap(shell(box, topFaces, wallThickness));
+
+      // Build interior solid block stopping at wallHeight - cutoutTopOffset
+      const innerW = outerW - 2 * wallThickness;
+      const innerD = outerD - 2 * wallThickness;
+      const fillHeight = wallHeight - cutoutTopOffset;
+      const innerFill = sketch(
+        drawRoundedRectangle(innerW, innerD, Math.max(0, CORNER_RADIUS - wallThickness)),
+        'XY'
+      ).extrude(fillHeight);
+
+      // Combine walls with lowered interior fill
+      const result = unwrap(fuse(hollowWalls, innerFill));
+      boxCache = { key: boxKey, shape: result };
+      return clone(result);
+    } else {
+      // Standard solid mode: full solid block
+      boxCache = { key: boxKey, shape: box };
+      return clone(box);
+    }
   }
 
   const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
@@ -667,10 +691,10 @@ function buildCutoutShape(cutout: {
 
 /**
  * Build cutout cavity cuts for solid bins.
- * Cutouts cut down from the top surface with configurable depth.
+ * Cutouts cut down from the solid fill surface with configurable depth.
  * All cutout shapes are unioned into a single solid, then boolean-cut from the bin.
  *
- * @param params - Bin configuration (reads cutouts array)
+ * @param params - Bin configuration (reads cutouts array and cutoutConfig.topOffset)
  * @param innerW - Interior width in mm (outer - 2*wall)
  * @param innerD - Interior depth in mm (outer - 2*wall)
  * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
@@ -687,6 +711,10 @@ function buildCutoutCuts(
   // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
   const originX = -innerW / 2;
   const originY = -innerD / 2;
+
+  // Global top offset: the solid fill surface is at wallHeight - topOffset
+  const topOffset = params.cutoutConfig.topOffset;
+  const solidSurfaceZ = wallHeight - topOffset;
 
   const cutoutShapes: Shape3D[] = [];
 
@@ -743,7 +771,7 @@ function buildCutoutCuts(
       translate(shape, [
         originX + cutout.x + cutout.width / 2,
         originY + cutout.y + cutout.depth / 2,
-        wallHeight - (cutout.topOffset ?? 0) - cutout.cutDepth,
+        solidSurfaceZ - cutout.cutDepth,
       ])
     );
   }
@@ -758,7 +786,7 @@ function buildCutoutCuts(
         translate(shape, [
           originX + cutout.x + cutout.width / 2,
           originY + cutout.y + cutout.depth / 2,
-          wallHeight - (cutout.topOffset ?? 0) - cutout.cutDepth,
+          solidSurfaceZ - cutout.cutDepth,
         ])
       );
     }
@@ -791,8 +819,7 @@ function buildCutoutCuts(
         groupBounds.maxY = Math.max(groupBounds.maxY, cy + diag);
       }
 
-      const groupTopOffset = Math.max(...groupMembers.map((c) => c.topOffset ?? 0));
-      const zBottom = wallHeight - groupTopOffset - groupCutDepth;
+      const zBottom = solidSurfaceZ - groupCutDepth;
       // Find horizontal edges near the bottom of the cutout group
       // Use relaxed tolerance for Z-height matching since edges may span multiple Z values
       const groupScoopEdges = edgeFinder()
@@ -828,8 +855,8 @@ function buildCutoutCuts(
   const fused = unwrap(fuseAll(cutoutShapes));
 
   // Clip cutout union to bin interior so cutouts extending past walls don't
-  // cut through them. The clip boundary covers the full Z range of cutouts.
-  const clipBoundary = sketch(drawRectangle(innerW, innerD), 'XY', 0).extrude(wallHeight);
+  // cut through them. The clip boundary covers from floor to the solid surface.
+  const clipBoundary = sketch(drawRectangle(innerW, innerD), 'XY', 0).extrude(solidSurfaceZ);
   return unwrap(intersect(fused, clipBoundary));
 }
 
@@ -1196,7 +1223,15 @@ export function generateBin(
   } else {
     checkCancelled(signal);
     onProgress?.('shell', 0.3);
-    const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, solid);
+    const cutoutTopOffset = solid ? params.cutoutConfig.topOffset : 0;
+    const box = buildBinBox(
+      params.width,
+      params.depth,
+      wallHeight,
+      wallThickness,
+      solid,
+      cutoutTopOffset
+    );
 
     if (isFlat) {
       // Flat floor: no socket, box body is the entire base
