@@ -10,6 +10,7 @@
  * - Base: Base attachments, Physical Units
  */
 
+import { useShallow } from 'zustand/react/shallow';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { InteriorSection } from '../panel/InteriorSection';
 import { BaseSection } from '../panel/BaseSection';
@@ -21,13 +22,14 @@ import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
 import { useTranslation } from '@/i18n';
+import { useDesignerStore } from '@/features/bin-designer/store';
 
 export function ParameterPanel() {
   const t = useTranslation();
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
-
+  const showLabelTabs = useDesignerStore(useShallow((s) => s.params.style === 'standard'));
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
@@ -47,12 +49,14 @@ export function ParameterPanel() {
           defaultExpanded
           summary={interiorSummary}
         >
-          <div className="px-4 py-4 border-b border-stroke-subtle/50">
+          <div className="px-4 py-4">
             <InteriorSection />
           </div>
-          <div className="px-4 py-4">
-            <LabelTabsSection />
-          </div>
+          {showLabelTabs && (
+            <div className="px-4 py-4 border-t border-stroke-subtle/50">
+              <LabelTabsSection />
+            </div>
+          )}
         </SectionGroup>
 
         {/* Base group */}

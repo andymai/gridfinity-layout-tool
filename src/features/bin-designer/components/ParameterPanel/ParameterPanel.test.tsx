@@ -40,7 +40,7 @@ describe('ParameterPanel', () => {
     render(<ParameterPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText('Interior Dividers')).toBeInTheDocument();
+      expect(screen.getByText('Grid Dividers')).toBeInTheDocument();
     });
   });
 

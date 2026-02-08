@@ -12,6 +12,7 @@ import type {
   SlotConfig,
   DividerPieceConfig,
   WallPatternConfig,
+  CutoutConfig,
 } from '../types';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -33,6 +34,11 @@ export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
 export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
   enabled: false,
   pattern: 'honeycomb',
+} as const;
+
+/** Default cutout configuration: flush with rim (no offset) */
+export const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
+  topOffset: 0,
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -80,6 +86,8 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   slotConfig: DEFAULT_SLOT_CONFIG,
   dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
   inserts: [],
+  cutouts: [],
+  cutoutConfig: DEFAULT_CUTOUT_CONFIG,
   wallPattern: DEFAULT_WALL_PATTERN_CONFIG,
 } as const;
 
@@ -98,6 +106,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   designListOpen: false,
   wireframeMode: false,
   halfBinMode: false,
+  cutoutEditorOpen: false,
   previewCompartments: null,
   previewSelection: null,
 };
@@ -192,7 +201,12 @@ export function migrateParams(
     }
   }
 
-  const style = params.style ?? DEFAULT_BIN_PARAMS.style;
+  // Migrate legacy base.solid=true → style='solid'
+  const baseConfig = { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) };
+  let style = params.style ?? DEFAULT_BIN_PARAMS.style;
+  if (baseConfig.solid && style !== 'solid') {
+    style = 'solid';
+  }
 
   // Backfill slot config and divider pieces
   const slotConfig: SlotConfig = {
@@ -234,6 +248,12 @@ export function migrateParams(
     }
   }
 
+  // Migrate cutoutConfig and handle legacy per-cutout topOffset
+  const cutoutConfig: CutoutConfig = {
+    ...DEFAULT_CUTOUT_CONFIG,
+    ...((params.cutoutConfig as Partial<CutoutConfig> | undefined) ?? {}),
+  };
+
   // Remove legacy dividers and eco fields from spread
   const { dividers: _legacyDividers, eco: _legacyEco, ...rest } = params as Record<string, unknown>;
 
@@ -241,7 +261,7 @@ export function migrateParams(
     ...DEFAULT_BIN_PARAMS,
     ...rest,
     style,
-    base: { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) },
+    base: baseConfig,
     compartments: compartmentsConfig,
     scoop: scoopConfig,
     label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
@@ -249,6 +269,8 @@ export function migrateParams(
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
+    cutouts: params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts,
+    cutoutConfig,
     wallPattern: wallPatternConfig,
   } as BinParams;
 }

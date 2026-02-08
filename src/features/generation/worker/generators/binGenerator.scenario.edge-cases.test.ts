@@ -181,4 +181,173 @@ describe('edge case generation', () => {
       60000
     );
   });
+
+  describe('cutout edge-finding robustness', () => {
+    // Test minimum-size cutout with scoop (edge-finding may find fewer edges)
+    testParams('2x2 with minimum cutout and scoop', {
+      width: 2,
+      depth: 2,
+      height: 4,
+      cutouts: [
+        {
+          id: 'min-cutout',
+          shape: 'rectangle',
+          width: 2,
+          depth: 2,
+          cutDepth: 2,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          scoopRadius: 2,
+        },
+      ],
+    });
+
+    // Test grouped cutouts with extreme rotation and scoop
+    testParams('2x2 with grouped cutouts at 45° rotation and scoop', {
+      width: 2,
+      depth: 2,
+      height: 4,
+      cutouts: [
+        {
+          id: 'group-1',
+          shape: 'rectangle',
+          width: 10,
+          depth: 10,
+          cutDepth: 3,
+          x: -5,
+          y: -5,
+          rotation: 45,
+          cornerRadius: 0,
+          label: '',
+          groupId: 'g1',
+          scoopRadius: 2,
+        },
+        {
+          id: 'group-2',
+          shape: 'rectangle',
+          width: 10,
+          depth: 10,
+          cutDepth: 3,
+          x: 5,
+          y: 5,
+          rotation: 45,
+          cornerRadius: 0,
+          label: '',
+          groupId: 'g1',
+          scoopRadius: 2,
+        },
+      ],
+    });
+
+    // Test grouped cutouts with multiple rotations
+    testParams('2x2 with grouped cutouts at mixed rotations and scoop', {
+      width: 2,
+      depth: 2,
+      height: 4,
+      cutouts: [
+        {
+          id: 'group-1',
+          shape: 'rectangle',
+          width: 12,
+          depth: 8,
+          cutDepth: 3,
+          x: -6,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: 'g1',
+          scoopRadius: 2,
+        },
+        {
+          id: 'group-2',
+          shape: 'rectangle',
+          width: 12,
+          depth: 8,
+          cutDepth: 3,
+          x: 6,
+          y: 0,
+          rotation: 90,
+          cornerRadius: 0,
+          label: '',
+          groupId: 'g1',
+          scoopRadius: 2,
+        },
+      ],
+    });
+
+    // Test ungrouped cutout with scoop at extreme rotation
+    testParams('2x2 with ungrouped cutout at 135° rotation and scoop', {
+      width: 2,
+      depth: 2,
+      height: 4,
+      cutouts: [
+        {
+          id: 'solo',
+          shape: 'rectangle',
+          width: 15,
+          depth: 10,
+          cutDepth: 3,
+          x: 0,
+          y: 0,
+          rotation: 135,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          scoopRadius: 2,
+        },
+      ],
+    });
+
+    // Test cutout with scoop larger than cutDepth (should clamp)
+    testParams('2x2 with cutout and excessive scoop radius', {
+      width: 2,
+      depth: 2,
+      height: 4,
+      cutouts: [
+        {
+          id: 'excessive',
+          shape: 'rectangle',
+          width: 20,
+          depth: 20,
+          cutDepth: 3,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          scoopRadius: 10, // Much larger than cutDepth
+        },
+      ],
+    });
+
+    // Test stacking lip with cutouts (both features enabled)
+    testParams('2x2 with stacking lip and cutouts with scoop', {
+      width: 2,
+      depth: 2,
+      height: 4,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      cutouts: [
+        {
+          id: 'with-lip',
+          shape: 'circle',
+          width: 15,
+          depth: 15,
+          cutDepth: 3,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          scoopRadius: 2,
+        },
+      ],
+    });
+  });
 });

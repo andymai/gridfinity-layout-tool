@@ -12,6 +12,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ParameterPanel } from '@/features/bin-designer/components/ParameterPanel';
 import { PreviewCanvas } from '@/features/bin-designer/components/PreviewCanvas';
+import { CutoutWorkspace } from '@/features/bin-designer/components/CutoutWorkspace';
+import { ResizeDivider } from '@/features/bin-designer/components/CutoutWorkspace/ResizeDivider';
+import { loadSplitRatio } from '@/features/bin-designer/components/CutoutWorkspace/splitRatioStorage';
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
@@ -161,6 +164,8 @@ export function DesignerPage(_props: DesignerPageProps) {
   useUnsavedWarning();
 
   const { isDesktop, isMobile } = useResponsive();
+  const cutoutEditorOpen = useDesignerStore((s) => s.ui.cutoutEditorOpen);
+  const [splitRatio, setSplitRatio] = useState(loadSplitRatio);
   const t = useTranslation();
   const saveStatus = useDesignerStore((s) => s.saveStatus);
   const designName = useDesignerStore((s) => s.designName);
@@ -513,7 +518,18 @@ export function DesignerPage(_props: DesignerPageProps) {
       )}
 
       {/* Main content - responsive layout */}
-      {isDesktop ? (
+      {isDesktop && cutoutEditorOpen ? (
+        /* Desktop: cutout workspace + resizable divider + 3D preview */
+        <main className="flex flex-1 overflow-hidden">
+          <div className="overflow-hidden" style={{ width: `${splitRatio * 100}%` }}>
+            <CutoutWorkspace />
+          </div>
+          <ResizeDivider ratio={splitRatio} onRatioChange={setSplitRatio} />
+          <div className="relative flex-1 overflow-hidden">
+            <PreviewCanvas />
+          </div>
+        </main>
+      ) : isDesktop ? (
         /* Desktop: side-by-side */
         <main className="flex flex-1 overflow-hidden">
           <div className="w-72 flex-shrink-0 overflow-hidden border-r border-stroke-subtle bg-surface-secondary">

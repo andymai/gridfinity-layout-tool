@@ -1,45 +1,35 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { getCompartmentCount } from '../../../utils/compartments';
-import { useTranslation } from '@/i18n';
 import type { BinStyle } from '../../../types';
-import type { SectionMeta } from '../types';
 
 export function useInteriorSection() {
-  const { compartments, style, setParam } = useDesignerStore(
+  const { style, setParam, updateBase, updateWallPattern } = useDesignerStore(
     useShallow((s) => ({
-      compartments: s.params.compartments,
       style: s.params.style,
       setParam: s.setParam,
+      updateBase: s.updateBase,
+      updateWallPattern: s.updateWallPattern,
     }))
   );
-  const t = useTranslation();
 
   const setStyle = useCallback(
     (newStyle: BinStyle) => {
       setParam('style', newStyle);
+      updateBase({ solid: newStyle === 'solid' });
+      // Disable wall patterns when switching to cutout mode
+      if (newStyle === 'solid') {
+        updateWallPattern({ enabled: false });
+      }
     },
-    [setParam]
+    [setParam, updateBase, updateWallPattern]
   );
 
   const isSlotted = style === 'slotted';
-  const compartmentCount = getCompartmentCount(compartments);
-
-  const summary = useMemo(
-    () =>
-      isSlotted
-        ? t('binDesigner.slottedInteriorSummary')
-        : t('binDesigner.interiorSummary', { count: compartmentCount }),
-    [isSlotted, compartmentCount, t]
-  );
-
-  const meta: SectionMeta = useMemo(() => ({ summary }), [summary]);
+  const isSolid = style === 'solid';
 
   return {
-    state: { style, isSlotted },
+    state: { style, isSlotted, isSolid },
     handlers: { setStyle },
-    meta,
-    t,
   };
 }

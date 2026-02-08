@@ -13,7 +13,7 @@
 export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted' | 'flat';
 
 /** Bin wall/style variant */
-export type BinStyle = 'standard' | 'slotted';
+export type BinStyle = 'standard' | 'slotted' | 'solid';
 
 /** Slot configuration for one axis */
 export interface AxisSlotConfig {
@@ -168,6 +168,8 @@ export interface BinParams {
   readonly slotConfig: SlotConfig;
   readonly dividerPieces: DividerPieceConfig;
   readonly inserts: Insert[];
+  readonly cutouts: Cutout[];
+  readonly cutoutConfig: CutoutConfig;
   readonly wallPattern: WallPatternConfig;
 }
 
@@ -199,6 +201,51 @@ export interface Insert {
   readonly cornerRadius: number;
   /** Optional label for the insert */
   readonly label: string;
+}
+
+// =============================================================================
+// Cutout Types (Top-Down Cavity Cuts for Solid Bins)
+// =============================================================================
+
+/** Shape of a top-down cutout into solid bin body */
+export type CutoutShape = 'rectangle' | 'circle';
+
+/** Global cutout configuration for solid bins */
+export interface CutoutConfig {
+  /** Global top offset: lowers the solid fill surface below the rim (0 = flush with rim) */
+  readonly topOffset: number;
+}
+
+/** A positioned cutout instance on the bin top surface */
+export interface Cutout {
+  readonly id: string;
+  readonly shape: CutoutShape;
+  /** X position of left edge in mm from bin interior left edge */
+  readonly x: number;
+  /** Y position of bottom edge in mm from bin interior front edge */
+  readonly y: number;
+  /** Width in mm (or diameter for circle) */
+  readonly width: number;
+  /** Depth in mm (ignored for circle) */
+  readonly depth: number;
+  /** Cavity depth in mm (how deep the cut goes from top surface) */
+  readonly cutDepth: number;
+  /** Rotation in degrees (0-359) */
+  readonly rotation: number;
+  /** Corner radius for rectangle shape (mm) */
+  readonly cornerRadius: number;
+  /** Optional label for the cutout */
+  readonly label: string;
+  /** Group ID for boolean union (null = ungrouped) */
+  readonly groupId: string | null;
+  /** Scoop radius in mm — fillets the bottom edges of the cutout for easy access */
+  readonly scoopRadius?: number;
+  /** When true, the cutout cannot be moved, resized, or rotated */
+  readonly locked?: boolean;
+  /** When true, the cutout is not rendered or selectable (faint ghost only) */
+  readonly hidden?: boolean;
+  /** Z-order for rendering layering (higher = rendered on top) */
+  readonly zIndex?: number;
 }
 
 // =============================================================================
@@ -262,6 +309,8 @@ export interface DesignerUIState {
   readonly wireframeMode: boolean;
   /** Whether half-bin mode is enabled (0.5 grid unit increments for width/depth) */
   readonly halfBinMode: boolean;
+  /** Whether the full-workspace cutout editor is open (desktop only) */
+  readonly cutoutEditorOpen: boolean;
   /** Preview compartments during drag-to-merge/split (shown as ghost in 3D view) */
   readonly previewCompartments: CompartmentConfig | null;
   /** Preview selection info for 3D ghost overlay */
@@ -328,6 +377,8 @@ export interface DesignerState {
   history: DesignerHistory;
   wasmStatus: WasmStatus;
   ui: DesignerUIState;
+  /** Transaction nesting depth — when > 0, pushHistoryEntry is suppressed */
+  transactionDepth: number;
 
   // Persistence
   currentDesignId: string | null;
@@ -372,11 +423,40 @@ export interface DesignerState {
   // Wall pattern actions
   updateWallPattern: (partial: Partial<WallPatternConfig>) => void;
 
+  // Cutout configuration actions
+  updateCutoutConfig: (partial: Partial<CutoutConfig>) => void;
+
   // Insert actions
   addInsert: (insert: Insert) => void;
   removeInsert: (id: string) => void;
   updateInsert: (id: string, updates: Partial<Insert>) => void;
   clearInserts: () => void;
+
+  // Cutout actions
+  addCutout: (cutout: Cutout) => void;
+  removeCutout: (id: string) => void;
+  updateCutout: (id: string, updates: Partial<Cutout>) => void;
+  clearCutouts: () => void;
+  duplicateCutouts: (cutoutIds: readonly string[]) => void;
+  groupCutouts: (cutoutIds: readonly string[]) => void;
+  ungroupCutouts: (cutoutIds: readonly string[]) => void;
+
+  // Transaction + batch cutout actions
+  startTransaction: () => void;
+  commitTransaction: () => void;
+  updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
+  removeCutoutsBatch: (ids: readonly string[]) => void;
+
+  // Lock/hide/layer ordering actions
+  lockCutouts: (ids: readonly string[]) => void;
+  unlockCutouts: (ids: readonly string[]) => void;
+  hideCutouts: (ids: readonly string[]) => void;
+  showCutouts: (ids: readonly string[]) => void;
+  showAllCutouts: () => void;
+  bringForward: (ids: readonly string[]) => void;
+  sendBackward: (ids: readonly string[]) => void;
+  bringToFront: (ids: readonly string[]) => void;
+  sendToBack: (ids: readonly string[]) => void;
 
   // Generation actions
   setGenerationStatus: (status: GenerationStatus) => void;
@@ -388,6 +468,7 @@ export interface DesignerState {
   setExportDialogOpen: (open: boolean) => void;
   setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
+  setCutoutEditorOpen: (open: boolean) => void;
   setPreviewCompartments: (preview: CompartmentConfig | null) => void;
   setPreviewSelection: (
     selection: {

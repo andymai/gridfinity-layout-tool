@@ -21,6 +21,8 @@ export type {
   DividerPieceConfig,
   Insert,
   InsertShape,
+  Cutout,
+  CutoutShape,
   WallPatternConfig,
   WallPatternType,
 } from '@/features/bin-designer/types';

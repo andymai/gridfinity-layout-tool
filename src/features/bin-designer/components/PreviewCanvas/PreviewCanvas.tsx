@@ -27,6 +27,7 @@ import {
   GhostLabelTabs,
   GhostSlotLines,
   GhostDividerPieces,
+  GhostCutouts,
   BinSplitLines,
   type CameraPreset,
 } from '../preview';
@@ -464,6 +465,7 @@ export function PreviewCanvas() {
             <GhostLabelTabs />
             <GhostSlotLines />
             <GhostDividerPieces />
+            <GhostCutouts />
 
             {/* Split lines for oversized bins */}
             <BinSplitLines />

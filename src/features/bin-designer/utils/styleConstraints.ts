@@ -37,6 +37,14 @@ const STYLE_CONSTRAINTS: Record<BinStyle, StyleConstraints> = {
     warnings: [],
     hasGussets: false,
   },
+  solid: {
+    disabledFeatures: ['dividers', 'label'],
+    disabledReasons: {
+      label: 'binDesigner.labelTabsUnavailableSlotted',
+    },
+    warnings: [],
+    hasGussets: false,
+  },
 };
 
 /**

@@ -27,21 +27,4 @@ describe('useInteriorSection', () => {
 
     expect(useDesignerStore.getState().params.style).toBe('slotted');
   });
-
-  it('summary shows compartment count for standard style', () => {
-    const { result } = renderHook(() => useInteriorSection());
-
-    // Default: 1×1 = 1 compartment
-    expect(result.current.meta.summary).toContain('1');
-  });
-
-  it('summary shows removable text for slotted style', () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, style: 'slotted' },
-    });
-
-    const { result } = renderHook(() => useInteriorSection());
-
-    expect(result.current.meta.summary).toContain('Removable');
-  });
 });

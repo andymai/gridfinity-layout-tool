@@ -18,6 +18,7 @@ import {
   draw,
   drawRoundedRectangle,
   drawCircle,
+  drawEllipse,
   drawRectangle,
   drawPolysides,
   unwrap,
@@ -347,15 +348,18 @@ function buildBaseSocket(
  * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
  * The box starts at Z=0 (socket interface) and goes up to wallHeight.
  * Shell removes the top face, leaving walls + solid floor.
+ *
+ * @param cutoutTopOffset - For solid mode: lowers the interior fill by this amount (mm)
  */
 function buildBinBox(
   gridW: number,
   gridD: number,
   wallHeight: number,
   wallThickness: number,
-  solid: boolean
+  solid: boolean,
+  cutoutTopOffset: number = 0
 ): Shape3D {
-  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}|${solid}`;
+  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}|${solid}|${cutoutTopOffset}`;
   if (boxCache?.key === boxKey) {
     return clone(boxCache.shape);
   }
@@ -365,10 +369,31 @@ function buildBinBox(
 
   const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
 
-  // Solid mode: return the raw extrusion without hollowing
+  // Solid mode: return the raw extrusion, optionally with lowered interior fill
   if (solid) {
-    boxCache = { key: boxKey, shape: box };
-    return clone(box);
+    if (cutoutTopOffset > 0) {
+      // Build hollow walls extending to full wallHeight
+      const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
+      const hollowWalls = unwrap(shell(box, topFaces, wallThickness));
+
+      // Build interior solid block stopping at wallHeight - cutoutTopOffset
+      const innerW = outerW - 2 * wallThickness;
+      const innerD = outerD - 2 * wallThickness;
+      const fillHeight = wallHeight - cutoutTopOffset;
+      const innerFill = sketch(
+        drawRoundedRectangle(innerW, innerD, Math.max(0, CORNER_RADIUS - wallThickness)),
+        'XY'
+      ).extrude(fillHeight);
+
+      // Combine walls with lowered interior fill
+      const result = unwrap(fuse(hollowWalls, innerFill));
+      boxCache = { key: boxKey, shape: result };
+      return clone(result);
+    } else {
+      // Standard solid mode: full solid block
+      boxCache = { key: boxKey, shape: box };
+      return clone(box);
+    }
   }
 
   const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
@@ -581,8 +606,9 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
         break;
       }
       case 'rounded-rect': {
+        const maxR = Math.min(insert.width, insert.depth) / 2 - 0.01;
         solid = sketch(
-          drawRoundedRectangle(insert.width, insert.depth, insert.cornerRadius),
+          drawRoundedRectangle(insert.width, insert.depth, Math.min(insert.cornerRadius, maxR)),
           'XY'
         ).extrude(insert.cutDepth);
         break;
@@ -614,6 +640,217 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
   }
 
   return unwrap(fuseAll(insertShapes));
+}
+
+// ─── Cutout Builder (Solid Mode Only) ────────────────────────────────────────
+
+/** Create an extruded + rotated cutout shape centered at origin (no translation). */
+function buildCutoutShape(cutout: {
+  readonly shape: string;
+  readonly width: number;
+  readonly depth: number;
+  readonly cutDepth: number;
+  readonly rotation: number;
+  readonly cornerRadius: number;
+}): Shape3D {
+  let shape: Shape3D;
+
+  switch (cutout.shape) {
+    case 'circle': {
+      const rx = cutout.width / 2;
+      const ry = cutout.depth / 2;
+      if (Math.abs(rx - ry) < 0.01) {
+        shape = sketch(drawCircle(rx), 'XY').extrude(cutout.cutDepth);
+      } else {
+        shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
+      }
+      break;
+    }
+    case 'rectangle':
+    default: {
+      if (cutout.cornerRadius > 0) {
+        const maxCR = Math.min(cutout.width, cutout.depth) / 2 - 0.01;
+        shape = sketch(
+          drawRoundedRectangle(cutout.width, cutout.depth, Math.min(cutout.cornerRadius, maxCR)),
+          'XY'
+        ).extrude(cutout.cutDepth);
+      } else {
+        shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+      }
+      break;
+    }
+  }
+
+  // Apply rotation around Z axis (at origin, before translation)
+  if (cutout.rotation !== 0) {
+    shape = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
+  }
+
+  return shape;
+}
+
+/**
+ * Build cutout cavity cuts for solid bins.
+ * Cutouts cut down from the solid fill surface with configurable depth.
+ * All cutout shapes are unioned into a single solid, then boolean-cut from the bin.
+ *
+ * @param params - Bin configuration (reads cutouts array and cutoutConfig.topOffset)
+ * @param innerW - Interior width in mm (outer - 2*wall)
+ * @param innerD - Interior depth in mm (outer - 2*wall)
+ * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
+ */
+function buildCutoutCuts(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): Shape3D | null {
+  if (params.cutouts.length === 0) return null;
+
+  // Cutout x,y are relative to interior bottom-left corner (0,0).
+  // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
+  const originX = -innerW / 2;
+  const originY = -innerD / 2;
+
+  // Global top offset: the solid fill surface is at wallHeight - topOffset
+  const topOffset = params.cutoutConfig.topOffset;
+  const solidSurfaceZ = wallHeight - topOffset;
+
+  const cutoutShapes: Shape3D[] = [];
+
+  // Partition cutouts by groupId: null → ungrouped, same groupId → collected
+  const ungrouped: typeof params.cutouts = [];
+  const groups = new Map<string, typeof params.cutouts>();
+  for (const cutout of params.cutouts) {
+    if (cutout.groupId === null) {
+      ungrouped.push(cutout);
+    } else {
+      const list = groups.get(cutout.groupId);
+      if (list) {
+        list.push(cutout);
+      } else {
+        groups.set(cutout.groupId, [cutout]);
+      }
+    }
+  }
+
+  // --- Process ungrouped cutouts (individual scoop, same as before) ---
+  for (const cutout of ungrouped) {
+    let shape = buildCutoutShape(cutout);
+
+    // Apply scoop radius fillet to bottom edges (before translation, at Z ≈ 0)
+    const maxScoop = Math.min(cutout.cutDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
+    const scoopR = Math.min(cutout.scoopRadius ?? 0, Math.max(0, maxScoop));
+    if (scoopR > 0) {
+      const halfW = cutout.width / 2 + 1;
+      const halfD = cutout.depth / 2 + 1;
+      // Find edges near the bottom (Z≈0) within the cutout bounds
+      // Use overlap checks instead of containment for better edge matching
+      const scoopEdges = edgeFinder()
+        .when((e) => {
+          const bounds = getBounds(e);
+          const zOverlaps = bounds.zMin <= 0.1 && bounds.zMax >= -0.1;
+          const xOverlaps = bounds.xMax >= -halfW && bounds.xMin <= halfW;
+          const yOverlaps = bounds.yMax >= -halfD && bounds.yMin <= halfD;
+          return zOverlaps && xOverlaps && yOverlaps;
+        })
+        .findAll(shape);
+      if (scoopEdges.length > 0) {
+        try {
+          shape = unwrap(fillet(shape, scoopEdges, scoopR));
+        } catch {
+          // Fillet can fail on complex geometries; skip if it does
+        }
+      }
+    }
+
+    cutoutShapes.push(
+      translate(shape, [
+        originX + cutout.x + cutout.width / 2,
+        originY + cutout.y + cutout.depth / 2,
+        solidSurfaceZ - cutout.cutDepth,
+      ])
+    );
+  }
+
+  // --- Process grouped cutouts (fuse first, then single scoop fillet) ---
+  for (const [, groupMembers] of groups) {
+    // Create and translate each member shape (no individual scoop)
+    const memberShapes: Shape3D[] = [];
+    for (const cutout of groupMembers) {
+      const shape = buildCutoutShape(cutout);
+      memberShapes.push(
+        translate(shape, [
+          originX + cutout.x + cutout.width / 2,
+          originY + cutout.y + cutout.depth / 2,
+          solidSurfaceZ - cutout.cutDepth,
+        ])
+      );
+    }
+
+    let fused = memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes));
+
+    // Determine group scoop radius and cut depth
+    const groupScoopRadius = Math.max(...groupMembers.map((c) => c.scoopRadius ?? 0));
+    const groupCutDepth = Math.min(...groupMembers.map((c) => c.cutDepth));
+    const minDim = Math.min(...groupMembers.map((c) => Math.min(c.width, c.depth)));
+    const maxScoop = Math.min(groupCutDepth, minDim / 2) - 0.01;
+    const scoopR = Math.min(groupScoopRadius, Math.max(0, maxScoop));
+
+    if (scoopR > 0) {
+      // Compute XY bounding box of the fused group for edge selection
+      const groupBounds = {
+        minX: Infinity,
+        minY: Infinity,
+        maxX: -Infinity,
+        maxY: -Infinity,
+      };
+      for (const cutout of groupMembers) {
+        const cx = originX + cutout.x + cutout.width / 2;
+        const cy = originY + cutout.y + cutout.depth / 2;
+        // Account for rotation: use diagonal as safe half-extent
+        const diag = Math.sqrt(cutout.width ** 2 + cutout.depth ** 2) / 2;
+        groupBounds.minX = Math.min(groupBounds.minX, cx - diag);
+        groupBounds.minY = Math.min(groupBounds.minY, cy - diag);
+        groupBounds.maxX = Math.max(groupBounds.maxX, cx + diag);
+        groupBounds.maxY = Math.max(groupBounds.maxY, cy + diag);
+      }
+
+      const zBottom = solidSurfaceZ - groupCutDepth;
+      // Find horizontal edges near the bottom of the cutout group
+      // Use relaxed tolerance for Z-height matching since edges may span multiple Z values
+      const groupScoopEdges = edgeFinder()
+        .when((e) => {
+          const bounds = getBounds(e);
+          // Check if edge overlaps the target Z region (not strictly contained)
+          const zOverlaps = bounds.zMin <= zBottom + 0.1 && bounds.zMax >= zBottom - 0.1;
+          // Check if edge is within or near the XY bounds of the group
+          const xOverlaps =
+            bounds.xMax >= groupBounds.minX - 1 && bounds.xMin <= groupBounds.maxX + 1;
+          const yOverlaps =
+            bounds.yMax >= groupBounds.minY - 1 && bounds.yMin <= groupBounds.maxY + 1;
+          return zOverlaps && xOverlaps && yOverlaps;
+        })
+        .findAll(fused);
+      // Only apply fillet if we found edges (avoid empty edge list error)
+      if (groupScoopEdges.length > 0) {
+        try {
+          fused = unwrap(fillet(fused, groupScoopEdges, scoopR));
+        } catch {
+          // Fillet can fail on complex geometries; skip if it does
+        }
+      }
+    }
+
+    cutoutShapes.push(fused);
+  }
+
+  const fused = unwrap(fuseAll(cutoutShapes));
+
+  // Clip cutout union to bin interior so cutouts extending past walls don't
+  // cut through them. The clip boundary covers from floor to the solid surface.
+  const clipBoundary = sketch(drawRectangle(innerW, innerD), 'XY', 0).extrude(solidSurfaceZ);
+  return unwrap(intersect(fused, clipBoundary));
 }
 
 // ─── Label Tab Builder ───────────────────────────────────────────────────────
@@ -979,7 +1216,15 @@ export function generateBin(
   } else {
     checkCancelled(signal);
     onProgress?.('shell', 0.3);
-    const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, solid);
+    const cutoutTopOffset = solid ? params.cutoutConfig.topOffset : 0;
+    const box = buildBinBox(
+      params.width,
+      params.depth,
+      wallHeight,
+      wallThickness,
+      solid,
+      cutoutTopOffset
+    );
 
     if (isFlat) {
       // Flat floor: no socket, box body is the entire base
@@ -995,11 +1240,6 @@ export function generateBin(
           bin = unwrap(fuse(box, top, { optimisation: 'commonFace' }));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Stacking lip failed, skipping:',
-            e instanceof Error ? e.message : e,
-            { wallThickness }
-          );
           bin = box;
         }
       } else {
@@ -1034,11 +1274,6 @@ export function generateBin(
           );
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Stacking lip failed, skipping:',
-            e instanceof Error ? e.message : e,
-            { wallThickness }
-          );
           bin = unwrap(fuse(base, box, { optimisation: 'commonFace' }));
         }
       } else {
@@ -1073,10 +1308,6 @@ export function generateBin(
           bin = unwrap(fuse(bin, compartmentWalls));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Divider fusion failed, skipping:',
-            e instanceof Error ? e.message : e
-          );
         }
       }
     }
@@ -1088,7 +1319,6 @@ export function generateBin(
         bin = unwrap(cut(bin, insertCuts));
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') throw e;
-        console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
 
@@ -1106,7 +1336,6 @@ export function generateBin(
           bin = unwrap(cut(bin, slotCuts));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn('[BinGen] Slot cut failed, skipping:', e instanceof Error ? e.message : e);
         }
       }
     }
@@ -1119,10 +1348,6 @@ export function generateBin(
           bin = unwrap(fuse(bin, labelTabs));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Label tab fusion failed, skipping:',
-            e instanceof Error ? e.message : e
-          );
         }
       }
     }
@@ -1183,12 +1408,17 @@ export function generateBin(
           }
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          console.warn(
-            '[BinGen] Wall pattern failed:',
-            params.wallPattern.pattern,
-            e instanceof Error ? e.message : e
-          );
         }
+      }
+    }
+  } else {
+    // Solid mode: apply cutouts (top-down cavity cuts into the solid block)
+    const cutoutCuts = buildCutoutCuts(params, innerW, innerD, wallHeight);
+    if (cutoutCuts) {
+      try {
+        bin = unwrap(cut(bin, cutoutCuts));
+      } catch {
+        // Cut operation can fail on complex geometries; skip if it does
       }
     }
   }

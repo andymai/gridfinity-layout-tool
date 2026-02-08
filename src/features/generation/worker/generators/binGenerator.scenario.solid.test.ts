@@ -79,4 +79,89 @@ describe('binGenerator — solid mode', () => {
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.triangleCount).toBeGreaterThan(10);
   }, 30000);
+
+  it('solid bin with cutout at corner (0,0) produces valid mesh within bin bounds', () => {
+    // A 2x2 bin: outerW = 2*42 - 0.5 = 83.5mm, innerW = 83.5 - 2*1.2 = 81.1mm
+    // Cutout at x=0, y=0 (bottom-left interior corner) should be positioned at
+    // model space (-innerW/2 + w/2, -innerD/2 + d/2) = (-35.55, -35.55)
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      depth: 2,
+      height: 3,
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+      cutouts: [
+        {
+          id: 'corner-cutout',
+          shape: 'rectangle',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          cutDepth: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+        },
+      ],
+    };
+
+    const result = generateBin(params, undefined, true);
+    expect(result.vertices.length).toBeGreaterThan(0);
+    expect(result.triangleCount).toBeGreaterThan(10);
+
+    // Verify mesh bounding box stays within bin outer dimensions
+    const outerW = 2 * 42 - 0.5;
+    const outerD = outerW;
+    const halfW = outerW / 2;
+    const halfD = outerD / 2;
+    const vertices = result.vertices;
+    for (let i = 0; i < vertices.length; i += 3) {
+      const x = vertices[i];
+      const y = vertices[i + 1];
+      // Allow small tolerance for tessellation artifacts
+      expect(x).toBeGreaterThanOrEqual(-halfW - 0.1);
+      expect(x).toBeLessThanOrEqual(halfW + 0.1);
+      expect(y).toBeGreaterThanOrEqual(-halfD - 0.1);
+      expect(y).toBeLessThanOrEqual(halfD + 0.1);
+    }
+  }, 30000);
+
+  it('solid bin with centered cutout has more triangles than without', () => {
+    const baseParams: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      depth: 2,
+      height: 3,
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+    };
+
+    const withCutout: BinParams = {
+      ...baseParams,
+      cutouts: [
+        {
+          id: 'center-cutout',
+          shape: 'rectangle',
+          x: 20,
+          y: 20,
+          width: 15,
+          depth: 15,
+          cutDepth: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+        },
+      ],
+    };
+
+    const plainResult = generateBin(baseParams, undefined, true);
+    const cutoutResult = generateBin(withCutout, undefined, true);
+
+    // A cutout adds surfaces (cavity walls), so more triangles
+    expect(cutoutResult.triangleCount).toBeGreaterThan(plainResult.triangleCount);
+  }, 60000);
 });

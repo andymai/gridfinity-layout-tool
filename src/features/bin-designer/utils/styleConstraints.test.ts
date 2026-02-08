@@ -16,6 +16,13 @@ describe('styleConstraints', () => {
       expect(constraints.disabledFeatures).toContain('label');
       expect(constraints.hasGussets).toBe(false);
     });
+
+    it('solid style disables dividers and label', () => {
+      const constraints = getStyleConstraints('solid');
+      expect(constraints.disabledFeatures).toContain('dividers');
+      expect(constraints.disabledFeatures).toContain('label');
+      expect(constraints.hasGussets).toBe(false);
+    });
   });
 
   describe('isFeatureDisabled', () => {
@@ -29,8 +36,13 @@ describe('styleConstraints', () => {
       expect(isFeatureDisabled('slotted', 'label')).toBe(true);
     });
 
+    it('returns true for solid style dividers and label', () => {
+      expect(isFeatureDisabled('solid', 'dividers')).toBe(true);
+      expect(isFeatureDisabled('solid', 'label')).toBe(true);
+    });
+
     it('covers all style types', () => {
-      const styles: BinStyle[] = ['standard', 'slotted'];
+      const styles: BinStyle[] = ['standard', 'slotted', 'solid'];
       for (const style of styles) {
         expect(() => getStyleConstraints(style)).not.toThrow();
       }
