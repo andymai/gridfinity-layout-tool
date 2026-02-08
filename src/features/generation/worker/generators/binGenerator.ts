@@ -716,20 +716,27 @@ function buildCutoutCuts(
     if (scoopR > 0) {
       const halfW = cutout.width / 2 + 1;
       const halfD = cutout.depth / 2 + 1;
+      // Find edges near the bottom (Z≈0) within the cutout bounds
+      // Use overlap checks instead of containment for better edge matching
       const scoopEdges = edgeFinder()
         .when((e) => {
           const bounds = getBounds(e);
-          return (
-            bounds.xMin >= -halfW &&
-            bounds.xMax <= halfW &&
-            bounds.yMin >= -halfD &&
-            bounds.yMax <= halfD &&
-            bounds.zMin >= -0.01 &&
-            bounds.zMax <= 0.01
-          );
+          const zOverlaps = bounds.zMin <= 0.1 && bounds.zMax >= -0.1;
+          const xOverlaps = bounds.xMax >= -halfW && bounds.xMin <= halfW;
+          const yOverlaps = bounds.yMax >= -halfD && bounds.yMin <= halfD;
+          return zOverlaps && xOverlaps && yOverlaps;
         })
         .findAll(shape);
-      shape = unwrap(fillet(shape, scoopEdges, scoopR));
+      if (scoopEdges.length > 0) {
+        try {
+          shape = unwrap(fillet(shape, scoopEdges, scoopR));
+        } catch (e) {
+          console.warn(
+            '[BinGen] Cutout scoop fillet failed, skipping:',
+            e instanceof Error ? e.message : e
+          );
+        }
+      }
     }
 
     cutoutShapes.push(
@@ -785,20 +792,33 @@ function buildCutoutCuts(
       }
 
       const zBottom = wallHeight - groupCutDepth;
+      // Find horizontal edges near the bottom of the cutout group
+      // Use relaxed tolerance for Z-height matching since edges may span multiple Z values
       const groupScoopEdges = edgeFinder()
         .when((e) => {
           const bounds = getBounds(e);
-          return (
-            bounds.xMin >= groupBounds.minX - 1 &&
-            bounds.xMax <= groupBounds.maxX + 1 &&
-            bounds.yMin >= groupBounds.minY - 1 &&
-            bounds.yMax <= groupBounds.maxY + 1 &&
-            bounds.zMin >= zBottom - 0.01 &&
-            bounds.zMax <= zBottom + 0.01
-          );
+          // Check if edge overlaps the target Z region (not strictly contained)
+          const zOverlaps = bounds.zMin <= zBottom + 0.1 && bounds.zMax >= zBottom - 0.1;
+          // Check if edge is within or near the XY bounds of the group
+          const xOverlaps =
+            bounds.xMax >= groupBounds.minX - 1 && bounds.xMin <= groupBounds.maxX + 1;
+          const yOverlaps =
+            bounds.yMax >= groupBounds.minY - 1 && bounds.yMin <= groupBounds.maxY + 1;
+          return zOverlaps && xOverlaps && yOverlaps;
         })
         .findAll(fused);
-      fused = unwrap(fillet(fused, groupScoopEdges, scoopR));
+      // Only apply fillet if we found edges (avoid empty edge list error)
+      if (groupScoopEdges.length > 0) {
+        try {
+          fused = unwrap(fillet(fused, groupScoopEdges, scoopR));
+        } catch (e) {
+          // Fillet can fail on complex geometries; skip if it does
+          console.warn(
+            '[BinGen] Group scoop fillet failed, skipping:',
+            e instanceof Error ? e.message : e
+          );
+        }
+      }
     }
 
     cutoutShapes.push(fused);
