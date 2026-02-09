@@ -56,6 +56,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     screwDiameter: 3,
     stackingLip: true,
     solid: false,
+    quarterFeet: false,
   },
   style: 'standard',
   compartments: {

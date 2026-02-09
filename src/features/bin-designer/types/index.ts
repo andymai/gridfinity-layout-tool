@@ -53,6 +53,8 @@ export interface BaseConfig {
   readonly stackingLip: boolean;
   /** When true, the bin body is a solid block (no cavity). Used by cutouts feature. */
   readonly solid: boolean;
+  /** When true, generates 4 corner feet (0.25×0.25 units each) instead of full socket grid. */
+  readonly quarterFeet: boolean;
 }
 
 /** Divider configuration for compartment splitting (legacy — use CompartmentConfig) */

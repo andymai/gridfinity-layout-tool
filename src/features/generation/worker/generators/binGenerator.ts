@@ -342,6 +342,91 @@ function buildBaseSocket(
   return clone(result);
 }
 
+// ─── Quarter Feet Builder ────────────────────────────────────────────────────
+
+/** Configuration for a single quarter-foot placement */
+interface QuarterFootConfig {
+  /** Center position in mm (relative to bin center) */
+  readonly centerX: number;
+  readonly centerY: number;
+  /** Foot dimensions in mm (each foot is 0.25 units = ~10.5mm per side) */
+  readonly width: number;
+  readonly depth: number;
+}
+
+/**
+ * Calculate quarter-foot positions for the four corners of a bin footprint.
+ *
+ * Quarter feet are positioned at the bin's outer corners, each occupying
+ * 0.25 × 0.25 units (~10.5mm × 10.5mm). This provides minimal baseplate
+ * contact while maintaining stability and Gridfinity compatibility.
+ *
+ * @param gridW - Bin width in grid units (must be >= 1.0)
+ * @param gridD - Bin depth in grid units (must be >= 1.0)
+ * @returns Array of 4 foot configurations positioned at bin corners
+ */
+function calculateQuarterFootPositions(gridW: number, gridD: number): QuarterFootConfig[] {
+  const FOOT_SIZE_UNITS = 0.25;
+  const FOOT_SIZE_MM = FOOT_SIZE_UNITS * SIZE; // ~10.5mm
+
+  const binW = gridW * SIZE - CLEARANCE;
+  const binD = gridD * SIZE - CLEARANCE;
+
+  // Position feet at outer corners, inset by half the foot size
+  // This places the foot's center at the corner position
+  const offsetX = binW / 2 - FOOT_SIZE_MM / 2;
+  const offsetY = binD / 2 - FOOT_SIZE_MM / 2;
+
+  return [
+    { centerX: -offsetX, centerY: -offsetY, width: FOOT_SIZE_MM, depth: FOOT_SIZE_MM }, // Bottom-left
+    { centerX: offsetX, centerY: -offsetY, width: FOOT_SIZE_MM, depth: FOOT_SIZE_MM }, // Bottom-right
+    { centerX: offsetX, centerY: offsetY, width: FOOT_SIZE_MM, depth: FOOT_SIZE_MM }, // Top-right
+    { centerX: -offsetX, centerY: offsetY, width: FOOT_SIZE_MM, depth: FOOT_SIZE_MM }, // Top-left
+  ];
+}
+
+/**
+ * Build a single quarter-foot with scaled Gridfinity socket profile.
+ *
+ * Each foot reuses the standard Gridfinity tapered socket geometry scaled
+ * to quarter-cell dimensions. This ensures proper baseplate fit while
+ * minimizing material usage.
+ *
+ * @param config - Foot dimensions and position
+ * @param forExport - If true, uses full 5-section socket profile for printing fidelity
+ * @returns Positioned foot solid ready for fusion
+ */
+function buildQuarterFoot(config: QuarterFootConfig, forExport = false): Shape3D {
+  // Reuse the existing cell socket builder with scaled dimensions
+  // Apply clearance to foot size for proper baseplate fit
+  const foot = forExport
+    ? buildSingleCellSocket(config.width - CLEARANCE, config.depth - CLEARANCE)
+    : buildSimplifiedCellSocket(config.width - CLEARANCE, config.depth - CLEARANCE);
+
+  return translate(foot, [config.centerX, config.centerY, 0]);
+}
+
+/**
+ * Build quarter-feet base: 4 corner feet with scaled Gridfinity socket profile.
+ *
+ * Each foot is 0.25 × 0.25 units (~10.5mm × 10.5mm) and positioned at the bin's
+ * outer corners. The feet reuse the standard Gridfinity socket taper profile
+ * scaled to the smaller footprint. No magnet/screw holes are cut.
+ *
+ * Use case: Lighter bins that need minimal baseplate contact, reduced material usage,
+ * or compatibility with grids that have half-sized edges.
+ *
+ * @param gridW - Bin width in grid units (must be >= 1.0)
+ * @param gridD - Bin depth in grid units (must be >= 1.0)
+ * @param forExport - If true, uses full 5-section socket profile for printing fidelity
+ * @returns Fused solid containing all 4 feet positioned at bin corners
+ */
+function buildQuarterFeetBase(gridW: number, gridD: number, forExport = false): Shape3D {
+  const footConfigs = calculateQuarterFootPositions(gridW, gridD);
+  const feet = footConfigs.map((config) => buildQuarterFoot(config, forExport));
+  return unwrap(fuseAll(feet, { optimisation: 'commonFace' }));
+}
+
 // ─── Box Body Builder ─────────────────────────────────────────────────────────
 
 /**
@@ -1167,10 +1252,12 @@ export function generateBin(
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
+  const quarterFeet = params.base.quarterFeet && !isFlat;
   const solid = params.base.solid;
   // Wall extends from socket top to bin top. Per Gridfinity spec, base is 1u (7mm),
   // but the physical socket structure is 5mm deep. Wall = total - socket depth.
   // Flat floor: no socket, so the full height is available for the box body.
+  // Quarter feet: use socket height (feet are socket-height structures).
   // Total height: e.g., 3u + lip = 21 + 4.4 = 25.4mm
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
@@ -1180,10 +1267,15 @@ export function generateBin(
   const innerD = outerD - 2 * wallThickness;
   const isSlotted = params.style === 'slotted';
 
+  // Quarter feet do not support magnet/screw holes (feet too small)
   const withMagnet =
-    !isFlat && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
+    !isFlat &&
+    !quarterFeet &&
+    (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
   const withScrew =
-    !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
+    !isFlat &&
+    !quarterFeet &&
+    (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
   // Dynamic quality: small bins (< 4x4) get higher fidelity preview
   const cellCount = params.width * params.depth;
@@ -1198,6 +1290,7 @@ export function generateBin(
     params.width,
     params.depth,
     isFlat,
+    quarterFeet,
     withMagnet,
     withScrew,
     params.base.magnetDiameter,
@@ -1244,6 +1337,31 @@ export function generateBin(
         }
       } else {
         bin = box;
+      }
+    } else if (quarterFeet) {
+      // Quarter feet: 4 corner feet with scaled Gridfinity socket profile
+      const feet = buildQuarterFeetBase(params.width, params.depth, useHighQuality);
+
+      checkCancelled(signal);
+      onProgress?.('features', 0.4);
+      if (params.base.stackingLip) {
+        try {
+          const top = translate(buildTopShape(params.width, params.depth, true), [
+            0,
+            0,
+            wallHeight,
+          ]);
+          bin = unwrap(
+            fuse(unwrap(fuse(feet, box, { optimisation: 'commonFace' })), top, {
+              optimisation: 'commonFace',
+            })
+          );
+        } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
+          bin = unwrap(fuse(feet, box, { optimisation: 'commonFace' }));
+        }
+      } else {
+        bin = unwrap(fuse(feet, box, { optimisation: 'commonFace' }));
       }
     } else {
       // Socket style: build base socket and fuse with box
