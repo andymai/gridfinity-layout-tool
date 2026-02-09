@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.0.2...gridfinity-layout-tool-v3.1.0) (2026-02-09)
+
+
+### Features
+
+* remove vercel speed insights ([#652](https://github.com/andymai/gridfinity-layout-tool/issues/652)) ([3a02938](https://github.com/andymai/gridfinity-layout-tool/commit/3a0293853dadaabfeb115169f4ad211ebbe2b5a6))
+
 ## [3.0.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.0.1...gridfinity-layout-tool-v3.0.2) (2026-02-09)
 
 
