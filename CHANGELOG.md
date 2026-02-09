@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.1.0...gridfinity-layout-tool-v3.2.0) (2026-02-09)
+
+
+### Features
+
+* add half sockets option for bins ([#659](https://github.com/andymai/gridfinity-layout-tool/issues/659)) ([1973458](https://github.com/andymai/gridfinity-layout-tool/commit/19734585b9e6e12f46a0d97b09da83ad3f3ca105))
+
 ## [3.1.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.0.2...gridfinity-layout-tool-v3.1.0) (2026-02-09)
 
 
