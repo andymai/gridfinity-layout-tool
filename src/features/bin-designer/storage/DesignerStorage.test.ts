@@ -124,6 +124,111 @@ describe('DesignerStorage', () => {
       const result = await loadDesign('nonexistent');
       expectErr(result);
     });
+
+    it('should return corruption error when params is null', async () => {
+      // First save a valid design to ensure DB is initialized
+      await saveDesign({
+        id: 'temp-design',
+        name: 'Temp',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+      });
+
+      // Now directly inject corrupted data using raw IndexedDB
+      const { openDB } = await import('idb');
+      const db = await openDB('gridfinity-designer-v1', 1, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains('designs')) {
+            const store = db.createObjectStore('designs', { keyPath: 'id' });
+            store.createIndex('updatedAt', 'updatedAt');
+          }
+        },
+      });
+      await db.put('designs', {
+        id: 'corrupted-null',
+        name: 'Corrupted Design',
+        params: null,
+        thumbnail: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      db.close();
+
+      const result = await loadDesign('corrupted-null');
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_CORRUPTED');
+      expect(error.key).toBe('corrupted-null');
+    });
+
+    it('should return corruption error when params is a primitive', async () => {
+      // First save a valid design to ensure DB is initialized
+      await saveDesign({
+        id: 'temp-design-2',
+        name: 'Temp 2',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+      });
+
+      // Now directly inject corrupted data
+      const { openDB } = await import('idb');
+      const db = await openDB('gridfinity-designer-v1', 1, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains('designs')) {
+            const store = db.createObjectStore('designs', { keyPath: 'id' });
+            store.createIndex('updatedAt', 'updatedAt');
+          }
+        },
+      });
+      await db.put('designs', {
+        id: 'corrupted-primitive',
+        name: 'Corrupted Design',
+        params: 'invalid-string' as unknown,
+        thumbnail: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      db.close();
+
+      const result = await loadDesign('corrupted-primitive');
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_CORRUPTED');
+      expect(error.key).toBe('corrupted-primitive');
+    });
+
+    it('should return corruption error when params is an array', async () => {
+      // First save a valid design to ensure DB is initialized
+      await saveDesign({
+        id: 'temp-design-3',
+        name: 'Temp 3',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+      });
+
+      // Now directly inject corrupted data
+      const { openDB } = await import('idb');
+      const db = await openDB('gridfinity-designer-v1', 1, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains('designs')) {
+            const store = db.createObjectStore('designs', { keyPath: 'id' });
+            store.createIndex('updatedAt', 'updatedAt');
+          }
+        },
+      });
+      await db.put('designs', {
+        id: 'corrupted-array',
+        name: 'Corrupted Design',
+        params: [] as unknown,
+        thumbnail: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      db.close();
+
+      const result = await loadDesign('corrupted-array');
+      const error = expectErr(result);
+      expect(error.code).toBe('STORAGE_CORRUPTED');
+      expect(error.key).toBe('corrupted-array');
+    });
   });
 
   describe('listDesigns', () => {
@@ -173,6 +278,127 @@ describe('DesignerStorage', () => {
       const result = await listDesigns();
       const value = expectOk(result);
       expect(value).toEqual([]);
+    });
+
+    it('should filter out corrupted designs with null params', async () => {
+      // Save one valid design
+      await saveDesign({
+        id: 'valid-design',
+        name: 'Valid Design',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+      });
+
+      // Directly inject corrupted data to IndexedDB
+      const { openDB } = await import('idb');
+      const db = await openDB('gridfinity-designer-v1', 1, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains('designs')) {
+            const store = db.createObjectStore('designs', { keyPath: 'id' });
+            store.createIndex('updatedAt', 'updatedAt');
+          }
+        },
+      });
+      await db.put('designs', {
+        id: 'corrupted-list',
+        name: 'Corrupted Design',
+        params: null,
+        thumbnail: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      db.close();
+
+      const result = await listDesigns();
+      const value = expectOk(result);
+      // Should only return the valid design, filtering out the corrupted one
+      expect(value.length).toBe(1);
+      expect(value[0].id).toBe('valid-design');
+    });
+
+    it('should filter out corrupted designs with primitive params', async () => {
+      // Save one valid design
+      await saveDesign({
+        id: 'valid-design-2',
+        name: 'Valid Design 2',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+      });
+
+      // Directly inject corrupted data with string params
+      const { openDB } = await import('idb');
+      const db = await openDB('gridfinity-designer-v1', 1, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains('designs')) {
+            const store = db.createObjectStore('designs', { keyPath: 'id' });
+            store.createIndex('updatedAt', 'updatedAt');
+          }
+        },
+      });
+      await db.put('designs', {
+        id: 'corrupted-string',
+        name: 'Corrupted String',
+        params: 'invalid' as unknown,
+        thumbnail: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      db.close();
+
+      const result = await listDesigns();
+      const value = expectOk(result);
+      expect(value.length).toBe(1);
+      expect(value[0].id).toBe('valid-design-2');
+    });
+
+    it('should handle mix of valid and corrupted designs', async () => {
+      // Save valid designs
+      await saveDesign({
+        id: 'valid-1',
+        name: 'Valid 1',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+      });
+      await saveDesign({
+        id: 'valid-2',
+        name: 'Valid 2',
+        params: { ...DEFAULT_BIN_PARAMS, width: 3 },
+        thumbnail: null,
+      });
+
+      // Add multiple corrupted entries
+      const { openDB } = await import('idb');
+      const db = await openDB('gridfinity-designer-v1', 1, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains('designs')) {
+            const store = db.createObjectStore('designs', { keyPath: 'id' });
+            store.createIndex('updatedAt', 'updatedAt');
+          }
+        },
+      });
+      await db.put('designs', {
+        id: 'corrupted-1',
+        name: 'Corrupted 1',
+        params: null,
+        thumbnail: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      await db.put('designs', {
+        id: 'corrupted-2',
+        name: 'Corrupted 2',
+        params: 123 as unknown,
+        thumbnail: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      db.close();
+
+      const result = await listDesigns();
+      const value = expectOk(result);
+      // Should return only the 2 valid designs
+      expect(value.length).toBe(2);
+      expect(value.map((d) => d.id).sort()).toEqual(['valid-1', 'valid-2']);
     });
   });
 

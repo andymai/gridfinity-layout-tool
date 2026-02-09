@@ -8,7 +8,14 @@
 
 import { openDB, type IDBPDatabase } from 'idb';
 import type { Result, StorageError } from '@/core/result';
-import { ok, err, isErr, storageNotFound, storageUnavailable } from '@/core/result';
+import {
+  ok,
+  err,
+  isErr,
+  storageNotFound,
+  storageUnavailable,
+  storageCorrupted,
+} from '@/core/result';
 import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
 import { THUMBNAIL_VERSION } from '@/features/bin-designer/types';
 import { DEFAULT_BIN_PARAMS, migrateParams } from '@/features/bin-designer/constants/defaults';
@@ -100,8 +107,16 @@ export async function loadDesign(id: string): Promise<Result<SavedDesign, Storag
       return err(storageNotFound(`Design '${id}' not found`));
     }
 
-    // Apply migration for backward compatibility with old designs
+    // Validate that params is a valid object before migration
+    if (!design.params || typeof design.params !== 'object' || Array.isArray(design.params)) {
+      return err(
+        storageCorrupted(id, [
+          `Invalid params type: ${design.params === null ? 'null' : typeof design.params}`,
+        ])
+      );
+    }
 
+    // Apply migration for backward compatibility with old designs
     const migratedParams = migrateParams(design.params as Partial<BinParams>);
 
     return ok({
@@ -122,11 +137,16 @@ export async function listDesigns(): Promise<Result<SavedDesign[], StorageError>
     const designs = (await db.getAll(DESIGNS_STORE)) as SavedDesign[];
 
     // Apply migration for backward compatibility with old designs
-    const migratedDesigns = designs.map((design) => ({
-      ...design,
-
-      params: migrateParams(design.params as Partial<BinParams>),
-    }));
+    // Filter out corrupted entries (invalid params) to avoid breaking the entire list
+    const migratedDesigns = designs
+      .filter((design) => {
+        // Skip entries with invalid params (null, undefined, or primitives)
+        return design.params && typeof design.params === 'object' && !Array.isArray(design.params);
+      })
+      .map((design) => ({
+        ...design,
+        params: migrateParams(design.params as Partial<BinParams>),
+      }));
 
     // Sort by updatedAt descending
     migratedDesigns.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
