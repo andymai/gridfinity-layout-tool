@@ -350,4 +350,28 @@ describe('edge case generation', () => {
       ],
     });
   });
+
+  describe('half sockets', () => {
+    testParams('2x2 with half sockets', {
+      base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+    });
+    testParams('1x1 with half sockets', {
+      width: 1,
+      depth: 1,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+    });
+    testParams('1.5x1.5 with half sockets', {
+      width: 1.5,
+      depth: 1.5,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+    });
+    testParams('2x2 with half sockets and magnet style (holes should be skipped)', {
+      base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true, style: 'magnet' },
+    });
+    testParams('2x2 with half sockets and stacking lip', {
+      base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true, stackingLip: true },
+    });
+  });
 });

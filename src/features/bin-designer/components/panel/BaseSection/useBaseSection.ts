@@ -58,8 +58,14 @@ export function useBaseSection() {
 
   const toggleHalfSockets = useCallback(() => {
     if (!canEnableHalfSockets && !hasHalfSockets) return;
-    updateBase({ halfSockets: !hasHalfSockets });
-  }, [hasHalfSockets, canEnableHalfSockets, updateBase]);
+    const enabling = !hasHalfSockets;
+    if (enabling && (hasMagnet || hasScrew)) {
+      // Clear magnet/screw style — half sockets are too small for holes
+      updateBase({ halfSockets: true, style: computeBaseStyle(false, false, false, base.style) });
+    } else {
+      updateBase({ halfSockets: enabling });
+    }
+  }, [hasHalfSockets, canEnableHalfSockets, hasMagnet, hasScrew, base.style, updateBase]);
 
   const toggleFlat = useCallback(() => {
     const newFlat = !isFlat;
