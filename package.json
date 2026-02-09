@@ -110,6 +110,9 @@
     "@vercel/node": {
       "undici": "^7.20.0"
     },
+    "@vercel/blob": {
+      "undici": "^7.20.0"
+    },
     "path-to-regexp": "6.3.0",
     "workbox-build": {
       "@rollup/plugin-replace": {
