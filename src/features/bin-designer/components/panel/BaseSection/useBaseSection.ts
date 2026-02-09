@@ -69,8 +69,11 @@ export function useBaseSection() {
 
   const toggleFlat = useCallback(() => {
     const newFlat = !isFlat;
-    updateBase({ style: computeBaseStyle(false, false, newFlat, base.style) });
-  }, [base.style, isFlat, updateBase]);
+    updateBase({
+      style: computeBaseStyle(false, false, newFlat, base.style),
+      ...(newFlat && hasHalfSockets ? { halfSockets: false } : {}),
+    });
+  }, [base.style, isFlat, hasHalfSockets, updateBase]);
 
   const setMagnetRadius = useCallback(
     (radius: number) => {
