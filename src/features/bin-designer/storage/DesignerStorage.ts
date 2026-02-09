@@ -13,12 +13,12 @@ import {
   err,
   isErr,
   storageNotFound,
-  storageCorrupted,
   storageUnavailable,
+  storageCorrupted,
 } from '@/core/result';
 import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
 import { THUMBNAIL_VERSION } from '@/features/bin-designer/types';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS, migrateParams } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
 const DB_NAME = 'gridfinity-designer-v1';
@@ -107,11 +107,22 @@ export async function loadDesign(id: string): Promise<Result<SavedDesign, Storag
       return err(storageNotFound(`Design '${id}' not found`));
     }
 
-    if (!design.params || typeof design.params !== 'object') {
-      return err(storageCorrupted(`Design '${id}' has invalid data`));
+    // Validate that params is a valid object before migration
+    if (!design.params || typeof design.params !== 'object' || Array.isArray(design.params)) {
+      return err(
+        storageCorrupted(id, [
+          `Invalid params type: ${design.params === null ? 'null' : typeof design.params}`,
+        ])
+      );
     }
 
-    return ok(design);
+    // Apply migration for backward compatibility with old designs
+    const migratedParams = migrateParams(design.params as Partial<BinParams>);
+
+    return ok({
+      ...design,
+      params: migratedParams,
+    });
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
   }
@@ -125,10 +136,22 @@ export async function listDesigns(): Promise<Result<SavedDesign[], StorageError>
     const db = await getDb();
     const designs = (await db.getAll(DESIGNS_STORE)) as SavedDesign[];
 
-    // Sort by updatedAt descending
-    designs.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    // Apply migration for backward compatibility with old designs
+    // Filter out corrupted entries (invalid params) to avoid breaking the entire list
+    const migratedDesigns = designs
+      .filter((design) => {
+        // Skip entries with invalid params (null, undefined, or primitives)
+        return design.params && typeof design.params === 'object' && !Array.isArray(design.params);
+      })
+      .map((design) => ({
+        ...design,
+        params: migrateParams(design.params as Partial<BinParams>),
+      }));
 
-    return ok(designs);
+    // Sort by updatedAt descending
+    migratedDesigns.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
+    return ok(migratedDesigns);
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
   }
