@@ -29,7 +29,11 @@ export function BaseSection() {
           label="Magnet holes"
           checked={state.hasMagnet}
           onChange={handlers.toggleMagnet}
-          disabledReason={handlers.flatDisabledReason}
+          disabledReason={
+            state.hasHalfSockets
+              ? t('binDesigner.halfSocketsDisablesMagnetHoles')
+              : handlers.flatDisabledReason
+          }
           valueSummary={`\u00f8${state.base.magnetDiameter}mm \u00d7 ${state.base.magnetDepth}mm deep`}
         >
           <SliderInput
@@ -56,7 +60,11 @@ export function BaseSection() {
           label="Screw holes"
           checked={state.hasScrew}
           onChange={handlers.toggleScrew}
-          disabledReason={handlers.flatDisabledReason}
+          disabledReason={
+            state.hasHalfSockets
+              ? t('binDesigner.halfSocketsDisablesScrewHoles')
+              : handlers.flatDisabledReason
+          }
           valueSummary={`\u00f8${state.base.screwDiameter}mm (M${state.base.screwDiameter})`}
         >
           <SliderInput
@@ -74,6 +82,16 @@ export function BaseSection() {
           label={t('binDesigner.flatFloor')}
           checked={state.isFlat}
           onChange={handlers.toggleFlat}
+          disabledReason={
+            state.hasHalfSockets ? t('binDesigner.halfSocketsDisablesFlatFloor') : undefined
+          }
+        />
+
+        <FeatureToggle
+          label="Half sockets"
+          checked={state.hasHalfSockets}
+          onChange={handlers.toggleHalfSockets}
+          disabledReason={handlers.halfSocketsDisabledReason}
         />
       </div>
     </CollapsibleSection>

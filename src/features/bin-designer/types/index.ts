@@ -53,6 +53,8 @@ export interface BaseConfig {
   readonly stackingLip: boolean;
   /** When true, the bin body is a solid block (no cavity). Used by cutouts feature. */
   readonly solid: boolean;
+  /** When true, subdivides each cell into 0.5×0.5 half sockets instead of full 1×1 sockets. */
+  readonly halfSockets: boolean;
 }
 
 /** Divider configuration for compartment splitting (legacy — use CompartmentConfig) */

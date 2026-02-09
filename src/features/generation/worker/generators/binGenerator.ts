@@ -117,6 +117,21 @@ function decomposeCells(gridUnits: number): number[] {
   return cells;
 }
 
+/**
+ * Decompose a grid dimension into all 0.5-unit cells (half sockets mode).
+ * Each 1-unit cell becomes two 0.5-unit cells; trailing half-cells stay 0.5.
+ *
+ * Examples:
+ *   2.0 → [0.5, 0.5, 0.5, 0.5]
+ *   1.5 → [0.5, 0.5, 0.5]
+ *   0.5 → [0.5]
+ *   1.0 → [0.5, 0.5]
+ */
+function decomposeHalfCells(gridUnits: number): number[] {
+  const totalHalves = Math.round(gridUnits * 2);
+  return Array<number>(totalHalves).fill(0.5);
+}
+
 /** Cell position info for iteration */
 interface CellInfo {
   /** Cell size in grid units (1 or 0.5) */
@@ -130,10 +145,19 @@ interface CellInfo {
 /**
  * Iterate over all cells in a grid, calling the callback with cell info.
  * Encapsulates the common pattern of nested cell iteration with position tracking.
+ *
+ * When `halfSockets` is true, every cell is decomposed into 0.5-unit sub-cells,
+ * so a 1×1 bin yields a 2×2 grid of 0.5×0.5 sockets.
  */
-function forEachCell(gridW: number, gridD: number, callback: (cell: CellInfo) => void): void {
-  const cellsW = decomposeCells(gridW);
-  const cellsD = decomposeCells(gridD);
+function forEachCell(
+  gridW: number,
+  gridD: number,
+  callback: (cell: CellInfo) => void,
+  halfSockets = false
+): void {
+  const decompose = halfSockets ? decomposeHalfCells : decomposeCells;
+  const cellsW = decompose(gridW);
+  const cellsD = decompose(gridD);
   const totalW_mm = gridW * SIZE;
   const totalD_mm = gridD * SIZE;
 
@@ -263,7 +287,8 @@ function buildBaseSocket(
   magnetRadius: number,
   magnetDepth: number,
   screwRadius: number,
-  forExport = false
+  forExport = false,
+  halfSockets = false
 ): Shape3D {
   // Check socket cache — skip entire build if params haven't changed
   const key = socketCacheKey(
@@ -274,7 +299,8 @@ function buildBaseSocket(
     magnetRadius,
     magnetDepth,
     screwRadius,
-    forExport
+    forExport,
+    halfSockets
   );
   if (socketCache?.key === key) {
     return clone(socketCache.shape);
@@ -283,18 +309,23 @@ function buildBaseSocket(
   // Build and position each cell socket
   const cellSockets: Shape3D[] = [];
 
-  forEachCell(gridW, gridD, (cell) => {
-    const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
-    const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
-    // Use simplified 3-section socket for preview, full 5-section for export
-    const cellSocket = translate(
-      forExport
-        ? buildSingleCellSocket(cellW_mm, cellD_mm)
-        : buildSimplifiedCellSocket(cellW_mm, cellD_mm),
-      [cell.centerX, cell.centerY, 0]
-    );
-    cellSockets.push(cellSocket);
-  });
+  forEachCell(
+    gridW,
+    gridD,
+    (cell) => {
+      const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
+      const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
+      // Use simplified 3-section socket for preview, full 5-section for export
+      const cellSocket = translate(
+        forExport
+          ? buildSingleCellSocket(cellW_mm, cellD_mm)
+          : buildSimplifiedCellSocket(cellW_mm, cellD_mm),
+        [cell.centerX, cell.centerY, 0]
+      );
+      cellSockets.push(cellSocket);
+    },
+    halfSockets
+  );
 
   if (cellSockets.length === 0) {
     throw new Error('Invalid grid dimensions: at least one cell required');
@@ -1084,9 +1115,10 @@ function socketCacheKey(
   magnetRadius: number,
   magnetDepth: number,
   screwRadius: number,
-  forExport: boolean
+  forExport: boolean,
+  halfSockets: boolean
 ): string {
-  return `${gridW}|${gridD}|${withMagnet}|${withScrew}|${magnetRadius}|${magnetDepth}|${screwRadius}|${forExport}`;
+  return `${gridW}|${gridD}|${withMagnet}|${withScrew}|${magnetRadius}|${magnetDepth}|${screwRadius}|${forExport}|${halfSockets}`;
 }
 
 // ─── Main Entry Point ───────────────────────────────────────────────────────
@@ -1167,10 +1199,12 @@ export function generateBin(
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
+  const halfSockets = params.base.halfSockets && !isFlat;
   const solid = params.base.solid;
   // Wall extends from socket top to bin top. Per Gridfinity spec, base is 1u (7mm),
   // but the physical socket structure is 5mm deep. Wall = total - socket depth.
   // Flat floor: no socket, so the full height is available for the box body.
+  // Half sockets: use socket height (sockets are socket-height structures).
   // Total height: e.g., 3u + lip = 21 + 4.4 = 25.4mm
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
@@ -1180,10 +1214,15 @@ export function generateBin(
   const innerD = outerD - 2 * wallThickness;
   const isSlotted = params.style === 'slotted';
 
+  // Half sockets do not support magnet/screw holes (0.5×0.5 cells too small)
   const withMagnet =
-    !isFlat && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
+    !isFlat &&
+    !halfSockets &&
+    (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
   const withScrew =
-    !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
+    !isFlat &&
+    !halfSockets &&
+    (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
   // Dynamic quality: small bins (< 4x4) get higher fidelity preview
   const cellCount = params.width * params.depth;
@@ -1198,6 +1237,7 @@ export function generateBin(
     params.width,
     params.depth,
     isFlat,
+    halfSockets,
     withMagnet,
     withScrew,
     params.base.magnetDiameter,
@@ -1246,7 +1286,8 @@ export function generateBin(
         bin = box;
       }
     } else {
-      // Socket style: build base socket and fuse with box
+      // Socket style: build base socket and fuse with box.
+      // Half sockets mode subdivides each cell into 0.5×0.5 sub-sockets.
       const base = buildBaseSocket(
         params.width,
         params.depth,
@@ -1255,7 +1296,8 @@ export function generateBin(
         params.base.magnetDiameter / 2,
         params.base.magnetDepth,
         params.base.screwDiameter / 2,
-        useHighQuality
+        useHighQuality,
+        halfSockets
       );
 
       checkCancelled(signal);
