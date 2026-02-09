@@ -26,10 +26,10 @@ export function BaseSection() {
         />
 
         <FeatureToggle
-          label="Quarter-sized feet"
-          checked={state.hasQuarterFeet}
-          onChange={handlers.toggleQuarterFeet}
-          disabledReason={handlers.quarterFeetDisabledReason}
+          label="Half sockets"
+          checked={state.hasHalfSockets}
+          onChange={handlers.toggleHalfSockets}
+          disabledReason={handlers.halfSocketsDisabledReason}
         />
 
         <FeatureToggle
@@ -37,8 +37,8 @@ export function BaseSection() {
           checked={state.hasMagnet}
           onChange={handlers.toggleMagnet}
           disabledReason={
-            state.hasQuarterFeet
-              ? t('binDesigner.quarterFeetDisablesMagnetHoles')
+            state.hasHalfSockets
+              ? t('binDesigner.halfSocketsDisablesMagnetHoles')
               : handlers.flatDisabledReason
           }
           valueSummary={`\u00f8${state.base.magnetDiameter}mm \u00d7 ${state.base.magnetDepth}mm deep`}
@@ -68,8 +68,8 @@ export function BaseSection() {
           checked={state.hasScrew}
           onChange={handlers.toggleScrew}
           disabledReason={
-            state.hasQuarterFeet
-              ? t('binDesigner.quarterFeetDisablesScrewHoles')
+            state.hasHalfSockets
+              ? t('binDesigner.halfSocketsDisablesScrewHoles')
               : handlers.flatDisabledReason
           }
           valueSummary={`\u00f8${state.base.screwDiameter}mm (M${state.base.screwDiameter})`}
@@ -90,7 +90,7 @@ export function BaseSection() {
           checked={state.isFlat}
           onChange={handlers.toggleFlat}
           disabledReason={
-            state.hasQuarterFeet ? t('binDesigner.quarterFeetDisablesFlatFloor') : undefined
+            state.hasHalfSockets ? t('binDesigner.halfSocketsDisablesFlatFloor') : undefined
           }
         />
       </div>

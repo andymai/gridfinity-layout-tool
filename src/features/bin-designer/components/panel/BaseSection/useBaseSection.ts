@@ -22,11 +22,9 @@ function computeBaseStyle(
 
 export function useBaseSection() {
   const t = useTranslation();
-  const { base, width, depth, updateBase } = useDesignerStore(
+  const { base, updateBase } = useDesignerStore(
     useShallow((s) => ({
       base: s.params.base,
-      width: s.params.width,
-      depth: s.params.depth,
       updateBase: s.updateBase,
     }))
   );
@@ -34,40 +32,34 @@ export function useBaseSection() {
   const hasMagnet = base.style === 'magnet' || base.style === 'magnet_and_screw';
   const hasScrew = base.style === 'screw' || base.style === 'magnet_and_screw';
   const isFlat = base.style === 'flat';
-  const hasQuarterFeet = base.quarterFeet;
-
-  // Quarter feet require bins >= 1×1 unit
-  const minDimensionForQuarterFeet = 1.0;
-  const canEnableQuarterFeet =
-    !isFlat && width >= minDimensionForQuarterFeet && depth >= minDimensionForQuarterFeet;
+  const hasHalfSockets = base.halfSockets;
+  const canEnableHalfSockets = !isFlat;
 
   const flatDisabledReason = isFlat ? t('binDesigner.flatFloorDisablesAttachment') : undefined;
-  const quarterFeetDisabledReason = isFlat
-    ? t('binDesigner.flatFloorDisablesQuarterFeet')
-    : !canEnableQuarterFeet
-      ? t('binDesigner.quarterFeetRequires1x1')
-      : undefined;
+  const halfSocketsDisabledReason = isFlat
+    ? t('binDesigner.flatFloorDisablesHalfSockets')
+    : undefined;
 
   const toggleMagnet = useCallback(() => {
-    if (isFlat || hasQuarterFeet) return;
+    if (isFlat || hasHalfSockets) return;
     const newMagnet = !hasMagnet;
     updateBase({ style: computeBaseStyle(newMagnet, hasScrew, false, base.style) });
-  }, [base.style, hasMagnet, hasScrew, isFlat, hasQuarterFeet, updateBase]);
+  }, [base.style, hasMagnet, hasScrew, isFlat, hasHalfSockets, updateBase]);
 
   const toggleScrew = useCallback(() => {
-    if (isFlat || hasQuarterFeet) return;
+    if (isFlat || hasHalfSockets) return;
     const newScrew = !hasScrew;
     updateBase({ style: computeBaseStyle(hasMagnet, newScrew, false, base.style) });
-  }, [base.style, hasMagnet, hasScrew, isFlat, hasQuarterFeet, updateBase]);
+  }, [base.style, hasMagnet, hasScrew, isFlat, hasHalfSockets, updateBase]);
 
   const toggleStackingLip = useCallback(() => {
     updateBase({ stackingLip: !base.stackingLip });
   }, [base.stackingLip, updateBase]);
 
-  const toggleQuarterFeet = useCallback(() => {
-    if (!canEnableQuarterFeet && !hasQuarterFeet) return;
-    updateBase({ quarterFeet: !hasQuarterFeet });
-  }, [hasQuarterFeet, canEnableQuarterFeet, updateBase]);
+  const toggleHalfSockets = useCallback(() => {
+    if (!canEnableHalfSockets && !hasHalfSockets) return;
+    updateBase({ halfSockets: !hasHalfSockets });
+  }, [hasHalfSockets, canEnableHalfSockets, updateBase]);
 
   const toggleFlat = useCallback(() => {
     const newFlat = !isFlat;
@@ -100,8 +92,8 @@ export function useBaseSection() {
     if (isFlat) {
       summaryParts.push(t('binDesigner.flatFloor'));
     } else {
-      if (hasQuarterFeet) {
-        summaryParts.push('Quarter feet');
+      if (hasHalfSockets) {
+        summaryParts.push('Half sockets');
       } else {
         if (hasMagnet) summaryParts.push(`${base.magnetDiameter}mm magnets`);
         if (hasScrew) summaryParts.push(`M${base.screwDiameter} screws`);
@@ -115,7 +107,7 @@ export function useBaseSection() {
     hasMagnet,
     hasScrew,
     isFlat,
-    hasQuarterFeet,
+    hasHalfSockets,
     base.magnetDiameter,
     base.screwDiameter,
     base.stackingLip,
@@ -123,18 +115,18 @@ export function useBaseSection() {
   ]);
 
   return {
-    state: { base, hasMagnet, hasScrew, isFlat, hasQuarterFeet, canEnableQuarterFeet },
+    state: { base, hasMagnet, hasScrew, isFlat, hasHalfSockets, canEnableHalfSockets },
     handlers: {
       toggleMagnet,
       toggleScrew,
       toggleStackingLip,
-      toggleQuarterFeet,
+      toggleHalfSockets,
       toggleFlat,
       setMagnetRadius,
       setMagnetHeight,
       setScrewRadius,
       flatDisabledReason,
-      quarterFeetDisabledReason,
+      halfSocketsDisabledReason,
     },
     meta,
   };
