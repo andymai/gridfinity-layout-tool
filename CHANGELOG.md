@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.0.1...gridfinity-layout-tool-v3.0.2) (2026-02-09)
+
+
+### Bug Fixes
+
+* handle legacy bin designer designs missing compartments field ([#650](https://github.com/andymai/gridfinity-layout-tool/issues/650)) ([392dacd](https://github.com/andymai/gridfinity-layout-tool/commit/392dacd8a32c8748334d9a9f5afd22bf7680c738))
+
 ## [3.0.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.0.0...gridfinity-layout-tool-v3.0.1) (2026-02-08)
 
 
