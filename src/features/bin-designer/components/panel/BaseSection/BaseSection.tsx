@@ -26,13 +26,6 @@ export function BaseSection() {
         />
 
         <FeatureToggle
-          label="Half sockets"
-          checked={state.hasHalfSockets}
-          onChange={handlers.toggleHalfSockets}
-          disabledReason={handlers.halfSocketsDisabledReason}
-        />
-
-        <FeatureToggle
           label="Magnet holes"
           checked={state.hasMagnet}
           onChange={handlers.toggleMagnet}
@@ -92,6 +85,13 @@ export function BaseSection() {
           disabledReason={
             state.hasHalfSockets ? t('binDesigner.halfSocketsDisablesFlatFloor') : undefined
           }
+        />
+
+        <FeatureToggle
+          label="Half sockets"
+          checked={state.hasHalfSockets}
+          onChange={handlers.toggleHalfSockets}
+          disabledReason={handlers.halfSocketsDisabledReason}
         />
       </div>
     </CollapsibleSection>
