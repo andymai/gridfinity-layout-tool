@@ -22,7 +22,7 @@ describe('DesignerStorage', () => {
     await new Promise<void>((resolve, reject) => {
       const req = indexedDB.deleteDatabase('gridfinity-designer-v1');
       req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
+      req.onerror = () => reject(new Error(req.error?.message ?? 'Failed to delete database'));
     });
   });
 
@@ -97,6 +97,29 @@ describe('DesignerStorage', () => {
       expect(value.params).toEqual(DEFAULT_BIN_PARAMS);
     });
 
+    it('should migrate old designs without compartments field', async () => {
+      // Simulate an old design saved before compartments feature
+      const oldParams = { ...DEFAULT_BIN_PARAMS };
+      // @ts-expect-error - Simulating old data without compartments
+      delete oldParams.compartments;
+
+      await saveDesign({
+        id: 'old-design',
+        name: 'Old Design',
+        // @ts-expect-error - Intentionally passing incomplete params
+        params: oldParams,
+        thumbnail: null,
+      });
+
+      const result = await loadDesign('old-design');
+      const value = expectOk(result);
+      expect(value.name).toBe('Old Design');
+      // Should have migrated compartments
+      expect(value.params.compartments).toBeDefined();
+      expect(value.params.compartments.cells).toBeDefined();
+      expect(Array.isArray(value.params.compartments.cells)).toBe(true);
+    });
+
     it('should return error for non-existent design', async () => {
       const result = await loadDesign('nonexistent');
       expectErr(result);
@@ -124,6 +147,26 @@ describe('DesignerStorage', () => {
       expect(value.length).toBe(2);
       expect(value[0].name).toBe('Second'); // most recent first
       expect(value[1].name).toBe('First');
+    });
+
+    it('should migrate old designs without compartments field', async () => {
+      const oldParams = { ...DEFAULT_BIN_PARAMS };
+      // @ts-expect-error - Simulating old data without compartments
+      delete oldParams.compartments;
+
+      await saveDesign({
+        id: 'old-list-test',
+        name: 'Old Design in List',
+        // @ts-expect-error - Intentionally passing incomplete params
+        params: oldParams,
+        thumbnail: null,
+      });
+
+      const result = await listDesigns();
+      const value = expectOk(result);
+      expect(value.length).toBe(1);
+      expect(value[0].params.compartments).toBeDefined();
+      expect(value[0].params.compartments.cells).toBeDefined();
     });
 
     it('should return empty list when no designs exist', async () => {

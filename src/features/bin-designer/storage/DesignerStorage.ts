@@ -8,17 +8,10 @@
 
 import { openDB, type IDBPDatabase } from 'idb';
 import type { Result, StorageError } from '@/core/result';
-import {
-  ok,
-  err,
-  isErr,
-  storageNotFound,
-  storageCorrupted,
-  storageUnavailable,
-} from '@/core/result';
+import { ok, err, isErr, storageNotFound, storageUnavailable } from '@/core/result';
 import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
 import { THUMBNAIL_VERSION } from '@/features/bin-designer/types';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS, migrateParams } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
 const DB_NAME = 'gridfinity-designer-v1';
@@ -107,11 +100,14 @@ export async function loadDesign(id: string): Promise<Result<SavedDesign, Storag
       return err(storageNotFound(`Design '${id}' not found`));
     }
 
-    if (!design.params || typeof design.params !== 'object') {
-      return err(storageCorrupted(`Design '${id}' has invalid data`));
-    }
+    // Apply migration for backward compatibility with old designs
 
-    return ok(design);
+    const migratedParams = migrateParams(design.params as Partial<BinParams>);
+
+    return ok({
+      ...design,
+      params: migratedParams,
+    });
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
   }
@@ -125,10 +121,17 @@ export async function listDesigns(): Promise<Result<SavedDesign[], StorageError>
     const db = await getDb();
     const designs = (await db.getAll(DESIGNS_STORE)) as SavedDesign[];
 
-    // Sort by updatedAt descending
-    designs.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    // Apply migration for backward compatibility with old designs
+    const migratedDesigns = designs.map((design) => ({
+      ...design,
 
-    return ok(designs);
+      params: migrateParams(design.params as Partial<BinParams>),
+    }));
+
+    // Sort by updatedAt descending
+    migratedDesigns.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
+    return ok(migratedDesigns);
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
   }
