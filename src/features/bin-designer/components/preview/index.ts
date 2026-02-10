@@ -10,6 +10,7 @@ export { GhostDividers } from './GhostDividers';
 export { GhostWireframe } from './GhostWireframe';
 export { GhostCompartmentPreview } from './GhostCompartmentPreview';
 export { GhostLabelTabs } from './GhostLabelTabs';
+export { GhostScoops } from './GhostScoops';
 export { GhostSlotLines } from './GhostSlotLines/GhostSlotLines';
 export { GhostDividerPieces } from './GhostDividerPieces/GhostDividerPieces';
 export { GhostCutouts } from './GhostCutouts';

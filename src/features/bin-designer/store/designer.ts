@@ -13,6 +13,7 @@ import type {
   BinParams,
   BaseConfig,
   LabelTabConfig,
+  ScoopConfig,
   WallPatternConfig,
   CutoutConfig,
   Insert,
@@ -163,6 +164,13 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params.label, partial);
+      });
+    },
+
+    updateScoop: (partial: Partial<ScoopConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        Object.assign(state.params.scoop, partial);
       });
     },
 
