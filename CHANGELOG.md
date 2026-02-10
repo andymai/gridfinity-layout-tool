@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.2.1...gridfinity-layout-tool-v3.2.2) (2026-02-10)
+
+
+### Bug Fixes
+
+* align Button, Input, Checkbox, Toast, Dialog sizing to match production ([#664](https://github.com/andymai/gridfinity-layout-tool/issues/664)) ([807b70c](https://github.com/andymai/gridfinity-layout-tool/commit/807b70ce91ae86d99fcc4a18994f7bd59400e78c))
+
 ## [3.2.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.2.0...gridfinity-layout-tool-v3.2.1) (2026-02-10)
 
 
