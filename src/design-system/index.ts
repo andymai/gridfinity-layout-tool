@@ -82,8 +82,14 @@ export { Collapsible } from './Collapsible';
 export type { CollapsibleProps } from './Collapsible';
 
 // Dialog (compound: Dialog.Root, Dialog.Header, Dialog.Body, Dialog.Footer)
-export { Dialog } from './Dialog';
-export type { DialogProps, DialogHeaderProps, DialogBodyProps, DialogFooterProps } from './Dialog';
+export { Dialog, ConfirmDialog } from './Dialog';
+export type {
+  DialogProps,
+  DialogHeaderProps,
+  DialogBodyProps,
+  DialogFooterProps,
+  ConfirmDialogProps,
+} from './Dialog';
 
 // Menu (compound: Menu.Root, Menu.Item, Menu.Divider)
 export { Menu } from './Menu';

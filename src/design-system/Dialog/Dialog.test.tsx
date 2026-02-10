@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Dialog } from './Dialog';
+import { Dialog, ConfirmDialog } from './Dialog';
 
 describe('Dialog', () => {
   beforeEach(() => {
@@ -155,5 +155,94 @@ describe('Dialog', () => {
       unmount();
       expect(document.body.style.overflow).toBe('');
     });
+  });
+});
+
+describe('ConfirmDialog', () => {
+  it('renders title and message', () => {
+    render(
+      <ConfirmDialog
+        isOpen={true}
+        title="Delete Item"
+        message="This cannot be undone."
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+    expect(screen.getByText('Delete Item')).toBeInTheDocument();
+    expect(screen.getByText('This cannot be undone.')).toBeInTheDocument();
+  });
+
+  it('renders default button labels', () => {
+    render(
+      <ConfirmDialog
+        isOpen={true}
+        title="Test"
+        message="Test message"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+    expect(screen.getByText('Confirm')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
+  });
+
+  it('renders custom button labels', () => {
+    render(
+      <ConfirmDialog
+        isOpen={true}
+        title="Test"
+        message="Test message"
+        confirmText="Delete"
+        cancelText="Keep"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+    expect(screen.getByText('Delete')).toBeInTheDocument();
+    expect(screen.getByText('Keep')).toBeInTheDocument();
+  });
+
+  it('calls onConfirm when confirm clicked', () => {
+    const onConfirm = vi.fn();
+    render(
+      <ConfirmDialog
+        isOpen={true}
+        title="Test"
+        message="Test"
+        onConfirm={onConfirm}
+        onCancel={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByText('Confirm'));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onCancel when cancel clicked', () => {
+    const onCancel = vi.fn();
+    render(
+      <ConfirmDialog
+        isOpen={true}
+        title="Test"
+        message="Test"
+        onConfirm={vi.fn()}
+        onCancel={onCancel}
+      />
+    );
+    fireEvent.click(screen.getByText('Cancel'));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns null when closed', () => {
+    const { container } = render(
+      <ConfirmDialog
+        isOpen={false}
+        title="Test"
+        message="Test"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+    expect(container.firstChild).toBeNull();
   });
 });

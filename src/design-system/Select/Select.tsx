@@ -19,7 +19,7 @@ const selectVariants = cva(
     'text-content',
     'border border-stroke',
     'rounded-md',
-    'pr-10', // Space for chevron
+    'pr-8', // Space for chevron
     'cursor-pointer',
     interactiveTransition,
     'hover:border-stroke-strong',
@@ -29,15 +29,15 @@ const selectVariants = cva(
   {
     variants: {
       size: {
-        sm: 'h-8 px-3 text-xs',
-        md: 'h-10 px-4 text-sm',
+        sm: 'h-6 px-1.5 text-xs',
+        md: 'h-8 px-3 text-sm',
         lg: 'h-12 px-5 text-base',
       },
       fullWidth: {
         true: 'w-full',
       },
       hasColorSwatch: {
-        true: 'pl-10', // Space for color swatch
+        true: 'pl-8', // Space for color swatch
       },
       error: {
         true: 'border-error focus:border-error',
@@ -55,12 +55,17 @@ export interface SelectOption {
   /**
    * Unique value for this option.
    */
-  value: string;
+  id: string;
 
   /**
    * Display label for this option.
    */
-  label: string;
+  name: string;
+
+  /**
+   * Optional suffix displayed after the name (e.g., unit indicator).
+   */
+  suffix?: string;
 
   /**
    * Whether this option is disabled.
@@ -92,6 +97,12 @@ export interface SelectProps
    * Error state styling.
    */
   error?: boolean;
+
+  /**
+   * Convenience callback that receives the new value string directly.
+   * Alternative to using `onChange` with `e.target.value`.
+   */
+  onValueChange?: (value: string) => void;
 
   /**
    * Accessible label for screen readers.
@@ -153,9 +164,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       size = 'md',
       fullWidth,
       error,
+      onValueChange,
       className,
       id: providedId,
       disabled,
+      onChange: onChangeProp,
       ...props
     },
     ref
@@ -165,10 +178,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const hasColorSwatch = colorSwatch !== undefined;
 
     const iconSize = {
-      sm: 'w-4 h-4',
+      sm: 'w-3 h-3',
       md: 'w-4 h-4',
       lg: 'w-5 h-5',
     }[size ?? 'md'];
+
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onChangeProp?.(e);
+      onValueChange?.(e.target.value);
+    };
 
     return (
       <div className={selectWrapperVariants({ fullWidth })}>
@@ -176,7 +194,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {hasColorSwatch && (
           <div
             className={cn(
-              'absolute left-3 top-1/2 -translate-y-1/2',
+              'absolute left-2.5 top-1/2 -translate-y-1/2',
               'w-4 h-4 rounded',
               'pointer-events-none',
               colorSwatch ? '' : 'bg-surface-hover border border-stroke-subtle'
@@ -192,6 +210,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           disabled={disabled}
           aria-invalid={error || undefined}
           className={cn(selectVariants({ size, fullWidth, hasColorSwatch, error }), className)}
+          onChange={handleChange}
           {...props}
         >
           {placeholder && (
@@ -200,8 +219,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           )}
           {options.map((option) => (
-            <option key={option.value} value={option.value} disabled={option.disabled}>
-              {option.label}
+            <option key={option.id} value={option.id} disabled={option.disabled}>
+              {option.name}
+              {option.suffix ? ` ${option.suffix}` : ''}
             </option>
           ))}
         </select>
@@ -210,7 +230,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <ChevronDownIcon
           size="sm"
           className={cn(
-            'absolute right-3 top-1/2 -translate-y-1/2',
+            'absolute right-2.5 top-1/2 -translate-y-1/2',
             'text-content-tertiary',
             'pointer-events-none',
             iconSize

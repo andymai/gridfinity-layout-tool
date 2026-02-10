@@ -3,9 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { Select } from './Select';
 
 const options = [
-  { value: 'a', label: 'Alpha' },
-  { value: 'b', label: 'Beta' },
-  { value: 'c', label: 'Gamma', disabled: true },
+  { id: 'a', name: 'Alpha' },
+  { id: 'b', name: 'Beta' },
+  { id: 'c', name: 'Gamma', disabled: true },
 ];
 
 describe('Select', () => {

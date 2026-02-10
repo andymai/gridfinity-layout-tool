@@ -137,7 +137,7 @@
         "options": {
           "type": "SelectOption[]",
           "required": true,
-          "description": "List of options"
+          "description": "List of options (id, name, suffix?, disabled?)"
         },
         "placeholder": {
           "type": "string",
@@ -159,6 +159,10 @@
         "error": {
           "type": "boolean",
           "default": false
+        },
+        "onValueChange": {
+          "type": "(value: string) => void",
+          "description": "Convenience change callback"
         }
       }
     },
@@ -300,6 +304,49 @@
         "role": "dialog",
         "features": ["focus trap", "escape to close", "focus restoration"],
         "ariaAttributes": ["aria-modal", "aria-labelledby", "aria-describedby"]
+      }
+    },
+    "ConfirmDialog": {
+      "description": "Pre-built confirmation dialog",
+      "category": "composite",
+      "file": "Dialog/Dialog.tsx",
+      "props": {
+        "isOpen": {
+          "type": "boolean",
+          "required": true
+        },
+        "title": {
+          "type": "string",
+          "required": true
+        },
+        "message": {
+          "type": "string",
+          "required": true
+        },
+        "confirmText": {
+          "type": "string",
+          "default": "Confirm"
+        },
+        "cancelText": {
+          "type": "string",
+          "default": "Cancel"
+        },
+        "destructive": {
+          "type": "boolean",
+          "default": false
+        },
+        "onConfirm": {
+          "type": "() => void",
+          "required": true
+        },
+        "onCancel": {
+          "type": "() => void",
+          "required": true
+        }
+      },
+      "accessibility": {
+        "role": "dialog",
+        "features": ["focus trap", "escape to close"]
       }
     },
     "Menu": {

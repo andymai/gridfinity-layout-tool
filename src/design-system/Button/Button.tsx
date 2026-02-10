@@ -42,8 +42,8 @@ const buttonVariants = cva(
       },
     },
     compoundVariants: [
-      { size: 'sm', iconOnly: true, class: 'w-8' },
-      { size: 'md', iconOnly: true, class: 'w-10' },
+      { size: 'sm', iconOnly: true, class: 'w-6' },
+      { size: 'md', iconOnly: true, class: 'w-8' },
       { size: 'lg', iconOnly: true, class: 'w-12' },
     ],
     defaultVariants: {

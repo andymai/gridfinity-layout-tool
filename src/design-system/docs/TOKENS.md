@@ -76,6 +76,16 @@ CSS variables and design tokens used throughout the design system.
 | `xl`   | `--text-xl`   | `18px` | Panel titles     |
 | `2xl`  | `--text-2xl`  | `24px` | Page title       |
 
+## Component Size Scale
+
+| Size | Height | Padding  | Icon  | Gap       | Maps to |
+| ---- | ------ | -------- | ----- | --------- | ------- |
+| `sm` | 24px   | `px-1.5` | 12×12 | `gap-1`   | Compact |
+| `md` | 32px   | `px-3`   | 16×16 | `gap-1.5` | Desktop |
+| `lg` | 48px   | `px-5`   | 20×20 | `gap-2.5` | Mobile  |
+
+These are defined in `variants.ts` and shared across Button, Select, Stepper, and other interactive components.
+
 ## Size Tokens
 
 | Variable              | Value   | Usage              |

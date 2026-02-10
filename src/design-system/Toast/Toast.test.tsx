@@ -39,9 +39,9 @@ describe('ToastContainer', () => {
   });
 
   describe('toast types', () => {
-    it('renders success toast', () => {
+    it('renders success toast with status role', () => {
       render(<ToastContainer toasts={[makeToast({ type: 'success' })]} onDismiss={vi.fn()} />);
-      expect(screen.getByRole('alert')).toBeInTheDocument();
+      expect(screen.getByRole('status')).toBeInTheDocument();
     });
 
     it('renders error toast', () => {
@@ -92,14 +92,14 @@ describe('ToastContainer', () => {
   });
 
   describe('accessibility', () => {
-    it('has alert role', () => {
-      render(<ToastContainer toasts={[makeToast()]} onDismiss={vi.fn()} />);
+    it('uses alert role for error toasts', () => {
+      render(<ToastContainer toasts={[makeToast({ type: 'error' })]} onDismiss={vi.fn()} />);
       expect(screen.getByRole('alert')).toBeInTheDocument();
     });
 
-    it('has aria-live for screen readers', () => {
-      render(<ToastContainer toasts={[makeToast()]} onDismiss={vi.fn()} />);
-      expect(screen.getByRole('alert')).toHaveAttribute('aria-live', 'polite');
+    it('uses status role for non-error toasts', () => {
+      render(<ToastContainer toasts={[makeToast({ type: 'success' })]} onDismiss={vi.fn()} />);
+      expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
     });
   });
 });

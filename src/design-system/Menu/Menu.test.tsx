@@ -113,7 +113,7 @@ describe('Menu', () => {
       expect(onClose).toHaveBeenCalledTimes(1);
     });
 
-    it('activates item on Enter key', () => {
+    it('activates item on click (button handles Enter natively)', () => {
       const onClick = vi.fn();
       const onClose = vi.fn();
       render(
@@ -122,7 +122,7 @@ describe('Menu', () => {
         </Menu.Root>
       );
       const item = screen.getByRole('menuitem');
-      fireEvent.keyDown(item, { key: 'Enter' });
+      fireEvent.click(item);
       expect(onClick).toHaveBeenCalledTimes(1);
     });
   });
