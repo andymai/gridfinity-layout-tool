@@ -123,16 +123,16 @@ describe('useScoopSection', () => {
     expect(useDesignerStore.getState().params.scoop.radius).toBe(15);
   });
 
-  it('toggleAllRows enables allRows', () => {
+  it('toggleAllRows disables allRows', () => {
     const { result } = renderHook(() => useScoopSection());
 
-    expect(result.current.state.scoop.allRows).toBe(false);
+    expect(result.current.state.scoop.allRows).toBe(true);
 
     act(() => {
       result.current.handlers.toggleAllRows();
     });
 
-    expect(useDesignerStore.getState().params.scoop.allRows).toBe(true);
+    expect(useDesignerStore.getState().params.scoop.allRows).toBe(false);
   });
 
   it('summary includes allRows text when enabled', () => {

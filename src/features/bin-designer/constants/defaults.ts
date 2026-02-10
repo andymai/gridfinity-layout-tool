@@ -68,7 +68,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   scoop: {
     enabled: false,
     radius: 'auto',
-    allRows: false,
+    allRows: true,
   },
   label: {
     enabled: false,

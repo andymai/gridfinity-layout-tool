@@ -1194,41 +1194,58 @@ function buildScoopRamps(
       } else {
         radius = baseRadius;
       }
-      // Clamp: radius can't exceed compartment depth or interior height (below lip taper)
-      radius = Math.min(radius, compD - 0.5, interiorHeight - 0.5);
+      // When a stacking lip is present on a front-row scoop, offset the scoop
+      // inward so its top edge meets the lip's protruding inner face. This lets
+      // items slide up the scoop and past the lip without catching.
+      const lipOffset = hasLip && minRow === 0 ? Math.max(0, LIP_TAPER_WIDTH - wallThickness) : 0;
+
+      // For front-row scoops with lip, auto radius must reach wallHeight
+      // so the scoop top meets the lip's inner face.
+      if (baseRadius === 'auto' && hasLip && minRow === 0) {
+        radius = Math.max(radius, wallHeight);
+      }
+
+      // Clamp: radius can't exceed compartment depth (minus offset) or wall height.
+      // Front-row scoops extend to wallHeight (lip base); interior rows to interiorHeight.
+      const maxHeight = minRow === 0 ? wallHeight : interiorHeight;
+      radius = Math.min(radius, compD - 0.5 - lipOffset, maxHeight);
       if (radius < 1) continue;
 
       // Build scoop ramp solid.
-      // Profile in YZ plane: a rectangle (R×R) with a concave quarter-circle
-      // cut from it. This matches the standard Gridfinity scoop shape
-      // (OpenSCAD: difference of cube and cylinder centered at (R,R)).
+      // Profile in YZ plane: draw([u, v]) where u→Y (depth), v→Z (height).
       //
-      // draw([u, v]) on 'YZ' plane: u→Y (depth into compartment), v→Z (height)
+      // Without lip offset (lipOffset = 0):
+      //   (0, 0) → (0, R) → arc → (R, 0) → close
       //
-      // Profile path:
-      //   (0, 0) → (0, R)   wall edge: floor to scoop top
-      //   (0, R) → arc → (R, 0)   concave scoop surface (curves toward corner)
-      //   (R, 0) → (0, 0)   floor edge: close
-      //
-      // The concave arc is a quarter-circle centered at (R, R):
-      //   arcY = R * (1 - cos(angle)), arcZ = R * (1 - sin(angle))
-      //   Midpoint at (0.293R, 0.293R) — curves toward origin, creating
-      //   the concave bowl shape when viewed from inside the bin.
+      // With lip offset (lo), extends to wallHeight so scoop meets lip:
+      //   (0, 0) → (0, wH) → (lo, wH) → (lo, R) → arc → (lo+R, 0) → close
+      //   Goes up the wall to wallHeight, across to the lip's inner face,
+      //   down to arc start at R, then curves to floor. Fills solid.
       const segments = 24;
       const points: [number, number][] = [];
       // Start at wall/floor corner
       points.push([0, 0]);
-      // Up the wall to scoop height
-      points.push([0, radius]);
-      // Concave arc from (0, radius) to (radius, 0)
+      if (lipOffset > 0) {
+        // Up the wall to wallHeight (lip base), across to lip inner face
+        points.push([0, wallHeight]);
+        points.push([lipOffset, wallHeight]);
+        // Down to arc start (only needed when radius < wallHeight)
+        if (radius < wallHeight) {
+          points.push([lipOffset, radius]);
+        }
+      } else {
+        // Standard: up the wall to scoop height
+        points.push([0, radius]);
+      }
+      // Concave arc from (lipOffset, radius) to (lipOffset + radius, 0)
       for (let i = 1; i < segments; i++) {
         const angle = (Math.PI / 2) * (i / segments);
-        const arcY = radius * (1 - Math.cos(angle));
+        const arcY = lipOffset + radius * (1 - Math.cos(angle));
         const arcZ = radius * (1 - Math.sin(angle));
         points.push([arcY, arcZ]);
       }
-      // Floor, radius away from wall
-      points.push([radius, 0]);
+      // Floor, lipOffset + radius away from wall
+      points.push([lipOffset + radius, 0]);
 
       // Draw the profile (will be sketched on YZ and extruded along X)
       let pen = draw(points[0]);
@@ -1242,9 +1259,9 @@ function buildScoopRamps(
 
       // Fillet the two longitudinal edges where the ramp meets the wall and floor.
       // Before translation, the scoop solid spans X=[-compW/2, +compW/2] with
-      // Y=[0, radius], Z=[0, radius]. The sharp edges are:
-      //   - Top-of-ramp: (Y≈0, Z≈radius) — ramp meets front wall
-      //   - Floor-of-ramp: (Y≈radius, Z≈0) — ramp meets bin floor
+      // Y=[lipOffset, lipOffset+radius], Z=[0, radius]. The sharp edges are:
+      //   - Top-of-ramp: (Y≈lipOffset, Z≈radius) — ramp meets wall/lip
+      //   - Floor-of-ramp: (Y≈lipOffset+radius, Z≈0) — ramp meets bin floor
       const filletR = Math.min(2, radius / 4);
       if (filletR >= 0.5) {
         const smoothEdges = edgeFinder()
@@ -1252,16 +1269,17 @@ function buildScoopRamps(
             const b = getBounds(e);
             // Edge must run along X (span most of the compartment width)
             if (b.xMax - b.xMin < compW * 0.5) return false;
-            // Top-of-ramp edge: Y≈0, Z≈radius
+            // Top-of-ramp edge: Y≈lipOffset, Z≈radius
             const isTop =
-              Math.abs(b.yMin) < 0.5 &&
-              Math.abs(b.yMax) < 0.5 &&
+              Math.abs(b.yMin - lipOffset) < 0.5 &&
+              Math.abs(b.yMax - lipOffset) < 0.5 &&
               Math.abs(b.zMin - radius) < 0.5 &&
               Math.abs(b.zMax - radius) < 0.5;
-            // Floor-of-ramp edge: Y≈radius, Z≈0
+            // Floor-of-ramp edge: Y≈lipOffset+radius, Z≈0
+            const floorY = lipOffset + radius;
             const isFloor =
-              Math.abs(b.yMin - radius) < 0.5 &&
-              Math.abs(b.yMax - radius) < 0.5 &&
+              Math.abs(b.yMin - floorY) < 0.5 &&
+              Math.abs(b.yMax - floorY) < 0.5 &&
               Math.abs(b.zMin) < 0.5 &&
               Math.abs(b.zMax) < 0.5;
             return isTop || isFloor;
@@ -1649,7 +1667,13 @@ export function generateBin(
     // Finger scoops: concave ramp fused at front wall of compartments
     if (!isSlotted) {
       checkCancelled(signal);
-      const scoopRamps = buildScoopRamps(params, innerW, innerD, interiorHeight);
+      const { ramps: scoopRamps } = buildScoopRamps(
+        params,
+        innerW,
+        innerD,
+        wallHeight,
+        wallThickness
+      );
       if (scoopRamps) {
         try {
           bin = unwrap(fuse(bin, scoopRamps));

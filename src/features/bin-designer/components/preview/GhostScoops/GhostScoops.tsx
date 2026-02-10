@@ -40,7 +40,7 @@ export function GhostScoops() {
   // Mirror the generator's interiorHeight calculation for radius clamping
   const hasLip = base.stackingLip;
   const isFlat = base.style === 'flat';
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT + (hasLip ? GRIDFINITY.LIP_HEIGHT : 0);
+  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
   const interiorHeight = hasLip ? wallHeight - GRIDFINITY.LIP_SMALL_TAPER : wallHeight;
 
@@ -99,7 +99,17 @@ export function GhostScoops() {
         } else {
           radius = scoop.radius;
         }
-        radius = Math.min(radius, compD - 0.5, interiorHeight - 0.5);
+        // Offset scoop inward when lip is present so top meets lip's inner face
+        const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
+        const lipOffset = hasLip && minRow === 0 ? Math.max(0, lipTaperWidth - wallThickness) : 0;
+
+        // Auto radius must reach wallHeight so scoop top meets the lip
+        if (scoop.radius === 'auto' && hasLip && minRow === 0) {
+          radius = Math.max(radius, wallHeight);
+        }
+
+        const maxHeight = minRow === 0 ? wallHeight : interiorHeight;
+        radius = Math.min(radius, compD - 0.5 - lipOffset, maxHeight);
         if (radius < 1) continue;
 
         // Compartment position
@@ -111,12 +121,11 @@ export function GhostScoops() {
         const leftX = compCenterX - compW / 2;
         const rightX = compCenterX + compW / 2;
 
-        // Concave arc: quarter-circle centered at (radius, radius)
-        // Curves toward the wall-floor corner, matching the BRep ramp surface
+        // Concave arc offset by lipOffset so scoop top meets the lip
         for (let i = 0; i <= ARC_SEGMENTS; i++) {
           const angle = (Math.PI / 2) * (i / ARC_SEGMENTS);
-          const dy = radius * (1 - Math.cos(angle)); // distance from wall into compartment
-          const dz = radius * (1 - Math.sin(angle)); // height
+          const dy = lipOffset + radius * (1 - Math.cos(angle));
+          const dz = radius * (1 - Math.sin(angle));
 
           // Left vertex
           allPositions.push(leftX, frontEdgeY + dy, dz);
@@ -145,7 +154,20 @@ export function GhostScoops() {
     geo.setIndex(allIndices);
     geo.computeVertexNormals();
     return geo;
-  }, [shouldShow, innerW, innerD, interiorHeight, cols, rows, cells, scoop.radius, scoop.allRows]);
+  }, [
+    shouldShow,
+    innerW,
+    innerD,
+    interiorHeight,
+    wallHeight,
+    wallThickness,
+    hasLip,
+    cols,
+    rows,
+    cells,
+    scoop.radius,
+    scoop.allRows,
+  ]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;
