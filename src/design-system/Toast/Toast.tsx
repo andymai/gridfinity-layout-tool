@@ -72,10 +72,9 @@ interface ToastItemProps {
   toast: ToastData;
   onDismiss: (id: string) => void;
   position: 'top' | 'bottom';
-  className?: string;
 }
 
-function ToastItem({ toast, onDismiss, position, className }: ToastItemProps) {
+function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
   const [isExiting, setIsExiting] = useState(false);
   // State for CSS animation pause (triggers re-render for progress bar)
   const [isPaused, setIsPaused] = useState(false);
@@ -159,7 +158,7 @@ function ToastItem({ toast, onDismiss, position, className }: ToastItemProps) {
     <div
       role={toastRole}
       aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
-      className={cn(toastVariants({ type: toast.type }), animationClass, className)}
+      className={cn(toastVariants({ type: toast.type }), animationClass)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
