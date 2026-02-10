@@ -38,7 +38,12 @@ const buttonVariants = cva(
       size: {
         sm: 'h-6 px-1',
         md: 'h-8 px-2',
-        lg: 'w-12 h-12 px-3 bg-gradient-to-b from-surface-hover to-surface-elevated',
+        lg: [
+          'w-12 h-12 px-3',
+          'bg-gradient-to-b from-surface-hover to-surface-elevated',
+          'border-stroke text-content shadow-sm',
+          '[box-shadow:var(--shadow-sm),inset_0_1px_0_rgba(255,255,255,0.03)]',
+        ].join(' '),
       },
       position: {
         left: 'rounded-l-md rounded-r-none border-r-0',
@@ -69,7 +74,7 @@ const inputVariants = cva(
       size: {
         sm: 'text-xs min-w-[40px]',
         md: 'text-sm min-w-[48px]',
-        lg: 'text-base font-semibold min-w-[64px]',
+        lg: 'text-base font-semibold min-w-[64px] border-stroke',
       },
     },
     defaultVariants: {
@@ -93,7 +98,7 @@ const displayVariants = cva(
       size: {
         sm: 'text-xs text-content-secondary min-w-[40px]',
         md: 'text-sm text-content-secondary min-w-[48px]',
-        lg: 'text-base font-semibold text-content min-w-[64px]',
+        lg: 'text-base font-semibold text-content min-w-[64px] border-stroke',
       },
     },
     defaultVariants: {

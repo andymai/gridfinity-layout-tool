@@ -78,7 +78,7 @@ CSS variables and design tokens used throughout the design system.
 
 ## Component Size Scale
 
-### Shared scale (Select, Stepper, Collapsible, etc.)
+### Shared scale (Stepper container, Collapsible, etc.)
 
 | Size | Height | Padding  | Icon  | Gap       | Maps to |
 | ---- | ------ | -------- | ----- | --------- | ------- |
@@ -86,7 +86,7 @@ CSS variables and design tokens used throughout the design system.
 | `md` | 32px   | `px-3`   | 16×16 | `gap-1.5` | Desktop |
 | `lg` | 48px   | `px-5`   | 20×20 | `gap-2.5` | Mobile  |
 
-These are defined in `variants.ts` and shared across Select, Stepper, and other interactive components.
+These are defined in `variants.ts` as `sizeHeights` and used for controls that need a fixed container height (e.g. Stepper). **Button, Input, and Select** use intrinsic height from padding at md (~36px), not this scale — see their individual sections below.
 
 ### Button (intrinsic height at md)
 
@@ -108,6 +108,16 @@ Icon-only buttons get a 44px `touchTarget` by default (per Apple HIG).
 | `lg` | 48px     | `px-4`      | 20×20 |
 
 \* `md` uses intrinsic height from `py-2` padding (~36px with `text-sm`), matching production `.input`.
+
+### Select (intrinsic height at md)
+
+| Size | Height   | Padding     |
+| ---- | -------- | ----------- |
+| `sm` | 28px     | `px-1.5`    |
+| `md` | ~36px \* | `py-2 px-3` |
+| `lg` | 48px     | `px-5`      |
+
+\* `md` uses intrinsic height from `py-2` padding (~36px with `text-sm`), matching production `SelectDropdown`.
 
 ## Size Tokens
 

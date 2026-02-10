@@ -29,8 +29,8 @@ const selectVariants = cva(
   {
     variants: {
       size: {
-        sm: 'h-6 px-1.5 text-xs',
-        md: 'h-8 px-3 text-sm',
+        sm: 'h-7 px-1.5 text-xs',
+        md: 'py-2 px-3 text-sm',
         lg: 'h-12 px-5 text-base',
       },
       fullWidth: {

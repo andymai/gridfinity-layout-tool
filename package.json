@@ -34,6 +34,8 @@
     "test:affected": "./scripts/test-affected.sh",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:visual": "playwright test -c playwright-ct.config.ts",
+    "test:visual:update": "playwright test -c playwright-ct.config.ts --update-snapshots",
     "prepare": "husky",
     "size": "size-limit",
     "size:check": "size-limit --limit",
@@ -128,6 +130,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
     "@eslint/js": "^9.39.1",
+    "@playwright/experimental-ct-react": "^1.58.2",
     "@playwright/test": "^1.58.2",
     "@size-limit/file": "^12.0.0",
     "@tailwindcss/vite": "^4.1.18",
