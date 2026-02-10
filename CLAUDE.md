@@ -2,12 +2,12 @@
 
 Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organizer layouts.
 
-**Stack:** React 19, TypeScript 5.9, Vite 7, Zustand 5 + Immer, Tailwind CSS 4, Three.js, Vitest, Playwright, PWA, Vercel Blob + Redis, Liveblocks, PostHog.
+**Stack:** React 19, TypeScript 5.9, Vite 7, Zustand 5 + Immer, Tailwind CSS 4, Three.js, AI SDK, Vitest, Playwright, PWA, Vercel Blob + Redis, Liveblocks, PostHog.
 
 ## Git & Quality
 
 - **Main is protected** - all changes via PRs
-- Pre-commit hooks enforce lint, build, test coverage
+- Pre-commit hooks enforce lint-staged, module boundaries, i18n (4 checks), exhaustiveness, affected tests, component structure, missing tests, readme reminders
 
 ## Code Style (Enforced)
 
@@ -22,14 +22,19 @@ Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organiz
 
 ```
 src/
-├── core/           # Infrastructure: api/, constants.ts, result/, storage/, store/, types.ts
+├── core/           # Infrastructure: api/, constants.ts, labs/, result/, storage/, store/, types.ts
 ├── features/       # Vertical slices (each has README.md): bin-designer, bin-inspector,
-│                   # categories, cloud-share, generation, grid-editor, inspiration-gallery,
-│                   # labs, layers, layout-library, print-export, staging
-├── shared/         # Cross-cutting: components/, contexts/, hooks/, utils/
+│                   # categories, cloud-share, command-palette, design-linking, generation,
+│                   # grid-editor, inspiration-gallery, labs, layers, layout-library,
+│                   # name-suggestions, onboarding, print-export, staging
+├── shared/         # Cross-cutting: analytics/, components/, constants/, contexts/,
+│                   # generation/, hooks/, printSettings/, types/, utils/
+├── design-system/  # UI primitives: Button, Checkbox, Dialog, Input, Select, etc.
 ├── components/     # App-level: Collab/, Mobile/, Modals/, Sidebar/, Tablet/
 ├── hooks/          # App-level hooks + interactions/
-├── i18n/           # Localization (en, de, es, fr, nl, pt-BR)
+├── i18n/           # Localization (en, de, es, fr, nb, nl, pt-BR)
+├── styles/         # Print CSS
+├── utils/          # App-level utilities (binLocation, entity, rotation, slug, etc.)
 └── layouts/        # Responsive layout shells
 ```
 
@@ -37,14 +42,22 @@ src/
 
 ### Stores (`src/core/store/`)
 
-| Store            | Purpose                                                                          |
-| ---------------- | -------------------------------------------------------------------------------- |
-| `layout.ts`      | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
-| `library.ts`     | Multi-layout library, `activeLayoutId`, thumbnails                               |
-| `settings.ts`    | User preferences (localStorage: `gridfinity-settings-v1`)                        |
-| `history.ts`     | Undo/redo (max 100). Use `useUndoableAction()`                                   |
-| `selection.ts`   | Selected bins, active layer/category                                             |
-| `interaction.ts` | Current mode, drop targets, paint mode                                           |
+| Store                | Purpose                                                                          |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `layout.ts`          | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
+| `library.ts`         | Multi-layout library, `activeLayoutId`, thumbnails                               |
+| `settings.ts`        | User preferences (localStorage: `gridfinity-settings-v1`)                        |
+| `history.ts`         | Undo/redo (max 100). Use `useUndoableAction()`                                   |
+| `selection.ts`       | Selected bins, active layer/category                                             |
+| `interaction.ts`     | Current interaction, drop targets, layer view mode                               |
+| `ui.ts`              | Panel visibility, sidebar state, UI toggles                                      |
+| `view.ts`            | 3D preview camera, isometric snap                                                |
+| `toast.ts`           | Toast notification queue                                                         |
+| `labs.ts`            | Experimental feature flags                                                       |
+| `halfBinMode.ts`     | Half-bin toggle state                                                            |
+| `mobile.ts`          | Mobile-specific UI state                                                         |
+| `layoutAnalytics.ts` | Layout statistics tracking                                                       |
+| `sharedPreview.ts`   | Shared preview/embed state                                                       |
 
 ### Data Model (`src/core/types.ts`)
 
@@ -72,9 +85,11 @@ Error types: `LayoutError`, `ValidationError`, `StorageError`, `ApiError`. Use `
 
 Import from `@/core/storage` (public facade).
 
-### Interaction Modes
+### Interaction Types (`src/core/types.ts`)
 
 `draw` | `drag` | `resize` | `stagingDrag` | `paint`
+
+**Layer view modes** (`interaction.ts`): `focus` | `stack` | `all`
 
 ## Key Constants (`src/core/constants.ts`)
 
@@ -98,16 +113,23 @@ const t = useTranslation();
 t('toast.binsDeleted', { count: 5 }); // Interpolation with {variable}
 ```
 
-Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`.
+Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`. Locales: de, en, es, fr, nb, nl, pt-BR.
 
 ## API (`api/`)
 
-| Endpoint            | Purpose                        |
-| ------------------- | ------------------------------ |
-| `share.ts`          | POST: Create share             |
-| `share/[id].ts`     | GET/PUT/DELETE share           |
-| `lib/rateLimit.ts`  | 100/min (CRUD), 10/hr (report) |
-| `lib/validation.ts` | 500KB max, 2500 bins max       |
+| Endpoint                    | Purpose                            |
+| --------------------------- | ---------------------------------- |
+| `share.ts`                  | POST: Create share                 |
+| `share/[id].ts`             | GET/PUT/DELETE share               |
+| `suggest-name.ts`           | AI-powered layout name suggestions |
+| `liveblocks-auth.ts`        | Liveblocks auth token endpoint     |
+| `ml-telemetry.ts`           | ML usage telemetry                 |
+| `report/[id].ts`            | Report shared layout               |
+| `lib/rateLimit.ts`          | 100/min (CRUD), 10/hr (report)     |
+| `lib/validation.ts`         | 500KB max, 2500 bins max           |
+| `lib/contentFilter.ts`      | Content moderation                 |
+| `lib/designerValidation.ts` | Bin designer input validation      |
+| `lib/llm.ts`                | LLM provider config (AI SDK)       |
 
 ## Testing
 
@@ -137,6 +159,9 @@ npm run dev           # Dev server
 npm run build         # TypeScript + production build
 npm run test:coverage # Tests with coverage
 npm run test:e2e      # Playwright E2E
+npm run quality       # typecheck + lint + knip (dead code)
+npm run typecheck     # TypeScript check (no emit)
+npm run lint          # ESLint
 npm run size          # Bundle size check
 ```
 
@@ -144,4 +169,4 @@ npm run size          # Bundle size check
 
 **Vercel (required):** `BLOB_READ_WRITE_TOKEN`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `TOKEN_SALT`
 
-**Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`
+**Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`, `VITE_PUBLIC_POSTHOG_KEY`
