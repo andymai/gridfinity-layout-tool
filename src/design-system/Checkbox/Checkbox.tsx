@@ -40,8 +40,8 @@ const labelVariants = cva(['select-none', 'transition-colors duration-100'], {
   variants: {
     size: {
       sm: 'text-xs',
-      md: 'text-sm',
-      lg: 'text-base',
+      md: 'text-xs',
+      lg: 'text-sm',
     },
     checked: {
       true: 'text-content',

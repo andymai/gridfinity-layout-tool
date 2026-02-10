@@ -42,7 +42,7 @@ const toastVariants = cva(
       type: {
         success: 'bg-toast-success text-white border border-success',
         error: 'bg-toast-error text-white border border-error',
-        info: 'bg-toast-default text-content border border-stroke',
+        info: 'bg-toast-default text-on-dark border border-stroke',
       },
     },
     defaultVariants: {
@@ -165,7 +165,7 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
       <Icon size="md" className="flex-shrink-0 mt-0.5" aria-hidden="true" />
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{toast.message}</p>
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">{toast.message}</p>
 
         {toast.action && (
           <button
@@ -175,7 +175,7 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
               handleDismiss();
             }}
             className={cn(
-              'mt-1 text-sm font-medium underline underline-offset-2',
+              'mt-2 text-sm font-medium underline underline-offset-2',
               'hover:opacity-80',
               interactiveTransition,
               ...focusRing
@@ -192,9 +192,9 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
         onClick={handleDismiss}
         aria-label="Dismiss notification"
         className={cn(
-          'absolute top-2 right-2',
+          'absolute top-1/2 -translate-y-1/2 right-1 p-2',
           'flex items-center justify-center',
-          'w-6 h-6 rounded',
+          'rounded',
           'text-current opacity-60',
           'hover:opacity-100',
           interactiveTransition,

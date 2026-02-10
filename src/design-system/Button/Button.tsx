@@ -6,9 +6,7 @@ import {
   focusRing,
   disabledStyles,
   interactiveTransition,
-  sizeHeights,
-  sizePaddings,
-  sizeText,
+  touchTarget,
   sizeGaps,
   variantColors,
 } from '../variants';
@@ -30,9 +28,9 @@ const buttonVariants = cva(
         danger: variantColors.danger,
       },
       size: {
-        sm: [sizeHeights.sm, sizePaddings.sm, sizeText.sm, sizeGaps.sm],
-        md: [sizeHeights.md, sizePaddings.md, sizeText.md, sizeGaps.md],
-        lg: [sizeHeights.lg, sizePaddings.lg, sizeText.lg, sizeGaps.lg],
+        sm: ['h-6', 'px-1.5', 'text-xs', sizeGaps.sm],
+        md: ['py-2', 'px-4', 'text-sm', sizeGaps.md],
+        lg: ['h-12', 'px-5', 'text-base', sizeGaps.lg],
       },
       iconOnly: {
         true: 'aspect-square !px-0 justify-center',
@@ -43,7 +41,7 @@ const buttonVariants = cva(
     },
     compoundVariants: [
       { size: 'sm', iconOnly: true, class: 'w-6' },
-      { size: 'md', iconOnly: true, class: 'w-8' },
+      { size: 'md', iconOnly: true, class: 'w-9' },
       { size: 'lg', iconOnly: true, class: 'w-12' },
     ],
     defaultVariants: {
@@ -77,6 +75,12 @@ export interface ButtonProps
    * Icon displayed after children.
    */
   rightIcon?: React.ReactNode;
+
+  /**
+   * Enforce 44px minimum touch target (Apple HIG).
+   * Defaults to `true` for iconOnly buttons, `false` otherwise.
+   */
+  touchTarget?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -128,6 +132,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       loading,
       leftIcon,
       rightIcon,
+      touchTarget: touchTargetProp,
       className,
       children,
       disabled,
@@ -136,12 +141,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const isDisabled = disabled || loading;
+    const hasTouchTarget = touchTargetProp ?? iconOnly === true;
 
     return (
       <button
         ref={ref}
         disabled={isDisabled}
-        className={cn(buttonVariants({ variant, size, iconOnly, fullWidth }), className)}
+        className={cn(
+          buttonVariants({ variant, size, iconOnly, fullWidth }),
+          hasTouchTarget && touchTarget,
+          className
+        )}
         aria-busy={loading || undefined}
         {...props}
       >

@@ -10,16 +10,17 @@ Interactive element for triggering actions.
 
 ### Props
 
-| Prop        | Type                                              | Default       | Description                         |
-| ----------- | ------------------------------------------------- | ------------- | ----------------------------------- |
-| `variant`   | `'primary' \| 'secondary' \| 'ghost' \| 'danger'` | `'secondary'` | Visual style                        |
-| `size`      | `'sm' \| 'md' \| 'lg'`                            | `'md'`        | Size variant                        |
-| `loading`   | `boolean`                                         | `false`       | Shows spinner, disables interaction |
-| `leftIcon`  | `ReactNode`                                       | -             | Icon before children                |
-| `rightIcon` | `ReactNode`                                       | -             | Icon after children                 |
-| `iconOnly`  | `boolean`                                         | `false`       | Square button for icon-only use     |
-| `fullWidth` | `boolean`                                         | `false`       | Expand to full container width      |
-| `disabled`  | `boolean`                                         | `false`       | Disable interaction                 |
+| Prop          | Type                                              | Default       | Description                         |
+| ------------- | ------------------------------------------------- | ------------- | ----------------------------------- |
+| `variant`     | `'primary' \| 'secondary' \| 'ghost' \| 'danger'` | `'secondary'` | Visual style                        |
+| `size`        | `'sm' \| 'md' \| 'lg'`                            | `'md'`        | Size variant                        |
+| `loading`     | `boolean`                                         | `false`       | Shows spinner, disables interaction |
+| `leftIcon`    | `ReactNode`                                       | -             | Icon before children                |
+| `rightIcon`   | `ReactNode`                                       | -             | Icon after children                 |
+| `iconOnly`    | `boolean`                                         | `false`       | Square button for icon-only use     |
+| `fullWidth`   | `boolean`                                         | `false`       | Expand to full container width      |
+| `touchTarget` | `boolean`                                         | `iconOnly`    | 44px min touch target (Apple HIG)   |
+| `disabled`    | `boolean`                                         | `false`       | Disable interaction                 |
 
 ### Examples
 
