@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.2.0...gridfinity-layout-tool-v3.2.1) (2026-02-10)
+
+
+### Bug Fixes
+
+* align design system sizing to match production components ([#662](https://github.com/andymai/gridfinity-layout-tool/issues/662)) ([a1aa1d5](https://github.com/andymai/gridfinity-layout-tool/commit/a1aa1d59e12d2864f330ed83ad47ec8dd24ca6d0))
+
 ## [3.2.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.1.0...gridfinity-layout-tool-v3.2.0) (2026-02-09)
 
 
