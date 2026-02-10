@@ -46,6 +46,29 @@ describe('Select', () => {
       render(<Select options={options} value="b" onChange={vi.fn()} aria-label="Choice" />);
       expect(screen.getByRole('combobox')).toHaveValue('b');
     });
+
+    it('calls onValueChange with selected id', () => {
+      const onValueChange = vi.fn();
+      render(<Select options={options} onValueChange={onValueChange} aria-label="Choice" />);
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'b' } });
+      expect(onValueChange).toHaveBeenCalledWith('b');
+    });
+
+    it('fires both onChange and onValueChange together', () => {
+      const onChange = vi.fn();
+      const onValueChange = vi.fn();
+      render(
+        <Select
+          options={options}
+          onChange={onChange}
+          onValueChange={onValueChange}
+          aria-label="Choice"
+        />
+      );
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'a' } });
+      expect(onChange).toHaveBeenCalled();
+      expect(onValueChange).toHaveBeenCalledWith('a');
+    });
   });
 
   describe('error state', () => {

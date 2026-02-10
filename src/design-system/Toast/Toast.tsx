@@ -146,11 +146,13 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
 
   const toastRole = toast.type === 'error' ? 'alert' : 'status';
 
-  const progressBarColor = {
-    success: 'bg-success',
-    error: 'bg-error',
-    info: 'bg-info',
-  }[toast.type];
+  const progressBarColor = (
+    {
+      success: 'bg-success',
+      error: 'bg-error',
+      info: 'bg-info',
+    } satisfies Record<ToastType, string>
+  )[toast.type];
 
   return (
     <div

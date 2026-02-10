@@ -31,6 +31,7 @@ const buttonVariants = cva(
     'disabled:opacity-30',
     interactiveTransition,
     ...focusRing,
+    ...disabledStyles,
   ],
   {
     variants: {

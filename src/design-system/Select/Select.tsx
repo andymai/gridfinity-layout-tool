@@ -117,19 +117,19 @@ export interface SelectProps
  * Uses the native `<select>` element for best accessibility and mobile experience.
  *
  * @example
- * // Basic select
+ * // Basic select with onValueChange
  * <Select
  *   value={sortOrder}
- *   onChange={e => setSortOrder(e.target.value)}
+ *   onValueChange={setSortOrder}
  *   options={[
- *     { value: 'name', label: 'Name' },
- *     { value: 'date', label: 'Date' },
+ *     { id: 'name', name: 'Name' },
+ *     { id: 'date', name: 'Date' },
  *   ]}
  *   aria-label="Sort by"
  * />
  *
  * @example
- * // With placeholder
+ * // With placeholder (native onChange also supported)
  * <Select
  *   value={category}
  *   onChange={e => setCategory(e.target.value)}
@@ -141,7 +141,7 @@ export interface SelectProps
  * // With color swatch (for category selection)
  * <Select
  *   value={selectedCategory}
- *   onChange={e => setSelectedCategory(e.target.value)}
+ *   onValueChange={setSelectedCategory}
  *   options={categories}
  *   colorSwatch={getCategoryColor(selectedCategory)}
  * />
@@ -151,7 +151,7 @@ export interface SelectProps
  * <Select
  *   fullWidth
  *   value={value}
- *   onChange={handleChange}
+ *   onValueChange={handleChange}
  *   options={options}
  * />
  */

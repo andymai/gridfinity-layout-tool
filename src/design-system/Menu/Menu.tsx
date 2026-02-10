@@ -263,7 +263,7 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
 
   return createPortal(
     <MenuContext.Provider value={{ onClose, registerItem }}>
-      {/* Invisible overlay to catch clicks outside */}
+      {/* Light overlay backdrop to catch clicks outside */}
       <div className={overlayVariants()} onClick={handleOverlayClick} aria-hidden="true" />
 
       {/* Menu content */}

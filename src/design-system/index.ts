@@ -81,7 +81,7 @@ export type { StepperProps } from './Stepper';
 export { Collapsible } from './Collapsible';
 export type { CollapsibleProps } from './Collapsible';
 
-// Dialog (compound: Dialog.Root, Dialog.Header, Dialog.Body, Dialog.Footer)
+// Dialog (compound: Dialog.Root, Dialog.Header, Dialog.Body, Dialog.Footer) + ConfirmDialog
 export { Dialog, ConfirmDialog } from './Dialog';
 export type {
   DialogProps,
