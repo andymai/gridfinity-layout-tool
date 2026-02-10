@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.2.2...gridfinity-layout-tool-v3.2.3) (2026-02-10)
+
+
+### Bug Fixes
+
+* align Select, Stepper, Toast sizing to match production and add visual regression tests ([#666](https://github.com/andymai/gridfinity-layout-tool/issues/666)) ([2ceddbe](https://github.com/andymai/gridfinity-layout-tool/commit/2ceddbe712b2dd124d2f3e4c4df6e06313efb064))
+
 ## [3.2.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.2.1...gridfinity-layout-tool-v3.2.2) (2026-02-10)
 
 
