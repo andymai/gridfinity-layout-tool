@@ -43,10 +43,10 @@ const overlayVariants = cva(['fixed inset-0 z-50', 'bg-overlay-dark', 'animate-f
 const contentVariants = cva(
   [
     'fixed z-50',
-    'bg-surface-elevated',
+    'bg-surface-secondary',
     'border border-stroke-subtle',
-    'rounded-lg',
-    'shadow-floating',
+    'rounded-[var(--radius-xl)]',
+    'shadow-[var(--shadow-xl)]',
     'animate-scale-in',
     'max-h-[90vh]',
     'overflow-hidden',
@@ -76,17 +76,15 @@ const contentVariants = cva(
 
 const headerVariants = cva([
   'flex items-center justify-between',
-  'px-6 py-4',
-  'border-b border-stroke-subtle',
+  'px-[var(--space-2xl)] pt-[var(--space-2xl)] pb-2',
   'flex-shrink-0',
 ]);
 
-const bodyVariants = cva(['px-6 py-4', 'overflow-y-auto', 'flex-1']);
+const bodyVariants = cva(['px-[var(--space-2xl)] py-0', 'overflow-y-auto', 'flex-1']);
 
 const footerVariants = cva([
   'flex items-center justify-end gap-3',
-  'px-6 py-4',
-  'border-t border-stroke-subtle',
+  'px-[var(--space-2xl)] pt-6 pb-[var(--space-2xl)]',
   'flex-shrink-0',
 ]);
 
@@ -355,7 +353,7 @@ function DialogHeader({ title, showCloseButton = true, children }: DialogHeaderP
 
   return (
     <div className={headerVariants()}>
-      <h2 id={titleId} className="text-lg font-semibold text-content">
+      <h2 id={titleId} className="text-xl font-semibold text-content">
         {title}
       </h2>
       <div className="flex items-center gap-2">
@@ -412,6 +410,97 @@ export const Dialog = {
   Body: DialogBody,
   Footer: DialogFooter,
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ConfirmDialog (convenience wrapper)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ConfirmDialogProps {
+  /**
+   * Whether the dialog is open.
+   */
+  isOpen: boolean;
+
+  /**
+   * Dialog title.
+   */
+  title: string;
+
+  /**
+   * Confirmation message body.
+   */
+  message: string;
+
+  /**
+   * Label for the confirm button.
+   * @default 'Confirm'
+   */
+  confirmText?: string;
+
+  /**
+   * Label for the cancel button.
+   * @default 'Cancel'
+   */
+  cancelText?: string;
+
+  /**
+   * Whether the action is destructive (uses danger variant).
+   * @default false
+   */
+  destructive?: boolean;
+
+  /**
+   * Called when the user confirms.
+   */
+  onConfirm: () => void;
+
+  /**
+   * Called when the user cancels or closes.
+   */
+  onCancel: () => void;
+}
+
+/**
+ * Pre-built confirmation dialog using Dialog compound parts.
+ *
+ * @example
+ * <ConfirmDialog
+ *   isOpen={showDelete}
+ *   title="Delete Layout"
+ *   message="This action cannot be undone."
+ *   confirmText="Delete"
+ *   destructive
+ *   onConfirm={handleDelete}
+ *   onCancel={() => setShowDelete(false)}
+ * />
+ */
+export function ConfirmDialog({
+  isOpen,
+  title,
+  message,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  destructive = false,
+  onConfirm,
+  onCancel,
+}: ConfirmDialogProps) {
+  return (
+    <DialogRoot open={isOpen} onClose={onCancel} size="sm">
+      <DialogHeader title={title} />
+      <DialogBody>
+        <p className="text-sm text-content-secondary">{message}</p>
+      </DialogBody>
+      <DialogFooter>
+        <Button variant="ghost" onClick={onCancel}>
+          {cancelText}
+        </Button>
+        <Button variant={destructive ? 'danger' : 'primary'} onClick={onConfirm}>
+          {confirmText}
+        </Button>
+      </DialogFooter>
+    </DialogRoot>
+  );
+}
 
 // Named exports for type access
 export type { DialogRootProps as DialogProps };

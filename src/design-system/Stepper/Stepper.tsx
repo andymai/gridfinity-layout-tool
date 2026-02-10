@@ -11,8 +11,8 @@ import { focusRing, disabledStyles, interactiveTransition } from '../variants';
 const containerVariants = cva(['inline-flex items-center'], {
   variants: {
     size: {
-      sm: 'h-8',
-      md: 'h-10',
+      sm: 'h-6',
+      md: 'h-8',
       lg: 'h-12',
     },
   },
@@ -28,6 +28,7 @@ const buttonVariants = cva(
     'border border-stroke-subtle',
     'text-content-tertiary',
     'hover:text-content hover:bg-surface-hover',
+    'disabled:opacity-30',
     interactiveTransition,
     ...focusRing,
     ...disabledStyles,
@@ -35,9 +36,9 @@ const buttonVariants = cva(
   {
     variants: {
       size: {
-        sm: 'w-8 h-8 px-2',
-        md: 'w-10 h-10 px-2.5',
-        lg: 'w-12 h-12 px-3',
+        sm: 'h-6 px-1',
+        md: 'h-8 px-2',
+        lg: 'w-12 h-12 px-3 bg-gradient-to-b from-surface-hover to-surface-elevated',
       },
       position: {
         left: 'rounded-l-md rounded-r-none border-r-0',
@@ -66,8 +67,8 @@ const inputVariants = cva(
   {
     variants: {
       size: {
-        sm: 'text-xs min-w-[48px]',
-        md: 'text-sm min-w-[56px]',
+        sm: 'text-xs min-w-[40px]',
+        md: 'text-sm min-w-[48px]',
         lg: 'text-base font-semibold min-w-[64px]',
       },
     },
@@ -90,8 +91,8 @@ const displayVariants = cva(
   {
     variants: {
       size: {
-        sm: 'text-xs text-content-secondary min-w-[48px]',
-        md: 'text-sm text-content-secondary min-w-[56px]',
+        sm: 'text-xs text-content-secondary min-w-[40px]',
+        md: 'text-sm text-content-secondary min-w-[48px]',
         lg: 'text-base font-semibold text-content min-w-[64px]',
       },
     },
@@ -312,7 +313,11 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
     const isDecreaseDisabled = disabled || value <= min;
     const isIncreaseDisabled = disabled || value >= max;
 
-    const iconSize = size === 'sm' ? 'sm' : 'md';
+    const iconConfig = {
+      sm: { className: 'w-2.5 h-2.5', strokeWidth: 2.5 },
+      md: { className: 'w-3 h-3', strokeWidth: 2.5 },
+      lg: { className: 'w-5 h-5', strokeWidth: 2 },
+    }[size ?? 'md'];
 
     const showInput = displayValue === undefined && onChange;
 
@@ -326,7 +331,11 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
           className={buttonVariants({ size, position: 'left' })}
           aria-label={`Decrease ${ariaLabel}`}
         >
-          <MinusIcon size={iconSize} />
+          <MinusIcon
+            size="sm"
+            className={iconConfig.className}
+            strokeWidth={iconConfig.strokeWidth}
+          />
         </button>
 
         {/* Input or display */}
@@ -354,7 +363,11 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
           className={buttonVariants({ size, position: 'right' })}
           aria-label={`Increase ${ariaLabel}`}
         >
-          <PlusIcon size={iconSize} />
+          <PlusIcon
+            size="sm"
+            className={iconConfig.className}
+            strokeWidth={iconConfig.strokeWidth}
+          />
         </button>
       </div>
     );

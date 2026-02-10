@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
-import { Button } from '../Button';
 import { XIcon, CheckIcon, AlertTriangleIcon, InfoIcon } from '../Icon';
 import { focusRing, interactiveTransition } from '../variants';
 
@@ -31,19 +30,19 @@ const toastVariants = cva(
   [
     'relative',
     'flex items-start gap-3',
-    'px-4 py-3',
-    'rounded-lg',
-    'shadow-floating',
-    'min-w-[280px] max-w-[400px]',
+    'p-4 pr-10',
+    'rounded-xl',
+    'shadow-lg backdrop-blur-sm',
+    'w-80',
     'pointer-events-auto',
     interactiveTransition,
   ],
   {
     variants: {
       type: {
-        success: 'bg-toast-success text-white',
-        error: 'bg-toast-error text-white',
-        info: 'bg-toast-default text-content',
+        success: 'bg-toast-success text-white border border-success',
+        error: 'bg-toast-error text-white border border-error',
+        info: 'bg-toast-default text-content border border-stroke',
       },
     },
     defaultVariants: {
@@ -55,7 +54,7 @@ const toastVariants = cva(
 const containerVariants = cva(['fixed', 'z-50', 'flex flex-col', 'gap-2', 'pointer-events-none'], {
   variants: {
     position: {
-      'top-center': 'top-4 left-1/2 -translate-x-1/2',
+      'top-center': 'top-4 left-1/2 -translate-x-1/2 pt-[env(safe-area-inset-top)]',
       'bottom-right': 'bottom-4 right-4',
       'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2',
     },
@@ -145,10 +144,20 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
       ? 'toast-enter-top'
       : 'toast-enter-bottom';
 
+  const toastRole = toast.type === 'error' ? 'alert' : 'status';
+
+  const progressBarColor = (
+    {
+      success: 'bg-success',
+      error: 'bg-error',
+      info: 'bg-info',
+    } satisfies Record<ToastType, string>
+  )[toast.type];
+
   return (
     <div
-      role="alert"
-      aria-live="polite"
+      role={toastRole}
+      aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
       className={cn(toastVariants({ type: toast.type }), animationClass)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -177,25 +186,32 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
         )}
       </div>
 
-      <Button
-        iconOnly
-        size="sm"
-        variant="ghost"
+      {/* Close button (absolute positioned) */}
+      <button
+        type="button"
         onClick={handleDismiss}
         aria-label="Dismiss notification"
-        className="flex-shrink-0 -mr-1 -mt-1 hover:bg-white/10"
+        className={cn(
+          'absolute top-2 right-2',
+          'flex items-center justify-center',
+          'w-6 h-6 rounded',
+          'text-current opacity-60',
+          'hover:opacity-100',
+          interactiveTransition,
+          ...focusRing
+        )}
       >
-        <XIcon size="sm" />
-      </Button>
+        <XIcon size="xs" />
+      </button>
 
       {/* Progress bar */}
       {toast.duration !== 0 && (
         <div
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/20 overflow-hidden"
+          className="absolute bottom-0 left-0 right-0 h-1 bg-black/20 overflow-hidden"
           aria-hidden="true"
         >
           <div
-            className="h-full bg-white/40"
+            className={cn('h-full', progressBarColor)}
             style={{
               animation: `toast-progress ${toast.duration ?? 5000}ms linear`,
               animationPlayState: isPaused ? 'paused' : 'running',

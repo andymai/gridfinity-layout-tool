@@ -67,8 +67,10 @@ export const focusRing = [
 export const disabledStyles = [
   'disabled:pointer-events-none',
   'disabled:opacity-40',
+  'disabled:grayscale-[0.2]',
   'aria-disabled:pointer-events-none',
   'aria-disabled:opacity-40',
+  'aria-disabled:grayscale-[0.2]',
 ] as const;
 
 /**
@@ -89,8 +91,8 @@ export const touchTarget = 'min-h-[44px] min-w-[44px]' as const;
  * Height classes for each size variant.
  */
 export const sizeHeights = {
-  sm: 'h-8',
-  md: 'h-10',
+  sm: 'h-6',
+  md: 'h-8',
   lg: 'h-12',
 } as const;
 
@@ -98,8 +100,8 @@ export const sizeHeights = {
  * Padding classes for each size variant.
  */
 export const sizePaddings = {
-  sm: 'px-3',
-  md: 'px-4',
+  sm: 'px-1.5',
+  md: 'px-3',
   lg: 'px-5',
 } as const;
 
@@ -116,8 +118,8 @@ export const sizeText = {
  * Gap classes for icon spacing at each size.
  */
 export const sizeGaps = {
-  sm: 'gap-1.5',
-  md: 'gap-2',
+  sm: 'gap-1',
+  md: 'gap-1.5',
   lg: 'gap-2.5',
 } as const;
 
@@ -125,9 +127,9 @@ export const sizeGaps = {
  * Icon sizes (width/height) for each size variant.
  */
 export const iconSizes = {
-  sm: 'w-4 h-4',
-  md: 'w-5 h-5',
-  lg: 'w-6 h-6',
+  sm: 'w-3 h-3',
+  md: 'w-4 h-4',
+  lg: 'w-5 h-5',
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -149,7 +151,7 @@ export const variantColors = {
     'bg-gradient-to-b from-surface-hover to-surface-elevated',
     'text-content',
     'border border-stroke',
-    'shadow-sm',
+    '[box-shadow:var(--shadow-sm),inset_0_1px_0_rgba(255,255,255,0.03)]',
     'hover:from-surface-active hover:to-surface-hover hover:-translate-y-px hover:shadow-md',
     'active:translate-y-0 active:shadow-sm',
   ],

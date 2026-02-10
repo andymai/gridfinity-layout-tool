@@ -36,17 +36,17 @@ function useMenuContext() {
 // Variants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const overlayVariants = cva(['fixed inset-0 z-40']);
+const overlayVariants = cva(['fixed inset-0 z-40', 'bg-overlay-light']);
 
 const contentVariants = cva([
-  'absolute z-50',
-  'min-w-[160px]',
+  'fixed z-50',
+  'min-w-[180px]',
   'bg-surface-elevated',
   'border border-stroke-subtle',
-  'rounded-lg',
-  'shadow-floating',
+  'rounded-xl',
+  'shadow-xl',
   'py-1',
-  'animate-scale-in',
+  'animate-fade-in',
   'origin-top-left',
   ...focusRing,
 ]);
@@ -54,7 +54,7 @@ const contentVariants = cva([
 const itemVariants = cva(
   [
     'flex items-center gap-3',
-    'px-3 py-2',
+    'px-4 py-3',
     'text-sm',
     'cursor-pointer',
     'outline-none',
@@ -64,10 +64,10 @@ const itemVariants = cva(
     variants: {
       variant: {
         default: ['text-content', 'hover:bg-surface-hover', 'focus-visible:bg-surface-hover'],
-        danger: ['text-danger', 'hover:bg-danger-muted', 'focus-visible:bg-danger-muted'],
+        danger: ['text-error', 'hover:bg-surface-hover', 'focus-visible:bg-surface-hover'],
       },
       disabled: {
-        true: 'opacity-40 cursor-not-allowed pointer-events-none',
+        true: 'opacity-50 cursor-not-allowed pointer-events-none',
       },
     },
     defaultVariants: {
@@ -263,7 +263,7 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
 
   return createPortal(
     <MenuContext.Provider value={{ onClose, registerItem }}>
-      {/* Invisible overlay to catch clicks outside */}
+      {/* Light overlay backdrop to catch clicks outside */}
       <div className={overlayVariants()} onClick={handleOverlayClick} aria-hidden="true" />
 
       {/* Menu content */}
@@ -328,7 +328,7 @@ function MenuItem({
   shortcut,
 }: MenuItemProps) {
   const { onClose, registerItem } = useMenuContext();
-  const itemRef = useRef<HTMLDivElement>(null);
+  const itemRef = useRef<HTMLButtonElement>(null);
 
   // Register for keyboard navigation
   useEffect(() => {
@@ -343,35 +343,29 @@ function MenuItem({
     onClose();
   };
 
-  const handleKeyDown = (e: ReactKeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleClick();
-    }
-  };
-
   return (
-    <div
+    <button
       ref={itemRef}
+      type="button"
       role="menuitem"
       tabIndex={disabled ? -1 : 0}
-      aria-disabled={disabled}
+      aria-disabled={disabled || undefined}
+      disabled={disabled}
       className={cn(itemVariants({ variant, disabled }))}
       onClick={handleClick}
-      onKeyDown={handleKeyDown}
     >
       {icon && (
         <span className="w-5 h-5 flex-shrink-0" aria-hidden="true">
           {icon}
         </span>
       )}
-      <span className="flex-1">{children}</span>
+      <span className="flex-1 text-left">{children}</span>
       {shortcut && (
         <span className="text-xs text-content-tertiary ml-4" aria-hidden="true">
           {shortcut}
         </span>
       )}
-    </div>
+    </button>
   );
 }
 

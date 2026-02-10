@@ -135,21 +135,23 @@ Native dropdown with consistent styling.
 
 ### Props
 
-| Prop          | Type                   | Default      | Description                    |
-| ------------- | ---------------------- | ------------ | ------------------------------ |
-| `options`     | `SelectOption[]`       | **required** | List of options                |
-| `placeholder` | `string`               | -            | Placeholder text               |
-| `colorSwatch` | `string \| null`       | -            | Color indicator (null = mixed) |
-| `size`        | `'sm' \| 'md' \| 'lg'` | `'md'`       | Size variant                   |
-| `fullWidth`   | `boolean`              | `false`      | Expand to full width           |
-| `error`       | `boolean`              | `false`      | Error state styling            |
+| Prop            | Type                      | Default      | Description                    |
+| --------------- | ------------------------- | ------------ | ------------------------------ |
+| `options`       | `SelectOption[]`          | **required** | List of options                |
+| `placeholder`   | `string`                  | -            | Placeholder text               |
+| `colorSwatch`   | `string \| null`          | -            | Color indicator (null = mixed) |
+| `size`          | `'sm' \| 'md' \| 'lg'`    | `'md'`       | Size variant                   |
+| `fullWidth`     | `boolean`                 | `false`      | Expand to full width           |
+| `error`         | `boolean`                 | `false`      | Error state styling            |
+| `onValueChange` | `(value: string) => void` | -            | Convenience change callback    |
 
 ### SelectOption
 
 ```typescript
 interface SelectOption {
-  value: string;
-  label: string;
+  id: string;
+  name: string;
+  suffix?: string;
   disabled?: boolean;
 }
 ```
@@ -160,10 +162,10 @@ interface SelectOption {
 // Basic
 <Select
   value={sort}
-  onChange={e => setSort(e.target.value)}
+  onValueChange={setSort}
   options={[
-    { value: 'name', label: 'Name' },
-    { value: 'date', label: 'Date' },
+    { id: 'name', name: 'Name' },
+    { id: 'date', name: 'Date' },
   ]}
   aria-label="Sort by"
 />
@@ -171,7 +173,7 @@ interface SelectOption {
 // With placeholder
 <Select
   value={category}
-  onChange={handleChange}
+  onValueChange={handleChange}
   options={categories}
   placeholder="Select category"
 />
@@ -179,7 +181,7 @@ interface SelectOption {
 // With color swatch
 <Select
   value={selectedId}
-  onChange={handleChange}
+  onValueChange={handleChange}
   options={categories}
   colorSwatch={getCategoryColor(selectedId)}
 />
@@ -351,6 +353,49 @@ Modal dialog with focus management.
     <Button variant="primary" onClick={save}>Save</Button>
   </Dialog.Footer>
 </Dialog.Root>
+```
+
+---
+
+## ConfirmDialog
+
+Pre-built confirmation dialog using Dialog compound parts.
+
+### Props
+
+| Prop          | Type         | Default      | Description                    |
+| ------------- | ------------ | ------------ | ------------------------------ |
+| `isOpen`      | `boolean`    | **required** | Open state                     |
+| `title`       | `string`     | **required** | Dialog title                   |
+| `message`     | `string`     | **required** | Confirmation message           |
+| `confirmText` | `string`     | `'Confirm'`  | Confirm button label           |
+| `cancelText`  | `string`     | `'Cancel'`   | Cancel button label            |
+| `destructive` | `boolean`    | `false`      | Use danger variant for confirm |
+| `onConfirm`   | `() => void` | **required** | Confirm handler                |
+| `onCancel`    | `() => void` | **required** | Cancel/close handler           |
+
+### Examples
+
+```tsx
+// Destructive confirmation
+<ConfirmDialog
+  isOpen={showDelete}
+  title="Delete Layout"
+  message="This action cannot be undone."
+  confirmText="Delete"
+  destructive
+  onConfirm={handleDelete}
+  onCancel={() => setShowDelete(false)}
+/>
+
+// Non-destructive confirmation
+<ConfirmDialog
+  isOpen={showReset}
+  title="Reset Settings"
+  message="All settings will return to defaults."
+  onConfirm={handleReset}
+  onCancel={() => setShowReset(false)}
+/>
 ```
 
 ---

@@ -3,9 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { Select } from './Select';
 
 const options = [
-  { value: 'a', label: 'Alpha' },
-  { value: 'b', label: 'Beta' },
-  { value: 'c', label: 'Gamma', disabled: true },
+  { id: 'a', name: 'Alpha' },
+  { id: 'b', name: 'Beta' },
+  { id: 'c', name: 'Gamma', disabled: true },
 ];
 
 describe('Select', () => {
@@ -45,6 +45,29 @@ describe('Select', () => {
     it('reflects controlled value', () => {
       render(<Select options={options} value="b" onChange={vi.fn()} aria-label="Choice" />);
       expect(screen.getByRole('combobox')).toHaveValue('b');
+    });
+
+    it('calls onValueChange with selected id', () => {
+      const onValueChange = vi.fn();
+      render(<Select options={options} onValueChange={onValueChange} aria-label="Choice" />);
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'b' } });
+      expect(onValueChange).toHaveBeenCalledWith('b');
+    });
+
+    it('fires both onChange and onValueChange together', () => {
+      const onChange = vi.fn();
+      const onValueChange = vi.fn();
+      render(
+        <Select
+          options={options}
+          onChange={onChange}
+          onValueChange={onValueChange}
+          aria-label="Choice"
+        />
+      );
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'a' } });
+      expect(onChange).toHaveBeenCalled();
+      expect(onValueChange).toHaveBeenCalledWith('a');
     });
   });
 
