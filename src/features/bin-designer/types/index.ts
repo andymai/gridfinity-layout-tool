@@ -96,8 +96,6 @@ export interface ScoopConfig {
   readonly enabled: boolean;
   /** Scoop radius in mm. 'auto' = min(compartmentSize/3, 15mm) */
   readonly radius: number | 'auto';
-  /** Whether to add scoops to all compartment rows (true) or only front row (false) */
-  readonly allRows: boolean;
 }
 
 /** Horizontal alignment of each label tab within its compartment column */

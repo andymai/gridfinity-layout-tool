@@ -1,7 +1,7 @@
 /**
  * Finger scoop section: curved ramp from bin floor to front wall.
  *
- * Controls: toggle on/off, radius (auto or manual), all rows toggle.
+ * Controls: toggle on/off, radius (auto or manual).
  * Available only in standard compartment mode.
  */
 
@@ -65,24 +65,6 @@ export function ScoopSection() {
                 </p>
               )}
             </div>
-
-            {/* All rows toggle */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={state.scoop.allRows}
-                onChange={handlers.toggleAllRows}
-                className="h-3.5 w-3.5 rounded border-stroke-subtle text-accent focus:ring-accent"
-              />
-              <span className="text-xs text-content-secondary">
-                {t('binDesigner.scoopAllRows')}
-              </span>
-            </label>
-            {state.scoop.allRows && (
-              <p className="text-[11px] text-content-tertiary ml-5.5">
-                {t('binDesigner.scoopAllRowsHint')}
-              </p>
-            )}
           </>
         }
       />

@@ -48,7 +48,7 @@ describe('GhostScoops', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        scoop: { enabled: false, radius: 'auto' as const, allRows: false },
+        scoop: { enabled: false, radius: 'auto' as const },
       },
       generation: {
         status: 'idle',
@@ -68,7 +68,7 @@ describe('GhostScoops', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        scoop: { enabled: true, radius: 'auto' as const, allRows: false },
+        scoop: { enabled: true, radius: 'auto' as const },
       },
       generation: {
         status: 'idle',
@@ -85,7 +85,7 @@ describe('GhostScoops', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        scoop: { enabled: true, radius: 'auto' as const, allRows: false },
+        scoop: { enabled: true, radius: 'auto' as const },
       },
       generation: {
         status: 'generating',
@@ -103,7 +103,7 @@ describe('GhostScoops', () => {
       params: {
         ...DEFAULT_BIN_PARAMS,
         style: 'slotted',
-        scoop: { enabled: true, radius: 'auto' as const, allRows: false },
+        scoop: { enabled: true, radius: 'auto' as const },
       },
       generation: {
         status: 'generating',

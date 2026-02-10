@@ -233,8 +233,6 @@
   "binDesigner.saved": "Lagret",
   "binDesigner.savedDesigns": "Lagrede design",
   "binDesigner.saving": "Lagrer...",
-  "binDesigner.scoopAllRows": "Alle rader",
-  "binDesigner.scoopAllRowsHint": "Legg til grep i alle rader, ikke bare den fremste raden",
   "binDesigner.scoopRadius": "Radius",
   "binDesigner.scoopRadiusAuto": "Automatisk (tilpasser seg romstørrelse)",
   "binDesigner.searchDesigns": "Søk etter design…",

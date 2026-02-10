@@ -33,16 +33,10 @@ export function useScoopSection() {
     [updateScoop]
   );
 
-  const toggleAllRows = useCallback(() => {
-    updateScoop({ allRows: !scoop.allRows });
-  }, [scoop.allRows, updateScoop]);
-
   const sectionSummary = useMemo(() => {
     if (!scoop.enabled) return undefined;
-    const parts = [isAutoRadius ? 'Auto' : `${manualRadius}mm`];
-    if (scoop.allRows) parts.push(t('binDesigner.scoopAllRows'));
-    return parts.join(' \u00b7 ');
-  }, [scoop.enabled, scoop.allRows, isAutoRadius, manualRadius, t]);
+    return isAutoRadius ? 'Auto' : `${manualRadius}mm`;
+  }, [scoop.enabled, isAutoRadius, manualRadius]);
 
   const disabledReason = isUnavailable ? t('binDesigner.fingerScoopUnavailableSlotted') : undefined;
 
@@ -56,7 +50,7 @@ export function useScoopSection() {
 
   return {
     state: { scoop, isAutoRadius, manualRadius },
-    handlers: { toggleScoop, toggleAutoRadius, setRadius, toggleAllRows },
+    handlers: { toggleScoop, toggleAutoRadius, setRadius },
     meta,
     t,
   };

@@ -1105,9 +1105,7 @@ function buildLabelTabs(
  * ramp fills the wall-floor junction and the concave curve helps slide
  * items out of the bin.
  *
- * When `allRows` is true, scoops are placed at the front edge of every
- * compartment row; otherwise only the front-most row (row 0) gets scoops.
- *
+ * Scoops are placed at the front edge of every compartment row.
  * For merged compartments spanning multiple columns, a single scoop spans
  * the full merged width.
  *
@@ -1140,7 +1138,6 @@ function buildScoopRamps(
 
   const { cols, rows, cells } = params.compartments;
   const baseRadius = params.scoop.radius;
-  const allRows = params.scoop.allRows;
 
   const cellW = innerW / cols;
   const cellD = innerD / rows;
@@ -1151,9 +1148,6 @@ function buildScoopRamps(
   const lipCutShapes: Shape3D[] = [];
 
   for (let row = 0; row < rows; row++) {
-    // Skip non-front rows unless allRows is enabled
-    if (!allRows && row !== 0) continue;
-
     for (let col = 0; col < cols; col++) {
       const compId = cells[row * cols + col];
       if (processedCompartments.has(compId)) continue;
@@ -1175,10 +1169,6 @@ function buildScoopRamps(
         }
       }
       if (maxCol === -1) continue;
-
-      // Skip if this compartment's front row doesn't match current row
-      // (for allRows mode, we process each compartment once at its front edge)
-      if (!allRows && minRow !== 0) continue;
 
       // Compartment physical dimensions
       const compCols = maxCol - minCol + 1;

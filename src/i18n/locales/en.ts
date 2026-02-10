@@ -1205,8 +1205,6 @@ const en: Record<string, string> = {
   'binDesigner.fingerScoopUnavailableSlotted': 'Not available for slotted or solid bins',
   'binDesigner.scoopRadius': 'Radius',
   'binDesigner.scoopRadiusAuto': 'Auto (adapts to compartment size)',
-  'binDesigner.scoopAllRows': 'All rows',
-  'binDesigner.scoopAllRowsHint': 'Add scoops to all compartment rows, not just the front row',
   'binDesigner.walls': 'Walls',
   'binDesigner.wallThickness': 'Wall thickness',
   'binDesigner.wallThickness.0.4': 'Ultra-thin, fragile—light contents only',

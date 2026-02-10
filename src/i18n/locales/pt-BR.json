@@ -233,8 +233,6 @@
   "binDesigner.saved": "Salvo",
   "binDesigner.savedDesigns": "Designs Salvos",
   "binDesigner.saving": "Salvando...",
-  "binDesigner.scoopAllRows": "Todas as fileiras",
-  "binDesigner.scoopAllRowsHint": "Adicionar rampas a todas as fileiras de compartimentos, não apenas à fileira frontal",
   "binDesigner.scoopRadius": "Raio",
   "binDesigner.scoopRadiusAuto": "Automático (adapta-se ao tamanho do compartimento)",
   "binDesigner.searchDesigns": "Buscar designs…",

@@ -3,7 +3,7 @@
  *
  * Shows translucent quarter-cylinder shapes at the front edge of each
  * compartment where scoops will appear. Provides immediate visual feedback
- * when the user toggles scoops, changes radius, or modifies allRows.
+ * when the user toggles scoops or changes radius.
  *
  * Position math mirrors binGenerator.ts buildScoopCuts.
  */
@@ -62,8 +62,6 @@ export function GhostScoops() {
     let vertexOffset = 0;
 
     for (let row = 0; row < rows; row++) {
-      if (!scoop.allRows && row !== 0) continue;
-
       for (let col = 0; col < cols; col++) {
         const compId = cells[row * cols + col];
         if (processedCompartments.has(compId)) continue;
@@ -85,7 +83,6 @@ export function GhostScoops() {
           }
         }
         if (maxCol === -1) continue;
-        if (!scoop.allRows && minRow !== 0) continue;
 
         const compCols = maxCol - minCol + 1;
         const compRows = maxRow - minRow + 1;
@@ -166,7 +163,6 @@ export function GhostScoops() {
     rows,
     cells,
     scoop.radius,
-    scoop.allRows,
   ]);
 
   const material = useMemo(() => {

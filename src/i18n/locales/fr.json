@@ -233,8 +233,6 @@
   "binDesigner.saved": "Enregistré",
   "binDesigner.savedDesigns": "Designs enregistrés",
   "binDesigner.saving": "Enregistrement...",
-  "binDesigner.scoopAllRows": "Toutes les rangées",
-  "binDesigner.scoopAllRowsHint": "Ajouter des rampes à toutes les rangées, pas seulement à la rangée avant",
   "binDesigner.scoopRadius": "Rayon",
   "binDesigner.scoopRadiusAuto": "Automatique (s'adapte à la taille du compartiment)",
   "binDesigner.searchDesigns": "Rechercher des designs…",

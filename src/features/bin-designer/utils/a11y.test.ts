@@ -131,7 +131,7 @@ describe('a11y utilities', () => {
         style: 'standard',
         compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
         label: { enabled: false, text: '', fontSize: 'auto' },
-        scoop: { enabled: false, radius: 'auto', allRows: false },
+        scoop: { enabled: false, radius: 'auto' },
         walls: {
           front: { width: 0, depth: 0 },
           back: { width: 0, depth: 0 },

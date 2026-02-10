@@ -122,29 +122,4 @@ describe('useScoopSection', () => {
 
     expect(useDesignerStore.getState().params.scoop.radius).toBe(15);
   });
-
-  it('toggleAllRows disables allRows', () => {
-    const { result } = renderHook(() => useScoopSection());
-
-    expect(result.current.state.scoop.allRows).toBe(true);
-
-    act(() => {
-      result.current.handlers.toggleAllRows();
-    });
-
-    expect(useDesignerStore.getState().params.scoop.allRows).toBe(false);
-  });
-
-  it('summary includes allRows text when enabled', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, allRows: true },
-      },
-    });
-
-    const { result } = renderHook(() => useScoopSection());
-
-    expect(result.current.meta.summary).toContain('All rows');
-  });
 });
