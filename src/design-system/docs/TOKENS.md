@@ -78,13 +78,36 @@ CSS variables and design tokens used throughout the design system.
 
 ## Component Size Scale
 
+### Shared scale (Select, Stepper, Collapsible, etc.)
+
 | Size | Height | Padding  | Icon  | Gap       | Maps to |
 | ---- | ------ | -------- | ----- | --------- | ------- |
 | `sm` | 24px   | `px-1.5` | 12×12 | `gap-1`   | Compact |
 | `md` | 32px   | `px-3`   | 16×16 | `gap-1.5` | Desktop |
 | `lg` | 48px   | `px-5`   | 20×20 | `gap-2.5` | Mobile  |
 
-These are defined in `variants.ts` and shared across Button, Select, Stepper, and other interactive components.
+These are defined in `variants.ts` and shared across Select, Stepper, and other interactive components.
+
+### Button (intrinsic height at md)
+
+| Size | Height   | Padding     | Icon-only | Touch target |
+| ---- | -------- | ----------- | --------- | ------------ |
+| `sm` | 24px     | `px-1.5`    | 24×24     | -            |
+| `md` | ~36px \* | `py-2 px-4` | 36×36     | 44px (icon)  |
+| `lg` | 48px     | `px-5`      | 48×48     | -            |
+
+\* `md` uses intrinsic height from `py-2` padding (~36px with `text-sm`), matching production `.btn`.
+Icon-only buttons get a 44px `touchTarget` by default (per Apple HIG).
+
+### Input (intrinsic height at md)
+
+| Size | Height   | Padding     | Icon  |
+| ---- | -------- | ----------- | ----- |
+| `sm` | 28px     | `px-2`      | 14×14 |
+| `md` | ~36px \* | `py-2 px-3` | 16×16 |
+| `lg` | 48px     | `px-4`      | 20×20 |
+
+\* `md` uses intrinsic height from `py-2` padding (~36px with `text-sm`), matching production `.input`.
 
 ## Size Tokens
 

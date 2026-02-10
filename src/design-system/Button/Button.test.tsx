@@ -95,6 +95,41 @@ describe('Button', () => {
     });
   });
 
+  describe('touchTarget', () => {
+    it('applies touch target class by default on iconOnly', () => {
+      render(
+        <Button iconOnly aria-label="Close">
+          X
+        </Button>
+      );
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('min-h-[44px]');
+      expect(button.className).toContain('min-w-[44px]');
+    });
+
+    it('does not apply touch target on regular buttons', () => {
+      render(<Button>Click</Button>);
+      const button = screen.getByRole('button');
+      expect(button.className).not.toContain('min-h-[44px]');
+    });
+
+    it('can disable touch target on iconOnly', () => {
+      render(
+        <Button iconOnly touchTarget={false} aria-label="Close">
+          X
+        </Button>
+      );
+      const button = screen.getByRole('button');
+      expect(button.className).not.toContain('min-h-[44px]');
+    });
+
+    it('can enable touch target on regular buttons', () => {
+      render(<Button touchTarget>Click</Button>);
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('min-h-[44px]');
+    });
+  });
+
   describe('ref forwarding', () => {
     it('forwards ref to button element', () => {
       const ref = vi.fn();

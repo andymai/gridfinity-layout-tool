@@ -44,7 +44,7 @@ const contentVariants = cva(
   [
     'fixed z-50',
     'bg-surface-secondary',
-    'border border-stroke-subtle',
+    'border border-stroke',
     'rounded-[var(--radius-xl)]',
     'shadow-[var(--shadow-xl)]',
     'animate-scale-in',
@@ -485,7 +485,7 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   return (
-    <DialogRoot open={isOpen} onClose={onCancel} size="sm">
+    <DialogRoot open={isOpen} onClose={onCancel} size="md">
       <DialogHeader title={title} />
       <DialogBody>
         <p className="text-sm text-content-secondary">{message}</p>

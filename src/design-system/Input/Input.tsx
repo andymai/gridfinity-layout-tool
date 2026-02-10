@@ -18,8 +18,8 @@ const inputWrapperVariants = cva(
   {
     variants: {
       size: {
-        sm: 'h-8',
-        md: 'h-10',
+        sm: 'h-7',
+        md: 'py-2',
         lg: 'h-12',
       },
       error: {
@@ -48,9 +48,9 @@ const inputVariants = cva(
   {
     variants: {
       size: {
-        sm: 'px-3 text-xs',
-        md: 'px-4 text-sm',
-        lg: 'px-5 text-base',
+        sm: 'px-2 text-xs',
+        md: 'px-3 text-sm',
+        lg: 'px-4 text-base',
       },
     },
     defaultVariants: {
@@ -62,13 +62,13 @@ const inputVariants = cva(
 const iconWrapperVariants = cva(['flex-shrink-0', 'text-content-tertiary'], {
   variants: {
     size: {
-      sm: 'w-4 h-4',
-      md: 'w-5 h-5',
-      lg: 'w-6 h-6',
+      sm: 'w-3.5 h-3.5',
+      md: 'w-4 h-4',
+      lg: 'w-5 h-5',
     },
     position: {
-      left: 'ml-3',
-      right: 'mr-3',
+      left: 'ml-2',
+      right: 'mr-2',
     },
   },
   defaultVariants: {
