@@ -33,7 +33,6 @@ const toastVariants = cva(
     'p-4 pr-10',
     'rounded-xl',
     'shadow-lg backdrop-blur-sm',
-    'w-80',
     'pointer-events-auto',
     interactiveTransition,
   ],
@@ -54,9 +53,10 @@ const toastVariants = cva(
 const containerVariants = cva(['fixed', 'z-50', 'flex flex-col', 'gap-2', 'pointer-events-none'], {
   variants: {
     position: {
-      'top-center': 'top-4 left-1/2 -translate-x-1/2 pt-[env(safe-area-inset-top)]',
-      'bottom-right': 'bottom-4 right-4',
-      'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2',
+      'top-center':
+        'top-4 left-1/2 -translate-x-1/2 pt-[env(safe-area-inset-top)] w-full max-w-md px-3 md:px-0',
+      'bottom-right': 'bottom-4 right-4 w-80',
+      'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2 w-80',
     },
   },
   defaultVariants: {
@@ -72,9 +72,10 @@ interface ToastItemProps {
   toast: ToastData;
   onDismiss: (id: string) => void;
   position: 'top' | 'bottom';
+  className?: string;
 }
 
-function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
+function ToastItem({ toast, onDismiss, position, className }: ToastItemProps) {
   const [isExiting, setIsExiting] = useState(false);
   // State for CSS animation pause (triggers re-render for progress bar)
   const [isPaused, setIsPaused] = useState(false);
@@ -158,7 +159,7 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
     <div
       role={toastRole}
       aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
-      className={cn(toastVariants({ type: toast.type }), animationClass)}
+      className={cn(toastVariants({ type: toast.type }), animationClass, className)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

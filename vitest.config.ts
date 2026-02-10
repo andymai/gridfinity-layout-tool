@@ -8,7 +8,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    exclude: ['e2e/**', 'node_modules/**'],
+    exclude: ['e2e/**', 'node_modules/**', '**/*.visual.tsx'],
     // Increase timeout for CI environment (can be 5-10x slower than local dev)
     testTimeout: 30000,
     // Use threads pool for faster jsdom tests
@@ -23,6 +23,7 @@ export default defineConfig({
         'e2e/**',
         'src/test/**',
         '**/*.test.{ts,tsx}',
+        '**/*.visual.tsx',
         '**/*.d.ts',
         '**/*.config.*',
         '**/types.ts',

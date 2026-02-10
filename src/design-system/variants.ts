@@ -88,7 +88,11 @@ export const touchTarget = 'min-h-[44px] min-w-[44px]' as const;
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Height classes for each size variant.
+ * Height classes for non-input interactive controls (e.g. Stepper container).
+ *
+ * Button, Input, and Select use intrinsic height from padding at md (~36px),
+ * not this explicit h-8 (32px). Only use sizeHeights for controls that need
+ * a fixed container height independent of content.
  */
 export const sizeHeights = {
   sm: 'h-6',
