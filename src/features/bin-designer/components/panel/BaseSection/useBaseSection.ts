@@ -1,79 +1,77 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import type { BaseStyle } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
 import type { SectionMeta } from '../types';
-
-/** Derive base style from individual magnet/screw/flat booleans */
-function computeBaseStyle(
-  magnet: boolean,
-  screw: boolean,
-  flat: boolean,
-  currentStyle: BaseStyle
-): BaseStyle {
-  if (flat) return 'flat';
-  if (!magnet && !screw && currentStyle === 'weighted') return 'weighted';
-  if (magnet && screw) return 'magnet_and_screw';
-  if (magnet) return 'magnet';
-  if (screw) return 'screw';
-  return 'standard';
-}
 
 export function useBaseSection() {
   const t = useTranslation();
-  const { base, updateBase } = useDesignerStore(
+  const { params, updateBase, setParams } = useDesignerStore(
     useShallow((s) => ({
-      base: s.params.base,
+      params: s.params,
       updateBase: s.updateBase,
+      setParams: s.setParams,
     }))
   );
 
+  const base = params.base;
   const hasMagnet = base.style === 'magnet' || base.style === 'magnet_and_screw';
   const hasScrew = base.style === 'screw' || base.style === 'magnet_and_screw';
   const isFlat = base.style === 'flat';
   const hasHalfSockets = base.halfSockets;
-  const canEnableHalfSockets = !isFlat;
 
-  const flatDisabledReason = isFlat ? t('binDesigner.flatFloorDisablesAttachment') : undefined;
-  const halfSocketsDisabledReason = isFlat
-    ? t('binDesigner.flatFloorDisablesHalfSockets')
+  // Feature statuses and disabled reasons from constraint engine
+  const magnetStatus = getFeatureStatus(params, 'base.magnet');
+  const screwStatus = getFeatureStatus(params, 'base.screw');
+  const flatStatus = getFeatureStatus(params, 'base.flat');
+  const halfSocketsStatus = getFeatureStatus(params, 'base.halfSockets');
+
+  const magnetDisabledReason = magnetStatus.reason ? t(magnetStatus.reason) : undefined;
+  const screwDisabledReason = screwStatus.reason ? t(screwStatus.reason) : undefined;
+  const flatDisabledReason = flatStatus.reason ? t(flatStatus.reason) : undefined;
+  const halfSocketsDisabledReason = halfSocketsStatus.reason
+    ? t(halfSocketsStatus.reason)
     : undefined;
 
   const toggleMagnet = useCallback(() => {
-    if (isFlat || hasHalfSockets) return;
-    const newMagnet = !hasMagnet;
-    updateBase({ style: computeBaseStyle(newMagnet, hasScrew, false, base.style) });
-  }, [base.style, hasMagnet, hasScrew, isFlat, hasHalfSockets, updateBase]);
+    if (!magnetStatus.available) return;
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.magnet',
+      enabled: !hasMagnet,
+    });
+    setParams(resolved);
+  }, [params, hasMagnet, magnetStatus.available, setParams]);
 
   const toggleScrew = useCallback(() => {
-    if (isFlat || hasHalfSockets) return;
-    const newScrew = !hasScrew;
-    updateBase({ style: computeBaseStyle(hasMagnet, newScrew, false, base.style) });
-  }, [base.style, hasMagnet, hasScrew, isFlat, hasHalfSockets, updateBase]);
+    if (!screwStatus.available) return;
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.screw',
+      enabled: !hasScrew,
+    });
+    setParams(resolved);
+  }, [params, hasScrew, screwStatus.available, setParams]);
 
   const toggleStackingLip = useCallback(() => {
     updateBase({ stackingLip: !base.stackingLip });
   }, [base.stackingLip, updateBase]);
 
   const toggleHalfSockets = useCallback(() => {
-    if (!canEnableHalfSockets && !hasHalfSockets) return;
-    const enabling = !hasHalfSockets;
-    if (enabling && (hasMagnet || hasScrew)) {
-      // Clear magnet/screw style — half sockets are too small for holes
-      updateBase({ halfSockets: true, style: computeBaseStyle(false, false, false, base.style) });
-    } else {
-      updateBase({ halfSockets: enabling });
-    }
-  }, [hasHalfSockets, canEnableHalfSockets, hasMagnet, hasScrew, base.style, updateBase]);
+    if (!halfSocketsStatus.available) return;
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.halfSockets',
+      enabled: !hasHalfSockets,
+    });
+    setParams(resolved);
+  }, [params, hasHalfSockets, halfSocketsStatus.available, setParams]);
 
   const toggleFlat = useCallback(() => {
-    const newFlat = !isFlat;
-    updateBase({
-      style: computeBaseStyle(false, false, newFlat, base.style),
-      ...(newFlat && hasHalfSockets ? { halfSockets: false } : {}),
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.flat',
+      enabled: !isFlat,
     });
-  }, [base.style, isFlat, hasHalfSockets, updateBase]);
+    setParams(resolved);
+  }, [params, isFlat, setParams]);
 
   const setMagnetRadius = useCallback(
     (radius: number) => {
@@ -124,7 +122,7 @@ export function useBaseSection() {
   ]);
 
   return {
-    state: { base, hasMagnet, hasScrew, isFlat, hasHalfSockets, canEnableHalfSockets },
+    state: { base, hasMagnet, hasScrew, isFlat, hasHalfSockets },
     handlers: {
       toggleMagnet,
       toggleScrew,
@@ -134,6 +132,8 @@ export function useBaseSection() {
       setMagnetRadius,
       setMagnetHeight,
       setScrewRadius,
+      magnetDisabledReason,
+      screwDisabledReason,
       flatDisabledReason,
       halfSocketsDisabledReason,
     },

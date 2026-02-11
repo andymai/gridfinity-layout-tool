@@ -5,14 +5,14 @@
  * then derives filament usage and print time estimates.
  *
  * Volume is computed as:
- *   shell + base socket + stacking lip + dividers + gussets + label tabs − scoops
+ *   shell + base socket + stacking lip + dividers + label tabs − scoops
  *
  * This avoids expensive mesh-based volume integration.
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
-import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
+import { isFeatureActive } from '@/shared/constraints';
 import {
   PLA_DENSITY,
   FILAMENT_AREA_MM2,
@@ -110,8 +110,6 @@ export function formatFilament(meters: number): string {
  */
 function computeBinVolume(params: BinParams): number {
   const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
-  const constraints = getStyleConstraints(params.style);
-
   // Outer dimensions in mm
   const outerW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
@@ -134,26 +132,18 @@ function computeBinVolume(params: BinParams): number {
     volume += computeStackingLipVolume(outerW, outerD);
   }
 
-  // Divider volumes
-  if (!constraints.disabledFeatures.includes('dividers')) {
+  // Divider volumes (standard style only — slotted/solid don't use interior dividers)
+  if (params.style === 'standard') {
     volume += computeDividerVolume(params, outerW, outerD, totalH, wallThickness, bottomH);
   }
 
-  // Corner gussets
-  if (constraints.hasGussets) {
-    const gussetSize = wallThickness * 2;
-    const gussetHeight = totalH - bottomH;
-    // 4 triangular prisms: volume = 0.5 * size * size * height each
-    volume += 4 * 0.5 * gussetSize * gussetSize * gussetHeight;
-  }
-
   // Label tabs (shelf + support structure)
-  if (params.label.enabled && !constraints.disabledFeatures.includes('label')) {
+  if (isFeatureActive(params, 'label')) {
     volume += computeLabelTabVolume(params, outerW, wallThickness);
   }
 
   // Scoops (remove material from compartment front walls)
-  if (params.scoop.enabled) {
+  if (isFeatureActive(params, 'scoop')) {
     volume -= computeScoopVolume(params, outerW, outerD, wallThickness);
   }
 
