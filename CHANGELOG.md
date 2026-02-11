@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.3.0...gridfinity-layout-tool-v3.4.0) (2026-02-11)
+
+
+### Features
+
+* improve auto scoop radius with height-aware formula and resolved display ([#671](https://github.com/andymai/gridfinity-layout-tool/issues/671)) ([7ba7847](https://github.com/andymai/gridfinity-layout-tool/commit/7ba78477bfc60d099c0bcfacd77ac241e51fa887))
+
 ## [3.3.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.2.3...gridfinity-layout-tool-v3.3.0) (2026-02-11)
 
 
