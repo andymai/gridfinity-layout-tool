@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.2.3...gridfinity-layout-tool-v3.3.0) (2026-02-11)
+
+
+### Features
+
+* finger scoop with stacking lip alignment ([#668](https://github.com/andymai/gridfinity-layout-tool/issues/668)) ([cf4cdcc](https://github.com/andymai/gridfinity-layout-tool/commit/cf4cdcc5ae8010546862a9ef53e7d4ad2f18da43))
+
 ## [3.2.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.2.2...gridfinity-layout-tool-v3.2.3) (2026-02-10)
 
 
