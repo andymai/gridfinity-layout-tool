@@ -109,9 +109,9 @@ describe('useExport', () => {
     expect(result.current.estimates.metersFilament).toBeGreaterThan(0);
   });
 
-  it('provides export function', () => {
+  it('provides downloadBin function', () => {
     const { result } = renderHook(() => useExport());
-    expect(result.current.downloadSTL).toBeTypeOf('function');
+    expect(result.current.downloadBin).toBeTypeOf('function');
   });
 
   it('isExporting is initially false', () => {
@@ -119,7 +119,7 @@ describe('useExport', () => {
     expect(result.current.isExporting).toBe(false);
   });
 
-  it('downloadSTL creates blob URL and triggers download via bridge', async () => {
+  it('downloadBin with stl format creates blob URL and triggers download via bridge', async () => {
     // Set up valid mesh
     useDesignerStore.setState({
       generation: {
@@ -146,6 +146,7 @@ describe('useExport', () => {
       href: '',
       download: '',
       click: vi.fn(),
+      parentNode: document.body,
     };
     const originalCreateElement = document.createElement.bind(document);
     const createElementSpy = vi
@@ -164,7 +165,11 @@ describe('useExport', () => {
     const { result } = renderHook(() => useExport());
 
     await act(async () => {
-      await result.current.downloadSTL({ style: 'descriptive', customName: '' });
+      await result.current.downloadBin('stl', {
+        style: 'descriptive',
+        customName: '',
+        format: 'stl',
+      });
     });
 
     expect(mockExportBin).toHaveBeenCalledWith(expect.any(Object), 'stl');
@@ -177,7 +182,65 @@ describe('useExport', () => {
     removeChildSpy.mockRestore();
   });
 
-  it('downloadSTL respects name style parameter', async () => {
+  it('downloadBin with step format calls bridge with step', async () => {
+    useDesignerStore.setState({
+      generation: {
+        status: 'complete',
+        mesh: {
+          vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
+          error: null,
+          timingMs: 10,
+        },
+        progress: 1,
+      },
+    });
+
+    mockExportBin.mockResolvedValue({
+      data: new ArrayBuffer(200),
+      fileName: 'test.step',
+    });
+
+    const mockAnchor = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+      parentNode: document.body,
+    };
+    const originalCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation((tag: string) => {
+        if (tag === 'a') return mockAnchor as unknown as HTMLAnchorElement;
+        return originalCreateElement(tag);
+      });
+    const appendChildSpy = vi
+      .spyOn(document.body, 'appendChild')
+      .mockImplementation((node) => node);
+    const removeChildSpy = vi
+      .spyOn(document.body, 'removeChild')
+      .mockImplementation((node) => node);
+
+    const { result } = renderHook(() => useExport());
+
+    await act(async () => {
+      await result.current.downloadBin('step', {
+        style: 'descriptive',
+        customName: '',
+        format: 'step',
+      });
+    });
+
+    expect(mockExportBin).toHaveBeenCalledWith(expect.any(Object), 'step');
+    expect(mockAnchor.download).toContain('.step');
+
+    createElementSpy.mockRestore();
+    appendChildSpy.mockRestore();
+    removeChildSpy.mockRestore();
+  });
+
+  it('downloadBin respects name style parameter', async () => {
     useDesignerStore.setState({
       generation: {
         status: 'complete',
@@ -198,7 +261,12 @@ describe('useExport', () => {
       fileName: 'test.stl',
     });
 
-    const mockAnchor = { href: '', download: '', click: vi.fn() };
+    const mockAnchor = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+      parentNode: document.body,
+    };
     const originalCreateElement = document.createElement.bind(document);
     const createElementSpy = vi
       .spyOn(document, 'createElement')
@@ -216,7 +284,11 @@ describe('useExport', () => {
     const { result } = renderHook(() => useExport());
 
     await act(async () => {
-      await result.current.downloadSTL({ style: 'compact', customName: '' });
+      await result.current.downloadBin('stl', {
+        style: 'compact',
+        customName: '',
+        format: 'stl',
+      });
     });
 
     expect(mockAnchor.download).toContain('gf_');
@@ -331,7 +403,12 @@ describe('useExport', () => {
       ],
     });
 
-    const mockAnchor = { href: '', download: '', click: vi.fn() };
+    const mockAnchor = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+      parentNode: document.body,
+    };
     const originalCreateElement = document.createElement.bind(document);
     const createElementSpy = vi
       .spyOn(document, 'createElement')
@@ -349,7 +426,11 @@ describe('useExport', () => {
     const { result } = renderHook(() => useExport());
 
     await act(async () => {
-      await result.current.downloadSplitSTL({ style: 'descriptive', customName: '' });
+      await result.current.downloadSplitSTL({
+        style: 'descriptive',
+        customName: '',
+        format: 'stl',
+      });
     });
 
     expect(mockExportSplitBin).toHaveBeenCalledWith(

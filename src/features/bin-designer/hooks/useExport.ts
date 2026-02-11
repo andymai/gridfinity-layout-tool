@@ -4,8 +4,10 @@
  * Manages export lifecycle: generates high-quality mesh via worker,
  * triggers browser download, and computes live print estimates.
  *
- * STL export regenerates the mesh with fine tessellation settings
- * (0.01mm tolerance, 5° angular) for smooth rounded corners.
+ * Supports STL (binary mesh), STEP (exact BREP), and 3MF (mesh + metadata).
+ * STL/STEP export goes directly through the BREP worker.
+ * 3MF export uses worker-generated STL data, parses it back into mesh arrays,
+ * then packages via threemfExporter with embedded print metadata.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -24,8 +26,17 @@ import {
   getSplitPlanePositionsMm,
 } from '@/features/bin-designer/utils/splitPositions';
 import { packageSplitPiecesAsZip } from '@/features/bin-designer/utils/splitExport';
-import type { ExportFileNameConfig } from '@/features/bin-designer/types';
+import { export3MF } from '@/shared/generation/export';
+import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
+import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
+
+/** MIME types for each export format */
+const FORMAT_MIME_TYPES: Record<ExportFileFormat, string> = {
+  stl: 'application/sla',
+  step: 'application/step',
+  '3mf': 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
+};
 
 interface UseExportReturn {
   /** Whether an export is currently being generated */
@@ -34,8 +45,12 @@ interface UseExportReturn {
   readonly canExport: boolean;
   /** Current print estimates based on params */
   readonly estimates: PrintEstimate;
-  /** Trigger high-quality STL download via worker */
-  readonly downloadSTL: (config: ExportFileNameConfig, designName?: string) => Promise<void>;
+  /** Download the bin in the specified format (STL, STEP, or 3MF) */
+  readonly downloadBin: (
+    format: ExportFileFormat,
+    config: ExportFileNameConfig,
+    designName?: string
+  ) => Promise<void>;
   /** Trigger divider pieces STL download (slotted bins only) */
   readonly downloadDividersSTL: (
     config: ExportFileNameConfig,
@@ -95,42 +110,67 @@ export function useExport(): UseExportReturn {
     [params.width, params.depth, maxGridUnits, needsSplit]
   );
 
+  /** Trigger browser download from a Blob */
+  const triggerDownload = useCallback((blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.parentNode?.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }, []);
+
   /**
-   * Download high-quality STL via worker bridge.
-   * Regenerates mesh with fine tessellation (0.01mm, 5°) for smooth curves.
+   * Download the bin in the specified format.
+   *
+   * STL/STEP: Direct worker export via bridge.exportBin().
+   * 3MF: Worker generates STL → parse into mesh arrays → package as 3MF with print metadata.
    */
-  const downloadSTL = useCallback(
-    async (config: ExportFileNameConfig, designName?: string) => {
+  const downloadBin = useCallback(
+    async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {
       const bridge = getActiveBridge();
-      if (!bridge) {
-        return;
-      }
+      if (!bridge) return;
 
       setIsExporting(true);
 
-      let url: string | null = null;
-      let anchor: HTMLAnchorElement | null = null;
       try {
-        // Generate high-quality STL via worker (0.01mm tolerance, 5° angular)
-        const result = await bridge.exportBin(params, 'stl');
+        const fileName = generateFileName(params, format, config, designName);
 
-        // Use custom filename from config
-        const fileName = generateFileName(params, 'stl', config, designName);
+        if (format === '3mf') {
+          // 3MF: get high-quality STL from worker, parse, then package as 3MF
+          const stlResult = await bridge.exportBin(params, 'stl');
+          const { vertices, normals } = parseSTLBinary(stlResult.data);
 
-        const blob = new Blob([result.data], { type: 'application/sla' });
-        url = URL.createObjectURL(blob);
-        anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = fileName;
-        document.body.appendChild(anchor);
-        anchor.click();
+          // Read print settings at call time to avoid capturing reactive values
+          const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
+          const currentEstimates = estimatePrint(params, currentPrintSettings);
+
+          const blob = export3MF(vertices, normals, {
+            name: designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`,
+            printSettings: {
+              layerHeight: currentPrintSettings.layerHeightMm,
+              infillPercent: currentPrintSettings.infillPercent,
+              material: 'PLA',
+              supportRequired: false,
+              estimatedMinutes: currentEstimates.printTimeMinutes,
+              estimatedGrams: currentEstimates.gramsFilament,
+            },
+          });
+
+          triggerDownload(blob, fileName);
+        } else {
+          // STL or STEP: direct worker export
+          const result = await bridge.exportBin(params, format);
+          const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
+          triggerDownload(blob, fileName);
+        }
       } finally {
-        if (anchor?.parentNode) anchor.parentNode.removeChild(anchor);
-        if (url) URL.revokeObjectURL(url);
         setIsExporting(false);
       }
     },
-    [params]
+    [params, triggerDownload]
   );
 
   /**
@@ -143,27 +183,16 @@ export function useExport(): UseExportReturn {
 
       setIsExporting(true);
 
-      let url: string | null = null;
-      let anchor: HTMLAnchorElement | null = null;
       try {
         const result = await bridge.exportDividers(params);
-
         const fileName = generateDividerFileName(params, config, designName);
-
-        const blob = new Blob([result.data], { type: 'application/sla' });
-        url = URL.createObjectURL(blob);
-        anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = fileName;
-        document.body.appendChild(anchor);
-        anchor.click();
+        const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES.stl });
+        triggerDownload(blob, fileName);
       } finally {
-        if (anchor?.parentNode) anchor.parentNode.removeChild(anchor);
-        if (url) URL.revokeObjectURL(url);
         setIsExporting(false);
       }
     },
-    [params]
+    [params, triggerDownload]
   );
 
   /**
@@ -178,8 +207,6 @@ export function useExport(): UseExportReturn {
 
       setIsExporting(true);
 
-      let url: string | null = null;
-      let anchor: HTMLAnchorElement | null = null;
       try {
         const gridSizeMm = params.gridUnitMm;
         const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGridUnits, gridSizeMm);
@@ -191,19 +218,12 @@ export function useExport(): UseExportReturn {
         const baseName = generateFileName(params, 'stl', config, designName).replace(/\.stl$/, '');
 
         const blob = await packageSplitPiecesAsZip(result.pieces, baseName);
-        url = URL.createObjectURL(blob);
-        anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = `${baseName}_split.zip`;
-        document.body.appendChild(anchor);
-        anchor.click();
+        triggerDownload(blob, `${baseName}_split.zip`);
       } finally {
-        if (anchor?.parentNode) anchor.parentNode.removeChild(anchor);
-        if (url) URL.revokeObjectURL(url);
         setIsExporting(false);
       }
     },
-    [params, maxGridUnits]
+    [params, maxGridUnits, triggerDownload]
   );
 
   return {
@@ -211,7 +231,7 @@ export function useExport(): UseExportReturn {
     canExport,
     canExportDividers,
     estimates,
-    downloadSTL,
+    downloadBin,
     downloadDividersSTL,
     needsSplit,
     splitPieceCount,

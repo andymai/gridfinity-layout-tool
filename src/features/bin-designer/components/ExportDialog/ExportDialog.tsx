@@ -1,9 +1,9 @@
 /**
  * Export dialog for the bin designer.
  *
- * Shows export format options, editable file name with style selection
- * (Descriptive / Compact / Custom), print estimates, and a download button.
- * The filename preference is persisted per-design via the designer store.
+ * Shows export format selector (STL / STEP / 3MF), editable file name with
+ * style selection (Descriptive / Compact / Custom), print estimates, and
+ * download buttons. Format and filename preferences are persisted per-design.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -13,11 +13,18 @@ import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
-import type { FileNameStyle } from '@/features/bin-designer/types';
-import { getSTLFileSize } from '@/shared/generation/export';
+import type { FileNameStyle, ExportFileFormat } from '@/features/bin-designer/types';
+import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
+
+/** File extension display for each format (split ZIP overrides STL) */
+const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
+  stl: '.stl',
+  step: '.step',
+  '3mf': '.3mf',
+};
 
 export function ExportDialog() {
   const t = useTranslation();
@@ -47,7 +54,7 @@ export function ExportDialog() {
     canExportDividers,
     estimates,
     isExporting,
-    downloadSTL,
+    downloadBin,
     downloadDividersSTL,
     needsSplit,
     splitPieceCount,
@@ -64,6 +71,13 @@ export function ExportDialog() {
 
   const customInputRef = useRef<HTMLInputElement>(null);
 
+  // Resolve format with backward-compatible default
+  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
+
+  // Split export is only available for STL format
+  const showSplitBanner = needsSplit && activeFormat === 'stl';
+  const useSplitExport = showSplitBanner && splitEnabled;
+
   // Focus the custom input when switching to custom mode
   useEffect(() => {
     if (exportFileNameConfig.style === 'custom' && customInputRef.current) {
@@ -73,8 +87,8 @@ export function ExportDialog() {
   }, [exportFileNameConfig.style]);
 
   const fileName = useMemo(
-    () => generateFileName(params, 'stl', exportFileNameConfig, designName),
-    [params, exportFileNameConfig, designName]
+    () => generateFileName(params, activeFormat, exportFileNameConfig, designName),
+    [params, activeFormat, exportFileNameConfig, designName]
   );
 
   // The display name (without extension) for the input field
@@ -87,12 +101,19 @@ export function ExportDialog() {
     (style: FileNameStyle) => {
       if (style === 'custom' && exportFileNameConfig.customName === '') {
         // Pre-fill custom name with current auto-generated name (without extension)
-        setExportFileNameConfig({ style, customName: fileNameWithoutExt });
+        setExportFileNameConfig({ ...exportFileNameConfig, style, customName: fileNameWithoutExt });
       } else {
         setExportFileNameConfig({ ...exportFileNameConfig, style });
       }
     },
     [exportFileNameConfig, setExportFileNameConfig, fileNameWithoutExt]
+  );
+
+  const handleFormatChange = useCallback(
+    (format: ExportFileFormat) => {
+      setExportFileNameConfig({ ...exportFileNameConfig, format });
+    },
+    [exportFileNameConfig, setExportFileNameConfig]
   );
 
   const handleCustomNameChange = useCallback(
@@ -104,9 +125,11 @@ export function ExportDialog() {
 
   if (!exportDialogOpen) return null;
 
-  const fileSizeBytes = getSTLFileSize(triangleCount);
-  const fileSizeLabel =
-    fileSizeBytes < 1024 ? `${fileSizeBytes} B` : `${Math.round(fileSizeBytes / 1024)} KB`;
+  // Dynamic file size based on selected format
+  const fileSizeLabel = getFileSizeLabel(activeFormat, triangleCount);
+
+  // File extension shown in the filename preview
+  const displayExtension = useSplitExport ? '.zip' : FORMAT_EXTENSIONS[activeFormat];
 
   return (
     <div
@@ -141,15 +164,38 @@ export function ExportDialog() {
           </button>
         </div>
 
-        {/* 3D Model (.stl) */}
+        {/* 3D Model Section */}
         <div>
           <h3 className="mb-1 text-sm font-semibold text-content">
-            {/* eslint-disable-next-line i18next/no-literal-string -- file extension is not translatable */}
-            {t('binDesigner.threeDModel')} (.stl)
+            {t('binDesigner.threeDModel')}
           </h3>
           <p className="mb-4 text-xs text-content-secondary">
             {t('binDesigner.threeDModelDescription')}
           </p>
+
+          {/* Format Selector */}
+          <div className="mb-4">
+            <label className="mb-2 block text-sm font-medium text-content-secondary">
+              {t('binDesigner.format')}
+            </label>
+            <div className="flex gap-2" role="radiogroup" aria-label={t('binDesigner.format')}>
+              <FormatButton
+                active={activeFormat === 'stl'}
+                onClick={() => handleFormatChange('stl')}
+                label={t('binDesigner.formatSTL')}
+              />
+              <FormatButton
+                active={activeFormat === 'step'}
+                onClick={() => handleFormatChange('step')}
+                label={t('binDesigner.formatSTEP')}
+              />
+              <FormatButton
+                active={activeFormat === '3mf'}
+                onClick={() => handleFormatChange('3mf')}
+                label={t('binDesigner.format3MF')}
+              />
+            </div>
+          </div>
 
           {/* File Name */}
           <div className="mb-4">
@@ -182,8 +228,7 @@ export function ExportDialog() {
                 </span>
               )}
               <span className="shrink-0 border-l border-stroke-subtle px-2 py-2 text-sm text-content-tertiary">
-                {/* eslint-disable-next-line i18next/no-literal-string -- file extensions are not translatable */}
-                {needsSplit && splitEnabled ? '.zip' : '.stl'}
+                {displayExtension}
               </span>
             </div>
             <div className="mt-2 flex gap-2">
@@ -205,8 +250,8 @@ export function ExportDialog() {
             </div>
           </div>
 
-          {/* Split Export Banner */}
-          {needsSplit && (
+          {/* Split Export Banner (STL only) */}
+          {showSplitBanner && (
             <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/30">
               <p className="mb-2 text-xs text-amber-800 dark:text-amber-200">
                 {t('binDesigner.splitExport.exceedsPrintBed', {
@@ -249,11 +294,11 @@ export function ExportDialog() {
             </p>
           </div>
 
-          {/* Download STL / Split ZIP Button */}
+          {/* Primary Download Button */}
           <button
             onClick={async () => {
               try {
-                if (needsSplit && splitEnabled) {
+                if (useSplitExport) {
                   await downloadSplitSTL(exportFileNameConfig, designName);
                   addToast({
                     message: t('binDesigner.splitExport.success', { count: splitPieceCount }),
@@ -261,9 +306,11 @@ export function ExportDialog() {
                     duration: 3000,
                   });
                 } else {
-                  await downloadSTL(exportFileNameConfig, designName);
+                  await downloadBin(activeFormat, exportFileNameConfig, designName);
                   addToast({
-                    message: t('binDesigner.stlExportedSuccessfully'),
+                    message: t('binDesigner.exportSuccess', {
+                      format: activeFormat.toUpperCase(),
+                    }),
                     type: 'success',
                     duration: 3000,
                   });
@@ -280,43 +327,22 @@ export function ExportDialog() {
             disabled={!canExport || isExporting}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
           >
-            {isExporting && (
-              <svg
-                className="h-4 w-4 animate-spin motion-reduce:animate-none"
-                fill="none"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-            )}
+            {isExporting && <ExportSpinner />}
             {isExporting
               ? t('binDesigner.exporting')
-              : needsSplit && splitEnabled
+              : useSplitExport
                 ? t('binDesigner.splitExport.downloadSplitSTL')
-                : t('binDesigner.downloadSTL')}
+                : t('binDesigner.downloadFormat', { format: activeFormat.toUpperCase() })}
           </button>
 
-          {/* Download Dividers STL Button (slotted bins only) */}
-          {canExportDividers && (
+          {/* Download Dividers STL Button (slotted bins only, STL format) */}
+          {canExportDividers && activeFormat === 'stl' && (
             <button
               onClick={async () => {
                 try {
                   await downloadDividersSTL(exportFileNameConfig, designName);
                   addToast({
-                    message: t('binDesigner.downloadDividersSTL') + ' ✓',
+                    message: t('binDesigner.exportSuccess', { format: 'STL' }),
                     type: 'success',
                     duration: 3000,
                   });
@@ -346,7 +372,49 @@ export function ExportDialog() {
   );
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Compute format-specific file size label for the estimates panel */
+function getFileSizeLabel(format: ExportFileFormat, triangleCount: number): string {
+  if (format === 'step') {
+    // STEP is BREP data — file size depends on geometry complexity, not triangle count
+    return '—';
+  }
+
+  const bytes =
+    format === '3mf' ? estimate3MFFileSize(triangleCount) : getSTLFileSize(triangleCount);
+
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
+
+function FormatButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      role="radio"
+      aria-checked={active}
+      className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-colors ${
+        active
+          ? 'bg-accent-muted text-accent'
+          : 'bg-surface text-content-secondary hover:bg-surface-hover'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
 
 function NameStyleButton({
   active,
@@ -378,5 +446,23 @@ function EstimateRow({ label, value }: { label: string; value: string }) {
       <span className="text-content-tertiary">{label}</span>
       <span className="font-medium text-content">{value}</span>
     </>
+  );
+}
+
+function ExportSpinner() {
+  return (
+    <svg
+      className="h-4 w-4 animate-spin motion-reduce:animate-none"
+      fill="none"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
+    </svg>
   );
 }

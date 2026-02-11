@@ -17,6 +17,7 @@ import {
 export const DEFAULT_EXPORT_FILE_NAME_CONFIG: ExportFileNameConfig = {
   style: 'descriptive',
   customName: '',
+  format: 'stl',
 };
 
 /** Characters not allowed in filenames (replaced with underscore) */
@@ -72,9 +73,9 @@ export function generateFileName(
   const ext = format.toLowerCase();
 
   // Normalize legacy string-based style to config object
-  const resolved: ExportFileNameConfig =
+  const resolved =
     typeof config === 'string'
-      ? { style: config === 'custom' ? 'descriptive' : config, customName: '' }
+      ? { style: (config === 'custom' ? 'descriptive' : config) as FileNameStyle, customName: '' }
       : config;
 
   if (resolved.style === 'custom') {
@@ -159,9 +160,9 @@ export function generateDividerFileName(
   config: FileNameStyle | ExportFileNameConfig = 'descriptive',
   designName?: string
 ): string {
-  const resolved: ExportFileNameConfig =
+  const resolved =
     typeof config === 'string'
-      ? { style: config === 'custom' ? 'descriptive' : config, customName: '' }
+      ? { style: (config === 'custom' ? 'descriptive' : config) as FileNameStyle, customName: '' }
       : config;
 
   if (resolved.style === 'custom') {
