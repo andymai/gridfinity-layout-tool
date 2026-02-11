@@ -455,6 +455,68 @@ export function findNearestSegment(
   return bestSegment;
 }
 
+/**
+ * Evaluate the world position at parameter t on the segment from path[segmentIndex]
+ * to path[(segmentIndex+1) % n]. Works for both straight and bezier segments.
+ */
+export function evaluateSegmentPoint(
+  points: readonly PathPoint[],
+  segmentIndex: number,
+  t: number
+): { x: number; y: number } {
+  const p0 = points[segmentIndex];
+  const p1 = points[(segmentIndex + 1) % points.length];
+  const hasCurve = p0.handleOut !== null || p1.handleIn !== null;
+
+  if (!hasCurve) {
+    return { x: p0.x + t * (p1.x - p0.x), y: p0.y + t * (p1.y - p0.y) };
+  }
+
+  const cp1 = p0.handleOut
+    ? { x: p0.x + p0.handleOut.dx, y: p0.y + p0.handleOut.dy }
+    : { x: p0.x, y: p0.y };
+  const cp2 = p1.handleIn
+    ? { x: p1.x + p1.handleIn.dx, y: p1.y + p1.handleIn.dy }
+    : { x: p1.x, y: p1.y };
+
+  return cubicBezier({ x: p0.x, y: p0.y }, cp1, cp2, { x: p1.x, y: p1.y }, t);
+}
+
+/**
+ * Flatten a single segment (from path[segmentIndex] to path[(segmentIndex+1)%n])
+ * into a polyline of {x,y} points. Useful for highlighting a hovered segment.
+ */
+export function flattenSegment(
+  points: readonly PathPoint[],
+  segmentIndex: number,
+  steps = 20
+): Array<{ x: number; y: number }> {
+  const p0 = points[segmentIndex];
+  const p1 = points[(segmentIndex + 1) % points.length];
+  const hasCurve = p0.handleOut !== null || p1.handleIn !== null;
+
+  if (!hasCurve) {
+    return [
+      { x: p0.x, y: p0.y },
+      { x: p1.x, y: p1.y },
+    ];
+  }
+
+  const cp1 = p0.handleOut
+    ? { x: p0.x + p0.handleOut.dx, y: p0.y + p0.handleOut.dy }
+    : { x: p0.x, y: p0.y };
+  const cp2 = p1.handleIn
+    ? { x: p1.x + p1.handleIn.dx, y: p1.y + p1.handleIn.dy }
+    : { x: p1.x, y: p1.y };
+
+  const result: Array<{ x: number; y: number }> = [];
+  for (let s = 0; s <= steps; s++) {
+    const t = s / steps;
+    result.push(cubicBezier({ x: p0.x, y: p0.y }, cp1, cp2, { x: p1.x, y: p1.y }, t));
+  }
+  return result;
+}
+
 /** Distance from a point to a line segment, with parameter t. */
 function pointToLineSegmentDist(
   px: number,
@@ -557,4 +619,93 @@ export function splitBezierSegment(
 
 function lerp(a: Point2D, b: Point2D, t: number): Point2D {
   return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+}
+
+// ─── Path Validation ─────────────────────────────────────────────────────────
+
+/**
+ * Clamp all path points and their bezier handles to stay within bin bounds.
+ * Points are clamped to [0, width] × [0, depth]. Handles are shortened
+ * so their absolute position stays in bounds.
+ */
+export function clampPathToBounds(
+  points: readonly PathPoint[],
+  width: number,
+  depth: number
+): PathPoint[] {
+  return points.map((pt) => {
+    const x = Math.max(0, Math.min(pt.x, width));
+    const y = Math.max(0, Math.min(pt.y, depth));
+
+    let handleIn = pt.handleIn;
+    if (handleIn) {
+      const hx = Math.max(0, Math.min(x + handleIn.dx, width)) - x;
+      const hy = Math.max(0, Math.min(y + handleIn.dy, depth)) - y;
+      handleIn = { dx: hx, dy: hy };
+    }
+
+    let handleOut = pt.handleOut;
+    if (handleOut) {
+      const hx = Math.max(0, Math.min(x + handleOut.dx, width)) - x;
+      const hy = Math.max(0, Math.min(y + handleOut.dy, depth)) - y;
+      handleOut = { dx: hx, dy: hy };
+    }
+
+    return { ...pt, x, y, handleIn, handleOut };
+  });
+}
+
+/**
+ * Check if a closed polyline self-intersects.
+ * Flattens the path then tests all non-adjacent edge pairs.
+ * Returns true if any intersection is found.
+ */
+export function isSelfIntersecting(points: readonly PathPoint[]): boolean {
+  if (points.length < 3) return false;
+
+  const poly = flattenPath(points);
+  const n = poly.length;
+  if (n < 4) return false;
+
+  // Test all non-adjacent edge pairs
+  for (let i = 0; i < n; i++) {
+    const a1 = poly[i];
+    const a2 = poly[(i + 1) % n];
+
+    for (let j = i + 2; j < n; j++) {
+      // Skip adjacent edges (share a vertex)
+      if (j === n - 1 && i === 0) continue;
+
+      const b1 = poly[j];
+      const b2 = poly[(j + 1) % n];
+
+      if (segmentsIntersect(a1.x, a1.y, a2.x, a2.y, b1.x, b1.y, b2.x, b2.y)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/** Test if two line segments (p1→p2) and (p3→p4) intersect (proper crossing only). */
+function segmentsIntersect(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  x3: number,
+  y3: number,
+  x4: number,
+  y4: number
+): boolean {
+  const d = (x2 - x1) * (y4 - y3) - (y2 - y1) * (x4 - x3);
+  if (Math.abs(d) < 1e-10) return false; // parallel
+
+  const t = ((x3 - x1) * (y4 - y3) - (y3 - y1) * (x4 - x3)) / d;
+  const u = ((x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1)) / d;
+
+  // Strict interior intersection (exclude endpoints to avoid false positives at vertices)
+  const eps = 1e-6;
+  return t > eps && t < 1 - eps && u > eps && u < 1 - eps;
 }

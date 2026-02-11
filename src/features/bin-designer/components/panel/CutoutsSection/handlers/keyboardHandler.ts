@@ -9,7 +9,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { computeBounds, rotatePoint } from '../geometry';
 import type { InteractionMode } from '../useCutoutInteraction';
 import { handleVertexEditKeyDown } from './pathEditHandler';
-import type { VertexEditMode } from './pathEditHandler';
+import type { VertexEditMode, SegmentHoverInfo } from './pathEditHandler';
 
 const NUDGE_AMOUNT = 0.5;
 const SHIFT_NUDGE_AMOUNT = 5;
@@ -39,6 +39,7 @@ export interface KeyboardHandlerContext {
   readonly clearDrawingPreview: () => void;
   readonly clearPathDrawingPreview: () => void;
   readonly setMode: (mode: InteractionMode) => void;
+  readonly setSegmentHover: (hover: SegmentHoverInfo | null) => void;
   readonly setSelection: (selection: ReadonlySet<string>) => void;
 }
 
@@ -71,6 +72,7 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
         setMode: ctx.setMode,
         setPreview: ctx.setPreview,
         onUpdate: ctx.onUpdate,
+        setSegmentHover: ctx.setSegmentHover,
       });
     }
     return;

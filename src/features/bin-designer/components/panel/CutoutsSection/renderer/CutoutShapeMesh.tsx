@@ -43,6 +43,7 @@ interface CutoutShapeMeshProps {
   readonly onSelect: (id: string, additive: boolean) => void;
   readonly onDoubleClick?: (id: string) => void;
   readonly onDragStart?: (id: string, mmX: number, mmY: number, altKey?: boolean) => void;
+  readonly disablePointerEvents?: boolean;
 }
 
 export const CutoutShapeMesh = memo(function CutoutShapeMesh(props: CutoutShapeMeshProps) {
@@ -59,6 +60,7 @@ export const CutoutShapeMesh = memo(function CutoutShapeMesh(props: CutoutShapeM
         onSelect={props.onSelect}
         onDoubleClick={props.onDoubleClick}
         onDragStart={props.onDragStart}
+        disablePointerEvents={props.disablePointerEvents}
       />
     );
   }

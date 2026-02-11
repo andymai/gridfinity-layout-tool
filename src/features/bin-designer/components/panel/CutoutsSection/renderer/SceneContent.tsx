@@ -14,6 +14,7 @@ import type {
   PathPoint,
 } from '@/features/bin-designer/types';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
+import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { EditorBackground3D } from './EditorBackground3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
@@ -98,6 +99,7 @@ export interface SceneContentProps {
   readonly onRotateStart: (id: string, startAngle: number) => void;
   readonly onGroupRotateStart: (startAngle: number) => void;
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
+  readonly segmentHover?: SegmentHoverInfo | null;
   readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
   readonly onVertexPointDown?: (index: number, mmX: number, mmY: number) => void;
   readonly onVertexHandleDown?: (
@@ -139,6 +141,7 @@ export function SceneContent({
   onRotateStart,
   onGroupRotateStart,
   onGroupScaleStart,
+  segmentHover,
   onPathDrawingVertexDown,
   onVertexPointDown,
   onVertexHandleDown,
@@ -200,39 +203,47 @@ export function SceneContent({
       {/* Ungrouped cutout shapes — normal rendering */}
       {cutouts
         .filter((c) => c.groupId === null)
-        .map((cutout) => (
-          <CutoutShapeMesh
-            key={cutout.id}
-            cutout={cutout}
-            isSelected={selection.has(cutout.id)}
-            isGrouped={false}
-            isDragging={isDragging && selection.has(cutout.id)}
-            previewOverrides={preview.get(cutout.id)}
-            binColor={binColor}
-            onSelect={onSelectCutout}
-            onDoubleClick={onDoubleClickCutout}
-            onDragStart={memoizedDragStart}
-          />
-        ))}
+        .map((cutout) => {
+          const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+          return (
+            <CutoutShapeMesh
+              key={cutout.id}
+              cutout={cutout}
+              isSelected={selection.has(cutout.id)}
+              isGrouped={false}
+              isDragging={isDragging && selection.has(cutout.id)}
+              previewOverrides={preview.get(cutout.id)}
+              binColor={binColor}
+              onSelect={onSelectCutout}
+              onDoubleClick={onDoubleClickCutout}
+              onDragStart={memoizedDragStart}
+              disablePointerEvents={isVertexEditing}
+            />
+          );
+        })}
 
       {/* Grouped cutouts — stencil fill pass (interactive, handles pointer events) */}
       {cutouts
         .filter((c) => c.groupId !== null)
-        .map((cutout) => (
-          <CutoutShapeMesh
-            key={`${cutout.id}-fill`}
-            cutout={cutout}
-            isSelected={selection.has(cutout.id)}
-            isGrouped={true}
-            isDragging={isDragging && selection.has(cutout.id)}
-            previewOverrides={preview.get(cutout.id)}
-            binColor={binColor}
-            renderMode="fill"
-            onSelect={onSelectCutout}
-            onDoubleClick={onDoubleClickCutout}
-            onDragStart={memoizedDragStart}
-          />
-        ))}
+        .map((cutout) => {
+          const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+          return (
+            <CutoutShapeMesh
+              key={`${cutout.id}-fill`}
+              cutout={cutout}
+              isSelected={selection.has(cutout.id)}
+              isGrouped={true}
+              isDragging={isDragging && selection.has(cutout.id)}
+              previewOverrides={preview.get(cutout.id)}
+              binColor={binColor}
+              renderMode="fill"
+              onSelect={onSelectCutout}
+              onDoubleClick={onDoubleClickCutout}
+              onDragStart={memoizedDragStart}
+              disablePointerEvents={isVertexEditing}
+            />
+          );
+        })}
       {/* Grouped cutouts — stencil stroke pass (visual-only, no interaction) */}
       {cutouts
         .filter((c) => c.groupId !== null)
@@ -349,6 +360,7 @@ export function SceneContent({
               cutout={editCutout}
               selectedPointIndex={mode.selectedPointIndex}
               previewOverrides={preview.get(editCutout.id)}
+              segmentHover={segmentHover}
               onPointDown={(index, mmX, mmY) => onVertexPointDown?.(index, mmX, mmY)}
               onHandleDown={(index, handleType, mmX, mmY) =>
                 onVertexHandleDown?.(index, handleType, mmX, mmY)

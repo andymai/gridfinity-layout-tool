@@ -83,6 +83,8 @@ interface PathShapeMeshProps {
   readonly onSelect: (id: string, additive: boolean) => void;
   readonly onDoubleClick?: (id: string) => void;
   readonly onDragStart?: (id: string, mmX: number, mmY: number, altKey?: boolean) => void;
+  /** When true, pointer events pass through to the background (e.g. during vertex editing). */
+  readonly disablePointerEvents?: boolean;
 }
 
 export const PathShapeMesh = memo(function PathShapeMesh({
@@ -95,6 +97,7 @@ export const PathShapeMesh = memo(function PathShapeMesh({
   onSelect,
   onDoubleClick,
   onDragStart,
+  disablePointerEvents,
 }: PathShapeMeshProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -230,6 +233,7 @@ export const PathShapeMesh = memo(function PathShapeMesh({
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (e.nativeEvent.button !== 0) return;
+    if (disablePointerEvents) return; // Let click fall through to background
     e.stopPropagation();
     const additive = e.nativeEvent.shiftKey;
     onSelect(cutout.id, additive);
@@ -240,6 +244,7 @@ export const PathShapeMesh = memo(function PathShapeMesh({
   };
 
   const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
+    if (disablePointerEvents) return;
     e.stopPropagation();
     onDoubleClick?.(cutout.id);
   };

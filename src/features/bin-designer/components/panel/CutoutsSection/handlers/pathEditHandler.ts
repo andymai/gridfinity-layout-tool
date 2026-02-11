@@ -15,6 +15,7 @@ import {
   updatePoint,
   enforceSymmetry,
   getPathBounds,
+  evaluateSegmentPoint,
 } from '../pathGeometry';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, SetModeFn } from './types';
 
@@ -33,11 +34,20 @@ export interface VertexEditMode {
   readonly dragTarget: VertexDragTarget | null;
 }
 
+/** Info about the segment the cursor is hovering near (for add-point preview). */
+export interface SegmentHoverInfo {
+  readonly segmentIndex: number;
+  readonly t: number;
+  readonly x: number;
+  readonly y: number;
+}
+
 /** Callbacks the vertex edit handlers use to update state. */
 export interface VertexEditSetters {
   readonly setMode: SetModeFn;
   readonly setPreview: PreviewSetters['setPreview'];
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
+  readonly setSegmentHover: (hover: SegmentHoverInfo | null) => void;
 }
 
 /** Compute cutout bound updates from an updated path. */
@@ -64,6 +74,9 @@ export function handleVertexEditPointerDown(
 ): void {
   const path = cutout.path;
   if (!path || path.length === 0) return;
+
+  // Clear hover on any pointer down
+  setters.setSegmentHover(null);
 
   for (let i = 0; i < path.length; i++) {
     if (isNearPoint(event.mmX, event.mmY, path[i].x, path[i].y, threshold)) {
@@ -135,18 +148,31 @@ export function handleVertexEditPointerDown(
  * Drags the active vertex or handle, applying snap and clamping.
  * For handles, enforces symmetry unless alt is held (which breaks it).
  */
+/** Threshold in mm for segment hover detection. */
+const SEGMENT_HOVER_THRESHOLD = 5;
+
 export function handleVertexEditPointerMove(
   mode: VertexEditMode,
   event: PointerMoveEvent,
   cutout: Cutout,
   bounds: BinBounds,
   snap: SnapFn,
-  setters: Pick<VertexEditSetters, 'setPreview'>
+  setters: Pick<VertexEditSetters, 'setPreview' | 'setSegmentHover'>
 ): void {
-  if (!mode.dragTarget) return;
-
   const path = cutout.path;
   if (!path || path.length === 0) return;
+
+  // When not dragging, compute segment hover for add-point preview
+  if (!mode.dragTarget) {
+    const seg = findNearestSegment(event.mmX, event.mmY, path, SEGMENT_HOVER_THRESHOLD);
+    if (seg) {
+      const pt = evaluateSegmentPoint(path, seg.segmentIndex, seg.t);
+      setters.setSegmentHover({ segmentIndex: seg.segmentIndex, t: seg.t, x: pt.x, y: pt.y });
+    } else {
+      setters.setSegmentHover(null);
+    }
+    return;
+  }
 
   const { dragTarget } = mode;
 
@@ -160,8 +186,11 @@ export function handleVertexEditPointerMove(
     setters.setPreview(new Map([[cutout.id, { path: updatedPath }]]));
   } else {
     const pt = path[dragTarget.index];
-    const dx = event.mmX - pt.x;
-    const dy = event.mmY - pt.y;
+    // Clamp handle endpoint to bin bounds
+    const clampedX = Math.max(0, Math.min(event.mmX, bounds.binWidth));
+    const clampedY = Math.max(0, Math.min(event.mmY, bounds.binDepth));
+    const dx = clampedX - pt.x;
+    const dy = clampedY - pt.y;
 
     let updatedPoint: PathPoint;
 

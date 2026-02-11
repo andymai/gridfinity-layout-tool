@@ -19,7 +19,12 @@ import {
   getRotatedBounds,
   type AlignmentGuide,
 } from './geometry';
-import { getPathBounds, CLOSE_SNAP_THRESHOLD } from './pathGeometry';
+import {
+  getPathBounds,
+  CLOSE_SNAP_THRESHOLD,
+  clampPathToBounds,
+  isSelfIntersecting,
+} from './pathGeometry';
 import {
   handlePendingPlaceMove,
   handleDragMove,
@@ -37,7 +42,7 @@ import {
   handleVertexEditPointerMove,
   handleVertexEditPointerUp,
 } from './handlers';
-import type { PathDrawingMode, PathDrawingPreviewState } from './handlers';
+import type { PathDrawingMode, PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import type { VertexEditMode } from './handlers';
 import type { StartRect } from './geometry';
 
@@ -180,6 +185,7 @@ export function useCutoutInteraction({
   const [pathDrawingPreview, setPathDrawingPreview] = useState<PathDrawingPreviewState | null>(
     null
   );
+  const [segmentHover, setSegmentHover] = useState<SegmentHoverInfo | null>(null);
 
   const snap = useCallback(
     (v: number) => (snapEnabled ? snapToGrid(v, gridSize) : v),
@@ -368,8 +374,17 @@ export function useCutoutInteraction({
   /** Commit a closed path as a new cutout. */
   const commitPath = useCallback(
     (points: readonly PathPoint[]) => {
-      // Compute bounding box from flattened path (includes bezier curve extents)
-      const { minX, minY, maxX, maxY } = getPathBounds(points);
+      // Clamp to bin bounds so cutout never extends outside the bin surface
+      const clamped = clampPathToBounds(points, binWidth, binDepth);
+
+      // Reject self-intersecting paths that would produce invalid 3D geometry
+      if (isSelfIntersecting(clamped)) {
+        setPathDrawingPreview(null);
+        setMode({ type: 'idle' });
+        return;
+      }
+
+      const { minX, minY, maxX, maxY } = getPathBounds(clamped);
       const newId = crypto.randomUUID();
       onAdd({
         id: newId,
@@ -383,13 +398,13 @@ export function useCutoutInteraction({
         cornerRadius: 0,
         label: '',
         groupId: null,
-        path: [...points],
+        path: clamped,
       });
       setSelection(new Set([newId]));
       setMode({ type: 'idle' });
       setPathDrawingPreview(null);
     },
-    [onAdd]
+    [onAdd, binWidth, binDepth]
   );
 
   /** Handle path background click (first click or subsequent). */
@@ -473,6 +488,7 @@ export function useCutoutInteraction({
         setMode,
         setPreview,
         onUpdate,
+        setSegmentHover,
       });
     },
     [mode, cutouts, onUpdate]
@@ -705,6 +721,7 @@ export function useCutoutInteraction({
           if (editCutout) {
             handleVertexEditPointerMove(mode, event, editCutout, bounds, snap, {
               setPreview,
+              setSegmentHover,
             });
           }
           break;
@@ -823,6 +840,7 @@ export function useCutoutInteraction({
           setMode,
           setPreview,
           onUpdate,
+          setSegmentHover,
         });
       }
     }
@@ -867,6 +885,7 @@ export function useCutoutInteraction({
         clearDrawingPreview: () => setDrawingPreview(null),
         clearPathDrawingPreview: () => setPathDrawingPreview(null),
         setMode,
+        setSegmentHover,
         setSelection,
       });
     };
@@ -978,6 +997,7 @@ export function useCutoutInteraction({
     preview,
     drawingPreview,
     pathDrawingPreview,
+    segmentHover,
     startDrag,
     startResize,
     startRotation,

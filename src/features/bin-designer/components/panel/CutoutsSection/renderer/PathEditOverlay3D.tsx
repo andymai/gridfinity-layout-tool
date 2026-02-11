@@ -11,13 +11,16 @@ import { useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, PathPoint } from '@/features/bin-designer/types';
+import type { SegmentHoverInfo } from '../handlers';
+import { flattenSegment } from '../pathGeometry';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
 
 interface PathEditOverlay3DProps {
   readonly cutout: Cutout;
   readonly selectedPointIndex: number | null;
   readonly previewOverrides?: Partial<Cutout>;
+  readonly segmentHover?: SegmentHoverInfo | null;
   readonly onPointDown: (index: number, mmX: number, mmY: number) => void;
   readonly onHandleDown: (
     index: number,
@@ -40,12 +43,14 @@ const HANDLE_DOT_INNER_RADIUS_PX = 2.5;
 const HOVER_SCALE = 1.25;
 const CIRCLE_SEGMENTS = 24; // Smoother circles
 
+const GHOST_DOT_RADIUS_PX = 4;
 const OVERLAY_RENDER_ORDER = RENDER_ORDER.HANDLES + 10;
 
 export function PathEditOverlay3D({
   cutout,
   selectedPointIndex,
   previewOverrides,
+  segmentHover,
   onPointDown,
   onHandleDown,
 }: PathEditOverlay3DProps) {
@@ -123,6 +128,15 @@ export function PathEditOverlay3D({
           </group>
         );
       })}
+
+      {/* Segment hover: highlighted segment + ghost dot */}
+      {segmentHover && path && (
+        <SegmentHoverPreview
+          path={path}
+          hover={segmentHover}
+          ghostRadius={GHOST_DOT_RADIUS_PX / zoom}
+        />
+      )}
     </group>
   );
 }
@@ -250,6 +264,51 @@ function HandleLine({
           <meshBasicMaterial color={WHITE} depthTest={false} />
         </mesh>
       </group>
+    </>
+  );
+}
+
+// ─── Segment Hover Preview ──────────────────────────────────────────────────
+
+interface SegmentHoverPreviewProps {
+  readonly path: readonly PathPoint[];
+  readonly hover: SegmentHoverInfo;
+  readonly ghostRadius: number;
+}
+
+function SegmentHoverPreview({ path, hover, ghostRadius }: SegmentHoverPreviewProps) {
+  // Highlighted segment polyline
+  const segLineObj = useMemo(() => {
+    const segPts = flattenSegment(path, hover.segmentIndex);
+    const vecs = segPts.map((p) => new THREE.Vector3(p.x, p.y, Z));
+    const geo = new THREE.BufferGeometry().setFromPoints(vecs);
+    const mat = new THREE.LineBasicMaterial({
+      color: ACCENT_COLOR,
+      transparent: true,
+      opacity: 0.8,
+      depthTest: false,
+    });
+    const obj = new THREE.Line(geo, mat);
+    obj.renderOrder = OVERLAY_RENDER_ORDER - 1;
+    return obj;
+  }, [path, hover.segmentIndex]);
+
+  // Ghost dot geometry
+  const ghostGeo = useMemo(
+    () => new THREE.CircleGeometry(ghostRadius, CIRCLE_SEGMENTS),
+    [ghostRadius]
+  );
+
+  return (
+    <>
+      {/* Highlighted segment */}
+      <primitive object={segLineObj} />
+
+      {/* Ghost dot at insertion point */}
+      <mesh position={[hover.x, hover.y, Z]} renderOrder={OVERLAY_RENDER_ORDER + 3}>
+        <primitive object={ghostGeo} attach="geometry" />
+        <meshBasicMaterial color={ACCENT_COLOR} transparent opacity={0.5} depthTest={false} />
+      </mesh>
     </>
   );
 }

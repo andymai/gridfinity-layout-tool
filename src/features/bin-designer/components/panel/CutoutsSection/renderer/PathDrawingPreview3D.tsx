@@ -32,10 +32,13 @@ const VERTEX_OUTER_RADIUS_PX = 4.5;
 const VERTEX_INNER_RADIUS_PX = 3;
 const CIRCLE_SEGMENTS = 24;
 
+const CLOSE_RING_RADIUS_PX = 7;
+
 export function PathDrawingPreview3D({
   points,
   cursorX,
   cursorY,
+  canClose,
   onVertexDown,
 }: PathDrawingPreview3DProps) {
   const { camera } = useThree();
@@ -43,6 +46,7 @@ export function PathDrawingPreview3D({
 
   const vOuter = VERTEX_OUTER_RADIUS_PX / zoom;
   const vInner = VERTEX_INNER_RADIUS_PX / zoom;
+  const closeRingRadius = CLOSE_RING_RADIUS_PX / zoom;
 
   // Flatten existing points to polyline for the placed segments
   const flatPoints = useMemo(() => {
@@ -66,25 +70,27 @@ export function PathDrawingPreview3D({
     return obj;
   }, [flatPoints]);
 
-  // Line from last point to cursor
+  // Line from last point to cursor (snaps to first vertex when closing)
   const cursorLineObj = useMemo(() => {
     if (points.length === 0) return null;
     const lastPt = points[points.length - 1];
+    const targetX = canClose ? points[0].x : cursorX;
+    const targetY = canClose ? points[0].y : cursorY;
     const linePoints = [
       new THREE.Vector3(lastPt.x, lastPt.y, Z),
-      new THREE.Vector3(cursorX, cursorY, Z),
+      new THREE.Vector3(targetX, targetY, Z),
     ];
     const geo = new THREE.BufferGeometry().setFromPoints(linePoints);
     const mat = new THREE.LineBasicMaterial({
-      color: CURSOR_LINE_COLOR,
+      color: canClose ? ACCENT_COLOR : CURSOR_LINE_COLOR,
       transparent: true,
-      opacity: 0.5,
+      opacity: canClose ? 0.8 : 0.5,
       depthTest: false,
     });
     const obj = new THREE.Line(geo, mat);
     obj.renderOrder = RENDER_ORDER.DRAWING_PREVIEW;
     return obj;
-  }, [points, cursorX, cursorY]);
+  }, [points, cursorX, cursorY, canClose]);
 
   // Handle visualization for latest point
   const lastPoint = points.length > 0 ? points[points.length - 1] : null;
@@ -184,18 +190,39 @@ export function PathDrawingPreview3D({
       )}
 
       {/* Interactive vertex dots — click to reposition existing points */}
-      {points.map((pt, i) => (
-        <group key={i} position={[pt.x, pt.y, Z]} onPointerDown={makeVertexDown(i)}>
-          <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 4}>
-            <primitive object={outerGeo} attach="geometry" />
-            <meshBasicMaterial color={ACCENT_COLOR} depthTest={false} />
-          </mesh>
-          <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 5} position={[0, 0, 0.001]}>
-            <primitive object={innerGeo} attach="geometry" />
-            <meshBasicMaterial color={WHITE} depthTest={false} />
-          </mesh>
-        </group>
-      ))}
+      {points.map((pt, i) => {
+        const isFirst = i === 0;
+        const showCloseIndicator = isFirst && canClose && points.length >= 3;
+        return (
+          <group key={i} position={[pt.x, pt.y, Z]} onPointerDown={makeVertexDown(i)}>
+            {/* Close ring — pulsing larger ring around first vertex */}
+            {showCloseIndicator && (
+              <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 3}>
+                <circleGeometry args={[closeRingRadius, CIRCLE_SEGMENTS]} />
+                <meshBasicMaterial
+                  color={ACCENT_COLOR}
+                  transparent
+                  opacity={0.25}
+                  depthTest={false}
+                />
+              </mesh>
+            )}
+            {/* Outer border */}
+            <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 4}>
+              <primitive object={outerGeo} attach="geometry" />
+              <meshBasicMaterial color={ACCENT_COLOR} depthTest={false} />
+            </mesh>
+            {/* Inner fill — accent when close-ready, white otherwise */}
+            <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 5} position={[0, 0, 0.001]}>
+              <primitive object={innerGeo} attach="geometry" />
+              <meshBasicMaterial
+                color={showCloseIndicator ? ACCENT_COLOR : WHITE}
+                depthTest={false}
+              />
+            </mesh>
+          </group>
+        );
+      })}
     </group>
   );
 }

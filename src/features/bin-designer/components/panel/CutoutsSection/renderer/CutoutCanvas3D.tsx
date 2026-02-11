@@ -16,6 +16,7 @@ import type {
   PathPoint,
 } from '@/features/bin-designer/types';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
+import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { computeBounds } from '../geometry';
 import { SceneContent } from './SceneContent';
@@ -85,6 +86,7 @@ export interface CutoutCanvas3DProps {
   readonly onRotateStart: (id: string, startAngle: number) => void;
   readonly onGroupRotateStart: (startAngle: number) => void;
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
+  readonly segmentHover?: SegmentHoverInfo | null;
   readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
   readonly onVertexPointDown?: (index: number, mmX: number, mmY: number) => void;
   readonly onVertexHandleDown?: (
@@ -122,6 +124,7 @@ export function CutoutCanvas3D({
   onRotateStart,
   onGroupRotateStart,
   onGroupScaleStart,
+  segmentHover,
   onPathDrawingVertexDown,
   onVertexPointDown,
   onVertexHandleDown,
@@ -165,8 +168,11 @@ export function CutoutCanvas3D({
     if (mode.type === 'group-scaling') {
       return 'nwse-resize';
     }
+    if (mode.type === 'vertex-editing' && segmentHover) {
+      return 'copy'; // Plus cursor indicating "add point here"
+    }
     return 'default';
-  }, [mode]);
+  }, [mode, segmentHover]);
 
   // Memoize dragStart ref so CutoutShapeMesh (React.memo) doesn't re-render on mode changes
   const memoizedDragStart = useMemo(
@@ -292,6 +298,7 @@ export function CutoutCanvas3D({
         onRotateStart={onRotateStart}
         onGroupRotateStart={onGroupRotateStart}
         onGroupScaleStart={onGroupScaleStart}
+        segmentHover={segmentHover}
         onPathDrawingVertexDown={onPathDrawingVertexDown}
         onVertexPointDown={onVertexPointDown}
         onVertexHandleDown={onVertexHandleDown}

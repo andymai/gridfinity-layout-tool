@@ -225,7 +225,12 @@ function buildCutoutShape(cutout: {
       break;
     }
     case 'path': {
-      shape = buildPathCutoutShape(cutout);
+      try {
+        shape = buildPathCutoutShape(cutout);
+      } catch {
+        // Self-intersecting or degenerate path — fall back to bounding box rectangle
+        shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+      }
       break;
     }
     case 'rectangle':

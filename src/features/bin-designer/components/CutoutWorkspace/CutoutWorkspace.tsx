@@ -178,6 +178,7 @@ export function CutoutWorkspace() {
     handlePointerUp,
     handlePathBackgroundDown,
     onPathDrawingVertexDown,
+    segmentHover,
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,
@@ -625,6 +626,7 @@ export function CutoutWorkspace() {
                 onRotateStart={startRotation}
                 onGroupRotateStart={startGroupRotation}
                 onGroupScaleStart={startGroupScale}
+                segmentHover={segmentHover}
                 onPathDrawingVertexDown={onPathDrawingVertexDown}
                 onVertexPointDown={handleVertexPointDown}
                 onVertexHandleDown={handleVertexHandleDown}
