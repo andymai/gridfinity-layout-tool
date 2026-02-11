@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.3...gridfinity-layout-tool-v3.6.0) (2026-02-11)
+
+
+### Features
+
+* add constraint resolution engine for bin designer ([#693](https://github.com/andymai/gridfinity-layout-tool/issues/693)) ([053273e](https://github.com/andymai/gridfinity-layout-tool/commit/053273e59fc27ef4a93737bd7073447d49fcf1d0))
+
 ## [3.5.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.2...gridfinity-layout-tool-v3.5.3) (2026-02-11)
 
 
