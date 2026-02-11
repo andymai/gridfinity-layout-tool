@@ -210,6 +210,9 @@ export interface Insert {
 /** Shape of a top-down cutout into solid bin body */
 export type CutoutShape = 'rectangle' | 'circle';
 
+/** Direction for z-order reordering of cutouts */
+export type ReorderDirection = 'forward' | 'backward' | 'front' | 'back';
+
 /** Global cutout configuration for solid bins */
 export interface CutoutConfig {
   /** Global top offset: lowers the solid fill surface below the rim (0 = flush with rim) */
@@ -448,12 +451,16 @@ export interface DesignerState {
   updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   removeCutoutsBatch: (ids: readonly string[]) => void;
 
-  // Lock/hide/layer ordering actions
+  // Consolidated cutout property + z-order actions
+  setCutoutProperty: (ids: readonly string[], partial: Partial<Cutout>) => void;
+  reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
+  showAllCutouts: () => void;
+
+  // Convenience wrappers (delegate to setCutoutProperty/reorderCutouts)
   lockCutouts: (ids: readonly string[]) => void;
   unlockCutouts: (ids: readonly string[]) => void;
   hideCutouts: (ids: readonly string[]) => void;
   showCutouts: (ids: readonly string[]) => void;
-  showAllCutouts: () => void;
   bringForward: (ids: readonly string[]) => void;
   sendBackward: (ids: readonly string[]) => void;
   bringToFront: (ids: readonly string[]) => void;
