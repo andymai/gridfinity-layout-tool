@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore, useUndoableAction } from '@/core/store';
+import {
+  useSelectionStore,
+  useInteractionStore,
+  useHalfBinModeStore,
+  useMobileStore,
+  useUndoableAction,
+} from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -47,27 +53,22 @@ export function ToolsTab() {
     }))
   );
 
-  const {
-    activeLayerId,
-    activeCategoryId,
-    paintSize,
-    togglePaintSize,
-    setPaintSize,
-    setSelectedBins,
-    halfBinMode,
-    closeMobilePanel,
-  } = useUIStore(
+  const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
       activeCategoryId: state.activeCategoryId,
+      setSelectedBins: state.setSelectedBins,
+    }))
+  );
+  const { paintSize, togglePaintSize, setPaintSize } = useInteractionStore(
+    useShallow((state) => ({
       paintSize: state.paintSize,
       togglePaintSize: state.togglePaintSize,
       setPaintSize: state.setPaintSize,
-      setSelectedBins: state.setSelectedBins,
-      halfBinMode: state.halfBinMode,
-      closeMobilePanel: state.closeMobilePanel,
     }))
   );
+  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+  const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
@@ -80,7 +81,7 @@ export function ToolsTab() {
   const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
   const emptyCells = totalCells - coveredCells;
 
-  const isPaintActive = (w: number, d: number) => paintSize?.width === w && paintSize?.depth === d;
+  const isPaintActive = (w: number, d: number) => paintSize?.width === w && paintSize.depth === d;
 
   const handleFillGaps = () => {
     if (!activeLayerId) return;

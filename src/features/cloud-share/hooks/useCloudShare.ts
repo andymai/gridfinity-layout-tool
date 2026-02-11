@@ -6,7 +6,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useInteractionStore } from '@/core/store/interaction';
 import type { SharePermission, CloudShareInfo, LayoutId } from '@/core/types';
 import { layoutId as toLayoutId } from '@/core/types';
 import {
@@ -82,7 +82,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   );
 
   const layout = useLayoutStore((state) => state.layout);
-  const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   const targetLayoutId: LayoutId = layoutId ? toLayoutId(layoutId) : activeLayoutId;
 
@@ -121,7 +121,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       mlTracking.trackQuality('shared');
 
       // Auto-copy URL
-      copyToClipboard(response.url);
+      void copyToClipboard(response.url);
     },
     [targetLayoutId, setCloudShare, announceToScreenReader]
   );

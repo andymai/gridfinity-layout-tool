@@ -30,8 +30,8 @@ export function GhostCompartmentPreview() {
   const lineRef = useRef<LineSegments2 | null>(null);
   const materialRef = useRef<LineMaterial | null>(null);
 
-  const canvasWidth = size?.width ?? 800;
-  const canvasHeight = size?.height ?? 600;
+  const canvasWidth = size.width;
+  const canvasHeight = size.height;
 
   const { params, previewCompartments, previewSelection } = useDesignerStore(
     useShallow((s) => ({
@@ -59,7 +59,7 @@ export function GhostCompartmentPreview() {
 
   // Create merge preview plane geometry
   const mergePlane = useMemo(() => {
-    if (!shouldShow || !isMerge || !previewSelection) return null;
+    if (!shouldShow || !isMerge) return null;
 
     const { minCol, maxCol, minRow, maxRow } = previewSelection;
     const cellW = innerW / cols;

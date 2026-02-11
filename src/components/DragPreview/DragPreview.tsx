@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '@/core/store';
+import { useInteractionStore, useViewStore, useLayoutStore } from '@/core/store';
 import { getBaseCellSize, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getContrastColor } from '@/shared/utils';
 import { useResponsive } from '@/shared/hooks';
@@ -10,12 +10,8 @@ import { useResponsive } from '@/shared/hooks';
  * Shows a visual representation of the bin(s) being dragged.
  */
 export function DragPreview() {
-  const { interaction, zoom } = useUIStore(
-    useShallow((state) => ({
-      interaction: state.interaction,
-      zoom: state.zoom,
-    }))
-  );
+  const interaction = useInteractionStore((state) => state.interaction);
+  const zoom = useViewStore((state) => state.zoom);
   const { bins, categories } = useLayoutStore(
     useShallow((state) => ({
       bins: state.layout.bins,

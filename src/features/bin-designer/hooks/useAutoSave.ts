@@ -21,15 +21,29 @@ import type { BinParams, ExportFileNameConfig, GenerationStatus } from '../types
 const AUTO_SAVE_DELAY_MS = 1000;
 
 /**
+ * Read abort state through a function call to prevent TypeScript
+ * control-flow narrowing across await boundaries.
+ */
+function isAborted(token: { current: boolean }): boolean {
+  return token.current;
+}
+
+/**
  * Wait for generation to reach 'complete' or 'error' status.
  * Polls the store at 200ms intervals up to a maximum wait time.
  * Returns the final status, or null if cancelled via AbortSignal.
  */
-function waitForGenerationComplete(signal: { current: boolean }, maxWaitMs = 5000): Promise<GenerationStatus | null> {
+function waitForGenerationComplete(
+  signal: { current: boolean },
+  maxWaitMs = 5000
+): Promise<GenerationStatus | null> {
   return new Promise((resolve) => {
     const start = Date.now();
     const check = () => {
-      if (signal.current) { resolve(null); return; }
+      if (signal.current) {
+        resolve(null);
+        return;
+      }
       const status = useDesignerStore.getState().generation.status;
       if (status === 'complete' || status === 'error' || status === 'idle') {
         resolve(status);
@@ -83,11 +97,11 @@ export function useAutoSave(): void {
       // Wait for mesh generation to finish before capturing thumbnail,
       // otherwise we capture ghost wireframes or stale geometry
       await waitForGenerationComplete(abortToken);
-      if (abortToken.current) return;
+      if (isAborted(abortToken)) return;
 
       // Small delay for React Three Fiber to flush the final render
       await new Promise((resolve) => setTimeout(resolve, 150));
-      if (abortToken.current) return;
+      if (isAborted(abortToken)) return;
 
       // Capture thumbnail from the standard isometric angle (null if canvas not ready)
       const thumbnail = captureThumbnailAtPreset({

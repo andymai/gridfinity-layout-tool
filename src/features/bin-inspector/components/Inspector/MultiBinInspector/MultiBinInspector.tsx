@@ -31,7 +31,6 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
     updateMultiLayer,
     requestDelete,
     moveToStaging,
-    clearSelection,
     existingPropertyKeys,
   } = inspector;
 
@@ -123,7 +122,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         {onClose && (
           <button
             type="button"
-            onClick={onClose || clearSelection}
+            onClick={onClose}
             className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
             aria-label={t('inspector.deselectAllBins')}
           >
@@ -247,6 +246,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                 placeholder={t('inspector.customProps.multiKeyPlaceholder')}
                 aria-label={t('inspector.propertyName')}
                 list="property-key-suggestions"
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                 autoFocus
               />
               <datalist id="property-key-suggestions">

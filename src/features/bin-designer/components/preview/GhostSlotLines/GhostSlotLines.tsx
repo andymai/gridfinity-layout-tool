@@ -27,8 +27,8 @@ export function GhostSlotLines() {
   const lineRef = useRef<LineSegments2 | null>(null);
   const materialRef = useRef<LineMaterial | null>(null);
 
-  const canvasWidth = size?.width ?? 800;
-  const canvasHeight = size?.height ?? 600;
+  const canvasWidth = size.width;
+  const canvasHeight = size.height;
 
   const { params, generationStatus } = useDesignerStore(
     useShallow((s) => ({

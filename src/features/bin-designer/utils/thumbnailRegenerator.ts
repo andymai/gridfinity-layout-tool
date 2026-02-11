@@ -49,12 +49,12 @@ export async function regenerateThumbnail(
     if (signal?.aborted) return null;
 
     const { vertices, normals } = result.mesh;
-    if (!vertices || vertices.length === 0) return null;
+    if (vertices.length === 0) return null;
 
     // Build geometry
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    if (normals && normals.length > 0) {
+    if (normals.length > 0) {
       geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
     } else {
       geometry.computeVertexNormals();
@@ -96,7 +96,7 @@ export async function regenerateThumbnail(
       side: THREE.DoubleSide,
       emissive: new THREE.Color(DEFAULT_COLOR),
       emissiveIntensity: 0.08,
-      flatShading: !(normals && normals.length > 0),
+      flatShading: !(normals.length > 0),
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1,

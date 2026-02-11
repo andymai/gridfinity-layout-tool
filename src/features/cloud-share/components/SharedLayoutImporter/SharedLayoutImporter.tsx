@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { useLibraryStore, computePreview } from '@/core/store/library';
@@ -36,12 +38,12 @@ export function SharedLayoutImporter() {
   const [isLoading, setIsLoading] = useState(false);
 
   const importLayout = useLayoutStore((state) => state.importLayout);
-  const setSharedLayoutPreview = useUIStore((state) => state.setSharedLayoutPreview);
-  const setActiveLayer = useUIStore((state) => state.setActiveLayer);
-  const setActiveCategory = useUIStore((state) => state.setActiveCategory);
-  const clearSelection = useUIStore((state) => state.clearSelection);
+  const setSharedLayoutPreview = useSharedPreviewStore((state) => state.setSharedLayoutPreview);
+  const setActiveLayer = useSelectionStore((state) => state.setActiveLayer);
+  const setActiveCategory = useSelectionStore((state) => state.setActiveCategory);
+  const clearSelection = useSelectionStore((state) => state.clearSelection);
   const clearHistory = useHistoryStore((state) => state.clear);
-  const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
   const addToast = useToastStore((state) => state.addToast);
 
   // Library store for auto-tracking shared layouts
@@ -51,7 +53,9 @@ export function SharedLayoutImporter() {
   const getSharedWithMeByShareId = useLibraryStore((state) => state.getSharedWithMeByShareId);
 
   // Check if we already loaded this share (to skip re-fetching)
-  const sharedLayoutCloudShareId = useUIStore((state) => state.sharedLayoutCloudShareId);
+  const sharedLayoutCloudShareId = useSharedPreviewStore(
+    (state) => state.sharedPreview?.cloudShareId ?? null
+  );
   const addSharedWithMe = useLibraryStore((state) => state.addSharedWithMe);
   const markShareAccessed = useLibraryStore((state) => state.markShareAccessed);
   const updateSharedWithMe = useLibraryStore((state) => state.updateSharedWithMe);
@@ -254,7 +258,7 @@ export function SharedLayoutImporter() {
       }
 
       const { layout, metadata } = result.value;
-      const permission = metadata.permission ?? 'view';
+      const permission = metadata.permission;
 
       // Auto-track this share in "Shared with me" (unless it's the owner's own)
       // Wrap in try-catch to ensure robust error handling
@@ -268,7 +272,7 @@ export function SharedLayoutImporter() {
       loadLayoutPreview(layout, metadata.authorName, initialCloudShareId, permission);
     };
 
-    loadCloudShare();
+    void loadCloudShare();
     // No cleanup needed - isMountedRef is managed by the separate mount/unmount effect
   }, [
     loadLayoutPreview,

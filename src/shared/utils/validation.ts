@@ -417,10 +417,6 @@ export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error
 export function validateCustomProperties(
   props: Record<string, string>
 ): Result<void, ValidationError> {
-  if (!props) {
-    return ok(undefined); // undefined/null is valid (no custom properties)
-  }
-
   if (typeof props !== 'object' || Array.isArray(props)) {
     return err(validationImportFailed(['Custom properties must be provided as a plain object']));
   }

@@ -79,10 +79,9 @@ export function useDesignerKeyboard({
         return;
       }
 
-      const preset = PRESET_KEYS[e.key];
-      if (preset) {
+      if (e.key in PRESET_KEYS) {
         e.preventDefault();
-        onCameraPreset(preset);
+        onCameraPreset(PRESET_KEYS[e.key]);
         return;
       }
 

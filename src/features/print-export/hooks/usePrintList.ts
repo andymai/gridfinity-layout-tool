@@ -5,7 +5,8 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useSettingsStore } from '@/core/store';
+import { useLayoutStore, useSettingsStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
 import { calcMaxGridUnits } from '@/core/constants';
 import { generateEnhancedPrintList } from '@/features/print-export/utils/split';
 import {
@@ -90,11 +91,7 @@ export function usePrintList(): UsePrintListReturn {
     }))
   );
 
-  const { setSelectedBins } = useUIStore(
-    useShallow((state) => ({
-      setSelectedBins: state.setSelectedBins,
-    }))
-  );
+  const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
 
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
 

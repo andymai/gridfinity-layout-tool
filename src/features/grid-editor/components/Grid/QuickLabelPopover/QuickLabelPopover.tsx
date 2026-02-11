@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useUIStore, useLayoutStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -11,7 +12,7 @@ import { useTranslation } from '@/i18n';
  * Triggered by L keyboard shortcut.
  */
 export function QuickLabelPopover() {
-  const quickLabelBinId = useUIStore((state) => state.quickLabelBinId);
+  const quickLabelBinId = useSelectionStore((state) => state.quickLabelBinId);
 
   if (!quickLabelBinId) return null;
 
@@ -21,7 +22,7 @@ export function QuickLabelPopover() {
 
 function QuickLabelPopoverInner({ binId }: { binId: string }) {
   const t = useTranslation();
-  const hideQuickLabel = useUIStore((state) => state.hideQuickLabel);
+  const hideQuickLabel = useSelectionStore((state) => state.hideQuickLabel);
   const bins = useLayoutStore((state) => state.layout.bins);
   const { updateBin } = useMutations();
   const { execute } = useUndoableAction();
@@ -117,6 +118,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
       <div
         className="fixed inset-0 z-40"
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+        role="presentation"
         onClick={handleSave}
       />
 

@@ -8,7 +8,14 @@
  * Both modes open the popover on click for alternatives.
  */
 
-import { useRef, useState, useEffect, useCallback, type ReactNode } from 'react';
+import {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  type ReactNode,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import { useTranslation } from '@/i18n';
 import { useSuggestionTrigger, useNameSuggestions } from '../../hooks';
 import { SuggestionPopover } from '../SuggestionPopover';
@@ -30,18 +37,13 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
   // Initialize the suggestion trigger (monitors layout and generates suggestions)
   const { triggerSuggestions } = useSuggestionTrigger();
 
-  const {
-    showHighlight,
-    showHighConfidenceInline,
-    primarySuggestion,
-    acceptPrimary,
-    collapse,
-  } = useNameSuggestions();
+  const { showHighlight, showHighConfidenceInline, primarySuggestion, acceptPrimary, collapse } =
+    useNameSuggestions();
 
   // Listen for command palette trigger event
   const handleTriggerEvent = useCallback(() => {
     // Manually trigger suggestions from command palette (async)
-    triggerSuggestions('command').then((result) => {
+    void triggerSuggestions('command').then((result) => {
       if (result.primary) {
         setIsPopoverOpen(true);
       }
@@ -83,8 +85,7 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
         // Check if focus is within our wrapper or document is focused on body
         const activeElement = document.activeElement;
         const isInputFocused =
-          activeElement instanceof HTMLInputElement ||
-          activeElement instanceof HTMLTextAreaElement;
+          activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement;
 
         // Don't intercept Tab if user is typing in an input
         if (isInputFocused) return;
@@ -119,7 +120,17 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
     <div className="relative inline-flex items-center gap-1">
       <div
         ref={wrapperRef}
-        onClick={handleClick}
+        {...(showHighlight && {
+          onClick: handleClick,
+          role: 'button' as const,
+          tabIndex: 0,
+          onKeyDown: (e: ReactKeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick();
+            }
+          },
+        })}
         className={`
           relative rounded transition-all duration-300
           ${showHighlight ? 'cursor-pointer' : ''}

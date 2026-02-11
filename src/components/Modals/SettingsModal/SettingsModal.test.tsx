@@ -20,11 +20,11 @@ vi.mock('./TabNavigation/TabNavigation', () => ({
     activeTab: string;
     onTabChange: (tab: string) => void;
   }) => (
-    <nav role="tablist" data-testid="tab-nav">
+    <div role="tablist" data-testid="tab-nav">
       <button role="tab" onClick={() => onTabChange('general')}>
         {activeTab}
       </button>
-    </nav>
+    </div>
   ),
 }));
 

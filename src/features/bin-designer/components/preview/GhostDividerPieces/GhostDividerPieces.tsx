@@ -277,7 +277,7 @@ export function GhostDividerPieces() {
 
   return (
     <>
-      {ghostVisible && geometry && material && (
+      {ghostVisible && material && (
         <mesh geometry={geometry} material={material} position={[0, 0, 0]} renderOrder={1} />
       )}
       {referenceGeometry && referenceMaterial && (

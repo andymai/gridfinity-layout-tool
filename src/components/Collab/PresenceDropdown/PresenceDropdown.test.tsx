@@ -22,9 +22,9 @@ vi.mock('../ConnectionIndicator', () => ({
 
 // Mock translation
 vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string, params?: Record<string, unknown>) => {
+  useTranslation: () => (key: string, params?: Record<string, number | string>) => {
     if (key === 'collab.participantCount') {
-      return `${params?.count || 0} participants`;
+      return `${String(params?.count ?? 0)} participants`;
     }
     if (key === 'common.close') return 'Close';
     if (key === 'collab.participants') return 'Participants';

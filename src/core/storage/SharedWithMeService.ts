@@ -49,11 +49,6 @@ export function loadSharedWithMe(): SharedWithMeEntry[] {
 
     const data = JSON.parse(raw) as SharedWithMeIndex;
 
-    // Validate structure
-    if (!data.entries || !Array.isArray(data.entries)) {
-      return [];
-    }
-
     return data.entries;
   } catch (error) {
     console.error('Failed to load shared-with-me entries:', error);
@@ -124,13 +119,6 @@ export function loadSharedWithMeResult(): Result<SharedWithMeEntry[], StorageErr
     if (!raw) return ok([]);
 
     const data = JSON.parse(raw) as SharedWithMeIndex;
-
-    // Validate structure
-    if (!data.entries || !Array.isArray(data.entries)) {
-      return err(
-        storageCorrupted(SHARED_WITH_ME_KEY, ['Invalid data structure: missing entries array'])
-      );
-    }
 
     return ok(data.entries);
   } catch (error) {

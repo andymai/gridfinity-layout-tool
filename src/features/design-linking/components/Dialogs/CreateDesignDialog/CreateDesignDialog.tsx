@@ -75,7 +75,7 @@ export function CreateDesignDialog() {
   }, [pendingCreateDesign]);
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    (e: React.SubmitEvent) => {
       e.preventDefault();
       handleCreate();
     },
@@ -93,6 +93,7 @@ export function CreateDesignDialog() {
       onClick={handleCancel}
       role="presentation"
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         ref={dialogRef}
         role="dialog"
@@ -101,6 +102,8 @@ export function CreateDesignDialog() {
         className="max-w-md w-full mx-4 animate-scale-in bg-surface-secondary border border-stroke rounded-[var(--radius-xl)] p-5"
         style={{ boxShadow: 'var(--shadow-xl)' }}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
         <h2 id="create-design-title" className="mb-3 text-lg font-semibold text-content">
           {t('designLinking.createDialog.title')}
@@ -122,6 +125,7 @@ export function CreateDesignDialog() {
                 placeholder={t('designLinking.createDialog.namePlaceholder')}
                 className="input flex-1"
                 maxLength={64}
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                 autoFocus
               />
               {binLabel && (

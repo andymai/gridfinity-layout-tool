@@ -41,6 +41,7 @@ function getStableUserId(): string {
   try {
     let id = localStorage.getItem(USER_ID_KEY);
     if (!id) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- user IDs must remain UUIDs for PostHog identity stability
       id = generateUUID();
       localStorage.setItem(USER_ID_KEY, id);
       localStorage.setItem(USER_FIRST_SEEN_KEY, new Date().toISOString());
@@ -49,6 +50,7 @@ function getStableUserId(): string {
   } catch {
     // localStorage unavailable (private browsing, storage full, etc.)
     // Fall back to a session-only ID
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- user IDs must remain UUIDs for PostHog identity stability
     return generateUUID();
   }
 }
@@ -107,7 +109,7 @@ export function initAnalytics(): void {
   const { analyticsEnabled } = useSettingsStore.getState().settings;
   if (!analyticsEnabled) return;
 
-  const key = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
+  const key = import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string | undefined;
 
   if (!key) {
     console.warn('Posthog API key not set, analytics disabled');
@@ -345,8 +347,8 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     totalArea += bin.width * bin.depth;
 
     // Feature detection
-    if (bin.label?.trim()) withLabels++;
-    if (bin.notes?.trim()) withNotes++;
+    if (bin.label.trim()) withLabels++;
+    if (bin.notes.trim()) withNotes++;
     if (bin.clearanceHeight && bin.clearanceHeight > 0) withClearance++;
     if (hasFractionalDimensions(bin)) withHalfUnits++;
 
@@ -685,8 +687,12 @@ export function updatePersonProperties(): void {
   try {
     // Get library data for usage metrics
     const libraryData = localStorage.getItem('gridfinity-library-v1');
-    const library = libraryData ? JSON.parse(libraryData) : null;
-    const layoutCount = library?.entries?.length ?? 0;
+    const library: unknown = libraryData ? JSON.parse(libraryData) : null;
+    const libraryObj =
+      typeof library === 'object' && library !== null ? (library as Record<string, unknown>) : null;
+    const entries =
+      libraryObj !== null && Array.isArray(libraryObj.entries) ? libraryObj.entries : [];
+    const layoutCount = entries.length;
 
     // Get current layout for feature detection
     const layout = useLayoutStore.getState().layout;

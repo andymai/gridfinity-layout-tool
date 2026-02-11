@@ -1,5 +1,12 @@
 import { Suspense, lazy } from 'react';
-import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '@/core/store';
+import {
+  useLayoutStore,
+  useSelectionStore,
+  useMobileStore,
+  useViewStore,
+  useUndoableAction,
+  useToastStore,
+} from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useContextMenu } from '@/hooks/useContextMenu';
@@ -53,10 +60,10 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
 
   const layout = useLayoutStore((state) => state.layout);
   const { deleteBin, moveBinToStaging, duplicateBin, updateBin } = useMutations();
-  const setSelectedBins = useUIStore((state) => state.setSelectedBins);
-  const toggleMobilePanel = useUIStore((state) => state.toggleMobilePanel);
-  const rightPanelCollapsed = useUIStore((state) => state.rightPanelCollapsed);
-  const toggleRightPanel = useUIStore((state) => state.toggleRightPanel);
+  const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
+  const toggleMobilePanel = useMobileStore((state) => state.toggleMobilePanel);
+  const rightPanelCollapsed = useViewStore((state) => state.rightPanelCollapsed);
+  const toggleRightPanel = useViewStore((state) => state.toggleRightPanel);
   const addToast = useToastStore((state) => state.addToast);
 
   const { execute } = useUndoableAction();

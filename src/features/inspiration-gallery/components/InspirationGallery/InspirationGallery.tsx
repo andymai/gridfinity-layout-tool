@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useShallow } from 'zustand/shallow';
 import { useResponsive } from '@/shared/hooks';
 import { useLayoutSwitcher } from '@/hooks';
-import { useUIStore } from '@/core/store/ui';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useMobileStore } from '@/core/store/mobile';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { layoutId } from '@/core/types';
@@ -58,12 +58,8 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   const hasTrackedCloseRef = useRef(false);
 
   const { importLayoutFromJSON, switchLayout } = useLayoutSwitcher();
-  const { announceToScreenReader, closeMobilePanel } = useUIStore(
-    useShallow((state) => ({
-      announceToScreenReader: state.announceToScreenReader,
-      closeMobilePanel: state.closeMobilePanel,
-    }))
-  );
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
+  const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
   const addToast = useToastStore((state) => state.addToast);
 
   /** Close gallery with tracking (fires only once per open). */
@@ -118,10 +114,10 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
 
         if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
-          last?.focus();
+          last.focus();
         } else if (!e.shiftKey && document.activeElement === last) {
           e.preventDefault();
-          first?.focus();
+          first.focus();
         }
       }
     };
@@ -263,7 +259,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
 
       if (newIndex !== focusedCardIndex && newIndex >= 0) {
         setFocusedCardIndex(newIndex);
-        (cards[newIndex] as HTMLElement)?.focus();
+        (cards[newIndex] as HTMLElement).focus();
       }
     },
     [focusedCardIndex]
@@ -284,6 +280,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       />
 
       {/* Modal */}
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         ref={modalRef}
         role="dialog"
@@ -298,6 +295,8 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
           }
         `}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
         {/* Header */}
         <div className="shrink-0 border-b border-stroke-subtle">
@@ -379,6 +378,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
             style={gridStyle}
             onKeyDown={handleGridKeyDown}
             role="grid"
+            tabIndex={0}
             aria-label={t('gallery.layoutGallery')}
           >
             {filteredLayouts.map((layout, index) => (

@@ -28,4 +28,5 @@ export type { SharedPreviewStore } from './sharedPreview';
 // Legacy re-export for backwards compatibility
 // Production code has been migrated to specific stores.
 // Test files still use this facade for convenience.
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- kept for backward compat
 export { useUIStore } from './ui';

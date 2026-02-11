@@ -168,7 +168,7 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
         {toast.action && (
           <button
             onClick={() => {
-              toast.action?.onClick();
+              void toast.action?.onClick();
               handleDismiss();
             }}
             className="mt-2 text-sm font-medium underline underline-offset-2 opacity-90 hover:opacity-100 transition-opacity"
@@ -225,7 +225,12 @@ export function ToastContainer() {
   const toastWidth = isMobile ? 'w-full max-w-md' : 'w-80';
 
   return (
-    <div className={containerClasses} role="region" aria-label={t('toast.notifications')} aria-live="polite">
+    <div
+      className={containerClasses}
+      role="region"
+      aria-label={t('toast.notifications')}
+      aria-live="polite"
+    >
       {toasts.map((toast) => (
         <div key={toast.id} className={toastWidth}>
           <ToastItem toast={toast} position={position} onRemove={removeToast} />

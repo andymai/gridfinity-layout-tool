@@ -9,7 +9,15 @@ import { resetAllStores } from '@/test/testUtils';
 vi.mock('@/features/layout-library/components/LayoutManagerModal', () => ({
   LayoutManagerModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
     isOpen ? (
-      <div data-testid="layout-manager-modal" onClick={onClose}>
+      <div
+        data-testid="layout-manager-modal"
+        role="button"
+        tabIndex={0}
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') onClose();
+        }}
+      >
         Modal
       </div>
     ) : null,
@@ -19,7 +27,15 @@ vi.mock('@/features/layout-library/components/LayoutManagerModal', () => ({
 vi.mock('@/features/print-export/components/PrintModal', () => ({
   PrintModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
     isOpen ? (
-      <div data-testid="print-modal" onClick={onClose}>
+      <div
+        data-testid="print-modal"
+        role="button"
+        tabIndex={0}
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') onClose();
+        }}
+      >
         Print Modal
       </div>
     ) : null,

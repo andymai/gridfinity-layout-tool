@@ -12,7 +12,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import { useCutoutSelection } from '@/features/bin-designer/store';
-import { generateUUID } from '@/shared/utils/uuid';
 import {
   snapToGrid,
   MIN_CUTOUT_SIZE,
@@ -300,12 +299,12 @@ export function useCutoutInteraction({
     const groupMap = new Map<string, string>();
     const newIds: string[] = [];
     for (const original of clipboard) {
-      const newId = generateUUID();
+      const newId = crypto.randomUUID();
       newIds.push(newId);
       let newGroupId: string | null = null;
       if (original.groupId) {
         if (!groupMap.has(original.groupId)) {
-          groupMap.set(original.groupId, generateUUID());
+          groupMap.set(original.groupId, crypto.randomUUID());
         }
         newGroupId = groupMap.get(original.groupId) ?? null;
       }
@@ -328,12 +327,12 @@ export function useCutoutInteraction({
     const groupMap = new Map<string, string>();
     const newIds: string[] = [];
     for (const original of selected) {
-      const newId = generateUUID();
+      const newId = crypto.randomUUID();
       newIds.push(newId);
       let newGroupId: string | null = null;
       if (original.groupId) {
         if (!groupMap.has(original.groupId)) {
-          groupMap.set(original.groupId, generateUUID());
+          groupMap.set(original.groupId, crypto.randomUUID());
         }
         newGroupId = groupMap.get(original.groupId) ?? null;
       }
@@ -396,12 +395,12 @@ export function useCutoutInteraction({
         for (const selectedId of effectiveSelection) {
           const original = cutouts.find((c) => c.id === selectedId);
           if (!original) continue;
-          const newId = generateUUID();
+          const newId = crypto.randomUUID();
           newIds.push(newId);
           let newGroupId: string | null = null;
           if (original.groupId) {
             if (!groupMap.has(original.groupId)) {
-              groupMap.set(original.groupId, generateUUID());
+              groupMap.set(original.groupId, crypto.randomUUID());
             }
             newGroupId = groupMap.get(original.groupId) ?? null;
           }
@@ -575,7 +574,7 @@ export function useCutoutInteraction({
       const defaultD = mode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
       const x = Math.max(0, Math.min(snap(mode.startMmX - defaultW / 2), binWidth - defaultW));
       const y = Math.max(0, Math.min(snap(mode.startMmY - defaultD / 2), binDepth - defaultD));
-      const newId = generateUUID();
+      const newId = crypto.randomUUID();
       onAdd({
         id: newId,
         shape: mode.shape,
@@ -621,7 +620,7 @@ export function useCutoutInteraction({
         drawingPreview.width >= MIN_CUTOUT_SIZE &&
         drawingPreview.depth >= MIN_CUTOUT_SIZE
       ) {
-        const newId = generateUUID();
+        const newId = crypto.randomUUID();
         onAdd({
           id: newId,
           shape: drawingPreview.shape,

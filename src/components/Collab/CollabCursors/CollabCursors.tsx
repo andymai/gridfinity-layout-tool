@@ -11,7 +11,7 @@
  */
 
 import { useOthers } from '@/liveblocks.config';
-import { useUIStore, useLayoutStore } from '@/core/store';
+import { useViewStore, useLayoutStore } from '@/core/store';
 import { getBaseCellSize } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 import { useInterpolatedPresence } from '@/hooks/useInterpolatedPresence';
@@ -40,7 +40,7 @@ interface CollabCursorsProps {
 export function CollabCursors({ className }: CollabCursorsProps) {
   const t = useTranslation();
   const others = useOthers();
-  const zoom = useUIStore((state) => state.zoom);
+  const zoom = useViewStore((state) => state.zoom);
   const drawer = useLayoutStore((state) => state.layout.drawer);
   const { viewportWidth } = useResponsive();
 

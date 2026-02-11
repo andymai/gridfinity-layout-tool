@@ -50,8 +50,9 @@ export function useCollabMode(): CollabModeState {
   });
 
   // Check for shared layout preview (viewing via /s/{shareId} URL)
-  const sharedLayoutCloudShareId = useSharedPreviewStore((state) => state.sharedLayoutCloudShareId);
-  const sharedLayoutPermission = useSharedPreviewStore((state) => state.sharedLayoutPermission);
+  const sharedPreview = useSharedPreviewStore((state) => state.sharedPreview);
+  const sharedLayoutCloudShareId = sharedPreview?.cloudShareId ?? null;
+  const sharedLayoutPermission = sharedPreview?.permission ?? null;
 
   // Not collaborative if feature flag is disabled
   if (!isFeatureEnabled) {
@@ -101,8 +102,9 @@ export function useCollabMode(): CollabModeState {
 export function getCollabMode(): CollabModeState {
   const isFeatureEnabled = useLabsStore.getState().isFeatureEnabled('collaborative_editing');
   const { activeLayoutId, entries } = useLibraryStore.getState().library;
-  const sharedLayoutCloudShareId = useSharedPreviewStore.getState().sharedLayoutCloudShareId;
-  const sharedLayoutPermission = useSharedPreviewStore.getState().sharedLayoutPermission;
+  const sharedPreview = useSharedPreviewStore.getState().sharedPreview;
+  const sharedLayoutCloudShareId = sharedPreview?.cloudShareId ?? null;
+  const sharedLayoutPermission = sharedPreview?.permission ?? null;
 
   const activeEntry = entries.find((e) => e.id === activeLayoutId);
   const cloudShare = activeEntry?.cloudShare;

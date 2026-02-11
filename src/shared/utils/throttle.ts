@@ -72,9 +72,7 @@ export function throttleRAF<T extends (...args: any[]) => void>(fn: T): T {
       isScheduled = false;
       const latestArgs = pendingArgs.get(throttled) as Parameters<T>;
       const latestThis = pendingThis.get(throttled);
-      if (latestArgs) {
-        fn.apply(latestThis, latestArgs);
-      }
+      fn.apply(latestThis, latestArgs);
       // After RAF completes, allow immediate execution for next call
       canExecuteImmediately = true;
     });

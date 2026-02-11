@@ -13,7 +13,7 @@ interface ShortcutBadgeProps {
   className?: string;
 }
 
-const isMac = typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac');
+const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
 const modKey = isMac ? '⌘' : 'Ctrl';
 
 /** Keyboard key styling matching HelpModal */

@@ -191,13 +191,25 @@ export function migrateParams(
     } else {
       // New format: merge each side with defaults
       wallsConfig = {
-        front: { ...DEFAULT_BIN_PARAMS.walls.front, ...((raw.front as Partial<WallCutout>) ?? {}) },
-        back: { ...DEFAULT_BIN_PARAMS.walls.back, ...((raw.back as Partial<WallCutout>) ?? {}) },
-        left: { ...DEFAULT_BIN_PARAMS.walls.left, ...((raw.left as Partial<WallCutout>) ?? {}) },
-        right: { ...DEFAULT_BIN_PARAMS.walls.right, ...((raw.right as Partial<WallCutout>) ?? {}) },
+        front: {
+          ...DEFAULT_BIN_PARAMS.walls.front,
+          ...(raw.front as Partial<WallCutout> | undefined),
+        },
+        back: {
+          ...DEFAULT_BIN_PARAMS.walls.back,
+          ...(raw.back as Partial<WallCutout> | undefined),
+        },
+        left: {
+          ...DEFAULT_BIN_PARAMS.walls.left,
+          ...(raw.left as Partial<WallCutout> | undefined),
+        },
+        right: {
+          ...DEFAULT_BIN_PARAMS.walls.right,
+          ...(raw.right as Partial<WallCutout> | undefined),
+        },
         interior: {
           ...DEFAULT_BIN_PARAMS.walls.interior,
-          ...((raw.interior as Partial<WallCutout>) ?? {}),
+          ...(raw.interior as Partial<WallCutout> | undefined),
         },
       };
     }
@@ -214,8 +226,14 @@ export function migrateParams(
   const slotConfig: SlotConfig = {
     ...DEFAULT_SLOT_CONFIG,
     ...((params.slotConfig as Partial<SlotConfig> | undefined) ?? {}),
-    x: { ...DEFAULT_SLOT_CONFIG.x, ...((params.slotConfig?.x as Partial<SlotConfig['x']>) ?? {}) },
-    y: { ...DEFAULT_SLOT_CONFIG.y, ...((params.slotConfig?.y as Partial<SlotConfig['y']>) ?? {}) },
+    x: {
+      ...DEFAULT_SLOT_CONFIG.x,
+      ...(params.slotConfig?.x as Partial<SlotConfig['x']> | undefined),
+    },
+    y: {
+      ...DEFAULT_SLOT_CONFIG.y,
+      ...(params.slotConfig?.y as Partial<SlotConfig['y']> | undefined),
+    },
   };
 
   const dividerPieces: DividerPieceConfig = {

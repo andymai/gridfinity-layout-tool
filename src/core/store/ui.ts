@@ -249,10 +249,15 @@ function getCombinedState(): Omit<
     // Half-bin mode
     halfBinMode: halfBin.halfBinMode,
     // Shared preview
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
     sharedLayoutPreview: sharedPreview.sharedLayoutPreview,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
     sharedLayoutOriginalName: sharedPreview.sharedLayoutOriginalName,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
     sharedLayoutAuthorName: sharedPreview.sharedLayoutAuthorName,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
     sharedLayoutCloudShareId: sharedPreview.sharedLayoutCloudShareId,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
     sharedLayoutPermission: sharedPreview.sharedLayoutPermission,
   };
 }
@@ -424,6 +429,7 @@ export const useUIStore = create<UIState>((_set) => ({
 // when ANY underlying store changes. For hot-path components (Bin.tsx, Overlay.tsx),
 // import from focused stores directly to bypass this overhead:
 //   import { useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
+/* eslint-disable @typescript-eslint/no-deprecated -- bridge subscriptions keep useUIStore facade in sync */
 useSelectionStore.subscribe(() => {
   useUIStore.setState(getCombinedState());
 });
@@ -442,3 +448,4 @@ useHalfBinModeStore.subscribe(() => {
 useSharedPreviewStore.subscribe(() => {
   useUIStore.setState(getCombinedState());
 });
+/* eslint-enable @typescript-eslint/no-deprecated */

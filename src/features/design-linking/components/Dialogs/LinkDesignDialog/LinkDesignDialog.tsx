@@ -5,7 +5,7 @@
  * Footprint = same width and depth; height can differ (with warning).
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { isOk } from '@/core/result';
 import { listDesigns } from '@/features/bin-designer/storage/DesignerStorage';
@@ -20,8 +20,21 @@ export function LinkDesignDialog() {
   const { linkBin } = useBinLinking();
 
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetchedForBinId, setFetchedForBinId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Derive loading: true when dialog is open but designs haven't been fetched for current bin
+  const loading = pendingLinkDesign !== null && fetchedForBinId !== pendingLinkDesign.binId;
+
+  // Reset search query when pendingLinkDesign changes
+  const prevBinIdRef = useRef<string | null>(null);
+  const currentBinId = pendingLinkDesign?.binId ?? null;
+  if (currentBinId !== prevBinIdRef.current) {
+    prevBinIdRef.current = currentBinId;
+    if (searchQuery !== '') {
+      setSearchQuery('');
+    }
+  }
 
   // Filter designs to only show compatible ones (matching footprint)
   const compatibleDesigns = useMemo(() => {
@@ -57,15 +70,13 @@ export function LinkDesignDialog() {
     if (!pendingLinkDesign) return;
 
     let cancelled = false;
-    setLoading(true);
-    setSearchQuery('');
 
     void listDesigns().then((result) => {
       if (cancelled) return;
       if (isOk(result)) {
         setDesigns(result.value);
       }
-      setLoading(false);
+      setFetchedForBinId(pendingLinkDesign.binId);
     });
 
     return () => {
@@ -106,6 +117,7 @@ export function LinkDesignDialog() {
       onClick={handleCancel}
       role="presentation"
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         role="dialog"
         aria-modal="true"
@@ -113,6 +125,8 @@ export function LinkDesignDialog() {
         className="max-w-lg w-full mx-4 max-h-[70vh] overflow-hidden animate-scale-in bg-surface-secondary border border-stroke rounded-[var(--radius-xl)] flex flex-col"
         style={{ boxShadow: 'var(--shadow-xl)' }}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
         {/* Header - compact */}
         <div className="flex items-center justify-between border-b border-stroke-subtle px-4 py-3 flex-shrink-0">

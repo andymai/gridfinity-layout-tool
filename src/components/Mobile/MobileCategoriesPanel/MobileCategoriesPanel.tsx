@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore, useUndoableAction } from '@/core/store';
+import { useSelectionStore, useMobileStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import type { CategoryId } from '@/core/types';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
@@ -29,14 +29,14 @@ export function MobileCategoriesPanel() {
       }))
     );
 
-  const { activeCategoryId, setActiveCategory, closeMobilePanel, selectedBinIds } = useUIStore(
+  const { activeCategoryId, setActiveCategory, selectedBinIds } = useSelectionStore(
     useShallow((state) => ({
       activeCategoryId: state.activeCategoryId,
       setActiveCategory: state.setActiveCategory,
-      closeMobilePanel: state.closeMobilePanel,
       selectedBinIds: state.selectedBinIds,
     }))
   );
+  const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
@@ -115,7 +115,7 @@ export function MobileCategoriesPanel() {
       deleteCategory(id);
       // Access fresh state to avoid stale closure issues
       const currentCategories = useLayoutStore.getState().layout.categories;
-      const currentActiveCategoryId = useUIStore.getState().activeCategoryId;
+      const currentActiveCategoryId = useSelectionStore.getState().activeCategoryId;
       if (currentActiveCategoryId === id && currentCategories.length > 0) {
         setActiveCategory(currentCategories[0].id);
       }
@@ -156,6 +156,7 @@ export function MobileCategoriesPanel() {
                     onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
                     className="input w-full"
                     placeholder={t('categories.categoryNamePlaceholder')}
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                     autoFocus
                   />
 

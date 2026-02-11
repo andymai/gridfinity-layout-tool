@@ -15,6 +15,7 @@ export {
 } from './compression';
 
 export {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- backward compat re-export
   generateUUID,
   generateLayoutId,
   isValidLayoutId,

@@ -102,7 +102,7 @@ function interpolate(template: string, vars?: TranslationVars): string {
  * Lazy-load locale modules. Vite splits these into separate chunks.
  * Only called for non-English locales.
  */
-const localeLoaders: Record<string, () => Promise<{ default: Translations }>> = {
+const localeLoaders: Partial<Record<string, () => Promise<{ default: Translations }>>> = {
   de: () => import('./locales/de.json'),
   nl: () => import('./locales/nl.json'),
   es: () => import('./locales/es.json'),
@@ -170,7 +170,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
   const setLocale = useCallback(
     (newLocale: Locale) => {
       setLocaleState(newLocale);
-      loadLocale(newLocale);
+      void loadLocale(newLocale);
       onLocaleChange?.(newLocale);
     },
     [loadLocale, onLocaleChange]
@@ -205,7 +205,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
   const t: TFunction = useCallback(
     (key: string, vars?: TranslationVars): string => {
       // Try current locale, fall back to English, then show key
-      const template = translations[key] ?? en[key] ?? key;
+      const template = translations[key] || en[key] || key;
       return interpolate(template, vars);
     },
     [translations]

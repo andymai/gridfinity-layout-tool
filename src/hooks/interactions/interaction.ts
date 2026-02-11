@@ -16,8 +16,8 @@ import type { PointerCaptureHandle } from './types';
  */
 export function capturePointer(
   pointerId: number | undefined,
-  activePointerIdRef: React.MutableRefObject<number | null>,
-  capturedPointerRef: React.MutableRefObject<PointerCaptureHandle | null>
+  activePointerIdRef: React.RefObject<number | null>,
+  capturedPointerRef: React.RefObject<PointerCaptureHandle | null>
 ): boolean {
   if (pointerId === undefined) {
     return false;

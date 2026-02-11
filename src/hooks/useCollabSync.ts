@@ -54,7 +54,7 @@ export function useCollabSync(): void {
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Get layout from Liveblocks storage
-  const remoteLayout = useStorage((root) => root?.layout);
+  const remoteLayout = useStorage((root) => root.layout);
 
   // Get local store state
   const localLayout = useLayoutStore((state) => state.layout);

@@ -9,7 +9,7 @@
 import type { Draft } from 'immer';
 import type { DesignerState, Cutout, CutoutToggleProperties, ReorderDirection } from '../../types';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
-import { generateUUID } from '@/shared/utils/uuid';
+import { generateLayoutId } from '@/shared/utils/uuid';
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 
@@ -140,13 +140,13 @@ export function createCutoutSlice(set: Set) {
           let newGroupId: string | null = null;
           if (c.groupId) {
             if (!groupMap.has(c.groupId)) {
-              groupMap.set(c.groupId, generateUUID());
+              groupMap.set(c.groupId, generateLayoutId());
             }
             newGroupId = groupMap.get(c.groupId) ?? null;
           }
           return {
             ...c,
-            id: generateUUID(),
+            id: generateLayoutId(),
             x: c.x + 5,
             y: c.y + 5,
             groupId: newGroupId,
@@ -164,7 +164,7 @@ export function createCutoutSlice(set: Set) {
         const existingGroupId = state.params.cutouts.find(
           (c) => cutoutIds.includes(c.id) && c.groupId !== null
         )?.groupId;
-        const groupId = existingGroupId ?? generateUUID();
+        const groupId = existingGroupId ?? generateLayoutId();
         // Include all existing members of the reused group
         const idsToGroup = new Set(cutoutIds);
         if (existingGroupId) {

@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore, useUIStore } from '@/core/store';
+import { useHistoryStore, useMobileStore } from '@/core/store';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { PresenceAvatars } from '@/components/Collab';
-import type { MobilePanel } from '@/core/store/ui';
+import type { MobilePanel } from '@/core/store';
 import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 
@@ -28,7 +28,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
   const undo = useHistoryStore((state) => state.undo);
   const redo = useHistoryStore((state) => state.redo);
 
-  const toggleMobilePanel = useUIStore((state) => state.toggleMobilePanel);
+  const toggleMobilePanel = useMobileStore((state) => state.toggleMobilePanel);
 
   // Only show presence avatars when actually in collaborative mode (inside RoomProvider)
   const { isCollaborative } = useCollabMode();

@@ -85,11 +85,6 @@ export interface CollapsibleProps extends CollapsibleVariantProps {
   icon?: ReactNode;
 
   /**
-   * @deprecated Use `icon` instead. Alias kept for backward compatibility during migration.
-   */
-  illustration?: ReactNode;
-
-  /**
    * Optional summary shown when collapsed.
    * Use for a preview of the content (e.g., "2×2×3u").
    */
@@ -159,16 +154,13 @@ export const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
       onExpandedChange,
       badge,
       actions,
-      icon: iconProp,
-      illustration,
+      icon,
       summary,
       size = 'md',
       className,
     },
     ref
   ) => {
-    const icon = iconProp ?? illustration;
-
     // Track internal state for uncontrolled mode
     const [uncontrolledExpanded, setUncontrolledExpanded] = useState(defaultExpanded);
 

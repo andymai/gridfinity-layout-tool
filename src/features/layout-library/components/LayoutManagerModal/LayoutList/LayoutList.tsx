@@ -4,7 +4,7 @@ import { LayoutListItem } from '../LayoutListItem';
 import { LayoutGridItem } from '../LayoutGridItem';
 import { useLayoutStore } from '@/core/store/layout';
 import { loadLayoutAsync, downloadLayoutAsFile } from '@/core/storage';
-import { useUIStore } from '@/core/store/ui';
+import { useInteractionStore } from '@/core/store/interaction';
 import { useTranslation } from '@/i18n';
 import { ViewModeToggle } from '../ViewModeToggle';
 import type { ViewMode } from '../ViewModeToggle';
@@ -54,7 +54,7 @@ export function LayoutList({
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const currentLayout = useLayoutStore((state) => state.layout);
-  const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   const showSearch = entries.length >= SEARCH_THRESHOLD;
 
@@ -157,9 +157,7 @@ export function LayoutList({
       if (newIndex !== focusedIndex) {
         setFocusedIndex(newIndex);
         const entry = sortedEntries[newIndex];
-        if (entry) {
-          itemRefs.current.get(entry.id)?.focus();
-        }
+        itemRefs.current.get(entry.id)?.focus();
       }
     },
     [focusedIndex, sortedEntries, viewMode, getGridColumns]
@@ -328,6 +326,7 @@ export function LayoutList({
         <div
           ref={gridRef}
           role="listbox"
+          tabIndex={0}
           aria-label={t('layouts.availableLayouts')}
           className="overflow-y-auto min-h-0 [scrollbar-gutter:stable] grid grid-cols-[repeat(auto-fill,minmax(225px,1fr))] gap-3 content-start"
           onKeyDown={handleListKeyDown}
@@ -361,6 +360,7 @@ export function LayoutList({
         <div
           ref={listRef}
           role="listbox"
+          tabIndex={0}
           aria-label={t('layouts.availableLayouts')}
           aria-activedescendant={sortedEntries[focusedIndex]?.id}
           className="overflow-y-auto space-y-2 min-h-0 [scrollbar-gutter:stable]"
@@ -413,12 +413,15 @@ export function LayoutList({
               stroke="currentColor"
               aria-hidden="true"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </div>
-          {showViewToggle && (
-            <ViewModeToggle value={viewMode} onChange={onViewModeChange} />
-          )}
+          {showViewToggle && <ViewModeToggle value={viewMode} onChange={onViewModeChange} />}
         </div>
       </div>
     </div>

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useToastStore } from '@/core/store/toast';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
+import { useInteractionStore } from '@/core/store/interaction';
 import { getStagingBins } from '@/shared/utils/bins';
 import { useLayoutStore } from '@/core/store/layout';
 import {
@@ -36,11 +38,13 @@ const RELOAD_FLAG_KEY = 'pwa-update-pending-reload';
  * Avoids reloading during active user interactions or when they have unsaved work.
  */
 function isSafeToReload(): boolean {
-  const ui = useUIStore.getState();
+  const interaction = useInteractionStore.getState();
+  const selection = useSelectionStore.getState();
+  const view = useViewStore.getState();
   const layout = useLayoutStore.getState();
 
   // Don't reload during active interaction (drag, resize, draw, paint)
-  if (ui.interaction !== null) {
+  if (interaction.interaction !== null) {
     return false;
   }
 
@@ -51,22 +55,22 @@ function isSafeToReload(): boolean {
   }
 
   // Don't reload during 3D preview (camera state would be lost)
-  if (ui.isPreviewExpanded) {
+  if (interaction.isPreviewExpanded) {
     return false;
   }
 
   // Don't reload with context menu open
-  if (ui.contextMenu !== null) {
+  if (view.contextMenu !== null) {
     return false;
   }
 
   // Don't reload with quick label popover open
-  if (ui.quickLabelBinId !== null) {
+  if (selection.quickLabelBinId !== null) {
     return false;
   }
 
   // Don't reload during keyboard drag/resize mode
-  if (ui.keyboardDragMode || ui.keyboardResizeMode) {
+  if (interaction.keyboardDragMode || interaction.keyboardResizeMode) {
     return false;
   }
 
@@ -127,30 +131,32 @@ function waitForSafeReload(timeoutMs: number, signal?: AbortSignal): Promise<boo
  * Returns state suitable for saveEphemeralState().
  */
 function gatherEphemeralState(): Omit<EphemeralState, 'savedAt'> {
-  const ui = useUIStore.getState();
+  const selection = useSelectionStore.getState();
+  const view = useViewStore.getState();
+  const interaction = useInteractionStore.getState();
 
   return {
     // Selection & navigation
-    selectedBinIds: ui.selectedBinIds,
-    activeLayerId: ui.activeLayerId,
-    activeCategoryId: ui.activeCategoryId,
-    focusedBinId: ui.focusedBinId,
+    selectedBinIds: selection.selectedBinIds,
+    activeLayerId: selection.activeLayerId,
+    activeCategoryId: selection.activeCategoryId,
+    focusedBinId: selection.focusedBinId,
 
     // View settings
-    zoom: ui.zoom,
-    showOtherLayers: ui.showOtherLayers,
+    zoom: view.zoom,
+    showOtherLayers: view.showOtherLayers,
 
     // Panel state
-    leftPanelCollapsed: ui.leftPanelCollapsed,
-    rightPanelCollapsed: ui.rightPanelCollapsed,
+    leftPanelCollapsed: view.leftPanelCollapsed,
+    rightPanelCollapsed: view.rightPanelCollapsed,
 
     // 3D preview state
-    showIsometricPreview: ui.showIsometricPreview,
-    isometricRotation: ui.isometricRotation,
-    layerViewMode: ui.layerViewMode,
+    showIsometricPreview: interaction.showIsometricPreview,
+    isometricRotation: interaction.isometricRotation,
+    layerViewMode: interaction.layerViewMode,
 
     // Paint mode
-    paintSize: ui.paintSize,
+    paintSize: interaction.paintSize,
 
     // Note: scroll position would require ref from Grid component
     // Could be added via a global ref or event-based approach
@@ -165,14 +171,16 @@ function restoreEphemeralState(): boolean {
   const state = loadEphemeralState();
   if (!state) return false;
 
-  const ui = useUIStore.getState();
+  const selection = useSelectionStore.getState();
+  const view = useViewStore.getState();
+  const interaction = useInteractionStore.getState();
   const layout = useLayoutStore.getState().layout;
 
   // Validate and restore activeLayerId
   const activeLayer = layerId(state.activeLayerId);
   const layerExists = layout.layers.some((l) => l.id === activeLayer);
   if (layerExists && state.activeLayerId) {
-    ui.setActiveLayer(activeLayer);
+    selection.setActiveLayer(activeLayer);
   }
 
   // Validate and restore selected bins (filter out any that no longer exist)
@@ -181,46 +189,46 @@ function restoreEphemeralState(): boolean {
     .map((id) => binId(id))
     .filter((id) => existingBinIds.has(id));
   if (validSelectedIds.length > 0) {
-    ui.setSelectedBins(validSelectedIds);
+    selection.setSelectedBins(validSelectedIds);
   }
 
   // Restore active category (categories might have changed, but IDs are stable)
   const activeCategory = categoryId(state.activeCategoryId);
   const categoryExists = layout.categories.some((c) => c.id === activeCategory);
   if (categoryExists) {
-    ui.setActiveCategory(activeCategory);
+    selection.setActiveCategory(activeCategory);
   }
 
   // Restore focused bin if it still exists
   if (state.focusedBinId && existingBinIds.has(binId(state.focusedBinId))) {
-    ui.setFocusedBin(binId(state.focusedBinId));
+    selection.setFocusedBin(binId(state.focusedBinId));
   }
 
   // Restore view settings (these don't need validation)
-  ui.setZoom(state.zoom);
+  view.setZoom(state.zoom);
 
   // Restore toggles only if they differ from current state
-  if (state.showOtherLayers !== ui.showOtherLayers) {
-    ui.toggleShowOtherLayers();
+  if (state.showOtherLayers !== view.showOtherLayers) {
+    view.toggleShowOtherLayers();
   }
   // Restore panel state
-  if (state.leftPanelCollapsed !== ui.leftPanelCollapsed) {
-    ui.toggleLeftPanel();
+  if (state.leftPanelCollapsed !== view.leftPanelCollapsed) {
+    view.toggleLeftPanel();
   }
-  if (state.rightPanelCollapsed !== ui.rightPanelCollapsed) {
-    ui.toggleRightPanel();
+  if (state.rightPanelCollapsed !== view.rightPanelCollapsed) {
+    view.toggleRightPanel();
   }
 
   // Restore 3D preview state
-  if (state.showIsometricPreview !== ui.showIsometricPreview) {
-    ui.toggleIsometricPreview();
+  if (state.showIsometricPreview !== interaction.showIsometricPreview) {
+    interaction.toggleIsometricPreview();
   }
-  ui.setIsometricRotation(state.isometricRotation);
-  ui.setLayerViewMode(state.layerViewMode);
+  interaction.setIsometricRotation(state.isometricRotation);
+  interaction.setLayerViewMode(state.layerViewMode);
 
   // Restore paint size
   if (state.paintSize) {
-    ui.setPaintSize(state.paintSize);
+    interaction.setPaintSize(state.paintSize);
   }
 
   return true;
@@ -298,11 +306,11 @@ export function usePWAUpdate(): void {
       }
 
       // Check immediately on registration (page load)
-      checkForUpdate();
+      void checkForUpdate();
 
       // Set up periodic checks (less aggressive - every 15 minutes)
       intervalRef.current = window.setInterval(() => {
-        checkForUpdate();
+        void checkForUpdate();
       }, UPDATE_CHECK_INTERVAL_MS);
     },
     onRegisterError(error) {
@@ -310,7 +318,7 @@ export function usePWAUpdate(): void {
 
       // App still works without SW, but offline features won't be available
       // Only warn if it seems like a persistent issue
-      if (error?.message?.includes('SecurityError')) {
+      if (error.message.includes('SecurityError')) {
         console.warn('SW blocked - may be in private browsing or SW disabled');
       }
     },
@@ -323,7 +331,7 @@ export function usePWAUpdate(): void {
         wasOfflineRef.current = false;
         addToast(t('toast.online'), 'success');
         // Check for updates when coming back online
-        checkForUpdate();
+        void checkForUpdate();
       }
     };
 
@@ -347,7 +355,7 @@ export function usePWAUpdate(): void {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        checkForUpdate();
+        void checkForUpdate();
       }
     };
 
@@ -415,17 +423,14 @@ export function usePWAUpdate(): void {
         });
       });
 
-      // Don't trigger reload if aborted
-      if (abortController.signal.aborted) return;
-
       // Save current UI state before reload so we can restore it
       saveEphemeralState(gatherEphemeralState());
 
       // Trigger the update (reloads the page)
-      updateServiceWorker(true);
+      void updateServiceWorker(true);
     };
 
-    performUpdate();
+    void performUpdate();
 
     return () => {
       abortController.abort();

@@ -71,6 +71,12 @@ check_file() {
     local target_feature
     target_feature=$(echo "$import_path" | sed 's|@/features/||' | cut -d'/' -f1)
 
+    # Known allowed cross-feature dependencies (tightly coupled by design)
+    # design-linking links bin designs to layout bins, so it needs bin-designer types
+    if [[ "$source_feature" == "design-linking" && "$target_feature" == "bin-designer" ]]; then
+      continue
+    fi
+
     # Check for cross-feature import
     if [[ "$target_feature" != "$source_feature" ]]; then
       # Get line number (match the actual import statement with fixed-string matching)

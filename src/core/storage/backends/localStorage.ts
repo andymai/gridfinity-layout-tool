@@ -14,7 +14,7 @@ import { ok, err, storageQuotaExceeded, storageCorrupted } from '@/core/result';
  * Save data to localStorage as JSON.
  * Returns Err with StorageQuotaExceededError if storage is full.
  */
-export function saveToLocalStorage<T>(key: string, data: T): Result<void, StorageError> {
+export function saveToLocalStorage(key: string, data: unknown): Result<void, StorageError> {
   try {
     localStorage.setItem(key, JSON.stringify(data));
     return ok(undefined);

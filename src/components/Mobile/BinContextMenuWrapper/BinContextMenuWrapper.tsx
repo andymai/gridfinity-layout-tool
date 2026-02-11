@@ -1,4 +1,4 @@
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore, useSelectionStore } from '@/core/store';
 import { binId } from '@/core/types';
 import { BinContextMenu } from '../BinContextMenu';
 import { MultiBinContextMenu } from '../MultiBinContextMenu';
@@ -26,10 +26,10 @@ export function BinContextMenuWrapper({
   source,
 }: BinContextMenuWrapperProps) {
   const bins = useLayoutStore((state) => state.layout.bins);
-  const selectedBinIds = useUIStore((state) => state.selectedBinIds);
+  const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
 
   // Guard: ensure binIds is valid
-  if (!binIds || binIds.length === 0) return null;
+  if (binIds.length === 0) return null;
 
   // Multi-select detection: if first bin is selected AND multiple bins selected
   const isMultiSelect = selectedBinIds.includes(binId(binIds[0])) && selectedBinIds.length > 1;

@@ -171,6 +171,7 @@ export function getHoneycombWallDescriptors(
 ): WallPatternDescriptor[] | null {
   // Runtime guard: wallPattern may be missing from old saved data
   const wallPattern = params.wallPattern as typeof params.wallPattern | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime guard for old data
   if (!wallPattern?.enabled || wallPattern.pattern !== 'honeycomb') {
     return null;
   }
@@ -208,7 +209,8 @@ export function getPatternDescriptors(
   const wallPattern = params.wallPattern as typeof params.wallPattern | undefined;
 
   // No pattern config, disabled, or no pattern type = solid walls (no pattern)
-  if (!wallPattern?.enabled || !wallPattern.pattern) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime guard for old data
+  if (!wallPattern?.enabled || wallPattern.pattern === undefined) {
     return null;
   }
 

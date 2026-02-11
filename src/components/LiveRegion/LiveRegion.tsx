@@ -1,4 +1,4 @@
-import { useUIStore } from '@/core/store';
+import { useInteractionStore } from '@/core/store';
 
 /**
  * ARIA live region for screen reader announcements.
@@ -8,7 +8,7 @@ import { useUIStore } from '@/core/store';
  * The message will be announced and automatically cleared after 1 second.
  */
 export function LiveRegion() {
-  const liveMessage = useUIStore((state) => state.liveMessage);
+  const liveMessage = useInteractionStore((state) => state.liveMessage);
 
   if (!liveMessage) return null;
 

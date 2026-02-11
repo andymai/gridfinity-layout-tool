@@ -104,6 +104,7 @@ export function ContextMenuContainer({
       <div
         ref={menuRef}
         role="menu"
+        tabIndex={0}
         aria-label={t('contextMenu.contextMenu')}
         className="fixed z-50 rounded-xl overflow-hidden shadow-xl bg-surface-elevated border border-stroke-subtle animate-fade-in"
         style={{

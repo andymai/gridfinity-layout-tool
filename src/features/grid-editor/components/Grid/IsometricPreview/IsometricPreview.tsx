@@ -2,7 +2,8 @@ import { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, calcMaxGridUnits } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 import { use3DPreviewKeyboard } from '@/hooks/use3DPreviewKeyboard';
@@ -33,21 +34,21 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   const { isMobile, isTablet } = useResponsive();
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
+  const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
+
   const {
     showIsometricPreview,
     layerViewMode,
     isPreviewExpanded,
-    selectedBinIds,
     setLayerViewMode,
     togglePreviewExpanded,
     setPreviewExpanded,
     toggleIsometricPreview,
-  } = useUIStore(
+  } = useInteractionStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
       layerViewMode: state.layerViewMode,
       isPreviewExpanded: state.isPreviewExpanded,
-      selectedBinIds: state.selectedBinIds,
       setLayerViewMode: state.setLayerViewMode,
       togglePreviewExpanded: state.togglePreviewExpanded,
       setPreviewExpanded: state.setPreviewExpanded,
@@ -134,7 +135,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
 
   // Calculate height-to-grid scale from user settings
   const heightToGridScale = heightUnitMm / gridUnitMm;
-  const activeLayerId = useUIStore((state) => state.activeLayerId);
+  const activeLayerId = useSelectionStore((state) => state.activeLayerId);
 
   // Memoize active layer index calculation
   const activeLayerIndex = useMemo(
@@ -681,7 +682,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             if (isPreviewExpanded) {
               setPreviewExpanded(false);
             } else {
-              useUIStore.getState().toggleIsometricPreview();
+              useInteractionStore.getState().toggleIsometricPreview();
             }
           }}
           className={`btn btn-ghost ${
@@ -758,6 +759,10 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         <div
           className="fixed inset-0 z-40 bg-black/60 animate-fade-in"
           onClick={handleBackdropClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setPreviewExpanded(false);
+          }}
+          role="presentation"
         />
       )}
       {/* Preview wrapper - changes positioning based on expanded state */}
@@ -775,6 +780,14 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             : undefined
         }
         onClick={isPreviewExpanded ? handleBackdropClick : undefined}
+        onKeyDown={
+          isPreviewExpanded
+            ? (e) => {
+                if (e.key === 'Escape') setPreviewExpanded(false);
+              }
+            : undefined
+        }
+        role={isPreviewExpanded ? 'presentation' : undefined}
       >
         {previewContent}
       </div>

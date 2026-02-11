@@ -79,50 +79,52 @@ export function useAutoSave(): SaveStatus {
 
       // Schedule storage operations during browser idle time to improve INP
       idleCallbackRef.current = scheduleIdleCallback(
-        async () => {
-          // Get fresh library state at save time (may have changed since effect triggered)
-          const currentLibrary = useLibraryStore.getState().library;
+        () => {
+          void (async () => {
+            // Get fresh library state at save time (may have changed since effect triggered)
+            const currentLibrary = useLibraryStore.getState().library;
 
-          // Atomic save: layout + library entry in one operation
-          const result = await saveLayoutWithMetadata(savingLayoutId, layout, currentLibrary);
+            // Atomic save: layout + library entry in one operation
+            const result = await saveLayoutWithMetadata(savingLayoutId, layout, currentLibrary);
 
-          if (isErr(result)) {
-            trackLayoutSaveFailure(
-              result.error.code,
-              result.error.message,
-              failureCountRef.current + 1
-            );
-            handleSaveError(result.error);
-            return;
-          }
+            if (isErr(result)) {
+              trackLayoutSaveFailure(
+                result.error.code,
+                result.error.message,
+                failureCountRef.current + 1
+              );
+              handleSaveError(result.error);
+              return;
+            }
 
-          // CRITICAL: Check if user switched layouts during the save.
-          // If so, discard the result - the data is saved to storage but
-          // updating the store would overwrite the new layout's library state.
-          const currentActiveId = useLayoutStore.getState().activeLayoutId;
-          if (currentActiveId !== savingLayoutId) {
-            // Layout switched during save - silently discard store update
-            // The data was saved to storage which is correct, we just
-            // don't want to overwrite the current library state
-            setSaveStatus('idle');
-            return;
-          }
+            // CRITICAL: Check if user switched layouts during the save.
+            // If so, discard the result - the data is saved to storage but
+            // updating the store would overwrite the new layout's library state.
+            const currentActiveId = useLayoutStore.getState().activeLayoutId;
+            if (currentActiveId !== savingLayoutId) {
+              // Layout switched during save - silently discard store update
+              // The data was saved to storage which is correct, we just
+              // don't want to overwrite the current library state
+              setSaveStatus('idle');
+              return;
+            }
 
-          // Sync library store with the persisted state
-          setLibrary(result.value.library);
+            // Sync library store with the persisted state
+            setLibrary(result.value.library);
 
-          // Success - reset error tracking
-          hasShownErrorRef.current = false;
-          failureCountRef.current = 0;
+            // Success - reset error tracking
+            hasShownErrorRef.current = false;
+            failureCountRef.current = 0;
 
-          // Track layout snapshot for ML telemetry (rate-limited internally)
-          mlTracking.trackSnapshot('save');
+            // Track layout snapshot for ML telemetry (rate-limited internally)
+            mlTracking.trackSnapshot('save');
 
-          setSaveStatus('saved');
+            setSaveStatus('saved');
 
-          savedTimeoutRef.current = window.setTimeout(() => {
-            setSaveStatus('idle');
-          }, SAVED_DISPLAY_MS);
+            savedTimeoutRef.current = window.setTimeout(() => {
+              setSaveStatus('idle');
+            }, SAVED_DISPLAY_MS);
+          })();
         },
         { timeout: IDLE_TIMEOUT_MS }
       );

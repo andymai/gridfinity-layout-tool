@@ -455,12 +455,10 @@ export function useKeyboard() {
           if (allValid) {
             // Track move BEFORE executing (capture old positions)
             const firstBin = selectedBins[0];
-            if (firstBin) {
-              const oldPosition = { x: firstBin.x, y: firstBin.y };
-              // Track once per batch with representative data
-              const newFirstBin = { ...firstBin, x: firstBin.x + dx, y: firstBin.y + dy };
-              mlTracking.trackMove(newFirstBin, oldPosition, 'nudge', selectedBins.length);
-            }
+            const oldPosition = { x: firstBin.x, y: firstBin.y };
+            // Track once per batch with representative data
+            const newFirstBin = { ...firstBin, x: firstBin.x + dx, y: firstBin.y + dy };
+            mlTracking.trackMove(newFirstBin, oldPosition, 'nudge', selectedBins.length);
 
             execute(() => {
               for (const binId of selectedBinIds) {

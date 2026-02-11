@@ -55,6 +55,7 @@ export function ViewModeToggle({
     <div
       className="flex rounded-lg bg-surface p-0.5 border border-stroke"
       role="radiogroup"
+      tabIndex={0}
       aria-label={ariaLabel}
       onKeyDown={handleKeyDown}
     >

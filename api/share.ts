@@ -44,7 +44,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Parse and validate request body
-    const { layout, layoutId, permission = 'view', authorName, type, params } = req.body || {};
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    const { layout, layoutId, permission = 'view', authorName, type, params } = body;
 
     // Validate layoutId - must be provided by client
     if (!isValidShareId(layoutId)) {
@@ -66,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (type === 'designer') {
       // Designer share: validate BinParams
-      const designerPayload = { type, version: (req.body || {}).version, params };
+      const designerPayload = { type, version: body.version, params };
       const payloadJson = JSON.stringify(designerPayload);
       const result = validateDesignerShare(designerPayload, payloadJson.length);
 
@@ -126,7 +127,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         lastUpdatedAt: nowIso,
         lastAccessedAt: nowIso,
         permission,
-        authorName: authorName ? String(authorName).slice(0, 64) : undefined,
+        authorName: typeof authorName === 'string' ? authorName.slice(0, 64) : undefined,
         reportCount: 0,
       },
     };

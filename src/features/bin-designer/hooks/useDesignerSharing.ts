@@ -7,8 +7,27 @@
 
 import { useState, useCallback } from 'react';
 import { ok, err, isOk, type Result } from '@/core/result';
-import { generateUUID } from '@/shared/utils/uuid';
+import { generateLayoutId } from '@/shared/utils/uuid';
 import type { BinParams } from '@/features/bin-designer/types';
+
+/** Shape of the JSON returned by POST /api/share */
+interface ShareApiResponse {
+  readonly id?: string;
+  readonly url?: string;
+  readonly deleteToken?: string;
+  readonly code?: string;
+  readonly error?: string;
+}
+
+/** Shape of the JSON returned by GET /api/share/:id */
+interface FetchShareApiResponse {
+  readonly code?: string;
+  readonly error?: string;
+  readonly layout?: {
+    readonly type?: string;
+    readonly params?: BinParams;
+  };
+}
 
 /** Response from creating a designer share */
 export interface DesignerShareResponse {
@@ -26,13 +45,6 @@ export interface DesignerShareError {
 /** State of the sharing operation */
 export type ShareStatus = 'idle' | 'sharing' | 'loading' | 'success' | 'error';
 
-/** The discriminated payload format stored in Blob */
-interface DesignerSharePayload {
-  readonly type: 'designer';
-  readonly version: 1;
-  readonly params: BinParams;
-}
-
 /**
  * Create a shared designer payload and register it via the backend.
  *
@@ -43,7 +55,7 @@ export async function createDesignerShare(
   params: BinParams
 ): Promise<Result<DesignerShareResponse, DesignerShareError>> {
   try {
-    const shareId = generateUUID();
+    const shareId = generateLayoutId();
 
     const response = await fetch('/api/share', {
       method: 'POST',
@@ -57,7 +69,7 @@ export async function createDesignerShare(
       }),
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as ShareApiResponse;
 
     if (!response.ok) {
       return err({
@@ -67,9 +79,9 @@ export async function createDesignerShare(
     }
 
     return ok({
-      id: data.id,
-      url: data.url,
-      deleteToken: data.deleteToken,
+      id: data.id ?? '',
+      url: data.url ?? '',
+      deleteToken: data.deleteToken ?? '',
     });
   } catch {
     return err({
@@ -95,7 +107,7 @@ export async function fetchDesignerShare(
 ): Promise<Result<BinParams, DesignerShareError>> {
   try {
     const response = await fetch(`/api/share/${id}`);
-    const data = await response.json();
+    const data = (await response.json()) as FetchShareApiResponse;
 
     if (!response.ok) {
       return err({
@@ -105,7 +117,7 @@ export async function fetchDesignerShare(
     }
 
     // Validate it's a designer share
-    const layout = data.layout as DesignerSharePayload | undefined;
+    const layout = data.layout;
     if (!layout || layout.type !== 'designer') {
       return err({
         code: 'WRONG_TYPE',

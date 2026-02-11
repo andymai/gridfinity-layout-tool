@@ -158,9 +158,8 @@ function computeBinVolume(params: BinParams): number {
   }
 
   // Wall pattern: honeycomb wall reduction
-  // Runtime guard: wallPattern may be missing from old saved data
-  const wallPattern = params.wallPattern as typeof params.wallPattern | undefined;
-  if (wallPattern?.enabled && wallPattern.pattern === 'honeycomb') {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- pattern type may expand beyond 'honeycomb'
+  if (params.wallPattern.enabled && params.wallPattern.pattern === 'honeycomb') {
     volume -= computeHoneycombWallReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
   }
 

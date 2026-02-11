@@ -78,144 +78,172 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
       className="fixed inset-0 flex items-end sm:items-center justify-center z-50 animate-fade-in"
       style={STYLES.overlay}
       onClick={onClose}
+      role="presentation"
     >
-      <div
-        className="w-full sm:max-w-md mx-0 sm:mx-4 max-h-[85vh] overflow-y-auto scrollbar-thin animate-slide-up rounded-t-2xl sm:rounded-2xl"
-        style={STYLES.modal}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="mobile-help-title"
-      >
-        {/* Drag handle for bottom sheet feel */}
-        <div className="flex justify-center mb-3 sm:hidden">
-          <div className="w-10 h-1 rounded-full bg-stroke" />
-        </div>
+      <div role="presentation" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="w-full sm:max-w-md mx-0 sm:mx-4 max-h-[85vh] overflow-y-auto scrollbar-thin animate-slide-up rounded-t-2xl sm:rounded-2xl"
+          style={STYLES.modal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mobile-help-title"
+        >
+          {/* Drag handle for bottom sheet feel */}
+          <div className="flex justify-center mb-3 sm:hidden">
+            <div className="w-10 h-1 rounded-full bg-stroke" />
+          </div>
 
-        <div className="flex justify-between items-center mb-5">
-          <h2 id="mobile-help-title" style={STYLES.title}>
-            {t('mobile.help')}
-          </h2>
-          <button onClick={onClose} className="btn btn-ghost w-10 h-10 p-0" aria-label={t('common.close')}>
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+          <div className="flex justify-between items-center mb-5">
+            <h2 id="mobile-help-title" style={STYLES.title}>
+              {t('mobile.help')}
+            </h2>
+            <button
+              onClick={onClose}
+              className="btn btn-ghost w-10 h-10 p-0"
+              aria-label={t('common.close')}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
 
-        <div className="space-y-5">
-          {/* Drawing & Selection */}
-          <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.drawingSelection')}</h3>
-            <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-              <GestureRow icon={<TapIcon />} gesture={t('help.gesture.tapBin')} description={t('help.gesture.selectBin')} />
-              <GestureRow
-                icon={<DragIcon />}
-                gesture={t('help.gesture.dragEmpty')}
-                description={t('help.gesture.drawNewBin')}
-              />
-              <GestureRow icon={<DragIcon />} gesture={t('help.gesture.dragSelected')} description={t('help.gesture.moveBin')} />
-              <GestureRow
-                icon={<LongPressIcon />}
-                gesture={t('help.gesture.longPress')}
-                description={t('help.gesture.openContextMenu')}
-              />
-            </div>
-          </section>
+          <div className="space-y-5">
+            {/* Drawing & Selection */}
+            <section>
+              <h3 className="mb-3" style={STYLES.sectionHeader}>
+                {t('mobile.help.drawingSelection')}
+              </h3>
+              <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+                <GestureRow
+                  icon={<TapIcon />}
+                  gesture={t('help.gesture.tapBin')}
+                  description={t('help.gesture.selectBin')}
+                />
+                <GestureRow
+                  icon={<DragIcon />}
+                  gesture={t('help.gesture.dragEmpty')}
+                  description={t('help.gesture.drawNewBin')}
+                />
+                <GestureRow
+                  icon={<DragIcon />}
+                  gesture={t('help.gesture.dragSelected')}
+                  description={t('help.gesture.moveBin')}
+                />
+                <GestureRow
+                  icon={<LongPressIcon />}
+                  gesture={t('help.gesture.longPress')}
+                  description={t('help.gesture.openContextMenu')}
+                />
+              </div>
+            </section>
 
-          {/* Editing */}
-          <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.editing')}</h3>
-            <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-              <GestureRow
-                icon={<DragEdgeIcon />}
-                gesture={t('help.gesture.dragEdge')}
-                description={t('help.gesture.resizeBin')}
-              />
-              <GestureRow
-                icon={<DragCornerIcon />}
-                gesture={t('help.gesture.dragCorner')}
-                description={t('help.gesture.resizeWidthDepth')}
-              />
-              <GestureRow
-                icon={<DragIcon />}
-                gesture={t('help.gesture.dragToStash')}
-                description={t('help.gesture.moveToStaging')}
-              />
-            </div>
-          </section>
+            {/* Editing */}
+            <section>
+              <h3 className="mb-3" style={STYLES.sectionHeader}>
+                {t('mobile.help.editing')}
+              </h3>
+              <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+                <GestureRow
+                  icon={<DragEdgeIcon />}
+                  gesture={t('help.gesture.dragEdge')}
+                  description={t('help.gesture.resizeBin')}
+                />
+                <GestureRow
+                  icon={<DragCornerIcon />}
+                  gesture={t('help.gesture.dragCorner')}
+                  description={t('help.gesture.resizeWidthDepth')}
+                />
+                <GestureRow
+                  icon={<DragIcon />}
+                  gesture={t('help.gesture.dragToStash')}
+                  description={t('help.gesture.moveToStaging')}
+                />
+              </div>
+            </section>
 
-          {/* Paint Mode */}
-          <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.paintMode')}</h3>
-            <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-              <GestureRow
-                icon={<TapIcon />}
-                gesture={t('help.gesture.tapPalette')}
-                description={t('help.gesture.enterPaintMode')}
-              />
-              <GestureRow
-                icon={<DragIcon />}
-                gesture={t('help.gesture.dragGrid')}
-                description={t('help.gesture.fillArea')}
-              />
-              <GestureRow icon={<TapIcon />} gesture={t('help.gesture.tapClose', { button: t('common.close') })} description={t('help.gesture.exitPaintMode')} />
-            </div>
-          </section>
+            {/* Paint Mode */}
+            <section>
+              <h3 className="mb-3" style={STYLES.sectionHeader}>
+                {t('mobile.help.paintMode')}
+              </h3>
+              <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+                <GestureRow
+                  icon={<TapIcon />}
+                  gesture={t('help.gesture.tapPalette')}
+                  description={t('help.gesture.enterPaintMode')}
+                />
+                <GestureRow
+                  icon={<DragIcon />}
+                  gesture={t('help.gesture.dragGrid')}
+                  description={t('help.gesture.fillArea')}
+                />
+                <GestureRow
+                  icon={<TapIcon />}
+                  gesture={t('help.gesture.tapClose', { button: t('common.close') })}
+                  description={t('help.gesture.exitPaintMode')}
+                />
+              </div>
+            </section>
 
-          {/* Navigation */}
-          <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.navigation')}</h3>
-            <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-              <GestureRow
-                icon={<SwipeDownIcon />}
-                gesture={t('help.gesture.swipeDown')}
-                description={t('help.gesture.closeBottomSheet')}
-              />
-              <GestureRow
-                icon={<TapIcon />}
-                gesture={t('help.gesture.tapLayer')}
-                description={t('help.gesture.switchLayers')}
-              />
-              <GestureRow
-                icon={<TapIcon />}
-                gesture={t('help.gesture.tapStriped')}
-                description={t('help.gesture.jumpToBlocking')}
-              />
-            </div>
-          </section>
+            {/* Navigation */}
+            <section>
+              <h3 className="mb-3" style={STYLES.sectionHeader}>
+                {t('mobile.help.navigation')}
+              </h3>
+              <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+                <GestureRow
+                  icon={<SwipeDownIcon />}
+                  gesture={t('help.gesture.swipeDown')}
+                  description={t('help.gesture.closeBottomSheet')}
+                />
+                <GestureRow
+                  icon={<TapIcon />}
+                  gesture={t('help.gesture.tapLayer')}
+                  description={t('help.gesture.switchLayers')}
+                />
+                <GestureRow
+                  icon={<TapIcon />}
+                  gesture={t('help.gesture.tapStriped')}
+                  description={t('help.gesture.jumpToBlocking')}
+                />
+              </div>
+            </section>
 
-          {/* Tips */}
-          <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.tips')}</h3>
-            <ul className="space-y-2 p-3 rounded-lg" style={STYLES.tipsList}>
-              <li className="flex items-start gap-2">
-                <span style={STYLES.colorPrimary}>•</span>
-                <span>{t('mobile.help.longPressABinToDuplicateDeleteOrMov')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span style={STYLES.colorPrimary}>•</span>
-                <span>{t('mobile.help.tapThe3dCubeIconToSeeYourLayoutInIs')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span style={STYLES.colorPrimary}>•</span>
-                <span>{t('mobile.help.withKeyboardMToMoveBinsRToResizeVFo')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span style={STYLES.colorPrimary}>•</span>
-                <span>{t('mobile.help.oversizedBinsAreAutomaticallySplitF')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span style={STYLES.colorPrimary}>•</span>
-                <span>{t('mobile.help.yourLayoutAutoSavesToYourBrowser')}</span>
-              </li>
-            </ul>
-          </section>
+            {/* Tips */}
+            <section>
+              <h3 className="mb-3" style={STYLES.sectionHeader}>
+                {t('mobile.help.tips')}
+              </h3>
+              <ul className="space-y-2 p-3 rounded-lg" style={STYLES.tipsList}>
+                <li className="flex items-start gap-2">
+                  <span style={STYLES.colorPrimary}>•</span>
+                  <span>{t('mobile.help.longPressABinToDuplicateDeleteOrMov')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span style={STYLES.colorPrimary}>•</span>
+                  <span>{t('mobile.help.tapThe3dCubeIconToSeeYourLayoutInIs')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span style={STYLES.colorPrimary}>•</span>
+                  <span>{t('mobile.help.withKeyboardMToMoveBinsRToResizeVFo')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span style={STYLES.colorPrimary}>•</span>
+                  <span>{t('mobile.help.oversizedBinsAreAutomaticallySplitF')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span style={STYLES.colorPrimary}>•</span>
+                  <span>{t('mobile.help.yourLayoutAutoSavesToYourBrowser')}</span>
+                </li>
+              </ul>
+            </section>
+          </div>
         </div>
       </div>
     </div>

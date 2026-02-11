@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { useUIStore } from '@/core/store/ui';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { createLayoutEntry, initializeLayoutLibrary } from '@/core/storage';
@@ -23,18 +25,18 @@ export function SharedLayoutBanner() {
   const t = useTranslation();
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
-  const {
-    sharedLayoutPreview,
-    sharedLayoutOriginalName,
-    clearSharedLayoutPreview,
-    setActiveLayer,
-    setActiveCategory,
-    clearSelection,
-  } = useUIStore(
+  const { sharedPreview, clearSharedLayoutPreview } = useSharedPreviewStore(
     useShallow((state) => ({
-      sharedLayoutPreview: state.sharedLayoutPreview,
-      sharedLayoutOriginalName: state.sharedLayoutOriginalName,
+      sharedPreview: state.sharedPreview,
       clearSharedLayoutPreview: state.clearSharedLayoutPreview,
+    }))
+  );
+
+  const sharedLayoutPreview = sharedPreview?.layout ?? null;
+  const sharedLayoutOriginalName = sharedPreview?.originalName ?? null;
+
+  const { setActiveLayer, setActiveCategory, clearSelection } = useSelectionStore(
+    useShallow((state) => ({
       setActiveLayer: state.setActiveLayer,
       setActiveCategory: state.setActiveCategory,
       clearSelection: state.clearSelection,
@@ -57,7 +59,7 @@ export function SharedLayoutBanner() {
 
   const clearHistory = useHistoryStore((state) => state.clear);
   const addToast = useToastStore((state) => state.addToast);
-  const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   // Check if in collaborative editing mode
   const { isCollaborative } = useCollabMode();

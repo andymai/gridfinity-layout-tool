@@ -53,14 +53,13 @@ const STYLE_CONSTRAINTS: Record<BinStyle, StyleConstraints> = {
  * Falls back to 'standard' constraints if the style is invalid.
  */
 export function getStyleConstraints(style: BinStyle): StyleConstraints {
-  return STYLE_CONSTRAINTS[style] ?? STYLE_CONSTRAINTS.standard;
+  return STYLE_CONSTRAINTS[style];
 }
 
 /**
  * Checks if a specific feature is disabled for a given style.
- * Falls back to 'standard' constraints if the style is invalid.
  */
 export function isFeatureDisabled(style: BinStyle, feature: ConstrainedFeature): boolean {
-  const constraints = STYLE_CONSTRAINTS[style] ?? STYLE_CONSTRAINTS.standard;
+  const constraints = STYLE_CONSTRAINTS[style];
   return constraints.disabledFeatures.includes(feature);
 }

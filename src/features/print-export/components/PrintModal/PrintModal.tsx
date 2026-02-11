@@ -197,15 +197,19 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
       <div
         className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in print-modal-overlay no-print"
         style={STYLES.overlay}
+        role="presentation"
         onClick={onClose}
       >
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
         <div
           className="max-w-5xl w-full mx-4 max-h-[90vh] flex flex-col animate-scale-in"
           style={STYLES.modal}
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
           role="dialog"
           aria-modal="true"
           aria-labelledby="print-modal-title"
+          tabIndex={-1}
         >
           {/* Header */}
           <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle print-modal-header">

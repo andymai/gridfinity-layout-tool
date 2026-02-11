@@ -29,7 +29,7 @@ export function useLinkedDesign(linkedDesignId: string | undefined): UseLinkedDe
   const registry = useCustomBins();
 
   return useMemo(() => {
-    const hasLink = linkedDesignId != null;
+    const hasLink = linkedDesignId !== undefined;
     const linkedDesign = resolveLinkedDesign(linkedDesignId, registry);
     const isStale = hasLink && !linkedDesignExists(linkedDesignId, registry);
 
