@@ -3,6 +3,8 @@
  *
  * Uses smart defaults with "Customize" inline expansion for magnet/screw
  * radius and depth parameters that most users won't need to change.
+ *
+ * Disabled reasons are computed by the constraint engine via useBaseSection.
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
@@ -29,11 +31,7 @@ export function BaseSection() {
           label="Magnet holes"
           checked={state.hasMagnet}
           onChange={handlers.toggleMagnet}
-          disabledReason={
-            state.hasHalfSockets
-              ? t('binDesigner.halfSocketsDisablesMagnetHoles')
-              : handlers.flatDisabledReason
-          }
+          disabledReason={handlers.magnetDisabledReason}
           valueSummary={`\u00f8${state.base.magnetDiameter}mm \u00d7 ${state.base.magnetDepth}mm deep`}
         >
           <SliderInput
@@ -60,11 +58,7 @@ export function BaseSection() {
           label="Screw holes"
           checked={state.hasScrew}
           onChange={handlers.toggleScrew}
-          disabledReason={
-            state.hasHalfSockets
-              ? t('binDesigner.halfSocketsDisablesScrewHoles')
-              : handlers.flatDisabledReason
-          }
+          disabledReason={handlers.screwDisabledReason}
           valueSummary={`\u00f8${state.base.screwDiameter}mm (M${state.base.screwDiameter})`}
         >
           <SliderInput
@@ -82,9 +76,7 @@ export function BaseSection() {
           label={t('binDesigner.flatFloor')}
           checked={state.isFlat}
           onChange={handlers.toggleFlat}
-          disabledReason={
-            state.hasHalfSockets ? t('binDesigner.halfSocketsDisablesFlatFloor') : undefined
-          }
+          disabledReason={handlers.flatDisabledReason}
         />
 
         <FeatureToggle

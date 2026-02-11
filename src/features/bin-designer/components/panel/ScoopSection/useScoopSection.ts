@@ -9,26 +9,22 @@ import {
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
+import { getFeatureStatus } from '@/shared/constraints';
 import type { SectionMeta } from '../types';
 
 export function useScoopSection() {
-  const { scoop, style, updateScoop, width, depth, height, wallThickness, base, compartments } =
-    useDesignerStore(
-      useShallow((s) => ({
-        scoop: s.params.scoop,
-        style: s.params.style,
-        updateScoop: s.updateScoop,
-        width: s.params.width,
-        depth: s.params.depth,
-        height: s.params.height,
-        wallThickness: s.params.wallThickness,
-        base: s.params.base,
-        compartments: s.params.compartments,
-      }))
-    );
+  const { scoop, updateScoop, params } = useDesignerStore(
+    useShallow((s) => ({
+      scoop: s.params.scoop,
+      updateScoop: s.updateScoop,
+      params: s.params,
+    }))
+  );
   const t = useTranslation();
 
-  const isUnavailable = style !== 'standard';
+  const { width, depth, height, wallThickness, base, compartments } = params;
+  const scoopStatus = getFeatureStatus(params, 'scoop');
+  const isUnavailable = !scoopStatus.available;
   const isAutoRadius = scoop.radius === 'auto';
   const manualRadius = typeof scoop.radius === 'number' ? scoop.radius : 10;
 
@@ -113,7 +109,7 @@ export function useScoopSection() {
     return isAutoRadius ? autoDisplayText : `${manualRadius}mm`;
   }, [scoop.enabled, isAutoRadius, autoDisplayText, manualRadius]);
 
-  const disabledReason = isUnavailable ? t('binDesigner.fingerScoopUnavailableSlotted') : undefined;
+  const disabledReason = scoopStatus.reason ? t(scoopStatus.reason) : undefined;
 
   const meta: SectionMeta = useMemo(
     () => ({

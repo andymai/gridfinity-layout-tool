@@ -3,23 +3,25 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
+import { getFeatureStatus } from '@/shared/constraints';
 import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
 import type { SectionMeta } from '../types';
 
 export function useLabelTabsSection() {
-  const { compartments, label, style, width, wallThickness, updateLabel } = useDesignerStore(
+  const { compartments, label, width, wallThickness, updateLabel, params } = useDesignerStore(
     useShallow((s) => ({
       compartments: s.params.compartments,
       label: s.params.label,
-      style: s.params.style,
       width: s.params.width,
       wallThickness: s.params.wallThickness,
       updateLabel: s.updateLabel,
+      params: s.params,
     }))
   );
   const t = useTranslation();
 
-  const isSlotted = style === 'slotted';
+  const labelStatus = getFeatureStatus(params, 'label');
+  const isUnavailable = !labelStatus.available;
 
   const toggleLabelTabs = useCallback(() => {
     updateLabel({ enabled: !label.enabled });
@@ -76,18 +78,18 @@ export function useLabelTabsSection() {
     return parts.join(' \u00b7 ');
   }, [label.enabled, label.support, label.width, label.alignment, t]);
 
-  const disabledReason = isSlotted ? t('binDesigner.labelTabsUnavailableSlotted') : undefined;
+  const disabledReason = labelStatus.reason ? t(labelStatus.reason) : undefined;
 
   const meta: SectionMeta = useMemo(
     () => ({
-      summary: isSlotted ? undefined : sectionSummary,
+      summary: isUnavailable ? undefined : sectionSummary,
       disabledReason,
     }),
-    [isSlotted, sectionSummary, disabledReason]
+    [isUnavailable, sectionSummary, disabledReason]
   );
 
   return {
-    state: { label, isSlotted, tabWidthMm },
+    state: { label, isUnavailable, tabWidthMm },
     handlers: { toggleLabelTabs, setTabSupport, setTabDepth, setTabWidth, setTabAlignment },
     meta,
     t,

@@ -114,6 +114,7 @@ export interface MeshResultResponse {
   readonly vertices: Float32Array;
   readonly normals: Float32Array;
   readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
   readonly triangleCount: number;
   readonly timingMs: number;
 }
@@ -163,5 +164,6 @@ export interface MeshData {
   readonly vertices: Float32Array;
   readonly normals: Float32Array;
   readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
   readonly triangleCount: number;
 }

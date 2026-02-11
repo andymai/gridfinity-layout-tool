@@ -5,7 +5,7 @@
  *
  * Features:
  * - Dynamic flat shading for large bins (GPU-computed normals)
- * - Edge lines for sketch-like appearance
+ * - Pre-computed BREP edge lines from worker (avoids main-thread EdgesGeometry)
  * - polygonOffset to prevent z-fighting with edge lines
  */
 
@@ -18,9 +18,6 @@ import { useShallow } from 'zustand/react/shallow';
 /** Edge line color (black for sketch look) */
 const EDGE_COLOR = '#000000';
 
-/** Angle threshold for edge detection (degrees). Lower = more edges visible. */
-const EDGE_THRESHOLD = 12;
-
 interface BinMeshProps {
   wireframe: boolean;
   /** Base color for the bin (user-selectable) */
@@ -29,11 +26,12 @@ interface BinMeshProps {
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
   const { invalidate } = useThree();
-  const { vertices, normals, indices } = useDesignerStore(
+  const { vertices, normals, indices, edgeVertices } = useDesignerStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
       normals: s.generation.mesh?.normals ?? null,
       indices: s.generation.mesh?.indices ?? null,
+      edgeVertices: s.generation.mesh?.edgeVertices ?? null,
     }))
   );
 
@@ -60,11 +58,13 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     return geo;
   }, [vertices, normals, indices, hasPrecomputedNormals]);
 
-  // Create edge geometry for sketch-like appearance
+  // Create edge geometry from pre-computed BREP topology edges (computed in worker)
   const edgesGeometry = useMemo(() => {
-    if (!geometry) return null;
-    return new THREE.EdgesGeometry(geometry, EDGE_THRESHOLD);
-  }, [geometry]);
+    if (!edgeVertices || edgeVertices.length === 0) return null;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+    return geo;
+  }, [edgeVertices]);
 
   // Dispose old geometry on unmount or change
   useEffect(() => {
@@ -103,7 +103,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           polygonOffsetUnits={1}
         />
       </mesh>
-      {/* Edge lines for sketch-like appearance */}
+      {/* Edge lines from BREP topology (pre-computed in worker) */}
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
           <lineBasicMaterial color={EDGE_COLOR} depthTest={true} />

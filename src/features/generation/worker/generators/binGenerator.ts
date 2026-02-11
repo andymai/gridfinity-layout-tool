@@ -20,6 +20,7 @@ import {
   drawPolysides,
   unwrap,
   fuse,
+  fuseAll,
   cut,
   cutAll,
   clone,
@@ -27,6 +28,7 @@ import {
   rotate,
   intersect,
   mesh,
+  meshEdges,
   exportSTL,
   exportSTEP,
 } from 'brepjs';
@@ -64,6 +66,8 @@ import {
   setPatternTemplateCache,
   getLastSolid,
   setLastSolid,
+  getFeatureCache,
+  setFeatureCache,
 } from './shapeCache';
 import { buildSlotCuts } from './slotBuilder';
 import { getPatternDescriptors } from './wallPatterns';
@@ -301,80 +305,80 @@ export function generateBin(
     const hasLip = params.base.stackingLip;
     const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
 
+    // Collect feature tool shapes, then batch-apply boolean ops.
+    // Fuses are commutative; all cuts operate on the result of all fuses.
+    const fuseTargets: Shape3D[] = [];
+    const cutTargets: Shape3D[] = [];
+
+    // ── Build feature tools (with per-feature caching) ──────────────────────
+
     if (!isSlotted) {
       checkCancelled(signal);
-      const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
-      if (compartmentWalls) {
-        try {
-          bin = unwrap(fuse(bin, compartmentWalls));
-        } catch (e) {
-          if (e instanceof DOMException && e.name === 'AbortError') throw e;
+      const cwKey = `${shellKey}|${innerW}|${innerD}|${interiorHeight}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.thickness}|${params.compartments.cells.join(',')}`;
+      let compartmentWalls = getFeatureCache('compartmentWalls', cwKey);
+      if (!compartmentWalls) {
+        compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
+        if (compartmentWalls) {
+          setFeatureCache('compartmentWalls', cwKey, compartmentWalls);
         }
       }
+      if (compartmentWalls) fuseTargets.push(compartmentWalls);
     }
 
     checkCancelled(signal);
-    const insertCuts = buildInsertCuts(params);
-    if (insertCuts) {
-      try {
-        bin = unwrap(cut(bin, insertCuts));
-      } catch (e) {
-        if (e instanceof DOMException && e.name === 'AbortError') throw e;
+    const icKey = `${shellKey}|${JSON.stringify(params.inserts)}`;
+    let insertCuts = getFeatureCache('insertCuts', icKey);
+    if (!insertCuts) {
+      insertCuts = buildInsertCuts(params);
+      if (insertCuts) {
+        setFeatureCache('insertCuts', icKey, insertCuts);
       }
     }
+    if (insertCuts) cutTargets.push(insertCuts);
 
     if (isSlotted) {
       checkCancelled(signal);
-      // Wall slots use interiorHeight (below lip taper zone).
-      // Lip cutouts are wider rectangles that cut through the full lip profile
-      // so dividers can slide in from the top.
       const lipInfo = hasLip
         ? { wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
         : undefined;
-      const slotCuts = buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo);
-      if (slotCuts) {
-        try {
-          bin = unwrap(cut(bin, slotCuts));
-        } catch (e) {
-          if (e instanceof DOMException && e.name === 'AbortError') throw e;
+      const scKey = `${shellKey}|${JSON.stringify(params.slotConfig)}|${innerW}|${innerD}|${interiorHeight}|${lipInfo ? `${lipInfo.wallHeight}|${lipInfo.lipHeight}|${lipInfo.lipTaperWidth}` : 'none'}`;
+      let slotCuts = getFeatureCache('slotCuts', scKey);
+      if (!slotCuts) {
+        slotCuts = buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo);
+        if (slotCuts) {
+          setFeatureCache('slotCuts', scKey, slotCuts);
         }
       }
+      if (slotCuts) cutTargets.push(slotCuts);
     }
 
     if (!isSlotted) {
       checkCancelled(signal);
-      const labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
-      if (labelTabs) {
-        try {
-          bin = unwrap(fuse(bin, labelTabs));
-        } catch (e) {
-          if (e instanceof DOMException && e.name === 'AbortError') throw e;
+      const ltKey = `${shellKey}|${JSON.stringify(params.label)}|${innerW}|${innerD}|${interiorHeight}|${wallThickness}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
+      let labelTabs = getFeatureCache('labelTabs', ltKey);
+      if (!labelTabs) {
+        labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
+        if (labelTabs) {
+          setFeatureCache('labelTabs', ltKey, labelTabs);
         }
       }
+      if (labelTabs) fuseTargets.push(labelTabs);
     }
 
-    // Finger scoops: concave ramp fused at front wall of compartments
     if (!isSlotted) {
       checkCancelled(signal);
-      const scoopRamps = buildScoopRamps(params, innerW, innerD, wallHeight, wallThickness);
-      if (scoopRamps) {
-        try {
-          bin = unwrap(fuse(bin, scoopRamps));
-        } catch (e) {
-          if (e instanceof DOMException && e.name === 'AbortError') throw e;
+      const srKey = `${shellKey}|${JSON.stringify(params.scoop)}|${params.style}|${innerW}|${innerD}|${wallHeight}|${wallThickness}|${hasLip}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
+      let scoopRamps = getFeatureCache('scoopRamps', srKey);
+      if (!scoopRamps) {
+        scoopRamps = buildScoopRamps(params, innerW, innerD, wallHeight, wallThickness);
+        if (scoopRamps) {
+          setFeatureCache('scoopRamps', srKey, scoopRamps);
         }
       }
+      if (scoopRamps) fuseTargets.push(scoopRamps);
     }
 
-    // Wall patterns: Pattern cutouts -- optimized with template cloning + single cutAll.
-    //
-    // Performance strategy:
-    // 1. Pattern calculators adapt size based on bin height (fewer cuts for large bins)
-    // 2. Build ONE shape template, clone() for each center position
-    // 3. Single cutAll() groups tools via TopoDS_Compound + one BRepAlgoAPI_Cut
-    // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
-    // 5. Cache the shape template between generations
-    // Runtime guard: wallPattern may be missing from old saved data
+    // Wall patterns: template cloning + cutAll
     if (params.wallPattern.enabled) {
       const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
       if (patternResult) {
@@ -385,7 +389,6 @@ export function generateBin(
           const patternType = calculator.getPatternType();
           const shapeRadius = calculator.getShapeRadius();
 
-          // Build or reuse cached shape template
           const templateKey = `${patternType}|${shapeRadius}|${cutDepth}`;
           let shapeTemplate: Shape3D;
 
@@ -393,13 +396,10 @@ export function generateBin(
           if (cachedTemplate) {
             shapeTemplate = cachedTemplate;
           } else {
-            // Create polygonal shape based on pattern type (honeycomb = 6 sides)
             const sides = calculator.getSidesCount();
             shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
             setPatternTemplateCache(templateKey, shapeTemplate);
           }
-
-          const allPatternTools: Shape3D[] = [];
 
           for (const wall of wallDescriptors) {
             for (const center of wall.centers) {
@@ -410,19 +410,51 @@ export function generateBin(
                 shape = rotate(shape, wall.zRotation, { at: [0, 0, 0], axis: [0, 0, 1] });
               }
               shape = translate(shape, [wall.translateX, wall.translateY, wall.translateZ]);
-              allPatternTools.push(shape);
+              cutTargets.push(shape);
             }
-          }
-
-          if (allPatternTools.length > 0) {
-            checkCancelled(signal);
-            // Preview: skip SimplifyResult -- shape is meshed and discarded
-            bin = unwrap(
-              cutAll(bin, allPatternTools, { simplify: forExport, signal } as BooleanOpts)
-            );
           }
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
+        }
+      }
+    }
+
+    // ── Batch boolean application ───────────────────────────────────────────
+    // Fuse all additive features in one operation, then cut all subtractive
+    // features. Fallback to sequential if batched op fails (OCCT edge case).
+
+    checkCancelled(signal);
+    if (fuseTargets.length > 0) {
+      try {
+        bin = unwrap(fuseAll([bin, ...fuseTargets]));
+      } catch (batchError) {
+        if (batchError instanceof DOMException && batchError.name === 'AbortError')
+          throw batchError;
+        // Fallback: apply fuses sequentially
+        for (const target of fuseTargets) {
+          try {
+            bin = unwrap(fuse(bin, target));
+          } catch (e) {
+            if (e instanceof DOMException && e.name === 'AbortError') throw e;
+          }
+        }
+      }
+    }
+
+    checkCancelled(signal);
+    if (cutTargets.length > 0) {
+      try {
+        bin = unwrap(cutAll(bin, cutTargets, { simplify: forExport, signal } as BooleanOpts));
+      } catch (batchError) {
+        if (batchError instanceof DOMException && batchError.name === 'AbortError')
+          throw batchError;
+        // Fallback: apply cuts sequentially
+        for (const target of cutTargets) {
+          try {
+            bin = unwrap(cut(bin, target));
+          } catch (e) {
+            if (e instanceof DOMException && e.name === 'AbortError') throw e;
+          }
         }
       }
     }
@@ -472,9 +504,13 @@ export function generateBin(
 
   const shapeMesh = mesh(bin, { tolerance, angularTolerance });
 
+  // Extract BREP topology edges in the worker (avoids main-thread EdgesGeometry)
+  const edgeMesh = meshEdges(bin, { tolerance, angularTolerance });
+  const edgeVertices = new Float32Array(edgeMesh.lines);
+
   onProgress?.('merge', 1.0);
   // Skip normals for large bin preview (GPU flat shading is faster)
-  return toIndexedMeshData(shapeMesh, !useHighQuality);
+  return toIndexedMeshData(shapeMesh, !useHighQuality, edgeVertices);
 }
 
 // ─── Split Export ────────────────────────────────────────────────────────────

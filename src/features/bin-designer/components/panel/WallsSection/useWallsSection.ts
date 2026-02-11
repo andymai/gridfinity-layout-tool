@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
+import { getFeatureStatus } from '@/shared/constraints';
 import type { WallPatternType } from '@/features/bin-designer/types';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 import type { SectionMeta } from '../types';
@@ -42,26 +43,21 @@ export function useWallsSection() {
     [updateWallPattern]
   );
 
-  // Slot detection — patterns cannot be applied to slotted walls
-  const allWallsSlotted = useMemo(() => {
-    if (params.style !== 'slotted') return false;
-    return params.slotConfig.x.enabled && params.slotConfig.y.enabled;
-  }, [params.style, params.slotConfig.x.enabled, params.slotConfig.y.enabled]);
+  // Constraint-driven pattern availability
+  const patternStatus = getFeatureStatus(params, 'wallPattern');
+  const patternDisabledReason = patternStatus.reason ? t(patternStatus.reason) : undefined;
 
+  // Partial note for UI hint when some (but not all) walls are slotted
   const someWallsSlotted = useMemo(() => {
     if (params.style !== 'slotted') return false;
     return params.slotConfig.x.enabled || params.slotConfig.y.enabled;
   }, [params.style, params.slotConfig.x.enabled, params.slotConfig.y.enabled]);
 
-  const patternDisabledReason = useMemo(() => {
-    if (allWallsSlotted) return t('binDesigner.walls.pattern.allSlotted');
-    return undefined;
-  }, [allWallsSlotted, t]);
-
   const patternPartialNote = useMemo(() => {
-    if (someWallsSlotted && !allWallsSlotted) return t('binDesigner.walls.pattern.someSlotted');
+    if (someWallsSlotted && patternStatus.available)
+      return t('binDesigner.walls.pattern.someSlotted');
     return undefined;
-  }, [someWallsSlotted, allWallsSlotted, t]);
+  }, [someWallsSlotted, patternStatus.available, t]);
 
   const meta: SectionMeta = useMemo(() => ({ summary: `${wallThickness}mm` }), [wallThickness]);
 
@@ -71,7 +67,7 @@ export function useWallsSection() {
       options,
       patternEnabled: wallPattern.enabled,
       pattern: wallPattern.pattern,
-      allWallsSlotted,
+      patternDisabled: !patternStatus.available,
       patternDisabledReason,
       patternPartialNote,
     },

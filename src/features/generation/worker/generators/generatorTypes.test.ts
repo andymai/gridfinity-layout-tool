@@ -137,6 +137,69 @@ describe('toIndexedMeshData', () => {
     expect(result.normals.length).toBe(0);
     expect(result.vertices.length).toBe(9);
   });
+
+  it('reuses Float32Array inputs without copying', () => {
+    const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    const triangles = new Uint32Array([0, 1, 2]);
+
+    const result = toIndexedMeshData({ vertices, normals, triangles });
+
+    expect(result.vertices).toBe(vertices);
+    expect(result.normals).toBe(normals);
+    expect(result.indices).toBe(triangles);
+  });
+
+  it('copies plain arrays to typed arrays', () => {
+    const meshInput = {
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      triangles: [0, 1, 2],
+    };
+
+    const result = toIndexedMeshData(meshInput);
+
+    expect(result.vertices).toBeInstanceOf(Float32Array);
+    expect(result.normals).toBeInstanceOf(Float32Array);
+    expect(result.indices).toBeInstanceOf(Uint32Array);
+    expect(result.triangleCount).toBe(1);
+  });
+
+  it('returns empty edgeVertices when none provided', () => {
+    const meshInput = {
+      vertices: new Float32Array([0, 0, 0]),
+      normals: new Float32Array([0, 0, 1]),
+      triangles: new Uint32Array([0]),
+    };
+
+    const result = toIndexedMeshData(meshInput);
+    expect(result.edgeVertices).toBeInstanceOf(Float32Array);
+    expect(result.edgeVertices.length).toBe(0);
+  });
+
+  it('passes through Float32Array edgeVertices without copying', () => {
+    const meshInput = {
+      vertices: new Float32Array([0, 0, 0]),
+      normals: new Float32Array([0, 0, 1]),
+      triangles: new Uint32Array([0]),
+    };
+    const edges = new Float32Array([0, 0, 0, 1, 1, 1]);
+
+    const result = toIndexedMeshData(meshInput, false, edges);
+    expect(result.edgeVertices).toBe(edges);
+  });
+
+  it('converts plain array edgeVertices to Float32Array', () => {
+    const meshInput = {
+      vertices: new Float32Array([0, 0, 0]),
+      normals: new Float32Array([0, 0, 1]),
+      triangles: new Uint32Array([0]),
+    };
+
+    const result = toIndexedMeshData(meshInput, false, [0, 0, 0, 1, 1, 1]);
+    expect(result.edgeVertices).toBeInstanceOf(Float32Array);
+    expect(result.edgeVertices.length).toBe(6);
+  });
 });
 
 describe('constants', () => {

@@ -91,6 +91,7 @@ export function restoreHistoryEntry(state: Draft<DesignerState>, entry: HistoryE
       vertices: entry.mesh.vertices,
       normals: entry.mesh.normals,
       indices: entry.mesh.indices,
+      edgeVertices: entry.mesh.edgeVertices,
       error: null,
       timingMs: 0,
     };

@@ -1,5 +1,40 @@
 # Changelog
 
+## [3.6.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.3...gridfinity-layout-tool-v3.6.0) (2026-02-11)
+
+
+### Features
+
+* add constraint resolution engine for bin designer ([#693](https://github.com/andymai/gridfinity-layout-tool/issues/693)) ([053273e](https://github.com/andymai/gridfinity-layout-tool/commit/053273e59fc27ef4a93737bd7073447d49fcf1d0))
+
+## [3.5.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.2...gridfinity-layout-tool-v3.5.3) (2026-02-11)
+
+
+### Bug Fixes
+
+* reset floating inspector position lock on hide/selection change ([#691](https://github.com/andymai/gridfinity-layout-tool/issues/691)) ([da46a36](https://github.com/andymai/gridfinity-layout-tool/commit/da46a36fdb6c15dfe7f62a9e06f103c694eb39a4))
+
+## [3.5.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.1...gridfinity-layout-tool-v3.5.2) (2026-02-11)
+
+
+### Bug Fixes
+
+* prevent floating inspector panel jitter during slider interaction ([#689](https://github.com/andymai/gridfinity-layout-tool/issues/689)) ([6d7d711](https://github.com/andymai/gridfinity-layout-tool/commit/6d7d7111f799471736b4a43b68eaf6833ea02a15))
+
+## [3.5.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.0...gridfinity-layout-tool-v3.5.1) (2026-02-11)
+
+
+### Performance
+
+* optimize bin designer generation pipeline ([#686](https://github.com/andymai/gridfinity-layout-tool/issues/686)) ([fc3bfb8](https://github.com/andymai/gridfinity-layout-tool/commit/fc3bfb85513e640cac9117d339e1e5c4e093afe1))
+
+## [3.5.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.4.1...gridfinity-layout-tool-v3.5.0) (2026-02-11)
+
+
+### Features
+
+* add multi-format export (STL / STEP / 3MF) to bin designer ([#683](https://github.com/andymai/gridfinity-layout-tool/issues/683)) ([7f62eae](https://github.com/andymai/gridfinity-layout-tool/commit/7f62eae34f85311bc6f84955b4020344e6596c16))
+
 ## [3.4.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.4.0...gridfinity-layout-tool-v3.4.1) (2026-02-11)
 
 

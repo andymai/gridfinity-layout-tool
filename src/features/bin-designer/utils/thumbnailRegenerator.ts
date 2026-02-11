@@ -20,9 +20,6 @@ const THUMBNAIL_SIZE = 384;
 /** Default preview color matching PreviewCanvas default */
 const DEFAULT_COLOR = '#d4d8dc';
 
-/** Edge detection angle threshold matching BinMesh */
-const EDGE_THRESHOLD = 12;
-
 /**
  * Generate a thumbnail for a bin design using an offscreen Three.js renderer.
  *
@@ -48,7 +45,7 @@ export async function regenerateThumbnail(
     const result = await bridge.generateImmediate(params);
     if (signal?.aborted) return null;
 
-    const { vertices, normals } = result.mesh;
+    const { vertices, normals, edgeVertices } = result.mesh;
     if (vertices.length === 0) return null;
 
     // Build geometry
@@ -60,13 +57,17 @@ export async function regenerateThumbnail(
       geometry.computeVertexNormals();
     }
 
-    // Build edge geometry for sketch-like appearance
-    const edgesGeometry = new THREE.EdgesGeometry(geometry, EDGE_THRESHOLD);
+    // Build edge geometry from pre-computed BREP edges (from worker)
+    let edgesGeometry: THREE.BufferGeometry | null = null;
+    if (edgeVertices.length > 0) {
+      edgesGeometry = new THREE.BufferGeometry();
+      edgesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+    }
 
     // Check abort before expensive scene setup and rendering
     if (signal?.aborted) {
       geometry.dispose();
-      edgesGeometry.dispose();
+      edgesGeometry?.dispose();
       return null;
     }
 
@@ -106,12 +107,14 @@ export async function regenerateThumbnail(
     mesh.position.set(0, 0, 0.1);
     scene.add(mesh);
 
-    // Edge lines
+    // Edge lines from pre-computed BREP topology
     const edgeMaterial = new THREE.LineBasicMaterial({ color: '#000000' });
-    const edges = new THREE.LineSegments(edgesGeometry, edgeMaterial);
-    edges.position.set(0, 0, 0.1);
-    edges.renderOrder = 1;
-    scene.add(edges);
+    if (edgesGeometry) {
+      const edges = new THREE.LineSegments(edgesGeometry, edgeMaterial);
+      edges.position.set(0, 0, 0.1);
+      edges.renderOrder = 1;
+      scene.add(edges);
+    }
 
     // Camera setup
     const fov = 45;
@@ -149,7 +152,7 @@ export async function regenerateThumbnail(
 
     // Clean up Three.js objects
     geometry.dispose();
-    edgesGeometry.dispose();
+    edgesGeometry?.dispose();
     material.dispose();
     edgeMaterial.dispose();
     scene.clear();
