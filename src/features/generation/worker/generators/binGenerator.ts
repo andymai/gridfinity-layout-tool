@@ -1,11 +1,12 @@
 /**
- * Gridfinity bin generator using brepjs (OpenCascade WASM).
+ * Gridfinity bin generator orchestrator using brepjs (OpenCascade WASM).
  *
- * Architecture:
- * 1. buildBaseSocket() — Per-cell segmented sockets (full 42mm + half 21mm cells)
- * 2. buildBinBox() — Rounded rect extruded + shelled (walls + floor)
- * 3. buildTopShape() — Swept stacking lip profile around perimeter
- * 4. Features: dividers, inserts, magnet/screw holes via booleans
+ * Composes the full generation pipeline from focused sub-modules:
+ * - socketBuilder: per-cell segmented sockets (full 42mm + half 21mm cells)
+ * - boxBuilder: rounded rect extruded + shelled (walls + floor) + stacking lip
+ * - featureBuilder: dividers, inserts, cutouts, label tabs, scoop ramps
+ * - shapeCache: memoization of expensive intermediate shapes
+ * - generatorTypes: shared types, constants, and utilities
  *
  * Coordinate system:
  * - Z=0: bin floor level (where box meets socket)
@@ -15,1345 +16,82 @@
  */
 
 import {
-  draw,
-  drawRoundedRectangle,
-  drawCircle,
-  drawEllipse,
   drawRectangle,
   drawPolysides,
   unwrap,
-  fuseAll,
+  fuse,
+  cut,
   cutAll,
   clone,
   translate,
-  fuse,
-  cut,
-  shell,
-  fillet,
+  rotate,
+  intersect,
   mesh,
   exportSTL,
   exportSTEP,
-  rotate,
-  intersect,
-  faceFinder,
-  edgeFinder,
-  getBounds,
 } from 'brepjs';
-import type {
-  Shape3D,
-  Plane,
-  PlaneName,
-  Vec3,
-  Sketch,
-  SketchInterface,
-  Drawing,
-  BooleanOptions,
-} from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
+
+// Sub-module imports
+import {
+  SIZE,
+  CLEARANCE,
+  SOCKET_HEIGHT,
+  LIP_SMALL_TAPER,
+  LIP_HEIGHT,
+  LIP_TAPER_WIDTH,
+  checkCancelled,
+  toIndexedMeshData,
+  sketch,
+} from './generatorTypes';
+import type { ProgressFn, BooleanOpts } from './generatorTypes';
+import { buildBaseSocket } from './socketBuilder';
+import { buildBinBox, buildTopShape } from './boxBuilder';
+import {
+  buildCompartmentWalls,
+  buildInsertCuts,
+  buildCutoutCuts,
+  buildLabelTabs,
+  buildScoopRamps,
+} from './featureBuilder';
+import {
+  getShellCache,
+  setShellCache,
+  getPatternTemplateCache,
+  setPatternTemplateCache,
+  getLastSolid,
+  setLastSolid,
+} from './shapeCache';
 import { buildSlotCuts } from './slotBuilder';
 import { getPatternDescriptors } from './wallPatterns';
-import {
-  resolveScoopRadius,
-  computeLipOffset,
-  computeInteriorHeight,
-} from '@/shared/utils/scoopCalculations';
 
-/** Progress callback for reporting generation stages */
-export type ProgressFn = (stage: string, progress: number) => void;
+// ─── Re-exports (public API) ─────────────────────────────────────────────────
 
-/**
- * Sketch a drawing on a plane, narrowing to SketchInterface.
- * All our drawings are single closed wires, so SketchInterface is always the
- * correct runtime type. This eliminates repeated `as SketchInterface` casts.
- */
-function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
-  return drawing.sketchOnPlane(plane, origin) as SketchInterface;
-}
-
-/** Throw if the AbortSignal has been triggered (mid-operation cancellation). */
-function checkCancelled(signal?: AbortSignal): void {
-  if (signal?.aborted) throw new DOMException('Generation cancelled', 'AbortError');
-}
-
-/**
- * Boolean operation options including AbortSignal for cancellation.
- */
-type BooleanOpts = BooleanOptions;
-
-// ─── Gridfinity Socket Constants ──────────────────────────────────────────────
-
-const SIZE = GRIDFINITY.GRID_SIZE;
-const CLEARANCE = GRIDFINITY.TOLERANCE;
-const CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
-const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
-const SOCKET_SMALL_TAPER = GRIDFINITY.SOCKET_SMALL_TAPER;
-const SOCKET_BIG_TAPER = GRIDFINITY.SOCKET_BIG_TAPER;
-const SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER;
-const SOCKET_TAPER_WIDTH = SOCKET_SMALL_TAPER + SOCKET_BIG_TAPER;
-const TOP_FILLET = GRIDFINITY.TOP_FILLET;
-
-// ─── Stacking Lip Constants (per spec v5) ─────────────────────────────────────
-
-const LIP_SMALL_TAPER = GRIDFINITY.LIP_SMALL_TAPER; // 0.7mm bottom chamfer
-const LIP_VERTICAL_PART = GRIDFINITY.LIP_VERTICAL_PART; // 1.8mm vertical
-const LIP_BIG_TAPER = GRIDFINITY.LIP_BIG_TAPER; // 1.9mm top chamfer
-const LIP_HEIGHT = LIP_SMALL_TAPER + LIP_VERTICAL_PART + LIP_BIG_TAPER; // 4.4mm total
-const LIP_TAPER_WIDTH = LIP_SMALL_TAPER + LIP_BIG_TAPER; // 2.6mm horizontal inset
-
-// ─── Socket Builder ───────────────────────────────────────────────────────────
-
-/**
- * Decompose a grid dimension (in units) into an array of cell sizes (in units).
- * Full cells are 1.0 unit; a trailing half-cell is 0.5 unit.
- *
- * Examples:
- *   2.0 → [1, 1]
- *   1.5 → [1, 0.5]
- *   0.5 → [0.5]
- *   3.0 → [1, 1, 1]
- */
-function decomposeCells(gridUnits: number): number[] {
-  const fullCells = Math.floor(gridUnits);
-  const hasHalf = gridUnits - fullCells >= 0.5 - 1e-10;
-  const cells: number[] = Array<number>(fullCells).fill(1);
-  if (hasHalf) cells.push(0.5);
-  return cells;
-}
-
-/**
- * Decompose a grid dimension into all 0.5-unit cells (half sockets mode).
- * Each 1-unit cell becomes two 0.5-unit cells; trailing half-cells stay 0.5.
- *
- * Examples:
- *   2.0 → [0.5, 0.5, 0.5, 0.5]
- *   1.5 → [0.5, 0.5, 0.5]
- *   0.5 → [0.5]
- *   1.0 → [0.5, 0.5]
- */
-function decomposeHalfCells(gridUnits: number): number[] {
-  const totalHalves = Math.round(gridUnits * 2);
-  return Array<number>(totalHalves).fill(0.5);
-}
-
-/** Cell position info for iteration */
-interface CellInfo {
-  /** Cell size in grid units (1 or 0.5) */
-  readonly widthUnits: number;
-  readonly depthUnits: number;
-  /** Cell center position in mm (relative to bin center) */
-  readonly centerX: number;
-  readonly centerY: number;
-}
-
-/**
- * Iterate over all cells in a grid, calling the callback with cell info.
- * Encapsulates the common pattern of nested cell iteration with position tracking.
- *
- * When `halfSockets` is true, every cell is decomposed into 0.5-unit sub-cells,
- * so a 1×1 bin yields a 2×2 grid of 0.5×0.5 sockets.
- */
-function forEachCell(
-  gridW: number,
-  gridD: number,
-  callback: (cell: CellInfo) => void,
-  halfSockets = false
-): void {
-  const decompose = halfSockets ? decomposeHalfCells : decomposeCells;
-  const cellsW = decompose(gridW);
-  const cellsD = decompose(gridD);
-  const totalW_mm = gridW * SIZE;
-  const totalD_mm = gridD * SIZE;
-
-  let xOffset = 0;
-  for (const cellW_units of cellsW) {
-    const centerX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
-    let yOffset = 0;
-
-    for (const cellD_units of cellsD) {
-      const centerY = yOffset + (cellD_units * SIZE) / 2 - totalD_mm / 2;
-
-      callback({
-        widthUnits: cellW_units,
-        depthUnits: cellD_units,
-        centerX,
-        centerY,
-      });
-
-      yOffset += cellD_units * SIZE;
-    }
-    xOffset += cellW_units * SIZE;
-  }
-}
-
-/**
- * Build a single socket cell solid at the origin using multi-section loft.
- *
- * The socket is a frustum-like solid whose cross-section shrinks with depth,
- * following the standard Gridfinity tapered profile. Built as a ruled loft
- * through 5 sections corresponding to the profile breakpoints:
- *   Z=0:     outer boundary (top face, mates with bin body)
- *   Z=-0.25: same as top (vertical clearance step)
- *   Z=-2.4:  inset by 2.15mm (end of big taper)
- *   Z=-4.2:  same inset (vertical wall section)
- *   Z=-5.0:  inset by 2.95mm (end of small taper, bottom face)
- *
- * This approach avoids EdgeFinder limitations with non-square cells.
- *
- * @param cellW_mm Physical width of this cell in mm (after clearance)
- * @param cellD_mm Physical depth of this cell in mm (after clearance)
- */
-function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
-  // Clamp corner radius to fit within cell dimensions
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
-
-  // Profile insets from outer boundary at each Z breakpoint
-  // (derived from socketProfile after translate(CLEARANCE/2, 0))
-  const INSET_TOP = 0;
-  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
-
-  // Z positions of profile breakpoints
-  const Z1 = 0;
-  const Z2 = -(CLEARANCE / 2); // -0.25
-  const Z3 = -SOCKET_BIG_TAPER; // -2.4
-  const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART); // -4.2
-  const Z5 = -SOCKET_HEIGHT; // -5.0
-
-  // Helper to create a rounded rect sketch at a given Z with a given inset
-  const sectionAt = (z: number, inset: number): Sketch => {
-    const w = cellW_mm - 2 * inset;
-    const d = cellD_mm - 2 * inset;
-    const r = Math.max(cornerR - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
-  };
-
-  // Build 5 cross-sections matching the socket profile breakpoints
-  const s1 = sectionAt(Z1, INSET_TOP);
-  const s2 = sectionAt(Z2, INSET_TOP);
-  const s3 = sectionAt(Z3, INSET_MID);
-  const s4 = sectionAt(Z4, INSET_MID);
-  const s5 = sectionAt(Z5, INSET_BOT);
-
-  // Ruled loft through all sections — straight-line connections between
-  // corresponding points, matching the angular profile exactly
-  return s1.loftWith([s2, s3, s4, s5], { ruled: true });
-}
-
-/**
- * Build a simplified 3-section socket cell for preview rendering.
- *
- * Uses only 3 sections (top, mid, bottom) instead of the full 5-section
- * profile. Visually similar but generates fewer triangles for faster
- * preview updates. Export mode uses buildSingleCellSocket for full fidelity.
- */
-function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
-
-  const INSET_TOP = 0;
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
-
-  const Z1 = 0;
-  const Z3 = -SOCKET_HEIGHT;
-
-  const sectionAt = (z: number, inset: number): Sketch => {
-    const w = cellW_mm - 2 * inset;
-    const d = cellD_mm - 2 * inset;
-    const r = Math.max(cornerR - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
-  };
-
-  const s1 = sectionAt(Z1, INSET_TOP);
-  const s3 = sectionAt(Z3, INSET_BOT);
-
-  return s1.loftWith([s3], { ruled: true });
-}
-
-/**
- * Build the segmented base socket grid for the bin.
- *
- * Decomposes the bin footprint into per-cell sockets (full 42mm or half 21mm cells),
- * each with the standard Gridfinity tapered profile. This ensures proper baseplate
- * interface for any half-bin dimension.
- *
- * Magnet/screw holes are placed only in full-size (1.0 × 1.0 unit) cells where
- * they physically fit.
- *
- * @param forExport If true, uses full 5-section socket profile. Preview uses 3-section.
- */
-function buildBaseSocket(
-  gridW: number,
-  gridD: number,
-  withMagnet: boolean,
-  withScrew: boolean,
-  magnetRadius: number,
-  magnetDepth: number,
-  screwRadius: number,
-  forExport = false,
-  halfSockets = false
-): Shape3D {
-  // Check socket cache — skip entire build if params haven't changed
-  const key = socketCacheKey(
-    gridW,
-    gridD,
-    withMagnet,
-    withScrew,
-    magnetRadius,
-    magnetDepth,
-    screwRadius,
-    forExport,
-    halfSockets
-  );
-  if (socketCache?.key === key) {
-    return clone(socketCache.shape);
-  }
-
-  // Build and position each cell socket
-  const cellSockets: Shape3D[] = [];
-
-  forEachCell(
-    gridW,
-    gridD,
-    (cell) => {
-      const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
-      const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
-      // Use simplified 3-section socket for preview, full 5-section for export
-      const cellSocket = translate(
-        forExport
-          ? buildSingleCellSocket(cellW_mm, cellD_mm)
-          : buildSimplifiedCellSocket(cellW_mm, cellD_mm),
-        [cell.centerX, cell.centerY, 0]
-      );
-      cellSockets.push(cellSocket);
-    },
-    halfSockets
-  );
-
-  if (cellSockets.length === 0) {
-    throw new Error('Invalid grid dimensions: at least one cell required');
-  }
-  let result: Shape3D = unwrap(fuseAll(cellSockets, { optimisation: 'commonFace' }));
-
-  // Cut magnet/screw holes only in full-size (1.0 × 1.0 unit) cells
-  if (withScrew || withMagnet) {
-    const HOLE_OFFSET = 13; // mm from cell center to hole center
-
-    const magnetCutout = withMagnet ? sketch(drawCircle(magnetRadius)).extrude(magnetDepth) : null;
-    const screwCutout = withScrew ? sketch(drawCircle(screwRadius)).extrude(SOCKET_HEIGHT) : null;
-
-    const cutout: Shape3D =
-      magnetCutout && screwCutout
-        ? unwrap(fuse(magnetCutout, screwCutout))
-        : ((magnetCutout || screwCutout) as Shape3D);
-
-    // 4 holes per full cell at ±HOLE_OFFSET from center (hoisted to avoid repeated allocation)
-    const holeOffsets: ReadonlyArray<readonly [number, number]> = [
-      [-HOLE_OFFSET, -HOLE_OFFSET],
-      [-HOLE_OFFSET, HOLE_OFFSET],
-      [HOLE_OFFSET, HOLE_OFFSET],
-      [HOLE_OFFSET, -HOLE_OFFSET],
-    ];
-
-    const holeTools: Shape3D[] = [];
-    forEachCell(gridW, gridD, (cell) => {
-      // Only cut holes in full-size cells
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
-
-      for (const [dx, dy] of holeOffsets) {
-        holeTools.push(
-          translate(clone(cutout), [cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
-        );
-      }
-    });
-
-    if (holeTools.length > 0) {
-      result = unwrap(cutAll(result, holeTools));
-    }
-  }
-
-  socketCache = { key, shape: result };
-  return clone(result);
-}
-
-// ─── Box Body Builder ─────────────────────────────────────────────────────────
-
-/**
- * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
- * The box starts at Z=0 (socket interface) and goes up to wallHeight.
- * Shell removes the top face, leaving walls + solid floor.
- *
- * @param cutoutTopOffset - For solid mode: lowers the interior fill by this amount (mm)
- */
-function buildBinBox(
-  gridW: number,
-  gridD: number,
-  wallHeight: number,
-  wallThickness: number,
-  solid: boolean,
-  cutoutTopOffset: number = 0
-): Shape3D {
-  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}|${solid}|${cutoutTopOffset}`;
-  if (boxCache?.key === boxKey) {
-    return clone(boxCache.shape);
-  }
-
-  const outerW = gridW * SIZE - CLEARANCE;
-  const outerD = gridD * SIZE - CLEARANCE;
-
-  const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
-
-  // Solid mode: return the raw extrusion, optionally with lowered interior fill
-  if (solid) {
-    if (cutoutTopOffset > 0) {
-      // Build hollow walls extending to full wallHeight
-      const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-      const hollowWalls = unwrap(shell(box, topFaces, wallThickness));
-
-      // Build interior solid block stopping at wallHeight - cutoutTopOffset
-      const innerW = outerW - 2 * wallThickness;
-      const innerD = outerD - 2 * wallThickness;
-      const fillHeight = wallHeight - cutoutTopOffset;
-      const innerFill = sketch(
-        drawRoundedRectangle(innerW, innerD, Math.max(0, CORNER_RADIUS - wallThickness)),
-        'XY'
-      ).extrude(fillHeight);
-
-      // Combine walls with lowered interior fill
-      const result = unwrap(fuse(hollowWalls, innerFill));
-      boxCache = { key: boxKey, shape: result };
-      return clone(result);
-    } else {
-      // Standard solid mode: full solid block
-      boxCache = { key: boxKey, shape: box };
-      return clone(box);
-    }
-  }
-
-  const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-  const result = unwrap(shell(box, topFaces, wallThickness));
-  boxCache = { key: boxKey, shape: result };
-  return clone(result);
-}
-
-// ─── Top Shape (Stacking Lip) Builder ─────────────────────────────────────────
-
-/**
- * Build the stacking lip at the top of the bin.
- *
- * The lip provides the mating interface that allows bins to stack.
- * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
- * The profile sweeps around the bin perimeter, then gets filleted at the peak.
- *
- * Profile traces (in XZ plane, X=outward, Z=up):
- *   Lip taper shape upward (mates with socket cavity when stacked)
- *   + wall extension downward (if includeLip, replaces top wall section)
- *
- * Built at Z=0 locally, caller translates to wallHeight.
- */
-function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape3D {
-  const lipKey = `${gridW}|${gridD}|${includeLip}`;
-  if (lipCache?.key === lipKey) {
-    return clone(lipCache.shape);
-  }
-
-  const outerW = gridW * SIZE - CLEARANCE;
-  const outerD = gridD * SIZE - CLEARANCE;
-
-  const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
-    // Draw the lip profile (going upward from the sweep path)
-    // Per spec: 0.7mm bottom chamfer, 1.8mm vertical, 1.9mm top chamfer
-    let sketcher = draw([-LIP_TAPER_WIDTH, 0])
-      .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
-      .vLine(LIP_VERTICAL_PART)
-      .line(LIP_BIG_TAPER, LIP_BIG_TAPER);
-
-    if (includeLip) {
-      // Extend wall downward with a FIXED depth to create consistent lip geometry.
-      // Use 1.2mm (standard wall thickness) for the extension - this ensures the
-      // lip profile is identical regardless of actual wall thickness. The overlap
-      // with thicker walls is handled by the fuse operation.
-      const LIP_EXTENSION = 1.2;
-      sketcher = sketcher
-        .vLineTo(-(LIP_TAPER_WIDTH + LIP_EXTENSION))
-        .lineTo([-LIP_TAPER_WIDTH, -LIP_EXTENSION]);
-    } else {
-      sketcher = sketcher.vLineTo(0);
-    }
-
-    const basicShape = sketcher.close();
-
-    // Per Gridfinity spec, the 0.5mm clearance is already applied to the outer
-    // dimensions (SIZE - CLEARANCE). The lip profile itself needs no additional
-    // clearance transforms — only a clip to the valid region.
-    let topProfileShape = basicShape.intersect(
-      drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5)
-    );
-
-    if (includeLip) {
-      // Remove the wall portion that the lip replaces
-      const LIP_EXTENSION = 1.2;
-      topProfileShape = topProfileShape.cut(
-        drawRectangle(LIP_EXTENSION, 10).translate(-LIP_EXTENSION / 2, -5)
-      );
-    }
-
-    // Pass the plane object directly — brepjs Drawing.sketchOnPlane accepts Plane
-    return topProfileShape.sketchOnPlane(plane) as Sketch;
-  };
-
-  // Sweep around the bin perimeter (built at Z=0, caller translates)
-  const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
-
-  const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
-  // Find the top edge of the lip at Z=LIP_HEIGHT (4.4mm)
-  // EdgeFinderFn has no box filter, so use .when() predicate (official custom filter API)
-  const lipEdges = edgeFinder()
-    .when((e) => {
-      const bounds = getBounds(e);
-      // Select edges that overlap the top 1mm slice of the lip (intersection, not containment)
-      return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
-    })
-    .findAll(swept);
-  const result = unwrap(fillet(swept, lipEdges, TOP_FILLET));
-
-  lipCache = { key: lipKey, shape: result };
-  return clone(result);
-}
-
-// ─── Feature Builders ─────────────────────────────────────────────────────────
-
-/** Build a positioned wall segment solid. */
-function buildWallSegment(w: number, d: number, height: number, x: number, y: number): Shape3D {
-  const wall = sketch(drawRectangle(w, d), 'XY').extrude(height);
-  return translate(wall, [x, y, 0]);
-}
-
-/**
- * Find consecutive wall segments along a boundary line.
- * Returns array of [start, end) index pairs where walls are needed.
- */
-function findWallSegments(
-  count: number,
-  needsWall: (i: number) => boolean
-): Array<[number, number]> {
-  const segments: Array<[number, number]> = [];
-  let segStart: number | null = null;
-
-  for (let i = 0; i < count; i++) {
-    if (needsWall(i)) {
-      if (segStart === null) segStart = i;
-    } else if (segStart !== null) {
-      segments.push([segStart, i]);
-      segStart = null;
-    }
-  }
-  if (segStart !== null) {
-    segments.push([segStart, count]);
-  }
-  return segments;
-}
-
-/**
- * Build compartment divider walls inside the bin.
- *
- * Uses the compartment grid to derive wall segments: walls appear at
- * boundaries between cells with different compartment IDs. This supports
- * non-uniform compartment layouts (merged cells have no wall between them).
- *
- * Positioned from Z=0 (floor) to Z=wallHeight.
- */
-function buildCompartmentWalls(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number
-): Shape3D | null {
-  const { cols, rows, thickness, cells } = params.compartments;
-
-  // Single compartment = no walls needed
-  if (cols <= 1 && rows <= 1) return null;
-  if (new Set(cells).size <= 1) return null;
-
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
-
-  // Effective free space per cell after accounting for internal divider thickness
-  const effectiveCellW = (innerW - (cols - 1) * thickness) / cols;
-  const effectiveCellD = (innerD - (rows - 1) * thickness) / rows;
-
-  // Safety net: skip wall generation if cells are too small for viable geometry
-  if (effectiveCellW < thickness * 2 || effectiveCellD < thickness * 2) return null;
-
-  const wallSegments: Shape3D[] = [];
-
-  // Vertical walls: between column boundaries
-  for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
-    const xPos = -innerW / 2 + colBoundary * cellW;
-    const segments = findWallSegments(rows, (row) => {
-      const leftId = cells[row * cols + (colBoundary - 1)];
-      const rightId = cells[row * cols + colBoundary];
-      return leftId !== rightId;
-    });
-
-    for (const [start, end] of segments) {
-      const segLength = (end - start) * cellD;
-      const yCenter = -innerD / 2 + (start + (end - start) / 2) * cellD;
-      wallSegments.push(buildWallSegment(thickness, segLength, wallHeight, xPos, yCenter));
-    }
-  }
-
-  // Horizontal walls: between row boundaries
-  for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
-    const yPos = -innerD / 2 + rowBoundary * cellD;
-    const segments = findWallSegments(cols, (col) => {
-      const topId = cells[(rowBoundary - 1) * cols + col];
-      const bottomId = cells[rowBoundary * cols + col];
-      return topId !== bottomId;
-    });
-
-    for (const [start, end] of segments) {
-      const segLength = (end - start) * cellW;
-      const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;
-      wallSegments.push(buildWallSegment(segLength, thickness, wallHeight, xCenter, yPos));
-    }
-  }
-
-  if (wallSegments.length === 0) return null;
-  return unwrap(fuseAll(wallSegments));
-}
-
-/**
- * Build insert cavity cuts.
- */
-function buildInsertCuts(params: BinParams): Shape3D | null {
-  if (params.inserts.length === 0) return null;
-
-  const insertShapes: Shape3D[] = [];
-
-  for (const insert of params.inserts) {
-    let solid: Shape3D;
-
-    switch (insert.shape) {
-      case 'circle': {
-        solid = sketch(drawCircle(insert.width / 2), 'XY').extrude(insert.cutDepth);
-        break;
-      }
-      case 'rounded-rect': {
-        const maxR = Math.min(insert.width, insert.depth) / 2 - 0.01;
-        solid = sketch(
-          drawRoundedRectangle(insert.width, insert.depth, Math.min(insert.cornerRadius, maxR)),
-          'XY'
-        ).extrude(insert.cutDepth);
-        break;
-      }
-      case 'hexagon': {
-        // Approximate hexagon with circle (polygon support TBD)
-        solid = sketch(drawCircle(insert.width / 2), 'XY').extrude(insert.cutDepth);
-        break;
-      }
-      case 'slot': {
-        solid = sketch(
-          drawRoundedRectangle(
-            insert.width,
-            insert.depth,
-            Math.min(insert.width, insert.depth) / 2
-          ),
-          'XY'
-        ).extrude(insert.cutDepth);
-        break;
-      }
-      case 'rectangle':
-      default: {
-        solid = sketch(drawRectangle(insert.width, insert.depth), 'XY').extrude(insert.cutDepth);
-        break;
-      }
-    }
-
-    insertShapes.push(translate(solid, [insert.x, insert.y, 0]));
-  }
-
-  return unwrap(fuseAll(insertShapes));
-}
-
-// ─── Cutout Builder (Solid Mode Only) ────────────────────────────────────────
-
-/** Create an extruded + rotated cutout shape centered at origin (no translation). */
-function buildCutoutShape(cutout: {
-  readonly shape: string;
-  readonly width: number;
-  readonly depth: number;
-  readonly cutDepth: number;
-  readonly rotation: number;
-  readonly cornerRadius: number;
-}): Shape3D {
-  let shape: Shape3D;
-
-  switch (cutout.shape) {
-    case 'circle': {
-      const rx = cutout.width / 2;
-      const ry = cutout.depth / 2;
-      if (Math.abs(rx - ry) < 0.01) {
-        shape = sketch(drawCircle(rx), 'XY').extrude(cutout.cutDepth);
-      } else {
-        shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
-      }
-      break;
-    }
-    case 'rectangle':
-    default: {
-      if (cutout.cornerRadius > 0) {
-        const maxCR = Math.min(cutout.width, cutout.depth) / 2 - 0.01;
-        shape = sketch(
-          drawRoundedRectangle(cutout.width, cutout.depth, Math.min(cutout.cornerRadius, maxCR)),
-          'XY'
-        ).extrude(cutout.cutDepth);
-      } else {
-        shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
-      }
-      break;
-    }
-  }
-
-  // Apply rotation around Z axis (at origin, before translation)
-  if (cutout.rotation !== 0) {
-    shape = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
-  }
-
-  return shape;
-}
-
-/**
- * Build cutout cavity cuts for solid bins.
- * Cutouts cut down from the solid fill surface with configurable depth.
- * All cutout shapes are unioned into a single solid, then boolean-cut from the bin.
- *
- * @param params - Bin configuration (reads cutouts array and cutoutConfig.topOffset)
- * @param innerW - Interior width in mm (outer - 2*wall)
- * @param innerD - Interior depth in mm (outer - 2*wall)
- * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
- */
-function buildCutoutCuts(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number
-): Shape3D | null {
-  if (params.cutouts.length === 0) return null;
-
-  // Cutout x,y are relative to interior bottom-left corner (0,0).
-  // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
-  const originX = -innerW / 2;
-  const originY = -innerD / 2;
-
-  // Global top offset: the solid fill surface is at wallHeight - topOffset
-  const topOffset = params.cutoutConfig.topOffset;
-  const solidSurfaceZ = wallHeight - topOffset;
-
-  const cutoutShapes: Shape3D[] = [];
-
-  // Partition cutouts by groupId: null → ungrouped, same groupId → collected
-  const ungrouped: typeof params.cutouts = [];
-  const groups = new Map<string, typeof params.cutouts>();
-  for (const cutout of params.cutouts) {
-    if (cutout.groupId === null) {
-      ungrouped.push(cutout);
-    } else {
-      const list = groups.get(cutout.groupId);
-      if (list) {
-        list.push(cutout);
-      } else {
-        groups.set(cutout.groupId, [cutout]);
-      }
-    }
-  }
-
-  // --- Process ungrouped cutouts (individual scoop, same as before) ---
-  for (const cutout of ungrouped) {
-    let shape = buildCutoutShape(cutout);
-
-    // Apply scoop radius fillet to bottom edges (before translation, at Z ≈ 0)
-    const maxScoop = Math.min(cutout.cutDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
-    const scoopR = Math.min(cutout.scoopRadius ?? 0, Math.max(0, maxScoop));
-    if (scoopR > 0) {
-      const halfW = cutout.width / 2 + 1;
-      const halfD = cutout.depth / 2 + 1;
-      // Find edges near the bottom (Z≈0) within the cutout bounds
-      // Use overlap checks instead of containment for better edge matching
-      const scoopEdges = edgeFinder()
-        .when((e) => {
-          const bounds = getBounds(e);
-          const zOverlaps = bounds.zMin <= 0.1 && bounds.zMax >= -0.1;
-          const xOverlaps = bounds.xMax >= -halfW && bounds.xMin <= halfW;
-          const yOverlaps = bounds.yMax >= -halfD && bounds.yMin <= halfD;
-          return zOverlaps && xOverlaps && yOverlaps;
-        })
-        .findAll(shape);
-      if (scoopEdges.length > 0) {
-        try {
-          shape = unwrap(fillet(shape, scoopEdges, scoopR));
-        } catch {
-          // Fillet can fail on complex geometries; skip if it does
-        }
-      }
-    }
-
-    cutoutShapes.push(
-      translate(shape, [
-        originX + cutout.x + cutout.width / 2,
-        originY + cutout.y + cutout.depth / 2,
-        solidSurfaceZ - cutout.cutDepth,
-      ])
-    );
-  }
-
-  // --- Process grouped cutouts (fuse first, then single scoop fillet) ---
-  for (const [, groupMembers] of groups) {
-    // Create and translate each member shape (no individual scoop)
-    const memberShapes: Shape3D[] = [];
-    for (const cutout of groupMembers) {
-      const shape = buildCutoutShape(cutout);
-      memberShapes.push(
-        translate(shape, [
-          originX + cutout.x + cutout.width / 2,
-          originY + cutout.y + cutout.depth / 2,
-          solidSurfaceZ - cutout.cutDepth,
-        ])
-      );
-    }
-
-    let fused = memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes));
-
-    // Determine group scoop radius and cut depth
-    const groupScoopRadius = Math.max(...groupMembers.map((c) => c.scoopRadius ?? 0));
-    const groupCutDepth = Math.min(...groupMembers.map((c) => c.cutDepth));
-    const minDim = Math.min(...groupMembers.map((c) => Math.min(c.width, c.depth)));
-    const maxScoop = Math.min(groupCutDepth, minDim / 2) - 0.01;
-    const scoopR = Math.min(groupScoopRadius, Math.max(0, maxScoop));
-
-    if (scoopR > 0) {
-      // Compute XY bounding box of the fused group for edge selection
-      const groupBounds = {
-        minX: Infinity,
-        minY: Infinity,
-        maxX: -Infinity,
-        maxY: -Infinity,
-      };
-      for (const cutout of groupMembers) {
-        const cx = originX + cutout.x + cutout.width / 2;
-        const cy = originY + cutout.y + cutout.depth / 2;
-        // Account for rotation: use diagonal as safe half-extent
-        const diag = Math.sqrt(cutout.width ** 2 + cutout.depth ** 2) / 2;
-        groupBounds.minX = Math.min(groupBounds.minX, cx - diag);
-        groupBounds.minY = Math.min(groupBounds.minY, cy - diag);
-        groupBounds.maxX = Math.max(groupBounds.maxX, cx + diag);
-        groupBounds.maxY = Math.max(groupBounds.maxY, cy + diag);
-      }
-
-      const zBottom = solidSurfaceZ - groupCutDepth;
-      // Find horizontal edges near the bottom of the cutout group
-      // Use relaxed tolerance for Z-height matching since edges may span multiple Z values
-      const groupScoopEdges = edgeFinder()
-        .when((e) => {
-          const bounds = getBounds(e);
-          // Check if edge overlaps the target Z region (not strictly contained)
-          const zOverlaps = bounds.zMin <= zBottom + 0.1 && bounds.zMax >= zBottom - 0.1;
-          // Check if edge is within or near the XY bounds of the group
-          const xOverlaps =
-            bounds.xMax >= groupBounds.minX - 1 && bounds.xMin <= groupBounds.maxX + 1;
-          const yOverlaps =
-            bounds.yMax >= groupBounds.minY - 1 && bounds.yMin <= groupBounds.maxY + 1;
-          return zOverlaps && xOverlaps && yOverlaps;
-        })
-        .findAll(fused);
-      // Only apply fillet if we found edges (avoid empty edge list error)
-      if (groupScoopEdges.length > 0) {
-        try {
-          fused = unwrap(fillet(fused, groupScoopEdges, scoopR));
-        } catch {
-          // Fillet can fail on complex geometries; skip if it does
-        }
-      }
-    }
-
-    cutoutShapes.push(fused);
-  }
-
-  const fused = unwrap(fuseAll(cutoutShapes));
-
-  // Clip cutout union to bin interior so cutouts extending past walls don't
-  // cut through them. The clip boundary covers from floor to the solid surface.
-  const clipBoundary = sketch(drawRectangle(innerW, innerD), 'XY', 0).extrude(solidSurfaceZ);
-  return unwrap(intersect(fused, clipBoundary));
-}
-
-// ─── Label Tab Builder ───────────────────────────────────────────────────────
-
-/**
- * Build label tabs for every compartment.
- *
- * Each tab is a flat shelf with support structure. Bracket style uses thin 45°
- * triangular gussets (less filament, still strong). Solid style uses a
- * continuous 45° triangle prism (maximum strength, still FDM-printable).
- *
- * Structure per compartment:
- *   - Flat shelf plate: tabWidth × tabDepth × wallThickness at the top
- *   - N interior gussets: 45° right-triangle supports, each divider-thickness
- *     wide, placed evenly between the walls that already support the shelf ends.
- *     Gusset count keeps unsupported span ≤10mm (conservative FDM bridge limit).
- *
- * Tabs are placed on the back edge of each compartment — the outer back wall
- * for the rearmost row, or a row divider wall for interior rows. Merged cells
- * get a single tab at the back of the merged group.
- *
- * Tab width is auto-capped to compartment column width when the configured
- * width exceeds available space.
- *
- * @param params - Bin parameters (label config, compartments)
- * @param innerW - Interior width in mm (outer - 2 × wallThickness)
- * @param innerD - Interior depth in mm
- * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
- * @param wallThickness - Bin wall thickness in mm (used for shelf thickness)
- */
-function buildLabelTabs(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number,
-  wallThickness: number
-): Shape3D | null {
-  if (!params.label.enabled) return null;
-
-  const { cols, rows, thickness, cells } = params.compartments;
-  const tabDepth = params.label.depth;
-  const widthPercent = params.label.width; // 1-100%
-  const alignment = params.label.alignment;
-  const wt = wallThickness;
-  const gt = thickness; // gusset thickness = compartment divider thickness
-
-  // 45° triangle envelope: height = depth
-  const tabHeight = tabDepth;
-
-  // Safety: tab must fit within wall height
-  if (tabHeight > wallHeight || tabHeight <= 0) return null;
-
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
-  const allTabs: Shape3D[] = [];
-
-  // Iterate per-row, grouping consecutive same-compartment columns that share
-  // a back edge at this row. This produces one tab spanning merged columns
-  // instead of separate per-column tabs with incorrect divider deductions.
-  for (let row = 0; row < rows; row++) {
-    const isLastRow = row === rows - 1;
-    let col = 0;
-
-    while (col < cols) {
-      const cellId = cells[row * cols + col];
-      const nextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + col];
-
-      // Check if this cell has a back edge (last row, or different compId behind)
-      const hasBackEdge = isLastRow || cellId !== nextRowCellId;
-      if (!hasBackEdge) {
-        col++;
-        continue;
-      }
-
-      // Find extent of consecutive same-compId columns with back edges at this row
-      let groupEnd = col + 1;
-      while (groupEnd < cols) {
-        const gCellId = cells[row * cols + groupEnd];
-        const gNextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + groupEnd];
-        if (gCellId !== cellId || !(isLastRow || gCellId !== gNextRowCellId)) break;
-        groupEnd++;
-      }
-
-      const groupCols = groupEnd - col;
-      const groupMinCol = col;
-      const groupMaxCol = groupEnd - 1;
-
-      // Compute available width for the column group.
-      // Deduct thickness only at boundaries with actual divider walls —
-      // merged columns share no divider, so no deduction between them.
-      const groupLeft = -innerW / 2 + groupMinCol * cellW;
-      const groupRight = groupLeft + groupCols * cellW;
-
-      const hasLeftWall = groupMinCol === 0 || cells[row * cols + (groupMinCol - 1)] !== cellId;
-      const hasRightWall =
-        groupMaxCol === cols - 1 || cells[row * cols + (groupMaxCol + 1)] !== cellId;
-
-      const leftDeduction =
-        groupMinCol > 0 && cells[row * cols + (groupMinCol - 1)] !== cellId ? thickness / 2 : 0;
-      const rightDeduction =
-        groupMaxCol < cols - 1 && cells[row * cols + (groupMaxCol + 1)] !== cellId
-          ? thickness / 2
-          : 0;
-
-      const availableLeft = groupLeft + leftDeduction;
-      const availableRight = groupRight - rightDeduction;
-      const availableWidth = availableRight - availableLeft;
-
-      // Compute tab width from percentage of available group width
-      const tabWidth = (availableWidth * widthPercent) / 100;
-      if (tabWidth <= 0) {
-        col = groupEnd;
-        continue;
-      }
-
-      // Compute X offset based on alignment within the group
-      let tabXStart: number;
-      if (alignment === 'left') {
-        tabXStart = availableLeft;
-      } else if (alignment === 'right') {
-        tabXStart = availableRight - tabWidth;
-      } else {
-        const availableCenter = (availableLeft + availableRight) / 2;
-        tabXStart = availableCenter - tabWidth / 2;
-      }
-
-      // Y position: back edge of this row
-      const backEdgeY = -innerD / 2 + (row + 1) * cellD;
-
-      // ── Determine which ends touch a wall ──
-      const fullWidth = tabWidth >= availableWidth - 0.01;
-      const touchesLeft = (fullWidth || alignment === 'left') && hasLeftWall;
-      const touchesRight = (fullWidth || alignment === 'right') && hasRightWall;
-
-      // ── Shelf: flat plate with rounded front corners on free ends ──
-      // XY footprint extruded along Z for wallThickness.
-      // Only front corners (away from back wall) are rounded on free ends.
-      const cornerR = 1; // mm
-      let pen = draw([0, 0]).lineTo([tabWidth, 0]).lineTo([tabWidth, -tabDepth]);
-      if (!touchesRight) pen = pen.customCorner(cornerR);
-      pen = pen.lineTo([0, -tabDepth]);
-      if (!touchesLeft) pen = pen.customCorner(cornerR);
-      const shelf = sketch(pen.close(), 'XY', tabHeight - wt).extrude(wt);
-
-      // ── Gussets: 45° triangular supports under the shelf ──
-      // Free ends get edge gussets for structural support.
-      // Interior gussets keep unsupported span ≤10mm (FDM bridge limit).
-      const gussetLeg = tabHeight - wt;
-      const maxSpan = 10; // mm
-
-      // Collect all gusset X positions (left edge of each gusset)
-      const gussetPositions: number[] = [];
-
-      // Edge gussets at free ends
-      if (!touchesLeft) gussetPositions.push(0);
-      if (!touchesRight) gussetPositions.push(tabWidth - gt);
-
-      // Interior gussets between the outermost supports
-      const leftSupport = touchesLeft ? 0 : gt;
-      const rightSupport = touchesRight ? tabWidth : tabWidth - gt;
-      const interiorSpan = rightSupport - leftSupport;
-      const numInterior = Math.max(0, Math.ceil(interiorSpan / maxSpan) - 1);
-      for (let g = 0; g < numInterior; g++) {
-        const center = leftSupport + (interiorSpan * (g + 1)) / (numInterior + 1);
-        gussetPositions.push(center - gt / 2);
-      }
-
-      let tabSolid: Shape3D = shelf;
-
-      const labelSupport = params.label.support;
-
-      if (labelSupport === 'solid') {
-        // Solid style: single continuous 45° right-triangle prism under the shelf
-        const gussetLegSolid = tabHeight - wt;
-        if (gussetLegSolid > 0) {
-          const solidProfile = draw([0, gussetLegSolid])
-            .lineTo([-gussetLegSolid, gussetLegSolid])
-            .lineTo([0, 0])
-            .close();
-          const solidSupport = sketch(solidProfile, 'YZ', 0).extrude(tabWidth);
-          tabSolid = unwrap(fuse(tabSolid, solidSupport));
-        }
-      } else {
-        // Bracket style: discrete triangular gussets at edges + every ≤10mm
-        if (gussetPositions.length > 0) {
-          const gussetProfile = draw([0, gussetLeg])
-            .lineTo([-gussetLeg, gussetLeg])
-            .lineTo([0, 0])
-            .close();
-
-          const gussetShapes: Shape3D[] = [];
-          for (const gx of gussetPositions) {
-            const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
-            gussetShapes.push(translate(gusset, [gx, 0, 0]));
-          }
-
-          tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes))));
-        }
-      }
-
-      // Position: X at alignment offset, Y at compartment back edge, Z at tab base
-      tabSolid = translate(tabSolid, [tabXStart, backEdgeY, wallHeight - tabHeight]);
-
-      allTabs.push(tabSolid);
-
-      col = groupEnd;
-    }
-  }
-
-  if (allTabs.length === 0) return null;
-  return unwrap(fuseAll(allTabs));
-}
-
-// ─── Finger Scoop Builder ────────────────────────────────────────────────────
-
-/**
- * Build finger scoop ramps that curve from the bin floor up to the front wall.
- *
- * Each scoop is a solid ramp with a concave quarter-cylinder inner surface,
- * fused into the bin interior at the front edge of each compartment. The
- * ramp fills the wall-floor junction and the concave curve helps slide
- * items out of the bin.
- *
- * Scoops are placed at the front edge of every compartment row.
- * For merged compartments spanning multiple columns, a single scoop spans
- * the full merged width.
- *
- * When the bin has a stacking lip and the scoop is at the outer front wall
- * (row 0), the scoop is offset inward by the lip overhang so its top edge
- * meets the lip's protruding inner face, providing a smooth exit path.
- *
- * @param params - Bin parameters (scoop config, compartments)
- * @param innerW - Interior width in mm (outer - 2 × wallThickness)
- * @param innerD - Interior depth in mm
- * @param wallHeight - Full wall height in mm (box body Z extent)
- * @param wallThickness - Outer wall thickness in mm
- * @returns Fused ramp shape, or null if no scoops were built
- */
-function buildScoopRamps(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number,
-  wallThickness: number
-): Shape3D | null {
-  if (!params.scoop.enabled) return null;
-  if (params.style !== 'standard') return null;
-
-  const hasLip = params.base.stackingLip;
-  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
-
-  const { cols, rows, cells } = params.compartments;
-
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
-
-  const processedCompartments = new Set<number>();
-  const scoopShapes: Shape3D[] = [];
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const compId = cells[row * cols + col];
-      if (processedCompartments.has(compId)) continue;
-      processedCompartments.add(compId);
-
-      // Find compartment bounds
-      let minCol = cols;
-      let maxCol = -1;
-      let minRow = rows;
-      let maxRow = -1;
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (cells[r * cols + c] === compId) {
-            minCol = Math.min(minCol, c);
-            maxCol = Math.max(maxCol, c);
-            minRow = Math.min(minRow, r);
-            maxRow = Math.max(maxRow, r);
-          }
-        }
-      }
-      if (maxCol === -1) continue;
-      const compCols = maxCol - minCol + 1;
-      const compRows = maxRow - minRow + 1;
-      const compW = compCols * cellW;
-      const compD = compRows * cellD;
-
-      const isMinRow = minRow === 0;
-      const lipOffset = computeLipOffset(hasLip, isMinRow, LIP_TAPER_WIDTH, wallThickness);
-      const radius = resolveScoopRadius(
-        params.scoop.radius,
-        compW,
-        compD,
-        isMinRow,
-        hasLip,
-        wallHeight,
-        interiorHeight,
-        lipOffset
-      );
-      if (radius === 0) continue;
-
-      // Build scoop ramp solid.
-      // Profile in YZ plane: draw([u, v]) where u→Y (depth), v→Z (height).
-      //
-      // Without lip offset (lipOffset = 0):
-      //   (0, 0) → (0, R) → arc → (R, 0) → close
-      //
-      // With lip offset (lo), extends to wallHeight so scoop meets lip:
-      //   (0, 0) → (0, wH) → (lo, wH) → (lo, R) → arc → (lo+R, 0) → close
-      //   Goes up the wall to wallHeight, across to the lip's inner face,
-      //   down to arc start at R, then curves to floor. Fills solid.
-      const segments = 24;
-      const points: [number, number][] = [];
-      // Start at wall/floor corner
-      points.push([0, 0]);
-      if (lipOffset > 0) {
-        // Up the wall to wallHeight (lip base), across to lip inner face
-        points.push([0, wallHeight]);
-        points.push([lipOffset, wallHeight]);
-        // Down to arc start (only needed when radius < wallHeight)
-        if (radius < wallHeight) {
-          points.push([lipOffset, radius]);
-        }
-      } else {
-        // Standard: up the wall to scoop height
-        points.push([0, radius]);
-      }
-      // Concave arc from (lipOffset, radius) to (lipOffset + radius, 0)
-      for (let i = 1; i < segments; i++) {
-        const angle = (Math.PI / 2) * (i / segments);
-        const arcY = lipOffset + radius * (1 - Math.cos(angle));
-        const arcZ = radius * (1 - Math.sin(angle));
-        points.push([arcY, arcZ]);
-      }
-      // Floor, lipOffset + radius away from wall
-      points.push([lipOffset + radius, 0]);
-
-      // Draw the profile (will be sketched on YZ and extruded along X)
-      let pen = draw(points[0]);
-      for (let i = 1; i < points.length; i++) {
-        pen = pen.lineTo(points[i]);
-      }
-      const profile = pen.close();
-
-      // Sketch on YZ plane and extrude along X for the compartment width
-      let scoopSolid = sketch(profile, 'YZ', -compW / 2).extrude(compW);
-
-      // Fillet the two longitudinal edges where the ramp meets the wall and floor.
-      // Before translation, the scoop solid spans X=[-compW/2, +compW/2] with
-      // Y=[lipOffset, lipOffset+radius], Z=[0, radius]. The sharp edges are:
-      //   - Top-of-ramp: (Y≈lipOffset, Z≈radius) — ramp meets wall/lip
-      //   - Floor-of-ramp: (Y≈lipOffset+radius, Z≈0) — ramp meets bin floor
-      const filletR = Math.min(2, radius / 4);
-      if (filletR >= 0.5) {
-        const smoothEdges = edgeFinder()
-          .when((e) => {
-            const b = getBounds(e);
-            // Edge must run along X (span most of the compartment width)
-            if (b.xMax - b.xMin < compW * 0.5) return false;
-            // Top-of-ramp edge: Y≈lipOffset, Z≈radius
-            const isTop =
-              Math.abs(b.yMin - lipOffset) < 0.5 &&
-              Math.abs(b.yMax - lipOffset) < 0.5 &&
-              Math.abs(b.zMin - radius) < 0.5 &&
-              Math.abs(b.zMax - radius) < 0.5;
-            // Floor-of-ramp edge: Y≈lipOffset+radius, Z≈0
-            const floorY = lipOffset + radius;
-            const isFloor =
-              Math.abs(b.yMin - floorY) < 0.5 &&
-              Math.abs(b.yMax - floorY) < 0.5 &&
-              Math.abs(b.zMin) < 0.5 &&
-              Math.abs(b.zMax) < 0.5;
-            return isTop || isFloor;
-          })
-          .findAll(scoopSolid);
-        if (smoothEdges.length > 0) {
-          try {
-            scoopSolid = unwrap(fillet(scoopSolid, smoothEdges, filletR));
-          } catch {
-            // Fillet can fail on complex geometries; skip if it does
-          }
-        }
-      }
-
-      // Position: center X at compartment center, Y at front edge of compartment
-      const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
-      const frontEdgeY = -innerD / 2 + minRow * cellD;
-
-      scoopShapes.push(translate(scoopSolid, [compCenterX, frontEdgeY, 0]));
-    }
-  }
-
-  if (scoopShapes.length === 0) return null;
-  return scoopShapes.length === 1 ? scoopShapes[0] : unwrap(fuseAll(scoopShapes));
-}
-
-// ─── Mesh Conversion ────────────────────────────────────────────────────────
-
-/**
- * Convert brepjs indexed mesh to our MeshData format, keeping indexed representation.
- *
- * @param mesh brepjs mesh with indexed vertices/normals/triangles
- * @param skipNormals If true, returns empty normals array (GPU will compute flat shading)
- */
-function toIndexedMeshData(
-  mesh: {
-    vertices: ArrayLike<number>;
-    normals: ArrayLike<number>;
-    triangles: ArrayLike<number>;
-  },
-  skipNormals = false
-): MeshData {
-  return {
-    vertices: new Float32Array(mesh.vertices),
-    normals: skipNormals ? new Float32Array(0) : new Float32Array(mesh.normals),
-    indices: new Uint32Array(mesh.triangles),
-    triangleCount: mesh.triangles.length / 3,
-  };
-}
-
-// ─── Shape Caches ──────────────────────────────────────────────────────────
-
-/**
- * Single-entry caches for expensive intermediate shapes. Each stores the last
- * built result and its cache key, returning a clone on hit. This avoids
- * rebuilding shapes whose parameters haven't changed between generation calls.
- *
- * - socketCache: lofts + fuseAll + cutAll holes (~30% of CAD time)
- * - lipCache: sweep + fillet (~10-15% of CAD time)
- * - boxCache: extrude + shell (~10% of CAD time)
- * - shellCache: assembled base + box + lip (~15% of CAD time for the 2-3 fuses)
- */
-let socketCache: { key: string; shape: Shape3D } | null = null;
-let lipCache: { key: string; shape: Shape3D } | null = null;
-let boxCache: { key: string; shape: Shape3D } | null = null;
-let shellCache: { key: string; shape: Shape3D } | null = null;
-/** Cache for pattern shape templates (keyed by pattern type + dimensions). */
-let patternTemplateCache: { key: string; shape: Shape3D } | null = null;
-
-function socketCacheKey(
-  gridW: number,
-  gridD: number,
-  withMagnet: boolean,
-  withScrew: boolean,
-  magnetRadius: number,
-  magnetDepth: number,
-  screwRadius: number,
-  forExport: boolean,
-  halfSockets: boolean
-): string {
-  return `${gridW}|${gridD}|${withMagnet}|${withScrew}|${magnetRadius}|${magnetDepth}|${screwRadius}|${forExport}|${halfSockets}`;
-}
-
-// ─── Main Entry Point ───────────────────────────────────────────────────────
-
-/** Last generated solid — cached for instant export without re-generation. */
-let lastSolid: Shape3D | null = null;
-
-/** Get the last generated solid for export operations. */
-export function getLastSolid(): Shape3D | null {
-  return lastSolid;
-}
+export type { ProgressFn } from './generatorTypes';
 
 /** Export result with binary data and suggested file name. */
 export interface ExportResult {
   readonly data: ArrayBuffer;
   readonly fileName: string;
 }
+
+/** Result of a split export: array of piece buffers with grid labels */
+export interface SplitExportResult {
+  readonly pieces: Array<{
+    readonly data: ArrayBuffer;
+    readonly label: string;
+    readonly col: number;
+    readonly row: number;
+  }>;
+}
+
+/** Get the last generated solid for export operations. */
+export { getLastSolid };
+
+// ─── Export Functions ─────────────────────────────────────────────────────────
 
 /**
  * Export the last generated solid in the requested format.
@@ -1369,11 +107,11 @@ export async function exportBin(
   angularTolerance = 5
 ): Promise<ExportResult> {
   // Regenerate if no cached solid (with forExport=true for full-fidelity geometry)
-  if (!lastSolid) {
+  if (!getLastSolid()) {
     generateBin(params, undefined, true);
   }
 
-  const solid = lastSolid;
+  const solid = getLastSolid();
   if (!solid) {
     throw new Error('Failed to generate solid for export');
   }
@@ -1397,6 +135,8 @@ export async function exportBin(
   const data = await blob.arrayBuffer();
   return { data, fileName: `${name}.stl` };
 }
+
+// ─── Main Entry Point ────────────────────────────────────────────────────────
 
 /**
  * Generate a complete Gridfinity bin from parameters.
@@ -1432,7 +172,7 @@ export function generateBin(
   const innerD = outerD - 2 * wallThickness;
   const isSlotted = params.style === 'slotted';
 
-  // Half sockets do not support magnet/screw holes (0.5×0.5 cells too small)
+  // Half sockets do not support magnet/screw holes (0.5x0.5 cells too small)
   const withMagnet =
     !isFlat &&
     !halfSockets &&
@@ -1448,7 +188,7 @@ export function generateBin(
   const useHighQuality = forExport || isSmallBin;
 
   // Stages 1-3: Build base socket + box + lip, then assemble.
-  // The assembled shell is cached — only features (compartments, inserts, tabs)
+  // The assembled shell is cached -- only features (compartments, inserts, tabs)
   // need to rebuild when those params change.
   onProgress?.('base', 0.1);
   const shellKey = [
@@ -1469,8 +209,9 @@ export function generateBin(
   ].join('|');
 
   let bin: Shape3D;
-  if (shellCache?.key === shellKey) {
-    bin = clone(shellCache.shape);
+  const cachedShell = getShellCache(shellKey);
+  if (cachedShell) {
+    bin = cachedShell;
   } else {
     checkCancelled(signal);
     onProgress?.('shell', 0.3);
@@ -1505,7 +246,7 @@ export function generateBin(
       }
     } else {
       // Socket style: build base socket and fuse with box.
-      // Half sockets mode subdivides each cell into 0.5×0.5 sub-sockets.
+      // Half sockets mode subdivides each cell into 0.5x0.5 sub-sockets.
       const base = buildBaseSocket(
         params.width,
         params.depth,
@@ -1541,7 +282,7 @@ export function generateBin(
       }
     }
 
-    shellCache = { key: shellKey, shape: bin };
+    setShellCache(shellKey, bin);
     bin = clone(bin);
   }
 
@@ -1551,7 +292,7 @@ export function generateBin(
   checkCancelled(signal);
   onProgress?.('features', 0.5);
 
-  // Solid mode: skip all interior features — the bin is a solid block.
+  // Solid mode: skip all interior features -- the bin is a solid block.
   // Cutouts will later carve into this solid to create shaped cavities.
   if (!solid) {
     // Interior features (dividers, tabs) must clear the stacking lip zone.
@@ -1625,7 +366,7 @@ export function generateBin(
       }
     }
 
-    // Wall patterns: Pattern cutouts — optimized with template cloning + single cutAll.
+    // Wall patterns: Pattern cutouts -- optimized with template cloning + single cutAll.
     //
     // Performance strategy:
     // 1. Pattern calculators adapt size based on bin height (fewer cuts for large bins)
@@ -1648,13 +389,14 @@ export function generateBin(
           const templateKey = `${patternType}|${shapeRadius}|${cutDepth}`;
           let shapeTemplate: Shape3D;
 
-          if (patternTemplateCache?.key === templateKey) {
-            shapeTemplate = patternTemplateCache.shape;
+          const cachedTemplate = getPatternTemplateCache(templateKey);
+          if (cachedTemplate) {
+            shapeTemplate = cachedTemplate;
           } else {
             // Create polygonal shape based on pattern type (honeycomb = 6 sides)
             const sides = calculator.getSidesCount();
             shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
-            patternTemplateCache = { key: templateKey, shape: shapeTemplate };
+            setPatternTemplateCache(templateKey, shapeTemplate);
           }
 
           const allPatternTools: Shape3D[] = [];
@@ -1674,7 +416,7 @@ export function generateBin(
 
           if (allPatternTools.length > 0) {
             checkCancelled(signal);
-            // Preview: skip SimplifyResult — shape is meshed and discarded
+            // Preview: skip SimplifyResult -- shape is meshed and discarded
             bin = unwrap(
               cutAll(bin, allPatternTools, { simplify: forExport, signal } as BooleanOpts)
             );
@@ -1697,7 +439,7 @@ export function generateBin(
   }
 
   // Stage 5: Translate so Z=0 = absolute bottom (socket bottom).
-  // Flat floor bins are already at Z=0 — no translation needed.
+  // Flat floor bins are already at Z=0 -- no translation needed.
   checkCancelled(signal);
   onProgress?.('merge', 0.8);
   if (!isFlat) {
@@ -1707,7 +449,7 @@ export function generateBin(
   // Stage 6: Tessellate to triangle mesh
   checkCancelled(signal);
   onProgress?.('merge', 0.9);
-  lastSolid = bin;
+  setLastSolid(bin);
 
   // Dynamic tessellation: export gets fine quality, preview adapts to bin size
   const maxDimension = Math.max(params.width, params.depth) * SIZE;
@@ -1735,15 +477,7 @@ export function generateBin(
   return toIndexedMeshData(shapeMesh, !useHighQuality);
 }
 
-/** Result of a split export: array of piece buffers with grid labels */
-export interface SplitExportResult {
-  readonly pieces: Array<{
-    readonly data: ArrayBuffer;
-    readonly label: string;
-    readonly col: number;
-    readonly row: number;
-  }>;
-}
+// ─── Split Export ────────────────────────────────────────────────────────────
 
 /**
  * Export the cached (or regenerated) bin solid, split into pieces via boolean cuts.
@@ -1766,11 +500,11 @@ export async function exportSplitBin(
   angularTolerance = 5
 ): Promise<SplitExportResult> {
   // Ensure we have a solid to work with
-  if (!lastSolid) {
+  if (!getLastSolid()) {
     generateBin(params, undefined, true);
   }
 
-  const solid = lastSolid;
+  const solid = getLastSolid();
   if (!solid) {
     throw new Error('Failed to generate solid for split export');
   }

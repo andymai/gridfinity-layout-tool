@@ -1,0 +1,104 @@
+// @vitest-environment node
+import { describe, it, expect, beforeAll } from 'vitest';
+import type { Shape3D } from 'brepjs';
+
+type BuildCellSocketFn = (cellW_mm: number, cellD_mm: number) => Shape3D;
+type BuildBaseSocketFn = (
+  gridW: number,
+  gridD: number,
+  withMagnet: boolean,
+  withScrew: boolean,
+  magnetRadius: number,
+  magnetDepth: number,
+  screwRadius: number,
+  forExport?: boolean,
+  halfSockets?: boolean
+) => Shape3D;
+
+let buildBaseSocket: BuildBaseSocketFn;
+let buildSingleCellSocket: BuildCellSocketFn;
+let buildSimplifiedCellSocket: BuildCellSocketFn;
+
+let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
+
+beforeAll(async () => {
+  const { initFromOC, mesh: meshFn } = await import('brepjs');
+  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
+  const { readFileSync } = await import('fs');
+  const { join } = await import('path');
+
+  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
+  const wasmBinary = readFileSync(wasmPath);
+  const OC = await opencascade({ wasmBinary });
+  initFromOC(OC);
+
+  const mod = await import('./socketBuilder');
+  buildBaseSocket = mod.buildBaseSocket;
+  buildSingleCellSocket = mod.buildSingleCellSocket;
+  buildSimplifiedCellSocket = mod.buildSimplifiedCellSocket;
+
+  meshShape = (shape) => meshFn(shape as never, { tolerance: 1, angularTolerance: 30 });
+}, 30000);
+
+describe('buildSingleCellSocket', () => {
+  it('builds a valid solid for a full-size cell', () => {
+    const shape = buildSingleCellSocket(41.5, 41.5);
+    const result = meshShape(shape);
+    expect(result.vertices.length).toBeGreaterThan(0);
+    expect(result.triangles.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('builds a valid solid for a half-size cell', () => {
+    const shape = buildSingleCellSocket(20.5, 20.5);
+    const result = meshShape(shape);
+    expect(result.vertices.length).toBeGreaterThan(0);
+    expect(result.triangles.length).toBeGreaterThan(0);
+  }, 30000);
+});
+
+describe('buildSimplifiedCellSocket', () => {
+  it('builds a valid solid for a full-size cell', () => {
+    const shape = buildSimplifiedCellSocket(41.5, 41.5);
+    const result = meshShape(shape);
+    expect(result.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('produces fewer triangles than full socket', () => {
+    const full = meshShape(buildSingleCellSocket(41.5, 41.5));
+    const simplified = meshShape(buildSimplifiedCellSocket(41.5, 41.5));
+    expect(simplified.triangles.length).toBeLessThanOrEqual(full.triangles.length);
+  }, 30000);
+});
+
+describe('buildBaseSocket', () => {
+  it('builds a 1x1 socket grid', () => {
+    const shape = buildBaseSocket(1, 1, false, false, 3.1, 2, 1.25, false, false);
+    const result = meshShape(shape);
+    expect(result.vertices.length).toBeGreaterThan(0);
+    expect(result.triangles.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('builds a 2x2 socket grid with magnets', () => {
+    const shape = buildBaseSocket(2, 2, true, false, 3.1, 2, 1.25, false, false);
+    const result = meshShape(shape);
+    expect(result.vertices.length).toBeGreaterThan(0);
+  }, 60000);
+
+  it('builds a 1.5x1 socket grid with mixed cell sizes', () => {
+    const shape = buildBaseSocket(1.5, 1, false, false, 3.1, 2, 1.25, false, false);
+    const result = meshShape(shape);
+    expect(result.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('builds a 2x2 socket grid in half-sockets mode', () => {
+    const shape = buildBaseSocket(2, 2, false, false, 3.1, 2, 1.25, false, true);
+    const result = meshShape(shape);
+    expect(result.vertices.length).toBeGreaterThan(0);
+  }, 60000);
+
+  it('throws on zero-dimension grid', () => {
+    expect(() => buildBaseSocket(0, 0, false, false, 3.1, 2, 1.25, false, false)).toThrow(
+      'at least one cell required'
+    );
+  });
+});
