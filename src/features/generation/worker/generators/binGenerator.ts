@@ -54,6 +54,11 @@ import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
 import { getPatternDescriptors } from './wallPatterns';
+import {
+  resolveScoopRadius,
+  computeLipOffset,
+  computeInteriorHeight,
+} from '@/shared/utils/scoopCalculations';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -938,54 +943,83 @@ function buildLabelTabs(
   const cellD = innerD / rows;
   const allTabs: Shape3D[] = [];
 
-  for (let col = 0; col < cols; col++) {
-    // Available width within this column (accounting for divider walls)
-    let availableWidth = cellW;
-    if (cols > 1) {
-      if (col === 0 || col === cols - 1) {
-        availableWidth -= thickness / 2;
-      } else {
-        availableWidth -= thickness;
-      }
-    }
+  // Iterate per-row, grouping consecutive same-compartment columns that share
+  // a back edge at this row. This produces one tab spanning merged columns
+  // instead of separate per-column tabs with incorrect divider deductions.
+  for (let row = 0; row < rows; row++) {
+    const isLastRow = row === rows - 1;
+    let col = 0;
 
-    // Compute tab width from percentage of available column width
-    const tabWidth = (availableWidth * widthPercent) / 100;
-    if (tabWidth <= 0) continue;
-
-    // X center of this column (bin coordinates, X=0 at center)
-    const colXCenter = -innerW / 2 + col * cellW + cellW / 2;
-
-    // Compute X offset based on alignment within the column
-    let tabXStart: number;
-    if (alignment === 'left') {
-      const colLeft = colXCenter - availableWidth / 2;
-      tabXStart = colLeft;
-    } else if (alignment === 'right') {
-      const colRight = colXCenter + availableWidth / 2;
-      tabXStart = colRight - tabWidth;
-    } else {
-      tabXStart = colXCenter - tabWidth / 2;
-    }
-
-    // Place a tab at the back edge of each compartment in this column.
-    // For merged cells spanning multiple rows, only the rearmost row triggers
-    // a tab (the back edge of the merged group).
-    for (let row = 0; row < rows; row++) {
-      const isLastRow = row === rows - 1;
+    while (col < cols) {
       const cellId = cells[row * cols + col];
-      const nextCellId = isLastRow ? undefined : cells[(row + 1) * cols + col];
+      const nextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + col];
 
-      // Tab goes here if this is the back wall or a divider exists behind this cell
-      if (!isLastRow && cellId === nextCellId) continue;
+      // Check if this cell has a back edge (last row, or different compId behind)
+      const hasBackEdge = isLastRow || cellId !== nextRowCellId;
+      if (!hasBackEdge) {
+        col++;
+        continue;
+      }
 
-      // Y position: back edge of this cell
+      // Find extent of consecutive same-compId columns with back edges at this row
+      let groupEnd = col + 1;
+      while (groupEnd < cols) {
+        const gCellId = cells[row * cols + groupEnd];
+        const gNextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + groupEnd];
+        if (gCellId !== cellId || !(isLastRow || gCellId !== gNextRowCellId)) break;
+        groupEnd++;
+      }
+
+      const groupCols = groupEnd - col;
+      const groupMinCol = col;
+      const groupMaxCol = groupEnd - 1;
+
+      // Compute available width for the column group.
+      // Deduct thickness only at boundaries with actual divider walls —
+      // merged columns share no divider, so no deduction between them.
+      const groupLeft = -innerW / 2 + groupMinCol * cellW;
+      const groupRight = groupLeft + groupCols * cellW;
+
+      const hasLeftWall = groupMinCol === 0 || cells[row * cols + (groupMinCol - 1)] !== cellId;
+      const hasRightWall =
+        groupMaxCol === cols - 1 || cells[row * cols + (groupMaxCol + 1)] !== cellId;
+
+      const leftDeduction =
+        groupMinCol > 0 && cells[row * cols + (groupMinCol - 1)] !== cellId ? thickness / 2 : 0;
+      const rightDeduction =
+        groupMaxCol < cols - 1 && cells[row * cols + (groupMaxCol + 1)] !== cellId
+          ? thickness / 2
+          : 0;
+
+      const availableLeft = groupLeft + leftDeduction;
+      const availableRight = groupRight - rightDeduction;
+      const availableWidth = availableRight - availableLeft;
+
+      // Compute tab width from percentage of available group width
+      const tabWidth = (availableWidth * widthPercent) / 100;
+      if (tabWidth <= 0) {
+        col = groupEnd;
+        continue;
+      }
+
+      // Compute X offset based on alignment within the group
+      let tabXStart: number;
+      if (alignment === 'left') {
+        tabXStart = availableLeft;
+      } else if (alignment === 'right') {
+        tabXStart = availableRight - tabWidth;
+      } else {
+        const availableCenter = (availableLeft + availableRight) / 2;
+        tabXStart = availableCenter - tabWidth / 2;
+      }
+
+      // Y position: back edge of this row
       const backEdgeY = -innerD / 2 + (row + 1) * cellD;
 
       // ── Determine which ends touch a wall ──
-      const fullWidth = tabWidth >= availableWidth;
-      const touchesLeft = fullWidth || alignment === 'left';
-      const touchesRight = fullWidth || alignment === 'right';
+      const fullWidth = tabWidth >= availableWidth - 0.01;
+      const touchesLeft = (fullWidth || alignment === 'left') && hasLeftWall;
+      const touchesRight = (fullWidth || alignment === 'right') && hasRightWall;
 
       // ── Shelf: flat plate with rounded front corners on free ends ──
       // XY footprint extruded along Z for wallThickness.
@@ -1022,7 +1056,7 @@ function buildLabelTabs(
 
       let tabSolid: Shape3D = shelf;
 
-      const labelSupport = params.label.support ?? 'bracket';
+      const labelSupport = params.label.support;
 
       if (labelSupport === 'solid') {
         // Solid style: single continuous 45° right-triangle prism under the shelf
@@ -1057,11 +1091,195 @@ function buildLabelTabs(
       tabSolid = translate(tabSolid, [tabXStart, backEdgeY, wallHeight - tabHeight]);
 
       allTabs.push(tabSolid);
+
+      col = groupEnd;
     }
   }
 
   if (allTabs.length === 0) return null;
   return unwrap(fuseAll(allTabs));
+}
+
+// ─── Finger Scoop Builder ────────────────────────────────────────────────────
+
+/**
+ * Build finger scoop ramps that curve from the bin floor up to the front wall.
+ *
+ * Each scoop is a solid ramp with a concave quarter-cylinder inner surface,
+ * fused into the bin interior at the front edge of each compartment. The
+ * ramp fills the wall-floor junction and the concave curve helps slide
+ * items out of the bin.
+ *
+ * Scoops are placed at the front edge of every compartment row.
+ * For merged compartments spanning multiple columns, a single scoop spans
+ * the full merged width.
+ *
+ * When the bin has a stacking lip and the scoop is at the outer front wall
+ * (row 0), the scoop is offset inward by the lip overhang so its top edge
+ * meets the lip's protruding inner face, providing a smooth exit path.
+ *
+ * @param params - Bin parameters (scoop config, compartments)
+ * @param innerW - Interior width in mm (outer - 2 × wallThickness)
+ * @param innerD - Interior depth in mm
+ * @param wallHeight - Full wall height in mm (box body Z extent)
+ * @param wallThickness - Outer wall thickness in mm
+ * @returns Fused ramp shape, or null if no scoops were built
+ */
+function buildScoopRamps(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): Shape3D | null {
+  if (!params.scoop.enabled) return null;
+  if (params.style !== 'standard') return null;
+
+  const hasLip = params.base.stackingLip;
+  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
+
+  const { cols, rows, cells } = params.compartments;
+
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
+
+  const processedCompartments = new Set<number>();
+  const scoopShapes: Shape3D[] = [];
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const compId = cells[row * cols + col];
+      if (processedCompartments.has(compId)) continue;
+      processedCompartments.add(compId);
+
+      // Find compartment bounds
+      let minCol = cols;
+      let maxCol = -1;
+      let minRow = rows;
+      let maxRow = -1;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (cells[r * cols + c] === compId) {
+            minCol = Math.min(minCol, c);
+            maxCol = Math.max(maxCol, c);
+            minRow = Math.min(minRow, r);
+            maxRow = Math.max(maxRow, r);
+          }
+        }
+      }
+      if (maxCol === -1) continue;
+      const compCols = maxCol - minCol + 1;
+      const compRows = maxRow - minRow + 1;
+      const compW = compCols * cellW;
+      const compD = compRows * cellD;
+
+      const isMinRow = minRow === 0;
+      const lipOffset = computeLipOffset(hasLip, isMinRow, LIP_TAPER_WIDTH, wallThickness);
+      const radius = resolveScoopRadius(
+        params.scoop.radius,
+        compW,
+        compD,
+        isMinRow,
+        hasLip,
+        wallHeight,
+        interiorHeight,
+        lipOffset
+      );
+      if (radius === 0) continue;
+
+      // Build scoop ramp solid.
+      // Profile in YZ plane: draw([u, v]) where u→Y (depth), v→Z (height).
+      //
+      // Without lip offset (lipOffset = 0):
+      //   (0, 0) → (0, R) → arc → (R, 0) → close
+      //
+      // With lip offset (lo), extends to wallHeight so scoop meets lip:
+      //   (0, 0) → (0, wH) → (lo, wH) → (lo, R) → arc → (lo+R, 0) → close
+      //   Goes up the wall to wallHeight, across to the lip's inner face,
+      //   down to arc start at R, then curves to floor. Fills solid.
+      const segments = 24;
+      const points: [number, number][] = [];
+      // Start at wall/floor corner
+      points.push([0, 0]);
+      if (lipOffset > 0) {
+        // Up the wall to wallHeight (lip base), across to lip inner face
+        points.push([0, wallHeight]);
+        points.push([lipOffset, wallHeight]);
+        // Down to arc start (only needed when radius < wallHeight)
+        if (radius < wallHeight) {
+          points.push([lipOffset, radius]);
+        }
+      } else {
+        // Standard: up the wall to scoop height
+        points.push([0, radius]);
+      }
+      // Concave arc from (lipOffset, radius) to (lipOffset + radius, 0)
+      for (let i = 1; i < segments; i++) {
+        const angle = (Math.PI / 2) * (i / segments);
+        const arcY = lipOffset + radius * (1 - Math.cos(angle));
+        const arcZ = radius * (1 - Math.sin(angle));
+        points.push([arcY, arcZ]);
+      }
+      // Floor, lipOffset + radius away from wall
+      points.push([lipOffset + radius, 0]);
+
+      // Draw the profile (will be sketched on YZ and extruded along X)
+      let pen = draw(points[0]);
+      for (let i = 1; i < points.length; i++) {
+        pen = pen.lineTo(points[i]);
+      }
+      const profile = pen.close();
+
+      // Sketch on YZ plane and extrude along X for the compartment width
+      let scoopSolid = sketch(profile, 'YZ', -compW / 2).extrude(compW);
+
+      // Fillet the two longitudinal edges where the ramp meets the wall and floor.
+      // Before translation, the scoop solid spans X=[-compW/2, +compW/2] with
+      // Y=[lipOffset, lipOffset+radius], Z=[0, radius]. The sharp edges are:
+      //   - Top-of-ramp: (Y≈lipOffset, Z≈radius) — ramp meets wall/lip
+      //   - Floor-of-ramp: (Y≈lipOffset+radius, Z≈0) — ramp meets bin floor
+      const filletR = Math.min(2, radius / 4);
+      if (filletR >= 0.5) {
+        const smoothEdges = edgeFinder()
+          .when((e) => {
+            const b = getBounds(e);
+            // Edge must run along X (span most of the compartment width)
+            if (b.xMax - b.xMin < compW * 0.5) return false;
+            // Top-of-ramp edge: Y≈lipOffset, Z≈radius
+            const isTop =
+              Math.abs(b.yMin - lipOffset) < 0.5 &&
+              Math.abs(b.yMax - lipOffset) < 0.5 &&
+              Math.abs(b.zMin - radius) < 0.5 &&
+              Math.abs(b.zMax - radius) < 0.5;
+            // Floor-of-ramp edge: Y≈lipOffset+radius, Z≈0
+            const floorY = lipOffset + radius;
+            const isFloor =
+              Math.abs(b.yMin - floorY) < 0.5 &&
+              Math.abs(b.yMax - floorY) < 0.5 &&
+              Math.abs(b.zMin) < 0.5 &&
+              Math.abs(b.zMax) < 0.5;
+            return isTop || isFloor;
+          })
+          .findAll(scoopSolid);
+        if (smoothEdges.length > 0) {
+          try {
+            scoopSolid = unwrap(fillet(scoopSolid, smoothEdges, filletR));
+          } catch {
+            // Fillet can fail on complex geometries; skip if it does
+          }
+        }
+      }
+
+      // Position: center X at compartment center, Y at front edge of compartment
+      const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
+      const frontEdgeY = -innerD / 2 + minRow * cellD;
+
+      scoopShapes.push(translate(scoopSolid, [compCenterX, frontEdgeY, 0]));
+    }
+  }
+
+  if (scoopShapes.length === 0) return null;
+  return scoopShapes.length === 1 ? scoopShapes[0] : unwrap(fuseAll(scoopShapes));
 }
 
 // ─── Mesh Conversion ────────────────────────────────────────────────────────
@@ -1394,6 +1612,19 @@ export function generateBin(
       }
     }
 
+    // Finger scoops: concave ramp fused at front wall of compartments
+    if (!isSlotted) {
+      checkCancelled(signal);
+      const scoopRamps = buildScoopRamps(params, innerW, innerD, wallHeight, wallThickness);
+      if (scoopRamps) {
+        try {
+          bin = unwrap(fuse(bin, scoopRamps));
+        } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
+        }
+      }
+    }
+
     // Wall patterns: Pattern cutouts — optimized with template cloning + single cutAll.
     //
     // Performance strategy:
@@ -1403,7 +1634,7 @@ export function generateBin(
     // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
     // 5. Cache the shape template between generations
     // Runtime guard: wallPattern may be missing from old saved data
-    if (params.wallPattern?.enabled) {
+    if (params.wallPattern.enabled) {
       const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
       if (patternResult) {
         const { descriptors: wallDescriptors, calculator } = patternResult;

@@ -25,6 +25,7 @@ import {
   GhostWireframe,
   GhostCompartmentPreview,
   GhostLabelTabs,
+  GhostScoops,
   GhostSlotLines,
   GhostDividerPieces,
   GhostCutouts,
@@ -463,6 +464,7 @@ export function PreviewCanvas() {
             <GhostDividers />
             <GhostCompartmentPreview />
             <GhostLabelTabs />
+            <GhostScoops />
             <GhostSlotLines />
             <GhostDividerPieces />
             <GhostCutouts />

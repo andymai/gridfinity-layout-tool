@@ -6,7 +6,7 @@
  *
  * Groups:
  * - Shape: Dimensions, Walls
- * - Interior: Interior Dividers, Label Tabs
+ * - Interior: Interior Dividers, Label Tabs, Finger Scoop
  * - Base: Base attachments, Physical Units
  */
 
@@ -15,6 +15,7 @@ import { DimensionsSection } from '../panel/DimensionsSection';
 import { InteriorSection } from '../panel/InteriorSection';
 import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
+import { ScoopSection } from '../panel/ScoopSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SectionGroup } from '../panel/SectionGroup';
@@ -57,6 +58,9 @@ export function ParameterPanel() {
               <LabelTabsSection />
             </div>
           )}
+          <div className="px-4 py-4 border-t border-stroke-subtle/50">
+            <ScoopSection />
+          </div>
         </SectionGroup>
 
         {/* Base group */}

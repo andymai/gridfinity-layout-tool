@@ -330,8 +330,7 @@ function computeScoopVolume(
       ? Math.min(Math.min(colWidth, rowDepth) / 3, 15)
       : params.scoop.radius;
 
-  // Count scooped compartments: front row only, or all rows
-  const numScoops = params.scoop.allRows ? cols * rows : cols;
+  const numScoops = cols * rows;
 
   // Quarter-cylinder: π/4 × r² × width (across compartment)
   const volumePerScoop = (Math.PI / 4) * scoopRadius * scoopRadius * colWidth;

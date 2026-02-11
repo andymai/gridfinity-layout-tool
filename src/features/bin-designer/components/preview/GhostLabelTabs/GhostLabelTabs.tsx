@@ -55,42 +55,66 @@ export function GhostLabelTabs() {
 
     const matrices: THREE.Matrix4[] = [];
 
-    for (let col = 0; col < cols; col++) {
-      // Available width within this column (accounting for divider walls)
-      let availableWidth = cellW;
-      if (cols > 1) {
-        if (col === 0 || col === cols - 1) {
-          availableWidth -= thickness / 2;
-        } else {
-          availableWidth -= thickness;
-        }
-      }
+    // Iterate per-row, grouping consecutive same-compartment columns that share
+    // a back edge. Produces one tab spanning merged columns instead of separate
+    // per-column tabs with incorrect divider deductions.
+    for (let row = 0; row < rows; row++) {
+      const isLastRow = row === rows - 1;
+      let col = 0;
 
-      const tabWidth = (availableWidth * widthPercent) / 100;
-      if (tabWidth <= 0) continue;
-
-      // X center of this column
-      const colXCenter = -innerW / 2 + col * cellW + cellW / 2;
-
-      // X offset based on alignment
-      let tabXStart: number;
-      if (alignment === 'left') {
-        const colLeft = colXCenter - availableWidth / 2;
-        tabXStart = colLeft;
-      } else if (alignment === 'right') {
-        const colRight = colXCenter + availableWidth / 2;
-        tabXStart = colRight - tabWidth;
-      } else {
-        tabXStart = colXCenter - tabWidth / 2;
-      }
-
-      for (let row = 0; row < rows; row++) {
-        const isLastRow = row === rows - 1;
+      while (col < cols) {
         const cellId = cells[row * cols + col];
-        const nextCellId = isLastRow ? undefined : cells[(row + 1) * cols + col];
+        const nextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + col];
 
-        // Tab goes here if this is the back wall or a divider exists behind this cell
-        if (!isLastRow && cellId === nextCellId) continue;
+        const hasBackEdge = isLastRow || cellId !== nextRowCellId;
+        if (!hasBackEdge) {
+          col++;
+          continue;
+        }
+
+        // Find extent of consecutive same-compId columns with back edges
+        let groupEnd = col + 1;
+        while (groupEnd < cols) {
+          const gCellId = cells[row * cols + groupEnd];
+          const gNextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + groupEnd];
+          if (gCellId !== cellId || !(isLastRow || gCellId !== gNextRowCellId)) break;
+          groupEnd++;
+        }
+
+        const groupCols = groupEnd - col;
+        const groupMinCol = col;
+        const groupMaxCol = groupEnd - 1;
+
+        // Compute available width — deduct thickness only at actual divider boundaries
+        const groupLeft = -innerW / 2 + groupMinCol * cellW;
+        const groupRight = groupLeft + groupCols * cellW;
+
+        const leftDeduction =
+          groupMinCol > 0 && cells[row * cols + (groupMinCol - 1)] !== cellId ? thickness / 2 : 0;
+        const rightDeduction =
+          groupMaxCol < cols - 1 && cells[row * cols + (groupMaxCol + 1)] !== cellId
+            ? thickness / 2
+            : 0;
+
+        const availableLeft = groupLeft + leftDeduction;
+        const availableRight = groupRight - rightDeduction;
+        const availableWidth = availableRight - availableLeft;
+
+        const tabWidth = (availableWidth * widthPercent) / 100;
+        if (tabWidth <= 0) {
+          col = groupEnd;
+          continue;
+        }
+
+        let tabXStart: number;
+        if (alignment === 'left') {
+          tabXStart = availableLeft;
+        } else if (alignment === 'right') {
+          tabXStart = availableRight - tabWidth;
+        } else {
+          const availableCenter = (availableLeft + availableRight) / 2;
+          tabXStart = availableCenter - tabWidth / 2;
+        }
 
         const backEdgeY = -innerD / 2 + (row + 1) * cellD;
 
@@ -98,6 +122,8 @@ export function GhostLabelTabs() {
         matrix.makeScale(tabWidth, tabDepth, 1);
         matrix.setPosition(tabXStart + tabWidth / 2, backEdgeY - tabDepth / 2, 0);
         matrices.push(matrix);
+
+        col = groupEnd;
       }
     }
 

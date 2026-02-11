@@ -50,32 +50,30 @@ describe('DEFAULT_BIN_PARAMS', () => {
     expect(typeof DEFAULT_BIN_PARAMS.scoop).toBe('object');
     expect(DEFAULT_BIN_PARAMS.scoop.enabled).toBe(false);
     expect(DEFAULT_BIN_PARAMS.scoop.radius).toBe('auto');
-    expect(DEFAULT_BIN_PARAMS.scoop.allRows).toBe(false);
   });
 });
 
 describe('migrateParams', () => {
   it('should handle legacy boolean scoop: true', () => {
     const result = migrateParams({ scoop: true as any });
-    expect(result.scoop).toEqual({ enabled: true, radius: 'auto', allRows: false });
+    expect(result.scoop).toEqual({ enabled: true, radius: 'auto' });
   });
 
   it('should handle legacy boolean scoop: false', () => {
     const result = migrateParams({ scoop: false as any });
-    expect(result.scoop).toEqual({ enabled: false, radius: 'auto', allRows: false });
+    expect(result.scoop).toEqual({ enabled: false, radius: 'auto' });
   });
 
   it('should pass through valid ScoopConfig', () => {
-    const config = { enabled: true, radius: 10, allRows: true };
+    const config = { enabled: true, radius: 10 };
 
     const result = migrateParams({ scoop: config as any });
-    expect(result.scoop).toEqual({ enabled: true, radius: 10, allRows: true });
+    expect(result.scoop).toEqual({ enabled: true, radius: 10 });
   });
 
   it('should fill missing ScoopConfig fields with defaults', () => {
     const result = migrateParams({ scoop: { enabled: true } as any });
     expect(result.scoop.radius).toBe('auto');
-    expect(result.scoop.allRows).toBe(false);
   });
 
   it('should produce valid params from empty input', () => {

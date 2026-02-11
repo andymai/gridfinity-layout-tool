@@ -68,7 +68,6 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   scoop: {
     enabled: false,
     radius: 'auto',
-    allRows: false,
   },
   label: {
     enabled: false,
@@ -139,6 +138,8 @@ export function migrateParams(
     } else {
       scoopConfig = { ...DEFAULT_BIN_PARAMS.scoop, ...params.scoop };
     }
+    // Strip removed allRows field from old saved designs
+    delete (scoopConfig as unknown as Record<string, unknown>).allRows;
   }
 
   // Migrate old DividerConfig to CompartmentConfig

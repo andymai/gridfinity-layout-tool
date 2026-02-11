@@ -96,8 +96,6 @@ export interface ScoopConfig {
   readonly enabled: boolean;
   /** Scoop radius in mm. 'auto' = min(compartmentSize/3, 15mm) */
   readonly radius: number | 'auto';
-  /** Whether to add scoops to all compartment rows (true) or only front row (false) */
-  readonly allRows: boolean;
 }
 
 /** Horizontal alignment of each label tab within its compartment column */
@@ -399,6 +397,7 @@ export interface DesignerState {
   // Scoped updaters (merge partial into nested config, push history)
   updateBase: (partial: Partial<BaseConfig>) => void;
   updateLabel: (partial: Partial<LabelTabConfig>) => void;
+  updateScoop: (partial: Partial<ScoopConfig>) => void;
 
   // History actions
   undo: () => void;

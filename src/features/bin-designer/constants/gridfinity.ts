@@ -116,6 +116,10 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_DIVIDER_CLEARANCE: 0.0, // mm
   MAX_DIVIDER_CLEARANCE: 0.3, // mm
   DIVIDER_CLEARANCE_STEP: 0.05, // mm
+  // Finger scoop
+  MIN_SCOOP_RADIUS: 5, // mm
+  MAX_SCOOP_RADIUS: 25, // mm
+  SCOOP_RADIUS_STEP: 1, // mm
 } as const;
 
 /**

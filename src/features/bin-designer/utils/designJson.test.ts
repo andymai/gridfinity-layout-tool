@@ -197,7 +197,6 @@ describe('parseDesignJSON', () => {
     expect(result.design?.params.scoop).toEqual({
       enabled: true,
       radius: 'auto',
-      allRows: false,
     });
     expect(result.errors).toHaveLength(0);
   });
