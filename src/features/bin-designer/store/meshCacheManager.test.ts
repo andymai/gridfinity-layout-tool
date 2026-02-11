@@ -14,22 +14,31 @@ function makeEntry(meshSize: number | null): HistoryEntry {
   const vertices = new Float32Array(floatCount);
   const normals = new Float32Array(floatCount);
   const indices = new Uint32Array(indexCount);
+  const edgeVertices = new Float32Array(0);
   return {
     params: { ...DEFAULT_BIN_PARAMS },
-    mesh: createCachedMesh(vertices, normals, indices, Math.floor(indexCount / 3)),
+    mesh: createCachedMesh(vertices, normals, indices, edgeVertices, Math.floor(indexCount / 3)),
   };
 }
 
 describe('meshByteSize', () => {
-  it('should calculate total byte size of vertices + normals + indices', () => {
+  it('should calculate total byte size of vertices + normals + indices + edgeVertices', () => {
     const vertices = new Float32Array(300); // 300 * 4 = 1200 bytes
     const normals = new Float32Array(300); // 300 * 4 = 1200 bytes
     const indices = new Uint32Array(100); // 100 * 4 = 400 bytes
-    expect(meshByteSize(vertices, normals, indices)).toBe(2800);
+    const edgeVertices = new Float32Array(60); // 60 * 4 = 240 bytes
+    expect(meshByteSize(vertices, normals, indices, edgeVertices)).toBe(3040);
   });
 
   it('should return 0 for empty arrays', () => {
-    expect(meshByteSize(new Float32Array(0), new Float32Array(0), new Uint32Array(0))).toBe(0);
+    expect(
+      meshByteSize(
+        new Float32Array(0),
+        new Float32Array(0),
+        new Uint32Array(0),
+        new Float32Array(0)
+      )
+    ).toBe(0);
   });
 });
 
@@ -38,12 +47,14 @@ describe('createCachedMesh', () => {
     const vertices = new Float32Array(90);
     const normals = new Float32Array(90);
     const indices = new Uint32Array(90); // 90 indices = 30 triangles
-    const result = createCachedMesh(vertices, normals, indices, 30);
+    const edgeVertices = new Float32Array(0);
+    const result = createCachedMesh(vertices, normals, indices, edgeVertices, 30);
     expect(result.triangleCount).toBe(30);
     expect(result.byteSize).toBe(1080); // 90*4 * 3
     expect(result.vertices).toBe(vertices);
     expect(result.normals).toBe(normals);
     expect(result.indices).toBe(indices);
+    expect(result.edgeVertices).toBe(edgeVertices);
   });
 });
 
@@ -107,6 +118,7 @@ describe('evictIfNeeded', () => {
         new Float32Array((60 * MB) / 12),
         new Float32Array((60 * MB) / 12),
         new Uint32Array((60 * MB) / 12),
+        new Float32Array(0),
         1000
       ),
     };

@@ -142,6 +142,7 @@ describe('useDesignerStore', () => {
         vertices: verts,
         normals: norms,
         indices: idxs,
+        edgeVertices: new Float32Array(0),
         error: null,
         timingMs: 100,
       });
@@ -177,6 +178,7 @@ describe('useDesignerStore', () => {
         vertices: verts,
         normals: norms,
         indices: idxs,
+        edgeVertices: new Float32Array(0),
         error: null,
         timingMs: 50,
       });
@@ -202,6 +204,7 @@ describe('useDesignerStore', () => {
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 1, 0]),
         indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array(0),
         error: null,
         timingMs: 42,
       };
@@ -215,6 +218,7 @@ describe('useDesignerStore', () => {
         vertices: null,
         normals: null,
         indices: null,
+        edgeVertices: null,
         error: 'Generation failed',
         timingMs: 10,
       };

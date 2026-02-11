@@ -30,10 +30,6 @@ vi.mock('three', () => {
     translate = vi.fn();
   }
 
-  class MockEdgesGeometry {
-    dispose = vi.fn();
-  }
-
   const Vector3 = vi.fn((x = 0, y = 0, z = 0) => ({
     x,
     y,
@@ -61,7 +57,6 @@ vi.mock('three', () => {
     BufferGeometry: MockBufferGeometry,
     BufferAttribute: vi.fn(),
     Float32BufferAttribute: vi.fn(),
-    EdgesGeometry: MockEdgesGeometry,
     DoubleSide: 2,
   };
 });
@@ -92,6 +87,7 @@ describe('BinMesh', () => {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
           indices: new Uint32Array([0, 1, 2]),
+          edgeVertices: new Float32Array(0),
           error: null,
           timingMs: 50,
         },
@@ -111,6 +107,7 @@ describe('BinMesh', () => {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
           indices: new Uint32Array([0, 1, 2]),
+          edgeVertices: new Float32Array(0),
           error: null,
           timingMs: 50,
         },
