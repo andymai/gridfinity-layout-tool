@@ -78,10 +78,10 @@ describe('Header', () => {
   });
 
   describe('rendering', () => {
-    it('renders app title', () => {
+    it('renders tool switcher', () => {
       render(<Header {...defaultProps} />);
 
-      expect(screen.getByText('Gridfinity Layout Tool')).toBeInTheDocument();
+      expect(screen.getByRole('tablist')).toBeInTheDocument();
     });
 
     it('renders layout name', () => {

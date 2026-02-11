@@ -18,7 +18,6 @@ import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import type { BinId } from '@/core/types';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
-import { useLabsStore } from '@/core/store';
 import { useGridNavigation } from '@/features/grid-editor';
 import { isOk, isErr } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -117,7 +116,6 @@ export function useKeyboard() {
   const addToast = useToastStore((state) => state.addToast);
 
   // Tool switching (Shift+D)
-  const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
   const { navigateToDesigner } = useDesignerRouting();
 
   // Grid navigation hook for spatial arrow key navigation
@@ -283,7 +281,7 @@ export function useKeyboard() {
       }
 
       // Tool switch (Shift+D) — toggle to Bin Designer
-      if (key === SHORTCUTS.TOOL_SWITCH && e.shiftKey && !ctrlOrMeta && isDesignerEnabled) {
+      if (key === SHORTCUTS.TOOL_SWITCH && e.shiftKey && !ctrlOrMeta) {
         e.preventDefault();
         navigateToDesigner();
         return;
@@ -502,7 +500,6 @@ export function useKeyboard() {
       toggleHalfBinMode,
       setShowLayoutManager,
       addToast,
-      isDesignerEnabled,
       navigateToDesigner,
       t,
     ]

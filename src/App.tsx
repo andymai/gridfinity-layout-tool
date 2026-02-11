@@ -46,7 +46,7 @@ import { useTranslation } from '@/i18n';
 import { CommandPalette, useCommandPalette } from '@/features/command-palette';
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 
-// Lazy load design-linking dialogs - only needed when bin_designer feature is enabled
+// Lazy load design-linking dialogs - loaded when mutations provider wraps content
 const DesignLinkingDialogs = lazyWithRetry(() =>
   import('./features/design-linking/components/DesignLinkingDialogs').then(
     namedExport('DesignLinkingDialogs')
@@ -151,8 +151,7 @@ export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
 
-  // Bin Designer route detection (behind feature flag)
-  const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
+  // Bin Designer route detection
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
 
   // Command palette state (⌘K / Ctrl+K) — disabled on designer route
@@ -293,10 +292,10 @@ export default function App() {
 
   // Download layout command palette action
   useEffect(() => {
-    const handleDownloadLayout = async () => {
+    const handleDownloadLayout = () => {
       const layout = useLayoutStore.getState().layout;
       const filename = `${layout.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
-      await downloadLayoutAsFile(layout, filename);
+      void downloadLayoutAsFile(layout, filename);
     };
     window.addEventListener('download-layout', handleDownloadLayout);
     return () => window.removeEventListener('download-layout', handleDownloadLayout);
@@ -307,11 +306,11 @@ export default function App() {
   // - Local mode: LocalMutationsProvider
   // Also renders DesignLinkingDialogs once (uses portal, so placement doesn't matter)
   const wrapWithMutations = (content: React.ReactNode) => {
-    const dialogs = isDesignerEnabled ? (
+    const dialogs = (
       <Suspense fallback={null}>
         <DesignLinkingDialogs />
       </Suspense>
-    ) : null;
+    );
     if (isCollaborative && shareId) {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.collaboration')} />}>
@@ -378,8 +377,8 @@ export default function App() {
 
   // Route-specific content (shared overlays rendered once below)
   const routeContent = (() => {
-    // Bin Designer route - lazy loaded, behind feature flag
-    if (isDesignerRoute && isDesignerEnabled) {
+    // Bin Designer route - lazy loaded
+    if (isDesignerRoute) {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>
           <DesignerPage />

@@ -23,7 +23,7 @@ import {
 } from '@/components/Mobile';
 import { PresenceAvatarList } from '@/components/Collab';
 
-// Lazy load design-linking dialogs - only needed when bin_designer feature is enabled
+// Lazy load design-linking dialogs
 const DesignLinkingDialogs = lazyWithRetry(() =>
   import('@/features/design-linking/components/DesignLinkingDialogs').then(
     namedExport('DesignLinkingDialogs')
@@ -31,7 +31,6 @@ const DesignLinkingDialogs = lazyWithRetry(() =>
 );
 import { usePresence } from '@/hooks/usePresence';
 import { useCollabMode } from '@/hooks/useCollabMode';
-import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
@@ -75,7 +74,6 @@ export function MobileLayout({
   const setActiveMobilePanel = useMobileStore((state) => state.setActiveMobilePanel);
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
-  const isDesignerEnabled = useFeatureFlag('bin_designer');
   const { shouldShowDrawTutorial } = useOnboarding();
 
   return (
@@ -123,12 +121,10 @@ export function MobileLayout({
         />
       )}
 
-      {/* Design linking dialogs - requires Bin Designer feature flag */}
-      {isDesignerEnabled && (
-        <Suspense fallback={null}>
-          <DesignLinkingDialogs />
-        </Suspense>
-      )}
+      {/* Design linking dialogs */}
+      <Suspense fallback={null}>
+        <DesignLinkingDialogs />
+      </Suspense>
 
       {/* Mobile help modal (touch gestures guide) */}
       {isMobileHelpOpen && (

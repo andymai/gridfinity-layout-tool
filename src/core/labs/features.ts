@@ -13,14 +13,11 @@ export const FEATURE_FLAGS = [
     name: 'Bin Designer',
     description:
       'Create custom parametric Gridfinity bins with a visual designer. Configure dimensions, compartments, magnet/screw holes, and export STL or 3MF files for 3D printing.',
-    status: 'experimental',
+    status: 'graduated',
     risk: 'medium',
-    warning:
-      'This feature is experimental. The CAD engine runs in a Web Worker and may use significant memory.',
     addedAt: '2026-01',
+    graduatedAt: '2026-02',
     requiresRefresh: false,
-    comingSoon: false,
-    defaultEnabled: true,
   },
   {
     id: 'collaborative_editing',

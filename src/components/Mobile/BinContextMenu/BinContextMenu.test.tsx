@@ -29,10 +29,6 @@ vi.mock('@/hooks/useContextMenu', () => ({
   useContextMenu: () => ({ menuRef: { current: null } }),
 }));
 
-vi.mock('@/hooks/useFeatureFlag', () => ({
-  useFeatureFlag: () => false,
-}));
-
 vi.mock('@/shared/hooks', () => ({
   useResponsive: () => ({ isDesktop: false, isMobile: true }),
 }));

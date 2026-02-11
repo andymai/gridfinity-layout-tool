@@ -8,10 +8,9 @@ import { StepperControl } from '@/shared/components/StepperControl';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
-import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 
-// Lazy load LinkedDesignSection - only needed when bin_designer feature is enabled
+// Lazy load LinkedDesignSection
 const LinkedDesignSection = lazy(() =>
   import('@/features/design-linking/components/LinkedDesignSection').then((m) => ({
     default: m.LinkedDesignSection,
@@ -49,7 +48,6 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   } = inspector;
 
   const halfBinMode = useUIStore((state) => state.halfBinMode);
-  const isDesignerEnabled = useFeatureFlag('bin_designer');
   const t = useTranslation();
 
   if (!bin) return null;
@@ -308,12 +306,10 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           className="w-full justify-center py-2 rounded-lg bg-surface-elevated/50 hover:bg-surface-hover border border-stroke-subtle"
         />
 
-        {/* Linked Design - requires Bin Designer feature flag */}
-        {isDesignerEnabled && (
-          <Suspense fallback={null}>
-            <LinkedDesignSection bin={bin} variant={variant} />
-          </Suspense>
-        )}
+        {/* Linked Design */}
+        <Suspense fallback={null}>
+          <LinkedDesignSection bin={bin} variant={variant} />
+        </Suspense>
 
         {/* Notes */}
         <div>
