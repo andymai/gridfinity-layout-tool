@@ -666,8 +666,8 @@ export function useCutoutInteraction({
         onLock,
         onUnlock,
         setPreview,
-        setActiveGuides,
-        setDrawingPreview: () => setDrawingPreview(null),
+        clearActiveGuides: () => setActiveGuides([]),
+        clearDrawingPreview: () => setDrawingPreview(null),
         setMode,
         setSelection,
       });

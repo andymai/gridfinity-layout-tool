@@ -7,26 +7,14 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { MIN_CUTOUT_SIZE } from '../geometry';
+import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, PreviewSetters, DeadZoneRef } from './types';
 
 /** Dead zone in mm before scale starts updating preview. */
 const DEAD_ZONE_MM = 0.5;
 
-/** Mode state for group scaling. */
-export interface GroupScalingMode {
-  readonly type: 'group-scaling';
-  readonly startDist: number;
-  readonly center: { readonly x: number; readonly y: number };
-  readonly initialStates: ReadonlyMap<
-    string,
-    {
-      readonly x: number;
-      readonly y: number;
-      readonly width: number;
-      readonly depth: number;
-    }
-  >;
-}
+/** Mode state for group scaling, derived from the global InteractionMode union. */
+type GroupScalingMode = Extract<InteractionMode, { type: 'group-scaling' }>;
 
 /**
  * Compute group scale preview for all members.

@@ -7,18 +7,11 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { rotatePoint } from '../geometry';
+import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, PreviewSetters, DeadZoneRef } from './types';
 
-/** Mode state for group rotation. */
-export interface GroupRotatingMode {
-  readonly type: 'group-rotating';
-  readonly startAngle: number;
-  readonly center: { readonly x: number; readonly y: number };
-  readonly initialStates: ReadonlyMap<
-    string,
-    { readonly x: number; readonly y: number; readonly rotation: number }
-  >;
-}
+/** Mode state for group rotation, derived from the global InteractionMode union. */
+type GroupRotatingMode = Extract<InteractionMode, { type: 'group-rotating' }>;
 
 /**
  * Compute group rotation preview for all members.

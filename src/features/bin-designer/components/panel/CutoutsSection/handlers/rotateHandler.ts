@@ -7,15 +7,11 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { clampRotationToBounds } from '../geometry';
+import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, PreviewSetters, DeadZoneRef } from './types';
 
-/** Mode state for rotating a single cutout. */
-export interface RotatingMode {
-  readonly type: 'rotating';
-  readonly cutoutId: string;
-  readonly startAngle: number;
-  readonly initialRotation: number;
-}
+/** Mode state for rotating a single cutout, derived from the global InteractionMode union. */
+type RotatingMode = Extract<InteractionMode, { type: 'rotating' }>;
 
 /**
  * Compute rotation preview for the target cutout.

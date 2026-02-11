@@ -7,18 +7,14 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { constrainGroupDrag, computeBounds, findAlignmentGuides } from '../geometry';
+import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, DeadZoneRef } from './types';
 
 /** Dead zone in mm before drag starts updating preview. */
 const DEAD_ZONE_MM = 0.5;
 
-/** Mode state for dragging. */
-export interface DraggingMode {
-  readonly type: 'dragging';
-  readonly startX: number;
-  readonly startY: number;
-  readonly offsets: ReadonlyMap<string, { readonly dx: number; readonly dy: number }>;
-}
+/** Mode state for dragging, derived from the global InteractionMode union. */
+type DraggingMode = Extract<InteractionMode, { type: 'dragging' }>;
 
 /**
  * Compute drag preview positions for all selected cutouts.

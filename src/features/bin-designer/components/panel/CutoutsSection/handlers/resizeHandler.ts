@@ -6,21 +6,15 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import type { ResizeHandle } from '../useCutoutInteraction';
 import { calculateCutoutResize, MIN_CUTOUT_SIZE } from '../geometry';
-import type { StartRect } from '../geometry';
+import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, DeadZoneRef } from './types';
 
 /** Dead zone in mm before resize starts updating preview. */
 const DEAD_ZONE_MM = 0.5;
 
-/** Mode state for resizing. */
-export interface ResizingMode {
-  readonly type: 'resizing';
-  readonly cutoutId: string;
-  readonly handle: ResizeHandle;
-  readonly startRect: StartRect;
-}
+/** Mode state for resizing, derived from the global InteractionMode union. */
+type ResizingMode = Extract<InteractionMode, { type: 'resizing' }>;
 
 /**
  * Compute resize preview for the target cutout.

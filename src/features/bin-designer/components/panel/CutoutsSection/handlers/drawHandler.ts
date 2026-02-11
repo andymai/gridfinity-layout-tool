@@ -5,17 +5,12 @@
  * support: Shift constrains to square, Alt draws from center.
  */
 
-import type { CutoutShape } from '@/features/bin-designer/types';
 import { MIN_CUTOUT_SIZE } from '../geometry';
+import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters } from './types';
 
-/** Mode state for drawing. */
-export interface DrawingMode {
-  readonly type: 'drawing';
-  readonly shape: CutoutShape;
-  readonly startMmX: number;
-  readonly startMmY: number;
-}
+/** Mode state for drawing, derived from the global InteractionMode union. */
+type DrawingMode = Extract<InteractionMode, { type: 'drawing' }>;
 
 /**
  * Compute drawing preview dimensions from cursor position and modifiers.

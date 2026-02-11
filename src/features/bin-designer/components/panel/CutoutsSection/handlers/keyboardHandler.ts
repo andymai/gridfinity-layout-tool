@@ -33,8 +33,8 @@ export interface KeyboardHandlerContext {
   readonly onLock?: (ids: readonly string[]) => void;
   readonly onUnlock?: (ids: readonly string[]) => void;
   readonly setPreview: (preview: ReadonlyMap<string, Partial<Cutout>>) => void;
-  readonly setActiveGuides: (guides: readonly unknown[]) => void;
-  readonly setDrawingPreview: (preview: null) => void;
+  readonly clearActiveGuides: () => void;
+  readonly clearDrawingPreview: () => void;
   readonly setMode: (mode: InteractionMode) => void;
   readonly setSelection: (selection: ReadonlySet<string>) => void;
 }
@@ -42,9 +42,8 @@ export interface KeyboardHandlerContext {
 /**
  * Handle a keydown event in the cutout editor.
  *
- * Returns true if the event was handled (to allow the caller to call
- * preventDefault if needed), but internally the handler calls
- * preventDefault on the event directly.
+ * Inspects the keyboard event and, when it matches a supported shortcut,
+ * updates the cutouts and calls `preventDefault` on the event directly.
  */
 export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContext): void {
   // Don't capture when typing in an input
@@ -66,8 +65,8 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       e.preventDefault();
       // Cancel in-progress drag/resize/rotate/drawing without committing
       ctx.setPreview(new Map());
-      ctx.setActiveGuides([]);
-      ctx.setDrawingPreview(null);
+      ctx.clearActiveGuides();
+      ctx.clearDrawingPreview();
       if (ctx.mode.type === 'idle') {
         // Two-stage: if inside a group (single member selected), first re-select whole group
         if (ctx.selection.size === 1) {

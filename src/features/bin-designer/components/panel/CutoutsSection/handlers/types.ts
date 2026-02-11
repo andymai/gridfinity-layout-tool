@@ -8,6 +8,7 @@
 
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import type { AlignmentGuide } from '../geometry';
+import type { InteractionMode } from '../useCutoutInteraction';
 
 // ── Pointer event context shared by all move handlers ────────────────────────
 
@@ -59,7 +60,7 @@ export interface DeadZoneRef {
 
 // ── Mode transition ──────────────────────────────────────────────────────────
 
-import type { InteractionMode } from '../useCutoutInteraction';
+export type { InteractionMode } from '../useCutoutInteraction';
 
 /** Callback to transition the interaction state machine. */
 export type SetModeFn = (mode: InteractionMode) => void;
