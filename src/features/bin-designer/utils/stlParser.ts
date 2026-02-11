@@ -40,10 +40,20 @@ export function parseSTLBinary(buffer: ArrayBuffer): ParsedSTLMesh {
   const view = new DataView(buffer);
   const triangleCount = view.getUint32(COUNT_OFFSET, true);
 
-  const expectedSize = MIN_FILE_SIZE + triangleCount * TRIANGLE_SIZE;
-  if (buffer.byteLength < expectedSize) {
+  const payloadBytes = buffer.byteLength - MIN_FILE_SIZE;
+
+  // Ensure payload length aligns with fixed per-triangle record size
+  if (payloadBytes % TRIANGLE_SIZE !== 0) {
     throw new Error(
-      `Invalid STL: expected ${expectedSize} bytes for ${triangleCount} triangles, got ${buffer.byteLength}`
+      `Invalid STL: payload size (${payloadBytes} bytes) is not a multiple of triangle record size (${TRIANGLE_SIZE} bytes)`
+    );
+  }
+
+  const expectedSize = MIN_FILE_SIZE + triangleCount * TRIANGLE_SIZE;
+  if (buffer.byteLength !== expectedSize) {
+    const actualTriangleCount = payloadBytes / TRIANGLE_SIZE;
+    throw new Error(
+      `Invalid STL: triangle count header (${triangleCount}) does not match payload (${actualTriangleCount} triangles)`
     );
   }
 

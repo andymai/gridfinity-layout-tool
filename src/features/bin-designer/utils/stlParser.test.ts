@@ -64,11 +64,19 @@ describe('parseSTLBinary', () => {
   });
 
   it('throws on triangle count mismatch', () => {
-    // Build a buffer with header claiming 100 triangles but only 84 bytes total
+    // Build a buffer with header claiming 100 triangles but only 84 bytes total (0 payload)
     const buffer = new ArrayBuffer(84);
     const view = new DataView(buffer);
     view.setUint32(80, 100, true); // claim 100 triangles
-    expect(() => parseSTLBinary(buffer)).toThrow(/expected/);
+    expect(() => parseSTLBinary(buffer)).toThrow(/does not match/);
+  });
+
+  it('throws on misaligned payload size', () => {
+    // 84-byte header + 30 bytes of junk (not a multiple of 50-byte triangle records)
+    const buffer = new ArrayBuffer(84 + 30);
+    const view = new DataView(buffer);
+    view.setUint32(80, 0, true);
+    expect(() => parseSTLBinary(buffer)).toThrow(/not a multiple/);
   });
 
   it('handles empty mesh (0 triangles)', () => {

@@ -278,5 +278,28 @@ describe('ExportDialog', () => {
 
     const radios = screen.getAllByRole('radio');
     expect(radios).toHaveLength(3);
+
+    // Active radio has tabIndex 0, others have -1
+    expect(radios[0]).toHaveAttribute('tabindex', '0'); // STL (active)
+    expect(radios[1]).toHaveAttribute('tabindex', '-1'); // STEP
+    expect(radios[2]).toHaveAttribute('tabindex', '-1'); // 3MF
+  });
+
+  it('format selector supports arrow key navigation', () => {
+    render(<ExportDialog />);
+    const radios = screen.getAllByRole('radio');
+
+    // Focus STL and press ArrowRight → should select STEP
+    radios[0].focus();
+    fireEvent.keyDown(radios[0], { key: 'ArrowRight' });
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('step');
+
+    // Press ArrowRight again → should select 3MF
+    fireEvent.keyDown(radios[1], { key: 'ArrowRight' });
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('3mf');
+
+    // Press ArrowRight again → should wrap to STL
+    fireEvent.keyDown(radios[2], { key: 'ArrowRight' });
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('stl');
   });
 });

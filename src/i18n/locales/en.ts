@@ -1145,9 +1145,6 @@ const en: Record<string, string> = {
   // ===========================================================================
   'binDesigner.exportBin': 'Export bin',
   'binDesigner.exportSTL': 'Export bin as STL',
-  'binDesigner.formatSTL': 'STL',
-  'binDesigner.formatSTEP': 'STEP',
-  'binDesigner.format3MF': '3MF',
   'binDesigner.exportSuccess': '{format} exported successfully',
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',

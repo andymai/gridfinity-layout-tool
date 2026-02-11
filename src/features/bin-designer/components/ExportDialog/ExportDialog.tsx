@@ -26,6 +26,12 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
   '3mf': '.3mf',
 };
 
+/** Ordered format options for the selector */
+const FORMAT_OPTIONS: readonly ExportFileFormat[] = ['stl', 'step', '3mf'] as const;
+
+/** Display labels for each format (file format names are universal acronyms) */
+const FORMAT_LABELS: Record<ExportFileFormat, string> = { stl: 'STL', step: 'STEP', '3mf': '3MF' };
+
 export function ExportDialog() {
   const t = useTranslation();
   const { printSettings, defaultPrintBedSize } = useSettingsStore(
@@ -174,28 +180,12 @@ export function ExportDialog() {
           </p>
 
           {/* Format Selector */}
-          <div className="mb-4">
-            <label className="mb-2 block text-sm font-medium text-content-secondary">
-              {t('binDesigner.format')}
-            </label>
-            <div className="flex gap-2" role="radiogroup" aria-label={t('binDesigner.format')}>
-              <FormatButton
-                active={activeFormat === 'stl'}
-                onClick={() => handleFormatChange('stl')}
-                label={t('binDesigner.formatSTL')}
-              />
-              <FormatButton
-                active={activeFormat === 'step'}
-                onClick={() => handleFormatChange('step')}
-                label={t('binDesigner.formatSTEP')}
-              />
-              <FormatButton
-                active={activeFormat === '3mf'}
-                onClick={() => handleFormatChange('3mf')}
-                label={t('binDesigner.format3MF')}
-              />
-            </div>
-          </div>
+          <FormatSelector
+            activeFormat={activeFormat}
+            onChange={handleFormatChange}
+            formatLabel={t('binDesigner.format')}
+            labels={FORMAT_LABELS}
+          />
 
           {/* File Name */}
           <div className="mb-4">
@@ -391,28 +381,81 @@ function getFileSizeLabel(format: ExportFileFormat, triangleCount: number): stri
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function FormatButton({
-  active,
-  onClick,
-  label,
+/** Accessible format radio group with roving tabindex and arrow key navigation */
+function FormatSelector({
+  activeFormat,
+  onChange,
+  formatLabel,
+  labels,
 }: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
+  activeFormat: ExportFileFormat;
+  onChange: (format: ExportFileFormat) => void;
+  formatLabel: string;
+  labels: Record<ExportFileFormat, string>;
 }) {
+  const groupRef = useRef<HTMLDivElement>(null);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const currentIndex = FORMAT_OPTIONS.indexOf(activeFormat);
+      let nextIndex = currentIndex;
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        nextIndex = (currentIndex + 1) % FORMAT_OPTIONS.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        nextIndex = (currentIndex - 1 + FORMAT_OPTIONS.length) % FORMAT_OPTIONS.length;
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        nextIndex = 0;
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        nextIndex = FORMAT_OPTIONS.length - 1;
+      } else {
+        return;
+      }
+
+      onChange(FORMAT_OPTIONS[nextIndex]);
+      const buttons = groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+      buttons?.[nextIndex]?.focus();
+    },
+    [activeFormat, onChange]
+  );
+
   return (
-    <button
-      onClick={onClick}
-      role="radio"
-      aria-checked={active}
-      className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-colors ${
-        active
-          ? 'bg-accent-muted text-accent'
-          : 'bg-surface text-content-secondary hover:bg-surface-hover'
-      }`}
-    >
-      {label}
-    </button>
+    <div className="mb-4">
+      <label className="mb-2 block text-sm font-medium text-content-secondary">{formatLabel}</label>
+      <div
+        ref={groupRef}
+        className="flex gap-2"
+        role="radiogroup"
+        aria-label={formatLabel}
+        onKeyDown={handleKeyDown}
+      >
+        {FORMAT_OPTIONS.map((fmt) => {
+          const isActive = fmt === activeFormat;
+          const focusIndex = isActive ? 0 : -1;
+          return (
+            <button
+              key={fmt}
+              type="button"
+              role="radio"
+              tabIndex={focusIndex}
+              aria-checked={isActive}
+              onClick={() => onChange(fmt)}
+              className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                isActive
+                  ? 'bg-accent-muted text-accent'
+                  : 'bg-surface text-content-secondary hover:bg-surface-hover'
+              }`}
+            >
+              {labels[fmt]}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
