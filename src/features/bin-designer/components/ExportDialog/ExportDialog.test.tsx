@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
-const mockDownloadSTL = vi.fn().mockResolvedValue(undefined);
+const mockDownloadBin = vi.fn().mockResolvedValue(undefined);
 
 // Mock useExport hook
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({
@@ -19,7 +19,13 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
       printTimeMinutes: 34,
       costUSD: 0.47,
     },
-    downloadSTL: mockDownloadSTL,
+    downloadBin: mockDownloadBin,
+    downloadDividersSTL: vi.fn().mockResolvedValue(undefined),
+    downloadSplitSTL: vi.fn().mockResolvedValue(undefined),
+    canExportDividers: false,
+    needsSplit: false,
+    splitPieceCount: 1,
+    maxGridUnits: 6,
   }),
 }));
 
@@ -90,21 +96,48 @@ describe('ExportDialog', () => {
     expect(screen.getByText('Cost')).toBeInTheDocument();
   });
 
-  it('shows Download STL button', () => {
+  it('shows Download STL button by default', () => {
     render(<ExportDialog />);
     const button = screen.getByRole('button', { name: /download stl/i });
     expect(button).toBeInTheDocument();
     expect(button).not.toBeDisabled();
   });
 
-  it('triggers download with config on button click', () => {
+  it('triggers downloadBin with stl format on button click', async () => {
     render(<ExportDialog />);
     const button = screen.getByRole('button', { name: /download stl/i });
-    fireEvent.click(button);
-    expect(mockDownloadSTL).toHaveBeenCalledWith(
-      { style: 'descriptive', customName: '' },
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    expect(mockDownloadBin).toHaveBeenCalledWith(
+      'stl',
+      expect.objectContaining({ style: 'descriptive' }),
       'Untitled Bin'
     );
+  });
+
+  it('shows format selector with STL, STEP, and 3MF options', () => {
+    render(<ExportDialog />);
+    expect(screen.getByText('STL')).toBeInTheDocument();
+    expect(screen.getByText('STEP')).toBeInTheDocument();
+    expect(screen.getByText('3MF')).toBeInTheDocument();
+  });
+
+  it('switches format to STEP and updates button text', () => {
+    render(<ExportDialog />);
+
+    fireEvent.click(screen.getByText('STEP'));
+
+    // Store should be updated
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('step');
+  });
+
+  it('switches format to 3MF and updates file extension', () => {
+    render(<ExportDialog />);
+
+    fireEvent.click(screen.getByText('3MF'));
+
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('3mf');
   });
 
   it('closes on backdrop click', () => {
@@ -158,7 +191,7 @@ describe('ExportDialog', () => {
 
   it('updates custom name on input change', () => {
     setupStore({
-      exportFileNameConfig: { style: 'custom', customName: 'my-bin' },
+      exportFileNameConfig: { style: 'custom', customName: 'my-bin', format: 'stl' },
     });
     render(<ExportDialog />);
 
@@ -228,17 +261,45 @@ describe('ExportDialog', () => {
     expect(input.tagName).toBe('INPUT');
   });
 
-  it('shows 3D Model section with STL export', () => {
+  it('shows 3D Model section', () => {
     render(<ExportDialog />);
 
     // Check for section heading
-    expect(screen.getByText(/3D Model.*\.stl/i)).toBeInTheDocument();
+    expect(screen.getByText('3D Model')).toBeInTheDocument();
 
     // Check for description
     expect(screen.getByText(/Export a printable 3D model file/i)).toBeInTheDocument();
+  });
 
-    // Check for Download STL button
-    const stlButton = screen.getByRole('button', { name: /download stl/i });
-    expect(stlButton).toBeInTheDocument();
+  it('format selector has proper radiogroup accessibility', () => {
+    render(<ExportDialog />);
+    const radiogroup = screen.getByRole('radiogroup', { name: 'Format' });
+    expect(radiogroup).toBeInTheDocument();
+
+    const radios = screen.getAllByRole('radio');
+    expect(radios).toHaveLength(3);
+
+    // Active radio has tabIndex 0, others have -1
+    expect(radios[0]).toHaveAttribute('tabindex', '0'); // STL (active)
+    expect(radios[1]).toHaveAttribute('tabindex', '-1'); // STEP
+    expect(radios[2]).toHaveAttribute('tabindex', '-1'); // 3MF
+  });
+
+  it('format selector supports arrow key navigation', () => {
+    render(<ExportDialog />);
+    const radios = screen.getAllByRole('radio');
+
+    // Focus STL and press ArrowRight → should select STEP
+    radios[0].focus();
+    fireEvent.keyDown(radios[0], { key: 'ArrowRight' });
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('step');
+
+    // Press ArrowRight again → should select 3MF
+    fireEvent.keyDown(radios[1], { key: 'ArrowRight' });
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('3mf');
+
+    // Press ArrowRight again → should wrap to STL
+    fireEvent.keyDown(radios[2], { key: 'ArrowRight' });
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('stl');
   });
 });

@@ -1145,8 +1145,7 @@ const en: Record<string, string> = {
   // ===========================================================================
   'binDesigner.exportBin': 'Export bin',
   'binDesigner.exportSTL': 'Export bin as STL',
-  'binDesigner.formatSTL': 'STL',
-  'binDesigner.format3MF': '3MF',
+  'binDesigner.exportSuccess': '{format} exported successfully',
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',
   'binDesigner.dimensions': 'Dimensions',
@@ -1345,7 +1344,6 @@ const en: Record<string, string> = {
   'binDesigner.dismissTouchHints': 'Dismiss touch hints',
   'binDesigner.dividerWalls': 'Divider walls',
   'binDesigner.downloadFormat': 'Download {format}',
-  'binDesigner.downloadSTL': 'Download STL',
   'binDesigner.downloadZip': 'Download ZIP',
   'binDesigner.dragToOrbit': 'Drag to orbit',
   'binDesigner.experimental': 'Experimental',
@@ -1407,7 +1405,6 @@ const en: Record<string, string> = {
   'binDesigner.soon': 'Soon',
   'binDesigner.specFeatures': 'Spec Features',
   'binDesigner.startANewDesign': 'Start a new design',
-  'binDesigner.stlExportedSuccessfully': 'STL exported successfully',
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
   'binDesigner.splitExport.enableSplit': 'Split into pieces',

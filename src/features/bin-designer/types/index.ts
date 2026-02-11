@@ -342,12 +342,17 @@ export interface DesignerHistory {
 /** File naming style for exports */
 export type FileNameStyle = 'descriptive' | 'compact' | 'custom';
 
+/** Export file format for the primary bin download */
+export type ExportFileFormat = 'stl' | 'step' | '3mf';
+
 /** Export filename configuration stored per design */
 export interface ExportFileNameConfig {
   /** Which naming mode to use */
   readonly style: FileNameStyle;
   /** User-provided filename (without extension) for 'custom' mode */
   readonly customName: string;
+  /** Export file format. Optional for backward compat with saved designs pre-format selection. */
+  readonly format?: ExportFileFormat;
 }
 
 // =============================================================================

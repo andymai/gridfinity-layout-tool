@@ -104,7 +104,7 @@ describe('useAutoSave', () => {
       'existing-id',
       expect.objectContaining({ width: 4 }),
       null, // thumbnail (null since no canvas in test)
-      { style: 'descriptive', customName: '' }
+      expect.objectContaining({ style: 'descriptive', customName: '' })
     );
     expect(useDesignerStore.getState().saveStatus).toBe('saved');
   });
@@ -140,7 +140,7 @@ describe('useAutoSave', () => {
       'existing-id',
       expect.objectContaining({ width: 4 }),
       null,
-      { style: 'descriptive', customName: '' }
+      expect.objectContaining({ style: 'descriptive', customName: '' })
     );
   });
 
@@ -227,7 +227,7 @@ describe('useAutoSave', () => {
       'new-id',
       expect.objectContaining({ width: 5 }),
       null,
-      { style: 'descriptive', customName: '' }
+      expect.objectContaining({ style: 'descriptive', customName: '' })
     );
   });
 });
