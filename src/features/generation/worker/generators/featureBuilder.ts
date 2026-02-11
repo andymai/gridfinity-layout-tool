@@ -24,8 +24,10 @@ import {
   rotate,
   edgeFinder,
   getBounds,
+  isOk,
+  curveLength,
 } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, Edge } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
 import {
@@ -244,6 +246,129 @@ function buildCutoutShape(cutout: {
   return shape;
 }
 
+// ─── Adaptive Fillet Constants ───────────────────────────────────────────────
+
+/** Minimum fillet radius in mm — below this OCCT cannot produce valid geometry. */
+const MIN_FILLET_RADIUS = 0.1;
+
+/** Edges shorter than this (mm) are degenerate seam artifacts; skip them entirely. */
+const MIN_EDGE_LENGTH = 0.2;
+
+/**
+ * Safety margin when fitting a fillet to a short edge.
+ * Radius is set to `(edgeLength / 2) * SHORT_EDGE_MARGIN` so the fillet
+ * doesn't consume the full edge span and fail.
+ */
+const SHORT_EDGE_MARGIN = 0.9;
+
+/**
+ * Fraction of the target radius applied to junction edges (where two merged
+ * shapes meet after boolean union). 30% is empirically the sweet spot:
+ * high enough to keep the scoop visible, low enough to avoid the curvature
+ * discontinuity that causes pinching. Validated across circle+rect, rect+rect,
+ * and rotated shape combinations at radii from 1–6 mm.
+ */
+const JUNCTION_RADIUS_FACTOR = 0.3;
+
+/** Progressive fallback multipliers when a fillet attempt fails. */
+const FALLBACK_FACTORS = [1.0, 0.75, 0.5, 0.25] as const;
+
+// ─── Adaptive Fillet Helpers ─────────────────────────────────────────────────
+
+/**
+ * Apply a fillet with progressive radius fallback for ungrouped cutouts.
+ * Tries 100%, 75%, 50%, 25% of the target radius. Returns original shape on total failure.
+ */
+function applyFilletWithFallback(shape: Shape3D, edges: readonly Edge[], radius: number): Shape3D {
+  for (const factor of FALLBACK_FACTORS) {
+    const r = radius * factor;
+    if (r < MIN_FILLET_RADIUS) break;
+    try {
+      const result = fillet(shape, edges as Edge[], r);
+      if (isOk(result)) return unwrap(result);
+    } catch {
+      // Try next reduction
+    }
+  }
+  return shape;
+}
+
+/**
+ * Apply an adaptive scoop fillet to a fused group of cutout shapes.
+ *
+ * Uses brepjs's per-edge radius callback to classify each bottom edge:
+ * - Short edges (length < 2× radius) get proportionally reduced radius
+ * - Junction edges (center falls inside 2+ member AABBs) get reduced radius
+ * - Normal perimeter edges get the full requested radius
+ *
+ * On failure, falls back to progressively reduced uniform radii.
+ */
+function applyAdaptiveScoop(
+  shape: Shape3D,
+  edges: readonly Edge[],
+  targetRadius: number,
+  members: ReadonlyArray<{
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly depth: number;
+    readonly rotation: number;
+  }>,
+  originX: number,
+  originY: number
+): Shape3D {
+  // Build AABBs for each member (using diagonal for rotation safety)
+  const memberBounds = members.map((m) => {
+    const cx = originX + m.x + m.width / 2;
+    const cy = originY + m.y + m.depth / 2;
+    const diag = Math.sqrt(m.width ** 2 + m.depth ** 2) / 2;
+    return { minX: cx - diag, minY: cy - diag, maxX: cx + diag, maxY: cy + diag };
+  });
+
+  // Per-edge radius callback
+  const radiusCallback = (edge: Edge): number | null => {
+    const len = curveLength(edge);
+
+    if (len < MIN_EDGE_LENGTH) return null;
+
+    // Short edges get proportionally reduced radius
+    if (len < 2 * targetRadius) {
+      const r = (len / 2) * SHORT_EDGE_MARGIN;
+      return r < MIN_FILLET_RADIUS ? null : r;
+    }
+
+    // Classify as junction edge: edge center falls inside 2+ member AABBs
+    const b = getBounds(edge);
+    const midX = (b.xMin + b.xMax) / 2;
+    const midY = (b.yMin + b.yMax) / 2;
+    let containCount = 0;
+    for (const mb of memberBounds) {
+      if (midX >= mb.minX && midX <= mb.maxX && midY >= mb.minY && midY <= mb.maxY) {
+        containCount++;
+        if (containCount >= 2) break;
+      }
+    }
+
+    if (containCount >= 2) {
+      const r = targetRadius * JUNCTION_RADIUS_FACTOR;
+      return r < MIN_FILLET_RADIUS ? null : r;
+    }
+
+    return targetRadius;
+  };
+
+  // Try adaptive per-edge fillet first
+  try {
+    const result = fillet(shape, edges as Edge[], radiusCallback);
+    if (isOk(result)) return unwrap(result);
+  } catch {
+    // Fall through to uniform fallback
+  }
+
+  // Progressive uniform fallback
+  return applyFilletWithFallback(shape, edges, targetRadius);
+}
+
 /**
  * Build cutout cavity cuts for solid bins.
  * Cutouts cut down from the solid fill surface with configurable depth.
@@ -311,11 +436,7 @@ export function buildCutoutCuts(
         })
         .findAll(shape);
       if (scoopEdges.length > 0) {
-        try {
-          shape = unwrap(fillet(shape, scoopEdges, scoopR));
-        } catch {
-          // Fillet can fail on complex geometries; skip if it does
-        }
+        shape = applyFilletWithFallback(shape, scoopEdges, scoopR);
       }
     }
 
@@ -389,11 +510,7 @@ export function buildCutoutCuts(
         .findAll(fused);
       // Only apply fillet if we found edges (avoid empty edge list error)
       if (groupScoopEdges.length > 0) {
-        try {
-          fused = unwrap(fillet(fused, groupScoopEdges, scoopR));
-        } catch {
-          // Fillet can fail on complex geometries; skip if it does
-        }
+        fused = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, groupMembers, originX, originY);
       }
     }
 
@@ -781,11 +898,7 @@ export function buildScoopRamps(
           })
           .findAll(scoopSolid);
         if (smoothEdges.length > 0) {
-          try {
-            scoopSolid = unwrap(fillet(scoopSolid, smoothEdges, filletR));
-          } catch {
-            // Fillet can fail on complex geometries; skip if it does
-          }
+          scoopSolid = applyFilletWithFallback(scoopSolid, smoothEdges, filletR);
         }
       }
 
