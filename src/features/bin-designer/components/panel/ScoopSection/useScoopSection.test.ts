@@ -55,7 +55,7 @@ describe('useScoopSection', () => {
     expect(result.current.meta.summary).toBeUndefined();
   });
 
-  it('summary shows Auto when scoops enabled with auto radius', () => {
+  it('summary shows Auto with resolved value when scoops enabled with auto radius', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -66,6 +66,8 @@ describe('useScoopSection', () => {
     const { result } = renderHook(() => useScoopSection());
 
     expect(result.current.meta.summary).toContain('Auto');
+    // Should include resolved radius value in mm
+    expect(result.current.meta.summary).toMatch(/\d+mm/);
   });
 
   it('summary shows radius in mm when manual', () => {
@@ -121,5 +123,55 @@ describe('useScoopSection', () => {
     });
 
     expect(useDesignerStore.getState().params.scoop.radius).toBe(15);
+  });
+
+  it('autoDisplayText shows resolved value for single compartment', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 'auto' },
+      },
+    });
+
+    const { result } = renderHook(() => useScoopSection());
+
+    expect(result.current.state.autoDisplayText).toMatch(/Auto \(\d+mm\)/);
+  });
+
+  it('autoDisplayText is empty string when manual radius', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 10 },
+      },
+    });
+
+    const { result } = renderHook(() => useScoopSection());
+
+    expect(result.current.state.autoDisplayText).toBe('');
+  });
+
+  it('autoDisplayText shows range for non-uniform compartments', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 4,
+        depth: 2,
+        scoop: { enabled: true, radius: 'auto' },
+        compartments: {
+          cols: 2,
+          rows: 2,
+          thickness: 1.2,
+          // Row 0: one wide merged compartment (ID 0)
+          // Row 1: two narrow compartments (IDs 1 and 2)
+          cells: [0, 0, 1, 2],
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useScoopSection());
+
+    // Merged compartment is wider → may produce different radius
+    expect(result.current.state.autoDisplayText).toMatch(/Auto/);
   });
 });

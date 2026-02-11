@@ -235,6 +235,8 @@
   "binDesigner.saving": "Enregistrement...",
   "binDesigner.scoopRadius": "Rayon",
   "binDesigner.scoopRadiusAuto": "Automatique (s'adapte à la taille du compartiment)",
+  "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",
+  "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.searchDesigns": "Rechercher des designs…",
   "binDesigner.searchDesignsAriaLabel": "Rechercher des designs",
   "binDesigner.shareDesign": "Partager le Design",

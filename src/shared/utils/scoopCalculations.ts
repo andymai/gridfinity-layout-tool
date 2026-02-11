@@ -9,7 +9,8 @@
 /**
  * Resolve scoop radius for a compartment.
  *
- * Auto mode: min(smallerDim/3, 15mm), clamped to fit compartment and height.
+ * Auto mode: min(smallerDim/3, max(15, wallHeight*0.5), compD/3),
+ * clamped to fit compartment depth and wall height.
  * Manual mode: clamped to fit compartment and height.
  *
  * For front-row scoops with a stacking lip, auto radius is increased to reach
@@ -38,7 +39,11 @@ export function resolveScoopRadius(
   const minDim = Math.min(compW, compD);
   let radius: number;
   if (scoopRadius === 'auto') {
-    radius = Math.min(minDim / 3, 15);
+    // Three-factor balance: curvature, usability, volume
+    //  - minDim/3: radius proportional to compartment size (curvature)
+    //  - max(15, wallHeight*0.5): height-aware cap for tall bins (usability)
+    //  - compD/3: preserve ≥2/3 of depth for storage (volume)
+    radius = Math.min(minDim / 3, Math.max(15, wallHeight * 0.5), compD / 3);
   } else {
     radius = scoopRadius;
   }

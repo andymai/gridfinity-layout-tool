@@ -22,6 +22,11 @@ import {
   scalePrintTime,
   type PrintSettings,
 } from '@/shared/printSettings';
+import {
+  resolveScoopRadius,
+  computeLipOffset,
+  computeInteriorHeight,
+} from '@/shared/utils/scoopCalculations';
 
 // ─── Result Type ─────────────────────────────────────────────────────────────
 
@@ -324,11 +329,26 @@ function computeScoopVolume(
   const colWidth = innerW / cols;
   const rowDepth = innerD / rows;
 
-  // Resolve 'auto' radius
-  const scoopRadius =
-    params.scoop.radius === 'auto'
-      ? Math.min(Math.min(colWidth, rowDepth) / 3, 15)
-      : params.scoop.radius;
+  const hasLip = params.base.stackingLip;
+  const isFlat = params.base.style === 'flat';
+  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
+  const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
+
+  // Use representative compartment (single-row bins are front row, multi-row are not)
+  const isRepresentativeMinRow = rows === 1;
+  const lipOffset = computeLipOffset(hasLip, isRepresentativeMinRow, lipTaperWidth, wallThickness);
+  const scoopRadius = resolveScoopRadius(
+    params.scoop.radius,
+    colWidth,
+    rowDepth,
+    isRepresentativeMinRow,
+    hasLip,
+    wallHeight,
+    interiorHeight,
+    lipOffset
+  );
 
   const numScoops = cols * rows;
 

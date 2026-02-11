@@ -235,6 +235,8 @@
   "binDesigner.saving": "Lagrer...",
   "binDesigner.scoopRadius": "Radius",
   "binDesigner.scoopRadiusAuto": "Automatisk (tilpasser seg romstørrelse)",
+  "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",
+  "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.searchDesigns": "Søk etter design…",
   "binDesigner.searchDesignsAriaLabel": "Søk etter design",
   "binDesigner.shareDesign": "Del design",

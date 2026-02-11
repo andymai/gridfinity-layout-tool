@@ -235,6 +235,8 @@
   "binDesigner.saving": "Speichere...",
   "binDesigner.scoopRadius": "Radius",
   "binDesigner.scoopRadiusAuto": "Automatisch (passt sich an Fachgröße an)",
+  "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",
+  "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.searchDesigns": "Designs suchen…",
   "binDesigner.searchDesignsAriaLabel": "Designs suchen",
   "binDesigner.shareDesign": "Design teilen",
