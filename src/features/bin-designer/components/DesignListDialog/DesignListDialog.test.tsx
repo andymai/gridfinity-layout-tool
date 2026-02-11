@@ -241,7 +241,8 @@ describe('DesignListDialog', () => {
   it('closes on backdrop click', async () => {
     render(<DesignListDialog open={true} onClose={onClose} />);
 
-    fireEvent.click(screen.getByRole('dialog'));
+    // Click the backdrop (role="presentation") directly, not the dialog
+    fireEvent.click(screen.getByRole('presentation'));
 
     expect(onClose).toHaveBeenCalled();
   });

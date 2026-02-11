@@ -103,7 +103,8 @@ function getAdjacentBinContext(
 
   for (const other of sameLevelBins) {
     if (areBinsAdjacent(bin, other)) {
-      if (other.label.trim()) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+      if (other.label?.trim()) {
         const labelData = processLabel(other.label);
         adjacentLabelHashes.push(labelData.hash);
       }
@@ -131,7 +132,8 @@ export function trackBinPlacement(bin: Bin, layout: Layout, method: PlacementMet
   // Apply sampling for high-volume sessions
   const shouldSample =
     sessionState.sessionIndex >= SAMPLING_THRESHOLD &&
-    !bin.label.trim() &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+    !bin.label?.trim() &&
     Math.random() > SAMPLING_RATE;
 
   if (shouldSample) {
@@ -160,7 +162,8 @@ export function trackBinPlacement(bin: Bin, layout: Layout, method: PlacementMet
   let labelDomain: string | null = null;
   let labelEmbeddingBucket: string | null = null;
 
-  if (bin.label.trim()) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+  if (bin.label?.trim()) {
     const labelData = processLabel(bin.label);
     labelHash = labelData.hash;
     labelNormalized = labelData.normalized;
@@ -441,7 +444,8 @@ export function trackCategoryChange(bin: Bin, categoryName: string, batchSize: n
 
   let labelHash: string | null = null;
   let labelDomain: string | null = null;
-  if (bin.label.trim()) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+  if (bin.label?.trim()) {
     const labelData = processLabel(bin.label);
     labelHash = labelData.hash;
     labelDomain = labelData.domain;
@@ -535,7 +539,8 @@ export function trackBinDeletion(
   const layerIndex = layout.layers.findIndex((l) => l.id === bin.layerId);
 
   let labelDomain: string | null = null;
-  if (bin.label.trim()) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+  if (bin.label?.trim()) {
     const labelData = processLabel(bin.label);
     labelDomain = labelData.domain;
   }
@@ -560,7 +565,8 @@ export function trackBinDeletion(
     creationRecord &&
     ageMs !== null &&
     ageMs < ABANDONED_THRESHOLD_MS &&
-    !bin.label.trim() &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+    !bin.label?.trim() &&
     batchSize === 1
   ) {
     const abandonedEvent: AbandonedBinEvent = {
@@ -581,7 +587,8 @@ export function trackBinDeletion(
     bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
     position: `${bin.x},${bin.y}`,
     layer_index: layerIndex >= 0 ? layerIndex : 0,
-    had_label: Boolean(bin.label.trim()),
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+    had_label: Boolean(bin.label?.trim()),
     label_domain: labelDomain,
     age_ms: ageMs,
     batch_size: batchSize,

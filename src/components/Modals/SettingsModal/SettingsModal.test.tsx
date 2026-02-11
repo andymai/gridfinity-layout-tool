@@ -117,8 +117,8 @@ describe('SettingsModal', () => {
 
   it('clicking overlay calls onClose', () => {
     render(<SettingsModal isOpen={true} onClose={mockOnClose} />);
-    // The overlay is the outermost div with the fixed class
-    const overlay = screen.getByRole('dialog').parentElement!;
+    // The overlay is the outermost presentation div (backdrop with onClick={onClose})
+    const overlay = screen.getAllByRole('presentation')[0];
     fireEvent.click(overlay);
     expect(mockOnClose).toHaveBeenCalled();
   });

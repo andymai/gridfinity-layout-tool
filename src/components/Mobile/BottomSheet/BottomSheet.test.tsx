@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react';
 import { BottomSheet } from '@/components/Mobile/BottomSheet';
-import { useUIStore } from '@/core/store/ui';
+import { useMobileStore } from '@/core/store/mobile';
 
 // Mock matchMedia for useResponsive hook
 Object.defineProperty(window, 'matchMedia', {
@@ -21,13 +21,13 @@ Object.defineProperty(window, 'matchMedia', {
 describe('BottomSheet', () => {
   beforeEach(() => {
     // Set up an active mobile panel so the sheet renders
-    useUIStore.setState({
+    useMobileStore.setState({
       activeMobilePanel: 'layers',
     });
   });
 
   afterEach(() => {
-    useUIStore.setState({
+    useMobileStore.setState({
       activeMobilePanel: null,
     });
     document.body.style.overflow = '';
@@ -45,7 +45,7 @@ describe('BottomSheet', () => {
   });
 
   it('does not render when activeMobilePanel is null', () => {
-    useUIStore.setState({ activeMobilePanel: null });
+    useMobileStore.setState({ activeMobilePanel: null });
 
     const { container } = render(
       <BottomSheet title="Test Panel">
@@ -71,7 +71,7 @@ describe('BottomSheet', () => {
       fireEvent.click(backdrop!);
     });
 
-    expect(useUIStore.getState().activeMobilePanel).toBeNull();
+    expect(useMobileStore.getState().activeMobilePanel).toBeNull();
   });
 
   it('closes on close button click', () => {
@@ -88,7 +88,7 @@ describe('BottomSheet', () => {
       fireEvent.click(closeButton!);
     });
 
-    expect(useUIStore.getState().activeMobilePanel).toBeNull();
+    expect(useMobileStore.getState().activeMobilePanel).toBeNull();
   });
 
   it('closes on Escape key', () => {
@@ -102,7 +102,7 @@ describe('BottomSheet', () => {
       fireEvent.keyDown(window, { key: 'Escape' });
     });
 
-    expect(useUIStore.getState().activeMobilePanel).toBeNull();
+    expect(useMobileStore.getState().activeMobilePanel).toBeNull();
   });
 
   describe('Swipe to dismiss', () => {
@@ -125,7 +125,7 @@ describe('BottomSheet', () => {
       });
 
       // The sheet should still be open
-      expect(useUIStore.getState().activeMobilePanel).toBe('layers');
+      expect(useMobileStore.getState().activeMobilePanel).toBe('layers');
     });
 
     it('closes when swiped down more than 80px', () => {
@@ -161,7 +161,7 @@ describe('BottomSheet', () => {
         });
       });
 
-      expect(useUIStore.getState().activeMobilePanel).toBeNull();
+      expect(useMobileStore.getState().activeMobilePanel).toBeNull();
     });
 
     it('stays open when swiped down less than 80px', () => {
@@ -198,7 +198,7 @@ describe('BottomSheet', () => {
       });
 
       // Should still be open
-      expect(useUIStore.getState().activeMobilePanel).toBe('layers');
+      expect(useMobileStore.getState().activeMobilePanel).toBe('layers');
     });
 
     it('does not allow swiping up (negative drag)', () => {
@@ -229,7 +229,7 @@ describe('BottomSheet', () => {
 
       // The sheet transform should be 0 (clamped to non-negative)
       // We can't easily test CSS values, but the panel should stay open
-      expect(useUIStore.getState().activeMobilePanel).toBe('layers');
+      expect(useMobileStore.getState().activeMobilePanel).toBe('layers');
     });
   });
 
@@ -253,7 +253,7 @@ describe('BottomSheet', () => {
     expect(document.body.style.overflow).toBe('hidden');
 
     // Close the panel
-    useUIStore.setState({ activeMobilePanel: null });
+    useMobileStore.setState({ activeMobilePanel: null });
 
     rerender(
       <BottomSheet title="Test Panel">

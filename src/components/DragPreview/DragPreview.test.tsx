@@ -4,12 +4,16 @@ import { DragPreview } from './DragPreview';
 import type { Bin, Category } from '@/core/types';
 
 // Mock state - use explicit type instead of importing Interaction
-let mockUIState: { interaction: { type: string; [key: string]: unknown } | null; zoom: number };
+let mockInteractionState: { interaction: { type: string; [key: string]: unknown } | null };
+let mockViewState: { zoom: number };
 let mockLayoutState: { layout: { bins: Bin[]; categories: Category[] } };
 
 vi.mock('@/core/store', () => ({
-  useUIStore: vi.fn((selector: unknown) => {
-    return (selector as (s: typeof mockUIState) => unknown)(mockUIState);
+  useInteractionStore: vi.fn((selector: unknown) => {
+    return (selector as (s: typeof mockInteractionState) => unknown)(mockInteractionState);
+  }),
+  useViewStore: vi.fn((selector: unknown) => {
+    return (selector as (s: typeof mockViewState) => unknown)(mockViewState);
   }),
   useLayoutStore: vi.fn((selector: unknown) => {
     return (selector as (s: typeof mockLayoutState) => unknown)(mockLayoutState);
@@ -68,7 +72,8 @@ function dispatchPointerMove(x: number, y: number) {
 
 describe('DragPreview', () => {
   beforeEach(() => {
-    mockUIState = { interaction: null, zoom: 1 };
+    mockInteractionState = { interaction: null };
+    mockViewState = { zoom: 1 };
     mockLayoutState = { layout: { bins: [], categories: [] } };
   });
 
@@ -83,7 +88,7 @@ describe('DragPreview', () => {
     });
 
     it('renders nothing when interaction is not drag type', () => {
-      mockUIState.interaction = { type: 'draw', startX: 0, startY: 0 };
+      mockInteractionState.interaction = { type: 'draw', startX: 0, startY: 0 };
       const { container } = render(<DragPreview />);
       expect(container.firstChild).toBeNull();
     });
@@ -98,13 +103,13 @@ describe('DragPreview', () => {
     });
 
     it('renders nothing when mouse position not set yet', () => {
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container } = render(<DragPreview />);
       expect(container.firstChild).toBeNull();
     });
 
     it('renders preview after pointer move', () => {
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -116,7 +121,7 @@ describe('DragPreview', () => {
     });
 
     it('positions preview at mouse cursor', () => {
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -130,7 +135,7 @@ describe('DragPreview', () => {
     });
 
     it('uses click offset when provided', () => {
-      mockUIState.interaction = {
+      mockInteractionState.interaction = {
         type: 'drag',
         binIds: ['bin-1'],
         clickOffset: { x: 30, y: 40 },
@@ -148,7 +153,7 @@ describe('DragPreview', () => {
     });
 
     it('renders bin with correct color', () => {
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -162,7 +167,7 @@ describe('DragPreview', () => {
 
     it('uses default color when category not found', () => {
       mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', category: 'nonexistent-category' })];
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -176,7 +181,7 @@ describe('DragPreview', () => {
 
     it('renders bin label when present', () => {
       mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', label: 'Test Label' })];
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { getByText, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -189,7 +194,7 @@ describe('DragPreview', () => {
 
     it('does not render label when bin has no label', () => {
       mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', label: '' })];
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -203,7 +208,7 @@ describe('DragPreview', () => {
 
     it('rotates label for tall bins', () => {
       mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', width: 1, depth: 3, label: 'Tall' })];
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -217,7 +222,7 @@ describe('DragPreview', () => {
 
     it('does not rotate label for wide bins', () => {
       mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', width: 3, depth: 1, label: 'Wide' })];
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -240,7 +245,7 @@ describe('DragPreview', () => {
     });
 
     it('renders all dragged bins', () => {
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1', 'bin-2'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1', 'bin-2'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -253,7 +258,7 @@ describe('DragPreview', () => {
     });
 
     it('positions bins relative to each other', () => {
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1', 'bin-2'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1', 'bin-2'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -266,7 +271,7 @@ describe('DragPreview', () => {
     });
 
     it('handles bins not in binIds list', () => {
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -286,7 +291,7 @@ describe('DragPreview', () => {
     });
 
     it('renders preview for staging drag', () => {
-      mockUIState.interaction = { type: 'stagingDrag', binId: 'bin-1' };
+      mockInteractionState.interaction = { type: 'stagingDrag', binId: 'bin-1' };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -298,7 +303,7 @@ describe('DragPreview', () => {
     });
 
     it('renders nothing if staging bin not found', () => {
-      mockUIState.interaction = { type: 'stagingDrag', binId: 'nonexistent' };
+      mockInteractionState.interaction = { type: 'stagingDrag', binId: 'nonexistent' };
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -314,11 +319,11 @@ describe('DragPreview', () => {
     beforeEach(() => {
       mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', width: 2, depth: 2 })];
       mockLayoutState.layout.categories = [makeCategory()];
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
     });
 
     it('scales preview with zoom', () => {
-      mockUIState.zoom = 1.5;
+      mockViewState.zoom = 1.5;
       const { container, rerender } = render(<DragPreview />);
 
       act(() => {
@@ -335,7 +340,7 @@ describe('DragPreview', () => {
   describe('event cleanup', () => {
     it('cleans up pointer event listener on unmount', () => {
       const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       mockLayoutState.layout.bins = [makeBin({ id: 'bin-1' })];
 
       const { unmount } = render(<DragPreview />);
@@ -346,7 +351,7 @@ describe('DragPreview', () => {
 
     it('resets mouse position when drag ends', () => {
       mockLayoutState.layout.bins = [makeBin({ id: 'bin-1' })];
-      mockUIState.interaction = { type: 'drag', binIds: ['bin-1'] };
+      mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
 
       const { container, rerender } = render(<DragPreview />);
 
@@ -358,7 +363,7 @@ describe('DragPreview', () => {
       expect(container.firstChild).not.toBeNull();
 
       // End drag
-      mockUIState.interaction = null;
+      mockInteractionState.interaction = null;
       rerender(<DragPreview />);
       expect(container.firstChild).toBeNull();
     });

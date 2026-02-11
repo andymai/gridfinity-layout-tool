@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { SharedLayoutBanner } from '@/features/cloud-share/components/SharedLayoutBanner';
-import { useUIStore } from '@/core/store/ui';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
@@ -145,11 +145,8 @@ describe('SharedLayoutBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Reset UI store
-    useUIStore.setState({
-      sharedLayoutPreview: null,
-      sharedLayoutOriginalName: null,
-    });
+    // Reset shared preview store
+    useSharedPreviewStore.getState().clearSharedLayoutPreview();
 
     // Reset layout store
     useLayoutStore.setState({
@@ -196,7 +193,7 @@ describe('SharedLayoutBanner', () => {
 
   describe('visibility', () => {
     it('does not render when sharedLayoutPreview is null', () => {
-      useUIStore.setState({ sharedLayoutPreview: null });
+      useSharedPreviewStore.getState().clearSharedLayoutPreview();
 
       const { container } = render(<SharedLayoutBanner />);
 
@@ -204,10 +201,7 @@ describe('SharedLayoutBanner', () => {
     });
 
     it('renders when sharedLayoutPreview is set', () => {
-      useUIStore.setState({
-        sharedLayoutPreview: mockLayout,
-        sharedLayoutOriginalName: 'Shared Layout',
-      });
+      useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout, 'Shared Layout');
 
       render(<SharedLayoutBanner />);
 
@@ -217,10 +211,7 @@ describe('SharedLayoutBanner', () => {
 
   describe('content', () => {
     beforeEach(() => {
-      useUIStore.setState({
-        sharedLayoutPreview: mockLayout,
-        sharedLayoutOriginalName: 'Original Name',
-      });
+      useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout, 'Original Name');
     });
 
     it('displays the original layout name', () => {
@@ -244,10 +235,7 @@ describe('SharedLayoutBanner', () => {
 
   describe('accessibility', () => {
     beforeEach(() => {
-      useUIStore.setState({
-        sharedLayoutPreview: mockLayout,
-        sharedLayoutOriginalName: 'Shared Layout',
-      });
+      useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout, 'Shared Layout');
     });
 
     it('has role="alert" for screen readers', () => {
@@ -266,10 +254,7 @@ describe('SharedLayoutBanner', () => {
 
   describe('save action', () => {
     beforeEach(() => {
-      useUIStore.setState({
-        sharedLayoutPreview: mockLayout,
-        sharedLayoutOriginalName: 'Original Name',
-      });
+      useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout, 'Original Name');
     });
 
     it('clears shared preview state after saving', async () => {
@@ -278,7 +263,7 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
 
       await waitFor(() => {
-        const state = useUIStore.getState();
+        const state = useSharedPreviewStore.getState();
         expect(state.sharedLayoutPreview).toBeNull();
         expect(state.sharedLayoutOriginalName).toBeNull();
       });
@@ -325,10 +310,7 @@ describe('SharedLayoutBanner', () => {
 
   describe('discard action', () => {
     beforeEach(() => {
-      useUIStore.setState({
-        sharedLayoutPreview: mockLayout,
-        sharedLayoutOriginalName: 'Shared Layout',
-      });
+      useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout, 'Shared Layout');
     });
 
     it('shows confirmation dialog when clicking Discard', () => {
@@ -351,7 +333,7 @@ describe('SharedLayoutBanner', () => {
       const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
       fireEvent.click(confirmButton);
 
-      const state = useUIStore.getState();
+      const state = useSharedPreviewStore.getState();
       expect(state.sharedLayoutPreview).toBeNull();
       expect(state.sharedLayoutOriginalName).toBeNull();
     });
@@ -395,7 +377,7 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Keep viewing/i }));
 
       // State should remain unchanged
-      const state = useUIStore.getState();
+      const state = useSharedPreviewStore.getState();
       expect(state.sharedLayoutPreview).not.toBeNull();
       expect(state.sharedLayoutOriginalName).toBe('Shared Layout');
     });
@@ -403,10 +385,7 @@ describe('SharedLayoutBanner', () => {
 
   describe('edge cases', () => {
     it('handles missing sharedLayoutOriginalName gracefully', () => {
-      useUIStore.setState({
-        sharedLayoutPreview: mockLayout,
-        sharedLayoutOriginalName: null,
-      });
+      useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout);
 
       render(<SharedLayoutBanner />);
 
@@ -416,10 +395,7 @@ describe('SharedLayoutBanner', () => {
 
     it('handles empty layout name', () => {
       const emptyNameLayout = { ...mockLayout, name: '' };
-      useUIStore.setState({
-        sharedLayoutPreview: emptyNameLayout,
-        sharedLayoutOriginalName: '',
-      });
+      useSharedPreviewStore.getState().setSharedLayoutPreview(emptyNameLayout, '');
       useLayoutStore.setState({ layout: emptyNameLayout });
 
       render(<SharedLayoutBanner />);

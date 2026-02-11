@@ -59,7 +59,8 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
  */
 export function detectBrowserLocale(): Locale {
   // Check all preferred languages in order
-  const languages = navigator.languages;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- navigator.languages can be undefined in some environments
+  const languages = navigator.languages ?? [navigator.language];
 
   for (const lang of languages) {
     // Try exact match first (e.g., "pt-BR")

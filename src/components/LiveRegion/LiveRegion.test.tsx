@@ -1,16 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LiveRegion } from './LiveRegion';
-import { useUIStore } from '@/core/store';
+import { useInteractionStore } from '@/core/store';
 
 // Mock the store module
 vi.mock('@/core/store', () => ({
-  useUIStore: vi.fn(),
+  useInteractionStore: vi.fn(),
 }));
 
 describe('LiveRegion', () => {
   it('renders nothing when no message', () => {
-    vi.mocked(useUIStore).mockImplementation((selector: unknown) => {
+    vi.mocked(useInteractionStore).mockImplementation((selector: unknown) => {
       const state = { liveMessage: '' };
       return (selector as (s: typeof state) => unknown)(state);
     });
@@ -20,7 +20,7 @@ describe('LiveRegion', () => {
   });
 
   it('renders message in aria-live region', () => {
-    vi.mocked(useUIStore).mockImplementation((selector: unknown) => {
+    vi.mocked(useInteractionStore).mockImplementation((selector: unknown) => {
       const state = { liveMessage: 'Bin deleted' };
       return (selector as (s: typeof state) => unknown)(state);
     });
@@ -33,7 +33,7 @@ describe('LiveRegion', () => {
   });
 
   it('is visually hidden with sr-only class', () => {
-    vi.mocked(useUIStore).mockImplementation((selector: unknown) => {
+    vi.mocked(useInteractionStore).mockImplementation((selector: unknown) => {
       const state = { liveMessage: 'Test message' };
       return (selector as (s: typeof state) => unknown)(state);
     });

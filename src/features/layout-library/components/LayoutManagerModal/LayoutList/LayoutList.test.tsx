@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { LayoutList } from '@/features/layout-library/components/LayoutManagerModal/LayoutList';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import type { LayoutEntry } from '@/core/types';
 
@@ -303,7 +304,7 @@ describe('LayoutList', () => {
 
     it('calls onRename and announces to screen reader', () => {
       const announceToScreenReader = vi.fn();
-      useUIStore.setState({ announceToScreenReader });
+      useInteractionStore.setState({ announceToScreenReader });
 
       render(<LayoutList {...defaultProps} />);
 
@@ -317,7 +318,7 @@ describe('LayoutList', () => {
 
     it('calls onDuplicate and announces to screen reader', () => {
       const announceToScreenReader = vi.fn();
-      useUIStore.setState({ announceToScreenReader });
+      useInteractionStore.setState({ announceToScreenReader });
 
       render(<LayoutList {...defaultProps} />);
 
@@ -330,7 +331,7 @@ describe('LayoutList', () => {
 
     it('calls onDelete and announces to screen reader', () => {
       const announceToScreenReader = vi.fn();
-      useUIStore.setState({ announceToScreenReader });
+      useInteractionStore.setState({ announceToScreenReader });
 
       render(<LayoutList {...defaultProps} />);
 
@@ -390,7 +391,7 @@ describe('LayoutList', () => {
     it('calls download with layout data', async () => {
       const { downloadLayoutAsFile } = await import('@/core/storage');
       const announceToScreenReader = vi.fn();
-      useUIStore.setState({ announceToScreenReader });
+      useInteractionStore.setState({ announceToScreenReader });
 
       // Setup current layout in store
       useLayoutStore.setState({

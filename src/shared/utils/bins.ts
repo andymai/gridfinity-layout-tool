@@ -130,7 +130,8 @@ export function getLayerBins(bins: Bin[], layerId: LayerId): Bin[] {
  * const labeled = getLabeledBins(getGridBins(layout.bins));
  */
 export function getLabeledBins(bins: Bin[]): Bin[] {
-  return bins.filter((bin) => bin.label.trim());
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+  return bins.filter((bin) => bin.label?.trim());
 }
 
 /**

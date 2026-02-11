@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Staging } from '@/features/staging/components/Staging';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
+import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import type { Bin } from '@/core/types';
@@ -157,12 +160,12 @@ describe('Staging', () => {
       const binElement = document.querySelector(`[data-staging-bin-id="${bins[0].id}"]`);
       fireEvent.click(binElement!);
 
-      expect(useUIStore.getState().selectedBinIds).toContain(bins[0].id);
+      expect(useSelectionStore.getState().selectedBinIds).toContain(bins[0].id);
     });
 
     it('toggles selection with ctrl+click', () => {
       const bins = addStagedBins([{}, {}]);
-      useUIStore.getState().setSelectedBin(bins[0].id);
+      useSelectionStore.getState().setSelectedBin(bins[0].id);
 
       render(<Staging />);
 
@@ -170,38 +173,38 @@ describe('Staging', () => {
       fireEvent.click(binElement!, { ctrlKey: true });
 
       // Both bins should now be selected
-      expect(useUIStore.getState().selectedBinIds).toContain(bins[0].id);
-      expect(useUIStore.getState().selectedBinIds).toContain(bins[1].id);
+      expect(useSelectionStore.getState().selectedBinIds).toContain(bins[0].id);
+      expect(useSelectionStore.getState().selectedBinIds).toContain(bins[1].id);
     });
 
     it('toggles selection with meta+click (Mac)', () => {
       const bins = addStagedBins([{}, {}]);
-      useUIStore.getState().setSelectedBin(bins[0].id);
+      useSelectionStore.getState().setSelectedBin(bins[0].id);
 
       render(<Staging />);
 
       const binElement = document.querySelector(`[data-staging-bin-id="${bins[1].id}"]`);
       fireEvent.click(binElement!, { metaKey: true });
 
-      expect(useUIStore.getState().selectedBinIds).toContain(bins[0].id);
-      expect(useUIStore.getState().selectedBinIds).toContain(bins[1].id);
+      expect(useSelectionStore.getState().selectedBinIds).toContain(bins[0].id);
+      expect(useSelectionStore.getState().selectedBinIds).toContain(bins[1].id);
     });
 
     it('replaces selection on regular click', () => {
       const bins = addStagedBins([{}, {}]);
-      useUIStore.getState().setSelectedBin(bins[0].id);
+      useSelectionStore.getState().setSelectedBin(bins[0].id);
 
       render(<Staging />);
 
       const binElement = document.querySelector(`[data-staging-bin-id="${bins[1].id}"]`);
       fireEvent.click(binElement!);
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([bins[1].id]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([bins[1].id]);
     });
 
     it('shows selection ring on selected bins', () => {
       const bins = addStagedBins([{}]);
-      useUIStore.getState().setSelectedBin(bins[0].id);
+      useSelectionStore.getState().setSelectedBin(bins[0].id);
 
       render(<Staging />);
 
@@ -213,7 +216,7 @@ describe('Staging', () => {
   describe('context menu', () => {
     it('shows context menu on right-click', () => {
       const bins = addStagedBins([{}]);
-      const showContextMenuSpy = vi.spyOn(useUIStore.getState(), 'showContextMenu');
+      const showContextMenuSpy = vi.spyOn(useViewStore.getState(), 'showContextMenu');
 
       render(<Staging />);
 
@@ -226,7 +229,7 @@ describe('Staging', () => {
     it('selects bin if not already selected on right-click', () => {
       const bins = addStagedBins([{}, {}]);
       // Select first bin
-      useUIStore.getState().setSelectedBin(bins[0].id);
+      useSelectionStore.getState().setSelectedBin(bins[0].id);
 
       render(<Staging />);
 
@@ -235,7 +238,7 @@ describe('Staging', () => {
       fireEvent.contextMenu(binElement!, { clientX: 100, clientY: 100 });
 
       // Second bin should now be selected
-      expect(useUIStore.getState().selectedBinIds).toContain(bins[1].id);
+      expect(useSelectionStore.getState().selectedBinIds).toContain(bins[1].id);
     });
   });
 
@@ -314,8 +317,10 @@ describe('Staging', () => {
       const binElement = document.querySelector(`[data-staging-bin-id="${bins[0].id}"]`);
       fireEvent.pointerDown(binElement!, { button: 0 });
 
-      expect(useUIStore.getState().interaction?.type).toBe('stagingDrag');
-      expect((useUIStore.getState().interaction as { binId: string })?.binId).toBe(bins[0].id);
+      expect(useInteractionStore.getState().interaction?.type).toBe('stagingDrag');
+      expect((useInteractionStore.getState().interaction as { binId: string })?.binId).toBe(
+        bins[0].id
+      );
     });
 
     it('ignores non-primary button pointer down', () => {
@@ -326,12 +331,12 @@ describe('Staging', () => {
       const binElement = document.querySelector(`[data-staging-bin-id="${bins[0].id}"]`);
       fireEvent.pointerDown(binElement!, { button: 2 }); // Right click
 
-      expect(useUIStore.getState().interaction).toBeNull();
+      expect(useInteractionStore.getState().interaction).toBeNull();
     });
 
     it('shows bin as dragging during staging drag', () => {
       const bins = addStagedBins([{}]);
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: {
           type: 'stagingDrag',
           binId: bins[0].id,
@@ -348,7 +353,7 @@ describe('Staging', () => {
 
     it('does not select bin during drag', () => {
       const bins = addStagedBins([{}]);
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: {
           type: 'stagingDrag',
           binId: bins[0].id,
@@ -363,7 +368,7 @@ describe('Staging', () => {
       fireEvent.click(binElement!);
 
       // Selection should not change during drag
-      expect(useUIStore.getState().selectedBinIds).toEqual([]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
     });
   });
 
@@ -810,7 +815,7 @@ describe('Staging as drop target', () => {
 
   it('shows drop zone when dragging from grid with movement', () => {
     // Set up drag interaction
-    useUIStore.setState({
+    useInteractionStore.setState({
       interaction: {
         type: 'drag',
         binIds: ['some-bin'],

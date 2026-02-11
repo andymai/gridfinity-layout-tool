@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGridNavigation } from '@/features/grid-editor/hooks/useGridNavigation';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
 
@@ -32,10 +33,10 @@ describe('useGridNavigation', () => {
 
   describe('handleNavigationKey', () => {
     it('does nothing when no bin is focused', () => {
-      const setFocusedBinSpy = vi.spyOn(useUIStore.getState(), 'setFocusedBin');
+      const setFocusedBinSpy = vi.spyOn(useSelectionStore.getState(), 'setFocusedBin');
 
       // No focused bin
-      useUIStore.setState({ focusedBinId: null });
+      useSelectionStore.setState({ focusedBinId: null });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -47,10 +48,10 @@ describe('useGridNavigation', () => {
     });
 
     it('does nothing when focused bin does not exist', () => {
-      const setFocusedBinSpy = vi.spyOn(useUIStore.getState(), 'setFocusedBin');
+      const setFocusedBinSpy = vi.spyOn(useSelectionStore.getState(), 'setFocusedBin');
 
       // Focused bin ID that doesn't exist in layout
-      useUIStore.setState({ focusedBinId: 'nonexistent', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'nonexistent', activeLayerId: 'layer1' });
       useLayoutStore.setState({
         layout: {
           ...useLayoutStore.getState().layout,
@@ -77,7 +78,7 @@ describe('useGridNavigation', () => {
           layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
         },
       });
-      useUIStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -85,7 +86,7 @@ describe('useGridNavigation', () => {
         result.current.handleNavigationKey('ArrowRight');
       });
 
-      expect(useUIStore.getState().focusedBinId).toBe('bin2');
+      expect(useSelectionStore.getState().focusedBinId).toBe('bin2');
     });
 
     it('navigates left to nearest bin', () => {
@@ -98,7 +99,7 @@ describe('useGridNavigation', () => {
           layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
         },
       });
-      useUIStore.setState({ focusedBinId: 'bin3', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'bin3', activeLayerId: 'layer1' });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -106,7 +107,7 @@ describe('useGridNavigation', () => {
         result.current.handleNavigationKey('ArrowLeft');
       });
 
-      expect(useUIStore.getState().focusedBinId).toBe('bin2');
+      expect(useSelectionStore.getState().focusedBinId).toBe('bin2');
     });
 
     it('navigates down to nearest bin', () => {
@@ -126,7 +127,7 @@ describe('useGridNavigation', () => {
         },
       });
       // Start from top bin, navigate down
-      useUIStore.setState({ focusedBinId: 'bin3', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'bin3', activeLayerId: 'layer1' });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -135,7 +136,7 @@ describe('useGridNavigation', () => {
       });
 
       // Should move to bin2 (lower Y value)
-      expect(useUIStore.getState().focusedBinId).toBe('bin2');
+      expect(useSelectionStore.getState().focusedBinId).toBe('bin2');
     });
 
     it('navigates up to nearest bin', () => {
@@ -155,7 +156,7 @@ describe('useGridNavigation', () => {
         },
       });
       // Start from bottom bin, navigate up
-      useUIStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -164,7 +165,7 @@ describe('useGridNavigation', () => {
       });
 
       // Should move to bin2 (higher Y value)
-      expect(useUIStore.getState().focusedBinId).toBe('bin2');
+      expect(useSelectionStore.getState().focusedBinId).toBe('bin2');
     });
 
     it('ignores non-arrow keys', () => {
@@ -177,7 +178,7 @@ describe('useGridNavigation', () => {
           layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
         },
       });
-      useUIStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -188,7 +189,7 @@ describe('useGridNavigation', () => {
       });
 
       // Should still be on bin1
-      expect(useUIStore.getState().focusedBinId).toBe('bin1');
+      expect(useSelectionStore.getState().focusedBinId).toBe('bin1');
     });
 
     it('does nothing when no bin in direction', () => {
@@ -201,7 +202,7 @@ describe('useGridNavigation', () => {
           layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
         },
       });
-      useUIStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -210,7 +211,7 @@ describe('useGridNavigation', () => {
       });
 
       // Should still be on bin1 (no bin to the right)
-      expect(useUIStore.getState().focusedBinId).toBe('bin1');
+      expect(useSelectionStore.getState().focusedBinId).toBe('bin1');
     });
 
     it('announces navigation to screen reader', () => {
@@ -223,7 +224,7 @@ describe('useGridNavigation', () => {
           layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
         },
       });
-      useUIStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -232,7 +233,7 @@ describe('useGridNavigation', () => {
       });
 
       // Check that announcement was made (liveMessage is set)
-      expect(useUIStore.getState().liveMessage).toContain('Screws');
+      expect(useInteractionStore.getState().liveMessage).toContain('Screws');
     });
 
     it('navigates only within active layer', () => {
@@ -252,7 +253,7 @@ describe('useGridNavigation', () => {
           ],
         },
       });
-      useUIStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'bin1', activeLayerId: 'layer1' });
 
       const { result } = renderHook(() => useGridNavigation());
 
@@ -261,7 +262,7 @@ describe('useGridNavigation', () => {
       });
 
       // Should skip bin2 (different layer) and go to bin3
-      expect(useUIStore.getState().focusedBinId).toBe('bin3');
+      expect(useSelectionStore.getState().focusedBinId).toBe('bin3');
     });
   });
 
@@ -284,13 +285,13 @@ describe('useGridNavigation', () => {
       });
 
       // Initially no focus
-      useUIStore.setState({ focusedBinId: null, activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: null, activeLayerId: 'layer1' });
 
       renderHook(() => useGridNavigation());
 
       // Set focused bin
       act(() => {
-        useUIStore.getState().setFocusedBin('bin1');
+        useSelectionStore.getState().setFocusedBin('bin1');
       });
 
       // Element should be focused
@@ -301,14 +302,14 @@ describe('useGridNavigation', () => {
     });
 
     it('does nothing when no focusedBinId', () => {
-      useUIStore.setState({ focusedBinId: null });
+      useSelectionStore.setState({ focusedBinId: null });
 
       // Should not throw
       expect(() => renderHook(() => useGridNavigation())).not.toThrow();
     });
 
     it('does nothing when element not found', () => {
-      useUIStore.setState({ focusedBinId: 'nonexistent', activeLayerId: 'layer1' });
+      useSelectionStore.setState({ focusedBinId: 'nonexistent', activeLayerId: 'layer1' });
 
       // Should not throw even if element doesn't exist
       expect(() => renderHook(() => useGridNavigation())).not.toThrow();

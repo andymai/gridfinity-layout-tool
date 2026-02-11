@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
 import { resetAllStores } from '@/test/testUtils';
 import type { Layer } from '@/core/types';
 
@@ -62,7 +63,7 @@ describe('LayerPanel', () => {
     // Set activeLayerId to match the default layer
     const defaultLayerId = useLayoutStore.getState().layout.layers[0]?.id;
     if (defaultLayerId) {
-      useUIStore.setState({ activeLayerId: defaultLayerId });
+      useSelectionStore.setState({ activeLayerId: defaultLayerId });
     }
   });
 
@@ -106,7 +107,7 @@ describe('LayerPanel', () => {
       useLayoutStore.setState({
         layout: { ...layout, layers: [] },
       });
-      useUIStore.setState({ activeLayerId: null });
+      useSelectionStore.setState({ activeLayerId: null });
 
       const { container } = render(<LayerPanel />);
 
@@ -134,7 +135,7 @@ describe('LayerPanel', () => {
       useLayoutStore.setState({
         layout: { ...layout, layers },
       });
-      useUIStore.setState({ activeLayerId: 'layer-0' });
+      useSelectionStore.setState({ activeLayerId: 'layer-0' });
 
       render(<LayerPanel />);
 
@@ -151,7 +152,7 @@ describe('LayerPanel', () => {
           layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
         },
       });
-      useUIStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: 'layer-1' });
 
       render(<LayerPanel />);
 
@@ -161,10 +162,10 @@ describe('LayerPanel', () => {
     it('sets new layer as active', () => {
       render(<LayerPanel />);
 
-      const initialActiveId = useUIStore.getState().activeLayerId;
+      const initialActiveId = useSelectionStore.getState().activeLayerId;
       fireEvent.click(screen.getByLabelText('Add new layer'));
 
-      expect(useUIStore.getState().activeLayerId).not.toBe(initialActiveId);
+      expect(useSelectionStore.getState().activeLayerId).not.toBe(initialActiveId);
     });
   });
 
@@ -181,7 +182,7 @@ describe('LayerPanel', () => {
           ],
         },
       });
-      useUIStore.setState({ activeLayerId: 'layer-2' });
+      useSelectionStore.setState({ activeLayerId: 'layer-2' });
     });
 
     it('shows delete button for active layer when multiple layers exist', () => {
@@ -232,7 +233,7 @@ describe('LayerPanel', () => {
       fireEvent.click(screen.getByLabelText('Delete Layer 2 layer'));
       fireEvent.click(screen.getByTestId('confirm-button'));
 
-      expect(useUIStore.getState().activeLayerId).toBe('layer-1');
+      expect(useSelectionStore.getState().activeLayerId).toBe('layer-1');
     });
 
     it('does not show delete button for single layer', () => {
@@ -244,7 +245,7 @@ describe('LayerPanel', () => {
           layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
         },
       });
-      useUIStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: 'layer-1' });
 
       render(<LayerPanel />);
 
@@ -265,17 +266,20 @@ describe('LayerPanel', () => {
           ],
         },
       });
-      useUIStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: 'layer-1' });
     });
 
     it('clicking layer name sets it as active', () => {
       render(<LayerPanel />);
 
-      // Click on the layer button for Layer 2
-      const layer2Button = screen.getByRole('button', { name: /Layer 2/ });
-      fireEvent.click(layer2Button);
+      // Click on the inner name button for Layer 2 (filter by aria-pressed to
+      // distinguish from the outer draggable div which also has role="button")
+      const layer2Buttons = screen.getAllByRole('button', { name: /Layer 2/ });
+      const layer2NameButton = layer2Buttons.find((btn) => btn.hasAttribute('aria-pressed'));
+      expect(layer2NameButton).toBeTruthy();
+      fireEvent.click(layer2NameButton!);
 
-      expect(useUIStore.getState().activeLayerId).toBe('layer-2');
+      expect(useSelectionStore.getState().activeLayerId).toBe('layer-2');
     });
   });
 
@@ -356,7 +360,7 @@ describe('LayerPanel', () => {
           layers: [{ id: 'layer-1', name: 'Layer 1', height: 5 }],
         },
       });
-      useUIStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: 'layer-1' });
 
       render(<LayerPanel />);
 
@@ -373,7 +377,7 @@ describe('LayerPanel', () => {
           layers: [{ id: 'layer-1', name: 'Layer 1', height: 1 }],
         },
       });
-      useUIStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: 'layer-1' });
 
       render(<LayerPanel />);
 
@@ -393,7 +397,7 @@ describe('LayerPanel', () => {
           ],
         },
       });
-      useUIStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: 'layer-1' });
     });
 
     it('shows height capacity indicator for multiple layers', () => {
@@ -430,7 +434,7 @@ describe('LayerPanel', () => {
           ],
         },
       });
-      useUIStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: 'layer-1' });
     });
 
     it('layers are draggable when multiple exist', () => {

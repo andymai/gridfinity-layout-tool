@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useBinInspector } from '@/features/bin-inspector';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
 import { resetAllStores } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
 
@@ -33,7 +33,7 @@ describe('useBinInspector', () => {
     useLayoutStore.setState({ layout });
 
     // Set default UI state
-    useUIStore.setState({ activeLayerId: 'layer1', selectedBinIds: [] });
+    useSelectionStore.setState({ activeLayerId: 'layer1', selectedBinIds: [] });
   });
 
   afterEach(() => {
@@ -56,7 +56,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [bin];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -72,7 +72,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = bins;
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -102,7 +102,7 @@ describe('useBinInspector', () => {
       layout.bins = [bin];
       layout.drawer.height = 12;
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -118,7 +118,7 @@ describe('useBinInspector', () => {
       layout.printBedSize = 100; // Small print bed
       layout.gridUnitMm = 42;
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -133,7 +133,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [bin];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -149,7 +149,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [bin];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -165,7 +165,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [bin];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -181,7 +181,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [bin];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -198,7 +198,7 @@ describe('useBinInspector', () => {
       layout.bins = [bin];
       layout.drawer.height = 12;
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -215,7 +215,7 @@ describe('useBinInspector', () => {
       layout.bins = [bin];
       layout.drawer.height = 12;
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -246,7 +246,7 @@ describe('useBinInspector', () => {
       layout.categories.push({ id: 'green', name: 'Green', color: '#00ff00' });
       layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -279,7 +279,7 @@ describe('useBinInspector', () => {
         { ...createBin('bin2', 'layer1', 3, 0), height: 4 },
       ];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -297,7 +297,7 @@ describe('useBinInspector', () => {
       layout.drawer.height = 6;
       layout.bins = [{ ...createBin('bin1', 'layer1'), height: 5 }];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -318,7 +318,7 @@ describe('useBinInspector', () => {
         { ...createBin('bin2', 'layer1', 3, 0), height: 4, clearanceHeight: 1 },
       ];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -337,7 +337,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [createBin('bin1', 'layer1')];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -355,7 +355,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -370,7 +370,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [createBin('bin1', 'layer1')];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -383,14 +383,14 @@ describe('useBinInspector', () => {
       });
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
-      expect(useUIStore.getState().selectedBinIds).toHaveLength(0);
+      expect(useSelectionStore.getState().selectedBinIds).toHaveLength(0);
     });
 
     it('cancelDelete clears confirmation state', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [createBin('bin1', 'layer1')];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -415,7 +415,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -434,17 +434,17 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [createBin('bin1', 'layer1')];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
-      expect(useUIStore.getState().selectedBinIds).toHaveLength(1);
+      expect(useSelectionStore.getState().selectedBinIds).toHaveLength(1);
 
       act(() => {
         result.current.clearSelection();
       });
 
-      expect(useUIStore.getState().selectedBinIds).toHaveLength(0);
+      expect(useSelectionStore.getState().selectedBinIds).toHaveLength(0);
     });
   });
 
@@ -453,7 +453,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [{ ...createBin('bin1', 'layer1'), width: 2, depth: 3 }];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -470,7 +470,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [{ ...createBin('bin1', 'layer1'), width: 2, depth: 3 }];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -503,7 +503,7 @@ describe('useBinInspector', () => {
       ];
       layout.bins = [createBin('bin1', 'layer1')];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -518,7 +518,7 @@ describe('useBinInspector', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [createBin('bin1', 'layer1')];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -540,7 +540,7 @@ describe('useBinInspector', () => {
       ];
       layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useBinInspector());
 
@@ -560,7 +560,7 @@ describe('useBinInspector', () => {
         { id: 'layer2', name: 'Layer 2', height: 3 },
       ];
       useLayoutStore.setState({ layout });
-      useUIStore.setState({ selectedBinIds: [] });
+      useSelectionStore.setState({ selectedBinIds: [] });
 
       const { result } = renderHook(() => useBinInspector());
 
