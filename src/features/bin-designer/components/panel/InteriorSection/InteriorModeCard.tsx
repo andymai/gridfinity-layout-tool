@@ -89,9 +89,19 @@ export function InteriorModeCard({ mode, isExpanded, onSelect }: InteriorModeCar
         </div>
       </div>
 
-      {/* Content (only when expanded) */}
+      {/* Content (only when expanded) — stop propagation so clicks on interior
+         controls (steppers, sliders, grid cells) don't bubble up to the card
+         button and re-trigger setStyle with stale params. */}
       {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-stroke-subtle">{config.content}</div>
+        // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+        <div
+          className="mt-3 pt-3 border-t border-stroke-subtle"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {config.content}
+        </div>
       )}
     </button>
   );

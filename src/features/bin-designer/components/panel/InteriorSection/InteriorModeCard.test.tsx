@@ -93,4 +93,24 @@ describe('InteriorModeCard', () => {
     expect(card.className).toContain('border-stroke-subtle');
     expect(card.className).toContain('bg-surface-elevated');
   });
+
+  it('does not trigger onSelect when clicking inside expanded content', () => {
+    const onSelect = vi.fn();
+    render(<InteriorModeCard mode="standard" isExpanded={true} onSelect={onSelect} />);
+
+    const editor = screen.getByTestId('compartment-editor');
+    fireEvent.click(editor);
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('does not trigger onSelect on pointerDown inside expanded content', () => {
+    const onSelect = vi.fn();
+    render(<InteriorModeCard mode="standard" isExpanded={true} onSelect={onSelect} />);
+
+    const editor = screen.getByTestId('compartment-editor');
+    fireEvent.pointerDown(editor);
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });
