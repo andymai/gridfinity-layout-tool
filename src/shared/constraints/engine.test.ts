@@ -335,7 +335,7 @@ describe('getFeatureStatus', () => {
     const params = makeParams({ style: 'slotted' });
     const status = getFeatureStatus(params, 'scoop');
     expect(status.available).toBe(false);
-    expect(status.reason).toBe('binDesigner.labelTabsUnavailableSlotted');
+    expect(status.reason).toBe('binDesigner.fingerScoopUnavailableSlotted');
     expect(status.conflicts).toContain('style.slotted');
   });
 

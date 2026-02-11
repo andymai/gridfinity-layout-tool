@@ -185,6 +185,7 @@
   "binDesigner.interiorSummary": "{count} compartiment(s)",
   "binDesigner.invalidDesignFile": "Fichier de design invalide",
   "binDesigner.labelTabs": "Onglets d'étiquette",
+  "binDesigner.compartmentsUnavailableSlotted": "Non disponible pour les bacs à fentes",
   "binDesigner.labelTabsUnavailableSlotted": "Non disponible pour les bacs à fentes",
   "binDesigner.layout": "Agencement",
   "binDesigner.listView": "Vue en liste",

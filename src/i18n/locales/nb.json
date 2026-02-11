@@ -185,6 +185,7 @@
   "binDesigner.interiorSummary": "{count} rom",
   "binDesigner.invalidDesignFile": "Ugyldig designfil",
   "binDesigner.labelTabs": "Etikettfaner",
+  "binDesigner.compartmentsUnavailableSlotted": "Ikke tilgjengelig for spor-bokser",
   "binDesigner.labelTabsUnavailableSlotted": "Ikke tilgjengelig for spor-bokser",
   "binDesigner.layout": "Oppsett",
   "binDesigner.listView": "Listevisning",

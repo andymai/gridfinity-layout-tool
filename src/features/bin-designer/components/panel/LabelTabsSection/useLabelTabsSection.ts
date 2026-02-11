@@ -89,7 +89,7 @@ export function useLabelTabsSection() {
   );
 
   return {
-    state: { label, isSlotted: isUnavailable, tabWidthMm },
+    state: { label, isUnavailable, tabWidthMm },
     handlers: { toggleLabelTabs, setTabSupport, setTabDepth, setTabWidth, setTabAlignment },
     meta,
     t,

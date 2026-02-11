@@ -32,7 +32,7 @@ describe('useLabelTabsSection', () => {
     const { result } = renderHook(() => useLabelTabsSection());
 
     expect(result.current.meta.disabledReason).toBeDefined();
-    expect(result.current.state.isSlotted).toBe(true);
+    expect(result.current.state.isUnavailable).toBe(true);
   });
 
   it('no disabledReason when style is standard', () => {

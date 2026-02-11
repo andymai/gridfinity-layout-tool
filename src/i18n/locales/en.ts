@@ -1190,6 +1190,7 @@ const en: Record<string, string> = {
   'binDesigner.downloadBinSTL': 'Download Bin STL',
   'binDesigner.downloadDividersSTL': 'Download Divider STL',
   'binDesigner.labelTabs': 'Label tabs',
+  'binDesigner.compartmentsUnavailableSlotted': 'Not available for slotted bins',
   'binDesigner.labelTabsUnavailableSlotted': 'Not available for slotted bins',
   'binDesigner.tabSupport': 'Support',
   'binDesigner.tabSupport.bracket': 'Bracket',

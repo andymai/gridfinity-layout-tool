@@ -185,6 +185,7 @@
   "binDesigner.interiorSummary": "{count} compartiment(en)",
   "binDesigner.invalidDesignFile": "Ongeldig ontwerpbestand",
   "binDesigner.labelTabs": "Labeltabs",
+  "binDesigner.compartmentsUnavailableSlotted": "Niet beschikbaar voor bins met sleuven",
   "binDesigner.labelTabsUnavailableSlotted": "Niet beschikbaar voor bins met sleuven",
   "binDesigner.layout": "Indeling",
   "binDesigner.listView": "Lijstweergave",

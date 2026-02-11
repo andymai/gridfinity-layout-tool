@@ -78,11 +78,25 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
 
   // ── Style: slotted ───────────────────────────────────────────────────────
   {
-    description: 'Slotted style disables interior features',
+    description: 'Slotted style disables compartments',
     source: 'style.slotted',
     when: (p) => p.style === 'slotted',
-    disables: ['compartments', 'label', 'scoop'],
+    disables: ['compartments'],
+    reason: 'binDesigner.compartmentsUnavailableSlotted',
+  },
+  {
+    description: 'Slotted style disables label tabs',
+    source: 'style.slotted',
+    when: (p) => p.style === 'slotted',
+    disables: ['label'],
     reason: 'binDesigner.labelTabsUnavailableSlotted',
+  },
+  {
+    description: 'Slotted style disables finger scoop',
+    source: 'style.slotted',
+    when: (p) => p.style === 'slotted',
+    disables: ['scoop'],
+    reason: 'binDesigner.fingerScoopUnavailableSlotted',
   },
 
   // ── Style: solid ─────────────────────────────────────────────────────────

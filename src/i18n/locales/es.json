@@ -185,6 +185,7 @@
   "binDesigner.interiorSummary": "{count} compartimento(s)",
   "binDesigner.invalidDesignFile": "Archivo de diseño no válido",
   "binDesigner.labelTabs": "Pestañas de etiqueta",
+  "binDesigner.compartmentsUnavailableSlotted": "No disponible para contenedores ranurados",
   "binDesigner.labelTabsUnavailableSlotted": "No disponible para contenedores ranurados",
   "binDesigner.layout": "Disposición",
   "binDesigner.listView": "Vista de lista",

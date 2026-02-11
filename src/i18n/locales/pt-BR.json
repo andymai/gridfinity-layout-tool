@@ -185,6 +185,7 @@
   "binDesigner.interiorSummary": "{count} compartimento(s)",
   "binDesigner.invalidDesignFile": "Arquivo de design inválido",
   "binDesigner.labelTabs": "Abas de etiqueta",
+  "binDesigner.compartmentsUnavailableSlotted": "Não disponível para caixas com ranhuras",
   "binDesigner.labelTabsUnavailableSlotted": "Não disponível para caixas com ranhuras",
   "binDesigner.layout": "Layout",
   "binDesigner.listView": "Visualização em lista",

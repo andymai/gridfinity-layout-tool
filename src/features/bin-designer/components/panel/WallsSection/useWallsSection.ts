@@ -67,7 +67,7 @@ export function useWallsSection() {
       options,
       patternEnabled: wallPattern.enabled,
       pattern: wallPattern.pattern,
-      allWallsSlotted: !patternStatus.available,
+      patternDisabled: !patternStatus.available,
       patternDisabledReason,
       patternPartialNote,
     },

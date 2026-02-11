@@ -32,7 +32,7 @@ export function validateConstraints(
     if (status.enabled && !status.available && status.reason) {
       return err({
         code: 'CONSTRAINT_VIOLATION',
-        message: `Feature "${feature}" is enabled but conflicts with active constraints: ${status.reason}`,
+        message: `Feature "${feature}" is enabled but conflicts with active constraints.`,
         feature,
         reason: status.reason,
       });
