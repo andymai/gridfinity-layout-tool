@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.0...gridfinity-layout-tool-v3.5.1) (2026-02-11)
+
+
+### Performance
+
+* optimize bin designer generation pipeline ([#686](https://github.com/andymai/gridfinity-layout-tool/issues/686)) ([fc3bfb8](https://github.com/andymai/gridfinity-layout-tool/commit/fc3bfb85513e640cac9117d339e1e5c4e093afe1))
+
 ## [3.5.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.4.1...gridfinity-layout-tool-v3.5.0) (2026-02-11)
 
 
