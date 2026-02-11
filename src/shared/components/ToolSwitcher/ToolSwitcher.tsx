@@ -1,14 +1,9 @@
 /**
  * Tool switcher segmented control.
  *
- * When the bin_designer feature flag is enabled, replaces the static
- * "Gridfinity Layout Tool" title with a segmented control to switch
- * between Layout Planner and Bin Designer.
- *
- * When the flag is off, renders the original static title.
+ * Renders a segmented control to switch between Layout Planner and Bin Designer.
  */
 
-import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useTranslation } from '@/i18n';
 
@@ -42,24 +37,11 @@ function GridfinityIcon({ className }: { className?: string }) {
 type Tool = 'planner' | 'designer';
 
 /**
- * Renders a segmented control for switching between Layout Planner and Bin Designer,
- * or falls back to a static "Gridfinity Layout Tool" title when the bin_designer
- * feature flag is disabled.
+ * Renders a segmented control for switching between Layout Planner and Bin Designer.
  */
 export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
   const t = useTranslation();
-  const isDesignerEnabled = useFeatureFlag('bin_designer');
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
-
-  // When feature flag is off, show original static title
-  if (!isDesignerEnabled) {
-    if (compact) {
-      return (
-        <span className="text-xs font-medium text-content-secondary">{t('toolSwitcher.gridfinityLayoutTool')}</span>
-      );
-    }
-    return <h1 className="text-lg font-semibold text-content">{t('toolSwitcher.gridfinityLayoutTool')}</h1>;
-  }
 
   const activeTool: Tool = isDesignerRoute ? 'designer' : 'planner';
 
@@ -78,7 +60,11 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
   const gap = compact ? 'gap-1.5' : 'gap-2';
 
   return (
-    <div className={`flex items-center ${gap}`} role="navigation" aria-label={t('toolSwitcher.toolSwitcher')}>
+    <div
+      className={`flex items-center ${gap}`}
+      role="navigation"
+      aria-label={t('toolSwitcher.toolSwitcher')}
+    >
       <GridfinityIcon className={`${iconSize} text-content-secondary flex-shrink-0`} />
       <div
         className="flex rounded-md bg-surface p-0.5 border border-stroke-subtle"
