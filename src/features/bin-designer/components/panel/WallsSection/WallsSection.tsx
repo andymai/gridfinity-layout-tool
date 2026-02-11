@@ -33,7 +33,7 @@ export function WallsSection() {
         <PatternSelector
           selectedPattern={state.patternEnabled ? state.pattern : null}
           onChange={handlers.handlePatternChange}
-          disabled={state.allWallsSlotted}
+          disabled={state.patternDisabled}
           disabledReason={state.patternDisabledReason}
         />
         {state.patternPartialNote && state.patternEnabled && (

@@ -161,7 +161,9 @@ describe('useBaseSection', () => {
 
       expect(result.current.state.hasMagnet).toBe(false);
       expect(result.current.state.hasScrew).toBe(false);
-      expect(result.current.handlers.flatDisabledReason).toBeDefined();
+      // In the constraint system, blocked features own their own disabled reasons
+      expect(result.current.handlers.magnetDisabledReason).toBeDefined();
+      expect(result.current.handlers.screwDisabledReason).toBeDefined();
     });
 
     it('toggleMagnet is a no-op when flat', () => {
