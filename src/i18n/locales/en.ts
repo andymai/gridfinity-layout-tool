@@ -1307,7 +1307,7 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.someSlotted': 'Walls with divider slots will keep solid walls',
   'binDesigner.walls.pattern.cutoutsEnabled': 'Wall patterns are not available in cutout mode',
   'binDesigner.interior.standard.title': 'Grid Dividers',
-  'binDesigner.interior.standard.description': 'Compartments with permanent walls',
+  'binDesigner.interior.standard.description': 'Compartments with walls',
   'binDesigner.interior.slotted.title': 'Removable Dividers',
   'binDesigner.interior.slotted.description': 'Slots for insertable dividers',
   'binDesigner.interior.solid.title': 'Custom Cutouts',

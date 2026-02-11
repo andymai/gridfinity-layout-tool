@@ -92,7 +92,7 @@
   "binDesigner.walls.pattern.someSlotted": "Wanden met verdeelsleuven blijven massief",
   "binDesigner.walls.pattern.cutoutsEnabled": "Wandpatronen zijn niet beschikbaar in uitsparingsmodus",
   "binDesigner.interior.standard.title": "Rasterverdeling",
-  "binDesigner.interior.standard.description": "Compartimenten met vaste wanden",
+  "binDesigner.interior.standard.description": "Compartimenten met wanden",
   "binDesigner.interior.slotted.title": "Verwijderbare scheidingswanden",
   "binDesigner.interior.slotted.description": "Sleuven voor inzetbare scheidingen",
   "binDesigner.interior.solid.title": "Aangepaste uitsparingen",
