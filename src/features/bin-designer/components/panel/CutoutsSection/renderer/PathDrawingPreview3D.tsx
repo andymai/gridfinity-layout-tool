@@ -24,11 +24,13 @@ interface PathDrawingPreview3DProps {
   readonly onVertexDown?: (index: number, mmX: number, mmY: number) => void;
 }
 
-const ACCENT_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
-const WHITE = new THREE.Color('#ffffff');
+/** Figma-style: blue border, white fill — pops on any background */
+const HANDLE_BORDER = new THREE.Color('#0d99ff');
+const HANDLE_FILL = new THREE.Color('#ffffff');
+const LINE_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
 const CURSOR_LINE_COLOR = new THREE.Color('#888888');
 const Z = 0.04;
-const VERTEX_OUTER_RADIUS_PX = 4.5;
+const VERTEX_OUTER_RADIUS_PX = 5;
 const VERTEX_INNER_RADIUS_PX = 3;
 const CIRCLE_SEGMENTS = 24;
 
@@ -60,7 +62,7 @@ export function PathDrawingPreview3D({
     const linePoints = flatPoints.map((p) => new THREE.Vector3(p.x, p.y, Z));
     const geo = new THREE.BufferGeometry().setFromPoints(linePoints);
     const mat = new THREE.LineBasicMaterial({
-      color: ACCENT_COLOR,
+      color: LINE_COLOR,
       transparent: true,
       opacity: 0.8,
       depthTest: false,
@@ -82,7 +84,7 @@ export function PathDrawingPreview3D({
     ];
     const geo = new THREE.BufferGeometry().setFromPoints(linePoints);
     const mat = new THREE.LineBasicMaterial({
-      color: canClose ? ACCENT_COLOR : CURSOR_LINE_COLOR,
+      color: canClose ? LINE_COLOR : CURSOR_LINE_COLOR,
       transparent: true,
       opacity: canClose ? 0.8 : 0.5,
       depthTest: false,
@@ -155,7 +157,7 @@ export function PathDrawingPreview3D({
       {/* Handle lines for latest point */}
       {handleLineGeo && (
         <lineSegments geometry={handleLineGeo} renderOrder={RENDER_ORDER.DRAWING_PREVIEW}>
-          <lineBasicMaterial color={ACCENT_COLOR} transparent opacity={0.5} depthTest={false} />
+          <lineBasicMaterial color={HANDLE_BORDER} transparent opacity={0.5} depthTest={false} />
         </lineSegments>
       )}
 
@@ -166,11 +168,11 @@ export function PathDrawingPreview3D({
         >
           <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 1}>
             <circleGeometry args={[vOuter * 0.7, CIRCLE_SEGMENTS]} />
-            <meshBasicMaterial color={ACCENT_COLOR} depthTest={false} />
+            <meshBasicMaterial color={HANDLE_BORDER} transparent opacity={1} depthTest={false} />
           </mesh>
           <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 2} position={[0, 0, 0.001]}>
             <circleGeometry args={[vInner * 0.7, CIRCLE_SEGMENTS]} />
-            <meshBasicMaterial color={WHITE} depthTest={false} />
+            <meshBasicMaterial color={HANDLE_FILL} transparent opacity={1} depthTest={false} />
           </mesh>
         </group>
       )}
@@ -180,11 +182,11 @@ export function PathDrawingPreview3D({
         >
           <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 1}>
             <circleGeometry args={[vOuter * 0.7, CIRCLE_SEGMENTS]} />
-            <meshBasicMaterial color={ACCENT_COLOR} depthTest={false} />
+            <meshBasicMaterial color={HANDLE_BORDER} transparent opacity={1} depthTest={false} />
           </mesh>
           <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 2} position={[0, 0, 0.001]}>
             <circleGeometry args={[vInner * 0.7, CIRCLE_SEGMENTS]} />
-            <meshBasicMaterial color={WHITE} depthTest={false} />
+            <meshBasicMaterial color={HANDLE_FILL} transparent opacity={1} depthTest={false} />
           </mesh>
         </group>
       )}
@@ -195,28 +197,30 @@ export function PathDrawingPreview3D({
         const showCloseIndicator = isFirst && canClose && points.length >= MIN_PATH_POINTS;
         return (
           <group key={i} position={[pt.x, pt.y, Z]} onPointerDown={makeVertexDown(i)}>
-            {/* Close ring — pulsing larger ring around first vertex */}
+            {/* Close ring */}
             {showCloseIndicator && (
-              <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 3}>
+              <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 2}>
                 <circleGeometry args={[closeRingRadius, CIRCLE_SEGMENTS]} />
                 <meshBasicMaterial
-                  color={ACCENT_COLOR}
+                  color={HANDLE_BORDER}
                   transparent
                   opacity={0.25}
                   depthTest={false}
                 />
               </mesh>
             )}
-            {/* Outer border */}
-            <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 4}>
+            {/* Blue border */}
+            <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 3}>
               <primitive object={outerGeo} attach="geometry" />
-              <meshBasicMaterial color={ACCENT_COLOR} depthTest={false} />
+              <meshBasicMaterial color={HANDLE_BORDER} transparent opacity={1} depthTest={false} />
             </mesh>
-            {/* Inner fill — accent when close-ready, white otherwise */}
-            <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 5} position={[0, 0, 0.001]}>
+            {/* White fill, solid blue when close-ready */}
+            <mesh renderOrder={RENDER_ORDER.DRAWING_PREVIEW + 4} position={[0, 0, 0.001]}>
               <primitive object={innerGeo} attach="geometry" />
               <meshBasicMaterial
-                color={showCloseIndicator ? ACCENT_COLOR : WHITE}
+                color={showCloseIndicator ? HANDLE_BORDER : HANDLE_FILL}
+                transparent
+                opacity={1}
                 depthTest={false}
               />
             </mesh>

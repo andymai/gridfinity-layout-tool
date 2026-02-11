@@ -14,7 +14,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import type { SegmentHoverInfo } from '../handlers';
 import { flattenSegment } from '../pathGeometry';
-import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { RENDER_ORDER } from './constants';
 
 interface PathEditOverlay3DProps {
   readonly cutout: Cutout;
@@ -30,24 +30,23 @@ interface PathEditOverlay3DProps {
   ) => void;
 }
 
-const ACCENT_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
-const WHITE = new THREE.Color('#ffffff');
-const HANDLE_LINE_COLOR = new THREE.Color('#a0a0a0');
+/** Figma-style handle colors: saturated blue border, white fill */
+const HANDLE_BORDER = new THREE.Color('#0d99ff');
+const HANDLE_FILL = new THREE.Color('#ffffff');
+const HANDLE_SELECTED_FILL = new THREE.Color('#0d99ff');
+const HANDLE_LINE_COLOR = new THREE.Color('#0d99ff');
 const Z = 0.05;
 
-// Figma-quality handle sizes (screen pixels)
-const VERTEX_SHADOW_RADIUS_PX = 7; // Dark halo for contrast on any background
-const VERTEX_OUTER_RADIUS_PX = 5.5; // Colored border circle
-const VERTEX_INNER_RADIUS_PX = 3.5; // White/accent fill circle
-const HANDLE_DOT_SHADOW_RADIUS_PX = 5.5;
+// Handle sizes (screen pixels) — matches Figma/Illustrator proportions
+const VERTEX_OUTER_RADIUS_PX = 5;
+const VERTEX_INNER_RADIUS_PX = 3;
 const HANDLE_DOT_OUTER_RADIUS_PX = 4;
 const HANDLE_DOT_INNER_RADIUS_PX = 2.5;
-const HOVER_SCALE = 1.25;
+const HOVER_SCALE = 1.2;
 const CIRCLE_SEGMENTS = 24;
 
 const GHOST_DOT_RADIUS_PX = 4;
 const OVERLAY_RENDER_ORDER = RENDER_ORDER.HANDLES + 10;
-const SHADOW_COLOR = new THREE.Color('#000000');
 
 export function PathEditOverlay3D({
   cutout,
@@ -70,10 +69,8 @@ export function PathEditOverlay3D({
   if (!path || path.length === 0) return null;
 
   // Screen-space sizing
-  const vShadow = VERTEX_SHADOW_RADIUS_PX / zoom;
   const vOuter = VERTEX_OUTER_RADIUS_PX / zoom;
   const vInner = VERTEX_INNER_RADIUS_PX / zoom;
-  const hShadow = HANDLE_DOT_SHADOW_RADIUS_PX / zoom;
   const hOuter = HANDLE_DOT_OUTER_RADIUS_PX / zoom;
   const hInner = HANDLE_DOT_INNER_RADIUS_PX / zoom;
 
@@ -92,7 +89,6 @@ export function PathEditOverlay3D({
                 pointY={pt.y}
                 handleDx={pt.handleIn.dx}
                 handleDy={pt.handleIn.dy}
-                shadowRadius={hShadow}
                 outerRadius={hOuter}
                 innerRadius={hInner}
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
@@ -108,7 +104,6 @@ export function PathEditOverlay3D({
                 pointY={pt.y}
                 handleDx={pt.handleOut.dx}
                 handleDy={pt.handleOut.dy}
-                shadowRadius={hShadow}
                 outerRadius={hOuter}
                 innerRadius={hInner}
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
@@ -123,7 +118,6 @@ export function PathEditOverlay3D({
             <VertexHandle
               x={pt.x}
               y={pt.y}
-              shadowRadius={vShadow}
               outerRadius={vOuter}
               innerRadius={vInner}
               isSelected={isSelected}
@@ -154,7 +148,6 @@ export function PathEditOverlay3D({
 interface VertexHandleProps {
   readonly x: number;
   readonly y: number;
-  readonly shadowRadius: number;
   readonly outerRadius: number;
   readonly innerRadius: number;
   readonly isSelected: boolean;
@@ -164,7 +157,6 @@ interface VertexHandleProps {
 function VertexHandle({
   x,
   y,
-  shadowRadius,
   outerRadius,
   innerRadius,
   isSelected,
@@ -173,10 +165,6 @@ function VertexHandle({
   const [hovered, setHovered] = useState(false);
   const scale = hovered ? HOVER_SCALE : 1;
 
-  const shadowGeo = useMemo(
-    () => new THREE.CircleGeometry(shadowRadius, CIRCLE_SEGMENTS),
-    [shadowRadius]
-  );
   const outerGeo = useMemo(
     () => new THREE.CircleGeometry(outerRadius, CIRCLE_SEGMENTS),
     [outerRadius]
@@ -194,17 +182,18 @@ function VertexHandle({
       onPointerEnter={useCallback(() => setHovered(true), [])}
       onPointerLeave={useCallback(() => setHovered(false), [])}
     >
-      {/* Dark shadow halo for contrast against any fill color */}
-      <mesh geometry={shadowGeo} renderOrder={OVERLAY_RENDER_ORDER}>
-        <meshBasicMaterial color={SHADOW_COLOR} transparent opacity={0.4} depthTest={false} />
+      {/* Blue border — Figma-style, always visible on any background */}
+      <mesh geometry={outerGeo} renderOrder={OVERLAY_RENDER_ORDER + 1}>
+        <meshBasicMaterial color={HANDLE_BORDER} transparent opacity={1} depthTest={false} />
       </mesh>
-      {/* Colored border circle */}
-      <mesh geometry={outerGeo} renderOrder={OVERLAY_RENDER_ORDER + 1} position={[0, 0, 0.001]}>
-        <meshBasicMaterial color={ACCENT_COLOR} depthTest={false} />
-      </mesh>
-      {/* Inner fill circle */}
-      <mesh geometry={innerGeo} renderOrder={OVERLAY_RENDER_ORDER + 2} position={[0, 0, 0.002]}>
-        <meshBasicMaterial color={isSelected ? ACCENT_COLOR : WHITE} depthTest={false} />
+      {/* White fill, solid blue when selected */}
+      <mesh geometry={innerGeo} renderOrder={OVERLAY_RENDER_ORDER + 2} position={[0, 0, 0.001]}>
+        <meshBasicMaterial
+          color={isSelected ? HANDLE_SELECTED_FILL : HANDLE_FILL}
+          transparent
+          opacity={1}
+          depthTest={false}
+        />
       </mesh>
     </group>
   );
@@ -217,7 +206,6 @@ interface HandleLineProps {
   readonly pointY: number;
   readonly handleDx: number;
   readonly handleDy: number;
-  readonly shadowRadius: number;
   readonly outerRadius: number;
   readonly innerRadius: number;
   readonly onPointerDown: (e: ThreeEvent<PointerEvent>) => void;
@@ -228,7 +216,6 @@ function HandleLine({
   pointY,
   handleDx,
   handleDy,
-  shadowRadius,
   outerRadius,
   innerRadius,
   onPointerDown,
@@ -238,14 +225,13 @@ function HandleLine({
   const handleY = pointY + handleDy;
   const scale = hovered ? HOVER_SCALE : 1;
 
-  // Solid thin line from anchor to handle endpoint
   const lineObj = useMemo(() => {
     const pts = [new THREE.Vector3(handleX, handleY, Z), new THREE.Vector3(pointX, pointY, Z)];
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
     const mat = new THREE.LineBasicMaterial({
       color: HANDLE_LINE_COLOR,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.5,
       depthTest: false,
     });
     const obj = new THREE.Line(geo, mat);
@@ -253,10 +239,6 @@ function HandleLine({
     return obj;
   }, [pointX, pointY, handleX, handleY]);
 
-  const shadowGeo = useMemo(
-    () => new THREE.CircleGeometry(shadowRadius, CIRCLE_SEGMENTS),
-    [shadowRadius]
-  );
   const outerGeo = useMemo(
     () => new THREE.CircleGeometry(outerRadius, CIRCLE_SEGMENTS),
     [outerRadius]
@@ -268,10 +250,7 @@ function HandleLine({
 
   return (
     <>
-      {/* Solid handle line */}
       <primitive object={lineObj} />
-
-      {/* Handle dot — shadow halo + circle with border, Figma-style */}
       <group
         position={[handleX, handleY, Z]}
         scale={[scale, scale, 1]}
@@ -279,14 +258,13 @@ function HandleLine({
         onPointerEnter={useCallback(() => setHovered(true), [])}
         onPointerLeave={useCallback(() => setHovered(false), [])}
       >
-        <mesh geometry={shadowGeo} renderOrder={OVERLAY_RENDER_ORDER}>
-          <meshBasicMaterial color={SHADOW_COLOR} transparent opacity={0.4} depthTest={false} />
+        {/* Blue border */}
+        <mesh geometry={outerGeo} renderOrder={OVERLAY_RENDER_ORDER + 1}>
+          <meshBasicMaterial color={HANDLE_BORDER} transparent opacity={1} depthTest={false} />
         </mesh>
-        <mesh geometry={outerGeo} renderOrder={OVERLAY_RENDER_ORDER + 1} position={[0, 0, 0.001]}>
-          <meshBasicMaterial color={ACCENT_COLOR} depthTest={false} />
-        </mesh>
-        <mesh geometry={innerGeo} renderOrder={OVERLAY_RENDER_ORDER + 2} position={[0, 0, 0.002]}>
-          <meshBasicMaterial color={WHITE} depthTest={false} />
+        {/* White fill */}
+        <mesh geometry={innerGeo} renderOrder={OVERLAY_RENDER_ORDER + 2} position={[0, 0, 0.001]}>
+          <meshBasicMaterial color={HANDLE_FILL} transparent opacity={1} depthTest={false} />
         </mesh>
       </group>
     </>
@@ -308,7 +286,7 @@ function SegmentHoverPreview({ path, hover, ghostRadius }: SegmentHoverPreviewPr
     const vecs = segPts.map((p) => new THREE.Vector3(p.x, p.y, Z));
     const geo = new THREE.BufferGeometry().setFromPoints(vecs);
     const mat = new THREE.LineBasicMaterial({
-      color: ACCENT_COLOR,
+      color: HANDLE_BORDER,
       transparent: true,
       opacity: 0.8,
       depthTest: false,
@@ -332,7 +310,7 @@ function SegmentHoverPreview({ path, hover, ghostRadius }: SegmentHoverPreviewPr
       {/* Ghost dot at insertion point */}
       <mesh position={[hover.x, hover.y, Z]} renderOrder={OVERLAY_RENDER_ORDER + 3}>
         <primitive object={ghostGeo} attach="geometry" />
-        <meshBasicMaterial color={ACCENT_COLOR} transparent opacity={0.5} depthTest={false} />
+        <meshBasicMaterial color={HANDLE_BORDER} transparent opacity={0.5} depthTest={false} />
       </mesh>
     </>
   );
