@@ -95,6 +95,7 @@ export function CutoutEditor() {
     handlePointerMove,
     handlePointerUp,
     handlePathBackgroundDown,
+    onPathDrawingVertexDown,
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,
@@ -405,6 +406,7 @@ export function CutoutEditor() {
           onRotateStart={startRotation}
           onGroupRotateStart={startGroupRotation}
           onGroupScaleStart={startGroupScale}
+          onPathDrawingVertexDown={onPathDrawingVertexDown}
           onVertexPointDown={handleVertexPointDown}
           onVertexHandleDown={handleVertexHandleDown}
         />

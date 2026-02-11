@@ -177,6 +177,7 @@ export function CutoutWorkspace() {
     handlePointerMove,
     handlePointerUp,
     handlePathBackgroundDown,
+    onPathDrawingVertexDown,
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,
@@ -624,6 +625,7 @@ export function CutoutWorkspace() {
                 onRotateStart={startRotation}
                 onGroupRotateStart={startGroupRotation}
                 onGroupScaleStart={startGroupScale}
+                onPathDrawingVertexDown={onPathDrawingVertexDown}
                 onVertexPointDown={handleVertexPointDown}
                 onVertexHandleDown={handleVertexHandleDown}
                 externalZoom={zoom}

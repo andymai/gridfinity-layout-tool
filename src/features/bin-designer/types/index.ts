@@ -267,7 +267,7 @@ export interface Cutout {
   /** Z-order for rendering layering (higher = rendered on top) */
   readonly zIndex?: number;
   /** Path vertices for pen tool shapes (required when shape === 'path') */
-  readonly path?: readonly PathPoint[];
+  readonly path?: PathPoint[];
 }
 
 // =============================================================================

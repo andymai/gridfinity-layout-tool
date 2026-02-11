@@ -85,6 +85,7 @@ export interface CutoutCanvas3DProps {
   readonly onRotateStart: (id: string, startAngle: number) => void;
   readonly onGroupRotateStart: (startAngle: number) => void;
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
+  readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
   readonly onVertexPointDown?: (index: number, mmX: number, mmY: number) => void;
   readonly onVertexHandleDown?: (
     index: number,
@@ -121,6 +122,7 @@ export function CutoutCanvas3D({
   onRotateStart,
   onGroupRotateStart,
   onGroupScaleStart,
+  onPathDrawingVertexDown,
   onVertexPointDown,
   onVertexHandleDown,
   externalZoom,
@@ -290,6 +292,7 @@ export function CutoutCanvas3D({
         onRotateStart={onRotateStart}
         onGroupRotateStart={onGroupRotateStart}
         onGroupScaleStart={onGroupScaleStart}
+        onPathDrawingVertexDown={onPathDrawingVertexDown}
         onVertexPointDown={onVertexPointDown}
         onVertexHandleDown={onVertexHandleDown}
         externalZoom={externalZoom}

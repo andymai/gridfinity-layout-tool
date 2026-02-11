@@ -98,6 +98,7 @@ export interface SceneContentProps {
   readonly onRotateStart: (id: string, startAngle: number) => void;
   readonly onGroupRotateStart: (startAngle: number) => void;
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
+  readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
   readonly onVertexPointDown?: (index: number, mmX: number, mmY: number) => void;
   readonly onVertexHandleDown?: (
     index: number,
@@ -138,6 +139,7 @@ export function SceneContent({
   onRotateStart,
   onGroupRotateStart,
   onGroupScaleStart,
+  onPathDrawingVertexDown,
   onVertexPointDown,
   onVertexHandleDown,
   externalZoom,
@@ -333,6 +335,7 @@ export function SceneContent({
           cursorX={pathDrawingPreview.cursorX}
           cursorY={pathDrawingPreview.cursorY}
           canClose={pathDrawingPreview.canClose}
+          onVertexDown={onPathDrawingVertexDown}
         />
       )}
 

@@ -32,6 +32,7 @@ import {
   handlePathDrawingPointerDown,
   handlePathDrawingPointerMove,
   handlePathDrawingPointerUp,
+  handlePathDrawingVertexDown,
   handleVertexEditPointerDown,
   handleVertexEditPointerMove,
   handleVertexEditPointerUp,
@@ -369,7 +370,7 @@ export function useCutoutInteraction({
     (points: readonly PathPoint[]) => {
       // Compute bounding box from flattened path (includes bezier curve extents)
       const { minX, minY, maxX, maxY } = getPathBounds(points);
-      const newId = generateUUID();
+      const newId = crypto.randomUUID();
       onAdd({
         id: newId,
         shape: 'path',
@@ -382,7 +383,7 @@ export function useCutoutInteraction({
         cornerRadius: 0,
         label: '',
         groupId: null,
-        path: points,
+        path: [...points],
       });
       setSelection(new Set([newId]));
       setMode({ type: 'idle' });
@@ -403,6 +404,19 @@ export function useCutoutInteraction({
       });
     },
     [mode, binWidth, binDepth, snap, commitPath]
+  );
+
+  /** Handle clicking an existing vertex while drawing (to reposition or close). */
+  const onPathDrawingVertexDown = useCallback(
+    (index: number, _mmX: number, _mmY: number) => {
+      if (mode.type !== 'path-drawing') return;
+      handlePathDrawingVertexDown(mode, index, {
+        setMode,
+        setPathDrawingPreview,
+        commitPath,
+      });
+    },
+    [mode, commitPath]
   );
 
   /** Enter vertex editing mode for a path cutout (on double-click). */
@@ -972,6 +986,7 @@ export function useCutoutInteraction({
     handlePointerMove,
     handlePointerUp,
     handlePathBackgroundDown,
+    onPathDrawingVertexDown,
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,

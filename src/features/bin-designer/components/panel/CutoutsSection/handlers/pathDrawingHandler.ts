@@ -26,6 +26,8 @@ export interface PathDrawingMode {
   readonly points: readonly PathPoint[];
   /** True while the user is dragging (creating handles on the latest point). */
   readonly activePointDrag: boolean;
+  /** Index of an existing point being repositioned (null = not repositioning). */
+  readonly repositionIndex: number | null;
 }
 
 /** Preview state exposed to the rendering layer during path drawing. */
@@ -85,6 +87,7 @@ export function handlePathDrawingPointerDown(
       type: 'path-drawing',
       points: [cornerPoint(x, y)],
       activePointDrag: true,
+      repositionIndex: null,
     });
     return;
   }
@@ -115,6 +118,7 @@ export function handlePathDrawingPointerDown(
     type: 'path-drawing',
     points: [...points, cornerPoint(x, y)],
     activePointDrag: true,
+    repositionIndex: null,
   });
 }
 
@@ -148,12 +152,40 @@ export function handlePathDrawingPointerMove(
   _snap: SnapFn,
   setters: PathDrawingSetters
 ): void {
-  const { points, activePointDrag } = mode;
+  const { points, activePointDrag, repositionIndex } = mode;
   if (points.length === 0) return;
 
   const clamp = (v: number, max: number) => Math.max(0, Math.min(v, max));
   const cursorX = clamp(event.mmX, bounds.binWidth);
   const cursorY = clamp(event.mmY, bounds.binDepth);
+
+  // Repositioning an existing vertex
+  if (repositionIndex !== null) {
+    let x = cursorX;
+    let y = cursorY;
+    if (event.shiftKey && repositionIndex > 0) {
+      const prev = points[repositionIndex - 1];
+      const snapped = snapAngle45(prev.x, prev.y, x, y);
+      x = clamp(snapped.x, bounds.binWidth);
+      y = clamp(snapped.y, bounds.binDepth);
+    }
+
+    const nextPoints = points.map((pt, i) => (i === repositionIndex ? { ...pt, x, y } : pt));
+
+    setters.setMode({
+      type: 'path-drawing',
+      points: nextPoints,
+      activePointDrag: false,
+      repositionIndex,
+    });
+    setters.setPathDrawingPreview({
+      points: nextPoints,
+      cursorX,
+      cursorY,
+      canClose: false,
+    });
+    return;
+  }
 
   if (activePointDrag) {
     const lastPt = points[points.length - 1];
@@ -186,7 +218,12 @@ export function handlePathDrawingPointerMove(
 
     const nextPoints = [...points.slice(0, -1), updatedPoint];
 
-    setters.setMode({ type: 'path-drawing', points: nextPoints, activePointDrag: true });
+    setters.setMode({
+      type: 'path-drawing',
+      points: nextPoints,
+      activePointDrag: true,
+      repositionIndex: null,
+    });
     setters.setPathDrawingPreview({
       points: nextPoints,
       cursorX: handleX,
@@ -217,11 +254,43 @@ export function handlePathDrawingPointerUp(
   mode: PathDrawingMode,
   setters: Pick<PathDrawingSetters, 'setMode'>
 ): void {
-  if (!mode.activePointDrag) return;
+  if (!mode.activePointDrag && mode.repositionIndex === null) return;
 
   setters.setMode({
     type: 'path-drawing',
     points: mode.points,
     activePointDrag: false,
+    repositionIndex: null,
+  });
+}
+
+// ── Vertex reposition ─────────────────────────────────────────────────────
+
+/**
+ * Start repositioning an existing vertex during path drawing.
+ *
+ * Called when the user clicks on a vertex dot in the drawing preview.
+ * If the click is on the first vertex with 3+ points, closes the path instead.
+ */
+export function handlePathDrawingVertexDown(
+  mode: PathDrawingMode,
+  vertexIndex: number,
+  setters: PathDrawingSetters
+): void {
+  const { points } = mode;
+
+  // Clicking the first vertex with enough points closes the path
+  if (vertexIndex === 0 && points.length >= MIN_PATH_POINTS) {
+    setters.commitPath(points);
+    setters.setPathDrawingPreview(null);
+    return;
+  }
+
+  // Start repositioning this vertex
+  setters.setMode({
+    type: 'path-drawing',
+    points,
+    activePointDrag: false,
+    repositionIndex: vertexIndex,
   });
 }

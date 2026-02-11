@@ -43,7 +43,7 @@ export interface VertexEditSetters {
 /** Compute cutout bound updates from an updated path. */
 function pathBoundsUpdate(path: readonly PathPoint[]): Partial<Cutout> {
   const { minX, minY, maxX, maxY } = getPathBounds(path);
-  return { path, x: minX, y: minY, width: maxX - minX, depth: maxY - minY };
+  return { path: [...path], x: minX, y: minY, width: maxX - minX, depth: maxY - minY };
 }
 
 // ── Pointer Down ─────────────────────────────────────────────────────────────

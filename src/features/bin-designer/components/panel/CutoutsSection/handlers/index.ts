@@ -18,6 +18,7 @@ export {
   handlePathDrawingPointerDown,
   handlePathDrawingPointerMove,
   handlePathDrawingPointerUp,
+  handlePathDrawingVertexDown,
 } from './pathDrawingHandler';
 export type {
   PathDrawingMode,
