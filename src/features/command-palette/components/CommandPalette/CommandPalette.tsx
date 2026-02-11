@@ -151,7 +151,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                   const newIds: BinId[] = [];
                   for (const id of selectedBinIds) {
                     const result = duplicateBin(id);
-                    if (result && 'value' in result) {
+                    if ('value' in result) {
                       newIds.push(binId(result.value));
                     }
                   }
@@ -366,12 +366,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         // Layout management
         case 'new-layout':
           return () => {
-            createNewLayout();
+            void createNewLayout();
           };
         case 'duplicate-layout':
           return activeLayoutId
             ? () => {
-                duplicateLayout(activeLayoutId);
+                void duplicateLayout(activeLayoutId);
               }
             : null;
 
@@ -557,10 +557,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const groupedCommands = useMemo(() => {
     const groups: Record<string, typeof commands> = {};
     for (const cmd of commands) {
-      if (!groups[cmd.category]) {
-        groups[cmd.category] = [];
-      }
-      groups[cmd.category].push(cmd);
+      const cat = cmd.category;
+      (groups[cat] ??= []).push(cmd);
     }
     return groups;
   }, [commands]);
@@ -616,7 +614,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]" onClick={() => onOpenChange(false)}>
+    <div className="fixed inset-0 z-[100]" role="presentation" onClick={() => onOpenChange(false)}>
       {/* Backdrop with blur */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] animate-fade-in" />
 
@@ -628,7 +626,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           loop
           onValueChange={(value) => {
             // Extract command ID from composite value (id::label keywords)
-            const commandId = value?.split('::')[0] ?? null;
+            const commandId = value.split('::')[0];
             setSelectedCommandId(commandId);
           }}
         >
@@ -650,6 +648,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <Command.Input
               placeholder={t('commandPalette.placeholder')}
               className="flex-1 py-3.5 text-[15px] bg-transparent text-content placeholder:text-content-tertiary outline-none"
+              // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
               autoFocus
             />
             <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-[22px] px-1.5 text-[11px] font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.05)]">
@@ -717,10 +716,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
             {/* Grouped commands (excluding ones already in Recent) */}
             {CATEGORY_ORDER.map((category) => {
-              const categoryCommands = groupedCommands[category]?.filter(
+              const categoryCommands = groupedCommands[category].filter(
                 (cmd) => !recentCommandIds.has(cmd.id)
               );
-              if (!categoryCommands?.length) return null;
+              if (!categoryCommands.length) return null;
 
               return (
                 <Command.Group

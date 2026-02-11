@@ -86,10 +86,10 @@ export async function exportLayoutJSONWithDesigns(layout: Layout): Promise<strin
  */
 export function importLayoutJSON(json: string): { layout: Layout | null; errors: string[] } {
   try {
-    const parsed = JSON.parse(json);
+    const parsed = JSON.parse(json) as Record<string, unknown>;
 
     // Strip export metadata if present (not part of Layout type)
-    if (parsed._meta) {
+    if ('_meta' in parsed) {
       delete parsed._meta;
     }
 
@@ -100,7 +100,7 @@ export function importLayoutJSON(json: string): { layout: Layout | null; errors:
     }
 
     // Regenerate all IDs
-    const layout = parsed as Layout;
+    const layout = parsed as unknown as Layout;
     const layerIdMap = new Map<string, LayerId>();
     const categoryIdMap = new Map<string, CategoryId>();
 
@@ -171,7 +171,7 @@ export async function restoreEmbeddedDesigns(
   // Parse the raw JSON again to get linkedDesigns
   let data: Record<string, unknown>;
   try {
-    data = JSON.parse(json);
+    data = JSON.parse(json) as Record<string, unknown>;
   } catch {
     return { layout, importedDesignCount: 0 };
   }
@@ -184,7 +184,8 @@ export async function restoreEmbeddedDesigns(
   const designIdMap = new Map<string, string>();
   let importedDesignCount = 0;
 
-  for (const linkedDesign of data.linkedDesigns) {
+  for (const entry of data.linkedDesigns as unknown[]) {
+    const linkedDesign = entry as Record<string, unknown> | null;
     if (
       linkedDesign &&
       typeof linkedDesign === 'object' &&

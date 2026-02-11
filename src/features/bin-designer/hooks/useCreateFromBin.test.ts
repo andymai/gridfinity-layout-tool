@@ -66,12 +66,11 @@ describe('useCreateFromBin', () => {
   function setUrlParams(params: Record<string, string>) {
     const searchParams = new URLSearchParams(params);
     Object.defineProperty(window, 'location', {
-      value: {
-        ...originalLocation,
+      value: Object.assign({}, originalLocation, {
         href: `http://localhost/designer?${searchParams.toString()}`,
         search: `?${searchParams.toString()}`,
         pathname: '/designer',
-      },
+      }),
       writable: true,
     });
   }

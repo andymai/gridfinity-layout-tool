@@ -32,7 +32,7 @@ export function SplitPreview({ width, depth, pieces, cellSize = 16, gap = 2 }: S
   // Place pieces using greedy left-to-right, bottom-to-top
   const placedPieces: Array<{ piece: PrintPiece; x: number; y: number }> = [];
   const piecesToPlace = pieces.flatMap((p) =>
-    Array(p.count).fill({ width: p.width, depth: p.depth })
+    Array.from({ length: p.count }, () => ({ width: p.width, depth: p.depth, count: 1 }))
   );
 
   for (const piece of piecesToPlace) {

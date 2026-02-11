@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useUIStore } from '@/core/store/ui';
+import { useMobileStore } from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 
@@ -14,8 +14,8 @@ interface BottomSheetProps {
  */
 export function BottomSheet({ children, title }: BottomSheetProps) {
   const t = useTranslation();
-  const activeMobilePanel = useUIStore((state) => state.activeMobilePanel);
-  const closeMobilePanel = useUIStore((state) => state.closeMobilePanel);
+  const activeMobilePanel = useMobileStore((state) => state.activeMobilePanel);
+  const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
   const { viewportHeight } = useResponsive();
 
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -39,9 +39,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
     setIsDragging(true);
     dragStartY.current = e.clientY;
     // Capture on the header element to ensure consistent drag tracking
-    if (headerEl.setPointerCapture) {
-      headerEl.setPointerCapture(e.pointerId);
-    }
+    headerEl.setPointerCapture(e.pointerId);
   }, []);
 
   const handlePointerMove = useCallback(

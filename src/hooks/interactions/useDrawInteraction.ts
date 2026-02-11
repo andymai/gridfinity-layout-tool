@@ -162,7 +162,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       // Single-click placement: when user clicks without dragging, place one bin
       // centered on the clicked position, clamped to drawer bounds
       const isSingleClick = start.x === current.x && start.y === current.y;
-      if (isSingleClick && layer && ps) {
+      if (isSingleClick && layer) {
         const { drawer } = layout;
         // Center the bin on the clicked cell, then snap to grid
         const centeredX = snapToGrid(start.x - (ps.width - minSizeNow) / 2, halfBinModeNow);
@@ -214,7 +214,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       const areaWidth = x2 - x1 + minSizeNow;
       const areaDepth = y2 - y1 + minSizeNow;
 
-      if (layer && ps) {
+      if (layer) {
         // Calculate how many bins fit in the selected area
         const binsAcross = Math.floor(areaWidth / ps.width);
         const binsDown = Math.floor(areaDepth / ps.depth);

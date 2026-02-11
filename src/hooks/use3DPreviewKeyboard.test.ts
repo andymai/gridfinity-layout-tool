@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { use3DPreviewKeyboard } from '@/hooks/use3DPreviewKeyboard';
-import type { SceneHandle } from '@/components/Grid/IsometricPreview/Scene';
+import type { SceneHandle } from '@/features/grid-editor';
 
 // Helper to create keyboard event
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {

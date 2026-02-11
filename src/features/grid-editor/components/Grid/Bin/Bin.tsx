@@ -320,8 +320,9 @@ function BinComponent({
   } = layoutCalcs;
 
   const hasLabel = !!bin.label;
-  const hasNotes = bin.notes && bin.notes.trim().length > 0;
-  const hasCustomProps = bin.customProperties && Object.keys(bin.customProperties).length > 0;
+  const hasNotes = bin.notes.trim().length > 0;
+  const hasCustomProps =
+    bin.customProperties !== undefined && Object.keys(bin.customProperties).length > 0;
   const hasLinkedDesign = !!bin.linkedDesignId;
   const hasMetadata = hasNotes || hasCustomProps;
 
@@ -427,9 +428,7 @@ function BinComponent({
       longPressTimerRef.current = window.setTimeout(() => {
         longPressTriggeredRef.current = true;
         // Vibrate if supported (haptic feedback)
-        if (navigator.vibrate) {
-          navigator.vibrate(50);
-        }
+        navigator.vibrate(50);
         // Show context menu
         showContextMenu([bin.id], { x: e.clientX, y: e.clientY }, 'grid');
       }, LONG_PRESS_DURATION);
@@ -540,7 +539,7 @@ function BinComponent({
       e.stopPropagation();
       if (e.button === 0) {
         // Haptic feedback on touch devices when starting resize
-        if (isTouchDevice && navigator.vibrate) {
+        if (isTouchDevice) {
           navigator.vibrate(30);
         }
         onStartResize(bin.id, handle, e.pointerId);
@@ -659,10 +658,12 @@ function BinComponent({
       onFocus={() => !isGhost && setFocusedBin(bin.id)}
       onBlur={() => isFocused && setFocusedBin(null)}
       role="button"
-      aria-label={`Bin ${bin.width} by ${bin.depth}${bin.label ? `, labeled ${bin.label}` : ''}${category ? `, category ${category.name}` : ''}`}
+      aria-label={`Bin ${bin.width} by ${bin.depth}${bin.label !== '' ? `, labeled ${bin.label}` : ''}${category ? `, category ${category.name}` : ''}`}
       aria-pressed={isSelected}
       tabIndex={isGhost ? -1 : 0}
-      title={isGhost ? undefined : bin.label ? `${dimensionsText} - ${bin.label}` : undefined}
+      title={
+        isGhost ? undefined : bin.label !== '' ? `${dimensionsText} - ${bin.label}` : undefined
+      }
     >
       {/* Tall bin indicator badge */}
       {isTall && !isGhost && (
@@ -783,7 +784,7 @@ function BinComponent({
           >
             {primaryText}
             {/* Split badge (only when dimensions are primary) */}
-            {!showLabel && needsSplit && !isGhost && (
+            {!showLabel && needsSplit && (
               <span
                 className="ml-0.5 rounded-sm"
                 title={t('grid.exceedsPrintSize')}
@@ -812,7 +813,7 @@ function BinComponent({
               }}
             >
               {secondaryText}
-              {needsSplit && !isGhost && (
+              {needsSplit && (
                 <span
                   className="ml-1"
                   title={t('grid.exceedsPrintSize')}

@@ -6,8 +6,8 @@ import {
   useSelectionStore,
   useViewStore,
   useLabsStore,
-  useUIStore,
 } from './core/store';
+import { useSharedPreviewStore } from './core/store/sharedPreview';
 import { initLayoutAnalytics } from './core/store/layoutAnalytics';
 import {
   useLayoutRouting,
@@ -83,25 +83,6 @@ import { useDesignerRouting } from './hooks/useDesignerRouting';
 import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';
 import { SHORTCUTS } from './core/constants';
 
-// Legacy context menu state for backwards compatibility (has binId instead of binIds)
-interface LegacyContextMenuStateWithBinId {
-  binId: string; // Non-optional when used with type guard
-  position: { x: number; y: number };
-}
-
-/**
- * Type guard to check if context menu state has legacy binId property.
- * Used for backward compatibility during migration period.
- */
-function hasLegacyBinId(state: unknown): state is LegacyContextMenuStateWithBinId {
-  return (
-    typeof state === 'object' &&
-    state !== null &&
-    'binId' in state &&
-    typeof (state as { binId?: unknown }).binId === 'string'
-  );
-}
-
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const HelpModal = lazyWithRetry(() =>
   import('./components/Modals/HelpModal').then(namedExport('HelpModal'))
@@ -171,7 +152,7 @@ export default function App() {
 
   // Lazy loading conditions - only load chunks when actually needed
   const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
-  const hasSharedLayoutPreview = useUIStore((state) => state.sharedLayoutPreview !== null);
+  const hasSharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview !== null);
 
   // Check if URL contains share parameters (determines if SharedLayoutImporter is needed)
   // This is checked once at component mount and doesn't re-run on URL changes
@@ -463,8 +444,7 @@ export default function App() {
           {/* Context menu (long-press on bin) */}
           {(() => {
             if (contextMenu) {
-              const binIds =
-                contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
+              const binIds = contextMenu.binIds;
               return (
                 <BinContextMenuWrapper
                   binIds={binIds}
@@ -546,8 +526,7 @@ export default function App() {
         {/* Context menu (right-click on bin) */}
         {(() => {
           if (contextMenu) {
-            const binIds =
-              contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
+            const binIds = contextMenu.binIds;
             return (
               <BinContextMenuWrapper
                 binIds={binIds}

@@ -137,7 +137,7 @@ export const useLayoutStore = create<LayoutState>()(
           layout
         );
         if (!validationResult.valid) {
-          const reason = validationResult.reason ?? 'out_of_bounds';
+          const reason = validationResult.reason;
           if (reason === 'collision') {
             return err(validationCollision());
           }
@@ -310,7 +310,7 @@ export const useLayoutStore = create<LayoutState>()(
       );
 
       if (!validationResult.valid) {
-        const reason = validationResult.reason ?? 'out_of_bounds';
+        const reason = validationResult.reason;
         if (reason === 'collision') {
           return err(validationCollision());
         }

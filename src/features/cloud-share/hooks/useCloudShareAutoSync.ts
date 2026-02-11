@@ -37,7 +37,7 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
   const lastEditSource = useLayoutStore((state) => state.lastEditSource);
 
   // Get deleteToken from Liveblocks storage (shared by owner)
-  const deleteToken = useStorage((root) => root?.metadata?.deleteToken) as string | undefined;
+  const deleteToken = useStorage((root) => root.metadata.deleteToken) as string | undefined;
 
   const syncToCloud = useCallback(async () => {
     if (!shareId || !deleteToken || isSyncingRef.current) return;
@@ -82,7 +82,7 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
 
     // Schedule new sync
     debounceTimerRef.current = setTimeout(() => {
-      syncToCloud();
+      void syncToCloud();
     }, CLOUD_SYNC_DEBOUNCE_MS);
 
     return () => {
@@ -99,7 +99,7 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
         // Clear pending timer and do immediate sync
         clearTimeout(debounceTimerRef.current);
         // Note: Can't await in cleanup, but fire-and-forget is acceptable here
-        syncToCloud();
+        void syncToCloud();
       }
     };
   }, [enabled, shareId, deleteToken, syncToCloud]);

@@ -21,9 +21,9 @@ function loadCart(): CartItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
-    const items = JSON.parse(raw);
+    const items: unknown = JSON.parse(raw);
     if (!Array.isArray(items)) return [];
-    return items;
+    return items as CartItem[];
   } catch {
     return [];
   }

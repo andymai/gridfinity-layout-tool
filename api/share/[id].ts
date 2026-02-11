@@ -96,7 +96,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
       metadata: {
         createdAt: shareData.metadata.createdAt,
         lastUpdatedAt: shareData.metadata.lastUpdatedAt,
-        permission: shareData.metadata.permission ?? 'view', // Default for old shares
+        permission: shareData.metadata.permission,
         authorName: shareData.metadata.authorName,
       },
     });
@@ -126,9 +126,10 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       });
     }
 
-    const { layout, permission, deleteToken } = req.body || {};
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    const { layout, permission, deleteToken } = body;
 
-    if (!deleteToken) {
+    if (!deleteToken || typeof deleteToken !== 'string') {
       return res.status(401).json({
         error: 'Delete token required for updates',
         code: ErrorCode.UNAUTHORIZED,
@@ -164,7 +165,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     // Validate permission if provided
-    const newPermission = permission ?? existingData.metadata.permission ?? 'view';
+    const newPermission = permission ?? existingData.metadata.permission;
     if (newPermission !== 'view' && newPermission !== 'edit') {
       return res.status(400).json({
         error: 'Invalid permission. Must be "view" or "edit".',
@@ -277,8 +278,10 @@ async function handleDelete(
     }
 
     // Get delete token from header or body
+    const deleteBody = (req.body ?? {}) as Record<string, unknown>;
     const deleteToken =
-      (req.headers['x-delete-token'] as string) ?? (req.body?.deleteToken as string | undefined);
+      (req.headers['x-delete-token'] as string | undefined) ??
+      (typeof deleteBody.deleteToken === 'string' ? deleteBody.deleteToken : undefined);
 
     if (!deleteToken) {
       return res.status(401).json({

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useLayoutSwitcher } from '@/hooks';
-import { useUIStore } from '@/core/store/ui';
+import { useInteractionStore } from '@/core/store/interaction';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
 import { LayoutList } from './LayoutList';
@@ -79,7 +79,7 @@ function LayoutManagerModalContent({
     importLayoutFromJSON,
   } = useLayoutSwitcher();
 
-  const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   // Announce modal opened
   useEffect(() => {
@@ -105,10 +105,10 @@ function LayoutManagerModalContent({
 
         if (e.shiftKey && document.activeElement === firstElement) {
           e.preventDefault();
-          lastElement?.focus();
+          lastElement.focus();
         } else if (!e.shiftKey && document.activeElement === lastElement) {
           e.preventDefault();
-          firstElement?.focus();
+          firstElement.focus();
         }
       }
     };
@@ -198,6 +198,7 @@ function LayoutManagerModalContent({
       onClick={onClose}
       role="presentation"
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         ref={modalRef}
         role="dialog"
@@ -205,6 +206,8 @@ function LayoutManagerModalContent({
         aria-labelledby="layout-manager-title"
         className="bg-surface-elevated rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] grid grid-rows-[auto_1fr] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
         {/* Header */}
         <div className="flex justify-between items-center border-b border-stroke-subtle px-6 py-4">

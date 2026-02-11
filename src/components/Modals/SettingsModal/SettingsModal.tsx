@@ -88,105 +88,107 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
       className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in"
       style={STYLES.overlay}
       onClick={onClose}
+      role="presentation"
     >
-      <div
-        ref={modalRef}
-        className={`w-full mx-4 max-h-[85vh] flex flex-col animate-scale-in ${
-          isMobile ? 'max-w-lg' : 'max-w-2xl'
-        }`}
-        style={STYLES.modal}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="settings-title"
-      >
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
-          <h2 id="settings-title" style={STYLES.title}>
-            {t('settings.title')}
-          </h2>
-          <button
-            ref={closeButtonRef}
-            onClick={onClose}
-            className="btn btn-ghost btn-icon"
-            style={{ minWidth: 'auto', minHeight: 'auto' }}
-            aria-label={t('common.close')}
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+      <div role="presentation" onClick={(e) => e.stopPropagation()}>
+        <div
+          ref={modalRef}
+          className={`w-full mx-4 max-h-[85vh] flex flex-col animate-scale-in ${
+            isMobile ? 'max-w-lg' : 'max-w-2xl'
+          }`}
+          style={STYLES.modal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-title"
+        >
+          {/* Header */}
+          <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
+            <h2 id="settings-title" style={STYLES.title}>
+              {t('settings.title')}
+            </h2>
+            <button
+              ref={closeButtonRef}
+              onClick={onClose}
+              className="btn btn-ghost btn-icon"
+              style={{ minWidth: 'auto', minHeight: 'auto' }}
+              aria-label={t('common.close')}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
 
-        {/* Tab layout */}
-        <div className={`flex-1 flex overflow-hidden ${isMobile ? 'flex-col' : 'flex-row'}`}>
-          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-          <div
-            className="flex-1 overflow-y-auto scrollbar-thin p-6"
-            role="tabpanel"
-            id={`settings-tabpanel-${activeTab}`}
-            aria-labelledby={`settings-tab-${activeTab}`}
-          >
-            <div key={activeTab} className="animate-fade-in">
-              {renderTab(activeTab)}
+          {/* Tab layout */}
+          <div className={`flex-1 flex overflow-hidden ${isMobile ? 'flex-col' : 'flex-row'}`}>
+            <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+            <div
+              className="flex-1 overflow-y-auto scrollbar-thin p-6"
+              role="tabpanel"
+              id={`settings-tabpanel-${activeTab}`}
+              aria-labelledby={`settings-tab-${activeTab}`}
+            >
+              <div key={activeTab} className="animate-fade-in">
+                {renderTab(activeTab)}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-3 border-t border-stroke-subtle text-xs">
-          <div className="text-content-tertiary space-x-3">
-            <button
-              onClick={() => setShowResetConfirm(true)}
-              className="hover:text-content transition-colors"
-            >
-              {t('settings.resetTabDefaults')}
-            </button>
-            <span className="text-content-disabled">·</span>
-            <button
-              onClick={() => {
-                resetOnboarding();
-                addToast(t('toast.onboardingReset'), 'info');
-              }}
-              className="hover:text-content transition-colors"
-            >
-              {t('settings.resetOnboarding')}
-            </button>
+          {/* Footer */}
+          <div className="flex items-center justify-between px-6 py-3 border-t border-stroke-subtle text-xs">
+            <div className="text-content-tertiary space-x-3">
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="hover:text-content transition-colors"
+              >
+                {t('settings.resetTabDefaults')}
+              </button>
+              <span className="text-content-disabled">·</span>
+              <button
+                onClick={() => {
+                  resetOnboarding();
+                  addToast(t('toast.onboardingReset'), 'info');
+                }}
+                className="hover:text-content transition-colors"
+              >
+                {t('settings.resetOnboarding')}
+              </button>
+            </div>
+            <div className="text-content-disabled space-x-3">
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-content-tertiary transition-colors"
+              >
+                {t('settings.privacyPolicy')}
+              </a>
+              <span>·</span>
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-content-tertiary transition-colors"
+              >
+                {t('settings.termsOfService')}
+              </a>
+            </div>
           </div>
-          <div className="text-content-disabled space-x-3">
-            <a
-              href="/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-content-tertiary transition-colors"
-            >
-              {t('settings.privacyPolicy')}
-            </a>
-            <span>·</span>
-            <a
-              href="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-content-tertiary transition-colors"
-            >
-              {t('settings.termsOfService')}
-            </a>
-          </div>
-        </div>
 
-        <ConfirmDialog
-          isOpen={showResetConfirm}
-          title={t('settings.resetTabDefaults')}
-          message={t('settings.confirmResetAll')}
-          confirmText={t('common.apply')}
-          onConfirm={handleResetAll}
-          onCancel={() => setShowResetConfirm(false)}
-        />
+          <ConfirmDialog
+            isOpen={showResetConfirm}
+            title={t('settings.resetTabDefaults')}
+            message={t('settings.confirmResetAll')}
+            confirmText={t('common.apply')}
+            onConfirm={handleResetAll}
+            onCancel={() => setShowResetConfirm(false)}
+          />
+        </div>
       </div>
     </div>,
     document.body

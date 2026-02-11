@@ -15,7 +15,13 @@ function cloneLayout(layout: Layout): Layout {
   if (typeof structuredClone === 'function') {
     return structuredClone(layout);
   }
-  return JSON.parse(JSON.stringify(layout));
+  try {
+    return JSON.parse(JSON.stringify(layout)) as Layout;
+  } catch {
+    // JSON round-trip on a plain Layout object should never fail,
+    // but return a shallow copy as a last resort
+    return { ...layout };
+  }
 }
 
 /**

@@ -1,7 +1,9 @@
 import { useCallback } from 'react';
 import type { RefObject } from 'react';
 import type { Coord } from '@/core/types';
-import { useUIStore, useLayoutStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useViewStore } from '@/core/store/view';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { getBaseCellSize, snapToHalf } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { useResponsive } from '@/shared/hooks';
@@ -63,8 +65,8 @@ import { useResponsive } from '@/shared/hooks';
  * ```
  */
 export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
-  const zoom = useUIStore((state) => state.zoom);
-  const halfBinMode = useUIStore((state) => state.halfBinMode);
+  const zoom = useViewStore((state) => state.zoom);
+  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
   const drawer = useLayoutStore((state) => state.layout.drawer);
   const { viewportWidth } = useResponsive();
 

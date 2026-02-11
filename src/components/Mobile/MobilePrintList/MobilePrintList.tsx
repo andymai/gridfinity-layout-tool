@@ -93,6 +93,17 @@ export function MobilePrintList() {
             <React.Fragment key={`${row.size}-${row.height}-${row.labels.join(',')}-${index}`}>
               <div
                 className="p-3 rounded-lg bg-surface-elevated cursor-pointer active:bg-surface-hover"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    printList.selectBinsByRow(row);
+                    if (row.needsSplit) {
+                      setExpandedRow(isExpanded ? null : index);
+                    }
+                  }
+                }}
                 onClick={() => {
                   // Select bins on click
                   printList.selectBinsByRow(row);
@@ -105,7 +116,7 @@ export function MobilePrintList() {
                 <div className="flex items-start gap-3">
                   {/* Category colors */}
                   <div className="flex gap-1 pt-0.5">
-                    {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
+                    {row.categoryIds.slice(0, 3).map((catId) => {
                       const cat = printList.categories.find((c) => c.id === catId);
                       return (
                         <div
@@ -115,10 +126,10 @@ export function MobilePrintList() {
                         />
                       );
                     })}
-                    {(row.categoryIds ?? []).length > 3 && (
+                    {row.categoryIds.length > 3 && (
                       <span className="text-xs text-content-disabled">
                         {OVERFLOW_PREFIX}
-                        {(row.categoryIds ?? []).length - 3}
+                        {row.categoryIds.length - 3}
                       </span>
                     )}
                   </div>
@@ -148,13 +159,13 @@ export function MobilePrintList() {
                       )}
                     </div>
                     {/* Label and notes/properties indicators */}
-                    {((row.labels ?? [])[0] ||
+                    {(row.labels[0] ||
                       row.notes ||
                       (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        {(row.labels ?? [])[0] && (
+                        {row.labels[0] && (
                           <span className="text-sm truncate text-content-tertiary">
-                            {(row.labels ?? [])[0]}
+                            {row.labels[0]}
                           </span>
                         )}
                         {row.notes && (

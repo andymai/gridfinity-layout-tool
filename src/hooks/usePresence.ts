@@ -86,7 +86,7 @@ export function usePresence(): PresenceState {
   const others = useOthers();
   const self = useSelf();
   const liveblocksStatus = useStatus();
-  const ownerId = useStorage((root) => root?.metadata?.ownerId);
+  const ownerId = useStorage((root) => root.metadata.ownerId);
 
   // Map Liveblocks status to our connection status
   const status: ConnectionStatus = useMemo(() => {
@@ -116,8 +116,8 @@ export function usePresence(): PresenceState {
       const id = String(other.connectionId);
       result.push({
         id,
-        name: other.presence?.name || generateGuestName(other.connectionId),
-        color: other.presence?.color || generateGuestColor(other.connectionId),
+        name: other.presence.name || generateGuestName(other.connectionId),
+        color: other.presence.color || generateGuestColor(other.connectionId),
         isOwner: ownerId ? id === ownerId : false,
         isSelf: false,
       });
@@ -128,8 +128,8 @@ export function usePresence(): PresenceState {
       const id = String(self.connectionId);
       result.push({
         id,
-        name: self.presence?.name || generateGuestName(self.connectionId),
-        color: self.presence?.color || generateGuestColor(self.connectionId),
+        name: self.presence.name || generateGuestName(self.connectionId),
+        color: self.presence.color || generateGuestColor(self.connectionId),
         isOwner: ownerId ? id === ownerId : false,
         isSelf: true,
       });

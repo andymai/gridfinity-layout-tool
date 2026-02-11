@@ -144,7 +144,11 @@ export function LayoutGridItem({
             {formatRelativeDate(entry.modifiedAt, false)}
           </span>
 
-          <div className="transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+            role="presentation"
+            onClick={(e) => e.stopPropagation()}
+          >
             <LayoutActions
               entry={entry}
               isOnlyLayout={isOnlyLayout}

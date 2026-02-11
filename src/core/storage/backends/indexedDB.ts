@@ -34,7 +34,7 @@ export async function isIndexedDBAvailable(): Promise<boolean> {
     const testDb = await openDB('__test__', 1);
     testDb.close();
     // Clean up test database
-    await indexedDB.deleteDatabase('__test__');
+    indexedDB.deleteDatabase('__test__');
     return true;
   } catch {
     return false;
@@ -84,13 +84,13 @@ export async function saveLayout(id: string, layout: Layout): Promise<void> {
  */
 export async function loadLayout(id: string): Promise<Layout | null> {
   const db = await getDb();
-  const compressed = await db.get(LAYOUTS_STORE, id);
+  const compressed: unknown = await db.get(LAYOUTS_STORE, id);
 
   if (!compressed) {
     return null;
   }
 
-  return decompressLayout(compressed);
+  return decompressLayout(compressed as string);
 }
 
 /**
@@ -114,12 +114,12 @@ export async function getAllLayoutIds(): Promise<string[]> {
  * Clear all data from the database.
  * Useful for testing and complete data reset.
  */
-export async function clearAllData(): Promise<void> {
+export function clearAllData(): void {
   // Close existing connection first
   closeDatabase();
 
   // Delete and recreate the database for a clean slate
-  await indexedDB.deleteDatabase(DB_NAME);
+  indexedDB.deleteDatabase(DB_NAME);
 
   // Reset instance so next getDb() creates fresh connection
   dbInstance = null;

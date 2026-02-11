@@ -48,7 +48,7 @@ export function useCollabLayout(): CollabLayoutState {
 
   // Only try to use Liveblocks storage when in collaborative mode
   // When not in RoomProvider, useStorage returns null
-  const remoteLayout = useStorage((root) => root?.layout);
+  const remoteLayout = useStorage((root) => root.layout);
 
   // Use remote layout in collaborative mode, fall back to local
   const layout = isCollaborative && remoteLayout ? remoteLayout : localLayout;
@@ -76,7 +76,7 @@ export function useCollabLayoutSelector<T>(selector: (layout: Layout) => T): T {
 
   // Always call both hooks
   const localResult = useLayoutStore((state) => selector(state.layout));
-  const remoteLayout = useStorage((root) => root?.layout);
+  const remoteLayout = useStorage((root) => root.layout);
 
   // In collaborative mode with remote data, apply selector to remote
   if (isCollaborative && remoteLayout) {

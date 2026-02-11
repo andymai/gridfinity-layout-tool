@@ -291,9 +291,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       if (newIndex !== focusedIndex) {
         setFocusedIndex(newIndex);
         const design = sortedDesigns[newIndex];
-        if (design) {
-          itemRefs.current.get(design.id)?.focus();
-        }
+        itemRefs.current.get(design.id)?.focus();
       }
     },
     [focusedIndex, sortedDesigns, effectiveViewMode, getGridColumns]
@@ -339,14 +337,19 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     <div
       ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('binDesigner.savedDesigns')}
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
     >
       <div
         className="mx-4 max-h-[80vh] w-full max-w-lg overflow-hidden rounded-xl border border-stroke-subtle bg-surface-secondary shadow-xl flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('binDesigner.savedDesigns')}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">

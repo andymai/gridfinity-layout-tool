@@ -95,11 +95,11 @@ function loadFrecencyData(): Record<string, CommandUsage> {
     // Try new v2 format first
     const v2Data = localStorage.getItem(STORAGE_KEY_V2);
     if (v2Data) {
-      const parsed = JSON.parse(v2Data);
+      const parsed: unknown = JSON.parse(v2Data);
       // Validate it's a plain object (not array) with valid entries
       if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
         const validated: Record<string, CommandUsage> = {};
-        for (const [key, value] of Object.entries(parsed)) {
+        for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
           if (isValidCommandUsage(value)) {
             validated[key] = value;
           }
@@ -111,8 +111,9 @@ function loadFrecencyData(): Record<string, CommandUsage> {
     // Migrate from v1 format (simple array of IDs)
     const v1Data = localStorage.getItem(STORAGE_KEY_V1);
     if (v1Data) {
-      const recentIds: string[] = JSON.parse(v1Data);
-      if (Array.isArray(recentIds)) {
+      const parsed: unknown = JSON.parse(v1Data);
+      if (Array.isArray(parsed)) {
+        const recentIds = parsed.filter((id): id is string => typeof id === 'string');
         const now = Date.now();
         const migrated: Record<string, CommandUsage> = {};
 
@@ -180,7 +181,7 @@ export const useRecentCommandsStore = create<FrecencyState>()((set, get) => {
         ...usage,
         [commandId]: {
           commandId,
-          useCount: (existing?.useCount ?? 0) + 1,
+          useCount: existing.useCount + 1,
           lastUsedAt: now,
         },
       };

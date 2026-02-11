@@ -24,8 +24,9 @@ vi.mock('@/hooks/useContextMenu', () => ({
 }));
 
 vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string, params?: Record<string, unknown>) => {
-    if (key === 'mobile.multiBinMenu.selectedBins') return `${params?.count || 0} Bins Selected`;
+  useTranslation: () => (key: string, params?: Record<string, number | string>) => {
+    if (key === 'mobile.multiBinMenu.selectedBins')
+      return `${String(params?.count ?? 0)} Bins Selected`;
     return key;
   },
 }));

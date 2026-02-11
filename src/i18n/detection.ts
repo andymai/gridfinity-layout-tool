@@ -12,7 +12,7 @@ import { isLocale } from './types';
  * Map of browser language codes to our supported locales.
  * Handles regional variants (e.g., pt-BR, de-AT, es-MX).
  */
-const LANGUAGE_MAP: Record<string, Locale> = {
+const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   // Direct matches
   en: 'en',
   de: 'de',
@@ -59,7 +59,7 @@ const LANGUAGE_MAP: Record<string, Locale> = {
  */
 export function detectBrowserLocale(): Locale {
   // Check all preferred languages in order
-  const languages = navigator.languages ?? [navigator.language];
+  const languages = navigator.languages;
 
   for (const lang of languages) {
     // Try exact match first (e.g., "pt-BR")

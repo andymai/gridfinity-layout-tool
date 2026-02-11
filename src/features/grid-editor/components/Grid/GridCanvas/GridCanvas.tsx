@@ -1,7 +1,7 @@
 import type { RefObject, PointerEvent, JSX } from 'react';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '@/core/store';
+import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
 import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';
 import { Bin } from '../Bin';
@@ -48,21 +48,19 @@ export function GridCanvas({
     }))
   );
 
-  const {
-    activeLayerId,
-    showOtherLayers,
-    selectedBinIds,
-    setSelectedBin,
-    setActiveLayer,
-    paintSize,
-    interaction,
-  } = useUIStore(
+  const { activeLayerId, selectedBinIds, setSelectedBin, setActiveLayer } = useSelectionStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
-      showOtherLayers: state.showOtherLayers,
       selectedBinIds: state.selectedBinIds,
       setSelectedBin: state.setSelectedBin,
       setActiveLayer: state.setActiveLayer,
+    }))
+  );
+
+  const showOtherLayers = useViewStore((state) => state.showOtherLayers);
+
+  const { paintSize, interaction } = useInteractionStore(
+    useShallow((state) => ({
       paintSize: state.paintSize,
       interaction: state.interaction,
     }))
@@ -341,12 +339,19 @@ export function GridCanvas({
                 zIndex: 8,
               }}
               onClick={() => sourceBin && handleBlockedZoneClick(sourceBin.id, sourceBin.layerId)}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && sourceBin) {
+                  e.preventDefault();
+                  handleBlockedZoneClick(sourceBin.id, sourceBin.layerId);
+                }
+              }}
+              role="button"
+              tabIndex={0}
               title={
                 sourceLayer
                   ? `${t('grid.blockedByBin', { layer: sourceLayer.name })}. ${t('grid.blockedZoneClick')}`
                   : undefined
               }
-              role="button"
               aria-label={
                 sourceLayer
                   ? `${t('grid.blockedByBin', { layer: sourceLayer.name })}. ${t('grid.blockedZoneClick')}`

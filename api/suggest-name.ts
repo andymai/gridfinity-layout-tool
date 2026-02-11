@@ -149,7 +149,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const raw = await redis.get(cacheKey);
         if (raw) {
           const cached = JSON.parse(raw) as { names: string[] };
-          if (cached.names && cached.names.length > 0) {
+          if (cached.names.length > 0) {
             return res.status(200).json({
               suggestions: cached.names.map((name: string) => ({
                 name,

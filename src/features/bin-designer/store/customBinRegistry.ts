@@ -48,7 +48,7 @@ export function loadRegistry(): CustomBinRef[] {
   try {
     const raw = localStorage.getItem(REGISTRY_KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw);
+    const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
     return parsed as CustomBinRef[];
   } catch {

@@ -76,9 +76,16 @@ export function useStorageMigration(): void {
     // Run migration after a short delay to not block initial render
     // Using requestIdleCallback if available for better UX
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(() => runMigration(), { timeout: 5000 });
+      window.requestIdleCallback(
+        () => {
+          void runMigration();
+        },
+        { timeout: 5000 }
+      );
     } else {
-      setTimeout(runMigration, 100);
+      setTimeout(() => {
+        void runMigration();
+      }, 100);
     }
   }, []);
 }

@@ -3,14 +3,15 @@ import {
   useLayoutStore,
   useLibraryStore,
   useHistoryStore,
-  useUIStore,
   useLabsStore,
   LABS_STORAGE_KEY,
 } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
 import { loadLayoutAsync, loadLibrary } from '@/core/storage';
 import { layoutId as toLayoutId } from '@/core/types';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import { createDefaultLabsPreferences } from '@/core/labs';
+import type { LabsPreferences } from '@/core/labs';
 
 /**
  * Hook to automatically sync layout data when modified in another browser tab.
@@ -22,10 +23,12 @@ export function useCrossTabSync() {
       // Labs preferences changed - sync them
       if (e.key === LABS_STORAGE_KEY) {
         try {
-          const newPrefs = e.newValue ? JSON.parse(e.newValue) : createDefaultLabsPreferences();
+          const newPrefs: unknown = e.newValue
+            ? JSON.parse(e.newValue)
+            : createDefaultLabsPreferences();
           useLabsStore.getState().syncFromStorage({
             ...createDefaultLabsPreferences(),
-            ...newPrefs,
+            ...(newPrefs as Partial<LabsPreferences>),
           });
         } catch {
           // Ignore parse errors
@@ -68,26 +71,26 @@ export function useCrossTabSync() {
                   useHistoryStore.getState().clear();
 
                   // Update active layer/category if they no longer exist
-                  const uiState = useUIStore.getState();
-                  const activeLayer = uiState.activeLayerId;
-                  const activeCategory = uiState.activeCategoryId;
+                  const selectionState = useSelectionStore.getState();
+                  const activeLayer = selectionState.activeLayerId;
+                  const activeCategory = selectionState.activeCategoryId;
 
                   if (activeLayer && !newLayout.layers.find((l) => l.id === activeLayer)) {
-                    uiState.setActiveLayer(newLayout.layers[0]?.id ?? '');
+                    selectionState.setActiveLayer(newLayout.layers[0]?.id ?? '');
                   }
                   if (
                     activeCategory &&
                     !newLayout.categories.find((c) => c.id === activeCategory)
                   ) {
-                    uiState.setActiveCategory(newLayout.categories[0]?.id ?? '');
+                    selectionState.setActiveCategory(newLayout.categories[0]?.id ?? '');
                   }
 
                   // Clear selection since bins may have changed
-                  uiState.clearSelection();
+                  selectionState.clearSelection();
                 }
               }
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
               console.error(`[CrossTabSync] Failed to load layout ${layoutId}:`, error);
             });
         }

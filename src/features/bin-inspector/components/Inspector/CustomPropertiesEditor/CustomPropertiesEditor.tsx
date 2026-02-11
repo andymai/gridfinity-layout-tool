@@ -137,10 +137,14 @@ export function CustomPropertiesEditor({
             aria-label={t('inspector.addCustomProperty')}
             title={
               atMaxProperties
-                ? t('inspector.maxPropertiesReached', { max: CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT })
+                ? t('inspector.maxPropertiesReached', {
+                    max: CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT,
+                  })
                 : t('inspector.addCustomProperty')
             }
-          >{t('inspector.add')}</button>
+          >
+            {t('inspector.add')}
+          </button>
         )}
       </div>
 
@@ -207,6 +211,7 @@ export function CustomPropertiesEditor({
             className={`input w-full ${inputHeight} ${error ? 'border-error' : ''}`}
             placeholder={t('inspector.customProps.keyPlaceholder')}
             aria-label={t('inspector.newPropertyName')}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
             autoFocus
           />
           <input
@@ -233,24 +238,32 @@ export function CustomPropertiesEditor({
               onClick={handleAdd}
               disabled={!newKey.trim() || !newValue.trim()}
               className={`btn btn-primary flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
-            >{t('common.add')}</button>
+            >
+              {t('common.add')}
+            </button>
             <button
               type="button"
               onClick={handleCancelAdd}
               className={`btn btn-ghost flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
-            >{t('common.cancel')}</button>
+            >
+              {t('common.cancel')}
+            </button>
           </div>
         </div>
       )}
 
       {!hasProperties && !isAdding && (
-        <div className="text-sm text-content-disabled italic">{t('inspector.noCustomProperties')}</div>
+        <div className="text-sm text-content-disabled italic">
+          {t('inspector.noCustomProperties')}
+        </div>
       )}
 
       {/* Quick add suggestions - show keys used by other bins */}
       {!isAdding && availableSuggestions.length > 0 && !atMaxProperties && (
         <div className="mt-2 pt-2 border-t border-stroke-subtle">
-          <div className="text-xs text-content-tertiary mb-1.5">{t('inspector.quickAddFromOtherBins')}</div>
+          <div className="text-xs text-content-tertiary mb-1.5">
+            {t('inspector.quickAddFromOtherBins')}
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {availableSuggestions.slice(0, 6).map((key) => (
               <button
@@ -265,7 +278,8 @@ export function CustomPropertiesEditor({
             ))}
             {availableSuggestions.length > 6 && (
               <span className="text-xs text-content-disabled px-1 py-1">
-                {t('inspector.moreCount', { count: availableSuggestions.length - 6 })}</span>
+                {t('inspector.moreCount', { count: availableSuggestions.length - 6 })}
+              </span>
             )}
           </div>
         </div>

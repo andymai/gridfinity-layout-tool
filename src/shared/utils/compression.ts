@@ -19,7 +19,7 @@ export function compressString(input: string): string {
  */
 export function decompressString(compressed: string): string {
   const result = LZString.decompressFromUTF16(compressed);
-  return result ?? '';
+  return result;
 }
 
 /**

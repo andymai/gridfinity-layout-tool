@@ -133,15 +133,13 @@ export function useSuggestionTrigger() {
                 ...localResult.alternatives.map((a) => a.name),
               ];
               const llmResult = await fetchLLMSuggestions(input, hints, abortController.signal);
-              if (abortController.signal.aborted || !llmResult) return;
+              if (!llmResult) return;
 
               // Merge LLM suggestions with local ones (LLM takes priority)
               const mergedResult = mergeSuggestions(localResult, llmResult);
               setSuggestions(mergedResult, activeLayoutId, 'auto');
             } finally {
-              if (!abortController.signal.aborted) {
-                setLoadingMore(false);
-              }
+              setLoadingMore(false);
             }
           }
         })

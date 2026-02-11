@@ -1200,8 +1200,9 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       return false;
     }
 
-    for (const item of e.label_size_consistency) {
-      if (!item || typeof item !== 'object') return false;
+    for (const rawItem of e.label_size_consistency) {
+      if (!rawItem || typeof rawItem !== 'object') return false;
+      const item = rawItem as Record<string, unknown>;
       if (typeof item.label_hash !== 'string' || !VALID_LABEL_HASH_REGEX.test(item.label_hash)) {
         return false;
       }
@@ -1212,7 +1213,7 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       ) {
         return false;
       }
-      for (const size of item.sizes_used) {
+      for (const size of item.sizes_used as unknown[]) {
         if (typeof size !== 'string' || !VALID_BIN_SIZE_REGEX.test(size)) {
           return false;
         }
@@ -1233,77 +1234,62 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
 // ============================================
 
 interface Increments {
-  [key: string]: { [field: string]: number };
+  [key: string]: Record<string, number> | undefined;
+}
+
+/** Initialize a hash bucket if needed and increment a field by the given amount (default 1). */
+function incr(inc: Increments, key: string, field: string, amount = 1): void {
+  const bucket = (inc[key] ??= {});
+  bucket[field] = (bucket[field] ?? 0) + amount;
 }
 
 function aggregateBinPlacement(event: BinPlacementEvent, inc: Increments): void {
   const { bin_size } = event;
 
   // 1. Global size frequency
-  inc['ml:sizes'] = inc['ml:sizes'] || {};
-  inc['ml:sizes'][bin_size] = (inc['ml:sizes'][bin_size] || 0) + 1;
+  incr(inc, 'ml:sizes', bin_size);
 
   // 2. Transition matrix (if we have prev bin)
   if (event.prev_bin_size) {
-    const transKey = `ml:trans:${event.prev_bin_size}`;
-    inc[transKey] = inc[transKey] || {};
-    inc[transKey][bin_size] = (inc[transKey][bin_size] || 0) + 1;
+    incr(inc, `ml:trans:${event.prev_bin_size}`, bin_size);
   }
 
   // 3. Drawer size correlation
-  const drawerKey = `ml:drawer:${event.drawer_size}`;
-  inc[drawerKey] = inc[drawerKey] || {};
-  inc[drawerKey][bin_size] = (inc[drawerKey][bin_size] || 0) + 1;
+  incr(inc, `ml:drawer:${event.drawer_size}`, bin_size);
 
   // 4. Label hash (PRIMARY - works for ANY language/domain)
   if (event.label_hash) {
-    const hashKey = `ml:label_hash:${event.label_hash}`;
-    inc[hashKey] = inc[hashKey] || {};
-    inc[hashKey][bin_size] = (inc[hashKey][bin_size] || 0) + 1;
+    incr(inc, `ml:label_hash:${event.label_hash}`, bin_size);
 
     // Track unknown hashes for vocabulary expansion
     if (!event.label_normalized) {
-      inc['ml:unknown_hashes'] = inc['ml:unknown_hashes'] || {};
-      inc['ml:unknown_hashes'][event.label_hash] =
-        (inc['ml:unknown_hashes'][event.label_hash] || 0) + 1;
+      incr(inc, 'ml:unknown_hashes', event.label_hash);
     }
   }
 
   // 5. Normalized label (ENRICHMENT - when vocabulary matches)
   if (event.label_normalized) {
-    const labelKey = `ml:label:${event.label_normalized}`;
-    inc[labelKey] = inc[labelKey] || {};
-    inc[labelKey][bin_size] = (inc[labelKey][bin_size] || 0) + 1;
+    incr(inc, `ml:label:${event.label_normalized}`, bin_size);
   }
 
   // 6. Label domain (FALLBACK - broader category)
   if (event.label_domain) {
-    const domainKey = `ml:label_domain:${event.label_domain}`;
-    inc[domainKey] = inc[domainKey] || {};
-    inc[domainKey][bin_size] = (inc[domainKey][bin_size] || 0) + 1;
+    incr(inc, `ml:label_domain:${event.label_domain}`, bin_size);
   }
 
   // 6b. Embedding bucket (semantic similarity grouping)
   if (event.label_embedding_bucket) {
-    const embedKey = `ml:embed:${event.label_embedding_bucket}`;
-    inc[embedKey] = inc[embedKey] || {};
-    inc[embedKey][bin_size] = (inc[embedKey][bin_size] || 0) + 1;
+    incr(inc, `ml:embed:${event.label_embedding_bucket}`, bin_size);
   }
 
   // 7. Category
-  const catKey = `ml:cat:${event.category_id}`;
-  inc[catKey] = inc[catKey] || {};
-  inc[catKey][bin_size] = (inc[catKey][bin_size] || 0) + 1;
+  incr(inc, `ml:cat:${event.category_id}`, bin_size);
 
   // 8. Gap fit pattern
-  const gapFitKey = `ml:gapfit:${event.gap_fit}`;
-  inc[gapFitKey] = inc[gapFitKey] || {};
-  inc[gapFitKey][bin_size] = (inc[gapFitKey][bin_size] || 0) + 1;
+  incr(inc, `ml:gapfit:${event.gap_fit}`, bin_size);
 
   // 9. Placement method
-  const methodKey = `ml:method:${event.method}`;
-  inc[methodKey] = inc[methodKey] || {};
-  inc[methodKey][bin_size] = (inc[methodKey][bin_size] || 0) + 1;
+  incr(inc, `ml:method:${event.method}`, bin_size);
 
   // 10. Adjacent label co-occurrence (Priority 3)
   // Track which label hashes appear adjacent to each other
@@ -1311,30 +1297,24 @@ function aggregateBinPlacement(event: BinPlacementEvent, inc: Increments): void 
     for (const adjHash of event.adjacent_label_hashes) {
       // Store in lexicographic order to avoid duplicates
       const [first, second] = [event.label_hash, adjHash].sort();
-      const cooccurKey = `ml:cooccur:${first}`;
-      inc[cooccurKey] = inc[cooccurKey] || {};
-      inc[cooccurKey][second] = (inc[cooccurKey][second] || 0) + 1;
+      incr(inc, `ml:cooccur:${first}`, second);
     }
   }
 
   // Track adjacent bin count distribution
-  inc['ml:adjacent_counts'] = inc['ml:adjacent_counts'] || {};
   const adjBucket = event.adjacent_count >= 4 ? '4+' : String(event.adjacent_count);
-  inc['ml:adjacent_counts'][adjBucket] = (inc['ml:adjacent_counts'][adjBucket] || 0) + 1;
+  incr(inc, 'ml:adjacent_counts', adjBucket);
 
   // 11. First-of-label tracking (Priority 5)
   // Track initial size choices for new item types - strong learning signal
   if (event.is_first_of_label && event.label_hash) {
-    const firstLabelKey = `ml:first_label:${event.label_hash}`;
-    inc[firstLabelKey] = inc[firstLabelKey] || {};
-    inc[firstLabelKey][bin_size] = (inc[firstLabelKey][bin_size] || 0) + 1;
+    incr(inc, `ml:first_label:${event.label_hash}`, bin_size);
   }
 
   // Track placement sequence patterns (recent sizes)
   if (event.recent_sizes.length > 0) {
     const seqKey = event.recent_sizes.join('>');
-    inc['ml:sequences'] = inc['ml:sequences'] || {};
-    inc['ml:sequences'][seqKey] = (inc['ml:sequences'][seqKey] || 0) + 1;
+    incr(inc, 'ml:sequences', seqKey);
   }
 }
 
@@ -1343,34 +1323,24 @@ function aggregateLabelUpdate(event: LabelUpdateEvent, inc: Increments): void {
 
   // Track new label associations
   if (event.new_label_hash) {
-    const hashKey = `ml:label_hash:${event.new_label_hash}`;
-    inc[hashKey] = inc[hashKey] || {};
-    inc[hashKey][bin_size] = (inc[hashKey][bin_size] || 0) + 1;
+    incr(inc, `ml:label_hash:${event.new_label_hash}`, bin_size);
 
     if (!event.new_label_normalized) {
-      inc['ml:unknown_hashes'] = inc['ml:unknown_hashes'] || {};
-      inc['ml:unknown_hashes'][event.new_label_hash] =
-        (inc['ml:unknown_hashes'][event.new_label_hash] || 0) + 1;
+      incr(inc, 'ml:unknown_hashes', event.new_label_hash);
     }
   }
 
   if (event.new_label_normalized) {
-    const labelKey = `ml:label:${event.new_label_normalized}`;
-    inc[labelKey] = inc[labelKey] || {};
-    inc[labelKey][bin_size] = (inc[labelKey][bin_size] || 0) + 1;
+    incr(inc, `ml:label:${event.new_label_normalized}`, bin_size);
   }
 
   if (event.new_label_domain) {
-    const domainKey = `ml:label_domain:${event.new_label_domain}`;
-    inc[domainKey] = inc[domainKey] || {};
-    inc[domainKey][bin_size] = (inc[domainKey][bin_size] || 0) + 1;
+    incr(inc, `ml:label_domain:${event.new_label_domain}`, bin_size);
   }
 
   // Track embedding bucket for semantic similarity
   if (event.new_label_embedding_bucket) {
-    const embedKey = `ml:embed:${event.new_label_embedding_bucket}`;
-    inc[embedKey] = inc[embedKey] || {};
-    inc[embedKey][bin_size] = (inc[embedKey][bin_size] || 0) + 1;
+    incr(inc, `ml:embed:${event.new_label_embedding_bucket}`, bin_size);
   }
 }
 
@@ -1379,16 +1349,12 @@ function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increments): v
 
   // 1. Track size distribution by drawer size
   for (const [size, count] of Object.entries(event.size_distribution)) {
-    const drawerSizeKey = `ml:drawer_sizes:${drawer_size}`;
-    inc[drawerSizeKey] = inc[drawerSizeKey] || {};
-    inc[drawerSizeKey][size] = (inc[drawerSizeKey][size] || 0) + count;
+    incr(inc, `ml:drawer_sizes:${drawer_size}`, size, count);
   }
 
   // 2. Track domain distribution by drawer size
   for (const [domain, count] of Object.entries(event.domain_distribution)) {
-    const domainKey = `ml:domains:${drawer_size}`;
-    inc[domainKey] = inc[domainKey] || {};
-    inc[domainKey][domain] = (inc[domainKey][domain] || 0) + count;
+    incr(inc, `ml:domains:${drawer_size}`, domain, count);
   }
 
   // 3. Build co-occurrence matrix from top label hashes
@@ -1396,147 +1362,107 @@ function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increments): v
   const hashes = event.top_label_hashes;
   for (let i = 0; i < hashes.length; i++) {
     for (let j = i + 1; j < hashes.length; j++) {
-      // Bidirectional: A→B and B→A
-      const cooccurKeyA = `ml:cooccur:${hashes[i]}`;
-      inc[cooccurKeyA] = inc[cooccurKeyA] || {};
-      inc[cooccurKeyA][hashes[j]] = (inc[cooccurKeyA][hashes[j]] || 0) + 1;
-
-      const cooccurKeyB = `ml:cooccur:${hashes[j]}`;
-      inc[cooccurKeyB] = inc[cooccurKeyB] || {};
-      inc[cooccurKeyB][hashes[i]] = (inc[cooccurKeyB][hashes[i]] || 0) + 1;
+      // Bidirectional: A->B and B->A
+      incr(inc, `ml:cooccur:${hashes[i]}`, hashes[j]);
+      incr(inc, `ml:cooccur:${hashes[j]}`, hashes[i]);
     }
   }
 
   // 4. Track snapshot trigger distribution
-  inc['ml:triggers'] = inc['ml:triggers'] || {};
-  inc['ml:triggers'][trigger] = (inc['ml:triggers'][trigger] || 0) + 1;
+  incr(inc, 'ml:triggers', trigger);
 
   // 5. Track purpose if set
   if (purpose) {
-    inc['ml:purpose'] = inc['ml:purpose'] || {};
-    inc['ml:purpose'][purpose] = (inc['ml:purpose'][purpose] || 0) + 1;
+    incr(inc, 'ml:purpose', purpose);
 
     // Track size distribution by purpose
     for (const [size, count] of Object.entries(event.size_distribution)) {
-      const purposeSizeKey = `ml:purpose_sizes:${purpose}`;
-      inc[purposeSizeKey] = inc[purposeSizeKey] || {};
-      inc[purposeSizeKey][size] = (inc[purposeSizeKey][size] || 0) + count;
+      incr(inc, `ml:purpose_sizes:${purpose}`, size, count);
     }
   }
 
   // 6. Track fill percentage buckets (0-25%, 25-50%, 50-75%, 75-100%)
   const fillBucket = Math.min(Math.floor(event.fill_percentage / 25), 3);
-  const fillKey = `ml:fill_bucket:${fillBucket}`;
-  inc[fillKey] = inc[fillKey] || {};
-  inc[fillKey][drawer_size] = (inc[fillKey][drawer_size] || 0) + 1;
+  incr(inc, `ml:fill_bucket:${fillBucket}`, drawer_size);
 
   // 7. Track labeled percentage buckets
   const labeledBucket = Math.min(Math.floor(event.labeled_percentage / 25), 3);
-  const labeledKey = `ml:labeled_bucket:${labeledBucket}`;
-  inc[labeledKey] = inc[labeledKey] || {};
-  inc[labeledKey][drawer_size] = (inc[labeledKey][drawer_size] || 0) + 1;
+  incr(inc, `ml:labeled_bucket:${labeledBucket}`, drawer_size);
 
   // 8. Track quality tier distribution (for backend weighting)
   const { quality_tier } = event;
-  inc['ml:quality_tier'] = inc['ml:quality_tier'] || {};
-  inc['ml:quality_tier'][quality_tier] = (inc['ml:quality_tier'][quality_tier] || 0) + 1;
+  incr(inc, 'ml:quality_tier', quality_tier);
 
   // 9. Track size distribution by quality tier (high-quality layouts are better training data)
   if (quality_tier === 'high' || quality_tier === 'medium') {
     for (const [size, count] of Object.entries(event.size_distribution)) {
-      const tierSizeKey = `ml:tier_sizes:${quality_tier}`;
-      inc[tierSizeKey] = inc[tierSizeKey] || {};
-      inc[tierSizeKey][size] = (inc[tierSizeKey][size] || 0) + count;
+      incr(inc, `ml:tier_sizes:${quality_tier}`, size, count);
     }
   }
 
   // 10. Track layout archetype distribution
   const { archetype, spatial_patterns, uniformity_score, edge_usage } = event;
-  inc['ml:archetype'] = inc['ml:archetype'] || {};
-  inc['ml:archetype'][archetype] = (inc['ml:archetype'][archetype] || 0) + 1;
+  incr(inc, 'ml:archetype', archetype);
 
   // Track archetype by drawer size
-  const archetypeDrawerKey = `ml:archetype:${drawer_size}`;
-  inc[archetypeDrawerKey] = inc[archetypeDrawerKey] || {};
-  inc[archetypeDrawerKey][archetype] = (inc[archetypeDrawerKey][archetype] || 0) + 1;
+  incr(inc, `ml:archetype:${drawer_size}`, archetype);
 
   // 11. Track spatial patterns
   for (const pattern of spatial_patterns) {
-    inc['ml:patterns'] = inc['ml:patterns'] || {};
-    inc['ml:patterns'][pattern] = (inc['ml:patterns'][pattern] || 0) + 1;
+    incr(inc, 'ml:patterns', pattern);
 
     // Track pattern co-occurrence with archetype
-    const patternArchetypeKey = `ml:patterns:${archetype}`;
-    inc[patternArchetypeKey] = inc[patternArchetypeKey] || {};
-    inc[patternArchetypeKey][pattern] = (inc[patternArchetypeKey][pattern] || 0) + 1;
+    incr(inc, `ml:patterns:${archetype}`, pattern);
   }
 
   // 12. Track uniformity score buckets (0-0.25, 0.25-0.5, 0.5-0.75, 0.75-1.0)
   const uniformityBucket = Math.min(Math.floor(uniformity_score * 4), 3);
-  inc['ml:uniformity'] = inc['ml:uniformity'] || {};
-  inc['ml:uniformity'][`bucket_${uniformityBucket}`] =
-    (inc['ml:uniformity'][`bucket_${uniformityBucket}`] || 0) + 1;
+  incr(inc, 'ml:uniformity', `bucket_${uniformityBucket}`);
 
   // 13. Track edge usage patterns
   const edgeCount = [edge_usage.left, edge_usage.right, edge_usage.top, edge_usage.bottom].filter(
     Boolean
   ).length;
-  inc['ml:edge_count'] = inc['ml:edge_count'] || {};
-  inc['ml:edge_count'][`edges_${edgeCount}`] =
-    (inc['ml:edge_count'][`edges_${edgeCount}`] || 0) + 1;
+  incr(inc, 'ml:edge_count', `edges_${edgeCount}`);
 
   // Track specific edge combinations
   const edgeKey =
     `${edge_usage.left ? 'L' : ''}${edge_usage.right ? 'R' : ''}${edge_usage.top ? 'T' : ''}${edge_usage.bottom ? 'B' : ''}` ||
     'none';
-  inc['ml:edge_combo'] = inc['ml:edge_combo'] || {};
-  inc['ml:edge_combo'][edgeKey] = (inc['ml:edge_combo'][edgeKey] || 0) + 1;
+  incr(inc, 'ml:edge_combo', edgeKey);
 
   // 14. Track temporal patterns
   const { hour_of_day, day_of_week, is_weekend, structure_hash } = event;
 
   // Track activity by hour (helps understand when users are most active)
-  const hourKey = `ml:temporal:hour:${hour_of_day}`;
-  inc[hourKey] = inc[hourKey] || {};
-  inc[hourKey]['count'] = (inc[hourKey]['count'] || 0) + 1;
+  incr(inc, `ml:temporal:hour:${hour_of_day}`, 'count');
 
   // Track activity by day of week
-  const dayKey = `ml:temporal:day:${day_of_week}`;
-  inc[dayKey] = inc[dayKey] || {};
-  inc[dayKey]['count'] = (inc[dayKey]['count'] || 0) + 1;
+  incr(inc, `ml:temporal:day:${day_of_week}`, 'count');
 
   // Track weekend vs weekday activity
   const weekendKey = is_weekend ? 'weekend' : 'weekday';
-  inc['ml:temporal:weekday'] = inc['ml:temporal:weekday'] || {};
-  inc['ml:temporal:weekday'][weekendKey] = (inc['ml:temporal:weekday'][weekendKey] || 0) + 1;
+  incr(inc, 'ml:temporal:weekday', weekendKey);
 
   // 15. Track layout clusters by structure hash
   // This enables finding layouts with similar structural characteristics
-  const clusterKey = `ml:clusters:${structure_hash}`;
-  inc[clusterKey] = inc[clusterKey] || {};
-
   // Track size distribution within each cluster
   for (const [size, count] of Object.entries(event.size_distribution)) {
-    inc[clusterKey][size] = (inc[clusterKey][size] || 0) + count;
+    incr(inc, `ml:clusters:${structure_hash}`, size, count);
   }
 
   // Track archetype correlations with clusters
-  const clusterArchetypeKey = `ml:cluster_archetypes:${structure_hash}`;
-  inc[clusterArchetypeKey] = inc[clusterArchetypeKey] || {};
-  inc[clusterArchetypeKey][archetype] = (inc[clusterArchetypeKey][archetype] || 0) + 1;
+  incr(inc, `ml:cluster_archetypes:${structure_hash}`, archetype);
 
   // Track cluster distribution (how common each structure hash is)
-  inc['ml:cluster_distribution'] = inc['ml:cluster_distribution'] || {};
-  inc['ml:cluster_distribution'][structure_hash] =
-    (inc['ml:cluster_distribution'][structure_hash] || 0) + 1;
+  incr(inc, 'ml:cluster_distribution', structure_hash);
 }
 
 function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): void {
   const { signal, confidence_breakdown, abandonment_type, time_since_last_edit_ms } = event;
 
   // Track quality signal frequency
-  inc['ml:quality'] = inc['ml:quality'] || {};
-  inc['ml:quality'][signal] = (inc['ml:quality'][signal] || 0) + 1;
+  incr(inc, 'ml:quality', signal);
 
   // Track by age bucket (0-1 day, 1-7 days, 7-30 days, 30+ days)
   let ageBucket: string;
@@ -1550,9 +1476,7 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
     ageBucket = 'older';
   }
 
-  const ageKey = `ml:quality_age:${signal}`;
-  inc[ageKey] = inc[ageKey] || {};
-  inc[ageKey][ageBucket] = (inc[ageKey][ageBucket] || 0) + 1;
+  incr(inc, `ml:quality_age:${signal}`, ageBucket);
 
   // Track confidence breakdown distribution (if provided)
   if (confidence_breakdown) {
@@ -1565,13 +1489,10 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
           : confidence_breakdown.combined < 0.75
             ? 'medium'
             : 'high';
-    inc['ml:quality_confidence'] = inc['ml:quality_confidence'] || {};
-    inc['ml:quality_confidence'][confBucket] = (inc['ml:quality_confidence'][confBucket] || 0) + 1;
+    incr(inc, 'ml:quality_confidence', confBucket);
 
     // Track confidence by signal type (export/share with high confidence = good data)
-    const confBySignalKey = `ml:quality_conf_by_signal:${signal}`;
-    inc[confBySignalKey] = inc[confBySignalKey] || {};
-    inc[confBySignalKey][confBucket] = (inc[confBySignalKey][confBucket] || 0) + 1;
+    incr(inc, `ml:quality_conf_by_signal:${signal}`, confBucket);
 
     // Track individual score distributions for analysis
     const scoreNames = [
@@ -1583,21 +1504,16 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
     for (const scoreName of scoreNames) {
       const score = confidence_breakdown[scoreName];
       const scoreBucket = score < 0.4 ? 'low' : score < 0.7 ? 'medium' : 'high';
-      const scoreKey = `ml:quality_score:${scoreName}`;
-      inc[scoreKey] = inc[scoreKey] || {};
-      inc[scoreKey][scoreBucket] = (inc[scoreKey][scoreBucket] || 0) + 1;
+      incr(inc, `ml:quality_score:${scoreName}`, scoreBucket);
     }
   }
 
   // Track abandonment patterns
   if (abandonment_type) {
-    inc['ml:abandonment'] = inc['ml:abandonment'] || {};
-    inc['ml:abandonment'][abandonment_type] = (inc['ml:abandonment'][abandonment_type] || 0) + 1;
+    incr(inc, 'ml:abandonment', abandonment_type);
 
     // Track abandonment by age (newer layouts abandoned more often = exploration)
-    const abandonAgeKey = `ml:abandonment_age:${abandonment_type}`;
-    inc[abandonAgeKey] = inc[abandonAgeKey] || {};
-    inc[abandonAgeKey][ageBucket] = (inc[abandonAgeKey][ageBucket] || 0) + 1;
+    incr(inc, `ml:abandonment_age:${abandonment_type}`, ageBucket);
   }
 
   // Track time since last edit (dormancy detection)
@@ -1609,22 +1525,18 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
         : time_since_last_edit_ms < 1800_000
           ? 'idle'
           : 'dormant';
-  inc['ml:quality_dormancy'] = inc['ml:quality_dormancy'] || {};
-  inc['ml:quality_dormancy'][dormancyBucket] =
-    (inc['ml:quality_dormancy'][dormancyBucket] || 0) + 1;
+  incr(inc, 'ml:quality_dormancy', dormancyBucket);
 }
 
 function aggregateDrawerPurpose(event: DrawerPurposeEvent, inc: Increments): void {
   const { purpose, is_custom } = event;
 
   // Track purpose frequency
-  inc['ml:purpose'] = inc['ml:purpose'] || {};
-  inc['ml:purpose'][purpose] = (inc['ml:purpose'][purpose] || 0) + 1;
+  incr(inc, 'ml:purpose', purpose);
 
   // Track custom vs predefined
   const customKey = is_custom ? 'custom' : 'predefined';
-  inc['ml:purpose_type'] = inc['ml:purpose_type'] || {};
-  inc['ml:purpose_type'][customKey] = (inc['ml:purpose_type'][customKey] || 0) + 1;
+  incr(inc, 'ml:purpose_type', customKey);
 }
 
 function aggregateCategoryChange(event: CategoryChangeEvent, inc: Increments): void {
@@ -1632,57 +1544,43 @@ function aggregateCategoryChange(event: CategoryChangeEvent, inc: Increments): v
 
   // Track which bin sizes are assigned to which categories (by name hash)
   // Only custom categories reach here (defaults filtered client-side)
-  const catSizeKey = `ml:cat_sizes:${category_name_hash}`;
-  inc[catSizeKey] = inc[catSizeKey] || {};
-  inc[catSizeKey][bin_size] = (inc[catSizeKey][bin_size] || 0) + 1;
+  incr(inc, `ml:cat_sizes:${category_name_hash}`, bin_size);
 
-  // Track label→category associations (helps learn what items go in what categories)
+  // Track label->category associations (helps learn what items go in what categories)
   if (label_hash) {
-    const labelCatKey = `ml:label_cat:${label_hash}`;
-    inc[labelCatKey] = inc[labelCatKey] || {};
-    inc[labelCatKey][category_name_hash] = (inc[labelCatKey][category_name_hash] || 0) + 1;
+    incr(inc, `ml:label_cat:${label_hash}`, category_name_hash);
   }
 
-  // Track domain→category associations (broader pattern)
+  // Track domain->category associations (broader pattern)
   if (label_domain) {
-    const domainCatKey = `ml:domain_cat:${label_domain}`;
-    inc[domainCatKey] = inc[domainCatKey] || {};
-    inc[domainCatKey][category_name_hash] = (inc[domainCatKey][category_name_hash] || 0) + 1;
+    incr(inc, `ml:domain_cat:${label_domain}`, category_name_hash);
   }
 
   // Track total category change events
-  inc['ml:cat_changes'] = inc['ml:cat_changes'] || {};
-  inc['ml:cat_changes']['total'] = (inc['ml:cat_changes']['total'] || 0) + 1;
+  incr(inc, 'ml:cat_changes', 'total');
 }
 
 function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
   const { old_size, new_size, dimensions_changed, resize_direction, area_delta } = event;
 
   // Track resize transitions (what sizes users resize to what)
-  const resizeKey = `ml:resize:${old_size}`;
-  inc[resizeKey] = inc[resizeKey] || {};
-  inc[resizeKey][new_size] = (inc[resizeKey][new_size] || 0) + 1;
+  incr(inc, `ml:resize:${old_size}`, new_size);
 
   // Track which dimensions are resized most often
   for (const dim of dimensions_changed) {
-    inc['ml:resize_dims'] = inc['ml:resize_dims'] || {};
-    inc['ml:resize_dims'][dim] = (inc['ml:resize_dims'][dim] || 0) + 1;
+    incr(inc, 'ml:resize_dims', dim);
   }
 
   // Track total resize events
-  inc['ml:resizes'] = inc['ml:resizes'] || {};
-  inc['ml:resizes']['total'] = (inc['ml:resizes']['total'] || 0) + 1;
+  incr(inc, 'ml:resizes', 'total');
 
   // Track resulting sizes (what users resize to)
-  inc['ml:resize_results'] = inc['ml:resize_results'] || {};
-  inc['ml:resize_results'][new_size] = (inc['ml:resize_results'][new_size] || 0) + 1;
+  incr(inc, 'ml:resize_results', new_size);
 
   // Track resize direction (Priority 1)
   // grow = user made bin bigger (likely initial was too small)
   // shrink = user made bin smaller (likely initial was too big)
-  inc['ml:resize_direction'] = inc['ml:resize_direction'] || {};
-  inc['ml:resize_direction'][resize_direction] =
-    (inc['ml:resize_direction'][resize_direction] || 0) + 1;
+  incr(inc, 'ml:resize_direction', resize_direction);
 
   // Track area delta buckets (how much users adjust)
   const absAreaDelta = Math.abs(area_delta);
@@ -1694,9 +1592,7 @@ function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
   else deltaBucket = '9+';
 
   const directionPrefix = area_delta > 0 ? '+' : area_delta < 0 ? '-' : '';
-  inc['ml:resize_delta'] = inc['ml:resize_delta'] || {};
-  inc['ml:resize_delta'][`${directionPrefix}${deltaBucket}`] =
-    (inc['ml:resize_delta'][`${directionPrefix}${deltaBucket}`] || 0) + 1;
+  incr(inc, 'ml:resize_delta', `${directionPrefix}${deltaBucket}`);
 }
 
 /**
@@ -1716,28 +1612,22 @@ function aggregateBinDeletion(event: BinDeletedEvent, inc: Increments): void {
   const { bin_size, method, had_label, label_domain } = event;
 
   // Track deleted sizes (important negative signal - what users rejected)
-  inc['ml:neg:deleted_sizes'] = inc['ml:neg:deleted_sizes'] || {};
-  inc['ml:neg:deleted_sizes'][bin_size] = (inc['ml:neg:deleted_sizes'][bin_size] || 0) + 1;
+  incr(inc, 'ml:neg:deleted_sizes', bin_size);
 
   // Track deletion method distribution
-  inc['ml:neg:delete_methods'] = inc['ml:neg:delete_methods'] || {};
-  inc['ml:neg:delete_methods'][method] = (inc['ml:neg:delete_methods'][method] || 0) + 1;
+  incr(inc, 'ml:neg:delete_methods', method);
 
   // Track whether deleted bins had labels (labeled bins being deleted may indicate bad ML suggestions)
-  inc['ml:neg:delete_labeled'] = inc['ml:neg:delete_labeled'] || {};
   const labeledKey = had_label ? 'labeled' : 'unlabeled';
-  inc['ml:neg:delete_labeled'][labeledKey] = (inc['ml:neg:delete_labeled'][labeledKey] || 0) + 1;
+  incr(inc, 'ml:neg:delete_labeled', labeledKey);
 
   // Track deleted bins by domain
   if (label_domain) {
-    const domainKey = `ml:neg:delete_domain:${label_domain}`;
-    inc[domainKey] = inc[domainKey] || {};
-    inc[domainKey][bin_size] = (inc[domainKey][bin_size] || 0) + 1;
+    incr(inc, `ml:neg:delete_domain:${label_domain}`, bin_size);
   }
 
   // Track total deletions
-  inc['ml:neg:deletions'] = inc['ml:neg:deletions'] || {};
-  inc['ml:neg:deletions']['total'] = (inc['ml:neg:deletions']['total'] || 0) + 1;
+  incr(inc, 'ml:neg:deletions', 'total');
 }
 
 /**
@@ -1753,12 +1643,10 @@ function aggregateBinMove(event: BinMovedEvent, inc: Increments): void {
   const { bin_size, distance, method } = event;
 
   // Track moved sizes (helps understand position adjustment patterns)
-  inc['ml:moved_sizes'] = inc['ml:moved_sizes'] || {};
-  inc['ml:moved_sizes'][bin_size] = (inc['ml:moved_sizes'][bin_size] || 0) + 1;
+  incr(inc, 'ml:moved_sizes', bin_size);
 
   // Track move method distribution (drag vs nudge)
-  inc['ml:move_methods'] = inc['ml:move_methods'] || {};
-  inc['ml:move_methods'][method] = (inc['ml:move_methods'][method] || 0) + 1;
+  incr(inc, 'ml:move_methods', method);
 
   // Track move distance buckets (short, medium, long moves)
   let distanceBucket: string;
@@ -1771,64 +1659,49 @@ function aggregateBinMove(event: BinMovedEvent, inc: Increments): void {
   } else {
     distanceBucket = 'long'; // 10+ cells (likely repositioning)
   }
-  inc['ml:move_distances'] = inc['ml:move_distances'] || {};
-  inc['ml:move_distances'][distanceBucket] = (inc['ml:move_distances'][distanceBucket] || 0) + 1;
+  incr(inc, 'ml:move_distances', distanceBucket);
 
   // Track total moves
-  inc['ml:moves'] = inc['ml:moves'] || {};
-  inc['ml:moves']['total'] = (inc['ml:moves']['total'] || 0) + 1;
+  incr(inc, 'ml:moves', 'total');
 }
 
 function aggregateDrawerResize(event: DrawerResizedEvent, inc: Increments): void {
   const { old_size, new_size, dimensions_changed, bins_staged } = event;
 
   // Track resize transitions (what drawer sizes users resize to)
-  const drawerResizeKey = `ml:drawer_resize:${old_size}`;
-  inc[drawerResizeKey] = inc[drawerResizeKey] || {};
-  inc[drawerResizeKey][new_size] = (inc[drawerResizeKey][new_size] || 0) + 1;
+  incr(inc, `ml:drawer_resize:${old_size}`, new_size);
 
   // Track which dimensions are changed most often
   for (const dim of dimensions_changed) {
-    inc['ml:drawer_resize_dims'] = inc['ml:drawer_resize_dims'] || {};
-    inc['ml:drawer_resize_dims'][dim] = (inc['ml:drawer_resize_dims'][dim] || 0) + 1;
+    incr(inc, 'ml:drawer_resize_dims', dim);
   }
 
   // Track how often bins are staged due to resize
   if (bins_staged > 0) {
-    inc['ml:drawer_resize_staged'] = inc['ml:drawer_resize_staged'] || {};
-    inc['ml:drawer_resize_staged']['with_bins'] =
-      (inc['ml:drawer_resize_staged']['with_bins'] || 0) + 1;
+    incr(inc, 'ml:drawer_resize_staged', 'with_bins');
   } else {
-    inc['ml:drawer_resize_staged'] = inc['ml:drawer_resize_staged'] || {};
-    inc['ml:drawer_resize_staged']['no_bins'] =
-      (inc['ml:drawer_resize_staged']['no_bins'] || 0) + 1;
+    incr(inc, 'ml:drawer_resize_staged', 'no_bins');
   }
 
   // Track total drawer resizes
-  inc['ml:drawer_resizes'] = inc['ml:drawer_resizes'] || {};
-  inc['ml:drawer_resizes']['total'] = (inc['ml:drawer_resizes']['total'] || 0) + 1;
+  incr(inc, 'ml:drawer_resizes', 'total');
 
   // Track resulting drawer sizes (what sizes users resize to)
-  inc['ml:drawer_resize_results'] = inc['ml:drawer_resize_results'] || {};
-  inc['ml:drawer_resize_results'][new_size] = (inc['ml:drawer_resize_results'][new_size] || 0) + 1;
+  incr(inc, 'ml:drawer_resize_results', new_size);
 }
 
 function aggregateFillOperation(event: FillOperationEvent, inc: Increments): void {
   const { method, fill_size, bins_created, drawer_size } = event;
 
   // Track fill method distribution (uniform vs gaps)
-  inc['ml:fill_methods'] = inc['ml:fill_methods'] || {};
-  inc['ml:fill_methods'][method] = (inc['ml:fill_methods'][method] || 0) + 1;
+  incr(inc, 'ml:fill_methods', method);
 
   // Track which sizes users fill with (for uniform fill - strong preference signal!)
   if (fill_size) {
-    inc['ml:fill_sizes'] = inc['ml:fill_sizes'] || {};
-    inc['ml:fill_sizes'][fill_size] = (inc['ml:fill_sizes'][fill_size] || 0) + 1;
+    incr(inc, 'ml:fill_sizes', fill_size);
 
     // Track fill size by drawer size (size preferences depend on container)
-    const fillByDrawerKey = `ml:fill_by_drawer:${drawer_size}`;
-    inc[fillByDrawerKey] = inc[fillByDrawerKey] || {};
-    inc[fillByDrawerKey][fill_size] = (inc[fillByDrawerKey][fill_size] || 0) + 1;
+    incr(inc, `ml:fill_by_drawer:${drawer_size}`, fill_size);
   }
 
   // Track bins created per fill (helps understand fill efficiency)
@@ -1840,12 +1713,10 @@ function aggregateFillOperation(event: FillOperationEvent, inc: Increments): voi
         : bins_created <= 100
           ? 'large'
           : 'xlarge';
-  inc['ml:fill_bins'] = inc['ml:fill_bins'] || {};
-  inc['ml:fill_bins'][binsBucket] = (inc['ml:fill_bins'][binsBucket] || 0) + 1;
+  incr(inc, 'ml:fill_bins', binsBucket);
 
   // Track total fill operations
-  inc['ml:fills'] = inc['ml:fills'] || {};
-  inc['ml:fills']['total'] = (inc['ml:fills']['total'] || 0) + 1;
+  incr(inc, 'ml:fills', 'total');
 }
 
 function aggregateLayerMove(event: LayerMoveEvent, inc: Increments): void {
@@ -1855,49 +1726,38 @@ function aggregateLayerMove(event: LayerMoveEvent, inc: Increments): void {
   const fromKey = from_layer_index === -1 ? 'staging' : `layer${from_layer_index}`;
   const toKey = to_layer_index === -1 ? 'staging' : `layer${to_layer_index}`;
 
-  // Track from→to transitions
-  const layerTransKey = `ml:layer_trans:${fromKey}`;
-  inc[layerTransKey] = inc[layerTransKey] || {};
-  inc[layerTransKey][toKey] = (inc[layerTransKey][toKey] || 0) + 1;
+  // Track from->to transitions
+  incr(inc, `ml:layer_trans:${fromKey}`, toKey);
 
   // Track sizes moved between layers
-  inc['ml:layer_moved_sizes'] = inc['ml:layer_moved_sizes'] || {};
-  inc['ml:layer_moved_sizes'][bin_size] = (inc['ml:layer_moved_sizes'][bin_size] || 0) + 1;
+  incr(inc, 'ml:layer_moved_sizes', bin_size);
 
   // Track layer move method distribution
-  inc['ml:layer_move_methods'] = inc['ml:layer_move_methods'] || {};
-  inc['ml:layer_move_methods'][method] = (inc['ml:layer_move_methods'][method] || 0) + 1;
+  incr(inc, 'ml:layer_move_methods', method);
 
   // Track staging in/out specifically (important for understanding stash usage)
   if (from_layer_index === -1) {
-    inc['ml:staging_out'] = inc['ml:staging_out'] || {};
-    inc['ml:staging_out'][toKey] = (inc['ml:staging_out'][toKey] || 0) + 1;
+    incr(inc, 'ml:staging_out', toKey);
   }
   if (to_layer_index === -1) {
-    inc['ml:staging_in'] = inc['ml:staging_in'] || {};
-    inc['ml:staging_in'][fromKey] = (inc['ml:staging_in'][fromKey] || 0) + 1;
+    incr(inc, 'ml:staging_in', fromKey);
   }
 
   // Track total layer moves
-  inc['ml:layer_moves'] = inc['ml:layer_moves'] || {};
-  inc['ml:layer_moves']['total'] = (inc['ml:layer_moves']['total'] || 0) + 1;
+  incr(inc, 'ml:layer_moves', 'total');
 }
 
 function aggregateBinRotation(event: BinRotatedEvent, inc: Increments): void {
   const { old_size, new_size } = event;
 
   // Track rotation transitions (shows which sizes users rotate)
-  const rotateKey = `ml:rotate:${old_size}`;
-  inc[rotateKey] = inc[rotateKey] || {};
-  inc[rotateKey][new_size] = (inc[rotateKey][new_size] || 0) + 1;
+  incr(inc, `ml:rotate:${old_size}`, new_size);
 
   // Track total rotations
-  inc['ml:rotations'] = inc['ml:rotations'] || {};
-  inc['ml:rotations']['total'] = (inc['ml:rotations']['total'] || 0) + 1;
+  incr(inc, 'ml:rotations', 'total');
 
   // Track rotated sizes (which sizes users rotate most)
-  inc['ml:rotated_sizes'] = inc['ml:rotated_sizes'] || {};
-  inc['ml:rotated_sizes'][old_size] = (inc['ml:rotated_sizes'][old_size] || 0) + 1;
+  incr(inc, 'ml:rotated_sizes', old_size);
 }
 
 // ============================================
@@ -1918,26 +1778,21 @@ function aggregatePlacementRejection(event: PlacementRejectedEvent, inc: Increme
   const { rejection_reason, intended_size, mode, drawer_size } = event;
 
   // Track rejection reasons
-  inc['ml:rejections'] = inc['ml:rejections'] || {};
-  inc['ml:rejections'][rejection_reason] = (inc['ml:rejections'][rejection_reason] || 0) + 1;
+  incr(inc, 'ml:rejections', rejection_reason);
 
   // Track by mode (draw vs paint)
-  inc['ml:reject_modes'] = inc['ml:reject_modes'] || {};
-  inc['ml:reject_modes'][mode] = (inc['ml:reject_modes'][mode] || 0) + 1;
+  incr(inc, 'ml:reject_modes', mode);
 
   // Track rejected sizes (important negative signal - what users tried but abandoned)
   if (intended_size) {
-    inc['ml:reject_sizes'] = inc['ml:reject_sizes'] || {};
-    inc['ml:reject_sizes'][intended_size] = (inc['ml:reject_sizes'][intended_size] || 0) + 1;
+    incr(inc, 'ml:reject_sizes', intended_size);
 
     // Negative signal: size rejection by drawer size
-    const negKey = `ml:neg:reject_by_drawer:${drawer_size}`;
-    inc[negKey] = inc[negKey] || {};
-    inc[negKey][intended_size] = (inc[negKey][intended_size] || 0) + 1;
+    incr(inc, `ml:neg:reject_by_drawer:${drawer_size}`, intended_size);
   }
 
   // Track total rejections
-  inc['ml:rejections']['total'] = (inc['ml:rejections']['total'] || 0) + 1;
+  incr(inc, 'ml:rejections', 'total');
 }
 
 /**
@@ -2361,7 +2216,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     if (!validateEvent(event)) {
       failedCount++;
       // Track failures by event type (extract from potentially invalid event)
-      const maybeType = (event as Record<string, unknown>)?.type;
+      const maybeType = (event as Record<string, unknown>).type;
       const eventType = typeof maybeType === 'string' ? maybeType : 'unknown';
       failedByType[eventType] = (failedByType[eventType] || 0) + 1;
       continue;
@@ -2447,6 +2302,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const pipe = client.pipeline();
 
     for (const [hash, fields] of Object.entries(increments)) {
+      if (!fields) continue;
       for (const [field, count] of Object.entries(fields)) {
         pipe.hincrby(hash, field, count);
       }

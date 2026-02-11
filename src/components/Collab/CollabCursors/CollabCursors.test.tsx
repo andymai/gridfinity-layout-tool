@@ -33,9 +33,9 @@ vi.mock('@/shared/hooks', () => ({
 
 // Mock translation
 vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string, params?: Record<string, unknown>) => {
+  useTranslation: () => (key: string, params?: Record<string, string | number>) => {
     if (key === 'collab.cursors.viewing') {
-      return `Viewing with ${params?.count || 0} others`;
+      return `Viewing with ${params?.count ?? 0} others`;
     }
     return key;
   },

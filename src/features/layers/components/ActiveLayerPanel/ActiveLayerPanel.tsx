@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { useToastStore } from '@/core/store/toast';
 import { STAGING_ID } from '@/core/constants';
 import { getLayerBins } from '@/shared/utils';
@@ -45,30 +48,28 @@ export function ActiveLayerPanel() {
     }))
   );
 
-  const {
-    activeLayerId,
-    activeCategoryId,
-    paintSize,
-    togglePaintSize,
-    setPaintSize,
-    setSelectedBins,
-    halfBinMode,
-  } = useUIStore(
+  const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
       activeCategoryId: state.activeCategoryId,
+      setSelectedBins: state.setSelectedBins,
+    }))
+  );
+
+  const { paintSize, togglePaintSize, setPaintSize } = useInteractionStore(
+    useShallow((state) => ({
       paintSize: state.paintSize,
       togglePaintSize: state.togglePaintSize,
       setPaintSize: state.setPaintSize,
-      setSelectedBins: state.setSelectedBins,
-      halfBinMode: state.halfBinMode,
     }))
   );
+
+  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
 
   const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
 
-  const isPaintActive = (w: number, d: number) => paintSize?.width === w && paintSize?.depth === d;
+  const isPaintActive = (w: number, d: number) => paintSize?.width === w && paintSize.depth === d;
 
   const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
   const layerBins = getLayerBins(layout.bins, activeLayerId);

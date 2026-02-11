@@ -1,10 +1,10 @@
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '@/core/store';
+import { useMobileStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { TabBar } from './TabBar';
 import { LayersTab } from './LayersTab';
 import { ToolsTab } from './ToolsTab';
-import type { MobileLayersTab } from '@/core/store/ui';
+import type { MobileLayersTab } from '@/core/store';
 
 /**
  * Mobile-optimized layers panel with tabbed interface.
@@ -20,7 +20,7 @@ export function MobileLayersPanel() {
     { id: 'tools', label: t('mobile.tabs.tools') },
   ];
 
-  const { activeTab, setActiveTab } = useUIStore(
+  const { activeTab, setActiveTab } = useMobileStore(
     useShallow((state) => ({
       activeTab: state.mobileLayersTab,
       setActiveTab: state.setMobileLayersTab,

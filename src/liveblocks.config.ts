@@ -63,7 +63,7 @@ export interface LiveblocksStorage {
  * Check if Liveblocks is configured.
  * Collaborative features are disabled when the public key is not set.
  */
-const LIVEBLOCKS_PUBLIC_KEY = import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY;
+const LIVEBLOCKS_PUBLIC_KEY = import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY as string | undefined;
 export const isLiveblocksConfigured = Boolean(LIVEBLOCKS_PUBLIC_KEY);
 
 /**
@@ -77,7 +77,7 @@ export const isLiveblocksConfigured = Boolean(LIVEBLOCKS_PUBLIC_KEY);
  */
 const client = isLiveblocksConfigured
   ? createClient({
-      publicApiKey: LIVEBLOCKS_PUBLIC_KEY,
+      publicApiKey: LIVEBLOCKS_PUBLIC_KEY as string,
       // Throttle presence updates to 20fps (50ms) to balance smoothness and bandwidth
       throttle: 50,
     })

@@ -52,10 +52,12 @@ export { saveLayoutSync, loadLayoutSync, deleteLayoutSync } from './LayoutServic
 // === Library Management ===
 export {
   saveLibrary,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
   saveLibraryResult,
   loadLibrary,
   loadLibraryResult,
   initializeLayoutLibrary,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
   computeLayoutPreview,
   getLayoutStorageKey,
   getStorageUsage,
@@ -123,4 +125,5 @@ export { getStorageBackend, resetStorageBackendCache } from './backend';
 
 // === Legacy API (Deprecated) ===
 // These are kept for backward compatibility only
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy compat re-exports
 export { saveLayout, loadLayout, clearStorage } from './LayoutService';

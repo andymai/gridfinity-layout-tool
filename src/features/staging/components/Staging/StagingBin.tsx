@@ -194,6 +194,8 @@ export const StagingBin = memo(function StagingBin({
   return (
     <div
       data-staging-bin-id={bin.id}
+      role="button"
+      tabIndex={0}
       className={`relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm touch-none ${
         isElevated ? 'z-20' : 'z-10'
       } ${
@@ -214,6 +216,12 @@ export const StagingBin = memo(function StagingBin({
         ...(cssHeightOverride !== undefined && { height: cssHeightOverride }),
       }}
       onClick={(e) => onBinClick(bin.id, e)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onBinClick(bin.id, e as unknown as React.MouseEvent);
+        }
+      }}
       onPointerDown={(e) => onBinPointerDown(bin.id, e)}
       onPointerMove={onBinPointerMove}
       onPointerUp={onBinPointerEnd}

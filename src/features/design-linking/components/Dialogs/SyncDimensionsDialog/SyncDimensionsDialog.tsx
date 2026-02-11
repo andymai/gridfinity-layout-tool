@@ -64,6 +64,7 @@ export function SyncDimensionsDialog() {
       onClick={handleCancel}
       role="presentation"
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         ref={dialogRef}
         role="dialog"
@@ -72,6 +73,8 @@ export function SyncDimensionsDialog() {
         className="max-w-md w-full mx-4 animate-scale-in bg-surface-secondary border border-stroke rounded-[var(--radius-xl)] p-5"
         style={{ boxShadow: 'var(--shadow-xl)' }}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
         <h2 id="sync-dialog-title" className="mb-1.5 text-lg font-semibold text-content">
           {t('designLinking.syncDialog.title')}

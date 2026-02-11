@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
-import { useUIStore } from '@/core/store';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { getBinLocationContext } from '@/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
@@ -42,12 +42,11 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
     moveToLayer,
     requestDelete,
     moveToStaging,
-    clearSelection,
     rotateBin,
     existingPropertyKeys,
   } = inspector;
 
-  const halfBinMode = useUIStore((state) => state.halfBinMode);
+  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
   const t = useTranslation();
 
   if (!bin) return null;
@@ -80,7 +79,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         {onClose && (
           <button
             type="button"
-            onClick={onClose || clearSelection}
+            onClick={onClose}
             className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
             aria-label={t('inspector.deselectBin')}
           >

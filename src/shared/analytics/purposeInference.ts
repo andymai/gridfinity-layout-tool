@@ -89,7 +89,7 @@ function getDomainDistribution(bins: Bin[]): Map<LabelDomain | 'unknown', number
   const distribution = new Map<LabelDomain | 'unknown', number>();
 
   for (const bin of getGridBins(bins)) {
-    if (!bin.label?.trim()) continue;
+    if (!bin.label.trim()) continue;
 
     const labelData = processLabel(bin.label);
     const domain = labelData.domain || 'unknown';
@@ -319,7 +319,7 @@ export function loadLabelSizes(): Record<string, string[]> {
   try {
     const stored = localStorage.getItem(LABEL_SIZES_STORAGE_KEY);
     if (!stored) return {};
-    return JSON.parse(stored);
+    return JSON.parse(stored) as Record<string, string[]>;
   } catch {
     return {};
   }
@@ -353,10 +353,6 @@ function saveLabelSizes(data: Record<string, string[]>): void {
 export function recordLabelSize(labelHash: string, size: string): void {
   const data = loadLabelSizes();
 
-  if (!data[labelHash]) {
-    data[labelHash] = [];
-  }
-
   // Add size if not already tracked
   if (!data[labelHash].includes(size)) {
     data[labelHash].push(size);
@@ -387,13 +383,9 @@ export function recordLayoutLabelSizes(layout: Layout): void {
 
   for (const bin of labeledBins) {
     // bin.label is guaranteed non-null by the filter above
-    const label = bin.label ?? '';
+    const label = bin.label;
     const labelData = processLabel(label);
     const size = `${bin.width}x${bin.depth}x${bin.height}`;
-
-    if (!data[labelData.hash]) {
-      data[labelData.hash] = [];
-    }
 
     // Add size if not already tracked
     if (!data[labelData.hash].includes(size)) {
@@ -426,14 +418,14 @@ export function getLabelSizeConsistency(
   const gridBins = getGridBins(layout.bins);
 
   for (const bin of gridBins) {
-    if (!bin.label?.trim()) continue;
+    if (!bin.label.trim()) continue;
 
     const labelData = processLabel(bin.label);
     if (processedHashes.has(labelData.hash)) continue;
     processedHashes.add(labelData.hash);
 
     const currentSize = `${bin.width}x${bin.depth}x${bin.height}`;
-    const historicalSizes = stored[labelData.hash] || [];
+    const historicalSizes = stored[labelData.hash];
 
     // Combine current with historical (deduplicated)
     const allSizes = [...new Set([...historicalSizes, currentSize])];

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '@/core/store';
+import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
 import type { SettingsTabId } from '@/components/Modals/SettingsModal/types';
@@ -51,7 +51,7 @@ export function Sidebar() {
     }
   }, []);
 
-  const { collapsed, toggle } = useUIStore(
+  const { collapsed, toggle } = useViewStore(
     useShallow((state) => ({
       collapsed: state.leftPanelCollapsed,
       toggle: state.toggleLeftPanel,
@@ -94,7 +94,7 @@ export function Sidebar() {
   useEffect(() => {
     const handleOpenSettings = (e: Event) => {
       const detail = (e as CustomEvent<{ tab?: SettingsTabId }>).detail;
-      setSettingsInitialTab(detail?.tab);
+      setSettingsInitialTab(detail.tab);
       setShowSettingsModal(true);
     };
     window.addEventListener('open-settings-modal', handleOpenSettings);

@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
+import { useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useMobileStore } from '@/core/store/mobile';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk, isErr } from '@/core/result';
@@ -83,14 +85,16 @@ export function useBinInspector(): UseBinInspectorReturn {
   const t = useTranslation();
   const [deleteConfirmState, setDeleteConfirmState] = useState<ConfirmDeleteState | null>(null);
 
-  // UI Store
-  const { selectedBinIds, setSelectedBins, closeMobilePanel } = useUIStore(
+  // Selection Store
+  const { selectedBinIds, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,
       setSelectedBins: state.setSelectedBins,
-      closeMobilePanel: state.closeMobilePanel,
     }))
   );
+
+  // Mobile Store
+  const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   // Layout Store
   const { layout, updateBin, deleteBin, moveBinToStaging } = useLayoutStore(
@@ -223,7 +227,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           if (newCategory) {
             mlTracking.trackCategory(bin, newCategory.name);
           }
-        } else if (field === 'notes') {
+        } else {
           updateBin(bin.id, { notes: value as string });
         }
       });
@@ -246,7 +250,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       // Validate properties before updating
       const validation = validateCustomProperties(properties);
       if (isErr(validation)) {
-        addToast(validation.error.message ?? 'Invalid custom properties', 'error');
+        addToast(validation.error.message, 'error');
         return;
       }
 
@@ -382,7 +386,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           blocked_zone: 'Blocked by a taller bin below',
           exceeds_height: 'Bin would exceed drawer height',
         };
-        addToast(reasons[result.reason ?? ''] || 'Cannot move bin here', 'error');
+        addToast(reasons[result.reason] || 'Cannot move bin here', 'error');
         return;
       }
 

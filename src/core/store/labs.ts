@@ -17,8 +17,8 @@ function loadPreferences(): LabsPreferences {
   try {
     const stored = localStorage.getItem(LABS_STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
-      return { ...createDefaultLabsPreferences(), ...parsed };
+      const parsed: unknown = JSON.parse(stored);
+      return { ...createDefaultLabsPreferences(), ...(parsed as Partial<LabsPreferences>) };
     }
   } catch (e) {
     console.warn('Failed to load Labs preferences:', e);
@@ -166,7 +166,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     // Coming Soon features are always disabled
     if (feature?.comingSoon) return false;
 
-    return preferences.enabledFeatures[featureId] ?? feature?.defaultEnabled ?? false;
+    return preferences.enabledFeatures[featureId];
   },
 
   getEnabledCount: () => {

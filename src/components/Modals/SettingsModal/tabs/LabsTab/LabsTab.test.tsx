@@ -45,7 +45,19 @@ vi.mock('@/features/labs/components/FeatureCard', () => ({
     isEnabled: boolean;
     onToggle: () => void;
   }) => (
-    <div data-testid="feature-card" data-enabled={isEnabled} onClick={onToggle}>
+    <div
+      data-testid="feature-card"
+      data-enabled={isEnabled}
+      role="button"
+      tabIndex={0}
+      onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+    >
       {feature.titleKey}
     </div>
   ),

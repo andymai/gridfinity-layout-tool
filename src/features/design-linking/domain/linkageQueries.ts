@@ -5,12 +5,7 @@
  */
 
 import type { Bin } from '@/core/types';
-import type {
-  BinId,
-  DesignId,
-  DesignLinkedBinsSummary,
-  SyncableDimensions,
-} from '../types';
+import type { BinId, DesignId, DesignLinkedBinsSummary, SyncableDimensions } from '../types';
 import type { CustomBinRef } from '@/features/bin-designer/store/customBinRegistry';
 import { dimensionsMatch } from './linkingRules';
 
@@ -29,7 +24,7 @@ export function getLinkedDesignId(bin: Bin): DesignId | null {
  * Check if a bin is linked to any design.
  */
 export function isLinked(bin: Bin): boolean {
-  return bin.linkedDesignId != null;
+  return bin.linkedDesignId !== undefined;
 }
 
 /**
@@ -98,10 +93,7 @@ export function getLinkedBins(bins: Bin[]): Bin[] {
 /**
  * Check if a bin's dimensions match its linked design.
  */
-export function binMatchesDesign(
-  bin: Bin,
-  designDimensions: SyncableDimensions
-): boolean {
+export function binMatchesDesign(bin: Bin, designDimensions: SyncableDimensions): boolean {
   return dimensionsMatch(
     { width: bin.width, depth: bin.depth, height: bin.height },
     designDimensions

@@ -130,7 +130,7 @@ export function getLayerBins(bins: Bin[], layerId: LayerId): Bin[] {
  * const labeled = getLabeledBins(getGridBins(layout.bins));
  */
 export function getLabeledBins(bins: Bin[]): Bin[] {
-  return bins.filter((bin) => bin.label?.trim());
+  return bins.filter((bin) => bin.label.trim());
 }
 
 /**

@@ -1,5 +1,7 @@
 import { useCallback, useEffect } from 'react';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
 import { findNearestBinInDirection, type Direction } from '@/features/grid-editor/utils/navigation';
 
 /**
@@ -13,10 +15,10 @@ import { findNearestBinInDirection, type Direction } from '@/features/grid-edito
  */
 export function useGridNavigation() {
   const bins = useLayoutStore((state) => state.layout.bins);
-  const activeLayerId = useUIStore((state) => state.activeLayerId);
-  const focusedBinId = useUIStore((state) => state.focusedBinId);
-  const setFocusedBin = useUIStore((state) => state.setFocusedBin);
-  const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const activeLayerId = useSelectionStore((state) => state.activeLayerId);
+  const focusedBinId = useSelectionStore((state) => state.focusedBinId);
+  const setFocusedBin = useSelectionStore((state) => state.setFocusedBin);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   /**
    * Handle arrow key navigation.

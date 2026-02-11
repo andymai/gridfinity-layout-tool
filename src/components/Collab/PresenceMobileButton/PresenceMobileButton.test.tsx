@@ -10,12 +10,12 @@ vi.mock('../ConnectionIndicator', () => ({
 
 // Mock translation
 vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string, params?: Record<string, unknown>) => {
+  useTranslation: () => (key: string, params?: Record<string, number | string>) => {
     if (key === 'collab.mobileButton.ariaLabel') {
-      return `${params?.count || 0} collaborators`;
+      return `${String(params?.count ?? 0)} collaborators`;
     }
     if (key === 'collab.mobileButton.title') {
-      return `View ${params?.count || 0} collaborators`;
+      return `View ${String(params?.count ?? 0)} collaborators`;
     }
     return key;
   },

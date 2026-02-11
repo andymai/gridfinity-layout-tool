@@ -1,4 +1,4 @@
-import { useUIStore } from '@/core/store/ui';
+import { useMobileStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 
 interface NavItem {
@@ -67,8 +67,8 @@ const navItems: NavItem[] = [
  */
 export function BottomNavBar() {
   const t = useTranslation();
-  const activeMobilePanel = useUIStore((state) => state.activeMobilePanel);
-  const toggleMobilePanel = useUIStore((state) => state.toggleMobilePanel);
+  const activeMobilePanel = useMobileStore((state) => state.activeMobilePanel);
+  const toggleMobilePanel = useMobileStore((state) => state.toggleMobilePanel);
 
   // Create label lookup function instead of Record to handle only the nav items we display
   const getLabel = (panelId: 'layers' | 'inspector' | 'categories' | 'print'): string => {
