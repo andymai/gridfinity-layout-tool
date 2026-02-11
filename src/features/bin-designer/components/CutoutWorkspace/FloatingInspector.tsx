@@ -127,12 +127,18 @@ export function FloatingInspector({
   }, []);
 
   useEffect(() => {
-    const handlePointerUp = () => {
+    const handlePointerEnd = () => {
       pointerIsDownRef.current = false;
       tryUnlock();
     };
-    window.addEventListener('pointerup', handlePointerUp);
-    return () => window.removeEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointerup', handlePointerEnd);
+    window.addEventListener('pointercancel', handlePointerEnd);
+    window.addEventListener('blur', handlePointerEnd);
+    return () => {
+      window.removeEventListener('pointerup', handlePointerEnd);
+      window.removeEventListener('pointercancel', handlePointerEnd);
+      window.removeEventListener('blur', handlePointerEnd);
+    };
   }, [tryUnlock]);
 
   if (selection.size === 0 || hidden || !selectionBounds) return null;
