@@ -17,7 +17,11 @@ graph TB
 
 ## Key Files
 
-- `components/Staging.tsx` — staging area UI with drag-out support
+- `components/Staging/Staging.tsx` — orchestrator: layout, state, drop target tracking
+- `components/Staging/StagingBin.tsx` — single bin rendering with adaptive label system
+- `hooks/useStagingResize.ts` — draggable height adjustment for the stash panel
+- `hooks/useStagingLongPress.ts` — long-press detection for touch context menu
+- `utils/packing.ts` — bin clustering and grid packing algorithm (pure functions)
 
 ## Key Concept
 
