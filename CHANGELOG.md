@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.4.0...gridfinity-layout-tool-v3.4.1) (2026-02-11)
+
+
+### Bug Fixes
+
+* resolve pinched scoop at merged cutout junctions ([#681](https://github.com/andymai/gridfinity-layout-tool/issues/681)) ([792fbf3](https://github.com/andymai/gridfinity-layout-tool/commit/792fbf3a229eb4ce73b40e6ab61356536ffd4a3f))
+
 ## [3.4.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.3.0...gridfinity-layout-tool-v3.4.0) (2026-02-11)
 
 
