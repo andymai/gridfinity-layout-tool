@@ -3,6 +3,10 @@
  *
  * Manages placement, selection, dragging, resizing, and marquee states.
  * Keyboard shortcuts: Delete, Ctrl+A, arrows (nudge), Escape.
+ *
+ * Pointer-move logic for each interaction mode is delegated to focused
+ * handler functions in ./handlers/ — this hook orchestrates transitions
+ * and wires shared state.
  */
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
@@ -10,18 +14,23 @@ import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import { useCutoutSelection } from '@/features/bin-designer/store';
 import { generateUUID } from '@/shared/utils/uuid';
 import {
-  calculateCutoutResize,
-  constrainGroupDrag,
   snapToGrid,
   MIN_CUTOUT_SIZE,
   computeBounds,
-  findAlignmentGuides,
-  rotatePoint,
-  clampRotationToBounds,
   getRotatedBounds,
-  type StartRect,
   type AlignmentGuide,
 } from './geometry';
+import {
+  handlePendingPlaceMove,
+  handleDragMove,
+  handleResizeMove,
+  handleRotateMove,
+  handleGroupRotateMove,
+  handleGroupScaleMove,
+  handleDrawMove,
+  handleCutoutKeyDown,
+} from './handlers';
+import type { StartRect } from './geometry';
 
 /** Direction for resize handles */
 export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
@@ -29,8 +38,6 @@ export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 /** Default sizes for click-to-place (mm) */
 const DEFAULT_RECT_SIZE = 20;
 const DEFAULT_CIRCLE_SIZE = 15;
-/** Minimum drag distance to enter drawing mode vs click-to-place (mm) */
-const PLACE_DRAG_THRESHOLD = 2;
 
 export type InteractionMode =
   | { readonly type: 'idle' }
@@ -113,13 +120,8 @@ interface UseCutoutInteractionOptions {
   readonly gridSize?: number;
 }
 
-const NUDGE_AMOUNT = 0.5;
-/** Dead zone in mm — cursor must move beyond this before drag/resize starts updating preview */
-const DEAD_ZONE_MM = 0.5;
 /** Paste offset in mm — each successive paste shifts by this amount */
 const PASTE_OFFSET = 2;
-
-const SHIFT_NUDGE_AMOUNT = 5;
 
 export function useCutoutInteraction({
   cutouts,
@@ -168,6 +170,8 @@ export function useCutoutInteraction({
     (v: number) => (snapEnabled ? snapToGrid(v, gridSize) : v),
     [snapEnabled, gridSize]
   );
+
+  // ── Selection ──────────────────────────────────────────────────────
 
   /** Select cutout; expands to full group unless additive. Skips hidden cutouts. */
   const selectCutout = useCallback(
@@ -222,6 +226,8 @@ export function useCutoutInteraction({
     setSelection(new Set(cutouts.map((c) => c.id)));
   }, [cutouts]);
 
+  // ── Bulk operations ────────────────────────────────────────────────
+
   const deleteSelected = useCallback(() => {
     if (selection.size === 0) return;
     // Filter out locked cutouts — only delete unlocked ones
@@ -275,6 +281,8 @@ export function useCutoutInteraction({
     [selection, cutouts, onUpdate, onUpdateBatch, binWidth, binDepth]
   );
 
+  // ── Clipboard ──────────────────────────────────────────────────────
+
   const copySelected = useCallback(() => {
     const selected = cutouts.filter((c) => selection.has(c.id));
     if (selected.length > 0) {
@@ -288,7 +296,7 @@ export function useCutoutInteraction({
     pasteCountRef.current += 1;
     const offset = PASTE_OFFSET * pasteCountRef.current;
 
-    // Map old groupId → new groupId so groups are preserved
+    // Map old groupId -> new groupId so groups are preserved
     const groupMap = new Map<string, string>();
     const newIds: string[] = [];
     for (const original of clipboard) {
@@ -316,7 +324,7 @@ export function useCutoutInteraction({
   const duplicateSelected = useCallback(() => {
     const selected = cutouts.filter((c) => selection.has(c.id));
     if (selected.length === 0) return;
-    // Map old groupId → new groupId so groups are preserved
+    // Map old groupId -> new groupId so groups are preserved
     const groupMap = new Map<string, string>();
     const newIds: string[] = [];
     for (const original of selected) {
@@ -340,6 +348,8 @@ export function useCutoutInteraction({
     setSelection(new Set(newIds));
   }, [cutouts, selection, onAdd, binWidth, binDepth]);
 
+  // ── Context menu ───────────────────────────────────────────────────
+
   const openContextMenu = useCallback((x: number, y: number) => {
     setContextMenu({ x, y });
   }, []);
@@ -348,7 +358,7 @@ export function useCutoutInteraction({
     setContextMenu(null);
   }, []);
 
-  // ── Drag lifecycle ──────────────────────────────────────────────────
+  // ── Drag lifecycle ─────────────────────────────────────────────────
 
   const startDrag = useCallback(
     (id: string, mmX: number, mmY: number, altKey?: boolean) => {
@@ -419,7 +429,7 @@ export function useCutoutInteraction({
     [selection, cutouts, onAdd]
   );
 
-  // ── Resize lifecycle ────────────────────────────────────────────────
+  // ── Resize lifecycle ───────────────────────────────────────────────
 
   const startResize = useCallback(
     (id: string, handle: ResizeHandle, _mmX: number, _mmY: number) => {
@@ -438,7 +448,7 @@ export function useCutoutInteraction({
     [cutouts]
   );
 
-  // ── Rotate lifecycle ────────────────────────────────────────────────
+  // ── Rotate lifecycle ───────────────────────────────────────────────
 
   const startRotation = useCallback(
     (id: string, startAngle: number) => {
@@ -457,7 +467,7 @@ export function useCutoutInteraction({
     [cutouts]
   );
 
-  // ── Group rotate lifecycle ──────────────────────────────────────────
+  // ── Group rotate lifecycle ─────────────────────────────────────────
 
   const startGroupRotation = useCallback(
     (startAngle: number) => {
@@ -478,7 +488,7 @@ export function useCutoutInteraction({
     [cutouts, selection]
   );
 
-  // ── Group scale lifecycle ───────────────────────────────────────────
+  // ── Group scale lifecycle ──────────────────────────────────────────
 
   const startGroupScale = useCallback(
     (mmX: number, mmY: number) => {
@@ -503,262 +513,60 @@ export function useCutoutInteraction({
     [cutouts, selection]
   );
 
-  // ── Pointer move (drag, resize, or rotate) ─────────────────────────
+  // ── Pointer move — delegates to mode-specific handlers ─────────────
 
   const handlePointerMove = useCallback(
     (mmX: number, mmY: number, shiftKey?: boolean, altKey?: boolean) => {
-      if (mode.type === 'pending-place') {
-        // Check if cursor has moved far enough to enter drawing mode
-        const dist = Math.sqrt((mmX - mode.startMmX) ** 2 + (mmY - mode.startMmY) ** 2);
-        if (dist >= PLACE_DRAG_THRESHOLD) {
-          setMode({
-            type: 'drawing',
-            shape: mode.shape,
-            startMmX: mode.startMmX,
-            startMmY: mode.startMmY,
+      const event = { mmX, mmY, shiftKey, altKey };
+      const bounds = { binWidth, binDepth };
+
+      switch (mode.type) {
+        case 'pending-place':
+          handlePendingPlaceMove(mode, event, setMode);
+          break;
+
+        case 'dragging':
+          handleDragMove(mode, event, cutouts, bounds, snap, pastDeadZoneRef, {
+            setPreview,
+            setActiveGuides,
           });
-        }
-        return;
-      }
+          break;
 
-      if (mode.type === 'dragging') {
-        // Dead zone check
-        if (!pastDeadZoneRef.current) {
-          const dist = Math.sqrt((mmX - mode.startX) ** 2 + (mmY - mode.startY) ** 2);
-          if (dist < DEAD_ZONE_MM) return;
-          pastDeadZoneRef.current = true;
-        }
-
-        // Compute raw deltas
-        const rawDx = mmX - mode.startX;
-        const rawDy = mmY - mode.startY;
-
-        // Shift: axis-lock — constrain to dominant axis (Figma-style)
-        let constrainedDx = rawDx;
-        let constrainedDy = rawDy;
-        if (shiftKey) {
-          if (Math.abs(rawDx) >= Math.abs(rawDy)) {
-            constrainedDy = 0;
-          } else {
-            constrainedDx = 0;
-          }
-        }
-
-        // Get selected cutouts for clamping
-        const selectedCutouts = cutouts.filter((c) => mode.offsets.has(c.id));
-        const { dx, dy } = constrainGroupDrag(
-          selectedCutouts,
-          constrainedDx,
-          constrainedDy,
-          binWidth,
-          binDepth
-        );
-
-        const nextPreview = new Map<string, Partial<Cutout>>();
-        for (const [id, offset] of mode.offsets) {
-          const cutout = cutouts.find((c) => c.id === id);
-          if (!cutout) continue;
-          // Snap, then clamp to bin bounds (snap can round past non-integer edges)
-          nextPreview.set(id, {
-            x: Math.max(0, Math.min(snap(mode.startX + dx + offset.dx), binWidth - cutout.width)),
-            y: Math.max(0, Math.min(snap(mode.startY + dy + offset.dy), binDepth - cutout.depth)),
+        case 'resizing':
+          handleResizeMove(mode, event, cutouts, bounds, snap, pastDeadZoneRef, {
+            setPreview,
           });
-        }
-        setPreview(nextPreview);
+          break;
 
-        // Compute alignment guides
-        const stationaryIds = new Set(cutouts.map((c) => c.id));
-        for (const id of mode.offsets.keys()) stationaryIds.delete(id);
-        const stationary = cutouts.filter((c) => stationaryIds.has(c.id));
-
-        // Compute bounds of moving cutouts using preview positions
-        const movingCutouts = [...nextPreview.entries()]
-          .map(([id, updates]) => {
-            const orig = cutouts.find((c) => c.id === id);
-            return orig ? ({ ...orig, ...updates } as Cutout) : null;
-          })
-          .filter((c): c is Cutout => c !== null);
-
-        const movingBounds = computeBounds(movingCutouts);
-        const guides = findAlignmentGuides(movingBounds, stationary);
-        setActiveGuides(guides);
-      } else if (mode.type === 'resizing') {
-        // Dead zone check
-        if (!pastDeadZoneRef.current) {
-          const cutout = cutouts.find((c) => c.id === mode.cutoutId);
-          if (!cutout) return;
-          // Use start center as reference
-          const cx = mode.startRect.x + mode.startRect.width / 2;
-          const cy = mode.startRect.y + mode.startRect.depth / 2;
-          const startDist = Math.sqrt(
-            (mode.startRect.x + mode.startRect.width - cx) ** 2 +
-              (mode.startRect.y + mode.startRect.depth - cy) ** 2
-          );
-          const curDist = Math.sqrt((mmX - cx) ** 2 + (mmY - cy) ** 2);
-          if (Math.abs(curDist - startDist) < DEAD_ZONE_MM) return;
-          pastDeadZoneRef.current = true;
-        }
-
-        const cutout = cutouts.find((c) => c.id === mode.cutoutId);
-        if (!cutout) return;
-
-        const resized = calculateCutoutResize(
-          mode.startRect,
-          mode.handle,
-          mmX,
-          mmY,
-          binWidth,
-          binDepth,
-          cutout.shape,
-          cutout.rotation,
-          shiftKey,
-          altKey
-        );
-
-        // Snap, then clamp to bin bounds (snap can round past non-integer edges)
-        const snappedW = Math.max(MIN_CUTOUT_SIZE, snap(resized.width));
-        const snappedD = Math.max(MIN_CUTOUT_SIZE, snap(resized.depth));
-        setPreview(
-          new Map([
-            [
-              mode.cutoutId,
-              {
-                x: Math.max(0, Math.min(snap(resized.x), binWidth - snappedW)),
-                y: Math.max(0, Math.min(snap(resized.y), binDepth - snappedD)),
-                width: snappedW,
-                depth: snappedD,
-              },
-            ],
-          ])
-        );
-      } else if (mode.type === 'rotating') {
-        // Dead zone check
-        if (!pastDeadZoneRef.current) {
-          const cutout = cutouts.find((c) => c.id === mode.cutoutId);
-          if (!cutout) return;
-          const cx = cutout.x + cutout.width / 2;
-          const cy = cutout.y + cutout.depth / 2;
-          // Check if we've rotated far enough from start
-          const currentAngle = Math.atan2(mmY - cy, mmX - cx) * (180 / Math.PI);
-          if (Math.abs(currentAngle - mode.startAngle) < 1) return;
-          pastDeadZoneRef.current = true;
-        }
-
-        const cutout = cutouts.find((c) => c.id === mode.cutoutId);
-        if (!cutout) return;
-
-        const cx = cutout.x + cutout.width / 2;
-        const cy = cutout.y + cutout.depth / 2;
-        const currentAngle = Math.atan2(mmY - cy, mmX - cx) * (180 / Math.PI);
-        const delta = currentAngle - mode.startAngle;
-        let newRotation = (((mode.initialRotation - delta) % 360) + 360) % 360;
-
-        // Snap to 15° increments when Shift is held
-        if (shiftKey) {
-          newRotation = Math.round(newRotation / 15) * 15;
-        }
-
-        // Clamp rotation to keep within bin bounds
-        newRotation = clampRotationToBounds(cutout, newRotation, binWidth, binDepth);
-
-        setPreview(new Map([[mode.cutoutId, { rotation: newRotation }]]));
-      } else if (mode.type === 'group-rotating') {
-        if (!pastDeadZoneRef.current) {
-          const currentAngle =
-            Math.atan2(mmY - mode.center.y, mmX - mode.center.x) * (180 / Math.PI);
-          if (Math.abs(currentAngle - mode.startAngle) < 1) return;
-          pastDeadZoneRef.current = true;
-        }
-
-        const currentAngle = Math.atan2(mmY - mode.center.y, mmX - mode.center.x) * (180 / Math.PI);
-        let delta = currentAngle - mode.startAngle;
-        if (shiftKey) {
-          delta = Math.round(delta / 15) * 15;
-        }
-
-        const nextPreview = new Map<string, Partial<Cutout>>();
-        for (const [id, initial] of mode.initialStates) {
-          const cutout = cutouts.find((c) => c.id === id);
-          if (!cutout) continue;
-          // Rotate position around group center
-          const cxI = initial.x + cutout.width / 2;
-          const cyI = initial.y + cutout.depth / 2;
-          const rotated = rotatePoint(cxI, cyI, mode.center.x, mode.center.y, delta);
-          nextPreview.set(id, {
-            x: rotated.x - cutout.width / 2,
-            y: rotated.y - cutout.depth / 2,
-            rotation: (((initial.rotation + delta) % 360) + 360) % 360,
+        case 'rotating':
+          handleRotateMove(mode, event, cutouts, bounds, pastDeadZoneRef, {
+            setPreview,
           });
-        }
-        setPreview(nextPreview);
-      } else if (mode.type === 'group-scaling') {
-        if (!pastDeadZoneRef.current) {
-          const curDist = Math.sqrt((mmX - mode.center.x) ** 2 + (mmY - mode.center.y) ** 2);
-          if (Math.abs(curDist - mode.startDist) < DEAD_ZONE_MM) return;
-          pastDeadZoneRef.current = true;
-        }
+          break;
 
-        const curDist = Math.sqrt((mmX - mode.center.x) ** 2 + (mmY - mode.center.y) ** 2);
-        const scaleFactor = mode.startDist > 0 ? curDist / mode.startDist : 1;
-
-        const nextPreview = new Map<string, Partial<Cutout>>();
-        for (const [id, initial] of mode.initialStates) {
-          // Scale size
-          const newW = Math.max(MIN_CUTOUT_SIZE, initial.width * scaleFactor);
-          const newD = Math.max(MIN_CUTOUT_SIZE, initial.depth * scaleFactor);
-          // Scale position offset from center
-          const cxI = initial.x + initial.width / 2;
-          const cyI = initial.y + initial.depth / 2;
-          const dx = (cxI - mode.center.x) * scaleFactor;
-          const dy = (cyI - mode.center.y) * scaleFactor;
-          nextPreview.set(id, {
-            x: mode.center.x + dx - newW / 2,
-            y: mode.center.y + dy - newD / 2,
-            width: newW,
-            depth: newD,
+        case 'group-rotating':
+          handleGroupRotateMove(mode, event, cutouts, pastDeadZoneRef, {
+            setPreview,
           });
-        }
-        setPreview(nextPreview);
-      } else if (mode.type === 'drawing') {
-        // Corner-to-corner drawing with modifiers
-        let w = Math.abs(mmX - mode.startMmX);
-        let d = Math.abs(mmY - mode.startMmY);
+          break;
 
-        // Shift: constrain to square
-        if (shiftKey) {
-          const maxDim = Math.max(w, d);
-          w = maxDim;
-          d = maxDim;
-        }
+        case 'group-scaling':
+          handleGroupScaleMove(mode, event, pastDeadZoneRef, {
+            setPreview,
+          });
+          break;
 
-        let x: number;
-        let y: number;
-        if (altKey) {
-          // Alt: draw from center
-          x = Math.max(0, mode.startMmX - w);
-          y = Math.max(0, mode.startMmY - d);
-          w = Math.min(w * 2, binWidth - x);
-          d = Math.min(d * 2, binDepth - y);
-        } else {
-          x = Math.max(0, Math.min(mode.startMmX, mmX));
-          y = Math.max(0, Math.min(mode.startMmY, mmY));
-          w = Math.min(w, binWidth - x);
-          d = Math.min(d, binDepth - y);
-        }
-
-        setDrawingPreview({
-          x: snap(x),
-          y: snap(y),
-          width: Math.max(MIN_CUTOUT_SIZE, snap(w)),
-          depth: Math.max(MIN_CUTOUT_SIZE, snap(d)),
-          shape: mode.shape,
-        });
+        case 'drawing':
+          handleDrawMove(mode, event, bounds, snap, {
+            setDrawingPreview,
+          });
+          break;
       }
     },
     [mode, cutouts, binWidth, binDepth, snap]
   );
 
-  // ── Pointer up (commit) ─────────────────────────────────────────────
+  // ── Pointer up (commit) ────────────────────────────────────────────
 
   const handlePointerUp = useCallback(() => {
     if (mode.type === 'pending-place') {
@@ -834,208 +642,35 @@ export function useCutoutInteraction({
     }
   }, [mode, preview, drawingPreview, onUpdate, onUpdateBatch, onAdd, snap, binWidth, binDepth]);
 
-  // Keyboard shortcuts
+  // ── Keyboard shortcuts — delegates to handler ──────────────────────
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't capture when typing in an input
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-
-      const mod = e.metaKey || e.ctrlKey;
-
-      switch (e.key) {
-        case 'Delete':
-        case 'Backspace':
-          if (selection.size > 0) {
-            e.preventDefault();
-            deleteSelected();
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          // Cancel in-progress drag/resize/rotate/drawing without committing
-          setPreview(new Map());
-          setActiveGuides([]);
-          setDrawingPreview(null);
-          if (mode.type === 'idle') {
-            // Two-stage: if inside a group (single member selected), first re-select whole group
-            if (selection.size === 1) {
-              const selectedId = [...selection][0];
-              const cutout = cutouts.find((c) => c.id === selectedId);
-              if (cutout?.groupId) {
-                const groupIds = cutouts
-                  .filter((c) => c.groupId === cutout.groupId)
-                  .map((c) => c.id);
-                if (groupIds.length > 1) {
-                  setSelection(new Set(groupIds));
-                  break;
-                }
-              }
-            }
-            deselectAll();
-          }
-          setMode({ type: 'idle' });
-          break;
-
-        // Undo/redo
-        case 'z':
-          if (mod) {
-            e.preventDefault();
-            if (e.shiftKey) {
-              onRedo?.();
-            } else {
-              onUndo?.();
-            }
-          }
-          break;
-        case 'Z':
-          if (mod && e.shiftKey) {
-            e.preventDefault();
-            onRedo?.();
-          }
-          break;
-        case 'y':
-          if (mod) {
-            e.preventDefault();
-            onRedo?.();
-          }
-          break;
-
-        case 'a':
-          if (mod) {
-            e.preventDefault();
-            selectAll();
-          }
-          break;
-        case 'c':
-          if (mod) {
-            e.preventDefault();
-            copySelected();
-          }
-          break;
-        case 'v':
-          if (mod) {
-            e.preventDefault();
-            pasteFromClipboard();
-          }
-          break;
-        case 'd':
-          if (mod) {
-            e.preventDefault();
-            duplicateSelected();
-          }
-          break;
-
-        // Ctrl+G group / Ctrl+Shift+G ungroup
-        case 'g':
-          if (mod) {
-            e.preventDefault();
-            if (e.shiftKey) {
-              onUngroup?.([...selection]);
-            } else if (selection.size >= 2) {
-              onGroup?.([...selection]);
-            }
-          }
-          break;
-        case 'G':
-          if (mod && e.shiftKey) {
-            e.preventDefault();
-            onUngroup?.([...selection]);
-          }
-          break;
-
-        // R to rotate 90°
-        case 'r':
-          if (!mod && selection.size > 0) {
-            e.preventDefault();
-            // Block rotation if any selected cutout is locked
-            if (cutouts.some((c) => selection.has(c.id) && c.locked)) break;
-            if (onUpdateBatch && selection.size > 1) {
-              // Group rotation: rotate each cutout's position around the group center
-              const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
-              const bounds = computeBounds(selectedCutouts);
-              const cx = (bounds.minX + bounds.maxX) / 2;
-              const cy = (bounds.minY + bounds.maxY) / 2;
-              const updates = new Map<string, Partial<Cutout>>();
-              for (const cutout of selectedCutouts) {
-                const cutCx = cutout.x + cutout.width / 2;
-                const cutCy = cutout.y + cutout.depth / 2;
-                const rotated = rotatePoint(cutCx, cutCy, cx, cy, 90);
-                updates.set(cutout.id, {
-                  x: rotated.x - cutout.width / 2,
-                  y: rotated.y - cutout.depth / 2,
-                  rotation: (cutout.rotation + 90) % 360,
-                });
-              }
-              onUpdateBatch(updates);
-            } else {
-              for (const id of selection) {
-                const cutout = cutouts.find((c) => c.id === id);
-                if (!cutout) continue;
-                onUpdate(id, { rotation: (cutout.rotation + 90) % 360 });
-              }
-            }
-          }
-          break;
-
-        // Tab / Shift+Tab to cycle selection
-        case 'Tab':
-          if (cutouts.length > 0) {
-            e.preventDefault();
-            const ids = cutouts.map((c) => c.id);
-            const currentIdx = selection.size === 1 ? ids.indexOf([...selection][0]) : -1;
-            const nextIdx = e.shiftKey
-              ? currentIdx <= 0
-                ? ids.length - 1
-                : currentIdx - 1
-              : (currentIdx + 1) % ids.length;
-            setSelection(new Set([ids[nextIdx]]));
-          }
-          break;
-
-        case 'ArrowLeft':
-          if (selection.size > 0) {
-            e.preventDefault();
-            const amount = e.shiftKey ? SHIFT_NUDGE_AMOUNT : NUDGE_AMOUNT;
-            nudgeSelected(-amount, 0);
-          }
-          break;
-        case 'ArrowRight':
-          if (selection.size > 0) {
-            e.preventDefault();
-            const amount = e.shiftKey ? SHIFT_NUDGE_AMOUNT : NUDGE_AMOUNT;
-            nudgeSelected(amount, 0);
-          }
-          break;
-        case 'ArrowUp':
-          if (selection.size > 0) {
-            e.preventDefault();
-            const amount = e.shiftKey ? SHIFT_NUDGE_AMOUNT : NUDGE_AMOUNT;
-            nudgeSelected(0, amount);
-          }
-          break;
-        case 'ArrowDown':
-          if (selection.size > 0) {
-            e.preventDefault();
-            const amount = e.shiftKey ? SHIFT_NUDGE_AMOUNT : NUDGE_AMOUNT;
-            nudgeSelected(0, -amount);
-          }
-          break;
-
-        // Ctrl+L to toggle lock
-        case 'l':
-          if (mod && selection.size > 0) {
-            e.preventDefault();
-            const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
-            const allLocked = selectedCutouts.every((c) => c.locked);
-            if (allLocked) {
-              onUnlock?.([...selection]);
-            } else {
-              onLock?.([...selection]);
-            }
-          }
-          break;
-      }
+      handleCutoutKeyDown(e, {
+        selection,
+        cutouts,
+        mode,
+        deleteSelected,
+        deselectAll,
+        selectAll,
+        nudgeSelected,
+        copySelected,
+        pasteFromClipboard,
+        duplicateSelected,
+        onUndo,
+        onRedo,
+        onGroup,
+        onUngroup,
+        onUpdate,
+        onUpdateBatch,
+        onLock,
+        onUnlock,
+        setPreview,
+        clearActiveGuides: () => setActiveGuides([]),
+        clearDrawingPreview: () => setDrawingPreview(null),
+        setMode,
+        setSelection,
+      });
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -1058,10 +693,11 @@ export function useCutoutInteraction({
     onUpdateBatch,
     onLock,
     onUnlock,
-    mode.type,
+    mode,
   ]);
 
-  // ── Recovery: reset on lost pointer / visibility change ─────────────
+  // ── Recovery: reset on lost pointer / visibility change ────────────
+
   useEffect(() => {
     const reset = () => {
       if (mode.type !== 'idle' && mode.type !== 'placing' && mode.type !== 'marquee') {
@@ -1084,6 +720,8 @@ export function useCutoutInteraction({
     };
   }, [mode.type]);
 
+  // ── Derived state ──────────────────────────────────────────────────
+
   // Derive effective selection by pruning stale IDs (avoids setState in effect)
   const effectiveSelection = useMemo(() => {
     const cutoutIds = new Set(cutouts.map((c) => c.id));
@@ -1101,6 +739,8 @@ export function useCutoutInteraction({
     }
     return cleaned as ReadonlySet<string>;
   }, [cutouts, selection]);
+
+  // ── Store sync ─────────────────────────────────────────────────────
 
   // Sync selection to shared store so the 3D preview can highlight selected cutouts
   useEffect(() => {
