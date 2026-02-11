@@ -10,14 +10,13 @@ import type {
   WasmStatus,
   HistoryEntry,
 } from '../../types';
-import { DESIGNER_CONSTRAINTS } from '../../constants';
 import {
   pushHistoryEntry,
   restoreHistoryEntry,
   getPendingMeshCache,
   setPendingMeshCache,
 } from '../helpers';
-import { createCachedMesh, evictIfNeeded } from '../meshCacheManager';
+import { createCachedMesh } from '../meshCacheManager';
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 type Get = () => DesignerState;
@@ -73,21 +72,9 @@ export function createHistorySlice(set: Set, get: Get) {
     startTransaction: () => {
       set((state) => {
         if (state.transactionDepth === 0) {
-          // Push history entry at the start of the transaction (before any mutations)
-          const entry: HistoryEntry = {
-            params: current(state.params),
-            mesh: getPendingMeshCache(),
-          };
-          state.history.past = [
-            ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-            entry,
-          ];
-          state.history.future = [];
-          state.generation.epoch += 1;
-          const evicted = evictIfNeeded(state.history.past, state.history.future);
-          state.history.past = evicted.past as HistoryEntry[];
-          state.history.future = evicted.future as HistoryEntry[];
-          setPendingMeshCache(null);
+          // Push history entry before any mutations (transactionDepth is still 0,
+          // so pushHistoryEntry will execute normally rather than skipping)
+          pushHistoryEntry(state);
         }
         state.transactionDepth += 1;
       });

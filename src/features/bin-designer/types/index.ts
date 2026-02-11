@@ -213,6 +213,9 @@ export type CutoutShape = 'rectangle' | 'circle';
 /** Direction for z-order reordering of cutouts */
 export type ReorderDirection = 'forward' | 'backward' | 'front' | 'back';
 
+/** Narrowed property subset for bulk cutout toggling (lock/hide) */
+export type CutoutToggleProperties = Partial<Pick<Cutout, 'locked' | 'hidden'>>;
+
 /** Global cutout configuration for solid bins */
 export interface CutoutConfig {
   /** Global top offset: lowers the solid fill surface below the rim (0 = flush with rim) */
@@ -452,7 +455,7 @@ export interface DesignerState {
   removeCutoutsBatch: (ids: readonly string[]) => void;
 
   // Consolidated cutout property + z-order actions
-  setCutoutProperty: (ids: readonly string[], partial: Partial<Cutout>) => void;
+  setCutoutProperty: (ids: readonly string[], partial: CutoutToggleProperties) => void;
   reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
   showAllCutouts: () => void;
 

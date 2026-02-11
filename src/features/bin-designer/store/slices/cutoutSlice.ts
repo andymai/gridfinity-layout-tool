@@ -7,7 +7,7 @@
  */
 
 import type { Draft } from 'immer';
-import type { DesignerState, Cutout, ReorderDirection } from '../../types';
+import type { DesignerState, Cutout, CutoutToggleProperties, ReorderDirection } from '../../types';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
 import { generateUUID } from '@/shared/utils/uuid';
 
@@ -18,7 +18,7 @@ export function createCutoutSlice(set: Set) {
   // Core actions
   // -------------------------------------------------------------------
 
-  const setCutoutProperty = (ids: readonly string[], partial: Partial<Cutout>): void => {
+  const setCutoutProperty = (ids: readonly string[], partial: CutoutToggleProperties): void => {
     if (ids.length === 0) return;
     set((state) => {
       pushHistoryEntry(state);
@@ -30,6 +30,7 @@ export function createCutoutSlice(set: Set) {
   };
 
   const reorderCutouts = (ids: readonly string[], direction: ReorderDirection): void => {
+    if (ids.length === 0) return;
     set((state) => {
       pushHistoryEntry(state);
       const idSet = new Set(ids);
