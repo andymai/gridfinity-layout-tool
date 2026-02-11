@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.4.1...gridfinity-layout-tool-v3.5.0) (2026-02-11)
+
+
+### Features
+
+* add multi-format export (STL / STEP / 3MF) to bin designer ([#683](https://github.com/andymai/gridfinity-layout-tool/issues/683)) ([7f62eae](https://github.com/andymai/gridfinity-layout-tool/commit/7f62eae34f85311bc6f84955b4020344e6596c16))
+
 ## [3.4.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.4.0...gridfinity-layout-tool-v3.4.1) (2026-02-11)
 
 
