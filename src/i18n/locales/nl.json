@@ -63,6 +63,8 @@
   "binDesigner.cutouts.paste": "Plakken",
   "binDesigner.cutouts.selectAll": "Alles selecteren",
   "binDesigner.cutouts.rotate90": "90° draaien",
+  "binDesigner.cutouts.penTool": "Pen",
+  "binDesigner.cutouts.clickToDrawPath": "Klik om punten te plaatsen, sluit pad om te voltooien",
   "binDesigner.editCutouts": "Snij-editor",
   "binDesigner.cutoutEditor.done": "Klaar",
   "binDesigner.cutoutEditor.title": "Uitsparing-editor",

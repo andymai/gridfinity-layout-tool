@@ -14,6 +14,23 @@ export { handleGroupScaleMove } from './groupScaleHandler';
 export { handleDrawMove } from './drawHandler';
 export { handleCutoutKeyDown } from './keyboardHandler';
 export type { KeyboardHandlerContext } from './keyboardHandler';
+export {
+  handlePathDrawingPointerDown,
+  handlePathDrawingPointerMove,
+  handlePathDrawingPointerUp,
+} from './pathDrawingHandler';
+export type {
+  PathDrawingMode,
+  PathDrawingPreviewState,
+  PathDrawingSetters,
+} from './pathDrawingHandler';
+export {
+  handleVertexEditPointerDown,
+  handleVertexEditPointerMove,
+  handleVertexEditPointerUp,
+  handleVertexEditKeyDown,
+} from './pathEditHandler';
+export type { VertexEditMode, VertexDragTarget, VertexEditSetters } from './pathEditHandler';
 
 export type {
   PointerMoveEvent,

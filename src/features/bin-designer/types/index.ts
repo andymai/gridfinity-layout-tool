@@ -208,7 +208,21 @@ export interface Insert {
 // =============================================================================
 
 /** Shape of a top-down cutout into solid bin body */
-export type CutoutShape = 'rectangle' | 'circle';
+export type CutoutShape = 'rectangle' | 'circle' | 'path';
+
+/** A vertex in a bezier path with optional control handles */
+export interface PathPoint {
+  /** X position in mm from bin interior left edge */
+  readonly x: number;
+  /** Y position in mm from bin interior front edge */
+  readonly y: number;
+  /** Incoming bezier control handle (relative offset from point). Null = corner. */
+  readonly handleIn: { readonly dx: number; readonly dy: number } | null;
+  /** Outgoing bezier control handle (relative offset from point). Null = corner. */
+  readonly handleOut: { readonly dx: number; readonly dy: number } | null;
+  /** When true, handleIn and handleOut are kept symmetric (mirrored) */
+  readonly symmetric: boolean;
+}
 
 /** Direction for z-order reordering of cutouts */
 export type ReorderDirection = 'forward' | 'backward' | 'front' | 'back';
@@ -252,6 +266,8 @@ export interface Cutout {
   readonly hidden?: boolean;
   /** Z-order for rendering layering (higher = rendered on top) */
   readonly zIndex?: number;
+  /** Path vertices for pen tool shapes (required when shape === 'path') */
+  readonly path?: readonly PathPoint[];
 }
 
 // =============================================================================

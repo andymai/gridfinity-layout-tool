@@ -1277,6 +1277,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.paste': 'Paste',
   'binDesigner.cutouts.selectAll': 'Select all',
   'binDesigner.cutouts.rotate90': 'Rotate 90°',
+  'binDesigner.cutouts.penTool': 'Pen',
+  'binDesigner.cutouts.clickToDrawPath': 'Click to place points, close path to finish',
   'binDesigner.editCutouts': 'Cut Editor',
   'binDesigner.cutoutEditor.done': 'Done',
   'binDesigner.cutoutEditor.title': 'Cutout Editor',

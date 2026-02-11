@@ -25,6 +25,7 @@ import {
   STROKE_WIDTH_HOVER_PX,
   STROKE_WIDTH_GROUPED_PX,
 } from './constants';
+import { PathShapeMesh } from './PathShapeMesh';
 
 const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
@@ -44,7 +45,29 @@ interface CutoutShapeMeshProps {
   readonly onDragStart?: (id: string, mmX: number, mmY: number, altKey?: boolean) => void;
 }
 
-export const CutoutShapeMesh = memo(function CutoutShapeMesh({
+export const CutoutShapeMesh = memo(function CutoutShapeMesh(props: CutoutShapeMeshProps) {
+  // Delegate path shapes to dedicated renderer (SDF shaders don't support arbitrary polygons)
+  if (props.cutout.shape === 'path') {
+    return (
+      <PathShapeMesh
+        cutout={props.cutout}
+        isSelected={props.isSelected}
+        isGrouped={props.isGrouped}
+        isDragging={props.isDragging}
+        previewOverrides={props.previewOverrides}
+        binColor={props.binColor}
+        onSelect={props.onSelect}
+        onDoubleClick={props.onDoubleClick}
+        onDragStart={props.onDragStart}
+      />
+    );
+  }
+
+  return <SDFShapeMesh {...props} />;
+});
+
+/** SDF-based renderer for rectangle and circle shapes. */
+const SDFShapeMesh = memo(function SDFShapeMesh({
   cutout,
   isSelected,
   isGrouped,

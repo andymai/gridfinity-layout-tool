@@ -28,7 +28,7 @@ import {
   curveLength,
 } from 'brepjs';
 import type { Shape3D, Edge } from 'brepjs';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, PathPoint } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
 import {
   resolveScoopRadius,
@@ -209,6 +209,7 @@ function buildCutoutShape(cutout: {
   readonly cutDepth: number;
   readonly rotation: number;
   readonly cornerRadius: number;
+  readonly path?: readonly PathPoint[];
 }): Shape3D {
   let shape: Shape3D;
 
@@ -221,6 +222,10 @@ function buildCutoutShape(cutout: {
       } else {
         shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
       }
+      break;
+    }
+    case 'path': {
+      shape = buildPathCutoutShape(cutout);
       break;
     }
     case 'rectangle':
@@ -367,6 +372,96 @@ function applyAdaptiveScoop(
 
   // Progressive uniform fallback
   return applyFilletWithFallback(shape, edges, targetRadius);
+}
+
+/**
+ * Build an extruded path cutout from bezier path points.
+ * Flattens curves to a polyline and extrudes the closed wire.
+ * The shape is centered at origin (bounding box center).
+ */
+function buildPathCutoutShape(cutout: {
+  readonly width: number;
+  readonly depth: number;
+  readonly cutDepth: number;
+  readonly path?: readonly PathPoint[];
+}): Shape3D {
+  const path = cutout.path;
+  if (!path || path.length < 3) {
+    // Fallback: rectangle if path data is missing
+    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+  }
+
+  // Flatten bezier path to polyline
+  const polyline = flattenPathToPolyline(path);
+  if (polyline.length < 3) {
+    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+  }
+
+  // Center the polyline at origin (buildCutoutShape expects shapes centered at origin).
+  // Path points are in bin-local absolute coordinates; subtract bounding box center.
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+  for (const pt of polyline) {
+    if (pt.x < minX) minX = pt.x;
+    if (pt.y < minY) minY = pt.y;
+    if (pt.x > maxX) maxX = pt.x;
+    if (pt.y > maxY) maxY = pt.y;
+  }
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+
+  // Build closed wire using brepjs draw API (points relative to center)
+  let pen = draw([polyline[0].x - cx, polyline[0].y - cy]);
+  for (let i = 1; i < polyline.length; i++) {
+    pen = pen.lineTo([polyline[i].x - cx, polyline[i].y - cy]);
+  }
+  const wire = pen.close();
+
+  return sketch(wire, 'XY').extrude(cutout.cutDepth);
+}
+
+/** Flatten a closed bezier path to an open polyline for 3D generation.
+ * Returns points for each anchor and bezier intermediates — without duplicating
+ * the first point at the end, since brepjs `close()` handles wire closure.
+ */
+const BEZIER_SEGMENTS = 12;
+
+function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y: number }> {
+  const result: Array<{ x: number; y: number }> = [];
+  const n = path.length;
+
+  for (let i = 0; i < n; i++) {
+    const p0 = path[i];
+    result.push({ x: p0.x, y: p0.y });
+
+    // Flatten bezier curves between consecutive anchors (skip closing segment)
+    if (i < n - 1) {
+      const p1 = path[i + 1];
+      if (p0.handleOut || p1.handleIn) {
+        const bx = p0.handleOut ? p0.x + p0.handleOut.dx : p0.x;
+        const by = p0.handleOut ? p0.y + p0.handleOut.dy : p0.y;
+        const cx = p1.handleIn ? p1.x + p1.handleIn.dx : p1.x;
+        const cy = p1.handleIn ? p1.y + p1.handleIn.dy : p1.y;
+
+        // Skip s=0 (p0 already pushed) and s=BEZIER_SEGMENTS (next iteration pushes p1)
+        for (let s = 1; s < BEZIER_SEGMENTS; s++) {
+          const t = s / BEZIER_SEGMENTS;
+          const mt = 1 - t;
+          const mt2 = mt * mt;
+          const mt3 = mt2 * mt;
+          const t2 = t * t;
+          const t3 = t2 * t;
+          const x = mt3 * p0.x + 3 * mt2 * t * bx + 3 * mt * t2 * cx + t3 * p1.x;
+          const y = mt3 * p0.y + 3 * mt2 * t * by + 3 * mt * t2 * cy + t3 * p1.y;
+          result.push({ x, y });
+        }
+      }
+    }
+  }
+
+  return result;
 }
 
 /**

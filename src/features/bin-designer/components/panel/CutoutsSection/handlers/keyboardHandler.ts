@@ -8,6 +8,8 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import { computeBounds, rotatePoint } from '../geometry';
 import type { InteractionMode } from '../useCutoutInteraction';
+import { handleVertexEditKeyDown } from './pathEditHandler';
+import type { VertexEditMode } from './pathEditHandler';
 
 const NUDGE_AMOUNT = 0.5;
 const SHIFT_NUDGE_AMOUNT = 5;
@@ -35,6 +37,7 @@ export interface KeyboardHandlerContext {
   readonly setPreview: (preview: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly clearActiveGuides: () => void;
   readonly clearDrawingPreview: () => void;
+  readonly clearPathDrawingPreview: () => void;
   readonly setMode: (mode: InteractionMode) => void;
   readonly setSelection: (selection: ReadonlySet<string>) => void;
 }
@@ -49,6 +52,29 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
   // Don't capture when typing in an input
   const target = e.target as HTMLElement;
   if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+  // Path drawing mode: only Escape
+  if (ctx.mode.type === 'path-drawing') {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      ctx.clearPathDrawingPreview();
+      ctx.setMode({ type: 'idle' });
+    }
+    return;
+  }
+
+  // Vertex editing mode: delegate Delete/Backspace/Escape
+  if (ctx.mode.type === 'vertex-editing') {
+    const cutout = ctx.cutouts.find((c) => c.id === (ctx.mode as VertexEditMode).cutoutId);
+    if (cutout) {
+      handleVertexEditKeyDown(e, ctx.mode, cutout, {
+        setMode: ctx.setMode,
+        setPreview: ctx.setPreview,
+        onUpdate: ctx.onUpdate,
+      });
+    }
+    return;
+  }
 
   const mod = e.metaKey || e.ctrlKey;
 

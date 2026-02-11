@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
+import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
 import { useCutoutSelection } from '@/features/bin-designer/store';
 import {
   snapToGrid,
@@ -19,6 +19,7 @@ import {
   getRotatedBounds,
   type AlignmentGuide,
 } from './geometry';
+import { getPathBounds, CLOSE_SNAP_THRESHOLD } from './pathGeometry';
 import {
   handlePendingPlaceMove,
   handleDragMove,
@@ -28,7 +29,15 @@ import {
   handleGroupScaleMove,
   handleDrawMove,
   handleCutoutKeyDown,
+  handlePathDrawingPointerDown,
+  handlePathDrawingPointerMove,
+  handlePathDrawingPointerUp,
+  handleVertexEditPointerDown,
+  handleVertexEditPointerMove,
+  handleVertexEditPointerUp,
 } from './handlers';
+import type { PathDrawingMode, PathDrawingPreviewState } from './handlers';
+import type { VertexEditMode } from './handlers';
 import type { StartRect } from './geometry';
 
 /** Direction for resize handles */
@@ -94,7 +103,9 @@ export type InteractionMode =
         }
       >;
     }
-  | { readonly type: 'marquee'; readonly startX: number; readonly startY: number };
+  | { readonly type: 'marquee'; readonly startX: number; readonly startY: number }
+  | PathDrawingMode
+  | VertexEditMode;
 
 /** Preview overrides applied during drag/resize for visual feedback */
 export type PreviewMap = ReadonlyMap<string, Partial<Cutout>>;
@@ -164,6 +175,10 @@ export function useCutoutInteraction({
     depth: number;
     shape: CutoutShape;
   } | null>(null);
+  /** Path drawing preview (pen tool multi-click) */
+  const [pathDrawingPreview, setPathDrawingPreview] = useState<PathDrawingPreviewState | null>(
+    null
+  );
 
   const snap = useCallback(
     (v: number) => (snapEnabled ? snapToGrid(v, gridSize) : v),
@@ -346,6 +361,108 @@ export function useCutoutInteraction({
     }
     setSelection(new Set(newIds));
   }, [cutouts, selection, onAdd, binWidth, binDepth]);
+
+  // ── Path tool ────────────────────────────────────────────────────
+
+  /** Commit a closed path as a new cutout. */
+  const commitPath = useCallback(
+    (points: readonly PathPoint[]) => {
+      // Compute bounding box from flattened path (includes bezier curve extents)
+      const { minX, minY, maxX, maxY } = getPathBounds(points);
+      const newId = generateUUID();
+      onAdd({
+        id: newId,
+        shape: 'path',
+        x: minX,
+        y: minY,
+        width: maxX - minX,
+        depth: maxY - minY,
+        cutDepth: 5,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+        path: points,
+      });
+      setSelection(new Set([newId]));
+      setMode({ type: 'idle' });
+      setPathDrawingPreview(null);
+    },
+    [onAdd]
+  );
+
+  /** Handle path background click (first click or subsequent). */
+  const handlePathBackgroundDown = useCallback(
+    (mmX: number, mmY: number, shiftKey: boolean) => {
+      const bounds = { binWidth, binDepth };
+      const pathMode = mode.type === 'path-drawing' ? mode : null;
+      handlePathDrawingPointerDown(pathMode, mmX, mmY, shiftKey, bounds, snap, {
+        setMode,
+        setPathDrawingPreview,
+        commitPath,
+      });
+    },
+    [mode, binWidth, binDepth, snap, commitPath]
+  );
+
+  /** Enter vertex editing mode for a path cutout (on double-click). */
+  const enterVertexEditing = useCallback(
+    (cutoutId: string) => {
+      const cutout = cutouts.find((c) => c.id === cutoutId);
+      if (!cutout || cutout.shape !== 'path') return;
+      setSelection(new Set([cutoutId]));
+      setMode({
+        type: 'vertex-editing',
+        cutoutId,
+        selectedPointIndex: null,
+        dragTarget: null,
+      });
+    },
+    [cutouts]
+  );
+
+  /** Handle vertex point down from PathEditOverlay3D. */
+  const handleVertexPointDown = useCallback(
+    (index: number, _mmX: number, _mmY: number) => {
+      if (mode.type !== 'vertex-editing') return;
+      setMode({
+        ...mode,
+        selectedPointIndex: index,
+        dragTarget: { type: 'vertex', index },
+      });
+    },
+    [mode]
+  );
+
+  /** Handle vertex handle down from PathEditOverlay3D. */
+  const handleVertexHandleDown = useCallback(
+    (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number) => {
+      if (mode.type !== 'vertex-editing') return;
+      setMode({
+        ...mode,
+        dragTarget: { type: 'handle', index, handleType },
+      });
+    },
+    [mode]
+  );
+
+  /** Handle background click during vertex editing (segment insertion or exit). */
+  const handleVertexBackgroundDown = useCallback(
+    (mmX: number, mmY: number) => {
+      if (mode.type !== 'vertex-editing') return;
+      const cutout = cutouts.find((c) => c.id === mode.cutoutId);
+      if (!cutout) {
+        setMode({ type: 'idle' });
+        return;
+      }
+      handleVertexEditPointerDown(mode, { mmX, mmY, altKey: false }, cutout, CLOSE_SNAP_THRESHOLD, {
+        setMode,
+        setPreview,
+        onUpdate,
+      });
+    },
+    [mode, cutouts, onUpdate]
+  );
 
   // ── Context menu ───────────────────────────────────────────────────
 
@@ -560,9 +677,27 @@ export function useCutoutInteraction({
             setDrawingPreview,
           });
           break;
+
+        case 'path-drawing':
+          handlePathDrawingPointerMove(mode, event, bounds, snap, {
+            setMode,
+            setPathDrawingPreview,
+            commitPath,
+          });
+          break;
+
+        case 'vertex-editing': {
+          const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
+          if (editCutout) {
+            handleVertexEditPointerMove(mode, event, editCutout, bounds, snap, {
+              setPreview,
+            });
+          }
+          break;
+        }
       }
     },
-    [mode, cutouts, binWidth, binDepth, snap]
+    [mode, cutouts, binWidth, binDepth, snap, commitPath]
   );
 
   // ── Pointer up (commit) ────────────────────────────────────────────
@@ -638,8 +773,30 @@ export function useCutoutInteraction({
       }
       setDrawingPreview(null);
       setMode({ type: 'idle' });
+    } else if (mode.type === 'path-drawing') {
+      handlePathDrawingPointerUp(mode, { setMode });
+    } else if (mode.type === 'vertex-editing') {
+      const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
+      if (editCutout) {
+        handleVertexEditPointerUp(mode, editCutout, preview, {
+          setMode,
+          setPreview,
+          onUpdate,
+        });
+      }
     }
-  }, [mode, preview, drawingPreview, onUpdate, onUpdateBatch, onAdd, snap, binWidth, binDepth]);
+  }, [
+    mode,
+    preview,
+    drawingPreview,
+    cutouts,
+    onUpdate,
+    onUpdateBatch,
+    onAdd,
+    snap,
+    binWidth,
+    binDepth,
+  ]);
 
   // ── Keyboard shortcuts — delegates to handler ──────────────────────
 
@@ -667,6 +824,7 @@ export function useCutoutInteraction({
         setPreview,
         clearActiveGuides: () => setActiveGuides([]),
         clearDrawingPreview: () => setDrawingPreview(null),
+        clearPathDrawingPreview: () => setPathDrawingPreview(null),
         setMode,
         setSelection,
       });
@@ -699,10 +857,17 @@ export function useCutoutInteraction({
 
   useEffect(() => {
     const reset = () => {
-      if (mode.type !== 'idle' && mode.type !== 'placing' && mode.type !== 'marquee') {
+      if (
+        mode.type !== 'idle' &&
+        mode.type !== 'placing' &&
+        mode.type !== 'marquee' &&
+        mode.type !== 'vertex-editing' &&
+        mode.type !== 'path-drawing'
+      ) {
         setPreview(new Map());
         setActiveGuides([]);
         setDrawingPreview(null);
+        setPathDrawingPreview(null);
         setMode({ type: 'idle' });
       }
     };
@@ -771,6 +936,7 @@ export function useCutoutInteraction({
     containerRef,
     preview,
     drawingPreview,
+    pathDrawingPreview,
     startDrag,
     startResize,
     startRotation,
@@ -778,6 +944,11 @@ export function useCutoutInteraction({
     startGroupScale,
     handlePointerMove,
     handlePointerUp,
+    handlePathBackgroundDown,
+    enterVertexEditing,
+    handleVertexPointDown,
+    handleVertexHandleDown,
+    handleVertexBackgroundDown,
     snapEnabled,
     setSnapEnabled,
     activeGuides,

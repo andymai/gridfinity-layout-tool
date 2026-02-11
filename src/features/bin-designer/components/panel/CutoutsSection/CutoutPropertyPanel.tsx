@@ -56,26 +56,30 @@ export function CutoutPropertyPanel({
           unit="mm"
           disabled={disabled}
         />
-        <SliderInput
-          label={t('binDesigner.cutouts.width')}
-          value={cutout.width}
-          onChange={(width) => onUpdate(cutout.id, { width })}
-          min={2}
-          max={maxWidth}
-          step={0.5}
-          unit="mm"
-          disabled={disabled}
-        />
-        <SliderInput
-          label={t('binDesigner.cutouts.depth')}
-          value={cutout.depth}
-          onChange={(depth) => onUpdate(cutout.id, { depth })}
-          min={2}
-          max={maxDepth}
-          step={0.5}
-          unit="mm"
-          disabled={disabled}
-        />
+        {cutout.shape !== 'path' && (
+          <>
+            <SliderInput
+              label={t('binDesigner.cutouts.width')}
+              value={cutout.width}
+              onChange={(width) => onUpdate(cutout.id, { width })}
+              min={2}
+              max={maxWidth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <SliderInput
+              label={t('binDesigner.cutouts.depth')}
+              value={cutout.depth}
+              onChange={(depth) => onUpdate(cutout.id, { depth })}
+              min={2}
+              max={maxDepth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+          </>
+        )}
         <SliderInput
           label={t('binDesigner.cutouts.cutDepth')}
           value={cutout.cutDepth}
