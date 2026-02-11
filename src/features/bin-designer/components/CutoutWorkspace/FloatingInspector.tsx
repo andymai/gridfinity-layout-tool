@@ -7,7 +7,7 @@
  * Auto-repositions to stay within viewport bounds.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
@@ -109,6 +109,38 @@ export function FloatingInspector({
     return { minX, minY, maxX, maxY };
   }, [selectedCutouts, preview]);
 
+  // --- Position lock: prevent panel jitter during input interaction ---
+  // When the user interacts with any control inside the panel (e.g. dragging
+  // the rotation slider), the cutout bounds change on every frame which causes
+  // the panel's computed position to jitter. We "lock" the position at the
+  // moment interaction starts, then release it on pointer-up / focus-out so
+  // the panel snaps to its new optimal placement.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const pointerIsDownRef = useRef(false);
+  const hasFocusRef = useRef(false);
+  const [lockedPos, setLockedPos] = useState<{ x: number; y: number } | null>(null);
+
+  const tryUnlock = useCallback(() => {
+    if (!pointerIsDownRef.current && !hasFocusRef.current) {
+      setLockedPos(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePointerEnd = () => {
+      pointerIsDownRef.current = false;
+      tryUnlock();
+    };
+    window.addEventListener('pointerup', handlePointerEnd);
+    window.addEventListener('pointercancel', handlePointerEnd);
+    window.addEventListener('blur', handlePointerEnd);
+    return () => {
+      window.removeEventListener('pointerup', handlePointerEnd);
+      window.removeEventListener('pointercancel', handlePointerEnd);
+      window.removeEventListener('blur', handlePointerEnd);
+    };
+  }, [tryUnlock]);
+
   if (selection.size === 0 || hidden || !selectionBounds) return null;
 
   // Convert world bounds to screen coords
@@ -160,6 +192,10 @@ export function FloatingInspector({
   // Clamp Y within canvas bounds
   panelY = Math.max(EDGE_MARGIN, Math.min(panelY, canvasHeight - PANEL_HEIGHT_EST - EDGE_MARGIN));
 
+  // Apply position lock: use locked position during interaction, computed otherwise
+  const finalX = lockedPos?.x ?? panelX;
+  const finalY = lockedPos?.y ?? panelY;
+
   const isSingle = selectedCutouts.length === 1;
   const singleCutout = isSingle ? selectedCutouts[0] : null;
 
@@ -180,11 +216,27 @@ export function FloatingInspector({
 
   return (
     <div
+      ref={panelRef}
       className="absolute z-50 w-[220px] rounded-lg border border-stroke-subtle bg-surface-elevated shadow-lg p-2 space-y-1.5 transition-opacity duration-150"
       style={{
-        left: panelX,
-        top: panelY,
+        left: finalX,
+        top: finalY,
         pointerEvents: 'auto',
+      }}
+      onPointerDown={() => {
+        pointerIsDownRef.current = true;
+        setLockedPos((prev) => prev ?? { x: panelX, y: panelY });
+      }}
+      onFocusCapture={() => {
+        hasFocusRef.current = true;
+        setLockedPos((prev) => prev ?? { x: panelX, y: panelY });
+      }}
+      onBlurCapture={(e) => {
+        const related = e.relatedTarget instanceof Node ? e.relatedTarget : null;
+        if (!panelRef.current?.contains(related)) {
+          hasFocusRef.current = false;
+          tryUnlock();
+        }
       }}
     >
       {/* Single selection: compact inputs for position/size, sliders for rotation/depth */}
