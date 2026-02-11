@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.6.0...gridfinity-layout-tool-v3.6.1) (2026-02-11)
+
+
+### Bug Fixes
+
+* resolve all test failures after ESLint lint fix PR ([#695](https://github.com/andymai/gridfinity-layout-tool/issues/695)) ([#696](https://github.com/andymai/gridfinity-layout-tool/issues/696)) ([524994a](https://github.com/andymai/gridfinity-layout-tool/commit/524994a6f36a907f2439b63505493e476631e650))
+
 ## [3.6.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.3...gridfinity-layout-tool-v3.6.0) (2026-02-11)
 
 
