@@ -34,21 +34,21 @@ exports[`bin styles > 2×2 'standard' 1`] = `1140`;
 
 exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`] = `716`;
 
-exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `1356`;
+exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `1540`;
 
-exports[`combined features > 2×2 label tabs with merged compartments 1`] = `1560`;
+exports[`combined features > 2×2 label tabs with merged compartments 1`] = `3528`;
 
-exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `1622`;
+exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `5288`;
 
-exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `4412`;
+exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `4636`;
 
 exports[`compartments > 2×2 bin with '1×1 (none)' compartments 1`] = `1140`;
 
-exports[`compartments > 2×2 bin with '2×2' compartments 1`] = `1316`;
+exports[`compartments > 2×2 bin with '2×2' compartments 1`] = `1892`;
 
-exports[`compartments > 2×2 bin with '3×2 merged top-left' compartments 1`] = `1304`;
+exports[`compartments > 2×2 bin with '3×2 merged top-left' compartments 1`] = `1968`;
 
-exports[`compartments > 2×2 bin with '4×4 dense grid' compartments 1`] = `1604`;
+exports[`compartments > 2×2 bin with '4×4 dense grid' compartments 1`] = `3636`;
 
 exports[`dimensions > '0.5×0.5' > 'no lip' 1`] = `276`;
 
@@ -92,29 +92,29 @@ exports[`inserts > 2×2 with 'rounded-rect' insert 1`] = `1240`;
 
 exports[`inserts > 2×2 with 'slot' insert 1`] = `1248`;
 
-exports[`label tabs > 2×2 label 'bracket center' 1`] = `1296`;
+exports[`label tabs > 2×2 label 'bracket center' 1`] = `1832`;
 
-exports[`label tabs > 2×2 label 'bracket left' 1`] = `1296`;
+exports[`label tabs > 2×2 label 'bracket left' 1`] = `1832`;
 
-exports[`label tabs > 2×2 label 'bracket right' 1`] = `1296`;
+exports[`label tabs > 2×2 label 'bracket right' 1`] = `1832`;
 
 exports[`label tabs > 2×2 label 'disabled' 1`] = `1140`;
 
-exports[`label tabs > 2×2 label 'solid left' 1`] = `1164`;
+exports[`label tabs > 2×2 label 'solid left' 1`] = `1496`;
 
 exports[`large bin > 8×8 standard 1`] = `4368`;
 
 exports[`multiple inserts > 2×2 with 2 circle inserts 1`] = `1376`;
 
-exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `1220`;
+exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `1764`;
 
-exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `1372`;
+exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `2640`;
 
-exports[`scoop > 2×2 scoop 'auto radius' 1`] = `1220`;
+exports[`scoop > 2×2 scoop 'auto radius' 1`] = `1764`;
 
 exports[`scoop > 2×2 scoop 'disabled' 1`] = `1140`;
 
-exports[`scoop > 2×2 scoop 'radius 10mm' 1`] = `1220`;
+exports[`scoop > 2×2 scoop 'radius 10mm' 1`] = `1816`;
 
 exports[`slotted variations > slotted with Y-axis slots 1`] = `1380`;
 

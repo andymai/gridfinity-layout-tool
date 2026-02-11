@@ -156,12 +156,28 @@ export function toIndexedMeshData(
     normals: ArrayLike<number>;
     triangles: ArrayLike<number>;
   },
-  skipNormals = false
+  skipNormals = false,
+  edgeVertices?: ArrayLike<number>
 ): MeshData {
   return {
-    vertices: new Float32Array(meshResult.vertices),
-    normals: skipNormals ? new Float32Array(0) : new Float32Array(meshResult.normals),
-    indices: new Uint32Array(meshResult.triangles),
+    vertices:
+      meshResult.vertices instanceof Float32Array
+        ? meshResult.vertices
+        : new Float32Array(meshResult.vertices),
+    normals: skipNormals
+      ? new Float32Array(0)
+      : meshResult.normals instanceof Float32Array
+        ? meshResult.normals
+        : new Float32Array(meshResult.normals),
+    indices:
+      meshResult.triangles instanceof Uint32Array
+        ? meshResult.triangles
+        : new Uint32Array(meshResult.triangles),
+    edgeVertices: edgeVertices
+      ? edgeVertices instanceof Float32Array
+        ? edgeVertices
+        : new Float32Array(edgeVertices)
+      : new Float32Array(0),
     triangleCount: meshResult.triangles.length / 3,
   };
 }

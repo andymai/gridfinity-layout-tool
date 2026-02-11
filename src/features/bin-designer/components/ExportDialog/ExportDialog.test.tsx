@@ -40,6 +40,7 @@ function setupStore(overrides: Record<string, unknown> = {}) {
         vertices: new Float32Array(108),
         normals: new Float32Array(108),
         indices: new Uint32Array(36), // 12 triangles
+        edgeVertices: new Float32Array(0),
         error: null,
         timingMs: 10,
       },

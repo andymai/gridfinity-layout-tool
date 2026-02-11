@@ -399,6 +399,7 @@ export class GenerationBridge {
                 vertices: response.vertices,
                 normals: response.normals,
                 indices: response.indices,
+                edgeVertices: response.edgeVertices,
                 triangleCount: response.triangleCount,
               },
               timingMs: response.timingMs,

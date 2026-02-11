@@ -178,14 +178,18 @@ function generate(params: BinParams, requestId: string): void {
       vertices: meshData.vertices,
       normals: meshData.normals,
       indices: meshData.indices,
+      edgeVertices: meshData.edgeVertices,
       triangleCount: meshData.triangleCount,
       timingMs,
     };
     // Transfer typed array buffers for zero-copy to main thread
     self.postMessage(response, {
-      transfer: [meshData.vertices.buffer, meshData.normals.buffer, meshData.indices.buffer].filter(
-        (b) => b.byteLength > 0
-      ),
+      transfer: [
+        meshData.vertices.buffer,
+        meshData.normals.buffer,
+        meshData.indices.buffer,
+        meshData.edgeVertices.buffer,
+      ].filter((b) => b.byteLength > 0),
     });
   } catch (e) {
     // AbortError = expected cancellation — silently discard
