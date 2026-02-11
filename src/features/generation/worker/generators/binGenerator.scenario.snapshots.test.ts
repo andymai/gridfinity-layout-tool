@@ -149,14 +149,14 @@ describe('base styles', () => {
 // ---------------------------------------------------------------------------
 
 describe('bin styles', () => {
-  it.each<{ style: BinStyle; label: string }>([
+  it.each<{ style: BinStyle; base?: Partial<BinParams['base']>; label: string }>([
     { style: 'standard', label: 'standard' },
     { style: 'slotted', label: 'slotted' },
-    { style: 'solid', label: 'solid' },
+    { style: 'solid', base: { solid: true }, label: 'solid' },
   ])(
     '2×2 $label',
-    ({ style }) => {
-      snapshotBin(buildParams({ style }));
+    ({ style, base }) => {
+      snapshotBin(buildParams({ style, base: { ...DEFAULT_BIN_PARAMS.base, ...base } }));
     },
     30000
   );
@@ -355,7 +355,7 @@ describe('multiple inserts', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 12. Solid bin cutouts — 7 tests (added cornerRadius, rotation, ellipse,
+// 12. Solid bin cutouts — 8 tests (added cornerRadius, rotation, ellipse,
 //     grouped, topOffset) [P1 gaps]
 // ---------------------------------------------------------------------------
 
