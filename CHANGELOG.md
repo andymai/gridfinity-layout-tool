@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.1...gridfinity-layout-tool-v3.5.2) (2026-02-11)
+
+
+### Bug Fixes
+
+* prevent floating inspector panel jitter during slider interaction ([#689](https://github.com/andymai/gridfinity-layout-tool/issues/689)) ([6d7d711](https://github.com/andymai/gridfinity-layout-tool/commit/6d7d7111f799471736b4a43b68eaf6833ea02a15))
+
 ## [3.5.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.0...gridfinity-layout-tool-v3.5.1) (2026-02-11)
 
 
