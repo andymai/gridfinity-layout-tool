@@ -54,6 +54,11 @@ import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildSlotCuts } from './slotBuilder';
 import { getPatternDescriptors } from './wallPatterns';
+import {
+  resolveScoopRadius,
+  computeLipOffset,
+  computeInteriorHeight,
+} from '@/shared/utils/scoopCalculations';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -1051,7 +1056,7 @@ function buildLabelTabs(
 
       let tabSolid: Shape3D = shelf;
 
-      const labelSupport = params.label.support ?? 'bracket';
+      const labelSupport = params.label.support;
 
       if (labelSupport === 'solid') {
         // Solid style: single continuous 45° right-triangle prism under the shelf
@@ -1109,18 +1114,16 @@ function buildLabelTabs(
  * For merged compartments spanning multiple columns, a single scoop spans
  * the full merged width.
  *
- * Lip relief: When the bin has a stacking lip and the scoop is at the outer
- * front wall (row 0), the lip overhangs inward by (LIP_TAPER_WIDTH -
- * wallThickness). This creates a ledge that items catch on when scooped out.
- * The function generates lip relief cuts to remove this overhang, providing
- * a clear exit path for items.
+ * When the bin has a stacking lip and the scoop is at the outer front wall
+ * (row 0), the scoop is offset inward by the lip overhang so its top edge
+ * meets the lip's protruding inner face, providing a smooth exit path.
  *
  * @param params - Bin parameters (scoop config, compartments)
  * @param innerW - Interior width in mm (outer - 2 × wallThickness)
  * @param innerD - Interior depth in mm
  * @param wallHeight - Full wall height in mm (box body Z extent)
  * @param wallThickness - Outer wall thickness in mm
- * @returns Ramp shapes to fuse and lip relief shapes to cut
+ * @returns Fused ramp shape, or null if no scoops were built
  */
 function buildScoopRamps(
   params: BinParams,
@@ -1128,24 +1131,20 @@ function buildScoopRamps(
   innerD: number,
   wallHeight: number,
   wallThickness: number
-): { ramps: Shape3D | null; lipCuts: Shape3D | null } {
-  const noResult = { ramps: null, lipCuts: null };
-  if (!params.scoop.enabled) return noResult;
-  if (params.style !== 'standard') return noResult;
+): Shape3D | null {
+  if (!params.scoop.enabled) return null;
+  if (params.style !== 'standard') return null;
 
   const hasLip = params.base.stackingLip;
-  const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
+  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
 
   const { cols, rows, cells } = params.compartments;
-  const baseRadius = params.scoop.radius;
 
   const cellW = innerW / cols;
   const cellD = innerD / rows;
 
-  // Track which compartments we've already built scoops for
   const processedCompartments = new Set<number>();
   const scoopShapes: Shape3D[] = [];
-  const lipCutShapes: Shape3D[] = [];
 
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -1153,7 +1152,7 @@ function buildScoopRamps(
       if (processedCompartments.has(compId)) continue;
       processedCompartments.add(compId);
 
-      // Find compartment bounds (same logic as getCompartmentBounds)
+      // Find compartment bounds
       let minCol = cols;
       let maxCol = -1;
       let minRow = rows;
@@ -1169,37 +1168,24 @@ function buildScoopRamps(
         }
       }
       if (maxCol === -1) continue;
-
-      // Compartment physical dimensions
       const compCols = maxCol - minCol + 1;
       const compRows = maxRow - minRow + 1;
       const compW = compCols * cellW;
       const compD = compRows * cellD;
 
-      // Resolve radius: auto = min(smallerDim/3, 15mm), clamped to fit
-      const minDim = Math.min(compW, compD);
-      let radius: number;
-      if (baseRadius === 'auto') {
-        radius = Math.min(minDim / 3, 15);
-      } else {
-        radius = baseRadius;
-      }
-      // When a stacking lip is present on a front-row scoop, offset the scoop
-      // inward so its top edge meets the lip's protruding inner face. This lets
-      // items slide up the scoop and past the lip without catching.
-      const lipOffset = hasLip && minRow === 0 ? Math.max(0, LIP_TAPER_WIDTH - wallThickness) : 0;
-
-      // For front-row scoops with lip, auto radius must reach wallHeight
-      // so the scoop top meets the lip's inner face.
-      if (baseRadius === 'auto' && hasLip && minRow === 0) {
-        radius = Math.max(radius, wallHeight);
-      }
-
-      // Clamp: radius can't exceed compartment depth (minus offset) or wall height.
-      // Front-row scoops extend to wallHeight (lip base); interior rows to interiorHeight.
-      const maxHeight = minRow === 0 ? wallHeight : interiorHeight;
-      radius = Math.min(radius, compD - 0.5 - lipOffset, maxHeight);
-      if (radius < 1) continue;
+      const isMinRow = minRow === 0;
+      const lipOffset = computeLipOffset(hasLip, isMinRow, LIP_TAPER_WIDTH, wallThickness);
+      const radius = resolveScoopRadius(
+        params.scoop.radius,
+        compW,
+        compD,
+        isMinRow,
+        hasLip,
+        wallHeight,
+        interiorHeight,
+        lipOffset
+      );
+      if (radius === 0) continue;
 
       // Build scoop ramp solid.
       // Profile in YZ plane: draw([u, v]) where u→Y (depth), v→Z (height).
@@ -1289,39 +1275,11 @@ function buildScoopRamps(
       const frontEdgeY = -innerD / 2 + minRow * cellD;
 
       scoopShapes.push(translate(scoopSolid, [compCenterX, frontEdgeY, 0]));
-
-      // Lip relief: when the scoop is at the outer front wall (row 0) and the bin
-      // has a stacking lip, cut away the lip's inward overhang so items don't catch.
-      // The lip extends LIP_TAPER_WIDTH inward from the outer edge; the wall only
-      // accounts for wallThickness, leaving (LIP_TAPER_WIDTH - wallThickness) of
-      // overhang past the inner wall surface.
-      if (hasLip && minRow === 0) {
-        const lipOverhang = LIP_TAPER_WIDTH - wallThickness;
-        if (lipOverhang > 0) {
-          const cutDepth = lipOverhang + 0.5;
-          const cutHeight = LIP_SMALL_TAPER + LIP_HEIGHT + 1;
-          const cutBox = sketch(drawRectangle(compW, cutDepth), 'XY').extrude(cutHeight);
-          lipCutShapes.push(
-            translate(cutBox, [compCenterX, -innerD / 2 + cutDepth / 2, interiorHeight - 0.5])
-          );
-        }
-      }
     }
   }
 
-  const ramps =
-    scoopShapes.length === 0
-      ? null
-      : scoopShapes.length === 1
-        ? scoopShapes[0]
-        : unwrap(fuseAll(scoopShapes));
-  const lipCuts =
-    lipCutShapes.length === 0
-      ? null
-      : lipCutShapes.length === 1
-        ? lipCutShapes[0]
-        : unwrap(fuseAll(lipCutShapes));
-  return { ramps, lipCuts };
+  if (scoopShapes.length === 0) return null;
+  return scoopShapes.length === 1 ? scoopShapes[0] : unwrap(fuseAll(scoopShapes));
 }
 
 // ─── Mesh Conversion ────────────────────────────────────────────────────────
@@ -1657,13 +1615,7 @@ export function generateBin(
     // Finger scoops: concave ramp fused at front wall of compartments
     if (!isSlotted) {
       checkCancelled(signal);
-      const { ramps: scoopRamps } = buildScoopRamps(
-        params,
-        innerW,
-        innerD,
-        wallHeight,
-        wallThickness
-      );
+      const scoopRamps = buildScoopRamps(params, innerW, innerD, wallHeight, wallThickness);
       if (scoopRamps) {
         try {
           bin = unwrap(fuse(bin, scoopRamps));
@@ -1682,7 +1634,7 @@ export function generateBin(
     // 4. Preview skips SimplifyResult (shape is immediately meshed and discarded)
     // 5. Cache the shape template between generations
     // Runtime guard: wallPattern may be missing from old saved data
-    if (params.wallPattern?.enabled) {
+    if (params.wallPattern.enabled) {
       const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
       if (patternResult) {
         const { descriptors: wallDescriptors, calculator } = patternResult;

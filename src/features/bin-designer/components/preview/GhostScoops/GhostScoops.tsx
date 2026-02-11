@@ -5,7 +5,7 @@
  * compartment where scoops will appear. Provides immediate visual feedback
  * when the user toggles scoops or changes radius.
  *
- * Position math mirrors binGenerator.ts buildScoopCuts.
+ * Position math mirrors binGenerator.ts buildScoopRamps.
  */
 
 import { useMemo, useEffect } from 'react';
@@ -14,6 +14,12 @@ import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
+import {
+  resolveScoopRadius,
+  computeLipOffset,
+  computeInteriorHeight,
+} from '@/shared/utils/scoopCalculations';
 
 const GHOST_COLOR = '#f97316';
 const GHOST_OPACITY = 0.35;
@@ -37,12 +43,12 @@ export function GhostScoops() {
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
 
-  // Mirror the generator's interiorHeight calculation for radius clamping
   const hasLip = base.stackingLip;
   const isFlat = base.style === 'flat';
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
-  const interiorHeight = hasLip ? wallHeight - GRIDFINITY.LIP_SMALL_TAPER : wallHeight;
+  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
+  const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 
   const shouldShow =
     scoop.enabled &&
@@ -67,47 +73,28 @@ export function GhostScoops() {
         if (processedCompartments.has(compId)) continue;
         processedCompartments.add(compId);
 
-        // Find compartment bounds
-        let minCol = cols,
-          maxCol = -1,
-          minRow = rows,
-          maxRow = -1;
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            if (cells[r * cols + c] === compId) {
-              minCol = Math.min(minCol, c);
-              maxCol = Math.max(maxCol, c);
-              minRow = Math.min(minRow, r);
-              maxRow = Math.max(maxRow, r);
-            }
-          }
-        }
-        if (maxCol === -1) continue;
+        const bounds = getCompartmentBounds(compartments, compId);
+        if (!bounds) continue;
 
+        const { minCol, maxCol, minRow, maxRow } = bounds;
         const compCols = maxCol - minCol + 1;
         const compRows = maxRow - minRow + 1;
         const compW = compCols * cellW;
         const compD = compRows * cellD;
 
-        const minDim = Math.min(compW, compD);
-        let radius: number;
-        if (scoop.radius === 'auto') {
-          radius = Math.min(minDim / 3, 15);
-        } else {
-          radius = scoop.radius;
-        }
-        // Offset scoop inward when lip is present so top meets lip's inner face
-        const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
-        const lipOffset = hasLip && minRow === 0 ? Math.max(0, lipTaperWidth - wallThickness) : 0;
-
-        // Auto radius must reach wallHeight so scoop top meets the lip
-        if (scoop.radius === 'auto' && hasLip && minRow === 0) {
-          radius = Math.max(radius, wallHeight);
-        }
-
-        const maxHeight = minRow === 0 ? wallHeight : interiorHeight;
-        radius = Math.min(radius, compD - 0.5 - lipOffset, maxHeight);
-        if (radius < 1) continue;
+        const isMinRow = minRow === 0;
+        const lipOffset = computeLipOffset(hasLip, isMinRow, lipTaperWidth, wallThickness);
+        const radius = resolveScoopRadius(
+          scoop.radius,
+          compW,
+          compD,
+          isMinRow,
+          hasLip,
+          wallHeight,
+          interiorHeight,
+          lipOffset
+        );
+        if (radius === 0) continue;
 
         // Compartment position
         const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
@@ -159,6 +146,8 @@ export function GhostScoops() {
     wallHeight,
     wallThickness,
     hasLip,
+    lipTaperWidth,
+    compartments,
     cols,
     rows,
     cells,
