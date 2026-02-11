@@ -138,6 +138,8 @@ exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`]
 
 exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `1074`;
 
+exports[`solid cutouts > 2×2 solid with path cutout having closing bezier curve 1`] = `1236`;
+
 exports[`solid cutouts > 2×2 solid with topOffset 1`] = `1056`;
 
 exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `1056`;

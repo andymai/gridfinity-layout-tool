@@ -434,30 +434,33 @@ function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y
 
   for (let i = 0; i < n; i++) {
     const p0 = path[i];
+    const p1 = path[(i + 1) % n];
+
     result.push({ x: p0.x, y: p0.y });
 
-    // Flatten bezier curves between consecutive anchors (skip closing segment)
-    if (i < n - 1) {
-      const p1 = path[i + 1];
-      if (p0.handleOut || p1.handleIn) {
-        const bx = p0.handleOut ? p0.x + p0.handleOut.dx : p0.x;
-        const by = p0.handleOut ? p0.y + p0.handleOut.dy : p0.y;
-        const cx = p1.handleIn ? p1.x + p1.handleIn.dx : p1.x;
-        const cy = p1.handleIn ? p1.y + p1.handleIn.dy : p1.y;
+    // Flatten bezier curves between consecutive anchors (including closing segment)
+    if (p0.handleOut || p1.handleIn) {
+      const bx = p0.handleOut ? p0.x + p0.handleOut.dx : p0.x;
+      const by = p0.handleOut ? p0.y + p0.handleOut.dy : p0.y;
+      const cx = p1.handleIn ? p1.x + p1.handleIn.dx : p1.x;
+      const cy = p1.handleIn ? p1.y + p1.handleIn.dy : p1.y;
 
-        // Skip s=0 (p0 already pushed) and s=BEZIER_SEGMENTS (next iteration pushes p1)
-        for (let s = 1; s < BEZIER_SEGMENTS; s++) {
-          const t = s / BEZIER_SEGMENTS;
-          const mt = 1 - t;
-          const mt2 = mt * mt;
-          const mt3 = mt2 * mt;
-          const t2 = t * t;
-          const t3 = t2 * t;
-          const x = mt3 * p0.x + 3 * mt2 * t * bx + 3 * mt * t2 * cx + t3 * p1.x;
-          const y = mt3 * p0.y + 3 * mt2 * t * by + 3 * mt * t2 * cy + t3 * p1.y;
-          result.push({ x, y });
-        }
+      // Skip s=0 (p0 already pushed) and s=BEZIER_SEGMENTS (next iteration pushes p1,
+      // or for closing segment we omit to avoid duplicating first point)
+      for (let s = 1; s < BEZIER_SEGMENTS; s++) {
+        const t = s / BEZIER_SEGMENTS;
+        const mt = 1 - t;
+        const mt2 = mt * mt;
+        const mt3 = mt2 * mt;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const x = mt3 * p0.x + 3 * mt2 * t * bx + 3 * mt * t2 * cx + t3 * p1.x;
+        const y = mt3 * p0.y + 3 * mt2 * t * by + 3 * mt * t2 * cy + t3 * p1.y;
+        result.push({ x, y });
       }
+
+      // p1 is pushed as p0 of the next iteration for non-closing segments.
+      // For the closing segment, brepjs close() handles the connection back to start.
     }
   }
 

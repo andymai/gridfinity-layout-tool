@@ -133,8 +133,15 @@ export function flattenPath(
       result.push({ x: p0.x, y: p0.y });
     }
 
+    // For the closing segment (last → first), include bezier intermediates
+    // but NOT the endpoint (which would duplicate the first point).
+    // lineLoop and earclip handle closure automatically.
+    const isClosing = i === n - 1;
+
     if (!p0.handleOut && !p1.handleIn) {
-      result.push({ x: p1.x, y: p1.y });
+      if (!isClosing) {
+        result.push({ x: p1.x, y: p1.y });
+      }
     } else {
       const cp1: Point2D = p0.handleOut
         ? { x: p0.x + p0.handleOut.dx, y: p0.y + p0.handleOut.dy }
@@ -144,6 +151,10 @@ export function flattenPath(
         : { x: p1.x, y: p1.y };
 
       flattenCubicBezier({ x: p0.x, y: p0.y }, cp1, cp2, { x: p1.x, y: p1.y }, tolerance, result);
+      // Remove the endpoint if this is the closing segment (duplicate of first point)
+      if (isClosing && result.length > 1) {
+        result.pop();
+      }
     }
   }
 
