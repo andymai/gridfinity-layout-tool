@@ -145,7 +145,7 @@ export function handlePathDrawingPointerMove(
   mode: PathDrawingMode,
   event: PointerMoveEvent,
   bounds: BinBounds,
-  snap: SnapFn,
+  _snap: SnapFn,
   setters: PathDrawingSetters
 ): void {
   const { points, activePointDrag } = mode;

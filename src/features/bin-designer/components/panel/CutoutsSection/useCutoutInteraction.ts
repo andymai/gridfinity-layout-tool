@@ -737,10 +737,37 @@ export function useCutoutInteraction({
     ) {
       // Only commit if we actually moved past the dead zone
       if (pastDeadZoneRef.current && preview.size > 0) {
-        if (onUpdateBatch && preview.size > 1) {
-          onUpdateBatch(preview);
+        // For path cutouts during drag, translate absolute path point coordinates
+        // to match the new x/y bounding box position.
+        const augmented = new Map(preview);
+        if (mode.type === 'dragging') {
+          for (const [id, updates] of augmented) {
+            const cutout = cutouts.find((c) => c.id === id);
+            if (
+              cutout?.shape === 'path' &&
+              cutout.path &&
+              updates.x !== undefined &&
+              updates.y !== undefined
+            ) {
+              const dx = updates.x - cutout.x;
+              const dy = updates.y - cutout.y;
+              if (dx !== 0 || dy !== 0) {
+                augmented.set(id, {
+                  ...updates,
+                  path: cutout.path.map((pt) => ({
+                    ...pt,
+                    x: pt.x + dx,
+                    y: pt.y + dy,
+                  })),
+                });
+              }
+            }
+          }
+        }
+        if (onUpdateBatch && augmented.size > 1) {
+          onUpdateBatch(augmented);
         } else {
-          for (const [id, updates] of preview) {
+          for (const [id, updates] of augmented) {
             onUpdate(id, updates);
           }
         }

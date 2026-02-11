@@ -2,11 +2,12 @@
  * WebGL overlay for pen tool vertex editing.
  *
  * Shows interactive vertex circles and bezier control handle lines/dots
- * when editing a committed path cutout. Screen-space sizing via camera zoom.
- * World coordinates: mm, Y-up.
+ * when editing a committed path cutout. Figma-quality handles with
+ * white fill, colored border, hover scale, and visible handles for all points.
+ * Screen-space sizing via camera zoom. World coordinates: mm, Y-up.
  */
 
-import { useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
@@ -28,11 +29,17 @@ interface PathEditOverlay3DProps {
 
 const ACCENT_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
 const WHITE = new THREE.Color('#ffffff');
-const HANDLE_DOT_COLOR = new THREE.Color('#93c5fd'); // Light blue for handle endpoints
+const HANDLE_LINE_COLOR = new THREE.Color('#a0a0a0');
 const Z = 0.05;
-const VERTEX_RADIUS_PX = 3;
-const HANDLE_DOT_SIZE_PX = 2.5;
-const CIRCLE_SEGMENTS = 16;
+
+// Figma-quality handle sizes (screen pixels)
+const VERTEX_OUTER_RADIUS_PX = 5; // Outer border circle
+const VERTEX_INNER_RADIUS_PX = 3.5; // Inner fill circle
+const HANDLE_DOT_OUTER_RADIUS_PX = 4;
+const HANDLE_DOT_INNER_RADIUS_PX = 2.5;
+const HOVER_SCALE = 1.25;
+const CIRCLE_SEGMENTS = 24; // Smoother circles
+
 const OVERLAY_RENDER_ORDER = RENDER_ORDER.HANDLES + 10;
 
 export function PathEditOverlay3D({
@@ -55,24 +62,28 @@ export function PathEditOverlay3D({
   if (!path || path.length === 0) return null;
 
   // Screen-space sizing
-  const vertexRadius = VERTEX_RADIUS_PX / zoom;
-  const handleDotHalf = HANDLE_DOT_SIZE_PX / zoom;
+  const vOuter = VERTEX_OUTER_RADIUS_PX / zoom;
+  const vInner = VERTEX_INNER_RADIUS_PX / zoom;
+  const hOuter = HANDLE_DOT_OUTER_RADIUS_PX / zoom;
+  const hInner = HANDLE_DOT_INNER_RADIUS_PX / zoom;
 
   return (
     <group renderOrder={OVERLAY_RENDER_ORDER}>
       {path.map((pt, i) => {
         const isSelected = selectedPointIndex === i;
+        const showHandles = isSelected;
 
         return (
           <group key={i}>
-            {/* Handle-in line and dot */}
-            {pt.handleIn && (
+            {/* Handle lines and dots (visible for selected vertex) */}
+            {showHandles && pt.handleIn && (
               <HandleLine
                 pointX={pt.x}
                 pointY={pt.y}
                 handleDx={pt.handleIn.dx}
                 handleDy={pt.handleIn.dy}
-                dotHalfSize={handleDotHalf}
+                outerRadius={hOuter}
+                innerRadius={hInner}
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
                   if (e.nativeEvent.button !== 0) return;
                   e.stopPropagation();
@@ -80,15 +91,14 @@ export function PathEditOverlay3D({
                 }}
               />
             )}
-
-            {/* Handle-out line and dot */}
-            {pt.handleOut && (
+            {showHandles && pt.handleOut && (
               <HandleLine
                 pointX={pt.x}
                 pointY={pt.y}
                 handleDx={pt.handleOut.dx}
                 handleDy={pt.handleOut.dy}
-                dotHalfSize={handleDotHalf}
+                outerRadius={hOuter}
+                innerRadius={hInner}
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
                   if (e.nativeEvent.button !== 0) return;
                   e.stopPropagation();
@@ -97,22 +107,75 @@ export function PathEditOverlay3D({
               />
             )}
 
-            {/* Vertex circle */}
-            <mesh
-              position={[pt.x, pt.y, Z]}
-              renderOrder={OVERLAY_RENDER_ORDER + 1}
+            {/* Vertex anchor — white fill with colored border, Figma-style */}
+            <VertexHandle
+              x={pt.x}
+              y={pt.y}
+              outerRadius={vOuter}
+              innerRadius={vInner}
+              isSelected={isSelected}
               onPointerDown={(e: ThreeEvent<PointerEvent>) => {
                 if (e.nativeEvent.button !== 0) return;
                 e.stopPropagation();
                 onPointDown(i, e.point.x, e.point.y);
               }}
-            >
-              <circleGeometry args={[vertexRadius, CIRCLE_SEGMENTS]} />
-              <meshBasicMaterial color={isSelected ? ACCENT_COLOR : WHITE} depthTest={false} />
-            </mesh>
+            />
           </group>
         );
       })}
+    </group>
+  );
+}
+
+// ─── Vertex Handle ──────────────────────────────────────────────────────────
+
+interface VertexHandleProps {
+  readonly x: number;
+  readonly y: number;
+  readonly outerRadius: number;
+  readonly innerRadius: number;
+  readonly isSelected: boolean;
+  readonly onPointerDown: (e: ThreeEvent<PointerEvent>) => void;
+}
+
+function VertexHandle({
+  x,
+  y,
+  outerRadius,
+  innerRadius,
+  isSelected,
+  onPointerDown,
+}: VertexHandleProps) {
+  const [hovered, setHovered] = useState(false);
+  const scale = hovered ? HOVER_SCALE : 1;
+
+  const outerGeo = useMemo(
+    () => new THREE.CircleGeometry(outerRadius, CIRCLE_SEGMENTS),
+    [outerRadius]
+  );
+  const innerGeo = useMemo(
+    () => new THREE.CircleGeometry(innerRadius, CIRCLE_SEGMENTS),
+    [innerRadius]
+  );
+
+  const borderColor = isSelected ? ACCENT_COLOR : ACCENT_COLOR;
+
+  return (
+    <group
+      position={[x, y, Z]}
+      scale={[scale, scale, 1]}
+      onPointerDown={onPointerDown}
+      onPointerEnter={useCallback(() => setHovered(true), [])}
+      onPointerLeave={useCallback(() => setHovered(false), [])}
+    >
+      {/* Outer border circle */}
+      <mesh geometry={outerGeo} renderOrder={OVERLAY_RENDER_ORDER + 1}>
+        <meshBasicMaterial color={borderColor} depthTest={false} />
+      </mesh>
+      {/* Inner fill circle */}
+      <mesh geometry={innerGeo} renderOrder={OVERLAY_RENDER_ORDER + 2} position={[0, 0, 0.001]}>
+        <meshBasicMaterial color={isSelected ? ACCENT_COLOR : WHITE} depthTest={false} />
+      </mesh>
     </group>
   );
 }
@@ -124,7 +187,8 @@ interface HandleLineProps {
   readonly pointY: number;
   readonly handleDx: number;
   readonly handleDy: number;
-  readonly dotHalfSize: number;
+  readonly outerRadius: number;
+  readonly innerRadius: number;
   readonly onPointerDown: (e: ThreeEvent<PointerEvent>) => void;
 }
 
@@ -133,44 +197,59 @@ function HandleLine({
   pointY,
   handleDx,
   handleDy,
-  dotHalfSize,
+  outerRadius,
+  innerRadius,
   onPointerDown,
 }: HandleLineProps) {
+  const [hovered, setHovered] = useState(false);
   const handleX = pointX + handleDx;
   const handleY = pointY + handleDy;
+  const scale = hovered ? HOVER_SCALE : 1;
 
-  // Dashed line from handle endpoint to vertex
+  // Solid thin line from anchor to handle endpoint
   const lineObj = useMemo(() => {
-    const points = [new THREE.Vector3(handleX, handleY, Z), new THREE.Vector3(pointX, pointY, Z)];
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineDashedMaterial({
-      color: ACCENT_COLOR,
-      dashSize: 1,
-      gapSize: 0.5,
+    const pts = [new THREE.Vector3(handleX, handleY, Z), new THREE.Vector3(pointX, pointY, Z)];
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = new THREE.LineBasicMaterial({
+      color: HANDLE_LINE_COLOR,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.6,
       depthTest: false,
     });
-    const line = new THREE.Line(geometry, material);
-    line.computeLineDistances();
-    line.renderOrder = OVERLAY_RENDER_ORDER;
-    return line;
+    const obj = new THREE.Line(geo, mat);
+    obj.renderOrder = OVERLAY_RENDER_ORDER;
+    return obj;
   }, [pointX, pointY, handleX, handleY]);
+
+  const outerGeo = useMemo(
+    () => new THREE.CircleGeometry(outerRadius, CIRCLE_SEGMENTS),
+    [outerRadius]
+  );
+  const innerGeo = useMemo(
+    () => new THREE.CircleGeometry(innerRadius, CIRCLE_SEGMENTS),
+    [innerRadius]
+  );
 
   return (
     <>
-      {/* Handle dashed line */}
+      {/* Solid handle line (not dashed — cleaner) */}
       <primitive object={lineObj} />
 
-      {/* Handle dot (small square) */}
-      <mesh
+      {/* Handle dot — circle with border, Figma-style */}
+      <group
         position={[handleX, handleY, Z]}
-        renderOrder={OVERLAY_RENDER_ORDER + 1}
+        scale={[scale, scale, 1]}
         onPointerDown={onPointerDown}
+        onPointerEnter={useCallback(() => setHovered(true), [])}
+        onPointerLeave={useCallback(() => setHovered(false), [])}
       >
-        <planeGeometry args={[dotHalfSize * 2, dotHalfSize * 2]} />
-        <meshBasicMaterial color={HANDLE_DOT_COLOR} depthTest={false} />
-      </mesh>
+        <mesh geometry={outerGeo} renderOrder={OVERLAY_RENDER_ORDER + 1}>
+          <meshBasicMaterial color={ACCENT_COLOR} depthTest={false} />
+        </mesh>
+        <mesh geometry={innerGeo} renderOrder={OVERLAY_RENDER_ORDER + 2} position={[0, 0, 0.001]}>
+          <meshBasicMaterial color={WHITE} depthTest={false} />
+        </mesh>
+      </group>
     </>
   );
 }

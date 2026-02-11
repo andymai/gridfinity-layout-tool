@@ -19,7 +19,7 @@ export const MAX_PATH_POINTS = 200;
 export const MIN_PATH_POINTS = 3;
 
 /** Distance threshold in mm for snapping to close a path */
-export const CLOSE_SNAP_THRESHOLD = 3;
+export const CLOSE_SNAP_THRESHOLD = 5;
 
 /** Default bezier flattening tolerance in mm */
 const DEFAULT_FLATTEN_TOLERANCE = 0.5;
