@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.2...gridfinity-layout-tool-v3.5.3) (2026-02-11)
+
+
+### Bug Fixes
+
+* reset floating inspector position lock on hide/selection change ([#691](https://github.com/andymai/gridfinity-layout-tool/issues/691)) ([da46a36](https://github.com/andymai/gridfinity-layout-tool/commit/da46a36fdb6c15dfe7f62a9e06f103c694eb39a4))
+
 ## [3.5.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.5.1...gridfinity-layout-tool-v3.5.2) (2026-02-11)
 
 
