@@ -71,7 +71,7 @@ export function PathEditOverlay3D({
     <group renderOrder={OVERLAY_RENDER_ORDER}>
       {path.map((pt, i) => {
         const isSelected = selectedPointIndex === i;
-        const showHandles = isSelected;
+        const showHandles = true; // All handles visible in edit mode (Figma behavior)
 
         return (
           <group key={i}>
