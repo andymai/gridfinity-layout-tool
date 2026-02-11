@@ -10,67 +10,123 @@ import { memo, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
-import { flattenPath, triangulatePath, getPathBounds } from '../pathGeometry';
+import { flattenPath, triangulatePath, getPathBounds, MIN_PATH_POINTS } from '../pathGeometry';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
 
 const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
-/** Vertex shader passing per-vertex edge distance for depth shading */
+/** Vertex shader passing local position for distance-field texture lookup */
 const pathVertexShader = /* glsl */ `
-  attribute float a_edgeDist;
-  varying float v_edgeDist;
+  varying vec2 v_local;
   void main() {
-    v_edgeDist = a_edgeDist;
+    v_local = position.xy;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
 
-/** Fragment shader with depth-shading gradient matching SDF shapes */
+/** Fragment shader sampling a baked distance-field texture for depth shading */
 const pathFragmentShader = /* glsl */ `
   uniform vec3 u_fillColor;
   uniform float u_opacity;
-  uniform float u_maxDist;
-  varying float v_edgeDist;
+  uniform sampler2D u_distField;
+  uniform vec2 u_boundsMin;
+  uniform vec2 u_boundsSize;
+
+  varying vec2 v_local;
 
   void main() {
-    // Normalize edge distance (0 = on edge, 1 = deep inside)
-    float depthNorm = clamp(v_edgeDist / u_maxDist, 0.0, 1.0);
+    // Map local position to UV in distance field texture
+    vec2 uv = (v_local - u_boundsMin) / u_boundsSize;
+    float edgeDist = texture2D(u_distField, uv).r;
+
     // Match SDF depth shading: edge darkest (0.55), center lighter (0.9)
-    float shadow = mix(0.55, 0.9, smoothstep(0.0, 0.35, depthNorm));
+    float shadow = mix(0.55, 0.9, smoothstep(0.0, 0.35, edgeDist));
     gl_FragColor = vec4(u_fillColor * shadow, u_opacity);
     if (gl_FragColor.a < 0.01) discard;
   }
 `;
 
+/** Resolution of the baked distance field texture (pixels per axis). */
+const DF_RESOLUTION = 64;
+
+/** Minimum flattened polyline points required to render fill/stroke (need 3 for triangulation). */
+const MIN_POLYLINE_POINTS = 3;
+
 /**
- * Compute minimum distance from a point to the polygon boundary.
- * Uses point-to-segment distance for each edge of the polygon.
+ * Bake a distance-field texture for a polygon.
+ * Each texel stores normalized distance-to-boundary (0 = on edge, 1 = deep inside).
+ * The texture covers the polygon's local bounding box (centered at render origin).
  */
-function distanceToPolygon(
-  px: number,
-  py: number,
-  polygon: readonly { x: number; y: number }[]
-): number {
-  let minDist = Infinity;
-  const n = polygon.length;
-  for (let i = 0; i < n; i++) {
-    const a = polygon[i];
-    const b = polygon[(i + 1) % n];
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const lenSq = dx * dx + dy * dy;
-    if (lenSq === 0) {
-      const d = Math.hypot(px - a.x, py - a.y);
-      if (d < minDist) minDist = d;
-      continue;
-    }
-    const t = Math.max(0, Math.min(1, ((px - a.x) * dx + (py - a.y) * dy) / lenSq));
-    const projX = a.x + t * dx;
-    const projY = a.y + t * dy;
-    const d = Math.hypot(px - projX, py - projY);
-    if (d < minDist) minDist = d;
+function bakeDistanceField(
+  polygon: readonly { x: number; y: number }[],
+  centerX: number,
+  centerY: number
+): { texture: THREE.DataTexture; boundsMin: [number, number]; boundsSize: [number, number] } {
+  // Compute local bounds (polygon coords relative to center)
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+  for (const p of polygon) {
+    const lx = p.x - centerX;
+    const ly = p.y - centerY;
+    if (lx < minX) minX = lx;
+    if (ly < minY) minY = ly;
+    if (lx > maxX) maxX = lx;
+    if (ly > maxY) maxY = ly;
   }
-  return minDist;
+  // Pad slightly to avoid edge artifacts
+  const pad = 0.5;
+  minX -= pad;
+  minY -= pad;
+  maxX += pad;
+  maxY += pad;
+  const w = maxX - minX;
+  const h = maxY - minY;
+
+  const data = new Uint8Array(DF_RESOLUTION * DF_RESOLUTION);
+  const n = polygon.length;
+
+  // Find max possible distance for normalization
+  const maxInner = Math.min(w, h) * 0.5;
+
+  for (let row = 0; row < DF_RESOLUTION; row++) {
+    for (let col = 0; col < DF_RESOLUTION; col++) {
+      const px = minX + ((col + 0.5) / DF_RESOLUTION) * w;
+      const py = minY + ((row + 0.5) / DF_RESOLUTION) * h;
+
+      // Min distance to polygon boundary
+      let dist = Infinity;
+      for (let i = 0; i < n; i++) {
+        const ax = polygon[i].x - centerX;
+        const ay = polygon[i].y - centerY;
+        const bx = polygon[(i + 1) % n].x - centerX;
+        const by = polygon[(i + 1) % n].y - centerY;
+        const dx = bx - ax,
+          dy = by - ay;
+        const lenSq = dx * dx + dy * dy;
+        let d: number;
+        if (lenSq === 0) {
+          d = Math.hypot(px - ax, py - ay);
+        } else {
+          const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
+          d = Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+        }
+        if (d < dist) dist = d;
+      }
+
+      // Normalize: 0 at edge, 1 at maxInner distance inside
+      const norm = Math.min(dist / maxInner, 1);
+      data[row * DF_RESOLUTION + col] = Math.round(norm * 255);
+    }
+  }
+
+  const tex = new THREE.DataTexture(data, DF_RESOLUTION, DF_RESOLUTION, THREE.RedFormat);
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+
+  return { texture: tex, boundsMin: [minX, minY], boundsSize: [w, h] };
 }
 
 interface PathShapeMeshProps {
@@ -104,7 +160,10 @@ export const PathShapeMesh = memo(function PathShapeMesh({
   const path = cutout.path;
 
   // Flatten bezier path to polyline from the committed path (stable during drag)
-  const flatPoints = useMemo(() => (path && path.length >= 3 ? flattenPath(path) : []), [path]);
+  const flatPoints = useMemo(
+    () => (path && path.length >= MIN_PATH_POINTS ? flattenPath(path) : []),
+    [path]
+  );
 
   // Cutout colors derived from the bin surface color
   const { cutFillColor, strokeDefault, strokeGrouped, strokeHover } = useMemo(() => {
@@ -119,7 +178,7 @@ export const PathShapeMesh = memo(function PathShapeMesh({
 
   // Geometry center from committed path — stable reference for local coords
   const { geoCenterX, geoCenterY, area } = useMemo(() => {
-    if (!path || path.length < 3) {
+    if (!path || path.length < MIN_PATH_POINTS) {
       return { geoCenterX: 0, geoCenterY: 0, area: 0 };
     }
     const bounds = getPathBounds(path);
@@ -133,13 +192,16 @@ export const PathShapeMesh = memo(function PathShapeMesh({
   // During vertex editing, preview has updated path — rebuild geometry from that
   const effectivePath = previewOverrides?.path ?? path;
   const effectiveFlatPoints = useMemo(
-    () => (effectivePath && effectivePath.length >= 3 ? flattenPath(effectivePath) : flatPoints),
+    () =>
+      effectivePath && effectivePath.length >= MIN_PATH_POINTS
+        ? flattenPath(effectivePath)
+        : flatPoints,
     [effectivePath, flatPoints]
   );
 
   // Effective center for geometry and positioning
   const { renderCenterX, renderCenterY } = useMemo(() => {
-    if (effectivePath && effectivePath !== path && effectivePath.length >= 3) {
+    if (effectivePath && effectivePath !== path && effectivePath.length >= MIN_PATH_POINTS) {
       const bounds = getPathBounds(effectivePath);
       return {
         renderCenterX: (bounds.minX + bounds.maxX) / 2,
@@ -160,39 +222,37 @@ export const PathShapeMesh = memo(function PathShapeMesh({
       ? renderCenterY + (previewOverrides.y - cutout.y)
       : renderCenterY;
 
-  // Build fill geometry with per-vertex edge distance for depth shading
-  const { fillGeometry, maxEdgeDist } = useMemo(() => {
+  // Build fill geometry (triangulated polygon mesh)
+  const fillGeometry = useMemo(() => {
     const pts = effectiveFlatPoints;
-    if (pts.length < 3) return { fillGeometry: null, maxEdgeDist: 1 };
+    if (pts.length < MIN_POLYLINE_POINTS) return null;
 
     const indices = triangulatePath(pts);
-    if (indices.length === 0) return { fillGeometry: null, maxEdgeDist: 1 };
+    if (indices.length === 0) return null;
 
     const positions = new Float32Array(pts.length * 3);
-    const edgeDists = new Float32Array(pts.length);
-    let maxDist = 0;
-
     for (let i = 0; i < pts.length; i++) {
       positions[i * 3] = pts[i].x - renderCenterX;
       positions[i * 3 + 1] = pts[i].y - renderCenterY;
       positions[i * 3 + 2] = 0.02;
-
-      const dist = distanceToPolygon(pts[i].x, pts[i].y, pts);
-      edgeDists[i] = dist;
-      if (dist > maxDist) maxDist = dist;
     }
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('a_edgeDist', new THREE.BufferAttribute(edgeDists, 1));
     geo.setIndex(indices);
-    return { fillGeometry: geo, maxEdgeDist: Math.max(maxDist, 0.1) };
+    return geo;
+  }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
+
+  // Bake distance field texture for depth shading
+  const distField = useMemo(() => {
+    if (effectiveFlatPoints.length < MIN_POLYLINE_POINTS) return null;
+    return bakeDistanceField(effectiveFlatPoints, renderCenterX, renderCenterY);
   }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
 
   // Build stroke geometry (closed loop outline)
   const strokeGeometry = useMemo(() => {
     const pts = effectiveFlatPoints;
-    if (pts.length < 3) return null;
+    if (pts.length < MIN_POLYLINE_POINTS) return null;
 
     const loopPoints = pts.map(
       (p) => new THREE.Vector3(p.x - renderCenterX, p.y - renderCenterY, 0.02)
@@ -200,25 +260,29 @@ export const PathShapeMesh = memo(function PathShapeMesh({
     return new THREE.BufferGeometry().setFromPoints(loopPoints);
   }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
 
-  // Depth-shaded fill material
-  const fillMaterial = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        vertexShader: pathVertexShader,
-        fragmentShader: pathFragmentShader,
-        uniforms: {
-          u_fillColor: { value: new THREE.Vector3(cutFillColor.r, cutFillColor.g, cutFillColor.b) },
-          u_opacity: { value: isDragging ? 0.85 : 0.95 },
-          u_maxDist: { value: maxEdgeDist },
+  // Depth-shaded fill material with distance field texture
+  const fillMaterial = useMemo(() => {
+    if (!distField) return null;
+    return new THREE.ShaderMaterial({
+      vertexShader: pathVertexShader,
+      fragmentShader: pathFragmentShader,
+      uniforms: {
+        u_fillColor: { value: new THREE.Vector3(cutFillColor.r, cutFillColor.g, cutFillColor.b) },
+        u_opacity: { value: isDragging ? 0.85 : 0.95 },
+        u_distField: { value: distField.texture },
+        u_boundsMin: { value: new THREE.Vector2(distField.boundsMin[0], distField.boundsMin[1]) },
+        u_boundsSize: {
+          value: new THREE.Vector2(distField.boundsSize[0], distField.boundsSize[1]),
         },
-        transparent: true,
-        depthTest: false,
-        side: THREE.DoubleSide,
-      }),
-    [cutFillColor, isDragging, maxEdgeDist]
-  );
+      },
+      transparent: true,
+      depthTest: false,
+      side: THREE.DoubleSide,
+    });
+  }, [cutFillColor, isDragging, distField]);
 
-  if (!path || path.length < 3 || effectiveFlatPoints.length < 3) return null;
+  if (!path || path.length < MIN_PATH_POINTS || effectiveFlatPoints.length < MIN_POLYLINE_POINTS)
+    return null;
 
   const effective = previewOverrides ? { ...cutout, ...previewOverrides } : cutout;
   const strokeColor = isSelected
@@ -266,7 +330,7 @@ export const PathShapeMesh = memo(function PathShapeMesh({
       renderOrder={RENDER_ORDER.SHAPES}
     >
       {/* Depth-shaded fill mesh */}
-      {fillGeometry && (
+      {fillGeometry && fillMaterial && (
         <mesh
           geometry={fillGeometry}
           material={fillMaterial}

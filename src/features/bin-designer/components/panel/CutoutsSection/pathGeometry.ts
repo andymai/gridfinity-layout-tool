@@ -7,16 +7,16 @@
  * All coordinates are in mm, Y-up, matching the cutout editor coordinate system.
  */
 
+import { MIN_PATH_POINTS } from '@/features/bin-designer/types';
 import type { PathPoint } from '@/features/bin-designer/types';
 import type { Bounds } from './geometry';
+
+export { MIN_PATH_POINTS };
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 /** Maximum number of path points to prevent performance issues */
 export const MAX_PATH_POINTS = 200;
-
-/** Minimum number of points for a valid closed path */
-export const MIN_PATH_POINTS = 3;
 
 /** Distance threshold in mm for snapping to close a path */
 export const CLOSE_SNAP_THRESHOLD = 5;

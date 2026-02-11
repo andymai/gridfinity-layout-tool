@@ -20,6 +20,10 @@ import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeome
 import { useDesignerStore, useCutoutSelection } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { Cutout } from '@/features/bin-designer/types';
+import {
+  flattenPath,
+  MIN_PATH_POINTS,
+} from '@/features/bin-designer/components/panel/CutoutsSection/pathGeometry';
 
 /** Ghost line color (amber — matches other ghost previews) */
 const GHOST_COLOR = '#fbbf24';
@@ -77,6 +81,34 @@ function buildCutoutGeometry(
         const px = cx + ex * cosR - ey * sinR;
         const py = cy + ex * sinR + ey * cosR;
         positions.push(px, py, topZ, px, py, bottomZ);
+      }
+    } else if (cutout.shape === 'path' && cutout.path && cutout.path.length >= MIN_PATH_POINTS) {
+      // Flatten bezier path to polyline and render actual shape outline
+      const flat = flattenPath(cutout.path);
+      const n = flat.length;
+      if (n >= 3) {
+        // Path points are in bin-local absolute coords — offset by origin
+        for (let z = 0; z < 2; z++) {
+          const zVal = z === 0 ? topZ : bottomZ;
+          for (let i = 0; i < n; i++) {
+            const p1 = flat[i];
+            const p2 = flat[(i + 1) % n];
+            positions.push(
+              originX + p1.x,
+              originY + p1.y,
+              zVal,
+              originX + p2.x,
+              originY + p2.y,
+              zVal
+            );
+          }
+        }
+        // Vertical lines at every few vertices to show depth
+        const vertStep = Math.max(1, Math.floor(n / 8));
+        for (let i = 0; i < n; i += vertStep) {
+          const p = flat[i];
+          positions.push(originX + p.x, originY + p.y, topZ, originX + p.x, originY + p.y, bottomZ);
+        }
       }
     } else {
       const hw = cutout.width / 2;

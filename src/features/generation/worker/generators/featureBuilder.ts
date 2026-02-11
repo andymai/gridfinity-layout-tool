@@ -29,6 +29,7 @@ import {
 } from 'brepjs';
 import type { Shape3D, Edge } from 'brepjs';
 import type { BinParams, PathPoint } from '@/shared/types/bin';
+import { MIN_PATH_POINTS } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
 import {
   resolveScoopRadius,
@@ -391,12 +392,11 @@ function buildPathCutoutShape(cutout: {
   readonly path?: readonly PathPoint[];
 }): Shape3D {
   const path = cutout.path;
-  if (!path || path.length < 3) {
-    // Fallback: rectangle if path data is missing
+  if (!path || path.length < MIN_PATH_POINTS) {
     return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
   }
 
-  // Flatten bezier path to polyline
+  // Flatten bezier path to polyline — need 3+ flattened points for a closed wire
   const polyline = flattenPathToPolyline(path);
   if (polyline.length < 3) {
     return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);

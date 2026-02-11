@@ -210,6 +210,9 @@ export interface Insert {
 /** Shape of a top-down cutout into solid bin body */
 export type CutoutShape = 'rectangle' | 'circle' | 'path';
 
+/** Minimum number of anchor points required to form a closed path shape */
+export const MIN_PATH_POINTS = 2;
+
 /** A vertex in a bezier path with optional control handles */
 export interface PathPoint {
   /** X position in mm from bin interior left edge */

@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { PathPoint } from '@/features/bin-designer/types';
-import { flattenPath } from '../pathGeometry';
+import { flattenPath, MIN_PATH_POINTS } from '../pathGeometry';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
 
 interface PathDrawingPreview3DProps {
@@ -192,7 +192,7 @@ export function PathDrawingPreview3D({
       {/* Interactive vertex dots — click to reposition existing points */}
       {points.map((pt, i) => {
         const isFirst = i === 0;
-        const showCloseIndicator = isFirst && canClose && points.length >= 3;
+        const showCloseIndicator = isFirst && canClose && points.length >= MIN_PATH_POINTS;
         return (
           <group key={i} position={[pt.x, pt.y, Z]} onPointerDown={makeVertexDown(i)}>
             {/* Close ring — pulsing larger ring around first vertex */}

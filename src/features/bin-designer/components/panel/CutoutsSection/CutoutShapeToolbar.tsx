@@ -126,8 +126,10 @@ export function CutoutShapeToolbar({
           stroke="currentColor"
           strokeWidth="1.5"
         >
-          <path d="M2 12L6 2l3 5 3-3" strokeLinejoin="round" />
-          <circle cx="2" cy="12" r="1.2" fill="currentColor" />
+          {/* Pen nib */}
+          <path d="M10.5 1.5L12.5 3.5 5 11 2 12l1-3z" strokeLinejoin="round" />
+          {/* Bezier curve hint */}
+          <path d="M2 12Q5 8 8 10" strokeLinecap="round" opacity="0.5" />
         </svg>
         {!vertical && t('binDesigner.cutouts.penTool')}
       </button>
