@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useHistoryStore } from '@/core/store/history';
 import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
 import { useLabsStore, LABS_STORAGE_KEY } from '@/core/store/labs';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 import * as storage from '@/core/storage';
@@ -193,8 +194,8 @@ describe('useCrossTabSync', () => {
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
-    useUIStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
-    const clearSelectionSpy = vi.spyOn(useUIStore.getState(), 'clearSelection');
+    useSelectionStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
+    const clearSelectionSpy = vi.spyOn(useSelectionStore.getState(), 'clearSelection');
 
     renderHook(() => useCrossTabSync());
 
@@ -222,8 +223,8 @@ describe('useCrossTabSync', () => {
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
-    useUIStore.setState({ activeLayerId: 'old-layer' });
-    const setActiveLayerSpy = vi.spyOn(useUIStore.getState(), 'setActiveLayer');
+    useSelectionStore.setState({ activeLayerId: 'old-layer' });
+    const setActiveLayerSpy = vi.spyOn(useSelectionStore.getState(), 'setActiveLayer');
 
     renderHook(() => useCrossTabSync());
 
@@ -379,8 +380,8 @@ describe('useCrossTabSync', () => {
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
-    useUIStore.setState({ activeCategoryId: 'old-cat' });
-    const setActiveCategorySpy = vi.spyOn(useUIStore.getState(), 'setActiveCategory');
+    useSelectionStore.setState({ activeCategoryId: 'old-cat' });
+    const setActiveCategorySpy = vi.spyOn(useSelectionStore.getState(), 'setActiveCategory');
 
     renderHook(() => useCrossTabSync());
 

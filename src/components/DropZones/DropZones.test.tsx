@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { DropZones } from './DropZones';
 
 vi.mock('@/core/store', () => ({
-  useUIStore: vi.fn((selector: unknown) => {
+  useInteractionStore: vi.fn((selector: unknown) => {
     const state = {
       interaction: null,
       dropTarget: null,
@@ -11,6 +11,10 @@ vi.mock('@/core/store', () => ({
     };
     return (selector as (s: typeof state) => unknown)(state);
   }),
+}));
+
+vi.mock('@/i18n', () => ({
+  useTranslation: () => (key: string) => key,
 }));
 
 describe('DropZones', () => {

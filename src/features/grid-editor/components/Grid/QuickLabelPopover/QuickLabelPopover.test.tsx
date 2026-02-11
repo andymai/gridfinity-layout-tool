@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { QuickLabelPopover } from './QuickLabelPopover';
-import { useUIStore, useLayoutStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout } from '@/core/constants';
 
 // Mock i18n
@@ -35,7 +36,7 @@ describe('QuickLabelPopover', () => {
   });
 
   it('renders nothing when quickLabelBinId is null', () => {
-    useUIStore.setState({ quickLabelBinId: null });
+    useSelectionStore.setState({ quickLabelBinId: null });
     const { container } = render(<QuickLabelPopover />);
     expect(container.textContent).toBe('');
   });
@@ -79,7 +80,7 @@ describe('QuickLabelPopover', () => {
         ],
       },
     });
-    useUIStore.setState({ quickLabelBinId: binId });
+    useSelectionStore.setState({ quickLabelBinId: binId });
 
     const { getByRole } = render(<QuickLabelPopover />);
     const input = getByRole('textbox');
@@ -127,7 +128,7 @@ describe('QuickLabelPopover', () => {
         ],
       },
     });
-    useUIStore.setState({ quickLabelBinId: binId });
+    useSelectionStore.setState({ quickLabelBinId: binId });
 
     const { getByRole } = render(<QuickLabelPopover />);
     const input = getByRole('textbox');
@@ -177,7 +178,7 @@ describe('QuickLabelPopover', () => {
         ],
       },
     });
-    useUIStore.setState({ quickLabelBinId: binId });
+    useSelectionStore.setState({ quickLabelBinId: binId });
 
     const { getByRole } = render(<QuickLabelPopover />);
     const input = getByRole('textbox') as HTMLInputElement;
@@ -211,7 +212,7 @@ describe('QuickLabelPopover', () => {
         ],
       },
     });
-    useUIStore.setState({ quickLabelBinId: binId });
+    useSelectionStore.setState({ quickLabelBinId: binId });
 
     const { container } = render(<QuickLabelPopover />);
     expect(container.textContent).toBe('');

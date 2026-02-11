@@ -181,7 +181,7 @@ export const useRecentCommandsStore = create<FrecencyState>()((set, get) => {
         ...usage,
         [commandId]: {
           commandId,
-          useCount: existing.useCount + 1,
+          useCount: (existing?.useCount ?? 0) + 1, // eslint-disable-line @typescript-eslint/no-unnecessary-condition -- existing is undefined for new commands
           lastUsedAt: now,
         },
       };

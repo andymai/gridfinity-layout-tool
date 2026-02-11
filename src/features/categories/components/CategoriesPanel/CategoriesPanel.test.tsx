@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
 import { resetAllStores } from '@/test/testUtils';
 
 // Mock ConfirmDialog to simplify testing
@@ -69,7 +70,7 @@ describe('CategoriesPanel', () => {
       },
     });
 
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeCategoryId: 'coral',
       selectedBinIds: [],
     });
@@ -110,7 +111,7 @@ describe('CategoriesPanel', () => {
 
       fireEvent.click(screen.getByText('Sky'));
 
-      expect(useUIStore.getState().activeCategoryId).toBe('sky');
+      expect(useSelectionStore.getState().activeCategoryId).toBe('sky');
     });
 
     it('updates selected bins when bins are selected', () => {
@@ -128,7 +129,7 @@ describe('CategoriesPanel', () => {
         notes: '',
       });
       const binId = useLayoutStore.getState().layout.bins[0].id;
-      useUIStore.setState({ selectedBinIds: [binId] });
+      useSelectionStore.setState({ selectedBinIds: [binId] });
 
       render(<CategoriesPanel />);
       fireEvent.click(screen.getByText('Sky'));

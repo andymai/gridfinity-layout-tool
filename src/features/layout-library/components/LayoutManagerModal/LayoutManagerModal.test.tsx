@@ -689,7 +689,8 @@ describe('LayoutManagerModal Accessibility', () => {
     it('closes when clicking backdrop', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const backdrop = screen.getByRole('presentation');
+      // Multiple elements may have role="presentation"; the backdrop is the first (outermost) one
+      const backdrop = screen.getAllByRole('presentation')[0];
       act(() => {
         fireEvent.click(backdrop);
       });

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
-import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '@/core/store';
+import { useLayoutStore, useLibraryStore, useLabsStore } from '@/core/store';
+import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import * as analytics from '@/shared/analytics/posthog';
@@ -283,7 +284,7 @@ describe('ShareModal', () => {
   describe('screen reader announcements', () => {
     it('announces copy to screen reader', async () => {
       const announceSpy = vi.fn();
-      useUIStore.setState({ announceToScreenReader: announceSpy });
+      useInteractionStore.setState({ announceToScreenReader: announceSpy });
 
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
       fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
@@ -296,7 +297,7 @@ describe('ShareModal', () => {
 
     it('announces download to screen reader', async () => {
       const announceSpy = vi.fn();
-      useUIStore.setState({ announceToScreenReader: announceSpy });
+      useInteractionStore.setState({ announceToScreenReader: announceSpy });
 
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
       fireEvent.click(screen.getByRole('tab', { name: 'File' }));
@@ -309,7 +310,7 @@ describe('ShareModal', () => {
 
     it('announces JSON copy to screen reader', async () => {
       const announceSpy = vi.fn();
-      useUIStore.setState({ announceToScreenReader: announceSpy });
+      useInteractionStore.setState({ announceToScreenReader: announceSpy });
 
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
       fireEvent.click(screen.getByRole('tab', { name: 'JSON' }));
@@ -333,8 +334,8 @@ describe('ShareModal', () => {
     it('calls onClose when backdrop clicked', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
-      // The dialog role is on the backdrop div itself
-      const backdrop = screen.getByRole('dialog');
+      // The backdrop div has role="presentation"; the inner content has role="dialog"
+      const backdrop = screen.getByRole('presentation');
       fireEvent.click(backdrop);
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);

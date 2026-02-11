@@ -19,7 +19,8 @@ export function compressString(input: string): string {
  */
 export function decompressString(compressed: string): string {
   const result = LZString.decompressFromUTF16(compressed);
-  return result;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- LZString can return null for invalid input
+  return result ?? '';
 }
 
 /**

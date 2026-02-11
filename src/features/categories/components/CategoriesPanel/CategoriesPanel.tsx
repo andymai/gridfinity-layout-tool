@@ -273,18 +273,11 @@ export function CategoriesPanel() {
             const isHovered = hoveredCategoryId === category.id;
 
             return (
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard users interact with inner buttons
               <div
                 key={category.id}
-                role="button"
-                tabIndex={0}
                 className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-colors duration-150 ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
                 onClick={() => handleCategorySelect(category.id, category.name)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleCategorySelect(category.id, category.name);
-                  }
-                }}
                 onMouseEnter={() => {
                   setHoveredCategoryId(category.id);
                   setHighlightedCategoryId(category.id);

@@ -309,6 +309,12 @@ export function saveLibraryResult(library: LayoutLibrary): Result<void, StorageE
  * Returns null if the library is structurally invalid or has no surviving entries.
  */
 function validateAndCleanLibrary(parsed: LayoutLibrary): LayoutLibrary | null {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- validate structure from localStorage
+  if (!parsed.version || !parsed.activeLayoutId || !Array.isArray(parsed.entries)) {
+    console.warn('Invalid library format');
+    return null;
+  }
+
   // Validate each entry exists in storage (clean up orphaned entries)
   const validEntries = parsed.entries.filter((entry: LayoutEntry) => {
     const key = getLayoutStorageKey(entry.id);

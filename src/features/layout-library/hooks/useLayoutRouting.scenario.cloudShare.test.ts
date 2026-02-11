@@ -11,7 +11,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useLayoutRouting } from '@/features/layout-library/hooks/useLayoutRouting';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { useUIStore } from '@/core/store/ui';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import * as url from '@/utils/url';
 
 // Mock the url utilities
@@ -79,7 +79,8 @@ describe('useLayoutRouting with cloud share URLs', () => {
       },
     });
 
-    useUIStore.setState({
+    useSharedPreviewStore.setState({
+      sharedPreview: null,
       sharedLayoutPreview: null,
     });
 
@@ -200,10 +201,13 @@ describe('useLayoutRouting with cloud share URLs', () => {
   describe('shared preview mode', () => {
     it('should preserve URL when in shared preview mode', () => {
       // During shared preview, keep the share URL visible for better UX
-      useUIStore.setState({
-        sharedLayoutPreview: {
+      useSharedPreviewStore.setState({
+        sharedPreview: {
           layout: {} as any,
-          layoutName: 'Shared Layout',
+          originalName: 'Shared Layout',
+          authorName: null,
+          cloudShareId: null,
+          permission: null,
         },
       });
 

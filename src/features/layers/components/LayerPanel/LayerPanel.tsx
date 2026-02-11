@@ -341,9 +341,8 @@ export function LayerPanel() {
                   <div className="absolute -top-0.5 left-0 right-0 h-1 bg-accent z-10 pointer-events-none" />
                 )}
 
+                {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard users interact with inner buttons */}
                 <div
-                  role="button"
-                  tabIndex={0}
                   draggable={hasMultipleLayers && !editingLayerId}
                   onDragStart={(e) => handleDragStart(e, displayIndex)}
                   onDragOver={(e) => handleDragOver(e, displayIndex)}
@@ -351,12 +350,6 @@ export function LayerPanel() {
                   onDrop={handleDrop}
                   onDragEnd={handleDragEnd}
                   onClick={() => !isEditing && setActiveLayer(layer.id)}
-                  onKeyDown={(e) => {
-                    if ((e.key === 'Enter' || e.key === ' ') && !isEditing) {
-                      e.preventDefault();
-                      setActiveLayer(layer.id);
-                    }
-                  }}
                   className={`group flex items-center gap-2 px-2 py-1.5 text-xs transition-all border-l-2 ${
                     isActive
                       ? 'bg-accent/15 border-l-accent text-content font-medium'

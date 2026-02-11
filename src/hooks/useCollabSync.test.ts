@@ -11,8 +11,7 @@ const mockUseMutation = vi.fn();
 const mockUpdateRemoteLayout = vi.fn();
 
 vi.mock('@/liveblocks.config', () => ({
-  useStorage: (selector: (root: { layout: Layout } | null) => Layout | null) =>
-    mockUseStorage(selector),
+  useStorage: (selector: (root: { layout: Layout }) => Layout) => mockUseStorage(selector),
   useMutation: (callback: unknown) => {
     mockUseMutation(callback);
     return mockUpdateRemoteLayout;
@@ -69,10 +68,8 @@ describe('useCollabSync', () => {
       lastEditSource: 'init',
     });
 
-    // Default mock: no remote layout
-    mockUseStorage.mockImplementation((selector) => {
-      return selector(null);
-    });
+    // Default mock: no remote layout (Liveblocks returns undefined when storage not loaded)
+    mockUseStorage.mockReturnValue(undefined);
   });
 
   afterEach(() => {
@@ -134,9 +131,7 @@ describe('useCollabSync', () => {
     });
 
     it('does not sync when remote layout is null', () => {
-      mockUseStorage.mockImplementation((selector) => {
-        return selector(null);
-      });
+      mockUseStorage.mockReturnValue(undefined);
 
       renderHook(() => useCollabSync());
 
@@ -200,9 +195,8 @@ describe('useCollabSync', () => {
 
     it('does not push when sync state is not ready', () => {
       // Remote is null, so sync state stays pending
-      mockUseStorage.mockImplementation((selector) => {
-        return selector(null);
-      });
+      // The selector receives a null root, so return undefined to simulate unloaded storage
+      mockUseStorage.mockReturnValue(undefined);
 
       renderHook(() => useCollabSync());
 

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BottomNavBar } from './BottomNavBar';
 import { resetAllStores } from '@/test/testUtils';
-import { useUIStore } from '@/core/store/ui';
+import { useMobileStore } from '@/core/store/mobile';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => {
@@ -39,12 +39,12 @@ describe('BottomNavBar', () => {
     const layersButton = screen.getByText('Layers').closest('button');
     if (layersButton) {
       fireEvent.click(layersButton);
-      expect(useUIStore.getState().activeMobilePanel).toBe('layers');
+      expect(useMobileStore.getState().activeMobilePanel).toBe('layers');
     }
   });
 
   it('marks active panel with aria-pressed', () => {
-    useUIStore.setState({ activeMobilePanel: 'layers' });
+    useMobileStore.setState({ activeMobilePanel: 'layers' });
     render(<BottomNavBar />);
     const layersButton = screen.getByText('Layers').closest('button');
     expect(layersButton).toHaveAttribute('aria-pressed', 'true');

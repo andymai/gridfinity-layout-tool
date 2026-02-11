@@ -122,7 +122,8 @@ export function computeDomainDistribution(
 ): Record<string, number> {
   const distribution: Record<string, number> = {};
   for (const bin of getGridBins(bins)) {
-    if (!bin.label.trim()) continue;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+    if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
     const domain = labelData.domain ?? 'unknown';
@@ -142,7 +143,8 @@ export function computeTopLabelHashes(
   const hashCounts: Record<string, number> = {};
 
   for (const bin of getGridBins(bins)) {
-    if (!bin.label.trim()) continue;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+    if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
     hashCounts[labelData.hash] = (hashCounts[labelData.hash] || 0) + 1;
