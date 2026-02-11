@@ -321,5 +321,79 @@ describe('FloatingInspector', () => {
       // Position should update
       expect(panel.style.left).not.toBe(initialLeft);
     });
+
+    it('resets position lock when panel is hidden and re-shown', () => {
+      const cutout = createCutout({ x: 10, y: 10, width: 20, depth: 20 });
+      const { container, rerender } = render(
+        <FloatingInspector {...defaultProps} cutouts={[cutout]} selection={new Set(['cutout1'])} />
+      );
+
+      const panel = container.firstChild as HTMLElement;
+
+      // Interact with panel to engage position lock
+      fireEvent.pointerDown(panel);
+      fireEvent.focusIn(screen.getByTestId('slider-input-Rotation'), { relatedTarget: null });
+
+      const lockedLeft = panel.style.left;
+
+      // Panel hidden (simulating canvas drag) — DOM removed, onBlurCapture can't fire
+      rerender(
+        <FloatingInspector
+          {...defaultProps}
+          cutouts={[cutout]}
+          selection={new Set(['cutout1'])}
+          hidden={true}
+        />
+      );
+      expect(container.firstChild).toBeNull();
+
+      // Panel re-shown with different cutout position
+      const movedCutout = createCutout({ x: 50, y: 50, width: 20, depth: 20 });
+      rerender(
+        <FloatingInspector
+          {...defaultProps}
+          cutouts={[movedCutout]}
+          selection={new Set(['cutout1'])}
+          hidden={false}
+        />
+      );
+
+      // Panel should reposition to the new cutout location, not stay at locked pos
+      const newPanel = container.firstChild as HTMLElement;
+      expect(newPanel).not.toBeNull();
+      expect(newPanel.style.left).not.toBe(lockedLeft);
+    });
+
+    it('resets position lock when selection changes', () => {
+      const cutout1 = createCutout({ id: 'c1', x: 10, y: 10, width: 20, depth: 20 });
+      const cutout2 = createCutout({ id: 'c2', x: 70, y: 70, width: 15, depth: 15 });
+      const { container, rerender } = render(
+        <FloatingInspector
+          {...defaultProps}
+          cutouts={[cutout1, cutout2]}
+          selection={new Set(['c1'])}
+        />
+      );
+
+      const panel = container.firstChild as HTMLElement;
+
+      // Interact with panel to engage position lock
+      fireEvent.pointerDown(panel);
+      fireEvent.focusIn(screen.getByTestId('slider-input-Rotation'), { relatedTarget: null });
+
+      const lockedLeft = panel.style.left;
+
+      // Switch selection to a different cutout at a different position
+      rerender(
+        <FloatingInspector
+          {...defaultProps}
+          cutouts={[cutout1, cutout2]}
+          selection={new Set(['c2'])}
+        />
+      );
+
+      // Panel should reposition for the new cutout
+      expect(panel.style.left).not.toBe(lockedLeft);
+    });
   });
 });
