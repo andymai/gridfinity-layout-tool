@@ -389,4 +389,27 @@ describe('useStagingLongPress', () => {
       expect(mockShowContextMenu).not.toHaveBeenCalled();
     });
   });
+
+  describe('cleanup on unmount', () => {
+    it('should clear pending timer when unmounted', () => {
+      const { result, unmount } = renderLongPressHook(true);
+      const testBinId = binId('bin-1');
+
+      // Start a long-press (timer is pending)
+      act(() => {
+        result.current.startLongPress(testBinId, 100, 200);
+      });
+
+      // Unmount before timer fires
+      unmount();
+
+      // Advance past the duration
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+
+      // Context menu should NOT have been called (timer was cleaned up)
+      expect(mockShowContextMenu).not.toHaveBeenCalled();
+    });
+  });
 });

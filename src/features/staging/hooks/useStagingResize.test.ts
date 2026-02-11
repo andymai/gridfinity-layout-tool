@@ -1,12 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import type { RefObject, PointerEvent as ReactPointerEvent } from 'react';
-import { useStagingResize } from '@/features/staging/hooks/useStagingResize';
-
-/** Minimum height in pixels the stash can be resized to */
-const MIN_STASH_HEIGHT = 80;
-/** Maximum height as percentage of viewport */
-const MAX_STASH_HEIGHT_VH = 90;
+import {
+  useStagingResize,
+  MIN_STASH_HEIGHT,
+  MAX_STASH_HEIGHT_VH,
+} from '@/features/staging/hooks/useStagingResize';
 
 describe('useStagingResize', () => {
   let mockScrollContainer: HTMLDivElement;

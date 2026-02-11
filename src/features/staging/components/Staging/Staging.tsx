@@ -13,16 +13,16 @@ import type { BinId } from '@/core/types';
 import { binId as toBinId } from '@/core/types';
 import { isErr } from '@/core/result';
 import { packBins } from '@/features/staging/utils/packing';
-import { useStagingResize } from '@/features/staging/hooks/useStagingResize';
+import {
+  useStagingResize,
+  MIN_STASH_HEIGHT,
+  MAX_STASH_HEIGHT_VH,
+} from '@/features/staging/hooks/useStagingResize';
 import { useStagingLongPress } from '@/features/staging/hooks/useStagingLongPress';
 import { StagingBin } from './StagingBin';
 
 /** Default max height for the stash panel (33% of viewport) */
 const DEFAULT_STASH_MAX_HEIGHT_VH = 33;
-/** Minimum height in pixels the stash can be resized to (mirrors useStagingResize) */
-const MIN_STASH_HEIGHT = 80;
-/** Maximum height as percentage of viewport (mirrors useStagingResize) */
-const MAX_STASH_HEIGHT_VH = 90;
 
 /**
  * Staging area with grid visualization for temporarily holding bins.

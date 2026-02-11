@@ -3,9 +3,9 @@ import type { RefObject, PointerEvent as ReactPointerEvent } from 'react';
 import { clamp } from '@/shared/utils';
 
 /** Minimum height in pixels the stash can be resized to */
-const MIN_STASH_HEIGHT = 80;
+export const MIN_STASH_HEIGHT = 80;
 /** Maximum height as percentage of viewport */
-const MAX_STASH_HEIGHT_VH = 90;
+export const MAX_STASH_HEIGHT_VH = 90;
 
 interface UseStagingResizeOptions {
   scrollContainerRef: RefObject<HTMLDivElement | null>;

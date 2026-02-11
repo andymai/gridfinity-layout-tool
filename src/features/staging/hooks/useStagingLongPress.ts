@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import type { BinId } from '@/core/types';
 
 /** Long-press duration for context menu on touch devices (ms) */
@@ -8,7 +8,11 @@ const MOVEMENT_THRESHOLD = 10;
 
 interface UseStagingLongPressOptions {
   isTouchDevice: boolean;
-  showContextMenu: (binIds: BinId[], position: { x: number; y: number }, context: string) => void;
+  showContextMenu: (
+    binIds: BinId[],
+    position: { x: number; y: number },
+    source?: 'grid' | 'staging'
+  ) => void;
 }
 
 interface UseStagingLongPressReturn {
@@ -47,7 +51,7 @@ export function useStagingLongPress({
         longPressTimerRef.current = window.setTimeout(() => {
           longPressTriggeredRef.current = true;
           // Vibrate if supported (haptic feedback)
-          if ('vibrate' in navigator) {
+          if (typeof navigator.vibrate === 'function') {
             navigator.vibrate(50);
           }
           showContextMenu([binId], { x: clientX, y: clientY }, 'staging');
@@ -74,6 +78,11 @@ export function useStagingLongPress({
   const handlePointerEnd = useCallback(() => {
     clearLongPress();
     pointerStartRef.current = null;
+  }, [clearLongPress]);
+
+  // Clear timer on unmount to prevent stray callbacks after component removal
+  useEffect(() => {
+    return () => clearLongPress();
   }, [clearLongPress]);
 
   return {

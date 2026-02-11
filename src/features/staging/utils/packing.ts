@@ -86,10 +86,14 @@ export function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
   // Cluster by category + similar size, then sort within clusters by area
   const sortedBins = clusterBins(bins);
 
+  // Compute a safe row limit: worst case is all bins stacked vertically
+  const totalDepth = sortedBins.reduce((sum, b) => sum + Math.ceil(b.depth), 0);
+  const maxRows = Math.max(totalDepth, sortedBins.length) + 1;
+
   for (const bin of sortedBins) {
     let placed = false;
     // Try to place at each position, scanning left-to-right, bottom-to-top
-    for (let y = 0; y < 50 && !placed; y++) {
+    for (let y = 0; y < maxRows && !placed; y++) {
       for (let x = 0; x <= gridWidth - bin.width && !placed; x++) {
         if (!isOccupied(x, y, bin.width, bin.depth)) {
           packed.push({ ...bin, x, y });
