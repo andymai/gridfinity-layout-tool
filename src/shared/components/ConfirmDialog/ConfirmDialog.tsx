@@ -92,6 +92,7 @@ export function ConfirmDialog({
       onClick={onCancel}
       role="presentation"
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         ref={dialogRef}
         role="dialog"
@@ -103,6 +104,7 @@ export function ConfirmDialog({
           boxShadow: 'var(--shadow-xl)',
         }}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         <h2 id="dialog-title" className="mb-2 text-xl font-semibold text-content">
           {title}

@@ -21,7 +21,6 @@ export function useUnsavedWarning(): void {
 
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = '';
     };
 
     window.addEventListener('beforeunload', handler);

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { InspirationGallery } from '.';
-import { useUIStore } from '@/core/store/ui';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useMobileStore } from '@/core/store/mobile';
 import { useToastStore } from '@/core/store/toast';
 import type { InspirationLayout } from '../../types';
 
@@ -244,10 +245,12 @@ describe('InspirationGallery', () => {
     document.body.style.overflow = '';
 
     // Spy on store methods
-    vi.spyOn(useUIStore.getState(), 'announceToScreenReader').mockImplementation(
+    vi.spyOn(useInteractionStore.getState(), 'announceToScreenReader').mockImplementation(
       mockAnnounceToScreenReader
     );
-    vi.spyOn(useUIStore.getState(), 'closeMobilePanel').mockImplementation(mockCloseMobilePanel);
+    vi.spyOn(useMobileStore.getState(), 'closeMobilePanel').mockImplementation(
+      mockCloseMobilePanel
+    );
     vi.spyOn(useToastStore.getState(), 'addToast').mockImplementation(mockAddToast);
   });
 

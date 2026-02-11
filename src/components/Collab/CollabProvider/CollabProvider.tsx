@@ -20,7 +20,7 @@ import {
 } from '@/liveblocks.config';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
 import { generateId } from '@/core/constants';
 import { generateGuestName, generateGuestColor } from '@/utils/guestNames';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -232,10 +232,10 @@ function PresenceProvider({ shareId, children }: { shareId: string; children: Re
   // Auto-broadcast selection changes from UI store
   useEffect(() => {
     // Track previous selection to detect changes
-    let prevSelection = useUIStore.getState().selectedBinIds;
+    let prevSelection = useSelectionStore.getState().selectedBinIds;
 
     // Subscribe to entire state and filter for selection changes
-    const unsubscribe = useUIStore.subscribe((state) => {
+    const unsubscribe = useSelectionStore.subscribe((state) => {
       const currentSelection = state.selectedBinIds;
       // Only update if selection actually changed
       if (

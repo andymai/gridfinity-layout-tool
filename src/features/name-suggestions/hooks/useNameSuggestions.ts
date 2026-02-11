@@ -143,7 +143,6 @@ export function useNameSuggestions(): UseNameSuggestionsReturn {
   const acceptAlternative = useCallback(
     (index: number) => {
       const suggestion = alternatives[index];
-      if (!suggestion) return;
 
       setLayoutName(suggestion.name);
       trackSuggestion('accepted', suggestion, index + 1);

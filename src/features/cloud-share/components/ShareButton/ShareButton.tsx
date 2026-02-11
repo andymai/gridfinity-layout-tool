@@ -4,7 +4,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useLabsStore, useLayoutStore, useUIStore, useToastStore } from '@/core/store';
+import { useLabsStore, useLayoutStore, useToastStore } from '@/core/store';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { useTranslation } from '@/i18n';
@@ -32,7 +33,9 @@ export function ShareButton() {
   const { hasActiveShare, status } = cloudShare;
 
   // Check if viewing someone else's shared layout
-  const sharedLayoutCloudShareId = useUIStore((state) => state.sharedLayoutCloudShareId);
+  const sharedLayoutCloudShareId = useSharedPreviewStore(
+    (state) => state.sharedPreview?.cloudShareId ?? null
+  );
   const isViewingSharedLayout = !!sharedLayoutCloudShareId;
 
   // Show shared indicator if we have our own share OR viewing someone else's
@@ -210,9 +213,13 @@ function SharePopover({
     return () => window.removeEventListener('resize', handleResize);
   }, [calculatePosition]);
 
-  // Get shared layout info from UI store (when viewing someone else's share)
-  const sharedLayoutCloudShareId = useUIStore((state) => state.sharedLayoutCloudShareId);
-  const sharedLayoutPermission = useUIStore((state) => state.sharedLayoutPermission);
+  // Get shared layout info from shared preview store (when viewing someone else's share)
+  const sharedLayoutCloudShareId = useSharedPreviewStore(
+    (state) => state.sharedPreview?.cloudShareId ?? null
+  );
+  const sharedLayoutPermission = useSharedPreviewStore(
+    (state) => state.sharedPreview?.permission ?? null
+  );
   const isViewingSharedLayout = !!sharedLayoutCloudShareId;
 
   // Check if we're in collaborative mode (will need to disconnect on delete)
@@ -547,7 +554,7 @@ function SharePopover({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete();
+                        void handleDelete();
                       }}
                       disabled={status === 'deleting'}
                       className="btn btn-secondary text-error border-error hover:bg-error hover:text-white text-sm px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"

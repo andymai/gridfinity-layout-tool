@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store';
+import { useViewStore, useSelectionStore, useInteractionStore, useMobileStore } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
@@ -14,29 +14,24 @@ interface MobileGridToolbarProps {
  */
 export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
   const t = useTranslation();
-  const {
-    zoom,
-    zoomIn,
-    zoomOut,
-    activeLayerId,
-    paintSize,
-    setPaintSize,
-    toggleMobilePanel,
-    showIsometricPreview,
-    toggleIsometricPreview,
-  } = useUIStore(
+  const { zoom, zoomIn, zoomOut } = useViewStore(
     useShallow((state) => ({
       zoom: state.zoom,
       zoomIn: state.zoomIn,
       zoomOut: state.zoomOut,
-      activeLayerId: state.activeLayerId,
-      paintSize: state.paintSize,
-      setPaintSize: state.setPaintSize,
-      toggleMobilePanel: state.toggleMobilePanel,
-      showIsometricPreview: state.showIsometricPreview,
-      toggleIsometricPreview: state.toggleIsometricPreview,
     }))
   );
+  const activeLayerId = useSelectionStore((state) => state.activeLayerId);
+  const { paintSize, setPaintSize, showIsometricPreview, toggleIsometricPreview } =
+    useInteractionStore(
+      useShallow((state) => ({
+        paintSize: state.paintSize,
+        setPaintSize: state.setPaintSize,
+        showIsometricPreview: state.showIsometricPreview,
+        toggleIsometricPreview: state.toggleIsometricPreview,
+      }))
+    );
+  const toggleMobilePanel = useMobileStore((state) => state.toggleMobilePanel);
 
   const layers = useLayoutStore((state) => state.layout.layers);
   const activeLayer = layers.find((l) => l.id === activeLayerId);
@@ -99,7 +94,9 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         <button
           onClick={toggleIsometricPreview}
           className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-secondary'} w-10 h-10 p-0`}
-          aria-label={showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')}
+          aria-label={
+            showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')
+          }
           title={showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '@/core/store';
+import { useInteractionStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -9,7 +9,7 @@ import { useTranslation } from '@/i18n';
  */
 export function DropZones() {
   const t = useTranslation();
-  const { interaction, dropTarget, setDropTarget } = useUIStore(
+  const { interaction, dropTarget, setDropTarget } = useInteractionStore(
     useShallow((state) => ({
       interaction: state.interaction,
       dropTarget: state.dropTarget,
@@ -121,7 +121,8 @@ export function DropZones() {
           style={{
             color: dropTarget === 'trash' ? 'white' : 'var(--text-primary)',
           }}
-        >{t('common.deleteBins', { count: binCount })}
+        >
+          {t('common.deleteBins', { count: binCount })}
         </div>
       </div>
     </div>

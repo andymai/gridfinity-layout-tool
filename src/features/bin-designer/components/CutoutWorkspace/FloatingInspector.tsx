@@ -141,6 +141,20 @@ export function FloatingInspector({
     };
   }, [tryUnlock]);
 
+  // Reset position lock when the panel is hidden or the selection changes.
+  // When hidden, the panel DOM is removed so onBlurCapture never fires,
+  // leaving hasFocusRef stuck true and lockedPos stale. The setState call
+  // here is safe: it only triggers when hidden/selectionKey change (infrequent
+  // prop updates), and is a no-op when the lock was never engaged.
+  const selectionKey = [...selection].sort().join(',');
+
+  useEffect(() => {
+    pointerIsDownRef.current = false;
+    hasFocusRef.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing stale lock; DOM removal prevents blur events from firing
+    setLockedPos(null);
+  }, [hidden, selectionKey]);
+
   if (selection.size === 0 || hidden || !selectionBounds) return null;
 
   // Convert world bounds to screen coords

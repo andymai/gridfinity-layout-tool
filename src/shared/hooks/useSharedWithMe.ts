@@ -117,7 +117,7 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
       }
 
       const { layout, metadata } = result.value;
-      const permission = metadata.permission ?? 'view';
+      const permission = metadata.permission;
 
       // Update the entry with latest info
       const preview = computePreview(layout);

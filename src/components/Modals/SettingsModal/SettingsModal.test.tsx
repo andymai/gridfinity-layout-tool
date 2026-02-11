@@ -20,11 +20,11 @@ vi.mock('./TabNavigation/TabNavigation', () => ({
     activeTab: string;
     onTabChange: (tab: string) => void;
   }) => (
-    <nav role="tablist" data-testid="tab-nav">
+    <div role="tablist" data-testid="tab-nav">
       <button role="tab" onClick={() => onTabChange('general')}>
         {activeTab}
       </button>
-    </nav>
+    </div>
   ),
 }));
 
@@ -117,8 +117,8 @@ describe('SettingsModal', () => {
 
   it('clicking overlay calls onClose', () => {
     render(<SettingsModal isOpen={true} onClose={mockOnClose} />);
-    // The overlay is the outermost div with the fixed class
-    const overlay = screen.getByRole('dialog').parentElement!;
+    // The overlay is the outermost presentation div (backdrop with onClick={onClose})
+    const overlay = screen.getAllByRole('presentation')[0];
     fireEvent.click(overlay);
     expect(mockOnClose).toHaveBeenCalled();
   });

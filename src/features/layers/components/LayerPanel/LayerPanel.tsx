@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
@@ -27,7 +28,7 @@ export function LayerPanel() {
   const layout = useLayoutStore((state) => state.layout);
   const { addLayer, updateLayer, deleteLayer, reorderLayers } = useMutations();
 
-  const { activeLayerId, setActiveLayer } = useUIStore(
+  const { activeLayerId, setActiveLayer } = useSelectionStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
       setActiveLayer: state.setActiveLayer,
@@ -69,7 +70,6 @@ export function LayerPanel() {
 
   const handleAddLayer = () => {
     const topLayer = layers[layers.length - 1];
-    if (!topLayer) return;
 
     // Calculate if layer expansion is needed before adding new layer
     const expansion = calculateLayerAutoExpansion(
@@ -330,9 +330,9 @@ export function LayerPanel() {
               totalCells > 0 ? Math.round((layerCoveredCells / totalCells) * 100) : 0;
             const isDragging = dragSourceIndex === displayIndex;
             const showDropAbove =
-              dropPosition?.index === displayIndex && dropPosition?.position === 'above';
+              dropPosition?.index === displayIndex && dropPosition.position === 'above';
             const showDropBelow =
-              dropPosition?.index === displayIndex && dropPosition?.position === 'below';
+              dropPosition?.index === displayIndex && dropPosition.position === 'below';
 
             return (
               <div key={layer.id} className="relative">
@@ -341,6 +341,7 @@ export function LayerPanel() {
                   <div className="absolute -top-0.5 left-0 right-0 h-1 bg-accent z-10 pointer-events-none" />
                 )}
 
+                {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard users interact with inner buttons */}
                 <div
                   draggable={hasMultipleLayers && !editingLayerId}
                   onDragStart={(e) => handleDragStart(e, displayIndex)}
@@ -374,6 +375,7 @@ export function LayerPanel() {
                       onKeyDown={(e) => e.key === 'Enter' && setEditingLayerId(null)}
                       onClick={(e) => e.stopPropagation()}
                       className="flex-1 bg-surface-elevated rounded px-1 py-0.5 text-xs font-medium outline-none text-content"
+                      // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                       autoFocus
                       aria-label={`Layer name for ${layer.name}`}
                     />
@@ -412,7 +414,11 @@ export function LayerPanel() {
 
                   {/* Height controls - show +/- when active and multiple layers, or always for single layer */}
                   {isActive || !hasMultipleLayers ? (
-                    <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="flex items-center gap-0.5"
+                      role="presentation"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         onClick={() => handleHeightChange(layer.id, -1)}
                         disabled={layer.height <= 1}

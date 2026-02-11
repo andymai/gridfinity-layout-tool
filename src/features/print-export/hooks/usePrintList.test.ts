@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout, generateId } from '@/core/constants';
 import type { Layout, Bin } from '@/core/types';
 
@@ -47,7 +47,7 @@ describe('usePrintList', () => {
       layout,
       activeLayoutId: 'test-layout',
     });
-    useUIStore.setState({
+    useSelectionStore.setState({
       selectedBinIds: [],
     });
   });
@@ -320,7 +320,7 @@ describe('usePrintList', () => {
       useLayoutStore.setState({ layout });
 
       const setSelectedBinsMock = vi.fn();
-      useUIStore.setState({ setSelectedBins: setSelectedBinsMock });
+      useSelectionStore.setState({ setSelectedBins: setSelectedBinsMock });
 
       const { result } = renderHook(() => usePrintList());
 

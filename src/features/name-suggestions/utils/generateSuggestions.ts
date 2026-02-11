@@ -1534,7 +1534,7 @@ export function generateSuggestions(input: SuggestionInput): SuggestionResult {
   const [primary, ...rest] = unique.slice(0, 5);
 
   return {
-    primary: primary ?? null,
+    primary,
     alternatives: rest,
     timestamp: Date.now(),
   };

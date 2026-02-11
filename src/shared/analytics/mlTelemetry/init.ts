@@ -72,9 +72,7 @@ export function initMLTelemetry(): () => void {
         incrementEditCount();
       }
     });
-    if (storeUnsubscribe) {
-      cleanupFunctions.push(storeUnsubscribe);
-    }
+    cleanupFunctions.push(storeUnsubscribe);
   }
 
   // Flush on page hide (tab switch, close, navigation)

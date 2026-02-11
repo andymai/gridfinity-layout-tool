@@ -14,12 +14,11 @@ describe('url utilities', () => {
   beforeEach(() => {
     // Mock window.location
     Object.defineProperty(window, 'location', {
-      value: {
-        ...originalLocation,
+      value: Object.assign({}, originalLocation, {
         hash: '',
         pathname: '/',
         search: '',
-      },
+      }),
       writable: true,
     });
 

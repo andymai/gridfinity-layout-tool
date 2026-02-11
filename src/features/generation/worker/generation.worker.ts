@@ -124,6 +124,7 @@ async function initOpenCascade(): Promise<void> {
       },
     });
   } else {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Emscripten WASM factory returns untyped module (see vite-env.d.ts TECH-DEBT)
     OC = await opencascadeSingle({
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
@@ -335,7 +336,7 @@ async function handleExportSplit(payload: ExportSplitPayload): Promise<void> {
 
 self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
   void (async () => {
-    const message = event.data;
+    const message: WorkerMessage = event.data;
 
     switch (message.type) {
       case 'INIT':

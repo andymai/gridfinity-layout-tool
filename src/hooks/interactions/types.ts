@@ -57,8 +57,8 @@ export interface InteractionContext {
   execute: (fn: () => void) => void;
 
   // Shared refs for pointer tracking (managed by parent)
-  activePointerIdRef: React.MutableRefObject<number | null>;
-  capturedPointerRef: React.MutableRefObject<PointerCaptureHandle | null>;
+  activePointerIdRef: RefObject<number | null>;
+  capturedPointerRef: RefObject<PointerCaptureHandle | null>;
 }
 
 /**

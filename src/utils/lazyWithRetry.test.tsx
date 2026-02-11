@@ -40,7 +40,7 @@ describe('lazyWithRetry', () => {
     originalLocation = window.location;
     mockReload = vi.fn();
     Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, reload: mockReload },
+      value: Object.assign({}, originalLocation, { reload: mockReload }),
       writable: true,
     });
   });

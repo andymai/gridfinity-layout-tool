@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLayoutRouting } from '@/features/layout-library/hooks/useLayoutRouting';
-import { useLayoutStore, useLibraryStore, useUIStore, useToastStore } from '@/core/store';
+import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import * as url from '@/utils/url';
@@ -49,6 +51,9 @@ describe('useLayoutRouting', () => {
 
   beforeEach(() => {
     resetAllStores();
+    // resetAllStores clears legacy fields but not the consolidated sharedPreview
+    // field, so explicitly clear it to prevent cross-test contamination.
+    useSharedPreviewStore.setState({ sharedPreview: null });
     vi.clearAllMocks();
 
     // Set up default mocks
@@ -74,8 +79,8 @@ describe('useLayoutRouting', () => {
       activeLayoutId: 'layout123test',
     });
 
-    // Set up UI store
-    useUIStore.setState({
+    // Set up selection store
+    useSelectionStore.setState({
       activeLayerId: 'layer1',
       activeCategoryId: 'coral',
     });
@@ -133,26 +138,26 @@ describe('useLayoutRouting', () => {
     });
 
     it('clears selection when navigating', async () => {
-      useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useLayoutRouting());
       await result.current.navigateToLayout('layout123test');
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
     });
 
     it('sets active layer to first layer', async () => {
       const { result } = renderHook(() => useLayoutRouting());
       await result.current.navigateToLayout('layout123test');
 
-      expect(useUIStore.getState().activeLayerId).toBe('layer1');
+      expect(useSelectionStore.getState().activeLayerId).toBe('layer1');
     });
 
     it('sets active category to first category', async () => {
       const { result } = renderHook(() => useLayoutRouting());
       await result.current.navigateToLayout('layout123test');
 
-      expect(useUIStore.getState().activeCategoryId).toBe('coral');
+      expect(useSelectionStore.getState().activeCategoryId).toBe('coral');
     });
 
     it('clears undo history', async () => {
@@ -278,7 +283,15 @@ describe('useLayoutRouting', () => {
     });
 
     it('skips popstate during shared preview', () => {
-      useUIStore.setState({ sharedLayoutPreview: mockLayout });
+      useSharedPreviewStore.setState({
+        sharedPreview: {
+          layout: mockLayout,
+          originalName: mockLayout.name,
+          authorName: null,
+          cloudShareId: null,
+          permission: null,
+        },
+      });
 
       renderHook(() => useLayoutRouting());
 
@@ -321,7 +334,15 @@ describe('useLayoutRouting', () => {
 
     it('preserves URL during shared preview', () => {
       // During shared preview, keep the share URL visible for better UX
-      useUIStore.setState({ sharedLayoutPreview: mockLayout });
+      useSharedPreviewStore.setState({
+        sharedPreview: {
+          layout: mockLayout,
+          originalName: mockLayout.name,
+          authorName: null,
+          cloudShareId: null,
+          permission: null,
+        },
+      });
 
       renderHook(() => useLayoutRouting());
 

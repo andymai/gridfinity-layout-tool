@@ -100,7 +100,7 @@ export function useOwnedShareSync(): void {
 
     // Schedule new sync
     debounceTimerRef.current = setTimeout(() => {
-      syncToCloud();
+      void syncToCloud();
     }, CLOUD_SYNC_DEBOUNCE_MS);
 
     return () => {
@@ -117,7 +117,7 @@ export function useOwnedShareSync(): void {
       if (cloudShareRef.current && debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
         // Fire-and-forget sync before unmount using the latest sync function
-        syncToCloudRef.current();
+        void syncToCloudRef.current();
       }
     };
   }, []); // Empty deps - refs provide current values

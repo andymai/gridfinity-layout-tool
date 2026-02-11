@@ -1,12 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import {
-  useLayoutStore,
-  useLibraryStore,
-  useUIStore,
-  useToastStore,
-  useHistoryStore,
-} from '@/core/store';
+import { useLayoutStore, useLibraryStore, useToastStore, useHistoryStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { loadLayoutAsync } from '@/core/storage';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import {
@@ -63,9 +59,10 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
     }))
   );
 
-  const { sharedLayoutPreview, setActiveLayer, setActiveCategory, clearSelection } = useUIStore(
+  const sharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview?.layout ?? null);
+
+  const { setActiveLayer, setActiveCategory, clearSelection } = useSelectionStore(
     useShallow((state) => ({
-      sharedLayoutPreview: state.sharedLayoutPreview,
       setActiveLayer: state.setActiveLayer,
       setActiveCategory: state.setActiveCategory,
       clearSelection: state.clearSelection,

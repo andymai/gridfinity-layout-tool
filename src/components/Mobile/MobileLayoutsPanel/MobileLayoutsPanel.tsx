@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '@/core/store/ui';
+import { useMobileStore } from '@/core/store/mobile';
+import { useInteractionStore } from '@/core/store/interaction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLayoutSwitcher } from '@/hooks';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
@@ -60,12 +60,8 @@ export function MobileLayoutsPanel() {
 
   const currentLayout = useLayoutStore((state) => state.layout);
 
-  const { closeMobilePanel, announceToScreenReader } = useUIStore(
-    useShallow((state) => ({
-      closeMobilePanel: state.closeMobilePanel,
-      announceToScreenReader: state.announceToScreenReader,
-    }))
-  );
+  const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   // Sort entries: active first, then by modifiedAt descending
   const sortedEntries = useMemo(
@@ -196,7 +192,7 @@ export function MobileLayoutsPanel() {
   const confirmDelete = useCallback(() => {
     if (!deleteLayoutId) return;
     const entry = library.entries.find((e) => e.id === deleteLayoutId);
-    deleteLayout(layoutId(deleteLayoutId));
+    void deleteLayout(layoutId(deleteLayoutId));
     announceToScreenReader(`${entry?.name || 'Layout'} deleted`);
     setDeleteLayoutId(null);
   }, [deleteLayoutId, deleteLayout, library.entries, announceToScreenReader]);
@@ -517,10 +513,15 @@ export function MobileLayoutsPanel() {
           <div
             className="fixed inset-0 bg-black/50 z-[60] flex items-end"
             onClick={() => setShareMenuId(null)}
+            role="presentation"
           >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
             <div
               className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-content mb-4">
@@ -626,10 +627,15 @@ export function MobileLayoutsPanel() {
               setRenameLayoutId(null);
               setRenameValue('');
             }}
+            role="presentation"
           >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
             <div
               className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-content mb-4">
@@ -651,6 +657,7 @@ export function MobileLayoutsPanel() {
                 className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
                 placeholder={t('layouts.layoutNamePlaceholder')}
                 maxLength={64}
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                 autoFocus
               />
               <div className="flex gap-2 mt-4">
@@ -725,7 +732,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
     if (existingShare) {
       // Update existing share's permission
       if (newPermission !== existingShare.permission) {
-        updatePermission(newPermission);
+        void updatePermission(newPermission);
       }
     } else {
       // Store locally for when we create the share
@@ -745,7 +752,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
     await share(permission);
   };
 
-  const handlePermissionChange = async (newPermission: SharePermission) => {
+  const handlePermissionChange = (newPermission: SharePermission) => {
     // Only update local state; setPermission already calls updatePermission
     // when an existing share exists (see line 558-565)
     setPermission(newPermission);
@@ -775,13 +782,19 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-[60] flex items-end" onClick={onClose}>
+    <div
+      className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+      onClick={onClose}
+      role="presentation"
+    >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="mobile-cloud-share-title"
         className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
 

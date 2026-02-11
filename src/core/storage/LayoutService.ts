@@ -309,6 +309,7 @@ export function saveLibraryResult(library: LayoutLibrary): Result<void, StorageE
  * Returns null if the library is structurally invalid or has no surviving entries.
  */
 function validateAndCleanLibrary(parsed: LayoutLibrary): LayoutLibrary | null {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- validate structure from localStorage
   if (!parsed.version || !parsed.activeLayoutId || !Array.isArray(parsed.entries)) {
     console.warn('Invalid library format');
     return null;
@@ -428,6 +429,7 @@ export function hasLegacyLayout(): boolean {
  * Returns the migrated library, or null if no legacy layout exists.
  */
 export function migrateFromLegacyStorage(): LayoutLibrary | null {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration from legacy format
   const legacyLayout = loadLegacyLayout();
   if (!legacyLayout) return null;
 
@@ -445,6 +447,7 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
         name: legacyLayout.name || 'Untitled layout',
         createdAt: now,
         modifiedAt: now,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
         preview: computeLayoutPreview(legacyLayout),
       },
     ],
@@ -513,6 +516,7 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
         name: legacyData.name || 'Untitled layout',
         createdAt: now,
         modifiedAt: now,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
         preview: computeLayoutPreview(legacyData),
       },
     ],
@@ -581,6 +585,7 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
           name: defaultLayout.name,
           createdAt: Date.now(),
           modifiedAt: Date.now(),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
           preview: computeLayoutPreview(defaultLayout),
         },
       ],
@@ -635,6 +640,7 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
           name: recoveredLayout.name,
           createdAt: Date.now(),
           modifiedAt: Date.now(),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
           preview: computeLayoutPreview(recoveredLayout),
         },
       ];
@@ -689,6 +695,7 @@ export function saveLayout(layout: Layout): void {
  * @deprecated Use loadLayoutSync for multi-layout support.
  */
 export function loadLayout(): Layout | null {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy compat wrapper
   return loadLegacyLayout();
 }
 

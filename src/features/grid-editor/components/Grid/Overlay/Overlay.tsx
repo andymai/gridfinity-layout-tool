@@ -498,7 +498,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         );
       }
     }
-  } else if (interaction.type === 'paint') {
+  } else {
     const { start, current, paintSize } = interaction;
     const x1 = Math.min(start.x, current.x);
     const y1 = Math.min(start.y, current.y);

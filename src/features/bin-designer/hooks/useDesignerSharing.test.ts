@@ -10,7 +10,7 @@ global.fetch = mockFetch;
 
 // Mock uuid
 vi.mock('@/shared/utils/uuid', () => ({
-  generateUUID: () => 'test-uuid-1234',
+  generateLayoutId: () => 'test-uuid-1234',
 }));
 
 describe('createDesignerShare', () => {

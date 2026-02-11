@@ -1,6 +1,9 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
+import { useInteractionStore } from '@/core/store/interaction';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
@@ -37,27 +40,23 @@ export function Staging() {
       updateBin: state.updateBin,
     }))
   );
-  const {
-    zoom,
-    interaction,
-    setInteraction,
-    dropTarget,
-    setDropTarget,
-    selectedBinIds,
-    setSelectedBin,
-    toggleSelection,
-    showContextMenu,
-  } = useUIStore(
+  const { selectedBinIds, setSelectedBin, toggleSelection } = useSelectionStore(
     useShallow((state) => ({
-      zoom: state.zoom,
+      selectedBinIds: state.selectedBinIds,
+      setSelectedBin: state.setSelectedBin,
+      toggleSelection: state.toggleSelection,
+    }))
+  );
+
+  const zoom = useViewStore((state) => state.zoom);
+  const showContextMenu = useViewStore((state) => state.showContextMenu);
+
+  const { interaction, setInteraction, dropTarget, setDropTarget } = useInteractionStore(
+    useShallow((state) => ({
       interaction: state.interaction,
       setInteraction: state.setInteraction,
       dropTarget: state.dropTarget,
       setDropTarget: state.setDropTarget,
-      selectedBinIds: state.selectedBinIds,
-      setSelectedBin: state.setSelectedBin,
-      toggleSelection: state.toggleSelection,
-      showContextMenu: state.showContextMenu,
     }))
   );
   const { execute } = useUndoableAction();
@@ -108,9 +107,7 @@ export function Staging() {
 
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (entry) {
-        setContainerWidth(entry.contentRect.width);
-      }
+      setContainerWidth(entry.contentRect.width);
     });
 
     observer.observe(container);

@@ -13,7 +13,7 @@
  */
 
 import { useOthers } from '@/liveblocks.config';
-import { useUIStore, useLayoutStore } from '@/core/store';
+import { useViewStore, useLayoutStore } from '@/core/store';
 import { getBaseCellSize } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 import type { InteractionHint } from '@/liveblocks.config';
@@ -30,7 +30,7 @@ interface CollabGhostsProps {
  */
 export function CollabGhosts({ className }: CollabGhostsProps) {
   const others = useOthers();
-  const zoom = useUIStore((state) => state.zoom);
+  const zoom = useViewStore((state) => state.zoom);
   const drawer = useLayoutStore((state) => state.layout.drawer);
   const bins = useLayoutStore((state) => state.layout.bins);
   const { viewportWidth } = useResponsive();
@@ -342,7 +342,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
       ghostElements.push(renderDrawingGhost(`${keyPrefix}-draw`, interaction, color));
     } else if (interaction.type === 'dragging') {
       ghostElements.push(...renderDraggingGhosts(keyPrefix, interaction, color, bins));
-    } else if (interaction.type === 'resizing') {
+    } else {
       ghostElements.push(...renderResizingGhosts(keyPrefix, interaction, color, bins));
     }
   }

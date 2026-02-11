@@ -243,8 +243,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     // Uses refs to always access current handlers (avoids stale closures)
     const processHeavyMove = throttleRAF(
       (coords: Coord, clamped: Coord, currentInteraction: typeof interaction) => {
-        if (!currentInteraction) return;
-
         if (currentInteraction.type === 'drag') {
           dragModeRef.current.handleMove(coords, clamped);
         } else if (currentInteraction.type === 'resize') {
@@ -305,7 +303,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         dragModeRef.current.handleUp();
       } else if (interaction.type === 'resize') {
         resizeModeRef.current.handleUp();
-      } else if (interaction.type === 'stagingDrag') {
+      } else {
         stagingDragModeRef.current.handleUp();
       }
 

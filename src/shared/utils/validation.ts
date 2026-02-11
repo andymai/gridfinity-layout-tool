@@ -417,6 +417,7 @@ export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error
 export function validateCustomProperties(
   props: Record<string, string>
 ): Result<void, ValidationError> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- props may be null/undefined at runtime
   if (!props) {
     return ok(undefined); // undefined/null is valid (no custom properties)
   }

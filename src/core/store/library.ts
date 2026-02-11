@@ -11,7 +11,7 @@ import type {
   LayoutId,
 } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
-import { generateUUID, generateLayoutId } from '@/shared/utils';
+import { generateLayoutId } from '@/shared/utils';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutLastEntity, OK } from '@/core/result';
 import { saveSharedWithMe } from '@/core/storage/SharedWithMeService';
@@ -296,7 +296,7 @@ export const useLibraryStore = create<LibraryState>()(
 
     addSharedWithMe: (entry) => {
       const newEntry: SharedWithMeEntry = {
-        id: generateUUID(),
+        id: crypto.randomUUID(),
         sourceShareId: entry.sourceShareId,
         name: entry.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
         authorName: entry.authorName,

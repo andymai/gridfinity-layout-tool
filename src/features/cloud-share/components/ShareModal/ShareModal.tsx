@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '@/core/store';
+import { useLayoutStore, useLibraryStore, useLabsStore } from '@/core/store';
+import { useInteractionStore } from '@/core/store/interaction';
 import {
   generateShareableURL,
   downloadLayoutAsFile,
@@ -27,7 +28,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
   const t = useTranslation();
   const layout = useLayoutStore((state) => state.layout);
   const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
-  const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   // When collaborative_editing is enabled, cloud sharing is handled by the ShareButton instead
   const isCollabEnabled = useLabsStore((state) => state.isFeatureEnabled('collaborative_editing'));
@@ -106,13 +107,20 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="share-modal-title"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onClose();
+      }}
+      role="presentation"
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         className="bg-surface-elevated rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-modal-title"
+        tabIndex={-1}
       >
         <div className="flex justify-between items-center mb-6">
           <h2 id="share-modal-title" className="text-2xl font-bold text-content">

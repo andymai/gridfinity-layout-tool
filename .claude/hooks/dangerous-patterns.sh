@@ -44,9 +44,6 @@ for file in "${TS_FILES[@]}"; do
   # Skip if no additions
   [[ -z "$ADDED_LINES" ]] && continue
 
-  # Get the actual diff with context once per file (for checks that need it)
-  DIFF_CONTEXT=$(git diff --cached -U30 "$file" 2>/dev/null)
-
   # Check 1: innerHTML assignment (XSS risk)
   if echo "$ADDED_LINES" | grep -qE '\.innerHTML\s*='; then
     # Allow if it's a sanitized value or explicit empty string assignment
@@ -76,27 +73,33 @@ for file in "${TS_FILES[@]}"; do
 
   # Check 5: Unguarded JSON.parse
   # Look for JSON.parse not inside a try block or without catch nearby
+  # Uses the full staged file to check surrounding context (avoids variable newline issues)
   if echo "$ADDED_LINES" | grep -qE 'JSON\.parse\s*\('; then
-    # Find all JSON.parse occurrences and check each one
-    while IFS= read -r match_line; do
-      [[ -z "$match_line" ]] && continue
-      LINE_NUM=$(echo "$match_line" | cut -d: -f1)
+    FULL_FILE=$(git show ":$file" 2>/dev/null)
+    if [[ -n "$FULL_FILE" ]]; then
+      HAS_UNGUARDED=false
+      while IFS= read -r line_num; do
+        [[ -z "$line_num" ]] && continue
 
-      # Skip if line is in a comment
-      LINE_CONTENT=$(echo "$DIFF_CONTEXT" | sed -n "${LINE_NUM}p")
-      [[ "$LINE_CONTENT" == *"//"*"JSON.parse"* ]] && continue
+        # Skip if line is in a comment
+        FILE_LINE=$(echo "$FULL_FILE" | sed -n "${line_num}p")
+        [[ "$FILE_LINE" == *"//"*"JSON.parse"* ]] && continue
 
-      # Get surrounding context
-      CONTEXT_START=$((LINE_NUM > 10 ? LINE_NUM - 10 : 1))
-      CONTEXT_END=$((LINE_NUM + 5))
-      CONTEXT=$(echo "$DIFF_CONTEXT" | sed -n "${CONTEXT_START},${CONTEXT_END}p")
+        # Check 20 lines above and 5 below for try-catch
+        CONTEXT_START=$((line_num > 20 ? line_num - 20 : 1))
+        CONTEXT_END=$((line_num + 5))
+        CONTEXT=$(echo "$FULL_FILE" | sed -n "${CONTEXT_START},${CONTEXT_END}p")
 
-      if ! echo "$CONTEXT" | grep -qE 'try\s*\{|\.catch\(|catch\s*\('; then
+        if ! echo "$CONTEXT" | grep -qE 'try\s*\{|\.catch\(|catch\s*\('; then
+          HAS_UNGUARDED=true
+          break
+        fi
+      done < <(echo "$FULL_FILE" | grep -n 'JSON\.parse' | cut -d: -f1)
+      if $HAS_UNGUARDED; then
         ISSUES+="  $file: JSON.parse without try-catch\n"
         ISSUES+="    Wrap in try-catch or use a safe parser\n"
-        break  # Only report once per file
       fi
-    done < <(echo "$DIFF_CONTEXT" | grep -n 'JSON\.parse' | grep '^[0-9]*:+')
+    fi
   fi
 
   # Check 6: Unguarded localStorage/sessionStorage in non-utility files
@@ -104,22 +107,25 @@ for file in "${TS_FILES[@]}"; do
   if echo "$ADDED_LINES" | grep -qE '(localStorage|sessionStorage)\.(get|set|remove)Item'; then
     # Skip if file is in storage/ or analytics/ directory (assumed to have proper handling)
     if [[ "$file" != */storage/* && "$file" != */analytics/* ]]; then
-      # Check each storage access for try-catch
-      while IFS= read -r match_line; do
-        [[ -z "$match_line" ]] && continue
-        LINE_NUM=$(echo "$match_line" | cut -d: -f1)
+      FULL_FILE=${FULL_FILE:-$(git show ":$file" 2>/dev/null)}
+      if [[ -n "$FULL_FILE" ]]; then
+        HAS_UNGUARDED_STORAGE=false
+        while IFS= read -r line_num; do
+          [[ -z "$line_num" ]] && continue
+          CONTEXT_START=$((line_num > 20 ? line_num - 20 : 1))
+          CONTEXT_END=$((line_num + 5))
+          CONTEXT=$(echo "$FULL_FILE" | sed -n "${CONTEXT_START},${CONTEXT_END}p")
 
-        # Get surrounding context for this specific line
-        CONTEXT_START=$((LINE_NUM > 10 ? LINE_NUM - 10 : 1))
-        CONTEXT_END=$((LINE_NUM + 5))
-        CONTEXT=$(echo "$DIFF_CONTEXT" | sed -n "${CONTEXT_START},${CONTEXT_END}p")
-
-        if ! echo "$CONTEXT" | grep -qE 'try\s*\{|\.catch\(|catch\s*\('; then
+          if ! echo "$CONTEXT" | grep -qE 'try\s*\{|\.catch\(|catch\s*\('; then
+            HAS_UNGUARDED_STORAGE=true
+            break
+          fi
+        done < <(echo "$FULL_FILE" | grep -n -E '(localStorage|sessionStorage)\.(get|set|remove)Item' | cut -d: -f1)
+        if $HAS_UNGUARDED_STORAGE; then
           ISSUES+="  $file: localStorage/sessionStorage without error handling\n"
           ISSUES+="    Use core/storage layer or wrap in try-catch\n"
-          break  # Only report once per file
         fi
-      done < <(echo "$DIFF_CONTEXT" | grep -n -E '(localStorage|sessionStorage)\.(get|set|remove)Item' | grep '^[0-9]*:+')
+      fi
     fi
   fi
 

@@ -13,7 +13,7 @@
 
 import { useMemo } from 'react';
 import { useOthers } from '@/liveblocks.config';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore, useViewStore } from '@/core/store';
 import { getBaseCellSize, STAGING_ID } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 
@@ -48,7 +48,7 @@ export function CollabSelectionRings({ className }: CollabSelectionRingsProps) {
   const others = useOthers();
   const bins = useLayoutStore((state) => state.layout.bins);
   const drawer = useLayoutStore((state) => state.layout.drawer);
-  const zoom = useUIStore((state) => state.zoom);
+  const zoom = useViewStore((state) => state.zoom);
   const { viewportWidth } = useResponsive();
 
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);

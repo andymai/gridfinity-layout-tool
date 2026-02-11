@@ -143,7 +143,8 @@ describe('ExportDialog', () => {
 
   it('closes on backdrop click', () => {
     render(<ExportDialog />);
-    const backdrop = screen.getByRole('dialog');
+    // Click the backdrop (role="presentation"), not the dialog itself
+    const backdrop = screen.getByRole('presentation');
     fireEvent.click(backdrop);
 
     // Verify store was updated

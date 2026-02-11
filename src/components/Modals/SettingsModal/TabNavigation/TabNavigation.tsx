@@ -12,7 +12,7 @@ interface TabNavigationProps {
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const { isMobile } = useResponsive();
   const t = useTranslation();
-  const navRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -43,9 +43,10 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
 
   if (isMobile) {
     return (
-      <nav
+      <div
         ref={navRef}
         role="tablist"
+        tabIndex={0}
         aria-label={t('settings.title')}
         className="flex overflow-x-auto border-b border-stroke-subtle scrollbar-none"
         onKeyDown={handleKeyDown}
@@ -73,14 +74,15 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
             </button>
           );
         })}
-      </nav>
+      </div>
     );
   }
 
   return (
-    <nav
+    <div
       ref={navRef}
       role="tablist"
+      tabIndex={0}
       aria-label={t('settings.title')}
       aria-orientation="vertical"
       className="w-40 flex-shrink-0 border-r border-stroke-subtle py-2"
@@ -109,6 +111,6 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           </button>
         );
       })}
-    </nav>
+    </div>
   );
 }

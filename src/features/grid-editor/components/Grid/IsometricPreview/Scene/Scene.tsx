@@ -2,7 +2,7 @@ import { useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useState }
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { OrthographicCamera, Spherical, Vector3 } from 'three';
-import { useUIStore } from '@/core/store';
+import { useInteractionStore } from '@/core/store/interaction';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from '../FloorGrid';
 import { FrontLabel } from '../FrontLabel';
@@ -93,7 +93,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
     const animationFrameRef = useRef<number | null>(null);
     const { camera, size } = useThree();
 
-    const setIsometricRotation = useUIStore((state) => state.setIsometricRotation);
+    const setIsometricRotation = useInteractionStore((state) => state.setIsometricRotation);
 
     // Calculate height-to-grid scale from user settings
     const heightToGridScale = heightUnitMm / gridUnitMm;
@@ -154,7 +154,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
     // - Initial mount (first time we have valid size)
     // - Size changes after expand/collapse (pendingFitZoom is set)
     useEffect(() => {
-      if (!camera || !(camera instanceof OrthographicCamera)) return;
+      if (!(camera instanceof OrthographicCamera)) return;
       if (size.width === 0 || size.height === 0) return;
 
       const prevSize = prevSizeRef.current;
@@ -209,17 +209,13 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       ref,
       () => ({
         resetView: () => {
-          if (!controlsRef.current || !camera) return;
-
           // Reset camera position to default front-right view
           camera.position.set(...defaultCameraPosition);
-          controlsRef.current.target.set(centerX, centerY, centerZ);
-          controlsRef.current.update();
+          controlsRef.current?.target.set(centerX, centerY, centerZ);
+          controlsRef.current?.update();
           setIsometricRotation(0);
         },
         setPreset: (preset: CameraPreset) => {
-          if (!controlsRef.current || !camera) return;
-
           const target = new Vector3(centerX, centerY, centerZ);
           const targetPosition = new Vector3(...cameraPresets[preset]);
           const startPosition = camera.position.clone();

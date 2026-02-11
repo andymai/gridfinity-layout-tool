@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { usePWAUpdate } from '@/shared/hooks';
-import { useUIStore } from '@/core/store/ui';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
 import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
@@ -92,7 +94,7 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Set up an active interaction
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: {
           type: 'drag',
           binIds: ['bin1'],
@@ -163,7 +165,7 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Set expanded preview state
-      useUIStore.setState({ isPreviewExpanded: true });
+      useInteractionStore.setState({ isPreviewExpanded: true });
 
       renderHook(() => usePWAUpdate());
 
@@ -181,7 +183,7 @@ describe('usePWAUpdate', () => {
     it('blocks reload with context menu open', async () => {
       mockNeedRefresh = true;
 
-      useUIStore.setState({
+      useViewStore.setState({
         contextMenu: { binIds: ['bin1'], position: { x: 100, y: 100 }, source: 'grid' },
       });
 
@@ -201,7 +203,7 @@ describe('usePWAUpdate', () => {
     it('blocks reload with quick label popover open', async () => {
       mockNeedRefresh = true;
 
-      useUIStore.setState({ quickLabelBinId: 'bin1' });
+      useSelectionStore.setState({ quickLabelBinId: 'bin1' });
 
       renderHook(() => usePWAUpdate());
 
@@ -219,7 +221,7 @@ describe('usePWAUpdate', () => {
     it('blocks reload during keyboard drag mode', async () => {
       mockNeedRefresh = true;
 
-      useUIStore.setState({ keyboardDragMode: true });
+      useInteractionStore.setState({ keyboardDragMode: true });
 
       renderHook(() => usePWAUpdate());
 
@@ -238,14 +240,14 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Ensure we're in a safe state (default after resetAllStores)
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: null,
         isPreviewExpanded: false,
-        contextMenu: null,
-        quickLabelBinId: null,
         keyboardDragMode: false,
         keyboardResizeMode: false,
       });
+      useViewStore.setState({ contextMenu: null });
+      useSelectionStore.setState({ quickLabelBinId: null });
 
       renderHook(() => usePWAUpdate());
 
@@ -572,7 +574,7 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Keep interaction active
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: {
           type: 'drag',
           binIds: ['bin1'],
@@ -619,11 +621,9 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Set up some UI state to be saved
-      useUIStore.setState({
-        selectedBinIds: ['bin-1', 'bin-2'],
-        zoom: 2.0,
-        showIsometricPreview: true,
-      });
+      useSelectionStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
+      useViewStore.setState({ zoom: 2.0 });
+      useInteractionStore.setState({ showIsometricPreview: true });
 
       renderHook(() => usePWAUpdate());
 
@@ -701,14 +701,13 @@ describe('usePWAUpdate', () => {
       });
 
       // Check that state was restored
-      const ui = useUIStore.getState();
-      expect(ui.zoom).toBe(1.5);
-      expect(ui.showIsometricPreview).toBe(true);
-      expect(ui.isometricRotation).toBe(90);
-      expect(ui.layerViewMode).toBe('all');
-      expect(ui.rightPanelCollapsed).toBe(true);
-      expect(ui.paintSize).toEqual({ width: 2, depth: 2 });
-      expect(ui.selectedBinIds).toEqual(['bin-1']);
+      expect(useViewStore.getState().zoom).toBe(1.5);
+      expect(useInteractionStore.getState().showIsometricPreview).toBe(true);
+      expect(useInteractionStore.getState().isometricRotation).toBe(90);
+      expect(useInteractionStore.getState().layerViewMode).toBe('all');
+      expect(useViewStore.getState().rightPanelCollapsed).toBe(true);
+      expect(useInteractionStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
+      expect(useSelectionStore.getState().selectedBinIds).toEqual(['bin-1']);
 
       // Check toast was shown
       const toasts = useToastStore.getState().toasts;
@@ -767,9 +766,9 @@ describe('usePWAUpdate', () => {
       });
 
       // Selection should be empty (bins don't exist)
-      const ui = useUIStore.getState();
-      expect(ui.selectedBinIds).toEqual([]);
-      expect(ui.focusedBinId).toBeNull();
+      const selection = useSelectionStore.getState();
+      expect(selection.selectedBinIds).toEqual([]);
+      expect(selection.focusedBinId).toBeNull();
     });
   });
 });

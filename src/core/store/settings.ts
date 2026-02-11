@@ -357,7 +357,7 @@ function loadSettings(): UserSettings {
   try {
     const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
+      const parsed = JSON.parse(stored) as Partial<UserSettings>;
       // Deep merge printViewSettings to handle new fields
       const printViewSettings: PrintViewSettings = {
         ...DEFAULT_PRINT_VIEW_SETTINGS,
@@ -383,7 +383,7 @@ function loadSettings(): UserSettings {
         ...parsed.printSettings,
       };
       // Merge with defaults to handle any missing fields
-      return {
+      const merged: UserSettings = {
         ...DEFAULT_SETTINGS,
         ...parsed,
         printViewSettings,
@@ -393,6 +393,7 @@ function loadSettings(): UserSettings {
         designListViewMode,
         printSettings,
       };
+      return merged;
     }
   } catch (e) {
     console.warn('Failed to load settings:', e);

@@ -22,7 +22,7 @@ vi.mock('@/core/store', () => ({
       undo: vi.fn(),
       redo: vi.fn(),
     }),
-  useUIStore: (selector: (state: Record<string, unknown>) => unknown) =>
+  useMobileStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       toggleMobilePanel: vi.fn(),
     }),

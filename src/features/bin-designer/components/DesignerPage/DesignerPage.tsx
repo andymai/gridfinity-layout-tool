@@ -199,8 +199,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   const redo = useDesignerStore((s) => s.redo);
   const addToast = useToastStore((s) => s.addToast);
   // Platform detection for keyboard shortcut hints
-  const isMac =
-    typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
   const modKey = isMac ? '\u2318' : 'Ctrl';
 
   // Inline name editing (like planner mode)

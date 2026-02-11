@@ -3,7 +3,9 @@ import { render, fireEvent, cleanup } from '@testing-library/react';
 import { createRef } from 'react';
 import { GridCanvas } from '@/features/grid-editor/components/Grid/GridCanvas';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
+import { useInteractionStore } from '@/core/store/interaction';
 import { createDefaultLayout } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
@@ -48,7 +50,7 @@ describe('GridCanvas', () => {
     // Set test-specific state
     defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       activeCategoryId: defaultLayout.categories[0].id,
     });
@@ -162,8 +164,10 @@ describe('GridCanvas', () => {
       });
 
       // Active layer is still the first layer
-      useUIStore.setState({
+      useSelectionStore.setState({
         activeLayerId: defaultLayout.layers[0].id,
+      });
+      useViewStore.setState({
         showOtherLayers: false, // Don't show ghost bins
       });
 
@@ -201,8 +205,10 @@ describe('GridCanvas', () => {
       });
 
       // Set active layer to second layer, show other layers
-      useUIStore.setState({
+      useSelectionStore.setState({
         activeLayerId: 'layer-2',
+      });
+      useViewStore.setState({
         showOtherLayers: true,
       });
 
@@ -234,7 +240,7 @@ describe('GridCanvas', () => {
         },
       });
 
-      useUIStore.setState({
+      useSelectionStore.setState({
         activeLayerId: defaultLayout.layers[0].id,
         selectedBinIds: ['selected-bin'],
       });
@@ -310,7 +316,7 @@ describe('GridCanvas', () => {
     });
 
     it('shows cell cursor in paint mode', () => {
-      useUIStore.setState({
+      useInteractionStore.setState({
         paintSize: { width: 2, depth: 2 },
       });
 
@@ -330,7 +336,7 @@ describe('GridCanvas', () => {
     });
 
     it('disables touch actions during interaction', () => {
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: {
           type: 'draw',
           start: { x: 0, y: 0 },
@@ -452,7 +458,7 @@ describe('GridCanvas', () => {
       });
 
       // Set active layer to layer 2 to see blocked zones
-      useUIStore.setState({
+      useSelectionStore.setState({
         activeLayerId: 'layer-2',
       });
 
@@ -492,7 +498,7 @@ describe('GridCanvas', () => {
         },
       });
 
-      useUIStore.setState({
+      useSelectionStore.setState({
         activeLayerId: 'layer-2',
         selectedBinIds: [],
       });
@@ -503,8 +509,8 @@ describe('GridCanvas', () => {
       fireEvent.click(blockedZone!);
 
       // Should switch to layer 1 and select the bin
-      expect(useUIStore.getState().activeLayerId).toBe('layer-1');
-      expect(useUIStore.getState().selectedBinIds).toContain('tall-bin');
+      expect(useSelectionStore.getState().activeLayerId).toBe('layer-1');
+      expect(useSelectionStore.getState().selectedBinIds).toContain('tall-bin');
     });
   });
 
@@ -616,7 +622,7 @@ describe('GridCanvas', () => {
   describe('Paint mode bin click behavior', () => {
     it('allows bin clicks to pass through in paint mode (does not intercept)', () => {
       // Set up paint mode
-      useUIStore.setState({
+      useInteractionStore.setState({
         paintSize: { width: 2, depth: 2 },
       });
 
@@ -644,7 +650,7 @@ describe('GridCanvas', () => {
       const { container } = renderGridCanvas();
 
       // Verify paint mode is active
-      expect(useUIStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
+      expect(useInteractionStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
 
       // Verify bin is rendered and can receive clicks
       const binElement = container.querySelector('[data-bin-id="test-bin-paint"]');
@@ -657,7 +663,7 @@ describe('GridCanvas', () => {
 
     it('clears paint mode when clicking on a bin', () => {
       // Set up paint mode
-      useUIStore.setState({
+      useInteractionStore.setState({
         paintSize: { width: 2, depth: 2 },
       });
 
@@ -685,7 +691,7 @@ describe('GridCanvas', () => {
       const { container } = renderGridCanvas();
 
       // Verify paint mode is active
-      expect(useUIStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
+      expect(useInteractionStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
 
       // Click on the bin
       const binElement = container.querySelector('[data-bin-id="test-bin-click"]');
@@ -695,13 +701,15 @@ describe('GridCanvas', () => {
       fireEvent.pointerDown(binElement!, { button: 0, isPrimary: true });
 
       // Paint mode should be cleared
-      expect(useUIStore.getState().paintSize).toBeNull();
+      expect(useInteractionStore.getState().paintSize).toBeNull();
     });
 
     it('selects the bin when clicking in paint mode', () => {
       // Set up paint mode
-      useUIStore.setState({
+      useInteractionStore.setState({
         paintSize: { width: 2, depth: 2 },
+      });
+      useSelectionStore.setState({
         selectedBinIds: [],
       });
 
@@ -733,7 +741,7 @@ describe('GridCanvas', () => {
       fireEvent.pointerDown(binElement!, { button: 0, isPrimary: true });
 
       // Bin should be selected
-      expect(useUIStore.getState().selectedBinIds).toContain('test-bin-select');
+      expect(useSelectionStore.getState().selectedBinIds).toContain('test-bin-select');
     });
   });
 });

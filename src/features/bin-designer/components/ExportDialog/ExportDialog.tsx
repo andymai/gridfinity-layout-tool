@@ -141,14 +141,20 @@ export function ExportDialog() {
     <div
       ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      role="presentation"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeDialog();
       }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="export-dialog-title"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') closeDialog();
+      }}
     >
-      <div className="mx-4 w-full max-w-md rounded-xl bg-surface-elevated p-6 shadow-2xl">
+      <div
+        className="mx-4 w-full max-w-md rounded-xl bg-surface-elevated p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="export-dialog-title"
+      >
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <h2 id="export-dialog-title" className="text-lg font-semibold text-content">
@@ -208,6 +214,9 @@ export function ExportDialog() {
                 <span
                   className="flex-1 cursor-text truncate px-3 py-2 text-sm text-content"
                   onClick={() => handleStyleChange('custom')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') handleStyleChange('custom');
+                  }}
                   onFocus={() => handleStyleChange('custom')}
                   role="textbox"
                   tabIndex={0}
@@ -431,6 +440,7 @@ function FormatSelector({
         className="flex gap-2"
         role="radiogroup"
         aria-label={formatLabel}
+        tabIndex={-1}
         onKeyDown={handleKeyDown}
       >
         {FORMAT_OPTIONS.map((fmt) => {

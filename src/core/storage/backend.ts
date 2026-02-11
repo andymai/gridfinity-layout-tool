@@ -148,13 +148,14 @@ export function deleteSync(key: string): void {
  * Save arbitrary data synchronously to localStorage.
  * Returns Result with StorageError if storage is full.
  */
-export function saveSyncGeneric<T>(key: string, data: T): Result<void, StorageError> {
+export function saveSyncGeneric(key: string, data: unknown): Result<void, StorageError> {
   return localStorage.saveToLocalStorage(key, data);
 }
 
 /**
  * Load arbitrary data synchronously from localStorage.
  */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T provides caller-side type safety
 export function loadSyncGeneric<T>(key: string): T | null {
   const result = localStorage.loadFromLocalStorage<T>(key);
   return isOk(result) ? result.value : null;

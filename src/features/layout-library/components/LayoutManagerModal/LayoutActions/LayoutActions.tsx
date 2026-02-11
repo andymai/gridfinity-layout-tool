@@ -38,7 +38,11 @@ export function LayoutActions({
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Two-click delete state
-  const { isConfirming: isConfirmingDelete, handleClick: handleDeleteClick, reset: resetDelete } = useTwoClickDelete(() => {
+  const {
+    isConfirming: isConfirmingDelete,
+    handleClick: handleDeleteClick,
+    reset: resetDelete,
+  } = useTwoClickDelete(() => {
     onDelete();
     setIsMenuOpen(false);
   });
@@ -99,7 +103,11 @@ export function LayoutActions({
   };
 
   return (
-    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="flex items-center gap-1"
+      role="presentation"
+      onClick={(e) => e.stopPropagation()}
+    >
       {/* Download Button */}
       <button
         onClick={handleAction(onDownload)}

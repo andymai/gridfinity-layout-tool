@@ -49,7 +49,7 @@ export function loadSharedWithMe(): SharedWithMeEntry[] {
 
     const data = JSON.parse(raw) as SharedWithMeIndex;
 
-    // Validate structure
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- validate structure from localStorage
     if (!data.entries || !Array.isArray(data.entries)) {
       return [];
     }
@@ -125,7 +125,7 @@ export function loadSharedWithMeResult(): Result<SharedWithMeEntry[], StorageErr
 
     const data = JSON.parse(raw) as SharedWithMeIndex;
 
-    // Validate structure
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- validate structure from localStorage
     if (!data.entries || !Array.isArray(data.entries)) {
       return err(
         storageCorrupted(SHARED_WITH_ME_KEY, ['Invalid data structure: missing entries array'])

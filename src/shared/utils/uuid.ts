@@ -9,6 +9,7 @@ import type { LayoutId } from '@/core/types';
  */
 export function generateUUID(): string {
   const c = globalThis.crypto;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- randomUUID may not exist in test/older environments
   if (c?.randomUUID) {
     return c.randomUUID();
   }

@@ -86,7 +86,11 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex items-center gap-2 text-content-secondary">
-          <svg className="w-5 h-5 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none">
+          <svg
+            className="w-5 h-5 animate-spin motion-reduce:animate-none"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
             <circle
               className="opacity-25"
               cx="12"
@@ -149,6 +153,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
       <div
         ref={listRef}
         role="listbox"
+        tabIndex={0}
         aria-label={t('layouts.sharedLayouts')}
         className="flex flex-col gap-2"
         onKeyDown={handleKeyDown}

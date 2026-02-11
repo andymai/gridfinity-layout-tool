@@ -20,6 +20,7 @@ vi.mock('@/shared/components', () => ({
   }) => (
     <div role="radiogroup" aria-label={ariaLabel}>
       <button
+        role="radio"
         onClick={() => onChange('list')}
         aria-checked={value === 'list'}
         data-testid="list-button"
@@ -27,6 +28,7 @@ vi.mock('@/shared/components', () => ({
         {listLabel}
       </button>
       <button
+        role="radio"
         onClick={() => onChange('grid')}
         aria-checked={value === 'grid'}
         data-testid="grid-button"

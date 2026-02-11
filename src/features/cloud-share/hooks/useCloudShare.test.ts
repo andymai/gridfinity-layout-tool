@@ -3,7 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useInteractionStore } from '@/core/store/interaction';
 import { createDefaultLayout } from '@/core/constants';
 import * as shareApi from '@/core/api/share';
 import * as storage from '@/core/storage';
@@ -80,7 +80,7 @@ describe('useCloudShare', () => {
       showLayoutManager: false,
     });
 
-    useUIStore.setState({
+    useInteractionStore.setState({
       announceToScreenReader: mockAnnounce,
     });
   });

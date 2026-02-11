@@ -13,8 +13,8 @@ interface CollapsibleSectionProps {
   actions?: ReactNode;
   /** Size variant for the header */
   variant?: 'default' | 'small';
-  /** Optional illustration icon shown before the title */
-  illustration?: ReactNode;
+  /** Optional icon shown before the title */
+  icon?: ReactNode;
   /** Optional summary shown when section is collapsed (e.g., "2×2×3u") */
   summary?: ReactNode;
 }
@@ -30,7 +30,7 @@ export function CollapsibleSection({
   badge,
   actions,
   variant = 'default',
-  illustration,
+  icon,
   summary,
 }: CollapsibleSectionProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -64,9 +64,7 @@ export function CollapsibleSection({
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-          {illustration && (
-            <span className="flex-shrink-0 text-content-tertiary">{illustration}</span>
-          )}
+          {icon && <span className="flex-shrink-0 text-content-tertiary">{icon}</span>}
           <span className={headerClass}>{title}</span>
           {badge}
         </button>
@@ -75,7 +73,7 @@ export function CollapsibleSection({
       {summary && !expanded && (
         <div
           className={`mt-1 text-xs text-content-tertiary truncate ${
-            illustration ? 'ml-[38px]' : 'ml-[22px]'
+            icon ? 'ml-[38px]' : 'ml-[22px]'
           }`}
         >
           {summary}

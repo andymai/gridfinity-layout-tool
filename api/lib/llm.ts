@@ -7,7 +7,7 @@
  */
 
 import { createHash } from 'crypto';
-import { generateObject } from 'ai';
+import { generateText, Output } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
 import { z } from 'zod';
 
@@ -106,7 +106,10 @@ function buildPrompt(request: NameSuggestionRequest): string {
 
   // Sanitize purpose and hints to prevent prompt injection
   const safePurpose = purpose ? sanitizePurpose(purpose) : null;
-  const safeHints = hints?.slice(0, 5).map(sanitizeHint).filter((h) => h.length > 0);
+  const safeHints = hints
+    ?.slice(0, 5)
+    .map(sanitizeHint)
+    .filter((h) => h.length > 0);
 
   // If we have hints, use a localization-focused prompt (more efficient)
   if (safeHints && safeHints.length > 0) {
@@ -140,17 +143,19 @@ export async function generateNameSuggestions(
 ): Promise<NameSuggestionResponse> {
   const prompt = buildPrompt(request);
 
-  const { object } = await generateObject({
+  const result = await generateText({
     model: gateway('openai/gpt-4o-mini'),
-    schema: z.object({
-      names: z.array(z.string().max(40)).min(1).max(5), // Enforce max length in schema
+    output: Output.object({
+      schema: z.object({
+        names: z.array(z.string().max(40)).min(1).max(5), // Enforce max length in schema
+      }),
     }),
     prompt,
     maxOutputTokens: 100, // Reduced from 200 - 5 short names need ~50-60 tokens
     temperature: 0.7, // Some creativity but not too random
   });
 
-  return object;
+  return result.output;
 }
 
 /**

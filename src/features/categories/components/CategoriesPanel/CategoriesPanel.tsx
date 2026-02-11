@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction, useSettingsStore } from '@/core/store';
+import { useLayoutStore, useUndoableAction, useSettingsStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -58,15 +60,15 @@ export function CategoriesPanel() {
   );
   const { addCategory, updateCategory, deleteCategory, updateBin } = useMutations();
 
-  const { activeCategoryId, setActiveCategory, setHighlightedCategoryId, selectedBinIds } =
-    useUIStore(
-      useShallow((state) => ({
-        activeCategoryId: state.activeCategoryId,
-        setActiveCategory: state.setActiveCategory,
-        setHighlightedCategoryId: state.setHighlightedCategoryId,
-        selectedBinIds: state.selectedBinIds,
-      }))
-    );
+  const { activeCategoryId, setActiveCategory, selectedBinIds } = useSelectionStore(
+    useShallow((state) => ({
+      activeCategoryId: state.activeCategoryId,
+      setActiveCategory: state.setActiveCategory,
+      selectedBinIds: state.selectedBinIds,
+    }))
+  );
+
+  const setHighlightedCategoryId = useViewStore((state) => state.setHighlightedCategoryId);
 
   const saveCategoriesAsDefaults = useSettingsStore((state) => state.saveCategoriesAsDefaults);
   const addToast = useToastStore((state) => state.addToast);
@@ -204,7 +206,7 @@ export function CategoriesPanel() {
       if (isOk(deleteResult)) {
         // Access fresh state to avoid stale closure issues
         const currentCategories = useLayoutStore.getState().layout.categories;
-        const currentActiveCategoryId = useUIStore.getState().activeCategoryId;
+        const currentActiveCategoryId = useSelectionStore.getState().activeCategoryId;
         if (currentActiveCategoryId === id && currentCategories.length > 0) {
           setActiveCategory(currentCategories[0].id);
         }
@@ -271,6 +273,7 @@ export function CategoriesPanel() {
             const isHovered = hoveredCategoryId === category.id;
 
             return (
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard users interact with inner buttons
               <div
                 key={category.id}
                 className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-colors duration-150 ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
@@ -288,6 +291,7 @@ export function CategoriesPanel() {
                   <div
                     ref={editingRef}
                     className="flex flex-col gap-2 w-full"
+                    role="presentation"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {/* Name input - auto-saves on change */}
@@ -297,6 +301,7 @@ export function CategoriesPanel() {
                       onChange={(e) => handleUpdateCategory(category.id, 'name', e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
                       className="input w-full py-1 px-2 text-sm"
+                      // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                       autoFocus
                       placeholder={t('categories.categoryNamePlaceholder')}
                     />
@@ -358,6 +363,7 @@ export function CategoriesPanel() {
                         <div
                           ref={colorPickerRef}
                           className="absolute left-0 top-full mt-1.5 z-50 p-2 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg animate-scale-in"
+                          role="presentation"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ColorPaletteGrid

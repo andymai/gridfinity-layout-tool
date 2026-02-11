@@ -89,6 +89,7 @@ function getDomainDistribution(bins: Bin[]): Map<LabelDomain | 'unknown', number
   const distribution = new Map<LabelDomain | 'unknown', number>();
 
   for (const bin of getGridBins(bins)) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
     if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
@@ -319,7 +320,7 @@ export function loadLabelSizes(): Record<string, string[]> {
   try {
     const stored = localStorage.getItem(LABEL_SIZES_STORAGE_KEY);
     if (!stored) return {};
-    return JSON.parse(stored);
+    return JSON.parse(stored) as Record<string, string[]>;
   } catch {
     return {};
   }
@@ -353,6 +354,7 @@ function saveLabelSizes(data: Record<string, string[]>): void {
 export function recordLabelSize(labelHash: string, size: string): void {
   const data = loadLabelSizes();
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- labelHash may not exist in data from localStorage
   if (!data[labelHash]) {
     data[labelHash] = [];
   }
@@ -387,10 +389,11 @@ export function recordLayoutLabelSizes(layout: Layout): void {
 
   for (const bin of labeledBins) {
     // bin.label is guaranteed non-null by the filter above
-    const label = bin.label ?? '';
+    const label = bin.label;
     const labelData = processLabel(label);
     const size = `${bin.width}x${bin.depth}x${bin.height}`;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- labelData.hash may not exist in data from localStorage
     if (!data[labelData.hash]) {
       data[labelData.hash] = [];
     }
@@ -426,6 +429,7 @@ export function getLabelSizeConsistency(
   const gridBins = getGridBins(layout.bins);
 
   for (const bin of gridBins) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
     if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
@@ -433,6 +437,7 @@ export function getLabelSizeConsistency(
     processedHashes.add(labelData.hash);
 
     const currentSize = `${bin.width}x${bin.depth}x${bin.height}`;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- stored[hash] can be undefined for new labels
     const historicalSizes = stored[labelData.hash] || [];
 
     // Combine current with historical (deduplicated)

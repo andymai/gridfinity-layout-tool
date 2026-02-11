@@ -35,25 +35,6 @@ import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 
-// Legacy context menu state for backwards compatibility (has binId instead of binIds)
-interface LegacyContextMenuStateWithBinId {
-  binId: string; // Non-optional when used with type guard
-  position: { x: number; y: number };
-}
-
-/**
- * Type guard to check if context menu state has legacy binId property.
- * Used for backward compatibility during migration period.
- */
-function hasLegacyBinId(state: unknown): state is LegacyContextMenuStateWithBinId {
-  return (
-    typeof state === 'object' &&
-    state !== null &&
-    'binId' in state &&
-    typeof (state as { binId?: unknown }).binId === 'string'
-  );
-}
-
 // Lazy load mobile help modal (with retry for chunk load failures)
 const MobileHelpModal = lazyWithRetry(() =>
   import('@/components/Mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
@@ -113,8 +94,7 @@ export function MobileLayout({
       {/* Context menu (long-press on bin) */}
       {contextMenu && (
         <BinContextMenuWrapper
-          // Backwards compatibility: support both old (binId) and new (binIds) formats
-          binIds={contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : [])}
+          binIds={contextMenu.binIds}
           position={contextMenu.position}
           onClose={hideContextMenu}
           source={contextMenu.source}

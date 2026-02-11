@@ -108,12 +108,10 @@ export async function loadDesign(id: string): Promise<Result<SavedDesign, Storag
     }
 
     // Validate that params is a valid object before migration
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- params can be corrupted in IndexedDB
     if (!design.params || typeof design.params !== 'object' || Array.isArray(design.params)) {
-      return err(
-        storageCorrupted(id, [
-          `Invalid params type: ${design.params === null ? 'null' : typeof design.params}`,
-        ])
-      );
+      const paramsType = String(design.params) === 'null' ? 'null' : typeof design.params;
+      return err(storageCorrupted(id, [`Invalid params type: ${paramsType}`]));
     }
 
     // Apply migration for backward compatibility with old designs
@@ -141,6 +139,7 @@ export async function listDesigns(): Promise<Result<SavedDesign[], StorageError>
     const migratedDesigns = designs
       .filter((design) => {
         // Skip entries with invalid params (null, undefined, or primitives)
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime data from IndexedDB
         return design.params && typeof design.params === 'object' && !Array.isArray(design.params);
       })
       .map((design) => ({
@@ -189,7 +188,7 @@ export async function duplicateDesign(id: string): Promise<Result<SavedDesign, S
 export async function deleteDesign(id: string): Promise<Result<void, StorageError>> {
   try {
     const db = await getDb();
-    const exists = await db.get(DESIGNS_STORE, id);
+    const exists: unknown = await db.get(DESIGNS_STORE, id);
 
     if (!exists) {
       return err(storageNotFound(`Design '${id}' not found`));

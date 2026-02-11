@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLayoutSwitcher } from '@/hooks';
 import { useToastStore } from '@/core/store/toast';
-import { useUIStore } from '@/core/store/ui';
-import { useShallow } from 'zustand/shallow';
+import { useMobileStore } from '@/core/store/mobile';
+import { useInteractionStore } from '@/core/store/interaction';
 import { isOk } from '@/core/result';
 import { layoutId } from '@/core/types';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -68,12 +68,8 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
   const gridRef = useRef<HTMLDivElement>(null);
 
   const { importLayoutFromJSON, switchLayout } = useLayoutSwitcher();
-  const { announceToScreenReader, closeMobilePanel } = useUIStore(
-    useShallow((state) => ({
-      announceToScreenReader: state.announceToScreenReader,
-      closeMobilePanel: state.closeMobilePanel,
-    }))
-  );
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
+  const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
   const addToast = useToastStore((state) => state.addToast);
 
   // Track modal shown
@@ -186,7 +182,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
 
       if (newIndex !== focusedIndex) {
         setFocusedIndex(newIndex);
-        (cards[newIndex] as HTMLElement)?.focus();
+        (cards[newIndex] as HTMLElement).focus();
       }
     },
     [focusedIndex, isMobile]
@@ -223,6 +219,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
             onClick={() => onClose('blank')}
             className="btn btn-primary px-8 py-2.5 text-sm font-semibold rounded-lg"
             disabled={isImporting}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
             autoFocus
           >
             {t('onboarding.welcome.startBlank')}
@@ -244,6 +241,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
             ref={gridRef}
             className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}
             role="listbox"
+            tabIndex={0}
             aria-label={t('onboarding.welcome.showcaseHeading')}
             onKeyDown={handleGridKeyDown}
           >

@@ -86,7 +86,7 @@ import {
  */
 export function isEnabled(): boolean {
   const settings = useSettingsStore.getState().settings;
-  return settings.analyticsEnabled ?? true;
+  return settings.analyticsEnabled;
 }
 
 /**
@@ -103,11 +103,10 @@ function getAdjacentBinContext(
 
   for (const other of sameLevelBins) {
     if (areBinsAdjacent(bin, other)) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
       if (other.label?.trim()) {
         const labelData = processLabel(other.label);
-        if (labelData.hash) {
-          adjacentLabelHashes.push(labelData.hash);
-        }
+        adjacentLabelHashes.push(labelData.hash);
       }
       adjacentSizes.push(`${other.width}x${other.depth}x${other.height}`);
     }
@@ -133,6 +132,7 @@ export function trackBinPlacement(bin: Bin, layout: Layout, method: PlacementMet
   // Apply sampling for high-volume sessions
   const shouldSample =
     sessionState.sessionIndex >= SAMPLING_THRESHOLD &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
     !bin.label?.trim() &&
     Math.random() > SAMPLING_RATE;
 
@@ -162,6 +162,7 @@ export function trackBinPlacement(bin: Bin, layout: Layout, method: PlacementMet
   let labelDomain: string | null = null;
   let labelEmbeddingBucket: string | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
   if (bin.label?.trim()) {
     const labelData = processLabel(bin.label);
     labelHash = labelData.hash;
@@ -174,6 +175,7 @@ export function trackBinPlacement(bin: Bin, layout: Layout, method: PlacementMet
 
   const now = Date.now();
   const lastPlacement = layoutSession.recentPlacements[layoutSession.recentPlacements.length - 1];
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- recentPlacements can be empty at runtime
   const timeSinceLastMs = lastPlacement ? now - lastPlacement.timestamp : null;
 
   const isFirstOfLabel =
@@ -442,6 +444,7 @@ export function trackCategoryChange(bin: Bin, categoryName: string, batchSize: n
 
   let labelHash: string | null = null;
   let labelDomain: string | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
   if (bin.label?.trim()) {
     const labelData = processLabel(bin.label);
     labelHash = labelData.hash;
@@ -536,6 +539,7 @@ export function trackBinDeletion(
   const layerIndex = layout.layers.findIndex((l) => l.id === bin.layerId);
 
   let labelDomain: string | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
   if (bin.label?.trim()) {
     const labelData = processLabel(bin.label);
     labelDomain = labelData.domain;
@@ -561,6 +565,7 @@ export function trackBinDeletion(
     creationRecord &&
     ageMs !== null &&
     ageMs < ABANDONED_THRESHOLD_MS &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
     !bin.label?.trim() &&
     batchSize === 1
   ) {
@@ -582,6 +587,7 @@ export function trackBinDeletion(
     bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
     position: `${bin.x},${bin.y}`,
     layer_index: layerIndex >= 0 ? layerIndex : 0,
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
     had_label: Boolean(bin.label?.trim()),
     label_domain: labelDomain,
     age_ms: ageMs,

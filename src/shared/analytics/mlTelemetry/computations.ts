@@ -122,11 +122,12 @@ export function computeDomainDistribution(
 ): Record<string, number> {
   const distribution: Record<string, number> = {};
   for (const bin of getGridBins(bins)) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
     if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
-    const domain = labelData.domain || 'unknown';
-    distribution[domain] = (distribution[domain] || 0) + 1;
+    const domain = labelData.domain ?? 'unknown';
+    distribution[domain] = (distribution[domain] ?? 0) + 1;
   }
   return distribution;
 }
@@ -142,6 +143,7 @@ export function computeTopLabelHashes(
   const hashCounts: Record<string, number> = {};
 
   for (const bin of getGridBins(bins)) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
     if (!bin.label?.trim()) continue;
 
     const labelData = processLabel(bin.label);
@@ -386,11 +388,7 @@ export function getUserHash(): string {
   try {
     let hash = localStorage.getItem(USER_HASH_STORAGE_KEY);
     if (!hash) {
-      hash =
-        typeof crypto !== 'undefined' && crypto.randomUUID
-          ? crypto.randomUUID()
-          : Math.random().toString(36).substring(2, 10) +
-            Math.random().toString(36).substring(2, 10);
+      hash = crypto.randomUUID();
       localStorage.setItem(USER_HASH_STORAGE_KEY, hash);
     }
     return hash;

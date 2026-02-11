@@ -82,7 +82,7 @@ const ANIMALS = [
  */
 export function generateGuestName(id: string | number): string {
   // Simple hash function to get consistent but varied results
-  const numericId = typeof id === 'number' ? id : hashString(String(id));
+  const numericId = typeof id === 'number' ? id : hashString(id);
 
   const adjIndex = Math.abs(numericId) % ADJECTIVES.length;
   const animalIndex = Math.abs(Math.floor(numericId / ADJECTIVES.length)) % ANIMALS.length;
@@ -126,7 +126,7 @@ export function generateGuestColor(id: string | number): string {
     '#A855F7', // Purple
   ];
 
-  const numericId = typeof id === 'number' ? id : hashString(String(id));
+  const numericId = typeof id === 'number' ? id : hashString(id);
   const colorIndex = Math.abs(numericId) % COLORS.length;
 
   return COLORS[colorIndex];

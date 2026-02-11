@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { useCollabMode, getCollabMode } from '@/hooks/useCollabMode';
 import { useLabsStore, useLibraryStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import type { CloudShareInfo, LayoutLibrary, LayoutEntry } from '@/core/types';
+import type { CloudShareInfo, LayoutLibrary, LayoutEntry, Layout } from '@/core/types';
 
 const TEST_LAYOUT_ID = 'test-layout-123';
 const TEST_SHARE_ID = 'share-abc-123';
@@ -61,9 +61,7 @@ describe('useCollabMode', () => {
     });
 
     useSharedPreviewStore.setState({
-      sharedLayoutCloudShareId: null,
-      sharedLayoutPermission: undefined,
-      sharedLayoutPreview: null,
+      sharedPreview: null,
     });
   });
 
@@ -114,8 +112,13 @@ describe('useCollabMode', () => {
 
     it('returns collaborative mode when viewing shared layout with edit permission', () => {
       useSharedPreviewStore.setState({
-        sharedLayoutCloudShareId: TEST_SHARE_ID,
-        sharedLayoutPermission: 'edit',
+        sharedPreview: {
+          layout: {} as Layout,
+          originalName: 'Test',
+          authorName: null,
+          cloudShareId: TEST_SHARE_ID,
+          permission: 'edit',
+        },
       });
 
       const { result } = renderHook(() => useCollabMode());
@@ -129,8 +132,13 @@ describe('useCollabMode', () => {
 
     it('returns non-collaborative mode when viewing shared layout with view permission', () => {
       useSharedPreviewStore.setState({
-        sharedLayoutCloudShareId: TEST_SHARE_ID,
-        sharedLayoutPermission: 'view',
+        sharedPreview: {
+          layout: {} as Layout,
+          originalName: 'Test',
+          authorName: null,
+          cloudShareId: TEST_SHARE_ID,
+          permission: 'view',
+        },
       });
 
       const { result } = renderHook(() => useCollabMode());
@@ -150,8 +158,13 @@ describe('useCollabMode', () => {
 
       // But shared preview has edit permission
       useSharedPreviewStore.setState({
-        sharedLayoutCloudShareId: 'different-share-id',
-        sharedLayoutPermission: 'edit',
+        sharedPreview: {
+          layout: {} as Layout,
+          originalName: 'Test',
+          authorName: null,
+          cloudShareId: 'different-share-id',
+          permission: 'edit',
+        },
       });
 
       const { result } = renderHook(() => useCollabMode());
@@ -245,8 +258,13 @@ describe('useCollabMode', () => {
 
       // Enter shared preview mode
       useSharedPreviewStore.setState({
-        sharedLayoutCloudShareId: TEST_SHARE_ID,
-        sharedLayoutPermission: 'edit',
+        sharedPreview: {
+          layout: {} as Layout,
+          originalName: 'Test',
+          authorName: null,
+          cloudShareId: TEST_SHARE_ID,
+          permission: 'edit',
+        },
       });
 
       rerender();
@@ -270,8 +288,7 @@ describe('getCollabMode', () => {
     });
 
     useSharedPreviewStore.setState({
-      sharedLayoutCloudShareId: null,
-      sharedLayoutPermission: undefined,
+      sharedPreview: null,
     });
   });
 
@@ -309,8 +326,13 @@ describe('getCollabMode', () => {
     });
 
     useSharedPreviewStore.setState({
-      sharedLayoutCloudShareId: 'preview-share-id',
-      sharedLayoutPermission: 'edit',
+      sharedPreview: {
+        layout: {} as Layout,
+        originalName: 'Test',
+        authorName: null,
+        cloudShareId: 'preview-share-id',
+        permission: 'edit',
+      },
     });
 
     const result = getCollabMode();

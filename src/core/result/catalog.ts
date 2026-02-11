@@ -354,9 +354,8 @@ export function formatErrorMessage(
 ): string {
   if (!vars) return template;
 
-  return template.replace(/\{(\w+)\}/g, (_, key) => {
-    const value = vars[key];
-    return value !== undefined ? String(value) : `{${key}}`;
+  return template.replace(/\{(\w+)\}/g, (_match, key: string) => {
+    return key in vars ? String(vars[key]) : `{${key}}`;
   });
 }
 

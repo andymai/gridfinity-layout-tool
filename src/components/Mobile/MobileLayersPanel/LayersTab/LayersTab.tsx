@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore, useUndoableAction } from '@/core/store';
+import { useSelectionStore, useInteractionStore, useUndoableAction } from '@/core/store';
 import type { LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
@@ -49,13 +49,13 @@ export function LayersTab() {
   const bins = layout.bins;
   const drawer = layout.drawer;
 
-  const { activeLayerId, setActiveLayer, announceToScreenReader } = useUIStore(
+  const { activeLayerId, setActiveLayer } = useSelectionStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
       setActiveLayer: state.setActiveLayer,
-      announceToScreenReader: state.announceToScreenReader,
     }))
   );
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   const { execute } = useUndoableAction();
   const addToast = useToastStore((state) => state.addToast);
@@ -108,7 +108,6 @@ export function LayersTab() {
 
   const handleAddLayer = () => {
     const topLayer = layers[layers.length - 1];
-    if (!topLayer) return;
 
     // Calculate if layer expansion is needed before adding new layer
     const expansion = calculateLayerAutoExpansion(topLayer, bins, totalLayerHeight, drawer.height);
@@ -280,6 +279,7 @@ export function LayersTab() {
                 <span
                   className={`truncate block text-sm ${isActive ? 'text-content font-semibold' : 'text-content font-medium'}`}
                   title={layer.name}
+                  role="presentation"
                   onClick={(e) => {
                     if (isActive) {
                       e.stopPropagation();
@@ -450,10 +450,15 @@ export function LayersTab() {
               setRenameLayerId(null);
               setRenameValue('');
             }}
+            role="presentation"
           >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
             <div
               className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-content mb-4">{t('mobile.renameLayer')}</h3>
@@ -473,6 +478,7 @@ export function LayersTab() {
                 className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
                 placeholder={t('layers.layerNamePlaceholder')}
                 maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                 autoFocus
               />
               <div className="flex gap-2 mt-4">

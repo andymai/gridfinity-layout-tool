@@ -69,6 +69,7 @@ export function ThicknessSelector({
         className="flex gap-1"
         role="radiogroup"
         aria-label={label}
+        tabIndex={-1}
         onKeyDown={handleKeyDown}
       >
         {WALL_THICKNESS_OPTIONS.map((option) => {

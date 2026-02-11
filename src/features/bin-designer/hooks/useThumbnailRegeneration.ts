@@ -55,9 +55,6 @@ export function useThumbnailRegeneration(
 
         const thumbnail = await regenerateThumbnail(design.params, controller.signal);
 
-        // On abort, don't mark as processed so designs can retry next time
-        if (controller.signal.aborted) break;
-
         if (!thumbnail) {
           // Generation failed — skip but don't mark as processed so it can retry
           continue;
@@ -65,7 +62,6 @@ export function useThumbnailRegeneration(
 
         // Persist to IndexedDB
         const result = await updateDesignThumbnail(design.id, thumbnail);
-        if (controller.signal.aborted) break;
 
         if (isOk(result)) {
           // Mark as successfully processed

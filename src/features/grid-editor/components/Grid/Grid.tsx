@@ -135,9 +135,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
     if (!toolbar) return;
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (entry) {
-        setToolbarWidth(entry.contentRect.width);
-      }
+      setToolbarWidth(entry.contentRect.width);
     });
     observer.observe(toolbar);
     return () => observer.disconnect();
@@ -218,7 +216,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   );
   const layerBins = useMemo(() => getLayerBins(bins, activeLayerId), [bins, activeLayerId]);
   const isEmpty = layerBins.length === 0;
-  const isFirstLayer = layers.length > 0 && activeLayerId === layers[0]?.id;
+  const isFirstLayer = layers.length > 0 && activeLayerId === layers[0].id;
 
   // Grid dimensions in pixels
   const gridWidth = drawer.width * scale * (visualCellSize + gap) + gap;

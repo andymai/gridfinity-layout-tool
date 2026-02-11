@@ -172,6 +172,7 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
 
   // Label tab validation
   if (params.label.enabled) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime guard for external data
     if (params.label.support !== 'bracket' && params.label.support !== 'solid') {
       return err({
         code: 'LABEL_TAB_SUPPORT_INVALID',
@@ -202,6 +203,7 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
     if (
       params.label.alignment !== 'left' &&
       params.label.alignment !== 'center' &&
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime guard for external data
       params.label.alignment !== 'right'
     ) {
       return err({

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useViewStore } from '@/core/store/view';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/shared/analytics/posthog';
@@ -32,7 +33,7 @@ export function RightPanel() {
     }
   }, []);
 
-  const { collapsed, toggle } = useUIStore(
+  const { collapsed, toggle } = useViewStore(
     useShallow((state) => ({
       collapsed: state.rightPanelCollapsed,
       toggle: state.toggleRightPanel,
@@ -290,7 +291,7 @@ export function RightPanel() {
                                 <span className="inline-flex items-center gap-1.5">
                                   <span
                                     className="inline-flex gap-0.5"
-                                    title={(row.categoryIds ?? [])
+                                    title={row.categoryIds
                                       .map(
                                         (catId) =>
                                           layout.categories.find((c) => c.id === catId)?.name ||
@@ -298,7 +299,7 @@ export function RightPanel() {
                                       )
                                       .join(LIST_SEPARATOR)}
                                   >
-                                    {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
+                                    {row.categoryIds.slice(0, 3).map((catId) => {
                                       const cat = layout.categories.find((c) => c.id === catId);
                                       return (
                                         <span
@@ -312,10 +313,10 @@ export function RightPanel() {
                                         />
                                       );
                                     })}
-                                    {(row.categoryIds ?? []).length > 3 && (
+                                    {row.categoryIds.length > 3 && (
                                       <span className="text-[9px] text-content-disabled">
                                         {t('rightPanel.moreCategories', {
-                                          count: (row.categoryIds ?? []).length - 3,
+                                          count: row.categoryIds.length - 3,
                                         })}
                                       </span>
                                     )}
@@ -338,17 +339,17 @@ export function RightPanel() {
                                     </svg>
                                   )}
                                 </span>
-                                {((row.labels ?? [])[0] ||
+                                {(row.labels[0] ||
                                   row.notes ||
                                   (row.customProperties &&
                                     Object.keys(row.customProperties).length > 0)) && (
                                   <span className="flex items-center gap-1">
-                                    {(row.labels ?? [])[0] && (
+                                    {row.labels[0] && (
                                       <span
                                         className="text-xs truncate text-content-tertiary max-w-[80px]"
-                                        title={(row.labels ?? [])[0]}
+                                        title={row.labels[0]}
                                       >
-                                        {(row.labels ?? [])[0]}
+                                        {row.labels[0]}
                                       </span>
                                     )}
                                     {row.notes && (

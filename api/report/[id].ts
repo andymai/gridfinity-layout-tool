@@ -35,10 +35,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const { reason } = req.body || {};
+    const { reason } = (req.body ?? {}) as Record<string, unknown>;
 
     // Validate reason (optional but helpful)
-    const reportReason = reason ? String(reason).slice(0, 500) : 'No reason provided';
+    const reportReason = typeof reason === 'string' ? reason.slice(0, 500) : 'No reason provided';
 
     const blobPath = `shares/${id}.json`;
 

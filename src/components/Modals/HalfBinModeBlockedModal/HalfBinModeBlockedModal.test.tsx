@@ -156,8 +156,8 @@ describe('HalfBinModeBlockedModal', () => {
     it('calls onClose when backdrop clicked', () => {
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      // Click on backdrop (role="presentation")
-      const backdrop = screen.getByRole('presentation');
+      // Click on backdrop (outermost role="presentation")
+      const backdrop = screen.getAllByRole('presentation')[0];
       fireEvent.click(backdrop);
 
       expect(mockOnClose).toHaveBeenCalledOnce();
@@ -220,7 +220,7 @@ describe('HalfBinModeBlockedModal', () => {
         expect(screen.getByText('Loading...')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('presentation'));
+      fireEvent.click(screen.getAllByRole('presentation')[0]);
 
       expect(mockOnClose).not.toHaveBeenCalled();
     });

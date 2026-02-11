@@ -129,7 +129,8 @@ export function CutoutCanvas3D({
       if (handle === 'nw' || handle === 'se') return 'nwse-resize';
       if (handle === 'ne' || handle === 'sw') return 'nesw-resize';
       if (handle === 'n' || handle === 's') return 'ns-resize';
-      if (handle === 'e' || handle === 'w') return 'ew-resize';
+      // Remaining handles are 'e' or 'w'
+      return 'ew-resize';
     }
     if (mode.type === 'rotating' || mode.type === 'group-rotating') {
       return 'grabbing';

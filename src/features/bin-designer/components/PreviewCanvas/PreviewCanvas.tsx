@@ -103,7 +103,7 @@ function CameraController({
   height,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
-  invalidateRef: React.MutableRefObject<(() => void) | null>;
+  invalidateRef: React.RefObject<(() => void) | null>;
   width: number;
   depth: number;
   height: number;

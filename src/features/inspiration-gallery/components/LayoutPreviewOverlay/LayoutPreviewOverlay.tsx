@@ -68,12 +68,14 @@ export function LayoutPreviewOverlay({
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in"
+      role="presentation"
       onClick={onClose}
     >
       {/* Darker backdrop */}
       <div className="absolute inset-0 bg-black/70" aria-hidden="true" />
 
       {/* Preview panel */}
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
       <div
         className={`
           relative bg-surface-elevated rounded-xl shadow-2xl
@@ -81,9 +83,11 @@ export function LayoutPreviewOverlay({
           ${isMobile ? 'w-full max-h-[95vh]' : 'w-full max-w-4xl max-h-[90vh]'}
         `}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="preview-title"
+        tabIndex={-1}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-stroke-subtle shrink-0">

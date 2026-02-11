@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '@/core/store';
+import {
+  useLayoutStore,
+  useHistoryStore,
+  useHalfBinModeStore,
+  useViewStore,
+  useLibraryStore,
+} from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useCollabMode } from '@/hooks/useCollabMode';
@@ -58,22 +64,23 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
     }))
   );
 
-  const halfBinMode = useUIStore((state) => state.halfBinMode);
-  const { printModalOpen, setPrintModalOpen } = useUIStore(
+  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+  const { printModalOpen, setPrintModalOpen } = useViewStore(
     useShallow((state) => ({
       printModalOpen: state.printModalOpen,
       setPrintModalOpen: state.setPrintModalOpen,
     }))
   );
 
-  const { leftPanelCollapsed, rightPanelCollapsed, toggleLeftPanel, toggleRightPanel } = useUIStore(
-    useShallow((state) => ({
-      leftPanelCollapsed: state.leftPanelCollapsed,
-      rightPanelCollapsed: state.rightPanelCollapsed,
-      toggleLeftPanel: state.toggleLeftPanel,
-      toggleRightPanel: state.toggleRightPanel,
-    }))
-  );
+  const { leftPanelCollapsed, rightPanelCollapsed, toggleLeftPanel, toggleRightPanel } =
+    useViewStore(
+      useShallow((state) => ({
+        leftPanelCollapsed: state.leftPanelCollapsed,
+        rightPanelCollapsed: state.rightPanelCollapsed,
+        toggleLeftPanel: state.toggleLeftPanel,
+        toggleRightPanel: state.toggleRightPanel,
+      }))
+    );
 
   const { showLayoutManager, setShowLayoutManager } = useLibraryStore(
     useShallow((state) => ({
@@ -114,8 +121,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   };
 
   // Platform detection for keyboard shortcut hints
-  const isMac =
-    typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
