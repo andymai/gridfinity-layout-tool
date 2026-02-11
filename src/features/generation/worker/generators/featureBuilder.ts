@@ -402,6 +402,11 @@ function buildPathCutoutShape(cutout: {
     return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
   }
 
+  // Reject self-intersecting polylines that would produce invalid 3D geometry
+  if (polylineSelfIntersects(polyline)) {
+    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+  }
+
   // Center the polyline at origin (buildCutoutShape expects shapes centered at origin).
   // Path points are in bin-local absolute coordinates; subtract bounding box center.
   let minX = Infinity,
@@ -470,6 +475,29 @@ function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y
   }
 
   return result;
+}
+
+/** Check if a closed polyline self-intersects (any non-adjacent edges cross). */
+function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): boolean {
+  const n = poly.length;
+  if (n < 4) return false;
+
+  for (let i = 0; i < n; i++) {
+    const a1 = poly[i];
+    const a2 = poly[(i + 1) % n];
+    for (let j = i + 2; j < n; j++) {
+      if (j === n - 1 && i === 0) continue; // adjacent (closing edge)
+      const b1 = poly[j];
+      const b2 = poly[(j + 1) % n];
+      const d = (a2.x - a1.x) * (b2.y - b1.y) - (a2.y - a1.y) * (b2.x - b1.x);
+      if (Math.abs(d) < 1e-10) continue;
+      const t = ((b1.x - a1.x) * (b2.y - b1.y) - (b1.y - a1.y) * (b2.x - b1.x)) / d;
+      const u = ((b1.x - a1.x) * (a2.y - a1.y) - (b1.y - a1.y) * (a2.x - a1.x)) / d;
+      const eps = 1e-6;
+      if (t > eps && t < 1 - eps && u > eps && u < 1 - eps) return true;
+    }
+  }
+  return false;
 }
 
 /**

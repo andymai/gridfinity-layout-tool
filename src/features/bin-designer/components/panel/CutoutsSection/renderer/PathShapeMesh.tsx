@@ -278,8 +278,8 @@ export const PathShapeMesh = memo(function PathShapeMesh({
         />
       )}
 
-      {/* Solid stroke outline (matches rect/circle styling) */}
-      {strokeGeometry && (
+      {/* Solid stroke outline (matches rect/circle styling) — hidden during vertex editing */}
+      {strokeGeometry && !disablePointerEvents && (
         <lineLoop geometry={strokeGeometry} renderOrder={RENDER_ORDER.SHAPES + 1}>
           <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
         </lineLoop>

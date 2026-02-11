@@ -16,6 +16,7 @@ import {
   enforceSymmetry,
   getPathBounds,
   evaluateSegmentPoint,
+  isSelfIntersecting,
 } from '../pathGeometry';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, SetModeFn } from './types';
 
@@ -228,7 +229,10 @@ export function handleVertexEditPointerUp(
 ): void {
   const previewUpdates = preview.get(cutout.id);
   if (previewUpdates?.path) {
-    setters.onUpdate(cutout.id, pathBoundsUpdate(previewUpdates.path));
+    // Reject edits that create self-intersecting paths
+    if (!isSelfIntersecting(previewUpdates.path)) {
+      setters.onUpdate(cutout.id, pathBoundsUpdate(previewUpdates.path));
+    }
   }
 
   // Clear preview and drag target, keep selection

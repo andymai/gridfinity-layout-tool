@@ -22,7 +22,7 @@ export const MIN_PATH_POINTS = 3;
 export const CLOSE_SNAP_THRESHOLD = 5;
 
 /** Default bezier flattening tolerance in mm */
-const DEFAULT_FLATTEN_TOLERANCE = 0.5;
+const DEFAULT_FLATTEN_TOLERANCE = 0.1;
 
 // ─── Bezier Math ────────────────────────────────────────────────────────────
 
