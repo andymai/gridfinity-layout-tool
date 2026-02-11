@@ -115,14 +115,14 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     key: 'inserts',
     label: 'Floor Inserts',
     isEnabled: (p) => p.inserts.length > 0,
-    apply: (p, enabled) => (enabled ? {} : { inserts: [] }),
+    apply: (_p, enabled) => (enabled ? {} : { inserts: [] }),
   },
 
   cutouts: {
     key: 'cutouts',
     label: 'Top Cutouts',
     isEnabled: (p) => p.cutouts.length > 0,
-    apply: (p, enabled) => (enabled ? {} : { cutouts: [] }),
+    apply: (_p, enabled) => (enabled ? {} : { cutouts: [] }),
   },
 
   slotConfig: {
