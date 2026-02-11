@@ -60,9 +60,7 @@ export function ScoopSection() {
                 />
               )}
               {state.isAutoRadius && (
-                <p className="text-[11px] text-content-tertiary">
-                  {t('binDesigner.scoopRadiusAuto')}
-                </p>
+                <p className="text-[11px] text-content-tertiary">{state.autoDisplayText}</p>
               )}
             </div>
           </>

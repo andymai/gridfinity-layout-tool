@@ -235,6 +235,8 @@
   "binDesigner.saving": "Opslaan...",
   "binDesigner.scoopRadius": "Radius",
   "binDesigner.scoopRadiusAuto": "Automatisch (past zich aan aan vakmaat)",
+  "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",
+  "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.searchDesigns": "Ontwerpen zoeken…",
   "binDesigner.searchDesignsAriaLabel": "Ontwerpen zoeken",
   "binDesigner.shareDesign": "Design delen",

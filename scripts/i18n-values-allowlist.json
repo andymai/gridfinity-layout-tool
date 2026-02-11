@@ -21,6 +21,8 @@
     "binDesigner.layout",
     "binDesigner.radius",
     "binDesigner.scoopRadius",
+    "binDesigner.scoopRadiusAutoRange",
+    "binDesigner.scoopRadiusAutoValue",
     "binDesigner.slotDirection",
     "binDesigner.slotHorizontal",
     "binDesigner.slotVertical",
