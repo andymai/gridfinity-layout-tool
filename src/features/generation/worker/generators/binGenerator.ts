@@ -25,14 +25,15 @@ import {
   cutAll,
   clone,
   translate,
-  rotate,
+  composeTransforms,
+  transformCopy,
   intersect,
   mesh,
   meshEdges,
   exportSTL,
   exportSTEP,
 } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, TransformOp } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
@@ -407,14 +408,26 @@ export function generateBin(
 
           for (const wall of wallDescriptors) {
             for (const center of wall.centers) {
-              let shape: Shape3D = clone(shapeTemplate);
-              shape = translate(shape, [center.x, center.y, -halfDepth]);
-              shape = rotate(shape, 90, { at: [0, 0, 0], axis: [1, 0, 0] });
-              if (wall.zRotation !== undefined) {
-                shape = rotate(shape, wall.zRotation, { at: [0, 0, 0], axis: [0, 0, 1] });
+              const ops: TransformOp[] = [
+                { type: 'translate', v: [center.x, center.y, -halfDepth] },
+                { type: 'rotate', angle: 90, axis: [1, 0, 0] },
+                ...(wall.zRotation !== undefined
+                  ? [
+                      {
+                        type: 'rotate' as const,
+                        angle: wall.zRotation,
+                        axis: [0, 0, 1] as [number, number, number],
+                      },
+                    ]
+                  : []),
+                { type: 'translate', v: [wall.translateX, wall.translateY, wall.translateZ] },
+              ];
+              const trsf = composeTransforms(ops);
+              try {
+                cutTargets.push(transformCopy(shapeTemplate, trsf));
+              } finally {
+                trsf.cleanup();
               }
-              shape = translate(shape, [wall.translateX, wall.translateY, wall.translateZ]);
-              cutTargets.push(shape);
             }
           }
         } catch (e) {
