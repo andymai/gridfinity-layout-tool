@@ -61,16 +61,16 @@ Improve organic search visibility for people searching for gridfinity generators
 
 ### 3. Update `index.html` Meta Tags
 
-**Title:**
+**Title (implemented):**
 
 ```
-Gridfinity Layout Tool | Design Bins & Plan Drawer Layouts for 3D Printing
+Gridfinity Layout Tool — Free Bin Generator & Planner
 ```
 
-**Meta description:**
+**Meta description (implemented):**
 
 ```
-Design custom Gridfinity bins with STL export and plan drawer layouts for 3D printing. Free online generator with 3D preview, multi-layer support, and print optimization.
+Gridfinity bin generator and layout planner. Make bins with configurable dimensions, export STL/STEP/3MF, and plan your drawer layout. Free, runs in your browser.
 ```
 
 **Keywords — add:**

@@ -327,6 +327,20 @@ function build(): void {
     processFile(path.join(CONTENT_DIR, file));
   }
 
+  // Update CSS filename in hand-crafted content pages
+  const handCraftedPages = ['gridfinity-bin-generator/index.html', 'gridfinity-sizes/index.html'];
+  for (const pagePath of handCraftedPages) {
+    const fullPath = path.join(OUTPUT_DIR, pagePath);
+    if (fs.existsSync(fullPath)) {
+      const html = fs.readFileSync(fullPath, 'utf-8');
+      const updated = html.replace(/\/content\.[a-f0-9]+\.css/, `/${cssFilename}`);
+      if (updated !== html) {
+        fs.writeFileSync(fullPath, updated);
+        console.log(`✓ Updated CSS reference in ${pagePath}`);
+      }
+    }
+  }
+
   console.log(`\n✓ Built ${files.length} content page(s)`);
 }
 
