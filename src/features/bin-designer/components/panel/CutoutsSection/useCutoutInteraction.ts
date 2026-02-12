@@ -873,8 +873,8 @@ export function useCutoutInteraction({
       }
       commitTransaction?.();
     } else if (mode.type === 'measuring') {
-      setRulerMeasurement(null);
-      setMode({ type: 'idle' });
+      // Stay in ruler-ready so the user can measure repeatedly
+      setMode({ type: 'ruler-ready' });
     }
   }, [
     mode,
@@ -985,10 +985,10 @@ export function useCutoutInteraction({
     };
   }, [mode]);
 
-  // Clear stale ruler measurement when leaving measuring mode (e.g. keyboard shortcut)
+  // Clear ruler measurement when leaving ruler modes (e.g. pressing Escape)
   /* eslint-disable react-hooks/set-state-in-effect -- clearing transient visual state when mode changes */
   useEffect(() => {
-    if (mode.type !== 'measuring') {
+    if (mode.type !== 'measuring' && mode.type !== 'ruler-ready') {
       setRulerMeasurement(null);
     }
   }, [mode.type]);

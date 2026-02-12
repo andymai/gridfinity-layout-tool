@@ -220,6 +220,7 @@ export function SceneContent({
         .filter((c) => c.groupId === null)
         .map((cutout) => {
           const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+          const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
           return (
             <CutoutShapeMesh
               key={cutout.id}
@@ -232,7 +233,7 @@ export function SceneContent({
               onSelect={onSelectCutout}
               onDoubleClick={onDoubleClickCutout}
               onDragStart={memoizedDragStart}
-              disablePointerEvents={isVertexEditing}
+              disablePointerEvents={isVertexEditing || isRulerActive}
             />
           );
         })}
@@ -242,6 +243,7 @@ export function SceneContent({
         .filter((c) => c.groupId !== null)
         .map((cutout) => {
           const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+          const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
           return (
             <CutoutShapeMesh
               key={`${cutout.id}-fill`}
@@ -255,7 +257,7 @@ export function SceneContent({
               onSelect={onSelectCutout}
               onDoubleClick={onDoubleClickCutout}
               onDragStart={memoizedDragStart}
-              disablePointerEvents={isVertexEditing}
+              disablePointerEvents={isVertexEditing || isRulerActive}
             />
           );
         })}

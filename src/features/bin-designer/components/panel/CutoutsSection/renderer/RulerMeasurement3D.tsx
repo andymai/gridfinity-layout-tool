@@ -4,11 +4,13 @@
  * Renders in the R3F scene: perpendicular ticks at each endpoint,
  * a connecting line, and a centered HTML label showing distance + deltas.
  * All coordinates are in mm (world space).
+ *
+ * Uses drei's Line (Line2) for thick lines — WebGL's native lineWidth is
+ * clamped to 1px on most platforms, making thin lines nearly invisible.
  */
 
 import { useMemo } from 'react';
-import * as THREE from 'three';
-import { Html } from '@react-three/drei';
+import { Html, Line } from '@react-three/drei';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
 import { RENDER_ORDER } from './constants';
 
@@ -18,14 +20,15 @@ interface RulerMeasurement3DProps {
 }
 
 /** Tick length in screen pixels (constant regardless of zoom) */
-const TICK_LENGTH_PX = 10;
+const TICK_LENGTH_PX = 12;
 const RULER_Z = 0.05;
-const RULER_COLOR = new THREE.Color('#60a5fa'); // blue-400
+const RULER_COLOR = '#facc15'; // yellow-400 — high contrast on dark bin surface
+const LINE_WIDTH_PX = 2.5;
 
 export function RulerMeasurement3D({ measurement, zoom }: RulerMeasurement3DProps) {
   const { startX, startY, endX, endY, distance, deltaX, deltaY } = measurement;
 
-  const geometry = useMemo(() => {
+  const { mainLine, startTick, endTick } = useMemo(() => {
     const tickMm = TICK_LENGTH_PX / zoom;
     const dx = endX - startX;
     const dy = endY - startY;
@@ -35,7 +38,6 @@ export function RulerMeasurement3D({ measurement, zoom }: RulerMeasurement3DProp
     let perpX: number;
     let perpY: number;
     if (lenSq < 0.000001) {
-      // len < 0.001 squared
       perpX = 0;
       perpY = tickMm / 2;
     } else {
@@ -45,33 +47,17 @@ export function RulerMeasurement3D({ measurement, zoom }: RulerMeasurement3DProp
       perpY = dx * halfTick;
     }
 
-    const positions = new Float32Array([
-      // Main line
-      startX,
-      startY,
-      RULER_Z,
-      endX,
-      endY,
-      RULER_Z,
-      // Start tick (perpendicular)
-      startX - perpX,
-      startY - perpY,
-      RULER_Z,
-      startX + perpX,
-      startY + perpY,
-      RULER_Z,
-      // End tick (perpendicular)
-      endX - perpX,
-      endY - perpY,
-      RULER_Z,
-      endX + perpX,
-      endY + perpY,
-      RULER_Z,
-    ]);
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    return geo;
+    return {
+      mainLine: [[startX, startY, RULER_Z] as const, [endX, endY, RULER_Z] as const],
+      startTick: [
+        [startX - perpX, startY - perpY, RULER_Z] as const,
+        [startX + perpX, startY + perpY, RULER_Z] as const,
+      ],
+      endTick: [
+        [endX - perpX, endY - perpY, RULER_Z] as const,
+        [endX + perpX, endY + perpY, RULER_Z] as const,
+      ],
+    };
   }, [startX, startY, endX, endY, zoom]);
 
   const midX = (startX + endX) / 2;
@@ -81,9 +67,33 @@ export function RulerMeasurement3D({ measurement, zoom }: RulerMeasurement3DProp
 
   return (
     <>
-      <lineSegments geometry={geometry} renderOrder={RENDER_ORDER.SMART_GUIDES + 5}>
-        <lineBasicMaterial color={RULER_COLOR} transparent opacity={0.9} depthTest={false} />
-      </lineSegments>
+      <Line
+        points={mainLine}
+        color={RULER_COLOR}
+        lineWidth={LINE_WIDTH_PX}
+        transparent
+        opacity={0.95}
+        depthTest={false}
+        renderOrder={RENDER_ORDER.SMART_GUIDES + 5}
+      />
+      <Line
+        points={startTick}
+        color={RULER_COLOR}
+        lineWidth={LINE_WIDTH_PX}
+        transparent
+        opacity={0.95}
+        depthTest={false}
+        renderOrder={RENDER_ORDER.SMART_GUIDES + 5}
+      />
+      <Line
+        points={endTick}
+        color={RULER_COLOR}
+        lineWidth={LINE_WIDTH_PX}
+        transparent
+        opacity={0.95}
+        depthTest={false}
+        renderOrder={RENDER_ORDER.SMART_GUIDES + 5}
+      />
 
       {/* Measurement label */}
       <Html
@@ -93,10 +103,10 @@ export function RulerMeasurement3D({ measurement, zoom }: RulerMeasurement3DProp
         renderOrder={RENDER_ORDER.HANDLES}
       >
         {/* eslint-disable i18next/no-literal-string -- measurement display, not translatable */}
-        <div className="rounded bg-blue-900/90 px-2 py-1 text-[11px] font-mono text-blue-200 whitespace-nowrap shadow-lg border border-blue-700/50">
-          <div className="font-semibold text-blue-100">{distance.toFixed(1)}mm</div>
+        <div className="rounded bg-gray-900/95 px-2.5 py-1.5 text-xs font-mono text-yellow-200 whitespace-nowrap shadow-lg border border-yellow-500/40">
+          <div className="font-semibold text-yellow-100">{distance.toFixed(1)}mm</div>
           {(Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1) && (
-            <div className="text-[10px] text-blue-300/80">
+            <div className="text-[10px] text-yellow-300/80">
               {'\u0394'}x: {Math.abs(deltaX).toFixed(1)} &nbsp; {'\u0394'}y:{' '}
               {Math.abs(deltaY).toFixed(1)}
             </div>
