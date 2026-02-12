@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.8.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.7.1...gridfinity-layout-tool-v3.8.0) (2026-02-12)
+
+
+### Features
+
+* add ruler measurement tool to cutout editor ([#706](https://github.com/andymai/gridfinity-layout-tool/issues/706)) ([31e9d0d](https://github.com/andymai/gridfinity-layout-tool/commit/31e9d0d9bef8c4da04c70f4c8688409416fea559))
+
 ## [3.7.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.7.0...gridfinity-layout-tool-v3.7.1) (2026-02-12)
 
 
