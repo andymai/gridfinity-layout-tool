@@ -928,6 +928,11 @@ export function useCutoutInteraction({
 
   useEffect(() => {
     const reset = () => {
+      if (mode.type === 'path-drawing' && mode.activePointDrag) {
+        // Cancel in-progress handle drag but preserve the placed path points
+        setMode({ ...mode, activePointDrag: false, repositionIndex: null });
+        return;
+      }
       if (
         mode.type !== 'idle' &&
         mode.type !== 'placing' &&
@@ -953,7 +958,7 @@ export function useCutoutInteraction({
       window.removeEventListener('blur', reset);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [mode.type]);
+  }, [mode]);
 
   // ── Derived state ──────────────────────────────────────────────────
 

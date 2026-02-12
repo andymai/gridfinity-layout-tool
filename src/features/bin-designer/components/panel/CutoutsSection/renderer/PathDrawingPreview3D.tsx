@@ -7,7 +7,7 @@
  * World coordinates: mm, Y-up.
  */
 
-import { useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
@@ -53,7 +53,7 @@ export function PathDrawingPreview3D({
   // Flatten existing points to polyline for the placed segments
   const flatPoints = useMemo(() => {
     if (points.length < 2) return null;
-    return flattenPath(points);
+    return flattenPath(points, undefined, false);
   }, [points]);
 
   // Solid line through placed points
@@ -71,6 +71,15 @@ export function PathDrawingPreview3D({
     obj.renderOrder = RENDER_ORDER.DRAWING_PREVIEW;
     return obj;
   }, [flatPoints]);
+
+  useEffect(() => {
+    return () => {
+      if (placedLineObj) {
+        placedLineObj.geometry.dispose();
+        (placedLineObj.material as THREE.Material).dispose();
+      }
+    };
+  }, [placedLineObj]);
 
   // Line from last point to cursor (snaps to first vertex when closing)
   const cursorLineObj = useMemo(() => {
@@ -93,6 +102,15 @@ export function PathDrawingPreview3D({
     obj.renderOrder = RENDER_ORDER.DRAWING_PREVIEW;
     return obj;
   }, [points, cursorX, cursorY, canClose]);
+
+  useEffect(() => {
+    return () => {
+      if (cursorLineObj) {
+        cursorLineObj.geometry.dispose();
+        (cursorLineObj.material as THREE.Material).dispose();
+      }
+    };
+  }, [cursorLineObj]);
 
   // Handle visualization for latest point
   const lastPoint = points.length > 0 ? points[points.length - 1] : null;
@@ -132,9 +150,27 @@ export function PathDrawingPreview3D({
     return geometry;
   }, [lastPoint]);
 
+  useEffect(() => {
+    return () => {
+      handleLineGeo?.dispose();
+    };
+  }, [handleLineGeo]);
+
   // Circle geometries
   const outerGeo = useMemo(() => new THREE.CircleGeometry(vOuter, CIRCLE_SEGMENTS), [vOuter]);
   const innerGeo = useMemo(() => new THREE.CircleGeometry(vInner, CIRCLE_SEGMENTS), [vInner]);
+
+  useEffect(() => {
+    return () => {
+      outerGeo.dispose();
+    };
+  }, [outerGeo]);
+
+  useEffect(() => {
+    return () => {
+      innerGeo.dispose();
+    };
+  }, [innerGeo]);
 
   // Vertex pointer handler factory
   const makeVertexDown = useCallback(

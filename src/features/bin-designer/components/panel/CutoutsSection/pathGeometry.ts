@@ -111,21 +111,27 @@ function mid(a: Point2D, b: Point2D): Point2D {
 // ─── Path Flattening ────────────────────────────────────────────────────────
 
 /**
- * Convert a closed bezier path to a polyline by flattening all curves.
+ * Convert a bezier path to a polyline by flattening all curves.
  *
  * Straight segments (no handles) are kept as-is. Bezier segments are
  * recursively subdivided until each sub-chord is within `tolerance` mm.
+ *
+ * @param closed When true (default), flattens the closing segment (last → first)
+ *   and omits the duplicate endpoint. When false, returns an open polyline ending
+ *   at the last anchor — suitable for in-progress drawing previews.
  */
 export function flattenPath(
   points: readonly PathPoint[],
-  tolerance: number = DEFAULT_FLATTEN_TOLERANCE
+  tolerance: number = DEFAULT_FLATTEN_TOLERANCE,
+  closed: boolean = true
 ): Point2D[] {
   if (points.length < 2) return points.map((p) => ({ x: p.x, y: p.y }));
 
   const result: Point2D[] = [];
   const n = points.length;
+  const segmentCount = closed ? n : n - 1;
 
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < segmentCount; i++) {
     const p0 = points[i];
     const p1 = points[(i + 1) % n];
 
@@ -136,7 +142,7 @@ export function flattenPath(
     // For the closing segment (last → first), include bezier intermediates
     // but NOT the endpoint (which would duplicate the first point).
     // lineLoop and earclip handle closure automatically.
-    const isClosing = i === n - 1;
+    const isClosing = closed && i === n - 1;
 
     if (!p0.handleOut && !p1.handleIn) {
       if (!isClosing) {

@@ -205,6 +205,8 @@ export function buildInsertCuts(params: BinParams): Shape3D | null {
 /** Create an extruded + rotated cutout shape centered at origin (no translation). */
 function buildCutoutShape(cutout: {
   readonly shape: string;
+  readonly x: number;
+  readonly y: number;
   readonly width: number;
   readonly depth: number;
   readonly cutDepth: number;
@@ -386,6 +388,8 @@ function applyAdaptiveScoop(
  * The shape is centered at origin (bounding box center).
  */
 function buildPathCutoutShape(cutout: {
+  readonly x: number;
+  readonly y: number;
   readonly width: number;
   readonly depth: number;
   readonly cutDepth: number;
@@ -408,19 +412,10 @@ function buildPathCutoutShape(cutout: {
   }
 
   // Center the polyline at origin (buildCutoutShape expects shapes centered at origin).
-  // Path points are in bin-local absolute coordinates; subtract bounding box center.
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-  for (const pt of polyline) {
-    if (pt.x < minX) minX = pt.x;
-    if (pt.y < minY) minY = pt.y;
-    if (pt.x > maxX) maxX = pt.x;
-    if (pt.y > maxY) maxY = pt.y;
-  }
-  const cx = (minX + maxX) / 2;
-  const cy = (minY + maxY) / 2;
+  // Use the cutout's stored bounds (from getPathBounds in the editor) so the center
+  // matches the translation applied later via cutout.x + cutout.width/2.
+  const cx = cutout.x + cutout.width / 2;
+  const cy = cutout.y + cutout.depth / 2;
 
   // Build closed wire using brepjs draw API (points relative to center)
   let pen = draw([polyline[0].x - cx, polyline[0].y - cy]);

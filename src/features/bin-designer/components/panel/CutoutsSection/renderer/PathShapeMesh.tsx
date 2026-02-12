@@ -6,7 +6,7 @@
  * coordinates (mm, Y-up).
  */
 
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
@@ -243,11 +243,25 @@ export const PathShapeMesh = memo(function PathShapeMesh({
     return geo;
   }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
 
+  // Dispose previous fill geometry on change
+  useEffect(() => {
+    return () => {
+      fillGeometry?.dispose();
+    };
+  }, [fillGeometry]);
+
   // Bake distance field texture for depth shading
   const distField = useMemo(() => {
     if (effectiveFlatPoints.length < MIN_POLYLINE_POINTS) return null;
     return bakeDistanceField(effectiveFlatPoints, renderCenterX, renderCenterY);
   }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
+
+  // Dispose previous distance field texture on change
+  useEffect(() => {
+    return () => {
+      distField?.texture.dispose();
+    };
+  }, [distField]);
 
   // Build stroke geometry (closed loop outline)
   const strokeGeometry = useMemo(() => {
@@ -259,6 +273,13 @@ export const PathShapeMesh = memo(function PathShapeMesh({
     );
     return new THREE.BufferGeometry().setFromPoints(loopPoints);
   }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
+
+  // Dispose previous stroke geometry on change
+  useEffect(() => {
+    return () => {
+      strokeGeometry?.dispose();
+    };
+  }, [strokeGeometry]);
 
   // Depth-shaded fill material with distance field texture
   const fillMaterial = useMemo(() => {

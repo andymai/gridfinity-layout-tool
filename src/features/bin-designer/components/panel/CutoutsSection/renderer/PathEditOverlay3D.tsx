@@ -7,7 +7,7 @@
  * Screen-space sizing via camera zoom. World coordinates: mm, Y-up.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
@@ -78,12 +78,12 @@ export function PathEditOverlay3D({
     <group renderOrder={OVERLAY_RENDER_ORDER}>
       {path.map((pt, i) => {
         const isSelected = selectedPointIndex === i;
-        const showHandles = true; // All handles visible in edit mode (Figma behavior)
+        // All handles visible in edit mode (Figma behavior)
 
         return (
           <group key={i}>
             {/* Handle lines and dots (visible for selected vertex) */}
-            {showHandles && pt.handleIn && (
+            {pt.handleIn && (
               <HandleLine
                 pointX={pt.x}
                 pointY={pt.y}
@@ -98,7 +98,7 @@ export function PathEditOverlay3D({
                 }}
               />
             )}
-            {showHandles && pt.handleOut && (
+            {pt.handleOut && (
               <HandleLine
                 pointX={pt.x}
                 pointY={pt.y}
@@ -239,6 +239,13 @@ function HandleLine({
     return obj;
   }, [pointX, pointY, handleX, handleY]);
 
+  useEffect(() => {
+    return () => {
+      lineObj.geometry.dispose();
+      (lineObj.material as THREE.Material).dispose();
+    };
+  }, [lineObj]);
+
   const outerGeo = useMemo(
     () => new THREE.CircleGeometry(outerRadius, CIRCLE_SEGMENTS),
     [outerRadius]
@@ -247,6 +254,18 @@ function HandleLine({
     () => new THREE.CircleGeometry(innerRadius, CIRCLE_SEGMENTS),
     [innerRadius]
   );
+
+  useEffect(() => {
+    return () => {
+      outerGeo.dispose();
+    };
+  }, [outerGeo]);
+
+  useEffect(() => {
+    return () => {
+      innerGeo.dispose();
+    };
+  }, [innerGeo]);
 
   return (
     <>
