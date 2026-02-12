@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.9.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.8.0...gridfinity-layout-tool-v3.9.0) (2026-02-12)
+
+
+### Features
+
+* add scoop and funnel wall cutout shapes ([523439e](https://github.com/andymai/gridfinity-layout-tool/commit/523439e651483dba11153a326ec167e25b7c0196))
+* add wall cutout feature to bin designer ([#707](https://github.com/andymai/gridfinity-layout-tool/issues/707)) ([8675067](https://github.com/andymai/gridfinity-layout-tool/commit/86750678196951e561d02a4d615c49fccc727ae0))
+
 ## [3.8.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.7.1...gridfinity-layout-tool-v3.8.0) (2026-02-12)
 
 
