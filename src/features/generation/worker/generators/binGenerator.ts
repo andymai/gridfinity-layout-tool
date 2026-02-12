@@ -59,6 +59,7 @@ import {
   buildCutoutCuts,
   buildLabelTabs,
   buildScoopRamps,
+  buildWallCutoutCuts,
 } from './featureBuilder';
 import {
   getShellCache,
@@ -381,6 +382,20 @@ export function generateBin(
         }
       }
       if (scoopRamps) fuseTargets.push(scoopRamps);
+    }
+
+    // Wall cutouts (U-notch from top, available for standard + slotted)
+    if (params.walls.enabled) {
+      checkCancelled(signal);
+      const wcKey = `${shellKey}|${JSON.stringify(params.walls)}|${innerW}|${innerD}|${wallHeight}|${hasLip}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
+      let wallCutoutCuts = getFeatureCache('wallCutoutCuts', wcKey);
+      if (!wallCutoutCuts) {
+        wallCutoutCuts = buildWallCutoutCuts(params, innerW, innerD, wallHeight, hasLip);
+        if (wallCutoutCuts) {
+          setFeatureCache('wallCutoutCuts', wcKey, wallCutoutCuts);
+        }
+      }
+      if (wallCutoutCuts) cutTargets.push(wallCutoutCuts);
     }
 
     // Wall patterns: template cloning + cutAll

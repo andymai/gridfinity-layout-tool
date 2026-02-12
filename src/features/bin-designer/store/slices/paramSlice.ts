@@ -9,6 +9,9 @@ import type {
   BaseConfig,
   LabelTabConfig,
   ScoopConfig,
+  WallConfig,
+  WallCutout,
+  WallSide,
   WallPatternConfig,
   CutoutConfig,
   Insert,
@@ -97,6 +100,23 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params.scoop, partial);
+      });
+    },
+
+    updateWalls: (partial: Partial<WallConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.walls = { ...state.params.walls, ...partial };
+      });
+    },
+
+    updateWallSide: (side: WallSide, partial: Partial<WallCutout>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.walls = {
+          ...state.params.walls,
+          [side]: { ...state.params.walls[side], ...partial },
+        };
       });
     },
 

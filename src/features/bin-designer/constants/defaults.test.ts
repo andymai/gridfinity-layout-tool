@@ -35,11 +35,12 @@ describe('DEFAULT_BIN_PARAMS', () => {
   });
 
   it('should have no wall cutouts by default', () => {
-    expect(DEFAULT_BIN_PARAMS.walls.front).toEqual({ width: 0, depth: 0 });
-    expect(DEFAULT_BIN_PARAMS.walls.back).toEqual({ width: 0, depth: 0 });
-    expect(DEFAULT_BIN_PARAMS.walls.left).toEqual({ width: 0, depth: 0 });
-    expect(DEFAULT_BIN_PARAMS.walls.right).toEqual({ width: 0, depth: 0 });
-    expect(DEFAULT_BIN_PARAMS.walls.interior).toEqual({ width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.enabled).toBe(false);
+    expect(DEFAULT_BIN_PARAMS.walls.front).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.back).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.left).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.right).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.interior).toEqual({ enabled: false, width: 0, depth: 0 });
   });
 
   it('should have stacking lip enabled', () => {
@@ -126,20 +127,24 @@ describe('migrateParams', () => {
 
   it('should migrate legacy number-based walls to WallCutout format', () => {
     const result = migrateParams({ walls: { front: 80, back: 0, left: 50, right: 0 } } as any);
-    expect(result.walls.front).toEqual({ width: 80, depth: 100 });
-    expect(result.walls.back).toEqual({ width: 0, depth: 0 });
-    expect(result.walls.left).toEqual({ width: 50, depth: 100 });
-    expect(result.walls.right).toEqual({ width: 0, depth: 0 });
-    expect(result.walls.interior).toEqual({ width: 0, depth: 0 });
+    expect(result.walls.front).toEqual({ enabled: true, width: 80, depth: 100 });
+    expect(result.walls.back).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(result.walls.left).toEqual({ enabled: true, width: 50, depth: 100 });
+    expect(result.walls.right).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(result.walls.interior).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(result.walls.enabled).toBe(true);
   });
 
   it('should pass through new WallCutout format', () => {
     const walls = {
-      front: { width: 80, depth: 60 },
-      back: { width: 0, depth: 0 },
-      left: { width: 0, depth: 0 },
-      right: { width: 50, depth: 40 },
-      interior: { width: 70, depth: 50 },
+      enabled: true,
+      width: 70,
+      depth: 50,
+      front: { enabled: true, width: 80, depth: 60 },
+      back: { enabled: false, width: 0, depth: 0 },
+      left: { enabled: false, width: 0, depth: 0 },
+      right: { enabled: true, width: 50, depth: 40 },
+      interior: { enabled: true, width: 70, depth: 50 },
     };
     const result = migrateParams({ walls });
     expect(result.walls).toEqual(walls);
@@ -147,8 +152,8 @@ describe('migrateParams', () => {
 
   it('should fill missing WallCutout fields with defaults', () => {
     const result = migrateParams({ walls: { front: { width: 80 } } } as any);
-    expect(result.walls.front).toEqual({ width: 80, depth: 0 });
-    expect(result.walls.back).toEqual({ width: 0, depth: 0 });
+    expect(result.walls.front).toEqual({ enabled: true, width: 80, depth: 0 });
+    expect(result.walls.back).toEqual({ enabled: false, width: 0, depth: 0 });
   });
 
   it('should produce valid params from legacy wall format', () => {

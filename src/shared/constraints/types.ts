@@ -25,7 +25,8 @@ export type FeatureKey =
   | 'wallPattern'
   | 'inserts'
   | 'cutouts'
-  | 'slotConfig';
+  | 'slotConfig'
+  | 'wallCutouts';
 
 // =============================================================================
 // Constraint Rule Types

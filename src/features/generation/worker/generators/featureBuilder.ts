@@ -1073,3 +1073,183 @@ export function buildScoopRamps(
   if (scoopShapes.length === 0) return null;
   return scoopShapes.length === 1 ? scoopShapes[0] : unwrap(fuseAll(scoopShapes));
 }
+
+// ─── Wall Cutout Builder ──────────────────────────────────────────────────────
+
+/** Auto-compute corner radius: 15% of the smaller dimension, clamped to [0.5, 5] mm. */
+function autoCornerRadius(cutWidth: number, cutHeight: number): number {
+  return Math.max(0.5, Math.min(5, Math.min(cutWidth * 0.15, cutHeight * 0.15)));
+}
+
+/**
+ * Build wall cutout cuts (U-shaped notches from the top of bin walls).
+ *
+ * Each enabled side gets a centered rectangular cutout with rounded corners.
+ * Per-side overrides take precedence over global width/depth when side.enabled is true.
+ * Interior divider walls get uniform cutouts at every wall segment boundary.
+ *
+ * The cutout extends downward from the wall top by the configured depth percentage.
+ * When the cut extends into the lip zone, it punches through the stacking lip too.
+ *
+ * @param params - Bin parameters (walls config, compartments for interior)
+ * @param innerW - Interior width in mm (outer - 2*wall)
+ * @param innerD - Interior depth in mm
+ * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
+ * @param hasLip - Whether the bin has a stacking lip
+ */
+export function buildWallCutoutCuts(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  hasLip: boolean
+): Shape3D | null {
+  if (!params.walls.enabled) return null;
+
+  const wallThickness = params.wallThickness;
+  const cutShapes: Shape3D[] = [];
+
+  // Resolve effective width/depth for a side
+  const resolveEffective = (side: 'front' | 'back' | 'left' | 'right' | 'interior') => {
+    const sideConfig = params.walls[side];
+    const effectiveWidth = sideConfig.enabled ? sideConfig.width : params.walls.width;
+    const effectiveDepth = sideConfig.enabled ? sideConfig.depth : params.walls.depth;
+    return { effectiveWidth, effectiveDepth };
+  };
+
+  // Extrusion depth: 2× wallThickness for safe boolean penetration
+  const extrudeDepth = wallThickness * 2;
+
+  // Lip height adds to the cut zone when depth extends to the very top
+  const lipExtension = hasLip ? LIP_SMALL_TAPER + 3.7 : 0; // ~LIP_HEIGHT
+
+  const sides: Array<{
+    key: 'front' | 'back' | 'left' | 'right';
+    wallSpan: number;
+    x: number;
+    y: number;
+    rotateZ: number;
+  }> = [
+    { key: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },
+    { key: 'back', wallSpan: innerW, x: 0, y: innerD / 2, rotateZ: 0 },
+    { key: 'left', wallSpan: innerD, x: -innerW / 2, y: 0, rotateZ: 90 },
+    { key: 'right', wallSpan: innerD, x: innerW / 2, y: 0, rotateZ: 90 },
+  ];
+
+  for (const side of sides) {
+    const { effectiveWidth, effectiveDepth } = resolveEffective(side.key);
+    if (effectiveWidth <= 0 || effectiveDepth <= 0) continue;
+
+    const cutWidth = side.wallSpan * (effectiveWidth / 100);
+    const cutHeight =
+      wallHeight * (effectiveDepth / 100) + (effectiveDepth >= 95 ? lipExtension : 0);
+
+    if (cutWidth < 0.1 || cutHeight < 0.1) continue;
+
+    const cornerR = autoCornerRadius(cutWidth, cutHeight);
+    const safeCornerR = Math.min(cornerR, cutWidth / 2 - 0.01, cutHeight / 2 - 0.01);
+
+    let shape: Shape3D;
+    if (safeCornerR > 0.1) {
+      shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeCornerR), 'XY').extrude(
+        extrudeDepth
+      );
+    } else {
+      shape = sketch(drawRectangle(cutWidth, cutHeight), 'XY').extrude(extrudeDepth);
+    }
+
+    // Rotate for left/right walls (cut body along X instead of Y)
+    if (side.rotateZ !== 0) {
+      shape = rotate(shape, side.rotateZ, { axis: [0, 0, 1] });
+    }
+
+    // Position: centered on wall face, top-aligned at wallHeight
+    // The cutout rectangle is centered at origin, so shift up by wallHeight - cutHeight/2
+    const cutZ = wallHeight - cutHeight / 2;
+    cutShapes.push(translate(shape, [side.x, side.y, cutZ]));
+  }
+
+  // Interior divider walls
+  if (params.walls.interior.enabled) {
+    const { effectiveWidth, effectiveDepth } = resolveEffective('interior');
+    if (effectiveWidth > 0 && effectiveDepth > 0) {
+      const { cols, rows, cells } = params.compartments;
+      if (cols > 1 || rows > 1) {
+        const cellW = innerW / cols;
+        const cellD = innerD / rows;
+
+        // Vertical divider walls (between columns)
+        for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
+          const segments = findWallSegments(rows, (row) => {
+            const leftId = cells[row * cols + (colBoundary - 1)];
+            const rightId = cells[row * cols + colBoundary];
+            return leftId !== rightId;
+          });
+
+          for (const [start, end] of segments) {
+            const segLength = (end - start) * cellD;
+            const cutWidth = segLength * (effectiveWidth / 100);
+            const cutHeight = wallHeight * (effectiveDepth / 100);
+            if (cutWidth < 0.1 || cutHeight < 0.1) continue;
+
+            const cornerR = autoCornerRadius(cutWidth, cutHeight);
+            const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, cutHeight / 2 - 0.01);
+
+            let shape: Shape3D;
+            if (safeR > 0.1) {
+              shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeR), 'XY').extrude(
+                extrudeDepth
+              );
+            } else {
+              shape = sketch(drawRectangle(cutWidth, cutHeight), 'XY').extrude(extrudeDepth);
+            }
+
+            // Rotate 90 degrees: interior vertical walls run along Y
+            shape = rotate(shape, 90, { axis: [0, 0, 1] });
+
+            const xPos = -innerW / 2 + colBoundary * cellW;
+            const yCenter = -innerD / 2 + (start + (end - start) / 2) * cellD;
+            const cutZ = wallHeight - cutHeight / 2;
+            cutShapes.push(translate(shape, [xPos, yCenter, cutZ]));
+          }
+        }
+
+        // Horizontal divider walls (between rows)
+        for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
+          const segments = findWallSegments(cols, (col) => {
+            const topId = cells[(rowBoundary - 1) * cols + col];
+            const bottomId = cells[rowBoundary * cols + col];
+            return topId !== bottomId;
+          });
+
+          for (const [start, end] of segments) {
+            const segLength = (end - start) * cellW;
+            const cutWidth = segLength * (effectiveWidth / 100);
+            const cutHeight = wallHeight * (effectiveDepth / 100);
+            if (cutWidth < 0.1 || cutHeight < 0.1) continue;
+
+            const cornerR = autoCornerRadius(cutWidth, cutHeight);
+            const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, cutHeight / 2 - 0.01);
+
+            let shape: Shape3D;
+            if (safeR > 0.1) {
+              shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeR), 'XY').extrude(
+                extrudeDepth
+              );
+            } else {
+              shape = sketch(drawRectangle(cutWidth, cutHeight), 'XY').extrude(extrudeDepth);
+            }
+
+            const yPos = -innerD / 2 + rowBoundary * cellD;
+            const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;
+            const cutZ = wallHeight - cutHeight / 2;
+            cutShapes.push(translate(shape, [xCenter, yPos, cutZ]));
+          }
+        }
+      }
+    }
+  }
+
+  if (cutShapes.length === 0) return null;
+  return unwrap(fuseAll(cutShapes));
+}

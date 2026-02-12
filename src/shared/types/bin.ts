@@ -16,6 +16,7 @@ export type {
   LabelTabAlignment,
   WallCutout,
   WallConfig,
+  WallSide,
   SlotConfig,
   AxisSlotConfig,
   DividerPieceConfig,

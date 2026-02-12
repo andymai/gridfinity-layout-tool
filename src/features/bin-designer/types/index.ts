@@ -117,16 +117,27 @@ export interface LabelTabConfig {
   readonly alignment: LabelTabAlignment;
 }
 
-/** A single wall cutout: width of the U-notch (centered) and depth from wall top */
+/** A single wall cutout: per-side override with its own enabled flag */
 export interface WallCutout {
+  /** Whether this side's cutout is individually enabled */
+  readonly enabled: boolean;
   /** Width of the cutout as 0-100% of the wall span (centered) */
   readonly width: number;
   /** Depth of the cutout as 0-100% of the wall height (from top) */
   readonly depth: number;
 }
 
-/** Wall cutout configuration per side plus interior divider walls */
+/** Wall side identifier for per-side operations */
+export type WallSide = 'front' | 'back' | 'left' | 'right' | 'interior';
+
+/** Wall cutout configuration: global defaults + per-side overrides */
 export interface WallConfig {
+  /** Master toggle for the wall cutouts feature */
+  readonly enabled: boolean;
+  /** Global default width % (0-100) applied to sides without individual overrides */
+  readonly width: number;
+  /** Global default depth % (0-100) applied to sides without individual overrides */
+  readonly depth: number;
   readonly front: WallCutout;
   readonly back: WallCutout;
   readonly left: WallCutout;
@@ -430,6 +441,8 @@ export interface DesignerState {
   updateBase: (partial: Partial<BaseConfig>) => void;
   updateLabel: (partial: Partial<LabelTabConfig>) => void;
   updateScoop: (partial: Partial<ScoopConfig>) => void;
+  updateWalls: (partial: Partial<WallConfig>) => void;
+  updateWallSide: (side: WallSide, partial: Partial<WallCutout>) => void;
 
   // History actions
   undo: () => void;
