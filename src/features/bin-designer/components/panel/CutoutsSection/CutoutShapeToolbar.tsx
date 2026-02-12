@@ -128,8 +128,8 @@ export function CutoutShapeToolbar({
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M8 1 11.5 3 5 10.5 1.5 12.5 3 9z" />
-          <path d="M6.5 4l3 1.5" />
+          <path d="M10 1 13 4 4 13 1 10z" />
+          <path d="M8.5 2.5l3 3" />
         </svg>
         {!vertical && t('binDesigner.cutouts.penTool')}
       </button>
