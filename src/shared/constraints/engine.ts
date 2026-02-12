@@ -139,6 +139,19 @@ export function resolveConstraints(
     if (!changed) break;
   }
 
+  // Post-check: if the user enabled a feature, verify it's not still blocked
+  // by an active one-way constraint. The loop above protects the user's feature
+  // (line 128) which is correct for mutual exclusion (enabling halfSockets
+  // auto-disables magnet). But for one-way constraints (slotted blocks scoop),
+  // the engine can't resolve the conflict. Return currentParams unchanged
+  // so callers get a no-op rather than inconsistent state.
+  if (change.enabled) {
+    const status = getFeatureStatus(params, change.feature);
+    if (!status.available) {
+      return { params: currentParams, autoDisabled: [], impliedChanges: {} };
+    }
+  }
+
   return { params, autoDisabled, impliedChanges };
 }
 

@@ -196,6 +196,20 @@ describe('resolveConstraints — base constraints', () => {
     expect(FEATURE_MANIFESTS['base.flat'].isEnabled(result.params)).toBe(false);
   });
 
+  it('enabling a one-way-blocked feature is a no-op', () => {
+    // Scoop is blocked by slotted (one-way — enabling scoop can't disable slotted)
+    const params = makeParams({ style: 'slotted' });
+    const result = resolveConstraints(params, {
+      feature: 'scoop',
+      enabled: true,
+    });
+
+    // Should return original params unchanged
+    expect(result.params.scoop.enabled).toBe(false);
+    expect(result.params.style).toBe('slotted');
+    expect(result.autoDisabled).toHaveLength(0);
+  });
+
   it('disabling a feature does not cascade', () => {
     const params = makeParams({
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
