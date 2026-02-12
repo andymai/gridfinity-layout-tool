@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.7.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.6.2...gridfinity-layout-tool-v3.7.0) (2026-02-12)
+
+
+### Features
+
+* add pen tool for freeform path cutouts ([#685](https://github.com/andymai/gridfinity-layout-tool/issues/685)) ([ca16505](https://github.com/andymai/gridfinity-layout-tool/commit/ca165058dc21634cad4e1358388f2500be97020f))
+
 ## [3.6.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.6.1...gridfinity-layout-tool-v3.6.2) (2026-02-12)
 
 
