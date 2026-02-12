@@ -34,12 +34,17 @@ describe('DEFAULT_BIN_PARAMS', () => {
     expect(DEFAULT_BIN_PARAMS.label.alignment).toBe('left');
   });
 
-  it('should have no wall cutouts by default', () => {
-    expect(DEFAULT_BIN_PARAMS.walls.front).toEqual({ width: 0, depth: 0 });
-    expect(DEFAULT_BIN_PARAMS.walls.back).toEqual({ width: 0, depth: 0 });
-    expect(DEFAULT_BIN_PARAMS.walls.left).toEqual({ width: 0, depth: 0 });
-    expect(DEFAULT_BIN_PARAMS.walls.right).toEqual({ width: 0, depth: 0 });
-    expect(DEFAULT_BIN_PARAMS.walls.interior).toEqual({ width: 0, depth: 0 });
+  it('should have wall cutouts on left/right sides by default', () => {
+    expect(DEFAULT_BIN_PARAMS.walls.enabled).toBe(false);
+    expect(DEFAULT_BIN_PARAMS.walls.front).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.back).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.left).toEqual({ enabled: true, width: 70, depth: 50 });
+    expect(DEFAULT_BIN_PARAMS.walls.right).toEqual({ enabled: true, width: 70, depth: 50 });
+    expect(DEFAULT_BIN_PARAMS.walls.interior).toEqual({ enabled: false, width: 0, depth: 0 });
+  });
+
+  it('should have u-shape as default wall cutout shape', () => {
+    expect(DEFAULT_BIN_PARAMS.walls.shape).toBe('u-shape');
   });
 
   it('should have stacking lip enabled', () => {
@@ -126,20 +131,25 @@ describe('migrateParams', () => {
 
   it('should migrate legacy number-based walls to WallCutout format', () => {
     const result = migrateParams({ walls: { front: 80, back: 0, left: 50, right: 0 } } as any);
-    expect(result.walls.front).toEqual({ width: 80, depth: 100 });
-    expect(result.walls.back).toEqual({ width: 0, depth: 0 });
-    expect(result.walls.left).toEqual({ width: 50, depth: 100 });
-    expect(result.walls.right).toEqual({ width: 0, depth: 0 });
-    expect(result.walls.interior).toEqual({ width: 0, depth: 0 });
+    expect(result.walls.front).toEqual({ enabled: true, width: 80, depth: 100 });
+    expect(result.walls.back).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(result.walls.left).toEqual({ enabled: true, width: 50, depth: 100 });
+    expect(result.walls.right).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(result.walls.interior).toEqual({ enabled: false, width: 0, depth: 0 });
+    expect(result.walls.enabled).toBe(true);
   });
 
   it('should pass through new WallCutout format', () => {
     const walls = {
-      front: { width: 80, depth: 60 },
-      back: { width: 0, depth: 0 },
-      left: { width: 0, depth: 0 },
-      right: { width: 50, depth: 40 },
-      interior: { width: 70, depth: 50 },
+      enabled: true,
+      shape: 'u-shape' as const,
+      width: 70,
+      depth: 50,
+      front: { enabled: true, width: 80, depth: 60 },
+      back: { enabled: false, width: 0, depth: 0 },
+      left: { enabled: false, width: 0, depth: 0 },
+      right: { enabled: true, width: 50, depth: 40 },
+      interior: { enabled: true, width: 70, depth: 50 },
     };
     const result = migrateParams({ walls });
     expect(result.walls).toEqual(walls);
@@ -147,8 +157,8 @@ describe('migrateParams', () => {
 
   it('should fill missing WallCutout fields with defaults', () => {
     const result = migrateParams({ walls: { front: { width: 80 } } } as any);
-    expect(result.walls.front).toEqual({ width: 80, depth: 0 });
-    expect(result.walls.back).toEqual({ width: 0, depth: 0 });
+    expect(result.walls.front).toEqual({ enabled: true, width: 80, depth: 0 });
+    expect(result.walls.back).toEqual({ enabled: false, width: 0, depth: 0 });
   });
 
   it('should produce valid params from legacy wall format', () => {
@@ -198,6 +208,66 @@ describe('migrateParams', () => {
     const result1 = migrateParams({});
     const result2 = migrateParams({});
     expect(result1.wallPattern).not.toBe(result2.wallPattern);
+  });
+
+  it('should default walls.shape to u-shape when shape is missing', () => {
+    const result = migrateParams({
+      walls: {
+        enabled: true,
+        width: 70,
+        depth: 50,
+        front: { enabled: true, width: 70, depth: 50 },
+      } as any,
+    });
+    expect(result.walls.shape).toBe('u-shape');
+  });
+
+  it('should default walls.shape to u-shape when shape is invalid', () => {
+    const result = migrateParams({
+      walls: {
+        enabled: true,
+        shape: 'invalid-shape',
+        width: 70,
+        depth: 50,
+        front: { enabled: true, width: 70, depth: 50 },
+      } as any,
+    });
+    expect(result.walls.shape).toBe('u-shape');
+  });
+
+  it('should preserve valid walls.shape values', () => {
+    const resultScoop = migrateParams({
+      walls: {
+        enabled: true,
+        shape: 'scoop',
+        width: 70,
+        depth: 50,
+        front: { enabled: true, width: 70, depth: 50 },
+      } as any,
+    });
+    expect(resultScoop.walls.shape).toBe('scoop');
+
+    const resultFunnel = migrateParams({
+      walls: {
+        enabled: true,
+        shape: 'funnel',
+        width: 70,
+        depth: 50,
+        front: { enabled: true, width: 70, depth: 50 },
+      } as any,
+    });
+    expect(resultFunnel.walls.shape).toBe('funnel');
+
+    const resultUShape = migrateParams({
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 70,
+        depth: 50,
+        front: { enabled: true, width: 70, depth: 50 },
+      } as any,
+    });
+    expect(resultUShape.walls.shape).toBe('u-shape');
   });
 });
 

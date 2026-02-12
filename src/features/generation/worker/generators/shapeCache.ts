@@ -145,6 +145,7 @@ const featureToolCaches = new Map<string, LRUCache<Shape3D>>([
   ['labelTabs', new LRUCache<Shape3D>(3)],
   ['scoopRamps', new LRUCache<Shape3D>(3)],
   ['slotCuts', new LRUCache<Shape3D>(3)],
+  ['wallCutoutCuts', new LRUCache<Shape3D>(3)],
 ]);
 
 export function getFeatureCache(feature: string, key: string): Shape3D | null {

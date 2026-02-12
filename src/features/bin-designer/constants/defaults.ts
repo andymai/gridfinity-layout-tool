@@ -9,6 +9,7 @@ import type {
   DesignerHistory,
   WallCutout,
   WallConfig,
+  WallCutoutShape,
   SlotConfig,
   DividerPieceConfig,
   WallPatternConfig,
@@ -77,11 +78,15 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     alignment: 'left',
   },
   walls: {
-    front: { width: 0, depth: 0 },
-    back: { width: 0, depth: 0 },
-    left: { width: 0, depth: 0 },
-    right: { width: 0, depth: 0 },
-    interior: { width: 0, depth: 0 },
+    enabled: false,
+    shape: 'u-shape',
+    width: 0,
+    depth: 0,
+    front: { enabled: false, width: 0, depth: 0 },
+    back: { enabled: false, width: 0, depth: 0 },
+    left: { enabled: true, width: 70, depth: 50 },
+    right: { enabled: true, width: 70, depth: 50 },
+    interior: { enabled: false, width: 0, depth: 0 },
   },
   slotConfig: DEFAULT_SLOT_CONFIG,
   dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
@@ -162,6 +167,13 @@ export function migrateParams(
   let wallsConfig: WallConfig = DEFAULT_BIN_PARAMS.walls;
   if (params.walls !== undefined) {
     const raw = params.walls as unknown as Record<string, unknown>;
+
+    // Helper: infer enabled from non-zero values
+    const inferEnabled = (cutout: WallCutout): WallCutout => ({
+      ...cutout,
+      enabled: cutout.enabled || cutout.width > 0 || cutout.depth > 0,
+    });
+
     // Detect legacy format: values are numbers instead of WallCutout objects
     if (
       typeof raw.front === 'number' ||
@@ -171,46 +183,91 @@ export function migrateParams(
     ) {
       const toWallCutout = (val: unknown): WallCutout => {
         if (typeof val === 'number') {
-          return { width: val, depth: val > 0 ? 100 : 0 };
+          return { enabled: val > 0, width: val, depth: val > 0 ? 100 : 0 };
         }
         if (val && typeof val === 'object' && 'width' in val) {
-          return { ...DEFAULT_BIN_PARAMS.walls.front, ...(val as Partial<WallCutout>) };
+          return inferEnabled({
+            ...DEFAULT_BIN_PARAMS.walls.front,
+            ...(val as Partial<WallCutout>),
+          });
         }
         return DEFAULT_BIN_PARAMS.walls.front;
       };
+      const front = toWallCutout(raw.front);
+      const back = toWallCutout(raw.back);
+      const left = toWallCutout(raw.left);
+      const right = toWallCutout(raw.right);
+      const interior =
+        raw.interior && typeof raw.interior === 'object'
+          ? inferEnabled({
+              ...DEFAULT_BIN_PARAMS.walls.interior,
+              ...(raw.interior as Partial<WallCutout>),
+            })
+          : DEFAULT_BIN_PARAMS.walls.interior;
+      const anySideEnabled =
+        front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
       wallsConfig = {
-        front: toWallCutout(raw.front),
-        back: toWallCutout(raw.back),
-        left: toWallCutout(raw.left),
-        right: toWallCutout(raw.right),
-        interior:
-          raw.interior && typeof raw.interior === 'object'
-            ? { ...DEFAULT_BIN_PARAMS.walls.interior, ...(raw.interior as Partial<WallCutout>) }
-            : DEFAULT_BIN_PARAMS.walls.interior,
+        enabled: anySideEnabled,
+        shape: DEFAULT_BIN_PARAMS.walls.shape,
+        width: DEFAULT_BIN_PARAMS.walls.width,
+        depth: DEFAULT_BIN_PARAMS.walls.depth,
+        front,
+        back,
+        left,
+        right,
+        interior,
       };
     } else {
-      // New format: merge each side with defaults
+      // New/current format: merge each side with defaults
+      const mergeSide = (
+        defaultSide: WallCutout,
+        rawSide: Partial<WallCutout> | undefined
+      ): WallCutout => {
+        const merged = { ...defaultSide, ...rawSide };
+        // Backfill enabled for old saves that lack the field
+        if (rawSide && !('enabled' in rawSide)) {
+          return inferEnabled(merged);
+        }
+        return merged;
+      };
+      const front = mergeSide(
+        DEFAULT_BIN_PARAMS.walls.front,
+        raw.front as Partial<WallCutout> | undefined
+      );
+      const back = mergeSide(
+        DEFAULT_BIN_PARAMS.walls.back,
+        raw.back as Partial<WallCutout> | undefined
+      );
+      const left = mergeSide(
+        DEFAULT_BIN_PARAMS.walls.left,
+        raw.left as Partial<WallCutout> | undefined
+      );
+      const right = mergeSide(
+        DEFAULT_BIN_PARAMS.walls.right,
+        raw.right as Partial<WallCutout> | undefined
+      );
+      const interior = mergeSide(
+        DEFAULT_BIN_PARAMS.walls.interior,
+        raw.interior as Partial<WallCutout> | undefined
+      );
+
+      // Backfill top-level enabled/width/depth for old saves missing these fields
+      const hasGlobalEnabled = 'enabled' in raw && typeof raw.enabled === 'boolean';
+      const anySideEnabled =
+        front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
+      const VALID_SHAPES: readonly WallCutoutShape[] = ['u-shape', 'scoop', 'funnel'];
+      const rawShape = raw.shape as WallCutoutShape | undefined;
       wallsConfig = {
-        front: {
-          ...DEFAULT_BIN_PARAMS.walls.front,
-          ...(raw.front as Partial<WallCutout> | undefined),
-        },
-        back: {
-          ...DEFAULT_BIN_PARAMS.walls.back,
-          ...(raw.back as Partial<WallCutout> | undefined),
-        },
-        left: {
-          ...DEFAULT_BIN_PARAMS.walls.left,
-          ...(raw.left as Partial<WallCutout> | undefined),
-        },
-        right: {
-          ...DEFAULT_BIN_PARAMS.walls.right,
-          ...(raw.right as Partial<WallCutout> | undefined),
-        },
-        interior: {
-          ...DEFAULT_BIN_PARAMS.walls.interior,
-          ...(raw.interior as Partial<WallCutout> | undefined),
-        },
+        enabled: hasGlobalEnabled ? (raw.enabled as boolean) : anySideEnabled,
+        shape:
+          rawShape && VALID_SHAPES.includes(rawShape) ? rawShape : DEFAULT_BIN_PARAMS.walls.shape,
+        width: typeof raw.width === 'number' ? raw.width : DEFAULT_BIN_PARAMS.walls.width,
+        depth: typeof raw.depth === 'number' ? raw.depth : DEFAULT_BIN_PARAMS.walls.depth,
+        front,
+        back,
+        left,
+        right,
+        interior,
       };
     }
   }

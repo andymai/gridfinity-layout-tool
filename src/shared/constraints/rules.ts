@@ -111,7 +111,7 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     description: 'Solid style disables cavity features',
     source: 'style.solid',
     when: (p) => p.style === 'solid',
-    disables: ['compartments', 'label', 'scoop', 'wallPattern', 'inserts'],
+    disables: ['compartments', 'label', 'scoop', 'wallPattern', 'inserts', 'wallCutouts'],
     reason: 'binDesigner.solidDisablesCavity',
   },
 

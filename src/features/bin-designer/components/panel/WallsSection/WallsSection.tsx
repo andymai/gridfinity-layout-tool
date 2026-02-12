@@ -11,6 +11,7 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
+import { WallCutoutsSection } from '../WallCutoutsSection';
 
 export function WallsSection() {
   const { state, handlers, meta, t } = useWallsSection();
@@ -39,6 +40,9 @@ export function WallsSection() {
         {state.patternPartialNote && state.patternEnabled && (
           <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
         )}
+      </div>
+      <div className="mt-3 pt-3 border-t border-stroke-subtle/50">
+        <WallCutoutsSection />
       </div>
     </CollapsibleSection>
   );

@@ -140,6 +140,13 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
             },
           },
   },
+
+  wallCutouts: {
+    key: 'wallCutouts',
+    label: 'Wall Cutouts',
+    isEnabled: (p) => p.walls.enabled,
+    apply: (p, enabled) => ({ walls: { ...p.walls, enabled } }),
+  },
 };
 
 // Compile-time exhaustiveness: ensures every FeatureKey has a manifest entry.

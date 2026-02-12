@@ -14,4 +14,5 @@ export { GhostScoops } from './GhostScoops';
 export { GhostSlotLines } from './GhostSlotLines/GhostSlotLines';
 export { GhostDividerPieces } from './GhostDividerPieces/GhostDividerPieces';
 export { GhostCutouts } from './GhostCutouts';
+export { GhostWallCutouts } from './GhostWallCutouts';
 export { BinSplitLines } from './BinSplitLines';
