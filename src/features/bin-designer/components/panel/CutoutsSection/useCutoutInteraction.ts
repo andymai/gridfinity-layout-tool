@@ -119,7 +119,13 @@ export type InteractionMode =
   | PathDrawingMode
   | VertexEditMode
   | { readonly type: 'ruler-ready' }
-  | { readonly type: 'measuring'; readonly startX: number; readonly startY: number };
+  | {
+      readonly type: 'measuring';
+      readonly startX: number;
+      readonly startY: number;
+      /** When true, return to ruler-ready on pointer up; otherwise return to idle (Shift+drag) */
+      readonly sticky: boolean;
+    };
 
 /** Preview overrides applied during drag/resize for visual feedback */
 export type PreviewMap = ReadonlyMap<string, Partial<Cutout>>;
@@ -873,8 +879,9 @@ export function useCutoutInteraction({
       }
       commitTransaction?.();
     } else if (mode.type === 'measuring') {
-      // Stay in ruler-ready so the user can measure repeatedly
-      setMode({ type: 'ruler-ready' });
+      // Sticky mode (toolbar): stay in ruler-ready for repeated measurements
+      // One-off (Shift+drag): return to idle
+      setMode({ type: mode.sticky ? 'ruler-ready' : 'idle' });
     }
   }, [
     mode,

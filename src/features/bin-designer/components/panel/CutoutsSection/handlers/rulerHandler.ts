@@ -9,7 +9,7 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import { getRotatedBounds } from '../geometry';
 
-/** A snap target point with a descriptive label */
+/** A snap target point derived from cutout geometry */
 interface SnapTarget {
   readonly x: number;
   readonly y: number;
@@ -33,8 +33,10 @@ export interface RulerMeasurement {
 const SNAP_THRESHOLD_PX = 8;
 
 /**
- * Collect all snap targets from cutout edges, corners, and centers.
- * Uses axis-aligned bounding boxes (accounting for rotation).
+ * Collect all snap targets from cutout bounding boxes.
+ * Uses axis-aligned bounding boxes (AABB) that account for rotation,
+ * so for rotated cutouts the snap points are on the AABB rather than
+ * the actual rotated edges.
  */
 export function collectSnapTargets(cutouts: readonly Cutout[]): readonly SnapTarget[] {
   const targets: SnapTarget[] = [];

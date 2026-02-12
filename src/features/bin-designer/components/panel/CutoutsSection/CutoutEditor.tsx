@@ -150,9 +150,10 @@ export function CutoutEditor() {
   // Background click — receives mm world coords from R3F
   const handleBackgroundPointerDown = useCallback(
     (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
-      // Ruler tool: sticky mode or Shift+drag quick measurement
+      // Ruler tool: sticky mode (toolbar) or Shift+drag quick measurement
       if (mode.type === 'ruler-ready' || (nativeEvent.shiftKey && mode.type === 'idle')) {
-        setMode({ type: 'measuring', startX: worldX, startY: worldY });
+        const sticky = mode.type === 'ruler-ready';
+        setMode({ type: 'measuring', startX: worldX, startY: worldY, sticky });
         return;
       }
 
