@@ -15,6 +15,10 @@ export function useInteriorSection() {
 
   const setStyle = useCallback(
     (newStyle: BinStyle) => {
+      // No-op when style is unchanged — prevents stale-closure overwrites
+      // if clicks on interior controls bubble up to the mode card button.
+      if (newStyle === style) return;
+
       // Determine which feature to enable based on the new style
       const featureToEnable =
         newStyle === 'slotted' ? 'style.slotted' : newStyle === 'solid' ? 'style.solid' : undefined;

@@ -35,7 +35,8 @@ export function useBaseSection() {
     : undefined;
 
   const toggleMagnet = useCallback(() => {
-    if (!magnetStatus.available) return;
+    // Only block enabling — allow disabling so users can recover from invalid states
+    if (!hasMagnet && !magnetStatus.available) return;
     const { params: resolved } = resolveConstraints(params, {
       feature: 'base.magnet',
       enabled: !hasMagnet,
@@ -44,7 +45,7 @@ export function useBaseSection() {
   }, [params, hasMagnet, magnetStatus.available, setParams]);
 
   const toggleScrew = useCallback(() => {
-    if (!screwStatus.available) return;
+    if (!hasScrew && !screwStatus.available) return;
     const { params: resolved } = resolveConstraints(params, {
       feature: 'base.screw',
       enabled: !hasScrew,
@@ -57,7 +58,7 @@ export function useBaseSection() {
   }, [base.stackingLip, updateBase]);
 
   const toggleHalfSockets = useCallback(() => {
-    if (!halfSocketsStatus.available) return;
+    if (!hasHalfSockets && !halfSocketsStatus.available) return;
     const { params: resolved } = resolveConstraints(params, {
       feature: 'base.halfSockets',
       enabled: !hasHalfSockets,

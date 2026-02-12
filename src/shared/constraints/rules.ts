@@ -48,11 +48,18 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
 
   // ── Base: flat ↔ everything else ─────────────────────────────────────────
   {
-    description: 'Flat base disables attachment features and half sockets',
+    description: 'Flat base disables attachment features',
     source: 'base.flat',
     when: (p) => p.base.style === 'flat',
-    disables: ['base.magnet', 'base.screw', 'base.halfSockets'],
+    disables: ['base.magnet', 'base.screw'],
     reason: 'binDesigner.flatFloorDisablesAttachment',
+  },
+  {
+    description: 'Flat base disables half sockets',
+    source: 'base.flat',
+    when: (p) => p.base.style === 'flat',
+    disables: ['base.halfSockets'],
+    reason: 'binDesigner.flatFloorDisablesHalfSockets',
   },
   {
     description: 'Half sockets incompatible with flat floor',

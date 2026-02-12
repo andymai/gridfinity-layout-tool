@@ -37,12 +37,12 @@ describe('InteriorModeCard', () => {
     expect(screen.getByText('binDesigner.interior.standard.description')).toBeInTheDocument();
   });
 
-  it('calls onSelect when card is clicked', () => {
+  it('calls onSelect when header button is clicked', () => {
     const onSelect = vi.fn();
     render(<InteriorModeCard mode="standard" isExpanded={false} onSelect={onSelect} />);
 
-    const card = screen.getByRole('button');
-    fireEvent.click(card);
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
 
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
@@ -76,21 +76,42 @@ describe('InteriorModeCard', () => {
     expect(screen.getByTestId('scissors-icon')).toBeInTheDocument();
   });
 
-  it('applies expanded styles when isExpanded is true', () => {
+  it('applies expanded styles to card wrapper when isExpanded is true', () => {
     const onSelect = vi.fn();
     render(<InteriorModeCard mode="standard" isExpanded={true} onSelect={onSelect} />);
 
-    const card = screen.getByRole('button');
-    expect(card.className).toContain('border-accent');
-    expect(card.className).toContain('bg-accent/5');
+    // Styles are on the outer wrapper div (parent of the button)
+    const wrapper = screen.getByRole('button').parentElement;
+    expect(wrapper?.className).toContain('border-accent');
+    expect(wrapper?.className).toContain('bg-accent/5');
   });
 
-  it('applies collapsed styles when isExpanded is false', () => {
+  it('applies collapsed styles to card wrapper when isExpanded is false', () => {
     const onSelect = vi.fn();
     render(<InteriorModeCard mode="standard" isExpanded={false} onSelect={onSelect} />);
 
-    const card = screen.getByRole('button');
-    expect(card.className).toContain('border-stroke-subtle');
-    expect(card.className).toContain('bg-surface-elevated');
+    const wrapper = screen.getByRole('button').parentElement;
+    expect(wrapper?.className).toContain('border-stroke-subtle');
+    expect(wrapper?.className).toContain('bg-surface-elevated');
+  });
+
+  it('does not trigger onSelect when clicking inside expanded content', () => {
+    const onSelect = vi.fn();
+    render(<InteriorModeCard mode="standard" isExpanded={true} onSelect={onSelect} />);
+
+    const editor = screen.getByTestId('compartment-editor');
+    fireEvent.click(editor);
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('does not trigger onSelect on pointerDown inside expanded content', () => {
+    const onSelect = vi.fn();
+    render(<InteriorModeCard mode="standard" isExpanded={true} onSelect={onSelect} />);
+
+    const editor = screen.getByTestId('compartment-editor');
+    fireEvent.pointerDown(editor);
+
+    expect(onSelect).not.toHaveBeenCalled();
   });
 });

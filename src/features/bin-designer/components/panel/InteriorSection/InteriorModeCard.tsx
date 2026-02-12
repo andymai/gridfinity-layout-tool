@@ -67,11 +67,9 @@ export function InteriorModeCard({ mode, isExpanded, onSelect }: InteriorModeCar
   const config = MODE_CONFIG[mode];
 
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <div
       className={`
-        w-full text-left rounded-lg border p-3 cursor-pointer
+        w-full rounded-lg border p-3
         transition-all duration-200 ease-in-out
         ${
           isExpanded
@@ -80,19 +78,23 @@ export function InteriorModeCard({ mode, isExpanded, onSelect }: InteriorModeCar
         }
       `}
     >
-      {/* Header (always visible) */}
-      <div className="flex items-start gap-3">
+      {/* Header — only this element is the interactive button */}
+      <button
+        type="button"
+        onClick={onSelect}
+        className="flex w-full cursor-pointer items-start gap-3 text-left"
+      >
         <div className="mt-0.5">{config.icon}</div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-medium text-content-primary">{t(config.titleKey)}</h4>
           <p className="text-xs text-content-secondary mt-0.5">{t(config.descriptionKey)}</p>
         </div>
-      </div>
+      </button>
 
-      {/* Content (only when expanded) */}
+      {/* Content — rendered outside the button so interactive controls are valid HTML */}
       {isExpanded && (
         <div className="mt-3 pt-3 border-t border-stroke-subtle">{config.content}</div>
       )}
-    </button>
+    </div>
   );
 }
