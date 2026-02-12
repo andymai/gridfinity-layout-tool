@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.7.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.7.0...gridfinity-layout-tool-v3.7.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* prevent WASM memory access crashes from degenerate geometry ([#703](https://github.com/andymai/gridfinity-layout-tool/issues/703)) ([0e93d1e](https://github.com/andymai/gridfinity-layout-tool/commit/0e93d1ef1150feec935c9927c5ad3f9442d2139f))
+
 ## [3.7.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.6.2...gridfinity-layout-tool-v3.7.0) (2026-02-12)
 
 
