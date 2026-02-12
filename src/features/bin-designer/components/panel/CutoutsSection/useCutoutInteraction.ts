@@ -42,6 +42,12 @@ import {
   handleVertexEditPointerMove,
   handleVertexEditPointerUp,
 } from './handlers';
+import type { RulerMeasurement } from './handlers/rulerHandler';
+import {
+  collectSnapTargets,
+  snapToNearestTarget,
+  computeMeasurement,
+} from './handlers/rulerHandler';
 import type { PathDrawingMode, PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import type { VertexEditMode } from './handlers';
 import type { StartRect } from './geometry';
@@ -111,7 +117,15 @@ export type InteractionMode =
     }
   | { readonly type: 'marquee'; readonly startX: number; readonly startY: number }
   | PathDrawingMode
-  | VertexEditMode;
+  | VertexEditMode
+  | { readonly type: 'ruler-ready' }
+  | {
+      readonly type: 'measuring';
+      readonly startX: number;
+      readonly startY: number;
+      /** When true, return to ruler-ready on pointer up; otherwise return to idle (Shift+drag) */
+      readonly sticky: boolean;
+    };
 
 /** Preview overrides applied during drag/resize for visual feedback */
 export type PreviewMap = ReadonlyMap<string, Partial<Cutout>>;
@@ -190,6 +204,12 @@ export function useCutoutInteraction({
     null
   );
   const [segmentHover, setSegmentHover] = useState<SegmentHoverInfo | null>(null);
+  const [rulerMeasurement, setRulerMeasurement] = useState<RulerMeasurement | null>(null);
+  /** Current zoom level — updated externally so ruler snap threshold adapts */
+  const rulerZoomRef = useRef(1);
+
+  /** Memoized snap targets for ruler — only recompute when cutouts array changes */
+  const rulerSnapTargets = useMemo(() => collectSnapTargets(cutouts), [cutouts]);
 
   const snap = useCallback(
     (v: number) => (snapEnabled ? snapToGrid(v, gridSize) : v),
@@ -734,9 +754,15 @@ export function useCutoutInteraction({
           }
           break;
         }
+
+        case 'measuring': {
+          const snapped = snapToNearestTarget(mmX, mmY, rulerSnapTargets, rulerZoomRef.current);
+          setRulerMeasurement(computeMeasurement(mode.startX, mode.startY, snapped.x, snapped.y));
+          break;
+        }
       }
     },
-    [mode, cutouts, binWidth, binDepth, snap, commitPath]
+    [mode, cutouts, binWidth, binDepth, snap, commitPath, rulerSnapTargets]
   );
 
   // ── Pointer up (commit) ────────────────────────────────────────────
@@ -852,6 +878,10 @@ export function useCutoutInteraction({
         });
       }
       commitTransaction?.();
+    } else if (mode.type === 'measuring') {
+      // Sticky mode (toolbar): stay in ruler-ready for repeated measurements
+      // One-off (Shift+drag): return to idle
+      setMode({ type: mode.sticky ? 'ruler-ready' : 'idle' });
     }
   }, [
     mode,
@@ -938,12 +968,14 @@ export function useCutoutInteraction({
         mode.type !== 'placing' &&
         mode.type !== 'marquee' &&
         mode.type !== 'vertex-editing' &&
-        mode.type !== 'path-drawing'
+        mode.type !== 'path-drawing' &&
+        mode.type !== 'ruler-ready'
       ) {
         setPreview(new Map());
         setActiveGuides([]);
         setDrawingPreview(null);
         setPathDrawingPreview(null);
+        setRulerMeasurement(null);
         setMode({ type: 'idle' });
       }
     };
@@ -959,6 +991,15 @@ export function useCutoutInteraction({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [mode]);
+
+  // Clear ruler measurement when leaving ruler modes (e.g. pressing Escape)
+  /* eslint-disable react-hooks/set-state-in-effect -- clearing transient visual state when mode changes */
+  useEffect(() => {
+    if (mode.type !== 'measuring' && mode.type !== 'ruler-ready') {
+      setRulerMeasurement(null);
+    }
+  }, [mode.type]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ── Derived state ──────────────────────────────────────────────────
 
@@ -1039,5 +1080,7 @@ export function useCutoutInteraction({
     closeContextMenu,
     canUndo: canUndo ?? false,
     canRedo: canRedo ?? false,
+    rulerMeasurement,
+    rulerZoomRef,
   };
 }

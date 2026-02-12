@@ -64,6 +64,8 @@
   "binDesigner.cutouts.selectAll": "Alles selecteren",
   "binDesigner.cutouts.rotate90": "90° draaien",
   "binDesigner.cutouts.penTool": "Pen",
+  "binDesigner.cutouts.rulerTool": "Liniaal",
+  "binDesigner.cutouts.dragToMeasure": "Sleep om afstand te meten (Shift+slepen voor snelle meting)",
   "binDesigner.cutouts.clickToDrawPath": "Klik om punten te plaatsen, sluit pad om te voltooien",
   "binDesigner.editCutouts": "Snij-editor",
   "binDesigner.cutoutEditor.done": "Klaar",

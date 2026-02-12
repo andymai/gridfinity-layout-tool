@@ -80,6 +80,7 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   onSelect,
   onDoubleClick,
   onDragStart,
+  disablePointerEvents,
 }: CutoutShapeMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
@@ -198,6 +199,7 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (e.nativeEvent.button !== 0) return; // Only left-click
+    if (disablePointerEvents) return; // Let click fall through to background
     e.stopPropagation();
     const additive = e.nativeEvent.shiftKey;
     onSelect(cutout.id, additive);
@@ -208,6 +210,7 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   };
 
   const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
+    if (disablePointerEvents) return;
     e.stopPropagation();
     onDoubleClick?.(cutout.id);
   };

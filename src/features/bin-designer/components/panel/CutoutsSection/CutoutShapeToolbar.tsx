@@ -30,9 +30,23 @@ export function CutoutShapeToolbar({
   vertical = false,
 }: CutoutShapeToolbarProps) {
   const t = useTranslation();
-  const isPlacing = mode.type === 'placing';
-  const isIdle = mode.type === 'idle';
-  const activeShape = isPlacing ? (mode as { shape: CutoutShape }).shape : null;
+  // Derive which tool is "active" across all transient interaction states
+  const activeShape: CutoutShape | null =
+    mode.type === 'placing' || mode.type === 'pending-place' || mode.type === 'drawing'
+      ? (mode as { shape: CutoutShape }).shape
+      : mode.type === 'path-drawing'
+        ? 'path'
+        : null;
+  const isPointerActive =
+    mode.type === 'idle' ||
+    mode.type === 'dragging' ||
+    mode.type === 'resizing' ||
+    mode.type === 'rotating' ||
+    mode.type === 'group-rotating' ||
+    mode.type === 'group-scaling' ||
+    mode.type === 'marquee' ||
+    mode.type === 'vertex-editing';
+  const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
 
   const handleClick = (shape: CutoutShape) => {
     if (activeShape === shape) {
@@ -61,7 +75,7 @@ export function CutoutShapeToolbar({
     <div className={vertical ? 'flex flex-col items-center gap-1' : 'flex items-center gap-2'}>
       <button
         type="button"
-        className={`${btnBase} ${isIdle ? btnActive : btnInactive}`}
+        className={`${btnBase} ${isPointerActive ? btnActive : btnInactive}`}
         onClick={() => onSelectShape({ type: 'idle' })}
         title={t('binDesigner.cutouts.pointerTool')}
       >
@@ -108,7 +122,7 @@ export function CutoutShapeToolbar({
           stroke="currentColor"
           strokeWidth="1.5"
         >
-          <circle cx="7" cy="7" r="6" />
+          <circle cx="7" cy="7" r="5.5" />
         </svg>
         {!vertical && t('binDesigner.cutouts.addCircle')}
       </button>
@@ -125,13 +139,50 @@ export function CutoutShapeToolbar({
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          {/* Pen nib */}
-          <path d="M10.5 1.5L12.5 3.5 5 11 2 12l1-3z" strokeLinejoin="round" />
-          {/* Bezier curve hint */}
-          <path d="M2 12Q5 8 8 10" strokeLinecap="round" opacity="0.5" />
+          {/* S-curve: top-right to bottom-left with opposing control points */}
+          <path d="M12 2 C5 2, 13 12, 2 12" strokeWidth="1.5" />
+          {/* Control handles */}
+          <line x1="12" y1="2" x2="5" y2="2" strokeWidth="0.7" strokeDasharray="1 1" />
+          <line x1="2" y1="12" x2="9" y2="12" strokeWidth="0.7" strokeDasharray="1 1" />
+          {/* Anchor points */}
+          <rect x="11" y="1" width="2" height="2" fill="currentColor" stroke="none" />
+          <rect x="1" y="11" width="2" height="2" fill="currentColor" stroke="none" />
+          {/* Control point handles */}
+          <circle cx="5" cy="2" r="1" fill="none" strokeWidth="1" />
+          <circle cx="9" cy="12" r="1" fill="none" strokeWidth="1" />
         </svg>
         {!vertical && t('binDesigner.cutouts.penTool')}
+      </button>
+
+      <div
+        className={
+          vertical ? 'w-5 border-t border-stroke-subtle my-0.5' : 'h-4 w-px bg-stroke-subtle'
+        }
+      />
+
+      <button
+        type="button"
+        className={`${btnBase} ${isRulerActive ? btnActive : btnInactive}`}
+        onClick={() => onSelectShape(isRulerActive ? { type: 'idle' } : { type: 'ruler-ready' })}
+        title={t('binDesigner.cutouts.rulerTool')}
+      >
+        <svg
+          className={iconSize}
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="1.5" y1="7" x2="12.5" y2="7" />
+          <line x1="1.5" y1="5" x2="1.5" y2="9" />
+          <line x1="12.5" y1="5" x2="12.5" y2="9" />
+        </svg>
+        {!vertical && t('binDesigner.cutouts.rulerTool')}
       </button>
 
       <div
@@ -171,11 +222,17 @@ export function CutoutShapeToolbar({
         </button>
       )}
 
-      {isPlacing && !vertical && (
+      {activeShape !== null && !vertical && (
         <span className="text-[11px] text-content-tertiary">
           {activeShape === 'path'
             ? t('binDesigner.cutouts.clickToDrawPath')
             : t('binDesigner.cutouts.dragToDraw')}
+        </span>
+      )}
+
+      {isRulerActive && !vertical && (
+        <span className="text-[11px] text-content-tertiary">
+          {t('binDesigner.cutouts.dragToMeasure')}
         </span>
       )}
     </div>

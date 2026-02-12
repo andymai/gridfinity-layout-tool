@@ -5,7 +5,7 @@
  * Composes all 3D child components (background, shapes, handles, guides, etc.).
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import type {
@@ -29,6 +29,8 @@ import { MarqueeBox3D } from './MarqueeBox3D';
 import { InteractionPlane } from './InteractionPlane';
 import { PathDrawingPreview3D } from './PathDrawingPreview3D';
 import { PathEditOverlay3D } from './PathEditOverlay3D';
+import { RulerMeasurement3D } from './RulerMeasurement3D';
+import type { RulerMeasurement } from '../handlers/rulerHandler';
 
 interface DrawingPreview {
   readonly x: number;
@@ -112,6 +114,10 @@ export interface SceneContentProps {
   readonly externalZoom?: number;
   /** Externally-managed camera center (workspace mode) */
   readonly externalCameraCenter?: { x: number; y: number };
+  /** Active ruler measurement */
+  readonly rulerMeasurement?: RulerMeasurement | null;
+  /** Ref to keep ruler handler informed of current zoom */
+  readonly rulerZoomRef?: RefObject<number>;
 }
 
 export function SceneContent({
@@ -147,9 +153,18 @@ export function SceneContent({
   onVertexHandleDown,
   externalZoom,
   externalCameraCenter,
+  rulerMeasurement,
+  rulerZoomRef,
 }: SceneContentProps) {
   // Force R3F invalidation on state changes
   const { camera, invalidate } = useThree();
+
+  // Keep ruler zoom ref in sync with camera zoom
+  useEffect(() => {
+    if (rulerZoomRef) {
+      rulerZoomRef.current = camera.zoom;
+    }
+  }, [rulerZoomRef, camera.zoom]);
   const cameraRef = useRef(camera);
   // Invalidate whenever key props change
   invalidate();
@@ -205,6 +220,7 @@ export function SceneContent({
         .filter((c) => c.groupId === null)
         .map((cutout) => {
           const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+          const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
           return (
             <CutoutShapeMesh
               key={cutout.id}
@@ -217,7 +233,7 @@ export function SceneContent({
               onSelect={onSelectCutout}
               onDoubleClick={onDoubleClickCutout}
               onDragStart={memoizedDragStart}
-              disablePointerEvents={isVertexEditing}
+              disablePointerEvents={isVertexEditing || isRulerActive}
             />
           );
         })}
@@ -227,6 +243,7 @@ export function SceneContent({
         .filter((c) => c.groupId !== null)
         .map((cutout) => {
           const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+          const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
           return (
             <CutoutShapeMesh
               key={`${cutout.id}-fill`}
@@ -240,7 +257,7 @@ export function SceneContent({
               onSelect={onSelectCutout}
               onDoubleClick={onDoubleClickCutout}
               onDragStart={memoizedDragStart}
-              disablePointerEvents={isVertexEditing}
+              disablePointerEvents={isVertexEditing || isRulerActive}
             />
           );
         })}
@@ -378,6 +395,9 @@ export function SceneContent({
           depth={marqueeWorld.depth}
         />
       )}
+
+      {/* Ruler measurement */}
+      {rulerMeasurement && <RulerMeasurement3D measurement={rulerMeasurement} zoom={camera.zoom} />}
     </>
   );
 }

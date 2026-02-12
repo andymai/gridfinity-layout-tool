@@ -193,6 +193,8 @@ export function CutoutWorkspace() {
     contextMenu,
     openContextMenu,
     closeContextMenu,
+    rulerMeasurement,
+    rulerZoomRef,
   } = useCutoutInteraction({
     cutouts,
     onUpdate: updateCutout,
@@ -275,6 +277,13 @@ export function CutoutWorkspace() {
         return;
       }
 
+      // Ruler tool: sticky mode (toolbar) or Shift+drag quick measurement
+      if (mode.type === 'ruler-ready' || (nativeEvent.shiftKey && mode.type === 'idle')) {
+        const sticky = mode.type === 'ruler-ready';
+        setMode({ type: 'measuring', startX: worldX, startY: worldY, sticky });
+        return;
+      }
+
       // Path tool: start or continue path drawing
       if ((mode.type === 'placing' && mode.shape === 'path') || mode.type === 'path-drawing') {
         handlePathBackgroundDown(worldX, worldY, nativeEvent.shiftKey);
@@ -328,7 +337,8 @@ export function CutoutWorkspace() {
         mode.type === 'group-scaling' ||
         mode.type === 'drawing' ||
         mode.type === 'path-drawing' ||
-        mode.type === 'vertex-editing'
+        mode.type === 'vertex-editing' ||
+        mode.type === 'measuring'
       ) {
         handlePointerMove(worldX, worldY, nativeEvent.shiftKey, nativeEvent.altKey);
         return;
@@ -365,7 +375,8 @@ export function CutoutWorkspace() {
       mode.type === 'group-scaling' ||
       mode.type === 'drawing' ||
       mode.type === 'path-drawing' ||
-      mode.type === 'vertex-editing'
+      mode.type === 'vertex-editing' ||
+      mode.type === 'measuring'
     ) {
       handlePointerUp();
       return;
@@ -632,6 +643,8 @@ export function CutoutWorkspace() {
                 onVertexHandleDown={handleVertexHandleDown}
                 externalZoom={zoom}
                 externalCameraCenter={cameraCenter}
+                rulerMeasurement={rulerMeasurement}
+                rulerZoomRef={rulerZoomRef}
               />
               {/* Floating inspector overlay */}
               <FloatingInspector
