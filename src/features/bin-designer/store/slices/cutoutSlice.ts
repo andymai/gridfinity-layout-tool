@@ -116,9 +116,27 @@ export function createCutoutSlice(set: Set) {
     updateCutout: (id: string, updates: Partial<Cutout>) => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = state.params.cutouts.map((c) =>
-          c.id === id ? { ...c, ...updates } : c
-        );
+        state.params.cutouts = state.params.cutouts.map((c) => {
+          if (c.id !== id) return c;
+          // When x/y changes on a path shape and path isn't explicitly provided,
+          // translate path points by the position delta so they stay in sync
+          let merged = { ...c, ...updates };
+          if (c.path && c.path.length > 0 && !updates.path) {
+            const dx = (updates.x !== undefined ? updates.x : c.x) - c.x;
+            const dy = (updates.y !== undefined ? updates.y : c.y) - c.y;
+            if (dx !== 0 || dy !== 0) {
+              merged = {
+                ...merged,
+                path: c.path.map((pt) => ({
+                  ...pt,
+                  x: pt.x + dx,
+                  y: pt.y + dy,
+                })),
+              };
+            }
+          }
+          return merged;
+        });
       });
     },
 
@@ -194,7 +212,23 @@ export function createCutoutSlice(set: Set) {
         pushHistoryEntry(state);
         state.params.cutouts = state.params.cutouts.map((c) => {
           const u = updates.get(c.id);
-          return u ? { ...c, ...u } : c;
+          if (!u) return c;
+          let merged = { ...c, ...u };
+          if (c.path && c.path.length > 0 && !u.path) {
+            const dx = (u.x !== undefined ? u.x : c.x) - c.x;
+            const dy = (u.y !== undefined ? u.y : c.y) - c.y;
+            if (dx !== 0 || dy !== 0) {
+              merged = {
+                ...merged,
+                path: c.path.map((pt) => ({
+                  ...pt,
+                  x: pt.x + dx,
+                  y: pt.y + dy,
+                })),
+              };
+            }
+          }
+          return merged;
         });
       });
     },

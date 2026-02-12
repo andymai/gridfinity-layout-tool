@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
+import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
 import { useCutoutSelection } from '@/features/bin-designer/store';
 import {
   snapToGrid,
@@ -20,6 +20,12 @@ import {
   type AlignmentGuide,
 } from './geometry';
 import {
+  getPathBounds,
+  CLOSE_SNAP_THRESHOLD,
+  clampPathToBounds,
+  isSelfIntersecting,
+} from './pathGeometry';
+import {
   handlePendingPlaceMove,
   handleDragMove,
   handleResizeMove,
@@ -28,7 +34,16 @@ import {
   handleGroupScaleMove,
   handleDrawMove,
   handleCutoutKeyDown,
+  handlePathDrawingPointerDown,
+  handlePathDrawingPointerMove,
+  handlePathDrawingPointerUp,
+  handlePathDrawingVertexDown,
+  handleVertexEditPointerDown,
+  handleVertexEditPointerMove,
+  handleVertexEditPointerUp,
 } from './handlers';
+import type { PathDrawingMode, PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
+import type { VertexEditMode } from './handlers';
 import type { StartRect } from './geometry';
 
 /** Direction for resize handles */
@@ -94,7 +109,9 @@ export type InteractionMode =
         }
       >;
     }
-  | { readonly type: 'marquee'; readonly startX: number; readonly startY: number };
+  | { readonly type: 'marquee'; readonly startX: number; readonly startY: number }
+  | PathDrawingMode
+  | VertexEditMode;
 
 /** Preview overrides applied during drag/resize for visual feedback */
 export type PreviewMap = ReadonlyMap<string, Partial<Cutout>>;
@@ -114,6 +131,8 @@ interface UseCutoutInteractionOptions {
   readonly canRedo?: boolean;
   readonly onLock?: (ids: readonly string[]) => void;
   readonly onUnlock?: (ids: readonly string[]) => void;
+  readonly startTransaction?: () => void;
+  readonly commitTransaction?: () => void;
   readonly binWidth: number;
   readonly binDepth: number;
   readonly gridSize?: number;
@@ -137,6 +156,8 @@ export function useCutoutInteraction({
   canRedo,
   onLock,
   onUnlock,
+  startTransaction,
+  commitTransaction,
   binWidth,
   binDepth,
   gridSize = 0.5,
@@ -164,6 +185,11 @@ export function useCutoutInteraction({
     depth: number;
     shape: CutoutShape;
   } | null>(null);
+  /** Path drawing preview (pen tool multi-click) */
+  const [pathDrawingPreview, setPathDrawingPreview] = useState<PathDrawingPreviewState | null>(
+    null
+  );
+  const [segmentHover, setSegmentHover] = useState<SegmentHoverInfo | null>(null);
 
   const snap = useCallback(
     (v: number) => (snapEnabled ? snapToGrid(v, gridSize) : v),
@@ -346,6 +372,135 @@ export function useCutoutInteraction({
     }
     setSelection(new Set(newIds));
   }, [cutouts, selection, onAdd, binWidth, binDepth]);
+
+  // ── Path tool ────────────────────────────────────────────────────
+
+  /** Commit a closed path as a new cutout. */
+  const commitPath = useCallback(
+    (points: readonly PathPoint[]) => {
+      // Clamp to bin bounds so cutout never extends outside the bin surface
+      const clamped = clampPathToBounds(points, binWidth, binDepth);
+
+      // Reject self-intersecting paths that would produce invalid 3D geometry
+      if (isSelfIntersecting(clamped)) {
+        setPathDrawingPreview(null);
+        setMode({ type: 'idle' });
+        return;
+      }
+
+      const { minX, minY, maxX, maxY } = getPathBounds(clamped);
+      const newId = crypto.randomUUID();
+      onAdd({
+        id: newId,
+        shape: 'path',
+        x: minX,
+        y: minY,
+        width: maxX - minX,
+        depth: maxY - minY,
+        cutDepth: 5,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+        path: clamped,
+      });
+      setSelection(new Set([newId]));
+      setMode({ type: 'idle' });
+      setPathDrawingPreview(null);
+    },
+    [onAdd, binWidth, binDepth]
+  );
+
+  /** Handle path background click (first click or subsequent). */
+  const handlePathBackgroundDown = useCallback(
+    (mmX: number, mmY: number, shiftKey: boolean) => {
+      const bounds = { binWidth, binDepth };
+      const pathMode = mode.type === 'path-drawing' ? mode : null;
+      handlePathDrawingPointerDown(pathMode, mmX, mmY, shiftKey, bounds, snap, {
+        setMode,
+        setPathDrawingPreview,
+        commitPath,
+      });
+    },
+    [mode, binWidth, binDepth, snap, commitPath]
+  );
+
+  /** Handle clicking an existing vertex while drawing (to reposition or close). */
+  const onPathDrawingVertexDown = useCallback(
+    (index: number, _mmX: number, _mmY: number) => {
+      if (mode.type !== 'path-drawing') return;
+      handlePathDrawingVertexDown(mode, index, {
+        setMode,
+        setPathDrawingPreview,
+        commitPath,
+      });
+    },
+    [mode, commitPath]
+  );
+
+  /** Enter vertex editing mode for a path cutout (on double-click). */
+  const enterVertexEditing = useCallback(
+    (cutoutId: string) => {
+      const cutout = cutouts.find((c) => c.id === cutoutId);
+      if (!cutout || cutout.shape !== 'path') return;
+      setSelection(new Set([cutoutId]));
+      setMode({
+        type: 'vertex-editing',
+        cutoutId,
+        selectedPointIndex: null,
+        dragTarget: null,
+      });
+    },
+    [cutouts]
+  );
+
+  /** Handle vertex point down from PathEditOverlay3D. */
+  const handleVertexPointDown = useCallback(
+    (index: number, _mmX: number, _mmY: number) => {
+      if (mode.type !== 'vertex-editing') return;
+      startTransaction?.();
+      setMode({
+        ...mode,
+        selectedPointIndex: index,
+        dragTarget: { type: 'vertex', index },
+      });
+    },
+    [mode, startTransaction]
+  );
+
+  /** Handle vertex handle down from PathEditOverlay3D. */
+  const handleVertexHandleDown = useCallback(
+    (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number) => {
+      if (mode.type !== 'vertex-editing') return;
+      startTransaction?.();
+      setMode({
+        ...mode,
+        dragTarget: { type: 'handle', index, handleType },
+      });
+    },
+    [mode, startTransaction]
+  );
+
+  /** Handle background click during vertex editing (segment insertion or exit). */
+  const handleVertexBackgroundDown = useCallback(
+    (mmX: number, mmY: number) => {
+      if (mode.type !== 'vertex-editing') return;
+      const cutout = cutouts.find((c) => c.id === mode.cutoutId);
+      if (!cutout) {
+        setMode({ type: 'idle' });
+        return;
+      }
+      // Start a transaction so the split + any subsequent drag = one undo step
+      startTransaction?.();
+      handleVertexEditPointerDown(mode, { mmX, mmY, altKey: false }, cutout, CLOSE_SNAP_THRESHOLD, {
+        setMode,
+        setPreview,
+        onUpdate,
+        setSegmentHover,
+      });
+    },
+    [mode, cutouts, onUpdate, startTransaction]
+  );
 
   // ── Context menu ───────────────────────────────────────────────────
 
@@ -560,9 +715,28 @@ export function useCutoutInteraction({
             setDrawingPreview,
           });
           break;
+
+        case 'path-drawing':
+          handlePathDrawingPointerMove(mode, event, bounds, snap, {
+            setMode,
+            setPathDrawingPreview,
+            commitPath,
+          });
+          break;
+
+        case 'vertex-editing': {
+          const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
+          if (editCutout) {
+            handleVertexEditPointerMove(mode, event, editCutout, bounds, snap, {
+              setPreview,
+              setSegmentHover,
+            });
+          }
+          break;
+        }
       }
     },
-    [mode, cutouts, binWidth, binDepth, snap]
+    [mode, cutouts, binWidth, binDepth, snap, commitPath]
   );
 
   // ── Pointer up (commit) ────────────────────────────────────────────
@@ -602,10 +776,37 @@ export function useCutoutInteraction({
     ) {
       // Only commit if we actually moved past the dead zone
       if (pastDeadZoneRef.current && preview.size > 0) {
-        if (onUpdateBatch && preview.size > 1) {
-          onUpdateBatch(preview);
+        // For path cutouts during drag, translate absolute path point coordinates
+        // to match the new x/y bounding box position.
+        const augmented = new Map(preview);
+        if (mode.type === 'dragging') {
+          for (const [id, updates] of augmented) {
+            const cutout = cutouts.find((c) => c.id === id);
+            if (
+              cutout?.shape === 'path' &&
+              cutout.path &&
+              updates.x !== undefined &&
+              updates.y !== undefined
+            ) {
+              const dx = updates.x - cutout.x;
+              const dy = updates.y - cutout.y;
+              if (dx !== 0 || dy !== 0) {
+                augmented.set(id, {
+                  ...updates,
+                  path: cutout.path.map((pt) => ({
+                    ...pt,
+                    x: pt.x + dx,
+                    y: pt.y + dy,
+                  })),
+                });
+              }
+            }
+          }
+        }
+        if (onUpdateBatch && augmented.size > 1) {
+          onUpdateBatch(augmented);
         } else {
-          for (const [id, updates] of preview) {
+          for (const [id, updates] of augmented) {
             onUpdate(id, updates);
           }
         }
@@ -638,8 +839,33 @@ export function useCutoutInteraction({
       }
       setDrawingPreview(null);
       setMode({ type: 'idle' });
+    } else if (mode.type === 'path-drawing') {
+      handlePathDrawingPointerUp(mode, { setMode });
+    } else if (mode.type === 'vertex-editing') {
+      const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
+      if (editCutout) {
+        handleVertexEditPointerUp(mode, editCutout, preview, {
+          setMode,
+          setPreview,
+          onUpdate,
+          setSegmentHover,
+        });
+      }
+      commitTransaction?.();
     }
-  }, [mode, preview, drawingPreview, onUpdate, onUpdateBatch, onAdd, snap, binWidth, binDepth]);
+  }, [
+    mode,
+    preview,
+    drawingPreview,
+    cutouts,
+    onUpdate,
+    onUpdateBatch,
+    onAdd,
+    snap,
+    binWidth,
+    binDepth,
+    commitTransaction,
+  ]);
 
   // ── Keyboard shortcuts — delegates to handler ──────────────────────
 
@@ -667,7 +893,10 @@ export function useCutoutInteraction({
         setPreview,
         clearActiveGuides: () => setActiveGuides([]),
         clearDrawingPreview: () => setDrawingPreview(null),
+        clearPathDrawingPreview: () => setPathDrawingPreview(null),
+        setPathDrawingPreview,
         setMode,
+        setSegmentHover,
         setSelection,
       });
     };
@@ -699,10 +928,22 @@ export function useCutoutInteraction({
 
   useEffect(() => {
     const reset = () => {
-      if (mode.type !== 'idle' && mode.type !== 'placing' && mode.type !== 'marquee') {
+      if (mode.type === 'path-drawing' && mode.activePointDrag) {
+        // Cancel in-progress handle drag but preserve the placed path points
+        setMode({ ...mode, activePointDrag: false, repositionIndex: null });
+        return;
+      }
+      if (
+        mode.type !== 'idle' &&
+        mode.type !== 'placing' &&
+        mode.type !== 'marquee' &&
+        mode.type !== 'vertex-editing' &&
+        mode.type !== 'path-drawing'
+      ) {
         setPreview(new Map());
         setActiveGuides([]);
         setDrawingPreview(null);
+        setPathDrawingPreview(null);
         setMode({ type: 'idle' });
       }
     };
@@ -717,7 +958,7 @@ export function useCutoutInteraction({
       window.removeEventListener('blur', reset);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [mode.type]);
+  }, [mode]);
 
   // ── Derived state ──────────────────────────────────────────────────
 
@@ -771,6 +1012,8 @@ export function useCutoutInteraction({
     containerRef,
     preview,
     drawingPreview,
+    pathDrawingPreview,
+    segmentHover,
     startDrag,
     startResize,
     startRotation,
@@ -778,6 +1021,12 @@ export function useCutoutInteraction({
     startGroupScale,
     handlePointerMove,
     handlePointerUp,
+    handlePathBackgroundDown,
+    onPathDrawingVertexDown,
+    enterVertexEditing,
+    handleVertexPointDown,
+    handleVertexHandleDown,
+    handleVertexBackgroundDown,
     snapEnabled,
     setSnapEnabled,
     activeGuides,

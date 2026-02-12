@@ -113,6 +113,27 @@ export function CutoutShapeToolbar({
         {!vertical && t('binDesigner.cutouts.addCircle')}
       </button>
 
+      <button
+        type="button"
+        className={`${btnBase} ${activeShape === 'path' ? btnActive : btnInactive}`}
+        onClick={() => handleClick('path')}
+        title={t('binDesigner.cutouts.penTool')}
+      >
+        <svg
+          className={iconSize}
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          {/* Pen nib */}
+          <path d="M10.5 1.5L12.5 3.5 5 11 2 12l1-3z" strokeLinejoin="round" />
+          {/* Bezier curve hint */}
+          <path d="M2 12Q5 8 8 10" strokeLinecap="round" opacity="0.5" />
+        </svg>
+        {!vertical && t('binDesigner.cutouts.penTool')}
+      </button>
+
       <div
         className={
           vertical ? 'w-5 border-t border-stroke-subtle my-0.5' : 'h-4 w-px bg-stroke-subtle'
@@ -152,7 +173,9 @@ export function CutoutShapeToolbar({
 
       {isPlacing && !vertical && (
         <span className="text-[11px] text-content-tertiary">
-          {t('binDesigner.cutouts.dragToDraw')}
+          {activeShape === 'path'
+            ? t('binDesigner.cutouts.clickToDrawPath')
+            : t('binDesigner.cutouts.dragToDraw')}
         </span>
       )}
     </div>

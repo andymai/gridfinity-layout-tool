@@ -8,8 +8,13 @@
 import { useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
-import type { Cutout, CutoutShape as CutoutShapeType } from '@/features/bin-designer/types';
+import type {
+  Cutout,
+  CutoutShape as CutoutShapeType,
+  PathPoint,
+} from '@/features/bin-designer/types';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
+import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { EditorBackground3D } from './EditorBackground3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
@@ -22,6 +27,8 @@ import { DrawingPreview3D } from './DrawingPreview3D';
 import { GroupBounds3D } from './GroupBounds3D';
 import { MarqueeBox3D } from './MarqueeBox3D';
 import { InteractionPlane } from './InteractionPlane';
+import { PathDrawingPreview3D } from './PathDrawingPreview3D';
+import { PathEditOverlay3D } from './PathEditOverlay3D';
 
 interface DrawingPreview {
   readonly x: number;
@@ -71,6 +78,12 @@ export interface SceneContentProps {
   readonly tooltipInfo: TooltipInfo | null;
   readonly groupBounds: GroupBoundsData | null;
   readonly drawingPreview: DrawingPreview | null;
+  readonly pathDrawingPreview: {
+    readonly points: readonly PathPoint[];
+    readonly cursorX: number;
+    readonly cursorY: number;
+    readonly canClose: boolean;
+  } | null;
   readonly activeGuides: readonly AlignmentGuide[];
   readonly marqueeWorld: { x: number; y: number; width: number; depth: number } | null;
   readonly onBackgroundPointerDown: (
@@ -86,6 +99,15 @@ export interface SceneContentProps {
   readonly onRotateStart: (id: string, startAngle: number) => void;
   readonly onGroupRotateStart: (startAngle: number) => void;
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
+  readonly segmentHover?: SegmentHoverInfo | null;
+  readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
+  readonly onVertexPointDown?: (index: number, mmX: number, mmY: number) => void;
+  readonly onVertexHandleDown?: (
+    index: number,
+    handleType: 'in' | 'out',
+    mmX: number,
+    mmY: number
+  ) => void;
   /** Externally-managed camera zoom (workspace mode) */
   readonly externalZoom?: number;
   /** Externally-managed camera center (workspace mode) */
@@ -99,6 +121,7 @@ export function SceneContent({
   binColor,
   selection,
   preview,
+  mode,
   isDragging,
   isInteracting,
   memoizedDragStart,
@@ -106,6 +129,7 @@ export function SceneContent({
   tooltipInfo,
   groupBounds,
   drawingPreview,
+  pathDrawingPreview,
   activeGuides,
   marqueeWorld,
   onBackgroundPointerDown,
@@ -117,6 +141,10 @@ export function SceneContent({
   onRotateStart,
   onGroupRotateStart,
   onGroupScaleStart,
+  segmentHover,
+  onPathDrawingVertexDown,
+  onVertexPointDown,
+  onVertexHandleDown,
   externalZoom,
   externalCameraCenter,
 }: SceneContentProps) {
@@ -175,39 +203,47 @@ export function SceneContent({
       {/* Ungrouped cutout shapes — normal rendering */}
       {cutouts
         .filter((c) => c.groupId === null)
-        .map((cutout) => (
-          <CutoutShapeMesh
-            key={cutout.id}
-            cutout={cutout}
-            isSelected={selection.has(cutout.id)}
-            isGrouped={false}
-            isDragging={isDragging && selection.has(cutout.id)}
-            previewOverrides={preview.get(cutout.id)}
-            binColor={binColor}
-            onSelect={onSelectCutout}
-            onDoubleClick={onDoubleClickCutout}
-            onDragStart={memoizedDragStart}
-          />
-        ))}
+        .map((cutout) => {
+          const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+          return (
+            <CutoutShapeMesh
+              key={cutout.id}
+              cutout={cutout}
+              isSelected={selection.has(cutout.id)}
+              isGrouped={false}
+              isDragging={isDragging && selection.has(cutout.id)}
+              previewOverrides={preview.get(cutout.id)}
+              binColor={binColor}
+              onSelect={onSelectCutout}
+              onDoubleClick={onDoubleClickCutout}
+              onDragStart={memoizedDragStart}
+              disablePointerEvents={isVertexEditing}
+            />
+          );
+        })}
 
       {/* Grouped cutouts — stencil fill pass (interactive, handles pointer events) */}
       {cutouts
         .filter((c) => c.groupId !== null)
-        .map((cutout) => (
-          <CutoutShapeMesh
-            key={`${cutout.id}-fill`}
-            cutout={cutout}
-            isSelected={selection.has(cutout.id)}
-            isGrouped={true}
-            isDragging={isDragging && selection.has(cutout.id)}
-            previewOverrides={preview.get(cutout.id)}
-            binColor={binColor}
-            renderMode="fill"
-            onSelect={onSelectCutout}
-            onDoubleClick={onDoubleClickCutout}
-            onDragStart={memoizedDragStart}
-          />
-        ))}
+        .map((cutout) => {
+          const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+          return (
+            <CutoutShapeMesh
+              key={`${cutout.id}-fill`}
+              cutout={cutout}
+              isSelected={selection.has(cutout.id)}
+              isGrouped={true}
+              isDragging={isDragging && selection.has(cutout.id)}
+              previewOverrides={preview.get(cutout.id)}
+              binColor={binColor}
+              renderMode="fill"
+              onSelect={onSelectCutout}
+              onDoubleClick={onDoubleClickCutout}
+              onDragStart={memoizedDragStart}
+              disablePointerEvents={isVertexEditing}
+            />
+          );
+        })}
       {/* Grouped cutouts — stencil stroke pass (visual-only, no interaction) */}
       {cutouts
         .filter((c) => c.groupId !== null)
@@ -302,6 +338,36 @@ export function SceneContent({
           shape={drawingPreview.shape}
         />
       )}
+
+      {/* Path drawing preview (pen tool) */}
+      {pathDrawingPreview && (
+        <PathDrawingPreview3D
+          points={pathDrawingPreview.points}
+          cursorX={pathDrawingPreview.cursorX}
+          cursorY={pathDrawingPreview.cursorY}
+          canClose={pathDrawingPreview.canClose}
+          onVertexDown={onPathDrawingVertexDown}
+        />
+      )}
+
+      {/* Vertex editing overlay for path cutouts */}
+      {mode.type === 'vertex-editing' &&
+        (() => {
+          const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
+          if (!editCutout) return null;
+          return (
+            <PathEditOverlay3D
+              cutout={editCutout}
+              selectedPointIndex={mode.selectedPointIndex}
+              previewOverrides={preview.get(editCutout.id)}
+              segmentHover={segmentHover}
+              onPointDown={(index, mmX, mmY) => onVertexPointDown?.(index, mmX, mmY)}
+              onHandleDown={(index, handleType, mmX, mmY) =>
+                onVertexHandleDown?.(index, handleType, mmX, mmY)
+              }
+            />
+          );
+        })()}
 
       {/* Marquee selection box */}
       {marqueeWorld && (

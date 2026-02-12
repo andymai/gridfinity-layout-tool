@@ -41,6 +41,8 @@ export function CutoutEditor() {
     canRedo,
     lockCutouts,
     unlockCutouts,
+    startTransaction,
+    commitTransaction,
   } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -59,6 +61,8 @@ export function CutoutEditor() {
       canRedo: s.history.future.length > 0,
       lockCutouts: s.lockCutouts,
       unlockCutouts: s.unlockCutouts,
+      startTransaction: s.startTransaction,
+      commitTransaction: s.commitTransaction,
     }))
   );
 
@@ -86,6 +90,7 @@ export function CutoutEditor() {
     deleteSelected,
     preview,
     drawingPreview,
+    pathDrawingPreview,
     startDrag,
     startResize,
     startRotation,
@@ -93,6 +98,13 @@ export function CutoutEditor() {
     startGroupScale,
     handlePointerMove,
     handlePointerUp,
+    handlePathBackgroundDown,
+    onPathDrawingVertexDown,
+    segmentHover,
+    enterVertexEditing,
+    handleVertexPointDown,
+    handleVertexHandleDown,
+    handleVertexBackgroundDown,
     snapEnabled,
     setSnapEnabled,
     activeGuides,
@@ -118,6 +130,8 @@ export function CutoutEditor() {
     canRedo,
     onLock: lockCutouts,
     onUnlock: unlockCutouts,
+    startTransaction,
+    commitTransaction,
     binWidth,
     binDepth,
     gridSize,
@@ -133,7 +147,19 @@ export function CutoutEditor() {
 
   // Background click — receives mm world coords from R3F
   const handleBackgroundPointerDown = useCallback(
-    (worldX: number, worldY: number, _nativeEvent: PointerEvent) => {
+    (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
+      // Path tool: start or continue path drawing
+      if ((mode.type === 'placing' && mode.shape === 'path') || mode.type === 'path-drawing') {
+        handlePathBackgroundDown(worldX, worldY, nativeEvent.shiftKey);
+        return;
+      }
+
+      // Vertex editing: try segment hit-test for point insertion, deselect on miss
+      if (mode.type === 'vertex-editing') {
+        handleVertexBackgroundDown(worldX, worldY);
+        return;
+      }
+
       if (mode.type === 'placing') {
         setMode({ type: 'pending-place', shape: mode.shape, startMmX: worldX, startMmY: worldY });
         return;
@@ -143,7 +169,7 @@ export function CutoutEditor() {
       marqueeStartRef.current = { x: worldX, y: worldY };
       setMarquee({ x: worldX, y: worldY, w: 0, h: 0 });
     },
-    [mode, setMode, deselectAll]
+    [mode, setMode, deselectAll, handlePathBackgroundDown, handleVertexBackgroundDown]
   );
 
   // Pointer move — receives mm world coords from R3F
@@ -156,7 +182,9 @@ export function CutoutEditor() {
         mode.type === 'rotating' ||
         mode.type === 'group-rotating' ||
         mode.type === 'group-scaling' ||
-        mode.type === 'drawing'
+        mode.type === 'drawing' ||
+        mode.type === 'path-drawing' ||
+        mode.type === 'vertex-editing'
       ) {
         handlePointerMove(worldX, worldY, nativeEvent.shiftKey, nativeEvent.altKey);
         return;
@@ -181,7 +209,9 @@ export function CutoutEditor() {
       mode.type === 'rotating' ||
       mode.type === 'group-rotating' ||
       mode.type === 'group-scaling' ||
-      mode.type === 'drawing'
+      mode.type === 'drawing' ||
+      mode.type === 'path-drawing' ||
+      mode.type === 'vertex-editing'
     ) {
       handlePointerUp();
       return;
@@ -225,6 +255,19 @@ export function CutoutEditor() {
     mode.type === 'rotating' ||
     mode.type === 'group-rotating' ||
     mode.type === 'group-scaling';
+
+  /** Double-click handler: enter vertex editing for path shapes, otherwise select individual. */
+  const handleDoubleClick = useCallback(
+    (id: string) => {
+      const cutout = cutouts.find((c) => c.id === id);
+      if (cutout?.shape === 'path') {
+        enterVertexEditing(id);
+      } else {
+        selectIndividual(id);
+      }
+    },
+    [cutouts, enterVertexEditing, selectIndividual]
+  );
 
   const selectedCutout =
     selection.size === 1 ? (cutouts.find((c) => selection.has(c.id)) ?? null) : null;
@@ -357,18 +400,23 @@ export function CutoutEditor() {
           preview={preview}
           mode={mode}
           drawingPreview={drawingPreview}
+          pathDrawingPreview={pathDrawingPreview}
           activeGuides={activeGuides}
           marquee={marquee}
           onBackgroundPointerDown={handleBackgroundPointerDown}
           onPointerMove={handleCanvasPointerMove}
           onPointerUp={handleCanvasPointerUp}
           onSelectCutout={selectCutout}
-          onDoubleClickCutout={selectIndividual}
+          onDoubleClickCutout={handleDoubleClick}
           onDragStart={startDrag}
           onResizeStart={startResize}
           onRotateStart={startRotation}
           onGroupRotateStart={startGroupRotation}
           onGroupScaleStart={startGroupScale}
+          segmentHover={segmentHover}
+          onPathDrawingVertexDown={onPathDrawingVertexDown}
+          onVertexPointDown={handleVertexPointDown}
+          onVertexHandleDown={handleVertexHandleDown}
         />
       </div>
 

@@ -23,6 +23,9 @@ export type {
   InsertShape,
   Cutout,
   CutoutShape,
+  PathPoint,
   WallPatternConfig,
   WallPatternType,
 } from '@/features/bin-designer/types';
+
+export { MIN_PATH_POINTS } from '@/features/bin-designer/types';

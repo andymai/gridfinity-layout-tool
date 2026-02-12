@@ -63,6 +63,8 @@
   "binDesigner.cutouts.paste": "Lim inn",
   "binDesigner.cutouts.selectAll": "Velg alle",
   "binDesigner.cutouts.rotate90": "Roter 90°",
+  "binDesigner.cutouts.penTool": "Penn",
+  "binDesigner.cutouts.clickToDrawPath": "Klikk for å plassere punkter, lukk banen for å fullføre",
   "binDesigner.editCutouts": "Kuttredigering",
   "binDesigner.cutoutEditor.done": "Ferdig",
   "binDesigner.cutoutEditor.title": "Utskjæringsredigerer",

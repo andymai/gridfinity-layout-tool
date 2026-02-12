@@ -63,6 +63,8 @@
   "binDesigner.cutouts.paste": "Coller",
   "binDesigner.cutouts.selectAll": "Tout sélectionner",
   "binDesigner.cutouts.rotate90": "Pivoter de 90°",
+  "binDesigner.cutouts.penTool": "Plume",
+  "binDesigner.cutouts.clickToDrawPath": "Cliquez pour placer des points, fermez le chemin pour terminer",
   "binDesigner.editCutouts": "Éditeur de découpes",
   "binDesigner.cutoutEditor.done": "Terminé",
   "binDesigner.cutoutEditor.title": "Éditeur de découpes",

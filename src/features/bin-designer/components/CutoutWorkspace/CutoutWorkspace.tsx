@@ -168,6 +168,7 @@ export function CutoutWorkspace() {
     deleteSelected,
     preview,
     drawingPreview,
+    pathDrawingPreview,
     startDrag,
     startResize,
     startRotation,
@@ -175,6 +176,13 @@ export function CutoutWorkspace() {
     startGroupScale,
     handlePointerMove,
     handlePointerUp,
+    handlePathBackgroundDown,
+    onPathDrawingVertexDown,
+    segmentHover,
+    enterVertexEditing,
+    handleVertexPointDown,
+    handleVertexHandleDown,
+    handleVertexBackgroundDown,
     snapEnabled,
     setSnapEnabled,
     activeGuides,
@@ -267,6 +275,18 @@ export function CutoutWorkspace() {
         return;
       }
 
+      // Path tool: start or continue path drawing
+      if ((mode.type === 'placing' && mode.shape === 'path') || mode.type === 'path-drawing') {
+        handlePathBackgroundDown(worldX, worldY, nativeEvent.shiftKey);
+        return;
+      }
+
+      // Vertex editing: try segment hit-test for point insertion, deselect on miss
+      if (mode.type === 'vertex-editing') {
+        handleVertexBackgroundDown(worldX, worldY);
+        return;
+      }
+
       if (mode.type === 'placing') {
         setMode({ type: 'pending-place', shape: mode.shape, startMmX: worldX, startMmY: worldY });
         return;
@@ -277,7 +297,7 @@ export function CutoutWorkspace() {
       marqueeStartRef.current = { x: worldX, y: worldY };
       setMarquee({ x: worldX, y: worldY, w: 0, h: 0 });
     },
-    [mode, setMode, deselectAll, spaceHeld]
+    [mode, setMode, deselectAll, spaceHeld, handlePathBackgroundDown, handleVertexBackgroundDown]
   );
 
   // Pointer move — receives world-space mm coords from R3F
@@ -306,7 +326,9 @@ export function CutoutWorkspace() {
         mode.type === 'rotating' ||
         mode.type === 'group-rotating' ||
         mode.type === 'group-scaling' ||
-        mode.type === 'drawing'
+        mode.type === 'drawing' ||
+        mode.type === 'path-drawing' ||
+        mode.type === 'vertex-editing'
       ) {
         handlePointerMove(worldX, worldY, nativeEvent.shiftKey, nativeEvent.altKey);
         return;
@@ -341,7 +363,9 @@ export function CutoutWorkspace() {
       mode.type === 'rotating' ||
       mode.type === 'group-rotating' ||
       mode.type === 'group-scaling' ||
-      mode.type === 'drawing'
+      mode.type === 'drawing' ||
+      mode.type === 'path-drawing' ||
+      mode.type === 'vertex-editing'
     ) {
       handlePointerUp();
       return;
@@ -582,18 +606,30 @@ export function CutoutWorkspace() {
                 preview={preview}
                 mode={mode}
                 drawingPreview={drawingPreview}
+                pathDrawingPreview={pathDrawingPreview}
                 activeGuides={activeGuides}
                 marquee={marquee}
                 onBackgroundPointerDown={handleBackgroundPointerDown}
                 onPointerMove={handleCanvasPointerMove}
                 onPointerUp={handleCanvasPointerUp}
                 onSelectCutout={selectCutout}
-                onDoubleClickCutout={selectIndividual}
+                onDoubleClickCutout={(id: string) => {
+                  const cutout = cutouts.find((c) => c.id === id);
+                  if (cutout?.shape === 'path') {
+                    enterVertexEditing(id);
+                  } else {
+                    selectIndividual(id);
+                  }
+                }}
                 onDragStart={startDrag}
                 onResizeStart={startResize}
                 onRotateStart={startRotation}
                 onGroupRotateStart={startGroupRotation}
                 onGroupScaleStart={startGroupScale}
+                segmentHover={segmentHover}
+                onPathDrawingVertexDown={onPathDrawingVertexDown}
+                onVertexPointDown={handleVertexPointDown}
+                onVertexHandleDown={handleVertexHandleDown}
                 externalZoom={zoom}
                 externalCameraCenter={cameraCenter}
               />

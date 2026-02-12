@@ -406,6 +406,113 @@ describe('solid cutouts', () => {
     );
   }, 30000);
 
+  it('2×2 solid with triangular path cutout', () => {
+    snapshotBin(
+      buildParams({
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          makeCutout({
+            shape: 'path',
+            x: 10,
+            y: 10,
+            width: 20,
+            depth: 20,
+            path: [
+              { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+              { x: 30, y: 10, handleIn: null, handleOut: null, symmetric: false },
+              { x: 20, y: 30, handleIn: null, handleOut: null, symmetric: false },
+            ],
+          }),
+        ],
+      })
+    );
+  }, 30000);
+
+  it('2×2 solid with curved path cutout (bezier handles)', () => {
+    snapshotBin(
+      buildParams({
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          makeCutout({
+            shape: 'path',
+            x: 5,
+            y: 5,
+            width: 30,
+            depth: 25,
+            path: [
+              { x: 5, y: 5, handleIn: null, handleOut: { dx: 10, dy: 0 }, symmetric: false },
+              {
+                x: 35,
+                y: 5,
+                handleIn: { dx: 0, dy: -10 },
+                handleOut: { dx: 0, dy: 10 },
+                symmetric: true,
+              },
+              {
+                x: 35,
+                y: 30,
+                handleIn: { dx: 10, dy: 0 },
+                handleOut: { dx: -10, dy: 0 },
+                symmetric: true,
+              },
+              { x: 5, y: 30, handleIn: { dx: 0, dy: 10 }, handleOut: null, symmetric: false },
+            ],
+          }),
+        ],
+      })
+    );
+  }, 30000);
+
+  it('2×2 solid with path cutout having closing bezier curve', () => {
+    snapshotBin(
+      buildParams({
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          makeCutout({
+            shape: 'path',
+            x: 8,
+            y: 8,
+            width: 24,
+            depth: 24,
+            path: [
+              {
+                x: 8,
+                y: 20,
+                handleIn: { dx: 0, dy: 8 },
+                handleOut: { dx: 0, dy: -8 },
+                symmetric: true,
+              },
+              {
+                x: 20,
+                y: 8,
+                handleIn: { dx: -8, dy: 0 },
+                handleOut: { dx: 8, dy: 0 },
+                symmetric: true,
+              },
+              {
+                x: 32,
+                y: 20,
+                handleIn: { dx: 0, dy: -8 },
+                handleOut: { dx: 0, dy: 8 },
+                symmetric: true,
+              },
+              {
+                x: 20,
+                y: 32,
+                handleIn: { dx: 8, dy: 0 },
+                handleOut: { dx: -8, dy: 0 },
+                symmetric: true,
+              },
+            ],
+          }),
+        ],
+      })
+    );
+  }, 30000);
+
   it('2×2 solid with topOffset', () => {
     snapshotBin(
       buildParams({

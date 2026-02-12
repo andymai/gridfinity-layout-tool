@@ -134,9 +134,15 @@ exports[`solid cutouts > 2×2 solid with 'rotated 45°' cutout 1`] = `1076`;
 
 exports[`solid cutouts > 2×2 solid with 'rounded-rectangle' cutout 1`] = `1132`;
 
+exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `1196`;
+
 exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `1074`;
 
+exports[`solid cutouts > 2×2 solid with path cutout having closing bezier curve 1`] = `1236`;
+
 exports[`solid cutouts > 2×2 solid with topOffset 1`] = `1056`;
+
+exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `1056`;
 
 exports[`wall thickness > 2×2 'thick (2.4mm)' walls 1`] = `1236`;
 

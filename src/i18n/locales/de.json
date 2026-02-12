@@ -63,6 +63,8 @@
   "binDesigner.cutouts.paste": "Einfügen",
   "binDesigner.cutouts.selectAll": "Alles auswählen",
   "binDesigner.cutouts.rotate90": "90° drehen",
+  "binDesigner.cutouts.penTool": "Stift",
+  "binDesigner.cutouts.clickToDrawPath": "Klicken um Punkte zu setzen, Pfad schließen zum Beenden",
   "binDesigner.editCutouts": "Schnitt-Editor",
   "binDesigner.cutoutEditor.done": "Fertig",
   "binDesigner.cutoutEditor.title": "Ausschnitt-Editor",

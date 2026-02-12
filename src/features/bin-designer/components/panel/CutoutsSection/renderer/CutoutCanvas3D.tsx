@@ -10,8 +10,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import type { RootState } from '@react-three/fiber';
-import type { Cutout, CutoutShape as CutoutShapeType } from '@/features/bin-designer/types';
+import type {
+  Cutout,
+  CutoutShape as CutoutShapeType,
+  PathPoint,
+} from '@/features/bin-designer/types';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
+import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { computeBounds } from '../geometry';
 import { SceneContent } from './SceneContent';
@@ -57,6 +62,12 @@ export interface CutoutCanvas3DProps {
   readonly preview: PreviewMap;
   readonly mode: InteractionMode;
   readonly drawingPreview: DrawingPreview | null;
+  readonly pathDrawingPreview: {
+    readonly points: readonly PathPoint[];
+    readonly cursorX: number;
+    readonly cursorY: number;
+    readonly canClose: boolean;
+  } | null;
   readonly activeGuides: readonly AlignmentGuide[];
   readonly marquee: { x: number; y: number; w: number; h: number } | null;
   // Interaction callbacks — receive world-space mm coordinates directly
@@ -75,6 +86,15 @@ export interface CutoutCanvas3DProps {
   readonly onRotateStart: (id: string, startAngle: number) => void;
   readonly onGroupRotateStart: (startAngle: number) => void;
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
+  readonly segmentHover?: SegmentHoverInfo | null;
+  readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
+  readonly onVertexPointDown?: (index: number, mmX: number, mmY: number) => void;
+  readonly onVertexHandleDown?: (
+    index: number,
+    handleType: 'in' | 'out',
+    mmX: number,
+    mmY: number
+  ) => void;
   /** Externally-managed camera zoom (workspace mode). When provided, the R3F camera syncs to this value. */
   readonly externalZoom?: number;
   /** Externally-managed camera center (workspace mode). When provided, the R3F camera syncs to this position. */
@@ -91,6 +111,7 @@ export function CutoutCanvas3D({
   preview,
   mode,
   drawingPreview,
+  pathDrawingPreview,
   activeGuides,
   marquee,
   onBackgroundPointerDown,
@@ -103,6 +124,10 @@ export function CutoutCanvas3D({
   onRotateStart,
   onGroupRotateStart,
   onGroupScaleStart,
+  segmentHover,
+  onPathDrawingVertexDown,
+  onVertexPointDown,
+  onVertexHandleDown,
   externalZoom,
   externalCameraCenter,
 }: CutoutCanvas3DProps) {
@@ -118,7 +143,12 @@ export function CutoutCanvas3D({
 
   // Determine cursor style based on interaction mode
   const cursorStyle = useMemo(() => {
-    if (mode.type === 'placing' || mode.type === 'pending-place' || mode.type === 'drawing') {
+    if (
+      mode.type === 'placing' ||
+      mode.type === 'pending-place' ||
+      mode.type === 'drawing' ||
+      mode.type === 'path-drawing'
+    ) {
       return 'crosshair';
     }
     if (mode.type === 'dragging') {
@@ -138,8 +168,11 @@ export function CutoutCanvas3D({
     if (mode.type === 'group-scaling') {
       return 'nwse-resize';
     }
+    if (mode.type === 'vertex-editing' && segmentHover) {
+      return 'copy'; // Plus cursor indicating "add point here"
+    }
     return 'default';
-  }, [mode]);
+  }, [mode, segmentHover]);
 
   // Memoize dragStart ref so CutoutShapeMesh (React.memo) doesn't re-render on mode changes
   const memoizedDragStart = useMemo(
@@ -253,6 +286,7 @@ export function CutoutCanvas3D({
         tooltipInfo={tooltipInfo}
         groupBounds={groupBounds}
         drawingPreview={drawingPreview}
+        pathDrawingPreview={pathDrawingPreview}
         activeGuides={activeGuides}
         marqueeWorld={marqueeWorld}
         onBackgroundPointerDown={onBackgroundPointerDown}
@@ -264,6 +298,10 @@ export function CutoutCanvas3D({
         onRotateStart={onRotateStart}
         onGroupRotateStart={onGroupRotateStart}
         onGroupScaleStart={onGroupScaleStart}
+        segmentHover={segmentHover}
+        onPathDrawingVertexDown={onPathDrawingVertexDown}
+        onVertexPointDown={onVertexPointDown}
+        onVertexHandleDown={onVertexHandleDown}
         externalZoom={externalZoom}
         externalCameraCenter={externalCameraCenter}
       />

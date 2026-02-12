@@ -28,7 +28,8 @@ import {
   curveLength,
 } from 'brepjs';
 import type { Shape3D, Edge } from 'brepjs';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, PathPoint } from '@/shared/types/bin';
+import { MIN_PATH_POINTS } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
 import {
   resolveScoopRadius,
@@ -204,11 +205,14 @@ export function buildInsertCuts(params: BinParams): Shape3D | null {
 /** Create an extruded + rotated cutout shape centered at origin (no translation). */
 function buildCutoutShape(cutout: {
   readonly shape: string;
+  readonly x: number;
+  readonly y: number;
   readonly width: number;
   readonly depth: number;
   readonly cutDepth: number;
   readonly rotation: number;
   readonly cornerRadius: number;
+  readonly path?: readonly PathPoint[];
 }): Shape3D {
   let shape: Shape3D;
 
@@ -220,6 +224,15 @@ function buildCutoutShape(cutout: {
         shape = sketch(drawCircle(rx), 'XY').extrude(cutout.cutDepth);
       } else {
         shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
+      }
+      break;
+    }
+    case 'path': {
+      try {
+        shape = buildPathCutoutShape(cutout);
+      } catch {
+        // Self-intersecting or degenerate path — fall back to bounding box rectangle
+        shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
       }
       break;
     }
@@ -367,6 +380,119 @@ function applyAdaptiveScoop(
 
   // Progressive uniform fallback
   return applyFilletWithFallback(shape, edges, targetRadius);
+}
+
+/**
+ * Build an extruded path cutout from bezier path points.
+ * Flattens curves to a polyline and extrudes the closed wire.
+ * The shape is centered at origin (bounding box center).
+ */
+function buildPathCutoutShape(cutout: {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly depth: number;
+  readonly cutDepth: number;
+  readonly path?: readonly PathPoint[];
+}): Shape3D {
+  const path = cutout.path;
+  if (!path || path.length < MIN_PATH_POINTS) {
+    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+  }
+
+  // Flatten bezier path to polyline — need 3+ flattened points for a closed wire
+  const polyline = flattenPathToPolyline(path);
+  if (polyline.length < 3) {
+    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+  }
+
+  // Reject self-intersecting polylines that would produce invalid 3D geometry
+  if (polylineSelfIntersects(polyline)) {
+    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+  }
+
+  // Center the polyline at origin (buildCutoutShape expects shapes centered at origin).
+  // Use the cutout's stored bounds (from getPathBounds in the editor) so the center
+  // matches the translation applied later via cutout.x + cutout.width/2.
+  const cx = cutout.x + cutout.width / 2;
+  const cy = cutout.y + cutout.depth / 2;
+
+  // Build closed wire using brepjs draw API (points relative to center)
+  let pen = draw([polyline[0].x - cx, polyline[0].y - cy]);
+  for (let i = 1; i < polyline.length; i++) {
+    pen = pen.lineTo([polyline[i].x - cx, polyline[i].y - cy]);
+  }
+  const wire = pen.close();
+
+  return sketch(wire, 'XY').extrude(cutout.cutDepth);
+}
+
+/** Flatten a closed bezier path to an open polyline for 3D generation.
+ * Returns points for each anchor and bezier intermediates — without duplicating
+ * the first point at the end, since brepjs `close()` handles wire closure.
+ */
+const BEZIER_SEGMENTS = 12;
+
+function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y: number }> {
+  const result: Array<{ x: number; y: number }> = [];
+  const n = path.length;
+
+  for (let i = 0; i < n; i++) {
+    const p0 = path[i];
+    const p1 = path[(i + 1) % n];
+
+    result.push({ x: p0.x, y: p0.y });
+
+    // Flatten bezier curves between consecutive anchors (including closing segment)
+    if (p0.handleOut || p1.handleIn) {
+      const bx = p0.handleOut ? p0.x + p0.handleOut.dx : p0.x;
+      const by = p0.handleOut ? p0.y + p0.handleOut.dy : p0.y;
+      const cx = p1.handleIn ? p1.x + p1.handleIn.dx : p1.x;
+      const cy = p1.handleIn ? p1.y + p1.handleIn.dy : p1.y;
+
+      // Skip s=0 (p0 already pushed) and s=BEZIER_SEGMENTS (next iteration pushes p1,
+      // or for closing segment we omit to avoid duplicating first point)
+      for (let s = 1; s < BEZIER_SEGMENTS; s++) {
+        const t = s / BEZIER_SEGMENTS;
+        const mt = 1 - t;
+        const mt2 = mt * mt;
+        const mt3 = mt2 * mt;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const x = mt3 * p0.x + 3 * mt2 * t * bx + 3 * mt * t2 * cx + t3 * p1.x;
+        const y = mt3 * p0.y + 3 * mt2 * t * by + 3 * mt * t2 * cy + t3 * p1.y;
+        result.push({ x, y });
+      }
+
+      // p1 is pushed as p0 of the next iteration for non-closing segments.
+      // For the closing segment, brepjs close() handles the connection back to start.
+    }
+  }
+
+  return result;
+}
+
+/** Check if a closed polyline self-intersects (any non-adjacent edges cross). */
+function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): boolean {
+  const n = poly.length;
+  if (n < 4) return false;
+
+  for (let i = 0; i < n; i++) {
+    const a1 = poly[i];
+    const a2 = poly[(i + 1) % n];
+    for (let j = i + 2; j < n; j++) {
+      if (j === n - 1 && i === 0) continue; // adjacent (closing edge)
+      const b1 = poly[j];
+      const b2 = poly[(j + 1) % n];
+      const d = (a2.x - a1.x) * (b2.y - b1.y) - (a2.y - a1.y) * (b2.x - b1.x);
+      if (Math.abs(d) < 1e-10) continue;
+      const t = ((b1.x - a1.x) * (b2.y - b1.y) - (b1.y - a1.y) * (b2.x - b1.x)) / d;
+      const u = ((b1.x - a1.x) * (a2.y - a1.y) - (b1.y - a1.y) * (a2.x - a1.x)) / d;
+      const eps = 1e-6;
+      if (t > eps && t < 1 - eps && u > eps && u < 1 - eps) return true;
+    }
+  }
+  return false;
 }
 
 /**

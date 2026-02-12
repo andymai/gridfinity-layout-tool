@@ -63,6 +63,8 @@
   "binDesigner.cutouts.paste": "Colar",
   "binDesigner.cutouts.selectAll": "Selecionar tudo",
   "binDesigner.cutouts.rotate90": "Girar 90°",
+  "binDesigner.cutouts.penTool": "Caneta",
+  "binDesigner.cutouts.clickToDrawPath": "Clique para posicionar pontos, feche o caminho para finalizar",
   "binDesigner.editCutouts": "Editor de corte",
   "binDesigner.cutoutEditor.done": "Concluído",
   "binDesigner.cutoutEditor.title": "Editor de recortes",
