@@ -7,6 +7,11 @@
 
 * prevent WASM memory access crashes from degenerate geometry ([#703](https://github.com/andymai/gridfinity-layout-tool/issues/703)) ([0e93d1e](https://github.com/andymai/gridfinity-layout-tool/commit/0e93d1ef1150feec935c9927c5ad3f9442d2139f))
 
+
+### Performance
+
+* use brepjs composeTransforms for wall pattern generation ([#702](https://github.com/andymai/gridfinity-layout-tool/issues/702)) ([dbaa95c](https://github.com/andymai/gridfinity-layout-tool/commit/dbaa95c7a0be75c6cfcfb2150551648b2f7eacf6))
+
 ## [3.7.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.6.2...gridfinity-layout-tool-v3.7.0) (2026-02-12)
 
 
