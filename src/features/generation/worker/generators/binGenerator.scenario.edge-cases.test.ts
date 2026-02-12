@@ -374,4 +374,233 @@ describe('edge case generation', () => {
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true, stackingLip: true },
     });
   });
+
+  describe('WASM degenerate geometry guards', () => {
+    // Solid mode: cutoutTopOffset >= wallHeight → fillHeight <= 0
+    testParams('solid mode with cutoutTopOffset >= wallHeight (zero fillHeight)', {
+      width: 2,
+      depth: 2,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+      cutoutConfig: { topOffset: 100 }, // Exceeds wallHeight (~16mm)
+    });
+
+    // Solid mode: solidSurfaceZ <= 0 with cutouts present (exercises the guard in buildCutoutCuts)
+    testParams('solid mode with solidSurfaceZ <= 0 and cutouts present', {
+      width: 2,
+      depth: 2,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+      cutoutConfig: { topOffset: 100 },
+      cutouts: [
+        {
+          id: 'unreachable',
+          shape: 'rectangle',
+          width: 20,
+          depth: 20,
+          cutDepth: 5,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          scoopRadius: 0,
+        },
+      ],
+    });
+
+    // Solid mode: cutout cutDepth exceeds solidSurfaceZ (extends below floor)
+    testParams('solid mode with cutout cutDepth > solidSurfaceZ', {
+      width: 2,
+      depth: 2,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+      cutoutConfig: { topOffset: 10 },
+      cutouts: [
+        {
+          id: 'deep',
+          shape: 'rectangle',
+          width: 20,
+          depth: 20,
+          cutDepth: 50, // Much deeper than solidSurfaceZ
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          scoopRadius: 0,
+        },
+      ],
+    });
+
+    // Insert with corner radius exceeding half min dimension (clamped to valid range)
+    testParams('insert with excessive cornerRadius (clamped gracefully)', {
+      width: 2,
+      depth: 2,
+      inserts: [
+        {
+          shape: 'rounded-rect',
+          width: 5,
+          depth: 5,
+          cutDepth: 3,
+          x: 0,
+          y: 0,
+          cornerRadius: 100, // Far exceeds min(5,5)/2 = 2.5
+        },
+      ],
+    });
+
+    // Insert with zero cutDepth
+    testParams('insert with zero cutDepth (skipped gracefully)', {
+      width: 2,
+      depth: 2,
+      inserts: [
+        { shape: 'circle', width: 20, depth: 20, cutDepth: 0, x: 0, y: 0, cornerRadius: 0 },
+      ],
+    });
+
+    // Cutout with zero width
+    testParams('solid mode with zero-width cutout (skipped gracefully)', {
+      width: 2,
+      depth: 2,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+      cutouts: [
+        {
+          id: 'zero-w',
+          shape: 'rectangle',
+          width: 0,
+          depth: 20,
+          cutDepth: 5,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          scoopRadius: 0,
+        },
+      ],
+    });
+
+    // Cutout with zero depth
+    testParams('solid mode with zero-depth cutout (skipped gracefully)', {
+      width: 2,
+      depth: 2,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+      cutouts: [
+        {
+          id: 'zero-d',
+          shape: 'rectangle',
+          width: 20,
+          depth: 0,
+          cutDepth: 5,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          scoopRadius: 0,
+        },
+      ],
+    });
+
+    // Small bin with thick walls → near-zero inner dimensions
+    testParams('0.5x0.5 with thick walls (near-zero inner dimensions)', {
+      width: 0.5,
+      depth: 0.5,
+      height: 2,
+      wallThickness: 2.4,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: false },
+    });
+
+    // Label tab where tabDepth >= wallHeight (hits pre-existing early return)
+    testParams('label tab with tabDepth >= wallHeight', {
+      width: 2,
+      depth: 2,
+      height: 2, // wallHeight ~9mm
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      label: {
+        enabled: true,
+        support: 'bracket',
+        depth: 20, // Exceeds wallHeight
+        width: 100,
+        alignment: 'left',
+      },
+    });
+
+    // Label tab where tabDepth <= wallThickness → gussetLeg <= 0 (exercises bracket guard)
+    testParams('label tab bracket with gussetLeg <= 0 (tabDepth <= wallThickness)', {
+      width: 2,
+      depth: 2,
+      height: 4, // wallHeight ~23mm, plenty of room
+      wallThickness: 2.4,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      label: {
+        enabled: true,
+        support: 'bracket',
+        depth: 2, // tabHeight = 2 < wt = 2.4, so gussetLeg = -0.4
+        width: 100,
+        alignment: 'left',
+      },
+    });
+
+    // Label tab solid support where tabDepth <= wallThickness → gussetLeg <= 0
+    testParams('label tab solid with gussetLeg <= 0 (tabDepth <= wallThickness)', {
+      width: 2,
+      depth: 2,
+      height: 4,
+      wallThickness: 2.4,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      label: {
+        enabled: true,
+        support: 'solid',
+        depth: 2, // tabHeight = 2 < wt = 2.4
+        width: 100,
+        alignment: 'left',
+      },
+    });
+
+    // Grouped cutouts with some zero-dimension members
+    testParams('solid mode with grouped cutouts including zero-width member', {
+      width: 2,
+      depth: 2,
+      height: 4,
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+      cutouts: [
+        {
+          id: 'good',
+          shape: 'rectangle',
+          width: 15,
+          depth: 15,
+          cutDepth: 5,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: 'g1',
+          scoopRadius: 0,
+        },
+        {
+          id: 'bad',
+          shape: 'rectangle',
+          width: 0,
+          depth: 15,
+          cutDepth: 5,
+          x: 20,
+          y: 0,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: 'g1',
+          scoopRadius: 0,
+        },
+      ],
+    });
+  });
 });

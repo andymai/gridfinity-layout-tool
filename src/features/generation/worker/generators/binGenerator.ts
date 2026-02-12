@@ -296,9 +296,13 @@ export function generateBin(
   checkCancelled(signal);
   onProgress?.('features', 0.5);
 
+  // Guard: if inner dimensions are non-positive (small bin with thick walls),
+  // skip all interior features — there's no room for dividers, inserts, etc.
+  const hasValidInterior = innerW > 0 && innerD > 0;
+
   // Solid mode: skip all interior features -- the bin is a solid block.
   // Cutouts will later carve into this solid to create shaped cavities.
-  if (!solid) {
+  if (!solid && hasValidInterior) {
     // Interior features (dividers, tabs) must clear the stacking lip zone.
     // The lip's bottom taper extends LIP_SMALL_TAPER (0.7mm) inward from the
     // outer wall at wallHeight. Dividers and tabs stop short to avoid interference.
@@ -458,7 +462,7 @@ export function generateBin(
         }
       }
     }
-  } else {
+  } else if (hasValidInterior) {
     // Solid mode: apply cutouts (top-down cavity cuts into the solid block)
     const cutoutCuts = buildCutoutCuts(params, innerW, innerD, wallHeight);
     if (cutoutCuts) {

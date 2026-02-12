@@ -75,6 +75,13 @@ export function buildBinBox(
       const innerW = outerW - 2 * wallThickness;
       const innerD = outerD - 2 * wallThickness;
       const fillHeight = wallHeight - cutoutTopOffset;
+
+      // Guard: if fillHeight or inner dimensions are non-positive, the interior fill
+      // would produce degenerate geometry that crashes WASM. Return hollow walls only.
+      if (fillHeight <= 0 || innerW <= 0 || innerD <= 0) {
+        return setBoxCache(boxKey, hollowWalls);
+      }
+
       const innerFill = sketch(
         drawRoundedRectangle(innerW, innerD, Math.max(0, CORNER_RADIUS - wallThickness)),
         'XY'

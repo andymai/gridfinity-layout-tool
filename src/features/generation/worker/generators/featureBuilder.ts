@@ -156,6 +156,9 @@ export function buildInsertCuts(params: BinParams): Shape3D | null {
   const insertShapes: Shape3D[] = [];
 
   for (const insert of params.inserts) {
+    // Guard: skip inserts with degenerate dimensions that would crash WASM
+    if (insert.cutDepth <= 0 || insert.width <= 0 || insert.depth <= 0) continue;
+
     let solid: Shape3D;
 
     switch (insert.shape) {
@@ -197,12 +200,15 @@ export function buildInsertCuts(params: BinParams): Shape3D | null {
     insertShapes.push(translate(solid, [insert.x, insert.y, 0]));
   }
 
+  if (insertShapes.length === 0) return null;
   return unwrap(fuseAll(insertShapes));
 }
 
 // ─── Cutout Builder (Solid Mode Only) ────────────────────────────────────────
 
-/** Create an extruded + rotated cutout shape centered at origin (no translation). */
+/** Create an extruded + rotated cutout shape centered at origin (no translation).
+ *  Returns null if dimensions are degenerate (would crash WASM).
+ */
 function buildCutoutShape(cutout: {
   readonly shape: string;
   readonly x: number;
@@ -213,7 +219,10 @@ function buildCutoutShape(cutout: {
   readonly rotation: number;
   readonly cornerRadius: number;
   readonly path?: readonly PathPoint[];
-}): Shape3D {
+}): Shape3D | null {
+  // Guard: skip cutouts with degenerate dimensions that would crash WASM
+  if (cutout.cutDepth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return null;
+
   let shape: Shape3D;
 
   switch (cutout.shape) {
@@ -522,6 +531,10 @@ export function buildCutoutCuts(
   const topOffset = params.cutoutConfig.topOffset;
   const solidSurfaceZ = wallHeight - topOffset;
 
+  // Guard: if solidSurfaceZ is non-positive, there's no valid cutting surface
+  // (the solid fill is at or below floor level). Skip all cutouts.
+  if (solidSurfaceZ <= 0) return null;
+
   const cutoutShapes: Shape3D[] = [];
 
   // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected
@@ -542,10 +555,15 @@ export function buildCutoutCuts(
 
   // --- Process ungrouped cutouts (individual scoop, same as before) ---
   for (const cutout of ungrouped) {
-    let shape = buildCutoutShape(cutout);
+    // Clamp effective cutDepth so the cutout doesn't extend below Z=0
+    const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+    if (effectiveDepth <= 0) continue;
+
+    let shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth });
+    if (!shape) continue;
 
     // Apply scoop radius fillet to bottom edges (before translation, at Z ~ 0)
-    const maxScoop = Math.min(cutout.cutDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
+    const maxScoop = Math.min(effectiveDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
     const scoopR = Math.min(cutout.scoopRadius ?? 0, Math.max(0, maxScoop));
     if (scoopR > 0) {
       const halfW = cutout.width / 2 + 1;
@@ -570,32 +588,45 @@ export function buildCutoutCuts(
       translate(shape, [
         originX + cutout.x + cutout.width / 2,
         originY + cutout.y + cutout.depth / 2,
-        solidSurfaceZ - cutout.cutDepth,
+        solidSurfaceZ - effectiveDepth,
       ])
     );
   }
 
   // --- Process grouped cutouts (fuse first, then single scoop fillet) ---
   for (const [, groupMembers] of groups) {
-    // Create and translate each member shape (no individual scoop)
+    // Create and translate each member shape (no individual scoop).
+    // Track which members actually produced shapes so scoop aggregates
+    // use clamped depths and exclude filtered-out zero-dimension members.
     const memberShapes: Shape3D[] = [];
+    const builtMembers: typeof groupMembers = [];
+    const builtDepths: number[] = [];
     for (const cutout of groupMembers) {
-      const shape = buildCutoutShape(cutout);
+      // Clamp effective cutDepth so the cutout doesn't extend below Z=0
+      const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+      if (effectiveDepth <= 0) continue;
+
+      const shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth });
+      if (!shape) continue;
+
+      builtMembers.push(cutout);
+      builtDepths.push(effectiveDepth);
       memberShapes.push(
         translate(shape, [
           originX + cutout.x + cutout.width / 2,
           originY + cutout.y + cutout.depth / 2,
-          solidSurfaceZ - cutout.cutDepth,
+          solidSurfaceZ - effectiveDepth,
         ])
       );
     }
+    if (memberShapes.length === 0) continue;
 
     let fused = memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes));
 
-    // Determine group scoop radius and cut depth
-    const groupScoopRadius = Math.max(...groupMembers.map((c) => c.scoopRadius ?? 0));
-    const groupCutDepth = Math.min(...groupMembers.map((c) => c.cutDepth));
-    const minDim = Math.min(...groupMembers.map((c) => Math.min(c.width, c.depth)));
+    // Determine group scoop radius and cut depth from built members only
+    const groupScoopRadius = Math.max(...builtMembers.map((c) => c.scoopRadius ?? 0));
+    const groupCutDepth = Math.min(...builtDepths);
+    const minDim = Math.min(...builtMembers.map((c) => Math.min(c.width, c.depth)));
     const maxScoop = Math.min(groupCutDepth, minDim / 2) - 0.01;
     const scoopR = Math.min(groupScoopRadius, Math.max(0, maxScoop));
 
@@ -607,7 +638,7 @@ export function buildCutoutCuts(
         maxX: -Infinity,
         maxY: -Infinity,
       };
-      for (const cutout of groupMembers) {
+      for (const cutout of builtMembers) {
         const cx = originX + cutout.x + cutout.width / 2;
         const cy = originY + cutout.y + cutout.depth / 2;
         // Account for rotation: use diagonal as safe half-extent
@@ -636,12 +667,14 @@ export function buildCutoutCuts(
         .findAll(fused);
       // Only apply fillet if we found edges (avoid empty edge list error)
       if (groupScoopEdges.length > 0) {
-        fused = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, groupMembers, originX, originY);
+        fused = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, builtMembers, originX, originY);
       }
     }
 
     cutoutShapes.push(fused);
   }
+
+  if (cutoutShapes.length === 0) return null;
 
   const fusedResult = unwrap(fuseAll(cutoutShapes));
 
@@ -799,53 +832,54 @@ export function buildLabelTabs(
       const gussetLeg = tabHeight - wt;
       const maxSpan = 10; // mm
 
-      // Collect all gusset X positions (left edge of each gusset)
-      const gussetPositions: number[] = [];
-
-      // Edge gussets at free ends
-      if (!touchesLeft) gussetPositions.push(0);
-      if (!touchesRight) gussetPositions.push(tabWidth - gt);
-
-      // Interior gussets between the outermost supports
-      const leftSupport = touchesLeft ? 0 : gt;
-      const rightSupport = touchesRight ? tabWidth : tabWidth - gt;
-      const interiorSpan = rightSupport - leftSupport;
-      const numInterior = Math.max(0, Math.ceil(interiorSpan / maxSpan) - 1);
-      for (let g = 0; g < numInterior; g++) {
-        const center = leftSupport + (interiorSpan * (g + 1)) / (numInterior + 1);
-        gussetPositions.push(center - gt / 2);
-      }
-
       let tabSolid: Shape3D = shelf;
 
-      const labelSupport = params.label.support;
+      // Guard: if gussetLeg <= 0 (tabHeight <= wallThickness), there's no room
+      // for support structure. Skip gusset/solid generation to avoid degenerate geometry.
+      if (gussetLeg > 0) {
+        // Collect all gusset X positions (left edge of each gusset)
+        const gussetPositions: number[] = [];
 
-      if (labelSupport === 'solid') {
-        // Solid style: single continuous 45deg right-triangle prism under the shelf
-        const gussetLegSolid = tabHeight - wt;
-        if (gussetLegSolid > 0) {
-          const solidProfile = draw([0, gussetLegSolid])
-            .lineTo([-gussetLegSolid, gussetLegSolid])
+        // Edge gussets at free ends
+        if (!touchesLeft) gussetPositions.push(0);
+        if (!touchesRight) gussetPositions.push(tabWidth - gt);
+
+        // Interior gussets between the outermost supports
+        const leftSupport = touchesLeft ? 0 : gt;
+        const rightSupport = touchesRight ? tabWidth : tabWidth - gt;
+        const interiorSpan = rightSupport - leftSupport;
+        const numInterior = Math.max(0, Math.ceil(interiorSpan / maxSpan) - 1);
+        for (let g = 0; g < numInterior; g++) {
+          const center = leftSupport + (interiorSpan * (g + 1)) / (numInterior + 1);
+          gussetPositions.push(center - gt / 2);
+        }
+
+        const labelSupport = params.label.support;
+
+        if (labelSupport === 'solid') {
+          // Solid style: single continuous 45deg right-triangle prism under the shelf
+          const solidProfile = draw([0, gussetLeg])
+            .lineTo([-gussetLeg, gussetLeg])
             .lineTo([0, 0])
             .close();
           const solidSupport = sketch(solidProfile, 'YZ', 0).extrude(tabWidth);
           tabSolid = unwrap(fuse(tabSolid, solidSupport));
-        }
-      } else {
-        // Bracket style: discrete triangular gussets at edges + every <=10mm
-        if (gussetPositions.length > 0) {
-          const gussetProfile = draw([0, gussetLeg])
-            .lineTo([-gussetLeg, gussetLeg])
-            .lineTo([0, 0])
-            .close();
+        } else {
+          // Bracket style: discrete triangular gussets at edges + every <=10mm
+          if (gussetPositions.length > 0) {
+            const gussetProfile = draw([0, gussetLeg])
+              .lineTo([-gussetLeg, gussetLeg])
+              .lineTo([0, 0])
+              .close();
 
-          const gussetShapes: Shape3D[] = [];
-          for (const gx of gussetPositions) {
-            const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
-            gussetShapes.push(translate(gusset, [gx, 0, 0]));
+            const gussetShapes: Shape3D[] = [];
+            for (const gx of gussetPositions) {
+              const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
+              gussetShapes.push(translate(gusset, [gx, 0, 0]));
+            }
+
+            tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes))));
           }
-
-          tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes))));
         }
       }
 
