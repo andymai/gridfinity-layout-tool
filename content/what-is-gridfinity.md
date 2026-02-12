@@ -44,10 +44,10 @@ Search for what you need (e.g., "gridfinity 2x2 battery holder") and you'll find
 ## What You Need to Start
 
 1. **A 3D printer.** Any FDM printer works. PLA is standard.
-2. **Measurements.** Your drawer's inside dimensions in millimeters.
+2. **Measurements.** Your drawer's inside dimensions in millimeters. See the [sizes reference](/gridfinity-sizes) for conversion.
 3. **A plan.** How many grid units fit, what bins you need, where they go.
 
-This tool helps with step 3. Mock up your layout, see how everything fits, then export a list of what to print.
+This tool helps with step 3. Mock up your layout, see how everything fits, then export a list of what to print. You can also [generate custom bins](/gridfinity-bin-generator) with STL, STEP, and 3MF export directly in your browser.
 
 ## Common Questions
 

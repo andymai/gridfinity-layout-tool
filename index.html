@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers</title>
+    <title>Gridfinity Layout Tool — Free Bin Generator & Planner</title>
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Plan and visualize Gridfinity drawer layouts for 3D printing. Custom bins, multi-layer support, and 3D preview.">
-    <meta name="keywords" content="gridfinity, drawer organizer, 3D printing, layout tool, bin organizer, drawer layout, storage bins, gridfinity bins, drawer dividers, 3D print planner, modular storage, desk organizer, tool organizer">
+    <meta name="description" content="Gridfinity bin generator and layout planner. Make bins with configurable dimensions, export STL/STEP/3MF, and plan your drawer layout. Free, runs in your browser.">
+    <meta name="keywords" content="gridfinity, gridfinity generator, gridfinity bin generator, gridfinity layout, drawer organizer, 3D printing, gridfinity planner, gridfinity STL, gridfinity bins">
     <meta name="author" content="Andy Aragon">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -31,8 +31,8 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://gridfinitylayouttool.com/">
-    <meta property="og:title" content="Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers">
-    <meta property="og:description" content="Plan and visualize Gridfinity drawer layouts for 3D printing. Custom bins, multi-layer support, and 3D preview.">
+    <meta property="og:title" content="Gridfinity Layout Tool — Free Bin Generator & Planner">
+    <meta property="og:description" content="Gridfinity bin generator and layout planner. Make bins with configurable dimensions, export STL/STEP/3MF, and plan your drawer layout. Free, runs in your browser.">
     <meta property="og:image" content="https://gridfinitylayouttool.com/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -43,8 +43,8 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://gridfinitylayouttool.com/">
-    <meta name="twitter:title" content="Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers">
-    <meta name="twitter:description" content="Plan and visualize Gridfinity drawer layouts for 3D printing. Custom bins, multi-layer support, and 3D preview.">
+    <meta name="twitter:title" content="Gridfinity Layout Tool — Free Bin Generator & Planner">
+    <meta name="twitter:description" content="Gridfinity bin generator and layout planner. Make bins with configurable dimensions, export STL/STEP/3MF, and plan your drawer layout. Free, runs in your browser.">
     <meta name="twitter:image" content="https://gridfinitylayouttool.com/og-image.png">
     <meta name="twitter:image:alt" content="Gridfinity Layout Tool interface showing a grid-based drawer layout editor with colorful storage bins">
 
@@ -107,7 +107,7 @@
         "@type": "SoftwareApplication",
         "name": "Gridfinity Layout Tool",
         "url": "https://gridfinitylayouttool.com/",
-        "description": "Design Gridfinity drawer layouts for 3D printing. Plan custom organizers with drag-and-drop bins, multi-layer support, 3D preview, and automatic print optimization.",
+        "description": "Gridfinity bin generator and drawer layout planner. Generate bins with configurable dimensions and features, export STL/STEP/3MF, arrange bins on a drag-and-drop grid, and preview in 3D. Free, runs in your browser.",
         "applicationCategory": "DesignApplication",
         "applicationSubCategory": "3D Printing Tools",
         "operatingSystem": "Any",
@@ -128,12 +128,16 @@
           "name": "Andy Aragon"
         },
         "featureList": [
+          "Custom bin STL, STEP, and 3MF generation",
+          "Parametric bin designer with real-time 3D preview",
+          "Wall patterns, cutouts, compartments, and label tabs",
           "Drag-and-drop bin placement",
           "Multi-layer drawer support",
           "Automatic print optimization",
           "3D isometric preview",
           "Export and share layouts",
           "Works offline as PWA",
+          "Runs in browser, no installation required",
           "Filament usage estimation",
           "Category color coding"
         ]
@@ -167,7 +171,7 @@
             "name": "Is the Gridfinity Layout Tool free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, the Gridfinity Layout Tool is completely free to use with no signup required. It works in your browser and even works offline as a Progressive Web App (PWA)."
+              "text": "Yes. It's free, doesn't require an account, and works offline as a Progressive Web App."
             }
           },
           {
@@ -207,7 +211,31 @@
             "name": "Where can I download Gridfinity STL files?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "After planning your layout, use the print list feature to see all required bin sizes. You can find Gridfinity STL files on Thangs, Printables, and MakerWorld. Search for 'Gridfinity' followed by the bin dimensions (e.g., 'Gridfinity 2x3' for a 2-wide by 3-deep bin)."
+              "text": "You can generate custom bin STL files directly with the built-in bin generator — no external downloads needed. For specialized bins, you can also find community STL files on Thangs, Printables, and MakerWorld. Search for 'Gridfinity' followed by the bin dimensions (e.g., 'Gridfinity 2x3')."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I generate custom Gridfinity STL files?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The built-in bin generator lets you set dimensions, pick a base style, and add compartments, wall cutouts, or label tabs. Export as STL, STEP, or 3MF. It runs in your browser."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What file formats does the bin generator support?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The generator exports STL (standard 3D printing), STEP (for CAD editing in Fusion 360, FreeCAD, etc.), and 3MF (modern format with color and material support). Most slicers accept all three formats."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need to install software to generate bins?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The bin generator runs in your browser. There's nothing to download or install. Works on desktop, tablet, and mobile."
             }
           }
         ]
@@ -236,9 +264,9 @@
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Gridfinity Layout Tool",
-        "alternateName": ["Gridfinity Planner", "Gridfinity Drawer Organizer Tool", "Gridfinity Bin Layout Tool"],
+        "alternateName": ["Gridfinity Planner", "Gridfinity Bin Generator", "Gridfinity Drawer Organizer Tool", "Gridfinity Bin Layout Tool", "Gridfinity STL Generator"],
         "url": "https://gridfinitylayouttool.com/",
-        "description": "Design Gridfinity drawer layouts for 3D printing with drag-and-drop bins, multi-layer support, and print optimization.",
+        "description": "Gridfinity bin generator and drawer layout planner. Free, runs in your browser.",
         "inLanguage": "en-US",
         "isAccessibleForFree": true,
         "potentialAction": {
@@ -260,7 +288,7 @@
         "name": "Gridfinity Layout Tool",
         "url": "https://gridfinitylayouttool.com/",
         "logo": "https://gridfinitylayouttool.com/icons/icon-512.png",
-        "description": "Free online tool for designing Gridfinity drawer organizer layouts for 3D printing",
+        "description": "Free Gridfinity bin generator and drawer layout planner for 3D printing",
         "foundingDate": "2024",
         "founder": {
           "@type": "Person",
@@ -337,60 +365,42 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
-    <!-- SEO: Fallback content for crawlers and users without JavaScript -->
-    <noscript>
+    <!-- SEO: Initial content visible to crawlers before React mounts. createRoot().render() replaces it. -->
+    <div id="root">
       <div style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: system-ui, sans-serif; line-height: 1.6;">
-        <h1>Gridfinity Layout Tool - Plan Your 3D Printed Drawer Organizers</h1>
-        <p><strong>Design custom Gridfinity drawer layouts for 3D printing.</strong> This layout planner helps you organize drawers, toolboxes, and storage systems using the popular Gridfinity modular storage system.</p>
-        <h2>What is Gridfinity?</h2>
-        <p>Gridfinity is an open-source, modular storage system designed for 3D printing. Created by Zack Freedman, it uses standardized 42mm grid units to create customizable drawer organizers and storage bins that snap together perfectly.</p>
-        <h2>Features of This Gridfinity Planner</h2>
+        <h1>Gridfinity Layout Tool</h1>
+        <p>A free tool for making Gridfinity bins and planning drawer layouts. Runs in your browser — nothing to install.</p>
+
+        <h2>Bin Generator</h2>
+        <p>The built-in bin generator lets you set dimensions, pick a base style, add compartments, and download the file as STL, STEP, or 3MF.</p>
+        <p>Other features: wall cutouts, scoop ramps, label tabs, honeycomb wall patterns, and a pen tool for drawing freeform cutouts.</p>
+
+        <h2>Layout Planner</h2>
+        <p>Measure your drawer, set the grid size, and drag to place bins. The tool prevents overlaps and shows how everything fits. Layers handle deep drawers, categories add color coding, and the 3D preview shows your layout from every angle.</p>
+        <p>When you're done, export a print list with every bin size and estimated filament usage.</p>
+
+        <h2>Who Uses This</h2>
         <ul>
-          <li><strong>Drag-and-drop bin placement</strong> - Click and drag to create and position bins in your drawer layout</li>
-          <li><strong>Multi-layer drawer support</strong> - Design stacked storage with multiple layers</li>
-          <li><strong>3D isometric preview</strong> - Visualize your drawer organizer before printing</li>
-          <li><strong>Print optimization</strong> - Get a list of bins to print with filament estimates</li>
-          <li><strong>Works offline</strong> - Install as a Progressive Web App (PWA)</li>
-          <li><strong>No signup required</strong> - Start designing immediately</li>
+          <li>Makers organizing tool drawers, workshops, and benches</li>
+          <li>3D printing enthusiasts storing nozzles, filament samples, and parts</li>
+          <li>Anyone with a messy drawer and a 3D printer</li>
         </ul>
-        <h2>How to Use This Gridfinity Layout Tool</h2>
+
+        <h2>How It Works</h2>
         <ol>
-          <li>Set your drawer dimensions (width, depth, and height in grid units)</li>
-          <li>Click and drag on the grid to create storage bins</li>
-          <li>Resize bins by dragging their edges or corners</li>
-          <li>Organize bins into categories with color coding</li>
-          <li>Use the 3D preview to visualize your layout</li>
-          <li>Export your print list to see which bins to 3D print</li>
+          <li>Measure your drawer in millimeters and divide by 42 to get grid units</li>
+          <li>Set the drawer size and drag to create bins</li>
+          <li>Generate custom bins or find STLs on Printables, Thangs, or MakerWorld</li>
+          <li>Export your print list and start printing</li>
         </ol>
-        <h2>Perfect For</h2>
-        <ul>
-          <li>Tool drawer organization - Organize wrenches, screwdrivers, pliers, and hand tools</li>
-          <li>Desk drawer organizers - Keep office supplies, pens, and accessories tidy</li>
-          <li>Workshop storage planning - Design custom storage for your garage or maker space</li>
-          <li>Parts bin layouts - Organize electronics, screws, nuts, bolts, and small components</li>
-          <li>Craft supply organization - Perfect for sewing, jewelry making, and hobby supplies</li>
-          <li>Kitchen drawer dividers - Organize utensils and cooking tools</li>
-          <li>3D printing accessories - Store nozzles, tools, and filament samples</li>
-        </ul>
-        <h2>Why Choose This Gridfinity Layout Planner?</h2>
-        <ul>
-          <li><strong>100% Free</strong> - No subscriptions, no hidden costs, no signup required</li>
-          <li><strong>Privacy-focused</strong> - All data stays in your browser, nothing uploaded to servers</li>
-          <li><strong>Works offline</strong> - Install as PWA and use without internet connection</li>
-          <li><strong>Mobile-friendly</strong> - Design layouts on your phone, tablet, or desktop</li>
-          <li><strong>Share layouts</strong> - Generate shareable links to collaborate with others</li>
-          <li><strong>Accurate print estimates</strong> - Know exactly how much filament you'll need</li>
-        </ul>
-        <h2>Getting Started with Gridfinity</h2>
-        <p>New to Gridfinity? It's the most popular modular storage system for 3D printing. The standard 42mm grid unit allows you to mix and match bins from different designers. This layout tool helps you plan before you print, saving time and filament.</p>
-        <h2>Frequently Asked Questions</h2>
-        <p><strong>What size should I make my Gridfinity bins?</strong> Measure your drawer in millimeters and divide by 42 to get the number of grid units. Most drawers fit between 5-15 units wide and 8-20 units deep.</p>
-        <p><strong>Where can I download Gridfinity STL files?</strong> Popular sources include Thangs, Printables, MakerWorld, and Thingiverse. Search for "Gridfinity" followed by your bin dimensions (e.g., "Gridfinity 2x3").</p>
-        <p><strong>Can I use half-bin sizes?</strong> Yes! Enable half-bin mode (press H) to place bins at 0.5 unit increments for tighter fits.</p>
-        <p><strong>JavaScript is required to use the interactive layout editor.</strong> Please enable JavaScript in your browser to access the full Gridfinity Layout Tool.</p>
+
+        <h2>Common Questions</h2>
+        <p><strong>Is it free?</strong> Yes. It's free and doesn't require an account.</p>
+        <p><strong>Do I need to install anything?</strong> No. It runs in your browser. You can also install it as an offline app.</p>
+        <p><strong>What file formats does the generator support?</strong> STL for most slicers, STEP for CAD editing, and 3MF for color and material support.</p>
+        <p><strong>Where do I find STL files for specific bins?</strong> The bin generator creates standard bins. For specialized holders, search Printables, Thangs, or MakerWorld for "Gridfinity" plus the size you need.</p>
       </div>
-    </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

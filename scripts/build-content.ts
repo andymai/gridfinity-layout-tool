@@ -152,6 +152,8 @@ ${content}
     <div class="content-footer">
       <div class="content-footer__links">
         <a href="/what-is-gridfinity">What is Gridfinity?</a>
+        <a href="/gridfinity-bin-generator">Bin Generator</a>
+        <a href="/gridfinity-sizes">Sizes Reference</a>
         <a href="/guide">Planning Guide</a>
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
@@ -323,6 +325,20 @@ function build(): void {
   // Process each file
   for (const file of files) {
     processFile(path.join(CONTENT_DIR, file));
+  }
+
+  // Update CSS filename in hand-crafted content pages
+  const handCraftedPages = ['gridfinity-bin-generator/index.html', 'gridfinity-sizes/index.html'];
+  for (const pagePath of handCraftedPages) {
+    const fullPath = path.join(OUTPUT_DIR, pagePath);
+    if (fs.existsSync(fullPath)) {
+      const html = fs.readFileSync(fullPath, 'utf-8');
+      const updated = html.replace(/\/content\.[a-f0-9]+\.css/, `/${cssFilename}`);
+      if (updated !== html) {
+        fs.writeFileSync(fullPath, updated);
+        console.log(`✓ Updated CSS reference in ${pagePath}`);
+      }
+    }
   }
 
   console.log(`\n✓ Built ${files.length} content page(s)`);

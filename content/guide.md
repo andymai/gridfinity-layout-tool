@@ -46,13 +46,13 @@ The daily stuff needs to be accessible. The weekly stuff can go in back. The for
 
 Rough guidelines:
 
-| Items | Bin Size |
-|-------|----------|
+| Items                       | Bin Size          |
+| --------------------------- | ----------------- |
 | M3 screws, small components | 1×1 with dividers |
-| Pens, USB drives, batteries | 1×2 or 2×2 |
-| Screwdrivers, pliers | 1×3 or 1×4 |
-| Tape, glue bottles | 2×2 or 2×3 |
-| Large tools | 3×3 or bigger |
+| Pens, USB drives, batteries | 1×2 or 2×2        |
+| Screwdrivers, pliers        | 1×3 or 1×4        |
+| Tape, glue bottles          | 2×2 or 2×3        |
+| Large tools                 | 3×3 or bigger     |
 
 Don't obsess over this. You can always print different bins later.
 
@@ -87,7 +87,9 @@ When you're happy with the layout, export a print list:
 
 ### Finding STL Files
 
-Search for the bin size you need:
+You can [generate custom bins](/gridfinity-bin-generator) directly with the built-in bin generator — choose your dimensions, base style, compartments, and export as STL, STEP, or 3MF.
+
+For specialized bins (tool-specific holders, complex shapes), search community repositories:
 
 - [Printables](https://www.printables.com/search/models?q=gridfinity) - largest selection
 - [Thangs](https://thangs.com/search/gridfinity) - good for finding similar designs
