@@ -108,7 +108,7 @@ export function CutoutShapeToolbar({
           stroke="currentColor"
           strokeWidth="1.5"
         >
-          <circle cx="7" cy="7" r="6" />
+          <circle cx="7" cy="7" r="5.5" />
         </svg>
         {!vertical && t('binDesigner.cutouts.addCircle')}
       </button>
@@ -128,10 +128,7 @@ export function CutoutShapeToolbar({
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          {/* Pen nib body */}
-          <path d="M9.5 1.5 12.5 4.5 5.5 11.5 2 12.5l1-3.5z" />
-          {/* Nib crease */}
-          <path d="M8.5 3.5l2 2" strokeWidth="1" />
+          <path d="M8 1 11.5 3 4 13 1.5 10.5z" />
         </svg>
         {!vertical && t('binDesigner.cutouts.penTool')}
       </button>
@@ -159,12 +156,9 @@ export function CutoutShapeToolbar({
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          {/* Ruler body — diagonal strip */}
-          <path d="M1.5 9.5 9.5 1.5 12.5 4.5 4.5 12.5z" />
-          {/* Tick marks from lower-left edge inward (perpendicular) */}
-          <line x1="2.25" y1="10.25" x2="2.95" y2="9.55" strokeWidth="1" />
-          <line x1="3" y1="11" x2="4.05" y2="9.95" strokeWidth="1" />
-          <line x1="3.75" y1="11.75" x2="4.45" y2="11.05" strokeWidth="1" />
+          <line x1="1.5" y1="7" x2="12.5" y2="7" />
+          <line x1="1.5" y1="5" x2="1.5" y2="9" />
+          <line x1="12.5" y1="5" x2="12.5" y2="9" />
         </svg>
         {!vertical && t('binDesigner.cutouts.rulerTool')}
       </button>
