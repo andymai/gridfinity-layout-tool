@@ -131,6 +131,8 @@ interface UseCutoutInteractionOptions {
   readonly canRedo?: boolean;
   readonly onLock?: (ids: readonly string[]) => void;
   readonly onUnlock?: (ids: readonly string[]) => void;
+  readonly startTransaction?: () => void;
+  readonly commitTransaction?: () => void;
   readonly binWidth: number;
   readonly binDepth: number;
   readonly gridSize?: number;
@@ -154,6 +156,8 @@ export function useCutoutInteraction({
   canRedo,
   onLock,
   onUnlock,
+  startTransaction,
+  commitTransaction,
   binWidth,
   binDepth,
   gridSize = 0.5,
@@ -454,25 +458,27 @@ export function useCutoutInteraction({
   const handleVertexPointDown = useCallback(
     (index: number, _mmX: number, _mmY: number) => {
       if (mode.type !== 'vertex-editing') return;
+      startTransaction?.();
       setMode({
         ...mode,
         selectedPointIndex: index,
         dragTarget: { type: 'vertex', index },
       });
     },
-    [mode]
+    [mode, startTransaction]
   );
 
   /** Handle vertex handle down from PathEditOverlay3D. */
   const handleVertexHandleDown = useCallback(
     (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number) => {
       if (mode.type !== 'vertex-editing') return;
+      startTransaction?.();
       setMode({
         ...mode,
         dragTarget: { type: 'handle', index, handleType },
       });
     },
-    [mode]
+    [mode, startTransaction]
   );
 
   /** Handle background click during vertex editing (segment insertion or exit). */
@@ -484,6 +490,8 @@ export function useCutoutInteraction({
         setMode({ type: 'idle' });
         return;
       }
+      // Start a transaction so the split + any subsequent drag = one undo step
+      startTransaction?.();
       handleVertexEditPointerDown(mode, { mmX, mmY, altKey: false }, cutout, CLOSE_SNAP_THRESHOLD, {
         setMode,
         setPreview,
@@ -491,7 +499,7 @@ export function useCutoutInteraction({
         setSegmentHover,
       });
     },
-    [mode, cutouts, onUpdate]
+    [mode, cutouts, onUpdate, startTransaction]
   );
 
   // ── Context menu ───────────────────────────────────────────────────
@@ -843,6 +851,7 @@ export function useCutoutInteraction({
           setSegmentHover,
         });
       }
+      commitTransaction?.();
     }
   }, [
     mode,
@@ -855,6 +864,7 @@ export function useCutoutInteraction({
     snap,
     binWidth,
     binDepth,
+    commitTransaction,
   ]);
 
   // ── Keyboard shortcuts — delegates to handler ──────────────────────
@@ -884,6 +894,7 @@ export function useCutoutInteraction({
         clearActiveGuides: () => setActiveGuides([]),
         clearDrawingPreview: () => setDrawingPreview(null),
         clearPathDrawingPreview: () => setPathDrawingPreview(null),
+        setPathDrawingPreview,
         setMode,
         setSegmentHover,
         setSelection,

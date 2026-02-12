@@ -41,6 +41,8 @@ export function CutoutEditor() {
     canRedo,
     lockCutouts,
     unlockCutouts,
+    startTransaction,
+    commitTransaction,
   } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -59,6 +61,8 @@ export function CutoutEditor() {
       canRedo: s.history.future.length > 0,
       lockCutouts: s.lockCutouts,
       unlockCutouts: s.unlockCutouts,
+      startTransaction: s.startTransaction,
+      commitTransaction: s.commitTransaction,
     }))
   );
 
@@ -126,6 +130,8 @@ export function CutoutEditor() {
     canRedo,
     onLock: lockCutouts,
     onUnlock: unlockCutouts,
+    startTransaction,
+    commitTransaction,
     binWidth,
     binDepth,
     gridSize,

@@ -10,6 +10,7 @@ import { computeBounds, rotatePoint } from '../geometry';
 import type { InteractionMode } from '../useCutoutInteraction';
 import { handleVertexEditKeyDown } from './pathEditHandler';
 import type { VertexEditMode, SegmentHoverInfo } from './pathEditHandler';
+import type { PathDrawingPreviewState } from './pathDrawingHandler';
 
 const NUDGE_AMOUNT = 0.5;
 const SHIFT_NUDGE_AMOUNT = 5;
@@ -38,6 +39,7 @@ export interface KeyboardHandlerContext {
   readonly clearActiveGuides: () => void;
   readonly clearDrawingPreview: () => void;
   readonly clearPathDrawingPreview: () => void;
+  readonly setPathDrawingPreview: (preview: PathDrawingPreviewState | null) => void;
   readonly setMode: (mode: InteractionMode) => void;
   readonly setSegmentHover: (hover: SegmentHoverInfo | null) => void;
   readonly setSelection: (selection: ReadonlySet<string>) => void;
@@ -54,8 +56,30 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
   const target = e.target as HTMLElement;
   if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
 
-  // Path drawing mode: only Escape
+  // Path drawing mode: Escape to cancel, Ctrl+Z to undo last point
   if (ctx.mode.type === 'path-drawing') {
+    const mod = e.metaKey || e.ctrlKey;
+    if (mod && e.key === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      const points = ctx.mode.points;
+      if (points.length <= 1) {
+        // No points left — cancel drawing entirely
+        ctx.clearPathDrawingPreview();
+        ctx.setMode({ type: 'idle' });
+      } else {
+        // Pop last point and continue drawing
+        const remaining = points.slice(0, -1);
+        ctx.setMode({ ...ctx.mode, points: remaining });
+        const last = remaining[remaining.length - 1];
+        ctx.setPathDrawingPreview({
+          points: remaining,
+          cursorX: last.x,
+          cursorY: last.y,
+          canClose: false,
+        });
+      }
+      return;
+    }
     if (e.key === 'Escape') {
       e.preventDefault();
       ctx.clearPathDrawingPreview();
@@ -64,8 +88,20 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
     return;
   }
 
-  // Vertex editing mode: delegate Delete/Backspace/Escape
+  // Vertex editing mode: delegate Delete/Backspace/Escape, handle undo/redo
   if (ctx.mode.type === 'vertex-editing') {
+    const mod = e.metaKey || e.ctrlKey;
+    // Undo/redo: exit vertex editing (stale UI) and delegate to store
+    if (mod && (e.key === 'z' || e.key === 'Z' || e.key === 'y')) {
+      e.preventDefault();
+      ctx.setMode({ type: 'idle' });
+      if (e.key === 'y' || e.shiftKey) {
+        ctx.onRedo?.();
+      } else {
+        ctx.onUndo?.();
+      }
+      return;
+    }
     const cutout = ctx.cutouts.find((c) => c.id === (ctx.mode as VertexEditMode).cutoutId);
     if (cutout) {
       handleVertexEditKeyDown(e, ctx.mode, cutout, {
