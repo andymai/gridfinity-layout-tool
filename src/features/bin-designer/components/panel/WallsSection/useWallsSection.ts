@@ -6,7 +6,6 @@ import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import type { WallPatternType } from '@/features/bin-designer/types';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
-import type { SectionMeta } from '../types';
 
 export function useWallsSection() {
   const { wallThickness, wallPattern, params, setParam, updateWallPattern } = useDesignerStore(
@@ -59,8 +58,6 @@ export function useWallsSection() {
     return undefined;
   }, [someWallsSlotted, patternStatus.available, t]);
 
-  const meta: SectionMeta = useMemo(() => ({ summary: `${wallThickness}mm` }), [wallThickness]);
-
   return {
     state: {
       wallThickness,
@@ -72,7 +69,6 @@ export function useWallsSection() {
       patternPartialNote,
     },
     handlers: { handleChange, handlePatternChange },
-    meta,
     t,
   };
 }

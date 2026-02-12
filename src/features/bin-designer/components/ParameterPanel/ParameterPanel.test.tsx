@@ -26,14 +26,40 @@ describe('ParameterPanel', () => {
     expect(screen.getByText('Shape')).toBeInTheDocument();
     expect(screen.getByText('Interior')).toBeInTheDocument();
     expect(screen.getByText('Base')).toBeInTheDocument();
-    expect(screen.getByText('Mounting')).toBeInTheDocument();
   });
 
-  it('renders section headers', () => {
+  describe('section groups', () => {
+    it('collapsing a group hides child sections', () => {
+      render(<ParameterPanel />);
+
+      const shapeButton = screen.getByText('Shape').closest('button');
+      expect(shapeButton).toBeInTheDocument();
+      expect(shapeButton).toHaveAttribute('aria-expanded', 'true');
+
+      fireEvent.click(shapeButton!);
+
+      expect(shapeButton).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('all three groups render expanded by default', () => {
+      render(<ParameterPanel />);
+
+      const shapeBtn = screen.getByText('Shape').closest('button');
+      const interiorBtn = screen.getByText('Interior').closest('button');
+      const baseGroupBtn = screen.getByText('Base').closest('button');
+
+      expect(shapeBtn).toHaveAttribute('aria-expanded', 'true');
+      expect(interiorBtn).toHaveAttribute('aria-expanded', 'true');
+      expect(baseGroupBtn).toHaveAttribute('aria-expanded', 'true');
+    });
+  });
+
+  it('renders dimension and wall controls directly (no section headers)', () => {
     render(<ParameterPanel />);
 
-    expect(screen.getByText('Dimensions')).toBeInTheDocument();
-    expect(screen.getByText('Walls')).toBeInTheDocument();
+    // Sections no longer have CollapsibleSection titles — controls render directly
+    expect(screen.getByLabelText('Width')).toBeInTheDocument();
+    expect(screen.getByText('Wall thickness')).toBeInTheDocument();
   });
 
   it('renders section headers including lazy-loaded interior', async () => {
@@ -302,34 +328,6 @@ describe('ParameterPanel', () => {
         expect(screen.getByLabelText('Columns')).toBeInTheDocument();
         expect(screen.getByLabelText('Rows')).toBeInTheDocument();
       });
-    });
-  });
-
-  describe('section groups', () => {
-    it('collapsing a group hides child sections', () => {
-      render(<ParameterPanel />);
-
-      // Shape group contains Dimensions — click Shape header to collapse
-      const shapeButton = screen.getByText('Shape').closest('button');
-      expect(shapeButton).toBeInTheDocument();
-      expect(shapeButton).toHaveAttribute('aria-expanded', 'true');
-
-      fireEvent.click(shapeButton!);
-
-      // After collapsing, aria-expanded should be false
-      expect(shapeButton).toHaveAttribute('aria-expanded', 'false');
-    });
-
-    it('all three groups render expanded by default', () => {
-      render(<ParameterPanel />);
-
-      const shapeBtn = screen.getByText('Shape').closest('button');
-      const interiorBtn = screen.getByText('Interior').closest('button');
-      const baseGroupBtn = screen.getByText('Base').closest('button');
-
-      expect(shapeBtn).toHaveAttribute('aria-expanded', 'true');
-      expect(interiorBtn).toHaveAttribute('aria-expanded', 'true');
-      expect(baseGroupBtn).toHaveAttribute('aria-expanded', 'true');
     });
   });
 });

@@ -1,27 +1,18 @@
 import { useState, useId, type ReactNode } from 'react';
 
-interface SectionGroupProps {
-  /** Group title (displayed uppercase, bold) */
+interface StickyGroupHeaderProps {
   title: string;
-  /** Whether group starts expanded (default: true) */
   defaultExpanded?: boolean;
-  /** Child sections to render inside the group */
-  children: ReactNode;
-  /** Summary string shown when collapsed */
   summary?: string;
+  children: ReactNode;
 }
 
-/**
- * Collapsible group container that wraps multiple CollapsibleSection children.
- * When collapsed, hides all children and shows a combined summary.
- * Visually distinct from individual sections: uppercase header, wider hit area.
- */
-export function SectionGroup({
+export function StickyGroupHeader({
   title,
   defaultExpanded = true,
-  children,
   summary,
-}: SectionGroupProps) {
+  children,
+}: StickyGroupHeaderProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [hasToggled, setHasToggled] = useState(false);
   const contentId = useId();
@@ -30,7 +21,7 @@ export function SectionGroup({
     <div className="border-b border-stroke-subtle">
       <button
         type="button"
-        className="flex w-full items-center gap-2 px-4 py-3 bg-transparent hover:bg-surface-hover/50 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+        className="sticky top-0 z-10 flex w-full items-center gap-2 backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50 px-4 py-3 hover:bg-surface-hover/50 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
         onClick={() => {
           setHasToggled(true);
           setExpanded(!expanded);

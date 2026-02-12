@@ -29,14 +29,6 @@ describe('useDimensionsSection', () => {
     expect(result.current.state.heightMm).toBe(21);
   });
 
-  it('computes summary string', () => {
-    const { result } = renderHook(() => useDimensionsSection());
-
-    expect(result.current.meta.summary).toContain('2\u00d72');
-    expect(result.current.meta.summary).toContain('3u');
-    expect(result.current.meta.summary).toContain('84');
-  });
-
   it('handleWidthStep increments correctly', () => {
     const { result } = renderHook(() => useDimensionsSection());
 

@@ -18,7 +18,7 @@ import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { ScoopSection } from '../panel/ScoopSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
-import { SectionGroup } from '../panel/SectionGroup';
+import { StickyGroupHeader } from '../panel/StickyGroupHeader';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
@@ -35,17 +35,21 @@ export function ParameterPanel() {
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
         {/* Shape group */}
-        <SectionGroup title={t('binDesigner.group.shape')} defaultExpanded summary={shapeSummary}>
+        <StickyGroupHeader
+          title={t('binDesigner.group.shape')}
+          defaultExpanded
+          summary={shapeSummary}
+        >
           <div className="px-4 py-4 border-b border-stroke-subtle/50">
             <DimensionsSection />
           </div>
           <div className="px-4 py-4">
             <WallsSection />
           </div>
-        </SectionGroup>
+        </StickyGroupHeader>
 
         {/* Interior group */}
-        <SectionGroup
+        <StickyGroupHeader
           title={t('binDesigner.group.interior')}
           defaultExpanded
           summary={interiorSummary}
@@ -61,17 +65,21 @@ export function ParameterPanel() {
           <div className="px-4 py-4 border-t border-stroke-subtle/50">
             <ScoopSection />
           </div>
-        </SectionGroup>
+        </StickyGroupHeader>
 
         {/* Base group */}
-        <SectionGroup title={t('binDesigner.group.base')} defaultExpanded summary={baseSummary}>
+        <StickyGroupHeader
+          title={t('binDesigner.group.base')}
+          defaultExpanded
+          summary={baseSummary}
+        >
           <div className="px-4 py-4 border-b border-stroke-subtle/50">
             <BaseSection />
           </div>
           <div className="px-4 py-4">
             <PhysicalUnitsSection />
           </div>
-        </SectionGroup>
+        </StickyGroupHeader>
 
         {/* Attribution */}
         <div className="px-4 py-4 text-content-disabled text-[10px] leading-relaxed">
