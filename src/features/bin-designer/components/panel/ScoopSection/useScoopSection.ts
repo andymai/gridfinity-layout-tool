@@ -110,13 +110,18 @@ export function useScoopSection() {
 
   const disabledReason = scoopStatus.reason ? t(scoopStatus.reason) : undefined;
 
+  const meta = useMemo(
+    () => ({
+      summary: isUnavailable ? undefined : sectionSummary,
+      disabledReason,
+    }),
+    [isUnavailable, sectionSummary, disabledReason]
+  );
+
   return {
     state: { scoop, isAutoRadius, manualRadius, autoDisplayText },
     handlers: { toggleScoop, toggleAutoRadius, setRadius },
-    meta: {
-      summary: isUnavailable ? undefined : sectionSummary,
-      disabledReason,
-    },
+    meta,
     t,
   };
 }

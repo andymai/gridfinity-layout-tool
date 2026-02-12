@@ -79,13 +79,18 @@ export function useLabelTabsSection() {
 
   const disabledReason = labelStatus.reason ? t(labelStatus.reason) : undefined;
 
+  const meta = useMemo(
+    () => ({
+      summary: isUnavailable ? undefined : sectionSummary,
+      disabledReason,
+    }),
+    [isUnavailable, sectionSummary, disabledReason]
+  );
+
   return {
     state: { label, isUnavailable, tabWidthMm },
     handlers: { toggleLabelTabs, setTabSupport, setTabDepth, setTabWidth, setTabAlignment },
-    meta: {
-      summary: isUnavailable ? undefined : sectionSummary,
-      disabledReason,
-    },
+    meta,
     t,
   };
 }
