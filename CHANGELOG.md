@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.6.1...gridfinity-layout-tool-v3.6.2) (2026-02-12)
+
+
+### Bug Fixes
+
+* prevent interior controls from being overwritten by event bubbling ([#698](https://github.com/andymai/gridfinity-layout-tool/issues/698)) ([d3b3e81](https://github.com/andymai/gridfinity-layout-tool/commit/d3b3e81aeef327d6e8977e495c949bd3ff1df58e))
+
 ## [3.6.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.6.0...gridfinity-layout-tool-v3.6.1) (2026-02-11)
 
 ### Bug Fixes
