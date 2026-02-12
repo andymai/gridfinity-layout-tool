@@ -419,8 +419,11 @@ export function generateBin(
                 { type: 'translate', v: [wall.translateX, wall.translateY, wall.translateZ] },
               ];
               const trsf = composeTransforms(ops);
-              cutTargets.push(transformCopy(shapeTemplate, trsf));
-              trsf.cleanup();
+              try {
+                cutTargets.push(transformCopy(shapeTemplate, trsf));
+              } finally {
+                trsf.cleanup();
+              }
             }
           }
         } catch (e) {
