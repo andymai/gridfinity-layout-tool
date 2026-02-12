@@ -64,6 +64,8 @@
   "binDesigner.cutouts.selectAll": "Selecionar tudo",
   "binDesigner.cutouts.rotate90": "Girar 90°",
   "binDesigner.cutouts.penTool": "Caneta",
+  "binDesigner.cutouts.rulerTool": "Régua",
+  "binDesigner.cutouts.dragToMeasure": "Arraste para medir distância (Shift+arrastar para medição rápida)",
   "binDesigner.cutouts.clickToDrawPath": "Clique para posicionar pontos, feche o caminho para finalizar",
   "binDesigner.editCutouts": "Editor de corte",
   "binDesigner.cutoutEditor.done": "Concluído",

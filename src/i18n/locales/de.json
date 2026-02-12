@@ -64,6 +64,8 @@
   "binDesigner.cutouts.selectAll": "Alles auswählen",
   "binDesigner.cutouts.rotate90": "90° drehen",
   "binDesigner.cutouts.penTool": "Stift",
+  "binDesigner.cutouts.rulerTool": "Lineal",
+  "binDesigner.cutouts.dragToMeasure": "Ziehen zum Messen (Shift+Ziehen für Schnellmessung)",
   "binDesigner.cutouts.clickToDrawPath": "Klicken um Punkte zu setzen, Pfad schließen zum Beenden",
   "binDesigner.editCutouts": "Schnitt-Editor",
   "binDesigner.cutoutEditor.done": "Fertig",

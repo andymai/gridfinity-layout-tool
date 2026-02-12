@@ -142,6 +142,37 @@ export function CutoutShapeToolbar({
 
       <button
         type="button"
+        className={`${btnBase} ${mode.type === 'ruler-ready' ? btnActive : btnInactive}`}
+        onClick={() =>
+          onSelectShape(mode.type === 'ruler-ready' ? { type: 'idle' } : { type: 'ruler-ready' })
+        }
+        title={t('binDesigner.cutouts.rulerTool')}
+      >
+        <svg
+          className={iconSize}
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          {/* Ruler icon — diagonal line with ticks */}
+          <line x1="2" y1="12" x2="12" y2="2" />
+          <line x1="4" y1="12" x2="4" y2="10" strokeWidth="1" />
+          <line x1="6" y1="11" x2="6" y2="9" strokeWidth="1" />
+          <line x1="8" y1="10" x2="8" y2="8" strokeWidth="1" />
+          <line x1="10" y1="9" x2="10" y2="7" strokeWidth="1" />
+        </svg>
+        {!vertical && t('binDesigner.cutouts.rulerTool')}
+      </button>
+
+      <div
+        className={
+          vertical ? 'w-5 border-t border-stroke-subtle my-0.5' : 'h-4 w-px bg-stroke-subtle'
+        }
+      />
+
+      <button
+        type="button"
         className={`${btnBase} ${snapEnabled ? btnActive : btnInactive}`}
         onClick={() => onSnapToggle(!snapEnabled)}
         title={t('binDesigner.cutouts.snapToGrid')}
@@ -176,6 +207,12 @@ export function CutoutShapeToolbar({
           {activeShape === 'path'
             ? t('binDesigner.cutouts.clickToDrawPath')
             : t('binDesigner.cutouts.dragToDraw')}
+        </span>
+      )}
+
+      {mode.type === 'ruler-ready' && !vertical && (
+        <span className="text-[11px] text-content-tertiary">
+          {t('binDesigner.cutouts.dragToMeasure')}
         </span>
       )}
     </div>

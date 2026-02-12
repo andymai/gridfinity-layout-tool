@@ -1278,6 +1278,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.selectAll': 'Select all',
   'binDesigner.cutouts.rotate90': 'Rotate 90°',
   'binDesigner.cutouts.penTool': 'Pen',
+  'binDesigner.cutouts.rulerTool': 'Ruler',
+  'binDesigner.cutouts.dragToMeasure': 'Drag to measure distance (Shift+drag for quick measure)',
   'binDesigner.cutouts.clickToDrawPath': 'Click to place points, close path to finish',
   'binDesigner.editCutouts': 'Cut Editor',
   'binDesigner.cutoutEditor.done': 'Done',

@@ -64,6 +64,8 @@
   "binDesigner.cutouts.selectAll": "Seleccionar todo",
   "binDesigner.cutouts.rotate90": "Rotar 90°",
   "binDesigner.cutouts.penTool": "Pluma",
+  "binDesigner.cutouts.rulerTool": "Regla",
+  "binDesigner.cutouts.dragToMeasure": "Arrastra para medir distancia (Shift+arrastrar para medición rápida)",
   "binDesigner.cutouts.clickToDrawPath": "Haz clic para colocar puntos, cierra el trazado para terminar",
   "binDesigner.editCutouts": "Editor de cortes",
   "binDesigner.cutoutEditor.done": "Listo",

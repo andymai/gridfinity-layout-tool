@@ -7,7 +7,7 @@
  * World coordinates: mm, Y-up. No SVG Y-inversion needed.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
 import { Canvas } from '@react-three/fiber';
 import type { RootState } from '@react-three/fiber';
 import type {
@@ -17,6 +17,7 @@ import type {
 } from '@/features/bin-designer/types';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
 import type { SegmentHoverInfo } from '../handlers';
+import type { RulerMeasurement } from '../handlers/rulerHandler';
 import type { AlignmentGuide } from '../geometry';
 import { computeBounds } from '../geometry';
 import { SceneContent } from './SceneContent';
@@ -99,6 +100,10 @@ export interface CutoutCanvas3DProps {
   readonly externalZoom?: number;
   /** Externally-managed camera center (workspace mode). When provided, the R3F camera syncs to this position. */
   readonly externalCameraCenter?: { x: number; y: number };
+  /** Active ruler measurement to render */
+  readonly rulerMeasurement?: RulerMeasurement | null;
+  /** Ref to keep ruler handler informed of current zoom */
+  readonly rulerZoomRef?: RefObject<number>;
 }
 
 export function CutoutCanvas3D({
@@ -130,6 +135,8 @@ export function CutoutCanvas3D({
   onVertexHandleDown,
   externalZoom,
   externalCameraCenter,
+  rulerMeasurement,
+  rulerZoomRef,
 }: CutoutCanvas3DProps) {
   const binColor = useBinPreviewColor();
   const isDragging = mode.type === 'dragging';
@@ -147,7 +154,9 @@ export function CutoutCanvas3D({
       mode.type === 'placing' ||
       mode.type === 'pending-place' ||
       mode.type === 'drawing' ||
-      mode.type === 'path-drawing'
+      mode.type === 'path-drawing' ||
+      mode.type === 'ruler-ready' ||
+      mode.type === 'measuring'
     ) {
       return 'crosshair';
     }
@@ -304,6 +313,8 @@ export function CutoutCanvas3D({
         onVertexHandleDown={onVertexHandleDown}
         externalZoom={externalZoom}
         externalCameraCenter={externalCameraCenter}
+        rulerMeasurement={rulerMeasurement}
+        rulerZoomRef={rulerZoomRef}
       />
     </Canvas>
   );

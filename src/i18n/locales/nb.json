@@ -64,6 +64,8 @@
   "binDesigner.cutouts.selectAll": "Velg alle",
   "binDesigner.cutouts.rotate90": "Roter 90°",
   "binDesigner.cutouts.penTool": "Penn",
+  "binDesigner.cutouts.rulerTool": "Linjal",
+  "binDesigner.cutouts.dragToMeasure": "Dra for å måle avstand (Shift+dra for hurtigmåling)",
   "binDesigner.cutouts.clickToDrawPath": "Klikk for å plassere punkter, lukk banen for å fullføre",
   "binDesigner.editCutouts": "Kuttredigering",
   "binDesigner.cutoutEditor.done": "Ferdig",

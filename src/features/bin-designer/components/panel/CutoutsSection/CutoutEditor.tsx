@@ -115,6 +115,8 @@ export function CutoutEditor() {
     contextMenu,
     openContextMenu,
     closeContextMenu,
+    rulerMeasurement,
+    rulerZoomRef,
   } = useCutoutInteraction({
     cutouts,
     onUpdate: updateCutout,
@@ -148,6 +150,12 @@ export function CutoutEditor() {
   // Background click — receives mm world coords from R3F
   const handleBackgroundPointerDown = useCallback(
     (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
+      // Ruler tool: sticky mode or Shift+drag quick measurement
+      if (mode.type === 'ruler-ready' || (nativeEvent.shiftKey && mode.type === 'idle')) {
+        setMode({ type: 'measuring', startX: worldX, startY: worldY });
+        return;
+      }
+
       // Path tool: start or continue path drawing
       if ((mode.type === 'placing' && mode.shape === 'path') || mode.type === 'path-drawing') {
         handlePathBackgroundDown(worldX, worldY, nativeEvent.shiftKey);
@@ -184,7 +192,8 @@ export function CutoutEditor() {
         mode.type === 'group-scaling' ||
         mode.type === 'drawing' ||
         mode.type === 'path-drawing' ||
-        mode.type === 'vertex-editing'
+        mode.type === 'vertex-editing' ||
+        mode.type === 'measuring'
       ) {
         handlePointerMove(worldX, worldY, nativeEvent.shiftKey, nativeEvent.altKey);
         return;
@@ -211,7 +220,8 @@ export function CutoutEditor() {
       mode.type === 'group-scaling' ||
       mode.type === 'drawing' ||
       mode.type === 'path-drawing' ||
-      mode.type === 'vertex-editing'
+      mode.type === 'vertex-editing' ||
+      mode.type === 'measuring'
     ) {
       handlePointerUp();
       return;
@@ -417,6 +427,8 @@ export function CutoutEditor() {
           onPathDrawingVertexDown={onPathDrawingVertexDown}
           onVertexPointDown={handleVertexPointDown}
           onVertexHandleDown={handleVertexHandleDown}
+          rulerMeasurement={rulerMeasurement}
+          rulerZoomRef={rulerZoomRef}
         />
       </div>
 
