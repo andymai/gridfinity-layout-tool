@@ -9,6 +9,7 @@ import type {
   DesignerHistory,
   WallCutout,
   WallConfig,
+  WallCutoutShape,
   SlotConfig,
   DividerPieceConfig,
   WallPatternConfig,
@@ -78,12 +79,13 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   },
   walls: {
     enabled: false,
-    width: 70,
-    depth: 50,
+    shape: 'u-shape',
+    width: 0,
+    depth: 0,
     front: { enabled: false, width: 0, depth: 0 },
     back: { enabled: false, width: 0, depth: 0 },
-    left: { enabled: false, width: 0, depth: 0 },
-    right: { enabled: false, width: 0, depth: 0 },
+    left: { enabled: true, width: 70, depth: 50 },
+    right: { enabled: true, width: 70, depth: 50 },
     interior: { enabled: false, width: 0, depth: 0 },
   },
   slotConfig: DEFAULT_SLOT_CONFIG,
@@ -206,6 +208,7 @@ export function migrateParams(
         front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
       wallsConfig = {
         enabled: anySideEnabled,
+        shape: DEFAULT_BIN_PARAMS.walls.shape,
         width: DEFAULT_BIN_PARAMS.walls.width,
         depth: DEFAULT_BIN_PARAMS.walls.depth,
         front,
@@ -252,8 +255,12 @@ export function migrateParams(
       const hasGlobalEnabled = 'enabled' in raw && typeof raw.enabled === 'boolean';
       const anySideEnabled =
         front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
+      const VALID_SHAPES: readonly WallCutoutShape[] = ['u-shape', 'scoop', 'funnel'];
+      const rawShape = raw.shape as WallCutoutShape | undefined;
       wallsConfig = {
         enabled: hasGlobalEnabled ? (raw.enabled as boolean) : anySideEnabled,
+        shape:
+          rawShape && VALID_SHAPES.includes(rawShape) ? rawShape : DEFAULT_BIN_PARAMS.walls.shape,
         width: typeof raw.width === 'number' ? raw.width : DEFAULT_BIN_PARAMS.walls.width,
         depth: typeof raw.depth === 'number' ? raw.depth : DEFAULT_BIN_PARAMS.walls.depth,
         front,

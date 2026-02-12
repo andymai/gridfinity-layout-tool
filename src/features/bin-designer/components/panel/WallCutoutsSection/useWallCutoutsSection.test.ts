@@ -43,45 +43,16 @@ describe('useWallCutoutsSection', () => {
     expect(useDesignerStore.getState().params.walls.enabled).toBe(false);
   });
 
-  it('setGlobalWidth updates width', () => {
-    const { result } = renderHook(() => useWallCutoutsSection());
-
-    act(() => {
-      result.current.handlers.setGlobalWidth(80);
-    });
-
-    expect(useDesignerStore.getState().params.walls.width).toBe(80);
-  });
-
-  it('setGlobalWidth clamps to 0-100', () => {
-    const { result } = renderHook(() => useWallCutoutsSection());
-
-    act(() => {
-      result.current.handlers.setGlobalWidth(150);
-    });
-    expect(useDesignerStore.getState().params.walls.width).toBe(100);
-
-    act(() => {
-      result.current.handlers.setGlobalWidth(-10);
-    });
-    expect(useDesignerStore.getState().params.walls.width).toBe(0);
-  });
-
-  it('setGlobalDepth updates depth', () => {
-    const { result } = renderHook(() => useWallCutoutsSection());
-
-    act(() => {
-      result.current.handlers.setGlobalDepth(60);
-    });
-
-    expect(useDesignerStore.getState().params.walls.depth).toBe(60);
-  });
-
-  it('toggleSide enables a side with global defaults', () => {
+  it('toggleSide enables a side with default 70/50', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true, width: 80, depth: 40 },
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { enabled: false, width: 0, depth: 0 },
+          right: { enabled: false, width: 0, depth: 0 },
+        },
       },
     });
 
@@ -93,11 +64,36 @@ describe('useWallCutoutsSection', () => {
 
     const frontConfig = useDesignerStore.getState().params.walls.front;
     expect(frontConfig.enabled).toBe(true);
+    expect(frontConfig.width).toBe(70);
+    expect(frontConfig.depth).toBe(50);
+  });
+
+  it('toggleSide copies linked values when other sides are active', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { enabled: true, width: 80, depth: 40 },
+          right: { enabled: false, width: 0, depth: 0 },
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+    // linked=true by default, so new side should copy from left
+    act(() => {
+      result.current.handlers.toggleSide('front');
+    });
+
+    const frontConfig = useDesignerStore.getState().params.walls.front;
+    expect(frontConfig.enabled).toBe(true);
     expect(frontConfig.width).toBe(80);
     expect(frontConfig.depth).toBe(40);
   });
 
-  it('toggleSide disables a side and clears overrides', () => {
+  it('toggleSide disables a side and clears values', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -121,27 +117,67 @@ describe('useWallCutoutsSection', () => {
     expect(frontConfig.depth).toBe(0);
   });
 
-  it('setSideWidth updates side width', () => {
+  it('setSideWidth updates all active sides when linked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+    // Default: left+right active, linked=true
+    act(() => {
+      result.current.handlers.setSideWidth('left', 45);
+    });
+
+    const { walls } = useDesignerStore.getState().params;
+    expect(walls.left.width).toBe(45);
+    expect(walls.right.width).toBe(45); // synced
+  });
+
+  it('setSideWidth updates only target side when unlinked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
     const { result } = renderHook(() => useWallCutoutsSection());
 
     act(() => {
-      result.current.handlers.setSideWidth('back', 45);
+      result.current.handlers.toggleLinked(); // unlink
+    });
+    act(() => {
+      result.current.handlers.setSideWidth('left', 45);
     });
 
-    expect(useDesignerStore.getState().params.walls.back.width).toBe(45);
+    const { walls } = useDesignerStore.getState().params;
+    expect(walls.left.width).toBe(45);
+    expect(walls.right.width).toBe(70); // unchanged
   });
 
-  it('setSideDepth updates side depth', () => {
+  it('setSideDepth updates all active sides when linked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
     const { result } = renderHook(() => useWallCutoutsSection());
 
     act(() => {
       result.current.handlers.setSideDepth('left', 90);
     });
 
-    expect(useDesignerStore.getState().params.walls.left.depth).toBe(90);
+    const { walls } = useDesignerStore.getState().params;
+    expect(walls.left.depth).toBe(90);
+    expect(walls.right.depth).toBe(90); // synced
   });
 
-  it('activeSideCount reflects enabled sides', () => {
+  it('activeSides reflects enabled sides', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -158,7 +194,26 @@ describe('useWallCutoutsSection', () => {
     });
 
     const { result } = renderHook(() => useWallCutoutsSection());
-    expect(result.current.state.activeSideCount).toBe(2);
+    expect(result.current.state.activeSides).toEqual(['front', 'back']);
+  });
+
+  it('starts in linked mode by default', () => {
+    const { result } = renderHook(() => useWallCutoutsSection());
+    expect(result.current.state.linked).toBe(true);
+  });
+
+  it('toggleLinked switches between linked and independent', () => {
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.toggleLinked();
+    });
+    expect(result.current.state.linked).toBe(false);
+
+    act(() => {
+      result.current.handlers.toggleLinked();
+    });
+    expect(result.current.state.linked).toBe(true);
   });
 
   it('disabledReason set when style is solid', () => {
@@ -180,7 +235,7 @@ describe('useWallCutoutsSection', () => {
     expect(result.current.meta.summary).toBeUndefined();
   });
 
-  it('summary shows dimensions when enabled', () => {
+  it('summary lists active side names with values', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -189,15 +244,16 @@ describe('useWallCutoutsSection', () => {
     });
 
     const { result } = renderHook(() => useWallCutoutsSection());
-    expect(result.current.meta.summary).toContain('70%');
-    expect(result.current.meta.summary).toContain('50%');
+    expect(result.current.state.activeSides).toEqual(['left', 'right']);
+    expect(result.current.meta.summary).toContain('70');
+    expect(result.current.meta.summary).toContain('50');
   });
 
   it('toggleSide for interior works correctly', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true, width: 70, depth: 50 },
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
       },
     });
 
@@ -209,7 +265,38 @@ describe('useWallCutoutsSection', () => {
 
     const interior = useDesignerStore.getState().params.walls.interior;
     expect(interior.enabled).toBe(true);
+    // Linked mode: copies from first active side (left: 70/50)
     expect(interior.width).toBe(70);
     expect(interior.depth).toBe(50);
+  });
+
+  it('setShape updates wall cutout shape', () => {
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setShape('funnel');
+    });
+
+    expect(useDesignerStore.getState().params.walls.shape).toBe('funnel');
+  });
+
+  it('setShape updates to scoop shape', () => {
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setShape('scoop');
+    });
+
+    expect(useDesignerStore.getState().params.walls.shape).toBe('scoop');
+  });
+
+  it('setShape updates to u-shape', () => {
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setShape('u-shape');
+    });
+
+    expect(useDesignerStore.getState().params.walls.shape).toBe('u-shape');
   });
 });

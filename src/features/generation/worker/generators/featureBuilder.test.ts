@@ -274,7 +274,27 @@ describe('buildWallCutoutCuts', () => {
     expect(result).toBeNull();
   });
 
-  it('builds cutouts with global defaults (no per-side overrides)', () => {
+  it('builds cutouts for enabled sides', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      walls: {
+        enabled: true,
+        width: 0,
+        depth: 0,
+        front: { enabled: true, width: 70, depth: 50 },
+        back: { enabled: true, width: 70, depth: 50 },
+        left: { enabled: false, width: 0, depth: 0 },
+        right: { enabled: false, width: 0, depth: 0 },
+        interior: { enabled: false, width: 0, depth: 0 },
+      },
+    };
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    expect(result).not.toBeNull();
+    const meshed = meshShape(result);
+    expect(meshed.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('returns null when all sides are disabled', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       walls: {
@@ -289,10 +309,8 @@ describe('buildWallCutoutCuts', () => {
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);
-    expect(result).not.toBeNull();
-    const meshed = meshShape(result);
-    expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+    expect(result).toBeNull();
+  });
 
   it('builds cutout for a single side override', () => {
     const params: BinParams = {
@@ -353,14 +371,14 @@ describe('buildWallCutoutCuts', () => {
     expect(meshed.vertices.length).toBeGreaterThan(0);
   }, 30000);
 
-  it('handles 100% depth (full height cutout)', () => {
+  it('handles 100% depth (full interior height cutout)', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       walls: {
         enabled: true,
-        width: 70,
-        depth: 100,
-        front: { enabled: false, width: 0, depth: 0 },
+        width: 0,
+        depth: 0,
+        front: { enabled: true, width: 70, depth: 100 },
         back: { enabled: false, width: 0, depth: 0 },
         left: { enabled: false, width: 0, depth: 0 },
         right: { enabled: false, width: 0, depth: 0 },
@@ -368,6 +386,69 @@ describe('buildWallCutoutCuts', () => {
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, true);
+    expect(result).not.toBeNull();
+    const meshed = meshShape(result);
+    expect(meshed.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('builds scoop shape cutouts for enabled sides', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      walls: {
+        enabled: true,
+        shape: 'scoop',
+        width: 0,
+        depth: 0,
+        front: { enabled: true, width: 70, depth: 50 },
+        back: { enabled: true, width: 70, depth: 50 },
+        left: { enabled: false, width: 0, depth: 0 },
+        right: { enabled: false, width: 0, depth: 0 },
+        interior: { enabled: false, width: 0, depth: 0 },
+      },
+    };
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    expect(result).not.toBeNull();
+    const meshed = meshShape(result);
+    expect(meshed.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('builds funnel shape cutouts for enabled sides', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      walls: {
+        enabled: true,
+        shape: 'funnel',
+        width: 0,
+        depth: 0,
+        front: { enabled: true, width: 70, depth: 50 },
+        back: { enabled: false, width: 0, depth: 0 },
+        left: { enabled: true, width: 70, depth: 50 },
+        right: { enabled: false, width: 0, depth: 0 },
+        interior: { enabled: false, width: 0, depth: 0 },
+      },
+    };
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    expect(result).not.toBeNull();
+    const meshed = meshShape(result);
+    expect(meshed.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('builds scoop with very wide cutout (width > 2*height) as floor-bounded arc', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      walls: {
+        enabled: true,
+        shape: 'scoop',
+        width: 0,
+        depth: 0,
+        front: { enabled: true, width: 90, depth: 30 },
+        back: { enabled: false, width: 0, depth: 0 },
+        left: { enabled: false, width: 0, depth: 0 },
+        right: { enabled: false, width: 0, depth: 0 },
+        interior: { enabled: false, width: 0, depth: 0 },
+      },
+    };
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);

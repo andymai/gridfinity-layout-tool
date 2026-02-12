@@ -10,6 +10,7 @@ const VALID_BIN_STYLES = ['standard', 'slotted'] as const;
 const VALID_BASE_STYLES = ['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted'] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
+const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 
 // Constraints (server-side copies of client DESIGNER_CONSTRAINTS)
@@ -196,6 +197,33 @@ function validateCompartments(compartments: unknown): string | null {
  * @param label - The value to validate as a label tab object
  * @returns `null` if valid; otherwise an error message
  */
+function validateWalls(walls: unknown): string | null {
+  if (!isObject(walls)) return 'walls must be an object';
+  // enabled is optional for legacy payloads (number-based wall format)
+  if (walls.enabled !== undefined && !isBoolean(walls.enabled)) {
+    return 'walls.enabled must be boolean';
+  }
+  if (
+    walls.shape !== undefined &&
+    !VALID_WALL_CUTOUT_SHAPES.includes(walls.shape as (typeof VALID_WALL_CUTOUT_SHAPES)[number])
+  ) {
+    return `walls.shape must be one of: ${VALID_WALL_CUTOUT_SHAPES.join(', ')}`;
+  }
+  // Validate per-side width/depth are in range (0-100%)
+  for (const side of ['front', 'back', 'left', 'right', 'interior']) {
+    const sideConfig = walls[side];
+    if (sideConfig !== undefined && isObject(sideConfig)) {
+      if (isNumber(sideConfig.width) && !inRange(sideConfig.width, 0, 100)) {
+        return `walls.${side}.width must be 0-100`;
+      }
+      if (isNumber(sideConfig.depth) && !inRange(sideConfig.depth, 0, 100)) {
+        return `walls.${side}.depth must be 0-100`;
+      }
+    }
+  }
+  return null;
+}
+
 function validateLabel(label: unknown): string | null {
   if (!isObject(label)) return 'label must be an object';
   if (!isBoolean(label.enabled)) return 'label.enabled must be boolean';
@@ -370,6 +398,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
 
   const labelErr = validateLabel(params.label);
   if (labelErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: labelErr } };
+
+  if (params.walls !== undefined) {
+    const wallsErr = validateWalls(params.walls);
+    if (wallsErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: wallsErr } };
+  }
 
   // Inserts
   if (!Array.isArray(params.inserts)) {

@@ -130,10 +130,15 @@ export interface WallCutout {
 /** Wall side identifier for per-side operations */
 export type WallSide = 'front' | 'back' | 'left' | 'right' | 'interior';
 
+/** Cutout shape style: u-shape (rectangular notch), scoop (semicircle), funnel (tapered U) */
+export type WallCutoutShape = 'u-shape' | 'scoop' | 'funnel';
+
 /** Wall cutout configuration: global defaults + per-side overrides */
 export interface WallConfig {
   /** Master toggle for the wall cutouts feature */
   readonly enabled: boolean;
+  /** Cutout shape applied globally to all sides */
+  readonly shape: WallCutoutShape;
   /** Global default width % (0-100) applied to sides without individual overrides */
   readonly width: number;
   /** Global default depth % (0-100) applied to sides without individual overrides */
