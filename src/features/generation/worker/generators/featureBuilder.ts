@@ -39,7 +39,7 @@ import {
 
 // ─── Lip Constants (needed for scoop calculations) ───────────────────────────
 
-import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorTypes';
+import { LIP_HEIGHT, LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorTypes';
 
 // ─── Helper Functions ────────────────────────────────────────────────────────
 
@@ -1117,11 +1117,12 @@ export function buildWallCutoutCuts(
     return { effectiveWidth, effectiveDepth };
   };
 
-  // Extrusion depth: 2× wallThickness for safe boolean penetration
-  const extrudeDepth = wallThickness * 2;
+  // Extrusion depth must exceed the thickest wall (outer or interior divider)
+  const maxThickness = Math.max(wallThickness, params.compartments.thickness);
+  const extrudeDepth = maxThickness * 2;
 
   // Lip height adds to the cut zone when depth extends to the very top
-  const lipExtension = hasLip ? LIP_SMALL_TAPER + 3.7 : 0; // ~LIP_HEIGHT
+  const lipExtension = hasLip ? LIP_HEIGHT : 0;
 
   const sides: Array<{
     key: 'front' | 'back' | 'left' | 'right';
@@ -1149,14 +1150,19 @@ export function buildWallCutoutCuts(
     const cornerR = autoCornerRadius(cutWidth, cutHeight);
     const safeCornerR = Math.min(cornerR, cutWidth / 2 - 0.01, cutHeight / 2 - 0.01);
 
+    // Sketch on XZ plane: X = cutWidth (horizontal), Z = cutHeight (vertical).
+    // Extrusion goes along Y (through the wall).
     let shape: Shape3D;
     if (safeCornerR > 0.1) {
-      shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeCornerR), 'XY').extrude(
+      shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeCornerR), 'XZ').extrude(
         extrudeDepth
       );
     } else {
-      shape = sketch(drawRectangle(cutWidth, cutHeight), 'XY').extrude(extrudeDepth);
+      shape = sketch(drawRectangle(cutWidth, cutHeight), 'XZ').extrude(extrudeDepth);
     }
+
+    // Center extrusion around Y=0 so the cut straddles the wall face
+    shape = translate(shape, [0, -extrudeDepth / 2, 0]);
 
     // Rotate for left/right walls (cut body along X instead of Y)
     if (side.rotateZ !== 0) {
@@ -1164,7 +1170,6 @@ export function buildWallCutoutCuts(
     }
 
     // Position: centered on wall face, top-aligned at wallHeight
-    // The cutout rectangle is centered at origin, so shift up by wallHeight - cutHeight/2
     const cutZ = wallHeight - cutHeight / 2;
     cutShapes.push(translate(shape, [side.x, side.y, cutZ]));
   }
@@ -1197,14 +1202,15 @@ export function buildWallCutoutCuts(
 
             let shape: Shape3D;
             if (safeR > 0.1) {
-              shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeR), 'XY').extrude(
+              shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeR), 'XZ').extrude(
                 extrudeDepth
               );
             } else {
-              shape = sketch(drawRectangle(cutWidth, cutHeight), 'XY').extrude(extrudeDepth);
+              shape = sketch(drawRectangle(cutWidth, cutHeight), 'XZ').extrude(extrudeDepth);
             }
 
-            // Rotate 90 degrees: interior vertical walls run along Y
+            // Center extrusion, then rotate 90°: vertical dividers run along Y
+            shape = translate(shape, [0, -extrudeDepth / 2, 0]);
             shape = rotate(shape, 90, { axis: [0, 0, 1] });
 
             const xPos = -innerW / 2 + colBoundary * cellW;
@@ -1233,12 +1239,15 @@ export function buildWallCutoutCuts(
 
             let shape: Shape3D;
             if (safeR > 0.1) {
-              shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeR), 'XY').extrude(
+              shape = sketch(drawRoundedRectangle(cutWidth, cutHeight, safeR), 'XZ').extrude(
                 extrudeDepth
               );
             } else {
-              shape = sketch(drawRectangle(cutWidth, cutHeight), 'XY').extrude(extrudeDepth);
+              shape = sketch(drawRectangle(cutWidth, cutHeight), 'XZ').extrude(extrudeDepth);
             }
+
+            // Center extrusion so the cut straddles the divider wall
+            shape = translate(shape, [0, -extrudeDepth / 2, 0]);
 
             const yPos = -innerD / 2 + rowBoundary * cellD;
             const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;
