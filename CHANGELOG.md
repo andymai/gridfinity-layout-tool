@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.9.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.9.1...gridfinity-layout-tool-v3.9.2) (2026-02-13)
+
+
+### Bug Fixes
+
+* snap staging drag to nearest valid position to prevent flickering ([#719](https://github.com/andymai/gridfinity-layout-tool/issues/719)) ([5bb4bb0](https://github.com/andymai/gridfinity-layout-tool/commit/5bb4bb0df8afc164b514b8ccc3628e8ea8d8d0df))
+
 ## [3.9.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.9.0...gridfinity-layout-tool-v3.9.1) (2026-02-13)
 
 
