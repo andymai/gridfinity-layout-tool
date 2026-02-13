@@ -29,20 +29,6 @@ import opencascadeThreadedWasm from 'brepjs-opencascade/src/brepjs_threaded.wasm
 import opencascadeThreadedWorker from 'brepjs-opencascade/src/brepjs_threaded.worker.js?url';
 import opencascadeThreadedJs from 'brepjs-opencascade/src/brepjs_threaded.js?url';
 
-// Emscripten module factory options (not reflected in the .d.ts)
-interface EmscriptenModuleConfig {
-  locateFile?: (path: string) => string;
-  mainScriptUrlOrBlob?: string;
-}
-
-// Type assertion for Emscripten factory functions that accept config
-const opencascadeSingle = opencascadeSingleInit as unknown as (
-  config?: EmscriptenModuleConfig
-) => ReturnType<typeof opencascadeSingleInit>;
-const opencascadeThreaded = opencascadeThreadedInit as unknown as (
-  config?: EmscriptenModuleConfig
-) => ReturnType<typeof opencascadeThreadedInit>;
-
 /** Currently active generation request ID (for cancellation) */
 let activeRequestId: string | null = null;
 
@@ -111,7 +97,7 @@ async function initOpenCascade(): Promise<void> {
 
   let OC: Awaited<ReturnType<typeof opencascadeSingleInit>>;
   if (isThreaded) {
-    OC = await opencascadeThreaded({
+    OC = await opencascadeThreadedInit({
       mainScriptUrlOrBlob: opencascadeThreadedJs,
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
@@ -125,7 +111,7 @@ async function initOpenCascade(): Promise<void> {
     });
   } else {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Emscripten WASM factory returns untyped module (see vite-env.d.ts TECH-DEBT)
-    OC = await opencascadeSingle({
+    OC = await opencascadeSingleInit({
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
           return opencascadeSingleWasm;
