@@ -25,8 +25,10 @@ graph TB
 - `hooks/useBinLinking.ts` — link/unlink/create actions
 - `hooks/useLinkedDesign.ts` — resolve linked design for a bin
 - `hooks/useLinkedBins.ts` — find all bins linked to a design
+- `hooks/useQuickExport.ts` — STL export for linked designs (internal)
 - `components/LinkedDesignSection.tsx` — inspector UI for link status
-- `components/DesignLinkingDialogs.tsx` — dialog orchestrator
+- `components/DesignLinkingDialogs/` — dialog orchestrator
+- `components/Dialogs/` — CreateDesignDialog, SyncDimensionsDialog, DeleteDesignWarningDialog, LinkDesignDialog
 - `store/linkingStore.ts` — transient UI state
 
 ## Data Model

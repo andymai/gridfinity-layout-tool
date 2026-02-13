@@ -14,6 +14,9 @@ graph TB
 
 - `components/Inspector/SingleBinInspector.tsx` — single bin edit panel
 - `components/Inspector/MultiBinInspector.tsx` — multi-select summary
+- `components/Inspector/CustomPropertiesEditor.tsx` — custom key-value property editor
+- `components/Inspector/SplitWarning.tsx` — print bed size warning indicator
+- `components/Inspector/EmptyState.tsx` — no selection state
 - `hooks/useBinInspector.ts` — selection resolution and bin data
 
 ## Constraints
@@ -27,5 +30,6 @@ graph TB
 ## Gotchas
 
 1. **Multi-select shows summary only** - can't edit dimensions of multiple bins
-2. **Reserved property keys** - `id`, `layerId`, `category` blocked from custom props
+2. **Reserved property keys** - bin field names (`id`, `layerId`, `x`, `y`, `width`, `depth`, `height`, `clearanceHeight`, `category`, `label`, etc.) blocked from custom props
 3. **Height validation** - must fit in layer + drawer height
+4. **Rotation with relocation** - bins can be rotated in place or auto-repositioned to nearest valid spot if blocked

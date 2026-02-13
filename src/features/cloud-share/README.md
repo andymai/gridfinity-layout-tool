@@ -26,10 +26,13 @@ graph TB
 
 - `components/ShareModal.tsx` — main share dialog
 - `components/CloudShareTab.tsx` — cloud sharing controls
+- `components/ShareButton.tsx` — header share button (collaborative_editing flag)
 - `components/SharedLayoutImporter.tsx` — import from `/l/shareId` URL
+- `components/SharedLayoutBanner.tsx` — banner for shared layouts
 - `hooks/useCloudShare.ts` — share CRUD operations
-- `hooks/useOwnedShareSync.ts` — auto-sync owned shares
-- `utils/cloudShare.ts` — API client utilities
+- `hooks/useOwnedShareSync.ts` — auto-sync owned shares (5s debounce)
+- `hooks/useCloudShareAutoSync.ts` — auto-sync in collab mode (1s debounce)
+- `utils/cloudShare.ts` — fingerprinting and date formatting utilities
 
 ## Permission Model
 

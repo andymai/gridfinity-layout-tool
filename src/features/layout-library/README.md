@@ -1,22 +1,38 @@
 # Layout Library
 
-Multi-layout management with thumbnails and metadata.
+Multi-layout management with thumbnails, metadata, and URL routing.
 
 ```mermaid
 graph TB
-    LMM[LayoutManagerModal] --> LL[LayoutList] & IV[ImportView] & SWM[SharedWithMeList]
-    LL --> LA[LayoutActions]
+    LMM[LayoutManagerModal] -->|Tab| LL[LayoutList] & IV[ImportView]
+    LL -->|ViewMode: grid| LGI[LayoutGridItem]
+    LL -->|ViewMode: list| LLI[LayoutListItem]
+    LL --> NLC[NewLayoutCard] & VMT[ViewModeToggle]
+    LGI & LLI --> LA[LayoutActions]
     LA -->|CRUD| Storage[saveLayoutWithMetadata / deleteLayoutWithEntry]
     Storage --> IDB[(IndexedDB)] & LS[(localStorage)]
-    ULR[useLayoutRouting] -->|URL /l/id| SAL[switchActiveLayout]
+    ULR[useLayoutRouting] -->|URL /l/id/slug| Switch[switchActiveLayout]
 ```
 
 ## Key Files
 
-- `components/LayoutManagerModal/index.tsx` — main library modal
-- `components/LayoutManagerModal/LayoutList.tsx` — layout grid/list view
+### Components
+
+- `components/LayoutManagerModal/LayoutManagerModal.tsx` — main modal with tabs (layouts/import)
+- `components/LayoutManagerModal/LayoutList.tsx` — layout grid/list view with search & sort
+- `components/LayoutManagerModal/LayoutGridItem.tsx` — grid view card
+- `components/LayoutManagerModal/LayoutListItem.tsx` — list view row
+- `components/LayoutManagerModal/LayoutActions.tsx` — action menu (download/copy link/rename/duplicate/suggest name/delete)
 - `components/LayoutManagerModal/ImportView.tsx` — JSON import UI
-- `hooks/useLayoutRouting.ts` — URL-based layout switching (`/l/id`)
+- `components/LayoutManagerModal/NewLayoutCard.tsx` — "Create New" card
+- `components/LayoutManagerModal/ViewModeToggle.tsx` — grid/list toggle
+- `components/LayoutManagerModal/SharedWithMeList.tsx` — shared layouts (not yet integrated)
+- `components/LayoutManagerModal/SharedWithMeItem.tsx` — shared layout item
+- `components/LayoutManagerModal/useInlineEdit.ts` — inline rename hook
+
+### Hooks
+
+- `hooks/useLayoutRouting.ts` — URL sync for bookmarkable layouts (`/l/{id}/{slug}`)
 
 ## Storage Keys
 
