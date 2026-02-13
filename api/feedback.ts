@@ -37,6 +37,16 @@ const FeedbackEnrichmentSchema = z.object({
 
 type FeedbackEnrichment = z.infer<typeof FeedbackEnrichmentSchema>;
 
+function sanitizeForPrompt(text: string, maxLength: number): string {
+  return (
+    text
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001f\u007f]/g, '')
+      .slice(0, maxLength)
+      .trim()
+  );
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
@@ -104,10 +114,10 @@ function buildEnrichmentPrompt(
   let prompt = `Analyze this user feedback and produce structured output.
 
 User's description (category: ${userCategory}):
-${description.slice(0, 500)}`;
+${sanitizeForPrompt(description, 500)}`;
 
   if (context) {
-    prompt += `\n\nLayout context:\n${JSON.stringify(context, null, 2).slice(0, 300)}`;
+    prompt += `\n\nLayout context:\n${sanitizeForPrompt(JSON.stringify(context, null, 2), 300)}`;
   }
 
   if (recentIssues.length > 0) {
@@ -158,6 +168,11 @@ async function enrichFeedback(
       maxOutputTokens: 500,
       temperature: 0.3,
     });
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime safety: LLM may return no output
+    if (!result.output) {
+      throw new Error('LLM returned no structured output');
+    }
 
     const enrichment: FeedbackEnrichment = result.output;
 
@@ -270,6 +285,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       typeof context === 'object' && context !== null
         ? (context as Record<string, unknown>)
         : undefined;
+
+    if (validContext) {
+      const contextStr = JSON.stringify(validContext);
+      if (contextStr.length > 5000) {
+        return res.status(400).json({ error: 'Context too large' });
+      }
+    }
 
     const recentIssues = await fetchRecentFeedbackIssues(token);
     const enriched = await enrichFeedback(
