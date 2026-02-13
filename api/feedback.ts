@@ -40,17 +40,18 @@ type FeedbackEnrichment = z.infer<typeof FeedbackEnrichmentSchema>;
 function sanitizeForPrompt(text: string, maxLength: number): string {
   return text
     .replace(/[^\w\s\-.,!?:;'"&()#×x/@+]/g, '')
+    .replace(/\s+/g, ' ')
     .slice(0, maxLength)
     .trim();
 }
 
 function sanitizeForMarkdown(text: string): string {
-  return text.replace(/[[\]()]/g, '\\$&');
+  return text.replace(/[[\]()\\<>&]/g, '\\$&');
 }
 
 /** Escape backticks to prevent code fence breakout in markdown. */
 function escapeCodeFence(text: string): string {
-  return text.replace(/`/g, '\\`');
+  return text.replace(/[`\\]/g, '\\$&');
 }
 
 /** Strip @mentions and bare URLs from LLM-generated markdown body. */
@@ -249,7 +250,7 @@ async function enrichFeedback(
     return {
       title: fallbackTitle,
       body,
-      categoryLabel: categoryLabel.replace('feedback: ', ''),
+      categoryLabel: categoryLabel.replace('feedback: ', '').replace(/^\w/, (c) => c.toUpperCase()),
       labels: [categoryLabel],
     };
   }
