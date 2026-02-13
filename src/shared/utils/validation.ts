@@ -218,7 +218,11 @@ export function canPlaceBin(
 /**
  * Validate an imported layout against the schema and constraints.
  */
-export function validateImport(data: unknown): { valid: boolean; errors: string[] } {
+export type ValidationSuccess = { valid: true; errors: readonly []; layout: Layout };
+export type ValidationFailure = { valid: false; errors: string[] };
+export type ImportValidationResult = ValidationSuccess | ValidationFailure;
+
+export function validateImport(data: unknown): ImportValidationResult {
   const errors: string[] = [];
 
   if (!data || typeof data !== 'object') {
@@ -373,7 +377,11 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
     categoryNames.add(name);
   });
 
-  return { valid: errors.length === 0, errors };
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  return { valid: true, errors: [], layout: data as Layout };
 }
 
 /**

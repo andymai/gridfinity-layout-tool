@@ -100,7 +100,7 @@ export function importLayoutJSON(json: string): { layout: Layout | null; errors:
     }
 
     // Regenerate all IDs
-    const layout = parsed as unknown as Layout;
+    const layout = validation.layout;
     const layerIdMap = new Map<string, LayerId>();
     const categoryIdMap = new Map<string, CategoryId>();
 

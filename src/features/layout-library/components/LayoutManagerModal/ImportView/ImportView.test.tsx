@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import type { Layout } from '@/core/types';
 import { ImportView } from '@/features/layout-library/components/LayoutManagerModal/ImportView';
 import * as validation from '@/shared/utils/validation';
 import * as storage from '@/core/storage';
 
 // Mock the modules
 vi.mock('@/shared/utils/validation', () => ({
-  validateImport: vi.fn(() => ({ valid: true, errors: [] })),
+  validateImport: vi.fn((data: unknown) => ({ valid: true, errors: [], layout: data })),
 }));
 
 vi.mock('@/core/storage', () => ({
@@ -59,7 +60,11 @@ describe('ImportView', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
+    vi.mocked(validation.validateImport).mockImplementation((data: unknown) => ({
+      valid: true as const,
+      errors: [],
+      layout: data as Layout,
+    }));
   });
 
   afterEach(() => {
@@ -111,7 +116,11 @@ describe('ImportView', () => {
     });
 
     it('shows preview for valid JSON', () => {
-      vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
+      vi.mocked(validation.validateImport).mockImplementation((data: unknown) => ({
+        valid: true as const,
+        errors: [],
+        layout: data as Layout,
+      }));
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
@@ -150,7 +159,11 @@ describe('ImportView', () => {
     });
 
     it('enables Import button when valid', () => {
-      vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
+      vi.mocked(validation.validateImport).mockImplementation((data: unknown) => ({
+        valid: true as const,
+        errors: [],
+        layout: data as Layout,
+      }));
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
@@ -233,7 +246,11 @@ describe('ImportView', () => {
     });
 
     it('processes uploaded JSON file', async () => {
-      vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
+      vi.mocked(validation.validateImport).mockImplementation((data: unknown) => ({
+        valid: true as const,
+        errors: [],
+        layout: data as Layout,
+      }));
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
@@ -276,7 +293,11 @@ describe('ImportView', () => {
     });
 
     it('processes dropped JSON file', async () => {
-      vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
+      vi.mocked(validation.validateImport).mockImplementation((data: unknown) => ({
+        valid: true as const,
+        errors: [],
+        layout: data as Layout,
+      }));
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
@@ -341,7 +362,11 @@ describe('ImportView', () => {
 
   describe('import action', () => {
     it('calls onImport with valid layout when Import clicked', async () => {
-      vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
+      vi.mocked(validation.validateImport).mockImplementation((data: unknown) => ({
+        valid: true as const,
+        errors: [],
+        layout: data as Layout,
+      }));
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
@@ -376,7 +401,11 @@ describe('ImportView', () => {
 
   describe('preview display', () => {
     it('shows layer count', () => {
-      vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
+      vi.mocked(validation.validateImport).mockImplementation((data: unknown) => ({
+        valid: true as const,
+        errors: [],
+        layout: data as Layout,
+      }));
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
@@ -388,7 +417,11 @@ describe('ImportView', () => {
     });
 
     it('shows bin count', () => {
-      vi.mocked(validation.validateImport).mockReturnValue({ valid: true, errors: [] });
+      vi.mocked(validation.validateImport).mockImplementation((data: unknown) => ({
+        valid: true as const,
+        errors: [],
+        layout: data as Layout,
+      }));
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 

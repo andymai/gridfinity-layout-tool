@@ -188,12 +188,12 @@ async function loadLayoutInternal(layoutId: string): Promise<Result<Layout, Stor
   }
 
   // Validate the loaded layout
-  const validation = validateImport(data as unknown as Record<string, unknown>);
+  const validation = validateImport(data);
   if (!validation.valid) {
     return err(storageCorrupted(key, validation.errors));
   }
 
-  return ok(data);
+  return ok(validation.layout);
 }
 
 /**

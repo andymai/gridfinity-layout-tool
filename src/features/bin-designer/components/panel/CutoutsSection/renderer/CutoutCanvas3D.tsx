@@ -35,12 +35,11 @@ function useBinPreviewColor(): string {
     }
   });
   useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<string>).detail;
-      if (detail) setColor(detail);
+    const handler = (e: CustomEvent<string>) => {
+      if (e.detail) setColor(e.detail);
     };
-    window.addEventListener('preview-color-change', handler);
-    return () => window.removeEventListener('preview-color-change', handler);
+    window.addEventListener('preview-color-change', handler as EventListener);
+    return () => window.removeEventListener('preview-color-change', handler as EventListener);
   }, []);
   return color;
 }

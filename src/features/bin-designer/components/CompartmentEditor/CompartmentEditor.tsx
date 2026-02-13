@@ -123,15 +123,14 @@ export function CompartmentEditor() {
         setPreviewColor(e.newValue ?? DEFAULT_PREVIEW_COLOR);
       }
     };
-    const handleColorChange = (e: Event) => {
-      const color = (e as CustomEvent<string>).detail;
-      setPreviewColor(color);
+    const handleColorChange = (e: CustomEvent<string>) => {
+      setPreviewColor(e.detail);
     };
     window.addEventListener('storage', handleStorage);
-    window.addEventListener('preview-color-change', handleColorChange);
+    window.addEventListener('preview-color-change', handleColorChange as EventListener);
     return () => {
       window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('preview-color-change', handleColorChange);
+      window.removeEventListener('preview-color-change', handleColorChange as EventListener);
     };
   }, []);
 

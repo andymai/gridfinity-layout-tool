@@ -20,7 +20,7 @@ interface StagingBinProps {
   integerWidth: number;
   fractionalWidthPart: number;
   fractionalCellWidth: number;
-  onBinClick: (binId: string, e: React.MouseEvent) => void;
+  onBinClick: (binId: string, e: React.MouseEvent | React.KeyboardEvent) => void;
   onBinPointerDown: (binId: string, e: React.PointerEvent) => void;
   onBinPointerMove: (e: React.PointerEvent) => void;
   onBinPointerEnd: () => void;
@@ -219,7 +219,7 @@ export const StagingBin = memo(function StagingBin({
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onBinClick(bin.id, e as unknown as React.MouseEvent);
+          onBinClick(bin.id, e);
         }
       }}
       onPointerDown={(e) => onBinPointerDown(bin.id, e)}
