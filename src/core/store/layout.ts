@@ -25,7 +25,7 @@ import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from './settings';
 import { trackBinCreated } from '@/shared/analytics/posthog';
-import type { Result, LayoutError, ValidationError } from '@/core/result';
+import type { Result, LayoutError, ValidationError, ValidationFailureReason } from '@/core/result';
 import {
   ok,
   err,
@@ -113,6 +113,24 @@ interface LayoutState {
   setHeightUnitMm: (mm: number) => void;
 }
 
+function findBin(bins: Bin[], id: BinId): Bin | undefined {
+  return bins.find((b) => b.id === id);
+}
+
+function requireBin(bins: Bin[], id: BinId, op: string): Result<Bin, LayoutError> {
+  const bin = findBin(bins, id);
+  if (!bin) return err(layoutInvalidOperation(op, `Bin ${id} not found`));
+  return ok(bin);
+}
+
+function toPlacementError(
+  reason: ValidationFailureReason,
+  rect: { x: number; y: number; width: number; depth: number }
+): ValidationError {
+  if (reason === 'collision') return validationCollision();
+  return validationOutOfBounds(reason, rect);
+}
+
 export const useLayoutStore = create<LayoutState>()(
   immer((set, get) => ({
     layout: createDefaultLayout(),
@@ -131,24 +149,10 @@ export const useLayoutStore = create<LayoutState>()(
           return err(validationInvalidLayer(bin.layerId));
         }
 
-        const validationResult = canPlaceBin(
-          { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
-          bin.layerId,
-          layout
-        );
+        const rect = { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
+        const validationResult = canPlaceBin({ ...rect, height: bin.height }, bin.layerId, layout);
         if (!validationResult.valid) {
-          const reason = validationResult.reason;
-          if (reason === 'collision') {
-            return err(validationCollision());
-          }
-          return err(
-            validationOutOfBounds(reason, {
-              x: bin.x,
-              y: bin.y,
-              width: bin.width,
-              depth: bin.depth,
-            })
-          );
+          return err(toPlacementError(validationResult.reason, rect));
         }
       }
 
@@ -162,10 +166,8 @@ export const useLayoutStore = create<LayoutState>()(
 
     updateBin: (id, updates) => {
       const { layout } = get();
-      const bin = layout.bins.find((b) => b.id === id);
-      if (!bin) {
-        return err(layoutInvalidOperation('updateBin', `Bin ${id} not found`));
-      }
+      const found = requireBin(layout.bins, id, 'updateBin');
+      if (!isOk(found)) return found;
 
       set((state) => {
         const b = state.layout.bins.find((b) => b.id === id);
@@ -180,10 +182,8 @@ export const useLayoutStore = create<LayoutState>()(
 
     deleteBin: (id) => {
       const { layout } = get();
-      const bin = layout.bins.find((b) => b.id === id);
-      if (!bin) {
-        return err(layoutInvalidOperation('deleteBin', `Bin ${id} not found`));
-      }
+      const found = requireBin(layout.bins, id, 'deleteBin');
+      if (!isOk(found)) return found;
 
       set((state) => {
         state.layout.bins = state.layout.bins.filter((b) => b.id !== id);
@@ -209,12 +209,11 @@ export const useLayoutStore = create<LayoutState>()(
 
     duplicateBin: (id) => {
       const { layout, addBin } = get();
-      const bin = layout.bins.find((b) => b.id === id);
-      if (!bin) {
-        return err(layoutInvalidOperation('duplicateBin', `Bin ${id} not found`));
-      }
+      const found = requireBin(layout.bins, id, 'duplicateBin');
+      if (!isOk(found)) return found;
+      const bin = found.value;
 
-      const copyProps = (overrides: { layerId: LayerId; x: number; y: number }) => ({
+      const copyAt = (layerId: LayerId, x: number, y: number) => ({
         width: bin.width,
         depth: bin.depth,
         height: bin.height,
@@ -223,23 +222,27 @@ export const useLayoutStore = create<LayoutState>()(
         label: bin.label,
         notes: bin.notes,
         customProperties: bin.customProperties,
-        ...overrides,
+        layerId,
+        x,
+        y,
       });
 
-      const trackDuplicate = () => {
-        trackBinCreated({
-          method: 'duplicate',
-          count: 1,
-          width: bin.width,
-          depth: bin.depth,
-          height: bin.height,
-        });
+      const addAndTrack = (layerId: LayerId, x: number, y: number) => {
+        const result = addBin(copyAt(layerId, x, y));
+        if (isOk(result)) {
+          trackBinCreated({
+            method: 'duplicate',
+            count: 1,
+            width: bin.width,
+            depth: bin.depth,
+            height: bin.height,
+          });
+        }
+        return result;
       };
 
       if (bin.layerId === STAGING_ID) {
-        const result = addBin(copyProps({ layerId: STAGING_ID, x: 0, y: 0 }));
-        if (isOk(result)) trackDuplicate();
-        return result;
+        return addAndTrack(STAGING_ID, 0, 0);
       }
 
       const offsets = [
@@ -250,34 +253,23 @@ export const useLayoutStore = create<LayoutState>()(
       ];
 
       for (const { dx, dy } of offsets) {
-        const newX = bin.x + dx;
-        const newY = bin.y + dy;
-
         const placement = canPlaceBin(
-          { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
+          { x: bin.x + dx, y: bin.y + dy, width: bin.width, depth: bin.depth, height: bin.height },
           bin.layerId,
           layout
         );
-
         if (placement.valid) {
-          const result = addBin(copyProps({ layerId: bin.layerId, x: newX, y: newY }));
-          if (isOk(result)) trackDuplicate();
-          return result;
+          return addAndTrack(bin.layerId, bin.x + dx, bin.y + dy);
         }
       }
 
-      // Fallback to staging if no adjacent space available
-      const result = addBin(copyProps({ layerId: STAGING_ID, x: 0, y: 0 }));
-      if (isOk(result)) trackDuplicate();
-      return result;
+      return addAndTrack(STAGING_ID, 0, 0);
     },
 
     moveBinToStaging: (id) => {
       const { layout } = get();
-      const bin = layout.bins.find((b) => b.id === id);
-      if (!bin) {
-        return err(layoutInvalidOperation('moveBinToStaging', `Bin ${id} not found`));
-      }
+      const found = requireBin(layout.bins, id, 'moveBinToStaging');
+      if (!isOk(found)) return found;
 
       set((state) => {
         const b = state.layout.bins.find((b) => b.id === id);
@@ -292,36 +284,19 @@ export const useLayoutStore = create<LayoutState>()(
 
     moveBinFromStaging: (id, layerId, x, y) => {
       const { layout } = get();
-      const bin = layout.bins.find((b) => b.id === id);
-      if (!bin) {
-        return err(layoutInvalidOperation('moveBinFromStaging', `Bin ${id} not found`));
-      }
+      const found = requireBin(layout.bins, id, 'moveBinFromStaging');
+      if (!isOk(found)) return found;
+      const bin = found.value;
 
       const layer = layout.layers.find((l) => l.id === layerId);
       if (!layer) {
         return err(validationInvalidLayer(layerId));
       }
 
-      const validationResult = canPlaceBin(
-        { x, y, width: bin.width, depth: bin.depth, height: layer.height },
-        layerId,
-        layout,
-        id
-      );
-
+      const rect = { x, y, width: bin.width, depth: bin.depth };
+      const validationResult = canPlaceBin({ ...rect, height: layer.height }, layerId, layout, id);
       if (!validationResult.valid) {
-        const reason = validationResult.reason;
-        if (reason === 'collision') {
-          return err(validationCollision());
-        }
-        return err(
-          validationOutOfBounds(reason, {
-            x,
-            y,
-            width: bin.width,
-            depth: bin.depth,
-          })
-        );
+        return err(toPlacementError(validationResult.reason, rect));
       }
 
       set((state) => {
