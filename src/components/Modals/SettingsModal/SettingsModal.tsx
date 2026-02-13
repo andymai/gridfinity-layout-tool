@@ -13,6 +13,7 @@ import { DefaultsTab } from './tabs/DefaultsTab/DefaultsTab';
 import { IntegrationsTab } from './tabs/IntegrationsTab/IntegrationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab/PrivacyTab';
 import { LabsTab } from './tabs/LabsTab/LabsTab';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { SettingsModalProps, SettingsTabId } from './types';
 
 const STYLES = {
@@ -114,12 +115,15 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
               aria-label={t('common.close')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                {ICON_PATHS.close.map((d) => (
+                  <path
+                    key={d}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={d}
+                  />
+                ))}
               </svg>
             </button>
           </div>

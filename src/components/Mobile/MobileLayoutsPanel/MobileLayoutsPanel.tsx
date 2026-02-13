@@ -15,7 +15,7 @@ import {
   downloadLayoutAsFile,
 } from '@/core/storage';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
-import type { LayoutEntry, SharePermission } from '@/core/types';
+import type { Layout, LayoutEntry, SharePermission } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation, useFormatting } from '@/i18n';
@@ -179,10 +179,207 @@ function ActiveLayoutActions({
   );
 }
 
-/**
- * Mobile-optimized layouts panel with larger touch targets and swipe gestures.
- * Displays in BottomSheet for mobile users.
- */
+function LoadingSpinner({ label }: { readonly label: string }) {
+  return (
+    <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
+      <div className="flex items-center gap-3 text-content-secondary">
+        <svg
+          className="w-5 h-5 animate-spin motion-reduce:animate-none"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          />
+        </svg>
+        <span>{label}</span>
+      </div>
+    </div>
+  );
+}
+
+interface PermissionSelectProps {
+  readonly value: SharePermission;
+  readonly onChange: (value: SharePermission) => void;
+  readonly id?: string;
+  readonly ariaLabel?: string;
+  readonly className?: string;
+}
+
+function PermissionSelect({ value, onChange, id, ariaLabel, className }: PermissionSelectProps) {
+  const t = useTranslation();
+  return (
+    <select
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value as SharePermission)}
+      className={`flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke ${className ?? ''}`}
+      aria-label={ariaLabel}
+    >
+      <option value="view">{t('mobile.layouts.anyoneCanView')}</option>
+      <option value="edit">{t('mobile.layouts.anyoneCanEdit')}</option>
+    </select>
+  );
+}
+
+function findEntry(entries: readonly LayoutEntry[], id: string): LayoutEntry | undefined {
+  return entries.find((e) => e.id === id);
+}
+
+async function resolveLayout(
+  id: string,
+  activeLayoutId: string,
+  currentLayout: Layout
+): Promise<Layout | null> {
+  if (id === activeLayoutId) return currentLayout;
+  return loadLayoutAsync(id);
+}
+
+interface LayoutListItemProps {
+  readonly entry: LayoutEntry;
+  readonly isActive: boolean;
+  readonly isSwiping: boolean;
+  readonly swipeX: number;
+  readonly canDelete: boolean;
+  readonly formatRelativeDate: (ts: number) => string;
+  readonly onSelect: (id: string) => void;
+  readonly onRename: (id: string) => void;
+  readonly onShare: (id: string) => void;
+  readonly onDuplicate: (id: string) => void;
+  readonly onDelete: (id: string) => void;
+  readonly onTouchStart: (e: React.TouchEvent, id: string) => void;
+  readonly onTouchMove: (e: React.TouchEvent) => void;
+  readonly onTouchEnd: () => void;
+}
+
+function LayoutListItem({
+  entry,
+  isActive,
+  isSwiping,
+  swipeX,
+  canDelete,
+  formatRelativeDate,
+  onSelect,
+  onRename,
+  onShare,
+  onDuplicate,
+  onDelete,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+}: LayoutListItemProps) {
+  const t = useTranslation();
+
+  return (
+    <div className="relative overflow-hidden rounded-lg">
+      <div className="absolute right-0 top-0 bottom-0 flex items-stretch">
+        <SwipeActionButton
+          onClick={() => onRename(entry.id)}
+          iconPath={ICON_PATHS.rename}
+          bgColor="bg-warning"
+          label={`Rename ${entry.name}`}
+        />
+        <SwipeActionButton
+          onClick={() => onShare(entry.id)}
+          iconPath={ICON_PATHS.share}
+          bgColor="bg-success"
+          label={`Share ${entry.name}`}
+        />
+        <SwipeActionButton
+          onClick={() => onDuplicate(entry.id)}
+          iconPath={ICON_PATHS.duplicate}
+          bgColor="bg-accent"
+          label={`Duplicate ${entry.name}`}
+        />
+        <SwipeActionButton
+          onClick={() => onDelete(entry.id)}
+          iconPath={ICON_PATHS.delete}
+          bgColor="bg-danger"
+          label={`Delete ${entry.name}`}
+          disabled={!canDelete}
+        />
+      </div>
+
+      <div
+        className={`relative transition-transform duration-200 ${isActive ? 'bg-surface-hover border-l-4 border-l-accent' : 'bg-surface-elevated border-l-4 border-l-transparent'}`}
+        style={{
+          transform: isSwiping ? `translateX(${swipeX}px)` : 'translateX(0)',
+          transitionDuration: isSwiping ? '0ms' : '200ms',
+        }}
+        onTouchStart={(e) => onTouchStart(e, entry.id)}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        <button
+          className="w-full p-4 text-left"
+          onClick={() => onSelect(entry.id)}
+          aria-current={isActive ? 'true' : undefined}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <LayoutThumbnail preview={entry.preview} size={48} />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`truncate text-base ${isActive ? 'font-semibold text-content' : 'font-medium text-content'}`}
+                >
+                  {entry.name}
+                </span>
+                {isActive && (
+                  <span className="text-xs px-2 py-0.5 bg-accent text-on-dark rounded flex-shrink-0">
+                    {t('mobile.layouts.active')}
+                  </span>
+                )}
+              </div>
+
+              <LayoutPreviewInfo entry={entry} />
+
+              <div className="text-xs text-content-tertiary mt-0.5">
+                {formatRelativeDate(entry.modifiedAt)}
+              </div>
+
+              {entry.forkedFrom && (
+                <div className="text-xs text-content-disabled">
+                  {t('mobile.layouts.forkedFrom')}
+                  {entry.forkedFrom.name}
+                </div>
+              )}
+            </div>
+          </div>
+        </button>
+
+        {isActive && (
+          <ActiveLayoutActions
+            entryId={entry.id}
+            onRename={onRename}
+            onShare={onShare}
+            onDuplicate={onDuplicate}
+          />
+        )}
+      </div>
+
+      {!isActive && !isSwiping && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-content-disabled pointer-events-none">
+          <SvgIcon path={ICON_PATHS.chevronLeft} className="w-4 h-4" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function MobileLayoutsPanel() {
   const t = useTranslation();
   const { formatRelativeDate } = useFormatting();
@@ -219,6 +416,8 @@ export function MobileLayoutsPanel() {
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
+  const entries = library.entries;
+
   const resetSwipe = useCallback(() => {
     setSwipingId(null);
     setSwipeX(0);
@@ -226,26 +425,26 @@ export function MobileLayoutsPanel() {
 
   const sortedEntries = useMemo(
     () =>
-      [...library.entries].sort((a, b) => {
+      [...entries].sort((a, b) => {
         if (a.id === activeLayoutId) return -1;
         if (b.id === activeLayoutId) return 1;
         return b.modifiedAt - a.modifiedAt;
       }),
-    [library.entries, activeLayoutId]
+    [entries, activeLayoutId]
   );
 
   const handleSelectLayout = useCallback(
     async (id: string) => {
       if (id === activeLayoutId) return;
 
-      const entry = library.entries.find((e) => e.id === id);
+      const entry = findEntry(entries, id);
       const result = await switchLayout(layoutId(id));
       if (isOk(result)) {
-        announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
+        announceToScreenReader(`Switched to ${entry?.name ?? 'layout'}`);
         closeMobilePanel();
       }
     },
-    [activeLayoutId, switchLayout, library.entries, announceToScreenReader, closeMobilePanel]
+    [activeLayoutId, switchLayout, entries, announceToScreenReader, closeMobilePanel]
   );
 
   const handleCreateNew = useCallback(async () => {
@@ -258,14 +457,14 @@ export function MobileLayoutsPanel() {
 
   const handleDuplicate = useCallback(
     async (id: string) => {
-      const entry = library.entries.find((e) => e.id === id);
+      const entry = findEntry(entries, id);
       const result = await duplicateLayout(layoutId(id));
       if (isOk(result)) {
-        announceToScreenReader(`Duplicated ${entry?.name || 'layout'}`);
+        announceToScreenReader(`Duplicated ${entry?.name ?? 'layout'}`);
       }
       resetSwipe();
     },
-    [duplicateLayout, library.entries, announceToScreenReader, resetSwipe]
+    [duplicateLayout, entries, announceToScreenReader, resetSwipe]
   );
 
   const handleShare = useCallback(
@@ -278,12 +477,12 @@ export function MobileLayoutsPanel() {
 
   const handleRenameRequest = useCallback(
     (id: string) => {
-      const entry = library.entries.find((e) => e.id === id);
-      setRenameValue(entry?.name || '');
+      const entry = findEntry(entries, id);
+      setRenameValue(entry?.name ?? '');
       setRenameLayoutId(id);
       resetSwipe();
     },
-    [library.entries, resetSwipe]
+    [entries, resetSwipe]
   );
 
   const handleRenameConfirm = useCallback(() => {
@@ -299,24 +498,24 @@ export function MobileLayoutsPanel() {
 
   const handleCopyLink = useCallback(
     async (id: string) => {
-      const entry = library.entries.find((e) => e.id === id);
-      const layout = id === activeLayoutId ? currentLayout : await loadLayoutAsync(id);
+      const entry = findEntry(entries, id);
+      const layout = await resolveLayout(id, activeLayoutId, currentLayout);
       if (layout) {
         const url = generateShareableURL(layout);
         const success = await copyToClipboard(url);
         if (success) {
-          announceToScreenReader(`Link copied for ${entry?.name || 'layout'}`);
+          announceToScreenReader(`Link copied for ${entry?.name ?? 'layout'}`);
         }
       }
       setShareMenuId(null);
     },
-    [activeLayoutId, currentLayout, library.entries, announceToScreenReader]
+    [activeLayoutId, currentLayout, entries, announceToScreenReader]
   );
 
   const handleDownload = useCallback(
     async (id: string) => {
-      const entry = library.entries.find((e) => e.id === id);
-      const layout = id === activeLayoutId ? currentLayout : await loadLayoutAsync(id);
+      const entry = findEntry(entries, id);
+      const layout = await resolveLayout(id, activeLayoutId, currentLayout);
       if (layout && entry) {
         await downloadLayoutAsFile(
           layout,
@@ -326,7 +525,7 @@ export function MobileLayoutsPanel() {
       }
       setShareMenuId(null);
     },
-    [activeLayoutId, currentLayout, library.entries, announceToScreenReader]
+    [activeLayoutId, currentLayout, entries, announceToScreenReader]
   );
 
   const handleCloudShare = useCallback((id: string) => {
@@ -336,23 +535,23 @@ export function MobileLayoutsPanel() {
 
   const handleDeleteRequest = useCallback(
     (id: string) => {
-      if (library.entries.length <= 1) {
+      if (entries.length <= 1) {
         announceToScreenReader('Cannot delete the only layout');
         return;
       }
       setDeleteLayoutId(id);
       resetSwipe();
     },
-    [library.entries.length, announceToScreenReader, resetSwipe]
+    [entries.length, announceToScreenReader, resetSwipe]
   );
 
   const confirmDelete = useCallback(() => {
     if (!deleteLayoutId) return;
-    const entry = library.entries.find((e) => e.id === deleteLayoutId);
+    const entry = findEntry(entries, deleteLayoutId);
     void deleteLayout(layoutId(deleteLayoutId));
-    announceToScreenReader(`${entry?.name || 'Layout'} deleted`);
+    announceToScreenReader(`${entry?.name ?? 'Layout'} deleted`);
     setDeleteLayoutId(null);
-  }, [deleteLayoutId, deleteLayout, library.entries, announceToScreenReader]);
+  }, [deleteLayoutId, deleteLayout, entries, announceToScreenReader]);
 
   const handleTouchStart = useCallback(
     (_e: React.TouchEvent, id: string) => {
@@ -383,124 +582,41 @@ export function MobileLayoutsPanel() {
     }
   }, [swipingId, swipeX, resetSwipe]);
 
-  const layoutToDelete = deleteLayoutId
-    ? library.entries.find((e) => e.id === deleteLayoutId)
-    : null;
+  const layoutToDelete = deleteLayoutId ? findEntry(entries, deleteLayoutId) : null;
 
   const dismissRename = useCallback(() => {
     setRenameLayoutId(null);
     setRenameValue('');
   }, []);
 
+  const canDelete = entries.length > 1;
+
   return (
     <div className="pb-4">
       <div className="text-sm text-content-tertiary mb-3">
-        {t('mobile.layouts.layoutCount', { count: library.entries.length })}
+        {t('mobile.layouts.layoutCount', { count: entries.length })}
       </div>
 
       <div className="space-y-2">
-        {sortedEntries.map((entry) => {
-          const isActive = entry.id === activeLayoutId;
-          const isSwiping = swipingId === entry.id;
-
-          return (
-            <div key={entry.id} className="relative overflow-hidden rounded-lg">
-              <div className="absolute right-0 top-0 bottom-0 flex items-stretch">
-                <SwipeActionButton
-                  onClick={() => handleRenameRequest(entry.id)}
-                  iconPath={ICON_PATHS.rename}
-                  bgColor="bg-warning"
-                  label={`Rename ${entry.name}`}
-                />
-                <SwipeActionButton
-                  onClick={() => handleShare(entry.id)}
-                  iconPath={ICON_PATHS.share}
-                  bgColor="bg-success"
-                  label={`Share ${entry.name}`}
-                />
-                <SwipeActionButton
-                  onClick={() => handleDuplicate(entry.id)}
-                  iconPath={ICON_PATHS.duplicate}
-                  bgColor="bg-accent"
-                  label={`Duplicate ${entry.name}`}
-                />
-                <SwipeActionButton
-                  onClick={() => handleDeleteRequest(entry.id)}
-                  iconPath={ICON_PATHS.delete}
-                  bgColor="bg-danger"
-                  label={`Delete ${entry.name}`}
-                  disabled={library.entries.length <= 1}
-                />
-              </div>
-
-              <div
-                className={`relative transition-transform duration-200 ${isActive ? 'bg-surface-hover border-l-4 border-l-accent' : 'bg-surface-elevated border-l-4 border-l-transparent'}`}
-                style={{
-                  transform: isSwiping ? `translateX(${swipeX}px)` : 'translateX(0)',
-                  transitionDuration: isSwiping ? '0ms' : '200ms',
-                }}
-                onTouchStart={(e) => handleTouchStart(e, entry.id)}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                <button
-                  className="w-full p-4 text-left"
-                  onClick={() => handleSelectLayout(entry.id)}
-                  aria-current={isActive ? 'true' : undefined}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                      <LayoutThumbnail preview={entry.preview} size={48} />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`truncate text-base ${isActive ? 'font-semibold text-content' : 'font-medium text-content'}`}
-                        >
-                          {entry.name}
-                        </span>
-                        {isActive && (
-                          <span className="text-xs px-2 py-0.5 bg-accent text-on-dark rounded flex-shrink-0">
-                            {t('mobile.layouts.active')}
-                          </span>
-                        )}
-                      </div>
-
-                      <LayoutPreviewInfo entry={entry} />
-
-                      <div className="text-xs text-content-tertiary mt-0.5">
-                        {formatRelativeDate(entry.modifiedAt)}
-                      </div>
-
-                      {entry.forkedFrom && (
-                        <div className="text-xs text-content-disabled">
-                          {t('mobile.layouts.forkedFrom')}
-                          {entry.forkedFrom.name}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </button>
-
-                {isActive && (
-                  <ActiveLayoutActions
-                    entryId={entry.id}
-                    onRename={handleRenameRequest}
-                    onShare={handleShare}
-                    onDuplicate={handleDuplicate}
-                  />
-                )}
-              </div>
-
-              {!isActive && !isSwiping && (
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 text-content-disabled pointer-events-none">
-                  <SvgIcon path={ICON_PATHS.chevronLeft} className="w-4 h-4" />
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {sortedEntries.map((entry) => (
+          <LayoutListItem
+            key={entry.id}
+            entry={entry}
+            isActive={entry.id === activeLayoutId}
+            isSwiping={swipingId === entry.id}
+            swipeX={swipeX}
+            canDelete={canDelete}
+            formatRelativeDate={formatRelativeDate}
+            onSelect={handleSelectLayout}
+            onRename={handleRenameRequest}
+            onShare={handleShare}
+            onDuplicate={handleDuplicate}
+            onDelete={handleDeleteRequest}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          />
+        ))}
       </div>
 
       <button
@@ -529,7 +645,7 @@ export function MobileLayoutsPanel() {
       <ConfirmDialog
         isOpen={deleteLayoutId !== null}
         title={t('layouts.confirmDelete.title')}
-        message={t('layouts.confirmDelete.message', { name: layoutToDelete?.name || '' })}
+        message={t('layouts.confirmDelete.message', { name: layoutToDelete?.name ?? '' })}
         confirmText={t('layouts.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDelete}
@@ -633,6 +749,19 @@ export function MobileLayoutsPanel() {
   );
 }
 
+function getLoadingLabel(status: string): string {
+  switch (status) {
+    case 'sharing':
+      return 'Uploading layout...';
+    case 'updating':
+      return 'Updating share...';
+    case 'deleting':
+      return 'Deleting share...';
+    default:
+      return '';
+  }
+}
+
 function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClose: () => void }) {
   const t = useTranslation();
   const [urlCopied, setUrlCopied] = useState(false);
@@ -723,37 +852,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
           </h3>
         </div>
 
-        {isLoading && (
-          <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
-            <div className="flex items-center gap-3 text-content-secondary">
-              <svg
-                className="w-5 h-5 animate-spin motion-reduce:animate-none"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <span>
-                {status === 'sharing' && 'Uploading layout...'}
-                {status === 'updating' && 'Updating share...'}
-                {status === 'deleting' && 'Deleting share...'}
-              </span>
-            </div>
-          </div>
-        )}
+        {isLoading && <LoadingSpinner label={getLoadingLabel(status)} />}
 
         {status === 'error' && error && (
           <div className="space-y-4">
@@ -821,15 +920,11 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
               >
                 {t('mobile.layouts.permission')}
               </label>
-              <select
+              <PermissionSelect
                 id="mobile-permission"
                 value={permission}
-                onChange={(e) => setPermission(e.target.value as SharePermission)}
-                className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke"
-              >
-                <option value="view">{t('mobile.layouts.anyoneCanView')}</option>
-                <option value="edit">{t('mobile.layouts.anyoneCanEdit')}</option>
-              </select>
+                onChange={setPermission}
+              />
             </div>
 
             <button
@@ -863,15 +958,12 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             </button>
 
             <div className="flex items-center gap-3">
-              <select
+              <PermissionSelect
                 value={permission}
-                onChange={(e) => setPermission(e.target.value as SharePermission)}
-                className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none"
-                aria-label={t('mobile.layouts.updatePermission')}
-              >
-                <option value="view">{t('mobile.layouts.anyoneCanView')}</option>
-                <option value="edit">{t('mobile.layouts.anyoneCanEdit')}</option>
-              </select>
+                onChange={setPermission}
+                ariaLabel={t('mobile.layouts.updatePermission')}
+                className="focus:outline-none"
+              />
             </div>
 
             <button

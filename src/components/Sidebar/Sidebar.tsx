@@ -18,6 +18,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>
@@ -117,12 +118,9 @@ export function Sidebar() {
             aria-label={t('sidebar.expandLeftPanel')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 5l7 7-7 7M5 5l7 7-7 7"
-              />
+              {ICON_PATHS.chevronDoubleRight.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
             </svg>
           </button>
         </div>
@@ -144,18 +142,15 @@ export function Sidebar() {
               aria-label={t('sidebar.openSettings')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
+                {ICON_PATHS.settings.map((d) => (
+                  <path
+                    key={d}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={d}
+                  />
+                ))}
               </svg>
             </button>
             <button
@@ -165,12 +160,15 @@ export function Sidebar() {
               aria-label={t('sidebar.collapseLeftPanel')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-                />
+                {ICON_PATHS.chevronDoubleLeft.map((d) => (
+                  <path
+                    key={d}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={d}
+                  />
+                ))}
               </svg>
             </button>
           </div>
@@ -205,12 +203,15 @@ export function Sidebar() {
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                    />
+                    {ICON_PATHS.dashboard.map((d) => (
+                      <path
+                        key={d}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d={d}
+                      />
+                    ))}
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -227,12 +228,15 @@ export function Sidebar() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
+                  {ICON_PATHS.chevronRight.map((d) => (
+                    <path
+                      key={d}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={d}
+                    />
+                  ))}
                 </svg>
               </button>
             </div>
@@ -356,62 +360,28 @@ export function Sidebar() {
                         {t('sidebar.halfUnitEdgePosition')}
                       </div>
                       {hasFractionalWidth && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-content-tertiary">{t('common.width')}</span>
-                          <div className="flex rounded overflow-hidden border border-stroke-subtle">
-                            <button
-                              onClick={() => handleFractionalEdgeChange('x', 'start')}
-                              className={`px-2.5 py-1 text-[10px] transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
-                                fractionalEdges.x === 'start'
-                                  ? 'bg-accent text-on-dark'
-                                  : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
-                              }`}
-                              title={t('sidebar.halfBinLeft')}
-                            >
-                              {t('sidebar.left')}
-                            </button>
-                            <button
-                              onClick={() => handleFractionalEdgeChange('x', 'end')}
-                              className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
-                                fractionalEdges.x === 'end'
-                                  ? 'bg-accent text-on-dark'
-                                  : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
-                              }`}
-                              title={t('sidebar.halfBinRight')}
-                            >
-                              {t('sidebar.right')}
-                            </button>
-                          </div>
-                        </div>
+                        <FractionalEdgeToggle
+                          axis="x"
+                          label={t('common.width')}
+                          value={fractionalEdges.x}
+                          onChange={handleFractionalEdgeChange}
+                          startTitle={t('sidebar.halfBinLeft')}
+                          startLabel={t('sidebar.left')}
+                          endTitle={t('sidebar.halfBinRight')}
+                          endLabel={t('sidebar.right')}
+                        />
                       )}
                       {hasFractionalDepth && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-content-tertiary">{t('common.depth')}</span>
-                          <div className="flex rounded overflow-hidden border border-stroke-subtle">
-                            <button
-                              onClick={() => handleFractionalEdgeChange('y', 'start')}
-                              className={`px-2.5 py-1 text-[10px] transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
-                                fractionalEdges.y === 'start'
-                                  ? 'bg-accent text-on-dark'
-                                  : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
-                              }`}
-                              title={t('sidebar.halfBinBottom')}
-                            >
-                              {t('sidebar.bottom')}
-                            </button>
-                            <button
-                              onClick={() => handleFractionalEdgeChange('y', 'end')}
-                              className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
-                                fractionalEdges.y === 'end'
-                                  ? 'bg-accent text-on-dark'
-                                  : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
-                              }`}
-                              title={t('sidebar.halfBinTop')}
-                            >
-                              {t('sidebar.top')}
-                            </button>
-                          </div>
-                        </div>
+                        <FractionalEdgeToggle
+                          axis="y"
+                          label={t('common.depth')}
+                          value={fractionalEdges.y}
+                          onChange={handleFractionalEdgeChange}
+                          startTitle={t('sidebar.halfBinBottom')}
+                          startLabel={t('sidebar.bottom')}
+                          endTitle={t('sidebar.halfBinTop')}
+                          endLabel={t('sidebar.top')}
+                        />
                       )}
                     </div>
                   )}
@@ -510,7 +480,9 @@ export function Sidebar() {
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  {ICON_PATHS.heart.map((d) => (
+                    <path key={d} d={d} />
+                  ))}
                 </svg>
                 {t('sidebar.tip')}
               </a>{' '}
@@ -559,5 +531,54 @@ export function Sidebar() {
         </Suspense>
       )}
     </aside>
+  );
+}
+
+function FractionalEdgeToggle({
+  axis,
+  label,
+  value,
+  onChange,
+  startTitle,
+  startLabel,
+  endTitle,
+  endLabel,
+}: {
+  axis: 'x' | 'y';
+  label: string;
+  value: 'start' | 'end';
+  onChange: (axis: 'x' | 'y', position: 'start' | 'end') => void;
+  startTitle: string;
+  startLabel: string;
+  endTitle: string;
+  endLabel: string;
+}) {
+  const activeClass = 'bg-accent text-on-dark';
+  const inactiveClass = 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover';
+
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-content-tertiary">{label}</span>
+      <div className="flex rounded overflow-hidden border border-stroke-subtle">
+        <button
+          onClick={() => onChange(axis, 'start')}
+          className={`px-2.5 py-1 text-[10px] transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
+            value === 'start' ? activeClass : inactiveClass
+          }`}
+          title={startTitle}
+        >
+          {startLabel}
+        </button>
+        <button
+          onClick={() => onChange(axis, 'end')}
+          className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
+            value === 'end' ? activeClass : inactiveClass
+          }`}
+          title={endTitle}
+        >
+          {endLabel}
+        </button>
+      </div>
+    </div>
   );
 }

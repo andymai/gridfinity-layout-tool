@@ -11,7 +11,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { APICallError } from 'ai';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { generateNameSuggestions, createCacheKey, type NameSuggestionRequest } from './lib/llm.js';
-import { ErrorCode } from './lib/shared.js';
+import { ErrorCode, methodNotAllowed } from './lib/shared.js';
 
 /** Cache TTL: 7 days in seconds */
 const CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -103,12 +103,8 @@ function isAllowedOrigin(origin: string | undefined): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Only allow POST
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res
-      .status(405)
-      .json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+    return methodNotAllowed(res, 'POST');
   }
 
   // Check origin to prevent abuse from unauthorized sites

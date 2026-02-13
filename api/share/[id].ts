@@ -8,6 +8,8 @@ import {
   hashToken,
   timingSafeCompare,
   ErrorCode,
+  methodNotAllowed,
+  getBaseUrl,
   type ShareData,
 } from '../lib/shared.js';
 
@@ -31,10 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'DELETE':
       return handleDelete(req, res, id, blobPath);
     default:
-      res.setHeader('Allow', 'GET, PUT, DELETE');
-      return res
-        .status(405)
-        .json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+      return methodNotAllowed(res, 'GET, PUT, DELETE');
   }
 }
 
@@ -193,7 +192,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         allowOverwrite: true,
       });
 
-      const shareUrl = `${getBaseUrl(req)}/l/${id}`;
+      const shareUrl = `${getBaseUrl()}/l/${id}`;
 
       return res.status(200).json({
         id,
@@ -239,7 +238,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       allowOverwrite: true,
     });
 
-    const shareUrl = `${getBaseUrl(req)}/l/${id}`;
+    const shareUrl = `${getBaseUrl()}/l/${id}`;
 
     return res.status(200).json({
       id,
@@ -332,17 +331,4 @@ async function handleDelete(
       code: ErrorCode.SERVER_ERROR,
     });
   }
-}
-
-/**
- * Get base URL from environment (not request headers, to prevent open redirects).
- */
-function getBaseUrl(_req: VercelRequest): string {
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'https://localhost:3000';
 }

@@ -5,6 +5,15 @@
  * These constraints mirror DESIGNER_CONSTRAINTS from the client.
  */
 
+import {
+  isNumber,
+  inRange,
+  isString,
+  isBoolean,
+  isObject,
+  validationError,
+} from './validationUtils.js';
+
 // Type-safe enum validation
 const VALID_BIN_STYLES = ['standard', 'slotted'] as const;
 const VALID_BASE_STYLES = ['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted'] as const;
@@ -47,57 +56,6 @@ export interface DesignerSharePayload {
 export type DesignerValidationResult =
   | { valid: true; payload: DesignerSharePayload }
   | { valid: false; error: { code: string; message: string } };
-
-/**
- * Determines whether a value is a finite, non-NaN number.
- *
- * @param val - The value to test
- * @returns `true` if `val` is a number, not `NaN`, and finite; `false` otherwise.
- */
-function isNumber(val: unknown): val is number {
-  return typeof val === 'number' && !Number.isNaN(val) && Number.isFinite(val);
-}
-
-/**
- * Determine whether a numeric value falls within an inclusive range.
- *
- * @param val - The value to test
- * @param min - The lower bound (inclusive)
- * @param max - The upper bound (inclusive)
- * @returns `true` if `val` is greater than or equal to `min` and less than or equal to `max`, `false` otherwise.
- */
-function inRange(val: number, min: number, max: number): boolean {
-  return val >= min && val <= max;
-}
-
-/**
- * Determines whether a value is a string.
- *
- * @returns `true` if `val` is a string, `false` otherwise.
- */
-function isString(val: unknown): val is string {
-  return typeof val === 'string';
-}
-
-/**
- * Determines whether a value is a boolean.
- *
- * @param val - The value to test
- * @returns `true` if `val` is a boolean, `false` otherwise.
- */
-function isBoolean(val: unknown): val is boolean {
-  return typeof val === 'boolean';
-}
-
-/**
- * Determines whether a value is a plain object (an object that is not null and not an array).
- *
- * @param val - The value to test
- * @returns `true` if `val` is a plain object (not null or an array), `false` otherwise.
- */
-function isObject(val: unknown): val is Record<string, unknown> {
-  return typeof val === 'object' && val !== null && !Array.isArray(val);
-}
 
 /**
  * Validate the `base` object of a designer payload.
@@ -192,9 +150,9 @@ function validateCompartments(compartments: unknown): string | null {
 }
 
 /**
- * Validates a label tab object from the designer payload.
+ * Validates the walls configuration from the designer payload.
  *
- * @param label - The value to validate as a label tab object
+ * @param walls - The value to validate as a walls object
  * @returns `null` if valid; otherwise an error message
  */
 function validateWalls(walls: unknown): string | null {
@@ -307,30 +265,24 @@ function validateInsert(insert: unknown, index: number): string | null {
  */
 export function validateDesignerShare(body: unknown, sizeBytes: number): DesignerValidationResult {
   if (sizeBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
-    return {
-      valid: false,
-      error: { code: 'SIZE_EXCEEDED', message: 'Designer share payload too large (max 100KB)' },
-    };
+    return validationError('SIZE_EXCEEDED', 'Designer share payload too large (max 100KB)');
   }
 
   if (!isObject(body)) {
-    return {
-      valid: false,
-      error: { code: 'INVALID_PAYLOAD', message: 'Payload must be an object' },
-    };
+    return validationError('INVALID_PAYLOAD', 'Payload must be an object');
   }
 
   if (body.type !== 'designer') {
-    return { valid: false, error: { code: 'INVALID_TYPE', message: 'type must be "designer"' } };
+    return validationError('INVALID_TYPE', 'type must be "designer"');
   }
 
   if (body.version !== 1) {
-    return { valid: false, error: { code: 'INVALID_VERSION', message: 'version must be 1' } };
+    return validationError('INVALID_VERSION', 'version must be 1');
   }
 
   const params = body.params;
   if (!isObject(params)) {
-    return { valid: false, error: { code: 'MISSING_PARAMS', message: 'params must be an object' } };
+    return validationError('MISSING_PARAMS', 'params must be an object');
   }
 
   // Dimensions
@@ -338,81 +290,66 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     !isNumber(params.width) ||
     !inRange(params.width, CONSTRAINTS.MIN_DIMENSION, CONSTRAINTS.MAX_DIMENSION)
   ) {
-    return {
-      valid: false,
-      error: {
-        code: 'INVALID_PARAMS',
-        message: `width must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`,
-      },
-    };
+    return validationError(
+      'INVALID_PARAMS',
+      `width must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`
+    );
   }
   if (
     !isNumber(params.depth) ||
     !inRange(params.depth, CONSTRAINTS.MIN_DIMENSION, CONSTRAINTS.MAX_DIMENSION)
   ) {
-    return {
-      valid: false,
-      error: {
-        code: 'INVALID_PARAMS',
-        message: `depth must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`,
-      },
-    };
+    return validationError(
+      'INVALID_PARAMS',
+      `depth must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`
+    );
   }
   if (
     !isNumber(params.height) ||
     !inRange(params.height, CONSTRAINTS.MIN_HEIGHT, CONSTRAINTS.MAX_HEIGHT)
   ) {
-    return {
-      valid: false,
-      error: {
-        code: 'INVALID_PARAMS',
-        message: `height must be ${CONSTRAINTS.MIN_HEIGHT}-${CONSTRAINTS.MAX_HEIGHT}`,
-      },
-    };
+    return validationError(
+      'INVALID_PARAMS',
+      `height must be ${CONSTRAINTS.MIN_HEIGHT}-${CONSTRAINTS.MAX_HEIGHT}`
+    );
   }
 
   // Style
   if (!VALID_BIN_STYLES.includes(params.style as (typeof VALID_BIN_STYLES)[number])) {
-    return {
-      valid: false,
-      error: {
-        code: 'INVALID_PARAMS',
-        message: `style must be one of: ${VALID_BIN_STYLES.join(', ')}`,
-      },
-    };
+    return validationError(
+      'INVALID_PARAMS',
+      `style must be one of: ${VALID_BIN_STYLES.join(', ')}`
+    );
   }
 
   // Sub-objects
   const baseErr = validateBase(params.base);
-  if (baseErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: baseErr } };
+  if (baseErr) return validationError('INVALID_PARAMS', baseErr);
 
   // Accept either legacy dividers or new compartments format
   if (params.compartments !== undefined) {
     const compErr = validateCompartments(params.compartments);
-    if (compErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: compErr } };
+    if (compErr) return validationError('INVALID_PARAMS', compErr);
   } else if (params.dividers !== undefined) {
     const divErr = validateDividers(params.dividers);
-    if (divErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: divErr } };
+    if (divErr) return validationError('INVALID_PARAMS', divErr);
   }
   // If neither is present, that's fine (no compartments = single cell)
 
   const labelErr = validateLabel(params.label);
-  if (labelErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: labelErr } };
+  if (labelErr) return validationError('INVALID_PARAMS', labelErr);
 
   if (params.walls !== undefined) {
     const wallsErr = validateWalls(params.walls);
-    if (wallsErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: wallsErr } };
+    if (wallsErr) return validationError('INVALID_PARAMS', wallsErr);
   }
 
   // Inserts
   if (!Array.isArray(params.inserts)) {
-    return { valid: false, error: { code: 'INVALID_PARAMS', message: 'inserts must be an array' } };
+    return validationError('INVALID_PARAMS', 'inserts must be an array');
   }
   if (params.inserts.length > CONSTRAINTS.MAX_INSERTS) {
-    return {
-      valid: false,
-      error: { code: 'INVALID_PARAMS', message: `max ${CONSTRAINTS.MAX_INSERTS} inserts` },
-    };
+    return validationError('INVALID_PARAMS', `max ${CONSTRAINTS.MAX_INSERTS} inserts`);
   }
   for (let i = 0; i < params.inserts.length; i++) {
     const insertErr = validateInsert(params.inserts[i], i);

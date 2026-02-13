@@ -9,6 +9,8 @@ import {
   hashToken,
   generateDeleteToken,
   ErrorCode,
+  methodNotAllowed,
+  getBaseUrl,
   type ShareData,
 } from './lib/shared.js';
 
@@ -22,12 +24,8 @@ import {
  * rate limiting, or content blocking, and 500 on unexpected failures.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Only allow POST for creating shares
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res
-      .status(405)
-      .json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+    return methodNotAllowed(res, 'POST');
   }
 
   try {
@@ -140,7 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     // Return success response
-    const shareUrl = `${getBaseUrl(req)}/${type === 'designer' ? 'd' : 'l'}/${shareId}`;
+    const shareUrl = `${getBaseUrl()}/${type === 'designer' ? 'd' : 'l'}/${shareId}`;
 
     return res.status(201).json({
       id: shareId,
@@ -155,17 +153,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       code: ErrorCode.SERVER_ERROR,
     });
   }
-}
-
-/**
- * Get base URL from environment (not request headers, to prevent open redirects).
- */
-function getBaseUrl(_req: VercelRequest): string {
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'https://localhost:3000';
 }

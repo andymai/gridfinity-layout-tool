@@ -41,7 +41,24 @@ import {
 
 import { LIP_HEIGHT, LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorTypes';
 
+// ─── AABB Type ──────────────────────────────────────────────────────────────
+
+/** Axis-aligned bounding box in XY. */
+interface AABB {
+  readonly minX: number;
+  readonly minY: number;
+  readonly maxX: number;
+  readonly maxY: number;
+}
+
 // ─── Helper Functions ────────────────────────────────────────────────────────
+
+/** Fuse an array of shapes into one, returning null if the array is empty. */
+function fuseAllOrNull(shapes: Shape3D[]): Shape3D | null {
+  if (shapes.length === 0) return null;
+  if (shapes.length === 1) return shapes[0];
+  return unwrap(fuseAll(shapes));
+}
 
 /** Build a positioned wall segment solid. */
 function buildWallSegment(w: number, d: number, height: number, x: number, y: number): Shape3D {
@@ -72,6 +89,79 @@ function findWallSegments(
     segments.push([segStart, count]);
   }
   return segments;
+}
+
+/**
+ * Build a rotation-safe AABB for a positioned cutout member.
+ * Uses the member's diagonal as a safe half-extent to account for any rotation.
+ */
+function computeRotationSafeAABB(cx: number, cy: number, width: number, depth: number): AABB {
+  const diag = Math.sqrt(width ** 2 + depth ** 2) / 2;
+  return { minX: cx - diag, minY: cy - diag, maxX: cx + diag, maxY: cy + diag };
+}
+
+/**
+ * Build the 2D insert profile (Drawing) for a given insert shape.
+ * All profiles are centered at the origin.
+ */
+function makeInsertProfile(
+  shape: string,
+  width: number,
+  depth: number,
+  cornerRadius: number
+): Drawing {
+  switch (shape) {
+    case 'circle':
+    case 'hexagon':
+      // Hexagon approximated with circle (polygon support TBD)
+      return drawCircle(width / 2);
+    case 'rounded-rect': {
+      const maxR = Math.min(width, depth) / 2 - 0.01;
+      return drawRoundedRectangle(width, depth, Math.min(cornerRadius, maxR));
+    }
+    case 'slot':
+      return drawRoundedRectangle(width, depth, Math.min(width, depth) / 2);
+    case 'rectangle':
+    default:
+      return drawRectangle(width, depth);
+  }
+}
+
+/**
+ * Build a 45deg right-triangle profile for label tab gusset supports.
+ * The triangle has its right angle at the origin, with legs extending
+ * to (0, leg) and (-leg, leg).
+ */
+function buildGussetProfile(leg: number): Drawing {
+  return draw([0, leg]).lineTo([-leg, leg]).lineTo([0, 0]).close();
+}
+
+/**
+ * Find the bounding row/column range of a compartment by its ID.
+ * Returns null if the compartment ID is not found in the grid.
+ */
+function findCompartmentBounds(
+  compId: number,
+  cols: number,
+  rows: number,
+  cells: readonly number[]
+): { minCol: number; maxCol: number; minRow: number; maxRow: number } | null {
+  let minCol = cols;
+  let maxCol = -1;
+  let minRow = rows;
+  let maxRow = -1;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (cells[r * cols + c] === compId) {
+        minCol = Math.min(minCol, c);
+        maxCol = Math.max(maxCol, c);
+        minRow = Math.min(minRow, r);
+        maxRow = Math.max(maxRow, r);
+      }
+    }
+  }
+  if (maxCol === -1) return null;
+  return { minCol, maxCol, minRow, maxRow };
 }
 
 // ─── Compartment Walls ───────────────────────────────────────────────────────
@@ -141,8 +231,7 @@ export function buildCompartmentWalls(
     }
   }
 
-  if (wallSegments.length === 0) return null;
-  return unwrap(fuseAll(wallSegments));
+  return fuseAllOrNull(wallSegments);
 }
 
 // ─── Insert Cuts ─────────────────────────────────────────────────────────────
@@ -159,49 +248,17 @@ export function buildInsertCuts(params: BinParams): Shape3D | null {
     // Guard: skip inserts with degenerate dimensions that would crash WASM
     if (insert.cutDepth <= 0 || insert.width <= 0 || insert.depth <= 0) continue;
 
-    let solid: Shape3D;
-
-    switch (insert.shape) {
-      case 'circle': {
-        solid = sketch(drawCircle(insert.width / 2), 'XY').extrude(insert.cutDepth);
-        break;
-      }
-      case 'rounded-rect': {
-        const maxR = Math.min(insert.width, insert.depth) / 2 - 0.01;
-        solid = sketch(
-          drawRoundedRectangle(insert.width, insert.depth, Math.min(insert.cornerRadius, maxR)),
-          'XY'
-        ).extrude(insert.cutDepth);
-        break;
-      }
-      case 'hexagon': {
-        // Approximate hexagon with circle (polygon support TBD)
-        solid = sketch(drawCircle(insert.width / 2), 'XY').extrude(insert.cutDepth);
-        break;
-      }
-      case 'slot': {
-        solid = sketch(
-          drawRoundedRectangle(
-            insert.width,
-            insert.depth,
-            Math.min(insert.width, insert.depth) / 2
-          ),
-          'XY'
-        ).extrude(insert.cutDepth);
-        break;
-      }
-      case 'rectangle':
-      default: {
-        solid = sketch(drawRectangle(insert.width, insert.depth), 'XY').extrude(insert.cutDepth);
-        break;
-      }
-    }
-
+    const profile = makeInsertProfile(
+      insert.shape,
+      insert.width,
+      insert.depth,
+      insert.cornerRadius
+    );
+    const solid = sketch(profile, 'XY').extrude(insert.cutDepth);
     insertShapes.push(translate(solid, [insert.x, insert.y, 0]));
   }
 
-  if (insertShapes.length === 0) return null;
-  return unwrap(fuseAll(insertShapes));
+  return fuseAllOrNull(insertShapes);
 }
 
 // ─── Cutout Builder (Solid Mode Only) ────────────────────────────────────────
@@ -274,7 +331,7 @@ function buildCutoutShape(cutout: {
 function findBottomEdges(
   shape: Shape3D,
   zTarget: number,
-  xyBounds: { minX: number; minY: number; maxX: number; maxY: number },
+  xyBounds: AABB,
   margin: number = 1
 ): readonly Edge[] {
   return edgeFinder()
@@ -349,24 +406,8 @@ function applyAdaptiveScoop(
   shape: Shape3D,
   edges: readonly Edge[],
   targetRadius: number,
-  members: ReadonlyArray<{
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly depth: number;
-    readonly rotation: number;
-  }>,
-  originX: number,
-  originY: number
+  memberBounds: readonly AABB[]
 ): Shape3D {
-  // Build AABBs for each member (using diagonal for rotation safety)
-  const memberBounds = members.map((m) => {
-    const cx = originX + m.x + m.width / 2;
-    const cy = originY + m.y + m.depth / 2;
-    const diag = Math.sqrt(m.width ** 2 + m.depth ** 2) / 2;
-    return { minX: cx - diag, minY: cy - diag, maxX: cx + diag, maxY: cy + diag };
-  });
-
   // Per-edge radius callback
   const radiusCallback = (edge: Edge): number | null => {
     const len = curveLength(edge);
@@ -521,6 +562,115 @@ function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): bool
   return false;
 }
 
+// ─── Cutout Processing Helpers ──────────────────────────────────────────────
+
+/** Build and position an ungrouped cutout with individual scoop fillet. */
+function buildUngroupedCutout(
+  cutout: BinParams['cutouts'][number],
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number
+): Shape3D | null {
+  const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+  if (effectiveDepth <= 0) return null;
+
+  let shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth });
+  if (!shape) return null;
+
+  // Apply scoop radius fillet to bottom edges (before translation, at Z ~ 0)
+  const maxScoop = Math.min(effectiveDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
+  const scoopR = Math.min(cutout.scoopRadius ?? 0, Math.max(0, maxScoop));
+  if (scoopR > 0) {
+    const halfW = cutout.width / 2;
+    const halfD = cutout.depth / 2;
+    const scoopEdges = findBottomEdges(shape, 0, {
+      minX: -halfW,
+      minY: -halfD,
+      maxX: halfW,
+      maxY: halfD,
+    });
+    if (scoopEdges.length > 0) {
+      shape = applyFilletWithFallback(shape, scoopEdges, scoopR);
+    }
+  }
+
+  return translate(shape, [
+    originX + cutout.x + cutout.width / 2,
+    originY + cutout.y + cutout.depth / 2,
+    solidSurfaceZ - effectiveDepth,
+  ]);
+}
+
+/** Build and fuse grouped cutouts with a shared adaptive scoop fillet. */
+function buildGroupedCutouts(
+  groupMembers: BinParams['cutouts'],
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number
+): Shape3D | null {
+  // Create and translate each member shape (no individual scoop).
+  // Track which members actually produced shapes so scoop aggregates
+  // use clamped depths and exclude filtered-out zero-dimension members.
+  const memberShapes: Shape3D[] = [];
+  const builtMembers: typeof groupMembers = [];
+  const builtDepths: number[] = [];
+  for (const cutout of groupMembers) {
+    const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+    if (effectiveDepth <= 0) continue;
+
+    const shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth });
+    if (!shape) continue;
+
+    builtMembers.push(cutout);
+    builtDepths.push(effectiveDepth);
+    memberShapes.push(
+      translate(shape, [
+        originX + cutout.x + cutout.width / 2,
+        originY + cutout.y + cutout.depth / 2,
+        solidSurfaceZ - effectiveDepth,
+      ])
+    );
+  }
+  if (memberShapes.length === 0) return null;
+
+  let fused = memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes));
+
+  // Determine group scoop radius and cut depth from built members only
+  const groupScoopRadius = Math.max(...builtMembers.map((c) => c.scoopRadius ?? 0));
+  const groupCutDepth = Math.min(...builtDepths);
+  const minDim = Math.min(...builtMembers.map((c) => Math.min(c.width, c.depth)));
+  const maxScoop = Math.min(groupCutDepth, minDim / 2) - 0.01;
+  const scoopR = Math.min(groupScoopRadius, Math.max(0, maxScoop));
+
+  if (scoopR > 0) {
+    // Build rotation-safe AABBs for each member (used for edge selection + junction detection)
+    const memberAABBs = builtMembers.map((cutout) =>
+      computeRotationSafeAABB(
+        originX + cutout.x + cutout.width / 2,
+        originY + cutout.y + cutout.depth / 2,
+        cutout.width,
+        cutout.depth
+      )
+    );
+
+    // Compute group bounding box from individual AABBs
+    const groupBounds: AABB = {
+      minX: Math.min(...memberAABBs.map((b) => b.minX)),
+      minY: Math.min(...memberAABBs.map((b) => b.minY)),
+      maxX: Math.max(...memberAABBs.map((b) => b.maxX)),
+      maxY: Math.max(...memberAABBs.map((b) => b.maxY)),
+    };
+
+    const zBottom = solidSurfaceZ - groupCutDepth;
+    const groupScoopEdges = findBottomEdges(fused, zBottom, groupBounds);
+    if (groupScoopEdges.length > 0) {
+      fused = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, memberAABBs);
+    }
+  }
+
+  return fused;
+}
+
 /**
  * Build cutout cavity cuts for solid bins.
  * Cutouts cut down from the solid fill surface with configurable depth.
@@ -555,11 +705,11 @@ export function buildCutoutCuts(
   const cutoutShapes: Shape3D[] = [];
 
   // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected
-  const ungrouped: typeof params.cutouts = [];
   const groups = new Map<string, typeof params.cutouts>();
   for (const cutout of params.cutouts) {
     if (cutout.groupId === null) {
-      ungrouped.push(cutout);
+      const shape = buildUngroupedCutout(cutout, solidSurfaceZ, originX, originY);
+      if (shape) cutoutShapes.push(shape);
     } else {
       const list = groups.get(cutout.groupId);
       if (list) {
@@ -570,111 +720,15 @@ export function buildCutoutCuts(
     }
   }
 
-  // --- Process ungrouped cutouts (individual scoop, same as before) ---
-  for (const cutout of ungrouped) {
-    // Clamp effective cutDepth so the cutout doesn't extend below Z=0
-    const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
-    if (effectiveDepth <= 0) continue;
-
-    let shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth });
-    if (!shape) continue;
-
-    // Apply scoop radius fillet to bottom edges (before translation, at Z ~ 0)
-    const maxScoop = Math.min(effectiveDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
-    const scoopR = Math.min(cutout.scoopRadius ?? 0, Math.max(0, maxScoop));
-    if (scoopR > 0) {
-      const halfW = cutout.width / 2;
-      const halfD = cutout.depth / 2;
-      const scoopEdges = findBottomEdges(shape, 0, {
-        minX: -halfW,
-        minY: -halfD,
-        maxX: halfW,
-        maxY: halfD,
-      });
-      if (scoopEdges.length > 0) {
-        shape = applyFilletWithFallback(shape, scoopEdges, scoopR);
-      }
-    }
-
-    cutoutShapes.push(
-      translate(shape, [
-        originX + cutout.x + cutout.width / 2,
-        originY + cutout.y + cutout.depth / 2,
-        solidSurfaceZ - effectiveDepth,
-      ])
-    );
-  }
-
-  // --- Process grouped cutouts (fuse first, then single scoop fillet) ---
   for (const [, groupMembers] of groups) {
-    // Create and translate each member shape (no individual scoop).
-    // Track which members actually produced shapes so scoop aggregates
-    // use clamped depths and exclude filtered-out zero-dimension members.
-    const memberShapes: Shape3D[] = [];
-    const builtMembers: typeof groupMembers = [];
-    const builtDepths: number[] = [];
-    for (const cutout of groupMembers) {
-      // Clamp effective cutDepth so the cutout doesn't extend below Z=0
-      const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
-      if (effectiveDepth <= 0) continue;
-
-      const shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth });
-      if (!shape) continue;
-
-      builtMembers.push(cutout);
-      builtDepths.push(effectiveDepth);
-      memberShapes.push(
-        translate(shape, [
-          originX + cutout.x + cutout.width / 2,
-          originY + cutout.y + cutout.depth / 2,
-          solidSurfaceZ - effectiveDepth,
-        ])
-      );
-    }
-    if (memberShapes.length === 0) continue;
-
-    let fused = memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes));
-
-    // Determine group scoop radius and cut depth from built members only
-    const groupScoopRadius = Math.max(...builtMembers.map((c) => c.scoopRadius ?? 0));
-    const groupCutDepth = Math.min(...builtDepths);
-    const minDim = Math.min(...builtMembers.map((c) => Math.min(c.width, c.depth)));
-    const maxScoop = Math.min(groupCutDepth, minDim / 2) - 0.01;
-    const scoopR = Math.min(groupScoopRadius, Math.max(0, maxScoop));
-
-    if (scoopR > 0) {
-      // Compute XY bounding box of the fused group for edge selection
-      const groupBounds = {
-        minX: Infinity,
-        minY: Infinity,
-        maxX: -Infinity,
-        maxY: -Infinity,
-      };
-      for (const cutout of builtMembers) {
-        const cx = originX + cutout.x + cutout.width / 2;
-        const cy = originY + cutout.y + cutout.depth / 2;
-        // Account for rotation: use diagonal as safe half-extent
-        const diag = Math.sqrt(cutout.width ** 2 + cutout.depth ** 2) / 2;
-        groupBounds.minX = Math.min(groupBounds.minX, cx - diag);
-        groupBounds.minY = Math.min(groupBounds.minY, cy - diag);
-        groupBounds.maxX = Math.max(groupBounds.maxX, cx + diag);
-        groupBounds.maxY = Math.max(groupBounds.maxY, cy + diag);
-      }
-
-      const zBottom = solidSurfaceZ - groupCutDepth;
-      const groupScoopEdges = findBottomEdges(fused, zBottom, groupBounds);
-      // Only apply fillet if we found edges (avoid empty edge list error)
-      if (groupScoopEdges.length > 0) {
-        fused = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, builtMembers, originX, originY);
-      }
-    }
-
-    cutoutShapes.push(fused);
+    const shape = buildGroupedCutouts(groupMembers, solidSurfaceZ, originX, originY);
+    if (shape) cutoutShapes.push(shape);
   }
 
   if (cutoutShapes.length === 0) return null;
 
-  const fusedResult = unwrap(fuseAll(cutoutShapes));
+  const fusedResult = fuseAllOrNull(cutoutShapes);
+  if (!fusedResult) return null;
 
   // Clip cutout union to bin interior so cutouts extending past walls don't
   // cut through them. The clip boundary covers from floor to the solid surface.
@@ -852,32 +906,20 @@ export function buildLabelTabs(
           gussetPositions.push(center - gt / 2);
         }
 
-        const labelSupport = params.label.support;
+        const gussetProfile = buildGussetProfile(gussetLeg);
 
-        if (labelSupport === 'solid') {
+        if (params.label.support === 'solid') {
           // Solid style: single continuous 45deg right-triangle prism under the shelf
-          const solidProfile = draw([0, gussetLeg])
-            .lineTo([-gussetLeg, gussetLeg])
-            .lineTo([0, 0])
-            .close();
-          const solidSupport = sketch(solidProfile, 'YZ', 0).extrude(tabWidth);
+          const solidSupport = sketch(gussetProfile, 'YZ', 0).extrude(tabWidth);
           tabSolid = unwrap(fuse(tabSolid, solidSupport));
-        } else {
+        } else if (gussetPositions.length > 0) {
           // Bracket style: discrete triangular gussets at edges + every <=10mm
-          if (gussetPositions.length > 0) {
-            const gussetProfile = draw([0, gussetLeg])
-              .lineTo([-gussetLeg, gussetLeg])
-              .lineTo([0, 0])
-              .close();
+          const gussetShapes: Shape3D[] = gussetPositions.map((gx) => {
+            const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
+            return translate(gusset, [gx, 0, 0]);
+          });
 
-            const gussetShapes: Shape3D[] = [];
-            for (const gx of gussetPositions) {
-              const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
-              gussetShapes.push(translate(gusset, [gx, 0, 0]));
-            }
-
-            tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes))));
-          }
+          tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes))));
         }
       }
 
@@ -890,8 +932,7 @@ export function buildLabelTabs(
     }
   }
 
-  if (allTabs.length === 0) return null;
-  return unwrap(fuseAll(allTabs));
+  return fuseAllOrNull(allTabs);
 }
 
 // ─── Finger Scoop Builder ────────────────────────────────────────────────────
@@ -946,22 +987,10 @@ export function buildScoopRamps(
       if (processedCompartments.has(compId)) continue;
       processedCompartments.add(compId);
 
-      // Find compartment bounds
-      let minCol = cols;
-      let maxCol = -1;
-      let minRow = rows;
-      let maxRow = -1;
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (cells[r * cols + c] === compId) {
-            minCol = Math.min(minCol, c);
-            maxCol = Math.max(maxCol, c);
-            minRow = Math.min(minRow, r);
-            maxRow = Math.max(maxRow, r);
-          }
-        }
-      }
-      if (maxCol === -1) continue;
+      const bounds = findCompartmentBounds(compId, cols, rows, cells);
+      if (!bounds) continue;
+
+      const { minCol, maxCol, minRow, maxRow } = bounds;
       const compCols = maxCol - minCol + 1;
       const compRows = maxRow - minRow + 1;
       const compW = compCols * cellW;
@@ -1068,8 +1097,7 @@ export function buildScoopRamps(
     }
   }
 
-  if (scoopShapes.length === 0) return null;
-  return scoopShapes.length === 1 ? scoopShapes[0] : unwrap(fuseAll(scoopShapes));
+  return fuseAllOrNull(scoopShapes);
 }
 
 // ─── Wall Cutout Builder ──────────────────────────────────────────────────────
@@ -1127,7 +1155,7 @@ function buildCutoutProfile(
       const topY = totalHeight / 2;
       const bottomY = -totalHeight / 2;
 
-      // Draw trapezoid: top-left → top-right → bottom-right → bottom-left → close
+      // Draw trapezoid: top-left -> top-right -> bottom-right -> bottom-left -> close
       let pen = draw([-topHW, topY]).lineTo([topHW, topY]).lineTo([bottomHW, bottomY]);
       if (safeR > 0.1) pen = pen.customCorner(safeR);
       pen = pen.lineTo([-bottomHW, bottomY]);
@@ -1319,6 +1347,5 @@ export function buildWallCutoutCuts(
     }
   }
 
-  if (cutShapes.length === 0) return null;
-  return unwrap(fuseAll(cutShapes));
+  return fuseAllOrNull(cutShapes);
 }
