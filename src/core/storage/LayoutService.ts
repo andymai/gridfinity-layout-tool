@@ -107,12 +107,14 @@ function parseLayoutData(data: unknown): ParseResult {
   return { success: true, layout: migrated as unknown as Layout };
 }
 
-function validateLoadedData(layoutId: string, data: unknown): Layout | null {
+function validateLoadedData(layoutId: string, data: unknown, silent = false): Layout | null {
   if (!data) return null;
 
   const result = parseLayoutData(data);
   if (!result.success) {
-    console.warn(`Layout ${layoutId} failed validation:`, result.errors);
+    if (!silent) {
+      console.warn(`Layout ${layoutId} failed validation:`, result.errors);
+    }
     return null;
   }
 
@@ -595,7 +597,7 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
 function loadLegacyLayout(): Layout | null {
   try {
     const data = backend.loadSync(LEGACY_STORAGE_KEY);
-    return validateLoadedData('legacy', data);
+    return validateLoadedData('legacy', data, true);
   } catch (error) {
     console.error('Failed to load legacy layout:', error);
     return null;
