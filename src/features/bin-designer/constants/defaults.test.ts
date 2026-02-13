@@ -210,6 +210,47 @@ describe('migrateParams', () => {
     expect(result1.wallPattern).not.toBe(result2.wallPattern);
   });
 
+  it('should handle mixed legacy walls with partial WallCutout objects alongside numbers', () => {
+    // Legacy format: at least one side is a number, another is a partial WallCutout object
+    const result = migrateParams({
+      walls: { front: 80, back: { width: 50, depth: 75 }, left: 0, right: undefined },
+    } as any);
+    // Number value: front=80 → enabled with depth 100
+    expect(result.walls.front).toEqual({ enabled: true, width: 80, depth: 100 });
+    // Object value: back gets merged with defaults and inferred enabled
+    expect(result.walls.back.width).toBe(50);
+    expect(result.walls.back.depth).toBe(75);
+    expect(result.walls.back.enabled).toBe(true);
+    // Number zero: left=0 → disabled
+    expect(result.walls.left).toEqual({ enabled: false, width: 0, depth: 0 });
+    // Undefined: right → defaults
+    expect(result.walls.right).toEqual(DEFAULT_BIN_PARAMS.walls.front);
+  });
+
+  it('should migrate legacy base.solid=true to style="solid"', () => {
+    const result = migrateParams({
+      style: 'standard',
+      base: { solid: true } as any,
+    });
+    expect(result.style).toBe('solid');
+  });
+
+  it('should not change style when base.solid is false', () => {
+    const result = migrateParams({
+      style: 'standard',
+      base: { solid: false } as any,
+    });
+    expect(result.style).toBe('standard');
+  });
+
+  it('should not change style when already solid', () => {
+    const result = migrateParams({
+      style: 'solid',
+      base: { solid: true } as any,
+    });
+    expect(result.style).toBe('solid');
+  });
+
   it('should default walls.shape to u-shape when shape is missing', () => {
     const result = migrateParams({
       walls: {

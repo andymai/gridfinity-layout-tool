@@ -655,6 +655,38 @@ describe('switchActiveLayout', () => {
 
     expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
   });
+
+  it('returns error when saving current layout fails during switch', async () => {
+    vi.mocked(backend.saveAsync).mockRejectedValueOnce(new Error('quota exceeded'));
+    const fromLayout = createTestLayout();
+    const library = createTestLibrary([
+      createTestEntry('from-id', 'From'),
+      createTestEntry('to-id', 'To'),
+    ]);
+
+    const result = await switchActiveLayout('from-id', fromLayout, 'to-id', library);
+
+    expect(expectErr(result).code).toBe('STORAGE_QUOTA_EXCEEDED');
+  });
+
+  it('returns error when library save fails after loading target', async () => {
+    // First saveSyncGeneric call (from saveLayoutWithMetadata) succeeds,
+    // second call (switchActiveLayout's own library save) fails
+    vi.mocked(backend.saveSyncGeneric)
+      .mockImplementationOnce(() => {})
+      .mockImplementationOnce(() => {
+        throw new Error('Storage full');
+      });
+    const fromLayout = createTestLayout();
+    const library = createTestLibrary([
+      createTestEntry('from-id', 'From'),
+      createTestEntry('to-id', 'To'),
+    ]);
+
+    const result = await switchActiveLayout('from-id', fromLayout, 'to-id', library);
+
+    expectErr(result);
+  });
 });
 
 // === updateCloudShare Tests ===
@@ -720,6 +752,21 @@ describe('updateCloudShare', () => {
       })
     );
   });
+
+  it('returns error when library save fails', () => {
+    vi.mocked(backend.saveSyncGeneric).mockImplementationOnce(() => {
+      throw new Error('Storage full');
+    });
+    const library = createTestLibrary([createTestEntry('layout-1', 'Layout 1')]);
+
+    const result = updateCloudShare(
+      'layout-1',
+      { id: 'share', deleteToken: 'token', sharedAt: Date.now(), permission: 'view' },
+      library
+    );
+
+    expectErr(result);
+  });
 });
 
 // === renameLayoutEntry Tests ===
@@ -780,5 +827,16 @@ describe('renameLayoutEntry', () => {
         entries: expect.arrayContaining([expect.objectContaining({ name: 'New' })]),
       })
     );
+  });
+
+  it('returns error when library save fails', () => {
+    vi.mocked(backend.saveSyncGeneric).mockImplementationOnce(() => {
+      throw new Error('Storage full');
+    });
+    const library = createTestLibrary([createTestEntry('layout-1', 'Old')]);
+
+    const result = renameLayoutEntry('layout-1', 'New', library);
+
+    expectErr(result);
   });
 });

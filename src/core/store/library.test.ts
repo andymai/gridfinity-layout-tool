@@ -492,6 +492,59 @@ describe('library store', () => {
     });
   });
 
+  describe('name suggestion state', () => {
+    beforeEach(() => {
+      useLibraryStore.setState({
+        library: createTestLibraryWithEntries(2),
+        isLoaded: true,
+        showLayoutManager: false,
+      });
+    });
+
+    it('setNameSuggestionDismissed sets dismissed state', () => {
+      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
+
+      const state = useLibraryStore.getState().getNameSuggestionState('layout-0');
+      expect(state?.dismissed).toBe(true);
+      expect(state?.dismissCount).toBe(1);
+      expect(state?.dismissedAt).toBeGreaterThan(0);
+    });
+
+    it('setNameSuggestionDismissed increments dismiss count', () => {
+      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
+      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
+
+      const state = useLibraryStore.getState().getNameSuggestionState('layout-0');
+      expect(state?.dismissCount).toBe(2);
+    });
+
+    it('setNameSuggestionDismissed clears state when false', () => {
+      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
+      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', false);
+
+      const state = useLibraryStore.getState().getNameSuggestionState('layout-0');
+      expect(state).toBeUndefined();
+    });
+
+    it('clearNameSuggestionState clears the state', () => {
+      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
+      useLibraryStore.getState().clearNameSuggestionState('layout-0');
+
+      const state = useLibraryStore.getState().getNameSuggestionState('layout-0');
+      expect(state).toBeUndefined();
+    });
+
+    it('getNameSuggestionState returns undefined for entry without state', () => {
+      const state = useLibraryStore.getState().getNameSuggestionState('layout-1');
+      expect(state).toBeUndefined();
+    });
+
+    it('getNameSuggestionState returns undefined for non-existent entry', () => {
+      const state = useLibraryStore.getState().getNameSuggestionState('non-existent');
+      expect(state).toBeUndefined();
+    });
+  });
+
   describe('setShowLayoutManager', () => {
     it('sets showLayoutManager to true', () => {
       useLibraryStore.getState().setShowLayoutManager(true);
