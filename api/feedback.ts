@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
-import { generateText } from 'ai';
+import { generateText, Output } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
+import { z } from 'zod';
 
 const GITHUB_REPO = 'andymai/gridfinity-layout-tool';
 
@@ -13,42 +14,227 @@ const CATEGORY_ISSUE_LABELS: Record<string, string> = {
 
 const VALID_CATEGORIES = new Set(['feature_request', 'bug_report', 'general']);
 
+const CATEGORY_MAP: Record<string, 'bug' | 'feature' | 'general'> = {
+  feature_request: 'feature',
+  bug_report: 'bug',
+  general: 'general',
+};
+
+const ENRICHED_CATEGORY_TO_LABEL: Record<string, string> = {
+  feature: 'feedback: feature',
+  bug: 'feedback: bug',
+  general: 'feedback: general',
+};
+
+const FeedbackEnrichmentSchema = z.object({
+  title: z.string().max(80),
+  summary: z.string().max(200),
+  category: z.enum(['bug', 'feature', 'general']),
+  priority: z.enum(['low', 'medium', 'high', 'critical']),
+  structuredBody: z.string(),
+  duplicateOf: z.number().nullable(),
+});
+
+type FeedbackEnrichment = z.infer<typeof FeedbackEnrichmentSchema>;
+
+function sanitizeForPrompt(text: string, maxLength: number): string {
+  return (
+    text
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001f\u007f]/g, '')
+      .slice(0, maxLength)
+      .trim()
+  );
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
 
-async function generateTitle(description: string): Promise<string> {
+interface RecentIssue {
+  number: number;
+  title: string;
+}
+
+async function fetchRecentFeedbackIssues(token: string): Promise<RecentIssue[]> {
   try {
-    const result = await generateText({
-      model: gateway('openai/gpt-4o-mini'),
-      prompt: `Write a concise issue title (max 80 chars) for this user feedback:\n\n${description.slice(0, 500)}`,
-      maxOutputTokens: 30,
-      temperature: 0.3,
+    const labels = ['feedback: feature', 'feedback: bug', 'feedback: general']
+      .map((l) => encodeURIComponent(l))
+      .join(',');
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/issues?state=open&labels=${labels}&per_page=20&sort=created&direction=desc`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
     });
-    return result.text.trim().replace(/^["']|["']$/g, '') || description.slice(0, 80);
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data: unknown = await response.json();
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data
+      .filter(
+        (issue: unknown): issue is { number: number; title: string } =>
+          typeof issue === 'object' &&
+          issue !== null &&
+          'number' in issue &&
+          'title' in issue &&
+          typeof (issue as Record<string, unknown>).number === 'number' &&
+          typeof (issue as Record<string, unknown>).title === 'string'
+      )
+      .map((issue) => ({ number: issue.number, title: issue.title }));
   } catch {
-    return description.split(/[.\n]/)[0].slice(0, 80) || 'User Feedback';
+    return [];
   }
 }
 
-function buildIssueBody(
+function buildEnrichmentPrompt(
   description: string,
-  email?: string,
-  context?: Record<string, unknown>
+  userCategory: string,
+  context: Record<string, unknown> | undefined,
+  recentIssues: RecentIssue[]
 ): string {
-  let body = description;
+  const categoryInstructions: Record<string, string> = {
+    bug: 'Format structuredBody as: ## Steps to Reproduce\\n\\n[steps]\\n\\n## Expected Behavior\\n\\n[expected]\\n\\n## Actual Behavior\\n\\n[actual]',
+    feature:
+      'Format structuredBody as: ## Use Case\\n\\n[why the user needs this]\\n\\n## Proposal\\n\\n[what they want]',
+    general: 'Format structuredBody as: ## Details\\n\\n[organized feedback details]',
+  };
+
+  const enrichedCategory = CATEGORY_MAP[userCategory] ?? 'general';
+
+  let prompt = `Analyze this user feedback and produce structured output.
+
+User's description (category: ${userCategory}):
+${sanitizeForPrompt(description, 500)}`;
 
   if (context) {
-    body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
-    body += JSON.stringify(context, null, 2);
-    body += '\n```\n\n</details>';
+    prompt += `\n\nLayout context:\n${sanitizeForPrompt(JSON.stringify(context, null, 2), 300)}`;
   }
 
-  if (email) {
-    body += `\n\n<details><summary>Contact</summary>\n\n${email}\n\n</details>`;
+  if (recentIssues.length > 0) {
+    prompt += '\n\nRecent open issues (check for duplicates):';
+    for (const issue of recentIssues) {
+      prompt += `\n- #${String(issue.number)}: ${issue.title}`;
+    }
+    prompt +=
+      '\n\nSet duplicateOf to the issue number if this is clearly a duplicate, otherwise null.';
+  } else {
+    prompt += '\n\nNo recent issues to check for duplicates. Set duplicateOf to null.';
   }
 
-  return body;
+  prompt += `\n\nInstructions:
+- title: concise issue title, max 80 chars
+- summary: one-sentence summary, max 200 chars
+- category: classify as bug, feature, or general (may differ from user's selection)
+- priority: assess as low, medium, high, or critical
+- ${categoryInstructions[enrichedCategory] ?? categoryInstructions.general}
+- structuredBody MUST end with: ## Original Description\\n\\n> [paste the user's raw text as a blockquote]`;
+
+  return prompt;
+}
+
+interface EnrichmentResult {
+  title: string;
+  body: string;
+  categoryLabel: string;
+  labels: string[];
+}
+
+async function enrichFeedback(
+  description: string,
+  userCategory: string,
+  email: string | undefined,
+  context: Record<string, unknown> | undefined,
+  recentIssues: RecentIssue[]
+): Promise<EnrichmentResult> {
+  try {
+    const prompt = buildEnrichmentPrompt(description, userCategory, context, recentIssues);
+
+    const result = await generateText({
+      model: gateway('openai/gpt-4o-mini'),
+      output: Output.object({
+        schema: FeedbackEnrichmentSchema,
+      }),
+      prompt,
+      maxOutputTokens: 500,
+      temperature: 0.3,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime safety: LLM may return no output
+    if (!result.output) {
+      throw new Error('LLM returned no structured output');
+    }
+
+    const enrichment: FeedbackEnrichment = result.output;
+
+    // Build issue body
+    let body = enrichment.structuredBody;
+
+    const enrichedCategory = enrichment.category;
+    const userEnrichedCategory = CATEGORY_MAP[userCategory] ?? 'general';
+    if (enrichedCategory !== userEnrichedCategory) {
+      body += `\n\n> **Note:** User selected "${userCategory}" but LLM classified as "${enrichedCategory}".`;
+    }
+
+    if (context) {
+      body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
+      body += JSON.stringify(context, null, 2);
+      body += '\n```\n\n</details>';
+    }
+
+    if (email) {
+      body += `\n\n<details><summary>Contact</summary>\n\n${email}\n\n</details>`;
+    }
+
+    if (enrichment.duplicateOf !== null) {
+      body += `\n\n---\n\n**Possible duplicate of #${String(enrichment.duplicateOf)}**`;
+    }
+
+    const categoryLabel = ENRICHED_CATEGORY_TO_LABEL[enrichedCategory] ?? 'feedback: general';
+    const labels: string[] = [categoryLabel, `priority: ${enrichment.priority}`];
+    if (enrichment.duplicateOf !== null) {
+      labels.push('possible duplicate');
+    }
+
+    return {
+      title: enrichment.title,
+      body,
+      categoryLabel: enrichedCategory,
+      labels,
+    };
+  } catch (error) {
+    console.error('[Feedback] Enrichment failed, using fallback:', error);
+
+    // Fallback: first sentence as title, raw body
+    const fallbackTitle = description.split(/[.\n]/)[0].slice(0, 80) || 'User Feedback';
+    const categoryLabel = CATEGORY_ISSUE_LABELS[userCategory] ?? 'feedback: general';
+
+    let body = description;
+    if (context) {
+      body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
+      body += JSON.stringify(context, null, 2);
+      body += '\n```\n\n</details>';
+    }
+    if (email) {
+      body += `\n\n<details><summary>Contact</summary>\n\n${email}\n\n</details>`;
+    }
+
+    return {
+      title: fallbackTitle,
+      body,
+      categoryLabel: categoryLabel.replace('feedback: ', ''),
+      labels: [categoryLabel],
+    };
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -94,16 +280,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const trimmedDescription = description.trim();
-    const title = await generateTitle(trimmedDescription);
-    const categoryLabel = category.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-    const issueTitle = `[Feedback] ${categoryLabel}: ${title}`;
-    const issueBody = buildIssueBody(
-      trimmedDescription,
-      typeof email === 'string' ? email : undefined,
+    const validEmail = typeof email === 'string' ? email : undefined;
+    const validContext =
       typeof context === 'object' && context !== null
         ? (context as Record<string, unknown>)
-        : undefined
+        : undefined;
+
+    if (validContext) {
+      const contextStr = JSON.stringify(validContext);
+      if (contextStr.length > 5000) {
+        return res.status(400).json({ error: 'Context too large' });
+      }
+    }
+
+    const recentIssues = await fetchRecentFeedbackIssues(token);
+    const enriched = await enrichFeedback(
+      trimmedDescription,
+      category,
+      validEmail,
+      validContext,
+      recentIssues
     );
+
+    const issueTitle = `[Feedback] ${enriched.categoryLabel}: ${enriched.title}`;
 
     const ghResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/issues`, {
       method: 'POST',
@@ -115,8 +314,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       body: JSON.stringify({
         title: issueTitle,
-        body: issueBody,
-        labels: [CATEGORY_ISSUE_LABELS[category]],
+        body: enriched.body,
+        labels: enriched.labels,
       }),
     });
 
