@@ -239,7 +239,7 @@ function findEntry(entries: readonly LayoutEntry[], id: string): LayoutEntry | u
 
 async function resolveLayout(
   id: string,
-  activeLayoutId: string,
+  activeLayoutId: string | null,
   currentLayout: Layout
 ): Promise<Layout | null> {
   if (id === activeLayoutId) return currentLayout;
