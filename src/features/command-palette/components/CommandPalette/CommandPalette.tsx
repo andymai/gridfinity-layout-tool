@@ -121,7 +121,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         case 'open-settings':
           return () => window.dispatchEvent(new CustomEvent('open-settings-modal'));
         case 'open-help':
-          // Dispatch custom event to open help modal (handled in App.tsx)
           return () => window.dispatchEvent(new CustomEvent('open-help-modal'));
         case 'open-print':
           return () => setPrintModalOpen(true);
@@ -151,7 +150,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                   const newIds: BinId[] = [];
                   for (const id of selectedBinIds) {
                     const result = duplicateBin(id);
-                    if ('value' in result) {
+                    if (isOk(result)) {
                       newIds.push(binId(result.value));
                     }
                   }
@@ -381,14 +380,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             if (paintSize) {
               setPaintSize(null);
             } else {
-              // Default to 1x1 paint size
               setPaintSize({ width: 1, depth: 1 });
               addToast(t('toast.paintModeEnabled'), 'info');
             }
           };
         case 'fill-layer':
           return () => {
-            // Fill with 1x1 bins as the default uniform size
             const count = fillLayer(activeLayerId, 1, 1, activeCategoryId, halfBinMode);
             if (count > 0) {
               addToast(t('toast.layerFilled'), 'success');
@@ -750,114 +747,47 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   );
 }
 
-/** Category icons for visual distinction */
-function CategoryIcon({ category }: { category: string }) {
-  const iconClass = 'w-3 h-3 text-content-tertiary';
+const CATEGORY_ICON_PATHS: Record<string, string[]> = {
+  navigation: [
+    'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+  ],
+  edit: [
+    'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
+  ],
+  layers: [
+    'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+  ],
+  view: [
+    'M15 12a3 3 0 11-6 0 3 3 0 016 0z',
+    'M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
+  ],
+  preview: [
+    'M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5',
+  ],
+  bins: ['M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'],
+  tools: [
+    'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z',
+    'M15 12a3 3 0 11-6 0 3 3 0 016 0z',
+  ],
+  export: ['M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12'],
+};
 
-  switch (category) {
-    case 'navigation':
-      return (
-        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-          />
-        </svg>
-      );
-    case 'edit':
-      return (
-        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-          />
-        </svg>
-      );
-    case 'layers':
-      return (
-        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-          />
-        </svg>
-      );
-    case 'view':
-      return (
-        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-          />
-        </svg>
-      );
-    case 'preview':
-      return (
-        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
-          />
-        </svg>
-      );
-    case 'bins':
-      return (
-        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-          />
-        </svg>
-      );
-    case 'tools':
-      return (
-        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-      );
-    case 'export':
-      return (
-        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-          />
-        </svg>
-      );
-    default:
-      return null;
-  }
+function CategoryIcon({ category }: { category: string }) {
+  const paths = CATEGORY_ICON_PATHS[category];
+  if (!paths) return null;
+
+  return (
+    <svg
+      className="w-3 h-3 text-content-tertiary"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      {paths.map((d) => (
+        <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+      ))}
+    </svg>
+  );
 }
 
 interface CommandItemProps {

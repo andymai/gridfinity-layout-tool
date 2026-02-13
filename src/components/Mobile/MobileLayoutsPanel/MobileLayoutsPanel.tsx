@@ -20,6 +20,165 @@ import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation, useFormatting } from '@/i18n';
 
+const ICON_PATHS = {
+  rename:
+    'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
+  share:
+    'M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z',
+  duplicate:
+    'M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z',
+  delete:
+    'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16',
+  cloud: 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z',
+  link: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1',
+  download:
+    'M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+  grid: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z',
+  chevronLeft: 'M15 19l-7-7 7-7',
+  chevronRight: 'M9 5l7 7-7 7',
+  plus: 'M12 4v16m8-8H4',
+  close: 'M6 18L18 6M6 6l12 12',
+  check: 'M5 13l4 4L19 7',
+} as const;
+
+interface SvgIconProps {
+  readonly path: string;
+  readonly className?: string;
+}
+
+function SvgIcon({ path, className = 'w-5 h-5' }: SvgIconProps) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={path} />
+    </svg>
+  );
+}
+
+interface ActionSheetProps {
+  readonly onClose: () => void;
+  readonly children: React.ReactNode;
+}
+
+function ActionSheet({ onClose, children }: ActionSheetProps) {
+  return createPortal(
+    <div
+      className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+      onClick={onClose}
+      role="presentation"
+    >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
+      <div
+        className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+interface ShareOptionButtonProps {
+  readonly onClick: () => void;
+  readonly iconPath: string;
+  readonly iconColor: string;
+  readonly bgColor: string;
+  readonly title: string;
+  readonly description: string;
+}
+
+function ShareOptionButton({
+  onClick,
+  iconPath,
+  iconColor,
+  bgColor,
+  title,
+  description,
+}: ShareOptionButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 p-4 bg-surface rounded-lg active:bg-surface-hover"
+    >
+      <div className={`w-10 h-10 ${bgColor} rounded-full flex items-center justify-center`}>
+        <SvgIcon path={iconPath} className={`w-5 h-5 ${iconColor}`} />
+      </div>
+      <div className="text-left">
+        <div className="font-medium text-content">{title}</div>
+        <div className="text-sm text-content-secondary">{description}</div>
+      </div>
+    </button>
+  );
+}
+
+interface SwipeActionButtonProps {
+  readonly onClick: () => void;
+  readonly iconPath: string;
+  readonly bgColor: string;
+  readonly label: string;
+  readonly disabled?: boolean;
+}
+
+function SwipeActionButton({
+  onClick,
+  iconPath,
+  bgColor,
+  label,
+  disabled,
+}: SwipeActionButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-15 flex items-center justify-center ${bgColor} text-on-dark`}
+      aria-label={label}
+      disabled={disabled}
+    >
+      <SvgIcon path={iconPath} />
+    </button>
+  );
+}
+
+interface ActiveLayoutActionsProps {
+  readonly entryId: string;
+  readonly onRename: (id: string) => void;
+  readonly onShare: (id: string) => void;
+  readonly onDuplicate: (id: string) => void;
+}
+
+function ActiveLayoutActions({
+  entryId,
+  onRename,
+  onShare,
+  onDuplicate,
+}: ActiveLayoutActionsProps) {
+  const t = useTranslation();
+
+  const actions = [
+    { handler: onRename, icon: ICON_PATHS.rename, label: t('common.rename') },
+    { handler: onShare, icon: ICON_PATHS.share, label: t('common.share') },
+    { handler: onDuplicate, icon: ICON_PATHS.duplicate, label: t('common.duplicate') },
+  ] as const;
+
+  return (
+    <div className="flex items-center gap-2 px-4 pb-4">
+      {actions.map((action) => (
+        <button
+          key={action.label}
+          onClick={() => action.handler(entryId)}
+          className="btn btn-secondary flex-1 h-11"
+        >
+          <SvgIcon path={action.icon} className="w-4 h-4 mr-1.5" />
+          {action.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /**
  * Mobile-optimized layouts panel with larger touch targets and swipe gestures.
  * Displays in BottomSheet for mobile users.
@@ -37,10 +196,8 @@ export function MobileLayoutsPanel() {
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
-  // Scroll rename input into view when keyboard appears on mobile
   useEffect(() => {
     if (renameLayoutId && renameInputRef.current) {
-      // Small delay to allow keyboard to appear
       const timer = setTimeout(() => {
         renameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
@@ -59,11 +216,14 @@ export function MobileLayoutsPanel() {
   } = useLayoutSwitcher();
 
   const currentLayout = useLayoutStore((state) => state.layout);
-
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
-  // Sort entries: active first, then by modifiedAt descending
+  const resetSwipe = useCallback(() => {
+    setSwipingId(null);
+    setSwipeX(0);
+  }, []);
+
   const sortedEntries = useMemo(
     () =>
       [...library.entries].sort((a, b) => {
@@ -103,27 +263,27 @@ export function MobileLayoutsPanel() {
       if (isOk(result)) {
         announceToScreenReader(`Duplicated ${entry?.name || 'layout'}`);
       }
-      setSwipingId(null);
-      setSwipeX(0);
+      resetSwipe();
     },
-    [duplicateLayout, library.entries, announceToScreenReader]
+    [duplicateLayout, library.entries, announceToScreenReader, resetSwipe]
   );
 
-  const handleShare = useCallback((layoutId: string) => {
-    setShareMenuId(layoutId);
-    setSwipingId(null);
-    setSwipeX(0);
-  }, []);
+  const handleShare = useCallback(
+    (id: string) => {
+      setShareMenuId(id);
+      resetSwipe();
+    },
+    [resetSwipe]
+  );
 
   const handleRenameRequest = useCallback(
-    (layoutId: string) => {
-      const entry = library.entries.find((e) => e.id === layoutId);
+    (id: string) => {
+      const entry = library.entries.find((e) => e.id === id);
       setRenameValue(entry?.name || '');
-      setRenameLayoutId(layoutId);
-      setSwipingId(null);
-      setSwipeX(0);
+      setRenameLayoutId(id);
+      resetSwipe();
     },
-    [library.entries]
+    [library.entries, resetSwipe]
   );
 
   const handleRenameConfirm = useCallback(() => {
@@ -138,10 +298,9 @@ export function MobileLayoutsPanel() {
   }, [renameLayoutId, renameValue, renameLayout, announceToScreenReader]);
 
   const handleCopyLink = useCallback(
-    async (layoutId: string) => {
-      const entry = library.entries.find((e) => e.id === layoutId);
-      // For active layout use current state; otherwise load from IndexedDB
-      const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutAsync(layoutId);
+    async (id: string) => {
+      const entry = library.entries.find((e) => e.id === id);
+      const layout = id === activeLayoutId ? currentLayout : await loadLayoutAsync(id);
       if (layout) {
         const url = generateShareableURL(layout);
         const success = await copyToClipboard(url);
@@ -155,10 +314,9 @@ export function MobileLayoutsPanel() {
   );
 
   const handleDownload = useCallback(
-    async (layoutId: string) => {
-      const entry = library.entries.find((e) => e.id === layoutId);
-      // For active layout use current state; otherwise load from IndexedDB
-      const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutAsync(layoutId);
+    async (id: string) => {
+      const entry = library.entries.find((e) => e.id === id);
+      const layout = id === activeLayoutId ? currentLayout : await loadLayoutAsync(id);
       if (layout && entry) {
         await downloadLayoutAsFile(
           layout,
@@ -171,22 +329,21 @@ export function MobileLayoutsPanel() {
     [activeLayoutId, currentLayout, library.entries, announceToScreenReader]
   );
 
-  const handleCloudShare = useCallback((layoutId: string) => {
+  const handleCloudShare = useCallback((id: string) => {
     setShareMenuId(null);
-    setCloudShareId(layoutId);
+    setCloudShareId(id);
   }, []);
 
   const handleDeleteRequest = useCallback(
-    (layoutId: string) => {
+    (id: string) => {
       if (library.entries.length <= 1) {
         announceToScreenReader('Cannot delete the only layout');
         return;
       }
-      setDeleteLayoutId(layoutId);
-      setSwipingId(null);
-      setSwipeX(0);
+      setDeleteLayoutId(id);
+      resetSwipe();
     },
-    [library.entries.length, announceToScreenReader]
+    [library.entries.length, announceToScreenReader, resetSwipe]
   );
 
   const confirmDelete = useCallback(() => {
@@ -197,11 +354,10 @@ export function MobileLayoutsPanel() {
     setDeleteLayoutId(null);
   }, [deleteLayoutId, deleteLayout, library.entries, announceToScreenReader]);
 
-  // Swipe gesture handling
   const handleTouchStart = useCallback(
-    (_e: React.TouchEvent, layoutId: string) => {
-      if (layoutId === activeLayoutId) return; // Don't allow swipe on active layout
-      setSwipingId(layoutId);
+    (_e: React.TouchEvent, id: string) => {
+      if (id === activeLayoutId) return;
+      setSwipingId(id);
       setSwipeX(0);
     },
     [activeLayoutId]
@@ -213,7 +369,6 @@ export function MobileLayoutsPanel() {
       const touch = e.touches[0];
       const startX = e.currentTarget.getBoundingClientRect().left;
       const deltaX = touch.clientX - startX - e.currentTarget.clientWidth / 2;
-      // Only allow left swipe (negative values) - 160px for 4 action buttons
       setSwipeX(Math.min(0, Math.max(-160, deltaX)));
     },
     [swipingId]
@@ -221,28 +376,28 @@ export function MobileLayoutsPanel() {
 
   const handleTouchEnd = useCallback(() => {
     if (!swipingId) return;
-    // If swiped far enough, show actions
     if (swipeX < -80) {
-      // Keep the swipe state to show buttons
       setSwipeX(-160);
     } else {
-      setSwipingId(null);
-      setSwipeX(0);
+      resetSwipe();
     }
-  }, [swipingId, swipeX]);
+  }, [swipingId, swipeX, resetSwipe]);
 
   const layoutToDelete = deleteLayoutId
     ? library.entries.find((e) => e.id === deleteLayoutId)
     : null;
 
+  const dismissRename = useCallback(() => {
+    setRenameLayoutId(null);
+    setRenameValue('');
+  }, []);
+
   return (
     <div className="pb-4">
-      {/* Layout count */}
       <div className="text-sm text-content-tertiary mb-3">
         {t('mobile.layouts.layoutCount', { count: library.entries.length })}
       </div>
 
-      {/* Layout list */}
       <div className="space-y-2">
         {sortedEntries.map((entry) => {
           const isActive = entry.id === activeLayoutId;
@@ -250,68 +405,34 @@ export function MobileLayoutsPanel() {
 
           return (
             <div key={entry.id} className="relative overflow-hidden rounded-lg">
-              {/* Swipe action buttons (revealed on swipe) */}
               <div className="absolute right-0 top-0 bottom-0 flex items-stretch">
-                <button
+                <SwipeActionButton
                   onClick={() => handleRenameRequest(entry.id)}
-                  className="w-15 flex items-center justify-center bg-warning text-on-dark"
-                  aria-label={`Rename ${entry.name}`}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
-                </button>
-                <button
+                  iconPath={ICON_PATHS.rename}
+                  bgColor="bg-warning"
+                  label={`Rename ${entry.name}`}
+                />
+                <SwipeActionButton
                   onClick={() => handleShare(entry.id)}
-                  className="w-15 flex items-center justify-center bg-success text-on-dark"
-                  aria-label={`Share ${entry.name}`}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
-                </button>
-                <button
+                  iconPath={ICON_PATHS.share}
+                  bgColor="bg-success"
+                  label={`Share ${entry.name}`}
+                />
+                <SwipeActionButton
                   onClick={() => handleDuplicate(entry.id)}
-                  className="w-15 flex items-center justify-center bg-accent text-on-dark"
-                  aria-label={`Duplicate ${entry.name}`}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                </button>
-                <button
+                  iconPath={ICON_PATHS.duplicate}
+                  bgColor="bg-accent"
+                  label={`Duplicate ${entry.name}`}
+                />
+                <SwipeActionButton
                   onClick={() => handleDeleteRequest(entry.id)}
-                  className="w-15 flex items-center justify-center bg-danger text-on-dark"
-                  aria-label={`Delete ${entry.name}`}
+                  iconPath={ICON_PATHS.delete}
+                  bgColor="bg-danger"
+                  label={`Delete ${entry.name}`}
                   disabled={library.entries.length <= 1}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                </button>
+                />
               </div>
 
-              {/* Layout card */}
               <div
                 className={`relative transition-transform duration-200 ${isActive ? 'bg-surface-hover border-l-4 border-l-accent' : 'bg-surface-elevated border-l-4 border-l-transparent'}`}
                 style={{
@@ -328,14 +449,11 @@ export function MobileLayoutsPanel() {
                   aria-current={isActive ? 'true' : undefined}
                 >
                   <div className="flex items-center gap-3">
-                    {/* Thumbnail */}
                     <div className="flex-shrink-0">
                       <LayoutThumbnail preview={entry.preview} size={48} />
                     </div>
 
-                    {/* Layout info */}
                     <div className="flex-1 min-w-0">
-                      {/* Layout name and active badge */}
                       <div className="flex items-center gap-2">
                         <span
                           className={`truncate text-base ${isActive ? 'font-semibold text-content' : 'font-medium text-content'}`}
@@ -349,15 +467,12 @@ export function MobileLayoutsPanel() {
                         )}
                       </div>
 
-                      {/* Preview stats */}
                       <LayoutPreviewInfo entry={entry} />
 
-                      {/* Modified date */}
                       <div className="text-xs text-content-tertiary mt-0.5">
                         {formatRelativeDate(entry.modifiedAt)}
                       </div>
 
-                      {/* Forked from info */}
                       {entry.forkedFrom && (
                         <div className="text-xs text-content-disabled">
                           {t('mobile.layouts.forkedFrom')}
@@ -368,81 +483,19 @@ export function MobileLayoutsPanel() {
                   </div>
                 </button>
 
-                {/* Action buttons for active layout */}
                 {isActive && (
-                  <div className="flex items-center gap-2 px-4 pb-4">
-                    <button
-                      onClick={() => handleRenameRequest(entry.id)}
-                      className="btn btn-secondary flex-1 h-11"
-                    >
-                      <svg
-                        className="w-4 h-4 mr-1.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        />
-                      </svg>
-                      {t('common.rename')}
-                    </button>
-                    <button
-                      onClick={() => handleShare(entry.id)}
-                      className="btn btn-secondary flex-1 h-11"
-                    >
-                      <svg
-                        className="w-4 h-4 mr-1.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                        />
-                      </svg>
-                      {t('common.share')}
-                    </button>
-                    <button
-                      onClick={() => handleDuplicate(entry.id)}
-                      className="btn btn-secondary flex-1 h-11"
-                    >
-                      <svg
-                        className="w-4 h-4 mr-1.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
-                      {t('common.duplicate')}
-                    </button>
-                  </div>
+                  <ActiveLayoutActions
+                    entryId={entry.id}
+                    onRename={handleRenameRequest}
+                    onShare={handleShare}
+                    onDuplicate={handleDuplicate}
+                  />
                 )}
               </div>
 
-              {/* Swipe hint for non-active layouts */}
               {!isActive && !isSwiping && (
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 text-content-disabled pointer-events-none">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
+                  <SvgIcon path={ICON_PATHS.chevronLeft} className="w-4 h-4" />
                 </div>
               )}
             </div>
@@ -450,25 +503,12 @@ export function MobileLayoutsPanel() {
         })}
       </div>
 
-      {/* Inspiration Gallery button */}
       <button
         onClick={() => setShowInspirationGallery(true)}
         className="w-full flex items-center gap-3 mt-4 p-3 rounded-xl bg-gradient-to-r from-accent/10 to-purple-500/10 border border-accent/20 active:scale-[0.98] transition-transform"
       >
         <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
-          <svg
-            className="w-5 h-5 text-accent"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-            />
-          </svg>
+          <SvgIcon path={ICON_PATHS.grid} className="w-5 h-5 text-accent" />
         </div>
         <div className="flex-1 text-left">
           <div className="text-sm font-medium text-content">
@@ -478,25 +518,14 @@ export function MobileLayoutsPanel() {
             {t('mobile.layouts.getIdeasForYourDrawer')}
           </div>
         </div>
-        <svg
-          className="w-4 h-4 text-content-tertiary"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        <SvgIcon path={ICON_PATHS.chevronRight} className="w-4 h-4 text-content-tertiary" />
       </button>
 
-      {/* Create new button */}
       <button onClick={handleCreateNew} className="btn btn-secondary w-full mt-3 h-12">
-        <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
+        <SvgIcon path={ICON_PATHS.plus} className="w-5 h-5 mr-2" />
         {t('mobile.layouts.newLayout')}
       </button>
 
-      {/* Delete confirmation dialog */}
       <ConfirmDialog
         isOpen={deleteLayoutId !== null}
         title={t('layouts.confirmDelete.title')}
@@ -507,190 +536,91 @@ export function MobileLayoutsPanel() {
         onCancel={() => setDeleteLayoutId(null)}
       />
 
-      {/* Share action sheet - portaled to escape BottomSheet's scrollable container */}
-      {shareMenuId &&
-        createPortal(
-          <div
-            className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+      {shareMenuId && (
+        <ActionSheet onClose={() => setShareMenuId(null)}>
+          <h3 className="text-lg font-semibold text-content mb-4">{t('layouts.shareLayout')}</h3>
+          <div className="space-y-2">
+            <ShareOptionButton
+              onClick={() => handleCloudShare(shareMenuId)}
+              iconPath={ICON_PATHS.cloud}
+              iconColor="text-purple-500"
+              bgColor="bg-purple-500/20"
+              title={t('share.shareToCloud')}
+              description={t('mobile.layouts.createExpiringShareLink')}
+            />
+            <ShareOptionButton
+              onClick={() => handleCopyLink(shareMenuId)}
+              iconPath={ICON_PATHS.link}
+              iconColor="text-accent"
+              bgColor="bg-accent/20"
+              title={t('share.copyLink')}
+              description={t('share.link.urlEncoded')}
+            />
+            <ShareOptionButton
+              onClick={() => handleDownload(shareMenuId)}
+              iconPath={ICON_PATHS.download}
+              iconColor="text-accent"
+              bgColor="bg-accent-muted"
+              title={t('share.file.download')}
+              description={t('share.file.saveAsFile')}
+            />
+          </div>
+          <button
             onClick={() => setShareMenuId(null)}
-            role="presentation"
+            className="w-full mt-4 py-3 text-content-secondary font-medium"
           >
-            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
-            <div
-              className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-            >
-              <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-content mb-4">
-                {t('layouts.shareLayout')}
-              </h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleCloudShare(shareMenuId)}
-                  className="w-full flex items-center gap-3 p-4 bg-surface rounded-lg active:bg-surface-hover"
-                >
-                  <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-purple-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium text-content">{t('share.shareToCloud')}</div>
-                    <div className="text-sm text-content-secondary">
-                      {t('mobile.layouts.createExpiringShareLink')}
-                    </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleCopyLink(shareMenuId)}
-                  className="w-full flex items-center gap-3 p-4 bg-surface rounded-lg active:bg-surface-hover"
-                >
-                  <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-accent"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium text-content">{t('share.copyLink')}</div>
-                    <div className="text-sm text-content-secondary">
-                      {t('share.link.urlEncoded')}
-                    </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleDownload(shareMenuId)}
-                  className="w-full flex items-center gap-3 p-4 bg-surface rounded-lg active:bg-surface-hover"
-                >
-                  <div className="w-10 h-10 bg-accent-muted rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-accent"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium text-content">{t('share.file.download')}</div>
-                    <div className="text-sm text-content-secondary">
-                      {t('share.file.saveAsFile')}
-                    </div>
-                  </div>
-                </button>
-              </div>
-              <button
-                onClick={() => setShareMenuId(null)}
-                className="w-full mt-4 py-3 text-content-secondary font-medium"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>,
-          document.body
-        )}
+            {t('common.cancel')}
+          </button>
+        </ActionSheet>
+      )}
 
-      {/* Rename action sheet - portaled to escape BottomSheet's scrollable container */}
-      {renameLayoutId &&
-        createPortal(
-          <div
-            className="fixed inset-0 bg-black/50 z-[60] flex items-end"
-            onClick={() => {
-              setRenameLayoutId(null);
-              setRenameValue('');
+      {renameLayoutId && (
+        <ActionSheet onClose={dismissRename}>
+          <h3 className="text-lg font-semibold text-content mb-4">
+            {t('mobile.layouts.renameLayout')}
+          </h3>
+          <input
+            ref={renameInputRef}
+            type="text"
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleRenameConfirm();
+              } else if (e.key === 'Escape') {
+                dismissRename();
+              }
             }}
-            role="presentation"
-          >
-            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
-            <div
-              className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
+            className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
+            placeholder={t('layouts.layoutNamePlaceholder')}
+            maxLength={64}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
+            autoFocus
+          />
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={dismissRename}
+              className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
             >
-              <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-content mb-4">
-                {t('mobile.layouts.renameLayout')}
-              </h3>
-              <input
-                ref={renameInputRef}
-                type="text"
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleRenameConfirm();
-                  } else if (e.key === 'Escape') {
-                    setRenameLayoutId(null);
-                    setRenameValue('');
-                  }
-                }}
-                className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
-                placeholder={t('layouts.layoutNamePlaceholder')}
-                maxLength={64}
-                // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
-                autoFocus
-              />
-              <div className="flex gap-2 mt-4">
-                <button
-                  onClick={() => {
-                    setRenameLayoutId(null);
-                    setRenameValue('');
-                  }}
-                  className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  onClick={handleRenameConfirm}
-                  disabled={!renameValue.trim()}
-                  className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
-                >
-                  {t('common.rename')}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+              {t('common.cancel')}
+            </button>
+            <button
+              onClick={handleRenameConfirm}
+              disabled={!renameValue.trim()}
+              className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
+            >
+              {t('common.rename')}
+            </button>
+          </div>
+        </ActionSheet>
+      )}
 
-      {/* Cloud share panel - portaled to escape BottomSheet's scrollable container */}
       {cloudShareId &&
         createPortal(
           <MobileCloudSharePanel layoutId={cloudShareId} onClose={() => setCloudShareId(null)} />,
           document.body
         )}
 
-      {/* Inspiration Gallery - portaled to avoid BottomSheet clipping */}
       {showInspirationGallery &&
         createPortal(
           <InspirationGallery
@@ -703,14 +633,9 @@ export function MobileLayoutsPanel() {
   );
 }
 
-/**
- * Mobile cloud share panel component.
- * Handles cloud sharing operations with a mobile-optimized UI.
- */
 function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClose: () => void }) {
   const t = useTranslation();
   const [urlCopied, setUrlCopied] = useState(false);
-  // Local permission state for new shares (before any share exists)
   const [localPermission, setLocalPermission] = useState<SharePermission>('view');
 
   const {
@@ -726,21 +651,17 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
     reset,
   } = useCloudShare(layoutId);
 
-  // Use existing share permission when available, otherwise use local state
   const permission: SharePermission = existingShare?.permission ?? localPermission;
   const setPermission = (newPermission: SharePermission) => {
     if (existingShare) {
-      // Update existing share's permission
       if (newPermission !== existingShare.permission) {
         void updatePermission(newPermission);
       }
     } else {
-      // Store locally for when we create the share
       setLocalPermission(newPermission);
     }
   };
 
-  // Reset copy state after timeout
   useEffect(() => {
     if (urlCopied) {
       const timer = setTimeout(() => setUrlCopied(false), 2000);
@@ -750,12 +671,6 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
 
   const handleShare = async () => {
     await share(permission);
-  };
-
-  const handlePermissionChange = (newPermission: SharePermission) => {
-    // Only update local state; setPermission already calls updatePermission
-    // when an existing share exists (see line 558-565)
-    setPermission(newPermission);
   };
 
   const handleDelete = async () => {
@@ -770,7 +685,6 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
     if (success) setUrlCopied(true);
   };
 
-  // Handle Escape key to close panel
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -780,6 +694,8 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
+
+  const isLoading = status === 'sharing' || status === 'updating' || status === 'deleting';
 
   return (
     <div
@@ -798,30 +714,16 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
       >
         <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
 
-        {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-purple-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
-              />
-            </svg>
+            <SvgIcon path={ICON_PATHS.cloud} className="w-5 h-5 text-purple-500" />
           </div>
           <h3 id="mobile-cloud-share-title" className="text-lg font-semibold text-content">
             {t('mobile.layouts.cloudShare')}
           </h3>
         </div>
 
-        {/* Loading states */}
-        {(status === 'sharing' || status === 'updating' || status === 'deleting') && (
+        {isLoading && (
           <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
             <div className="flex items-center gap-3 text-content-secondary">
               <svg
@@ -853,18 +755,10 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
           </div>
         )}
 
-        {/* Error state */}
         {status === 'error' && error && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-error">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <SvgIcon path={ICON_PATHS.close} />
               <span className="font-medium">{t('share.failedToShare')}</span>
             </div>
             <p className="text-sm text-content-secondary">{error.message}</p>
@@ -877,18 +771,10 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
           </div>
         )}
 
-        {/* Success state */}
         {status === 'success' && result && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-success">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+              <SvgIcon path={ICON_PATHS.check} />
               <span className="font-medium">{t('share.sharedSuccessfully')}</span>
             </div>
 
@@ -922,7 +808,6 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
           </div>
         )}
 
-        {/* Idle state - no existing share */}
         {status === 'idle' && !hasActiveShare && (
           <div className="space-y-4">
             <p className="text-sm text-content-secondary">
@@ -956,7 +841,6 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
           </div>
         )}
 
-        {/* Idle state - has existing share */}
         {status === 'idle' && hasActiveShare && existingShare && (
           <div className="space-y-4">
             <div className="bg-surface rounded-lg p-3">
@@ -981,7 +865,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             <div className="flex items-center gap-3">
               <select
                 value={permission}
-                onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
+                onChange={(e) => setPermission(e.target.value as SharePermission)}
                 className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none"
                 aria-label={t('mobile.layouts.updatePermission')}
               >
@@ -999,7 +883,6 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
           </div>
         )}
 
-        {/* Cancel button */}
         {status !== 'success' && (
           <button onClick={onClose} className="w-full mt-4 py-3 text-content-secondary font-medium">
             {t('common.cancel')}
@@ -1010,32 +893,19 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
   );
 }
 
-/**
- * Layout preview info showing drawer dimensions, bin count, and layer count.
- */
 function LayoutPreviewInfo({ entry }: { entry: LayoutEntry }) {
   const t = useTranslation();
   const { preview } = entry;
 
   return (
     <div className="flex items-center gap-3 text-sm text-content-secondary">
-      {/* Drawer dimensions */}
       <span className="flex items-center gap-1">
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-          />
-        </svg>
+        <SvgIcon path={ICON_PATHS.grid} className="w-4 h-4" />
         {preview.drawerWidth}×{preview.drawerDepth}
       </span>
 
-      {/* Bin count */}
       <span>{t('mobile.layouts.previewBins', { count: preview.binCount })}</span>
 
-      {/* Layer count */}
       {preview.layerCount > 1 && (
         <span>{t('mobile.layouts.previewLayers', { count: preview.layerCount })}</span>
       )}

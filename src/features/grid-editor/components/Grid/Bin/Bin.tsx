@@ -21,6 +21,56 @@ const LONG_PRESS_DURATION = 500; // ms
 const DOUBLE_TAP_THRESHOLD = 300; // ms
 const WARNING_ICON = '\u26A0'; // Unicode warning sign
 
+const ICON_PATHS = {
+  tallArrow:
+    'M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z',
+  notes:
+    'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z',
+  tag: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z',
+  link: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1',
+} as const;
+
+interface BinBadgeProps {
+  small: boolean;
+  label: string;
+  path: string;
+  colorClass?: string;
+  fillRule?: 'evenodd';
+}
+
+function BinBadge({
+  small,
+  label,
+  path,
+  colorClass = 'text-content-tertiary',
+  fillRule,
+}: BinBadgeProps) {
+  const sizeClass = small ? 'w-2.5 h-2.5' : 'w-3 h-3';
+  const strokeWidth = small ? 2.5 : 2;
+  return (
+    <div
+      className={`${small ? 'p-px' : 'p-0.5'} rounded-sm bg-surface/80`}
+      style={{ boxShadow: 'var(--shadow-sm)' }}
+    >
+      <svg
+        className={`${sizeClass} ${colorClass}`}
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        aria-label={label}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d={path}
+          {...(fillRule ? { fillRule, clipRule: fillRule } : {})}
+        />
+      </svg>
+    </div>
+  );
+}
+
 interface BinProps {
   bin: BinType;
   category?: Category;
@@ -551,54 +601,53 @@ function BinComponent({
   const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
   const textColors = getBinTextColors(bgColor);
 
-  // Selection and hover styles
-  const getBoxShadow = () => {
-    if (isGhost) return 'none';
-    if (isSelected) {
-      // Selection ring with optional focus ring
-      if (isFocused) {
-        return '0 0 0 2px var(--selection-ring), 0 0 0 4px #3b82f6, 0 0 20px var(--selection-glow), var(--shadow-lg)';
-      }
-      return '0 0 0 2px var(--selection-ring), 0 0 20px var(--selection-glow), var(--shadow-lg)';
+  const visualStyles = useMemo(() => {
+    let boxShadow = 'var(--shadow-sm)';
+    if (isGhost) {
+      boxShadow = 'none';
+    } else if (isSelected && isFocused) {
+      boxShadow =
+        '0 0 0 2px var(--selection-ring), 0 0 0 4px #3b82f6, 0 0 20px var(--selection-glow), var(--shadow-lg)';
+    } else if (isSelected) {
+      boxShadow =
+        '0 0 0 2px var(--selection-ring), 0 0 20px var(--selection-glow), var(--shadow-lg)';
+    } else if (isFocused) {
+      boxShadow = '0 0 0 2px #3b82f6, var(--shadow-md)';
+    } else if (isCategoryHighlighted) {
+      boxShadow = '0 0 0 2px var(--color-accent), 0 0 12px rgba(34, 197, 94, 0.4)';
+    } else if (isRowColHighlighted) {
+      boxShadow = '0 0 0 2px var(--selection-ring), 0 0 12px var(--selection-glow)';
     }
-    if (isFocused) {
-      // Focus ring without selection
-      return '0 0 0 2px #3b82f6, var(--shadow-md)';
-    }
-    // Category highlight (when hovering category in sidebar)
-    if (isCategoryHighlighted) {
-      return '0 0 0 2px var(--color-accent), 0 0 12px rgba(34, 197, 94, 0.4)';
-    }
-    // Row/column label highlight (when hovering row/column label)
-    if (isRowColHighlighted) {
-      return '0 0 0 2px var(--selection-ring), 0 0 12px var(--selection-glow)';
-    }
-    return 'var(--shadow-sm)';
-  };
 
-  const getTransform = () => {
-    if (isGhost) return 'none';
-    if (isSelected) return 'scale(1.01)';
-    return 'none';
-  };
+    let opacity = 1;
+    if (isGhost) opacity = 0.3;
+    else if (isBeingDragged) opacity = 0.5;
+    else if (isAnyCategoryHighlighted && !isCategoryHighlighted) opacity = 0.4;
+    else if (isAnyRowColHighlighted && !isRowColHighlighted) opacity = 0.6;
 
-  const getOpacity = (): number => {
-    if (isGhost) return 0.3;
-    if (isBeingDragged) return 0.5;
-    if (isAnyCategoryHighlighted && !isCategoryHighlighted) return 0.4;
-    if (isAnyRowColHighlighted && !isRowColHighlighted) return 0.6;
-    return 1;
-  };
+    let zIndex = 10;
+    if (isGhost) zIndex = 5;
+    else if (isSelected) zIndex = 40;
+    else if (isHovered) zIndex = 30;
+    else if (isCategoryHighlighted || isRowColHighlighted) zIndex = 15;
 
-  const getZIndex = (): number => {
-    // Selected bins need higher z-index (40) to ensure resize handles appear above axis labels (30)
-    // Hovered bins (30) need to be above regular bins (10) so resize handles aren't clipped by neighbors
-    if (isGhost) return 5;
-    if (isSelected) return 40;
-    if (isHovered) return 30;
-    if (isCategoryHighlighted || isRowColHighlighted) return 15;
-    return 10;
-  };
+    return {
+      boxShadow,
+      opacity,
+      zIndex,
+      transform: !isGhost && isSelected ? 'scale(1.01)' : ('none' as const),
+    };
+  }, [
+    isGhost,
+    isSelected,
+    isFocused,
+    isCategoryHighlighted,
+    isRowColHighlighted,
+    isBeingDragged,
+    isAnyCategoryHighlighted,
+    isAnyRowColHighlighted,
+    isHovered,
+  ]);
 
   return (
     <div
@@ -629,10 +678,10 @@ function BinComponent({
         WebkitUserSelect: 'none',
         userSelect: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
-        opacity: getOpacity(),
-        zIndex: getZIndex(),
-        boxShadow: getBoxShadow(),
-        transform: getTransform(),
+        opacity: visualStyles.opacity,
+        zIndex: visualStyles.zIndex,
+        boxShadow: visualStyles.boxShadow,
+        transform: visualStyles.transform,
         // Allow resize handles to extend outside bin (text constrained by whitespace-nowrap and sizing)
         overflow: 'visible',
         minWidth: 0,
@@ -677,88 +726,41 @@ function BinComponent({
         >
           <span>{bin.height}u</span>
           <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z"
-              clipRule="evenodd"
-            />
+            <path fillRule="evenodd" d={ICON_PATHS.tallArrow} clipRule="evenodd" />
           </svg>
         </div>
       )}
 
-      {/* Metadata indicators - shown when bin has notes or custom properties */}
       {hasMetadata && showBadges && (
         <div className="absolute bottom-0.5 left-0.5 flex items-center gap-0.5 pointer-events-none">
-          {/* Notes indicator - speech bubble icon (matches print list) */}
           {hasNotes && (
-            <div
-              className={`${useSmallBadges ? 'p-px' : 'p-0.5'} rounded-sm bg-surface/80`}
-              style={{ boxShadow: 'var(--shadow-sm)' }}
-            >
-              <svg
-                className={`${useSmallBadges ? 'w-2.5 h-2.5' : 'w-3 h-3'} text-content-tertiary`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={useSmallBadges ? 2.5 : 2}
-                aria-label={t('grid.hasNotesAriaLabel')}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                />
-              </svg>
-            </div>
+            <BinBadge
+              small={useSmallBadges}
+              label={t('grid.hasNotesAriaLabel')}
+              path={ICON_PATHS.notes}
+            />
           )}
-          {/* Custom properties indicator - tag icon */}
           {hasCustomProps && (
-            <div
-              className={`${useSmallBadges ? 'p-px' : 'p-0.5'} rounded-sm bg-surface/80`}
-              style={{ boxShadow: 'var(--shadow-sm)' }}
-            >
-              <svg
-                className={`${useSmallBadges ? 'w-2.5 h-2.5' : 'w-3 h-3'} text-content-tertiary`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={useSmallBadges ? 2.5 : 2}
-                aria-label={t('grid.hasCustomPropertiesAriaLabel')}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
-                />
-              </svg>
-            </div>
+            <BinBadge
+              small={useSmallBadges}
+              label={t('grid.hasCustomPropertiesAriaLabel')}
+              path={ICON_PATHS.tag}
+            />
           )}
         </div>
       )}
 
-      {/* Linked design indicator - shown at bottom-right when bin has a linked design */}
       {hasLinkedDesign && showBadges && (
-        <div className="absolute bottom-0.5 right-0.5 pointer-events-none">
-          <div
-            className={`${useSmallBadges ? 'p-px' : 'p-0.5'} rounded-sm bg-surface/80`}
-            style={{ boxShadow: 'var(--shadow-sm)' }}
-            title={t('grid.hasLinkedDesign')}
-          >
-            <svg
-              className={`${useSmallBadges ? 'w-2.5 h-2.5' : 'w-3 h-3'} text-accent`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={useSmallBadges ? 2.5 : 2}
-              aria-label={t('grid.hasLinkedDesign')}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-              />
-            </svg>
-          </div>
+        <div
+          className="absolute bottom-0.5 right-0.5 pointer-events-none"
+          title={t('grid.hasLinkedDesign')}
+        >
+          <BinBadge
+            small={useSmallBadges}
+            label={t('grid.hasLinkedDesign')}
+            path={ICON_PATHS.link}
+            colorClass="text-accent"
+          />
         </div>
       )}
 

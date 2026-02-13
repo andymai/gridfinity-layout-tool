@@ -155,6 +155,36 @@ interface UseCutoutInteractionOptions {
 /** Paste offset in mm — each successive paste shifts by this amount */
 const PASTE_OFFSET = 2;
 
+interface ClonedCutout extends Cutout {
+  readonly originalId: string;
+}
+
+function cloneCutoutsWithGroups(
+  originals: readonly Cutout[],
+  offsetFn?: (original: Cutout) => { x: number; y: number }
+): readonly ClonedCutout[] {
+  const groupMap = new Map<string, string>();
+  return originals.map((original) => {
+    const newId = crypto.randomUUID();
+    let newGroupId: string | null = null;
+    if (original.groupId) {
+      if (!groupMap.has(original.groupId)) {
+        groupMap.set(original.groupId, crypto.randomUUID());
+      }
+      newGroupId = groupMap.get(original.groupId) ?? null;
+    }
+    const pos = offsetFn ? offsetFn(original) : { x: original.x, y: original.y };
+    return {
+      ...original,
+      id: newId,
+      x: pos.x,
+      y: pos.y,
+      groupId: newGroupId,
+      originalId: original.id,
+    };
+  });
+}
+
 export function useCutoutInteraction({
   cutouts,
   onUpdate,
@@ -341,56 +371,28 @@ export function useCutoutInteraction({
     pasteCountRef.current += 1;
     const offset = PASTE_OFFSET * pasteCountRef.current;
 
-    // Map old groupId -> new groupId so groups are preserved
-    const groupMap = new Map<string, string>();
-    const newIds: string[] = [];
-    for (const original of clipboard) {
-      const newId = crypto.randomUUID();
-      newIds.push(newId);
-      let newGroupId: string | null = null;
-      if (original.groupId) {
-        if (!groupMap.has(original.groupId)) {
-          groupMap.set(original.groupId, crypto.randomUUID());
-        }
-        newGroupId = groupMap.get(original.groupId) ?? null;
-      }
-      onAdd({
-        ...original,
-        id: newId,
-        x: Math.min(original.x + offset, binWidth - original.width),
-        y: Math.min(original.y + offset, binDepth - original.depth),
-        groupId: newGroupId,
-      });
+    const clones = cloneCutoutsWithGroups(clipboard, (original) => ({
+      x: Math.min(original.x + offset, binWidth - original.width),
+      y: Math.min(original.y + offset, binDepth - original.depth),
+    }));
+    for (const { originalId: _, ...cutout } of clones) {
+      onAdd(cutout);
     }
-    // Select the newly pasted cutouts
-    setSelection(new Set(newIds));
+    setSelection(new Set(clones.map((c) => c.id)));
   }, [clipboard, onAdd, binWidth, binDepth]);
 
   const duplicateSelected = useCallback(() => {
     const selected = cutouts.filter((c) => selection.has(c.id));
     if (selected.length === 0) return;
-    // Map old groupId -> new groupId so groups are preserved
-    const groupMap = new Map<string, string>();
-    const newIds: string[] = [];
-    for (const original of selected) {
-      const newId = crypto.randomUUID();
-      newIds.push(newId);
-      let newGroupId: string | null = null;
-      if (original.groupId) {
-        if (!groupMap.has(original.groupId)) {
-          groupMap.set(original.groupId, crypto.randomUUID());
-        }
-        newGroupId = groupMap.get(original.groupId) ?? null;
-      }
-      onAdd({
-        ...original,
-        id: newId,
-        x: Math.min(original.x + PASTE_OFFSET, binWidth - original.width),
-        y: Math.min(original.y + PASTE_OFFSET, binDepth - original.depth),
-        groupId: newGroupId,
-      });
+
+    const clones = cloneCutoutsWithGroups(selected, (original) => ({
+      x: Math.min(original.x + PASTE_OFFSET, binWidth - original.width),
+      y: Math.min(original.y + PASTE_OFFSET, binDepth - original.depth),
+    }));
+    for (const { originalId: _, ...cutout } of clones) {
+      onAdd(cutout);
     }
-    setSelection(new Set(newIds));
+    setSelection(new Set(clones.map((c) => c.id)));
   }, [cutouts, selection, onAdd, binWidth, binDepth]);
 
   // ── Path tool ────────────────────────────────────────────────────
@@ -564,34 +566,23 @@ export function useCutoutInteraction({
 
       // Alt+drag: duplicate selected cutouts in-place, then drag the clones
       let dragSelection = effectiveSelection;
+      let cloneOriginMap: ReadonlyMap<string, string> | null = null;
       if (altKey) {
-        const groupMap = new Map<string, string>();
-        const newIds: string[] = [];
-        for (const selectedId of effectiveSelection) {
-          const original = cutouts.find((c) => c.id === selectedId);
-          if (!original) continue;
-          const newId = crypto.randomUUID();
-          newIds.push(newId);
-          let newGroupId: string | null = null;
-          if (original.groupId) {
-            if (!groupMap.has(original.groupId)) {
-              groupMap.set(original.groupId, crypto.randomUUID());
-            }
-            newGroupId = groupMap.get(original.groupId) ?? null;
-          }
-          onAdd({ ...original, id: newId, groupId: newGroupId });
+        const selected = cutouts.filter((c) => effectiveSelection.has(c.id));
+        const clones = cloneCutoutsWithGroups(selected);
+        for (const { originalId: _, ...cutout } of clones) {
+          onAdd(cutout);
         }
-        dragSelection = new Set(newIds);
+        cloneOriginMap = new Map(clones.map((c) => [c.id, c.originalId]));
+        dragSelection = new Set(clones.map((c) => c.id));
         setSelection(dragSelection);
       }
 
       // Store offset from cursor to each selected cutout's origin
       const offsets = new Map<string, { dx: number; dy: number }>();
       for (const selectedId of dragSelection) {
-        // For alt-clones, look up by original position (clones start at same pos)
-        const cutout = altKey
-          ? cutouts.find((c) => effectiveSelection.has(c.id))
-          : cutouts.find((c) => c.id === selectedId);
+        const lookupId = cloneOriginMap?.get(selectedId) ?? selectedId;
+        const cutout = cutouts.find((c) => c.id === lookupId);
         if (cutout) {
           offsets.set(selectedId, { dx: cutout.x - mmX, dy: cutout.y - mmY });
         }
