@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.1...gridfinity-layout-tool-v3.11.2) (2026-02-13)
+
+
+### Bug Fixes
+
+* **grid-editor:** clamp fractional row/column coords to valid half-bin positions ([#737](https://github.com/andymai/gridfinity-layout-tool/issues/737)) ([f7fb02c](https://github.com/andymai/gridfinity-layout-tool/commit/f7fb02c43c479a196aef49c1ad250cc9b01756b1))
+
 ## [3.11.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.0...gridfinity-layout-tool-v3.11.1) (2026-02-13)
 
 
