@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { STAGING_ID } from '@/core/constants';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 import type { InteractionContext } from '@/hooks/interactions/types';
 
@@ -233,12 +234,11 @@ describe('useStagingDragInteraction', () => {
       );
     });
 
-    it('marks placement as invalid if collision detected', () => {
-      const binId = addStagingBin();
-      // Add a bin on the grid that will collide
-      addGridBin(2, 2);
+    it('snaps to nearest valid position on collision at bin boundary', () => {
+      const binId = addStagingBin(); // 2x2 bin
+      // Add a bin on the grid at (4,2) with width=2, depth=2
+      addGridBin(4, 2);
 
-      // Set up interaction state
       useInteractionStore.setState({
         ...useInteractionStore.getState(),
         interaction: {
@@ -249,11 +249,42 @@ describe('useStagingDragInteraction', () => {
         },
       });
 
-      // Need fresh context with updated layout
       const context = createContext();
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
-      // Try to move to occupied spot (2,2 has a 2x2 bin)
+      // Cursor at x=3: 2-wide staging bin would span [3,5), overlapping grid bin at [4,6).
+      // Should snap 1 cell left to x=2 where [2,4) doesn't overlap [4,6).
+      act(() => {
+        result.current.handleMove({ x: 3, y: 2 }, { x: 3, y: 2 });
+      });
+
+      const call = mockSetInteraction.mock.calls[0][0];
+      expect(call.valid).toBe(true);
+      expect(call.currentCoord).toEqual({ x: 2, y: 2 });
+    });
+
+    it('still shows invalid when directly on top of another bin', () => {
+      const binId = addStagingBin(); // 2x2 bin
+      // Add a bin at (2,2) — same position, no room to nudge by just 1 step
+      addGridBin(2, 2);
+
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
+        interaction: {
+          type: 'stagingDrag',
+          binId,
+          currentCoord: null,
+          valid: false,
+        },
+      });
+
+      const context = createContext();
+      const { result } = renderHook(() => useStagingDragInteraction(context));
+
+      // Directly on top — all ±1 nudges still overlap because both bins are 2×2:
+      // (-1,0)→(1,2): [1,3)∩[2,4)=overlap  (+1,0)→(3,2): [3,5)∩[2,4)=overlap
+      // (0,-1)→(2,1): [1,3)∩[2,4)=overlap  (0,+1)→(2,3): [3,5)∩[2,4)=overlap
+      // Diagonals also overlap → no valid position within 1 step
       act(() => {
         result.current.handleMove({ x: 2, y: 2 }, { x: 2, y: 2 });
       });
@@ -263,6 +294,128 @@ describe('useStagingDragInteraction', () => {
           valid: false,
         })
       );
+    });
+
+    it('marks invalid when no nearby valid position exists', () => {
+      const binId = addStagingBin(); // 2x2 bin
+
+      // Fill the grid densely so there's no room to snap to
+      // Default drawer is 10x8, fill it with 2x2 bins
+      for (let x = 0; x < 10; x += 2) {
+        for (let y = 0; y < 8; y += 2) {
+          addGridBin(x, y);
+        }
+      }
+
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
+        interaction: {
+          type: 'stagingDrag',
+          binId,
+          currentCoord: null,
+          valid: false,
+        },
+      });
+
+      const context = createContext();
+      const { result } = renderHook(() => useStagingDragInteraction(context));
+
+      act(() => {
+        result.current.handleMove({ x: 4, y: 4 }, { x: 4, y: 4 });
+      });
+
+      expect(mockSetInteraction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          valid: false,
+          invalidReason: 'collision',
+        })
+      );
+    });
+
+    it('snaps with 0.5 step in half-bin mode', () => {
+      const binId = addStagingBin(); // 2x2 bin
+      addGridBin(4, 2); // grid bin at (4,2)
+
+      // Enable half-bin mode
+      useHalfBinModeStore.setState({ halfBinMode: true });
+
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
+        interaction: {
+          type: 'stagingDrag',
+          binId,
+          currentCoord: null,
+          valid: false,
+        },
+      });
+
+      const context = createContext();
+      const { result } = renderHook(() => useStagingDragInteraction(context));
+
+      // Cursor at x=2.5: bin [2.5,4.5) overlaps grid [4,6).
+      // Half-bin step=0.5 → nudge left to x=2.0: bin [2,4) no overlap.
+      act(() => {
+        result.current.handleMove({ x: 2.5, y: 2 }, { x: 2.5, y: 2 });
+      });
+
+      const call = mockSetInteraction.mock.calls[0][0];
+      expect(call.valid).toBe(true);
+      expect(call.currentCoord).toEqual({ x: 2, y: 2 });
+
+      // Clean up
+      useHalfBinModeStore.setState({ halfBinMode: false });
+    });
+
+    it('snaps when blocked_zone detected', () => {
+      // Create a tall bin on layer 0 that protrudes into layer 1
+      const { addBin, layout, addLayer } = useLayoutStore.getState();
+      const categoryId = layout.categories[0].id;
+      const layer0Id = layout.layers[0].id;
+
+      // Add a second layer
+      addLayer();
+      const updatedLayout = useLayoutStore.getState().layout;
+      const layer1Id = updatedLayout.layers[1].id;
+
+      // Tall bin on layer 0 that protrudes into layer 1
+      addBin({
+        layerId: layer0Id,
+        x: 4,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: updatedLayout.layers[0].height + 1, // protrudes
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Add staging bin and set active layer to layer 1
+      const binId = addStagingBin();
+      useSelectionStore.setState({ activeLayerId: layer1Id });
+
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
+        interaction: {
+          type: 'stagingDrag',
+          binId,
+          currentCoord: null,
+          valid: false,
+        },
+      });
+
+      const context = createContext();
+      const { result } = renderHook(() => useStagingDragInteraction(context));
+
+      // Try placing at (3,2) — overlaps blocked zone from tall bin at (4,2).
+      // Should snap to (2,2) or another valid position.
+      act(() => {
+        result.current.handleMove({ x: 3, y: 2 }, { x: 3, y: 2 });
+      });
+
+      const call = mockSetInteraction.mock.calls[0][0];
+      expect(call.valid).toBe(true);
+      expect(call.currentCoord.x).not.toBe(3);
     });
 
     it('exits early if no interaction state', () => {
