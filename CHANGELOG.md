@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.10.0...gridfinity-layout-tool-v3.11.0) (2026-02-13)
+
+
+### Features
+
+* **feedback:** llm-enriched issue creation with priority and duplicate detection ([#731](https://github.com/andymai/gridfinity-layout-tool/issues/731)) ([cd4ea84](https://github.com/andymai/gridfinity-layout-tool/commit/cd4ea847ec07988a59d57b991b6aa9b484317301))
+
 ## [3.10.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.9.2...gridfinity-layout-tool-v3.10.0) (2026-02-13)
 
 
