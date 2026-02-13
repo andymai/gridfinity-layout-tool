@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.3...gridfinity-layout-tool-v3.11.4) (2026-02-13)
+
+
+### Bug Fixes
+
+* **analytics:** prevent Infinity binsPerMinute in ML confidence scoring ([#741](https://github.com/andymai/gridfinity-layout-tool/issues/741)) ([203d768](https://github.com/andymai/gridfinity-layout-tool/commit/203d7688fa26b624729ce35d978db059ce4da1f8))
+
 ## [3.11.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.2...gridfinity-layout-tool-v3.11.3) (2026-02-13)
 
 
