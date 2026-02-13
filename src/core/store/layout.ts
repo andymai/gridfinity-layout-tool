@@ -246,10 +246,10 @@ export const useLayoutStore = create<LayoutState>()(
       }
 
       const offsets = [
-        { dx: bin.width, dy: 0 },
-        { dx: 0, dy: -bin.depth },
-        { dx: -bin.width, dy: 0 },
-        { dx: 0, dy: bin.depth },
+        { dx: bin.width, dy: 0 }, // right
+        { dx: 0, dy: -bin.depth }, // below (y decreases going down visually)
+        { dx: -bin.width, dy: 0 }, // left
+        { dx: 0, dy: bin.depth }, // above
       ];
 
       for (const { dx, dy } of offsets) {
