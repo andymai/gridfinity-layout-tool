@@ -726,6 +726,26 @@ function validateSizeSequenceArray(value: unknown): value is string[] {
   return true;
 }
 
+// Field validators for common patterns in validateEvent
+function isBinSize(v: unknown): v is string {
+  return typeof v === 'string' && VALID_BIN_SIZE_REGEX.test(v);
+}
+function isDrawerSize(v: unknown): v is string {
+  return typeof v === 'string' && VALID_DRAWER_SIZE_REGEX.test(v);
+}
+function isLayerIndex(v: unknown): v is number {
+  return typeof v === 'number' && v >= 0 && v <= 20;
+}
+function isFillPct(v: unknown): v is number {
+  return typeof v === 'number' && v >= 0 && v <= 100;
+}
+function isBatchSize(v: unknown): v is number {
+  return typeof v === 'number' && v > 0 && v < 1000;
+}
+function isCount(v: unknown, max = 10000): v is number {
+  return typeof v === 'number' && v >= 0 && v < max;
+}
+
 function validateEvent(event: unknown): event is MLTelemetryEvent {
   if (!event || typeof event !== 'object') return false;
 
@@ -733,19 +753,14 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
 
   if (e.type === 'bin_placed') {
     return (
-      typeof e.bin_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
-      (e.prev_bin_size === null ||
-        (typeof e.prev_bin_size === 'string' && VALID_BIN_SIZE_REGEX.test(e.prev_bin_size))) &&
-      typeof e.drawer_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
+      isBinSize(e.bin_size) &&
+      (e.prev_bin_size === null || isBinSize(e.prev_bin_size)) &&
+      isDrawerSize(e.drawer_size) &&
       typeof e.gap_fit === 'string' &&
       VALID_GAP_FIT.has(e.gap_fit) &&
       typeof e.method === 'string' &&
       VALID_METHODS.has(e.method) &&
-      typeof e.session_index === 'number' &&
-      e.session_index >= 0 &&
-      e.session_index < 10000 &&
+      isCount(e.session_index) &&
       // Security: Validate fields used in Redis keys
       validateNullableField(e.label_hash, VALID_LABEL_HASH_REGEX) &&
       validateNullableField(e.label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
@@ -781,8 +796,7 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
 
   if (e.type === 'label_updated') {
     return (
-      typeof e.bin_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      isBinSize(e.bin_size) &&
       // Security: Validate fields used in Redis keys
       validateNullableField(e.old_label_hash, VALID_LABEL_HASH_REGEX) &&
       validateNullableField(e.old_label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
@@ -799,30 +813,19 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       VALID_TRIGGERS.has(e.trigger) &&
       typeof e.layout_hash === 'string' &&
       VALID_LAYOUT_HASH_REGEX.test(e.layout_hash) &&
-      typeof e.snapshot_index === 'number' &&
-      e.snapshot_index >= 0 &&
-      e.snapshot_index < 10000 &&
-      typeof e.drawer_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
-      typeof e.layer_count === 'number' &&
-      e.layer_count >= 0 &&
-      e.layer_count <= 20 &&
+      isCount(e.snapshot_index) &&
+      isDrawerSize(e.drawer_size) &&
+      isLayerIndex(e.layer_count) &&
       (e.purpose === null ||
         (typeof e.purpose === 'string' &&
           (VALID_PURPOSES.has(e.purpose) || VALID_PURPOSE_REGEX.test(e.purpose)))) &&
-      typeof e.bin_count === 'number' &&
-      e.bin_count >= 0 &&
-      e.bin_count < 10000 &&
+      isCount(e.bin_count) &&
       validateSizeDistribution(e.size_distribution) &&
       validateDistribution(e.category_distribution, VALID_CATEGORY_ID_REGEX) &&
       validateDistribution(e.domain_distribution, /^[a-z_]+$/) &&
       validateLabelHashArray(e.top_label_hashes) &&
-      typeof e.fill_percentage === 'number' &&
-      e.fill_percentage >= 0 &&
-      e.fill_percentage <= 100 &&
-      typeof e.labeled_percentage === 'number' &&
-      e.labeled_percentage >= 0 &&
-      e.labeled_percentage <= 100 &&
+      isFillPct(e.fill_percentage) &&
+      isFillPct(e.labeled_percentage) &&
       typeof e.session_duration_ms === 'number' &&
       e.session_duration_ms >= 0 &&
       typeof e.edit_count === 'number' &&
@@ -857,9 +860,7 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       VALID_LAYOUT_HASH_REGEX.test(e.layout_hash) &&
       typeof e.signal === 'string' &&
       VALID_QUALITY_SIGNALS.has(e.signal) &&
-      typeof e.days_since_creation === 'number' &&
-      e.days_since_creation >= 0 &&
-      e.days_since_creation < 10000 &&
+      isCount(e.days_since_creation) &&
       // New fields for PR 5
       (e.confidence_breakdown === undefined ||
         validateConfidenceBreakdown(e.confidence_breakdown)) &&
@@ -884,14 +885,11 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
 
   if (e.type === 'category_changed') {
     return (
-      typeof e.bin_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      isBinSize(e.bin_size) &&
       // Category name hash: 8-char hex (same format as label hashes)
       typeof e.category_name_hash === 'string' &&
       VALID_LABEL_HASH_REGEX.test(e.category_name_hash) &&
-      typeof e.batch_size === 'number' &&
-      e.batch_size > 0 &&
-      e.batch_size < 1000 &&
+      isBatchSize(e.batch_size) &&
       validateNullableField(e.label_hash, VALID_LABEL_HASH_REGEX) &&
       validateNullableDomain(e.label_domain)
     );
@@ -903,17 +901,11 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       e.dimensions_changed.length > 0 &&
       e.dimensions_changed.every((d: unknown) => d === 'width' || d === 'depth');
     return (
-      typeof e.old_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.old_size) &&
-      typeof e.new_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.new_size) &&
+      isBinSize(e.old_size) &&
+      isBinSize(e.new_size) &&
       validDimensions &&
-      typeof e.batch_size === 'number' &&
-      e.batch_size > 0 &&
-      e.batch_size < 1000 &&
-      typeof e.fill_pct === 'number' &&
-      e.fill_pct >= 0 &&
-      e.fill_pct <= 100 &&
+      isBatchSize(e.batch_size) &&
+      isFillPct(e.fill_pct) &&
       // Resize direction (Priority 1)
       typeof e.resize_direction === 'string' &&
       VALID_RESIZE_DIRECTIONS.has(e.resize_direction) &&
@@ -924,22 +916,15 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
 
   if (e.type === 'bin_deleted') {
     return (
-      typeof e.bin_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      isBinSize(e.bin_size) &&
       typeof e.position === 'string' &&
       VALID_POSITION_REGEX.test(e.position) &&
-      typeof e.layer_index === 'number' &&
-      e.layer_index >= 0 &&
-      e.layer_index <= 20 &&
+      isLayerIndex(e.layer_index) &&
       typeof e.had_label === 'boolean' &&
       validateNullableDomain(e.label_domain) &&
       (e.age_ms === null || (typeof e.age_ms === 'number' && e.age_ms >= 0)) &&
-      typeof e.batch_size === 'number' &&
-      e.batch_size > 0 &&
-      e.batch_size < 1000 &&
-      typeof e.fill_pct === 'number' &&
-      e.fill_pct >= 0 &&
-      e.fill_pct <= 100 &&
+      isBatchSize(e.batch_size) &&
+      isFillPct(e.fill_pct) &&
       typeof e.method === 'string' &&
       VALID_DELETE_METHODS.has(e.method)
     );
@@ -947,21 +932,14 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
 
   if (e.type === 'bin_moved') {
     return (
-      typeof e.bin_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      isBinSize(e.bin_size) &&
       typeof e.old_position === 'string' &&
       VALID_POSITION_REGEX.test(e.old_position) &&
       typeof e.new_position === 'string' &&
       VALID_POSITION_REGEX.test(e.new_position) &&
-      typeof e.distance === 'number' &&
-      e.distance >= 0 &&
-      e.distance < 1000 &&
-      typeof e.layer_index === 'number' &&
-      e.layer_index >= 0 &&
-      e.layer_index <= 20 &&
-      typeof e.batch_size === 'number' &&
-      e.batch_size > 0 &&
-      e.batch_size < 1000 &&
+      isCount(e.distance, 1000) &&
+      isLayerIndex(e.layer_index) &&
+      isBatchSize(e.batch_size) &&
       typeof e.method === 'string' &&
       VALID_MOVE_METHODS.has(e.method)
     );
@@ -973,17 +951,11 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       e.dimensions_changed.length > 0 &&
       e.dimensions_changed.every((d: unknown) => d === 'width' || d === 'depth' || d === 'height');
     return (
-      typeof e.old_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.old_size) &&
-      typeof e.new_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.new_size) &&
+      isDrawerSize(e.old_size) &&
+      isDrawerSize(e.new_size) &&
       validDimensions &&
-      typeof e.bins_staged === 'number' &&
-      e.bins_staged >= 0 &&
-      e.bins_staged < 10000 &&
-      typeof e.fill_pct === 'number' &&
-      e.fill_pct >= 0 &&
-      e.fill_pct <= 100
+      isCount(e.bins_staged) &&
+      isFillPct(e.fill_pct)
     );
   }
 
@@ -993,48 +965,31 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       VALID_FILL_METHODS.has(e.method) &&
       (e.fill_size === null ||
         (typeof e.fill_size === 'string' && VALID_FILL_SIZE_REGEX.test(e.fill_size))) &&
-      typeof e.bins_created === 'number' &&
+      isCount(e.bins_created) &&
       e.bins_created > 0 &&
-      e.bins_created < 10000 &&
-      typeof e.layer_index === 'number' &&
-      e.layer_index >= 0 &&
-      e.layer_index <= 20 &&
-      typeof e.fill_pct === 'number' &&
-      e.fill_pct >= 0 &&
-      e.fill_pct <= 100 &&
-      typeof e.drawer_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size)
+      isLayerIndex(e.layer_index) &&
+      isFillPct(e.fill_pct) &&
+      isDrawerSize(e.drawer_size)
     );
   }
 
   if (e.type === 'layer_move') {
     return (
-      typeof e.bin_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      isBinSize(e.bin_size) &&
       typeof e.from_layer_index === 'number' &&
       e.from_layer_index >= -1 && // -1 = staging
       e.from_layer_index <= 20 &&
       typeof e.to_layer_index === 'number' &&
       e.to_layer_index >= -1 && // -1 = staging
       e.to_layer_index <= 20 &&
-      typeof e.batch_size === 'number' &&
-      e.batch_size > 0 &&
-      e.batch_size < 1000 &&
+      isBatchSize(e.batch_size) &&
       typeof e.method === 'string' &&
       VALID_LAYER_MOVE_METHODS.has(e.method)
     );
   }
 
   if (e.type === 'bin_rotated') {
-    return (
-      typeof e.old_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.old_size) &&
-      typeof e.new_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.new_size) &&
-      typeof e.batch_size === 'number' &&
-      e.batch_size > 0 &&
-      e.batch_size < 1000
-    );
+    return isBinSize(e.old_size) && isBinSize(e.new_size) && isBatchSize(e.batch_size);
   }
 
   // ============================================
@@ -1051,14 +1006,9 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       (e.intended_position === null ||
         (typeof e.intended_position === 'string' &&
           VALID_POSITION_REGEX.test(e.intended_position))) &&
-      typeof e.layer_index === 'number' &&
-      e.layer_index >= 0 &&
-      e.layer_index <= 20 &&
-      typeof e.drawer_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
-      typeof e.fill_pct === 'number' &&
-      e.fill_pct >= 0 &&
-      e.fill_pct <= 100 &&
+      isLayerIndex(e.layer_index) &&
+      isDrawerSize(e.drawer_size) &&
+      isFillPct(e.fill_pct) &&
       typeof e.mode === 'string' &&
       VALID_DRAW_MODES.has(e.mode)
     );
@@ -1068,13 +1018,10 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
     return (
       typeof e.action_undone === 'string' &&
       VALID_UNDO_ACTIONS.has(e.action_undone) &&
-      typeof e.bins_affected === 'number' &&
-      e.bins_affected >= 0 &&
-      e.bins_affected < 10000 &&
+      isCount(e.bins_affected) &&
       typeof e.time_since_action_ms === 'number' &&
       e.time_since_action_ms >= 0 &&
-      typeof e.drawer_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size)
+      isDrawerSize(e.drawer_size)
     );
   }
 
@@ -1082,40 +1029,26 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
     return (
       typeof e.correction_type === 'string' &&
       VALID_CORRECTION_TYPES.has(e.correction_type) &&
-      typeof e.original_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.original_size) &&
-      (e.new_size === null ||
-        (typeof e.new_size === 'string' && VALID_BIN_SIZE_REGEX.test(e.new_size))) &&
+      isBinSize(e.original_size) &&
+      (e.new_size === null || isBinSize(e.new_size)) &&
       typeof e.placement_method === 'string' &&
       VALID_METHODS.has(e.placement_method) &&
-      typeof e.time_to_correction_ms === 'number' &&
-      e.time_to_correction_ms >= 0 &&
-      e.time_to_correction_ms < 600_000 && // Max 10 minutes
-      typeof e.layer_index === 'number' &&
-      e.layer_index >= 0 &&
-      e.layer_index <= 20
+      isCount(e.time_to_correction_ms, 600_000) && // Max 10 minutes
+      isLayerIndex(e.layer_index)
     );
   }
 
   if (e.type === 'bin_abandoned') {
     return (
-      typeof e.bin_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      isBinSize(e.bin_size) &&
       typeof e.position === 'string' &&
       VALID_POSITION_REGEX.test(e.position) &&
-      typeof e.layer_index === 'number' &&
-      e.layer_index >= 0 &&
-      e.layer_index <= 20 &&
-      typeof e.lifetime_ms === 'number' &&
-      e.lifetime_ms >= 0 &&
-      e.lifetime_ms < 86400000 && // Max 24 hours
+      isLayerIndex(e.layer_index) &&
+      isCount(e.lifetime_ms, 86400000) && // Max 24 hours
       typeof e.creation_method === 'string' &&
       VALID_METHODS.has(e.creation_method) &&
-      typeof e.fill_pct === 'number' &&
-      e.fill_pct >= 0 &&
-      e.fill_pct <= 100 &&
-      typeof e.drawer_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size)
+      isFillPct(e.fill_pct) &&
+      isDrawerSize(e.drawer_size)
     );
   }
 
@@ -1125,37 +1058,19 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
 
   if (e.type === 'session_summary') {
     return (
-      typeof e.bins_placed === 'number' &&
-      e.bins_placed >= 0 &&
-      e.bins_placed < 10000 &&
-      typeof e.bins_deleted === 'number' &&
-      e.bins_deleted >= 0 &&
-      e.bins_deleted < 10000 &&
-      typeof e.edits_total === 'number' &&
-      e.edits_total >= 0 &&
-      e.edits_total < 100000 &&
-      (e.time_to_first_bin_ms === null ||
-        (typeof e.time_to_first_bin_ms === 'number' &&
-          e.time_to_first_bin_ms >= 0 &&
-          e.time_to_first_bin_ms < 86400000)) && // Max 24 hours
-      typeof e.session_duration_ms === 'number' &&
-      e.session_duration_ms >= 0 &&
-      e.session_duration_ms < 86400000 && // Max 24 hours
+      isCount(e.bins_placed) &&
+      isCount(e.bins_deleted) &&
+      isCount(e.edits_total, 100000) &&
+      (e.time_to_first_bin_ms === null || isCount(e.time_to_first_bin_ms, 86400000)) && // Max 24 hours
+      isCount(e.session_duration_ms, 86400000) && // Max 24 hours
       validateSizeSequenceArray(e.size_sequence) &&
-      typeof e.edit_to_done_ratio === 'number' &&
-      e.edit_to_done_ratio >= 0 &&
-      e.edit_to_done_ratio <= 100 && // Ratio can exceed 1.0 when edits > bins (e.g., heavy editing then deleting)
-      typeof e.undo_count === 'number' &&
-      e.undo_count >= 0 &&
-      e.undo_count < 10000 &&
+      isFillPct(e.edit_to_done_ratio) && // Ratio can exceed 1.0 when edits > bins (e.g., heavy editing then deleting)
+      isCount(e.undo_count) &&
       typeof e.confidence_score === 'number' &&
       e.confidence_score >= 0 &&
       e.confidence_score <= 1 &&
-      typeof e.drawer_size === 'string' &&
-      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
-      typeof e.final_fill_pct === 'number' &&
-      e.final_fill_pct >= 0 &&
-      e.final_fill_pct <= 100
+      isDrawerSize(e.drawer_size) &&
+      isFillPct(e.final_fill_pct)
     );
   }
 
@@ -1173,7 +1088,7 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
     }
 
     // Validate drawer_size
-    if (typeof e.drawer_size !== 'string' || !VALID_DRAWER_SIZE_REGEX.test(e.drawer_size)) {
+    if (!isDrawerSize(e.drawer_size)) {
       return false;
     }
 
@@ -1239,8 +1154,20 @@ interface Increments {
 
 /** Initialize a hash bucket if needed and increment a field by the given amount (default 1). */
 function incr(inc: Increments, key: string, field: string, amount = 1): void {
-  const bucket = (inc[key] ??= {});
-  bucket[field] = (bucket[field] ?? 0) + amount;
+  const b = (inc[key] ??= {});
+  b[field] = (b[field] ?? 0) + amount;
+}
+
+/** Map a numeric value into a labeled bucket. Thresholds are [maxInclusive, label] pairs in ascending order. */
+function bucket(
+  value: number,
+  thresholds: ReadonlyArray<readonly [number, string]>,
+  overflow: string
+): string {
+  for (const [max, label] of thresholds) {
+    if (value <= max) return label;
+  }
+  return overflow;
 }
 
 function aggregateBinPlacement(event: BinPlacementEvent, inc: Increments): void {
@@ -1465,17 +1392,15 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
   incr(inc, 'ml:quality', signal);
 
   // Track by age bucket (0-1 day, 1-7 days, 7-30 days, 30+ days)
-  let ageBucket: string;
-  if (event.days_since_creation <= 1) {
-    ageBucket = 'day1';
-  } else if (event.days_since_creation <= 7) {
-    ageBucket = 'week1';
-  } else if (event.days_since_creation <= 30) {
-    ageBucket = 'month1';
-  } else {
-    ageBucket = 'older';
-  }
-
+  const ageBucket = bucket(
+    event.days_since_creation,
+    [
+      [1, 'day1'],
+      [7, 'week1'],
+      [30, 'month1'],
+    ],
+    'older'
+  );
   incr(inc, `ml:quality_age:${signal}`, ageBucket);
 
   // Track confidence breakdown distribution (if provided)
@@ -1584,12 +1509,16 @@ function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
 
   // Track area delta buckets (how much users adjust)
   const absAreaDelta = Math.abs(area_delta);
-  let deltaBucket: string;
-  if (absAreaDelta === 0) deltaBucket = '0';
-  else if (absAreaDelta <= 1) deltaBucket = '0-1';
-  else if (absAreaDelta <= 4) deltaBucket = '1-4';
-  else if (absAreaDelta <= 9) deltaBucket = '4-9';
-  else deltaBucket = '9+';
+  const deltaBucket = bucket(
+    absAreaDelta,
+    [
+      [0, '0'],
+      [1, '0-1'],
+      [4, '1-4'],
+      [9, '4-9'],
+    ],
+    '9+'
+  );
 
   const directionPrefix = area_delta > 0 ? '+' : area_delta < 0 ? '-' : '';
   incr(inc, 'ml:resize_delta', `${directionPrefix}${deltaBucket}`);
@@ -1649,16 +1578,15 @@ function aggregateBinMove(event: BinMovedEvent, inc: Increments): void {
   incr(inc, 'ml:move_methods', method);
 
   // Track move distance buckets (short, medium, long moves)
-  let distanceBucket: string;
-  if (distance <= 1) {
-    distanceBucket = 'micro'; // 1 cell or less
-  } else if (distance <= 3) {
-    distanceBucket = 'short'; // 2-3 cells
-  } else if (distance < 10) {
-    distanceBucket = 'medium'; // 4-9 cells
-  } else {
-    distanceBucket = 'long'; // 10+ cells (likely repositioning)
-  }
+  const distanceBucket = bucket(
+    distance,
+    [
+      [1, 'micro'], // 1 cell or less
+      [3, 'short'], // 2-3 cells
+      [9, 'medium'], // 4-9 cells
+    ],
+    'long'
+  ); // 10+ cells (likely repositioning)
   incr(inc, 'ml:move_distances', distanceBucket);
 
   // Track total moves
@@ -1812,42 +1740,36 @@ function aggregateUndo(event: UndoEvent, inc: Increments): void {
   const { action_undone, bins_affected, time_since_action_ms } = event;
 
   // Track what actions get undone (strong negative signal)
-  inc['ml:neg:undos'] = inc['ml:neg:undos'] || {};
-  inc['ml:neg:undos'][action_undone] = (inc['ml:neg:undos'][action_undone] || 0) + 1;
+  incr(inc, 'ml:neg:undos', action_undone);
 
   // Track timing buckets (how fast did user regret?)
-  // Immediate: <2s, Quick: 2-10s, Delayed: >10s
-  let timingBucket: string;
-  if (time_since_action_ms < 2000) {
-    timingBucket = 'immediate'; // Likely accidental or instant regret
-  } else if (time_since_action_ms < 10000) {
-    timingBucket = 'quick'; // Realized mistake quickly
-  } else {
-    timingBucket = 'delayed'; // Thought about it, then undid
-  }
-  inc['ml:neg:undo_timing'] = inc['ml:neg:undo_timing'] || {};
-  inc['ml:neg:undo_timing'][timingBucket] = (inc['ml:neg:undo_timing'][timingBucket] || 0) + 1;
+  const timingBucket = bucket(
+    time_since_action_ms,
+    [
+      [1999, 'immediate'], // <2s: Likely accidental or instant regret
+      [9999, 'quick'], // 2-10s: Realized mistake quickly
+    ],
+    'delayed'
+  ); // >10s: Thought about it, then undid
+  incr(inc, 'ml:neg:undo_timing', timingBucket);
 
   // Track by action + timing (e.g., "placement_immediate" indicates bad auto-suggestion)
-  const actionTimingKey = `${action_undone}_${timingBucket}`;
-  inc['ml:neg:undo_action_timing'] = inc['ml:neg:undo_action_timing'] || {};
-  inc['ml:neg:undo_action_timing'][actionTimingKey] =
-    (inc['ml:neg:undo_action_timing'][actionTimingKey] || 0) + 1;
+  incr(inc, 'ml:neg:undo_action_timing', `${action_undone}_${timingBucket}`);
 
   // Track bins affected (bulk undos vs single-bin undos)
-  const binsBucket =
-    bins_affected <= 1
-      ? 'single'
-      : bins_affected <= 5
-        ? 'few'
-        : bins_affected <= 20
-          ? 'many'
-          : 'bulk';
-  inc['ml:neg:undo_scale'] = inc['ml:neg:undo_scale'] || {};
-  inc['ml:neg:undo_scale'][binsBucket] = (inc['ml:neg:undo_scale'][binsBucket] || 0) + 1;
+  const binsBucket = bucket(
+    bins_affected,
+    [
+      [1, 'single'],
+      [5, 'few'],
+      [20, 'many'],
+    ],
+    'bulk'
+  );
+  incr(inc, 'ml:neg:undo_scale', binsBucket);
 
   // Track total undos
-  inc['ml:neg:undos']['total'] = (inc['ml:neg:undos']['total'] || 0) + 1;
+  incr(inc, 'ml:neg:undos', 'total');
 }
 
 /**
@@ -1867,45 +1789,32 @@ function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments):
     event;
 
   // Track correction type (delete, resize, move)
-  inc['ml:neg:quick_corrections'] = inc['ml:neg:quick_corrections'] || {};
-  inc['ml:neg:quick_corrections'][correction_type] =
-    (inc['ml:neg:quick_corrections'][correction_type] || 0) + 1;
+  incr(inc, 'ml:neg:quick_corrections', correction_type);
 
   // STRONG NEGATIVE SIGNAL: Track which sizes get quickly corrected
-  // These are sizes the model should NOT suggest
-  inc['ml:neg:corrected_sizes'] = inc['ml:neg:corrected_sizes'] || {};
-  inc['ml:neg:corrected_sizes'][original_size] =
-    (inc['ml:neg:corrected_sizes'][original_size] || 0) + 1;
+  incr(inc, 'ml:neg:corrected_sizes', original_size);
 
   // Track which placement methods produce quick corrections
-  // High correction rate for a method = that method needs improvement
-  const methodCorrKey = `ml:neg:correct_by_method:${placement_method}`;
-  inc[methodCorrKey] = inc[methodCorrKey] || {};
-  inc[methodCorrKey][correction_type] = (inc[methodCorrKey][correction_type] || 0) + 1;
+  incr(inc, `ml:neg:correct_by_method:${placement_method}`, correction_type);
 
   // Track correction timing
-  // <5s = very quick (probably obvious mistake), 5-15s = quick, 15-30s = considered
-  let timingBucket: string;
-  if (time_to_correction_ms < 5000) {
-    timingBucket = 'very_quick';
-  } else if (time_to_correction_ms < 15000) {
-    timingBucket = 'quick';
-  } else {
-    timingBucket = 'considered';
-  }
-  inc['ml:neg:correction_timing'] = inc['ml:neg:correction_timing'] || {};
-  inc['ml:neg:correction_timing'][timingBucket] =
-    (inc['ml:neg:correction_timing'][timingBucket] || 0) + 1;
+  const timingBucket = bucket(
+    time_to_correction_ms,
+    [
+      [4999, 'very_quick'], // <5s: probably obvious mistake
+      [14999, 'quick'], // 5-15s
+    ],
+    'considered'
+  ); // 15s+
+  incr(inc, 'ml:neg:correction_timing', timingBucket);
 
   // For resize corrections, track the size transition (what user ACTUALLY wanted)
   if (correction_type === 'resize' && new_size) {
-    const resizeCorrKey = `ml:neg:resize_correct:${original_size}`;
-    inc[resizeCorrKey] = inc[resizeCorrKey] || {};
-    inc[resizeCorrKey][new_size] = (inc[resizeCorrKey][new_size] || 0) + 1;
+    incr(inc, `ml:neg:resize_correct:${original_size}`, new_size);
   }
 
   // Track total quick corrections
-  inc['ml:neg:quick_corrections']['total'] = (inc['ml:neg:quick_corrections']['total'] || 0) + 1;
+  incr(inc, 'ml:neg:quick_corrections', 'total');
 }
 
 /**
@@ -1922,40 +1831,28 @@ function aggregateBinAbandonment(event: AbandonedBinEvent, inc: Increments): voi
   const { bin_size, creation_method, lifetime_ms, drawer_size } = event;
 
   // STRONG NEGATIVE SIGNAL: Track which sizes get abandoned
-  // These are sizes the model should be cautious about suggesting
-  inc['ml:neg:abandoned_sizes'] = inc['ml:neg:abandoned_sizes'] || {};
-  inc['ml:neg:abandoned_sizes'][bin_size] = (inc['ml:neg:abandoned_sizes'][bin_size] || 0) + 1;
+  incr(inc, 'ml:neg:abandoned_sizes', bin_size);
 
   // Track abandonment by creation method
-  // High abandonment for a method = that method produces regrettable placements
-  const methodKey = `ml:neg:abandoned_by_method:${creation_method}`;
-  inc[methodKey] = inc[methodKey] || {};
-  inc[methodKey][bin_size] = (inc[methodKey][bin_size] || 0) + 1;
+  incr(inc, `ml:neg:abandoned_by_method:${creation_method}`, bin_size);
 
   // Track lifetime buckets
-  // <1min = very quick abandon, 1-5min = quick, 5-30min = considered, >30min = long-lived
-  let lifetimeBucket: string;
-  if (lifetime_ms < 60000) {
-    lifetimeBucket = '<1min';
-  } else if (lifetime_ms < 300000) {
-    lifetimeBucket = '1-5min';
-  } else if (lifetime_ms < 1800000) {
-    lifetimeBucket = '5-30min';
-  } else {
-    lifetimeBucket = '>30min';
-  }
-  inc['ml:neg:abandon_lifetime'] = inc['ml:neg:abandon_lifetime'] || {};
-  inc['ml:neg:abandon_lifetime'][lifetimeBucket] =
-    (inc['ml:neg:abandon_lifetime'][lifetimeBucket] || 0) + 1;
+  const lifetimeBucket = bucket(
+    lifetime_ms,
+    [
+      [59999, '<1min'],
+      [299999, '1-5min'],
+      [1799999, '5-30min'],
+    ],
+    '>30min'
+  );
+  incr(inc, 'ml:neg:abandon_lifetime', lifetimeBucket);
 
   // Track by drawer size (some drawer contexts may have more abandoned bins)
-  const drawerKey = `ml:neg:abandoned_by_drawer:${drawer_size}`;
-  inc[drawerKey] = inc[drawerKey] || {};
-  inc[drawerKey][bin_size] = (inc[drawerKey][bin_size] || 0) + 1;
+  incr(inc, `ml:neg:abandoned_by_drawer:${drawer_size}`, bin_size);
 
   // Track total
-  inc['ml:neg:abandonment_total'] = inc['ml:neg:abandonment_total'] || {};
-  inc['ml:neg:abandonment_total']['total'] = (inc['ml:neg:abandonment_total']['total'] || 0) + 1;
+  incr(inc, 'ml:neg:abandonment_total', 'total');
 }
 
 /**

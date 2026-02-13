@@ -1,3 +1,5 @@
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
+
 interface ItemSearchProps {
   value: string;
   onChange: (value: string) => void;
@@ -28,12 +30,9 @@ export function ItemSearch({
         stroke="currentColor"
         aria-hidden="true"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-        />
+        {ICON_PATHS.search.map((d) => (
+          <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+        ))}
       </svg>
       <input
         ref={inputRef}
@@ -58,12 +57,9 @@ export function ItemSearch({
             stroke="currentColor"
             aria-hidden="true"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+            {ICON_PATHS.close.map((d) => (
+              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+            ))}
           </svg>
         </button>
       )}

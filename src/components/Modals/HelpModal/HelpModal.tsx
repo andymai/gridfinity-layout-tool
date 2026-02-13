@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, type CSSProperties } from 'react';
 import { SHORTCUTS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -93,7 +94,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     id: 'general',
     nameKey: 'help.category.general',
-    icon: <CommandIcon />,
+    icon: <HelpCategoryIcon paths={ICON_PATHS.menu} />,
     shortcuts: [
       { keys: 'K', descriptionKey: 'help.shortcut.commandPalette', modifier: true },
       { keys: formatKey(SHORTCUTS.UNDO), descriptionKey: 'common.undo', modifier: true },
@@ -106,7 +107,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     id: 'editing',
     nameKey: 'help.category.editing',
-    icon: <EditIcon />,
+    icon: <HelpCategoryIcon paths={ICON_PATHS.edit} />,
     shortcuts: [
       { keys: 'D', descriptionKey: 'help.shortcut.duplicate', modifier: true },
       { keys: formatKey(SHORTCUTS.DELETE), descriptionKey: 'help.shortcut.delete' },
@@ -122,7 +123,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     id: 'navigation',
     nameKey: 'help.category.navigation',
-    icon: <NavigationIcon />,
+    icon: <HelpCategoryIcon paths={ICON_PATHS.navigation} />,
     shortcuts: [
       {
         keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(),
@@ -149,7 +150,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     id: 'view',
     nameKey: 'help.category.view',
-    icon: <ViewIcon />,
+    icon: <HelpCategoryIcon paths={ICON_PATHS.eye} />,
     shortcuts: [
       { keys: formatKey(SHORTCUTS.ZOOM_IN), descriptionKey: 'help.shortcut.zoomIn' },
       { keys: formatKey(SHORTCUTS.ZOOM_OUT), descriptionKey: 'help.shortcut.zoomOut' },
@@ -159,7 +160,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     id: '3d-preview',
     nameKey: 'help.category.preview3d',
-    icon: <CubeIcon />,
+    icon: <HelpCategoryIcon paths={ICON_PATHS.cube} />,
     shortcuts: [
       {
         keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(),
@@ -171,7 +172,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     id: 'advanced',
     nameKey: 'help.category.advanced',
-    icon: <SettingsIcon />,
+    icon: <HelpCategoryIcon paths={ICON_PATHS.settings} />,
     shortcuts: [
       {
         keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(),
@@ -253,12 +254,15 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
               aria-label={t('common.close')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                {ICON_PATHS.close.map((d) => (
+                  <path
+                    key={d}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={d}
+                  />
+                ))}
               </svg>
             </button>
           </div>
@@ -297,12 +301,15 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
+                    {ICON_PATHS.search.map((d) => (
+                      <path
+                        key={d}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d={d}
+                      />
+                    ))}
                   </svg>
                   <input
                     type="text"
@@ -323,12 +330,15 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
+                        {ICON_PATHS.close.map((d) => (
+                          <path
+                            key={d}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d={d}
+                          />
+                        ))}
                       </svg>
                     </button>
                   )}
@@ -351,12 +361,15 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 10V3L4 14h7v7l9-11h-7z"
-                        />
+                        {ICON_PATHS.bolt.map((d) => (
+                          <path
+                            key={d}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d={d}
+                          />
+                        ))}
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -500,7 +513,7 @@ function MouseInteractionsSection() {
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent">
-          <MouseIcon />
+          <HelpCategoryIcon paths={ICON_PATHS.mouse} />
         </span>
         <h3 style={STYLES.sectionHeader}>{t('help.mouse')}</h3>
       </div>
@@ -546,7 +559,7 @@ function TouchGesturesSection() {
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent">
-          <TouchIcon />
+          <HelpCategoryIcon paths={ICON_PATHS.touch} />
         </span>
         <h3 style={STYLES.sectionHeader}>{t('help.touchGestures')}</h3>
       </div>
@@ -663,119 +676,12 @@ function BinClearanceSection() {
   );
 }
 
-// Category icons
-function CommandIcon() {
+function HelpCategoryIcon({ paths }: { paths: readonly string[] }) {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M4 6h16M4 12h16M4 18h7"
-      />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-      />
-    </svg>
-  );
-}
-
-function NavigationIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-      />
-    </svg>
-  );
-}
-
-function ViewIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-      />
-    </svg>
-  );
-}
-
-function CubeIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-      />
-    </svg>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-      />
-    </svg>
-  );
-}
-
-function MouseIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
-      />
-    </svg>
-  );
-}
-
-function TouchIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"
-      />
+      {paths.map((d) => (
+        <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+      ))}
     </svg>
   );
 }

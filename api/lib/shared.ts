@@ -1,3 +1,5 @@
+import type { VercelResponse } from '@vercel/node';
+
 /**
  * Shared utilities for API endpoints.
  *
@@ -122,4 +124,19 @@ export interface ShareMetadata {
 export interface ShareData {
   layout: unknown;
   metadata: ShareMetadata;
+}
+
+export function methodNotAllowed(res: VercelResponse, allowed: string): VercelResponse {
+  res.setHeader('Allow', allowed);
+  return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+}
+
+export function getBaseUrl(): string {
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'https://localhost:3000';
 }

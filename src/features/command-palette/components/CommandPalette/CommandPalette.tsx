@@ -31,19 +31,23 @@ import type { CommandDefinition } from '../../commands';
 import { useRecentCommandsStore } from '../../store/recentStore';
 import { ShortcutBadge } from '../ShortcutBadge';
 import { CommandPaletteFooter } from '../CommandPaletteFooter';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import type { IconName } from '@/shared/constants/iconPaths';
 
-interface CommandPaletteProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+type ActionHandler = (() => void) | null;
+
+/** Dispatch a nameless CustomEvent on window */
+function dispatchWindowEvent(name: string): void {
+  window.dispatchEvent(new CustomEvent(name));
 }
 
-export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+/**
+ * Builds a map of command ID to action handler (or null if unavailable).
+ * Extracted from the component to keep the render body focused on presentation.
+ */
+function useActionHandlers(): Record<string, ActionHandler> {
   const t = useTranslation();
 
-  // Frecency tracking
-  const { recordUsage } = useRecentCommandsStore();
-
-  // Stores
   const layout = useLayoutStore((s) => s.layout);
   const { undo, redo, canUndo, canRedo } = useHistoryStore(
     useShallow((s) => ({
@@ -107,433 +111,371 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   );
   const { execute } = useUndoableAction();
   const { deleteBin, duplicateBin, updateBin, addLayer } = useMutations();
-
-  // Layout management
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
 
-  // Build action handlers
-  const getAction = useCallback(
-    (id: string): (() => void) | null => {
-      switch (id) {
-        // Navigation
-        case 'open-layout-manager':
-          return () => setShowLayoutManager(true);
-        case 'open-settings':
-          return () => window.dispatchEvent(new CustomEvent('open-settings-modal'));
-        case 'open-help':
-          return () => window.dispatchEvent(new CustomEvent('open-help-modal'));
-        case 'open-print':
-          return () => setPrintModalOpen(true);
-        case 'send-feedback':
-          return () => window.dispatchEvent(new CustomEvent('open-feedback-modal'));
-        case 'switch-to-designer':
-          return () => window.dispatchEvent(new CustomEvent('switch-to-designer'));
+  return useMemo(() => {
+    const hasBinsSelected = selectedBinIds.length > 0;
+    const hasSingleBin = selectedBinIds.length === 1;
+    const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
+    const stagingBins = getStagingBins(layout.bins);
+    const categories = layout.categories;
 
-        // Edit
-        case 'undo':
-          return canUndo ? () => undo() : null;
-        case 'redo':
-          return canRedo ? () => redo() : null;
-        case 'delete-selected':
-          return selectedBinIds.length > 0
-            ? () => {
-                execute(() => {
-                  for (const binId of selectedBinIds) {
-                    deleteBin(binId);
-                  }
-                });
-                setSelectedBins([]);
-              }
-            : null;
-        case 'duplicate-selected':
-          return selectedBinIds.length > 0
-            ? () => {
-                execute(() => {
-                  const newIds: BinId[] = [];
-                  for (const id of selectedBinIds) {
-                    const result = duplicateBin(id);
-                    if (isOk(result)) {
-                      newIds.push(binId(result.value));
-                    }
-                  }
-                  if (newIds.length > 0) {
-                    setSelectedBins(newIds);
-                  }
-                });
-              }
-            : null;
-        case 'rotate-bin': {
-          if (selectedBinIds.length !== 1) return null;
-          const bin = findBinById(layout, selectedBinIds[0]);
-          if (!bin) return null;
-          return () => {
-            execute(() => {
-              updateBin(bin.id, { width: bin.depth, depth: bin.width });
-            });
-          };
+    // --- Helpers for repeated patterns ---
+
+    function clearSelection(): void {
+      setSelectedBins([]);
+      setInteraction(null);
+    }
+
+    function cycleBinInLayer(direction: 1 | -1): ActionHandler {
+      const sorted = layerBins.sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y));
+      if (sorted.length === 0) return null;
+      const currentId = selectedBinIds[0];
+      const currentIndex = sorted.findIndex((b) => b.id === currentId);
+      const nextIndex =
+        currentIndex < 0 ? 0 : (currentIndex + direction + sorted.length) % sorted.length;
+      return () => setSelectedBins([sorted[nextIndex].id]);
+    }
+
+    function cycleCategory(direction: 1 | -1): ActionHandler {
+      if (categories.length === 0) return null;
+
+      if (hasBinsSelected) {
+        const firstBin = findBinById(layout, selectedBinIds[0]);
+        if (!firstBin) return null;
+
+        return () => {
+          const currentPos = categories.findIndex((c) => c.id === firstBin.category);
+          const nextPos = (currentPos + direction + categories.length) % categories.length;
+          const newCategoryId = categories[nextPos].id;
+
+          execute(() => {
+            for (const id of selectedBinIds) {
+              const result = updateBin(id, { category: newCategoryId });
+              if (isErr(result)) break;
+            }
+          });
+          addToast(
+            t('toast.categoryChanged', {
+              count: selectedBinIds.length,
+              name: categories[nextPos].name,
+            }),
+            'success'
+          );
+        };
+      }
+
+      // No selection: cycle active drawing category
+      return () => {
+        const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
+        let nextIndex: number;
+        if (currentIndex === -1) {
+          nextIndex = direction === 1 ? 0 : categories.length - 1;
+        } else {
+          nextIndex = (currentIndex + direction + categories.length) % categories.length;
         }
-        case 'quick-label':
-          return selectedBinIds.length === 1 ? () => showQuickLabel(selectedBinIds[0]) : null;
-        case 'clear-selection':
-          return () => {
+        setActiveCategory(categories[nextIndex].id);
+      };
+    }
+
+    // --- Navigation ---
+    const navigation: Record<string, ActionHandler> = {
+      'open-layout-manager': () => setShowLayoutManager(true),
+      'open-settings': () => dispatchWindowEvent('open-settings-modal'),
+      'open-help': () => dispatchWindowEvent('open-help-modal'),
+      'open-print': () => setPrintModalOpen(true),
+      'send-feedback': () => dispatchWindowEvent('open-feedback-modal'),
+      'switch-to-designer': () => dispatchWindowEvent('switch-to-designer'),
+      'new-layout': () => {
+        void createNewLayout();
+      },
+      'duplicate-layout': activeLayoutId
+        ? () => {
+            void duplicateLayout(activeLayoutId);
+          }
+        : null,
+    };
+
+    // --- Edit ---
+    const rotateBin = (): ActionHandler => {
+      if (!hasSingleBin) return null;
+      const bin = findBinById(layout, selectedBinIds[0]);
+      if (!bin) return null;
+      return () => {
+        execute(() => {
+          const result = updateBin(bin.id, { width: bin.depth, depth: bin.width });
+          if (isErr(result)) return;
+        });
+      };
+    };
+
+    const edit: Record<string, ActionHandler> = {
+      undo: canUndo ? () => undo() : null,
+      redo: canRedo ? () => redo() : null,
+      'delete-selected': hasBinsSelected
+        ? () => {
+            execute(() => {
+              for (const id of selectedBinIds) {
+                const result = deleteBin(id);
+                if (isErr(result)) break;
+              }
+            });
             setSelectedBins([]);
-            setInteraction(null);
-          };
-
-        // Layers
-        case 'add-layer':
-          return () => addLayer();
-        case 'layer-up': {
-          const currentIndex = layout.layers.findIndex((l) => l.id === activeLayerId);
-          if (currentIndex < layout.layers.length - 1) {
-            return () => setActiveLayer(layout.layers[currentIndex + 1].id);
           }
-          return null;
-        }
-        case 'layer-down': {
-          const currentIndex = layout.layers.findIndex((l) => l.id === activeLayerId);
-          if (currentIndex > 0) {
-            return () => setActiveLayer(layout.layers[currentIndex - 1].id);
-          }
-          return null;
-        }
-        case 'clear-layer':
-          return () => {
-            const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
-            if (layerBins.length === 0) return;
+        : null,
+      'duplicate-selected': hasBinsSelected
+        ? () => {
             execute(() => {
-              for (const b of layerBins) {
-                deleteBin(b.id);
+              const newIds: BinId[] = [];
+              for (const id of selectedBinIds) {
+                const result = duplicateBin(id);
+                if (isOk(result)) {
+                  newIds.push(binId(result.value));
+                }
+              }
+              if (newIds.length > 0) {
+                setSelectedBins(newIds);
               }
             });
-          };
+          }
+        : null,
+      'rotate-bin': rotateBin(),
+      'quick-label': hasSingleBin ? () => showQuickLabel(selectedBinIds[0]) : null,
+      'clear-selection': () => clearSelection(),
+    };
 
-        // View
-        case 'zoom-in':
-          return () => zoomIn();
-        case 'zoom-out':
-          return () => zoomOut();
-        case 'fit-to-screen':
-          return () => window.dispatchEvent(new CustomEvent('fit-to-screen'));
-        case 'toggle-other-layers':
-          return () => toggleShowOtherLayers();
+    // --- Selection ---
+    const invertedIds = (() => {
+      if (layerBins.length === 0) return [];
+      const currentSet = new Set(selectedBinIds);
+      return layerBins.filter((b) => !currentSet.has(b.id)).map((b) => b.id);
+    })();
 
-        // 3D Preview
-        case 'toggle-preview':
-          return () => toggleIsometricPreview();
-        case 'expand-preview':
-          return showIsometricPreview ? () => togglePreviewExpanded() : null;
+    const selectByCategory = (): ActionHandler => {
+      if (!hasBinsSelected) return null;
+      const firstBin = findBinById(layout, selectedBinIds[0]);
+      if (!firstBin) return null;
+      const sameCategoryBins = layout.bins
+        .filter((b) => b.layerId === activeLayerId && b.category === firstBin.category)
+        .map((b) => b.id);
+      const category = categories.find((c) => c.id === firstBin.category);
+      return () => {
+        setSelectedBins(sameCategoryBins);
+        addToast(
+          t('toast.selectedByCategory', {
+            count: sameCategoryBins.length,
+            name: category?.name || 'category',
+          }),
+          'info'
+        );
+      };
+    };
 
-        // Bins
-        case 'prev-bin':
-        case 'next-bin': {
-          const layerBins = layout.bins
-            .filter((b) => b.layerId === activeLayerId)
-            .sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y));
-          if (layerBins.length === 0) return null;
-          const currentId = selectedBinIds[0];
-          const currentIndex = layerBins.findIndex((b) => b.id === currentId);
-          const direction = id === 'next-bin' ? 1 : -1;
-          const nextIndex =
-            currentIndex < 0 ? 0 : (currentIndex + direction + layerBins.length) % layerBins.length;
-          return () => setSelectedBins([layerBins[nextIndex].id]);
-        }
-        case 'prev-category':
-        case 'next-category': {
-          const categories = layout.categories;
-          if (categories.length === 0) return null;
+    const selection: Record<string, ActionHandler> = {
+      'select-all':
+        layerBins.length > 0
+          ? () => {
+              setSelectedBins(layerBins.map((b) => b.id));
+              addToast(t('toast.selectedAll', { count: layerBins.length }), 'info');
+            }
+          : null,
+      'select-none': hasBinsSelected ? () => clearSelection() : null,
+      'invert-selection':
+        layerBins.length > 0 && invertedIds.length > 0
+          ? () => {
+              setSelectedBins(invertedIds);
+              addToast(t('toast.selectionInverted', { count: invertedIds.length }), 'info');
+            }
+          : null,
+      'select-by-category': selectByCategory(),
+    };
 
-          const direction = id === 'next-category' ? 1 : -1;
+    // --- Layers ---
+    const currentLayerIndex = layout.layers.findIndex((l) => l.id === activeLayerId);
 
-          if (selectedBinIds.length > 0) {
-            // Cycle category of selected bins
-            const firstBin = findBinById(layout, selectedBinIds[0]);
-            if (!firstBin) return null;
+    const layers: Record<string, ActionHandler> = {
+      'add-layer': () => addLayer(),
+      'layer-up':
+        currentLayerIndex < layout.layers.length - 1
+          ? () => setActiveLayer(layout.layers[currentLayerIndex + 1].id)
+          : null,
+      'layer-down':
+        currentLayerIndex > 0
+          ? () => setActiveLayer(layout.layers[currentLayerIndex - 1].id)
+          : null,
+      'clear-layer': () => {
+        if (layerBins.length === 0) return;
+        execute(() => {
+          for (const b of layerBins) {
+            const result = deleteBin(b.id);
+            if (isErr(result)) break;
+          }
+        });
+      },
+    };
 
-            return () => {
-              const currentPos = categories.findIndex((c) => c.id === firstBin.category);
-              const nextPos = (currentPos + direction + categories.length) % categories.length;
-              const newCategoryId = categories[nextPos].id;
+    // --- View ---
+    const view: Record<string, ActionHandler> = {
+      'zoom-in': () => zoomIn(),
+      'zoom-out': () => zoomOut(),
+      'fit-to-screen': () => dispatchWindowEvent('fit-to-screen'),
+      'toggle-other-layers': () => toggleShowOtherLayers(),
+    };
 
+    // --- 3D Preview ---
+    const preview: Record<string, ActionHandler> = {
+      'toggle-preview': () => toggleIsometricPreview(),
+      'expand-preview': showIsometricPreview ? () => togglePreviewExpanded() : null,
+    };
+
+    // --- Bins ---
+    const bins: Record<string, ActionHandler> = {
+      'prev-bin': cycleBinInLayer(-1),
+      'next-bin': cycleBinInLayer(1),
+      'prev-category': cycleCategory(-1),
+      'next-category': cycleCategory(1),
+      'move-to-stash': hasBinsSelected
+        ? () => {
+            execute(() => {
+              for (const id of selectedBinIds) {
+                if (isErr(updateBin(id, { layerId: STAGING_ID }))) break;
+              }
+            });
+            addToast(t('toast.movedToStash', { count: selectedBinIds.length }), 'info');
+            setSelectedBins([]);
+          }
+        : null,
+      'clear-staging':
+        stagingBins.length > 0
+          ? () => {
               execute(() => {
-                for (const binId of selectedBinIds) {
-                  updateBin(binId, { category: newCategoryId });
+                for (const bin of stagingBins) {
+                  const result = deleteBin(bin.id);
+                  if (isErr(result)) break;
                 }
               });
-              addToast(
-                t('toast.categoryChanged', {
-                  count: selectedBinIds.length,
-                  name: categories[nextPos].name,
-                }),
-                'success'
-              );
-            };
-          } else {
-            // Cycle active drawing category
-            return () => {
-              const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
-              const nextIndex =
-                currentIndex === -1
-                  ? direction === 1
-                    ? 0
-                    : categories.length - 1
-                  : (currentIndex + direction + categories.length) % categories.length;
-              setActiveCategory(categories[nextIndex].id);
-            };
-          }
-        }
-        case 'move-to-stash':
-          return selectedBinIds.length > 0
-            ? () => {
-                execute(() => {
-                  for (const binId of selectedBinIds) {
-                    if (isErr(updateBin(binId, { layerId: STAGING_ID }))) break;
-                  }
-                });
-                addToast(t('toast.movedToStash', { count: selectedBinIds.length }), 'info');
-                setSelectedBins([]);
-              }
-            : null;
-
-        // Tools
-        case 'toggle-half-bin':
-          return () => {
-            const result = toggleHalfBinMode();
-            if (!isOk(result)) {
-              addToast(t('halfBinBlocked.title'), 'error');
+              addToast(t('toast.stagingCleared', { count: stagingBins.length }), 'success');
             }
-          };
-        case 'fill-gaps':
-          return () => fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode);
-
-        // Export
-        case 'download-layout':
-          return () => window.dispatchEvent(new CustomEvent('download-layout'));
-        case 'copy-share-link':
-          return () => window.dispatchEvent(new CustomEvent('open-share-modal'));
-
-        // Name suggestions
-        case 'suggest-layout-name':
-          return () => window.dispatchEvent(new CustomEvent('trigger-name-suggestions'));
-        // Selection
-        case 'select-all': {
-          const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
-          return layerBins.length > 0
-            ? () => {
-                setSelectedBins(layerBins.map((b) => b.id));
-                addToast(t('toast.selectedAll', { count: layerBins.length }), 'info');
-              }
-            : null;
-        }
-        case 'select-none':
-          return selectedBinIds.length > 0
-            ? () => {
-                setSelectedBins([]);
-                setInteraction(null);
-              }
-            : null;
-        case 'invert-selection': {
-          const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
-          if (layerBins.length === 0) return null;
-          const currentSet = new Set(selectedBinIds);
-          const invertedIds = layerBins.filter((b) => !currentSet.has(b.id)).map((b) => b.id);
-          return invertedIds.length > 0
-            ? () => {
-                setSelectedBins(invertedIds);
-                addToast(t('toast.selectionInverted', { count: invertedIds.length }), 'info');
-              }
-            : null;
-        }
-        case 'select-by-category': {
-          if (selectedBinIds.length === 0) return null;
-          const firstBin = findBinById(layout, selectedBinIds[0]);
-          if (!firstBin) return null;
-          const sameCategoryBins = layout.bins
-            .filter((b) => b.layerId === activeLayerId && b.category === firstBin.category)
-            .map((b) => b.id);
-          const category = layout.categories.find((c) => c.id === firstBin.category);
-          return () => {
-            setSelectedBins(sameCategoryBins);
-            addToast(
-              t('toast.selectedByCategory', {
-                count: sameCategoryBins.length,
-                name: category?.name || 'category',
-              }),
-              'info'
-            );
-          };
-        }
-
-        // Layout management
-        case 'new-layout':
-          return () => {
-            void createNewLayout();
-          };
-        case 'duplicate-layout':
-          return activeLayoutId
-            ? () => {
-                void duplicateLayout(activeLayoutId);
-              }
-            : null;
-
-        // Tools (extended)
-        case 'toggle-paint-mode':
-          return () => {
-            if (paintSize) {
-              setPaintSize(null);
-            } else {
-              setPaintSize({ width: 1, depth: 1 });
-              addToast(t('toast.paintModeEnabled'), 'info');
+          : null,
+      'restore-from-staging':
+        stagingBins.length > 0
+          ? () => {
+              execute(() => {
+                for (const bin of stagingBins) {
+                  const result = updateBin(bin.id, { layerId: activeLayerId });
+                  if (isErr(result)) break;
+                }
+              });
+              addToast(t('toast.restoredFromStaging', { count: stagingBins.length }), 'success');
             }
-          };
-        case 'fill-layer':
-          return () => {
-            const count = fillLayer(activeLayerId, 1, 1, activeCategoryId, halfBinMode);
-            if (count > 0) {
-              addToast(t('toast.layerFilled'), 'success');
-            }
-          };
+          : null,
+    };
 
-        // Staging
-        case 'clear-staging': {
-          const stagingBins = getStagingBins(layout.bins);
-          return stagingBins.length > 0
-            ? () => {
-                execute(() => {
-                  for (const bin of stagingBins) {
-                    deleteBin(bin.id);
-                  }
-                });
-                addToast(t('toast.stagingCleared', { count: stagingBins.length }), 'success');
-              }
-            : null;
+    // --- Tools ---
+    const tools: Record<string, ActionHandler> = {
+      'toggle-half-bin': () => {
+        const result = toggleHalfBinMode();
+        if (!isOk(result)) {
+          addToast(t('halfBinBlocked.title'), 'error');
         }
-        case 'restore-from-staging': {
-          const stagingBins = getStagingBins(layout.bins);
-          return stagingBins.length > 0
-            ? () => {
-                execute(() => {
-                  for (const bin of stagingBins) {
-                    updateBin(bin.id, { layerId: activeLayerId });
-                  }
-                });
-                addToast(t('toast.restoredFromStaging', { count: stagingBins.length }), 'success');
-              }
-            : null;
+      },
+      'fill-gaps': () => fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode),
+      'toggle-paint-mode': () => {
+        if (paintSize) {
+          setPaintSize(null);
+        } else {
+          setPaintSize({ width: 1, depth: 1 });
+          addToast(t('toast.paintModeEnabled'), 'info');
         }
+      },
+      'fill-layer': () => {
+        const count = fillLayer(activeLayerId, 1, 1, activeCategoryId, halfBinMode);
+        if (count > 0) {
+          addToast(t('toast.layerFilled'), 'success');
+        }
+      },
+      'suggest-layout-name': () => dispatchWindowEvent('trigger-name-suggestions'),
+    };
 
-        default:
-          return null;
-      }
-    },
-    [
-      canUndo,
-      canRedo,
-      undo,
-      redo,
-      selectedBinIds,
-      layout,
-      activeLayerId,
-      activeCategoryId,
-      activeLayoutId,
-      showIsometricPreview,
-      halfBinMode,
-      paintSize,
-      execute,
-      deleteBin,
-      duplicateBin,
-      updateBin,
-      addLayer,
-      fillLayerGaps,
-      fillLayer,
-      createNewLayout,
-      duplicateLayout,
-      setPaintSize,
-      setSelectedBins,
-      setActiveLayer,
-      setActiveCategory,
-      setInteraction,
-      setShowLayoutManager,
-      setPrintModalOpen,
-      toggleIsometricPreview,
-      togglePreviewExpanded,
-      toggleShowOtherLayers,
-      showQuickLabel,
-      toggleHalfBinMode,
-      zoomIn,
-      zoomOut,
-      addToast,
-      t,
-    ]
+    // --- Export ---
+    const exportActions: Record<string, ActionHandler> = {
+      'download-layout': () => dispatchWindowEvent('download-layout'),
+      'copy-share-link': () => dispatchWindowEvent('open-share-modal'),
+    };
+
+    return {
+      ...navigation,
+      ...edit,
+      ...selection,
+      ...layers,
+      ...view,
+      ...preview,
+      ...bins,
+      ...tools,
+      ...exportActions,
+    };
+  }, [
+    canUndo,
+    canRedo,
+    undo,
+    redo,
+    selectedBinIds,
+    layout,
+    activeLayerId,
+    activeCategoryId,
+    activeLayoutId,
+    showIsometricPreview,
+    halfBinMode,
+    paintSize,
+    execute,
+    deleteBin,
+    duplicateBin,
+    updateBin,
+    addLayer,
+    fillLayerGaps,
+    fillLayer,
+    createNewLayout,
+    duplicateLayout,
+    setPaintSize,
+    setSelectedBins,
+    setActiveLayer,
+    setActiveCategory,
+    setInteraction,
+    setShowLayoutManager,
+    setPrintModalOpen,
+    toggleIsometricPreview,
+    togglePreviewExpanded,
+    toggleShowOtherLayers,
+    showQuickLabel,
+    toggleHalfBinMode,
+    zoomIn,
+    zoomOut,
+    addToast,
+    t,
+  ]);
+}
+
+interface CommandPaletteProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+  const t = useTranslation();
+
+  // Frecency tracking
+  const { recordUsage } = useRecentCommandsStore();
+
+  // Build all action handlers via extracted hook
+  const actionHandlers = useActionHandlers();
+
+  const getAction = useCallback(
+    (id: string): ActionHandler => actionHandlers[id] ?? null,
+    [actionHandlers]
   );
 
   // Contextual boost multipliers based on current app state
-  const contextBoosts = useMemo(() => {
-    const hasBinsSelected = selectedBinIds.length > 0;
-    const hasSingleBin = selectedBinIds.length === 1;
-    const hasMultipleLayers = layout.layers.length > 1;
-    const hasLayerBins = layout.bins.some((b) => b.layerId === activeLayerId);
-    const hasStagingBins = getStagingBins(layout.bins).length > 0;
-
-    // Returns multiplier: >1 = boosted, <1 = demoted, 1 = neutral
-    const boosts: Record<string, number> = {
-      // Edit commands - boost when bins selected
-      'delete-selected': hasBinsSelected ? 2.0 : 0.4,
-      'duplicate-selected': hasBinsSelected ? 2.0 : 0.4,
-      'rotate-bin': hasSingleBin ? 2.0 : 0.3,
-      'quick-label': hasSingleBin ? 1.8 : 0.4,
-      'clear-selection': hasBinsSelected ? 1.5 : 0.3,
-      'move-to-stash': hasBinsSelected ? 1.8 : 0.4,
-
-      // Layer commands - boost when multiple layers
-      'layer-up': hasMultipleLayers ? 1.5 : 0.5,
-      'layer-down': hasMultipleLayers ? 1.5 : 0.5,
-      'add-layer': layout.layers.length < 10 ? 1.3 : 0.5,
-      'clear-layer': hasLayerBins ? 1.5 : 0.3,
-
-      // 3D preview commands - boost when preview visible
-      'expand-preview': showIsometricPreview ? 1.8 : 0.3,
-      'toggle-preview': showIsometricPreview ? 1.0 : 1.5,
-
-      // Undo/redo - boost when available
-      undo: canUndo ? 1.5 : 0.3,
-      redo: canRedo ? 1.5 : 0.3,
-
-      // Category navigation - boost when bins selected
-      'prev-category': hasBinsSelected ? 1.8 : 0.8,
-      'next-category': hasBinsSelected ? 1.8 : 0.8,
-
-      // Selection - boost select-all when no selection, select-none when selection exists
-      'select-all': hasBinsSelected ? 0.5 : 1.8,
-      'select-none': hasBinsSelected ? 1.5 : 0.3,
-
-      // Paint mode - boost when not in paint mode
-      'toggle-paint-mode': paintSize ? 1.2 : 1.5,
-
-      // Fill operations - boost when layer has space
-      'fill-layer': hasLayerBins ? 0.8 : 1.8,
-      'fill-gaps': hasLayerBins ? 1.5 : 0.5,
-
-      // Staging operations - boost when staging has bins
-      'clear-staging': hasStagingBins ? 1.8 : 0.3,
-      'restore-from-staging': hasStagingBins ? 2.0 : 0.3,
-
-      // Advanced selection - boost when bins selected
-      'invert-selection': hasLayerBins ? 1.5 : 0.3,
-      'select-by-category': hasBinsSelected ? 1.8 : 0.3,
-    };
-
-    return boosts;
-  }, [
-    selectedBinIds.length,
-    layout.layers.length,
-    layout.bins,
-    activeLayerId,
-    showIsometricPreview,
-    canUndo,
-    canRedo,
-    paintSize,
-  ]);
+  const contextBoosts = useContextBoosts();
 
   // Build commands with availability and boosted scores
   const commands = useMemo(() => {
@@ -638,11 +580,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               stroke="currentColor"
               strokeWidth={2.5}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
+              {ICON_PATHS.search.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" d={d} />
+              ))}
             </svg>
             <Command.Input
               placeholder={t('commandPalette.placeholder')}
@@ -666,11 +606,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                     stroke="currentColor"
                     strokeWidth={1.5}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
-                    />
+                    {ICON_PATHS.questionCircle.map((d) => (
+                      <path key={d} strokeLinecap="round" strokeLinejoin="round" d={d} />
+                    ))}
                   </svg>
                 </div>
                 <p className="text-sm text-content-secondary">{t('commandPalette.noResults')}</p>
@@ -689,11 +627,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                       stroke="currentColor"
                       strokeWidth={2}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
+                      {ICON_PATHS.clock.map((d) => (
+                        <path key={d} strokeLinecap="round" strokeLinejoin="round" d={d} />
+                      ))}
                     </svg>
                     <span className="text-[10px] font-semibold text-content-tertiary uppercase tracking-wider">
                       {t('commandPalette.recent')}
@@ -749,34 +685,100 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   );
 }
 
-const CATEGORY_ICON_PATHS: Record<string, string[]> = {
-  navigation: [
-    'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
-  ],
-  edit: [
-    'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
-  ],
-  layers: [
-    'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
-  ],
-  view: [
-    'M15 12a3 3 0 11-6 0 3 3 0 016 0z',
-    'M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
-  ],
-  preview: [
-    'M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5',
-  ],
-  bins: ['M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'],
-  tools: [
-    'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z',
-    'M15 12a3 3 0 11-6 0 3 3 0 016 0z',
-  ],
-  export: ['M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12'],
+/**
+ * Contextual boost multipliers based on current app state.
+ * Extracted to keep the component body focused.
+ */
+function useContextBoosts(): Record<string, number> {
+  const selectedBinIds = useSelectionStore((s) => s.selectedBinIds);
+  const layout = useLayoutStore((s) => s.layout);
+  const activeLayerId = useSelectionStore((s) => s.activeLayerId);
+  const showIsometricPreview = useInteractionStore((s) => s.showIsometricPreview);
+  const { canUndo, canRedo } = useHistoryStore(
+    useShallow((s) => ({ canUndo: s.canUndo, canRedo: s.canRedo }))
+  );
+  const paintSize = useInteractionStore((s) => s.paintSize);
+
+  return useMemo(() => {
+    const hasBinsSelected = selectedBinIds.length > 0;
+    const hasSingleBin = selectedBinIds.length === 1;
+    const hasMultipleLayers = layout.layers.length > 1;
+    const hasLayerBins = layout.bins.some((b) => b.layerId === activeLayerId);
+    const hasStagingBins = getStagingBins(layout.bins).length > 0;
+
+    return {
+      // Edit commands - boost when bins selected
+      'delete-selected': hasBinsSelected ? 2.0 : 0.4,
+      'duplicate-selected': hasBinsSelected ? 2.0 : 0.4,
+      'rotate-bin': hasSingleBin ? 2.0 : 0.3,
+      'quick-label': hasSingleBin ? 1.8 : 0.4,
+      'clear-selection': hasBinsSelected ? 1.5 : 0.3,
+      'move-to-stash': hasBinsSelected ? 1.8 : 0.4,
+
+      // Layer commands - boost when multiple layers
+      'layer-up': hasMultipleLayers ? 1.5 : 0.5,
+      'layer-down': hasMultipleLayers ? 1.5 : 0.5,
+      'add-layer': layout.layers.length < 10 ? 1.3 : 0.5,
+      'clear-layer': hasLayerBins ? 1.5 : 0.3,
+
+      // 3D preview commands - boost when preview visible
+      'expand-preview': showIsometricPreview ? 1.8 : 0.3,
+      'toggle-preview': showIsometricPreview ? 1.0 : 1.5,
+
+      // Undo/redo - boost when available
+      undo: canUndo ? 1.5 : 0.3,
+      redo: canRedo ? 1.5 : 0.3,
+
+      // Category navigation - boost when bins selected
+      'prev-category': hasBinsSelected ? 1.8 : 0.8,
+      'next-category': hasBinsSelected ? 1.8 : 0.8,
+
+      // Selection - boost select-all when no selection, select-none when selection exists
+      'select-all': hasBinsSelected ? 0.5 : 1.8,
+      'select-none': hasBinsSelected ? 1.5 : 0.3,
+
+      // Paint mode - boost when not in paint mode
+      'toggle-paint-mode': paintSize ? 1.2 : 1.5,
+
+      // Fill operations - boost when layer has space
+      'fill-layer': hasLayerBins ? 0.8 : 1.8,
+      'fill-gaps': hasLayerBins ? 1.5 : 0.5,
+
+      // Staging operations - boost when staging has bins
+      'clear-staging': hasStagingBins ? 1.8 : 0.3,
+      'restore-from-staging': hasStagingBins ? 2.0 : 0.3,
+
+      // Advanced selection - boost when bins selected
+      'invert-selection': hasLayerBins ? 1.5 : 0.3,
+      'select-by-category': hasBinsSelected ? 1.8 : 0.3,
+    };
+  }, [
+    selectedBinIds.length,
+    layout.layers.length,
+    layout.bins,
+    activeLayerId,
+    showIsometricPreview,
+    canUndo,
+    canRedo,
+    paintSize,
+  ]);
+}
+
+const CATEGORY_ICON_MAP: Record<string, IconName> = {
+  navigation: 'home',
+  edit: 'edit',
+  layers: 'layers',
+  view: 'eye',
+  preview: '3dPreview',
+  bins: 'cube',
+  tools: 'settings',
+  export: 'upload',
 };
 
 function CategoryIcon({ category }: { category: string }) {
-  const paths = CATEGORY_ICON_PATHS[category];
-  if (!paths) return null;
+  const iconName = CATEGORY_ICON_MAP[category];
+  if (!iconName) return null;
+  const paths = ICON_PATHS[iconName];
 
   return (
     <svg

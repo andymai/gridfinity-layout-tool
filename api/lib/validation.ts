@@ -3,6 +3,8 @@
  * Adapted from client-side validation but with stricter limits.
  */
 
+import { isNumber, isObject, inRange, validationError } from './validationUtils.js';
+
 // Constraints for shared layouts
 const SHARE_CONSTRAINTS = {
   MAX_SIZE_BYTES: 500 * 1024, // 500KB
@@ -115,26 +117,17 @@ export function isValidationError(
 export function validateShareLayout(data: unknown, jsonSize: number): ValidationResult {
   // Size check first
   if (jsonSize > SHARE_CONSTRAINTS.MAX_SIZE_BYTES) {
-    return {
-      valid: false,
-      error: {
-        code: 'SIZE_LIMIT',
-        message: `Layout exceeds maximum size of ${SHARE_CONSTRAINTS.MAX_SIZE_BYTES / 1024}KB`,
-      },
-    };
+    return validationError(
+      'SIZE_LIMIT',
+      `Layout exceeds maximum size of ${SHARE_CONSTRAINTS.MAX_SIZE_BYTES / 1024}KB`
+    );
   }
 
-  if (!data || typeof data !== 'object') {
-    return {
-      valid: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Invalid layout format',
-      },
-    };
+  if (!isObject(data)) {
+    return validationError('VALIDATION_ERROR', 'Invalid layout format');
   }
 
-  const layout = data as Record<string, unknown>;
+  const layout = data;
 
   // Check required fields
   const requiredErrors: string[] = [];
@@ -158,13 +151,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
   }
 
   if (requiredErrors.length > 0) {
-    return {
-      valid: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: `Invalid layout: ${requiredErrors.join(', ')}`,
-      },
-    };
+    return validationError('VALIDATION_ERROR', `Invalid layout: ${requiredErrors.join(', ')}`);
   }
 
   const drawer = layout.drawer as DrawerShape;
@@ -174,62 +161,44 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
 
   // Bin count check
   if (bins.length > SHARE_CONSTRAINTS.MAX_BINS) {
-    return {
-      valid: false,
-      error: {
-        code: 'BIN_LIMIT',
-        message: `Layout exceeds maximum of ${SHARE_CONSTRAINTS.MAX_BINS} bins`,
-      },
-    };
+    return validationError(
+      'BIN_LIMIT',
+      `Layout exceeds maximum of ${SHARE_CONSTRAINTS.MAX_BINS} bins`
+    );
   }
 
   // Validate drawer dimensions
   if (
-    !isInRange(drawer.width, SHARE_CONSTRAINTS.GRID_MIN, SHARE_CONSTRAINTS.GRID_MAX) ||
-    !isInRange(drawer.depth, SHARE_CONSTRAINTS.GRID_MIN, SHARE_CONSTRAINTS.GRID_MAX)
+    !inRange(drawer.width, SHARE_CONSTRAINTS.GRID_MIN, SHARE_CONSTRAINTS.GRID_MAX) ||
+    !inRange(drawer.depth, SHARE_CONSTRAINTS.GRID_MIN, SHARE_CONSTRAINTS.GRID_MAX)
   ) {
-    return {
-      valid: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: `Drawer dimensions must be ${SHARE_CONSTRAINTS.GRID_MIN}-${SHARE_CONSTRAINTS.GRID_MAX}`,
-      },
-    };
+    return validationError(
+      'VALIDATION_ERROR',
+      `Drawer dimensions must be ${SHARE_CONSTRAINTS.GRID_MIN}-${SHARE_CONSTRAINTS.GRID_MAX}`
+    );
   }
 
   // Validate layer count
-  if (!isInRange(layers.length, SHARE_CONSTRAINTS.LAYERS_MIN, SHARE_CONSTRAINTS.LAYERS_MAX)) {
-    return {
-      valid: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: `Must have ${SHARE_CONSTRAINTS.LAYERS_MIN}-${SHARE_CONSTRAINTS.LAYERS_MAX} layers`,
-      },
-    };
+  if (!inRange(layers.length, SHARE_CONSTRAINTS.LAYERS_MIN, SHARE_CONSTRAINTS.LAYERS_MAX)) {
+    return validationError(
+      'VALIDATION_ERROR',
+      `Must have ${SHARE_CONSTRAINTS.LAYERS_MIN}-${SHARE_CONSTRAINTS.LAYERS_MAX} layers`
+    );
   }
 
   // Validate category count
   if (categories.length > SHARE_CONSTRAINTS.CATEGORIES_MAX) {
-    return {
-      valid: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: `Maximum ${SHARE_CONSTRAINTS.CATEGORIES_MAX} categories allowed`,
-      },
-    };
+    return validationError(
+      'VALIDATION_ERROR',
+      `Maximum ${SHARE_CONSTRAINTS.CATEGORIES_MAX} categories allowed`
+    );
   }
 
   // Validate each layer
   const validatedLayers: LayerShape[] = [];
   for (const layer of layers) {
     if (!isValidLayer(layer)) {
-      return {
-        valid: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid layer structure',
-        },
-      };
+      return validationError('VALIDATION_ERROR', 'Invalid layer structure');
     }
     validatedLayers.push({
       id: sanitizeString(layer.id, 64),
@@ -242,13 +211,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
   const validatedBins: BinShape[] = [];
   for (const bin of bins) {
     if (!isValidBin(bin)) {
-      return {
-        valid: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid bin structure',
-        },
-      };
+      return validationError('VALIDATION_ERROR', 'Invalid bin structure');
     }
 
     // Validate and sanitize custom properties if present
@@ -263,13 +226,10 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
 
       // Check property count
       if (keys.length > SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT) {
-        return {
-          valid: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: `Bin has too many custom properties (max ${SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT})`,
-          },
-        };
+        return validationError(
+          'VALIDATION_ERROR',
+          `Bin has too many custom properties (max ${SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT})`
+        );
       }
 
       // Validate and sanitize each property
@@ -299,13 +259,10 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
 
         // Check total size limit
         if (totalSize > SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_TOTAL_SIZE) {
-          return {
-            valid: false,
-            error: {
-              code: 'VALIDATION_ERROR',
-              message: `Bin custom properties exceed size limit (max ${SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_TOTAL_SIZE / 1024}KB)`,
-            },
-          };
+          return validationError(
+            'VALIDATION_ERROR',
+            `Bin custom properties exceed size limit (max ${SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_TOTAL_SIZE / 1024}KB)`
+          );
         }
 
         sanitized[cleanKey] = cleanValue;
@@ -335,13 +292,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
   const validatedCategories: CategoryShape[] = [];
   for (const cat of categories) {
     if (!isValidCategory(cat)) {
-      return {
-        valid: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid category structure',
-        },
-      };
+      return validationError('VALIDATION_ERROR', 'Invalid category structure');
     }
     validatedCategories.push({
       id: sanitizeString(cat.id, 64),
@@ -360,18 +311,9 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       layers: validatedLayers,
       bins: validatedBins,
       categories: validatedCategories,
-      printBedSize:
-        typeof layout.printBedSize === 'number' && Number.isFinite(layout.printBedSize)
-          ? layout.printBedSize
-          : undefined,
-      gridUnitMm:
-        typeof layout.gridUnitMm === 'number' && Number.isFinite(layout.gridUnitMm)
-          ? layout.gridUnitMm
-          : undefined,
-      heightUnitMm:
-        typeof layout.heightUnitMm === 'number' && Number.isFinite(layout.heightUnitMm)
-          ? layout.heightUnitMm
-          : undefined,
+      printBedSize: isNumber(layout.printBedSize) ? layout.printBedSize : undefined,
+      gridUnitMm: isNumber(layout.gridUnitMm) ? layout.gridUnitMm : undefined,
+      heightUnitMm: isNumber(layout.heightUnitMm) ? layout.heightUnitMm : undefined,
     },
   };
 }
@@ -388,66 +330,50 @@ export function validateExpiration(days: unknown): days is ValidExpiration {
 
 // Type guards
 function isValidDrawer(value: unknown): value is DrawerShape {
-  if (!value || typeof value !== 'object') return false;
-  const obj = value as Record<string, unknown>;
+  if (!isObject(value)) return false;
   return (
-    typeof obj.width === 'number' &&
-    typeof obj.depth === 'number' &&
-    typeof obj.height === 'number' &&
-    Number.isFinite(obj.width) &&
-    Number.isFinite(obj.depth) &&
-    Number.isFinite(obj.height) &&
-    obj.width > 0 &&
-    obj.depth > 0 &&
-    obj.height > 0
+    isNumber(value.width) &&
+    isNumber(value.depth) &&
+    isNumber(value.height) &&
+    value.width > 0 &&
+    value.depth > 0 &&
+    value.height > 0
   );
 }
 
 function isValidLayer(value: unknown): value is LayerShape {
-  if (!value || typeof value !== 'object') return false;
-  const obj = value as Record<string, unknown>;
+  if (!isObject(value)) return false;
   return (
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.height === 'number' &&
-    Number.isFinite(obj.height) &&
-    obj.height > 0
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    isNumber(value.height) &&
+    value.height > 0
   );
 }
 
 function isValidBin(value: unknown): value is BinShape {
-  if (!value || typeof value !== 'object') return false;
-  const obj = value as Record<string, unknown>;
+  if (!isObject(value)) return false;
   return (
-    typeof obj.id === 'string' &&
-    typeof obj.layerId === 'string' &&
-    typeof obj.x === 'number' &&
-    typeof obj.y === 'number' &&
-    typeof obj.width === 'number' &&
-    typeof obj.depth === 'number' &&
-    typeof obj.height === 'number' &&
-    Number.isFinite(obj.x) &&
-    Number.isFinite(obj.y) &&
-    Number.isFinite(obj.width) &&
-    Number.isFinite(obj.depth) &&
-    Number.isFinite(obj.height) &&
-    obj.width > 0 &&
-    obj.depth > 0 &&
-    obj.height > 0
+    typeof value.id === 'string' &&
+    typeof value.layerId === 'string' &&
+    isNumber(value.x) &&
+    isNumber(value.y) &&
+    isNumber(value.width) &&
+    isNumber(value.depth) &&
+    isNumber(value.height) &&
+    value.width > 0 &&
+    value.depth > 0 &&
+    value.height > 0
   );
 }
 
 function isValidCategory(value: unknown): value is CategoryShape {
-  if (!value || typeof value !== 'object') return false;
-  const obj = value as Record<string, unknown>;
+  if (!isObject(value)) return false;
   return (
-    typeof obj.id === 'string' && typeof obj.name === 'string' && typeof obj.color === 'string'
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.color === 'string'
   );
-}
-
-// Utility functions
-function isInRange(value: number, min: number, max: number): boolean {
-  return value >= min && value <= max;
 }
 
 function sanitizeString(str: string, maxLength: number): string {

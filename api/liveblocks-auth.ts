@@ -2,7 +2,7 @@ import { Liveblocks } from '@liveblocks/node';
 import { head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
-import { ErrorCode, isValidShareId } from './lib/shared.js';
+import { ErrorCode, isValidShareId, methodNotAllowed } from './lib/shared.js';
 import type { ShareData } from './lib/shared.js';
 
 /**
@@ -64,12 +64,8 @@ interface AuthRequest {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Only allow POST
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res
-      .status(405)
-      .json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+    return methodNotAllowed(res, 'POST');
   }
 
   try {

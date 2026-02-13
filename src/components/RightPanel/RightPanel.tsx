@@ -7,6 +7,7 @@ import { exportPrintListTSV } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/shared/analytics/posthog';
 import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
 import { useTranslation } from '@/i18n';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 const LIST_SEPARATOR = ', ';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
@@ -70,12 +71,9 @@ export function RightPanel() {
             aria-label={t('rightPanel.expandRightPanel')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-              />
+              {ICON_PATHS.chevronDoubleLeft.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
             </svg>
           </button>
         </div>
@@ -91,12 +89,9 @@ export function RightPanel() {
       aria-label={t('rightPanel.collapseRightPanel')}
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M13 5l7 7-7 7M5 5l7 7-7 7"
-        />
+        {ICON_PATHS.chevronDoubleRight.map((d) => (
+          <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+        ))}
       </svg>
     </button>
   );
@@ -205,21 +200,27 @@ export function RightPanel() {
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
+                      {ICON_PATHS.check.map((d) => (
+                        <path
+                          key={d}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={d}
+                        />
+                      ))}
                     </svg>
                   ) : (
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      />
+                      {ICON_PATHS.duplicate.map((d) => (
+                        <path
+                          key={d}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={d}
+                        />
+                      ))}
                     </svg>
                   )}
                 </button>

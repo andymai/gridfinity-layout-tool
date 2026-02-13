@@ -6,6 +6,7 @@ import { useTranslation } from '@/i18n';
 import { ContextMenuContainer, ContextMenuItem } from '@/shared/components/ContextMenu';
 import { openSTLSearch, formatDimension } from '@/utils/stlSearch';
 import type { STLSearchSite } from '@/core/store/settings';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 interface STLSearchDropdownProps {
   /** Bin width in grid units */
@@ -256,12 +257,9 @@ function SearchIcon({ className }: { className?: string }) {
       stroke="currentColor"
       aria-hidden="true"
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-      />
+      {ICON_PATHS.search.map((d) => (
+        <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+      ))}
     </svg>
   );
 }
@@ -289,7 +287,9 @@ function ChevronRightIcon({ className }: { className?: string }) {
       stroke="currentColor"
       aria-hidden="true"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      {ICON_PATHS.chevronRight.map((d) => (
+        <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+      ))}
     </svg>
   );
 }

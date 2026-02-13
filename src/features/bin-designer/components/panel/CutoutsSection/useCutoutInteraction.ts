@@ -185,6 +185,61 @@ function cloneCutoutsWithGroups(
   });
 }
 
+/** Clamp a position so the cutout stays within bin bounds. */
+function clampedOffset(
+  original: Cutout,
+  offset: number,
+  binWidth: number,
+  binDepth: number
+): { x: number; y: number } {
+  return {
+    x: Math.min(original.x + offset, binWidth - original.width),
+    y: Math.min(original.y + offset, binDepth - original.depth),
+  };
+}
+
+/**
+ * Clone cutouts, add each to the layout, and select the new set.
+ * Returns the cloned cutouts (with originalId) for further use.
+ */
+function addClonedCutouts(
+  originals: readonly Cutout[],
+  onAdd: (cutout: Cutout) => void,
+  setSelection: (sel: ReadonlySet<string>) => void,
+  offsetFn?: (original: Cutout) => { x: number; y: number }
+): readonly ClonedCutout[] {
+  const clones = cloneCutoutsWithGroups(originals, offsetFn);
+  for (const { originalId: _, ...cutout } of clones) {
+    onAdd(cutout);
+  }
+  setSelection(new Set(clones.map((c) => c.id)));
+  return clones;
+}
+
+/** Default cutout properties shared by click-to-place and draw-to-place. */
+function createDefaultCutout(
+  id: string,
+  shape: CutoutShape,
+  x: number,
+  y: number,
+  width: number,
+  depth: number
+): Cutout {
+  return {
+    id,
+    shape,
+    x,
+    y,
+    width,
+    depth,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+  };
+}
+
 export function useCutoutInteraction({
   cutouts,
   onUpdate,
@@ -371,28 +426,18 @@ export function useCutoutInteraction({
     pasteCountRef.current += 1;
     const offset = PASTE_OFFSET * pasteCountRef.current;
 
-    const clones = cloneCutoutsWithGroups(clipboard, (original) => ({
-      x: Math.min(original.x + offset, binWidth - original.width),
-      y: Math.min(original.y + offset, binDepth - original.depth),
-    }));
-    for (const { originalId: _, ...cutout } of clones) {
-      onAdd(cutout);
-    }
-    setSelection(new Set(clones.map((c) => c.id)));
+    addClonedCutouts(clipboard, onAdd, setSelection, (original) =>
+      clampedOffset(original, offset, binWidth, binDepth)
+    );
   }, [clipboard, onAdd, binWidth, binDepth]);
 
   const duplicateSelected = useCallback(() => {
     const selected = cutouts.filter((c) => selection.has(c.id));
     if (selected.length === 0) return;
 
-    const clones = cloneCutoutsWithGroups(selected, (original) => ({
-      x: Math.min(original.x + PASTE_OFFSET, binWidth - original.width),
-      y: Math.min(original.y + PASTE_OFFSET, binDepth - original.depth),
-    }));
-    for (const { originalId: _, ...cutout } of clones) {
-      onAdd(cutout);
-    }
-    setSelection(new Set(clones.map((c) => c.id)));
+    addClonedCutouts(selected, onAdd, setSelection, (original) =>
+      clampedOffset(original, PASTE_OFFSET, binWidth, binDepth)
+    );
   }, [cutouts, selection, onAdd, binWidth, binDepth]);
 
   // ── Path tool ────────────────────────────────────────────────────
@@ -413,17 +458,7 @@ export function useCutoutInteraction({
       const { minX, minY, maxX, maxY } = getPathBounds(clamped);
       const newId = crypto.randomUUID();
       onAdd({
-        id: newId,
-        shape: 'path',
-        x: minX,
-        y: minY,
-        width: maxX - minX,
-        depth: maxY - minY,
-        cutDepth: 5,
-        rotation: 0,
-        cornerRadius: 0,
-        label: '',
-        groupId: null,
+        ...createDefaultCutout(newId, 'path', minX, minY, maxX - minX, maxY - minY),
         path: clamped,
       });
       setSelection(new Set([newId]));
@@ -569,13 +604,9 @@ export function useCutoutInteraction({
       let cloneOriginMap: ReadonlyMap<string, string> | null = null;
       if (altKey) {
         const selected = cutouts.filter((c) => effectiveSelection.has(c.id));
-        const clones = cloneCutoutsWithGroups(selected);
-        for (const { originalId: _, ...cutout } of clones) {
-          onAdd(cutout);
-        }
+        const clones = addClonedCutouts(selected, onAdd, setSelection);
         cloneOriginMap = new Map(clones.map((c) => [c.id, c.originalId]));
         dragSelection = new Set(clones.map((c) => c.id));
-        setSelection(dragSelection);
       }
 
       // Store offset from cursor to each selected cutout's origin
@@ -758,133 +789,149 @@ export function useCutoutInteraction({
 
   // ── Pointer up (commit) ────────────────────────────────────────────
 
-  const handlePointerUp = useCallback(() => {
-    if (mode.type === 'pending-place') {
-      // Click-to-place: create default-sized shape centered at click position
-      const defaultW = mode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
-      const defaultD = mode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
-      const x = Math.max(0, Math.min(snap(mode.startMmX - defaultW / 2), binWidth - defaultW));
-      const y = Math.max(0, Math.min(snap(mode.startMmY - defaultD / 2), binDepth - defaultD));
+  /** Click-to-place: create a default-sized shape centered at the click position. */
+  const commitPendingPlace = useCallback(
+    (placeMode: Extract<InteractionMode, { type: 'pending-place' }>) => {
+      const defaultSize = placeMode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
+      const x = Math.max(
+        0,
+        Math.min(snap(placeMode.startMmX - defaultSize / 2), binWidth - defaultSize)
+      );
+      const y = Math.max(
+        0,
+        Math.min(snap(placeMode.startMmY - defaultSize / 2), binDepth - defaultSize)
+      );
       const newId = crypto.randomUUID();
-      onAdd({
-        id: newId,
-        shape: mode.shape,
-        x,
-        y,
-        width: defaultW,
-        depth: defaultD,
-        cutDepth: 5,
-        rotation: 0,
-        cornerRadius: 0,
-        label: '',
-        groupId: null,
-      });
+      onAdd(createDefaultCutout(newId, placeMode.shape, x, y, defaultSize, defaultSize));
       setSelection(new Set([newId]));
       setMode({ type: 'idle' });
-      return;
-    }
+    },
+    [snap, binWidth, binDepth, onAdd]
+  );
 
-    if (
-      mode.type === 'dragging' ||
-      mode.type === 'resizing' ||
-      mode.type === 'rotating' ||
-      mode.type === 'group-rotating' ||
-      mode.type === 'group-scaling'
-    ) {
-      // Only commit if we actually moved past the dead zone
-      if (pastDeadZoneRef.current && preview.size > 0) {
-        // For path cutouts during drag, translate absolute path point coordinates
-        // to match the new x/y bounding box position.
-        const augmented = new Map(preview);
-        if (mode.type === 'dragging') {
-          for (const [id, updates] of augmented) {
-            const cutout = cutouts.find((c) => c.id === id);
-            if (
-              cutout?.shape === 'path' &&
-              cutout.path &&
-              updates.x !== undefined &&
-              updates.y !== undefined
-            ) {
-              const dx = updates.x - cutout.x;
-              const dy = updates.y - cutout.y;
-              if (dx !== 0 || dy !== 0) {
-                augmented.set(id, {
-                  ...updates,
-                  path: cutout.path.map((pt) => ({
-                    ...pt,
-                    x: pt.x + dx,
-                    y: pt.y + dy,
-                  })),
-                });
-              }
+  /**
+   * Augment drag preview with translated path coordinates, then commit all
+   * preview updates to the store.
+   */
+  const commitTransformPreview = useCallback(
+    (isDrag: boolean) => {
+      if (!pastDeadZoneRef.current || preview.size === 0) return;
+
+      // For path cutouts during drag, translate absolute path point coordinates
+      // to match the new x/y bounding box position.
+      const augmented = new Map(preview);
+      if (isDrag) {
+        for (const [id, updates] of augmented) {
+          const cutout = cutouts.find((c) => c.id === id);
+          if (
+            cutout?.shape === 'path' &&
+            cutout.path &&
+            updates.x !== undefined &&
+            updates.y !== undefined
+          ) {
+            const dx = updates.x - cutout.x;
+            const dy = updates.y - cutout.y;
+            if (dx !== 0 || dy !== 0) {
+              augmented.set(id, {
+                ...updates,
+                path: cutout.path.map((pt) => ({
+                  ...pt,
+                  x: pt.x + dx,
+                  y: pt.y + dy,
+                })),
+              });
             }
           }
         }
-        if (onUpdateBatch && augmented.size > 1) {
-          onUpdateBatch(augmented);
-        } else {
-          for (const [id, updates] of augmented) {
-            onUpdate(id, updates);
-          }
+      }
+      if (onUpdateBatch && augmented.size > 1) {
+        onUpdateBatch(augmented);
+      } else {
+        for (const [id, updates] of augmented) {
+          onUpdate(id, updates);
         }
       }
-      setPreview(new Map());
-      setActiveGuides([]);
-      setMode({ type: 'idle' });
-    } else if (mode.type === 'drawing') {
-      // Commit the drawn shape
-      if (
-        drawingPreview &&
-        drawingPreview.width >= MIN_CUTOUT_SIZE &&
-        drawingPreview.depth >= MIN_CUTOUT_SIZE
-      ) {
-        const newId = crypto.randomUUID();
-        onAdd({
-          id: newId,
-          shape: drawingPreview.shape,
-          x: drawingPreview.x,
-          y: drawingPreview.y,
-          width: drawingPreview.width,
-          depth: drawingPreview.depth,
-          cutDepth: 5,
-          rotation: 0,
-          cornerRadius: 0,
-          label: '',
-          groupId: null,
-        });
-        setSelection(new Set([newId]));
+    },
+    [preview, cutouts, onUpdate, onUpdateBatch]
+  );
+
+  /** Commit the draw-to-place preview as a new cutout. */
+  const commitDrawing = useCallback(() => {
+    if (
+      drawingPreview &&
+      drawingPreview.width >= MIN_CUTOUT_SIZE &&
+      drawingPreview.depth >= MIN_CUTOUT_SIZE
+    ) {
+      const newId = crypto.randomUUID();
+      onAdd(
+        createDefaultCutout(
+          newId,
+          drawingPreview.shape,
+          drawingPreview.x,
+          drawingPreview.y,
+          drawingPreview.width,
+          drawingPreview.depth
+        )
+      );
+      setSelection(new Set([newId]));
+    }
+    setDrawingPreview(null);
+    setMode({ type: 'idle' });
+  }, [drawingPreview, onAdd]);
+
+  const handlePointerUp = useCallback(() => {
+    switch (mode.type) {
+      case 'pending-place':
+        commitPendingPlace(mode);
+        return;
+
+      case 'dragging':
+      case 'resizing':
+      case 'rotating':
+      case 'group-rotating':
+      case 'group-scaling':
+        commitTransformPreview(mode.type === 'dragging');
+        setPreview(new Map());
+        setActiveGuides([]);
+        setMode({ type: 'idle' });
+        return;
+
+      case 'drawing':
+        commitDrawing();
+        return;
+
+      case 'path-drawing':
+        handlePathDrawingPointerUp(mode, { setMode });
+        return;
+
+      case 'vertex-editing': {
+        const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
+        if (editCutout) {
+          handleVertexEditPointerUp(mode, editCutout, preview, {
+            setMode,
+            setPreview,
+            onUpdate,
+            setSegmentHover,
+          });
+        }
+        commitTransaction?.();
+        return;
       }
-      setDrawingPreview(null);
-      setMode({ type: 'idle' });
-    } else if (mode.type === 'path-drawing') {
-      handlePathDrawingPointerUp(mode, { setMode });
-    } else if (mode.type === 'vertex-editing') {
-      const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
-      if (editCutout) {
-        handleVertexEditPointerUp(mode, editCutout, preview, {
-          setMode,
-          setPreview,
-          onUpdate,
-          setSegmentHover,
-        });
-      }
-      commitTransaction?.();
-    } else if (mode.type === 'measuring') {
-      // Sticky mode (toolbar): stay in ruler-ready for repeated measurements
-      // One-off (Shift+drag): return to idle
-      setMode({ type: mode.sticky ? 'ruler-ready' : 'idle' });
+
+      case 'measuring':
+        // Sticky mode (toolbar): stay in ruler-ready for repeated measurements
+        // One-off (Shift+drag): return to idle
+        setMode({ type: mode.sticky ? 'ruler-ready' : 'idle' });
+        return;
     }
   }, [
     mode,
     preview,
-    drawingPreview,
     cutouts,
     onUpdate,
-    onUpdateBatch,
-    onAdd,
-    snap,
-    binWidth,
-    binDepth,
+    commitPendingPlace,
+    commitTransformPreview,
+    commitDrawing,
     commitTransaction,
   ]);
 

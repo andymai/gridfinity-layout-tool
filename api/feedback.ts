@@ -5,22 +5,18 @@ import { gateway } from '@ai-sdk/gateway';
 import { z } from 'zod';
 
 const GITHUB_REPO = 'andymai/gridfinity-layout-tool';
+const DESCRIPTION_MAX = 2000;
+const EMAIL_MAX = 254;
 
-const CATEGORY_ISSUE_LABELS: Record<string, string> = {
-  feature_request: 'feedback: feature',
-  bug_report: 'feedback: bug',
-  general: 'feedback: general',
-};
+/** Single source of truth for category → enriched type → GitHub label. */
+const CATEGORY_CONFIG: Record<string, { enriched: 'bug' | 'feature' | 'general'; label: string }> =
+  {
+    feature_request: { enriched: 'feature', label: 'feedback: feature' },
+    bug_report: { enriched: 'bug', label: 'feedback: bug' },
+    general: { enriched: 'general', label: 'feedback: general' },
+  };
 
-const VALID_CATEGORIES = new Set(['feature_request', 'bug_report', 'general']);
-
-const CATEGORY_MAP: Record<string, 'bug' | 'feature' | 'general'> = {
-  feature_request: 'feature',
-  bug_report: 'bug',
-  general: 'general',
-};
-
-const ENRICHED_CATEGORY_TO_LABEL: Record<string, string> = {
+const ENRICHED_LABEL: Record<string, string> = {
   feature: 'feedback: feature',
   bug: 'feedback: bug',
   general: 'feedback: general',
@@ -66,7 +62,15 @@ function sanitizeLlmBody(text: string): string {
 }
 
 function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= EMAIL_MAX;
+}
+
+function githubHeaders(token: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
 }
 
 interface RecentIssue {
@@ -82,11 +86,7 @@ async function fetchRecentFeedbackIssues(token: string): Promise<RecentIssue[]> 
     const url = `https://api.github.com/repos/${GITHUB_REPO}/issues?state=open&labels=${labels}&per_page=20&sort=created&direction=desc`;
 
     const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
+      headers: githubHeaders(token),
     });
 
     if (!response.ok) {
@@ -127,7 +127,7 @@ function buildEnrichmentPrompt(
     general: 'Format structuredBody as: ## Details\\n\\n[organized feedback details]',
   };
 
-  const enrichedCategory = CATEGORY_MAP[userCategory] ?? 'general';
+  const enrichedCategory = CATEGORY_CONFIG[userCategory]?.enriched ?? 'general';
 
   let prompt = `Analyze this user feedback and produce structured output.
 
@@ -168,6 +168,23 @@ interface EnrichmentResult {
   labels: string[];
 }
 
+function appendMetadataSections(
+  body: string,
+  context: Record<string, unknown> | undefined,
+  email: string | undefined
+): string {
+  let result = body;
+  if (context) {
+    result += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
+    result += escapeCodeFence(JSON.stringify(context, null, 2));
+    result += '\n```\n\n</details>';
+  }
+  if (email) {
+    result += `\n\n<details><summary>Contact</summary>\n\n${sanitizeForMarkdown(email)}\n\n</details>`;
+  }
+  return result;
+}
+
 async function enrichFeedback(
   description: string,
   userCategory: string,
@@ -199,26 +216,18 @@ async function enrichFeedback(
     let body = sanitizeLlmBody(enrichment.structuredBody);
 
     const enrichedCategory = enrichment.category;
-    const userEnrichedCategory = CATEGORY_MAP[userCategory] ?? 'general';
+    const userEnrichedCategory = CATEGORY_CONFIG[userCategory]?.enriched ?? 'general';
     if (enrichedCategory !== userEnrichedCategory) {
       body += `\n\n> **Note:** User selected "${userCategory}" but LLM classified as "${enrichedCategory}".`;
     }
 
-    if (context) {
-      body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
-      body += escapeCodeFence(JSON.stringify(context, null, 2));
-      body += '\n```\n\n</details>';
-    }
-
-    if (email) {
-      body += `\n\n<details><summary>Contact</summary>\n\n${sanitizeForMarkdown(email)}\n\n</details>`;
-    }
+    body = appendMetadataSections(body, context, email);
 
     if (enrichment.duplicateOf !== null) {
       body += `\n\n---\n\n**Possible duplicate of #${String(enrichment.duplicateOf)}**`;
     }
 
-    const categoryLabel = ENRICHED_CATEGORY_TO_LABEL[enrichedCategory] ?? 'feedback: general';
+    const categoryLabel = ENRICHED_LABEL[enrichedCategory] ?? 'feedback: general';
     const labels: string[] = [categoryLabel, `priority: ${enrichment.priority}`];
     if (enrichment.duplicateOf !== null) {
       labels.push('possible duplicate');
@@ -235,17 +244,9 @@ async function enrichFeedback(
 
     // Fallback: first sentence as title, raw body
     const fallbackTitle = description.split(/[.\n]/)[0].slice(0, 80) || 'User Feedback';
-    const categoryLabel = CATEGORY_ISSUE_LABELS[userCategory] ?? 'feedback: general';
+    const categoryLabel = CATEGORY_CONFIG[userCategory]?.label ?? 'feedback: general';
 
-    let body = sanitizeLlmBody(description);
-    if (context) {
-      body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
-      body += escapeCodeFence(JSON.stringify(context, null, 2));
-      body += '\n```\n\n</details>';
-    }
-    if (email) {
-      body += `\n\n<details><summary>Contact</summary>\n\n${sanitizeForMarkdown(email)}\n\n</details>`;
-    }
+    const body = appendMetadataSections(sanitizeLlmBody(description), context, email);
 
     return {
       title: fallbackTitle,
@@ -303,14 +304,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true });
     }
 
-    if (typeof category !== 'string' || !VALID_CATEGORIES.has(category)) {
+    if (typeof category !== 'string' || !(category in CATEGORY_CONFIG)) {
       return res.status(400).json({ error: 'Invalid category' });
     }
     if (typeof description !== 'string' || description.trim().length === 0) {
       return res.status(400).json({ error: 'Description is required' });
     }
-    if (description.length > 2000) {
-      return res.status(400).json({ error: 'Description too long (max 2000 characters)' });
+    if (description.length > DESCRIPTION_MAX) {
+      return res
+        .status(400)
+        .json({ error: `Description too long (max ${DESCRIPTION_MAX} characters)` });
     }
     if (email !== undefined && (typeof email !== 'string' || !isValidEmail(email))) {
       return res.status(400).json({ error: 'Invalid email format' });
@@ -343,12 +346,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const ghResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/issues`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
+      headers: { ...githubHeaders(token), 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title: issueTitle,
         body: enriched.body,
