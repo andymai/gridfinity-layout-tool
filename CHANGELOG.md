@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.5...gridfinity-layout-tool-v3.11.6) (2026-02-13)
+
+
+### Bug Fixes
+
+* **types:** accept nullable activeLayoutId in resolveLayout ([#746](https://github.com/andymai/gridfinity-layout-tool/issues/746)) ([a6e462b](https://github.com/andymai/gridfinity-layout-tool/commit/a6e462be5ecec75f3ae4f35fe45d3d3cf94735d4))
+
 ## [3.11.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.4...gridfinity-layout-tool-v3.11.5) (2026-02-13)
 
 
