@@ -1,11 +1,67 @@
 import { useCallback } from 'react';
 import { useInteractionStore } from '@/core/store';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { canPlaceBin, clamp } from '@/shared/utils/validation';
 import { capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
-import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types';
+import type {
+  Bin,
+  Coord,
+  Layout,
+  LayerId,
+  ValidationReason,
+  BlockingInfo,
+  BinId,
+} from '@/core/types';
+
+/**
+ * When a staging drag position collides with an existing bin, try nudging
+ * by ±1 step (or ±0.5 in half-bin mode) in each axis to find the nearest
+ * valid position. This prevents flickering at bin boundaries.
+ *
+ * Returns the nudged valid position, or null if no nearby valid position exists.
+ */
+function findNearestValidPosition(
+  targetX: number,
+  targetY: number,
+  bin: Bin,
+  activeLayerId: LayerId,
+  layout: Layout,
+  step: number
+): { x: number; y: number } | null {
+  const maxX = layout.drawer.width - bin.width;
+  const maxY = layout.drawer.depth - bin.depth;
+
+  // Try nudges in order of increasing distance: axis-aligned first, then diagonal
+  const nudges = [
+    { dx: -step, dy: 0 },
+    { dx: step, dy: 0 },
+    { dx: 0, dy: -step },
+    { dx: 0, dy: step },
+    { dx: -step, dy: -step },
+    { dx: step, dy: -step },
+    { dx: -step, dy: step },
+    { dx: step, dy: step },
+  ];
+
+  for (const { dx, dy } of nudges) {
+    const nx = clamp(targetX + dx, 0, maxX);
+    const ny = clamp(targetY + dy, 0, maxY);
+    // Skip if clamping brought us back to the same position
+    if (nx === targetX && ny === targetY) continue;
+    const result = canPlaceBin(
+      { x: nx, y: ny, width: bin.width, depth: bin.depth, height: bin.height },
+      activeLayerId,
+      layout,
+      bin.id
+    );
+    if (result.valid) return { x: nx, y: ny };
+  }
+
+  return null;
+}
 
 /**
  * Hook for staging drag mode interactions: dragging bins from the stash onto the grid.
@@ -98,18 +154,41 @@ export function useStagingDragInteraction(
         bin.id
       );
 
-      // Track validation reason and blocking info for user feedback
+      let finalX = targetX;
+      let finalY = targetY;
+      let finalValid = result.valid;
       let invalidReason: ValidationReason | undefined;
       let blockingInfo: BlockingInfo | undefined;
-      if (!result.valid) {
+
+      if (!result.valid && (result.reason === 'collision' || result.reason === 'blocked_zone')) {
+        // Snap to nearest valid position to prevent flickering at bin boundaries
+        const halfBinMode = useHalfBinModeStore.getState().halfBinMode;
+        const step = halfBinMode ? 0.5 : 1;
+        const snapped = findNearestValidPosition(
+          targetX,
+          targetY,
+          bin,
+          activeLayerId,
+          layout,
+          step
+        );
+        if (snapped) {
+          finalX = snapped.x;
+          finalY = snapped.y;
+          finalValid = true;
+        } else {
+          invalidReason = result.reason;
+          blockingInfo = result.blockingInfo;
+        }
+      } else if (!result.valid) {
         invalidReason = result.reason;
         blockingInfo = result.blockingInfo;
       }
 
       setInteraction({
         ...interaction,
-        currentCoord: { x: targetX, y: targetY },
-        valid: result.valid,
+        currentCoord: { x: finalX, y: finalY },
+        valid: finalValid,
         invalidReason,
         blockingInfo,
       });

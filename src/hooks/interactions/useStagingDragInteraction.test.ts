@@ -233,12 +233,11 @@ describe('useStagingDragInteraction', () => {
       );
     });
 
-    it('marks placement as invalid if collision detected', () => {
-      const binId = addStagingBin();
-      // Add a bin on the grid that will collide
-      addGridBin(2, 2);
+    it('snaps to nearest valid position on collision at bin boundary', () => {
+      const binId = addStagingBin(); // 2x2 bin
+      // Add a bin on the grid at (4,2) with width=2, depth=2
+      addGridBin(4, 2);
 
-      // Set up interaction state
       useInteractionStore.setState({
         ...useInteractionStore.getState(),
         interaction: {
@@ -249,11 +248,45 @@ describe('useStagingDragInteraction', () => {
         },
       });
 
-      // Need fresh context with updated layout
       const context = createContext();
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
-      // Try to move to occupied spot (2,2 has a 2x2 bin)
+      // Cursor at x=3: 2-wide staging bin would span [3,5), overlapping grid bin at [4,6).
+      // Should snap 1 cell left to x=2 where [2,4) doesn't overlap [4,6).
+      act(() => {
+        result.current.handleMove({ x: 3, y: 2 }, { x: 3, y: 2 });
+      });
+
+      const call = mockSetInteraction.mock.calls[0][0];
+      expect(call.valid).toBe(true);
+      expect(call.currentCoord).toEqual({ x: 2, y: 2 });
+    });
+
+    it('still shows invalid when directly on top of another bin', () => {
+      const binId = addStagingBin(); // 2x2 bin
+      // Add a bin at (2,2) — same position, no room to nudge by just 1 step
+      addGridBin(2, 2);
+
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
+        interaction: {
+          type: 'stagingDrag',
+          binId,
+          currentCoord: null,
+          valid: false,
+        },
+      });
+
+      const context = createContext();
+      const { result } = renderHook(() => useStagingDragInteraction(context));
+
+      // Directly on top — 1-step nudge still overlaps (both bins are 2-wide)
+      // but a valid position exists at (0,2) via the (-1,0) nudge... let's check:
+      // nudge (-1,0): pos (1,2), bin [1,3) vs grid [2,4) → overlaps (1<4 && 2<3) → invalid
+      // nudge (+1,0): pos (3,2), bin [3,5) vs grid [2,4) → overlaps (3<4 && 2<5) → invalid
+      // nudge (0,-1): pos (2,1), bin [2,4)x[1,3) vs grid [2,4)x[2,4) → overlaps → invalid
+      // nudge (0,+1): pos (2,3), bin [2,4)x[3,5) vs grid [2,4)x[2,4) → overlaps (3<4 && 2<5) → invalid
+      // All single-step nudges still overlap → should be invalid
       act(() => {
         result.current.handleMove({ x: 2, y: 2 }, { x: 2, y: 2 });
       });
@@ -261,6 +294,42 @@ describe('useStagingDragInteraction', () => {
       expect(mockSetInteraction).toHaveBeenCalledWith(
         expect.objectContaining({
           valid: false,
+        })
+      );
+    });
+
+    it('marks invalid when no nearby valid position exists', () => {
+      const binId = addStagingBin(); // 2x2 bin
+
+      // Fill the grid densely so there's no room to snap to
+      // Default drawer is 10x8, fill it with 2x2 bins
+      for (let x = 0; x < 10; x += 2) {
+        for (let y = 0; y < 8; y += 2) {
+          addGridBin(x, y);
+        }
+      }
+
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
+        interaction: {
+          type: 'stagingDrag',
+          binId,
+          currentCoord: null,
+          valid: false,
+        },
+      });
+
+      const context = createContext();
+      const { result } = renderHook(() => useStagingDragInteraction(context));
+
+      act(() => {
+        result.current.handleMove({ x: 4, y: 4 }, { x: 4, y: 4 });
+      });
+
+      expect(mockSetInteraction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          valid: false,
+          invalidReason: 'collision',
         })
       );
     });
