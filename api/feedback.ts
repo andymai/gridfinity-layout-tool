@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, getClientIP } from './lib/rateLimit';
+import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
 import { generateText } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
 
