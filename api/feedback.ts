@@ -31,19 +31,37 @@ const FeedbackEnrichmentSchema = z.object({
   summary: z.string().max(200),
   category: z.enum(['bug', 'feature', 'general']),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
-  structuredBody: z.string(),
+  structuredBody: z.string().max(3000),
   duplicateOf: z.number().nullable(),
 });
 
 type FeedbackEnrichment = z.infer<typeof FeedbackEnrichmentSchema>;
 
 function sanitizeForPrompt(text: string, maxLength: number): string {
+  return text
+    .replace(/[^\w\s\-.,!?:;'"&()#×x/@+]/g, '')
+    .replace(/\s+/g, ' ')
+    .slice(0, maxLength)
+    .trim();
+}
+
+function sanitizeForMarkdown(text: string): string {
+  return text.replace(/[[\]()\\<>&]/g, '\\$&');
+}
+
+/** Escape backticks to prevent code fence breakout in markdown. */
+function escapeCodeFence(text: string): string {
+  return text.replace(/[`\\]/g, '\\$&');
+}
+
+/** Strip @mentions and bare URLs from LLM-generated markdown body. */
+function sanitizeLlmBody(text: string): string {
   return (
     text
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\u0000-\u001f\u007f]/g, '')
-      .slice(0, maxLength)
-      .trim()
+      // Strip @mentions (GitHub would ping users)
+      .replace(/@(\w+)/g, '＠$1')
+      // Strip bare URLs outside markdown links (potential phishing)
+      .replace(/(?<!\()https?:\/\/[^\s)]+/g, '[link removed]')
   );
 }
 
@@ -113,8 +131,9 @@ function buildEnrichmentPrompt(
 
   let prompt = `Analyze this user feedback and produce structured output.
 
-User's description (category: ${userCategory}):
-${sanitizeForPrompt(description, 500)}`;
+<user_feedback category="${userCategory}">
+${sanitizeForPrompt(description, 500)}
+</user_feedback>`;
 
   if (context) {
     prompt += `\n\nLayout context:\n${sanitizeForPrompt(JSON.stringify(context, null, 2), 300)}`;
@@ -123,7 +142,7 @@ ${sanitizeForPrompt(description, 500)}`;
   if (recentIssues.length > 0) {
     prompt += '\n\nRecent open issues (check for duplicates):';
     for (const issue of recentIssues) {
-      prompt += `\n- #${String(issue.number)}: ${issue.title}`;
+      prompt += `\n- #${String(issue.number)}: ${sanitizeForPrompt(issue.title, 100)}`;
     }
     prompt +=
       '\n\nSet duplicateOf to the issue number if this is clearly a duplicate, otherwise null.';
@@ -177,7 +196,7 @@ async function enrichFeedback(
     const enrichment: FeedbackEnrichment = result.output;
 
     // Build issue body
-    let body = enrichment.structuredBody;
+    let body = sanitizeLlmBody(enrichment.structuredBody);
 
     const enrichedCategory = enrichment.category;
     const userEnrichedCategory = CATEGORY_MAP[userCategory] ?? 'general';
@@ -187,12 +206,12 @@ async function enrichFeedback(
 
     if (context) {
       body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
-      body += JSON.stringify(context, null, 2);
+      body += escapeCodeFence(JSON.stringify(context, null, 2));
       body += '\n```\n\n</details>';
     }
 
     if (email) {
-      body += `\n\n<details><summary>Contact</summary>\n\n${email}\n\n</details>`;
+      body += `\n\n<details><summary>Contact</summary>\n\n${sanitizeForMarkdown(email)}\n\n</details>`;
     }
 
     if (enrichment.duplicateOf !== null) {
@@ -208,7 +227,7 @@ async function enrichFeedback(
     return {
       title: enrichment.title,
       body,
-      categoryLabel: enrichedCategory,
+      categoryLabel: enrichedCategory.charAt(0).toUpperCase() + enrichedCategory.slice(1),
       labels,
     };
   } catch (error) {
@@ -218,28 +237,46 @@ async function enrichFeedback(
     const fallbackTitle = description.split(/[.\n]/)[0].slice(0, 80) || 'User Feedback';
     const categoryLabel = CATEGORY_ISSUE_LABELS[userCategory] ?? 'feedback: general';
 
-    let body = description;
+    let body = sanitizeLlmBody(description);
     if (context) {
       body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
-      body += JSON.stringify(context, null, 2);
+      body += escapeCodeFence(JSON.stringify(context, null, 2));
       body += '\n```\n\n</details>';
     }
     if (email) {
-      body += `\n\n<details><summary>Contact</summary>\n\n${email}\n\n</details>`;
+      body += `\n\n<details><summary>Contact</summary>\n\n${sanitizeForMarkdown(email)}\n\n</details>`;
     }
 
     return {
       title: fallbackTitle,
       body,
-      categoryLabel: categoryLabel.replace('feedback: ', ''),
+      categoryLabel: categoryLabel.replace('feedback: ', '').replace(/^\w/, (c) => c.toUpperCase()),
       labels: [categoryLabel],
     };
   }
 }
 
+const ALLOWED_ORIGINS = new Set([
+  'https://gridfinitylayouttool.com',
+  'https://www.gridfinitylayouttool.com',
+  'https://gridfinity-layout-tool.vercel.app',
+]);
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  // Allow Vercel preview deployments
+  return /^https:\/\/gridfinity-layout-tool[a-z0-9-]*\.vercel\.app$/.test(origin);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const origin = req.headers.origin;
+  if (!isAllowedOrigin(origin)) {
+    return res.status(403).json({ error: 'Forbidden' });
   }
 
   const token = process.env.GITHUB_FEEDBACK_TOKEN;
