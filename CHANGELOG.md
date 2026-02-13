@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.9.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.9.0...gridfinity-layout-tool-v3.9.1) (2026-02-13)
+
+
+### Bug Fixes
+
+* hide SEO fallback content flash on page load ([#714](https://github.com/andymai/gridfinity-layout-tool/issues/714)) ([b278ded](https://github.com/andymai/gridfinity-layout-tool/commit/b278ded69e84ebec1d455c15a8b102c6509c63c9))
+
 ## [3.9.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.8.0...gridfinity-layout-tool-v3.9.0) (2026-02-12)
 
 
