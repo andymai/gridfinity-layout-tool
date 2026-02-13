@@ -365,9 +365,10 @@
     </script>
   </head>
   <body>
-    <!-- SEO: Initial content visible to crawlers before React mounts. createRoot().render() replaces it. -->
+    <!-- SEO: Content for crawlers/noscript. Hidden by inline script; shown only if JS is disabled. -->
     <div id="root">
-      <div style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: system-ui, sans-serif; line-height: 1.6;">
+      <div id="seo-fallback" style="display:none; max-width: 800px; margin: 40px auto; padding: 20px; font-family: system-ui, sans-serif; line-height: 1.6;">
+    <noscript><style>#seo-fallback{display:block!important}</style></noscript>
         <h1>Gridfinity Layout Tool</h1>
         <p>A free tool for making Gridfinity bins and planning drawer layouts. Runs in your browser — nothing to install.</p>
 
