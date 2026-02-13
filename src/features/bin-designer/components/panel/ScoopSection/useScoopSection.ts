@@ -10,7 +10,6 @@ import {
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
 import { getFeatureStatus } from '@/shared/constraints';
-import type { SectionMeta } from '../types';
 
 export function useScoopSection() {
   const { scoop, updateScoop, params } = useDesignerStore(
@@ -111,7 +110,7 @@ export function useScoopSection() {
 
   const disabledReason = scoopStatus.reason ? t(scoopStatus.reason) : undefined;
 
-  const meta: SectionMeta = useMemo(
+  const meta = useMemo(
     () => ({
       summary: isUnavailable ? undefined : sectionSummary,
       disabledReason,

@@ -72,7 +72,6 @@ src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.t
 src/features/bin-designer/components/panel/FeatureToggle/FeatureToggle.tsx
 src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
 src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
-src/features/bin-designer/components/panel/SectionGroup/SectionGroup.tsx
 src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
 src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.tsx
 src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx

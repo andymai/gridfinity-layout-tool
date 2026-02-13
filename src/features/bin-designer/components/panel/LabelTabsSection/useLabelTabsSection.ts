@@ -5,7 +5,6 @@ import { GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
-import type { SectionMeta } from '../types';
 
 export function useLabelTabsSection() {
   const { compartments, label, width, wallThickness, updateLabel, params } = useDesignerStore(
@@ -80,7 +79,7 @@ export function useLabelTabsSection() {
 
   const disabledReason = labelStatus.reason ? t(labelStatus.reason) : undefined;
 
-  const meta: SectionMeta = useMemo(
+  const meta = useMemo(
     () => ({
       summary: isUnavailable ? undefined : sectionSummary,
       disabledReason,

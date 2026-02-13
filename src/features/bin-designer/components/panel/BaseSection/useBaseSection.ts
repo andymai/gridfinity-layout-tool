@@ -1,9 +1,8 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
-import type { SectionMeta } from '../types';
 
 export function useBaseSection() {
   const t = useTranslation();
@@ -95,33 +94,6 @@ export function useBaseSection() {
     [updateBase]
   );
 
-  const meta: SectionMeta = useMemo(() => {
-    const summaryParts: string[] = [];
-    if (isFlat) {
-      summaryParts.push(t('binDesigner.flatFloor'));
-    } else {
-      if (hasHalfSockets) {
-        summaryParts.push('Half sockets');
-      } else {
-        if (hasMagnet) summaryParts.push(`${base.magnetDiameter}mm magnets`);
-        if (hasScrew) summaryParts.push(`M${base.screwDiameter} screws`);
-      }
-    }
-    if (base.stackingLip) summaryParts.push('Lip');
-    const summary =
-      summaryParts.length > 0 ? summaryParts.join(' \u2022 ') : 'Standard (no attachment)';
-    return { summary };
-  }, [
-    hasMagnet,
-    hasScrew,
-    isFlat,
-    hasHalfSockets,
-    base.magnetDiameter,
-    base.screwDiameter,
-    base.stackingLip,
-    t,
-  ]);
-
   return {
     state: { base, hasMagnet, hasScrew, isFlat, hasHalfSockets },
     handlers: {
@@ -138,6 +110,5 @@ export function useBaseSection() {
       flatDisabledReason,
       halfSocketsDisabledReason,
     },
-    meta,
   };
 }

@@ -85,33 +85,6 @@ describe('useBaseSection', () => {
     expect(useDesignerStore.getState().params.base.screwDiameter).toBe(4.0);
   });
 
-  it('summary shows active features', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', stackingLip: true },
-      },
-    });
-
-    const { result } = renderHook(() => useBaseSection());
-
-    expect(result.current.meta.summary).toContain('magnets');
-    expect(result.current.meta.summary).toContain('Lip');
-  });
-
-  it('summary shows standard when no features', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: false },
-      },
-    });
-
-    const { result } = renderHook(() => useBaseSection());
-
-    expect(result.current.meta.summary).toBe('Standard (no attachment)');
-  });
-
   describe('flat floor', () => {
     it('derives isFlat from base style', () => {
       const { result } = renderHook(() => useBaseSection());
@@ -204,21 +177,6 @@ describe('useBaseSection', () => {
       const { result } = renderHook(() => useBaseSection());
 
       expect(result.current.handlers.flatDisabledReason).toBeUndefined();
-    });
-
-    it('summary shows flat floor when enabled', () => {
-      useDesignerStore.setState({
-        params: {
-          ...DEFAULT_BIN_PARAMS,
-          base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: true },
-        },
-      });
-
-      const { result } = renderHook(() => useBaseSection());
-
-      expect(result.current.meta.summary).toContain('Flat floor');
-      expect(result.current.meta.summary).toContain('Lip');
-      expect(result.current.meta.summary).not.toContain('magnets');
     });
   });
 });

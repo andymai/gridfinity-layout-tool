@@ -7,21 +7,16 @@
  * Also allows selection of wall patterns (honeycomb, etc.) via dropdown.
  */
 
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { WallCutoutsSection } from '../WallCutoutsSection';
 
 export function WallsSection() {
-  const { state, handlers, meta, t } = useWallsSection();
+  const { state, handlers, t } = useWallsSection();
 
   return (
-    <CollapsibleSection
-      title={t('binDesigner.walls')}
-      defaultExpanded={true}
-      summary={meta.summary}
-    >
+    <div className="space-y-4">
       <SnappingSlider
         label={t('binDesigner.wallThickness')}
         value={state.wallThickness}
@@ -30,7 +25,7 @@ export function WallsSection() {
         unit="mm"
         tip={t('binDesigner.wallThickness.nozzleTip')}
       />
-      <div className="mt-3 pt-3 border-t border-stroke-subtle/50">
+      <div className="pt-3 border-t border-stroke-subtle/50">
         <PatternSelector
           selectedPattern={state.patternEnabled ? state.pattern : null}
           onChange={handlers.handlePatternChange}
@@ -41,9 +36,9 @@ export function WallsSection() {
           <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
         )}
       </div>
-      <div className="mt-3 pt-3 border-t border-stroke-subtle/50">
+      <div className="pt-3 border-t border-stroke-subtle/50">
         <WallCutoutsSection />
       </div>
-    </CollapsibleSection>
+    </div>
   );
 }

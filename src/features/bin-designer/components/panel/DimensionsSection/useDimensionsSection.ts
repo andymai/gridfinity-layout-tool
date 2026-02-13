@@ -1,9 +1,8 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
-import type { SectionMeta } from '../types';
 
 export function useDimensionsSection() {
   const {
@@ -72,14 +71,6 @@ export function useDimensionsSection() {
     setParams({ width: depth, depth: width });
   }, [width, depth, setParams]);
 
-  const summary = useMemo(
-    () =>
-      `${width}\u00d7${depth} \u00d7 ${height}u (${widthMm.toFixed(0)}\u00d7${depthMm.toFixed(0)}\u00d7${heightMm.toFixed(0)}mm)`,
-    [width, depth, height, widthMm, depthMm, heightMm]
-  );
-
-  const meta: SectionMeta = useMemo(() => ({ summary }), [summary]);
-
   return {
     state: {
       width,
@@ -100,7 +91,6 @@ export function useDimensionsSection() {
       handleSwapDimensions,
       toggleHalfBinMode,
     },
-    meta,
     t,
   };
 }

@@ -26,11 +26,6 @@ describe('useWallsSection', () => {
     expect(useDesignerStore.getState().params.wallThickness).toBe(1.6);
   });
 
-  it('summary shows wall thickness with mm', () => {
-    const { result } = renderHook(() => useWallsSection());
-    expect(result.current.meta.summary).toBe('1.2mm');
-  });
-
   it('options contain translated descriptions', () => {
     const { result } = renderHook(() => useWallsSection());
     expect(result.current.state.options.length).toBeGreaterThan(0);
