@@ -48,6 +48,22 @@ function sanitizeForMarkdown(text: string): string {
   return text.replace(/[[\]()]/g, '\\$&');
 }
 
+/** Escape backticks to prevent code fence breakout in markdown. */
+function escapeCodeFence(text: string): string {
+  return text.replace(/`/g, '\\`');
+}
+
+/** Strip @mentions and bare URLs from LLM-generated markdown body. */
+function sanitizeLlmBody(text: string): string {
+  return (
+    text
+      // Strip @mentions (GitHub would ping users)
+      .replace(/@(\w+)/g, '＠$1')
+      // Strip bare URLs outside markdown links (potential phishing)
+      .replace(/(?<!\()https?:\/\/[^\s)]+/g, '[link removed]')
+  );
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
@@ -178,7 +194,7 @@ async function enrichFeedback(
     const enrichment: FeedbackEnrichment = result.output;
 
     // Build issue body
-    let body = enrichment.structuredBody;
+    let body = sanitizeLlmBody(enrichment.structuredBody);
 
     const enrichedCategory = enrichment.category;
     const userEnrichedCategory = CATEGORY_MAP[userCategory] ?? 'general';
@@ -188,7 +204,7 @@ async function enrichFeedback(
 
     if (context) {
       body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
-      body += JSON.stringify(context, null, 2);
+      body += escapeCodeFence(JSON.stringify(context, null, 2));
       body += '\n```\n\n</details>';
     }
 
@@ -222,7 +238,7 @@ async function enrichFeedback(
     let body = description;
     if (context) {
       body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
-      body += JSON.stringify(context, null, 2);
+      body += escapeCodeFence(JSON.stringify(context, null, 2));
       body += '\n```\n\n</details>';
     }
     if (email) {
