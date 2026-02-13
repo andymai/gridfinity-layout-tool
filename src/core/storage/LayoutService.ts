@@ -18,7 +18,7 @@ import { validateImport } from '@/shared/utils/validation';
 import { generateCategoryId, generateLayerId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from './LayoutManager';
-import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
+import type { Layout, LayoutId, LayoutLibrary, LayoutEntry } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
 import {
   ok,
@@ -492,7 +492,7 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
  * localStorage for immediate availability. New layouts are also saved to
  * IndexedDB asynchronously for future-proofing.
  */
-function createLibraryEntry(layoutId: string, layout: Layout): LayoutEntry {
+function createLibraryEntry(layoutId: LayoutId, layout: Layout): LayoutEntry {
   const now = Date.now();
   return {
     id: layoutId,
@@ -504,7 +504,7 @@ function createLibraryEntry(layoutId: string, layout: Layout): LayoutEntry {
   };
 }
 
-function createLibraryWithLayout(layoutId: string, layout: Layout): LayoutLibrary {
+function createLibraryWithLayout(layoutId: LayoutId, layout: Layout): LayoutLibrary {
   return {
     version: '1.0',
     activeLayoutId: layoutId,
