@@ -65,11 +65,11 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
       const validation = validateImport(data);
 
       if (validation.valid) {
-        const layout = data as Layout;
-        const parsed = data as Record<string, unknown>;
+        const { layout } = validation;
+        const raw = data as Record<string, unknown>;
         const linkedDesignCount =
-          Array.isArray(parsed.linkedDesigns) && parsed.linkedDesigns.length > 0
-            ? (parsed.linkedDesigns as unknown[]).length
+          Array.isArray(raw.linkedDesigns) && raw.linkedDesigns.length > 0
+            ? raw.linkedDesigns.length
             : undefined;
         setPreview({
           name: layout.name,

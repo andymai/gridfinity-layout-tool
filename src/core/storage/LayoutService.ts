@@ -103,8 +103,7 @@ function parseLayoutData(data: unknown): ParseResult {
     return { success: false, errors: validation.errors };
   }
 
-  // Type assertion is safe after validation confirms Layout structure
-  return { success: true, layout: migrated as unknown as Layout };
+  return { success: true, layout: validation.layout };
 }
 
 function validateLoadedData(layoutId: string, data: unknown, silent = false): Layout | null {

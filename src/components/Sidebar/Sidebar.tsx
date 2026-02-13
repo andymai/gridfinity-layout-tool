@@ -92,13 +92,13 @@ export function Sidebar() {
 
   // Listen for command palette open-settings-modal event (supports optional tab)
   useEffect(() => {
-    const handleOpenSettings = (e: Event) => {
-      const detail = (e as CustomEvent<{ tab?: SettingsTabId }>).detail;
-      setSettingsInitialTab(detail.tab);
+    const handleOpenSettings = (e: CustomEvent<{ tab?: SettingsTabId }>) => {
+      setSettingsInitialTab(e.detail.tab);
       setShowSettingsModal(true);
     };
-    window.addEventListener('open-settings-modal', handleOpenSettings);
-    return () => window.removeEventListener('open-settings-modal', handleOpenSettings);
+    window.addEventListener('open-settings-modal', handleOpenSettings as EventListener);
+    return () =>
+      window.removeEventListener('open-settings-modal', handleOpenSettings as EventListener);
   }, []);
 
   return (

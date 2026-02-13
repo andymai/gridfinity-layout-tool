@@ -156,7 +156,7 @@ export function Staging() {
 
   // --- Event handlers ---
 
-  const handleBinClick = (rawBinId: string, e: React.MouseEvent) => {
+  const handleBinClick = (rawBinId: string, e: React.MouseEvent | React.KeyboardEvent) => {
     if (interaction?.type === 'stagingDrag') return;
 
     e.preventDefault();

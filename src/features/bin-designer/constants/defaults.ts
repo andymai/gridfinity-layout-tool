@@ -122,6 +122,34 @@ export const DEFAULT_HISTORY: DesignerHistory = {
   future: [],
 } as const;
 
+/** Legacy wall config where sides could be numbers instead of WallCutout objects. */
+interface LegacyWallConfig {
+  enabled?: boolean;
+  shape?: WallCutoutShape;
+  width?: number;
+  depth?: number;
+  front?: number | Partial<WallCutout>;
+  back?: number | Partial<WallCutout>;
+  left?: number | Partial<WallCutout>;
+  right?: number | Partial<WallCutout>;
+  interior?: Partial<WallCutout>;
+}
+
+/** Legacy fields that may appear in saved designs from older versions. */
+interface LegacyFields {
+  dividers?: { x: number; y: number; thickness: number };
+  eco?: {
+    honeycombWall?: {
+      enabled?: boolean;
+      mode?: string;
+    };
+  };
+  walls?: WallConfig | LegacyWallConfig;
+}
+
+/** Input type for migrateParams — current params plus known legacy fields. */
+type MigrateParamsInput = Partial<BinParams> & LegacyFields;
+
 /**
  * Populate missing bin parameters with default values.
  * Handles backward compatibility for old designs:
@@ -131,9 +159,7 @@ export const DEFAULT_HISTORY: DesignerHistory = {
  * @param params - Partial bin parameters to migrate; any fields not provided will be filled from `DEFAULT_BIN_PARAMS`.
  * @returns A complete `BinParams` object with unspecified fields taken from `DEFAULT_BIN_PARAMS`.
  */
-export function migrateParams(
-  params: Partial<BinParams> & { dividers?: { x: number; y: number; thickness: number } }
-): BinParams {
+export function migrateParams(params: MigrateParamsInput): BinParams {
   // Migrate old boolean scoop format to ScoopConfig
   let scoopConfig = DEFAULT_BIN_PARAMS.scoop;
   if (params.scoop !== undefined) {
@@ -144,7 +170,8 @@ export function migrateParams(
       scoopConfig = { ...DEFAULT_BIN_PARAMS.scoop, ...params.scoop };
     }
     // Strip removed allRows field from old saved designs
-    delete (scoopConfig as unknown as Record<string, unknown>).allRows;
+    const { allRows: _, ...cleanScoop } = scoopConfig as typeof scoopConfig & { allRows?: unknown };
+    scoopConfig = cleanScoop;
   }
 
   // Migrate old DividerConfig to CompartmentConfig
@@ -166,7 +193,7 @@ export function migrateParams(
   // Migrate old number-based WallConfig to WallCutout format
   let wallsConfig: WallConfig = DEFAULT_BIN_PARAMS.walls;
   if (params.walls !== undefined) {
-    const raw = params.walls as unknown as Record<string, unknown>;
+    const raw = params.walls as LegacyWallConfig;
 
     // Helper: infer enabled from non-zero values
     const inferEnabled = (cutout: WallCutout): WallCutout => ({
@@ -181,14 +208,14 @@ export function migrateParams(
       typeof raw.left === 'number' ||
       typeof raw.right === 'number'
     ) {
-      const toWallCutout = (val: unknown): WallCutout => {
+      const toWallCutout = (val: number | Partial<WallCutout> | undefined): WallCutout => {
         if (typeof val === 'number') {
           return { enabled: val > 0, width: val, depth: val > 0 ? 100 : 0 };
         }
         if (val && typeof val === 'object' && 'width' in val) {
           return inferEnabled({
             ...DEFAULT_BIN_PARAMS.walls.front,
-            ...(val as Partial<WallCutout>),
+            ...val,
           });
         }
         return DEFAULT_BIN_PARAMS.walls.front;
@@ -197,13 +224,12 @@ export function migrateParams(
       const back = toWallCutout(raw.back);
       const left = toWallCutout(raw.left);
       const right = toWallCutout(raw.right);
-      const interior =
-        raw.interior && typeof raw.interior === 'object'
-          ? inferEnabled({
-              ...DEFAULT_BIN_PARAMS.walls.interior,
-              ...(raw.interior as Partial<WallCutout>),
-            })
-          : DEFAULT_BIN_PARAMS.walls.interior;
+      const interior = raw.interior
+        ? inferEnabled({
+            ...DEFAULT_BIN_PARAMS.walls.interior,
+            ...raw.interior,
+          })
+        : DEFAULT_BIN_PARAMS.walls.interior;
       const anySideEnabled =
         front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
       wallsConfig = {
@@ -230,37 +256,26 @@ export function migrateParams(
         }
         return merged;
       };
-      const front = mergeSide(
-        DEFAULT_BIN_PARAMS.walls.front,
-        raw.front as Partial<WallCutout> | undefined
-      );
-      const back = mergeSide(
-        DEFAULT_BIN_PARAMS.walls.back,
-        raw.back as Partial<WallCutout> | undefined
-      );
-      const left = mergeSide(
-        DEFAULT_BIN_PARAMS.walls.left,
-        raw.left as Partial<WallCutout> | undefined
-      );
-      const right = mergeSide(
-        DEFAULT_BIN_PARAMS.walls.right,
-        raw.right as Partial<WallCutout> | undefined
-      );
-      const interior = mergeSide(
-        DEFAULT_BIN_PARAMS.walls.interior,
-        raw.interior as Partial<WallCutout> | undefined
-      );
+      const asCutout = (
+        v: number | Partial<WallCutout> | undefined
+      ): Partial<WallCutout> | undefined => (typeof v === 'number' ? undefined : v);
+      const front = mergeSide(DEFAULT_BIN_PARAMS.walls.front, asCutout(raw.front));
+      const back = mergeSide(DEFAULT_BIN_PARAMS.walls.back, asCutout(raw.back));
+      const left = mergeSide(DEFAULT_BIN_PARAMS.walls.left, asCutout(raw.left));
+      const right = mergeSide(DEFAULT_BIN_PARAMS.walls.right, asCutout(raw.right));
+      const interior = mergeSide(DEFAULT_BIN_PARAMS.walls.interior, raw.interior);
 
       // Backfill top-level enabled/width/depth for old saves missing these fields
       const hasGlobalEnabled = 'enabled' in raw && typeof raw.enabled === 'boolean';
       const anySideEnabled =
         front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
       const VALID_SHAPES: readonly WallCutoutShape[] = ['u-shape', 'scoop', 'funnel'];
-      const rawShape = raw.shape as WallCutoutShape | undefined;
       wallsConfig = {
-        enabled: hasGlobalEnabled ? (raw.enabled as boolean) : anySideEnabled,
+        enabled: hasGlobalEnabled ? raw.enabled === true : anySideEnabled,
         shape:
-          rawShape && VALID_SHAPES.includes(rawShape) ? rawShape : DEFAULT_BIN_PARAMS.walls.shape,
+          raw.shape && VALID_SHAPES.includes(raw.shape)
+            ? raw.shape
+            : DEFAULT_BIN_PARAMS.walls.shape,
         width: typeof raw.width === 'number' ? raw.width : DEFAULT_BIN_PARAMS.walls.width,
         depth: typeof raw.depth === 'number' ? raw.depth : DEFAULT_BIN_PARAMS.walls.depth,
         front,
@@ -304,22 +319,18 @@ export function migrateParams(
   // 3. Neither → fresh default
   // Fresh object each time — avoid returning shared DEFAULT_WALL_PATTERN_CONFIG reference
   let wallPatternConfig: WallPatternConfig = { enabled: false, pattern: 'honeycomb' };
-  const rawParams = params as unknown as Record<string, unknown>;
   if (params.wallPattern !== undefined) {
     wallPatternConfig = { ...wallPatternConfig, ...params.wallPattern };
-  } else if (rawParams.eco !== undefined) {
-    const rawEco = rawParams.eco as Record<string, unknown>;
-    if (rawEco.honeycombWall && typeof rawEco.honeycombWall === 'object') {
-      const rawWall = rawEco.honeycombWall as Record<string, unknown>;
-      // Legacy format had mode: 'none' | 'pocketed' | 'perforated'; new format uses enabled boolean only
-      const hadMode = typeof rawWall.mode === 'string';
-      const hadEnabled = typeof rawWall.enabled === 'boolean';
+  } else if (params.eco !== undefined) {
+    const honeycombWall = params.eco.honeycombWall;
+    if (honeycombWall) {
       wallPatternConfig = {
-        enabled: hadEnabled
-          ? (rawWall.enabled as boolean)
-          : hadMode
-            ? rawWall.mode !== 'none'
-            : false,
+        enabled:
+          typeof honeycombWall.enabled === 'boolean'
+            ? honeycombWall.enabled
+            : typeof honeycombWall.mode === 'string'
+              ? honeycombWall.mode !== 'none'
+              : false,
         pattern: 'honeycomb',
       };
     }
