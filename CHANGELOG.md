@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.0...gridfinity-layout-tool-v3.11.1) (2026-02-13)
+
+
+### Bug Fixes
+
+* **feedback:** address review comments on sanitization and formatting ([#733](https://github.com/andymai/gridfinity-layout-tool/issues/733)) ([e35bf3c](https://github.com/andymai/gridfinity-layout-tool/commit/e35bf3c8451c6c3ae5ff745e188f4f1a03146e9d))
+
 ## [3.11.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.10.0...gridfinity-layout-tool-v3.11.0) (2026-02-13)
 
 
