@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.2...gridfinity-layout-tool-v3.11.3) (2026-02-13)
+
+
+### Bug Fixes
+
+* **api:** add missing allowOverwrite to report endpoint blob put ([#739](https://github.com/andymai/gridfinity-layout-tool/issues/739)) ([162b18e](https://github.com/andymai/gridfinity-layout-tool/commit/162b18e8e6d6e3fab4900fdb3e4f0c455b3232d0))
+
 ## [3.11.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.1...gridfinity-layout-tool-v3.11.2) (2026-02-13)
 
 
