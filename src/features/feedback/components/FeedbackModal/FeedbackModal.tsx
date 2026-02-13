@@ -50,7 +50,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   }, [resetForm, onClose]);
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: React.SyntheticEvent) => {
       e.preventDefault();
 
       const payload = {
