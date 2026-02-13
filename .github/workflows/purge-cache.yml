@@ -3,6 +3,8 @@ name: Purge Cloudflare Cache
 on:
   deployment_status:
 
+permissions: {}
+
 jobs:
   purge:
     if: >
@@ -12,8 +14,15 @@ jobs:
     steps:
       - name: Purge Cloudflare Cache
         run: |
-          curl -s -X POST \
+          response=$(curl -s -w "\n%{http_code}" -X POST \
             "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"purge_everything": true}'
+            -d '{"purge_everything": true}')
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" != "200" ]; then
+            echo "Failed to purge cache: HTTP $http_code"
+            echo "$response"
+            exit 1
+          fi
+          echo "Cache purged successfully"
