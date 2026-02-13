@@ -410,7 +410,8 @@ function isValidLayer(value: unknown): value is LayerShape {
     typeof obj.id === 'string' &&
     typeof obj.name === 'string' &&
     typeof obj.height === 'number' &&
-    Number.isFinite(obj.height)
+    Number.isFinite(obj.height) &&
+    obj.height > 0
   );
 }
 
@@ -429,7 +430,10 @@ function isValidBin(value: unknown): value is BinShape {
     Number.isFinite(obj.y) &&
     Number.isFinite(obj.width) &&
     Number.isFinite(obj.depth) &&
-    Number.isFinite(obj.height)
+    Number.isFinite(obj.height) &&
+    obj.width > 0 &&
+    obj.depth > 0 &&
+    obj.height > 0
   );
 }
 
