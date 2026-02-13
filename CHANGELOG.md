@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.9.2...gridfinity-layout-tool-v3.10.0) (2026-02-13)
+
+
+### Features
+
+* add feedback UI with GitHub Issue creation ([#722](https://github.com/andymai/gridfinity-layout-tool/issues/722)) ([707580d](https://github.com/andymai/gridfinity-layout-tool/commit/707580d0f748adc2d1f81d6cc4ceaec89cd7a6a4))
+
 ## [3.9.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.9.1...gridfinity-layout-tool-v3.9.2) (2026-02-13)
 
 
