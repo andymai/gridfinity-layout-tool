@@ -145,8 +145,9 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
 
         let x: number;
         if (cellX === -1) {
-          // In fractional column - x is 0 to fractionalWidthPart
-          x = isLeftHalf ? 0 : fractionalWidthPart / 2;
+          // In fractional column - clamp to valid half-bin positions within the strip
+          const xHalfOffset = isLeftHalf ? 0 : snapToHalf(fractionalWidthPart / 2);
+          x = Math.min(xHalfOffset, fractionalWidthPart - 0.5);
         } else {
           // In integer column - offset by fractional width if edge is at start
           const baseX =
@@ -157,8 +158,9 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
         let y: number;
         if (cellY === -1) {
           // In fractional row (at top when edge='end')
-          const fractionalY = integerDepth + (isTopHalf ? fractionalDepthPart / 2 : 0);
-          y = fractionalY;
+          // Clamp to last valid half-bin position within the fractional strip
+          const halfOffset = isTopHalf ? snapToHalf(fractionalDepthPart / 2) : 0;
+          y = integerDepth + Math.min(halfOffset, fractionalDepthPart - 0.5);
         } else {
           // In integer row
           const baseY =
