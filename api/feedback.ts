@@ -130,8 +130,9 @@ function buildEnrichmentPrompt(
 
   let prompt = `Analyze this user feedback and produce structured output.
 
-User's description (category: ${userCategory}):
-${sanitizeForPrompt(description, 500)}`;
+<user_feedback category="${userCategory}">
+${sanitizeForPrompt(description, 500)}
+</user_feedback>`;
 
   if (context) {
     prompt += `\n\nLayout context:\n${sanitizeForPrompt(JSON.stringify(context, null, 2), 300)}`;
@@ -235,7 +236,7 @@ async function enrichFeedback(
     const fallbackTitle = description.split(/[.\n]/)[0].slice(0, 80) || 'User Feedback';
     const categoryLabel = CATEGORY_ISSUE_LABELS[userCategory] ?? 'feedback: general';
 
-    let body = description;
+    let body = sanitizeLlmBody(description);
     if (context) {
       body += '\n\n<details><summary>Layout Context</summary>\n\n```json\n';
       body += escapeCodeFence(JSON.stringify(context, null, 2));
@@ -254,9 +255,27 @@ async function enrichFeedback(
   }
 }
 
+const ALLOWED_ORIGINS = new Set([
+  'https://gridfinitylayouttool.com',
+  'https://www.gridfinitylayouttool.com',
+  'https://gridfinity-layout-tool.vercel.app',
+]);
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  // Allow Vercel preview deployments
+  return /^https:\/\/gridfinity-layout-tool[a-z0-9-]*\.vercel\.app$/.test(origin);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const origin = req.headers.origin;
+  if (!isAllowedOrigin(origin)) {
+    return res.status(403).json({ error: 'Forbidden' });
   }
 
   const token = process.env.GITHUB_FEEDBACK_TOKEN;
