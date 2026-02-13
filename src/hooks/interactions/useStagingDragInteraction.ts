@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useInteractionStore } from '@/core/store';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin, clamp } from '@/shared/utils/validation';
 import { capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
@@ -52,7 +52,14 @@ function findNearestValidPosition(
     // Skip if clamping brought us back to the same position
     if (nx === targetX && ny === targetY) continue;
     const result = canPlaceBin(
-      { x: nx, y: ny, width: bin.width, depth: bin.depth, height: bin.height },
+      {
+        x: nx,
+        y: ny,
+        width: bin.width,
+        depth: bin.depth,
+        height: bin.height,
+        clearanceHeight: bin.clearanceHeight,
+      },
       activeLayerId,
       layout,
       bin.id
@@ -148,7 +155,14 @@ export function useStagingDragInteraction(
 
       // Validate placement using bin's actual height (no auto-adjustment)
       const result = canPlaceBin(
-        { x: targetX, y: targetY, width: bin.width, depth: bin.depth, height: bin.height },
+        {
+          x: targetX,
+          y: targetY,
+          width: bin.width,
+          depth: bin.depth,
+          height: bin.height,
+          clearanceHeight: bin.clearanceHeight,
+        },
         activeLayerId,
         layout,
         bin.id
