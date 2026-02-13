@@ -31,20 +31,21 @@ const FeedbackEnrichmentSchema = z.object({
   summary: z.string().max(200),
   category: z.enum(['bug', 'feature', 'general']),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
-  structuredBody: z.string(),
+  structuredBody: z.string().max(3000),
   duplicateOf: z.number().nullable(),
 });
 
 type FeedbackEnrichment = z.infer<typeof FeedbackEnrichmentSchema>;
 
 function sanitizeForPrompt(text: string, maxLength: number): string {
-  return (
-    text
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\u0000-\u001f\u007f]/g, '')
-      .slice(0, maxLength)
-      .trim()
-  );
+  return text
+    .replace(/[^\w\s\-.,!?:;'"&()#×x/@+]/g, '')
+    .slice(0, maxLength)
+    .trim();
+}
+
+function sanitizeForMarkdown(text: string): string {
+  return text.replace(/[[\]()]/g, '\\$&');
 }
 
 function isValidEmail(email: string): boolean {
@@ -123,7 +124,7 @@ ${sanitizeForPrompt(description, 500)}`;
   if (recentIssues.length > 0) {
     prompt += '\n\nRecent open issues (check for duplicates):';
     for (const issue of recentIssues) {
-      prompt += `\n- #${String(issue.number)}: ${issue.title}`;
+      prompt += `\n- #${String(issue.number)}: ${sanitizeForPrompt(issue.title, 100)}`;
     }
     prompt +=
       '\n\nSet duplicateOf to the issue number if this is clearly a duplicate, otherwise null.';
@@ -192,7 +193,7 @@ async function enrichFeedback(
     }
 
     if (email) {
-      body += `\n\n<details><summary>Contact</summary>\n\n${email}\n\n</details>`;
+      body += `\n\n<details><summary>Contact</summary>\n\n${sanitizeForMarkdown(email)}\n\n</details>`;
     }
 
     if (enrichment.duplicateOf !== null) {
@@ -208,7 +209,7 @@ async function enrichFeedback(
     return {
       title: enrichment.title,
       body,
-      categoryLabel: enrichedCategory,
+      categoryLabel: enrichedCategory.charAt(0).toUpperCase() + enrichedCategory.slice(1),
       labels,
     };
   } catch (error) {
@@ -225,7 +226,7 @@ async function enrichFeedback(
       body += '\n```\n\n</details>';
     }
     if (email) {
-      body += `\n\n<details><summary>Contact</summary>\n\n${email}\n\n</details>`;
+      body += `\n\n<details><summary>Contact</summary>\n\n${sanitizeForMarkdown(email)}\n\n</details>`;
     }
 
     return {
