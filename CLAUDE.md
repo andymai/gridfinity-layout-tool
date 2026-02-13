@@ -117,19 +117,20 @@ Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`. Loca
 
 ## API (`api/`)
 
-| Endpoint                    | Purpose                            |
-| --------------------------- | ---------------------------------- |
-| `share.ts`                  | POST: Create share                 |
-| `share/[id].ts`             | GET/PUT/DELETE share               |
-| `suggest-name.ts`           | AI-powered layout name suggestions |
-| `liveblocks-auth.ts`        | Liveblocks auth token endpoint     |
-| `ml-telemetry.ts`           | ML usage telemetry                 |
-| `report/[id].ts`            | Report shared layout               |
-| `lib/rateLimit.ts`          | 100/min (CRUD), 10/hr (report)     |
-| `lib/validation.ts`         | 500KB max, 2500 bins max           |
-| `lib/contentFilter.ts`      | Content moderation                 |
-| `lib/designerValidation.ts` | Bin designer input validation      |
-| `lib/llm.ts`                | LLM provider config (AI SDK)       |
+| Endpoint                    | Purpose                                                            |
+| --------------------------- | ------------------------------------------------------------------ |
+| `share.ts`                  | POST: Create share                                                 |
+| `share/[id].ts`             | GET/PUT/DELETE share                                               |
+| `suggest-name.ts`           | AI-powered layout name suggestions                                 |
+| `liveblocks-auth.ts`        | Liveblocks auth token endpoint                                     |
+| `ml-telemetry.ts`           | ML usage telemetry                                                 |
+| `feedback.ts`               | POST: Submit feedback (LLM title via AI SDK, creates GitHub Issue) |
+| `report/[id].ts`            | Report shared layout                                               |
+| `lib/rateLimit.ts`          | 100/min (CRUD), 10/hr (report), 5/hr (feedback)                    |
+| `lib/validation.ts`         | 500KB max, 2500 bins max                                           |
+| `lib/contentFilter.ts`      | Content moderation                                                 |
+| `lib/designerValidation.ts` | Bin designer input validation                                      |
+| `lib/llm.ts`                | LLM provider config (AI SDK)                                       |
 
 ## Testing
 
@@ -169,4 +170,4 @@ npm run size          # Bundle size check
 
 **Vercel (required):** `BLOB_READ_WRITE_TOKEN`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `TOKEN_SALT`
 
-**Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`, `VITE_PUBLIC_POSTHOG_KEY`
+**Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`, `VITE_PUBLIC_POSTHOG_KEY`, `GITHUB_FEEDBACK_TOKEN`

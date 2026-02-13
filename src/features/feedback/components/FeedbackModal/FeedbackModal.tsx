@@ -1,9 +1,13 @@
 import { useState, useCallback } from 'react';
 import { Dialog } from '@/design-system/Dialog';
+import { Select } from '@/design-system/Select';
+import { Input } from '@/design-system/Input';
+import { Checkbox } from '@/design-system/Checkbox';
+import { Button } from '@/design-system/Button';
 import { useTranslation } from '@/i18n';
 import { useLayoutStore, useHalfBinModeStore, useToastStore } from '@/core/store';
 import { useFeedbackSubmit } from '../../hooks/useFeedbackSubmit';
-import type { FeedbackCategory, FeedbackContext } from '../../types';
+import type { FeedbackCategory, FeedbackContext, FeedbackPayload } from '../../types';
 import { FEEDBACK_CONSTRAINTS } from '../../types';
 
 interface FeedbackModalProps {
@@ -12,10 +16,11 @@ interface FeedbackModalProps {
 }
 
 function gatherContext(): FeedbackContext {
-  const { layout } = useLayoutStore.getState();
-  const { halfBinMode } = useHalfBinModeStore.getState();
+  const layout = useLayoutStore.getState().layout;
+  const halfBinMode = useHalfBinModeStore.getState().halfBinMode;
+  const { width, depth, height } = layout.drawer;
   return {
-    drawerSize: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
+    drawerSize: `${width}x${depth}x${height}`,
     binCount: layout.bins.length,
     layerCount: layout.layers.length,
     browser: navigator.userAgent,
@@ -35,6 +40,12 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   const [includeContext, setIncludeContext] = useState(false);
   const [hp, setHp] = useState('');
 
+  const categoryOptions = [
+    { id: 'feature_request', name: t('feedback.categoryFeature') },
+    { id: 'bug_report', name: t('feedback.categoryBug') },
+    { id: 'general', name: t('feedback.categoryGeneral') },
+  ];
+
   const resetForm = useCallback(() => {
     setCategory('feature_request');
     setDescription('');
@@ -53,13 +64,10 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     async (e: React.SyntheticEvent) => {
       e.preventDefault();
 
-      const payload = {
-        category,
-        description,
-        ...(email.trim() ? { email: email.trim() } : {}),
-        ...(includeContext ? { context: gatherContext() } : {}),
-        ...(hp ? { hp } : {}),
-      };
+      const payload: FeedbackPayload = { category, description };
+      if (email.trim()) payload.email = email.trim();
+      if (includeContext) payload.context = gatherContext();
+      if (hp) payload.hp = hp;
 
       const success = await submit(payload);
       if (success) {
@@ -96,17 +104,14 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
             <label htmlFor="feedback-category" className="text-sm font-medium text-content">
               {t('feedback.categoryLabel')}
             </label>
-            <select
+            <Select
               id="feedback-category"
               aria-label={t('feedback.categoryLabel')}
               value={category}
-              onChange={(e) => setCategory(e.target.value as FeedbackCategory)}
-              className="px-3 py-2 rounded-md text-sm bg-surface-elevated border border-stroke-subtle text-content"
-            >
-              <option value="feature_request">{t('feedback.categoryFeature')}</option>
-              <option value="bug_report">{t('feedback.categoryBug')}</option>
-              <option value="general">{t('feedback.categoryGeneral')}</option>
-            </select>
+              onValueChange={(v) => setCategory(v as FeedbackCategory)}
+              options={categoryOptions}
+              fullWidth
+            />
           </div>
 
           {/* Description */}
@@ -122,7 +127,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
               placeholder={t('feedback.descriptionPlaceholder')}
               maxLength={FEEDBACK_CONSTRAINTS.DESCRIPTION_MAX}
               rows={5}
-              className="px-3 py-2 rounded-md text-sm bg-surface-elevated border border-stroke-subtle text-content placeholder:text-content-tertiary resize-y"
+              className="px-3 py-2 rounded-md text-sm bg-surface border border-stroke text-content placeholder:text-content-tertiary resize-y transition-all duration-100 hover:border-stroke-strong focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none"
             />
           </div>
 
@@ -131,7 +136,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
             <label htmlFor="feedback-email" className="text-sm font-medium text-content">
               {t('feedback.emailLabel')}
             </label>
-            <input
+            <Input
               id="feedback-email"
               aria-label={t('feedback.emailLabel')}
               type="email"
@@ -139,21 +144,17 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('feedback.emailPlaceholder')}
               maxLength={FEEDBACK_CONSTRAINTS.EMAIL_MAX}
-              className="px-3 py-2 rounded-md text-sm bg-surface-elevated border border-stroke-subtle text-content placeholder:text-content-tertiary"
+              wrapperClassName="w-full"
             />
           </div>
 
           {/* Include context checkbox */}
-          <label className="flex items-center gap-2 text-sm text-content-secondary cursor-pointer">
-            <input
-              type="checkbox"
-              aria-label={t('feedback.includeContext')}
-              checked={includeContext}
-              onChange={(e) => setIncludeContext(e.target.checked)}
-              className="rounded border-stroke-subtle"
-            />
-            <span>{t('feedback.includeContext')}</span>
-          </label>
+          <Checkbox
+            checked={includeContext}
+            onChange={setIncludeContext}
+            label={t('feedback.includeContext')}
+            aria-label={t('feedback.includeContext')}
+          />
 
           {/* Error message */}
           {error && (
@@ -164,23 +165,23 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
         </form>
       </Dialog.Body>
       <Dialog.Footer>
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={handleClose}
-          className="btn btn-ghost"
           aria-label={t('feedback.cancel')}
         >
           {t('feedback.cancel')}
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
+          variant="primary"
           form="feedback-form"
           disabled={isSubmitting}
-          className="btn btn-primary"
           aria-label={t('feedback.submit')}
         >
           {isSubmitting ? t('feedback.submitting') : t('feedback.submit')}
-        </button>
+        </Button>
       </Dialog.Footer>
     </Dialog.Root>
   );

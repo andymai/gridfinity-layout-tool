@@ -109,7 +109,6 @@
     "feedback.errorGeneric",
     "feedback.errorRateLimit",
     "feedback.includeContext",
-    "feedback.includeContextTooltip",
     "feedback.submit",
     "feedback.submitting",
     "feedback.successToast",

@@ -5,12 +5,6 @@ import { gateway } from '@ai-sdk/gateway';
 
 const GITHUB_REPO = 'andymai/gridfinity-layout-tool';
 
-const CATEGORY_LABELS: Record<string, string> = {
-  feature_request: 'Feature Request',
-  bug_report: 'Bug Report',
-  general: 'General',
-};
-
 const CATEGORY_ISSUE_LABELS: Record<string, string> = {
   feature_request: 'feedback: feature',
   bug_report: 'feedback: bug',
@@ -23,18 +17,16 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
 
-async function generateTitle(description: string, category: string): Promise<string> {
+async function generateTitle(description: string): Promise<string> {
   try {
     const result = await generateText({
       model: gateway('openai/gpt-4o-mini'),
-      prompt: `Write a concise issue title (max 80 chars) for this ${CATEGORY_LABELS[category] ?? 'feedback'}:\n\n${description.slice(0, 500)}`,
+      prompt: `Write a concise issue title (max 80 chars) for this user feedback:\n\n${description.slice(0, 500)}`,
       maxOutputTokens: 30,
       temperature: 0.3,
     });
-    const title = result.text.trim().replace(/^["']|["']$/g, '');
-    return title || description.slice(0, 80);
+    return result.text.trim().replace(/^["']|["']$/g, '') || description.slice(0, 80);
   } catch {
-    // Fallback: use first line/sentence of description
     return description.split(/[.\n]/)[0].slice(0, 80) || 'User Feedback';
   }
 }
@@ -81,16 +73,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const body = (req.body ?? {}) as Record<string, unknown>;
+    const { category, description, email, context, hp } = req.body as Record<string, unknown>;
 
     // Honeypot check
-    if (body.hp && typeof body.hp === 'string' && body.hp.length > 0) {
-      // Silently accept but don't create issue (looks successful to bots)
+    if (typeof hp === 'string' && hp.length > 0) {
       return res.status(200).json({ success: true });
     }
-
-    // Validate required fields
-    const { category, description, email, context } = body;
 
     if (typeof category !== 'string' || !VALID_CATEGORIES.has(category)) {
       return res.status(400).json({ error: 'Invalid category' });
@@ -105,13 +93,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    // Auto-generate title from description using LLM
-    const title = await generateTitle(description.trim(), category);
-    const issueTitle = `[Feedback] ${CATEGORY_LABELS[category]}: ${title}`;
+    const trimmedDescription = description.trim();
+    const title = await generateTitle(trimmedDescription);
+    const categoryLabel = category.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    const issueTitle = `[Feedback] ${categoryLabel}: ${title}`;
     const issueBody = buildIssueBody(
-      description.trim(),
+      trimmedDescription,
       typeof email === 'string' ? email : undefined,
-      context && typeof context === 'object' ? (context as Record<string, unknown>) : undefined
+      typeof context === 'object' && context !== null
+        ? (context as Record<string, unknown>)
+        : undefined
     );
 
     const ghResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/issues`, {

@@ -54,11 +54,10 @@ describe('useFeedbackSubmit', () => {
     );
   });
 
-  it('handles API error and returns false', async () => {
+  it('uses rate limit i18n key on 429', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 429,
-      json: async () => ({ error: 'Too many submissions.' }),
     });
 
     const { result } = renderHook(() => useFeedbackSubmit());
@@ -72,7 +71,44 @@ describe('useFeedbackSubmit', () => {
     });
 
     expect(result.current.status).toBe('error');
-    expect(result.current.error).toBeTruthy();
+    expect(result.current.error).toBe('feedback.errorRateLimit');
+  });
+
+  it('uses generic i18n key on other API errors', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+    });
+
+    const { result } = renderHook(() => useFeedbackSubmit());
+
+    await act(async () => {
+      const success = await result.current.submit({
+        category: 'general',
+        description: 'Some feedback',
+      });
+      expect(success).toBe(false);
+    });
+
+    expect(result.current.status).toBe('error');
+    expect(result.current.error).toBe('feedback.errorGeneric');
+  });
+
+  it('handles network failure', async () => {
+    mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+
+    const { result } = renderHook(() => useFeedbackSubmit());
+
+    await act(async () => {
+      const success = await result.current.submit({
+        category: 'feature_request',
+        description: 'Some feedback',
+      });
+      expect(success).toBe(false);
+    });
+
+    expect(result.current.status).toBe('error');
+    expect(result.current.error).toBe('feedback.errorGeneric');
   });
 
   it('resets state', async () => {

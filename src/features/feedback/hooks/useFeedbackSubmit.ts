@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { FeedbackPayload, FeedbackResponse } from '../types';
+import type { FeedbackPayload } from '../types';
 
 type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -31,12 +31,10 @@ export function useFeedbackSubmit(): UseFeedbackSubmitReturn {
         body: JSON.stringify(payload),
       });
 
-      const data = (await response.json()) as FeedbackResponse;
-
-      if (!response.ok || !data.success) {
+      if (!response.ok) {
         const errorKey =
           response.status === 429 ? 'feedback.errorRateLimit' : 'feedback.errorGeneric';
-        setError(data.error ?? errorKey);
+        setError(errorKey);
         setStatus('error');
         return false;
       }

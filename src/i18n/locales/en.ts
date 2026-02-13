@@ -1763,7 +1763,6 @@ const en: Record<string, string> = {
   'feedback.emailLabel': 'Email (optional)',
   'feedback.emailPlaceholder': 'For follow-up only',
   'feedback.includeContext': 'Include layout info to help debug',
-  'feedback.includeContextTooltip': 'Attaches drawer size, bin/layer count, browser, and locale',
   'feedback.submit': 'Submit Feedback',
   'feedback.submitting': 'Submitting...',
   'feedback.cancel': 'Cancel',
