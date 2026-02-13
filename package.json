@@ -81,7 +81,7 @@
     "@vercel/blob": "^2.0.0",
     "ai": "^6.0.49",
     "brepjs": "^8.1.0",
-    "brepjs-opencascade": "^0.7.1",
+    "brepjs-opencascade": "^0.7.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
