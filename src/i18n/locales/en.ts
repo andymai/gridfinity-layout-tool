@@ -1758,8 +1758,6 @@ const en: Record<string, string> = {
   'feedback.categoryFeature': 'Feature Request',
   'feedback.categoryBug': 'Bug Report',
   'feedback.categoryGeneral': 'General Feedback',
-  'feedback.titleLabel': 'Title',
-  'feedback.titlePlaceholder': 'Brief summary of your feedback',
   'feedback.descriptionLabel': 'Description',
   'feedback.descriptionPlaceholder': 'Tell us more...',
   'feedback.emailLabel': 'Email (optional)',
@@ -1772,7 +1770,6 @@ const en: Record<string, string> = {
   'feedback.successToast': 'Feedback submitted — thank you!',
   'feedback.errorGeneric': 'Failed to submit feedback. Please try again.',
   'feedback.errorRateLimit': 'Too many submissions. Please try again later.',
-  'feedback.titleRequired': 'Title is required',
   'feedback.descriptionRequired': 'Description is required',
 };
 

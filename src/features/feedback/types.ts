@@ -11,7 +11,6 @@ export interface FeedbackContext {
 
 export interface FeedbackPayload {
   category: FeedbackCategory;
-  title: string;
   description: string;
   email?: string;
   context?: FeedbackContext;
@@ -24,7 +23,6 @@ export interface FeedbackResponse {
 }
 
 export const FEEDBACK_CONSTRAINTS = {
-  TITLE_MAX: 100,
   DESCRIPTION_MAX: 2000,
   EMAIL_MAX: 254,
 } as const;
