@@ -25,7 +25,7 @@ import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from './settings';
 import { trackBinCreated } from '@/shared/analytics/posthog';
-import type { Result, LayoutError, ValidationError } from '@/core/result';
+import type { Result, LayoutError, ValidationError, ValidationFailureReason } from '@/core/result';
 import {
   ok,
   err,
@@ -124,7 +124,7 @@ function requireBin(bins: Bin[], id: BinId, op: string): Result<Bin, LayoutError
 }
 
 function toPlacementError(
-  reason: string,
+  reason: ValidationFailureReason,
   rect: { x: number; y: number; width: number; depth: number }
 ): ValidationError {
   if (reason === 'collision') return validationCollision();
