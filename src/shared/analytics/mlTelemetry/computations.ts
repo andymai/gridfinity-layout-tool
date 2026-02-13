@@ -207,13 +207,8 @@ export function computeSessionConfidence(
   const correctionScore =
     correctionRatio === 0 ? 1.0 : correctionRatio < 0.3 ? 0.8 : correctionRatio < 0.6 ? 0.6 : 0.4;
 
-  // Session score
-  const binsPerMinute =
-    sessionDurationMs > 0
-      ? binsPlaced / (sessionDurationMs / 60_000)
-      : binsPlaced > 0
-        ? Infinity
-        : 0;
+  // Session score — treat zero-duration sessions as low confidence (rapid/test behavior)
+  const binsPerMinute = sessionDurationMs > 0 ? binsPlaced / (sessionDurationMs / 60_000) : 0;
   const sessionScore =
     binsPerMinute > 2 ? 1.0 : binsPerMinute > 0.5 ? 0.8 : binsPerMinute > 0.1 ? 0.6 : 0.4;
 
@@ -258,7 +253,7 @@ export function computeConfidenceBreakdown(layout: Layout): ConfidenceBreakdown 
   const completionScore = Math.round(fillPct * 0.7 + labelRate * 100 * 0.3) / 100;
 
   const sessionDurationMs = Date.now() - layoutSession.startTime;
-  const binsPerMinute = binsPlaced / (sessionDurationMs / 60_000);
+  const binsPerMinute = sessionDurationMs > 0 ? binsPlaced / (sessionDurationMs / 60_000) : 0;
   const sessionScore =
     binsPerMinute > 2 ? 1.0 : binsPerMinute > 0.5 ? 0.8 : binsPerMinute > 0.1 ? 0.6 : 0.4;
 
