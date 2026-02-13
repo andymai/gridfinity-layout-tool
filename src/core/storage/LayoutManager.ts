@@ -193,7 +193,7 @@ async function loadLayoutInternal(layoutId: string): Promise<Result<Layout, Stor
     return err(storageCorrupted(key, validation.errors));
   }
 
-  return ok(data);
+  return ok(validation.layout);
 }
 
 /**

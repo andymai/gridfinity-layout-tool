@@ -218,7 +218,7 @@ export function canPlaceBin(
 /**
  * Validate an imported layout against the schema and constraints.
  */
-export type ValidationSuccess = { valid: true; errors: string[]; layout: Layout };
+export type ValidationSuccess = { valid: true; errors: readonly []; layout: Layout };
 export type ValidationFailure = { valid: false; errors: string[] };
 export type ImportValidationResult = ValidationSuccess | ValidationFailure;
 
