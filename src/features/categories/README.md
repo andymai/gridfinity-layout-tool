@@ -13,6 +13,14 @@ graph TB
 
 - `components/CategoriesPanel.tsx` — category CRUD UI
 
+## Features
+
+- **CRUD operations** - add, rename, recolor, delete categories
+- **Quick color picker** - inline palette for fast color changes
+- **Apply to selected bins** - clicking category updates all selected bins
+- **Save as defaults** - persist current categories for new layouts
+- **Hover highlighting** - preview category bins in 3D view
+
 ## Constraints
 
 - **Min 1 category** - can't delete the last one
@@ -21,6 +29,6 @@ graph TB
 
 ## Gotchas
 
-1. **Deleting category reassigns bins** to first remaining category
+1. **Deletion blocked if category in use** - bins must be reassigned first (prevented at store level)
 2. **Category ID used in bin.category** - not name
 3. **Print list groups by category** - affects export organization

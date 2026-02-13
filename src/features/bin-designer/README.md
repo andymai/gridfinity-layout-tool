@@ -27,11 +27,13 @@ graph TB
 ## Key Files
 
 - `components/DesignerPage.tsx` — main UI entry point
-- `components/ParameterPanel.tsx` — parameter editing sidebar
+- `components/ParameterPanel.tsx` — parameter editing sidebar with collapsible sections
 - `components/PreviewCanvas.tsx` — 3D preview with Three.js
-- `store/designer.ts` — design state and parameter mutations
+- `components/CutoutWorkspace` — dedicated 3D editor for floor/wall cutouts
+- `store/designer.ts` — design state and parameter mutations (composed from slices)
 - `store/cart.ts` — batch export cart
 - `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
+- `store/cutoutSelection.ts` — cutout editor selection state
 - `hooks/useGeneration.ts` — triggers geometry regeneration via bridge
 - `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs
 
@@ -40,7 +42,7 @@ graph TB
 - **Epoch pattern**: `store.setParam()` increments epoch → triggers regeneration
 - **Mesh cache**: 100MB budget, attached to history for instant undo
 - **Custom bin registry**: Syncs to localStorage for Layout Planner palette
-- **Ghost overlays**: Lightweight Three.js primitives (`GhostDividers`, `GhostWireframe`, `GhostCompartmentPreview`, `GhostLabelTabs`) render during `generationStatus === 'generating'` for instant visual feedback before BREP mesh completes
+- **Ghost overlays**: Lightweight Three.js primitives render during `generationStatus === 'generating'` for instant visual feedback before BREP mesh completes. Components: `GhostDividers`, `GhostWireframe`, `GhostCompartmentPreview`, `GhostLabelTabs`, `GhostScoops`, `GhostCutouts`, `GhostWallCutouts`, `GhostSlotLines`, `GhostDividerPieces`
 
 ## Gotchas
 

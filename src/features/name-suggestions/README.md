@@ -1,42 +1,61 @@
 # Name Suggestions
 
-Intelligent layout name suggestions based on bin contents.
+Intelligent layout name suggestions using local algorithms + optional LLM enhancement.
 
 ```mermaid
 graph TB
-    UST[useSuggestionTrigger] -->|5+ bins, untitled| NSS[(store)]
-    NSS --> NFH[NameFieldHighlight] --> SP[SuggestionPopover]
-    UNS[useNameSuggestions] --> GS[generateSuggestions]
+    UST[useSuggestionTrigger] -->|5+ bins, untitled| GS[generateSuggestions]
     GS --> Labels & Purpose & Categories & Dimensions
+    GS --> NSS[(store)]
+    UST -->|parallel| API[/api/suggest-name]
+    API -->|LLM suggestions| NSS
+    NSS --> NFH[NameFieldHighlight] --> SP[SuggestionPopover]
+    UNS[useNameSuggestions] --> NSS
     SP -->|accept| LIB[(library store)]
+    SP -->|dismiss| LIB
 ```
 
 ## Key Files
 
 - `components/SuggestionPopover.tsx` — suggestion dropdown UI
 - `components/NameFieldHighlight.tsx` — pulsing highlight wrapper
-- `hooks/useNameSuggestions.ts` — suggestion generation logic
-- `hooks/useSuggestionTrigger.ts` — auto-trigger conditions
-- `utils/generateSuggestions.ts` — name generation from bin data
+- `hooks/useNameSuggestions.ts` — UI hook (accept/dismiss/telemetry)
+- `hooks/useSuggestionTrigger.ts` — auto-trigger + dual-path generation
+- `store/index.ts` — Zustand store (state + persistent dismissal)
+- `utils/generateSuggestions.ts` — local name generation (lazy-loaded)
+- `utils/stringUtils.ts` — hashName, editDistance for telemetry
+- `api-types.ts` — shared client/server types for LLM API
+- `types.ts` — core suggestion types
+
+## Architecture
+
+### Dual-Path Generation
+
+1. **Local** (instant): `generateSuggestions()` analyzes bin data using:
+   - `labelVocabulary.ts` for domain detection
+   - `purposeInference.ts` for drawer purpose
+   - Category names, drawer dimensions
+2. **LLM** (parallel): `/api/suggest-name` generates culturally-localized names (5s timeout)
+
+Results merge in store. Local suggestions show immediately; LLM suggestions enhance alternatives.
+
+### State Management
+
+- **Store**: `useNameSuggestionStore` (Zustand) tracks current suggestions, expand/collapse, loading state
+- **Persistence**: Dismissal state saved per-layout in `library.entries[].nameSuggestionState`
+- **Telemetry**: Tracks shown/accepted/edited/dismissed events with hashed names (privacy-preserving)
 
 ## Trigger Conditions
 
-- 5+ bins have labels
+- 5+ bins have labels (on-grid only)
 - Layout name is "Untitled layout"
-- Not dismissed in current session
-
-## Suggestion Sources
-
-1. **Labels** - Analyzes bin labels via `labelVocabulary.ts`
-2. **Purpose** - `purposeInference.ts` detects drawer purpose
-3. **Categories** - Custom category names if significant
-4. **Dimensions** - Fallback using drawer size
+- Not dismissed for this layout (persists across sessions)
 
 ## Entry Points
 
-- **Auto-trigger** - Pulsing highlight on Header name field
-- **Command Palette** - "Suggest Layout Name"
-- **Layout Manager** - "Suggest Name" menu item
+- **Auto-trigger** — Pulsing highlight on Header name field
+- **Command Palette** — "Suggest Layout Name" (bypasses dismissal)
+- **Layout Manager** — "Suggest Name" menu item (bypasses dismissal)
 
 ## Usage
 

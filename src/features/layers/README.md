@@ -5,35 +5,30 @@ Vertical stacking system for multi-height drawer organization.
 ```mermaid
 graph TB
     LP[LayerPanel] --> AL[addLayer] & DL[deleteLayer] & RL[reorderLayers]
-    ALP[ActiveLayerPanel] --> SAL[setActiveLayer] --> SEL[(selection)]
-    LAY[(layout)] --> ZS[getLayerZStart] & ZE[getLayerZEnd]
-    ZS & ZE --> GE[grid-editor] & COL[collision.ts]
-    DL -->|bins to staging| LAY
+    ALP[ActiveLayerPanel] --> FL[fillLayer] & CLR[clearLayer] & SAL[setActiveLayer]
+    SAL --> SEL[(selection)]
+    DL -->|bins to staging| LAY[(layout)]
+    AL --> AE[layerAutoExpansion]
 ```
 
 ## Key Files
 
-- `components/LayerPanel.tsx` — layer list with add/delete/reorder
-- `components/ActiveLayerPanel.tsx` — active layer indicator
+- `components/LayerPanel.tsx` — layer list with add/delete/reorder, drag-and-drop reordering
+- `components/ActiveLayerPanel.tsx` — active layer controls (fill, clear, paint mode)
 - `utils/layerAutoExpansion.ts` — auto-expand layer height for tall bins
 
 ## Z-Axis Model (CRITICAL)
 
 ```
 layers[0] is BOTTOM - array order = physical stack order
-UI displays reversed via getDisplayLayers()
+UI displays reversed via getDisplayLayers() from @/shared/utils/collision
 
 Layer 0: z = 0 to h0
 Layer 1: z = h0 to (h0 + h1)
 Layer 2: z = (h0 + h1) to ...
 ```
 
-## Z Calculations
-
-```typescript
-getLayerZStart(layerId): sum of heights of layers below
-getLayerZEnd(layerId): zStart + layer.height
-```
+Z-axis calculations (getLayerZStart, getLayerZEnd) are in `@/shared/utils/collision`.
 
 ## Gotchas
 

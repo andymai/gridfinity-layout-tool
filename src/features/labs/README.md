@@ -4,10 +4,11 @@ Experimental feature flags for opt-in preview features.
 
 ```mermaid
 graph TB
-    LBtn[LabsButton] --> LD[LabsDrawer] --> FC[FeatureCard]
+    LBtn[LabsButton] --> LD[LabsDrawer]
+    LD --> FC[FeatureCard] & GS[GraduatedSection]
     FC -->|toggle| LS[(labs store)] --> LOCAL[(localStorage)]
     LS --> UFF[useFeatureFlag]
-    UFF --> CS[cloud-share] & BD[bin-designer]
+    UFF --> Features[Features using flags]
 ```
 
 ## Infrastructure Location
@@ -16,13 +17,21 @@ graph TB
 - **Store**: `@/core/store/labs`
 - **Hook**: `@/hooks/useFeatureFlag`
 
+## Components
+
+- **LabsButton** - Opens labs drawer
+- **LabsDrawer** - Main drawer UI with feature list
+- **FeatureCard** - Individual feature toggle card
+- **FeatureStatusBadge** - Status indicator (experimental/preview/graduated)
+- **GraduatedSection** - Collapsible "What's New" section for graduated features
+
 ## Current Flags
 
-| Flag                    | Purpose                     |
-| ----------------------- | --------------------------- |
-| `bin_designer`          | Parametric bin generator    |
-| `collaborative_editing` | Real-time Liveblocks collab |
-| `layout_to_print`       | STL export from layout      |
+| Flag                    | Status       | Purpose                     |
+| ----------------------- | ------------ | --------------------------- |
+| `bin_designer`          | Graduated    | Parametric bin generator    |
+| `collaborative_editing` | Experimental | Real-time Liveblocks collab |
+| `layout_to_print`       | Experimental | STL export from layout      |
 
 ## Usage
 

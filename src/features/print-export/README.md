@@ -13,11 +13,26 @@ graph TB
 
 ## Key Files
 
-- `components/PrintModal.tsx` — main print list dialog
-- `hooks/usePrintList.ts` — aggregates bins into print rows
-- `utils/split.ts` — recursive bin splitting for print bed
+**Components:**
+
+- `components/PrintModal.tsx` — main print list dialog with settings
+- `components/PrintLayout.tsx` — renders print preview layout
+- `components/PrintBin.tsx` — individual bin display in print view
+- `components/PrintListSummary.tsx` — summary stats display
+- `components/PrintListEmpty.tsx` — empty state
+- `components/SortOrderConfig.tsx` — sort configuration UI
+- `components/printBinLayout.ts` — CSS grid calculations for bin positioning
+
+**Hooks:**
+
+- `hooks/usePrintList.ts` — aggregates bins into print rows, filtering/sorting
+
+**Utils:**
+
+- `utils/split.ts` — recursive bin splitting for print bed constraints
 - `utils/printEstimates.ts` — filament/time/cost calculations
-- `utils/printListOperations.ts` — sort and group operations
+- `utils/printListOperations.ts` — filter, sort, and group operations
+- `utils/printLayout.ts` — bin/layer filtering and formatting for print
 
 ## Split Algorithm
 
