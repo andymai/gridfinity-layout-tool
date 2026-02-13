@@ -124,6 +124,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => window.dispatchEvent(new CustomEvent('open-help-modal'));
         case 'open-print':
           return () => setPrintModalOpen(true);
+        case 'send-feedback':
+          return () => window.dispatchEvent(new CustomEvent('open-feedback-modal'));
         case 'switch-to-designer':
           return () => window.dispatchEvent(new CustomEvent('switch-to-designer'));
 

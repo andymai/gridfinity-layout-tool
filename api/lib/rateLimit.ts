@@ -2,7 +2,15 @@ import { createHash } from 'crypto';
 import { Redis } from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 
-export type RateLimitAction = 'create' | 'update' | 'view' | 'delete' | 'report' | 'telemetry' | 'suggest';
+export type RateLimitAction =
+  | 'create'
+  | 'update'
+  | 'view'
+  | 'delete'
+  | 'report'
+  | 'telemetry'
+  | 'suggest'
+  | 'feedback';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -33,6 +41,7 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   report: { limit: 10, windowSeconds: 3600 }, // 10/hour
   telemetry: { limit: 100, windowSeconds: 60 }, // 100/minute (ML telemetry)
   suggest: { limit: 20, windowSeconds: 3600 }, // 20/hour (LLM calls are expensive)
+  feedback: { limit: 5, windowSeconds: 3600 }, // 5/hour
 };
 
 interface RateLimitResult {

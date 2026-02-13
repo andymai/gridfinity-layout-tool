@@ -98,6 +98,12 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     category: 'navigation',
     keywords: ['export', 'pdf'],
   },
+  {
+    id: 'send-feedback',
+    labelKey: 'commandPalette.sendFeedback',
+    category: 'navigation',
+    keywords: ['feedback', 'report', 'bug', 'suggestion', 'contact', 'feature'],
+  },
 
   // === Edit ===
   {

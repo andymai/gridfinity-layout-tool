@@ -32,6 +32,12 @@ const PrintModal = lazyWithRetry(() =>
   import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
 );
 
+const FeedbackModal = lazyWithRetry(() =>
+  import('@/features/feedback/components/FeedbackModal/FeedbackModal').then(
+    namedExport('FeedbackModal')
+  )
+);
+
 // Lazy load name suggestions feature to reduce main bundle size
 const NameFieldHighlight = lazyWithRetry(() =>
   import('@/features/name-suggestions').then(namedExport('NameFieldHighlight'))
@@ -91,6 +97,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(layout.name);
+  const [showFeedback, setShowFeedback] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus input when editing starts
@@ -100,6 +107,13 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
       inputRef.current.select();
     }
   }, [isEditing]);
+
+  // Listen for command palette open-feedback-modal event
+  useEffect(() => {
+    const handleOpenFeedback = () => setShowFeedback(true);
+    window.addEventListener('open-feedback-modal', handleOpenFeedback);
+    return () => window.removeEventListener('open-feedback-modal', handleOpenFeedback);
+  }, []);
 
   const handleNameClick = () => {
     setEditValue(layout.name);
@@ -370,6 +384,24 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         {/* Language selector */}
         <LanguageSelector />
 
+        {/* Feedback button */}
+        <button
+          onClick={() => setShowFeedback(true)}
+          className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary flex items-center gap-1.5"
+          title={t('header.sendFeedback')}
+          aria-label={t('header.sendFeedback')}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+          <span className="hidden lg:inline">{t('header.sendFeedback')}</span>
+        </button>
+
         <button
           onClick={onHelpClick}
           className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary"
@@ -439,6 +471,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
       <Suspense fallback={null}>
         <PrintModal isOpen={printModalOpen} onClose={() => setPrintModalOpen(false)} />
       </Suspense>
+
+      {showFeedback && (
+        <Suspense fallback={null}>
+          <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
+        </Suspense>
+      )}
     </header>
   );
 }
