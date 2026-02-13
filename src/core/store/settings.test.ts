@@ -512,6 +512,44 @@ describe('settings store', () => {
     });
   });
 
+  describe('saveCategoriesAsDefaults', () => {
+    it('saves categories as default categories', () => {
+      const { saveCategoriesAsDefaults } = useSettingsStore.getState();
+      const categories = [
+        { id: 'cat-1', name: 'Tools', color: '#FF0000' },
+        { id: 'cat-2', name: 'Parts', color: '#00FF00' },
+      ];
+
+      saveCategoriesAsDefaults(categories);
+
+      const settings = useSettingsStore.getState().settings;
+      expect(settings.defaultCategories).toEqual(categories);
+    });
+
+    it('deep copies categories to avoid reference issues', () => {
+      const { saveCategoriesAsDefaults } = useSettingsStore.getState();
+      const categories = [{ id: 'cat-1', name: 'Tools', color: '#FF0000' }];
+
+      saveCategoriesAsDefaults(categories);
+
+      const settings = useSettingsStore.getState().settings;
+      expect(settings.defaultCategories).not.toBe(categories);
+      expect(settings.defaultCategories![0]).not.toBe(categories[0]);
+    });
+
+    it('sets null when given empty array', () => {
+      const { saveCategoriesAsDefaults, updateSetting } = useSettingsStore.getState();
+      // First set some categories
+      updateSetting('defaultCategories', [{ id: 'cat-1', name: 'Tools', color: '#FF0000' }]);
+
+      // Then clear with empty array
+      saveCategoriesAsDefaults([]);
+
+      const settings = useSettingsStore.getState().settings;
+      expect(settings.defaultCategories).toBeNull();
+    });
+  });
+
   // Note: Tests for loadSettings() initialization behavior are not feasible in unit tests
   // because Zustand stores initialize their state once at module load time.
   // The localStorage loading and normalization logic is tested via e2e tests instead.
