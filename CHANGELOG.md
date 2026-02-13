@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.4...gridfinity-layout-tool-v3.11.5) (2026-02-13)
+
+
+### Bug Fixes
+
+* **validation:** reject zero/negative dimensions in type guards ([#743](https://github.com/andymai/gridfinity-layout-tool/issues/743)) ([7124558](https://github.com/andymai/gridfinity-layout-tool/commit/7124558dd8a1e3f5cbb9a5288b9d2f340a9781dc))
+
 ## [3.11.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.3...gridfinity-layout-tool-v3.11.4) (2026-02-13)
 
 
