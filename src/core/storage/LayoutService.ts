@@ -18,9 +18,8 @@ import { validateImport } from '@/shared/utils/validation';
 import { generateCategoryId, generateLayerId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from './LayoutManager';
-import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
-import type { Result } from '@/core/result';
-import type { StorageError } from '@/core/result';
+import type { Layout, LayoutId, LayoutLibrary, LayoutEntry } from '@/core/types';
+import type { Result, StorageError } from '@/core/result';
 import {
   ok,
   err,
@@ -108,6 +107,20 @@ function parseLayoutData(data: unknown): ParseResult {
   return { success: true, layout: migrated as unknown as Layout };
 }
 
+function validateLoadedData(layoutId: string, data: unknown, silent = false): Layout | null {
+  if (!data) return null;
+
+  const result = parseLayoutData(data);
+  if (!result.success) {
+    if (!silent) {
+      console.warn(`Layout ${layoutId} failed validation:`, result.errors);
+    }
+    return null;
+  }
+
+  return result.layout;
+}
+
 // === Async Layout Operations (Primary API) ===
 
 /**
@@ -126,16 +139,7 @@ export async function saveLayoutAsync(layoutId: string, layout: Layout): Promise
 export async function loadLayoutAsync(layoutId: string): Promise<Layout | null> {
   const key = getLayoutStorageKey(layoutId);
   const data = await backend.loadAsync(key);
-
-  if (!data) return null;
-
-  const result = parseLayoutData(data);
-  if (!result.success) {
-    console.warn(`Layout ${layoutId} failed validation:`, result.errors);
-    return null;
-  }
-
-  return result.layout;
+  return validateLoadedData(layoutId, data);
 }
 
 /**
@@ -203,12 +207,6 @@ export async function loadLayoutResult(layoutId: string): Promise<Result<Layout,
   try {
     data = await backend.loadAsync(key);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-
-    if (message.includes('unavailable') || message.includes('SecurityError')) {
-      return err(storageUnavailable('indexedDB', error));
-    }
-
     return err(storageUnavailable('indexedDB', error));
   }
 
@@ -233,9 +231,7 @@ export async function deleteLayoutResult(layoutId: string): Promise<Result<void,
 
   return tryCatchAsync(
     () => backend.deleteAsync(key),
-    (error): StorageError => {
-      return storageUnavailable('indexedDB', error);
-    }
+    (error): StorageError => storageUnavailable('indexedDB', error)
   );
 }
 
@@ -259,16 +255,7 @@ export function loadLayoutSync(layoutId: string): Layout | null {
   try {
     const key = getLayoutStorageKey(layoutId);
     const data = backend.loadSync(key);
-
-    if (!data) return null;
-
-    const result = parseLayoutData(data);
-    if (!result.success) {
-      console.warn(`Layout ${layoutId} failed validation:`, result.errors);
-      return null;
-    }
-
-    return result.layout;
+    return validateLoadedData(layoutId, data);
   } catch (error) {
     console.error(`Failed to load layout ${layoutId}:`, error);
     return null;
@@ -434,32 +421,10 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
   if (!legacyLayout) return null;
 
   const layoutId = generateLayoutId();
-  const now = Date.now();
+  const library = createLibraryWithLayout(layoutId, legacyLayout);
 
-  // Create library with single entry
-  const library: LayoutLibrary = {
-    version: '1.0',
-    activeLayoutId: layoutId,
-    settings: {},
-    entries: [
-      {
-        id: layoutId,
-        name: legacyLayout.name || 'Untitled layout',
-        createdAt: now,
-        modifiedAt: now,
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
-        preview: computeLayoutPreview(legacyLayout),
-      },
-    ],
-  };
-
-  // Save layout under new key
   saveLayoutSync(layoutId, legacyLayout);
-
-  // Save library index
   saveLibrary(library);
-
-  // Remove legacy key
   backend.deleteSync(LEGACY_STORAGE_KEY);
 
   return library;
@@ -504,23 +469,7 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
 
   // Create new library from legacy layout
   const layoutId = generateLayoutId();
-  const now = Date.now();
-
-  const library: LayoutLibrary = {
-    version: '1.0',
-    activeLayoutId: layoutId,
-    settings: {},
-    entries: [
-      {
-        id: layoutId,
-        name: legacyData.name || 'Untitled layout',
-        createdAt: now,
-        modifiedAt: now,
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
-        preview: computeLayoutPreview(legacyData),
-      },
-    ],
-  };
+  const library = createLibraryWithLayout(layoutId, legacyData);
 
   // Save layout and library
   const layoutSaveResult = saveLayoutSync(layoutId, legacyData);
@@ -545,17 +494,39 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
  * localStorage for immediate availability. New layouts are also saved to
  * IndexedDB asynchronously for future-proofing.
  */
+function createLibraryEntry(layoutId: LayoutId, layout: Layout): LayoutEntry {
+  const now = Date.now();
+  return {
+    id: layoutId,
+    name: layout.name || 'Untitled layout',
+    createdAt: now,
+    modifiedAt: now,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
+    preview: computeLayoutPreview(layout),
+  };
+}
+
+function createLibraryWithLayout(layoutId: LayoutId, layout: Layout): LayoutLibrary {
+  return {
+    version: '1.0',
+    activeLayoutId: layoutId,
+    settings: {},
+    entries: [createLibraryEntry(layoutId, layout)],
+  };
+}
+
+function persistNewLayout(layoutId: string, layout: Layout, library: LayoutLibrary): void {
+  saveLayoutSync(layoutId, layout);
+  saveLibrary(library);
+  saveLayoutAsync(layoutId, layout).catch(() => {
+    // Ignore errors - localStorage save is sufficient for now
+  });
+}
+
 export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayout: Layout } {
-  // Try to load existing library
-  let library = loadLibrary();
+  let library = loadLibrary() ?? migrateFromLegacyStorage();
 
   if (!library) {
-    // Check for legacy storage and migrate
-    library = migrateFromLegacyStorage();
-  }
-
-  if (!library) {
-    // Fresh start: create new library with default layout
     const layoutId = generateLayoutId();
     const defaultLayout: Layout = {
       version: '1.0',
@@ -575,39 +546,15 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
       bins: [],
     };
 
-    library = {
-      version: '1.0',
-      activeLayoutId: layoutId,
-      settings: {},
-      entries: [
-        {
-          id: layoutId,
-          name: defaultLayout.name,
-          createdAt: Date.now(),
-          modifiedAt: Date.now(),
-          // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
-          preview: computeLayoutPreview(defaultLayout),
-        },
-      ],
-    };
-
-    // Save to localStorage (sync for immediate availability)
-    saveLayoutSync(layoutId, defaultLayout);
-    saveLibrary(library);
-
-    // Also save to IndexedDB (async, fire-and-forget)
-    saveLayoutAsync(layoutId, defaultLayout).catch(() => {
-      // Ignore errors - localStorage save is sufficient for now
-    });
+    library = createLibraryWithLayout(layoutId, defaultLayout);
+    persistNewLayout(layoutId, defaultLayout, library);
   }
 
   let activeLayout = loadLayoutSync(library.activeLayoutId);
 
   if (!activeLayout) {
-    // Active layout is missing, try to recover
     console.warn(`Active layout ${library.activeLayoutId} not found, attempting recovery`);
 
-    // Try loading any available layout
     for (const entry of library.entries) {
       activeLayout = loadLayoutSync(entry.id);
       if (activeLayout) {
@@ -617,7 +564,6 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
       }
     }
 
-    // If still nothing, create a fresh default
     if (!activeLayout) {
       const layoutId = generateLayoutId();
       const recoveredLayout: Layout = {
@@ -634,25 +580,8 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
 
       activeLayout = recoveredLayout;
       library.activeLayoutId = layoutId;
-      library.entries = [
-        {
-          id: layoutId,
-          name: recoveredLayout.name,
-          createdAt: Date.now(),
-          modifiedAt: Date.now(),
-          // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
-          preview: computeLayoutPreview(recoveredLayout),
-        },
-      ];
-
-      // Save to localStorage (sync)
-      saveLayoutSync(layoutId, recoveredLayout);
-      saveLibrary(library);
-
-      // Also save to IndexedDB (async, fire-and-forget)
-      saveLayoutAsync(layoutId, recoveredLayout).catch(() => {
-        // Ignore errors - localStorage save is sufficient for now
-      });
+      library.entries = [createLibraryEntry(layoutId, recoveredLayout)];
+      persistNewLayout(layoutId, recoveredLayout, library);
     }
   }
 
@@ -668,14 +597,7 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
 function loadLegacyLayout(): Layout | null {
   try {
     const data = backend.loadSync(LEGACY_STORAGE_KEY);
-    if (!data) return null;
-
-    const result = parseLayoutData(data);
-    if (!result.success) {
-      return null;
-    }
-
-    return result.layout;
+    return validateLoadedData('legacy', data, true);
   } catch (error) {
     console.error('Failed to load legacy layout:', error);
     return null;

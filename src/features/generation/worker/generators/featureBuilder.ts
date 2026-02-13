@@ -270,6 +270,26 @@ function buildCutoutShape(cutout: {
 
 // ─── Adaptive Fillet Constants ───────────────────────────────────────────────
 
+/** Find edges near a target Z height within XY bounds, with tolerance margins. */
+function findBottomEdges(
+  shape: Shape3D,
+  zTarget: number,
+  xyBounds: { minX: number; minY: number; maxX: number; maxY: number },
+  margin: number = 1
+): readonly Edge[] {
+  return edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      const zOverlaps = bounds.zMin <= zTarget + 0.1 && bounds.zMax >= zTarget - 0.1;
+      const xOverlaps =
+        bounds.xMax >= xyBounds.minX - margin && bounds.xMin <= xyBounds.maxX + margin;
+      const yOverlaps =
+        bounds.yMax >= xyBounds.minY - margin && bounds.yMin <= xyBounds.maxY + margin;
+      return zOverlaps && xOverlaps && yOverlaps;
+    })
+    .findAll(shape);
+}
+
 /** Minimum fillet radius in mm — below this OCCT cannot produce valid geometry. */
 const MIN_FILLET_RADIUS = 0.1;
 
@@ -404,21 +424,18 @@ function buildPathCutoutShape(cutout: {
   readonly cutDepth: number;
   readonly path?: readonly PathPoint[];
 }): Shape3D {
+  const fallbackRect = (): Shape3D =>
+    sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+
   const path = cutout.path;
-  if (!path || path.length < MIN_PATH_POINTS) {
-    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
-  }
+  if (!path || path.length < MIN_PATH_POINTS) return fallbackRect();
 
   // Flatten bezier path to polyline — need 3+ flattened points for a closed wire
   const polyline = flattenPathToPolyline(path);
-  if (polyline.length < 3) {
-    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
-  }
+  if (polyline.length < 3) return fallbackRect();
 
   // Reject self-intersecting polylines that would produce invalid 3D geometry
-  if (polylineSelfIntersects(polyline)) {
-    return sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
-  }
+  if (polylineSelfIntersects(polyline)) return fallbackRect();
 
   // Center the polyline at origin (buildCutoutShape expects shapes centered at origin).
   // Use the cutout's stored bounds (from getPathBounds in the editor) so the center
@@ -566,19 +583,14 @@ export function buildCutoutCuts(
     const maxScoop = Math.min(effectiveDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
     const scoopR = Math.min(cutout.scoopRadius ?? 0, Math.max(0, maxScoop));
     if (scoopR > 0) {
-      const halfW = cutout.width / 2 + 1;
-      const halfD = cutout.depth / 2 + 1;
-      // Find edges near the bottom (Z~0) within the cutout bounds
-      // Use overlap checks instead of containment for better edge matching
-      const scoopEdges = edgeFinder()
-        .when((e) => {
-          const bounds = getBounds(e);
-          const zOverlaps = bounds.zMin <= 0.1 && bounds.zMax >= -0.1;
-          const xOverlaps = bounds.xMax >= -halfW && bounds.xMin <= halfW;
-          const yOverlaps = bounds.yMax >= -halfD && bounds.yMin <= halfD;
-          return zOverlaps && xOverlaps && yOverlaps;
-        })
-        .findAll(shape);
+      const halfW = cutout.width / 2;
+      const halfD = cutout.depth / 2;
+      const scoopEdges = findBottomEdges(shape, 0, {
+        minX: -halfW,
+        minY: -halfD,
+        maxX: halfW,
+        maxY: halfD,
+      });
       if (scoopEdges.length > 0) {
         shape = applyFilletWithFallback(shape, scoopEdges, scoopR);
       }
@@ -650,21 +662,7 @@ export function buildCutoutCuts(
       }
 
       const zBottom = solidSurfaceZ - groupCutDepth;
-      // Find horizontal edges near the bottom of the cutout group
-      // Use relaxed tolerance for Z-height matching since edges may span multiple Z values
-      const groupScoopEdges = edgeFinder()
-        .when((e) => {
-          const bounds = getBounds(e);
-          // Check if edge overlaps the target Z region (not strictly contained)
-          const zOverlaps = bounds.zMin <= zBottom + 0.1 && bounds.zMax >= zBottom - 0.1;
-          // Check if edge is within or near the XY bounds of the group
-          const xOverlaps =
-            bounds.xMax >= groupBounds.minX - 1 && bounds.xMin <= groupBounds.maxX + 1;
-          const yOverlaps =
-            bounds.yMax >= groupBounds.minY - 1 && bounds.yMin <= groupBounds.maxY + 1;
-          return zOverlaps && xOverlaps && yOverlaps;
-        })
-        .findAll(fused);
+      const groupScoopEdges = findBottomEdges(fused, zBottom, groupBounds);
       // Only apply fillet if we found edges (avoid empty edge list error)
       if (groupScoopEdges.length > 0) {
         fused = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, builtMembers, originX, originY);
@@ -1202,9 +1200,10 @@ export function buildWallCutoutCuts(
   const cutoutShape = params.walls.shape;
 
   const resolveEffective = (side: 'front' | 'back' | 'left' | 'right' | 'interior') => {
-    const sideConfig = params.walls[side];
-    if (!sideConfig.enabled) return { effectiveWidth: 0, effectiveDepth: 0 };
-    return { effectiveWidth: sideConfig.width, effectiveDepth: sideConfig.depth };
+    const cfg = params.walls[side];
+    return cfg.enabled
+      ? { effectiveWidth: cfg.width, effectiveDepth: cfg.depth }
+      : { effectiveWidth: 0, effectiveDepth: 0 };
   };
 
   const maxThickness = Math.max(wallThickness, params.compartments.thickness);
@@ -1253,69 +1252,69 @@ export function buildWallCutoutCuts(
         const cellD = innerD / rows;
         const interiorH = wallHeight - wallThickness;
 
-        // Vertical divider walls (between columns)
-        for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
-          const segments = findWallSegments(rows, (row) => {
-            const leftId = cells[row * cols + (colBoundary - 1)];
-            const rightId = cells[row * cols + colBoundary];
-            return leftId !== rightId;
-          });
+        const addDividerCutouts = (
+          boundaryCount: number,
+          segCount: number,
+          getCellIds: (boundary: number, i: number) => [number, number],
+          getPosition: (
+            boundary: number,
+            start: number,
+            end: number
+          ) => { x: number; y: number; rotateZ: number },
+          segCellSize: number
+        ): void => {
+          for (let boundary = 1; boundary < boundaryCount; boundary++) {
+            const segments = findWallSegments(segCount, (i) => {
+              const [id1, id2] = getCellIds(boundary, i);
+              return id1 !== id2;
+            });
 
-          for (const [start, end] of segments) {
-            const segLength = (end - start) * cellD;
-            const cutWidth = segLength * (effectiveWidth / 100);
-            const cutHeight = interiorH * (effectiveDepth / 100);
-            if (cutWidth < 0.1 || cutHeight < 0.1) continue;
+            for (const [start, end] of segments) {
+              const segLength = (end - start) * segCellSize;
+              const cutW = segLength * (effectiveWidth / 100);
+              const cutH = interiorH * (effectiveDepth / 100);
+              if (cutW < 0.1 || cutH < 0.1) continue;
 
-            cutShapes.push(
-              buildSingleCutout(
-                cutoutShape,
-                cutWidth,
-                cutHeight,
-                overshoot,
-                extrudeDepth,
-                wallHeight,
-                {
-                  x: -innerW / 2 + colBoundary * cellW,
-                  y: -innerD / 2 + (start + (end - start) / 2) * cellD,
-                  rotateZ: 90,
-                }
-              )
-            );
+              cutShapes.push(
+                buildSingleCutout(
+                  cutoutShape,
+                  cutW,
+                  cutH,
+                  overshoot,
+                  extrudeDepth,
+                  wallHeight,
+                  getPosition(boundary, start, end)
+                )
+              );
+            }
           }
-        }
+        };
+
+        // Vertical divider walls (between columns)
+        addDividerCutouts(
+          cols,
+          rows,
+          (boundary, row) => [cells[row * cols + (boundary - 1)], cells[row * cols + boundary]],
+          (boundary, start, end) => ({
+            x: -innerW / 2 + boundary * cellW,
+            y: -innerD / 2 + (start + (end - start) / 2) * cellD,
+            rotateZ: 90,
+          }),
+          cellD
+        );
 
         // Horizontal divider walls (between rows)
-        for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
-          const segments = findWallSegments(cols, (col) => {
-            const topId = cells[(rowBoundary - 1) * cols + col];
-            const bottomId = cells[rowBoundary * cols + col];
-            return topId !== bottomId;
-          });
-
-          for (const [start, end] of segments) {
-            const segLength = (end - start) * cellW;
-            const cutWidth = segLength * (effectiveWidth / 100);
-            const cutHeight = interiorH * (effectiveDepth / 100);
-            if (cutWidth < 0.1 || cutHeight < 0.1) continue;
-
-            cutShapes.push(
-              buildSingleCutout(
-                cutoutShape,
-                cutWidth,
-                cutHeight,
-                overshoot,
-                extrudeDepth,
-                wallHeight,
-                {
-                  x: -innerW / 2 + (start + (end - start) / 2) * cellW,
-                  y: -innerD / 2 + rowBoundary * cellD,
-                  rotateZ: 0,
-                }
-              )
-            );
-          }
-        }
+        addDividerCutouts(
+          rows,
+          cols,
+          (boundary, col) => [cells[(boundary - 1) * cols + col], cells[boundary * cols + col]],
+          (boundary, start, end) => ({
+            x: -innerW / 2 + (start + (end - start) / 2) * cellW,
+            y: -innerD / 2 + boundary * cellD,
+            rotateZ: 0,
+          }),
+          cellW
+        );
       }
     }
   }
