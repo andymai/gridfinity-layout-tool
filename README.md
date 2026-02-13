@@ -15,6 +15,10 @@ Web app for designing storage layouts for 3D-printed Gridfinity drawer organizer
 - **Responsive Design** - Desktop, tablet, and mobile support
 - **PWA** - Installable, works offline
 
+## Built With
+
+3D geometry generation is powered by [brepjs](https://github.com/andymai/brepjs) — a Web CAD library built on OpenCascade WASM for solid modeling, boolean operations, and mesh export.
+
 ## Quick Start
 
 ```bash
