@@ -169,11 +169,11 @@ html[data-accent='sky'] {
 }
 
 html[data-accent='violet'] {
-  --color-primary: #8b5cf6;
-  --color-primary-hover: #a78bfa;
-  --color-primary-muted: rgba(139, 92, 246, 0.15);
-  --selection-ring: #a78bfa;
-  --selection-glow: rgba(167, 139, 250, 0.25);
+  --color-primary: #7c3aed; /* Violet 600 — white text 5.7:1 (500 was only 4.2:1) */
+  --color-primary-hover: #8b5cf6;
+  --color-primary-muted: rgba(124, 58, 237, 0.15);
+  --selection-ring: #8b5cf6;
+  --selection-glow: rgba(139, 92, 246, 0.25);
   --text-on-accent: #ffffff;
 }
 
@@ -182,12 +182,12 @@ html[data-accent='violet'] {
    have poor contrast. These compound selectors deepen the accent slightly
    and reduce muted opacity so tints don't disappear. */
 html[data-theme='light'][data-accent='amber'] {
-  --color-primary: #d97706; /* Amber 600 — better contrast on white */
-  --color-primary-hover: #f59e0b;
-  --color-primary-muted: rgba(217, 119, 6, 0.1);
-  --selection-ring: #f59e0b;
-  --selection-glow: rgba(245, 158, 11, 0.2);
-  --text-on-accent: #000000;
+  --color-primary: #b45309; /* Amber 700 — 4.6:1 on light bg (600 was only 2.9:1) */
+  --color-primary-hover: #d97706;
+  --color-primary-muted: rgba(180, 83, 9, 0.1);
+  --selection-ring: #d97706;
+  --selection-glow: rgba(217, 119, 6, 0.2);
+  --text-on-accent: #ffffff; /* 5.0:1 on amber-700 */
 }
 
 html[data-theme='light'][data-accent='rose'] {

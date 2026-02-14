@@ -16,7 +16,7 @@ const ACCENT_COLORS: { id: AccentOption; hex: string }[] = [
   { id: 'fuchsia', hex: '#d946ef' },
   { id: 'emerald', hex: '#10b981' },
   { id: 'sky', hex: '#0ea5e9' },
-  { id: 'violet', hex: '#8b5cf6' },
+  { id: 'violet', hex: '#7c3aed' },
 ];
 
 const DENSITY_OPTIONS: DensityOption[] = ['compact', 'default', 'comfortable'];
