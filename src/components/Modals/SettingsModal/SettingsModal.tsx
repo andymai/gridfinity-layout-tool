@@ -92,7 +92,7 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
         <div
           ref={modalRef}
           className={`flex flex-col animate-scale-in ${
-            isMobile ? 'w-full h-full' : 'w-full mx-4 h-[85vh] max-w-2xl'
+            isMobile ? 'w-full h-full' : 'w-[48rem] h-[85vh]'
           }`}
           style={{
             backgroundColor: 'var(--bg-secondary)',
