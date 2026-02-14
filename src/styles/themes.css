@@ -13,7 +13,7 @@
    bolted-on. Depth is conveyed through tinted surface layers + soft shadows
    rather than heavy borders.
    ============================================================================= */
-[data-theme='light'] {
+html[data-theme='light'] {
   color-scheme: light;
 
   /* ---- Background Colors ----
@@ -123,7 +123,7 @@
    Each accent overrides the primary/selection CSS variables.
    Amber is the default so its values match :root — included for explicitness.
    ============================================================================= */
-[data-accent='amber'] {
+html[data-accent='amber'] {
   --color-primary: #f59e0b;
   --color-primary-hover: #fbbf24;
   --color-primary-muted: rgba(245, 158, 11, 0.15);
@@ -132,7 +132,7 @@
   --text-on-accent: #000000;
 }
 
-[data-accent='rose'] {
+html[data-accent='rose'] {
   --color-primary: #f43f5e;
   --color-primary-hover: #fb7185;
   --color-primary-muted: rgba(244, 63, 94, 0.15);
@@ -141,7 +141,7 @@
   --text-on-accent: #ffffff;
 }
 
-[data-accent='orange'] {
+html[data-accent='orange'] {
   --color-primary: #f97316;
   --color-primary-hover: #fb923c;
   --color-primary-muted: rgba(249, 115, 22, 0.15);
@@ -150,7 +150,7 @@
   --text-on-accent: #000000;
 }
 
-[data-accent='emerald'] {
+html[data-accent='emerald'] {
   --color-primary: #10b981;
   --color-primary-hover: #34d399;
   --color-primary-muted: rgba(16, 185, 129, 0.15);
@@ -159,7 +159,7 @@
   --text-on-accent: #000000;
 }
 
-[data-accent='sky'] {
+html[data-accent='sky'] {
   --color-primary: #0ea5e9;
   --color-primary-hover: #38bdf8;
   --color-primary-muted: rgba(14, 165, 233, 0.15);
@@ -168,7 +168,7 @@
   --text-on-accent: #000000;
 }
 
-[data-accent='violet'] {
+html[data-accent='violet'] {
   --color-primary: #8b5cf6;
   --color-primary-hover: #a78bfa;
   --color-primary-muted: rgba(139, 92, 246, 0.15);
@@ -181,7 +181,7 @@
    On light backgrounds, the dark-mode accent values can look washed out or
    have poor contrast. These compound selectors deepen the accent slightly
    and reduce muted opacity so tints don't disappear. */
-[data-theme='light'][data-accent='amber'] {
+html[data-theme='light'][data-accent='amber'] {
   --color-primary: #d97706; /* Amber 600 — better contrast on white */
   --color-primary-hover: #f59e0b;
   --color-primary-muted: rgba(217, 119, 6, 0.1);
@@ -190,7 +190,7 @@
   --text-on-accent: #000000;
 }
 
-[data-theme='light'][data-accent='rose'] {
+html[data-theme='light'][data-accent='rose'] {
   --color-primary: #e11d48; /* Rose 600 */
   --color-primary-hover: #f43f5e;
   --color-primary-muted: rgba(225, 29, 72, 0.08);
@@ -199,7 +199,7 @@
   --text-on-accent: #ffffff;
 }
 
-[data-theme='light'][data-accent='orange'] {
+html[data-theme='light'][data-accent='orange'] {
   --color-primary: #ea580c; /* Orange 600 */
   --color-primary-hover: #f97316;
   --color-primary-muted: rgba(234, 88, 12, 0.08);
@@ -208,7 +208,7 @@
   --text-on-accent: #000000;
 }
 
-[data-theme='light'][data-accent='emerald'] {
+html[data-theme='light'][data-accent='emerald'] {
   --color-primary: #059669; /* Emerald 600 */
   --color-primary-hover: #10b981;
   --color-primary-muted: rgba(5, 150, 105, 0.08);
@@ -217,7 +217,7 @@
   --text-on-accent: #000000;
 }
 
-[data-theme='light'][data-accent='sky'] {
+html[data-theme='light'][data-accent='sky'] {
   --color-primary: #0284c7; /* Sky 600 */
   --color-primary-hover: #0ea5e9;
   --color-primary-muted: rgba(2, 132, 199, 0.08);
@@ -226,7 +226,7 @@
   --text-on-accent: #000000;
 }
 
-[data-theme='light'][data-accent='violet'] {
+html[data-theme='light'][data-accent='violet'] {
   --color-primary: #7c3aed; /* Violet 600 */
   --color-primary-hover: #8b5cf6;
   --color-primary-muted: rgba(124, 58, 237, 0.08);
@@ -239,14 +239,14 @@
    UI DENSITY
    Overrides spacing and base font size. Default density uses :root values.
    ============================================================================= */
-[data-density='compact'] {
+html[data-density='compact'] {
   --space-panel: 12px;
   --space-section: 16px;
   --space-item: 6px;
   --text-base: 0.8125rem;
 }
 
-[data-density='comfortable'] {
+html[data-density='comfortable'] {
   --space-panel: 20px;
   --space-section: 24px;
   --space-item: 10px;
@@ -266,9 +266,7 @@
    REDUCE MOTION
    Disables animations and transitions globally when the user prefers it.
    ============================================================================= */
-[data-reduce-motion='true'] *,
-[data-reduce-motion='true'] *::before,
-[data-reduce-motion='true'] *::after {
+html[data-reduce-motion='true'] *,\nhtml[data-reduce-motion='true'] *::before,\nhtml[data-reduce-motion='true'] *::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
