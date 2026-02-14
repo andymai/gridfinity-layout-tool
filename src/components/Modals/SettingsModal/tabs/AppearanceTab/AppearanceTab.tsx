@@ -220,7 +220,6 @@ export function AppearanceTab() {
 
       {/* Reduce Motion */}
       <section>
-        <h3 className="text-base font-semibold text-content mb-3">{t('settings.reduceMotion')}</h3>
         <ToggleRow
           checked={reduceMotion}
           label={t('settings.reduceMotion')}

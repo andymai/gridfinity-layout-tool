@@ -53,7 +53,7 @@ describe('AppearanceTab', () => {
     expect(screen.getByText('settings.accentColor')).toBeInTheDocument();
     expect(screen.getByText('settings.uiDensity')).toBeInTheDocument();
     expect(screen.getByText('settings.gridVisuals')).toBeInTheDocument();
-    expect(screen.getAllByText('settings.reduceMotion').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('settings.reduceMotion')).toBeInTheDocument();
   });
 
   it('renders theme radio options', () => {
@@ -89,10 +89,8 @@ describe('AppearanceTab', () => {
 
   it('toggling reduce motion calls updateSetting', () => {
     render(<AppearanceTab />);
-    // The reduce motion label appears twice (section heading + toggle label)
-    // Use the checkbox role to find the toggle
     const checkboxes = screen.getAllByRole('checkbox');
-    // Last checkbox is reduce motion
+    // Last checkbox is reduce motion (no separate heading — just the toggle)
     fireEvent.click(checkboxes[checkboxes.length - 1]);
     expect(mockUpdateSetting).toHaveBeenCalledWith('reduceMotion', true);
   });
