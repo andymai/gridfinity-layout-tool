@@ -31,6 +31,7 @@ import { PathDrawingPreview3D } from './PathDrawingPreview3D';
 import { PathEditOverlay3D } from './PathEditOverlay3D';
 import { RulerMeasurement3D } from './RulerMeasurement3D';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 interface DrawingPreview {
   readonly x: number;
@@ -156,6 +157,7 @@ export function SceneContent({
   rulerMeasurement,
   rulerZoomRef,
 }: SceneContentProps) {
+  const colors = useThreeColors();
   // Force R3F invalidation on state changes
   const { camera, invalidate } = useThree();
 
@@ -192,7 +194,7 @@ export function SceneContent({
   return (
     <>
       {/* Scene clear color — matches 3D preview background */}
-      <color attach="background" args={['#1a1a22']} />
+      <color attach="background" args={[colors.canvasBg]} />
 
       {/* Background grid and bin surface */}
       <EditorBackground3D

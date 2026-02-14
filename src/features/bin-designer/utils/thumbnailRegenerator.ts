@@ -13,6 +13,7 @@ import { GenerationBridge } from '@/shared/generation/bridge';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams } from '@/features/bin-designer/types';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
+import { THREE_COLORS } from '@/hooks/useThemeEffect';
 
 /** Thumbnail size matching the main capture utility */
 const THUMBNAIL_SIZE = 384;
@@ -75,10 +76,12 @@ export async function regenerateThumbnail(
     const scene = new THREE.Scene();
 
     // Gradient background (solid dark since it's a single color in current implementation)
-    scene.background = new THREE.Color('#2a2a3e');
+    const palette =
+      document.documentElement.dataset.theme === 'light' ? THREE_COLORS.light : THREE_COLORS.dark;
+    scene.background = new THREE.Color(palette.gradientTop);
 
     // 3-point lighting matching PreviewCanvas
-    const hemiLight = new THREE.HemisphereLight('#ffffff', '#1a1a2e', 0.65);
+    const hemiLight = new THREE.HemisphereLight('#ffffff', palette.groundBounce, 0.65);
     scene.add(hemiLight);
 
     const keyLight = new THREE.DirectionalLight('#fff8f0', 0.85);

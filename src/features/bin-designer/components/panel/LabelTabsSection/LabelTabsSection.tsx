@@ -112,7 +112,7 @@ export function LabelTabsSection() {
               onClick={() => handlers.setTabAlignment(option)}
               className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
                 state.label.alignment === option
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent text-on-accent'
                   : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
               }`}
             >
@@ -135,7 +135,7 @@ export function LabelTabsSection() {
               onClick={() => handlers.setTabSupport(option)}
               className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
                 state.label.support === option
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent text-on-accent'
                   : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
               }`}
             >

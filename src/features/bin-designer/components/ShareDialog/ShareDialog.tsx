@@ -153,7 +153,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
             {status === 'idle' && (
               <button
                 onClick={handleShare}
-                className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-info px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110"
               >
                 <svg
                   className="h-4 w-4"
@@ -297,10 +297,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
 
           {/* Error display */}
           {status === 'error' && error && (
-            <div
-              role="alert"
-              className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300"
-            >
+            <div role="alert" className="rounded-md bg-error-muted px-3 py-2 text-xs text-error">
               {error}
             </div>
           )}

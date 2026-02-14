@@ -117,7 +117,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
       {/* Subtle backdrop for focus */}
       <div
         className="fixed inset-0 z-40"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+        style={{ backgroundColor: 'var(--overlay-medium)' }}
         role="presentation"
         onClick={handleSave}
       />

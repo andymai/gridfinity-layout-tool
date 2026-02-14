@@ -136,7 +136,7 @@ export function SharedLayoutBanner() {
 
   return (
     <div
-      className="flex items-center justify-between px-4 py-2 bg-primary text-white"
+      className="flex items-center justify-between px-4 py-2 bg-primary text-on-accent"
       role="alert"
       aria-live="polite"
     >
@@ -162,13 +162,13 @@ export function SharedLayoutBanner() {
       <div className="flex items-center gap-2">
         <button
           onClick={handleSave}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-slate-900 hover:bg-slate-100 transition-colors"
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-surface text-content hover:bg-surface-hover transition-colors"
         >
           {t('share.banner.saveToMyLayouts')}
         </button>
         <button
           onClick={() => setShowDiscardConfirm(true)}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-white/15 hover:bg-white/25 transition-colors"
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-on-accent/15 hover:bg-on-accent/25 transition-colors"
         >
           {t('share.banner.discardConfirm')}
         </button>

@@ -129,7 +129,7 @@ export function Sidebar() {
         <div className="flex flex-col h-full animate-fade-in">
           <div
             className={`flex items-center gap-3 px-4 py-2 border-b border-stroke-subtle transition-shadow duration-200 ${
-              isScrolled ? 'shadow-[0_2px_8px_rgba(0,0,0,0.5)]' : ''
+              isScrolled ? 'shadow-elevated' : ''
             }`}
           >
             <h2 className="flex-1 text-xs font-semibold text-content-tertiary uppercase tracking-wider">
@@ -177,13 +177,13 @@ export function Sidebar() {
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto scrollbar-thin flex flex-col"
           >
-            <div data-active-layer-panel className="px-4 py-4 border-b border-stroke-subtle">
+            <div data-active-layer-panel className="border-b border-stroke-subtle">
               <ActiveLayerPanel />
             </div>
-            <div data-layers-panel className="px-4 py-4 border-b border-stroke-subtle">
+            <div data-layers-panel className="border-b border-stroke-subtle">
               <LayerPanel />
             </div>
-            <div data-categories-panel className="px-4 py-4 border-b border-stroke-subtle">
+            <div data-categories-panel className="border-b border-stroke-subtle">
               <CategoriesPanel />
             </div>
 

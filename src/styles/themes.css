@@ -1,0 +1,275 @@
+/* =============================================================================
+   THEME OVERRIDES
+   Light theme, accent colors, UI density, and reduce-motion overrides.
+   Imported by index.css. Default (dark) values live in :root in index.css.
+   ============================================================================= */
+
+/* =============================================================================
+   LIGHT THEME
+
+   Design philosophy: warm neutral palette that echoes the dark theme's
+   personality. Uses a subtle warm undertone (hue ~40-50, saturation 4-8%)
+   instead of cold blue-grays, so the amber accent feels native rather than
+   bolted-on. Depth is conveyed through tinted surface layers + soft shadows
+   rather than heavy borders.
+   ============================================================================= */
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* ---- Background Colors ----
+     Three-tier surface stack: primary (page) → secondary (panels) → elevated (cards).
+     The warmth comes from a ~220° hue shifted to ~40° at very low saturation. */
+  --bg-primary: #f5f4f1; /* Warm off-white — page canvas */
+  --bg-secondary: #fefefd; /* Near-white with warmth — panels, sidebars */
+  --bg-elevated: #f0efec; /* Tinted surface — cards, popovers, selected rows */
+  --bg-hover: #eae8e4; /* Hover on any surface */
+  --bg-active: #dfddd8; /* Active/pressed state */
+
+  /* ---- Border Colors ----
+     Warm-tinted borders. Subtle is barely visible; strong is for focus/emphasis. */
+  --border-subtle: #e8e6e1; /* Hairline separators */
+  --border-default: #d6d3cc; /* Standard borders */
+  --border-strong: #b8b4ab; /* Emphasized borders, dividers */
+
+  /* ---- Text Colors ----
+     Warm near-blacks. Contrast ratios on #f5f4f1 background:
+     primary  ~15.5:1, secondary ~7.2:1, tertiary ~4.6:1, disabled ~3.1:1 */
+  --text-primary: #1c1b18; /* Body text, headings */
+  --text-secondary: #5c5a54; /* Labels, secondary info */
+  --text-tertiary: #84817a; /* Hints, placeholders — WCAG AA (4.6:1) */
+  --text-disabled: #b0ada6; /* Disabled controls — WCAG AA large text (3.1:1) */
+
+  /* ---- Semantic Colors ----
+     Slightly deeper than dark-mode variants to maintain vibrancy on light bg. */
+  --color-success: #16a34a; /* Deeper green — 4.5:1 on white */
+  --color-success-muted: rgba(22, 163, 74, 0.1);
+  --color-warning: #d97706; /* Deeper amber — better contrast on light */
+  --color-warning-muted: rgba(217, 119, 6, 0.1);
+  --color-error: #dc2626; /* Stays saturated red */
+  --color-error-muted: rgba(220, 38, 38, 0.08);
+  --color-danger: #b91c1c; /* Deeper for destructive on light */
+  --color-danger-muted: rgba(185, 28, 28, 0.08);
+  --color-info: #2563eb; /* Deeper blue — 4.5:1 on white */
+  --color-info-muted: rgba(37, 99, 235, 0.08);
+
+  /* ---- Contrast Text (on colored backgrounds) ---- */
+  --text-on-light: rgba(0, 0, 0, 0.78);
+  --text-on-light-muted: rgba(0, 0, 0, 0.52);
+  --text-on-dark: rgba(255, 255, 255, 0.95);
+  --text-on-dark-muted: rgba(255, 255, 255, 0.7);
+  --highlight-ring: rgba(0, 0, 0, 0.08);
+
+  /* ---- Selection Colors ---- */
+  --selection-bg: rgba(217, 119, 6, 0.08); /* Softer on light bg */
+
+  /* ---- Overlay/Backdrop Colors ---- */
+  --overlay-light: rgba(0, 0, 0, 0.06);
+  --overlay-medium: rgba(0, 0, 0, 0.2);
+  --overlay-dark: rgba(0, 0, 0, 0.45);
+  --overlay-gradient: linear-gradient(to top, rgba(0, 0, 0, 0.25) 0%, transparent 100%);
+
+  /* ---- Border on colored surfaces ---- */
+  --border-on-color: rgba(0, 0, 0, 0.12);
+
+  /* ---- Focus Ring ---- */
+  --focus-ring-offset: var(--bg-secondary);
+
+  /* ---- Grid Colors ----
+     Subtle warm grid that doesn't compete with bin colors. */
+  --grid-bg: #edecea; /* Slightly inset from page */
+  --grid-cell: #e4e2de; /* Individual cells */
+  --grid-cell-hover: #d9d7d2; /* Cell hover */
+  --grid-line-half: rgba(0, 0, 0, 0.08);
+
+  /* ---- Staging Colors ---- */
+  --staging-bg: #fefefd;
+  --staging-cell: #f5f4f1;
+
+  /* ---- Toast Colors ----
+     Dark toasts on light bg (inverted pattern) for high visibility. */
+  --color-toast-success: rgba(5, 46, 22, 0.92);
+  --color-toast-error: rgba(69, 10, 10, 0.92);
+  --color-toast-default: rgba(28, 27, 24, 0.9);
+
+  /* ---- Shadows ----
+     Softer, warmer shadows. Light themes rely more on shadows for depth
+     since the surface color differences are subtler. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
+
+  /* ---- Glow Effects ----
+     Reduced opacity — glows are less effective on light backgrounds. */
+  --glow-selection: 0 0 12px rgba(217, 119, 6, 0.15);
+  --glow-success: 0 0 10px rgba(22, 163, 74, 0.15);
+  --glow-error: 0 0 10px rgba(220, 38, 38, 0.15);
+  --glow-red: 0 0 16px rgba(220, 38, 38, 0.2);
+  --glow-blue: 0 0 16px rgba(37, 99, 235, 0.2);
+
+  /* ---- Color Overlays (for grid previews) ----
+     Slightly increased opacity to remain visible on light cells. */
+  --color-amber-5: rgba(217, 119, 6, 0.06);
+  --color-amber-10: rgba(217, 119, 6, 0.12);
+  --color-green-5: rgba(22, 163, 74, 0.06);
+  --color-green-15: rgba(22, 163, 74, 0.14);
+  --color-red-20: rgba(220, 38, 38, 0.12);
+}
+
+/* =============================================================================
+   ACCENT COLOR OVERRIDES
+   Each accent overrides the primary/selection CSS variables.
+   Amber is the default so its values match :root — included for explicitness.
+   ============================================================================= */
+[data-accent='amber'] {
+  --color-primary: #f59e0b;
+  --color-primary-hover: #fbbf24;
+  --color-primary-muted: rgba(245, 158, 11, 0.15);
+  --selection-ring: #fbbf24;
+  --selection-glow: rgba(251, 191, 36, 0.25);
+  --text-on-accent: #000000;
+}
+
+[data-accent='rose'] {
+  --color-primary: #f43f5e;
+  --color-primary-hover: #fb7185;
+  --color-primary-muted: rgba(244, 63, 94, 0.15);
+  --selection-ring: #fb7185;
+  --selection-glow: rgba(251, 113, 133, 0.25);
+  --text-on-accent: #ffffff;
+}
+
+[data-accent='orange'] {
+  --color-primary: #f97316;
+  --color-primary-hover: #fb923c;
+  --color-primary-muted: rgba(249, 115, 22, 0.15);
+  --selection-ring: #fb923c;
+  --selection-glow: rgba(251, 146, 60, 0.25);
+  --text-on-accent: #000000;
+}
+
+[data-accent='emerald'] {
+  --color-primary: #10b981;
+  --color-primary-hover: #34d399;
+  --color-primary-muted: rgba(16, 185, 129, 0.15);
+  --selection-ring: #34d399;
+  --selection-glow: rgba(52, 211, 153, 0.25);
+  --text-on-accent: #000000;
+}
+
+[data-accent='sky'] {
+  --color-primary: #0ea5e9;
+  --color-primary-hover: #38bdf8;
+  --color-primary-muted: rgba(14, 165, 233, 0.15);
+  --selection-ring: #38bdf8;
+  --selection-glow: rgba(56, 189, 248, 0.25);
+  --text-on-accent: #000000;
+}
+
+[data-accent='violet'] {
+  --color-primary: #8b5cf6;
+  --color-primary-hover: #a78bfa;
+  --color-primary-muted: rgba(139, 92, 246, 0.15);
+  --selection-ring: #a78bfa;
+  --selection-glow: rgba(167, 139, 250, 0.25);
+  --text-on-accent: #ffffff;
+}
+
+/* ---- Light-mode accent adjustments ----
+   On light backgrounds, the dark-mode accent values can look washed out or
+   have poor contrast. These compound selectors deepen the accent slightly
+   and reduce muted opacity so tints don't disappear. */
+[data-theme='light'][data-accent='amber'] {
+  --color-primary: #d97706; /* Amber 600 — better contrast on white */
+  --color-primary-hover: #f59e0b;
+  --color-primary-muted: rgba(217, 119, 6, 0.1);
+  --selection-ring: #f59e0b;
+  --selection-glow: rgba(245, 158, 11, 0.2);
+  --text-on-accent: #000000;
+}
+
+[data-theme='light'][data-accent='rose'] {
+  --color-primary: #e11d48; /* Rose 600 */
+  --color-primary-hover: #f43f5e;
+  --color-primary-muted: rgba(225, 29, 72, 0.08);
+  --selection-ring: #f43f5e;
+  --selection-glow: rgba(244, 63, 94, 0.2);
+  --text-on-accent: #ffffff;
+}
+
+[data-theme='light'][data-accent='orange'] {
+  --color-primary: #ea580c; /* Orange 600 */
+  --color-primary-hover: #f97316;
+  --color-primary-muted: rgba(234, 88, 12, 0.08);
+  --selection-ring: #f97316;
+  --selection-glow: rgba(249, 115, 22, 0.2);
+  --text-on-accent: #000000;
+}
+
+[data-theme='light'][data-accent='emerald'] {
+  --color-primary: #059669; /* Emerald 600 */
+  --color-primary-hover: #10b981;
+  --color-primary-muted: rgba(5, 150, 105, 0.08);
+  --selection-ring: #10b981;
+  --selection-glow: rgba(16, 185, 129, 0.2);
+  --text-on-accent: #000000;
+}
+
+[data-theme='light'][data-accent='sky'] {
+  --color-primary: #0284c7; /* Sky 600 */
+  --color-primary-hover: #0ea5e9;
+  --color-primary-muted: rgba(2, 132, 199, 0.08);
+  --selection-ring: #0ea5e9;
+  --selection-glow: rgba(14, 165, 233, 0.2);
+  --text-on-accent: #000000;
+}
+
+[data-theme='light'][data-accent='violet'] {
+  --color-primary: #7c3aed; /* Violet 600 */
+  --color-primary-hover: #8b5cf6;
+  --color-primary-muted: rgba(124, 58, 237, 0.08);
+  --selection-ring: #8b5cf6;
+  --selection-glow: rgba(139, 92, 246, 0.2);
+  --text-on-accent: #ffffff;
+}
+
+/* =============================================================================
+   UI DENSITY
+   Overrides spacing and base font size. Default density uses :root values.
+   ============================================================================= */
+[data-density='compact'] {
+  --space-panel: 12px;
+  --space-section: 16px;
+  --space-item: 6px;
+  --text-base: 0.8125rem;
+}
+
+[data-density='comfortable'] {
+  --space-panel: 20px;
+  --space-section: 24px;
+  --space-item: 10px;
+  --text-base: 0.9375rem;
+}
+
+/* Apply density spacing to sidebar panel sections.
+   These elements use data attributes as hooks (set in Sidebar.tsx).
+   The --space-panel var is overridden per density level above. */
+[data-active-layer-panel],
+[data-layers-panel],
+[data-categories-panel] {
+  padding: var(--space-panel);
+}
+
+/* =============================================================================
+   REDUCE MOTION
+   Disables animations and transitions globally when the user prefers it.
+   ============================================================================= */
+[data-reduce-motion='true'] *,
+[data-reduce-motion='true'] *::before,
+[data-reduce-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}

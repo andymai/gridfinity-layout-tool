@@ -762,7 +762,7 @@ describe('RightPanel', () => {
       const { container } = render(<RightPanel />);
 
       const header = container.querySelector('[class*="flex items-center gap-3 px-4 py-2"]');
-      expect(header).not.toHaveClass('shadow-[0_2px_8px_rgba(0,0,0,0.5)]');
+      expect(header).not.toHaveClass('shadow-elevated');
     });
 
     it('shows shadow when scrolled', () => {

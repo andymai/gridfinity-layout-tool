@@ -1,9 +1,9 @@
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 // L-shaped marker arm length
 const MARKER_SIZE = 0.12;
-const LINE_COLOR = '#ffffff';
 const LINE_OPACITY = 0.4;
 
 interface BinData {
@@ -25,6 +25,7 @@ interface BatchedCornerMarkersProps {
  * Reduces 200 draw calls to 1 by combining all line segments.
  */
 export function BatchedCornerMarkers({ bins }: BatchedCornerMarkersProps) {
+  const colors = useThreeColors();
   const geometry = useMemo(() => {
     const positions: number[] = [];
 
@@ -135,7 +136,7 @@ export function BatchedCornerMarkers({ bins }: BatchedCornerMarkersProps) {
 
   return (
     <lineSegments geometry={geometry}>
-      <lineBasicMaterial color={LINE_COLOR} transparent opacity={LINE_OPACITY} />
+      <lineBasicMaterial color={colors.lineColor} transparent opacity={LINE_OPACITY} />
     </lineSegments>
   );
 }

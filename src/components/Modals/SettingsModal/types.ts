@@ -1,4 +1,10 @@
-export type SettingsTabId = 'general' | 'defaults' | 'integrations' | 'privacy' | 'labs';
+export type SettingsTabId =
+  | 'general'
+  | 'appearance'
+  | 'defaults'
+  | 'integrations'
+  | 'privacy'
+  | 'labs';
 
 export interface TabDefinition {
   id: SettingsTabId;

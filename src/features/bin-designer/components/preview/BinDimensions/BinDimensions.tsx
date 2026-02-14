@@ -12,6 +12,7 @@
 import { Line, Text } from '@react-three/drei';
 import { useMemo } from 'react';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 interface BinDimensionsProps {
   /** Bin width in grid units */
@@ -33,7 +34,6 @@ interface BinDimensionsProps {
 const OFFSET = 14; // Distance from bin edge to dimension line
 const END_CAP = 1; // Length of end cap markers (half-length, extends both directions)
 const LABEL_GAP = 4; // Additional offset from line to label text
-const LINE_COLOR = '#ffffff';
 const LINE_OPACITY = 0.5;
 const TEXT_OPACITY = 0.7;
 const FONT_SIZE = 4.5;
@@ -50,6 +50,7 @@ export function BinDimensions({
   heightUnitMm,
   stackingLip,
 }: BinDimensionsProps) {
+  const colors = useThreeColors();
   // Bin extents in mm (mesh is centered at origin)
   const outerW = width * GRIDFINITY.GRID_SIZE;
   const outerD = depth * GRIDFINITY.GRID_SIZE;
@@ -133,21 +134,21 @@ export function BinDimensions({
       {/* Width dimension line */}
       <Line
         points={[dimensions.width.start, dimensions.width.end]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.width.endCaps.left}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.width.endCaps.right}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
@@ -155,7 +156,7 @@ export function BinDimensions({
       <Text
         position={dimensions.width.labelPos}
         fontSize={FONT_SIZE}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         fillOpacity={TEXT_OPACITY}
         anchorX="center"
         anchorY="top"
@@ -166,21 +167,21 @@ export function BinDimensions({
       {/* Depth dimension line */}
       <Line
         points={[dimensions.depth.start, dimensions.depth.end]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.depth.endCaps.left}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.depth.endCaps.right}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
@@ -188,7 +189,7 @@ export function BinDimensions({
       <Text
         position={dimensions.depth.labelPos}
         fontSize={FONT_SIZE}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         fillOpacity={TEXT_OPACITY}
         anchorX="right"
         anchorY="middle"
@@ -200,21 +201,21 @@ export function BinDimensions({
       {/* Height dimension line */}
       <Line
         points={[dimensions.height.start, dimensions.height.end]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.height.endCaps.bottom}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.height.endCaps.top}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
@@ -222,7 +223,7 @@ export function BinDimensions({
       <Text
         position={dimensions.height.labelPos}
         fontSize={FONT_SIZE}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         fillOpacity={TEXT_OPACITY}
         anchorX="right"
         anchorY="middle"

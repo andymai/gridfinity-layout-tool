@@ -86,7 +86,7 @@ export function ThicknessSelector({
               onClick={() => onChange(option)}
               className={`flex-1 rounded-md px-1 py-1.5 text-xs font-medium tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                 isActive
-                  ? 'bg-accent text-white shadow-sm'
+                  ? 'bg-accent text-on-accent shadow-sm'
                   : 'bg-surface-secondary text-content-secondary hover:bg-surface-tertiary'
               } disabled:cursor-not-allowed`}
             >

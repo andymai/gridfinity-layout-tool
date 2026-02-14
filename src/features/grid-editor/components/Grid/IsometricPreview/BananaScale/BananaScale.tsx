@@ -5,8 +5,8 @@
  */
 import { useGLTF, Text, Clone } from '@react-three/drei';
 import { useTranslation } from '@/i18n';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
-const TEXT_COLOR = '#ffffff';
 const TEXT_OPACITY = 0.6;
 const FONT_SIZE = 0.25;
 
@@ -26,6 +26,7 @@ interface BananaScaleProps {
 
 export function BananaScale({ drawerDepth, gridUnitMm }: BananaScaleProps) {
   const t = useTranslation();
+  const colors = useThreeColors();
   const { scene } = useGLTF('/models/banana.glb');
 
   // Target length in grid-unit space
@@ -49,7 +50,7 @@ export function BananaScale({ drawerDepth, gridUnitMm }: BananaScaleProps) {
       <Text
         position={[1.2, 0, 0]}
         fontSize={FONT_SIZE}
-        color={TEXT_COLOR}
+        color={colors.labelColor}
         fillOpacity={TEXT_OPACITY}
         anchorX="center"
         anchorY="middle"

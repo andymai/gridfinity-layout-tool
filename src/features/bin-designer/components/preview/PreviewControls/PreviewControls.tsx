@@ -221,7 +221,7 @@ export function PreviewControls({
                 onClick={() => onCameraPreset(key)}
                 className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
                   isActive
-                    ? 'bg-accent text-white'
+                    ? 'bg-accent text-on-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 title={`${label} view (${shortcut})`}
@@ -231,7 +231,7 @@ export function PreviewControls({
                 <Icon />
                 <span>{label}</span>
                 <kbd
-                  className={`text-[9px] font-normal ${isActive ? 'text-white/60' : 'text-content-tertiary'}`}
+                  className={`text-[9px] font-normal ${isActive ? 'text-on-accent/60' : 'text-content-tertiary'}`}
                 >
                   {shortcut}
                 </kbd>
@@ -260,7 +260,7 @@ export function PreviewControls({
             onClick={onWireframeToggle}
             className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
               wireframe
-                ? 'bg-accent text-white'
+                ? 'bg-accent text-on-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('binDesigner.toggleWireframe')}
@@ -317,7 +317,7 @@ export function PreviewControls({
                 onClick={() => onCameraPreset(key)}
                 className={`flex items-center justify-center p-2 min-w-[36px] min-h-[36px] transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
                   isActive
-                    ? 'bg-accent text-white'
+                    ? 'bg-accent text-on-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 title={`${label} view (${shortcut})`}
@@ -349,7 +349,7 @@ export function PreviewControls({
             onClick={onWireframeToggle}
             className={`flex items-center justify-center p-2 min-w-[36px] min-h-[36px] transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
               wireframe
-                ? 'bg-accent text-white'
+                ? 'bg-accent text-on-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('binDesigner.toggleWireframe')}

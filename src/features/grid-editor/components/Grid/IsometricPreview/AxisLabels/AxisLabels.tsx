@@ -2,6 +2,7 @@ import { useMemo, useEffect } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import type { FractionalEdge } from '@/core/types';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 interface AxisLabelsProps {
   width: number;
@@ -10,7 +11,6 @@ interface AxisLabelsProps {
   fractionalEdgeY?: FractionalEdge;
 }
 
-const LABEL_COLOR = '#ffffff';
 const LABEL_OPACITY = 0.45;
 const FRACTIONAL_LABEL_OPACITY = 0.35;
 const FONT_SIZE = 0.28;
@@ -32,6 +32,7 @@ export function AxisLabels({
   fractionalEdgeX = 'end',
   fractionalEdgeY = 'end',
 }: AxisLabelsProps) {
+  const colors = useThreeColors();
   const integerWidth = Math.floor(width);
   const integerDepth = Math.floor(depth);
   const hasFractionalWidth = width % 1 !== 0;
@@ -130,7 +131,7 @@ export function AxisLabels({
     <group>
       {/* Tick marks */}
       <lineSegments geometry={tickGeometry}>
-        <lineBasicMaterial color={LABEL_COLOR} transparent opacity={TICK_OPACITY} />
+        <lineBasicMaterial color={colors.labelColor} transparent opacity={TICK_OPACITY} />
       </lineSegments>
 
       {/* X-axis labels along front edge */}
@@ -151,7 +152,7 @@ export function AxisLabels({
             key={`x-${idx}`}
             position={[xPos, -0.28, 0.01]}
             fontSize={isFractional ? FRACTIONAL_FONT_SIZE : FONT_SIZE}
-            color={LABEL_COLOR}
+            color={colors.labelColor}
             fillOpacity={isFractional ? FRACTIONAL_LABEL_OPACITY : LABEL_OPACITY}
             anchorX="center"
             anchorY="top"
@@ -179,7 +180,7 @@ export function AxisLabels({
             key={`y-${idx}`}
             position={[-0.28, yPos, 0.01]}
             fontSize={isFractional ? FRACTIONAL_FONT_SIZE : FONT_SIZE}
-            color={LABEL_COLOR}
+            color={colors.labelColor}
             fillOpacity={isFractional ? FRACTIONAL_LABEL_OPACITY : LABEL_OPACITY}
             anchorX="right"
             anchorY="middle"

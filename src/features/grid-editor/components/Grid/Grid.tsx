@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect, Suspense, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '@/core/store';
+import { useLayoutStore, useSettingsStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useSelectionStore } from '@/core/store/selection';
@@ -150,7 +150,8 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   // Grid resize hook - handles drawer edge/corner resize logic
   // Note: We get zoom from the view store directly (instead of from useGridZoom)
   // to avoid circular dependency - useGridZoom needs isResizing from useGridResize
-  const gap = 1; // 1px gap between cells
+  const gridShowLines = useSettingsStore((s) => s.settings.gridShowLines);
+  const gap = gridShowLines ? 1 : 0; // 1px gap between cells, 0 when lines hidden
   const zoomFromStore = useViewStore((state) => state.zoom);
   const baseCellSize = getBaseCellSize(viewportWidth);
   const zoomedCellSize = Math.round(baseCellSize * zoomFromStore);

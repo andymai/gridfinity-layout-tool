@@ -7,6 +7,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, calcMaxGridUnits } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 import { use3DPreviewKeyboard } from '@/hooks/use3DPreviewKeyboard';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk } from '@/core/result';
 import { Scene, type SceneHandle } from './Scene';
@@ -29,6 +30,7 @@ interface IsometricPreviewProps {
  */
 export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   const t = useTranslation();
+  const threeColors = useThreeColors();
   const sceneRef = useRef<SceneHandle>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { isMobile, isTablet } = useResponsive();
@@ -300,7 +302,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           near: 0.1,
           far: 1000,
         }}
-        style={{ background: '#0a0a0f' }}
+        style={{ background: threeColors.canvasBg }}
       >
         <Scene
           ref={sceneRef}
@@ -397,9 +399,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           <div
             className="flex flex-col items-center gap-3 px-6 py-8 rounded-lg text-center"
             style={{
-              background: 'rgba(255, 255, 255, 0.08)',
+              background: 'var(--overlay-light)',
               backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              border: '1px solid var(--border-subtle)',
               maxWidth: isPreviewExpanded ? '400px' : '240px',
             }}
           >
@@ -409,7 +411,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+              style={{ color: 'var(--text-tertiary)' }}
             >
               <path
                 strokeLinecap="round"
@@ -421,14 +423,14 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             {/* Heading */}
             <h3
               className={`font-semibold ${isPreviewExpanded ? 'text-lg' : 'text-base'}`}
-              style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+              style={{ color: 'var(--text-primary)' }}
             >
               {t('grid.noBinsYet')}
             </h3>
             {/* Message */}
             <p
               className={isPreviewExpanded ? 'text-sm' : 'text-xs'}
-              style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+              style={{ color: 'var(--text-secondary)' }}
             >
               {t('grid.placeBinsOnTheGridToSeeYour3dLayout')}
             </p>
@@ -714,8 +716,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         <div
           className="absolute bottom-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-xs"
           style={{
-            background: 'rgba(0, 0, 0, 0.8)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-default)',
+            boxShadow: 'var(--shadow-floating)',
             pointerEvents: 'none',
           }}
         >

@@ -173,7 +173,7 @@ function AutoArrangePopover({
               </label>
               <button
                 type="button"
-                className="rounded bg-accent px-2 py-0.5 text-[11px] font-medium text-white hover:bg-accent/90 transition-colors"
+                className="rounded bg-accent px-2 py-0.5 text-[11px] font-medium text-on-accent hover:bg-accent/90 transition-colors"
                 onClick={() => {
                   onArrange(gap, staggered);
                   setOpen(false);
@@ -579,7 +579,7 @@ export function WorkspaceHeader({
         <button
           type="button"
           onClick={() => setCutoutEditorOpen(false)}
-          className="rounded-md px-4 py-1.5 text-xs font-semibold bg-accent text-white hover:bg-accent/90 shadow-sm transition-colors"
+          className="rounded-md px-4 py-1.5 text-xs font-semibold bg-accent text-on-accent hover:bg-accent/90 shadow-sm transition-colors"
         >
           {t('binDesigner.cutoutEditor.done')}
         </button>

@@ -58,7 +58,7 @@ function PlacementIndicator({
         left: left + 4,
         top: top - 28,
         backgroundColor: 'var(--color-error)',
-        color: 'white',
+        color: '#ffffff',
         padding: '4px 8px',
         borderRadius: '4px',
         fontSize: '12px',
@@ -66,7 +66,7 @@ function PlacementIndicator({
         whiteSpace: 'nowrap',
         pointerEvents: 'none',
         zIndex: 100,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        boxShadow: '0 2px 4px var(--overlay-medium)',
       }}
     >
       {message}

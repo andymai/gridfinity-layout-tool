@@ -133,7 +133,7 @@ export function WallCutoutsSection() {
                   onClick={() => handlers.setShape(value)}
                   className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
                     isActive
-                      ? 'bg-accent text-white'
+                      ? 'bg-accent text-on-accent'
                       : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
                   }`}
                 >
@@ -156,7 +156,7 @@ export function WallCutoutsSection() {
                   onClick={() => handlers.toggleSide(side)}
                   className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
                     isActive
-                      ? 'bg-accent text-white'
+                      ? 'bg-accent text-on-accent'
                       : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
                   }`}
                 >

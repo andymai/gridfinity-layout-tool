@@ -9,6 +9,7 @@ import { resetOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 import { TabNavigation } from './TabNavigation/TabNavigation';
 import { useSettingsTab } from './hooks/useSettingsTab';
 import { GeneralTab } from './tabs/GeneralTab/GeneralTab';
+import { AppearanceTab } from './tabs/AppearanceTab/AppearanceTab';
 import { DefaultsTab } from './tabs/DefaultsTab/DefaultsTab';
 import { IntegrationsTab } from './tabs/IntegrationsTab/IntegrationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab/PrivacyTab';
@@ -35,6 +36,8 @@ function renderTab(tabId: SettingsTabId) {
   switch (tabId) {
     case 'general':
       return <GeneralTab />;
+    case 'appearance':
+      return <AppearanceTab />;
     case 'defaults':
       return <DefaultsTab />;
     case 'integrations':
