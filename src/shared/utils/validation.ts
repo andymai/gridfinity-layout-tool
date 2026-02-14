@@ -509,3 +509,8 @@ export function clamp(value: number, min: number, max: number): number {
 export function truncate(str: string, maxLength: number): string {
   return str.slice(0, maxLength);
 }
+
+/** Format a dimension value, showing decimals only for fractional values (half-bin mode). */
+export function formatDimension(val: number): string {
+  return val % 1 === 0 ? val.toString() : val.toFixed(1);
+}

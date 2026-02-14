@@ -48,6 +48,7 @@ export {
   validateCustomProperties,
   clamp,
   truncate,
+  formatDimension,
 } from './validation';
 
 export {
