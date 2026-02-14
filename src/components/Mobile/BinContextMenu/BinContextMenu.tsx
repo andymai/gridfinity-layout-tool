@@ -146,8 +146,9 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const locationContext = getBinLocationContext(bin);
   const canMoveToStash = locationContext.canMoveToStash;
   const isInStash = locationContext.location === 'stash';
-  // Hide rotate in staging context menu since there's already a rotate affordance
-  const showRotate = locationContext.canRotate && !isInStash;
+  // On desktop, hide rotate for stash bins since the hover rotate button is available.
+  // On mobile, the context menu is the only way to rotate stash bins.
+  const showRotate = locationContext.canRotate && !(isInStash && isDesktop);
 
   // Check if bin needs splitting for STL search
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);

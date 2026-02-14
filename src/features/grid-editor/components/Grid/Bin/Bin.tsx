@@ -12,7 +12,7 @@ import {
 import { useToastStore } from '@/core/store/toast';
 import { useResponsive } from '@/shared/hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import { getBinTextColors, clamp } from '@/shared/utils';
+import { getBinTextColors, clamp, formatDimension } from '@/shared/utils';
 import { calcFractionalPixelSize } from '@/features/grid-editor/utils/fractionalPixels';
 import { ResizeHandles } from '../ResizeHandles';
 import { useTranslation } from '@/i18n';
@@ -209,9 +209,7 @@ function BinComponent({
   // All heavy grid positioning and pixel sizing calculations are memoized together
   // to prevent recalculation when only UI state (hover, focus, etc.) changes.
   const layoutCalcs = useMemo(() => {
-    // Format dimensions - show decimal if fractional (half-bin mode)
-    const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
-    const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
+    const dimensionsText = `${formatDimension(bin.width)}×${formatDimension(bin.depth)}`;
 
     // Calculate grid position (always use standard grid, no scaling)
     const hasFractionalX = bin.x % 1 !== 0;
@@ -462,6 +460,14 @@ function BinComponent({
     if (isGhost) return;
     // Ignore non-primary pointer (second finger) - allow two-finger pan
     if (!e.isPrimary) return;
+
+    // Defense-in-depth: if the event originated from a resize handle, bail out.
+    // The ResizeHandle's own handler should fire first via React bubbling and
+    // call stopPropagation, but on mobile touch devices event ordering can be
+    // unpredictable. This guard ensures the Bin never intercepts resize events.
+    const target = e.target as HTMLElement;
+    if (target.closest('.resize-handle')) return;
+
     e.preventDefault();
     e.stopPropagation();
 

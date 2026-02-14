@@ -3,6 +3,13 @@ import { useMobileStore } from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 
+/** Minimum velocity (px/ms) to dismiss regardless of distance */
+const VELOCITY_DISMISS_THRESHOLD = 0.5;
+/** Maximum rubber-band overshoot when dragging upward (px) */
+const RUBBER_BAND_MAX = 20;
+/** Rubber-band resistance factor (0-1, lower = more resistance) */
+const RUBBER_BAND_FACTOR = 0.3;
+
 interface BottomSheetProps {
   children: React.ReactNode;
   title: string;
@@ -10,7 +17,8 @@ interface BottomSheetProps {
 
 /**
  * Bottom sheet container for mobile panels.
- * Features gesture dismiss (swipe down) and backdrop tap to close.
+ * Features gesture dismiss (swipe down with velocity detection),
+ * rubber-band overscroll, haptic feedback, and backdrop tap to close.
  */
 export function BottomSheet({ children, title }: BottomSheetProps) {
   const t = useTranslation();
@@ -21,8 +29,14 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  // Track whether we're animating the dismiss (slide off-screen)
+  const [isDismissing, setIsDismissing] = useState(false);
   const dragStartY = useRef(0);
   const dragYRef = useRef(0);
+
+  // Velocity tracking: store last two move timestamps/positions
+  const lastMoveRef = useRef<{ y: number; time: number } | null>(null);
+  const velocityRef = useRef(0);
 
   // Adaptive dismiss threshold: 15% of viewport height, capped at 80px
   // Smaller screens get smaller thresholds for easier dismissal
@@ -38,6 +52,8 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
 
     setIsDragging(true);
     dragStartY.current = e.clientY;
+    lastMoveRef.current = { y: e.clientY, time: performance.now() };
+    velocityRef.current = 0;
     // Capture on the header element to ensure consistent drag tracking
     headerEl.setPointerCapture(e.pointerId);
   }, []);
@@ -47,8 +63,29 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
       if (!isDragging) return;
 
       const deltaY = e.clientY - dragStartY.current;
-      // Only allow dragging down
-      const clamped = Math.max(0, deltaY);
+
+      // Track velocity from the last move event
+      const now = performance.now();
+      if (lastMoveRef.current) {
+        const dt = now - lastMoveRef.current.time;
+        if (dt > 0) {
+          velocityRef.current = (e.clientY - lastMoveRef.current.y) / dt;
+        }
+      }
+      lastMoveRef.current = { y: e.clientY, time: now };
+
+      // Rubber-band effect when dragging upward:
+      // Apply diminishing resistance so the sheet feels elastic
+      let clamped: number;
+      if (deltaY < 0) {
+        clamped = -(
+          RUBBER_BAND_MAX *
+          (1 - Math.exp((deltaY * RUBBER_BAND_FACTOR) / RUBBER_BAND_MAX))
+        );
+      } else {
+        clamped = deltaY;
+      }
+
       dragYRef.current = clamped;
       setDragY(clamped);
     },
@@ -59,13 +96,37 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
     if (!isDragging) return;
 
     setIsDragging(false);
-    // If dragged more than threshold, close the sheet
-    if (dragYRef.current > dismissThreshold) {
-      closeMobilePanel();
+
+    const distance = dragYRef.current;
+    const velocity = velocityRef.current;
+
+    // Dismiss if: dragged past threshold OR fast downward flick
+    const shouldDismiss =
+      distance > dismissThreshold || (velocity > VELOCITY_DISMISS_THRESHOLD && distance > 10);
+
+    if (shouldDismiss) {
+      // Haptic feedback on dismiss
+      if (navigator.vibrate) {
+        navigator.vibrate(15);
+      }
+      // Animate off-screen before closing
+      setIsDismissing(true);
+      setDragY(viewportHeight);
+      // Wait for the slide-out animation to complete
+      setTimeout(() => {
+        closeMobilePanel();
+        setIsDismissing(false);
+        setDragY(0);
+      }, 200);
+    } else {
+      // Snap back with spring animation
+      dragYRef.current = 0;
+      setDragY(0);
     }
-    dragYRef.current = 0;
-    setDragY(0);
-  }, [isDragging, dismissThreshold, closeMobilePanel]);
+
+    lastMoveRef.current = null;
+    velocityRef.current = 0;
+  }, [isDragging, dismissThreshold, closeMobilePanel, viewportHeight]);
 
   // Close on escape key
   useEffect(() => {
@@ -92,6 +153,13 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
 
   if (!isOpen) return null;
 
+  // Choose transition timing: instant during drag, spring-like snap-back/dismiss otherwise
+  const transitionStyle = isDragging
+    ? '0ms'
+    : isDismissing
+      ? '200ms'
+      : '300ms cubic-bezier(0.25, 1, 0.5, 1)';
+
   return (
     <>
       {/* Backdrop */}
@@ -99,7 +167,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
         className="fixed inset-0 z-40 transition-opacity duration-200"
         style={{
           backgroundColor: 'var(--overlay-medium)',
-          opacity: isDragging ? 1 - dragY / 300 : 1,
+          opacity: isDragging ? 1 - Math.max(0, dragY) / 300 : isDismissing ? 0 : 1,
         }}
         onClick={closeMobilePanel}
         aria-hidden="true"
@@ -108,11 +176,11 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
       {/* Sheet */}
       <div
         ref={sheetRef}
-        className="fixed left-0 right-0 bottom-0 z-50 flex flex-col rounded-t-2xl transition-transform duration-200 bg-surface-secondary"
+        className="fixed left-0 right-0 bottom-0 z-50 flex flex-col rounded-t-2xl bg-surface-secondary"
         style={{
           maxHeight: '85dvh',
           transform: `translateY(${dragY}px)`,
-          transitionDuration: isDragging ? '0ms' : '200ms',
+          transition: `transform ${transitionStyle}`,
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -144,7 +212,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
               height: isDragging ? 'auto' : 0,
             }}
           >
-            {dragY > 80
+            {dragY > dismissThreshold
               ? t('mobile.bottomSheet.releaseToClose')
               : t('mobile.bottomSheet.swipeToClose')}
           </div>

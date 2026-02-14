@@ -328,14 +328,17 @@ describe('GridCanvas', () => {
   });
 
   describe('Touch action', () => {
-    it('allows pan when no interaction active', () => {
+    it('always disables native touch actions on the grid canvas', () => {
+      // touchAction must be 'none' unconditionally because the browser evaluates
+      // it at pointerdown time (CSS spec). Conditional touchAction caused draw
+      // gestures to be cancelled via pointercancel on mobile.
       const { container } = renderGridCanvas();
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.style.touchAction).toBe('pan-x pan-y');
+      expect(wrapper.style.touchAction).toBe('none');
     });
 
-    it('disables touch actions during interaction', () => {
+    it('keeps touchAction none during interaction', () => {
       useInteractionStore.setState({
         interaction: {
           type: 'draw',

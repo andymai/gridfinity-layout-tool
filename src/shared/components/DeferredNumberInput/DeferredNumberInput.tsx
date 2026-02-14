@@ -68,6 +68,7 @@ export function DeferredNumberInput({
     <input
       id={id}
       type="number"
+      inputMode="decimal"
       value={localValue}
       onChange={(e) => setLocalValue(e.target.value)}
       onFocus={(e) => e.target.select()}

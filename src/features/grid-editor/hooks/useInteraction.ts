@@ -214,7 +214,10 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   }, [setInteraction]);
 
   // Document-level pointer tracking (unified mouse/touch/pen)
-  useEffect(() => {
+  // useLayoutEffect ensures listeners are attached synchronously before paint,
+  // preventing a race condition where quick mobile touch gestures complete
+  // (pointerup fires) before async useEffect attaches the listener.
+  useLayoutEffect(() => {
     if (!interaction) {
       // Reset pointer tracking when no interaction
       activePointerIdRef.current = null;

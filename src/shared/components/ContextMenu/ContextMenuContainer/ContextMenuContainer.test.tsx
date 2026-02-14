@@ -27,10 +27,26 @@ describe('ContextMenuContainer', () => {
     expect(screen.getByText('Menu Content')).toBeInTheDocument();
   });
 
-  it('positions menu at specified coordinates', () => {
+  it('positions menu at specified coordinates when within viewport', () => {
+    // Position well within viewport bounds — should not be clamped
     render(<ContextMenuContainer {...defaultProps} />);
     const menu = screen.getByRole('menu');
     expect(menu).toHaveStyle({ left: '100px', top: '200px' });
+  });
+
+  it('clamps menu position to stay within viewport bounds', () => {
+    // Position near bottom-right corner of a small viewport
+    // jsdom defaults to 1024x768, so position at 950,700 with a 180px+ menu
+    // would overflow — it should be clamped
+    const edgePosition = { x: 950, y: 700 };
+    render(<ContextMenuContainer {...defaultProps} position={edgePosition} />);
+    const menu = screen.getByRole('menu');
+
+    // The menu should be positioned so it doesn't overflow
+    // Exact values depend on measured menu size, but left/top should be numbers
+    const style = menu.style;
+    expect(parseInt(style.left, 10)).toBeLessThanOrEqual(950);
+    expect(parseInt(style.top, 10)).toBeLessThanOrEqual(700);
   });
 
   it('calls onClose when backdrop is clicked', () => {

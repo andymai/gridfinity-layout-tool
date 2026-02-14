@@ -59,12 +59,7 @@ export function GridCanvas({
 
   const showOtherLayers = useViewStore((state) => state.showOtherLayers);
 
-  const { paintSize, interaction } = useInteractionStore(
-    useShallow((state) => ({
-      paintSize: state.paintSize,
-      interaction: state.interaction,
-    }))
-  );
+  const paintSize = useInteractionStore((state) => state.paintSize);
 
   const { getGridCoords } = useGridCoords(gridRef);
 
@@ -244,8 +239,12 @@ export function GridCanvas({
       onPointerDown={handlePointerDown}
       style={{
         cursor: paintSize ? 'cell' : 'crosshair',
-        // Allow two-finger pan when no interaction active, block during draw/drag
-        touchAction: interaction ? 'none' : 'pan-x pan-y',
+        // Always disable native touch actions on the grid canvas.
+        // Per CSS spec, browser determines touch behavior at pointerdown time and
+        // ignores subsequent changes. Conditional touchAction caused draw gestures
+        // on empty cells to be cancelled (pointercancel) because the browser locked
+        // in pan-x/pan-y before the interaction state could update.
+        touchAction: 'none',
       }}
     >
       {/* CSS Grid container */}
