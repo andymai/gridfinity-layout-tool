@@ -240,9 +240,10 @@ html[data-theme='light'][data-accent='violet'] {
    Overrides spacing and base font size. Default density uses :root values.
    ============================================================================= */
 html[data-density='compact'] {
-  --space-panel: 12px;
-  --space-section: 16px;
-  --space-item: 6px;
+  --space-panel: 8px;
+  --space-section: 10px;
+  --space-item: 2px;
+  --space-row-y: 2px 6px;
   --text-base: 0.8125rem;
 }
 
@@ -250,23 +251,54 @@ html[data-density='comfortable'] {
   --space-panel: 20px;
   --space-section: 24px;
   --space-item: 10px;
+  --space-row-y: 10px 12px;
   --text-base: 0.9375rem;
 }
 
-/* Apply density spacing to sidebar panel sections.
-   These elements use data attributes as hooks (set in Sidebar.tsx).
-   The --space-panel var is overridden per density level above. */
+/* Apply density spacing to sidebar panel sections and their internals.
+   Panel wrappers get --space-panel padding.
+   Inner lists and rows get tighter/looser gap via --space-item.
+   Section headings get --space-section margin. */
 [data-active-layer-panel],
 [data-layers-panel],
-[data-categories-panel] {
+[data-categories-panel],
+[data-grid-size-panel] {
   padding: var(--space-panel);
+}
+
+/* Row-level density: layer items, category items */
+[data-active-layer-panel] > *,
+[data-layers-panel] .flex.flex-col {
+  gap: var(--space-item);
+}
+
+[data-categories-panel] .space-y-1 > * + * {
+  margin-top: var(--space-item);
+}
+
+/* Section header spacing */
+[data-active-layer-panel] .mb-3,
+[data-layers-panel] .mb-3 {
+  margin-bottom: var(--space-section);
+}
+
+/* Row padding responds to density */
+[data-layers-panel] .py-1\.5 {
+  padding-top: var(--space-item);
+  padding-bottom: var(--space-item);
+}
+
+[data-categories-panel] .p-2 {
+  padding: var(--space-row-y);
 }
 
 /* =============================================================================
    REDUCE MOTION
    Disables animations and transitions globally when the user prefers it.
    ============================================================================= */
-html[data-reduce-motion='true'] *,\nhtml[data-reduce-motion='true'] *::before,\nhtml[data-reduce-motion='true'] *::after {
+html[data-reduce-motion='true'] *,
+html[data-reduce-motion='true'] *::before,
+html[data-reduce-motion='true'] *::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
