@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.12.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.6...gridfinity-layout-tool-v3.12.0) (2026-02-14)
+
+
+### Features
+
+* **settings:** add Appearance tab with theme, accent, density, and grid controls ([#748](https://github.com/andymai/gridfinity-layout-tool/issues/748)) ([5cbce12](https://github.com/andymai/gridfinity-layout-tool/commit/5cbce12abd7917da9411ae6e760f7a02ee0f5450))
+
 ## [3.11.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.5...gridfinity-layout-tool-v3.11.6) (2026-02-13)
 
 
