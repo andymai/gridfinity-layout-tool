@@ -19,12 +19,6 @@ import type { SettingsModalProps, SettingsTabId } from './types';
 
 const STYLES = {
   overlay: { backgroundColor: 'var(--overlay-dark)' } as CSSProperties,
-  modal: {
-    backgroundColor: 'var(--bg-secondary)',
-    border: '1px solid var(--border-default)',
-    borderRadius: 'var(--radius-xl)',
-    boxShadow: 'var(--shadow-xl)',
-  } as CSSProperties,
   title: {
     fontSize: 'var(--text-2xl)',
     fontWeight: 'var(--font-bold)',
@@ -97,10 +91,19 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
       <div role="presentation" onClick={(e) => e.stopPropagation()}>
         <div
           ref={modalRef}
-          className={`w-full mx-4 max-h-[85vh] flex flex-col animate-scale-in ${
-            isMobile ? 'max-w-lg' : 'max-w-2xl'
+          className={`flex flex-col animate-scale-in ${
+            isMobile ? 'w-full h-full' : 'w-[48rem] h-[85vh]'
           }`}
-          style={STYLES.modal}
+          style={{
+            backgroundColor: 'var(--bg-secondary)',
+            ...(isMobile
+              ? {}
+              : {
+                  border: '1px solid var(--border-default)',
+                  borderRadius: 'var(--radius-xl)',
+                  boxShadow: 'var(--shadow-xl)',
+                }),
+          }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="settings-title"
