@@ -60,7 +60,7 @@ function ToggleRow({
   checked,
   label,
   hint,
-  disabled,
+  disabled = false,
   onToggle,
 }: {
   checked: boolean;
@@ -79,16 +79,13 @@ function ToggleRow({
       tabIndex={disabled ? -1 : 0}
       aria-checked={checked}
       aria-disabled={disabled || undefined}
-      onKeyDown={
-        disabled
-          ? undefined
-          : (e) => {
-              if (e.key === ' ' || e.key === 'Enter') {
-                e.preventDefault();
-                onToggle();
-              }
-            }
-      }
+      onKeyDown={(e) => {
+        if (disabled) return;
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
     >
       <div>
         <span

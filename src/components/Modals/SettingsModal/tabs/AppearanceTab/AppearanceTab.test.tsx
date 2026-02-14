@@ -114,6 +114,13 @@ describe('AppearanceTab', () => {
     expect(slider).toBeDisabled();
   });
 
+  it('does not fire toggle when disabled half-lines is clicked', () => {
+    mockState.gridShowLines = false;
+    render(<AppearanceTab />);
+    fireEvent.click(screen.getByText('settings.gridShowHalfLines'));
+    expect(mockUpdateSetting).not.toHaveBeenCalled();
+  });
+
   it('keyboard Enter triggers theme selection', () => {
     render(<AppearanceTab />);
     const lightOption = screen.getByText('settings.theme.light');
