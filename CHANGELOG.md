@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.12.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.0...gridfinity-layout-tool-v3.12.1) (2026-02-14)
+
+
+### Bug Fixes
+
+* **build:** export formatDimension from shared utils ([e0fa499](https://github.com/andymai/gridfinity-layout-tool/commit/e0fa499d946bcd8f9eb4d86edba6d4a32cc54178))
+* **mobile:** improve touch grid usability and polish mobile UX ([3066246](https://github.com/andymai/gridfinity-layout-tool/commit/3066246a58bb19d1dac29e38de2e48ee640d0969))
+
 ## [3.12.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.11.6...gridfinity-layout-tool-v3.12.0) (2026-02-14)
 
 
