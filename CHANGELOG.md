@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.12.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.1...gridfinity-layout-tool-v3.12.2) (2026-02-14)
+
+
+### Bug Fixes
+
+* **settings:** stabilize modal height and add mobile fullscreen ([#751](https://github.com/andymai/gridfinity-layout-tool/issues/751)) ([221a463](https://github.com/andymai/gridfinity-layout-tool/commit/221a4634db52207face06f76073217b1555f6e73))
+
 ## [3.12.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.0...gridfinity-layout-tool-v3.12.1) (2026-02-14)
 
 
