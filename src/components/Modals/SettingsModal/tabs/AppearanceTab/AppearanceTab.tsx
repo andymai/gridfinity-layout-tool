@@ -60,30 +60,39 @@ function ToggleRow({
   checked,
   label,
   hint,
+  disabled,
   onToggle,
 }: {
   checked: boolean;
   label: string;
   hint?: string;
+  disabled?: boolean;
   onToggle: () => void;
 }) {
   return (
     <div
-      className="flex items-center justify-between text-sm cursor-pointer group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
-      onClick={onToggle}
+      className={`flex items-center justify-between text-sm group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface ${
+        disabled ? 'opacity-40 cursor-default' : 'cursor-pointer'
+      }`}
+      onClick={disabled ? undefined : onToggle}
       role="checkbox"
-      tabIndex={0}
+      tabIndex={disabled ? -1 : 0}
       aria-checked={checked}
-      onKeyDown={(e) => {
-        if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          onToggle();
-        }
-      }}
+      aria-disabled={disabled || undefined}
+      onKeyDown={
+        disabled
+          ? undefined
+          : (e) => {
+              if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                onToggle();
+              }
+            }
+      }
     >
       <div>
         <span
-          className={`${checked ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}
+          className={`${checked ? 'text-content' : 'text-content-tertiary'} ${disabled ? '' : 'group-hover:text-content'} transition-colors`}
         >
           {label}
         </span>
@@ -193,14 +202,13 @@ export function AppearanceTab() {
             label={t('settings.gridShowLines')}
             onToggle={() => updateSetting('gridShowLines', !gridShowLines)}
           />
-          <div className={gridShowLines ? '' : 'opacity-40 pointer-events-none'}>
-            <ToggleRow
-              checked={gridShowHalfLines}
-              label={t('settings.gridShowHalfLines')}
-              onToggle={() => updateSetting('gridShowHalfLines', !gridShowHalfLines)}
-            />
-          </div>
-          <div className={gridShowLines ? '' : 'opacity-40 pointer-events-none'}>
+          <ToggleRow
+            checked={gridShowHalfLines}
+            label={t('settings.gridShowHalfLines')}
+            disabled={!gridShowLines}
+            onToggle={() => updateSetting('gridShowHalfLines', !gridShowHalfLines)}
+          />
+          <div className={gridShowLines ? '' : 'opacity-40'}>
             <label htmlFor="grid-opacity" className="text-sm text-content mb-1 block">
               {t('settings.gridLineOpacity')}: {gridLineOpacity}%
             </label>
@@ -211,6 +219,7 @@ export function AppearanceTab() {
               max={100}
               step={5}
               value={gridLineOpacity}
+              disabled={!gridShowLines}
               onChange={(e) => updateSetting('gridLineOpacity', Number(e.target.value))}
               className="w-full accent-accent"
             />

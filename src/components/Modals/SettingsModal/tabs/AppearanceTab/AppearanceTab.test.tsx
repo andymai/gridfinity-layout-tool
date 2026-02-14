@@ -108,9 +108,10 @@ describe('AppearanceTab', () => {
     const halfLinesToggle = screen
       .getByText('settings.gridShowHalfLines')
       .closest('[role="checkbox"]')!;
-    expect(halfLinesToggle.closest('.pointer-events-none')).toBeTruthy();
+    expect(halfLinesToggle).toHaveAttribute('aria-disabled', 'true');
+    expect(halfLinesToggle).toHaveAttribute('tabindex', '-1');
     const slider = screen.getByRole('slider');
-    expect(slider.closest('.pointer-events-none')).toBeTruthy();
+    expect(slider).toBeDisabled();
   });
 
   it('keyboard Enter triggers theme selection', () => {
