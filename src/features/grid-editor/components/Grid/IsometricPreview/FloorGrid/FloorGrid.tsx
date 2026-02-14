@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { FractionalEdge } from '@/core/types';
 import { useThreeColors } from '@/hooks/useThemeEffect';
-import { useSettingsStore } from '@/core/store';
 
 interface FloorGridProps {
   width: number;
@@ -24,9 +23,7 @@ export function FloorGrid({
   fractionalEdgeY = 'end',
 }: FloorGridProps) {
   const colors = useThreeColors();
-  const gridShowLines = useSettingsStore((s) => s.settings.gridShowLines);
-  const gridShowHalfLines = useSettingsStore((s) => s.settings.gridShowHalfLines);
-  const gridLineOpacity = useSettingsStore((s) => s.settings.gridLineOpacity);
+  const gridLineOpacity = 40;
   // Check for fractional dimensions
   const hasFractionalWidth = width % 1 !== 0;
   const hasFractionalDepth = depth % 1 !== 0;
@@ -109,7 +106,6 @@ export function FloorGrid({
 
   // Half-bin subdivision lines at 0.5 intervals between integer lines
   const halfBinGeometry = useMemo(() => {
-    if (!gridShowHalfLines) return null;
     const geometry = new THREE.BufferGeometry();
     const positions: number[] = [];
     const xOffset = hasFractionalWidth && fractionalEdgeX === 'start' ? fractionalWidthPart : 0;
@@ -138,7 +134,6 @@ export function FloorGrid({
     fractionalDepthPart,
     fractionalEdgeX,
     fractionalEdgeY,
-    gridShowHalfLines,
   ]);
 
   return (
@@ -150,18 +145,16 @@ export function FloorGrid({
       </mesh>
 
       {/* Main gridlines at integer positions - raised slightly to prevent z-fighting */}
-      {gridShowLines && (
-        <lineSegments geometry={gridGeometry} position={[0, 0, 0.01]}>
-          <lineBasicMaterial
-            color={colors.gridLine}
-            opacity={colors.gridLineOpacity * (gridLineOpacity / 100)}
-            transparent
-          />
-        </lineSegments>
-      )}
+      <lineSegments geometry={gridGeometry} position={[0, 0, 0.01]}>
+        <lineBasicMaterial
+          color={colors.gridLine}
+          opacity={colors.gridLineOpacity * (gridLineOpacity / 100)}
+          transparent
+        />
+      </lineSegments>
 
       {/* Half-bin subdivision lines at 0.5 intervals */}
-      {gridShowLines && halfBinGeometry && (
+      {halfBinGeometry && (
         <lineSegments geometry={halfBinGeometry} position={[0, 0, 0.01]}>
           <lineBasicMaterial
             color={colors.gridLine}
@@ -172,7 +165,7 @@ export function FloorGrid({
       )}
 
       {/* Fractional edge lines - slightly less visible for subtle appearance */}
-      {gridShowLines && fractionalEdgeGeometry && (
+      {fractionalEdgeGeometry && (
         <lineSegments geometry={fractionalEdgeGeometry} position={[0, 0, 0.01]}>
           <lineBasicMaterial
             color={colors.gridLine}

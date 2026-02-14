@@ -230,12 +230,6 @@ export interface UserSettings {
   accentColor: 'amber' | 'rose' | 'fuchsia' | 'emerald' | 'sky' | 'violet';
   /** UI density level affecting spacing and font size. */
   uiDensity: 'compact' | 'default' | 'comfortable';
-  /** Whether grid lines are visible on the editor. */
-  gridShowLines: boolean;
-  /** Whether half-bin subdivision lines are visible. */
-  gridShowHalfLines: boolean;
-  /** Grid line opacity percentage (0-100). */
-  gridLineOpacity: number;
   /** Override to reduce animations and transitions. */
   reduceMotion: boolean;
 }
@@ -288,9 +282,6 @@ export const DEFAULT_SETTINGS: UserSettings = {
   theme: 'dark',
   accentColor: 'amber',
   uiDensity: 'default',
-  gridShowLines: true,
-  gridShowHalfLines: true,
-  gridLineOpacity: 40,
   reduceMotion: false,
 };
 
