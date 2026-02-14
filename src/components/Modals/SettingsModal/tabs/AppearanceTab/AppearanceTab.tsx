@@ -103,23 +103,11 @@ function ToggleRow({
 export function AppearanceTab() {
   const t = useTranslation();
 
-  const {
-    theme,
-    accentColor,
-    uiDensity,
-    gridShowLines,
-    gridShowHalfLines,
-    gridLineOpacity,
-    reduceMotion,
-    updateSetting,
-  } = useSettingsStore(
+  const { theme, accentColor, uiDensity, reduceMotion, updateSetting } = useSettingsStore(
     useShallow((state) => ({
       theme: state.settings.theme,
       accentColor: state.settings.accentColor,
       uiDensity: state.settings.uiDensity,
-      gridShowLines: state.settings.gridShowLines,
-      gridShowHalfLines: state.settings.gridShowHalfLines,
-      gridLineOpacity: state.settings.gridLineOpacity,
       reduceMotion: state.settings.reduceMotion,
       updateSetting: state.updateSetting,
     }))
@@ -187,40 +175,6 @@ export function AppearanceTab() {
               onSelect={() => updateSetting('uiDensity', option)}
             />
           ))}
-        </div>
-      </section>
-
-      {/* Grid Visuals */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-3">{t('settings.gridVisuals')}</h3>
-        <div className="space-y-3">
-          <ToggleRow
-            checked={gridShowLines}
-            label={t('settings.gridShowLines')}
-            onToggle={() => updateSetting('gridShowLines', !gridShowLines)}
-          />
-          <ToggleRow
-            checked={gridShowHalfLines}
-            label={t('settings.gridShowHalfLines')}
-            disabled={!gridShowLines}
-            onToggle={() => updateSetting('gridShowHalfLines', !gridShowHalfLines)}
-          />
-          <div className={gridShowLines ? '' : 'opacity-40'}>
-            <label htmlFor="grid-opacity" className="text-sm text-content mb-1 block">
-              {t('settings.gridLineOpacity')}: {gridLineOpacity}%
-            </label>
-            <input
-              id="grid-opacity"
-              type="range"
-              min={0}
-              max={100}
-              step={5}
-              value={gridLineOpacity}
-              disabled={!gridShowLines}
-              onChange={(e) => updateSetting('gridLineOpacity', Number(e.target.value))}
-              className="w-full accent-accent"
-            />
-          </div>
         </div>
       </section>
 

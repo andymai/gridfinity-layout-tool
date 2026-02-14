@@ -7,9 +7,6 @@ const mockState = vi.hoisted(() => ({
   theme: 'dark' as string,
   accentColor: 'amber' as string,
   uiDensity: 'default' as string,
-  gridShowLines: true,
-  gridShowHalfLines: true,
-  gridLineOpacity: 40,
   reduceMotion: false,
 }));
 
@@ -41,9 +38,6 @@ describe('AppearanceTab', () => {
     mockState.theme = 'dark';
     mockState.accentColor = 'amber';
     mockState.uiDensity = 'default';
-    mockState.gridShowLines = true;
-    mockState.gridShowHalfLines = true;
-    mockState.gridLineOpacity = 40;
     mockState.reduceMotion = false;
   });
 
@@ -52,7 +46,6 @@ describe('AppearanceTab', () => {
     expect(screen.getByText('settings.theme')).toBeInTheDocument();
     expect(screen.getByText('settings.accentColor')).toBeInTheDocument();
     expect(screen.getByText('settings.uiDensity')).toBeInTheDocument();
-    expect(screen.getByText('settings.gridVisuals')).toBeInTheDocument();
     expect(screen.getByText('settings.reduceMotion')).toBeInTheDocument();
   });
 
@@ -81,44 +74,11 @@ describe('AppearanceTab', () => {
     expect(mockUpdateSetting).toHaveBeenCalledWith('uiDensity', 'compact');
   });
 
-  it('toggling grid lines calls updateSetting', () => {
-    render(<AppearanceTab />);
-    fireEvent.click(screen.getByText('settings.gridShowLines'));
-    expect(mockUpdateSetting).toHaveBeenCalledWith('gridShowLines', false);
-  });
-
   it('toggling reduce motion calls updateSetting', () => {
     render(<AppearanceTab />);
     const checkboxes = screen.getAllByRole('checkbox');
-    // Last checkbox is reduce motion (no separate heading — just the toggle)
     fireEvent.click(checkboxes[checkboxes.length - 1]);
     expect(mockUpdateSetting).toHaveBeenCalledWith('reduceMotion', true);
-  });
-
-  it('grid opacity slider updates setting', () => {
-    render(<AppearanceTab />);
-    const slider = screen.getByRole('slider');
-    fireEvent.change(slider, { target: { value: '80' } });
-    expect(mockUpdateSetting).toHaveBeenCalledWith('gridLineOpacity', 80);
-  });
-
-  it('disables half-lines and opacity when grid lines are off', () => {
-    mockState.gridShowLines = false;
-    render(<AppearanceTab />);
-    const halfLinesToggle = screen
-      .getByText('settings.gridShowHalfLines')
-      .closest('[role="checkbox"]')!;
-    expect(halfLinesToggle).toHaveAttribute('aria-disabled', 'true');
-    expect(halfLinesToggle).toHaveAttribute('tabindex', '-1');
-    const slider = screen.getByRole('slider');
-    expect(slider).toBeDisabled();
-  });
-
-  it('does not fire toggle when disabled half-lines is clicked', () => {
-    mockState.gridShowLines = false;
-    render(<AppearanceTab />);
-    fireEvent.click(screen.getByText('settings.gridShowHalfLines'));
-    expect(mockUpdateSetting).not.toHaveBeenCalled();
   });
 
   it('keyboard Enter triggers theme selection', () => {
