@@ -116,122 +116,81 @@ html[data-theme='light'] {
   --color-green-5: rgba(22, 163, 74, 0.06);
   --color-green-15: rgba(22, 163, 74, 0.14);
   --color-red-20: rgba(220, 38, 38, 0.12);
+
+  /* Lighter accent tints in light mode (dark mode uses 15%/25%) */
+  --color-primary-muted: color-mix(in srgb, var(--color-primary) 9%, transparent);
+  --selection-glow: color-mix(in srgb, var(--color-primary-hover) 20%, transparent);
+  --selection-bg: color-mix(in srgb, var(--color-primary-hover) 8%, transparent);
 }
 
 /* =============================================================================
    ACCENT COLOR OVERRIDES
-   Each accent overrides the primary/selection CSS variables.
+   Each accent only sets 3 core values. Derived tokens (--color-primary-muted,
+   --selection-ring, --selection-glow, --selection-bg) are computed via
+   color-mix() in :root and the light theme block above.
    Amber is the default so its values match :root — included for explicitness.
    ============================================================================= */
 html[data-accent='amber'] {
   --color-primary: #f59e0b;
   --color-primary-hover: #fbbf24;
-  --color-primary-muted: rgba(245, 158, 11, 0.15);
-  --selection-ring: #fbbf24;
-  --selection-glow: rgba(251, 191, 36, 0.25);
   --text-on-accent: #000000;
 }
-
 html[data-accent='rose'] {
   --color-primary: #f43f5e;
   --color-primary-hover: #fb7185;
-  --color-primary-muted: rgba(244, 63, 94, 0.15);
-  --selection-ring: #fb7185;
-  --selection-glow: rgba(251, 113, 133, 0.25);
-  --text-on-accent: #000000; /* 5.72:1 — rose-500 is bright enough for black */
+  --text-on-accent: #000000;
 }
-
 html[data-accent='fuchsia'] {
   --color-primary: #d946ef;
   --color-primary-hover: #e879f9;
-  --color-primary-muted: rgba(217, 70, 239, 0.15);
-  --selection-ring: #e879f9;
-  --selection-glow: rgba(232, 121, 249, 0.25);
-  --text-on-accent: #000000; /* 6.07:1 */
+  --text-on-accent: #000000;
 }
-
 html[data-accent='emerald'] {
   --color-primary: #10b981;
   --color-primary-hover: #34d399;
-  --color-primary-muted: rgba(16, 185, 129, 0.15);
-  --selection-ring: #34d399;
-  --selection-glow: rgba(52, 211, 153, 0.25);
   --text-on-accent: #000000;
 }
-
 html[data-accent='sky'] {
   --color-primary: #0ea5e9;
   --color-primary-hover: #38bdf8;
-  --color-primary-muted: rgba(14, 165, 233, 0.15);
-  --selection-ring: #38bdf8;
-  --selection-glow: rgba(56, 189, 248, 0.25);
   --text-on-accent: #000000;
 }
-
 html[data-accent='violet'] {
-  --color-primary: #7c3aed; /* Violet 600 — white text 5.7:1 (500 was only 4.2:1) */
+  --color-primary: #7c3aed;
   --color-primary-hover: #8b5cf6;
-  --color-primary-muted: rgba(124, 58, 237, 0.15);
-  --selection-ring: #8b5cf6;
-  --selection-glow: rgba(139, 92, 246, 0.25);
   --text-on-accent: #ffffff;
 }
 
 /* ---- Light-mode accent adjustments ----
-   On light backgrounds, the dark-mode accent values can look washed out or
-   have poor contrast. These compound selectors deepen the accent slightly
-   and reduce muted opacity so tints don't disappear. */
+   Deeper shades for contrast on light backgrounds. Derived tokens auto-update. */
 html[data-theme='light'][data-accent='amber'] {
-  --color-primary: #b45309; /* Amber 700 — 4.6:1 on light bg (600 was only 2.9:1) */
+  --color-primary: #b45309;
   --color-primary-hover: #d97706;
-  --color-primary-muted: rgba(180, 83, 9, 0.1);
-  --selection-ring: #d97706;
-  --selection-glow: rgba(217, 119, 6, 0.2);
-  --text-on-accent: #ffffff; /* 5.0:1 on amber-700 */
-}
-
-html[data-theme='light'][data-accent='rose'] {
-  --color-primary: #e11d48; /* Rose 600 */
-  --color-primary-hover: #f43f5e;
-  --color-primary-muted: rgba(225, 29, 72, 0.08);
-  --selection-ring: #f43f5e;
-  --selection-glow: rgba(244, 63, 94, 0.2);
   --text-on-accent: #ffffff;
 }
-
+html[data-theme='light'][data-accent='rose'] {
+  --color-primary: #e11d48;
+  --color-primary-hover: #f43f5e;
+  --text-on-accent: #ffffff;
+}
 html[data-theme='light'][data-accent='fuchsia'] {
-  --color-primary: #c026d3; /* Fuchsia 600 */
+  --color-primary: #c026d3;
   --color-primary-hover: #d946ef;
-  --color-primary-muted: rgba(192, 38, 211, 0.08);
-  --selection-ring: #d946ef;
-  --selection-glow: rgba(217, 70, 239, 0.2);
-  --text-on-accent: #ffffff; /* 4.71:1 */
+  --text-on-accent: #ffffff;
 }
-
 html[data-theme='light'][data-accent='emerald'] {
-  --color-primary: #059669; /* Emerald 600 */
+  --color-primary: #059669;
   --color-primary-hover: #10b981;
-  --color-primary-muted: rgba(5, 150, 105, 0.08);
-  --selection-ring: #10b981;
-  --selection-glow: rgba(16, 185, 129, 0.2);
   --text-on-accent: #000000;
 }
-
 html[data-theme='light'][data-accent='sky'] {
-  --color-primary: #0284c7; /* Sky 600 */
+  --color-primary: #0284c7;
   --color-primary-hover: #0ea5e9;
-  --color-primary-muted: rgba(2, 132, 199, 0.08);
-  --selection-ring: #0ea5e9;
-  --selection-glow: rgba(14, 165, 233, 0.2);
   --text-on-accent: #000000;
 }
-
 html[data-theme='light'][data-accent='violet'] {
-  --color-primary: #7c3aed; /* Violet 600 */
+  --color-primary: #7c3aed;
   --color-primary-hover: #8b5cf6;
-  --color-primary-muted: rgba(124, 58, 237, 0.08);
-  --selection-ring: #8b5cf6;
-  --selection-glow: rgba(139, 92, 246, 0.2);
   --text-on-accent: #ffffff;
 }
 

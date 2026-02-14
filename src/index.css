@@ -111,16 +111,16 @@
   --color-info: #3b82f6; /* Informational */
   --color-info-muted: rgba(59, 130, 246, 0.15);
 
-  /* Interactive/Accent Colors */
+  /* Interactive/Accent Colors — only these 3 change per accent */
   --color-primary: #f59e0b; /* Amber - primary accent */
   --color-primary-hover: #fbbf24;
-  --color-primary-muted: rgba(245, 158, 11, 0.15);
   --text-on-accent: #000000; /* Text on accent-colored surfaces */
 
-  /* Selection Colors */
-  --selection-ring: #fbbf24;
-  --selection-glow: rgba(251, 191, 36, 0.25);
-  --selection-bg: rgba(251, 191, 36, 0.1);
+  /* Derived accent tokens — computed from the 3 values above */
+  --color-primary-muted: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  --selection-ring: var(--color-primary-hover);
+  --selection-glow: color-mix(in srgb, var(--color-primary-hover) 25%, transparent);
+  --selection-bg: color-mix(in srgb, var(--color-primary-hover) 10%, transparent);
 
   /* Overlay/Backdrop Colors */
   --overlay-light: rgba(0, 0, 0, 0.3);
