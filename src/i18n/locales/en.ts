@@ -670,7 +670,7 @@ const en: Record<string, string> = {
   'settings.accentColor': 'Accent Color',
   'settings.accentColor.amber': 'Amber',
   'settings.accentColor.rose': 'Rose',
-  'settings.accentColor.orange': 'Orange',
+  'settings.accentColor.fuchsia': 'Fuchsia',
   'settings.accentColor.emerald': 'Emerald',
   'settings.accentColor.sky': 'Sky',
   'settings.accentColor.violet': 'Violet',

@@ -227,7 +227,7 @@ export interface UserSettings {
   /** Color theme: 'dark', 'light', or 'system' (follows OS preference). */
   theme: 'dark' | 'light' | 'system';
   /** Accent color preset applied to interactive elements. */
-  accentColor: 'amber' | 'rose' | 'orange' | 'emerald' | 'sky' | 'violet';
+  accentColor: 'amber' | 'rose' | 'fuchsia' | 'emerald' | 'sky' | 'violet';
   /** UI density level affecting spacing and font size. */
   uiDensity: 'compact' | 'default' | 'comfortable';
   /** Whether grid lines are visible on the editor. */

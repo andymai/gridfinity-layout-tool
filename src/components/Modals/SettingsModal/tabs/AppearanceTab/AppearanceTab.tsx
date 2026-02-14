@@ -13,7 +13,7 @@ const THEME_OPTIONS: ThemeOption[] = ['dark', 'light', 'system'];
 const ACCENT_COLORS: { id: AccentOption; hex: string }[] = [
   { id: 'amber', hex: '#f59e0b' },
   { id: 'rose', hex: '#f43f5e' },
-  { id: 'orange', hex: '#f97316' },
+  { id: 'fuchsia', hex: '#d946ef' },
   { id: 'emerald', hex: '#10b981' },
   { id: 'sky', hex: '#0ea5e9' },
   { id: 'violet', hex: '#8b5cf6' },
