@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.12.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.2...gridfinity-layout-tool-v3.12.3) (2026-02-14)
+
+
+### Bug Fixes
+
+* **settings:** remove grid visuals settings and use defaults ([#753](https://github.com/andymai/gridfinity-layout-tool/issues/753)) ([ad1108c](https://github.com/andymai/gridfinity-layout-tool/commit/ad1108ce426b4bc5364f4a78913f9169a6f9a55a))
+
 ## [3.12.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.1...gridfinity-layout-tool-v3.12.2) (2026-02-14)
 
 
