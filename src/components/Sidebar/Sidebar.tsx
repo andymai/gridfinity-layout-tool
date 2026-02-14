@@ -242,7 +242,7 @@ export function Sidebar() {
             </div>
 
             {/* Grid Size */}
-            <div data-grid-size-panel className="mt-auto px-4 py-4">
+            <div data-grid-size-panel className="mt-auto">
               <CollapsibleSection title={t('sidebar.gridSize')} variant="default">
                 <div className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
@@ -390,7 +390,7 @@ export function Sidebar() {
             </div>
 
             {/* Physical Units */}
-            <div data-units-panel className="px-4 py-4 border-t border-stroke-subtle">
+            <div data-units-panel className="border-t border-stroke-subtle">
               <CollapsibleSection
                 title={t('sidebar.physicalUnits')}
                 variant="default"
