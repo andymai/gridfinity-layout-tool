@@ -251,8 +251,8 @@ export function ExportDialog() {
 
           {/* Split Export Banner (STL only) */}
           {showSplitBanner && (
-            <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/30">
-              <p className="mb-2 text-xs text-amber-800 dark:text-amber-200">
+            <div className="mb-4 rounded-lg border border-warning bg-warning-muted p-3">
+              <p className="mb-2 text-xs text-warning">
                 {t('binDesigner.splitExport.exceedsPrintBed', {
                   size: defaultPrintBedSize,
                   count: splitPieceCount,
@@ -263,9 +263,9 @@ export function ExportDialog() {
                   type="checkbox"
                   checked={splitEnabled}
                   onChange={(e) => setSplitEnabled(e.target.checked)}
-                  className="h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                  className="h-4 w-4 rounded border-warning text-warning focus:ring-warning"
                 />
-                <span className="text-xs font-medium text-amber-800 dark:text-amber-200">
+                <span className="text-xs font-medium text-warning">
                   {t('binDesigner.splitExport.enableSplit')}
                 </span>
               </label>
@@ -324,7 +324,7 @@ export function ExportDialog() {
               }
             }}
             disabled={!canExport || isExporting}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-info px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
           >
             {isExporting && <ExportSpinner />}
             {isExporting
@@ -354,7 +354,7 @@ export function ExportDialog() {
                 }
               }}
               disabled={isExporting}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-blue-600 bg-transparent px-4 py-2.5 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:border-stroke-subtle disabled:text-content-disabled dark:hover:bg-blue-950"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-info bg-transparent px-4 py-2.5 text-sm font-medium text-info transition-colors hover:bg-info-muted disabled:cursor-not-allowed disabled:border-stroke-subtle disabled:text-content-disabled"
             >
               {t('binDesigner.downloadDividersSTL')}
             </button>

@@ -15,6 +15,7 @@ import { useMemo, useEffect } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 interface BinAxisLabelsProps {
   /** Bin width in grid units (can be fractional for half-bin mode) */
@@ -25,7 +26,6 @@ interface BinAxisLabelsProps {
 
 // Styling constants matched to planner's AxisLabels proportions
 // (planner values × GRID_SIZE, scaled for typical 2–4 unit bins)
-const LABEL_COLOR = '#ffffff';
 const LABEL_OPACITY = 0.45;
 const FRACTIONAL_LABEL_OPACITY = 0.35;
 const FONT_SIZE = 4; // mm (planner: 0.28 units)
@@ -41,6 +41,7 @@ const FRACTIONAL_LABEL = '+.5'; // Display label for half-unit cells
  * Matches the architectural drawing style of the layout planner.
  */
 export function BinAxisLabels({ width, depth }: BinAxisLabelsProps) {
+  const colors = useThreeColors();
   const GS = GRIDFINITY.GRID_SIZE; // 42mm
 
   const halfW = (width * GS) / 2;
@@ -111,7 +112,7 @@ export function BinAxisLabels({ width, depth }: BinAxisLabelsProps) {
     <group>
       {/* Tick marks */}
       <lineSegments geometry={tickGeometry}>
-        <lineBasicMaterial color={LABEL_COLOR} transparent opacity={TICK_OPACITY} />
+        <lineBasicMaterial color={colors.labelColor} transparent opacity={TICK_OPACITY} />
       </lineSegments>
 
       {/* X-axis labels (columns) — along front edge */}
@@ -128,7 +129,7 @@ export function BinAxisLabels({ width, depth }: BinAxisLabelsProps) {
             key={`x-${idx}`}
             position={[xPos, yPos, TICK_OFFSET]}
             fontSize={isFractional ? FRACTIONAL_FONT_SIZE : FONT_SIZE}
-            color={LABEL_COLOR}
+            color={colors.labelColor}
             fillOpacity={isFractional ? FRACTIONAL_LABEL_OPACITY : LABEL_OPACITY}
             anchorX="center"
             anchorY="top"
@@ -152,7 +153,7 @@ export function BinAxisLabels({ width, depth }: BinAxisLabelsProps) {
             key={`y-${idx}`}
             position={[xPos, yPos, TICK_OFFSET]}
             fontSize={isFractional ? FRACTIONAL_FONT_SIZE : FONT_SIZE}
-            color={LABEL_COLOR}
+            color={colors.labelColor}
             fillOpacity={isFractional ? FRACTIONAL_LABEL_OPACITY : LABEL_OPACITY}
             anchorX="right"
             anchorY="middle"

@@ -1,11 +1,11 @@
 import { Line, Text } from '@react-three/drei';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 interface ScaleIndicatorProps {
   gridUnitMm: number;
   drawerDepth: number;
 }
 
-const LINE_COLOR = '#ffffff';
 const LINE_OPACITY = 0.5;
 const TEXT_OPACITY = 0.6;
 const FONT_SIZE = 0.25;
@@ -16,6 +16,7 @@ const TICK_HEIGHT = 0.12;
  * Positioned at the back-right corner of the drawer floor.
  */
 export function ScaleIndicator({ gridUnitMm, drawerDepth }: ScaleIndicatorProps) {
+  const colors = useThreeColors();
   // Position at back-right, offset from edge
   const y = drawerDepth + 0.5;
   const x = 0;
@@ -29,7 +30,7 @@ export function ScaleIndicator({ gridUnitMm, drawerDepth }: ScaleIndicatorProps)
           [0, 0, 0],
           [1, 0, 0],
         ]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1.5}
         transparent
         opacity={LINE_OPACITY}
@@ -41,7 +42,7 @@ export function ScaleIndicator({ gridUnitMm, drawerDepth }: ScaleIndicatorProps)
           [0, -TICK_HEIGHT, 0],
           [0, TICK_HEIGHT, 0],
         ]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1.5}
         transparent
         opacity={LINE_OPACITY}
@@ -53,7 +54,7 @@ export function ScaleIndicator({ gridUnitMm, drawerDepth }: ScaleIndicatorProps)
           [1, -TICK_HEIGHT, 0],
           [1, TICK_HEIGHT, 0],
         ]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1.5}
         transparent
         opacity={LINE_OPACITY}
@@ -63,7 +64,7 @@ export function ScaleIndicator({ gridUnitMm, drawerDepth }: ScaleIndicatorProps)
       <Text
         position={[0.5, 0.3, 0]}
         fontSize={FONT_SIZE}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         fillOpacity={TEXT_OPACITY}
         anchorX="center"
         anchorY="bottom"

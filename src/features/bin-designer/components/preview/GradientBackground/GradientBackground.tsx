@@ -6,6 +6,7 @@
 
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -29,22 +30,26 @@ const fragmentShader = /* glsl */ `
  * Uses a screen-space quad with a custom shader for a studio photography feel.
  */
 export function GradientBackground() {
+  const colors = useThreeColors();
+
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
       uniforms: {
-        colorTop: { value: new THREE.Color('#2a2a3e') },
-        colorBottom: { value: new THREE.Color('#2a2a3e') },
+        colorTop: { value: new THREE.Color(colors.gradientTop) },
+        colorBottom: { value: new THREE.Color(colors.gradientBottom) },
       },
       depthWrite: false,
       depthTest: false,
     });
-  }, []);
+  }, [colors.gradientTop, colors.gradientBottom]);
 
-  // Dispose shader material on unmount
+  // Dispose shader material on unmount or when recreated
   useEffect(() => {
-    return () => { material.dispose(); };
+    return () => {
+      material.dispose();
+    };
   }, [material]);
 
   return (

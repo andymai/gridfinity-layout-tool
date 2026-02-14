@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { FractionalEdge } from '@/core/types';
+import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useSettingsStore } from '@/core/store';
 
 interface FloorGridProps {
   width: number;
@@ -21,6 +23,10 @@ export function FloorGrid({
   fractionalEdgeX = 'end',
   fractionalEdgeY = 'end',
 }: FloorGridProps) {
+  const colors = useThreeColors();
+  const gridShowLines = useSettingsStore((s) => s.settings.gridShowLines);
+  const gridShowHalfLines = useSettingsStore((s) => s.settings.gridShowHalfLines);
+  const gridLineOpacity = useSettingsStore((s) => s.settings.gridLineOpacity);
   // Check for fractional dimensions
   const hasFractionalWidth = width % 1 !== 0;
   const hasFractionalDepth = depth % 1 !== 0;
@@ -101,23 +107,78 @@ export function FloorGrid({
     fractionalEdgeY,
   ]);
 
+  // Half-bin subdivision lines at 0.5 intervals between integer lines
+  const halfBinGeometry = useMemo(() => {
+    if (!gridShowHalfLines) return null;
+    const geometry = new THREE.BufferGeometry();
+    const positions: number[] = [];
+    const xOffset = hasFractionalWidth && fractionalEdgeX === 'start' ? fractionalWidthPart : 0;
+    for (let i = 0; i < integerWidth; i++) {
+      const x = xOffset + i + 0.5;
+      positions.push(x, 0, 0);
+      positions.push(x, depth, 0);
+    }
+    const yOffset = hasFractionalDepth && fractionalEdgeY === 'start' ? fractionalDepthPart : 0;
+    for (let i = 0; i < integerDepth; i++) {
+      const y = yOffset + i + 0.5;
+      positions.push(0, y, 0);
+      positions.push(width, y, 0);
+    }
+    if (positions.length === 0) return null;
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    return geometry;
+  }, [
+    width,
+    depth,
+    integerWidth,
+    integerDepth,
+    hasFractionalWidth,
+    hasFractionalDepth,
+    fractionalWidthPart,
+    fractionalDepthPart,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    gridShowHalfLines,
+  ]);
+
   return (
     <group>
       {/* Floor plane - no rotation needed since Z is up */}
       <mesh position={[width / 2, depth / 2, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color="#2a2a3e" side={THREE.DoubleSide} />
+        <meshBasicMaterial color={colors.floorPlane} side={THREE.DoubleSide} />
       </mesh>
 
       {/* Main gridlines at integer positions - raised slightly to prevent z-fighting */}
-      <lineSegments geometry={gridGeometry} position={[0, 0, 0.01]}>
-        <lineBasicMaterial color="#ffffff" opacity={0.12} transparent />
-      </lineSegments>
+      {gridShowLines && (
+        <lineSegments geometry={gridGeometry} position={[0, 0, 0.01]}>
+          <lineBasicMaterial
+            color={colors.gridLine}
+            opacity={colors.gridLineOpacity * (gridLineOpacity / 100)}
+            transparent
+          />
+        </lineSegments>
+      )}
+
+      {/* Half-bin subdivision lines at 0.5 intervals */}
+      {gridShowLines && halfBinGeometry && (
+        <lineSegments geometry={halfBinGeometry} position={[0, 0, 0.01]}>
+          <lineBasicMaterial
+            color={colors.gridLine}
+            opacity={colors.gridLineOpacity * 0.5 * (gridLineOpacity / 100)}
+            transparent
+          />
+        </lineSegments>
+      )}
 
       {/* Fractional edge lines - slightly less visible for subtle appearance */}
-      {fractionalEdgeGeometry && (
+      {gridShowLines && fractionalEdgeGeometry && (
         <lineSegments geometry={fractionalEdgeGeometry} position={[0, 0, 0.01]}>
-          <lineBasicMaterial color="#ffffff" opacity={0.08} transparent />
+          <lineBasicMaterial
+            color={colors.gridLine}
+            opacity={colors.gridEdgeOpacity * (gridLineOpacity / 100)}
+            transparent
+          />
         </lineSegments>
       )}
     </group>

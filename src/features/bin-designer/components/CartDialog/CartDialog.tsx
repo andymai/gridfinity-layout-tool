@@ -233,7 +233,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                   aria-label={t('binDesigner.exportProgress')}
                 >
                   <div
-                    className="h-full rounded-full bg-blue-500 transition-all"
+                    className="h-full rounded-full bg-info transition-all"
                     style={{ width: `${((progress.current + 1) / progress.total) * 100}%` }}
                   />
                 </div>
@@ -244,7 +244,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
             {error && (
               <div
                 role="alert"
-                className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300"
+                className="mb-3 rounded-md bg-error-muted px-3 py-2 text-xs text-error"
               >
                 {error}
               </div>
@@ -270,7 +270,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                 ) : (
                   <button
                     onClick={handleExport}
-                    className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                    className="flex items-center gap-2 rounded-md bg-info px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110"
                   >
                     <svg
                       className="h-4 w-4"

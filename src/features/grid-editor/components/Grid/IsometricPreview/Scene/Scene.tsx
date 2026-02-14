@@ -11,6 +11,7 @@ import { DrawerDimensions } from '../DrawerDimensions';
 import { ScaleIndicator } from '../ScaleIndicator';
 import { BananaScale } from '../BananaScale';
 import { useSettingsStore } from '@/core/store/settings';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 import type { FractionalEdge } from '@/core/types';
 
@@ -86,6 +87,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
   ) => {
     const showBananaScale = useSettingsStore((state) => state.settings.showBananaScale);
     const controlsRef = useRef<OrbitControlsType>(null);
+    const colors = useThreeColors();
     const hasInitializedRef = useRef(false);
     const pendingFitZoomRef = useRef(false);
     const prevExpandedRef = useRef<boolean | undefined>(undefined);
@@ -304,7 +306,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
 
         {/* Hemisphere light - sky color from above, dark ground bounce from below
           Creates natural shadowing where interiors facing down get darker */}
-        <hemisphereLight args={['#ffffff', '#1a1a2e', 0.65]} />
+        <hemisphereLight args={['#ffffff', colors.groundBounce, 0.65]} />
 
         {/* Key light - main directional for depth and shadows */}
         <directionalLight position={[-4, 6, 7]} intensity={0.85} color="#fff8f0" />

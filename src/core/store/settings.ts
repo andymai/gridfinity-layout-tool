@@ -222,6 +222,22 @@ export interface UserSettings {
    * Used by both bin designer and print export for time/cost estimates.
    */
   printSettings: PrintSettings;
+
+  // Appearance preferences
+  /** Color theme: 'dark', 'light', or 'system' (follows OS preference). */
+  theme: 'dark' | 'light' | 'system';
+  /** Accent color preset applied to interactive elements. */
+  accentColor: 'amber' | 'rose' | 'fuchsia' | 'emerald' | 'sky' | 'violet';
+  /** UI density level affecting spacing and font size. */
+  uiDensity: 'compact' | 'default' | 'comfortable';
+  /** Whether grid lines are visible on the editor. */
+  gridShowLines: boolean;
+  /** Whether half-bin subdivision lines are visible. */
+  gridShowHalfLines: boolean;
+  /** Grid line opacity percentage (0-100). */
+  gridLineOpacity: number;
+  /** Override to reduce animations and transitions. */
+  reduceMotion: boolean;
 }
 
 /**
@@ -267,6 +283,15 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Print estimation settings
   printSettings: { ...DEFAULT_PRINT_SETTINGS },
+
+  // Appearance
+  theme: 'dark',
+  accentColor: 'amber',
+  uiDensity: 'default',
+  gridShowLines: true,
+  gridShowHalfLines: true,
+  gridLineOpacity: 40,
+  reduceMotion: false,
 };
 
 /**

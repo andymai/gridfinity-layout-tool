@@ -19,7 +19,7 @@ const STATUS_CONFIG: Record<FeatureStatus, { label: string; className: string }>
   },
   deprecated: {
     label: 'Deprecated',
-    className: 'bg-gray-500/15 text-gray-500',
+    className: 'bg-surface-hover text-content-tertiary',
   },
 };
 

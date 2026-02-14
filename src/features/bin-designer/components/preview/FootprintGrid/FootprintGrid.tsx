@@ -8,6 +8,7 @@
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 interface FootprintGridProps {
   /** Bin width in grid units */
@@ -66,12 +67,10 @@ const gridFragmentShader = /* glsl */ `
  * so the bin appears correctly placed on the grid cells it occupies.
  */
 export function FootprintGrid({ width, depth }: FootprintGridProps) {
+  const colors = useThreeColors();
   // Floor size: extends well beyond the bin for the "infinite" illusion
   const maxDim = Math.max(width, depth);
-  const floorSize = Math.max(
-    (maxDim + GRID_EXTENT * 2) * GRIDFINITY.GRID_SIZE,
-    MIN_FLOOR_SIZE
-  );
+  const floorSize = Math.max((maxDim + GRID_EXTENT * 2) * GRIDFINITY.GRID_SIZE, MIN_FLOOR_SIZE);
 
   // Grid offset: shift the grid pattern so lines align with the bin's cell boundaries
   // The bin is centered at origin, so offset by half the nominal width/depth
@@ -91,18 +90,20 @@ export function FootprintGrid({ width, depth }: FootprintGridProps) {
         gridOffset: { value: new THREE.Vector2(offsetX, offsetY) },
         fadeStart: { value: fadeStart },
         fadeEnd: { value: fadeEnd },
-        lineColor: { value: new THREE.Color('#ffffff') },
+        lineColor: { value: new THREE.Color(colors.footprintLine) },
         lineOpacity: { value: 0.15 },
       },
       side: THREE.DoubleSide,
       transparent: true,
       depthWrite: false,
     });
-  }, [offsetX, offsetY, fadeStart, fadeEnd]);
+  }, [offsetX, offsetY, fadeStart, fadeEnd, colors.footprintLine]);
 
   // Dispose shader material on unmount/change
   useEffect(() => {
-    return () => { material.dispose(); };
+    return () => {
+      material.dispose();
+    };
   }, [material]);
 
   return (

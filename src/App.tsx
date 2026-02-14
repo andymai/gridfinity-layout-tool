@@ -45,6 +45,7 @@ import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
 import { CommandPalette, useCommandPalette } from '@/features/command-palette';
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
+import { useThemeEffect } from '@/hooks/useThemeEffect';
 
 // Lazy load design-linking dialogs - loaded when mutations provider wraps content
 const DesignLinkingDialogs = lazyWithRetry(() =>
@@ -129,6 +130,7 @@ try {
  */
 export default function App() {
   const t = useTranslation();
+  useThemeEffect();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
 

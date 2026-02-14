@@ -1,5 +1,6 @@
 import { Line, Text } from '@react-three/drei';
 import { useMemo } from 'react';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 interface DrawerDimensionsProps {
   width: number;
@@ -12,7 +13,6 @@ interface DrawerDimensionsProps {
 // Dimension line offset from drawer edges
 const OFFSET = 0.8;
 const END_CAP_SIZE = 0.15;
-const LINE_COLOR = '#ffffff';
 const LINE_OPACITY = 0.5;
 const TEXT_OPACITY = 0.7;
 const FONT_SIZE = 0.32;
@@ -28,6 +28,7 @@ export function DrawerDimensions({
   gridUnitMm,
   heightUnitMm,
 }: DrawerDimensionsProps) {
+  const colors = useThreeColors();
   // Convert height from height-units to grid-units for 3D space
   const heightInGridUnits = height * (heightUnitMm / gridUnitMm);
 
@@ -102,21 +103,21 @@ export function DrawerDimensions({
       {/* Width dimension line */}
       <Line
         points={[dimensions.width.start, dimensions.width.end]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.width.endCaps.left}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.width.endCaps.right}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
@@ -124,7 +125,7 @@ export function DrawerDimensions({
       <Text
         position={dimensions.width.labelPos}
         fontSize={FONT_SIZE}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         fillOpacity={TEXT_OPACITY}
         anchorX="center"
         anchorY="top"
@@ -135,21 +136,21 @@ export function DrawerDimensions({
       {/* Depth dimension line */}
       <Line
         points={[dimensions.depth.start, dimensions.depth.end]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.depth.endCaps.left}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.depth.endCaps.right}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
@@ -157,7 +158,7 @@ export function DrawerDimensions({
       <Text
         position={dimensions.depth.labelPos}
         fontSize={FONT_SIZE}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         fillOpacity={TEXT_OPACITY}
         anchorX="right"
         anchorY="middle"
@@ -169,21 +170,21 @@ export function DrawerDimensions({
       {/* Height dimension line */}
       <Line
         points={[dimensions.height.start, dimensions.height.end]}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.height.endCaps.left}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
       />
       <Line
         points={dimensions.height.endCaps.right}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         lineWidth={1}
         transparent
         opacity={LINE_OPACITY}
@@ -191,7 +192,7 @@ export function DrawerDimensions({
       <Text
         position={dimensions.height.labelPos}
         fontSize={FONT_SIZE}
-        color={LINE_COLOR}
+        color={colors.lineColor}
         fillOpacity={TEXT_OPACITY}
         anchorX="right"
         anchorY="middle"

@@ -146,7 +146,7 @@ export const iconSizes = {
 export const variantColors = {
   primary: [
     'bg-gradient-to-b from-accent-hover to-accent',
-    'text-on-light',
+    'text-on-accent',
     'shadow-sm',
     'hover:brightness-110 hover:-translate-y-px hover:shadow-md',
     'active:translate-y-0 active:shadow-sm',

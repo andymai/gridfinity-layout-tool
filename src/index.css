@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './styles/themes.css';
 
 /* Exclude .claude/ config directory from Tailwind's class detection */
 @source not "../.claude";
@@ -25,6 +26,7 @@
   --color-on-light: var(--text-on-light);
   --color-on-dark: var(--text-on-dark);
   --color-on-dark-muted: var(--text-on-dark-muted);
+  --color-on-accent: var(--text-on-accent);
 
   /* Stroke colors (borders) - use as border-stroke, border-stroke-subtle, etc. */
   --color-stroke: var(--border-default);
@@ -38,8 +40,8 @@
   --color-error: #ef4444;
   --color-danger: #dc2626;
   --color-info: #3b82f6;
-  --color-accent: #f59e0b;
-  --color-accent-hover: #fbbf24;
+  --color-accent: var(--color-primary);
+  --color-accent-hover: var(--color-primary-hover);
 
   /* Muted semantic colors (for subtle backgrounds) */
   --color-success-muted: rgba(34, 197, 94, 0.15);
@@ -47,7 +49,7 @@
   --color-error-muted: rgba(239, 68, 68, 0.15);
   --color-danger-muted: rgba(220, 38, 38, 0.15);
   --color-info-muted: rgba(59, 130, 246, 0.15);
-  --color-accent-muted: rgba(245, 158, 11, 0.15);
+  --color-accent-muted: var(--color-primary-muted);
 
   /* Toast background colors (dark saturated for contrast) */
   --color-toast-success: rgba(6, 78, 59, 0.95);
@@ -109,15 +111,16 @@
   --color-info: #3b82f6; /* Informational */
   --color-info-muted: rgba(59, 130, 246, 0.15);
 
-  /* Interactive/Accent Colors */
+  /* Interactive/Accent Colors — only these 3 change per accent */
   --color-primary: #f59e0b; /* Amber - primary accent */
   --color-primary-hover: #fbbf24;
-  --color-primary-muted: rgba(245, 158, 11, 0.15);
+  --text-on-accent: #000000; /* Text on accent-colored surfaces */
 
-  /* Selection Colors */
-  --selection-ring: #fbbf24;
-  --selection-glow: rgba(251, 191, 36, 0.25);
-  --selection-bg: rgba(251, 191, 36, 0.1);
+  /* Derived accent tokens — computed from the 3 values above */
+  --color-primary-muted: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  --selection-ring: var(--color-primary-hover);
+  --selection-glow: color-mix(in srgb, var(--color-primary-hover) 25%, transparent);
+  --selection-bg: color-mix(in srgb, var(--color-primary-hover) 10%, transparent);
 
   /* Overlay/Backdrop Colors */
   --overlay-light: rgba(0, 0, 0, 0.3);
@@ -173,6 +176,7 @@
   --space-panel: 16px;
   --space-section: 20px;
   --space-item: 8px;
+  --space-row-y: 6px 8px;
 
   /* ===========================================
      TYPOGRAPHY SCALE
@@ -465,7 +469,7 @@ body {
   z-index: 9999;
   padding: 12px 24px;
   background: var(--color-primary);
-  color: #000;
+  color: var(--text-on-accent);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
@@ -526,7 +530,7 @@ textarea:focus-visible {
   transform: translateX(-50%);
   padding: 8px 16px;
   background: var(--color-primary);
-  color: #000;
+  color: var(--text-on-accent);
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
@@ -1054,7 +1058,7 @@ input[type='range']:hover::-moz-range-thumb {
 
   .btn-primary {
     background: linear-gradient(180deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
-    color: #000;
+    color: var(--text-on-accent);
     box-shadow: var(--shadow-sm);
   }
 
@@ -1140,7 +1144,7 @@ input[type='range']:hover::-moz-range-thumb {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--text-on-accent);
     font-size: 10px;
     font-weight: bold;
   }

@@ -66,7 +66,7 @@ export function CutoutShapeToolbar({
   const btnBase = vertical
     ? 'flex items-center justify-center rounded p-2 transition-colors'
     : 'flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors';
-  const btnActive = 'bg-accent text-white';
+  const btnActive = 'bg-accent text-on-accent';
   const btnInactive =
     'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover';
   const iconSize = vertical ? 'h-5 w-5' : 'h-3.5 w-3.5';

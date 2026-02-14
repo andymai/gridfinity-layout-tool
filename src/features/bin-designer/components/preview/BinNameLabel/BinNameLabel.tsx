@@ -7,6 +7,7 @@
 
 import { Text } from '@react-three/drei';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 interface BinNameLabelProps {
   /** Bin width in grid units (for centering) */
@@ -17,7 +18,6 @@ interface BinNameLabelProps {
   name: string;
 }
 
-const TEXT_COLOR = '#ffffff';
 const TEXT_OPACITY = 0.6;
 const FONT_SIZE = 7; // mm (planner: 0.5 units)
 const LETTER_SPACING = 0.08;
@@ -29,6 +29,7 @@ const FRONT_OFFSET = 32;
  * Uppercase text centered on the bin's width.
  */
 export function BinNameLabel({ width, depth, name }: BinNameLabelProps) {
+  const colors = useThreeColors();
   if (!name.trim()) return null;
 
   const outerW = width * GRIDFINITY.GRID_SIZE;
@@ -40,7 +41,7 @@ export function BinNameLabel({ width, depth, name }: BinNameLabelProps) {
     <Text
       position={[0, textY, 0.01]}
       fontSize={FONT_SIZE}
-      color={TEXT_COLOR}
+      color={colors.labelColor}
       fillOpacity={TEXT_OPACITY}
       anchorX="center"
       anchorY="middle"

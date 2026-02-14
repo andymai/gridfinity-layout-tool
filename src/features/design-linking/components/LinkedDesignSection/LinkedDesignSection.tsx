@@ -106,7 +106,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           <label className={`${textSize} text-content-tertiary`}>
             {t('designLinking.inspector.linkedDesign')}
           </label>
-          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
             {t('designLinking.experimental')}
           </span>
         </div>
@@ -153,7 +153,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           <label className={`${textSize} text-content-tertiary`}>
             {t('designLinking.inspector.linkedDesign')}
           </label>
-          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
             {t('designLinking.experimental')}
           </span>
         </div>
@@ -200,7 +200,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
         <label className={`${textSize} text-content-tertiary`}>
           {t('designLinking.inspector.linkedDesign')}
         </label>
-        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
           {t('designLinking.experimental')}
         </span>
       </div>

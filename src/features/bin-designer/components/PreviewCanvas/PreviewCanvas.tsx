@@ -41,6 +41,7 @@ import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
+import { useThreeColors } from '@/hooks/useThemeEffect';
 
 /** localStorage key for persisting the user's preview color preference */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
@@ -298,6 +299,18 @@ function usePresetTransition(
  * - Dimension lines showing W×D×H + interior height in mm
  * - Footprint grid matching the bin's unit dimensions
  */
+/** Inner component for theme-aware lighting (hooks must be called inside Canvas). */
+function SceneLighting() {
+  const colors = useThreeColors();
+  return (
+    <>
+      <hemisphereLight args={['#ffffff', colors.groundBounce, 0.65]} />
+      <directionalLight position={[-50, 60, 80]} intensity={0.85} color="#fff8f0" />
+      <directionalLight position={[40, -40, 30]} intensity={0.15} color="#e0e8ff" />
+    </>
+  );
+}
+
 export function PreviewCanvas() {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
@@ -443,10 +456,8 @@ export function PreviewCanvas() {
             {/* Gradient background */}
             <GradientBackground />
 
-            {/* 3-point lighting (matching main grid preview) */}
-            <hemisphereLight args={['#ffffff', '#1a1a2e', 0.65]} />
-            <directionalLight position={[-50, 60, 80]} intensity={0.85} color="#fff8f0" />
-            <directionalLight position={[40, -40, 30]} intensity={0.15} color="#e0e8ff" />
+            {/* 3-point lighting (theme-aware ground bounce) */}
+            <SceneLighting />
 
             {/* Camera controller for auto-framing */}
             <CameraController

@@ -145,7 +145,7 @@ export function SlotConfigurator() {
               onClick={() => setDirection(direction)}
               className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
                 activeDirection === direction
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent text-on-accent'
                   : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
               }`}
             >
