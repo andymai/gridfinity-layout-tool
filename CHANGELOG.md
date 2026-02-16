@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.12.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.3...gridfinity-layout-tool-v3.12.4) (2026-02-16)
+
+
+### Bug Fixes
+
+* **categories:** widen color picker popup to prevent squished layout ([#756](https://github.com/andymai/gridfinity-layout-tool/issues/756)) ([e3faa80](https://github.com/andymai/gridfinity-layout-tool/commit/e3faa80e20c88fbe9b81758bb3dadb72789d24e6))
+
 ## [3.12.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.2...gridfinity-layout-tool-v3.12.3) (2026-02-14)
 
 
