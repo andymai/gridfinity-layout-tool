@@ -44,7 +44,7 @@ jobs:
       # Get these from PostHog: Settings > Environment > Source Maps
       - name: Upload source maps to PostHog
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: PostHog/upload-source-maps@v0.5.7.0
+        uses: PostHog/upload-source-maps@v2.0.0
         with:
           directory: dist
           env-id: ${{ secrets.POSTHOG_ENV_ID }}
