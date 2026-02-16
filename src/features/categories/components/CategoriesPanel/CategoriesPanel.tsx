@@ -276,7 +276,7 @@ export function CategoriesPanel() {
               // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard users interact with inner buttons
               <div
                 key={category.id}
-                className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-colors duration-150 ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
+                className={`group relative flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-colors duration-150 ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
                 onClick={() => handleCategorySelect(category.id, category.name)}
                 onMouseEnter={() => {
                   setHoveredCategoryId(category.id);
@@ -327,56 +327,54 @@ export function CategoriesPanel() {
                 ) : (
                   <>
                     {/* Color swatch with checkmark overlay - click to open quick color picker */}
-                    <div className="relative">
-                      <button
-                        className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm transition-all duration-150 hover:scale-110 hover:ring-2 hover:ring-accent/50 focus-visible:ring-2 focus-visible:ring-accent"
-                        style={{ backgroundColor: category.color }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setColorPickerId(colorPickerId === category.id ? null : category.id);
-                        }}
-                        title={t('categories.changeColor')}
-                        aria-label={t('categories.changeColor')}
-                        aria-expanded={colorPickerId === category.id}
-                        aria-haspopup="true"
-                      >
-                        {isActive && (
-                          <svg
-                            className="absolute inset-0 w-5 h-5 p-0.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="white"
-                            style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
-                            aria-hidden="true"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={3}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        )}
-                      </button>
-
-                      {colorPickerId === category.id && (
-                        <div
-                          ref={colorPickerRef}
-                          className="absolute left-0 top-full mt-1.5 z-50 p-2 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg animate-scale-in"
-                          role="presentation"
-                          onClick={(e) => e.stopPropagation()}
+                    <button
+                      className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm transition-all duration-150 hover:scale-110 hover:ring-2 hover:ring-accent/50 focus-visible:ring-2 focus-visible:ring-accent"
+                      style={{ backgroundColor: category.color }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setColorPickerId(colorPickerId === category.id ? null : category.id);
+                      }}
+                      title={t('categories.changeColor')}
+                      aria-label={t('categories.changeColor')}
+                      aria-expanded={colorPickerId === category.id}
+                      aria-haspopup="true"
+                    >
+                      {isActive && (
+                        <svg
+                          className="absolute inset-0 w-5 h-5 p-0.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="white"
+                          style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
+                          aria-hidden="true"
                         >
-                          <ColorPaletteGrid
-                            selectedColor={category.color}
-                            onColorSelect={(color) => {
-                              handleUpdateCategory(category.id, 'color', color);
-                              setColorPickerId(null);
-                            }}
-                            t={t}
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
                           />
-                        </div>
+                        </svg>
                       )}
-                    </div>
+                    </button>
+
+                    {colorPickerId === category.id && (
+                      <div
+                        ref={colorPickerRef}
+                        className="absolute left-0 top-full mt-0.5 z-50 p-2 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg animate-scale-in w-[calc(100%-0.5rem)]"
+                        role="presentation"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ColorPaletteGrid
+                          selectedColor={category.color}
+                          onColorSelect={(color) => {
+                            handleUpdateCategory(category.id, 'color', color);
+                            setColorPickerId(null);
+                          }}
+                          t={t}
+                        />
+                      </div>
+                    )}
                     {/* Category name - click to select, double-click to edit */}
                     <button
                       className="flex-1 min-w-0 text-left"
