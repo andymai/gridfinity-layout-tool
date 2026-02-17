@@ -127,7 +127,7 @@ function buildEnrichmentPrompt(
     general: 'Format structuredBody as: ## Details\\n\\n[organized feedback details]',
   };
 
-  const enrichedCategory = CATEGORY_CONFIG[userCategory]?.enriched ?? 'general';
+  const enrichedCategory = CATEGORY_CONFIG[userCategory].enriched;
 
   let prompt = `Analyze this user feedback and produce structured output.
 
@@ -216,7 +216,7 @@ async function enrichFeedback(
     let body = sanitizeLlmBody(enrichment.structuredBody);
 
     const enrichedCategory = enrichment.category;
-    const userEnrichedCategory = CATEGORY_CONFIG[userCategory]?.enriched ?? 'general';
+    const userEnrichedCategory = CATEGORY_CONFIG[userCategory].enriched;
     if (enrichedCategory !== userEnrichedCategory) {
       body += `\n\n> **Note:** User selected "${userCategory}" but LLM classified as "${enrichedCategory}".`;
     }
@@ -244,7 +244,7 @@ async function enrichFeedback(
 
     // Fallback: first sentence as title, raw body
     const fallbackTitle = description.split(/[.\n]/)[0].slice(0, 80) || 'User Feedback';
-    const categoryLabel = CATEGORY_CONFIG[userCategory]?.label ?? 'feedback: general';
+    const categoryLabel = CATEGORY_CONFIG[userCategory].label;
 
     const body = appendMetadataSections(sanitizeLlmBody(description), context, email);
 

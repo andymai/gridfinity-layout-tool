@@ -24,6 +24,7 @@ function mergeParams(base: BinParams, partial: Partial<BinParams>): BinParams {
   const result = { ...base };
 
   for (const [key, value] of Object.entries(partial)) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Object.entries can yield undefined at runtime for Partial<T>
     if (value === undefined) continue;
 
     const k = key as keyof BinParams;
