@@ -213,6 +213,8 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   // Build triangle-to-material lookup if feature colors requested
   const materialLookup = buildMaterialLookup(options);
   const uniqueTags = materialLookup ? getUniqueTags(materialLookup) : [];
+  // Pre-build O(1) lookup from tag → material index (avoids indexOf per triangle)
+  const tagIndexMap = uniqueTags.length > 0 ? new Map(uniqueTags.map((tag, i) => [tag, i])) : null;
 
   // Resources
   xml += '  <resources>\n';
@@ -243,8 +245,8 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   xml += '        <triangles>\n';
   for (let i = 0; i < mesh.triangles.length; i++) {
     const [v1, v2, v3] = mesh.triangles[i];
-    if (materialLookup && i < materialLookup.length && materialLookup[i] !== -1) {
-      const matIndex = uniqueTags.indexOf(materialLookup[i]);
+    if (materialLookup && tagIndexMap && i < materialLookup.length && materialLookup[i] !== -1) {
+      const matIndex = tagIndexMap.get(materialLookup[i]) ?? 0;
       xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="1" p1="${matIndex}" />\n`;
     } else {
       xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;

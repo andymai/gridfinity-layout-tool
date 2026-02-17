@@ -92,8 +92,6 @@
     "settings.theme.system",
     "settings.uiDensity.compact",
     "settings.experimental",
-    "settings.featureColorPreview",
-    "settings.featureColorPreviewDescription",
     "settings.labs",
     "settings.privacy",
     "settings.tabs.general",

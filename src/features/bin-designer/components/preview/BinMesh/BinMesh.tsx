@@ -37,37 +37,32 @@ interface BinMeshProps {
  */
 function buildFeatureMaterials(
   faceGroups: readonly FaceGroupData[],
-  geometry: THREE.BufferGeometry,
   wireframe: boolean,
   hasPrecomputedNormals: boolean
 ): THREE.MeshStandardMaterial[] {
-  // Map unique tags to sequential material indices
+  // Map unique tags to sequential material indices (no geometry mutation here)
   const tagToIndex = new Map<number, number>();
   const materials: THREE.MeshStandardMaterial[] = [];
 
   for (const group of faceGroups) {
-    let materialIndex = tagToIndex.get(group.tag);
-    if (materialIndex === undefined) {
-      materialIndex = materials.length;
-      tagToIndex.set(group.tag, materialIndex);
-      const tagColor = FEATURE_TAG_COLORS[group.tag] ?? FALLBACK_TAG_COLOR;
-      materials.push(
-        new THREE.MeshStandardMaterial({
-          color: tagColor,
-          roughness: 0.45,
-          metalness: 0,
-          wireframe,
-          side: THREE.DoubleSide,
-          emissive: new THREE.Color(tagColor),
-          emissiveIntensity: 0.08,
-          flatShading: !hasPrecomputedNormals,
-          polygonOffset: true,
-          polygonOffsetFactor: 1,
-          polygonOffsetUnits: 1,
-        })
-      );
-    }
-    geometry.addGroup(group.start, group.count, materialIndex);
+    if (tagToIndex.has(group.tag)) continue;
+    tagToIndex.set(group.tag, materials.length);
+    const tagColor = FEATURE_TAG_COLORS[group.tag] ?? FALLBACK_TAG_COLOR;
+    materials.push(
+      new THREE.MeshStandardMaterial({
+        color: tagColor,
+        roughness: 0.45,
+        metalness: 0,
+        wireframe,
+        side: THREE.DoubleSide,
+        emissive: new THREE.Color(tagColor),
+        emissiveIntensity: 0.08,
+        flatShading: !hasPrecomputedNormals,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      })
+    );
   }
 
   return materials;
@@ -112,14 +107,31 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     return geo;
   }, [vertices, normals, indices, hasPrecomputedNormals]);
 
-  // Build feature materials when feature color mode is active
+  // Build feature materials when feature color mode is active.
+  // Geometry group mutation is done in a useEffect to avoid side effects inside useMemo.
   const featureMaterials = useMemo(() => {
     if (!useFeatureColors || !geometry) return null;
-
-    // Clear any existing groups before adding new ones
-    geometry.clearGroups();
-    return buildFeatureMaterials(faceGroups, geometry, wireframe, !!hasPrecomputedNormals);
+    return buildFeatureMaterials(faceGroups, wireframe, !!hasPrecomputedNormals);
   }, [useFeatureColors, geometry, faceGroups, wireframe, hasPrecomputedNormals]);
+
+  // Apply geometry groups as a side effect (mutation shouldn't live in useMemo)
+  useEffect(() => {
+    if (!geometry || !featureMaterials || !faceGroups) return;
+    geometry.clearGroups();
+    const tagToIndex = new Map<number, number>();
+    let nextIndex = 0;
+    for (const group of faceGroups) {
+      let materialIndex = tagToIndex.get(group.tag);
+      if (materialIndex === undefined) {
+        materialIndex = nextIndex++;
+        tagToIndex.set(group.tag, materialIndex);
+      }
+      geometry.addGroup(group.start, group.count, materialIndex);
+    }
+    return () => {
+      geometry.clearGroups();
+    };
+  }, [geometry, featureMaterials, faceGroups]);
 
   // Create edge geometry from pre-computed BREP topology edges (computed in worker)
   const edgesGeometry = useMemo(() => {
