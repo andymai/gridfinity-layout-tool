@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store/settings';
 import { BinMesh } from './BinMesh';
 
 vi.mock('@react-three/fiber', () => ({
@@ -21,6 +22,14 @@ vi.mock('@react-three/fiber', () => ({
   extend: vi.fn(),
 }));
 
+vi.mock('@/features/generation/worker/generators/featureTags', () => ({
+  FEATURE_TAG_COLORS: {
+    0: '#9CA3AF',
+    1: '#64748B',
+    255: '#6B7280',
+  },
+}));
+
 vi.mock('three', () => {
   class MockBufferGeometry {
     setAttribute = vi.fn();
@@ -28,6 +37,12 @@ vi.mock('three', () => {
     computeVertexNormals = vi.fn();
     dispose = vi.fn();
     translate = vi.fn();
+    addGroup = vi.fn();
+    clearGroups = vi.fn();
+  }
+
+  class MockMeshStandardMaterial {
+    dispose = vi.fn();
   }
 
   const Vector3 = vi.fn((x = 0, y = 0, z = 0) => ({
@@ -43,18 +58,19 @@ vi.mock('three', () => {
     copy: vi.fn().mockReturnThis(),
     toArray: vi.fn(() => [x, y, z]),
   }));
-  const Color = vi.fn(() => ({
-    r: 0.5,
-    g: 0.5,
-    b: 0.5,
-    set: vi.fn().mockReturnThis(),
-    getHex: vi.fn(() => 0xcccccc),
-    lerp: vi.fn().mockReturnThis(),
-  }));
+  class Color {
+    r = 0.5;
+    g = 0.5;
+    b = 0.5;
+    set = vi.fn().mockReturnThis();
+    getHex = vi.fn(() => 0xcccccc);
+    lerp = vi.fn().mockReturnThis();
+  }
   return {
     Vector3,
     Color,
     BufferGeometry: MockBufferGeometry,
+    MeshStandardMaterial: MockMeshStandardMaterial,
     BufferAttribute: vi.fn(),
     Float32BufferAttribute: vi.fn(),
     DoubleSide: 2,
@@ -116,6 +132,53 @@ describe('BinMesh', () => {
       },
     });
     const { container } = render(<BinMesh wireframe={true} color="#d4d8dc" />);
+    expect(container.firstChild).not.toBeNull();
+  });
+
+  it('renders multi-material mesh when featureColorPreview is enabled with faceGroups', () => {
+    useSettingsStore.setState({ featureColorPreview: true });
+    useDesignerStore.setState({
+      generation: {
+        status: 'complete',
+        mesh: {
+          vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1]),
+          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
+          edgeVertices: new Float32Array(0),
+          error: null,
+          timingMs: 50,
+          faceGroups: [
+            { start: 0, count: 3, tag: 0 },
+            { start: 3, count: 3, tag: 1 },
+          ],
+        },
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    const { container } = render(<BinMesh wireframe={false} color="#d4d8dc" />);
+    expect(container.firstChild).not.toBeNull();
+  });
+
+  it('renders single material when featureColorPreview is disabled even with faceGroups', () => {
+    useSettingsStore.setState({ featureColorPreview: false });
+    useDesignerStore.setState({
+      generation: {
+        status: 'complete',
+        mesh: {
+          vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
+          edgeVertices: new Float32Array(0),
+          error: null,
+          timingMs: 50,
+          faceGroups: [{ start: 0, count: 3, tag: 0 }],
+        },
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    const { container } = render(<BinMesh wireframe={false} color="#d4d8dc" />);
     expect(container.firstChild).not.toBeNull();
   });
 });
