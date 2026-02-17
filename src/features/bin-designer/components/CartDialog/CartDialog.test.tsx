@@ -67,15 +67,15 @@ describe('CartDialog', () => {
     expect(useCartStore.getState().items).toHaveLength(0);
   });
 
-  it('clears all items when Clear cart clicked', () => {
+  it('clears all items when Clear cart clicked and confirmed', () => {
     useCartStore.setState({
       items: [makeCartItem('a'), makeCartItem('b'), makeCartItem('c')],
     });
     render(<CartDialog open={true} onClose={onClose} />);
 
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     fireEvent.click(screen.getByText('Clear cart'));
-    expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('Remove all 3 items'));
+    // ConfirmDialog should appear with Clear button
+    fireEvent.click(screen.getByText('Clear'));
     expect(useCartStore.getState().items).toHaveLength(0);
   });
 

@@ -1492,5 +1492,7 @@
   "toolbar.zoomInKey": "Aumentar zoom (+)",
   "toolbar.zoomOut": "Reduzir zoom",
   "toolbar.zoomOutKey": "Reduzir zoom (−)",
-  "binDesigner.cutoutDesktopOnly": "O editor de recortes está disponível no desktop. Mude para uma tela mais larga para usar este recurso."
+  "binDesigner.cutoutDesktopOnly": "O editor de recortes está disponível no desktop. Mude para uma tela mais larga para usar este recurso.",
+  "binDesigner.clearCartConfirm": "Remover todos os {count} itens do carrinho?",
+  "binDesigner.newDesignConfirm": "Iniciar um novo design? Seu design atual está salvo e pode ser carregado mais tarde."
 }

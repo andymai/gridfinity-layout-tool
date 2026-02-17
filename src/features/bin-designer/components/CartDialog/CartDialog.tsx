@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import { useCartStore } from '@/features/bin-designer/store/cart';
 import { batchExport } from '@/features/bin-designer/utils/batchExport';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
@@ -94,11 +95,17 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
     }
   }, [items, addToast]);
 
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
   const handleClearCart = useCallback(() => {
-    if (!window.confirm(`Remove all ${items.length} items from cart?`)) return;
+    setShowClearConfirm(true);
+  }, []);
+
+  const handleConfirmClear = useCallback(() => {
     clearCart();
+    setShowClearConfirm(false);
     addToast({ message: 'Cart cleared', type: 'success', duration: 2000 });
-  }, [items.length, clearCart, addToast]);
+  }, [clearCart, addToast]);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
@@ -294,6 +301,15 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        title={t('binDesigner.clearCart')}
+        message={t('binDesigner.clearCartConfirm', { count: items.length })}
+        confirmText={t('common.clear')}
+        destructive
+        onConfirm={handleConfirmClear}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   );
 }

@@ -1492,5 +1492,7 @@
   "toolbar.zoomInKey": "Vergrößern (+)",
   "toolbar.zoomOut": "Verkleinern",
   "toolbar.zoomOutKey": "Verkleinern (−)",
-  "binDesigner.cutoutDesktopOnly": "Der Ausschnitt-Editor ist auf dem Desktop verfügbar. Bitte wechseln Sie zu einem breiteren Bildschirm, um diese Funktion zu nutzen."
+  "binDesigner.cutoutDesktopOnly": "Der Ausschnitt-Editor ist auf dem Desktop verfügbar. Bitte wechseln Sie zu einem breiteren Bildschirm, um diese Funktion zu nutzen.",
+  "binDesigner.clearCartConfirm": "Alle {count} Artikel aus dem Warenkorb entfernen?",
+  "binDesigner.newDesignConfirm": "Neues Design starten? Dein aktuelles Design wird gespeichert und kann später geladen werden."
 }

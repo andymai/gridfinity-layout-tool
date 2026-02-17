@@ -1492,5 +1492,7 @@
   "toolbar.zoomInKey": "Zoom inn (+)",
   "toolbar.zoomOut": "Zoom ut",
   "toolbar.zoomOutKey": "Zoom ut (−)",
-  "binDesigner.cutoutDesktopOnly": "Utskjæringsredigereren er tilgjengelig på datamaskinen. Bytt til en bredere skjerm for å bruke denne funksjonen."
+  "binDesigner.cutoutDesktopOnly": "Utskjæringsredigereren er tilgjengelig på datamaskinen. Bytt til en bredere skjerm for å bruke denne funksjonen.",
+  "binDesigner.clearCartConfirm": "Fjerne alle {count} elementer fra handlekurven?",
+  "binDesigner.newDesignConfirm": "Starte et nytt design? Det nåværende designet ditt er lagret og kan lastes inn igjen senere."
 }

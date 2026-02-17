@@ -28,6 +28,7 @@ import { DesignImportView } from '../DesignImportView';
 import type { SavedDesign, BinParams } from '../../types';
 import { useThumbnailRegeneration } from '../../hooks/useThumbnailRegeneration';
 import { useTranslation } from '@/i18n';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import type { ViewMode } from '@/shared/components/ViewModeToggle';
 import { downloadDesignAsFile } from '@/features/bin-designer/utils/designJson';
 
@@ -180,15 +181,22 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [loadDesign, navigateToDesign, addToast, onClose, currentDesignId]
   );
 
+  const [showNewDesignConfirm, setShowNewDesignConfirm] = useState(false);
+
   const handleNewDesign = useCallback(() => {
     const state = useDesignerStore.getState();
     if (state.currentDesignId && state.history.past.length > 0) {
-      if (
-        !window.confirm('Start a new design? Your current design is saved and can be loaded later.')
-      ) {
-        return;
-      }
+      setShowNewDesignConfirm(true);
+      return;
     }
+    newDesign();
+    syncUrlToDesign(null);
+    addToast({ message: 'New design created', type: 'success', duration: 2000 });
+    onClose();
+  }, [newDesign, syncUrlToDesign, addToast, onClose]);
+
+  const handleConfirmNewDesign = useCallback(() => {
+    setShowNewDesignConfirm(false);
     newDesign();
     syncUrlToDesign(null);
     addToast({ message: 'New design created', type: 'success', duration: 2000 });
@@ -549,6 +557,14 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
           )}
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={showNewDesignConfirm}
+        title={t('binDesigner.newDesign')}
+        message={t('binDesigner.newDesignConfirm')}
+        confirmText={t('binDesigner.newDesign')}
+        onConfirm={handleConfirmNewDesign}
+        onCancel={() => setShowNewDesignConfirm(false)}
+      />
     </div>
   );
 }
