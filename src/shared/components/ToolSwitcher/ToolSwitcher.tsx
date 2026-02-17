@@ -55,7 +55,7 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
   };
 
   const iconSize = compact ? 'w-4 h-4' : 'w-5 h-5';
-  const segmentPadding = compact ? 'px-2 py-0.5' : 'px-3 py-1';
+  const segmentPadding = compact ? 'px-2.5 py-2.5' : 'px-3 py-1';
   const fontSize = compact ? 'text-xs' : 'text-sm';
   const gap = compact ? 'gap-1.5' : 'gap-2';
 
