@@ -369,6 +369,14 @@ const en: Record<string, string> = {
   'categories.saveAsDefaultsTitle': 'Save current categories as defaults for new layouts',
 
   // ===========================================================================
+  // Size Suggestion
+  // ===========================================================================
+  'sizeSuggestion.dismiss': 'Dismiss',
+  'sizeSuggestion.next': 'Next',
+  'sizeSuggestion.placed': 'Placed {size} bin',
+  'sizeSuggestion.useSize': 'Use suggested size: {size}',
+
+  // ===========================================================================
   // Staging / Stash
   // ===========================================================================
   'staging.title': 'Stash',
