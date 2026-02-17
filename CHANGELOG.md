@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.3...gridfinity-layout-tool-v3.13.4) (2026-02-17)
+
+
+### Bug Fixes
+
+* **bin-designer:** mobile UI fixes for touch targets, layout, and UX ([#774](https://github.com/andymai/gridfinity-layout-tool/issues/774)) ([19e8dfb](https://github.com/andymai/gridfinity-layout-tool/commit/19e8dfb805d7814c04d80f7b370a19f54e4d3d53))
+
 ## [3.13.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.2...gridfinity-layout-tool-v3.13.3) (2026-02-17)
 
 
