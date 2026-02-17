@@ -540,24 +540,3 @@ export interface DesignerState {
   ) => void;
   toggleHalfBinMode: () => void;
 }
-
-// =============================================================================
-// Export Cart Types
-// =============================================================================
-
-/** A snapshot of a design queued for batch export */
-export interface CartItem {
-  readonly id: string;
-  readonly name: string;
-  readonly params: BinParams;
-  readonly thumbnail: string | null;
-  readonly addedAt: string;
-}
-
-/** Batch export cart store state */
-export interface CartState {
-  items: CartItem[];
-  addToCart: (item: Omit<CartItem, 'addedAt'>) => void;
-  removeFromCart: (id: string) => void;
-  clearCart: () => void;
-}

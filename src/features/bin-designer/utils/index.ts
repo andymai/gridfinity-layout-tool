@@ -1,5 +1,4 @@
 export { describeBin, getStatusAnnouncement } from './a11y';
-export { batchExport, type BatchProgress, type BatchExportResult } from './batchExport';
 export {
   createUniformGrid,
   createSingleCell,

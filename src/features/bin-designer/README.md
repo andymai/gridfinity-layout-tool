@@ -9,7 +9,6 @@ graph TB
     end
     subgraph State
         DS[(designer store)] --> MCM[meshCacheManager]
-        CS[(cart store)]
         CBR[(customBinRegistry)]
     end
     subgraph Generation
@@ -31,7 +30,6 @@ graph TB
 - `components/PreviewCanvas.tsx` — 3D preview with Three.js
 - `components/CutoutWorkspace` — dedicated 3D editor for floor/wall cutouts
 - `store/designer.ts` — design state and parameter mutations (composed from slices)
-- `store/cart.ts` — batch export cart
 - `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
 - `store/cutoutSelection.ts` — cutout editor selection state
 - `hooks/useGeneration.ts` — triggers geometry regeneration via bridge
@@ -57,4 +55,3 @@ graph TB
 
 - `?placeBin=WxDxH` URL param places bin at (0,0) in Layout Planner
 - Uses `generation` feature for WASM tessellation
-- Cart enables batch export with quantities
