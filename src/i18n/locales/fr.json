@@ -1230,6 +1230,8 @@
   "settings.drawerDimensions": "Dimensions du Drawer",
   "settings.drawerSize": "Taille du drawer",
   "settings.experimental": "Expérimental",
+  "settings.featureColorPreview": "Feature-colored preview",
+  "settings.featureColorPreviewDescription": "Color bin faces by feature type in the 3D preview",
   "settings.filamentCostPerKg": "Coût du filament",
   "settings.gridSettings": "Paramètres de la grille",
   "settings.gridUnit": "Unité de grille",

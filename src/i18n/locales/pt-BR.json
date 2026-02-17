@@ -1230,6 +1230,8 @@
   "settings.drawerDimensions": "Dimensões do Drawer",
   "settings.drawerSize": "Tamanho do drawer",
   "settings.experimental": "Experimental",
+  "settings.featureColorPreview": "Feature-colored preview",
+  "settings.featureColorPreviewDescription": "Color bin faces by feature type in the 3D preview",
   "settings.filamentCostPerKg": "Custo do filamento",
   "settings.gridSettings": "Configurações da Grade",
   "settings.gridUnit": "Unidade de grade",

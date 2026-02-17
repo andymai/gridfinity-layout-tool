@@ -1230,6 +1230,8 @@
   "settings.drawerDimensions": "Drawer-dimensjoner",
   "settings.drawerSize": "Drawer-størrelse",
   "settings.experimental": "Eksperimentell",
+  "settings.featureColorPreview": "Feature-colored preview",
+  "settings.featureColorPreviewDescription": "Color bin faces by feature type in the 3D preview",
   "settings.filamentCostPerKg": "Filamentkostnad",
   "settings.gridSettings": "Rutenettinnstillinger",
   "settings.gridUnit": "Rutenettenhet",

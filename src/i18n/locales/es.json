@@ -1230,6 +1230,8 @@
   "settings.drawerDimensions": "Dimensiones del Drawer",
   "settings.drawerSize": "Tamaño del drawer",
   "settings.experimental": "Experimental",
+  "settings.featureColorPreview": "Feature-colored preview",
+  "settings.featureColorPreviewDescription": "Color bin faces by feature type in the 3D preview",
   "settings.filamentCostPerKg": "Coste del filamento",
   "settings.gridSettings": "Configuración de Cuadrícula",
   "settings.gridUnit": "Unidad de rejilla",

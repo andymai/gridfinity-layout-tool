@@ -680,6 +680,8 @@ const en: Record<string, string> = {
   'settings.uiDensity.comfortable': 'Comfortable',
   'settings.reduceMotion': 'Reduce motion',
   'settings.reduceMotionHint': 'Minimize animations and transitions',
+  'settings.featureColorPreview': 'Feature-colored preview',
+  'settings.featureColorPreviewDescription': 'Color bin faces by feature type in the 3D preview',
   'settings.resetTabDefaults': 'Reset all settings',
   'settings.copyFromCurrentLayout': 'Copy from Current Layout',
   'settings.confirmCopyFromLayout.title': 'Copy from Current Layout',

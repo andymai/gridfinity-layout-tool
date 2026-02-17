@@ -1230,6 +1230,8 @@
   "settings.drawerDimensions": "Drawer-Abmessungen",
   "settings.drawerSize": "Drawer-Größe",
   "settings.experimental": "Experimentell",
+  "settings.featureColorPreview": "Feature-colored preview",
+  "settings.featureColorPreviewDescription": "Color bin faces by feature type in the 3D preview",
   "settings.filamentCostPerKg": "Filamentkosten",
   "settings.gridSettings": "Raster-Einstellungen",
   "settings.gridUnit": "Rastereinheit",
