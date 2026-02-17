@@ -33,7 +33,7 @@ export function ParameterPanel() {
   const showLabelTabs = useDesignerStore(useShallow((s) => s.params.style === 'standard'));
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="flex-1 overflow-y-scroll scrollbar-thin">
         {/* Shape group */}
         <StickyGroupHeader
           title={t('binDesigner.group.shape')}
