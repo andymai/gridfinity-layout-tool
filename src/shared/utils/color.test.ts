@@ -60,5 +60,14 @@ describe('getContrastColor', () => {
       // Pure blue: luminance = 0.114 * 255 / 255 = 0.114 (dark)
       expect(getContrastColor('#0000ff')).toBe('var(--text-on-dark)');
     });
+
+    it('handles 3-char hex colors', () => {
+      // #fff should be treated as #ffffff (white → dark text)
+      expect(getContrastColor('#fff')).toBe('var(--text-on-light)');
+      // #000 should be treated as #000000 (black → light text)
+      expect(getContrastColor('#000')).toBe('var(--text-on-dark)');
+      // #f00 should be treated as #ff0000 (red → light text)
+      expect(getContrastColor('#f00')).toBe('var(--text-on-dark)');
+    });
   });
 });
