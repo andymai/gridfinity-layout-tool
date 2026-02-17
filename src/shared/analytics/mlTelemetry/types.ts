@@ -654,7 +654,7 @@ export type MLTelemetryEvent =
   | SessionSummaryEvent
   | CrossLayoutPatternEvent;
 
-export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint';
+export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint' | 'suggestion';
 
 export type DeleteMethod = 'key' | 'context_menu' | 'bulk' | 'inspector';
 
