@@ -304,7 +304,7 @@ export function PreviewControls({
       </div>
 
       {/* Mobile: compact vertical column in bottom-left */}
-      <div className="absolute bottom-2 left-2 flex flex-col gap-1 md:hidden">
+      <div className="absolute bottom-2 left-2 z-30 flex flex-col gap-1 md:hidden">
         {/* Camera presets in a compact pill row */}
         <div className="flex rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
           {PRESETS.map(({ key, label, shortcut }) => {
@@ -315,7 +315,7 @@ export function PreviewControls({
                 key={key}
                 type="button"
                 onClick={() => onCameraPreset(key)}
-                className={`flex items-center justify-center p-2 min-w-[36px] min-h-[36px] transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                className={`flex items-center justify-center p-2 min-w-[44px] min-h-[44px] transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
                   isActive
                     ? 'bg-accent text-on-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -336,7 +336,7 @@ export function PreviewControls({
           <button
             type="button"
             onClick={onResetView}
-            className="flex items-center justify-center p-2 min-w-[36px] min-h-[36px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+            className="flex items-center justify-center p-2 min-w-[44px] min-h-[44px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
             title={t('binDesigner.resetView')}
             aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
@@ -347,7 +347,7 @@ export function PreviewControls({
           <button
             type="button"
             onClick={onWireframeToggle}
-            className={`flex items-center justify-center p-2 min-w-[36px] min-h-[36px] transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+            className={`flex items-center justify-center p-2 min-w-[44px] min-h-[44px] transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
               wireframe
                 ? 'bg-accent text-on-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -365,7 +365,7 @@ export function PreviewControls({
               ref={mobileColorBtnRef}
               type="button"
               onClick={() => setColorPickerOpen((v) => !v)}
-              className="flex items-center justify-center p-2 min-w-[36px] min-h-[36px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+              className="flex items-center justify-center p-2 min-w-[44px] min-h-[44px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
               title={t('binDesigner.changeColor')}
               aria-label={t('binDesigner.changePreviewColor')}
               aria-expanded={colorPickerOpen}
