@@ -423,4 +423,83 @@ describe('threemfExporter', () => {
       expect(contentTypes).toContain('Extension="rels"');
     });
   });
+
+  describe('feature colors (basematerials)', () => {
+    it('emits basematerials and pid/p1 when featureColors enabled', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'test',
+        featureColors: true,
+        faceGroups: [
+          { start: 0, count: 3, tag: 0 }, // tri 0 = BASE
+          { start: 3, count: 3, tag: 1 }, // tri 1 = SHELL
+        ],
+      });
+      const xml = extractModelXML(buffer);
+
+      expect(xml).toContain('<basematerials id="1">');
+      expect(xml).toContain('displaycolor="#9CA3AF"'); // BASE color
+      expect(xml).toContain('displaycolor="#64748B"'); // SHELL color
+      expect(xml).toContain('name="Base"');
+      expect(xml).toContain('name="Shell"');
+      expect(xml).toMatch(/triangle.*pid="1" p1="0"/); // BASE = index 0
+      expect(xml).toMatch(/triangle.*pid="1" p1="1"/); // SHELL = index 1
+    });
+
+    it('does not emit basematerials when featureColors is false', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'test',
+        featureColors: false,
+        faceGroups: [
+          { start: 0, count: 3, tag: 0 },
+          { start: 3, count: 3, tag: 1 },
+        ],
+      });
+      const xml = extractModelXML(buffer);
+
+      expect(xml).not.toContain('basematerials');
+      expect(xml).not.toContain('pid=');
+    });
+
+    it('does not emit basematerials when faceGroups absent', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'test',
+        featureColors: true,
+      });
+      const xml = extractModelXML(buffer);
+
+      expect(xml).not.toContain('basematerials');
+      expect(xml).not.toContain('pid=');
+    });
+
+    it('uses object id 2 when basematerials present (id 1 used by basematerials)', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'test',
+        featureColors: true,
+        faceGroups: [{ start: 0, count: 3, tag: 0 }],
+      });
+      const xml = extractModelXML(buffer);
+
+      expect(xml).toContain('<object id="2"');
+      expect(xml).toContain('<item objectid="2" />');
+    });
+
+    it('handles multiple triangles with same tag', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'test',
+        featureColors: true,
+        faceGroups: [{ start: 0, count: 6, tag: 2 }], // both triangles = SCOOP
+      });
+      const xml = extractModelXML(buffer);
+
+      // Only one base material entry
+      const baseMatches = xml.match(/<base /g);
+      expect(baseMatches).toHaveLength(1);
+      expect(xml).toContain('displaycolor="#3B82F6"'); // SCOOP color
+    });
+  });
 });

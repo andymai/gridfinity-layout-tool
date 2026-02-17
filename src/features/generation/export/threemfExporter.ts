@@ -15,6 +15,12 @@
 
 import { zipSync, strToU8 } from 'fflate';
 
+import type { FaceGroupData } from '@/features/generation/bridge/types';
+import {
+  FEATURE_TAG_COLORS,
+  featureTagName,
+} from '@/features/generation/worker/generators/featureTags';
+
 /** Options for 3MF export */
 export interface ThreeMFOptions {
   /** Model name for metadata */
@@ -23,6 +29,10 @@ export interface ThreeMFOptions {
   readonly thumbnail?: Uint8Array;
   /** Optional print settings hints (embedded as metadata) */
   readonly printSettings?: ThreeMFPrintSettings;
+  /** Enable multi-color export with per-feature basematerials */
+  readonly featureColors?: boolean;
+  /** Face group data from the generation pipeline (index-buffer offsets) */
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 /** Suggested print settings embedded as metadata */
@@ -145,8 +155,10 @@ export function deduplicateVertices(vertices: Float32Array): IndexedMesh {
 function buildContentTypes(hasThumbnail: boolean): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n';
-  xml += '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />\n';
-  xml += '  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n';
+  xml +=
+    '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />\n';
+  xml +=
+    '  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n';
   if (hasThumbnail) {
     xml += '  <Default Extension="png" ContentType="image/png" />\n';
   }
@@ -157,7 +169,8 @@ function buildContentTypes(hasThumbnail: boolean): string {
 function buildRelationships(): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n';
-  xml += '  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" />\n';
+  xml +=
+    '  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" />\n';
   xml += '</Relationships>';
   return xml;
 }
@@ -171,7 +184,8 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   // Metadata
   xml += '  <metadata name="Title">' + escapeXml(options.name) + '</metadata>\n';
   xml += '  <metadata name="Designer">Gridfinity Layout Tool</metadata>\n';
-  xml += '  <metadata name="CreationDate">' + new Date().toISOString().split('T')[0] + '</metadata>\n';
+  xml +=
+    '  <metadata name="CreationDate">' + new Date().toISOString().split('T')[0] + '</metadata>\n';
 
   // Print settings as custom metadata
   if (options.printSettings) {
@@ -196,9 +210,26 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
     }
   }
 
-  // Resources (mesh object)
+  // Build triangle-to-material lookup if feature colors requested
+  const materialLookup = buildMaterialLookup(options);
+  const uniqueTags = materialLookup ? getUniqueTags(materialLookup) : [];
+
+  // Resources
   xml += '  <resources>\n';
-  xml += '    <object id="1" type="model" name="' + escapeXml(options.name) + '">\n';
+
+  // Basematerials (if feature colors enabled)
+  if (uniqueTags.length > 0) {
+    xml += '    <basematerials id="1">\n';
+    for (const tag of uniqueTags) {
+      const color = FEATURE_TAG_COLORS[tag] ?? '#6B7280';
+      const name = featureTagName(tag);
+      xml += `      <base name="${escapeXml(name)}" displaycolor="${color}" />\n`;
+    }
+    xml += '    </basematerials>\n';
+  }
+
+  const objectId = uniqueTags.length > 0 ? '2' : '1';
+  xml += `    <object id="${objectId}" type="model" name="${escapeXml(options.name)}">\n`;
   xml += '      <mesh>\n';
 
   // Vertices
@@ -210,8 +241,14 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
 
   // Triangles
   xml += '        <triangles>\n';
-  for (const [v1, v2, v3] of mesh.triangles) {
-    xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
+  for (let i = 0; i < mesh.triangles.length; i++) {
+    const [v1, v2, v3] = mesh.triangles[i];
+    if (materialLookup && i < materialLookup.length && materialLookup[i] !== -1) {
+      const matIndex = uniqueTags.indexOf(materialLookup[i]);
+      xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="1" p1="${matIndex}" />\n`;
+    } else {
+      xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
+    }
   }
   xml += '        </triangles>\n';
 
@@ -221,11 +258,60 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
 
   // Build instructions
   xml += '  <build>\n';
-  xml += '    <item objectid="1" />\n';
+  xml += `    <item objectid="${objectId}" />\n`;
   xml += '  </build>\n';
 
   xml += '</model>';
   return xml;
+}
+
+// ─── Material Lookup ─────────────────────────────────────────────────────────
+
+/**
+ * Builds a per-triangle tag lookup array from faceGroups.
+ * Returns null if feature colors are not enabled or no groups provided.
+ *
+ * FaceGroups use index-buffer offsets (start/count in indices).
+ * Since the exporter uses flat vertex arrays (9 floats per triangle),
+ * triangle index = start / 3, triangle count = count / 3.
+ */
+function buildMaterialLookup(options: ThreeMFOptions): Int16Array | null {
+  if (!options.featureColors || !options.faceGroups || options.faceGroups.length === 0) {
+    return null;
+  }
+
+  // Find max triangle index to size the array
+  let maxTriangle = 0;
+  for (const group of options.faceGroups) {
+    const endTriangle = (group.start + group.count) / 3;
+    if (endTriangle > maxTriangle) {
+      maxTriangle = endTriangle;
+    }
+  }
+
+  const lookup = new Int16Array(maxTriangle);
+  lookup.fill(-1);
+
+  for (const group of options.faceGroups) {
+    const startTri = group.start / 3;
+    const countTri = group.count / 3;
+    for (let i = startTri; i < startTri + countTri; i++) {
+      lookup[i] = group.tag;
+    }
+  }
+
+  return lookup;
+}
+
+/** Extracts sorted unique tags from the material lookup. */
+function getUniqueTags(lookup: Int16Array): number[] {
+  const tags = new Set<number>();
+  for (const tag of lookup) {
+    if (tag !== -1) {
+      tags.add(tag);
+    }
+  }
+  return [...tags].sort((a, b) => a - b);
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
