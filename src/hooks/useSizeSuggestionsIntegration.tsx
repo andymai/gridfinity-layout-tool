@@ -13,6 +13,7 @@ import { useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import type { LayerId } from '@/core/types';
 import { useSizeSuggestions } from '@/features/size-suggestions/hooks';
 import { NextBinPreview, SuggestionGhost } from '@/features/size-suggestions';
 import type { SizeSuggestion } from '@/features/size-suggestions/types';
@@ -20,7 +21,7 @@ import type { SizeSuggestion } from '@/features/size-suggestions/types';
 interface SizeSuggestionsOverlayProps {
   cellSize: number;
   gap: number;
-  activeLayerId: string;
+  activeLayerId: LayerId;
   activeLayerHeight: number;
 }
 
@@ -51,7 +52,7 @@ export function useSizeSuggestionsIntegration(): UseSizeSuggestionsIntegrationRe
   }, [enabled, fetchSuggestions]);
 
   const handleAcceptSuggestion = useCallback(
-    (suggestion: SizeSuggestion, activeLayerId: string, layerHeight: number) => {
+    (suggestion: SizeSuggestion, activeLayerId: LayerId, layerHeight: number) => {
       const pos = suggestion.position;
       if (!pos) return;
 
