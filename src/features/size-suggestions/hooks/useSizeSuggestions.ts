@@ -6,7 +6,7 @@
  * and cancels in-flight requests on new fetch.
  */
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLabsStore } from '@/core/store/labs';
 import { STAGING_ID } from '@/core/constants';
@@ -16,23 +16,26 @@ import type { SizeSuggestResponse } from '../types';
 const DEBOUNCE_MS = 2000;
 const API_ENDPOINT = '/api/size-suggest';
 
+interface UseSizeSuggestionsReturn {
+  fetchSuggestions: () => void;
+  debouncedFetch: () => void;
+}
+
 /**
  * Hook that fetches size suggestions based on layout state.
+ * Returns imperative fetch functions for use in effects and handlers.
  */
-export function useSizeSuggestions(): void {
-  const isFeatureEnabled = useLabsStore((s) => s.isFeatureEnabled('size-suggestions'));
-  const layout = useLayoutStore((s) => s.layout);
-  const { setLoading, setSuggestions, setLastFetchParams, lastFetchParams } =
-    useSizeSuggestionStore();
-
+export function useSizeSuggestions(): UseSizeSuggestionsReturn {
   const abortControllerRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    // Feature flag gate
-    if (!isFeatureEnabled) {
-      return;
-    }
+  const fetchSuggestions = useCallback(() => {
+    const isEnabled = useLabsStore.getState().isFeatureEnabled('size-suggestions');
+    if (!isEnabled) return;
+
+    const layout = useLayoutStore.getState().layout;
+    const { setLoading, setSuggestions, setLastFetchParams, lastFetchParams } =
+      useSizeSuggestionStore.getState();
 
     // Build request params
     const onGridBins = layout.bins.filter((bin) => bin.layerId !== STAGING_ID);
@@ -51,57 +54,58 @@ export function useSizeSuggestions(): void {
     });
 
     // Deduplicate - skip if identical to last fetch
-    if (requestParams === lastFetchParams) {
-      return;
+    if (requestParams === lastFetchParams) return;
+
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
 
-    // Cancel previous debounce timer
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    setLoading(true);
+    setLastFetchParams(requestParams);
+
+    fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: requestParams,
+      signal: abortController.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data: unknown = await response.json();
+        return data as SizeSuggestResponse;
+      })
+      .then((data) => {
+        if (!abortController.signal.aborted) {
+          setSuggestions(data.suggestions);
+        }
+      })
+      .catch(() => {
+        // Silently fail - no toast, no retry
+      })
+      .finally(() => {
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
+      });
+  }, []);
+
+  const debouncedFetch = useCallback(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-
-    // Debounce 2s
     debounceTimerRef.current = setTimeout(() => {
-      // Cancel any in-flight request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      const abortController = new AbortController();
-      abortControllerRef.current = abortController;
-
-      setLoading(true);
-      setLastFetchParams(requestParams);
-
-      fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: requestParams,
-        signal: abortController.signal,
-      })
-        .then(async (response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-          const data: unknown = await response.json();
-          return data as SizeSuggestResponse;
-        })
-        .then((data) => {
-          if (!abortController.signal.aborted) {
-            setSuggestions(data.suggestions);
-          }
-        })
-        .catch(() => {
-          // Silently fail - no toast, no retry
-        })
-        .finally(() => {
-          if (!abortController.signal.aborted) {
-            setLoading(false);
-          }
-        });
+      fetchSuggestions();
     }, DEBOUNCE_MS);
+  }, [fetchSuggestions]);
 
-    // Cleanup
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
@@ -110,5 +114,23 @@ export function useSizeSuggestions(): void {
         abortControllerRef.current.abort();
       }
     };
-  }, [isFeatureEnabled, layout, lastFetchParams, setLoading, setSuggestions, setLastFetchParams]);
+  }, []);
+
+  // Auto-refresh when bin count changes (Task 9)
+  useEffect(() => {
+    if (!useLabsStore.getState().isFeatureEnabled('size-suggestions')) return;
+
+    let prevBinCount = useLayoutStore.getState().layout.bins.length;
+    const unsub = useLayoutStore.subscribe((state) => {
+      const newCount = state.layout.bins.length;
+      if (newCount !== prevBinCount) {
+        prevBinCount = newCount;
+        debouncedFetch();
+      }
+    });
+
+    return unsub;
+  }, [debouncedFetch]);
+
+  return { fetchSuggestions, debouncedFetch };
 }

@@ -30,6 +30,7 @@ import { useCollabMode } from '@/hooks/useCollabMode';
 import { useCollabPresence } from '@/hooks/useCollabPresence';
 import { useGridCoords } from '@/features/grid-editor/hooks/useGridCoords';
 import { useTranslation } from '@/i18n';
+import { useSizeSuggestionsIntegration } from '@/hooks/useSizeSuggestionsIntegration';
 
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
 const IsometricPreview = lazyWithRetry(() =>
@@ -78,6 +79,10 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
 
   // Half-bin mode - single value, no useShallow needed
   const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+
+  // Size suggestions (labs feature) - app-level hook handles cross-feature orchestration
+  const { enabled: sizeSuggestionsEnabled, SizeSuggestionsOverlay } =
+    useSizeSuggestionsIntegration();
 
   const { drawer, layers, bins } = useLayoutStore(
     useShallow((state) => ({
@@ -359,6 +364,16 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
                   {isCollaborative && <CollabGhosts />}
                   {/* Collaborative cursors overlay - shows other users' cursors */}
                   {isCollaborative && <CollabCursors />}
+
+                  {/* Size suggestion overlays */}
+                  {sizeSuggestionsEnabled && SizeSuggestionsOverlay && (
+                    <SizeSuggestionsOverlay
+                      cellSize={cellSize}
+                      gap={gap}
+                      activeLayerId={activeLayerId}
+                      activeLayerHeight={activeLayer?.height ?? 1}
+                    />
+                  )}
 
                   {/* Empty state overlay */}
                   {isEmpty &&
