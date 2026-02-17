@@ -82,6 +82,16 @@ export interface ExportSplitPayload {
 /** Export file formats supported by the BREP worker */
 export type ExportFormat = 'stl' | 'step';
 
+/** Per-face-group feature tag for provenance-based coloring. */
+export interface FaceGroupData {
+  /** Starting index offset into the triangles/indices array. */
+  readonly start: number;
+  /** Number of indices in this group. */
+  readonly count: number;
+  /** FeatureTag identifying the modeling step that created these faces. */
+  readonly tag: number;
+}
+
 // ─── Worker → Main Responses ─────────────────────────────────────────────────
 
 export type WorkerResponse =
@@ -117,6 +127,8 @@ export interface MeshResultResponse {
   readonly edgeVertices: Float32Array;
   readonly triangleCount: number;
   readonly timingMs: number;
+  /** Optional per-face feature groups for provenance-based coloring. */
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 export interface ExportResultResponse {
@@ -166,4 +178,5 @@ export interface MeshData {
   readonly indices: Uint32Array;
   readonly edgeVertices: Float32Array;
   readonly triangleCount: number;
+  readonly faceGroups?: readonly FaceGroupData[];
 }
