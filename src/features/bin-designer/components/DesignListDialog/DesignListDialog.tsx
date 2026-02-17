@@ -354,7 +354,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
           <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowImport(true)}
               className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
