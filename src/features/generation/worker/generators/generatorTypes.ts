@@ -155,29 +155,30 @@ export function toIndexedMeshData(
     vertices: ArrayLike<number>;
     normals: ArrayLike<number>;
     triangles: ArrayLike<number>;
+    faceGroups?: ReadonlyArray<{ start: number; count: number; faceId: number; origin: number }>;
   },
   skipNormals = false,
-  edgeVertices?: ArrayLike<number>
+  edgeVertices?: ArrayLike<number>,
+  originToTag?: ReadonlyMap<number, number>
 ): MeshData {
+  const faceGroups = meshResult.faceGroups?.map((g) => ({
+    start: g.start,
+    count: g.count,
+    tag: originToTag?.get(g.origin) ?? 255, // FeatureTag.UNKNOWN
+  }));
+
+  const toFloat32Array = (data: ArrayLike<number>): Float32Array =>
+    data instanceof Float32Array ? data : new Float32Array(data);
+
+  const toUint32Array = (data: ArrayLike<number>): Uint32Array =>
+    data instanceof Uint32Array ? data : new Uint32Array(data);
+
   return {
-    vertices:
-      meshResult.vertices instanceof Float32Array
-        ? meshResult.vertices
-        : new Float32Array(meshResult.vertices),
-    normals: skipNormals
-      ? new Float32Array(0)
-      : meshResult.normals instanceof Float32Array
-        ? meshResult.normals
-        : new Float32Array(meshResult.normals),
-    indices:
-      meshResult.triangles instanceof Uint32Array
-        ? meshResult.triangles
-        : new Uint32Array(meshResult.triangles),
-    edgeVertices: edgeVertices
-      ? edgeVertices instanceof Float32Array
-        ? edgeVertices
-        : new Float32Array(edgeVertices)
-      : new Float32Array(0),
+    vertices: toFloat32Array(meshResult.vertices),
+    normals: skipNormals ? new Float32Array(0) : toFloat32Array(meshResult.normals),
+    indices: toUint32Array(meshResult.triangles),
+    edgeVertices: edgeVertices ? toFloat32Array(edgeVertices) : new Float32Array(0),
     triangleCount: meshResult.triangles.length / 3,
+    faceGroups,
   };
 }

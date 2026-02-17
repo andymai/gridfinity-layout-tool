@@ -5,6 +5,8 @@
  * generation state, and designer UI state.
  */
 
+import type { FaceGroupData } from '@/shared/types/generation';
+
 // =============================================================================
 // Bin Configuration Types
 // =============================================================================
@@ -307,6 +309,8 @@ export interface GenerationResult {
   readonly edgeVertices: Float32Array | null;
   readonly error: string | null;
   readonly timingMs: number;
+  /** Optional per-face feature groups for provenance-based coloring. */
+  readonly faceGroups?: FaceGroupData[];
 }
 
 /** Generation state tracked in the store */

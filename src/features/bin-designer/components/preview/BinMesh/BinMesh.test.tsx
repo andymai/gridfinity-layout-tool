@@ -43,18 +43,19 @@ vi.mock('three', () => {
     copy: vi.fn().mockReturnThis(),
     toArray: vi.fn(() => [x, y, z]),
   }));
-  const Color = vi.fn(() => ({
-    r: 0.5,
-    g: 0.5,
-    b: 0.5,
-    set: vi.fn().mockReturnThis(),
-    getHex: vi.fn(() => 0xcccccc),
-    lerp: vi.fn().mockReturnThis(),
-  }));
+  class Color {
+    r = 0.5;
+    g = 0.5;
+    b = 0.5;
+    set = vi.fn().mockReturnThis();
+    getHex = vi.fn(() => 0xcccccc);
+    lerp = vi.fn().mockReturnThis();
+  }
   return {
     Vector3,
     Color,
     BufferGeometry: MockBufferGeometry,
+    MeshStandardMaterial: vi.fn(),
     BufferAttribute: vi.fn(),
     Float32BufferAttribute: vi.fn(),
     DoubleSide: 2,

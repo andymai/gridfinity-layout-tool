@@ -168,6 +168,7 @@ function generate(params: BinParams, requestId: string): void {
       edgeVertices: meshData.edgeVertices,
       triangleCount: meshData.triangleCount,
       timingMs,
+      faceGroups: meshData.faceGroups,
     };
     // Transfer typed array buffers for zero-copy to main thread
     self.postMessage(response, {
@@ -231,6 +232,7 @@ async function handleExport(payload: ExportPayload): Promise<void> {
       data: result.data,
       format: payload.format,
       fileName: result.fileName,
+      faceGroups: result.faceGroups,
     };
     self.postMessage(response, { transfer: [result.data] });
   } catch (e) {

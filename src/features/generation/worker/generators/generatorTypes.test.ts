@@ -202,6 +202,41 @@ describe('toIndexedMeshData', () => {
   });
 });
 
+describe('toIndexedMeshData faceGroups', () => {
+  it('passes through faceGroups mapped via originToTag', () => {
+    const meshResult = {
+      vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      triangles: new Uint32Array([0, 1, 2]),
+      faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 42 }],
+    };
+    const originToTag = new Map([[42, 2]]); // origin 42 → SCOOP (2)
+    const result = toIndexedMeshData(meshResult, false, undefined, originToTag);
+    expect(result.faceGroups).toEqual([{ start: 0, count: 3, tag: 2 }]);
+  });
+
+  it('uses UNKNOWN tag when originToTag is undefined', () => {
+    const meshResult = {
+      vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      triangles: new Uint32Array([0, 1, 2]),
+      faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 99 }],
+    };
+    const result = toIndexedMeshData(meshResult, false, undefined, undefined);
+    expect(result.faceGroups).toEqual([{ start: 0, count: 3, tag: 255 }]);
+  });
+
+  it('returns undefined faceGroups when mesh has no faceGroups', () => {
+    const meshResult = {
+      vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      triangles: new Uint32Array([0, 1, 2]),
+    };
+    const result = toIndexedMeshData(meshResult);
+    expect(result.faceGroups).toBeUndefined();
+  });
+});
+
 describe('constants', () => {
   it('SIZE matches Gridfinity grid size', () => {
     expect(SIZE).toBe(42);

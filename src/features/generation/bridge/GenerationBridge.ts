@@ -13,6 +13,7 @@ import type {
   GenerationStage,
   ExportFormat,
   SplitExportPiece,
+  FaceGroupData,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 
@@ -30,6 +31,7 @@ export interface ExportResult {
   readonly data: ArrayBuffer;
   readonly fileName: string;
   readonly format: ExportFormat;
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 /** Result from a successful dividers export */
@@ -401,6 +403,7 @@ export class GenerationBridge {
                 indices: response.indices,
                 edgeVertices: response.edgeVertices,
                 triangleCount: response.triangleCount,
+                faceGroups: response.faceGroups,
               },
               timingMs: response.timingMs,
             });
@@ -443,6 +446,7 @@ export class GenerationBridge {
               data: response.data,
               fileName: response.fileName,
               format: response.format,
+              faceGroups: response.faceGroups,
             });
           }
           break;

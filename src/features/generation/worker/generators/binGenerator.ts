@@ -35,7 +35,7 @@ import {
 } from 'brepjs';
 import type { Shape3D, TransformOp } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import type { MeshData, ExportFormat } from '../../bridge/types';
+import type { MeshData, ExportFormat, FaceGroupData } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 
 // Sub-module imports
@@ -72,7 +72,21 @@ import {
   setFeatureCache,
 } from './shapeCache';
 import { buildSlotCuts } from './slotBuilder';
+import { FeatureTag } from './featureTags';
 import { getPatternDescriptors } from './wallPatterns';
+
+/**
+ * Collect face origin IDs from a shape using a fast low-fidelity mesh.
+ * Maps each unique origin to the given FeatureTag.
+ */
+function collectOrigins(shape: Shape3D, tag: FeatureTag, map: Map<number, number>): void {
+  const m = mesh(shape, { tolerance: 5, angularTolerance: 45 });
+  for (const fg of m.faceGroups) {
+    if (!map.has(fg.origin)) {
+      map.set(fg.origin, tag);
+    }
+  }
+}
 
 // ─── Re-exports (public API) ─────────────────────────────────────────────────
 
@@ -82,6 +96,7 @@ export type { ProgressFn } from './generatorTypes';
 export interface ExportResult {
   readonly data: ArrayBuffer;
   readonly fileName: string;
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 /** Result of a split export: array of piece buffers with grid labels */
@@ -139,6 +154,7 @@ export async function exportBin(
     })
   );
   const data = await blob.arrayBuffer();
+
   return { data, fileName: `${name}.stl` };
 }
 
@@ -177,6 +193,8 @@ export function generateBin(
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const isSlotted = params.style === 'slotted';
+
+  const originToTag = new Map<number, number>();
 
   // Half sockets do not support magnet/screw holes (0.5x0.5 cells too small)
   const withMagnet =
@@ -230,6 +248,7 @@ export function generateBin(
       solid,
       cutoutTopOffset
     );
+    collectOrigins(box, FeatureTag.BASE, originToTag);
 
     if (isFlat) {
       // Flat floor: no socket, box body is the entire base
@@ -242,6 +261,7 @@ export function generateBin(
             0,
             wallHeight,
           ]);
+          collectOrigins(top, FeatureTag.LIP, originToTag);
           bin = unwrap(fuse(box, top, { optimisation: 'commonFace' }));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
@@ -264,6 +284,7 @@ export function generateBin(
         useHighQuality,
         halfSockets
       );
+      collectOrigins(base, FeatureTag.SOCKET, originToTag);
 
       checkCancelled(signal);
       onProgress?.('features', 0.4);
@@ -274,6 +295,7 @@ export function generateBin(
             0,
             wallHeight,
           ]);
+          collectOrigins(top, FeatureTag.LIP, originToTag);
           bin = unwrap(
             fuse(unwrap(fuse(base, box, { optimisation: 'commonFace' })), top, {
               optimisation: 'commonFace',
@@ -328,7 +350,10 @@ export function generateBin(
           setFeatureCache('compartmentWalls', cwKey, compartmentWalls);
         }
       }
-      if (compartmentWalls) fuseTargets.push(compartmentWalls);
+      if (compartmentWalls) {
+        collectOrigins(compartmentWalls, FeatureTag.DIVIDER, originToTag);
+        fuseTargets.push(compartmentWalls);
+      }
     }
 
     checkCancelled(signal);
@@ -340,7 +365,10 @@ export function generateBin(
         setFeatureCache('insertCuts', icKey, insertCuts);
       }
     }
-    if (insertCuts) cutTargets.push(insertCuts);
+    if (insertCuts) {
+      collectOrigins(insertCuts, FeatureTag.INSERT, originToTag);
+      cutTargets.push(insertCuts);
+    }
 
     if (isSlotted) {
       checkCancelled(signal);
@@ -355,7 +383,10 @@ export function generateBin(
           setFeatureCache('slotCuts', scKey, slotCuts);
         }
       }
-      if (slotCuts) cutTargets.push(slotCuts);
+      if (slotCuts) {
+        collectOrigins(slotCuts, FeatureTag.SLOT, originToTag);
+        cutTargets.push(slotCuts);
+      }
     }
 
     if (!isSlotted) {
@@ -368,7 +399,10 @@ export function generateBin(
           setFeatureCache('labelTabs', ltKey, labelTabs);
         }
       }
-      if (labelTabs) fuseTargets.push(labelTabs);
+      if (labelTabs) {
+        collectOrigins(labelTabs, FeatureTag.LABEL_TAB, originToTag);
+        fuseTargets.push(labelTabs);
+      }
     }
 
     if (!isSlotted) {
@@ -381,7 +415,10 @@ export function generateBin(
           setFeatureCache('scoopRamps', srKey, scoopRamps);
         }
       }
-      if (scoopRamps) fuseTargets.push(scoopRamps);
+      if (scoopRamps) {
+        collectOrigins(scoopRamps, FeatureTag.SCOOP, originToTag);
+        fuseTargets.push(scoopRamps);
+      }
     }
 
     // Wall cutouts (U-notch from top, available for standard + slotted)
@@ -395,7 +432,10 @@ export function generateBin(
           setFeatureCache('wallCutoutCuts', wcKey, wallCutoutCuts);
         }
       }
-      if (wallCutoutCuts) cutTargets.push(wallCutoutCuts);
+      if (wallCutoutCuts) {
+        collectOrigins(wallCutoutCuts, FeatureTag.WALL_CUTOUT, originToTag);
+        cutTargets.push(wallCutoutCuts);
+      }
     }
 
     // Wall patterns: template cloning + cutAll
@@ -494,6 +534,7 @@ export function generateBin(
     // Solid mode: apply cutouts (top-down cavity cuts into the solid block)
     const cutoutCuts = buildCutoutCuts(params, innerW, innerD, wallHeight);
     if (cutoutCuts) {
+      collectOrigins(cutoutCuts, FeatureTag.CUTOUT, originToTag);
       try {
         bin = unwrap(cut(bin, cutoutCuts));
       } catch {
@@ -542,7 +583,7 @@ export function generateBin(
 
   onProgress?.('merge', 1.0);
   // Skip normals for large bin preview (GPU flat shading is faster)
-  return toIndexedMeshData(shapeMesh, !useHighQuality, edgeVertices);
+  return toIndexedMeshData(shapeMesh, !useHighQuality, edgeVertices, originToTag);
 }
 
 // ─── Split Export ────────────────────────────────────────────────────────────

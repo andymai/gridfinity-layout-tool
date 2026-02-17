@@ -145,8 +145,10 @@ export function deduplicateVertices(vertices: Float32Array): IndexedMesh {
 function buildContentTypes(hasThumbnail: boolean): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n';
-  xml += '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />\n';
-  xml += '  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n';
+  xml +=
+    '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />\n';
+  xml +=
+    '  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n';
   if (hasThumbnail) {
     xml += '  <Default Extension="png" ContentType="image/png" />\n';
   }
@@ -157,7 +159,8 @@ function buildContentTypes(hasThumbnail: boolean): string {
 function buildRelationships(): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n';
-  xml += '  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" />\n';
+  xml +=
+    '  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" />\n';
   xml += '</Relationships>';
   return xml;
 }
@@ -169,9 +172,9 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   xml += `<model unit="millimeter" xml:lang="en-US" xmlns="${NS}">\n`;
 
   // Metadata
-  xml += '  <metadata name="Title">' + escapeXml(options.name) + '</metadata>\n';
+  xml += `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
   xml += '  <metadata name="Designer">Gridfinity Layout Tool</metadata>\n';
-  xml += '  <metadata name="CreationDate">' + new Date().toISOString().split('T')[0] + '</metadata>\n';
+  xml += `  <metadata name="CreationDate">${new Date().toISOString().split('T')[0]}</metadata>\n`;
 
   // Print settings as custom metadata
   if (options.printSettings) {
@@ -196,9 +199,9 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
     }
   }
 
-  // Resources (mesh object)
+  // Resources
   xml += '  <resources>\n';
-  xml += '    <object id="1" type="model" name="' + escapeXml(options.name) + '">\n';
+  xml += `    <object id="1" type="model" name="${escapeXml(options.name)}">\n`;
   xml += '      <mesh>\n';
 
   // Vertices

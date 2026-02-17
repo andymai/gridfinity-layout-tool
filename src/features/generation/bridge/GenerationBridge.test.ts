@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GenerationBridge } from './GenerationBridge';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import type { WorkerResponse } from './types';
+import type { WorkerResponse, MeshResultResponse } from './types';
 
 /**
  * Mock Worker that simulates the generation worker's message protocol.
@@ -385,6 +385,24 @@ describe('GenerationBridge', () => {
       await expect(bridge.exportSplitBin(DEFAULT_BIN_PARAMS, [], [])).rejects.toThrow(
         'Bridge has been destroyed'
       );
+    });
+  });
+
+  describe('types', () => {
+    it('MeshResultResponse supports optional faceGroups', () => {
+      const response: MeshResultResponse = {
+        type: 'MESH_RESULT',
+        requestId: 'test',
+        vertices: new Float32Array(0),
+        normals: new Float32Array(0),
+        indices: new Uint32Array(0),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 0,
+        timingMs: 10,
+        faceGroups: [{ start: 0, count: 3, tag: 0 }],
+      };
+      expect(response.faceGroups).toHaveLength(1);
+      expect(response.faceGroups![0].tag).toBe(0);
     });
   });
 
