@@ -132,7 +132,7 @@ export function PathEditOverlay3D({
       })}
 
       {/* Segment hover: highlighted segment + ghost dot */}
-      {segmentHover && path && (
+      {segmentHover && (
         <SegmentHoverPreview
           path={path}
           hover={segmentHover}

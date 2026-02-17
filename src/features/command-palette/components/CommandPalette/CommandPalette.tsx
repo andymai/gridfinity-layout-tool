@@ -777,7 +777,6 @@ const CATEGORY_ICON_MAP: Record<string, IconName> = {
 
 function CategoryIcon({ category }: { category: string }) {
   const iconName = CATEGORY_ICON_MAP[category];
-  if (!iconName) return null;
   const paths = ICON_PATHS[iconName];
 
   return (

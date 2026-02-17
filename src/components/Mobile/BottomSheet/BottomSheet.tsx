@@ -106,6 +106,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
 
     if (shouldDismiss) {
       // Haptic feedback on dismiss
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- not available in all environments (e.g. jsdom)
       if (navigator.vibrate) {
         navigator.vibrate(15);
       }
