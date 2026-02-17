@@ -562,7 +562,7 @@ export function DesignerPage(_props: DesignerPageProps) {
         </main>
       ) : !isDesktop && isLandscape ? (
         /* Landscape tablet/mobile: side-by-side */
-        <main className="flex flex-1 overflow-hidden">
+        <main className="flex flex-1 flex-col overflow-hidden">
           {!isDesktop && cutoutEditorOpen && (
             <div className="flex items-center gap-2 bg-info/10 px-4 py-2 text-xs text-info border-b border-info/20">
               <svg
@@ -581,11 +581,13 @@ export function DesignerPage(_props: DesignerPageProps) {
               <span>{t('binDesigner.cutoutDesktopOnly')}</span>
             </div>
           )}
-          <div className="relative flex-1">
-            <PreviewCanvas />
-          </div>
-          <div className="w-64 flex-shrink-0 overflow-hidden border-l border-stroke-subtle bg-surface-secondary">
-            <ParameterPanel />
+          <div className="flex flex-1 overflow-hidden">
+            <div className="relative flex-1">
+              <PreviewCanvas />
+            </div>
+            <div className="w-64 flex-shrink-0 overflow-hidden border-l border-stroke-subtle bg-surface-secondary">
+              <ParameterPanel />
+            </div>
           </div>
         </main>
       ) : (
