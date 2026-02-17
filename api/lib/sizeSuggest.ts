@@ -110,7 +110,7 @@ export function scoreSizes(input: ScoreInput): ScoredSize[] {
     score += (normLabel[size] ?? 0) * labelWeight;
     score -= (normCorrection[size] ?? 0) * 0.1;
 
-    scored.push({ size, score });
+    scored.push({ size, score: Math.max(0, score) });
   }
 
   // Sort descending by score and return top 3

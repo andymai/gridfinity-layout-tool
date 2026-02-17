@@ -59,6 +59,7 @@ export function useSizeSuggestions(): UseSizeSuggestionsReturn {
     // Cancel any in-flight request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
 
     const abortController = new AbortController();
@@ -91,6 +92,7 @@ export function useSizeSuggestions(): UseSizeSuggestionsReturn {
       .finally(() => {
         if (!abortController.signal.aborted) {
           setLoading(false);
+          abortControllerRef.current = null;
         }
       });
   }, []);
@@ -118,7 +120,8 @@ export function useSizeSuggestions(): UseSizeSuggestionsReturn {
 
   // Auto-refresh when bin count changes (Task 9)
   useEffect(() => {
-    if (!useLabsStore.getState().isFeatureEnabled('size-suggestions')) return;
+    const isEnabled = useLabsStore.getState().isFeatureEnabled('size-suggestions');
+    if (!isEnabled) return;
 
     let prevBinCount = useLayoutStore.getState().layout.bins.length;
     const unsub = useLayoutStore.subscribe((state) => {

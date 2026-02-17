@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSizeSuggestionStore } from '../../store';
+import { parseSize } from '../../utils/parseSize';
 
 interface SuggestionGhostProps {
   cellSize: number; // pixels per grid unit
@@ -19,46 +21,38 @@ export function SuggestionGhost({ cellSize, gap, categoryColor }: SuggestionGhos
     }))
   );
 
-  // Early returns for cases where we don't render
-  if (suggestions.length === 0 || isDismissed) {
-    return null;
-  }
-
   const topSuggestion = suggestions[0];
-  if (!topSuggestion.position) {
+
+  const style = useMemo(() => {
+    if (!topSuggestion?.position) return null;
+
+    const dims = parseSize(topSuggestion.size);
+    if (!dims) return null;
+
+    const { width, depth } = dims;
+    const left = topSuggestion.position.x * (cellSize + gap);
+    const top = topSuggestion.position.y * (cellSize + gap);
+    const pixelWidth = width * cellSize + (width - 1) * gap;
+    const pixelHeight = depth * cellSize + (depth - 1) * gap;
+
+    return {
+      position: 'absolute' as const,
+      pointerEvents: 'none' as const,
+      zIndex: 5,
+      left: `${left}px`,
+      top: `${top}px`,
+      width: `${pixelWidth}px`,
+      height: `${pixelHeight}px`,
+      border: `2px dashed ${categoryColor}`,
+      backgroundColor: `${categoryColor}15`,
+      borderRadius: '4px',
+      transition: 'all 200ms ease-out',
+    };
+  }, [topSuggestion, cellSize, gap, categoryColor]);
+
+  if (suggestions.length === 0 || isDismissed || !style) {
     return null;
   }
 
-  // Parse size string (e.g., "2x1" → width=2, depth=1)
-  const sizeMatch = topSuggestion.size.match(/^(\d+)x(\d+)$/);
-  if (!sizeMatch) {
-    return null;
-  }
-
-  const width = parseInt(sizeMatch[1], 10);
-  const depth = parseInt(sizeMatch[2], 10);
-
-  // Calculate pixel position and dimensions
-  const left = topSuggestion.position.x * (cellSize + gap);
-  const top = topSuggestion.position.y * (cellSize + gap);
-  const pixelWidth = width * cellSize + (width - 1) * gap;
-  const pixelHeight = depth * cellSize + (depth - 1) * gap;
-
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        pointerEvents: 'none',
-        zIndex: 5,
-        left: `${left}px`,
-        top: `${top}px`,
-        width: `${pixelWidth}px`,
-        height: `${pixelHeight}px`,
-        border: `2px dashed ${categoryColor}`,
-        backgroundColor: `${categoryColor}15`,
-        borderRadius: '4px',
-        transition: 'all 200ms ease-out',
-      }}
-    />
-  );
+  return <div style={style} />;
 }

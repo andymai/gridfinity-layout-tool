@@ -5,7 +5,7 @@
  * size-suggestions and grid-editor features, respecting module boundaries.
  */
 
-import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useLabsStore } from '@/core/store/labs';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
@@ -15,19 +15,24 @@ import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { LayerId } from '@/core/types';
 import { useSizeSuggestions } from '@/features/size-suggestions/hooks';
-import { NextBinPreview, SuggestionGhost } from '@/features/size-suggestions';
 import type { SizeSuggestion } from '@/features/size-suggestions/types';
+import { parseSize } from '@/features/size-suggestions/utils/parseSize';
 
-interface SizeSuggestionsOverlayProps {
+export interface SizeSuggestionsOverlayProps {
   cellSize: number;
   gap: number;
   activeLayerId: LayerId;
   activeLayerHeight: number;
+  onAccept: (suggestion: SizeSuggestion, layerId: LayerId, layerHeight: number) => void;
+  categoryColor: string;
 }
 
 interface UseSizeSuggestionsIntegrationReturn {
   enabled: boolean;
-  SizeSuggestionsOverlay: ((props: SizeSuggestionsOverlayProps) => ReactNode) | null;
+  overlayProps: {
+    onAccept: (suggestion: SizeSuggestion, layerId: LayerId, layerHeight: number) => void;
+    categoryColor: string;
+  } | null;
 }
 
 export function useSizeSuggestionsIntegration(): UseSizeSuggestionsIntegrationReturn {
@@ -45,28 +50,30 @@ export function useSizeSuggestionsIntegration(): UseSizeSuggestionsIntegrationRe
   );
   const activeCategoryColor = activeCategory?.color ?? '#6366f1';
 
+  const hasInitialFetchRef = useRef(false);
   useEffect(() => {
-    if (enabled) {
+    if (enabled && !hasInitialFetchRef.current) {
+      hasInitialFetchRef.current = true;
       fetchSuggestions();
     }
   }, [enabled, fetchSuggestions]);
 
   const handleAcceptSuggestion = useCallback(
-    (suggestion: SizeSuggestion, activeLayerId: LayerId, layerHeight: number) => {
+    (suggestion: SizeSuggestion, layerId: LayerId, layerHeight: number) => {
       const pos = suggestion.position;
       if (!pos) return;
 
-      const [width, depth] = suggestion.size.split('x').map(Number);
-      if (!width || !depth) return;
+      const dims = parseSize(suggestion.size);
+      if (!dims) return;
 
       execute(() => {
         const result = addBin({
           x: pos.x,
           y: pos.y,
-          width,
-          depth,
+          width: dims.width,
+          depth: dims.depth,
           height: layerHeight,
-          layerId: activeLayerId,
+          layerId,
           category: activeCategoryId,
         });
 
@@ -77,10 +84,10 @@ export function useSizeSuggestionsIntegration(): UseSizeSuggestionsIntegrationRe
               id: result.value,
               x: pos.x,
               y: pos.y,
-              width,
-              depth,
+              width: dims.width,
+              depth: dims.depth,
               height: layerHeight,
-              layerId: activeLayerId,
+              layerId,
               category: activeCategoryId,
               label: '',
               notes: '',
@@ -95,23 +102,14 @@ export function useSizeSuggestionsIntegration(): UseSizeSuggestionsIntegrationRe
   );
 
   if (!enabled) {
-    return { enabled: false, SizeSuggestionsOverlay: null };
+    return { enabled: false, overlayProps: null };
   }
 
-  const SizeSuggestionsOverlay = ({
-    cellSize,
-    gap,
-    activeLayerId,
-    activeLayerHeight,
-  }: SizeSuggestionsOverlayProps): ReactNode => (
-    <>
-      <SuggestionGhost cellSize={cellSize} gap={gap} categoryColor={activeCategoryColor} />
-      <NextBinPreview
-        onAccept={(s) => handleAcceptSuggestion(s, activeLayerId, activeLayerHeight)}
-        categoryColor={activeCategoryColor}
-      />
-    </>
-  );
-
-  return { enabled: true, SizeSuggestionsOverlay };
+  return {
+    enabled: true,
+    overlayProps: {
+      onAccept: handleAcceptSuggestion,
+      categoryColor: activeCategoryColor,
+    },
+  };
 }
