@@ -461,6 +461,55 @@ describe('history store', () => {
       expect(useSelectionStore.getState().selectedBinIds).toEqual([bin1Id]);
     });
 
+    it('resets activeLayerId when active layer does not exist in restored layout', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+      // Save state with only the default layer
+      push(JSON.parse(JSON.stringify(layout)));
+
+      // Add a new layer and switch to it
+      const addLayerResult = useLayoutStore.getState().addLayer('Layer 2');
+      if (!isOk(addLayerResult)) throw new Error('addLayer failed');
+      const newLayerId = addLayerResult.value;
+
+      // Set the new layer as active
+      useSelectionStore.setState({ activeLayerId: newLayerId });
+      expect(useSelectionStore.getState().activeLayerId).toBe(newLayerId);
+
+      // Undo the layer addition — restores layout without the new layer
+      undo();
+
+      // The active layer should be reset to a valid layer from the restored layout
+      const activeLayerAfterUndo = useSelectionStore.getState().activeLayerId;
+      const restoredLayers = useLayoutStore.getState().layout.layers;
+      const activeLayerExists = restoredLayers.some((l) => l.id === activeLayerAfterUndo);
+      expect(activeLayerExists).toBe(true);
+    });
+
+    it('resets activeCategoryId when active category does not exist in restored layout', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      // Save state
+      push(JSON.parse(JSON.stringify(layout)));
+
+      // Add a new category and switch to it
+      const addCatResult = useLayoutStore.getState().addCategory('Custom Cat');
+      if (!isOk(addCatResult)) throw new Error('addCategory failed');
+      const newCatId = addCatResult.value;
+
+      useSelectionStore.setState({ activeCategoryId: newCatId });
+      expect(useSelectionStore.getState().activeCategoryId).toBe(newCatId);
+
+      // Undo — restores layout without the new category
+      undo();
+
+      const activeCatAfterUndo = useSelectionStore.getState().activeCategoryId;
+      const restoredCategories = useLayoutStore.getState().layout.categories;
+      const activeCatExists = restoredCategories.some((c) => c.id === activeCatAfterUndo);
+      expect(activeCatExists).toBe(true);
+    });
+
     it('prunes stale selections on redo', () => {
       const { push, undo, redo } = useHistoryStore.getState();
       const layout = useLayoutStore.getState().layout;

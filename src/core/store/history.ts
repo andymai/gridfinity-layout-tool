@@ -31,6 +31,8 @@ function cloneLayout(layout: Layout): Layout {
  */
 function pruneStaleSelections(restoredLayout: Layout): void {
   const binIds = new Set(restoredLayout.bins.map((b) => b.id));
+  const layerIds = new Set(restoredLayout.layers.map((l) => l.id));
+  const categoryIds = new Set(restoredLayout.categories.map((c) => c.id));
   const selectionState = useSelectionStore.getState();
 
   const prunedIds = selectionState.selectedBinIds.filter((id) => binIds.has(id));
@@ -44,6 +46,16 @@ function pruneStaleSelections(restoredLayout: Layout): void {
 
   if (selectionState.quickLabelBinId && !binIds.has(selectionState.quickLabelBinId)) {
     useSelectionStore.setState({ quickLabelBinId: null });
+  }
+
+  // Reset active layer if it no longer exists in the restored layout
+  if (!layerIds.has(selectionState.activeLayerId) && restoredLayout.layers.length > 0) {
+    useSelectionStore.setState({ activeLayerId: restoredLayout.layers[0].id });
+  }
+
+  // Reset active category if it no longer exists in the restored layout
+  if (!categoryIds.has(selectionState.activeCategoryId) && restoredLayout.categories.length > 0) {
+    useSelectionStore.setState({ activeCategoryId: restoredLayout.categories[0].id });
   }
 }
 

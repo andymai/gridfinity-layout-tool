@@ -207,6 +207,21 @@ describe('migration.ts', () => {
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0]).toContain('layout-1');
     });
+
+    it('sets success to false when any layout fails to migrate', async () => {
+      vi.mocked(backend.isIndexedDBAvailable).mockResolvedValue(true);
+      vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
+      vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue([]);
+      vi.mocked(localStorageBackend.loadLayout)
+        .mockReturnValueOnce(ok(null)) // layout-1 fails (not found)
+        .mockReturnValueOnce(ok(createTestLayout())); // layout-2 succeeds
+      vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
+
+      const result = await migrateAllLayoutsToIndexedDB();
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toHaveLength(1);
+    });
   });
 
   describe('getMigrationStatus', () => {

@@ -170,6 +170,11 @@ export async function migrateAllLayoutsToIndexedDB(): Promise<BulkMigrationResul
     }
   }
 
+  // Mark as failed if any individual layout migration errored
+  if (result.errors.length > 0) {
+    result.success = false;
+  }
+
   // Only set migration flag if all layouts migrated successfully
   if (result.errors.length === 0) {
     window.localStorage.setItem(MIGRATION_FLAG_KEY, 'true');

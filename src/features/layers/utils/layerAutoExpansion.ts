@@ -35,7 +35,10 @@ export function calculateLayerAutoExpansion(
 ): LayerAutoExpansionResult {
   // Find bins on the top layer that exceed its height
   const topLayerBins = bins.filter((b) => b.layerId === topLayer.id);
-  const binsExceedingLayer = topLayerBins.filter((b) => b.height > topLayer.height);
+  // Use effective height (bin height + clearance) for protrusion checks,
+  // matching how collision detection calculates blocked zones
+  const effectiveHeight = (b: Bin) => b.height + (b.clearanceHeight ?? 0);
+  const binsExceedingLayer = topLayerBins.filter((b) => effectiveHeight(b) > topLayer.height);
 
   // No bins exceed layer height - no expansion needed
   if (binsExceedingLayer.length === 0) {
@@ -45,9 +48,9 @@ export function calculateLayerAutoExpansion(
     };
   }
 
-  // Find the smallest bin height that exceeds the layer (not tallest!)
+  // Find the smallest effective height that exceeds the layer (not tallest!)
   // This preserves intentionally tall bins while accommodating the shortest protruding ones
-  const smallestExceedingHeight = Math.min(...binsExceedingLayer.map((b) => b.height));
+  const smallestExceedingHeight = Math.min(...binsExceedingLayer.map(effectiveHeight));
   const heightDeficit = smallestExceedingHeight - topLayer.height;
 
   // Check if expanding would leave room for new layer (minimum 1 unit)

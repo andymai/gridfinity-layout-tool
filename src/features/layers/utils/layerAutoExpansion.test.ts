@@ -189,6 +189,18 @@ describe('calculateLayerAutoExpansion', () => {
       expect(result.newHeight).toBe(2);
     });
 
+    it('accounts for clearanceHeight when determining if expansion is needed', () => {
+      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 3 };
+      // Bin height (3) fits within layer, but clearanceHeight (2) makes effective height 5
+      const bins: Bin[] = [{ ...createBin('bin1', 'layer1', 3), clearanceHeight: 2 }];
+
+      const result = calculateLayerAutoExpansion(topLayer, bins, 3, 10);
+
+      // Should need expansion because effective height (3 + 2 = 5) exceeds layer height (3)
+      expect(result.needsExpansion).toBe(true);
+      expect(result.newHeight).toBe(5); // effective height including clearance
+    });
+
     it('handles drawer at exact capacity (no room for any layer)', () => {
       const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
       const bins: Bin[] = [createBin('bin1', 'layer1', 3)];
