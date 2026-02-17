@@ -87,6 +87,13 @@ describe('Labs Feature Registry', () => {
   });
 
   describe('FEATURE_FLAGS constant', () => {
+    it('should include size-suggestions feature flag', () => {
+      const feature = FEATURE_FLAGS.find((f) => f.id === 'size-suggestions');
+      expect(feature).toBeDefined();
+      expect(feature?.status).toBe('experimental');
+      expect(feature?.defaultEnabled).toBe(false);
+    });
+
     it('has required properties on each feature', () => {
       for (const feature of FEATURE_FLAGS) {
         expect(feature.id).toBeDefined();

@@ -42,6 +42,17 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
     comingSoon: true,
   },
+  {
+    id: 'size-suggestions',
+    name: 'Smart Size Suggestions',
+    description:
+      'Tetris-style "Next Bin" predictions based on community usage patterns. Shows a suggested bin size and position — click to auto-place.',
+    status: 'experimental',
+    risk: 'low',
+    addedAt: '2026-02',
+    requiresRefresh: false,
+    defaultEnabled: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];
