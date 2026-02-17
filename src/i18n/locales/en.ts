@@ -1329,6 +1329,8 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.sendToBack': 'Send to back',
   'binDesigner.cutoutEditor.group': 'Group (Ctrl+G)',
   'binDesigner.cutoutEditor.ungroup': 'Ungroup (Ctrl+Shift+G)',
+  'binDesigner.cutoutDesktopOnly':
+    'The cutout editor is available on desktop. Please switch to a wider screen to use this feature.',
   'binDesigner.walls.pattern.label': 'Wall pattern',
   'binDesigner.walls.pattern.none': 'Solid',
   'binDesigner.walls.pattern.honeycomb': 'Honeycomb',

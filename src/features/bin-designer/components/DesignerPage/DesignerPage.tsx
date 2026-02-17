@@ -163,7 +163,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   // Warn before closing tab with unsaved changes
   useUnsavedWarning();
 
-  const { isDesktop, isMobile } = useResponsive();
+  const { isDesktop, isMobile, isLandscape } = useResponsive();
   const cutoutEditorOpen = useDesignerStore((s) => s.ui.cutoutEditorOpen);
   const [splitRatio, setSplitRatio] = useState(loadSplitRatio);
   const t = useTranslation();
@@ -427,6 +427,28 @@ export function DesignerPage(_props: DesignerPageProps) {
             </svg>
           </button>
 
+          {/* Export button (icon only, for mobile) */}
+          <button
+            className="btn btn-ghost btn-icon sm:hidden"
+            onClick={() => setExportDialogOpen(true)}
+            disabled={!canExport}
+            aria-label={t('binDesigner.exportBinAsStl')}
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
+              />
+            </svg>
+          </button>
+
           {/* Export button */}
           <button
             onClick={() => setExportDialogOpen(true)}
@@ -538,9 +560,56 @@ export function DesignerPage(_props: DesignerPageProps) {
             <PreviewCanvas />
           </div>
         </main>
+      ) : !isDesktop && isLandscape ? (
+        /* Landscape tablet/mobile: side-by-side */
+        <main className="flex flex-1 overflow-hidden">
+          {!isDesktop && cutoutEditorOpen && (
+            <div className="flex items-center gap-2 bg-info/10 px-4 py-2 text-xs text-info border-b border-info/20">
+              <svg
+                className="h-4 w-4 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{t('binDesigner.cutoutDesktopOnly')}</span>
+            </div>
+          )}
+          <div className="relative flex-1">
+            <PreviewCanvas />
+          </div>
+          <div className="w-64 flex-shrink-0 overflow-hidden border-l border-stroke-subtle bg-surface-secondary">
+            <ParameterPanel />
+          </div>
+        </main>
       ) : (
         /* Tablet/Mobile: stacked */
         <main className="flex flex-1 flex-col overflow-hidden">
+          {!isDesktop && cutoutEditorOpen && (
+            <div className="flex items-center gap-2 bg-info/10 px-4 py-2 text-xs text-info border-b border-info/20">
+              <svg
+                className="h-4 w-4 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{t('binDesigner.cutoutDesktopOnly')}</span>
+            </div>
+          )}
+
           {/* 3D preview area - taller on tablet, shorter on mobile */}
           <div
             className="relative flex-shrink-0 border-b border-stroke-subtle"

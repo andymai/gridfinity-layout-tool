@@ -1491,5 +1491,6 @@
   "toolbar.zoomIn": "Zoomer",
   "toolbar.zoomInKey": "Zoomer (+)",
   "toolbar.zoomOut": "Dézoomer",
-  "toolbar.zoomOutKey": "Dézoomer (−)"
+  "toolbar.zoomOutKey": "Dézoomer (−)",
+  "binDesigner.cutoutDesktopOnly": "L'éditeur de découpes est disponible sur ordinateur. Veuillez passer à un écran plus large pour utiliser cette fonctionnalité."
 }

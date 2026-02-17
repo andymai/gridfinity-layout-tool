@@ -1491,5 +1491,6 @@
   "toolbar.zoomIn": "Zoom inn",
   "toolbar.zoomInKey": "Zoom inn (+)",
   "toolbar.zoomOut": "Zoom ut",
-  "toolbar.zoomOutKey": "Zoom ut (−)"
+  "toolbar.zoomOutKey": "Zoom ut (−)",
+  "binDesigner.cutoutDesktopOnly": "Utskjæringsredigereren er tilgjengelig på datamaskinen. Bytt til en bredere skjerm for å bruke denne funksjonen."
 }
