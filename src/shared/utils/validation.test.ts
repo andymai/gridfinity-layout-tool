@@ -243,6 +243,21 @@ describe('validateImport', () => {
     expect(result.errors.some((e) => e.includes('exceeds drawer width'))).toBe(true);
   });
 
+  it('does not use invalid bins for collision checks on subsequent bins', () => {
+    const layout = createTestLayout();
+    // Bin 0: exceeds drawer width (x=9, width=2 in a 10-wide drawer)
+    // Bin 1: valid bin at (8,0) — overlaps with bin 0's footprint but should NOT
+    //   be flagged as colliding since bin 0 is invalid and shouldn't be in the pool
+    layout.bins = [
+      createTestBin({ id: 'bad', x: 9, width: 2, depth: 2 }),
+      createTestBin({ id: 'good', x: 8, y: 0, width: 2, depth: 2 }),
+    ];
+    const result = validateImport(layout);
+    // Should have exactly 1 error (the out-of-bounds bin), not 2
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toContain('Bin 0');
+  });
+
   it('rejects total layer height exceeding drawer', () => {
     const layout = createTestLayout();
     layout.layers = [

@@ -321,10 +321,13 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const handleRemediate = useCallback(() => {
     if (!halfBinViolation) return;
 
+    let movedCount = 0;
     execute(() => {
-      // Move all fractional bins to staging
+      // Move all fractional bins to staging (skip already-deleted bins)
       for (const id of halfBinViolation.binIds) {
-        if (isErr(updateBin(toBinId(id), { layerId: STAGING_ID }))) break;
+        const result = updateBin(toBinId(id), { layerId: STAGING_ID });
+        if (isErr(result)) continue;
+        movedCount++;
       }
     });
 
@@ -333,10 +336,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
     // Close modal and show success message
     setShowHalfBinBlockedModal(false);
-    addToast(
-      `Moved ${halfBinViolation.count} bin${halfBinViolation.count !== 1 ? 's' : ''} to staging`,
-      'success'
-    );
+    addToast(`Moved ${movedCount} bin${movedCount !== 1 ? 's' : ''} to staging`, 'success');
   }, [halfBinViolation, execute, updateBin, setHalfBinMode, addToast]);
 
   // Save current settings as defaults
