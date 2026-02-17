@@ -161,7 +161,7 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
  *
  * Renders a responsive layout (desktop: side panel + preview; tablet/mobile: stacked preview + tabbed controls)
  * and the header actions and dialogs required to edit parameters, auto-generate meshes, autosave, share/load designs,
- * add designs to an export cart, and open the export flow.
+ * and open the export flow.
  *
  * @param onNavigateBack - Callback invoked when the user requests navigation back to the layout planner.
  * @returns The rendered Designer page element.
