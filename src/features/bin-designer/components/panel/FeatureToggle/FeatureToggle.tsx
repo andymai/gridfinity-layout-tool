@@ -66,15 +66,15 @@ export function FeatureToggle({
           disabled={isDisabled}
           className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
             isDisabled
-              ? 'cursor-not-allowed bg-stroke-subtle opacity-50'
+              ? 'cursor-not-allowed bg-surface-tertiary opacity-50'
               : checked
                 ? 'bg-accent'
-                : 'bg-stroke-subtle'
+                : 'bg-surface-tertiary'
           }`}
         >
           <span
-            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
-              isActive ? 'translate-x-6' : 'translate-x-0.5'
+            className={`inline-block h-5 w-5 transform rounded-full shadow transition-transform ${
+              isActive ? 'translate-x-6 bg-white' : 'translate-x-0.5 bg-content-tertiary'
             }`}
           />
         </button>
