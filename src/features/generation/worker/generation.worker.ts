@@ -222,8 +222,7 @@ async function handleExport(payload: ExportPayload): Promise<void> {
       payload.params,
       payload.format,
       payload.tolerance,
-      payload.angularTolerance,
-      payload.includeFaceGroups
+      payload.angularTolerance
     );
 
     // Transfer the ArrayBuffer (zero-copy to main thread)

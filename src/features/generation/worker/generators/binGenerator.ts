@@ -125,8 +125,7 @@ export async function exportBin(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = 5,
-  includeFaceGroups = false
+  angularTolerance = 5
 ): Promise<ExportResult> {
   // Regenerate if no cached solid (with forExport=true for full-fidelity geometry)
   if (!getLastSolid()) {
@@ -156,15 +155,7 @@ export async function exportBin(
   );
   const data = await blob.arrayBuffer();
 
-  // Optionally mesh the solid to get face groups for 3MF coloring.
-  // Uses the same tessellation params so triangle order matches the STL.
-  let faceGroups: readonly FaceGroupData[] | undefined;
-  if (includeFaceGroups) {
-    const meshData = generateBin(params, undefined, true);
-    faceGroups = meshData.faceGroups;
-  }
-
-  return { data, fileName: `${name}.stl`, faceGroups };
+  return { data, fileName: `${name}.stl` };
 }
 
 // ─── Main Entry Point ────────────────────────────────────────────────────────

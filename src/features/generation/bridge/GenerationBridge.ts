@@ -244,7 +244,7 @@ export class GenerationBridge {
   async exportBin(
     params: BinParams,
     format: ExportFormat,
-    options?: { tolerance?: number; angularTolerance?: number; includeFaceGroups?: boolean }
+    options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<ExportResult> {
     if (this.destroyed) {
       throw new Error('Bridge has been destroyed');
@@ -274,7 +274,6 @@ export class GenerationBridge {
           format,
           tolerance: options?.tolerance,
           angularTolerance: options?.angularTolerance,
-          includeFaceGroups: options?.includeFaceGroups,
         },
       });
     });

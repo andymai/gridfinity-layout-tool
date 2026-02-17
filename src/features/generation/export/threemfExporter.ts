@@ -172,10 +172,9 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   xml += `<model unit="millimeter" xml:lang="en-US" xmlns="${NS}">\n`;
 
   // Metadata
-  xml += '  <metadata name="Title">' + escapeXml(options.name) + '</metadata>\n';
+  xml += `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
   xml += '  <metadata name="Designer">Gridfinity Layout Tool</metadata>\n';
-  xml +=
-    '  <metadata name="CreationDate">' + new Date().toISOString().split('T')[0] + '</metadata>\n';
+  xml += `  <metadata name="CreationDate">${new Date().toISOString().split('T')[0]}</metadata>\n`;
 
   // Print settings as custom metadata
   if (options.printSettings) {
