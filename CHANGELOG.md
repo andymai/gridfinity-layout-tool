@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.1...gridfinity-layout-tool-v3.13.2) (2026-02-17)
+
+
+### Bug Fixes
+
+* 4 bugs found via systematic codebase audit (round 2) ([#767](https://github.com/andymai/gridfinity-layout-tool/issues/767)) ([6b538f3](https://github.com/andymai/gridfinity-layout-tool/commit/6b538f3ad4906c423495290037f33382a002ece1))
+
 ## [3.13.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.0...gridfinity-layout-tool-v3.13.1) (2026-02-17)
 
 
