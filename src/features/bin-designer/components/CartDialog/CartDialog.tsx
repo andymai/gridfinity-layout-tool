@@ -103,8 +103,8 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
 
   const handleConfirmClear = useCallback(() => {
     clearCart();
-    addToast({ message: 'Cart cleared', type: 'success', duration: 2000 });
-  }, [clearCart, addToast]);
+    addToast({ message: t('binDesigner.cartCleared'), type: 'success', duration: 2000 });
+  }, [clearCart, addToast, t]);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();

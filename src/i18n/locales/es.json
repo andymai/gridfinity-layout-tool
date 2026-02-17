@@ -1494,5 +1494,7 @@
   "toolbar.zoomOutKey": "Alejar (−)",
   "binDesigner.cutoutDesktopOnly": "El editor de recortes está disponible en escritorio. Cambie a una pantalla más ancha para usar esta función.",
   "binDesigner.clearCartConfirm": "¿Eliminar todos los {count} artículos del carrito?",
-  "binDesigner.newDesignConfirm": "¿Iniciar un nuevo diseño? Tu diseño actual se guarda y se puede cargar más tarde."
+  "binDesigner.newDesignConfirm": "¿Iniciar un nuevo diseño? Tu diseño actual se guarda y se puede cargar más tarde.",
+  "binDesigner.cartCleared": "Carrito vaciado",
+  "binDesigner.newDesignCreated": "Nuevo diseño creado"
 }

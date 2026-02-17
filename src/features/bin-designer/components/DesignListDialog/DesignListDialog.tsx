@@ -191,16 +191,16 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     }
     newDesign();
     syncUrlToDesign(null);
-    addToast({ message: 'New design created', type: 'success', duration: 2000 });
+    addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
     onClose();
-  }, [newDesign, syncUrlToDesign, addToast, onClose]);
+  }, [newDesign, syncUrlToDesign, addToast, onClose, t]);
 
   const handleConfirmNewDesign = useCallback(() => {
     newDesign();
     syncUrlToDesign(null);
-    addToast({ message: 'New design created', type: 'success', duration: 2000 });
+    addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
     onClose();
-  }, [newDesign, syncUrlToDesign, addToast, onClose]);
+  }, [newDesign, syncUrlToDesign, addToast, onClose, t]);
 
   const handleRename = useCallback(
     async (design: SavedDesign, newName: string) => {

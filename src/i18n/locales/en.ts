@@ -1379,6 +1379,7 @@ const en: Record<string, string> = {
     'Changes are saved automatically as you design',
   'binDesigner.clearCart': 'Clear cart',
   'binDesigner.clearCartConfirm': 'Remove all {count} items from cart?',
+  'binDesigner.cartCleared': 'Cart cleared',
   'binDesigner.columns': 'Columns',
   'binDesigner.compartments': 'compartments',
   'binDesigner.compartments.count': '{count} compartments',
@@ -1426,6 +1427,7 @@ const en: Record<string, string> = {
   'binDesigner.newDesign': 'New Design',
   'binDesigner.newDesignConfirm':
     'Start a new design? Your current design is saved and can be loaded later.',
+  'binDesigner.newDesignCreated': 'New design created',
   'binDesigner.noSavedDesignsYet': 'No saved designs yet',
   'binDesigner.or': 'or',
   'binDesigner.pinchToZoom': 'Pinch to zoom',
