@@ -155,10 +155,18 @@ export function toIndexedMeshData(
     vertices: ArrayLike<number>;
     normals: ArrayLike<number>;
     triangles: ArrayLike<number>;
+    faceGroups?: ReadonlyArray<{ start: number; count: number; faceId: number; origin: number }>;
   },
   skipNormals = false,
-  edgeVertices?: ArrayLike<number>
+  edgeVertices?: ArrayLike<number>,
+  originToTag?: ReadonlyMap<number, number>
 ): MeshData {
+  const faceGroups = meshResult.faceGroups?.map((g) => ({
+    start: g.start,
+    count: g.count,
+    tag: originToTag?.get(g.origin) ?? 255, // FeatureTag.UNKNOWN
+  }));
+
   return {
     vertices:
       meshResult.vertices instanceof Float32Array
@@ -179,5 +187,6 @@ export function toIndexedMeshData(
         : new Float32Array(edgeVertices)
       : new Float32Array(0),
     triangleCount: meshResult.triangles.length / 3,
+    faceGroups,
   };
 }

@@ -542,7 +542,7 @@ export function generateBin(
 
   onProgress?.('merge', 1.0);
   // Skip normals for large bin preview (GPU flat shading is faster)
-  return toIndexedMeshData(shapeMesh, !useHighQuality, edgeVertices);
+  return toIndexedMeshData(shapeMesh, !useHighQuality, edgeVertices, undefined);
 }
 
 // ─── Split Export ────────────────────────────────────────────────────────────
