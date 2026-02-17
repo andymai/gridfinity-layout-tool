@@ -322,9 +322,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     if (!halfBinViolation) return;
 
     execute(() => {
-      // Move all fractional bins to staging
+      // Move all fractional bins to staging (skip already-deleted bins)
       for (const id of halfBinViolation.binIds) {
-        if (isErr(updateBin(toBinId(id), { layerId: STAGING_ID }))) break;
+        const result = updateBin(toBinId(id), { layerId: STAGING_ID });
+        if (isErr(result)) continue;
       }
     });
 
