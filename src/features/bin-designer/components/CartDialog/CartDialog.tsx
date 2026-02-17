@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import { useCartStore } from '@/features/bin-designer/store/cart';
 import { batchExport } from '@/features/bin-designer/utils/batchExport';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
@@ -94,11 +95,16 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
     }
   }, [items, addToast]);
 
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
   const handleClearCart = useCallback(() => {
-    if (!window.confirm(`Remove all ${items.length} items from cart?`)) return;
+    setShowClearConfirm(true);
+  }, []);
+
+  const handleConfirmClear = useCallback(() => {
     clearCart();
-    addToast({ message: 'Cart cleared', type: 'success', duration: 2000 });
-  }, [items.length, clearCart, addToast]);
+    addToast({ message: t('binDesigner.cartCleared'), type: 'success', duration: 2000 });
+  }, [clearCart, addToast, t]);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
@@ -202,7 +208,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
         {items.length > 0 && (
           <div className="border-t border-stroke-subtle px-5 py-4">
             {/* Estimates summary */}
-            <div className="mb-3 flex gap-4 text-xs text-content-secondary">
+            <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-content-secondary">
               <span>{t('binDesigner.cart.filament', { amount: totals.filament.toFixed(1) })}</span>
               <span>{formatTime(totals.time)}</span>
               <span>{t('binDesigner.cart.cost', { amount: totals.cost.toFixed(2) })}</span>
@@ -294,6 +300,15 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        title={t('binDesigner.clearCart')}
+        message={t('binDesigner.clearCartConfirm', { count: items.length })}
+        confirmText={t('common.clear')}
+        destructive
+        onConfirm={handleConfirmClear}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   );
 }

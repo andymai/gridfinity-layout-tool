@@ -64,7 +64,7 @@ export function FeatureToggle({
           aria-label={label}
           onClick={onChange}
           disabled={isDisabled}
-          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
             isDisabled
               ? 'cursor-not-allowed bg-stroke-subtle opacity-50'
               : checked
@@ -73,8 +73,8 @@ export function FeatureToggle({
           }`}
         >
           <span
-            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${
-              isActive ? 'translate-x-5' : 'translate-x-0.5'
+            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+              isActive ? 'translate-x-6' : 'translate-x-0.5'
             }`}
           />
         </button>
@@ -100,7 +100,7 @@ export function FeatureToggle({
               onClick={() => setCustomizeOpen(!customizeOpen)}
               aria-expanded={customizeOpen}
               aria-controls={contentId}
-              className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+              className="text-xs font-medium text-accent py-2 -my-2 hover:text-accent/80 transition-colors"
             >
               {customizeOpen ? t('common.done') : t('binDesigner.customize')}
             </button>

@@ -1491,5 +1491,10 @@
   "toolbar.zoomIn": "Zoomer",
   "toolbar.zoomInKey": "Zoomer (+)",
   "toolbar.zoomOut": "Dézoomer",
-  "toolbar.zoomOutKey": "Dézoomer (−)"
+  "toolbar.zoomOutKey": "Dézoomer (−)",
+  "binDesigner.cutoutDesktopOnly": "L'éditeur de découpes est disponible sur ordinateur. Veuillez passer à un écran plus large pour utiliser cette fonctionnalité.",
+  "binDesigner.clearCartConfirm": "Supprimer tous les {count} articles du panier ?",
+  "binDesigner.newDesignConfirm": "Commencer un nouveau design ? Votre design actuel est sauvegardé et peut être chargé ultérieurement.",
+  "binDesigner.cartCleared": "Panier vidé",
+  "binDesigner.newDesignCreated": "Nouveau design créé"
 }

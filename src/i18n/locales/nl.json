@@ -1491,5 +1491,10 @@
   "toolbar.zoomIn": "Inzoomen",
   "toolbar.zoomInKey": "Inzoomen (+)",
   "toolbar.zoomOut": "Uitzoomen",
-  "toolbar.zoomOutKey": "Uitzoomen (−)"
+  "toolbar.zoomOutKey": "Uitzoomen (−)",
+  "binDesigner.cutoutDesktopOnly": "De uitsnijdingseditor is beschikbaar op desktop. Schakel over naar een breder scherm om deze functie te gebruiken.",
+  "binDesigner.clearCartConfirm": "Alle {count} items uit de winkelwagen verwijderen?",
+  "binDesigner.newDesignConfirm": "Een nieuw ontwerp starten? Je huidige ontwerp is opgeslagen en kan later worden geladen.",
+  "binDesigner.cartCleared": "Winkelwagen geleegd",
+  "binDesigner.newDesignCreated": "Nieuw ontwerp aangemaakt"
 }

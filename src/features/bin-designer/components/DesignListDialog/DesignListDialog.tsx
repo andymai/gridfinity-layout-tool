@@ -28,6 +28,7 @@ import { DesignImportView } from '../DesignImportView';
 import type { SavedDesign, BinParams } from '../../types';
 import { useThumbnailRegeneration } from '../../hooks/useThumbnailRegeneration';
 import { useTranslation } from '@/i18n';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import type { ViewMode } from '@/shared/components/ViewModeToggle';
 import { downloadDesignAsFile } from '@/features/bin-designer/utils/designJson';
 
@@ -180,20 +181,26 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [loadDesign, navigateToDesign, addToast, onClose, currentDesignId]
   );
 
+  const [showNewDesignConfirm, setShowNewDesignConfirm] = useState(false);
+
   const handleNewDesign = useCallback(() => {
     const state = useDesignerStore.getState();
     if (state.currentDesignId && state.history.past.length > 0) {
-      if (
-        !window.confirm('Start a new design? Your current design is saved and can be loaded later.')
-      ) {
-        return;
-      }
+      setShowNewDesignConfirm(true);
+      return;
     }
     newDesign();
     syncUrlToDesign(null);
-    addToast({ message: 'New design created', type: 'success', duration: 2000 });
+    addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
     onClose();
-  }, [newDesign, syncUrlToDesign, addToast, onClose]);
+  }, [newDesign, syncUrlToDesign, addToast, onClose, t]);
+
+  const handleConfirmNewDesign = useCallback(() => {
+    newDesign();
+    syncUrlToDesign(null);
+    addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
+    onClose();
+  }, [newDesign, syncUrlToDesign, addToast, onClose, t]);
 
   const handleRename = useCallback(
     async (design: SavedDesign, newName: string) => {
@@ -354,7 +361,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
           <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowImport(true)}
               className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
@@ -549,6 +556,14 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
           )}
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={showNewDesignConfirm}
+        title={t('binDesigner.newDesign')}
+        message={t('binDesigner.newDesignConfirm')}
+        confirmText={t('binDesigner.newDesign')}
+        onConfirm={handleConfirmNewDesign}
+        onCancel={() => setShowNewDesignConfirm(false)}
+      />
     </div>
   );
 }

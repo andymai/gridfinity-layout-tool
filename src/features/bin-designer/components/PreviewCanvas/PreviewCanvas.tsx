@@ -584,11 +584,11 @@ function TouchHint() {
         <span>{t('binDesigner.2FingersToPan')}</span>
         <button
           onClick={dismiss}
-          className="ml-1 rounded-full p-0.5 hover:bg-white/20"
+          className="ml-1 flex items-center justify-center rounded-full p-2 hover:bg-white/20 min-w-[36px] min-h-[36px]"
           aria-label={t('binDesigner.dismissTouchHints')}
         >
           <svg
-            className="h-3 w-3"
+            className="h-3.5 w-3.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 12 12"

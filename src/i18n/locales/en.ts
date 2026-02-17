@@ -1329,6 +1329,8 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.sendToBack': 'Send to back',
   'binDesigner.cutoutEditor.group': 'Group (Ctrl+G)',
   'binDesigner.cutoutEditor.ungroup': 'Ungroup (Ctrl+Shift+G)',
+  'binDesigner.cutoutDesktopOnly':
+    'The cutout editor is available on desktop. Please switch to a wider screen to use this feature.',
   'binDesigner.walls.pattern.label': 'Wall pattern',
   'binDesigner.walls.pattern.none': 'Solid',
   'binDesigner.walls.pattern.honeycomb': 'Honeycomb',
@@ -1376,6 +1378,8 @@ const en: Record<string, string> = {
   'binDesigner.changesAreSavedAutomaticallyAsYouDe':
     'Changes are saved automatically as you design',
   'binDesigner.clearCart': 'Clear cart',
+  'binDesigner.clearCartConfirm': 'Remove all {count} items from cart?',
+  'binDesigner.cartCleared': 'Cart cleared',
   'binDesigner.columns': 'Columns',
   'binDesigner.compartments': 'compartments',
   'binDesigner.compartments.count': '{count} compartments',
@@ -1421,6 +1425,9 @@ const en: Record<string, string> = {
   'binDesigner.loadingMessage.11': 'Projecting curves...',
   'binDesigner.mmBody': 'mm body',
   'binDesigner.newDesign': 'New Design',
+  'binDesigner.newDesignConfirm':
+    'Start a new design? Your current design is saved and can be loaded later.',
+  'binDesigner.newDesignCreated': 'New design created',
   'binDesigner.noSavedDesignsYet': 'No saved designs yet',
   'binDesigner.or': 'or',
   'binDesigner.pinchToZoom': 'Pinch to zoom',

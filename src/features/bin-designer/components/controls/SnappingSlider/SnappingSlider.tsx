@@ -290,7 +290,7 @@ export function SnappingSlider({
         </div>
 
         {/* Tick labels below track - only key values shown */}
-        <div className="relative mt-1 h-4">
+        <div className="relative mt-1 h-9">
           {options.map((option) => {
             const isActive = Math.abs(option.value - value) < 0.001;
             const showLabel = KEY_VALUES.has(option.value) || isActive;
@@ -301,7 +301,7 @@ export function SnappingSlider({
                 type="button"
                 onClick={() => handleTickClick(option.value)}
                 disabled={disabled}
-                className={`absolute -translate-x-1/2 text-[10px] tabular-nums transition-colors ${
+                className={`absolute -translate-x-1/2 min-h-[36px] flex items-end pb-0.5 text-[11px] tabular-nums transition-colors ${
                   disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:text-content'
                 } ${isActive ? 'font-semibold text-accent' : 'text-content-tertiary'}`}
                 style={{ left: `${getPosition(option.value)}%` }}

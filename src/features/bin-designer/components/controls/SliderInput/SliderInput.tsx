@@ -114,7 +114,7 @@ export function SliderInput({
             max={max}
             step={step}
             disabled={disabled}
-            className="w-14 rounded border border-stroke-subtle bg-surface px-1.5 py-0.5 text-right text-xs tabular-nums text-content disabled:cursor-not-allowed"
+            className="w-16 rounded border border-stroke-subtle bg-surface px-1.5 py-1.5 text-right text-xs min-h-[36px] tabular-nums text-content disabled:cursor-not-allowed"
             aria-label={label}
             aria-describedby={info ? infoId : undefined}
           />

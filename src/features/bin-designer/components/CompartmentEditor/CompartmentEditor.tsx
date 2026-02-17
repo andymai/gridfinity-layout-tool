@@ -27,6 +27,7 @@ import {
 } from '@/features/bin-designer/utils/compartments';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 
 // =============================================================================
 // Color palette for compartment visualization
@@ -87,6 +88,8 @@ function getCompartmentBorder(_id: number, previewColor: string): string {
 
 export function CompartmentEditor() {
   const t = useTranslation();
+  const { isMobile } = useResponsive();
+  const stepperVariant = isMobile ? 'mobile' : 'desktop';
   const {
     compartments,
     width,
@@ -400,7 +403,7 @@ export function CompartmentEditor() {
               min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
               max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
               step={1}
-              variant="desktop"
+              variant={stepperVariant}
               ariaLabel="Columns"
             />
           </div>
@@ -415,7 +418,7 @@ export function CompartmentEditor() {
               min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
               max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
               step={1}
-              variant="desktop"
+              variant={stepperVariant}
               ariaLabel="Rows"
             />
           </div>
@@ -653,7 +656,7 @@ function GridCell({
 
   return (
     <div
-      className="relative touch-manipulation"
+      className="relative touch-manipulation min-w-[28px] min-h-[28px]"
       role="button"
       tabIndex={0}
       aria-label={cellLabel}
