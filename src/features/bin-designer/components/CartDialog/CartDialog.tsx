@@ -202,7 +202,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
         {items.length > 0 && (
           <div className="border-t border-stroke-subtle px-5 py-4">
             {/* Estimates summary */}
-            <div className="mb-3 flex gap-4 text-xs text-content-secondary">
+            <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-content-secondary">
               <span>{t('binDesigner.cart.filament', { amount: totals.filament.toFixed(1) })}</span>
               <span>{formatTime(totals.time)}</span>
               <span>{t('binDesigner.cart.cost', { amount: totals.cost.toFixed(2) })}</span>
