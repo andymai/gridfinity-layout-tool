@@ -114,7 +114,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
 
   // Build feature materials when feature color mode is active
   const featureMaterials = useMemo(() => {
-    if (!useFeatureColors || !geometry || !faceGroups) return null;
+    if (!useFeatureColors || !geometry) return null;
 
     // Clear any existing groups before adding new ones
     geometry.clearGroups();
