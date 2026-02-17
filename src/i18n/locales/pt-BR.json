@@ -1230,8 +1230,6 @@
   "settings.drawerDimensions": "Dimensões do Drawer",
   "settings.drawerSize": "Tamanho do drawer",
   "settings.experimental": "Experimental",
-  "settings.featureColorPreview": "Pré-visualização colorida por recurso",
-  "settings.featureColorPreviewDescription": "Colorir as faces dos bins por tipo de recurso na pré-visualização 3D",
   "settings.filamentCostPerKg": "Custo do filamento",
   "settings.gridSettings": "Configurações da Grade",
   "settings.gridUnit": "Unidade de grade",

@@ -1230,8 +1230,6 @@
   "settings.drawerDimensions": "Drawer-dimensjoner",
   "settings.drawerSize": "Drawer-størrelse",
   "settings.experimental": "Eksperimentell",
-  "settings.featureColorPreview": "Funksjonsfarget forhåndsvisning",
-  "settings.featureColorPreviewDescription": "Farg bin-flater etter funksjonstype i 3D-forhåndsvisningen",
   "settings.filamentCostPerKg": "Filamentkostnad",
   "settings.gridSettings": "Rutenettinnstillinger",
   "settings.gridUnit": "Rutenettenhet",

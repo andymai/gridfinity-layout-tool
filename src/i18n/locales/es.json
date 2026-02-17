@@ -1230,8 +1230,6 @@
   "settings.drawerDimensions": "Dimensiones del Drawer",
   "settings.drawerSize": "Tamaño del drawer",
   "settings.experimental": "Experimental",
-  "settings.featureColorPreview": "Vista previa con colores por característica",
-  "settings.featureColorPreviewDescription": "Colorear las caras del contenedor según el tipo de característica en la vista previa 3D",
   "settings.filamentCostPerKg": "Coste del filamento",
   "settings.gridSettings": "Configuración de Cuadrícula",
   "settings.gridUnit": "Unidad de rejilla",

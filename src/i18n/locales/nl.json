@@ -1230,8 +1230,6 @@
   "settings.drawerDimensions": "Drawer afmetingen",
   "settings.drawerSize": "Drawer formaat",
   "settings.experimental": "Experimenteel",
-  "settings.featureColorPreview": "Voorbeeld met functiekleuren",
-  "settings.featureColorPreviewDescription": "Kleur bin-vlakken op basis van functietype in de 3D-voorbeeldweergave",
   "settings.filamentCostPerKg": "Filamentkosten",
   "settings.gridSettings": "Grid instellingen",
   "settings.gridUnit": "Rastereenheid",

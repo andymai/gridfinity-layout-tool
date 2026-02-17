@@ -1230,8 +1230,6 @@
   "settings.drawerDimensions": "Dimensions du Drawer",
   "settings.drawerSize": "Taille du drawer",
   "settings.experimental": "Expérimental",
-  "settings.featureColorPreview": "Aperçu coloré par fonctionnalité",
-  "settings.featureColorPreviewDescription": "Colorer les faces des bacs par type de fonctionnalité dans l'aperçu 3D",
   "settings.filamentCostPerKg": "Coût du filament",
   "settings.gridSettings": "Paramètres de la grille",
   "settings.gridUnit": "Unité de grille",

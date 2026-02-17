@@ -232,12 +232,6 @@ export interface UserSettings {
   uiDensity: 'compact' | 'default' | 'comfortable';
   /** Override to reduce animations and transitions. */
   reduceMotion: boolean;
-
-  /**
-   * Show feature-colored preview in the bin designer.
-   * Colors faces by their modeling step (scoop, label tab, etc.).
-   */
-  featureColorPreview: boolean;
 }
 
 /**
@@ -289,7 +283,6 @@ export const DEFAULT_SETTINGS: UserSettings = {
   accentColor: 'amber',
   uiDensity: 'default',
   reduceMotion: false,
-  featureColorPreview: false,
 };
 
 /**
