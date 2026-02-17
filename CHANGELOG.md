@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.12.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.4...gridfinity-layout-tool-v3.12.5) (2026-02-17)
+
+
+### Bug Fixes
+
+* **lint:** resolve all 10 ESLint no-unnecessary-condition warnings ([#761](https://github.com/andymai/gridfinity-layout-tool/issues/761)) ([7b831f3](https://github.com/andymai/gridfinity-layout-tool/commit/7b831f3002c1fd4fbb8b4fa5e63db42e2607d16f))
+
 ## [3.12.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.3...gridfinity-layout-tool-v3.12.4) (2026-02-16)
 
 
