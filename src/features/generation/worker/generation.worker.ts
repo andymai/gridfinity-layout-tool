@@ -222,7 +222,8 @@ async function handleExport(payload: ExportPayload): Promise<void> {
       payload.params,
       payload.format,
       payload.tolerance,
-      payload.angularTolerance
+      payload.angularTolerance,
+      payload.includeFaceGroups
     );
 
     // Transfer the ArrayBuffer (zero-copy to main thread)
@@ -232,6 +233,7 @@ async function handleExport(payload: ExportPayload): Promise<void> {
       data: result.data,
       format: payload.format,
       fileName: result.fileName,
+      faceGroups: result.faceGroups,
     };
     self.postMessage(response, { transfer: [result.data] });
   } catch (e) {

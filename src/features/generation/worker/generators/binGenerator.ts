@@ -35,7 +35,7 @@ import {
 } from 'brepjs';
 import type { Shape3D, TransformOp } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import type { MeshData, ExportFormat } from '../../bridge/types';
+import type { MeshData, ExportFormat, FaceGroupData } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 
 // Sub-module imports
@@ -96,6 +96,7 @@ export type { ProgressFn } from './generatorTypes';
 export interface ExportResult {
   readonly data: ArrayBuffer;
   readonly fileName: string;
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 /** Result of a split export: array of piece buffers with grid labels */
@@ -124,7 +125,8 @@ export async function exportBin(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = 5
+  angularTolerance = 5,
+  includeFaceGroups = false
 ): Promise<ExportResult> {
   // Regenerate if no cached solid (with forExport=true for full-fidelity geometry)
   if (!getLastSolid()) {
@@ -153,7 +155,16 @@ export async function exportBin(
     })
   );
   const data = await blob.arrayBuffer();
-  return { data, fileName: `${name}.stl` };
+
+  // Optionally mesh the solid to get face groups for 3MF coloring.
+  // Uses the same tessellation params so triangle order matches the STL.
+  let faceGroups: readonly FaceGroupData[] | undefined;
+  if (includeFaceGroups) {
+    const meshData = generateBin(params, undefined, true);
+    faceGroups = meshData.faceGroups;
+  }
+
+  return { data, fileName: `${name}.stl`, faceGroups };
 }
 
 // ─── Main Entry Point ────────────────────────────────────────────────────────

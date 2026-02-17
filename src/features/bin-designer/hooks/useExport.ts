@@ -140,7 +140,11 @@ export function useExport(): UseExportReturn {
 
         if (format === '3mf') {
           // 3MF: get high-quality STL from worker, parse, then package as 3MF
-          const stlResult = await bridge.exportBin(params, 'stl');
+          // Request faceGroups when feature color preview is enabled
+          const currentFeatureColors = useSettingsStore.getState().settings.featureColorPreview;
+          const stlResult = await bridge.exportBin(params, 'stl', {
+            includeFaceGroups: currentFeatureColors,
+          });
           const { vertices, normals } = parseSTLBinary(stlResult.data);
 
           // Read print settings at call time to avoid capturing reactive values
@@ -149,6 +153,8 @@ export function useExport(): UseExportReturn {
 
           const blob = export3MF(vertices, normals, {
             name: designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`,
+            featureColors: currentFeatureColors,
+            faceGroups: stlResult.faceGroups,
             printSettings: {
               layerHeight: currentPrintSettings.layerHeightMm,
               infillPercent: currentPrintSettings.infillPercent,

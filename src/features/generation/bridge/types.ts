@@ -49,6 +49,8 @@ export interface ExportPayload {
   readonly tolerance?: number;
   /** STL angular tolerance in degrees (default 5) */
   readonly angularTolerance?: number;
+  /** When true, also return faceGroups for provenance-based 3MF coloring. */
+  readonly includeFaceGroups?: boolean;
 }
 
 export interface ExportDividersMessage {
@@ -137,6 +139,8 @@ export interface ExportResultResponse {
   readonly data: ArrayBuffer;
   readonly format: ExportFormat;
   readonly fileName: string;
+  /** Face groups for provenance coloring (only present when includeFaceGroups was requested). */
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 export interface DividersExportResultResponse {
