@@ -168,6 +168,7 @@ function generate(params: BinParams, requestId: string): void {
       edgeVertices: meshData.edgeVertices,
       triangleCount: meshData.triangleCount,
       timingMs,
+      faceGroups: meshData.faceGroups,
     };
     // Transfer typed array buffers for zero-copy to main thread
     self.postMessage(response, {
