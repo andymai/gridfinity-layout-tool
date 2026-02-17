@@ -16,7 +16,7 @@ import {
   renameLayoutEntry,
 } from '@/core/storage/LayoutManager';
 import { expectOk, expectErr } from '@/test/testUtils';
-import { createDefaultLayout, STAGING_ID } from '@/core/constants';
+import { createDefaultLayout, STAGING_ID, CONSTRAINTS } from '@/core/constants';
 import type { Layout, LayoutLibrary, LayoutEntry, Bin } from '@/core/types';
 
 // Mock the backend module
@@ -420,6 +420,18 @@ describe('createLayoutEntry', () => {
 
     expectErr(result);
   });
+
+  it('returns error when library is at max capacity', async () => {
+    const entries = Array.from({ length: CONSTRAINTS.LAYOUTS_MAX }, (_, i) =>
+      createTestEntry(`layout-${i}`, `Layout ${i}`)
+    );
+    const library = createTestLibrary(entries);
+    const layout = createTestLayout();
+
+    const result = await createLayoutEntry(layout, library);
+
+    expect(expectErr(result).code).toBe('LAYOUT_LIBRARY_LIMIT');
+  });
 });
 
 // === deleteLayoutWithEntry Tests ===
@@ -554,6 +566,17 @@ describe('duplicateLayoutEntry', () => {
     const result = await duplicateLayoutEntry('source-id', library);
 
     expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
+  });
+
+  it('returns error when library is at max capacity', async () => {
+    const entries = Array.from({ length: CONSTRAINTS.LAYOUTS_MAX }, (_, i) =>
+      createTestEntry(`layout-${i}`, `Layout ${i}`)
+    );
+    const library = createTestLibrary(entries);
+
+    const result = await duplicateLayoutEntry('layout-0', library);
+
+    expect(expectErr(result).code).toBe('LAYOUT_LIBRARY_LIMIT');
   });
 });
 

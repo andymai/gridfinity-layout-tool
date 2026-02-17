@@ -332,6 +332,7 @@ export function validateImport(data: unknown): ImportValidationResult {
         };
         const message = reasonMap[placementResult.reason] || 'has invalid placement';
         errors.push(`Bin ${i} ${message}`);
+        return; // Don't add invalid bins to collision pool for subsequent checks
       }
     }
 

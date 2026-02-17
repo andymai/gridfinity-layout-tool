@@ -34,7 +34,7 @@ import type {
   ThumbnailBin,
   CloudShareInfo,
 } from '@/core/types';
-import type { Result, StorageError } from '@/core/result';
+import type { Result, StorageError, LayoutLibraryLimitError } from '@/core/result';
 import {
   ok,
   err,
@@ -43,6 +43,7 @@ import {
   storageNotFound,
   storageCorrupted,
   storageUnavailable,
+  layoutLibraryLimit,
 } from '@/core/result';
 import { classifyStorageError, createStorageErrorClassifier } from './errorUtils';
 import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
@@ -309,7 +310,11 @@ export async function createLayoutEntry(
   layout: Layout,
   library: LayoutLibrary,
   options: CreateLayoutOptions = {}
-): Promise<Result<CreateResult, StorageError>> {
+): Promise<Result<CreateResult, StorageError | LayoutLibraryLimitError>> {
+  if (library.entries.length >= CONSTRAINTS.LAYOUTS_MAX) {
+    return err(layoutLibraryLimit(library.entries.length, CONSTRAINTS.LAYOUTS_MAX));
+  }
+
   const layoutId = generateLayoutId();
   const now = Date.now();
 
@@ -451,7 +456,11 @@ export async function deleteLayoutWithEntry(
 export async function duplicateLayoutEntry(
   sourceId: string,
   library: LayoutLibrary
-): Promise<Result<DuplicateResult, StorageError>> {
+): Promise<Result<DuplicateResult, StorageError | LayoutLibraryLimitError>> {
+  if (library.entries.length >= CONSTRAINTS.LAYOUTS_MAX) {
+    return err(layoutLibraryLimit(library.entries.length, CONSTRAINTS.LAYOUTS_MAX));
+  }
+
   // 1. Find source entry
   const sourceEntry = library.entries.find((e) => e.id === sourceId);
   if (!sourceEntry) {

@@ -28,5 +28,9 @@ export function createLayoutFingerprint(layout: Layout): string {
     categories: layout.categories,
     drawer: layout.drawer,
     name: layout.name,
+    purpose: layout.purpose,
+    printBedSize: layout.printBedSize,
+    gridUnitMm: layout.gridUnitMm,
+    heightUnitMm: layout.heightUnitMm,
   });
 }
