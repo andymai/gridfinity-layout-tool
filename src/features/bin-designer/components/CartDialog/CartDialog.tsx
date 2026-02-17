@@ -103,7 +103,6 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
 
   const handleConfirmClear = useCallback(() => {
     clearCart();
-    setShowClearConfirm(false);
     addToast({ message: 'Cart cleared', type: 'success', duration: 2000 });
   }, [clearCart, addToast]);
 

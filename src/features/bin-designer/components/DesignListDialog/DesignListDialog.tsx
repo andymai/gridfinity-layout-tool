@@ -196,7 +196,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   }, [newDesign, syncUrlToDesign, addToast, onClose]);
 
   const handleConfirmNewDesign = useCallback(() => {
-    setShowNewDesignConfirm(false);
     newDesign();
     syncUrlToDesign(null);
     addToast({ message: 'New design created', type: 'success', duration: 2000 });
