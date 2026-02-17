@@ -104,7 +104,7 @@ export const GridToolbar = memo(function GridToolbar({
     <div
       data-grid-toolbar
       ref={toolbarRef}
-      className="flex items-center justify-between px-4 py-[7.5px] bg-surface-secondary border-b border-stroke-subtle"
+      className="flex items-center justify-between px-4 py-[7.5px] bg-surface-secondary border-b border-stroke-subtle overflow-hidden"
     >
       {/* Left: Layer indicator + Paint mode */}
       <div className="flex items-center gap-3">

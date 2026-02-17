@@ -141,7 +141,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
 
   return (
     <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
-      <div className="flex items-center gap-4 min-w-0">
+      <div className="flex items-center gap-2 lg:gap-4 min-w-0">
         <ToolSwitcher />
 
         {/* Divider */}
@@ -168,7 +168,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             fallback={
               <button
                 onClick={handleNameClick}
-                className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+                className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[120px] lg:max-w-[200px]"
                 title={t('header.editLayoutName')}
               >
                 {layout.name}
@@ -178,7 +178,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             <NameFieldHighlight>
               <button
                 onClick={handleNameClick}
-                className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+                className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[120px] lg:max-w-[200px]"
                 title={t('header.editLayoutName')}
               >
                 {layout.name}
@@ -218,7 +218,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
               <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
             ))}
           </svg>
-          <span className="hidden sm:inline">{t('header.layouts')}</span>
+          <span className="hidden lg:inline">{t('header.layouts')}</span>
         </button>
 
         {/* Print Button */}
@@ -236,7 +236,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
               d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
             />
           </svg>
-          <span className="hidden sm:inline">{t('header.print')}</span>
+          <span className="hidden lg:inline">{t('header.print')}</span>
         </button>
       </div>
 

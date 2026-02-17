@@ -142,7 +142,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   }, []);
 
   // Derive narrow state from actual toolbar width (threshold where content starts to clip)
-  const isNarrowToolbar = !isMobile && toolbarWidth > 0 && toolbarWidth < 580;
+  const isNarrowToolbar = !isMobile && toolbarWidth > 0 && toolbarWidth < 640;
 
   // Single interaction hook instance for the entire grid
   const { startDraw, startDrag, startResize } = useInteraction(gridRef);
