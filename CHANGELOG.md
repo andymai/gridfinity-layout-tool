@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.5...gridfinity-layout-tool-v3.13.0) (2026-02-17)
+
+
+### Features
+
+* add face origin provenance pipeline (brepjs 8.3.0) ([#763](https://github.com/andymai/gridfinity-layout-tool/issues/763)) ([7fbc59a](https://github.com/andymai/gridfinity-layout-tool/commit/7fbc59ad171446dcbfa41e4f36b7091786a58fb5))
+
 ## [3.12.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.12.4...gridfinity-layout-tool-v3.12.5) (2026-02-17)
 
 
