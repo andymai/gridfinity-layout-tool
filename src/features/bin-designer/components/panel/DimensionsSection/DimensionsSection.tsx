@@ -9,10 +9,13 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDimensionsSection } from './useDimensionsSection';
 
 export function DimensionsSection() {
   const { state, handlers, t } = useDimensionsSection();
+  const { isMobile } = useResponsive();
+  const stepperVariant = isMobile ? 'mobile' : 'desktop';
 
   return (
     <div className="space-y-3">
@@ -28,7 +31,7 @@ export function DimensionsSection() {
             min={state.minDimension}
             max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
             step={state.dimensionStep}
-            variant="desktop"
+            variant={stepperVariant}
             ariaLabel="Width"
           />
         </div>
@@ -37,7 +40,7 @@ export function DimensionsSection() {
         <button
           type="button"
           onClick={handlers.handleSwapDimensions}
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary transition-colors hover:bg-surface-hover hover:text-content"
+          className={`flex ${isMobile ? 'h-12 w-12' : 'h-8 w-8'} flex-shrink-0 items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary transition-colors hover:bg-surface-hover hover:text-content`}
           title={t('inspector.swapDimensions')}
           aria-label={t('inspector.swapWidthAndDepth')}
         >
@@ -66,7 +69,7 @@ export function DimensionsSection() {
             min={state.minDimension}
             max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
             step={state.dimensionStep}
-            variant="desktop"
+            variant={stepperVariant}
             ariaLabel="Depth"
           />
         </div>
@@ -105,7 +108,7 @@ export function DimensionsSection() {
           min={DESIGNER_CONSTRAINTS.MIN_HEIGHT}
           max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
           step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
-          variant="desktop"
+          variant={stepperVariant}
           ariaLabel="Height"
         />
       </div>
@@ -130,7 +133,7 @@ export function DimensionsSection() {
         >
           {t('binDesigner.halfBinMode')}
         </span>
-        <Checkbox checked={state.halfBinMode} variant="desktop" />
+        <Checkbox checked={state.halfBinMode} variant={stepperVariant} />
       </div>
     </div>
   );

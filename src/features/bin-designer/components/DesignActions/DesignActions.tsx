@@ -133,7 +133,7 @@ export function DesignActions({
               <button
                 role="menuitem"
                 onClick={handleAction(onLoad)}
-                className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+                className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
               >
                 <svg
                   className="w-4 h-4 text-content-secondary"
@@ -157,7 +157,7 @@ export function DesignActions({
             <button
               role="menuitem"
               onClick={handleAction(onDownloadJSON)}
-              className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4 text-content-secondary"
@@ -180,7 +180,7 @@ export function DesignActions({
             <button
               role="menuitem"
               onClick={handleAction(onRename)}
-              className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4 text-content-secondary"
@@ -203,7 +203,7 @@ export function DesignActions({
             <button
               role="menuitem"
               onClick={handleAction(onDuplicate)}
-              className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4 text-content-secondary"
@@ -228,7 +228,7 @@ export function DesignActions({
               role="menuitem"
               onClick={handleDelete}
               className={`
-                w-full px-3 py-2 text-left text-sm flex flex-col gap-0.5 transition-colors
+                w-full px-3 py-2.5 text-left text-sm flex flex-col gap-0.5 transition-colors
                 ${isConfirmingDelete ? 'bg-danger text-on-dark' : 'text-danger hover:bg-surface'}
               `}
             >
