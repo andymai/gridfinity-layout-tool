@@ -150,7 +150,7 @@ export function ExportDialog() {
       }}
     >
       <div
-        className="mx-4 w-full max-w-md rounded-xl bg-surface-elevated p-6 shadow-2xl"
+        className="mx-4 w-full max-w-md max-h-[85vh] overflow-y-auto rounded-xl bg-surface-elevated p-6 shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="export-dialog-title"
@@ -454,7 +454,7 @@ function FormatSelector({
               tabIndex={focusIndex}
               aria-checked={isActive}
               onClick={() => onChange(fmt)}
-              className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+              className={`rounded-md px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                 isActive
                   ? 'bg-accent-muted text-accent'
                   : 'bg-surface text-content-secondary hover:bg-surface-hover'
@@ -482,7 +482,7 @@ function NameStyleButton({
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+      className={`rounded-md px-3 py-2 text-xs font-medium transition-colors ${
         active
           ? 'bg-accent-muted text-accent'
           : 'bg-surface text-content-secondary hover:bg-surface-hover'
