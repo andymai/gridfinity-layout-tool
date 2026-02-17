@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.2...gridfinity-layout-tool-v3.13.3) (2026-02-17)
+
+
+### Bug Fixes
+
+* **ci:** update PostHog source map upload inputs for v2 ([#772](https://github.com/andymai/gridfinity-layout-tool/issues/772)) ([aee03ee](https://github.com/andymai/gridfinity-layout-tool/commit/aee03eeadc22272004cdf8ae5baca74f922587ee))
+
 ## [3.13.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.1...gridfinity-layout-tool-v3.13.2) (2026-02-17)
 
 
