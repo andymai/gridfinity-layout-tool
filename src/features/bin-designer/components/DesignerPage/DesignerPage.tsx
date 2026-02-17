@@ -340,7 +340,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   return (
     <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
-      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+      <header className="h-12 flex items-center justify-between px-2 sm:px-4 gap-1 sm:gap-2 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
         <div className="flex items-center gap-4 min-w-0">
           <ToolSwitcher compact={!isDesktop} />
 
