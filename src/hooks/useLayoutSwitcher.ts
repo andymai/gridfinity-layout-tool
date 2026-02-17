@@ -24,7 +24,14 @@ import { setLayoutURL } from '@/utils/url';
 import { createLayoutWithSettings } from '@/core/constants';
 import { trackLayoutAction } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { Result, Unit, LayoutError, StorageError, UnknownError } from '@/core/result';
+import type {
+  Result,
+  Unit,
+  LayoutError,
+  StorageError,
+  UnknownError,
+  LayoutLibraryLimitError,
+} from '@/core/result';
 import { ok, err, OK, layoutLastEntity, layoutInvalidOperation, fromUnknown } from '@/core/result';
 import { useTranslation } from '@/i18n';
 
@@ -189,7 +196,9 @@ export function useLayoutSwitcher() {
    * Create a new layout and switch to it.
    */
   const createNewLayout = useCallback(
-    async (name?: string): Promise<Result<string, StorageError | UnknownError>> => {
+    async (
+      name?: string
+    ): Promise<Result<string, StorageError | UnknownError | LayoutLibraryLimitError>> => {
       // Save current layout first
       await saveCurrentLayout();
 
@@ -369,7 +378,7 @@ export function useLayoutSwitcher() {
     async (
       importedLayout: Layout,
       forkedFrom?: { name: string; author?: string }
-    ): Promise<Result<string, StorageError | UnknownError>> => {
+    ): Promise<Result<string, StorageError | UnknownError | LayoutLibraryLimitError>> => {
       try {
         // Get fresh library state to avoid stale closure
         const currentLibrary = useLibraryStore.getState().library;
