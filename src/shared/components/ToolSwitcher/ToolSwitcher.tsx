@@ -17,6 +17,19 @@ interface ToolSwitcherProps {
 
 type Tool = 'planner' | 'designer';
 
+function getSegmentPadding(iconOnly: boolean, compact: boolean): string {
+  if (iconOnly && compact) return 'p-1.5';
+  if (iconOnly) return 'px-2 py-1';
+  if (compact) return 'px-2.5 py-2.5';
+  return 'px-3 py-1';
+}
+
+function getIconSize(iconOnly: boolean, compact: boolean): string {
+  if (iconOnly && compact) return 'w-5 h-5';
+  if (compact) return 'w-3.5 h-3.5';
+  return 'w-4 h-4';
+}
+
 /**
  * Renders a segmented control for switching between Layout Planner and Bin Designer.
  */
@@ -35,35 +48,33 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
     }
   };
 
-  const isCompactIcon = iconOnly && compact;
-  const segmentPadding = isCompactIcon
-    ? 'p-1'
-    : iconOnly
-      ? 'px-2 py-1'
-      : compact
-        ? 'px-2.5 py-2.5'
-        : 'px-3 py-1';
+  const handleToggle = () => {
+    const nextTool: Tool = activeTool === 'planner' ? 'designer' : 'planner';
+    handleSwitch(nextTool);
+  };
+
+  const segmentPadding = getSegmentPadding(iconOnly, compact);
   const fontSize = compact ? 'text-xs' : 'text-sm';
-  const iconSize = isCompactIcon ? 'w-4 h-4' : compact ? 'w-3.5 h-3.5' : 'w-4 h-4';
+  const iconSize = getIconSize(iconOnly, compact);
 
   const segmentClass = (tool: Tool) =>
-    `${segmentPadding} ${fontSize} font-medium rounded transition-all flex items-center justify-center gap-1.5 ${isCompactIcon ? 'leading-none' : ''} ${
+    `${segmentPadding} ${fontSize} font-medium rounded-md transition-all flex items-center justify-center gap-1.5 leading-none ${
       activeTool === tool
         ? 'bg-surface-elevated text-content shadow-sm'
         : 'text-content-tertiary hover:text-content-secondary'
     }`;
 
-  const wrapperClass = isCompactIcon
-    ? 'flex rounded bg-surface border border-stroke-subtle'
-    : 'flex rounded-md bg-surface p-0.5 border border-stroke-subtle';
-
   return (
-    <div role="navigation" aria-label={t('toolSwitcher.toolSwitcher')}>
-      <div className={wrapperClass} role="tablist" aria-label={t('toolSwitcher.activeTool')}>
+    <div role="navigation" aria-label={t('toolSwitcher.toolSwitcher')} className="flex-shrink-0">
+      <div
+        className={`flex whitespace-nowrap rounded-lg bg-surface p-0.5 border border-stroke-subtle${iconOnly ? ' cursor-pointer' : ''}`}
+        role="tablist"
+        aria-label={t('toolSwitcher.activeTool')}
+      >
         <button
           role="tab"
           aria-selected={activeTool === 'planner'}
-          onClick={() => handleSwitch('planner')}
+          onClick={iconOnly ? handleToggle : () => handleSwitch('planner')}
           title={t('toolSwitcher.switchToPlanner')}
           className={segmentClass('planner')}
         >
@@ -77,7 +88,7 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         <button
           role="tab"
           aria-selected={activeTool === 'designer'}
-          onClick={() => handleSwitch('designer')}
+          onClick={iconOnly ? handleToggle : () => handleSwitch('designer')}
           title={t('toolSwitcher.switchToDesigner')}
           className={segmentClass('designer')}
         >

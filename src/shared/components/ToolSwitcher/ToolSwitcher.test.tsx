@@ -98,6 +98,16 @@ describe('ToolSwitcher', () => {
     expect(screen.getByRole('tablist')).toHaveAttribute('aria-label', 'Active tool');
   });
 
+  it('toggles tool when clicking either tab in iconOnly mode', async () => {
+    const user = userEvent.setup();
+    render(<ToolSwitcher iconOnly />);
+
+    const tabs = screen.getAllByRole('tab');
+    await user.click(tabs[1]);
+
+    expect(mockNavigateToDesigner).toHaveBeenCalledTimes(1);
+  });
+
   it('shows title attributes on tabs', () => {
     render(<ToolSwitcher />);
     const tabs = screen.getAllByRole('tab');

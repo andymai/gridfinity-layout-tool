@@ -45,11 +45,6 @@ import { binId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
-interface DesignerPageProps {
-  /** Unused - navigation is handled by ToolSwitcher */
-  onNavigateBack?: () => void;
-}
-
 /** CSS class for each save status */
 const SAVE_STATUS_CLASSES: Record<Exclude<SaveStatus, 'idle'>, string> = {
   saving: 'text-content-tertiary',
@@ -163,11 +158,8 @@ function SaveStatusIndicator({ status, compact }: { status: SaveStatus; compact?
  * Renders a responsive layout (desktop: side panel + preview; tablet/mobile: stacked preview + tabbed controls)
  * and the header actions and dialogs required to edit parameters, auto-generate meshes, autosave, share/load designs,
  * and open the export flow.
- *
- * @param onNavigateBack - Callback invoked when the user requests navigation back to the layout planner.
- * @returns The rendered Designer page element.
  */
-export function DesignerPage(_props: DesignerPageProps) {
+export function DesignerPage() {
   // Initialize designer - ensures we always have an active design
   // Must be called before useAutoSave to set currentDesignId
   useDesignerInit();
@@ -270,43 +262,41 @@ export function DesignerPage(_props: DesignerPageProps) {
     }
 
     // First save: when user names an unsaved design, persist it
-    if (!currentDesignId) {
-      setSaveStatus('saving');
-      const thumbnail = captureThumbnail();
-      void saveDesign({ name, params, thumbnail, exportFileNameConfig }).then((result) => {
-        if (isOk(result)) {
-          setCurrentDesignId(result.value.id);
-          setActiveDesignId(result.value.id);
-          setSaveStatus('saved');
-          upsertRegistryEntry({
-            id: result.value.id,
-            name: result.value.name,
-            width: params.width,
-            depth: params.depth,
-            height: params.height,
-            thumbnail: result.value.thumbnail,
-            updatedAt: result.value.updatedAt,
-          });
+    setSaveStatus('saving');
+    const thumbnail = captureThumbnail();
+    void saveDesign({ name, params, thumbnail, exportFileNameConfig }).then((result) => {
+      if (isOk(result)) {
+        setCurrentDesignId(result.value.id);
+        setActiveDesignId(result.value.id);
+        setSaveStatus('saved');
+        upsertRegistryEntry({
+          id: result.value.id,
+          name: result.value.name,
+          width: params.width,
+          depth: params.depth,
+          height: params.height,
+          thumbnail: result.value.thumbnail,
+          updatedAt: result.value.updatedAt,
+        });
 
-          // Auto-link design to source bin if this was created from a bin
-          if (pendingBinLink) {
-            const linkResult = updateBin(binId(pendingBinLink), {
-              linkedDesignId: result.value.id,
+        // Auto-link design to source bin if this was created from a bin
+        if (pendingBinLink) {
+          const linkResult = updateBin(binId(pendingBinLink), {
+            linkedDesignId: result.value.id,
+          });
+          clearPendingBinLink();
+          if (isOk(linkResult)) {
+            addToast({
+              message: t('binDesigner.designCreatedAndLinked'),
+              type: 'success',
+              duration: 4000,
             });
-            clearPendingBinLink();
-            if (isOk(linkResult)) {
-              addToast({
-                message: t('binDesigner.designCreatedAndLinked'),
-                type: 'success',
-                duration: 4000,
-              });
-            }
           }
-        } else {
-          setSaveStatus('error');
         }
-      });
-    }
+      } else {
+        setSaveStatus('error');
+      }
+    });
   }, [
     editNameValue,
     setDesignName,
@@ -417,12 +407,12 @@ export function DesignerPage(_props: DesignerPageProps) {
       )}
 
       {/* Header / Action bar */}
-      <header className="h-12 flex items-center justify-between px-3 gap-1 sm:gap-2 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
         {isDesktop ? (
           /* ---- Desktop action bar ---- */
           <>
             <div className="flex items-center gap-4 min-w-0">
-              <ToolSwitcher compact={false} iconOnly={false} />
+              <ToolSwitcher />
 
               {/* Divider */}
               <div className="w-px h-6 bg-stroke-subtle" />

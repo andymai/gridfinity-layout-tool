@@ -100,9 +100,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
       {/* Action bar */}
       <header className="mobile-header h-12 flex items-center justify-between px-3 bg-surface-secondary border-b border-stroke-subtle">
         {/* Left: Tool switcher */}
-        <div className="flex items-center flex-shrink-0">
-          <ToolSwitcher compact iconOnly />
-        </div>
+        <ToolSwitcher compact iconOnly />
 
         {/* Center: Layout name - tap to open layouts panel, long press to edit */}
         <div className="flex-1 mx-3 min-w-0">
