@@ -98,7 +98,7 @@ describe('ToolSwitcher', () => {
     expect(screen.getByRole('tablist')).toHaveAttribute('aria-label', 'Active tool');
   });
 
-  it('toggles tool when clicking either tab in iconOnly mode', async () => {
+  it('navigates when clicking inactive tab in iconOnly mode', async () => {
     const user = userEvent.setup();
     render(<ToolSwitcher iconOnly />);
 
@@ -108,10 +108,21 @@ describe('ToolSwitcher', () => {
     expect(mockNavigateToDesigner).toHaveBeenCalledTimes(1);
   });
 
-  it('shows title attributes on tabs', () => {
+  it('does not navigate when clicking active tab in iconOnly mode', async () => {
+    const user = userEvent.setup();
+    render(<ToolSwitcher iconOnly />);
+
+    const tabs = screen.getAllByRole('tab');
+    await user.click(tabs[0]);
+
+    expect(mockNavigateToPlanner).not.toHaveBeenCalled();
+    expect(mockNavigateToDesigner).not.toHaveBeenCalled();
+  });
+
+  it('shows title only on inactive tabs', () => {
     render(<ToolSwitcher />);
     const tabs = screen.getAllByRole('tab');
-    expect(tabs[0].getAttribute('title')).toContain('Switch to Grid Planner');
+    expect(tabs[0]).not.toHaveAttribute('title'); // active tab
     expect(tabs[1].getAttribute('title')).toContain('Switch to Bin Designer');
   });
 });

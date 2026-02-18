@@ -48,11 +48,6 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
     }
   };
 
-  const handleToggle = () => {
-    const nextTool: Tool = activeTool === 'planner' ? 'designer' : 'planner';
-    handleSwitch(nextTool);
-  };
-
   const segmentPadding = getSegmentPadding(iconOnly, compact);
   const fontSize = compact ? 'text-xs' : 'text-sm';
   const iconSize = getIconSize(iconOnly, compact);
@@ -67,15 +62,15 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
   return (
     <div role="navigation" aria-label={t('toolSwitcher.toolSwitcher')} className="flex-shrink-0">
       <div
-        className={`flex whitespace-nowrap rounded-lg bg-surface p-0.5 border border-stroke-subtle${iconOnly ? ' cursor-pointer' : ''}`}
+        className="flex whitespace-nowrap rounded-lg bg-surface p-0.5 border border-stroke-subtle"
         role="tablist"
         aria-label={t('toolSwitcher.activeTool')}
       >
         <button
           role="tab"
           aria-selected={activeTool === 'planner'}
-          onClick={iconOnly ? handleToggle : () => handleSwitch('planner')}
-          title={t('toolSwitcher.switchToPlanner')}
+          onClick={() => handleSwitch('planner')}
+          title={activeTool !== 'planner' ? t('toolSwitcher.switchToPlanner') : undefined}
           className={segmentClass('planner')}
         >
           <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -88,8 +83,8 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         <button
           role="tab"
           aria-selected={activeTool === 'designer'}
-          onClick={iconOnly ? handleToggle : () => handleSwitch('designer')}
-          title={t('toolSwitcher.switchToDesigner')}
+          onClick={() => handleSwitch('designer')}
+          title={activeTool !== 'designer' ? t('toolSwitcher.switchToDesigner') : undefined}
           className={segmentClass('designer')}
         >
           <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">

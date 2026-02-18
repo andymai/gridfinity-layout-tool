@@ -262,41 +262,43 @@ export function DesignerPage() {
     }
 
     // First save: when user names an unsaved design, persist it
-    setSaveStatus('saving');
-    const thumbnail = captureThumbnail();
-    void saveDesign({ name, params, thumbnail, exportFileNameConfig }).then((result) => {
-      if (isOk(result)) {
-        setCurrentDesignId(result.value.id);
-        setActiveDesignId(result.value.id);
-        setSaveStatus('saved');
-        upsertRegistryEntry({
-          id: result.value.id,
-          name: result.value.name,
-          width: params.width,
-          depth: params.depth,
-          height: params.height,
-          thumbnail: result.value.thumbnail,
-          updatedAt: result.value.updatedAt,
-        });
-
-        // Auto-link design to source bin if this was created from a bin
-        if (pendingBinLink) {
-          const linkResult = updateBin(binId(pendingBinLink), {
-            linkedDesignId: result.value.id,
+    if (!currentDesignId) {
+      setSaveStatus('saving');
+      const thumbnail = captureThumbnail();
+      void saveDesign({ name, params, thumbnail, exportFileNameConfig }).then((result) => {
+        if (isOk(result)) {
+          setCurrentDesignId(result.value.id);
+          setActiveDesignId(result.value.id);
+          setSaveStatus('saved');
+          upsertRegistryEntry({
+            id: result.value.id,
+            name: result.value.name,
+            width: params.width,
+            depth: params.depth,
+            height: params.height,
+            thumbnail: result.value.thumbnail,
+            updatedAt: result.value.updatedAt,
           });
-          clearPendingBinLink();
-          if (isOk(linkResult)) {
-            addToast({
-              message: t('binDesigner.designCreatedAndLinked'),
-              type: 'success',
-              duration: 4000,
+
+          // Auto-link design to source bin if this was created from a bin
+          if (pendingBinLink) {
+            const linkResult = updateBin(binId(pendingBinLink), {
+              linkedDesignId: result.value.id,
             });
+            clearPendingBinLink();
+            if (isOk(linkResult)) {
+              addToast({
+                message: t('binDesigner.designCreatedAndLinked'),
+                type: 'success',
+                duration: 4000,
+              });
+            }
           }
+        } else {
+          setSaveStatus('error');
         }
-      } else {
-        setSaveStatus('error');
-      }
-    });
+      });
+    }
   }, [
     editNameValue,
     setDesignName,
@@ -569,6 +571,7 @@ export function DesignerPage() {
                   setIsEditingName(true);
                 }}
                 onTouchStart={handleNameTouchStart}
+                onTouchMove={handleNameTouchEnd}
                 onTouchEnd={handleNameTouchEnd}
                 onTouchCancel={handleNameTouchEnd}
                 className="flex-1 mx-3 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-sm rounded-md text-content-secondary bg-transparent hover:bg-surface-hover"
