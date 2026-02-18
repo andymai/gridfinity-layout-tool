@@ -79,16 +79,6 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
     }))
   );
 
-  const { leftPanelCollapsed, rightPanelCollapsed, toggleLeftPanel, toggleRightPanel } =
-    useViewStore(
-      useShallow((state) => ({
-        leftPanelCollapsed: state.leftPanelCollapsed,
-        rightPanelCollapsed: state.rightPanelCollapsed,
-        toggleLeftPanel: state.toggleLeftPanel,
-        toggleRightPanel: state.toggleRightPanel,
-      }))
-    );
-
   const { showLayoutManager, setShowLayoutManager } = useLibraryStore(
     useShallow((state) => ({
       showLayoutManager: state.showLayoutManager,
@@ -142,7 +132,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   return (
     <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
       <div className="flex items-center gap-4 min-w-0">
-        <ToolSwitcher />
+        <ToolSwitcher iconOnly={isTablet} />
 
         {/* Divider */}
         <div className="w-px h-6 bg-stroke-subtle" />
@@ -218,7 +208,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
               <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
             ))}
           </svg>
-          <span className="hidden sm:inline">{t('header.layouts')}</span>
+          {!isTablet && <span className="hidden sm:inline">{t('header.layouts')}</span>}
         </button>
 
         {/* Print Button */}
@@ -236,52 +226,11 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
               d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
             />
           </svg>
-          <span className="hidden sm:inline">{t('header.print')}</span>
+          {!isTablet && <span className="hidden sm:inline">{t('header.print')}</span>}
         </button>
       </div>
 
       <div className="flex items-center gap-1 flex-shrink-0">
-        {/* Tablet panel toggle buttons */}
-        {isTablet && (
-          <div className="flex items-center mr-2 border-r border-stroke-subtle pr-2">
-            <button
-              onClick={toggleLeftPanel}
-              className={`btn btn-ghost btn-icon ${!leftPanelCollapsed ? 'bg-surface-hover' : ''}`}
-              title={t('header.toggleSidebar')}
-              aria-label={t('header.toggleSidebar')}
-              aria-pressed={!leftPanelCollapsed}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {ICON_PATHS.menu.map((d) => (
-                  <path
-                    key={d}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={d}
-                  />
-                ))}
-              </svg>
-            </button>
-            <button
-              onClick={toggleRightPanel}
-              className={`btn btn-ghost btn-icon ${!rightPanelCollapsed ? 'bg-surface-hover' : ''}`}
-              title={t('header.toggleInspector')}
-              aria-label={t('header.toggleInspector')}
-              aria-pressed={!rightPanelCollapsed}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-            </button>
-          </div>
-        )}
-
         {/* Save status indicator */}
         {saveStatus === 'saving' && (
           <div

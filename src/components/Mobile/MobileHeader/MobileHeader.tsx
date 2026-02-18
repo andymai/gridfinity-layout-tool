@@ -4,14 +4,13 @@ import { useHistoryStore, useMobileStore } from '@/core/store';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { PresenceAvatars } from '@/components/Collab';
-import type { MobilePanel } from '@/core/store';
 import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 
 interface MobileHeaderProps {
   onMenuClick: () => void;
-  onHelpClick: () => void;
   saveStatus: SaveStatus;
 }
 
@@ -19,7 +18,7 @@ interface MobileHeaderProps {
  * Compact header for mobile layout.
  * Shows app title, tip link, layout name (editable) and essential actions.
  */
-export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHeaderProps) {
+export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
   const t = useTranslation();
   const layout = useLayoutStore((state) => state.layout);
   const setName = useLayoutStore((state) => state.setName);
@@ -64,11 +63,6 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
     }
   };
 
-  // Helper for landscape nav buttons
-  const handleLandscapeNav = (panel: MobilePanel) => {
-    toggleMobilePanel(panel);
-  };
-
   return (
     <div className="flex-shrink-0">
       {/* App title bar */}
@@ -105,73 +99,8 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
       </div>
       {/* Action bar */}
       <header className="mobile-header h-12 flex items-center justify-between px-3 bg-surface-secondary border-b border-stroke-subtle">
-        {/* Left: Settings button */}
-        <button
-          onClick={onMenuClick}
-          className="btn btn-ghost btn-icon"
-          aria-label={t('mobile.header.openSettings')}
-          title={t('mobile.settings')}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {ICON_PATHS.settings.map((d) => (
-              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
-          </svg>
-        </button>
-
-        {/* Landscape nav buttons (shown when bottom nav is hidden) */}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => handleLandscapeNav('layers')}
-            className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label={t('common.layers')}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {ICON_PATHS.layers.map((d) => (
-                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-              ))}
-            </svg>
-          </button>
-          <button
-            onClick={() => handleLandscapeNav('inspector')}
-            className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label={t('mobile.header.inspector')}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {ICON_PATHS.cube.map((d) => (
-                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-              ))}
-            </svg>
-          </button>
-          <button
-            onClick={() => handleLandscapeNav('categories')}
-            className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label={t('common.categories')}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={() => handleLandscapeNav('print')}
-            className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label={t('mobile.header.binList')}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-          </button>
-        </div>
+        {/* Left: Tool switcher */}
+        <ToolSwitcher compact iconOnly />
 
         {/* Center: Layout name - tap to open layouts panel, long press to edit */}
         <div className="flex-1 mx-3 min-w-0">
@@ -214,8 +143,8 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           )}
         </div>
 
-        {/* Right: Presence + Save status + Undo/Redo + Help */}
-        <div className="flex items-center gap-1">
+        {/* Right: Save status + Undo/Redo + Settings */}
+        <div className="flex items-center gap-1 flex-shrink-0">
           {/* Presence indicator (only when actually in collaborative mode, inside RoomProvider) */}
           {isCollaborative && <PresenceAvatars />}
 
@@ -275,18 +204,15 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
             </svg>
           </button>
           <button
-            onClick={onHelpClick}
+            onClick={onMenuClick}
             className="btn btn-ghost btn-icon"
-            aria-label={t('mobile.header.helpAndGestures')}
-            title={t('mobile.help')}
+            aria-label={t('mobile.header.openSettings')}
+            title={t('mobile.settings')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
+              {ICON_PATHS.settings.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
             </svg>
           </button>
         </div>

@@ -278,15 +278,6 @@
     --text-base: 0.8125rem;
   }
 
-  /* Ensure touch targets are large enough */
-  button,
-  [role='button'],
-  input[type='checkbox'],
-  input[type='radio'] {
-    min-height: var(--touch-target);
-    min-width: var(--touch-target);
-  }
-
   /* Stack form elements */
   .mobile-stack {
     flex-direction: column;
@@ -403,12 +394,6 @@
 /* ===========================================
    LANDSCAPE MOBILE OPTIMIZATION
    =========================================== */
-/* Default: hide landscape nav buttons (shown only in landscape mode) */
-/* Use higher specificity to override .btn styles */
-.mobile-header .landscape-nav-button {
-  display: none;
-}
-
 /* Compact UI when phone is in landscape with limited height */
 @media (orientation: landscape) and (max-height: 500px) {
   /* Reduce header height */
@@ -421,11 +406,6 @@
   /* Hide bottom nav in landscape to maximize grid space */
   .bottom-nav {
     display: none;
-  }
-
-  /* Show alternative navigation via header in landscape */
-  .mobile-header .landscape-nav-button {
-    display: inline-flex;
   }
 }
 

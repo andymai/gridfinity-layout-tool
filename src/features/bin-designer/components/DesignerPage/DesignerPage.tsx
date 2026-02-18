@@ -43,11 +43,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import type { SaveStatus } from '@/features/bin-designer/types';
 import { binId } from '@/core/types';
 import { useTranslation } from '@/i18n';
-
-interface DesignerPageProps {
-  /** Unused - navigation is handled by ToolSwitcher */
-  onNavigateBack?: () => void;
-}
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 /** CSS class for each save status */
 const SAVE_STATUS_CLASSES: Record<Exclude<SaveStatus, 'idle'>, string> = {
@@ -86,7 +82,7 @@ function CutoutDesktopOnlyBanner() {
  * Render a compact status label that reflects the current save state.
  * Returns null when status is 'idle'.
  */
-function SaveStatusIndicator({ status }: { status: SaveStatus }) {
+function SaveStatusIndicator({ status, compact }: { status: SaveStatus; compact?: boolean }) {
   const t = useTranslation();
   if (status === 'idle') return null;
 
@@ -98,7 +94,7 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
 
   return (
     <div
-      className={`flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 ${SAVE_STATUS_CLASSES[status]}`}
+      className={`flex items-center gap-1.5 ${compact ? 'px-0.5 py-0.5' : 'px-2 py-1 mr-2'} text-[11px] ${SAVE_STATUS_CLASSES[status]}`}
       aria-live="polite"
       role="status"
     >
@@ -151,7 +147,7 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
           />
         </svg>
       )}
-      <span>{t(statusTextKey[status])}</span>
+      {!compact && <span>{t(statusTextKey[status])}</span>}
     </div>
   );
 }
@@ -162,11 +158,8 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
  * Renders a responsive layout (desktop: side panel + preview; tablet/mobile: stacked preview + tabbed controls)
  * and the header actions and dialogs required to edit parameters, auto-generate meshes, autosave, share/load designs,
  * and open the export flow.
- *
- * @param onNavigateBack - Callback invoked when the user requests navigation back to the layout planner.
- * @returns The rendered Designer page element.
  */
-export function DesignerPage(_props: DesignerPageProps) {
+export function DesignerPage() {
   // Initialize designer - ensures we always have an active design
   // Must be called before useAutoSave to set currentDesignId
   useDesignerInit();
@@ -363,178 +356,320 @@ export function DesignerPage(_props: DesignerPageProps) {
     });
   }, [setParams, addToast]);
 
+  // Long-press handler for mobile name editing
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleNameTouchStart = useCallback(() => {
+    longPressTimerRef.current = setTimeout(() => {
+      setEditNameValue(designName);
+      setIsEditingName(true);
+    }, 500);
+  }, [designName]);
+  const handleNameTouchEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
   return (
     <div className="flex h-screen flex-col bg-surface">
-      {/* Header */}
-      <header className="h-12 flex items-center justify-between px-2 sm:px-4 gap-1 sm:gap-2 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
-        <div className="flex items-center gap-4 min-w-0">
-          <ToolSwitcher compact={!isDesktop} />
-
-          {/* Divider */}
-          <div className="w-px h-6 bg-stroke-subtle" />
-
-          {/* Experimental badge */}
-          <span className="hidden items-center gap-1 rounded-sm bg-warning-muted px-1.5 py-0.5 text-xs font-medium text-warning sm:inline-flex">
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-              />
-            </svg>
-            {t('binDesigner.experimental')}
+      {/* Mobile title bar */}
+      {!isDesktop && (
+        <div className="h-7 flex items-center justify-between px-3 bg-surface border-b border-stroke-subtle">
+          <span className="text-xs font-medium text-content-secondary">
+            {t('toolSwitcher.gridfinityLayoutTool')}
           </span>
-
-          {/* Design name (click to rename inline) */}
-          {isEditingName ? (
-            <input
-              ref={nameInputRef}
-              type="text"
-              value={editNameValue}
-              onChange={(e) => setEditNameValue(e.target.value)}
-              onBlur={handleNameSubmit}
-              onKeyDown={handleNameKeyDown}
-              maxLength={50}
-              aria-label={t('binDesigner.designName')}
-              className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content max-w-[120px] sm:max-w-[200px]"
-              style={{
-                boxShadow: '0 0 0 3px var(--color-primary-muted)',
-              }}
-            />
-          ) : (
-            <button
-              onClick={handleNameClick}
-              className="inline-block px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[120px] sm:max-w-[200px]"
-              title={t('binDesigner.clickToRename')}
+          <div className="flex items-center gap-3">
+            <a
+              href="https://ko-fi.com/andyaragon"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs text-accent hover:underline"
             >
-              {designName}
-            </button>
-          )}
-
-          {/* Designs switcher button */}
-          <button
-            onClick={() => setDesignListOpen(true)}
-            className="hidden px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content sm:flex items-center gap-1.5"
-            title={t('binDesigner.openDesignList')}
-            aria-label={t('binDesigner.openDesignList')}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-              />
-            </svg>
-            <span className="hidden lg:inline">{t('binDesigner.designs')}</span>
-          </button>
-
-          {/* Designs button (icon only, for mobile) */}
-          <button
-            onClick={() => setDesignListOpen(true)}
-            className="sm:hidden btn btn-ghost btn-icon"
-            title={t('binDesigner.savedDesigns')}
-            aria-label={t('binDesigner.openDesignList')}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-              />
-            </svg>
-          </button>
-
-          {/* Export button (icon only, for mobile) */}
-          <button
-            className="btn btn-ghost btn-icon sm:hidden"
-            onClick={() => setExportDialogOpen(true)}
-            disabled={!canExport}
-            aria-label={t('binDesigner.exportBinAsStl')}
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
-              />
-            </svg>
-          </button>
-
-          {/* Export button */}
-          <button
-            onClick={() => setExportDialogOpen(true)}
-            disabled={!canExport}
-            className="hidden px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content sm:flex items-center gap-1.5"
-            title={t('binDesigner.exportSTL')}
-            aria-label={t('binDesigner.exportBinAsStl')}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-            <span className="hidden lg:inline">{t('common.export')}</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {/* Save status indicator */}
-          <SaveStatusIndicator status={saveStatus} />
-
-          {/* Undo/Redo buttons */}
-          <div className="flex items-center">
-            <button
-              onClick={undo}
-              disabled={!canUndo}
-              className="btn btn-ghost btn-icon"
-              title={`Undo (${modKey}+Z)`}
-              aria-label={`Undo (${modKey}+Z)`}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                />
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                {ICON_PATHS.heart.map((d) => (
+                  <path key={d} d={d} />
+                ))}
               </svg>
-            </button>
-            <button
-              onClick={redo}
-              disabled={!canRedo}
-              className="btn btn-ghost btn-icon"
-              title={`Redo (${modKey}+Y)`}
-              aria-label={`Redo (${modKey}+Y)`}
+              {t('mobile.header.tip')}
+            </a>
+            <a
+              href="https://github.com/andymai/gridfinity-layout-tool"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs text-content-tertiary hover:underline"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
-                />
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z" />
               </svg>
-            </button>
+              {t('mobile.header.github')}
+            </a>
           </div>
         </div>
+      )}
+
+      {/* Header / Action bar */}
+      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+        {isDesktop ? (
+          /* ---- Desktop action bar ---- */
+          <>
+            <div className="flex items-center gap-4 min-w-0">
+              <ToolSwitcher />
+
+              {/* Divider */}
+              <div className="w-px h-6 bg-stroke-subtle" />
+
+              {/* Experimental badge */}
+              <span className="inline-flex items-center gap-1 rounded-sm bg-warning-muted px-1.5 py-0.5 text-xs font-medium text-warning">
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                  />
+                </svg>
+                {t('binDesigner.experimental')}
+              </span>
+
+              {/* Design name (click to rename inline) */}
+              {isEditingName ? (
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={editNameValue}
+                  onChange={(e) => setEditNameValue(e.target.value)}
+                  onBlur={handleNameSubmit}
+                  onKeyDown={handleNameKeyDown}
+                  maxLength={50}
+                  aria-label={t('binDesigner.designName')}
+                  className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content max-w-[200px]"
+                  style={{
+                    boxShadow: '0 0 0 3px var(--color-primary-muted)',
+                  }}
+                />
+              ) : (
+                <button
+                  onClick={handleNameClick}
+                  className="inline-block px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+                  title={t('binDesigner.clickToRename')}
+                >
+                  {designName}
+                </button>
+              )}
+
+              {/* Designs switcher button */}
+              <button
+                onClick={() => setDesignListOpen(true)}
+                className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+                title={t('binDesigner.openDesignList')}
+                aria-label={t('binDesigner.openDesignList')}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+                <span className="hidden lg:inline">{t('binDesigner.designs')}</span>
+              </button>
+
+              {/* Export button */}
+              <button
+                onClick={() => setExportDialogOpen(true)}
+                disabled={!canExport}
+                className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+                title={t('binDesigner.exportSTL')}
+                aria-label={t('binDesigner.exportBinAsStl')}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                <span className="hidden lg:inline">{t('common.export')}</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <SaveStatusIndicator status={saveStatus} />
+
+              <div className="flex items-center">
+                <button
+                  onClick={undo}
+                  disabled={!canUndo}
+                  className="btn btn-ghost btn-icon"
+                  title={`Undo (${modKey}+Z)`}
+                  aria-label={`Undo (${modKey}+Z)`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={redo}
+                  disabled={!canRedo}
+                  className="btn btn-ghost btn-icon"
+                  title={`Redo (${modKey}+Y)`}
+                  aria-label={`Redo (${modKey}+Y)`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* ---- Mobile/Tablet action bar ---- */
+          <>
+            <ToolSwitcher compact iconOnly />
+
+            {/* Design name - center, tap opens design list, long-press/context-menu renames */}
+            {isEditingName ? (
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={editNameValue}
+                onChange={(e) => setEditNameValue(e.target.value)}
+                onBlur={handleNameSubmit}
+                onKeyDown={handleNameKeyDown}
+                maxLength={50}
+                aria-label={t('binDesigner.designName')}
+                className="flex-1 mx-3 min-w-0 px-2 py-1 rounded-md text-sm bg-surface-elevated border border-accent text-content"
+                style={{
+                  boxShadow: '0 0 0 3px var(--color-primary-muted)',
+                }}
+              />
+            ) : (
+              <button
+                onClick={() => setDesignListOpen(true)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setEditNameValue(designName);
+                  setIsEditingName(true);
+                }}
+                onTouchStart={handleNameTouchStart}
+                onTouchMove={handleNameTouchEnd}
+                onTouchEnd={handleNameTouchEnd}
+                onTouchCancel={handleNameTouchEnd}
+                className="flex-1 mx-3 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-sm rounded-md text-content-secondary bg-transparent hover:bg-surface-hover"
+                title={t('binDesigner.clickToRename')}
+              >
+                <span className="truncate">{designName}</span>
+                <svg
+                  className="w-3 h-3 flex-shrink-0 text-content-tertiary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+            )}
+
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <SaveStatusIndicator status={saveStatus} compact />
+
+              {/* Designs button */}
+              <button
+                onClick={() => setDesignListOpen(true)}
+                className="btn btn-ghost btn-icon"
+                title={t('binDesigner.savedDesigns')}
+                aria-label={t('binDesigner.openDesignList')}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </button>
+
+              {/* Export button */}
+              <button
+                className="btn btn-ghost btn-icon"
+                onClick={() => setExportDialogOpen(true)}
+                disabled={!canExport}
+                aria-label={t('binDesigner.exportBinAsStl')}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
+                  />
+                </svg>
+              </button>
+
+              {/* Undo/Redo */}
+              <button
+                onClick={undo}
+                disabled={!canUndo}
+                className="btn btn-ghost btn-icon"
+                aria-label={`Undo (${modKey}+Z)`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={redo}
+                disabled={!canRedo}
+                className="btn btn-ghost btn-icon"
+                aria-label={`Redo (${modKey}+Y)`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
+                  />
+                </svg>
+              </button>
+            </div>
+          </>
+        )}
       </header>
 
       {/* Share loading banner */}

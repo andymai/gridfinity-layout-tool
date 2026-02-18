@@ -6,40 +6,34 @@
 
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useTranslation } from '@/i18n';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 interface ToolSwitcherProps {
   /** Compact mode for mobile layouts */
   compact?: boolean;
-}
-
-/**
- * A small Gridfinity grid icon used as branding next to the segmented control.
- */
-function GridfinityIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden="true"
-    >
-      {/* 2x2 grid of squares representing Gridfinity bins */}
-      <rect x="2" y="2" width="7" height="7" rx="1" />
-      <rect x="11" y="2" width="7" height="7" rx="1" />
-      <rect x="2" y="11" width="7" height="7" rx="1" />
-      <rect x="11" y="11" width="7" height="7" rx="1" />
-    </svg>
-  );
+  /** Show icons only (no text labels) */
+  iconOnly?: boolean;
 }
 
 type Tool = 'planner' | 'designer';
 
+function getSegmentPadding(iconOnly: boolean, compact: boolean): string {
+  if (iconOnly && compact) return 'p-1.5';
+  if (iconOnly) return 'px-2 py-1';
+  if (compact) return 'px-2.5 py-2.5';
+  return 'px-3 py-1';
+}
+
+function getIconSize(iconOnly: boolean, compact: boolean): string {
+  if (iconOnly && compact) return 'w-5 h-5';
+  if (compact) return 'w-3.5 h-3.5';
+  return 'w-4 h-4';
+}
+
 /**
  * Renders a segmented control for switching between Layout Planner and Bin Designer.
  */
-export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
+export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcherProps) {
   const t = useTranslation();
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
 
@@ -54,20 +48,21 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
     }
   };
 
-  const iconSize = compact ? 'w-4 h-4' : 'w-5 h-5';
-  const segmentPadding = compact ? 'px-2.5 py-2.5' : 'px-3 py-1';
+  const segmentPadding = getSegmentPadding(iconOnly, compact);
   const fontSize = compact ? 'text-xs' : 'text-sm';
-  const gap = compact ? 'gap-1.5' : 'gap-2';
+  const iconSize = getIconSize(iconOnly, compact);
+
+  const segmentClass = (tool: Tool) =>
+    `${segmentPadding} ${fontSize} font-medium rounded-md transition-all flex items-center justify-center gap-1.5 leading-none ${
+      activeTool === tool
+        ? 'bg-surface-elevated text-content shadow-sm'
+        : 'text-content-tertiary hover:text-content-secondary'
+    }`;
 
   return (
-    <div
-      className={`flex items-center ${gap}`}
-      role="navigation"
-      aria-label={t('toolSwitcher.toolSwitcher')}
-    >
-      <GridfinityIcon className={`${iconSize} text-content-secondary flex-shrink-0`} />
+    <div role="navigation" aria-label={t('toolSwitcher.toolSwitcher')} className="flex-shrink-0">
       <div
-        className="flex rounded-md bg-surface p-0.5 border border-stroke-subtle"
+        className="flex whitespace-nowrap rounded-lg bg-surface p-0.5 border border-stroke-subtle"
         role="tablist"
         aria-label={t('toolSwitcher.activeTool')}
       >
@@ -76,26 +71,28 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
           aria-selected={activeTool === 'planner'}
           onClick={() => handleSwitch('planner')}
           title={activeTool !== 'planner' ? t('toolSwitcher.switchToPlanner') : undefined}
-          className={`${segmentPadding} ${fontSize} font-medium rounded transition-all ${
-            activeTool === 'planner'
-              ? 'bg-surface-elevated text-content shadow-sm'
-              : 'text-content-tertiary hover:text-content-secondary'
-          }`}
+          className={segmentClass('planner')}
         >
-          {t('toolSwitcher.gridEditor')}
+          <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {ICON_PATHS.dashboard.map((d) => (
+              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+            ))}
+          </svg>
+          {!iconOnly && t('toolSwitcher.gridEditor')}
         </button>
         <button
           role="tab"
           aria-selected={activeTool === 'designer'}
           onClick={() => handleSwitch('designer')}
           title={activeTool !== 'designer' ? t('toolSwitcher.switchToDesigner') : undefined}
-          className={`${segmentPadding} ${fontSize} font-medium rounded transition-all ${
-            activeTool === 'designer'
-              ? 'bg-surface-elevated text-content shadow-sm'
-              : 'text-content-tertiary hover:text-content-secondary'
-          }`}
+          className={segmentClass('designer')}
         >
-          {t('toolSwitcher.binDesigner')}
+          <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {ICON_PATHS.cube.map((d) => (
+              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+            ))}
+          </svg>
+          {!iconOnly && t('toolSwitcher.binDesigner')}
         </button>
       </div>
     </div>

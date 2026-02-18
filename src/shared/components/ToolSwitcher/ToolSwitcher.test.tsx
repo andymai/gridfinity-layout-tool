@@ -47,7 +47,7 @@ describe('ToolSwitcher', () => {
     render(<ToolSwitcher />);
 
     const tabs = screen.getAllByRole('tab');
-    await user.click(tabs[1]); // Click designer tab
+    await user.click(tabs[1]);
 
     expect(mockNavigateToDesigner).toHaveBeenCalledTimes(1);
   });
@@ -58,7 +58,7 @@ describe('ToolSwitcher', () => {
     render(<ToolSwitcher />);
 
     const tabs = screen.getAllByRole('tab');
-    await user.click(tabs[0]); // Click planner tab
+    await user.click(tabs[0]);
 
     expect(mockNavigateToPlanner).toHaveBeenCalledTimes(1);
   });
@@ -68,28 +68,28 @@ describe('ToolSwitcher', () => {
     render(<ToolSwitcher />);
 
     const tabs = screen.getAllByRole('tab');
-    await user.click(tabs[0]); // Click already active planner tab
+    await user.click(tabs[0]);
 
     expect(mockNavigateToPlanner).not.toHaveBeenCalled();
     expect(mockNavigateToDesigner).not.toHaveBeenCalled();
   });
 
-  it('renders GridfinityIcon', () => {
+  it('renders icons in tabs', () => {
     render(<ToolSwitcher />);
-    const svg = document.querySelector('svg');
-    expect(svg).toBeInTheDocument();
+    const svgs = document.querySelectorAll('svg');
+    expect(svgs.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('applies compact styles when compact prop is true', () => {
-    render(<ToolSwitcher compact />);
-    const navigation = screen.getByRole('navigation');
-    expect(navigation).toHaveClass('gap-1.5');
+  it('shows text labels by default', () => {
+    render(<ToolSwitcher />);
+    expect(screen.getByText('Grid Planner')).toBeInTheDocument();
+    expect(screen.getByText('Bin Designer')).toBeInTheDocument();
   });
 
-  it('applies regular styles when compact prop is false', () => {
-    render(<ToolSwitcher />);
-    const navigation = screen.getByRole('navigation');
-    expect(navigation).toHaveClass('gap-2');
+  it('hides text labels in iconOnly mode', () => {
+    render(<ToolSwitcher iconOnly />);
+    expect(screen.queryByText('Grid Planner')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bin Designer')).not.toBeInTheDocument();
   });
 
   it('has accessible labels', () => {
@@ -98,22 +98,31 @@ describe('ToolSwitcher', () => {
     expect(screen.getByRole('tablist')).toHaveAttribute('aria-label', 'Active tool');
   });
 
-  it('shows title attribute on inactive tabs', () => {
-    render(<ToolSwitcher />);
+  it('navigates when clicking inactive tab in iconOnly mode', async () => {
+    const user = userEvent.setup();
+    render(<ToolSwitcher iconOnly />);
+
     const tabs = screen.getAllByRole('tab');
-    expect(tabs[0]).not.toHaveAttribute('title'); // Active tab
-    // Title includes keyboard shortcut
-    const title = tabs[1].getAttribute('title');
-    expect(title).toContain('Switch to Bin Designer');
+    await user.click(tabs[1]);
+
+    expect(mockNavigateToDesigner).toHaveBeenCalledTimes(1);
   });
 
-  it('shows correct title attribute when designer is active', () => {
-    mockIsDesignerRoute = true;
+  it('does not navigate when clicking active tab in iconOnly mode', async () => {
+    const user = userEvent.setup();
+    render(<ToolSwitcher iconOnly />);
+
+    const tabs = screen.getAllByRole('tab');
+    await user.click(tabs[0]);
+
+    expect(mockNavigateToPlanner).not.toHaveBeenCalled();
+    expect(mockNavigateToDesigner).not.toHaveBeenCalled();
+  });
+
+  it('shows title only on inactive tabs', () => {
     render(<ToolSwitcher />);
     const tabs = screen.getAllByRole('tab');
-    // Title includes keyboard shortcut
-    const title = tabs[0].getAttribute('title');
-    expect(title).toContain('Switch to');
-    expect(tabs[1]).not.toHaveAttribute('title'); // Active tab
+    expect(tabs[0]).not.toHaveAttribute('title'); // active tab
+    expect(tabs[1].getAttribute('title')).toContain('Switch to Bin Designer');
   });
 });
