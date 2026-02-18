@@ -35,6 +35,9 @@ bundle-analysis.*
 
 .env
 .vercel
+
+# Implementation plans (transient, never commit)
+docs/plans/
 .env*.local
 .playwright-mcp/
 
