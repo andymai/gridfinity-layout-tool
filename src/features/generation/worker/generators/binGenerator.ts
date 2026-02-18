@@ -206,10 +206,13 @@ export function generateBin(
     !halfSockets &&
     (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
-  // Dynamic quality: small bins (< 4x4) get higher fidelity preview
-  const cellCount = params.width * params.depth;
-  const isSmallBin = cellCount < 16; // 4x4 = 16 cells threshold
-  const useHighQuality = forExport || isSmallBin;
+  // Dynamic quality based on physical dimension (not cell count).
+  // Cell count correlates poorly with needed tessellation quality — a 6×2 bin
+  // has only 12 cells but a 252mm footprint with thin features that need care.
+  const maxDimension = Math.max(params.width, params.depth) * SIZE;
+  const isSmallBin = maxDimension <= 200; // ~4.7 units — small enough for full-quality preview
+  // Lip bins always need precomputed normals for smooth chamfer shading
+  const useHighQuality = forExport || isSmallBin || params.base.stackingLip;
 
   // Stages 1-3: Build base socket + box + lip, then assemble.
   // The assembled shell is cached -- only features (compartments, inserts, tabs)
@@ -556,32 +559,36 @@ export function generateBin(
   onProgress?.('merge', 0.9);
   setLastSolid(bin);
 
-  // Dynamic tessellation: export gets fine quality, preview adapts to bin size
-  const maxDimension = Math.max(params.width, params.depth) * SIZE;
+  // Dynamic tessellation: export gets fine quality, preview scales with dimension.
+  //
+  // The stacking lip has a 0.7mm chamfer and 1.9mm chamfer that intersect with
+  // corner fillets — these curved junctions need tight tolerance to avoid chunky
+  // faceting. For bins with lips, tolerance is capped at 0.1mm so the chamfer
+  // profile stays smooth. Bins without lips can use coarser tessellation since
+  // their surfaces are mostly planar.
   let tolerance: number;
   let angularTolerance: number;
 
-  // The stacking lip wall extension is only 1.2mm thick. Tessellation tolerance
-  // must be well under this to preserve the thin wall geometry in the mesh.
-  // Tolerance values above ~0.7mm cause the lip extension faces to collapse.
   const hasLipFeature = params.base.stackingLip;
 
   if (forExport) {
     // Export: fine tessellation for smooth curves
     tolerance = 0.01;
     angularTolerance = 5;
+  } else if (hasLipFeature) {
+    // Any bin with stacking lip: tight tolerance to preserve chamfer profile.
+    // The lip's 0.7mm small chamfer at corner fillet intersections needs ≤0.1mm
+    // tolerance to render smoothly. Scale slightly with dimension but hard-cap.
+    tolerance = Math.min(0.1, Math.max(0.05, maxDimension / 2500));
+    angularTolerance = 10;
   } else if (isSmallBin) {
-    // Small bin preview: moderate quality (fast but still smooth)
+    // Small bin without lip: moderate quality
     tolerance = Math.min(0.4, Math.max(0.15, maxDimension / 600));
     angularTolerance = 12;
-  } else if (hasLipFeature) {
-    // Large bin with lip: tighter tolerance to preserve the thin lip extension wall
-    tolerance = Math.min(0.6, Math.max(0.3, maxDimension / 400));
-    angularTolerance = 20;
   } else {
-    // Large bin without lip: coarse tessellation for speed
-    tolerance = Math.min(3, Math.max(1, maxDimension / 100));
-    angularTolerance = 30;
+    // Large bin without lip: coarser tessellation for speed
+    tolerance = Math.min(1.0, Math.max(0.3, maxDimension / 300));
+    angularTolerance = 25;
   }
 
   const shapeMesh = mesh(bin, { tolerance, angularTolerance });
