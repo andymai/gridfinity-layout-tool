@@ -77,11 +77,16 @@ describe('Stacking lip wall presence in preview (#781)', () => {
     return { left, right, front, back, maxZ };
   }
 
-  // Sizes spanning the isSmallBin threshold (cellCount < 16)
+  // Mix of small-bin and large-bin sizes around the isSmallBin boundary (cellCount < 16):
+  //   - 6x2 (12 cells): small bin with large footprint (small-bin tessellation tier)
+  //   - 4x4 (16 cells): exactly at the threshold (large-bin + lip tier)
+  //   - 5x4 (20 cells): above threshold (large-bin + lip tier)
+  //   - 8x2 (16 cells): at threshold, elongated shape (large-bin + lip tier)
   const testCases = [
-    { width: 6, depth: 2, label: '6x2 (reported in #781)' },
+    { width: 6, depth: 2, label: '6x2 (reported in #781, small bin)' },
     { width: 4, depth: 4, label: '4x4 (threshold)' },
-    { width: 8, depth: 2, label: '8x2 (large)' },
+    { width: 5, depth: 4, label: '5x4 (above threshold)' },
+    { width: 8, depth: 2, label: '8x2 (large, elongated)' },
   ];
 
   describe.each(testCases)('$label slotted + stacking lip', ({ width, depth }) => {
