@@ -7,6 +7,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
 import { CATEGORY_COLOR_PALETTE } from '@/core/constants';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 
 export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
 
@@ -164,25 +165,21 @@ export function PreviewControls({
 }: PreviewControlsProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const desktopPickerRef = useRef<HTMLDivElement>(null);
-  const mobilePickerRef = useRef<HTMLDivElement>(null);
-  const mobileColorBtnRef = useRef<HTMLButtonElement>(null);
   const t = useTranslation();
+  const { isDesktop } = useResponsive();
 
-  // Close picker on outside click
+  // Close picker on outside click (desktop only — mobile uses backdrop)
   useEffect(() => {
-    if (!colorPickerOpen) return;
+    if (!colorPickerOpen || !isDesktop) return;
     const handleClick = (e: MouseEvent) => {
       const target = e.target as Node;
-      const inDesktop = desktopPickerRef.current?.contains(target);
-      const inMobile = mobilePickerRef.current?.contains(target);
-      const inMobileBtn = mobileColorBtnRef.current?.contains(target);
-      if (!inDesktop && !inMobile && !inMobileBtn) {
+      if (!desktopPickerRef.current?.contains(target)) {
         setColorPickerOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
-  }, [colorPickerOpen]);
+  }, [colorPickerOpen, isDesktop]);
 
   const handleColorSelect = useCallback(
     (color: string) => {
@@ -303,10 +300,10 @@ export function PreviewControls({
         )}
       </div>
 
-      {/* Mobile: compact vertical column in bottom-left */}
-      <div className="absolute bottom-2 left-2 z-30 flex flex-col gap-1 md:hidden">
-        {/* Camera presets in a compact pill row */}
-        <div className="flex rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
+      {/* Mobile: single compact horizontal strip at top edge */}
+      <div className="absolute inset-x-2 top-2 z-30 md:hidden">
+        <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
+          {/* Camera presets */}
           {PRESETS.map(({ key, label, shortcut }) => {
             const Icon = PRESET_ICONS[key];
             const isActive = activePreset === key;
@@ -315,28 +312,28 @@ export function PreviewControls({
                 key={key}
                 type="button"
                 onClick={() => onCameraPreset(key)}
-                className={`flex items-center justify-center p-2 min-w-[44px] min-h-[44px] transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
                   isActive
                     ? 'bg-accent text-on-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 title={`${label} view (${shortcut})`}
-                aria-label={`${label} camera view, keyboard shortcut ${shortcut}`}
+                aria-label={`${label} camera view`}
                 aria-pressed={isActive}
               >
                 <Icon />
               </button>
             );
           })}
-        </div>
 
-        {/* Action buttons row */}
-        <div className="flex rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
+          {/* Divider */}
+          <div className="w-px h-5 bg-stroke-subtle/50" />
+
           {/* Reset */}
           <button
             type="button"
             onClick={onResetView}
-            className="flex items-center justify-center p-2 min-w-[44px] min-h-[44px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
             title={t('binDesigner.resetView')}
             aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
@@ -347,7 +344,7 @@ export function PreviewControls({
           <button
             type="button"
             onClick={onWireframeToggle}
-            className={`flex items-center justify-center p-2 min-w-[44px] min-h-[44px] transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+            className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
               wireframe
                 ? 'bg-accent text-on-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -359,37 +356,44 @@ export function PreviewControls({
             <IconWireframe />
           </button>
 
+          {/* Spacer to push color picker to right */}
+          <div className="flex-1" />
+
           {/* Color picker */}
-          <div className="relative">
-            <button
-              ref={mobileColorBtnRef}
-              type="button"
-              onClick={() => setColorPickerOpen((v) => !v)}
-              className="flex items-center justify-center p-2 min-w-[44px] min-h-[44px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
-              title={t('binDesigner.changeColor')}
-              aria-label={t('binDesigner.changePreviewColor')}
-              aria-expanded={colorPickerOpen}
-            >
-              <span
-                className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
-                style={{ backgroundColor: previewColor }}
-              />
-            </button>
+          <button
+            type="button"
+            onClick={() => setColorPickerOpen((v) => !v)}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+            title={t('binDesigner.changeColor')}
+            aria-label={t('binDesigner.changePreviewColor')}
+            aria-expanded={colorPickerOpen}
+          >
+            <span
+              className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
+              style={{ backgroundColor: previewColor }}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile color picker — bottom sheet style overlay */}
+      {colorPickerOpen && !isDesktop && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- decorative backdrop, keyboard users dismiss via Escape */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => setColorPickerOpen(false)} />
+          {/* Sheet */}
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-surface-elevated p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl">
+            <div className="mx-auto mb-3 h-1 w-8 rounded-full bg-stroke-subtle/50" />
+            <p className="mb-3 text-sm font-medium text-content">
+              {t('binDesigner.changePreviewColor')}
+            </p>
+            <div role="listbox" aria-label={t('binDesigner.previewColorOptions')}>
+              <ColorPickerContent previewColor={previewColor} onColorSelect={handleColorSelect} />
+            </div>
           </div>
         </div>
-
-        {/* Mobile color picker popover — opens above */}
-        {colorPickerOpen && (
-          <div
-            ref={mobilePickerRef}
-            className="absolute bottom-full left-0 z-50 mb-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
-            role="listbox"
-            aria-label={t('binDesigner.previewColorOptions')}
-          >
-            <ColorPickerContent previewColor={previewColor} onColorSelect={handleColorSelect} />
-          </div>
-        )}
-      </div>
+      )}
     </>
   );
 }

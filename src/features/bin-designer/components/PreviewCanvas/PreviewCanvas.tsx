@@ -412,6 +412,26 @@ export function PreviewCanvas() {
     }
   }, [wasmStatus]);
 
+  // Responsive state for touch optimizations
+  const { isDesktop } = useResponsive();
+
+  // Double-tap to reset view (mobile only)
+  const lastTapRef = useRef<number>(0);
+  const handleCanvasDoubleTouch = useCallback(
+    (e: React.PointerEvent) => {
+      if (isDesktop || e.pointerType !== 'touch') return;
+      const now = Date.now();
+      if (now - lastTapRef.current < 300) {
+        e.preventDefault();
+        resetView();
+        lastTapRef.current = 0;
+      } else {
+        lastTapRef.current = now;
+      }
+    },
+    [isDesktop, resetView]
+  );
+
   // Bin dimensions for scene elements
   const { width, depth, height } = params;
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
@@ -420,7 +440,12 @@ export function PreviewCanvas() {
   const showOverlay = generationStatus === 'generating' && hasMesh;
 
   return (
-    <div className="relative h-full w-full" role="img" aria-label={binDescription}>
+    <div
+      className="relative h-full w-full touch-manipulation"
+      role="img"
+      aria-label={binDescription}
+      onPointerUp={handleCanvasDoubleTouch}
+    >
       {/* ARIA live region for status announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {statusAnnouncement}
@@ -504,7 +529,7 @@ export function PreviewCanvas() {
             {/* Design name on floor */}
             <BinNameLabel width={width} depth={depth} name={designName} />
 
-            {/* Orbit controls - Z-up with polar limits */}
+            {/* Orbit controls - Z-up with polar limits, pan disabled on mobile */}
             <OrbitControls
               ref={controlsRef}
               makeDefault
@@ -516,6 +541,7 @@ export function PreviewCanvas() {
               maxDistance={800}
               maxPolarAngle={Math.PI * 0.85}
               minPolarAngle={Math.PI * 0.05}
+              enablePan={isDesktop}
               onStart={handleOrbitStart}
             />
           </Canvas>
@@ -581,7 +607,7 @@ function TouchHint() {
         <span className="h-3 w-px bg-white/30" />
         <span>{t('binDesigner.pinchToZoom')}</span>
         <span className="h-3 w-px bg-white/30" />
-        <span>{t('binDesigner.2FingersToPan')}</span>
+        <span>{t('binDesigner.doubleTapToReset')}</span>
         <button
           onClick={dismiss}
           className="ml-1 flex items-center justify-center rounded-full p-2 hover:bg-white/20 min-w-[36px] min-h-[36px]"
