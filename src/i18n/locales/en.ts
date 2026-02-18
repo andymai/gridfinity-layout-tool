@@ -1366,7 +1366,7 @@ const en: Record<string, string> = {
   'binDesigner.createShareLink': 'Create Share Link',
   'binDesigner.loadSharedDesign': 'Load Shared Design',
   'binDesigner.pasteShareUrl': 'Paste share URL or ID',
-  'binDesigner.2FingersToPan': '2 fingers to pan',
+
   'binDesigner.changePreviewColor': 'Change preview color',
   'binDesigner.changesAreSavedAutomaticallyAsYouDe':
     'Changes are saved automatically as you design',
@@ -1383,6 +1383,7 @@ const en: Record<string, string> = {
   'binDesigner.dividerWalls': 'Divider walls',
   'binDesigner.downloadFormat': 'Download {format}',
   'binDesigner.downloadZip': 'Download ZIP',
+  'binDesigner.doubleTapToReset': 'Double-tap to reset',
   'binDesigner.dragToOrbit': 'Drag to orbit',
   'binDesigner.experimental': 'Experimental',
   'binDesigner.exportBinAsStl': 'Export bin as STL',
