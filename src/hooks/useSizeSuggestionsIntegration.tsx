@@ -56,7 +56,8 @@ export function useSizeSuggestionsIntegration(): UseSizeSuggestionsIntegrationRe
       hasInitialFetchRef.current = true;
       fetchSuggestions();
     }
-  }, [enabled, fetchSuggestions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only fetch on initial enable
+  }, [enabled]);
 
   const handleAcceptSuggestion = useCallback(
     (suggestion: SizeSuggestion, layerId: LayerId, layerHeight: number) => {
@@ -75,6 +76,8 @@ export function useSizeSuggestionsIntegration(): UseSizeSuggestionsIntegrationRe
           height: layerHeight,
           layerId,
           category: activeCategoryId,
+          label: '',
+          notes: '',
         });
 
         if (isOk(result)) {

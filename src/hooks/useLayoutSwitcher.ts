@@ -28,9 +28,9 @@ import type {
   Result,
   Unit,
   LayoutError,
+  LayoutLibraryLimitError,
   StorageError,
   UnknownError,
-  LayoutLibraryLimitError,
 } from '@/core/result';
 import { ok, err, OK, layoutLastEntity, layoutInvalidOperation, fromUnknown } from '@/core/result';
 import { useTranslation } from '@/i18n';
@@ -198,7 +198,11 @@ export function useLayoutSwitcher() {
   const createNewLayout = useCallback(
     async (
       name?: string
+<<<<<<< HEAD
     ): Promise<Result<string, StorageError | UnknownError | LayoutLibraryLimitError>> => {
+=======
+    ): Promise<Result<string, StorageError | LayoutLibraryLimitError | UnknownError>> => {
+>>>>>>> 0a7bc48fd (fix: address PR review feedback for size-suggestions)
       // Save current layout first
       await saveCurrentLayout();
 
@@ -378,7 +382,11 @@ export function useLayoutSwitcher() {
     async (
       importedLayout: Layout,
       forkedFrom?: { name: string; author?: string }
+<<<<<<< HEAD
     ): Promise<Result<string, StorageError | UnknownError | LayoutLibraryLimitError>> => {
+=======
+    ): Promise<Result<string, StorageError | LayoutLibraryLimitError | UnknownError>> => {
+>>>>>>> 0a7bc48fd (fix: address PR review feedback for size-suggestions)
       try {
         // Get fresh library state to avoid stale closure
         const currentLibrary = useLibraryStore.getState().library;

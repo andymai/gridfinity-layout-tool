@@ -40,6 +40,7 @@ describe('NextBinPreview', () => {
       size: '2x1',
       score: 0.9,
       position: { x: 0, y: 0 },
+      positionSource: 'gap_fill',
     };
 
     useSizeSuggestionStore.setState({
@@ -58,7 +59,8 @@ describe('NextBinPreview', () => {
     const suggestion: SizeSuggestion = {
       size: '2x1',
       score: 0.9,
-      // no position
+      position: null,
+      positionSource: 'none',
     };
 
     useSizeSuggestionStore.setState({
@@ -78,6 +80,7 @@ describe('NextBinPreview', () => {
       size: '2x1',
       score: 0.9,
       position: { x: 0, y: 0 },
+      positionSource: 'gap_fill',
     };
 
     useSizeSuggestionStore.setState({
@@ -96,6 +99,7 @@ describe('NextBinPreview', () => {
       size: '2x1',
       score: 0.9,
       position: { x: 0, y: 0 },
+      positionSource: 'gap_fill',
     };
 
     useSizeSuggestionStore.setState({
@@ -119,6 +123,7 @@ describe('NextBinPreview', () => {
       size: '2x1',
       score: 0.9,
       position: { x: 0, y: 0 },
+      positionSource: 'gap_fill',
     };
 
     useSizeSuggestionStore.setState({

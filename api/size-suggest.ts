@@ -75,16 +75,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   const ip = getClientIP(req);
-  const redis = getRedis();
-  const rateLimitResult = await checkRateLimit(redis, ip, 'size-suggest', 100, 60);
+  const rateLimitResult = await checkRateLimit(ip, 'suggest');
   if (!rateLimitResult.allowed) {
     res.status(429).json({
       error: 'Rate limit exceeded',
       code: ErrorCode.RATE_LIMITED,
-      retryAfter: rateLimitResult.retryAfter,
+      retryAfter: rateLimitResult.retryAfterSeconds,
     });
     return;
   }
+
+  const redis = getRedis();
 
   const validation = validateRequest(req.body);
   if (!validation.valid) {
@@ -96,14 +97,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   // Check cache
   const cacheKey = buildCacheKey(request);
-  try {
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      res.status(200).json(typeof cached === 'string' ? JSON.parse(cached) : cached);
-      return;
+  if (redis) {
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        res.status(200).json(typeof cached === 'string' ? JSON.parse(cached) : cached);
+        return;
+      }
+    } catch {
+      // Cache miss or error — continue to compute
     }
-  } catch {
-    // Cache miss or error — continue to compute
   }
 
   // Build telemetry keys
@@ -116,15 +119,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     .filter((l): l is string => typeof l === 'string' && l.length > 0);
   const uniqueLabels = [...new Set(labels)];
 
-  // Parallel Redis queries
-  const [drawerFreqRaw, transitionFreqRaw, correctionFreqRaw, ...labelFreqRaws] = await Promise.all(
-    [
+  // Parallel Redis queries (if Redis is available)
+  let drawerFreqRaw: Record<string, string> | null = null;
+  let transitionFreqRaw: Record<string, string> | null = null;
+  let correctionFreqRaw: Record<string, string> | null = null;
+  let labelFreqRaws: Array<Record<string, string> | null> = [];
+
+  if (redis) {
+    const results = await Promise.all([
       redis.hgetall(`ml:drawer:${drawerKey}`).catch(() => null),
       prevKey ? redis.hgetall(`ml:trans:${prevKey}`).catch(() => null) : Promise.resolve(null),
       redis.hgetall('ml:neg:corrected_sizes').catch(() => null),
       ...uniqueLabels.map((label) => redis.hgetall(`ml:label_hash:${label}`).catch(() => null)),
-    ]
-  );
+    ]);
+    [drawerFreqRaw, transitionFreqRaw, correctionFreqRaw, ...labelFreqRaws] = results;
+  }
 
   const toFreqMap = (raw: Record<string, string> | null): FreqMap => {
     if (!raw) return {};
@@ -174,10 +183,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const response = { suggestions, source: 'telemetry' };
 
-  try {
-    await redis.set(cacheKey, JSON.stringify(response), { ex: CACHE_TTL_SECONDS });
-  } catch {
-    // Cache write failure is not fatal
+  if (redis) {
+    try {
+      await redis.set(cacheKey, JSON.stringify(response), 'EX', CACHE_TTL_SECONDS);
+    } catch {
+      // Cache write failure is not fatal
+    }
   }
 
   res.status(200).json(response);

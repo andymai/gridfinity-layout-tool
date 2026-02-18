@@ -1,5 +1,5 @@
 /**
- * Tests for useSizeSuggestions hook and its backing store.
+ * Tests for the size suggestion store hook `useSizeSuggestionStore`.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
