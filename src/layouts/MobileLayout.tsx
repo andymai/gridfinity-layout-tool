@@ -63,11 +63,7 @@ export function MobileLayout({
       <SharedLayoutBanner />
 
       {/* Mobile Header */}
-      <MobileHeader
-        onMenuClick={() => setActiveMobilePanel('settings')}
-        onHelpClick={() => setIsMobileHelpOpen(true)}
-        saveStatus={saveStatus}
-      />
+      <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} saveStatus={saveStatus} />
 
       {/* Main content area - Grid takes full width */}
       <main className="flex-1 flex flex-col overflow-hidden bg-surface">
