@@ -50,6 +50,23 @@ function validateRequest(
     return { valid: false, error: `bins array exceeds maximum of ${MAX_BINS}` };
   }
 
+  // Validate individual bin fields
+  for (let i = 0; i < bins.length; i++) {
+    const bin = bins[i] as Record<string, unknown>;
+    if (
+      typeof bin?.width !== 'number' ||
+      typeof bin?.depth !== 'number' ||
+      typeof bin?.x !== 'number' ||
+      typeof bin?.y !== 'number' ||
+      !Number.isFinite(bin.width) ||
+      !Number.isFinite(bin.depth) ||
+      !Number.isFinite(bin.x) ||
+      !Number.isFinite(bin.y)
+    ) {
+      return { valid: false, error: `bins[${i}] must have finite numeric width, depth, x, and y` };
+    }
+  }
+
   return {
     valid: true,
     request: {
@@ -61,11 +78,14 @@ function validateRequest(
 
 function buildCacheKey(body: SuggestRequestBody): string {
   const drawerKey = `${body.drawer.width}x${body.drawer.depth}`;
-  const binSizes = body.bins
-    .map((b) => `${b.width}x${b.depth}`)
-    .sort()
-    .join(',');
-  return `size-suggest:${drawerKey}:${binSizes}`;
+  // Include positions (order-sensitive for rankPositions) and labels (for label frequency)
+  const binKeys = body.bins
+    .map((b) => {
+      const base = `${b.width}x${b.depth}@${b.x},${b.y}`;
+      return b.label ? `${base}:${b.label}` : base;
+    })
+    .join(';');
+  return `size-suggest:${drawerKey}:${binKeys}`;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {

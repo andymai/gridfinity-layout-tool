@@ -32,8 +32,8 @@ export function SuggestionGhost({ cellSize, gap, categoryColor }: SuggestionGhos
     const { width, depth } = dims;
     const left = topSuggestion.position.x * (cellSize + gap);
     const top = topSuggestion.position.y * (cellSize + gap);
-    const pixelWidth = width * cellSize + (width - 1) * gap;
-    const pixelHeight = depth * cellSize + (depth - 1) * gap;
+    const pixelWidth = width * cellSize + Math.max(0, width - 1) * gap;
+    const pixelHeight = depth * cellSize + Math.max(0, depth - 1) * gap;
 
     return {
       position: 'absolute' as const,
