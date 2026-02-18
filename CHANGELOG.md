@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.13.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.4...gridfinity-layout-tool-v3.13.5) (2026-02-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** optimize 3D preview for mobile web ([#780](https://github.com/andymai/gridfinity-layout-tool/issues/780)) ([611f257](https://github.com/andymai/gridfinity-layout-tool/commit/611f2570074ae064571a94515047d7c3e0734ece))
+* **bin-designer:** preserve stacking lip wall in preview tessellation ([#782](https://github.com/andymai/gridfinity-layout-tool/issues/782)) ([c813a61](https://github.com/andymai/gridfinity-layout-tool/commit/c813a61c1e98c4d7174cd9b080433fe1b79d0980))
+
 ## [3.13.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.3...gridfinity-layout-tool-v3.13.4) (2026-02-17)
 
 ### Bug Fixes
