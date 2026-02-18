@@ -561,16 +561,25 @@ export function generateBin(
   let tolerance: number;
   let angularTolerance: number;
 
+  // The stacking lip wall extension is only 1.2mm thick. Tessellation tolerance
+  // must be well under this to preserve the thin wall geometry in the mesh.
+  // Tolerance values above ~0.7mm cause the lip extension faces to collapse.
+  const hasLipFeature = params.base.stackingLip;
+
   if (forExport) {
     // Export: fine tessellation for smooth curves
     tolerance = 0.01;
     angularTolerance = 5;
   } else if (isSmallBin) {
     // Small bin preview: moderate quality (fast but still smooth)
-    tolerance = Math.min(0.5, Math.max(0.2, maxDimension / 500));
-    angularTolerance = 15;
+    tolerance = Math.min(0.4, Math.max(0.15, maxDimension / 600));
+    angularTolerance = 12;
+  } else if (hasLipFeature) {
+    // Large bin with lip: tighter tolerance to preserve the thin lip extension wall
+    tolerance = Math.min(0.6, Math.max(0.3, maxDimension / 400));
+    angularTolerance = 20;
   } else {
-    // Large bin preview: coarse tessellation for speed
+    // Large bin without lip: coarse tessellation for speed
     tolerance = Math.min(3, Math.max(1, maxDimension / 100));
     angularTolerance = 30;
   }
