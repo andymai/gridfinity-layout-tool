@@ -417,7 +417,7 @@ export function DesignerPage(_props: DesignerPageProps) {
       )}
 
       {/* Header / Action bar */}
-      <header className="h-12 flex items-center justify-between px-2 sm:px-4 gap-1 sm:gap-2 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+      <header className="h-12 flex items-center justify-between px-3 gap-1 sm:gap-2 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
         {isDesktop ? (
           /* ---- Desktop action bar ---- */
           <>
@@ -565,7 +565,7 @@ export function DesignerPage(_props: DesignerPageProps) {
                 onKeyDown={handleNameKeyDown}
                 maxLength={50}
                 aria-label={t('binDesigner.designName')}
-                className="flex-1 mx-2 min-w-0 px-2 py-1 rounded-md text-sm bg-surface-elevated border border-accent text-content"
+                className="flex-1 mx-3 min-w-0 px-2 py-1 rounded-md text-sm bg-surface-elevated border border-accent text-content"
                 style={{
                   boxShadow: '0 0 0 3px var(--color-primary-muted)',
                 }}
@@ -581,12 +581,12 @@ export function DesignerPage(_props: DesignerPageProps) {
                 onTouchStart={handleNameTouchStart}
                 onTouchEnd={handleNameTouchEnd}
                 onTouchCancel={handleNameTouchEnd}
-                className="flex-1 mx-2 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-sm rounded-md text-content-secondary bg-transparent hover:bg-surface-hover"
+                className="flex-1 mx-3 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-sm rounded-md text-content-secondary bg-transparent hover:bg-surface-hover"
                 title={t('binDesigner.clickToRename')}
               >
                 <span className="truncate">{designName}</span>
                 <svg
-                  className="w-3 h-3 flex-shrink-0 opacity-50"
+                  className="w-3 h-3 flex-shrink-0 text-content-tertiary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

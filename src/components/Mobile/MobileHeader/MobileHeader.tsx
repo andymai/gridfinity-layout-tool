@@ -211,7 +211,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
             aria-label={t('mobile.header.openSettings')}
             title={t('mobile.settings')}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               {ICON_PATHS.settings.map((d) => (
                 <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
               ))}
