@@ -761,6 +761,14 @@ const en: Record<string, string> = {
   'settings.storage.settingsCacheNote':
     'Used for preferences, startup cache, and small metadata. Does not affect layout storage.',
 
+  // Storage danger zone
+  'settings.storage.dangerZone': 'Danger Zone',
+  'settings.storage.clearAllData': 'Clear all data',
+  'settings.storage.clearAllDataHint':
+    'Delete all layouts, snapshots, analytics, and cached data. Your settings will be preserved.',
+  'settings.storage.confirmClearAll':
+    'This will permanently delete all your layouts and data. Your settings will be preserved. This cannot be undone.',
+
   // ===========================================================================
   // Help
   // ===========================================================================

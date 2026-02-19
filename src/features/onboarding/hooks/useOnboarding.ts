@@ -6,10 +6,10 @@ import { trackEvent } from '@/shared/analytics/posthog';
 // localStorage Keys
 // ============================================================================
 
-const WELCOME_SEEN_KEY = 'gridfinity_onboarding_welcome_seen';
-const DRAW_TUTORIAL_SEEN_KEY = 'gridfinity_onboarding_draw_tutorial_seen';
-const SIDEBAR_PULSE_DISMISSED_KEY = 'gridfinity_onboarding_sidebar_pulse_dismissed';
-const CHOSE_BLANK_CANVAS_KEY = 'gridfinity_onboarding_chose_blank';
+const WELCOME_SEEN_KEY = 'gridfinity-onboarding-welcome-seen';
+const DRAW_TUTORIAL_SEEN_KEY = 'gridfinity-onboarding-draw-tutorial-seen';
+const SIDEBAR_PULSE_DISMISSED_KEY = 'gridfinity-onboarding-sidebar-pulse-dismissed';
+const CHOSE_BLANK_CANVAS_KEY = 'gridfinity-onboarding-chose-blank';
 
 const ALL_KEYS = [
   WELCOME_SEEN_KEY,

@@ -1,7 +1,7 @@
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '@/core/store';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { optInAnalytics, optOutAnalytics } from '@/shared/analytics/posthog';
+import { optInAnalytics, optOutAnalytics, pruneAnalyticsData } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 
 export function PrivacyTab() {
@@ -21,6 +21,7 @@ export function PrivacyTab() {
       optInAnalytics();
     } else {
       optOutAnalytics();
+      pruneAnalyticsData();
     }
   };
 

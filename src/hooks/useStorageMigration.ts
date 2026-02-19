@@ -14,7 +14,12 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { migrateAllLayoutsToIndexedDB, isMigrationNeeded } from '@/core/storage';
+import {
+  migrateAllLayoutsToIndexedDB,
+  isMigrationNeeded,
+  runLocalStorageMigrations,
+} from '@/core/storage';
+import { initLabelSizesCache } from '@/shared/analytics/purposeInference';
 
 // Track if migration has been attempted this session
 let migrationAttempted = false;
@@ -36,7 +41,13 @@ export function useStorageMigration(): void {
 
     const runMigration = async () => {
       try {
-        // Check if migration is needed
+        // Run one-time localStorage consolidation migrations
+        await runLocalStorageMigrations();
+
+        // Hydrate ML label sizes cache from IndexedDB
+        await initLabelSizesCache();
+
+        // Check if layout migration is needed
         const needed = await isMigrationNeeded();
 
         if (!needed) {

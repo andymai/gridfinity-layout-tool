@@ -3,6 +3,7 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { Bin } from '@/features/grid-editor/components/Grid/Bin';
 import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
 import type { Bin as BinType, Category, Layer, Drawer } from '@/core/types';
 
@@ -737,8 +738,10 @@ describe('Bin', () => {
 
   describe('toast hints', () => {
     it('shows resize hint on first selection', () => {
-      // Clear the localStorage flag
-      localStorage.removeItem('gridfinity-resize-hint-shown');
+      // Ensure hint is not yet dismissed
+      useSettingsStore.setState((state) => ({
+        settings: { ...state.settings, dismissedHints: [] },
+      }));
 
       const addToastSpy = vi.fn();
       useToastStore.setState({ addToast: addToastSpy });
@@ -757,8 +760,10 @@ describe('Bin', () => {
     });
 
     it('does not show resize hint after first time', () => {
-      // Set the localStorage flag
-      localStorage.setItem('gridfinity-resize-hint-shown', 'true');
+      // Mark the hint as already dismissed
+      useSettingsStore.setState((state) => ({
+        settings: { ...state.settings, dismissedHints: ['bin-resize'] },
+      }));
 
       const addToastSpy = vi.fn();
       useToastStore.setState({ addToast: addToastSpy });
@@ -774,9 +779,6 @@ describe('Bin', () => {
       });
 
       expect(addToastSpy).not.toHaveBeenCalled();
-
-      // Cleanup
-      localStorage.removeItem('gridfinity-resize-hint-shown');
     });
   });
 

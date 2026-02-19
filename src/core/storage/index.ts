@@ -119,6 +119,9 @@ export {
   saveSharedWithMeResult,
   loadSharedWithMeResult,
   clearSharedWithMeResult,
+  saveSharedWithMeAsync,
+  loadSharedWithMeAsync,
+  clearSharedWithMeAsync,
 } from './SharedWithMeService';
 
 // === Migration ===
@@ -148,6 +151,12 @@ export {
   deleteSnapshotsForLayout,
   updateSnapshotLabel,
 } from './SnapshotService';
+
+// === localStorage Migrations ===
+export { runLocalStorageMigrations } from './localStorageMigrations';
+
+// === Clear All Data ===
+export { clearAllAppData } from './clearAppData';
 
 // === localStorage Cleanup ===
 export { cleanupLocalStorageBackups, clearCleanupFlag } from './localStorageCleanup';

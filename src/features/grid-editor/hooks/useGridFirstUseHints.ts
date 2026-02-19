@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useToastStore } from '@/core/store/toast';
 import type { PaintSize } from '@/core/store/interaction';
+import { useSettingsStore } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -44,10 +45,10 @@ export function useGridFirstUseHints(options: UseGridFirstUseHintsOptions): Grid
     if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
 
     if (paintSize) {
-      const hintShown = localStorage.getItem('gridfinity-paint-mode-hint-shown');
-      if (!hintShown) {
+      const { settings, updateSetting } = useSettingsStore.getState();
+      if (!settings.dismissedHints.includes('paint-mode')) {
         addToast(t('toast.paintModeHint'), 'info');
-        localStorage.setItem('gridfinity-paint-mode-hint-shown', 'true');
+        updateSetting('dismissedHints', [...settings.dismissedHints, 'paint-mode']);
         // Defer state update to avoid cascading renders
         pulseTimeoutRef.current = setTimeout(() => {
           setShouldPulsePaintHint(true);

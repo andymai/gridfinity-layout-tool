@@ -5,6 +5,11 @@ import { renderHook, cleanup } from '@testing-library/react';
 vi.mock('@/core/storage', () => ({
   isMigrationNeeded: vi.fn(),
   migrateAllLayoutsToIndexedDB: vi.fn(),
+  runLocalStorageMigrations: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/shared/analytics/purposeInference', () => ({
+  initLabelSizesCache: vi.fn().mockResolvedValue(undefined),
 }));
 
 // We need to import and re-create the hook each test since it has module-level state

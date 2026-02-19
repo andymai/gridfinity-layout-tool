@@ -64,7 +64,7 @@ describe('useOnboarding', () => {
     });
 
     it('does not show welcome if localStorage flag is already set', () => {
-      setFlags({ gridfinity_onboarding_welcome_seen: 'true' });
+      setFlags({ 'gridfinity-onboarding-welcome-seen': 'true' });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldShowWelcome).toBe(false);
     });
@@ -97,7 +97,7 @@ describe('useOnboarding', () => {
     });
 
     it('does not show if localStorage flag already set', () => {
-      setFlags({ gridfinity_onboarding_draw_tutorial_seen: 'true' });
+      setFlags({ 'gridfinity-onboarding-draw-tutorial-seen': 'true' });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldShowDrawTutorial).toBe(false);
     });
@@ -105,7 +105,7 @@ describe('useOnboarding', () => {
 
   describe('shouldPulseGallery', () => {
     it('pulses for returning low-engagement user (welcome seen, 0 bins)', () => {
-      setFlags({ gridfinity_onboarding_welcome_seen: 'true' });
+      setFlags({ 'gridfinity-onboarding-welcome-seen': 'true' });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldPulseGallery).toBe(true);
     });
@@ -116,7 +116,7 @@ describe('useOnboarding', () => {
     });
 
     it('dismisses pulse on gallery open', () => {
-      setFlags({ gridfinity_onboarding_welcome_seen: 'true' });
+      setFlags({ 'gridfinity-onboarding-welcome-seen': 'true' });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldPulseGallery).toBe(true);
 
@@ -126,8 +126,8 @@ describe('useOnboarding', () => {
 
     it('does not pulse if dismissed flag is set', () => {
       setFlags({
-        gridfinity_onboarding_welcome_seen: 'true',
-        gridfinity_onboarding_sidebar_pulse_dismissed: 'true',
+        'gridfinity-onboarding-welcome-seen': 'true',
+        'gridfinity-onboarding-sidebar-pulse-dismissed': 'true',
       });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldPulseGallery).toBe(false);
@@ -154,11 +154,11 @@ describe('useOnboarding', () => {
       });
 
       expect(result.current.shouldShowDrawTutorial).toBe(false);
-      expect(localStorage.getItem('gridfinity_onboarding_draw_tutorial_seen')).toBe('true');
+      expect(localStorage.getItem('gridfinity-onboarding-draw-tutorial-seen')).toBe('true');
     });
 
     it('auto-dismisses gallery pulse when engagement threshold is reached', () => {
-      setFlags({ gridfinity_onboarding_welcome_seen: 'true' });
+      setFlags({ 'gridfinity-onboarding-welcome-seen': 'true' });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldPulseGallery).toBe(true);
 
@@ -179,7 +179,7 @@ describe('useOnboarding', () => {
       }
 
       expect(result.current.shouldPulseGallery).toBe(false);
-      expect(localStorage.getItem('gridfinity_onboarding_sidebar_pulse_dismissed')).toBe('true');
+      expect(localStorage.getItem('gridfinity-onboarding-sidebar-pulse-dismissed')).toBe('true');
     });
   });
 
@@ -189,34 +189,34 @@ describe('useOnboarding', () => {
       act(() => result.current.markWelcomeComplete('blank'));
 
       // A second hook instance should read from localStorage
-      expect(localStorage.getItem('gridfinity_onboarding_chose_blank')).toBe('true');
+      expect(localStorage.getItem('gridfinity-onboarding-chose-blank')).toBe('true');
     });
 
     it('shares choseBlankCanvas flag via localStorage', () => {
       setFlags({
-        gridfinity_onboarding_welcome_seen: 'true',
-        gridfinity_onboarding_chose_blank: 'true',
+        'gridfinity-onboarding-welcome-seen': 'true',
+        'gridfinity-onboarding-chose-blank': 'true',
       });
       // Verify the flag is readable from localStorage
-      expect(localStorage.getItem('gridfinity_onboarding_chose_blank')).toBe('true');
+      expect(localStorage.getItem('gridfinity-onboarding-chose-blank')).toBe('true');
     });
   });
 
   describe('resetOnboarding', () => {
     it('clears all onboarding flags', () => {
       setFlags({
-        gridfinity_onboarding_welcome_seen: 'true',
-        gridfinity_onboarding_draw_tutorial_seen: 'true',
-        gridfinity_onboarding_sidebar_pulse_dismissed: 'true',
-        gridfinity_onboarding_chose_blank: 'true',
+        'gridfinity-onboarding-welcome-seen': 'true',
+        'gridfinity-onboarding-draw-tutorial-seen': 'true',
+        'gridfinity-onboarding-sidebar-pulse-dismissed': 'true',
+        'gridfinity-onboarding-chose-blank': 'true',
       });
 
       resetOnboarding();
 
-      expect(localStorage.getItem('gridfinity_onboarding_welcome_seen')).toBeNull();
-      expect(localStorage.getItem('gridfinity_onboarding_draw_tutorial_seen')).toBeNull();
-      expect(localStorage.getItem('gridfinity_onboarding_sidebar_pulse_dismissed')).toBeNull();
-      expect(localStorage.getItem('gridfinity_onboarding_chose_blank')).toBeNull();
+      expect(localStorage.getItem('gridfinity-onboarding-welcome-seen')).toBeNull();
+      expect(localStorage.getItem('gridfinity-onboarding-draw-tutorial-seen')).toBeNull();
+      expect(localStorage.getItem('gridfinity-onboarding-sidebar-pulse-dismissed')).toBeNull();
+      expect(localStorage.getItem('gridfinity-onboarding-chose-blank')).toBeNull();
     });
   });
 });

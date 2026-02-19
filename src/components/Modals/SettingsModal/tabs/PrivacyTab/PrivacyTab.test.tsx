@@ -32,6 +32,7 @@ vi.mock('@/shared/components/Checkbox', () => ({
 vi.mock('@/shared/analytics/posthog', () => ({
   optInAnalytics: mockOptIn,
   optOutAnalytics: mockOptOut,
+  pruneAnalyticsData: vi.fn(),
 }));
 
 describe('PrivacyTab', () => {

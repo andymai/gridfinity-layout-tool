@@ -8,20 +8,25 @@
  *   - 'layouts': Local layout data (key: layout id)
  *   - 'snapshots': Periodic layout snapshots for version history (key: snapshot id)
  *   - 'library': Library index metadata (key: 'index')
+ *   - 'ml-data': ML telemetry data like label sizes (key: data id)
+ *   - 'shared-with-me': Shared layout entries (key: 'entries')
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
 import { compressLayout, decompressLayout } from '@/shared/utils';
-import type { Layout, LayoutLibrary, CompressedSnapshot } from '@/core/types';
+import type { Layout, LayoutLibrary, CompressedSnapshot, SharedWithMeEntry } from '@/core/types';
 
 const DB_NAME = 'gridfinity-db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 // Store names
 const LAYOUTS_STORE = 'layouts';
 const SNAPSHOTS_STORE = 'snapshots';
 const LIBRARY_STORE = 'library';
 const LIBRARY_KEY = 'index';
+const ML_DATA_STORE = 'ml-data';
+const SHARED_WITH_ME_STORE = 'shared-with-me';
+const SHARED_WITH_ME_KEY = 'entries';
 
 // Database instance cache
 let dbInstance: IDBPDatabase | null = null;
@@ -69,6 +74,14 @@ export async function openLayoutDatabase(): Promise<IDBPDatabase> {
       // v2: Create library store for library index metadata
       if (!db.objectStoreNames.contains(LIBRARY_STORE)) {
         db.createObjectStore(LIBRARY_STORE);
+      }
+      // v3: ML data store (label sizes, etc.)
+      if (!db.objectStoreNames.contains(ML_DATA_STORE)) {
+        db.createObjectStore(ML_DATA_STORE);
+      }
+      // v3: Shared-with-me entries
+      if (!db.objectStoreNames.contains(SHARED_WITH_ME_STORE)) {
+        db.createObjectStore(SHARED_WITH_ME_STORE);
       }
     },
   });
@@ -216,6 +229,60 @@ export async function deleteSnapshotsByLayoutId(layoutId: string): Promise<void>
 export async function updateSnapshot(snapshot: CompressedSnapshot): Promise<void> {
   const db = await getDb();
   await db.put(SNAPSHOTS_STORE, snapshot);
+}
+
+// === ML Data Operations ===
+
+/**
+ * Save ML data to IndexedDB (e.g. label sizes for name suggestions).
+ */
+export async function saveMlData(key: string, data: unknown): Promise<void> {
+  const db = await getDb();
+  await db.put(ML_DATA_STORE, data, key);
+}
+
+/**
+ * Load ML data from IndexedDB.
+ */
+export async function loadMlData<T>(key: string): Promise<T | null> {
+  const db = await getDb();
+  const result: unknown = await db.get(ML_DATA_STORE, key);
+  return result !== null && result !== undefined ? (result as T) : null;
+}
+
+/**
+ * Delete ML data from IndexedDB.
+ */
+export async function deleteMlData(key: string): Promise<void> {
+  const db = await getDb();
+  await db.delete(ML_DATA_STORE, key);
+}
+
+// === Shared-With-Me Operations ===
+
+/**
+ * Save shared-with-me entries to IndexedDB.
+ */
+export async function saveSharedWithMeEntries(entries: SharedWithMeEntry[]): Promise<void> {
+  const db = await getDb();
+  await db.put(SHARED_WITH_ME_STORE, entries, SHARED_WITH_ME_KEY);
+}
+
+/**
+ * Load shared-with-me entries from IndexedDB.
+ */
+export async function loadSharedWithMeEntries(): Promise<SharedWithMeEntry[] | null> {
+  const db = await getDb();
+  const result: unknown = await db.get(SHARED_WITH_ME_STORE, SHARED_WITH_ME_KEY);
+  return result !== null && result !== undefined ? (result as SharedWithMeEntry[]) : null;
+}
+
+/**
+ * Clear shared-with-me entries from IndexedDB.
+ */
+export async function clearSharedWithMeEntries(): Promise<void> {
+  const db = await getDb();
+  await db.delete(SHARED_WITH_ME_STORE, SHARED_WITH_ME_KEY);
 }
 
 /**
