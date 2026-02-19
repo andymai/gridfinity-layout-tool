@@ -281,6 +281,37 @@ describe('DesignListDialog', () => {
     expect(screen.getByText(/1×1×6u/)).toBeInTheDocument();
   });
 
+  it('renders all designs when there are more than 9 saved', async () => {
+    const manyDesigns: SavedDesign[] = Array.from({ length: 12 }, (_, i) => ({
+      id: `design-${i + 1}`,
+      name: `Design ${i + 1}`,
+      params: { ...DEFAULT_BIN_PARAMS, width: i + 1 },
+      thumbnail: null,
+      createdAt: '2026-01-20T10:00:00.000Z',
+      updatedAt: new Date(2026, 0, 20 + i).toISOString(),
+      exportFileNameConfig: null,
+    }));
+
+    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
+    vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok(manyDesigns));
+
+    render(<DesignListDialog open={true} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Design 1')).toBeInTheDocument();
+    });
+
+    // All 12 designs should be in the DOM (scrollable, not clipped)
+    for (let i = 1; i <= 12; i++) {
+      expect(screen.getByText(`Design ${i}`)).toBeInTheDocument();
+    }
+
+    // The content wrapper must be a flex column to ensure the scroll chain works
+    const dialog = screen.getByRole('dialog');
+    const contentWrapper = dialog.querySelector('[aria-busy]');
+    expect(contentWrapper).toHaveClass('flex', 'flex-col');
+  });
+
   describe('Import flow', () => {
     it('shows Import button in header', async () => {
       render(<DesignListDialog open={true} onClose={onClose} />);
