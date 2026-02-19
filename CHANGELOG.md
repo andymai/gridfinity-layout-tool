@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.16.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.16.0...gridfinity-layout-tool-v3.16.1) (2026-02-19)
+
+
+### Bug Fixes
+
+* update tests for post-merge API changes ([1e0debc](https://github.com/andymai/gridfinity-layout-tool/commit/1e0debc6988f7850dc2978afee35cb6881b1a65a))
+
 ## [3.16.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.15.0...gridfinity-layout-tool-v3.16.0) (2026-02-19)
 
 
