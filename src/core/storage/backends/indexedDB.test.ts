@@ -8,6 +8,12 @@ import {
   getAllLayoutIds,
   clearAllData,
   closeDatabase,
+  saveMlData,
+  loadMlData,
+  deleteMlData,
+  saveSharedWithMeEntries,
+  loadSharedWithMeEntries,
+  clearSharedWithMeEntries,
 } from '@/core/storage/backends/indexedDB';
 import type { Layout } from '@/core/types';
 
@@ -449,6 +455,16 @@ describe('indexedDB backend', () => {
       expect(loaded?.name).toBe('抽屉布局 Küchenschublade');
     });
 
+    it('creates ml-data object store', async () => {
+      const db = await openLayoutDatabase();
+      expect(db.objectStoreNames.contains('ml-data')).toBe(true);
+    });
+
+    it('creates shared-with-me object store', async () => {
+      const db = await openLayoutDatabase();
+      expect(db.objectStoreNames.contains('shared-with-me')).toBe(true);
+    });
+
     it('handles bin with optional properties', async () => {
       const layout = createTestLayout({
         bins: [
@@ -479,6 +495,81 @@ describe('indexedDB backend', () => {
       expect(bin?.notes).toBe('Some notes here');
       expect(bin?.clearanceHeight).toBe(5);
       expect(bin?.customProperties?.['custom-key']).toBe('custom-value');
+    });
+  });
+
+  describe('ML data operations', () => {
+    it('saves and loads ML data', async () => {
+      const data = { labels: { abc123: ['1x1x3', '2x2x3'] } };
+      await saveMlData('label-sizes', data);
+
+      const loaded = await loadMlData<typeof data>('label-sizes');
+      expect(loaded).toEqual(data);
+    });
+
+    it('returns null for non-existent ML data', async () => {
+      const loaded = await loadMlData('non-existent');
+      expect(loaded).toBeNull();
+    });
+
+    it('overwrites existing ML data', async () => {
+      await saveMlData('key', { v: 1 });
+      await saveMlData('key', { v: 2 });
+
+      const loaded = await loadMlData<{ v: number }>('key');
+      expect(loaded?.v).toBe(2);
+    });
+
+    it('deletes ML data', async () => {
+      await saveMlData('to-delete', { x: 1 });
+      await deleteMlData('to-delete');
+
+      const loaded = await loadMlData('to-delete');
+      expect(loaded).toBeNull();
+    });
+
+    it('does not throw when deleting non-existent ML data', async () => {
+      await expect(deleteMlData('non-existent')).resolves.not.toThrow();
+    });
+  });
+
+  describe('shared-with-me operations', () => {
+    const testEntries = [
+      { id: 'share-1', name: 'Layout A', sharedAt: Date.now(), sharedBy: 'user1' },
+      { id: 'share-2', name: 'Layout B', sharedAt: Date.now(), sharedBy: 'user2' },
+    ];
+
+    it('saves and loads entries', async () => {
+      await saveSharedWithMeEntries(testEntries);
+
+      const loaded = await loadSharedWithMeEntries();
+      expect(loaded).toEqual(testEntries);
+    });
+
+    it('returns null when no entries exist', async () => {
+      const loaded = await loadSharedWithMeEntries();
+      expect(loaded).toBeNull();
+    });
+
+    it('overwrites existing entries', async () => {
+      await saveSharedWithMeEntries(testEntries);
+      const updated = [testEntries[0]];
+      await saveSharedWithMeEntries(updated);
+
+      const loaded = await loadSharedWithMeEntries();
+      expect(loaded).toHaveLength(1);
+    });
+
+    it('clears entries', async () => {
+      await saveSharedWithMeEntries(testEntries);
+      await clearSharedWithMeEntries();
+
+      const loaded = await loadSharedWithMeEntries();
+      expect(loaded).toBeNull();
+    });
+
+    it('does not throw when clearing empty store', async () => {
+      await expect(clearSharedWithMeEntries()).resolves.not.toThrow();
     });
   });
 });
