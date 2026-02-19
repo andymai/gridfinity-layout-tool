@@ -167,6 +167,20 @@ describe('exportAllLayouts', () => {
     expect(progress[1]).toEqual({ current: 2, total: 2 });
   });
 
+  it('skips layouts that throw during load and reports skipped count', async () => {
+    mockLoadLayoutAsync
+      .mockRejectedValueOnce(new Error('corrupt'))
+      .mockResolvedValueOnce(makeLayout('Beta'));
+    const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
+
+    const result = await exportAllLayouts(library);
+    const parsed = JSON.parse(result.json);
+
+    expect(result.exported).toBe(1);
+    expect(result.skipped).toBe(1);
+    expect(parsed.layouts[0].name).toBe('Beta');
+  });
+
   it('skips layouts that fail to load and reports skipped count', async () => {
     mockLoadLayoutAsync.mockResolvedValueOnce(null).mockResolvedValueOnce(makeLayout('Beta'));
     const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
@@ -314,6 +328,39 @@ describe('importArchive', () => {
     expect(result.skipped).toBe(1);
     expect(result.errors[0]).toContain('full');
     expect(mockCreateLayoutEntry).not.toHaveBeenCalled();
+  });
+
+  it('stops importing when library limit is reached mid-loop', async () => {
+    // Start with 99 entries, try to import 3 => should import 1, skip 2
+    const entries = Array.from({ length: 99 }, (_, i) => makeEntry(`id-${i}`, `L${i}`));
+    const library = makeLibrary(entries);
+
+    const regenerated = makeLayout('Import');
+    mockImportLayoutJSON.mockReturnValue({ layout: regenerated, errors: [] });
+    // After importing the first, the library has 100 entries (at the limit)
+    const fullLibrary = makeLibrary([...entries, makeEntry('new-1', 'Import 1')]);
+    mockCreateLayoutEntry.mockResolvedValueOnce(ok({ library: fullLibrary, layoutId: 'new-1' }));
+
+    const archive = {
+      _archive: {
+        version: '1.0' as const,
+        exportedFrom: 'x',
+        exportedAt: 'now',
+        layoutCount: 3,
+      },
+      layouts: [
+        { name: 'Import 1', layout: makeLayout('I1') },
+        { name: 'Import 2', layout: makeLayout('I2') },
+        { name: 'Import 3', layout: makeLayout('I3') },
+      ],
+    };
+
+    const { result } = await importArchive(archive, library);
+
+    expect(result.imported).toBe(1);
+    expect(result.skipped).toBe(2);
+    expect(result.errors[0]).toContain('Library full');
+    expect(mockCreateLayoutEntry).toHaveBeenCalledTimes(1);
   });
 
   it('calls onProgress for each layout entry', async () => {
