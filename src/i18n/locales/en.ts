@@ -1767,27 +1767,6 @@ const en: Record<string, string> = {
   'designLinking.toast.exportFailed': 'Failed to export bin design',
   'designLinking.toast.deleted': 'Deleted "{name}"',
   'designLinking.toast.deleteFailed': 'Failed to delete bin design',
-
-  // ===========================================================================
-  // Feedback
-  // ===========================================================================
-  'feedback.title': 'Send Feedback',
-  'feedback.categoryLabel': 'Category',
-  'feedback.categoryFeature': 'Feature Request',
-  'feedback.categoryBug': 'Bug Report',
-  'feedback.categoryGeneral': 'General Feedback',
-  'feedback.descriptionLabel': 'Description',
-  'feedback.descriptionPlaceholder': 'Tell us more...',
-  'feedback.emailLabel': 'Email (optional)',
-  'feedback.emailPlaceholder': 'For follow-up only',
-  'feedback.includeContext': 'Include layout info to help debug',
-  'feedback.submit': 'Submit Feedback',
-  'feedback.submitting': 'Submitting...',
-  'feedback.cancel': 'Cancel',
-  'feedback.successToast': 'Feedback submitted — thank you!',
-  'feedback.errorGeneric': 'Failed to submit feedback. Please try again.',
-  'feedback.errorRateLimit': 'Too many submissions. Please try again later.',
-  'feedback.descriptionRequired': 'Description is required',
 };
 
 export default en;
