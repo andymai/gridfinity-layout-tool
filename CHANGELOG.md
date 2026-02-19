@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.14.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.9...gridfinity-layout-tool-v3.14.0) (2026-02-19)
+
+
+### Features
+
+* snapshot history with auto-save, restore, and IndexedDB recovery ([#797](https://github.com/andymai/gridfinity-layout-tool/issues/797)) ([f2bf4ec](https://github.com/andymai/gridfinity-layout-tool/commit/f2bf4ec0596682897403ab02b6082cd94829835a))
+
 ## [3.13.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.8...gridfinity-layout-tool-v3.13.9) (2026-02-19)
 
 
