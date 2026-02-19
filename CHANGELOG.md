@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.8...gridfinity-layout-tool-v3.13.9) (2026-02-19)
+
+
+### Bug Fixes
+
+* **bin-designer:** use scrollbar-thin style in saved designs dialog ([#794](https://github.com/andymai/gridfinity-layout-tool/issues/794)) ([f1b8551](https://github.com/andymai/gridfinity-layout-tool/commit/f1b85512e36322314ab33071f74d8a387cb8745e))
+
 ## [3.13.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.7...gridfinity-layout-tool-v3.13.8) (2026-02-19)
 
 
