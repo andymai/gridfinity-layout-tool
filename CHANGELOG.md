@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.15.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.14.0...gridfinity-layout-tool-v3.15.0) (2026-02-19)
+
+
+### Features
+
+* migrate library index from localStorage to IndexedDB ([#799](https://github.com/andymai/gridfinity-layout-tool/issues/799)) ([e1068bd](https://github.com/andymai/gridfinity-layout-tool/commit/e1068bda1f034e13e725b75e9b0dd346ca5f7696))
+
 ## [3.14.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.9...gridfinity-layout-tool-v3.14.0) (2026-02-19)
 
 
