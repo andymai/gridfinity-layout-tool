@@ -306,10 +306,11 @@ describe('DesignListDialog', () => {
       expect(screen.getByText(`Design ${i}`)).toBeInTheDocument();
     }
 
-    // The content wrapper must be a flex column to ensure the scroll chain works
+    // The content wrapper must be a flex column (not overflow-hidden) to ensure the scroll chain works
     const dialog = screen.getByRole('dialog');
     const contentWrapper = dialog.querySelector('[aria-busy]');
     expect(contentWrapper).toHaveClass('flex', 'flex-col');
+    expect(contentWrapper).not.toHaveClass('overflow-hidden');
   });
 
   describe('Import flow', () => {

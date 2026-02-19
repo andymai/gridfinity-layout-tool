@@ -398,7 +398,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         </div>
 
         {/* Design list or import view */}
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col px-5 py-3" aria-busy={loading}>
+        <div className="flex-1 min-h-0 flex flex-col px-5 py-3" aria-busy={loading}>
           {showImport ? (
             <DesignImportView onImport={handleImportDesign} onCancel={() => setShowImport(false)} />
           ) : loading ? (

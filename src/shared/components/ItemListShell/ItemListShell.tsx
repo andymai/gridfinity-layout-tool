@@ -81,7 +81,7 @@ export function ItemListShell<T>({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex-1 min-h-0 flex flex-col">
       {/* Optional Header Content (e.g., Create Button) */}
       {headerContent && <div className="pb-3">{headerContent}</div>}
 
