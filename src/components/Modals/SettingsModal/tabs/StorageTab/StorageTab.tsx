@@ -42,6 +42,17 @@ export function StorageTab() {
   const layoutWarn = info.layoutCount >= CONSTRAINTS.LAYOUTS_WARNING_THRESHOLD;
   const localStorageWarn = info.localStoragePercent >= 80;
 
+  const isHealthy = info.backend === 'indexeddb';
+
+  let statusDotColor = 'bg-content-disabled';
+  let statusLabel = t('common.loading');
+  if (!info.loading) {
+    statusDotColor = isHealthy ? 'bg-success' : 'bg-warning';
+    statusLabel = isHealthy
+      ? t('settings.storage.statusHealthy')
+      : t('settings.storage.statusLimited');
+  }
+
   return (
     <div className="space-y-8">
       {/* Storage Status */}
@@ -50,26 +61,12 @@ export function StorageTab() {
           {t('settings.storage.status')}
         </h3>
         <div className="flex items-center gap-2 text-sm">
-          <span
-            className={`inline-block w-2 h-2 rounded-full ${
-              info.loading
-                ? 'bg-content-disabled'
-                : info.backend === 'indexeddb'
-                  ? 'bg-success'
-                  : 'bg-warning'
-            }`}
-          />
-          <span className="text-content">
-            {info.loading
-              ? t('common.loading')
-              : info.backend === 'indexeddb'
-                ? t('settings.storage.statusHealthy')
-                : t('settings.storage.statusLimited')}
-          </span>
+          <span className={`inline-block w-2 h-2 rounded-full ${statusDotColor}`} />
+          <span className="text-content">{statusLabel}</span>
         </div>
         {!info.loading && (
           <p className="text-xs text-content-disabled mt-1">
-            {info.backend === 'indexeddb'
+            {isHealthy
               ? t('settings.storage.statusHealthyHint')
               : t('settings.storage.statusLimitedHint')}
           </p>

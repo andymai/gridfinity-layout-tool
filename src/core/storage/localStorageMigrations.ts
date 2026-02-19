@@ -43,7 +43,7 @@ function migrateHintFlagsToSettings(): void {
         localStorage.removeItem(old);
       }
     } catch {
-      // Continue with other keys
+      // Best-effort — continue with remaining work
     }
   }
 
@@ -78,7 +78,6 @@ const OLD_MILESTONE_KEYS = [
 function migrateAnalyticsToConsolidatedKey(): void {
   if (isMigrationDone('gridfinity-migration-analytics-v1')) return;
 
-  // Check if any old keys exist
   const hasOldKey = (key: string): boolean => {
     try {
       return localStorage.getItem(key) !== null;
@@ -87,6 +86,7 @@ function migrateAnalyticsToConsolidatedKey(): void {
     }
   };
 
+  // If no old keys exist, nothing to migrate
   if (!OLD_FEATURE_KEYS.some(hasOldKey) && !hasOldKey('gridfinity_user_id')) {
     setMigrationDone('gridfinity-migration-analytics-v1');
     return;
@@ -100,7 +100,7 @@ function migrateAnalyticsToConsolidatedKey(): void {
       }
       localStorage.removeItem(key);
     } catch {
-      /* continue */
+      // Best-effort — continue with remaining work
     }
   }
 
@@ -113,7 +113,7 @@ function migrateAnalyticsToConsolidatedKey(): void {
       }
       localStorage.removeItem(key);
     } catch {
-      /* continue */
+      // Best-effort — continue with remaining work
     }
   }
 
@@ -180,7 +180,7 @@ function migrateOnboardingKeysToKebab(): void {
         localStorage.removeItem(old);
       }
     } catch {
-      /* continue */
+      // Best-effort — continue with remaining work
     }
   }
 

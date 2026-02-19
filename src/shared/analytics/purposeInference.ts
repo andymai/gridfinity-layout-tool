@@ -123,7 +123,7 @@ function getSizePatternSignals(bins: Bin[]): PurposeSignal[] {
 
   if (gridBins.length === 0) return signals;
 
-  for (const [_patternName, pattern] of Object.entries(SIZE_PATTERNS)) {
+  for (const pattern of Object.values(SIZE_PATTERNS)) {
     const matchingBins = gridBins.filter((b) => matchesSizePattern(b, pattern));
     const matchRatio = matchingBins.length / gridBins.length;
 
@@ -325,15 +325,12 @@ export function loadLabelSizes(): Record<string, string[]> {
  * Save label sizes (sync cache update + async write-behind to IDB).
  */
 function saveLabelSizes(data: Record<string, string[]>): void {
-  // Prune to max entries if needed
   const entries = Object.entries(data);
-  if (entries.length > MAX_LABEL_ENTRIES) {
-    const pruned = Object.fromEntries(entries.slice(-MAX_LABEL_ENTRIES));
-    labelSizesCache = pruned;
-  } else {
-    labelSizesCache = data;
-  }
-  // Write-behind to IDB
+  labelSizesCache =
+    entries.length > MAX_LABEL_ENTRIES
+      ? Object.fromEntries(entries.slice(-MAX_LABEL_ENTRIES))
+      : data;
+
   saveMlData(ML_LABEL_SIZES_KEY, labelSizesCache).catch(() => {
     // Silent — storage may be unavailable
   });

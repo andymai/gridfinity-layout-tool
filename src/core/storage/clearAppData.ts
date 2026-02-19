@@ -35,14 +35,12 @@ export function clearAllAppData(): void {
   clearLabelSizesCache();
 
   // 4. Clear all localStorage keys except preserved ones
+  // Keys are collected before removal because deleting during iteration skips entries.
   try {
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && !PRESERVED_KEYS.has(key)) {
-        keysToRemove.push(key);
-      }
-    }
+    const keysToRemove = Array.from({ length: localStorage.length }, (_, i) =>
+      localStorage.key(i)
+    ).filter((key): key is string => key !== null && !PRESERVED_KEYS.has(key));
+
     for (const key of keysToRemove) {
       localStorage.removeItem(key);
     }

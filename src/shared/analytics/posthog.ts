@@ -542,7 +542,7 @@ export function trackLayoutSnapshot(
       is_first_session: isFirstSession(),
       ...metrics,
       ...labsMetrics,
-      ...(sessionContext || {}),
+      ...sessionContext,
     });
   } catch {
     // Analytics should never break the app
