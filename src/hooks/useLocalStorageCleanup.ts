@@ -29,14 +29,18 @@ export function useLocalStorageCleanup(): void {
 
     const handle = scheduleIdleCallback(
       () => {
-        void cleanupLocalStorageBackups().then((stats) => {
-          if (stats && stats.removedCount > 0) {
-            const freedKB = Math.round(stats.freedBytes / 1024);
-            console.warn(
-              `[Storage] Cleaned ${stats.removedCount} localStorage backup(s), freed ~${freedKB} KB`
-            );
-          }
-        });
+        void cleanupLocalStorageBackups()
+          .then((stats) => {
+            if (stats && stats.removedCount > 0) {
+              const freedKB = Math.round(stats.freedBytes / 1024);
+              console.warn(
+                `[Storage] Cleaned ${stats.removedCount} localStorage backup(s), freed ~${freedKB} KB`
+              );
+            }
+          })
+          .catch((error: unknown) => {
+            console.warn('[Storage] localStorage cleanup failed:', error);
+          });
       },
       { timeout: 10_000 }
     );

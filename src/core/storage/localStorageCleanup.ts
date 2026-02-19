@@ -63,7 +63,7 @@ export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null>
   };
 
   for (const layoutId of localStorageIds) {
-    if (indexedDBIds.has(layoutId)) {
+    if (indexedDBIds.has(`${LAYOUT_KEY_PREFIX}${layoutId}`)) {
       // Confirmed in IndexedDB — safe to remove localStorage copy
       const key = `${LAYOUT_KEY_PREFIX}${layoutId}`;
       const value = window.localStorage.getItem(key);
