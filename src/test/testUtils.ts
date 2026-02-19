@@ -20,6 +20,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useMobileStore } from '@/core/store/mobile';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
+import { useSnapshotStore } from '@/core/store/snapshots';
 
 /**
  * Reset all Zustand stores to their initial state.
@@ -121,6 +122,12 @@ export function resetAllStores(): void {
   useLabsStore.setState({
     preferences: createDefaultLabsPreferences(),
     isDrawerOpen: false,
+  });
+
+  // Snapshot store
+  useSnapshotStore.setState({
+    snapshots: [],
+    isLoading: false,
   });
 }
 

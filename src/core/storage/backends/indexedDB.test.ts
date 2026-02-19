@@ -55,7 +55,7 @@ describe('indexedDB backend', () => {
 
       expect(db).toBeDefined();
       expect(db.name).toBe('gridfinity-db');
-      expect(db.version).toBe(1);
+      expect(db.version).toBe(2);
     });
 
     it('creates layouts object store', async () => {

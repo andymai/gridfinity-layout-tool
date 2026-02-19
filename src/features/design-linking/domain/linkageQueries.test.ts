@@ -43,7 +43,6 @@ function makeDesignRef(overrides: Partial<CustomBinRef> = {}): CustomBinRef {
     width: 2,
     depth: 3,
     height: 4,
-    thumbnail: null,
     updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };

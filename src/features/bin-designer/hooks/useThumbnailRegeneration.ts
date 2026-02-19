@@ -14,6 +14,7 @@ import { THUMBNAIL_VERSION } from '../types';
 import { regenerateThumbnail } from '../utils/thumbnailRegenerator';
 import { updateDesignThumbnail } from '../storage/DesignerStorage';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
+import { updateThumbnailCache } from './useDesignThumbnail';
 import { isOk } from '@/core/result';
 
 /**
@@ -67,16 +68,18 @@ export function useThumbnailRegeneration(
           // Mark as successfully processed
           processedRef.current.add(design.id);
 
-          // Update custom bin registry
+          // Update custom bin registry (thumbnails not stored in registry)
           upsertRegistryEntry({
             id: design.id,
             name: design.name,
             width: design.params.width,
             depth: design.params.depth,
             height: design.params.height,
-            thumbnail,
             updatedAt: result.value.updatedAt,
           });
+
+          // Update in-memory thumbnail cache
+          updateThumbnailCache(design.id, thumbnail);
 
           // Notify parent to update local state
           onDesignUpdatedRef.current(design.id, thumbnail);

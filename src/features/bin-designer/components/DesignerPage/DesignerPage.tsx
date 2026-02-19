@@ -253,7 +253,6 @@ export function DesignerPage() {
             width: params.width,
             depth: params.depth,
             height: params.height,
-            thumbnail: result.value.thumbnail,
             updatedAt: result.value.updatedAt,
           });
         }
@@ -276,7 +275,6 @@ export function DesignerPage() {
             width: params.width,
             depth: params.depth,
             height: params.height,
-            thumbnail: result.value.thumbnail,
             updatedAt: result.value.updatedAt,
           });
 

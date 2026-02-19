@@ -126,7 +126,6 @@ function syncToRegistry(design: {
   id: string;
   name: string;
   params: { width: number; depth: number; height: number };
-  thumbnail: string | null;
   updatedAt: string;
 }): void {
   upsertRegistryEntry({
@@ -135,7 +134,6 @@ function syncToRegistry(design: {
     width: design.params.width,
     depth: design.params.depth,
     height: design.params.height,
-    thumbnail: design.thumbnail,
     updatedAt: design.updatedAt,
   });
 }

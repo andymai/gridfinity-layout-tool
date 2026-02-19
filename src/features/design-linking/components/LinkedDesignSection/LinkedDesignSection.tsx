@@ -11,6 +11,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
+import { useDesignThumbnail } from '@/features/bin-designer/hooks/useDesignThumbnail';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 
@@ -22,6 +23,7 @@ interface LinkedDesignSectionProps {
 export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) {
   const t = useTranslation();
   const { linkedDesign, isStale, hasLink } = useLinkedDesign(bin.linkedDesignId);
+  const { thumbnail } = useDesignThumbnail(linkedDesign?.id);
   const { editLinkedDesign, showCreateDesignDialog, unlinkBin, deleteLinkedDesign } =
     useBinLinking();
   const { isExporting, exportToSTL } = useQuickExport();
@@ -212,12 +214,8 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           className={`${thumbSize} flex-shrink-0 rounded-md overflow-hidden relative hover:ring-2 hover:ring-accent/50 transition-all focus:outline-none focus:ring-2 focus:ring-accent`}
           title={t('designLinking.inspector.clickToEdit')}
         >
-          {linkedDesign.thumbnail ? (
-            <img
-              src={linkedDesign.thumbnail}
-              alt={linkedDesign.name}
-              className="w-full h-full object-cover"
-            />
+          {thumbnail ? (
+            <img src={thumbnail} alt={linkedDesign.name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-surface-elevated border border-dashed border-stroke-subtle">
               <svg

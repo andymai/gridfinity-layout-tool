@@ -178,7 +178,6 @@ export function useCreateFromBin(): void {
           width: binParams.width,
           depth: binParams.depth,
           height: binParams.height,
-          thumbnail: design.thumbnail,
           updatedAt: design.updatedAt,
         });
 

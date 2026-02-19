@@ -120,6 +120,16 @@ export {
 } from './migration';
 export type { MigrationStats } from './migration';
 
+// === Snapshots ===
+export {
+  createSnapshot,
+  loadSnapshots,
+  restoreSnapshot,
+  deleteSnapshot as deleteSnapshotById,
+  deleteSnapshotsForLayout,
+  updateSnapshotLabel,
+} from './SnapshotService';
+
 // === Backend (Internal - for useStorageMigration hook) ===
 export { getStorageBackend, resetStorageBackendCache } from './backend';
 

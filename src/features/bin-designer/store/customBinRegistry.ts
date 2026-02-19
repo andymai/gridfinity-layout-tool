@@ -33,8 +33,6 @@ export interface CustomBinRef {
   readonly depth: number;
   /** Height units */
   readonly height: number;
-  /** Base64 thumbnail (small) or null */
-  readonly thumbnail: string | null;
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -50,7 +48,10 @@ export function loadRegistry(): CustomBinRef[] {
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed as CustomBinRef[];
+    // Strip legacy thumbnail field to reduce localStorage usage
+    return (parsed as Array<Record<string, unknown>>).map(
+      ({ thumbnail: _, ...rest }) => rest as unknown as CustomBinRef
+    );
   } catch {
     return [];
   }

@@ -4,9 +4,13 @@ import { LinkedDesignSection } from './LinkedDesignSection';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
 import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
+import { useDesignThumbnail } from '@/features/bin-designer/hooks/useDesignThumbnail';
 
 // Mock hooks
 vi.mock('../../hooks');
+vi.mock('@/features/bin-designer/hooks/useDesignThumbnail', () => ({
+  useDesignThumbnail: vi.fn(() => ({ thumbnail: null, isLoading: false })),
+}));
 vi.mock('../../store', () => ({
   useLinkingStore: vi.fn((selector) => {
     const state = { showLinkDesignDialog: vi.fn() };
@@ -110,6 +114,10 @@ describe('LinkedDesignSection', () => {
   });
 
   it('renders linked design with thumbnail and actions', () => {
+    vi.mocked(useDesignThumbnail).mockReturnValue({
+      thumbnail: 'data:image/png;base64,abc123',
+      isLoading: false,
+    });
     vi.mocked(useLinkedDesign).mockReturnValue({
       linkedDesign: {
         id: 'design-1',
@@ -117,7 +125,7 @@ describe('LinkedDesignSection', () => {
         width: 2,
         depth: 3,
         height: 5,
-        thumbnail: 'data:image/png;base64,test',
+        updatedAt: '2026-01-01T00:00:00.000Z',
       },
       isStale: false,
       hasLink: true,
@@ -129,6 +137,9 @@ describe('LinkedDesignSection', () => {
     expect(screen.getByText(/2×3×5u/)).toBeInTheDocument();
     expect(screen.getByText('designLinking.inspector.editDesign')).toBeInTheDocument();
     expect(screen.getByText('common.export')).toBeInTheDocument();
+
+    const img = screen.getByRole('img', { name: 'My Design' });
+    expect(img).toHaveAttribute('src', 'data:image/png;base64,abc123');
   });
 
   it('shows placeholder thumbnail when no thumbnail available', () => {
@@ -139,7 +150,7 @@ describe('LinkedDesignSection', () => {
         width: 2,
         depth: 3,
         height: 5,
-        thumbnail: null,
+        updatedAt: '2026-01-01T00:00:00.000Z',
       },
       isStale: false,
       hasLink: true,
@@ -157,7 +168,7 @@ describe('LinkedDesignSection', () => {
         width: 2,
         depth: 3,
         height: 5,
-        thumbnail: null,
+        updatedAt: '2026-01-01T00:00:00.000Z',
       },
       isStale: false,
       hasLink: true,
@@ -175,7 +186,7 @@ describe('LinkedDesignSection', () => {
         width: 2,
         depth: 3,
         height: 5,
-        thumbnail: null,
+        updatedAt: '2026-01-01T00:00:00.000Z',
       },
       isStale: false,
       hasLink: true,

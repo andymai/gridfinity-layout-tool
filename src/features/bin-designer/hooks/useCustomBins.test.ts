@@ -10,7 +10,6 @@ function makeRef(id: string, name: string = 'Test Bin'): CustomBinRef {
     width: 2,
     depth: 3,
     height: 4,
-    thumbnail: null,
     updatedAt: '2026-01-22T00:00:00.000Z',
   };
 }
@@ -57,7 +56,6 @@ describe('useCustomBins', () => {
       width: 4,
       depth: 2,
       height: 6,
-      thumbnail: 'data:image/png;base64,...',
       updatedAt: '2026-01-22T12:00:00.000Z',
     };
     upsertRegistryEntry(ref);
