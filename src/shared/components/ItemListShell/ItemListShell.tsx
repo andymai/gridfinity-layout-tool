@@ -101,7 +101,7 @@ export function ItemListShell<T>({
 
       {/* Content Area */}
       <div
-        className="flex-1 min-h-0 overflow-y-auto [scrollbar-gutter:stable]"
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-thin"
         role="presentation"
         onKeyDown={onKeyboardNav}
       >
