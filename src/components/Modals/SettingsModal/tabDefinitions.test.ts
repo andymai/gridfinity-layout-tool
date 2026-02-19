@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { TAB_DEFINITIONS } from './tabDefinitions';
 
 describe('TAB_DEFINITIONS', () => {
-  it('has exactly 6 tab definitions', () => {
-    expect(TAB_DEFINITIONS).toHaveLength(6);
+  it('has exactly 7 tab definitions', () => {
+    expect(TAB_DEFINITIONS).toHaveLength(7);
   });
 
   it('every tab has id, labelKey, and icon', () => {
@@ -19,7 +19,15 @@ describe('TAB_DEFINITIONS', () => {
 
   it('tab ids match expected set', () => {
     const ids = TAB_DEFINITIONS.map((t) => t.id);
-    expect(ids).toEqual(['general', 'appearance', 'defaults', 'integrations', 'privacy', 'labs']);
+    expect(ids).toEqual([
+      'general',
+      'appearance',
+      'defaults',
+      'integrations',
+      'privacy',
+      'storage',
+      'labs',
+    ]);
   });
 
   it('all labelKeys follow settings.tabs.* pattern', () => {
