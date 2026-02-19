@@ -628,10 +628,6 @@ export async function initializeLayoutLibrary(): Promise<{
     }
 
     if (!activeLayout) {
-      // Preserve original IDs before overwriting — IndexedDB may still
-      // have data under these keys even though localStorage lost them.
-      const recoveryLayoutIds = library.entries.map((e) => e.id);
-
       const layoutId = generateLayoutId();
       const recoveredLayout: Layout = {
         version: '1.0',
