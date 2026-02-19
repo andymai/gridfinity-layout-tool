@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.5...gridfinity-layout-tool-v3.13.6) (2026-02-19)
+
+
+### Bug Fixes
+
+* **bin-designer:** use dimension-based tessellation with tight lip tolerance ([#787](https://github.com/andymai/gridfinity-layout-tool/issues/787)) ([54aab1a](https://github.com/andymai/gridfinity-layout-tool/commit/54aab1ab501a5eb2d8fcd73c1834b06fec59fcee))
+
 ## [3.13.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.4...gridfinity-layout-tool-v3.13.5) (2026-02-18)
 
 
