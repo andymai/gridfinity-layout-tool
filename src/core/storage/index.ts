@@ -80,6 +80,21 @@ export {
   type PrintListTSVMeta,
 } from './ShareService';
 
+// === Bulk Archive ===
+export {
+  exportAllLayouts,
+  downloadArchive,
+  importArchive,
+  parseArchive,
+  isArchiveFormat,
+} from './BulkArchiveService';
+export type {
+  LayoutArchive,
+  ImportArchiveResult,
+  ExportProgress,
+  ExportResult,
+} from './BulkArchiveService';
+
 // === URL Sharing ===
 export {
   encodeLayoutForURL,

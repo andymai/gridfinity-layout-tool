@@ -1,12 +1,14 @@
 import { useState, useRef, useCallback } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { validateImport } from '@/shared/utils/validation';
-import { decodeLayoutFromURL } from '@/core/storage';
+import { decodeLayoutFromURL, isArchiveFormat } from '@/core/storage';
 import type { Layout } from '@/core/types';
+import type { LayoutArchive } from '@/core/storage';
 import { useTranslation } from '@/i18n';
 
 interface ImportViewProps {
   onImport: (layout: Layout) => void;
+  onImportArchive?: (archive: LayoutArchive) => void;
   onCancel: () => void;
 }
 
@@ -18,16 +20,25 @@ interface ImportPreview {
   linkedDesignCount?: number;
 }
 
+interface ArchivePreview {
+  layoutCount: number;
+  exportedAt: string;
+}
+
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
+
 /**
  * Import view with drag-and-drop file support and paste area.
  */
-export function ImportView({ onImport, onCancel }: ImportViewProps) {
+export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewProps) {
   const t = useTranslation();
   const [jsonText, setJsonText] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
+  const [archivePreview, setArchivePreview] = useState<ArchivePreview | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [validLayout, setValidLayout] = useState<Layout | null>(null);
+  const [validArchive, setValidArchive] = useState<LayoutArchive | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,7 +47,9 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
     setJsonText(text);
     setErrors([]);
     setPreview(null);
+    setArchivePreview(null);
     setValidLayout(null);
+    setValidArchive(null);
 
     if (!text.trim()) return;
 
@@ -62,6 +75,17 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
     // Try to parse as JSON
     try {
       const data: unknown = JSON.parse(text);
+
+      // Check if it's a bulk archive
+      if (isArchiveFormat(data)) {
+        setArchivePreview({
+          layoutCount: data.layouts.length,
+          exportedAt: data._archive.exportedAt,
+        });
+        setValidArchive(data);
+        return;
+      }
+
       const validation = validateImport(data);
 
       if (validation.valid) {
@@ -94,19 +118,31 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
     [processInput]
   );
 
-  const handleFileUpload = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
+  const readFile = useCallback(
+    (file: File) => {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setErrors([
+          `File too large (${Math.round(file.size / 1024 / 1024)} MB). Maximum is 50 MB.`,
+        ]);
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
-        const text = event.target?.result as string;
-        processInput(text);
+        const text = event.target?.result;
+        if (typeof text === 'string') processInput(text);
       };
       reader.readAsText(file);
     },
     [processInput]
+  );
+
+  const handleFileUpload = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      readFile(file);
+    },
+    [readFile]
   );
 
   const handleDragOver = useCallback((e: DragEvent) => {
@@ -136,36 +172,33 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const text = event.target?.result as string;
-        processInput(text);
-      };
-      reader.readAsText(file);
+      readFile(file);
     },
-    [processInput]
+    [readFile]
   );
 
   const handleImport = useCallback(async () => {
     if (!validLayout) return;
 
-    let layoutToImport = validLayout;
+    // Restore embedded designs if present in the raw JSON
+    const { restoreEmbeddedDesigns } = await import('@/core/storage');
+    const { layout: updatedLayout } = await restoreEmbeddedDesigns(jsonText, validLayout);
 
-    // Restore embedded designs if present
-    if (jsonText.trim()) {
-      const { restoreEmbeddedDesigns } = await import('@/core/storage');
-      const { layout: updatedLayout } = await restoreEmbeddedDesigns(jsonText, validLayout);
-      layoutToImport = updatedLayout;
-    }
-
-    onImport(layoutToImport);
+    onImport(updatedLayout);
   }, [validLayout, jsonText, onImport]);
+
+  const handleImportArchive = useCallback(() => {
+    if (!validArchive || !onImportArchive) return;
+    onImportArchive(validArchive);
+  }, [validArchive, onImportArchive]);
 
   const handleClear = useCallback(() => {
     setJsonText('');
     setErrors([]);
     setPreview(null);
+    setArchivePreview(null);
     setValidLayout(null);
+    setValidArchive(null);
   }, []);
 
   return (
@@ -281,7 +314,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         </div>
       )}
 
-      {/* Preview */}
+      {/* Preview (single layout) */}
       {preview && (
         <div className="bg-success-muted border border-success rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
@@ -314,15 +347,46 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         </div>
       )}
 
+      {/* Preview (archive) */}
+      {archivePreview && (
+        <div className="bg-success-muted border border-success rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            {t('layouts.archiveDetected')}
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-success/80">
+            <div>{t('layouts.layoutsInArchive')}</div>
+            <div className="font-medium">{archivePreview.layoutCount}</div>
+          </div>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4 border-t border-stroke">
-        <button
-          onClick={handleImport}
-          disabled={!validLayout}
-          className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
-        >
-          {t('layouts.importLayout')}
-        </button>
+        {validArchive ? (
+          <button
+            onClick={handleImportArchive}
+            disabled={!onImportArchive}
+            className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
+          >
+            {t('layouts.importAll', { count: validArchive.layouts.length })}
+          </button>
+        ) : (
+          <button
+            onClick={handleImport}
+            disabled={!validLayout}
+            className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
+          >
+            {t('layouts.importLayout')}
+          </button>
+        )}
         <button
           onClick={onCancel}
           className="py-2.5 px-4 bg-surface-secondary hover:bg-surface border border-stroke text-content rounded-lg transition-colors text-sm"

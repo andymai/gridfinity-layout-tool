@@ -4,13 +4,17 @@ import { useLayoutSwitcher } from '@/hooks';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
+import { useLibraryStore } from '@/core/store/library';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import type { ViewMode } from './ViewModeToggle';
 import type { Layout } from '@/core/types';
 import { layoutId } from '@/core/types';
+import type { LayoutArchive } from '@/core/storage';
+import { downloadArchive, importArchive } from '@/core/storage';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { useToastStore } from '@/core/store/toast';
 
 export type SortOption = 'recent' | 'name' | 'size' | 'binCount';
 
@@ -50,6 +54,7 @@ function LayoutManagerModalContent({
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [isExporting, setIsExporting] = useState(false);
   const handleSortChange = useCallback((value: SortOption) => setSortBy(value), []);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -79,6 +84,7 @@ function LayoutManagerModalContent({
     importLayoutFromJSON,
   } = useLayoutSwitcher();
 
+  const setLibrary = useLibraryStore((state) => state.setLibrary);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   // Announce modal opened
@@ -184,6 +190,54 @@ function LayoutManagerModalContent({
     [importLayoutFromJSON, switchLayout, announceToScreenReader, onClose]
   );
 
+  const handleImportArchive = useCallback(
+    async (archive: LayoutArchive) => {
+      const addToast = useToastStore.getState().addToast;
+
+      try {
+        const currentLibrary = useLibraryStore.getState().library;
+        const { result, library: updatedLibrary } = await importArchive(archive, currentLibrary);
+
+        setLibrary(updatedLibrary);
+
+        if (result.imported > 0) {
+          addToast(
+            t('layouts.archiveImported', {
+              count: result.imported,
+              skipped: result.skipped,
+            }),
+            'success'
+          );
+          announceToScreenReader(`Imported ${result.imported} layouts`);
+          onClose();
+        } else {
+          addToast(t('layouts.archiveImportFailed'), 'error');
+        }
+      } catch {
+        addToast(t('layouts.archiveImportFailed'), 'error');
+      }
+    },
+    [setLibrary, announceToScreenReader, onClose, t]
+  );
+
+  const handleExportAll = useCallback(async () => {
+    const addToast = useToastStore.getState().addToast;
+    setIsExporting(true);
+    try {
+      const currentLibrary = useLibraryStore.getState().library;
+      const { exported, skipped } = await downloadArchive(currentLibrary);
+      if (skipped > 0) {
+        addToast(t('layouts.exportedAllWithSkipped', { count: exported, skipped }), 'info');
+      } else {
+        addToast(t('layouts.exportedAll', { count: exported }), 'success');
+      }
+    } catch {
+      addToast(t('layouts.exportFailed'), 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  }, [t]);
+
   const handleImportCancel = useCallback(() => {
     setActiveTab('layouts');
   }, []);
@@ -241,6 +295,13 @@ function LayoutManagerModalContent({
           <div className="flex items-center gap-2">
             {activeTab === 'layouts' && (
               <>
+                <button
+                  onClick={handleExportAll}
+                  disabled={isExporting}
+                  className="rounded-md border border-stroke bg-surface px-3 py-1.5 text-sm font-medium text-content transition-colors hover:bg-surface-hover disabled:opacity-50"
+                >
+                  {isExporting ? t('common.exporting') : t('layouts.exportAll')}
+                </button>
                 <button
                   onClick={() => setActiveTab('import')}
                   className="rounded-md border border-stroke bg-surface px-3 py-1.5 text-sm font-medium text-content transition-colors hover:bg-surface-hover"
@@ -300,7 +361,11 @@ function LayoutManagerModalContent({
 
           {activeTab === 'import' && (
             <div className="h-full">
-              <ImportView onImport={handleImport} onCancel={handleImportCancel} />
+              <ImportView
+                onImport={handleImport}
+                onImportArchive={handleImportArchive}
+                onCancel={handleImportCancel}
+              />
             </div>
           )}
         </div>

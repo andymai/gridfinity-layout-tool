@@ -15,6 +15,7 @@ vi.mock('@/core/storage', () => ({
   restoreEmbeddedDesigns: vi.fn((json, layout) =>
     Promise.resolve({ layout, importedDesignCount: 0 })
   ),
+  isArchiveFormat: vi.fn(() => false),
 }));
 
 describe('ImportView', () => {
