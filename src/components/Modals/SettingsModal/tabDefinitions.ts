@@ -1,5 +1,5 @@
 import { SparklesIcon } from '@/features/labs/components/icons';
-import { GlobeIcon, PaletteIcon, BoxIcon, PlugIcon, ShieldIcon } from './tabIcons';
+import { GlobeIcon, PaletteIcon, BoxIcon, PlugIcon, ShieldIcon, DatabaseIcon } from './tabIcons';
 import type { TabDefinition } from './types';
 
 export const TAB_DEFINITIONS: TabDefinition[] = [
@@ -8,5 +8,6 @@ export const TAB_DEFINITIONS: TabDefinition[] = [
   { id: 'defaults', labelKey: 'settings.tabs.defaults', icon: BoxIcon },
   { id: 'integrations', labelKey: 'settings.tabs.integrations', icon: PlugIcon },
   { id: 'privacy', labelKey: 'settings.tabs.privacy', icon: ShieldIcon },
+  { id: 'storage', labelKey: 'settings.tabs.storage', icon: DatabaseIcon },
   { id: 'labs', labelKey: 'settings.tabs.labs', icon: SparklesIcon },
 ];

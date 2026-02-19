@@ -4,6 +4,7 @@ export type SettingsTabId =
   | 'defaults'
   | 'integrations'
   | 'privacy'
+  | 'storage'
   | 'labs';
 
 export interface TabDefinition {

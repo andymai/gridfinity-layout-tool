@@ -25,12 +25,12 @@ describe('TabNavigation', () => {
       mockUseResponsive.mockReturnValue({ isMobile: false });
     });
 
-    it('renders all 6 tabs with vertical orientation', () => {
+    it('renders all 7 tabs with vertical orientation', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
       const tablist = screen.getByRole('tablist');
       expect(tablist).toHaveAttribute('aria-orientation', 'vertical');
       const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(6);
+      expect(tabs).toHaveLength(7);
     });
 
     it('marks the active tab with aria-selected', () => {
@@ -65,7 +65,7 @@ describe('TabNavigation', () => {
       const tablist = screen.getByRole('tablist');
       expect(tablist).not.toHaveAttribute('aria-orientation');
       const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(6);
+      expect(tabs).toHaveLength(7);
     });
 
     it('supports arrow key navigation (left/right)', () => {

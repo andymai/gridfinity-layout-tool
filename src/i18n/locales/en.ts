@@ -691,6 +691,7 @@ const en: Record<string, string> = {
   'settings.tabs.defaults': 'Defaults',
   'settings.tabs.integrations': 'STL Search',
   'settings.tabs.privacy': 'Privacy',
+  'settings.tabs.storage': 'Storage',
   'settings.tabs.labs': 'Labs',
 
   // Appearance tab
@@ -728,6 +729,27 @@ const en: Record<string, string> = {
   'settings.confirmResetPrivacy': 'This will re-enable anonymous analytics. Continue?',
   'settings.confirmResetAll': 'Reset all settings to their defaults? This cannot be undone.',
   'settings.resetAllConfirmed': 'All settings reset',
+
+  // Storage tab
+  'settings.storage.status': 'Status',
+  'settings.storage.statusHealthy': 'Healthy — full capacity',
+  'settings.storage.statusLimited': 'Limited — reduced capacity',
+  'settings.storage.statusHealthyHint':
+    'Your layouts and snapshots are stored in a high-capacity database.',
+  'settings.storage.statusLimitedHint':
+    'Your browser does not support the high-capacity database. Storage is limited to ~5 MB.',
+  'settings.storage.layouts': 'Layouts',
+  'settings.storage.layoutCount': '{count} layouts',
+  'settings.storage.layoutMax': 'max {max}',
+  'settings.storage.databaseSize': 'Database Size',
+  'settings.storage.databaseSizeHint':
+    'Total space used by layouts, snapshots, and version history.',
+  'settings.storage.quotaOf': 'of {quota}',
+  'settings.storage.percentUsed': '{percent}% used',
+  'settings.storage.settingsCache': 'Settings Cache',
+  'settings.storage.settingsCacheLimit': '~5 MB limit',
+  'settings.storage.settingsCacheNote':
+    'Used for preferences, startup cache, and small metadata. Does not affect layout storage.',
 
   // ===========================================================================
   // Help

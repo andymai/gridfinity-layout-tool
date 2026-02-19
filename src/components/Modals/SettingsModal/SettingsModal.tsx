@@ -13,6 +13,7 @@ import { AppearanceTab } from './tabs/AppearanceTab/AppearanceTab';
 import { DefaultsTab } from './tabs/DefaultsTab/DefaultsTab';
 import { IntegrationsTab } from './tabs/IntegrationsTab/IntegrationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab/PrivacyTab';
+import { StorageTab } from './tabs/StorageTab/StorageTab';
 import { LabsTab } from './tabs/LabsTab/LabsTab';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { SettingsModalProps, SettingsTabId } from './types';
@@ -38,6 +39,8 @@ function renderTab(tabId: SettingsTabId) {
       return <IntegrationsTab />;
     case 'privacy':
       return <PrivacyTab />;
+    case 'storage':
+      return <StorageTab />;
     case 'labs':
       return <LabsTab />;
   }
