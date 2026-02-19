@@ -1,0 +1,276 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  isArchiveFormat,
+  parseArchive,
+  exportAllLayouts,
+  importArchive,
+} from '@/core/storage/BulkArchiveService';
+import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
+import { ok, err } from '@/core/result';
+
+// === Mocks ===
+
+const mockLoadLayoutAsync = vi.fn();
+vi.mock('@/core/storage/LayoutService', () => ({
+  loadLayoutAsync: (...args: unknown[]) => mockLoadLayoutAsync(...args),
+}));
+
+const mockCreateLayoutEntry = vi.fn();
+vi.mock('@/core/storage/LayoutManager', () => ({
+  createLayoutEntry: (...args: unknown[]) => mockCreateLayoutEntry(...args),
+}));
+
+const mockValidateImport = vi.fn();
+vi.mock('@/shared/utils/validation', () => ({
+  validateImport: (...args: unknown[]) => mockValidateImport(...args),
+}));
+
+// === Fixtures ===
+
+function makeLayout(name = 'Test Layout'): Layout {
+  return {
+    version: '1.0',
+    name,
+    drawer: { width: 10, depth: 8, height: 12 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories: [],
+    layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
+    bins: [],
+  } as unknown as Layout;
+}
+
+function makeEntry(id: string, name: string): LayoutEntry {
+  return {
+    id,
+    name,
+    createdAt: Date.now(),
+    modifiedAt: Date.now(),
+    preview: {
+      drawerWidth: 10,
+      drawerDepth: 8,
+      drawerHeight: 12,
+      binCount: 0,
+      layerCount: 1,
+      binMap: [],
+    },
+  };
+}
+
+function makeLibrary(entries: LayoutEntry[]): LayoutLibrary {
+  return { version: '1.0', activeLayoutId: entries[0]?.id ?? '', settings: {}, entries };
+}
+
+// === isArchiveFormat ===
+
+describe('isArchiveFormat', () => {
+  it('returns true for a valid archive object', () => {
+    const archive = {
+      _archive: { version: '1.0', exportedFrom: 'x', exportedAt: 'now', layoutCount: 1 },
+      layouts: [],
+    };
+    expect(isArchiveFormat(archive)).toBe(true);
+  });
+
+  it('returns false for a single layout (no _archive key)', () => {
+    expect(isArchiveFormat(makeLayout())).toBe(false);
+  });
+
+  it('returns false for null', () => {
+    expect(isArchiveFormat(null)).toBe(false);
+  });
+
+  it('returns false for a plain string', () => {
+    expect(isArchiveFormat('not an object')).toBe(false);
+  });
+
+  it('returns false when layouts is not an array', () => {
+    expect(isArchiveFormat({ _archive: {}, layouts: 'bad' })).toBe(false);
+  });
+});
+
+// === parseArchive ===
+
+describe('parseArchive', () => {
+  it('parses valid archive JSON', () => {
+    const archive = {
+      _archive: { version: '1.0', exportedFrom: 'x', exportedAt: 'now', layoutCount: 1 },
+      layouts: [{ name: 'L1', layout: makeLayout('L1') }],
+    };
+    const result = parseArchive(JSON.stringify(archive));
+    expect(result).not.toBeNull();
+    expect(result?._archive.version).toBe('1.0');
+    expect(result?.layouts).toHaveLength(1);
+  });
+
+  it('returns null for single-layout JSON (missing _archive)', () => {
+    expect(parseArchive(JSON.stringify(makeLayout()))).toBeNull();
+  });
+
+  it('returns null for invalid JSON', () => {
+    expect(parseArchive('{broken json')).toBeNull();
+  });
+
+  it('returns null for empty string', () => {
+    expect(parseArchive('')).toBeNull();
+  });
+});
+
+// === exportAllLayouts ===
+
+describe('exportAllLayouts', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('builds archive JSON containing each layout entry', async () => {
+    const layout1 = makeLayout('Alpha');
+    const layout2 = makeLayout('Beta');
+    mockLoadLayoutAsync.mockResolvedValueOnce(layout1).mockResolvedValueOnce(layout2);
+
+    const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
+    const json = await exportAllLayouts(library);
+    const parsed = JSON.parse(json);
+
+    expect(isArchiveFormat(parsed)).toBe(true);
+    expect(parsed._archive.layoutCount).toBe(2);
+    expect(parsed.layouts).toHaveLength(2);
+    expect(parsed.layouts[0].name).toBe('Alpha');
+    expect(parsed.layouts[1].name).toBe('Beta');
+  });
+
+  it('reports progress for each entry', async () => {
+    mockLoadLayoutAsync.mockResolvedValue(makeLayout());
+    const library = makeLibrary([makeEntry('id-1', 'L1'), makeEntry('id-2', 'L2')]);
+    const progress: { current: number; total: number }[] = [];
+
+    await exportAllLayouts(library, (p) => progress.push({ ...p }));
+
+    expect(progress).toHaveLength(2);
+    expect(progress[0]).toEqual({ current: 1, total: 2 });
+    expect(progress[1]).toEqual({ current: 2, total: 2 });
+  });
+
+  it('skips layouts that fail to load', async () => {
+    mockLoadLayoutAsync.mockResolvedValueOnce(null).mockResolvedValueOnce(makeLayout('Beta'));
+    const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
+
+    const json = await exportAllLayouts(library);
+    const parsed = JSON.parse(json);
+
+    expect(parsed._archive.layoutCount).toBe(1);
+    expect(parsed.layouts[0].name).toBe('Beta');
+  });
+});
+
+// === importArchive ===
+
+describe('importArchive', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('imports valid layouts and skips invalid ones', async () => {
+    const layout1 = makeLayout('Valid');
+    const layout2 = makeLayout('Invalid');
+    const library = makeLibrary([makeEntry('existing', 'Existing')]);
+    const updatedLibrary = makeLibrary([
+      makeEntry('existing', 'Existing'),
+      makeEntry('new-id', 'Valid'),
+    ]);
+
+    mockValidateImport
+      .mockReturnValueOnce({ valid: true, errors: [], layout: layout1 })
+      .mockReturnValueOnce({ valid: false, errors: ['bad data'] });
+    mockCreateLayoutEntry.mockResolvedValueOnce(
+      ok({ library: updatedLibrary, layoutId: 'new-id' })
+    );
+
+    const archive = {
+      _archive: { version: '1.0' as const, exportedFrom: 'x', exportedAt: 'now', layoutCount: 2 },
+      layouts: [
+        { name: 'Valid', layout: layout1 },
+        { name: 'Invalid', layout: layout2 },
+      ],
+    };
+
+    const { result } = await importArchive(archive, library);
+
+    expect(result.imported).toBe(1);
+    expect(result.skipped).toBe(1);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toContain('Invalid');
+  });
+
+  it('returns updated library after successful imports', async () => {
+    const layout = makeLayout('My Layout');
+    const library = makeLibrary([makeEntry('existing', 'Existing')]);
+    const updatedLibrary = makeLibrary([
+      makeEntry('existing', 'Existing'),
+      makeEntry('new-id', 'My Layout'),
+    ]);
+
+    mockValidateImport.mockReturnValueOnce({ valid: true, errors: [], layout });
+    mockCreateLayoutEntry.mockResolvedValueOnce(
+      ok({ library: updatedLibrary, layoutId: 'new-id' })
+    );
+
+    const archive = {
+      _archive: { version: '1.0' as const, exportedFrom: 'x', exportedAt: 'now', layoutCount: 1 },
+      layouts: [{ name: 'My Layout', layout }],
+    };
+
+    const { library: resultLibrary } = await importArchive(archive, library);
+
+    expect(resultLibrary.entries).toHaveLength(2);
+  });
+
+  it('skips and records error when createLayoutEntry fails', async () => {
+    const layout = makeLayout('Layout');
+    const library = makeLibrary([makeEntry('existing', 'Existing')]);
+
+    mockValidateImport.mockReturnValueOnce({ valid: true, errors: [], layout });
+    mockCreateLayoutEntry.mockResolvedValueOnce(
+      err({ code: 'STORAGE_QUOTA_EXCEEDED', message: 'full' })
+    );
+
+    const archive = {
+      _archive: { version: '1.0' as const, exportedFrom: 'x', exportedAt: 'now', layoutCount: 1 },
+      layouts: [{ name: 'Layout', layout }],
+    };
+
+    const { result } = await importArchive(archive, library);
+
+    expect(result.imported).toBe(0);
+    expect(result.skipped).toBe(1);
+    expect(result.errors[0]).toContain('storage error');
+  });
+
+  it('calls onProgress for each layout entry', async () => {
+    const layout = makeLayout();
+    const library = makeLibrary([makeEntry('existing', 'Existing')]);
+    const updatedLibrary = makeLibrary([
+      makeEntry('existing', 'Existing'),
+      makeEntry('new-id', 'New'),
+    ]);
+
+    mockValidateImport.mockReturnValue({ valid: true, errors: [], layout });
+    mockCreateLayoutEntry.mockResolvedValue(ok({ library: updatedLibrary, layoutId: 'new-id' }));
+
+    const archive = {
+      _archive: { version: '1.0' as const, exportedFrom: 'x', exportedAt: 'now', layoutCount: 2 },
+      layouts: [
+        { name: 'L1', layout },
+        { name: 'L2', layout },
+      ],
+    };
+
+    const progress: { current: number; total: number }[] = [];
+    await importArchive(archive, library, (p) => progress.push({ ...p }));
+
+    expect(progress).toHaveLength(2);
+    expect(progress[0]).toEqual({ current: 1, total: 2 });
+    expect(progress[1]).toEqual({ current: 2, total: 2 });
+  });
+});

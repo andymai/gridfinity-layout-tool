@@ -1,0 +1,240 @@
+/**
+ * Bulk Archive Service - export/import all layouts as a single JSON archive.
+ *
+ * Archive format:
+ * {
+ *   _archive: { version, exportedFrom, exportedAt, layoutCount },
+ *   layouts: [{ name, layout, linkedDesigns? }]
+ * }
+ */
+
+import type { Layout, LayoutLibrary } from '@/core/types';
+import type { Result, StorageError, LayoutLibraryLimitError } from '@/core/result';
+import { isOk, isErr } from '@/core/result';
+import { loadLayoutAsync } from './LayoutService';
+import { createLayoutEntry } from './LayoutManager';
+import { validateImport } from '@/shared/utils/validation';
+
+// === Types ===
+
+interface LinkedDesignExport {
+  readonly id: string;
+  readonly name: string;
+  readonly params: unknown;
+}
+
+interface ArchiveLayoutEntry {
+  readonly name: string;
+  readonly layout: Layout;
+  readonly linkedDesigns?: LinkedDesignExport[];
+}
+
+export interface LayoutArchive {
+  readonly _archive: {
+    readonly version: '1.0';
+    readonly exportedFrom: string;
+    readonly exportedAt: string;
+    readonly layoutCount: number;
+  };
+  readonly layouts: ArchiveLayoutEntry[];
+}
+
+export interface ExportProgress {
+  current: number;
+  total: number;
+}
+
+export interface ImportArchiveResult {
+  imported: number;
+  skipped: number;
+  errors: string[];
+}
+
+// === Export ===
+
+/**
+ * Check if parsed JSON is a bulk archive (vs. a single layout).
+ */
+export function isArchiveFormat(data: unknown): data is LayoutArchive {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    '_archive' in data &&
+    'layouts' in data &&
+    Array.isArray((data as LayoutArchive).layouts)
+  );
+}
+
+/**
+ * Export all layouts in the library as a JSON archive string.
+ * Loads each layout from storage and bundles them together.
+ */
+export async function exportAllLayouts(
+  library: LayoutLibrary,
+  onProgress?: (progress: ExportProgress) => void
+): Promise<string> {
+  const total = library.entries.length;
+  const layouts: ArchiveLayoutEntry[] = [];
+
+  for (let i = 0; i < library.entries.length; i++) {
+    const entry = library.entries[i];
+    onProgress?.({ current: i + 1, total });
+
+    try {
+      const layout = await loadLayoutAsync(entry.id);
+      if (!layout) continue;
+
+      // Collect linked designs if any bins reference them
+      const designIds = new Set<string>();
+      for (const bin of layout.bins) {
+        if (bin.linkedDesignId) {
+          designIds.add(bin.linkedDesignId);
+        }
+      }
+
+      let linkedDesigns: LinkedDesignExport[] | undefined;
+      if (designIds.size > 0) {
+        linkedDesigns = [];
+        try {
+          const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
+          for (const id of designIds) {
+            const result = await loadDesign(id);
+            if (isOk(result)) {
+              linkedDesigns.push({
+                id: result.value.id,
+                name: result.value.name,
+                params: result.value.params,
+              });
+            }
+          }
+        } catch {
+          // Designer storage unavailable — skip linked designs
+        }
+        if (linkedDesigns.length === 0) linkedDesigns = undefined;
+      }
+
+      layouts.push({
+        name: entry.name,
+        layout,
+        ...(linkedDesigns ? { linkedDesigns } : {}),
+      });
+    } catch {
+      // Skip layouts that can't be loaded
+    }
+  }
+
+  const archive: LayoutArchive = {
+    _archive: {
+      version: '1.0',
+      exportedFrom: 'https://gridfinitylayouttool.com',
+      exportedAt: new Date().toISOString(),
+      layoutCount: layouts.length,
+    },
+    layouts,
+  };
+
+  return JSON.stringify(archive, null, 2);
+}
+
+/**
+ * Download all layouts as a single JSON archive file.
+ */
+export async function downloadArchive(
+  library: LayoutLibrary,
+  onProgress?: (progress: ExportProgress) => void
+): Promise<void> {
+  const json = await exportAllLayouts(library, onProgress);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  const date = new Date().toISOString().slice(0, 10);
+  a.download = `gridfinity-layouts-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// === Import ===
+
+/**
+ * Parse and validate a bulk archive from raw JSON.
+ * Returns null if the JSON is not in archive format.
+ */
+export function parseArchive(json: string): LayoutArchive | null {
+  try {
+    const data = JSON.parse(json) as unknown;
+    if (!isArchiveFormat(data)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Import all layouts from an archive into the library.
+ * Each layout gets new IDs to prevent collisions.
+ */
+export async function importArchive(
+  archive: LayoutArchive,
+  library: LayoutLibrary,
+  onProgress?: (progress: ExportProgress) => void
+): Promise<{
+  result: ImportArchiveResult;
+  library: LayoutLibrary;
+}> {
+  const total = archive.layouts.length;
+  let imported = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+  let currentLibrary = library;
+
+  for (let i = 0; i < archive.layouts.length; i++) {
+    const archiveEntry = archive.layouts[i];
+    onProgress?.({ current: i + 1, total });
+
+    // Validate the layout data
+    const validation = validateImport(archiveEntry.layout);
+    if (!validation.valid) {
+      errors.push(`"${archiveEntry.name}": ${validation.errors.join(', ')}`);
+      skipped++;
+      continue;
+    }
+
+    // Create entry via atomic operation
+    const createResult: Result<
+      { library: LayoutLibrary; layoutId: string },
+      StorageError | LayoutLibraryLimitError
+    > = await createLayoutEntry(validation.layout, currentLibrary, {
+      name: archiveEntry.name,
+    });
+
+    if (isErr(createResult)) {
+      errors.push(`"${archiveEntry.name}": storage error`);
+      skipped++;
+      continue;
+    }
+
+    currentLibrary = createResult.value.library;
+    imported++;
+
+    // Restore linked designs if present
+    if (archiveEntry.linkedDesigns && archiveEntry.linkedDesigns.length > 0) {
+      try {
+        const { restoreEmbeddedDesigns } = await import('./ShareService');
+        // restoreEmbeddedDesigns expects raw JSON with linkedDesigns array
+        const designsJson = JSON.stringify({ linkedDesigns: archiveEntry.linkedDesigns });
+        await restoreEmbeddedDesigns(designsJson, validation.layout);
+      } catch {
+        // Design restoration is best-effort
+      }
+    }
+  }
+
+  return {
+    result: { imported, skipped, errors },
+    library: currentLibrary,
+  };
+}
