@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.16.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.15.0...gridfinity-layout-tool-v3.16.0) (2026-02-19)
+
+
+### Features
+
+* add bulk export/import for all layouts ([#802](https://github.com/andymai/gridfinity-layout-tool/issues/802)) ([a6c5bc7](https://github.com/andymai/gridfinity-layout-tool/commit/a6c5bc75aeed22e68fba71751bf9982c2f085afc))
+* add Storage dashboard tab in Settings ([#801](https://github.com/andymai/gridfinity-layout-tool/issues/801)) ([60447b7](https://github.com/andymai/gridfinity-layout-tool/commit/60447b7d5382b76d35165645842102a6df66c112))
+* auto-clean localStorage layout backups ([#800](https://github.com/andymai/gridfinity-layout-tool/issues/800)) ([6391445](https://github.com/andymai/gridfinity-layout-tool/commit/6391445e4d37feea3aa1be6a72cdbfc749e4ed58))
+
 ## [3.15.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.14.0...gridfinity-layout-tool-v3.15.0) (2026-02-19)
 
 
