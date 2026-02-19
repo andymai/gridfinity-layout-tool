@@ -896,6 +896,7 @@
   "layouts.dropFileHere": "Datei hier ablegen",
   "layouts.exportAll": "Alle exportieren",
   "layouts.exportedAll": "{count} Layouts exportiert",
+  "layouts.exportedAllWithSkipped": "{count} Layouts exportiert ({skipped} übersprungen)",
   "layouts.exportFailed": "Layouts konnten nicht exportiert werden",
   "layouts.forkedFrom": "Abgeleitet von",
   "layouts.forkedFromName": "Abgeleitet von {name}",

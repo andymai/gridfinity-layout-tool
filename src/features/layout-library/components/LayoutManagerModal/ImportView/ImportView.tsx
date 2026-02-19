@@ -25,6 +25,8 @@ interface ArchivePreview {
   exportedAt: string;
 }
 
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
+
 /**
  * Import view with drag-and-drop file support and paste area.
  */
@@ -116,19 +118,31 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
     [processInput]
   );
 
-  const handleFileUpload = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
+  const readFile = useCallback(
+    (file: File) => {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setErrors([
+          `File too large (${Math.round(file.size / 1024 / 1024)} MB). Maximum is 50 MB.`,
+        ]);
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
-        const text = event.target?.result as string;
-        processInput(text);
+        const text = event.target?.result;
+        if (typeof text === 'string') processInput(text);
       };
       reader.readAsText(file);
     },
     [processInput]
+  );
+
+  const handleFileUpload = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      readFile(file);
+    },
+    [readFile]
   );
 
   const handleDragOver = useCallback((e: DragEvent) => {
@@ -158,29 +172,19 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const text = event.target?.result as string;
-        processInput(text);
-      };
-      reader.readAsText(file);
+      readFile(file);
     },
-    [processInput]
+    [readFile]
   );
 
   const handleImport = useCallback(async () => {
     if (!validLayout) return;
 
-    let layoutToImport = validLayout;
+    // Restore embedded designs if present in the raw JSON
+    const { restoreEmbeddedDesigns } = await import('@/core/storage');
+    const { layout: updatedLayout } = await restoreEmbeddedDesigns(jsonText, validLayout);
 
-    // Restore embedded designs if present
-    if (jsonText.trim()) {
-      const { restoreEmbeddedDesigns } = await import('@/core/storage');
-      const { layout: updatedLayout } = await restoreEmbeddedDesigns(jsonText, validLayout);
-      layoutToImport = updatedLayout;
-    }
-
-    onImport(layoutToImport);
+    onImport(updatedLayout);
   }, [validLayout, jsonText, onImport]);
 
   const handleImportArchive = useCallback(() => {

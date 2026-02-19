@@ -54,6 +54,7 @@ function LayoutManagerModalContent({
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [isExporting, setIsExporting] = useState(false);
   const handleSortChange = useCallback((value: SortOption) => setSortBy(value), []);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -219,21 +220,18 @@ function LayoutManagerModalContent({
     [setLibrary, announceToScreenReader, onClose, t]
   );
 
-  const [isExporting, setIsExporting] = useState(false);
-
   const handleExportAll = useCallback(async () => {
+    const addToast = useToastStore.getState().addToast;
     setIsExporting(true);
     try {
       const currentLibrary = useLibraryStore.getState().library;
       const { exported, skipped } = await downloadArchive(currentLibrary);
-      const addToast = useToastStore.getState().addToast;
       if (skipped > 0) {
-        addToast(t('layouts.exportedAll', { count: exported }) + ` (${skipped} skipped)`, 'info');
+        addToast(t('layouts.exportedAllWithSkipped', { count: exported, skipped }), 'info');
       } else {
         addToast(t('layouts.exportedAll', { count: exported }), 'success');
       }
     } catch {
-      const addToast = useToastStore.getState().addToast;
       addToast(t('layouts.exportFailed'), 'error');
     } finally {
       setIsExporting(false);
