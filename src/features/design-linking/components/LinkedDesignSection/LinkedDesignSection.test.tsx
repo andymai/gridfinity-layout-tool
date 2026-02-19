@@ -7,6 +7,9 @@ import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 
 // Mock hooks
 vi.mock('../../hooks');
+vi.mock('@/features/bin-designer/hooks/useDesignThumbnail', () => ({
+  useDesignThumbnail: vi.fn(() => ({ thumbnail: null, isLoading: false })),
+}));
 vi.mock('../../store', () => ({
   useLinkingStore: vi.fn((selector) => {
     const state = { showLinkDesignDialog: vi.fn() };
@@ -117,7 +120,7 @@ describe('LinkedDesignSection', () => {
         width: 2,
         depth: 3,
         height: 5,
-        thumbnail: 'data:image/png;base64,test',
+        updatedAt: '2026-01-01T00:00:00.000Z',
       },
       isStale: false,
       hasLink: true,
@@ -139,7 +142,7 @@ describe('LinkedDesignSection', () => {
         width: 2,
         depth: 3,
         height: 5,
-        thumbnail: null,
+        updatedAt: '2026-01-01T00:00:00.000Z',
       },
       isStale: false,
       hasLink: true,
@@ -157,7 +160,7 @@ describe('LinkedDesignSection', () => {
         width: 2,
         depth: 3,
         height: 5,
-        thumbnail: null,
+        updatedAt: '2026-01-01T00:00:00.000Z',
       },
       isStale: false,
       hasLink: true,
@@ -175,7 +178,7 @@ describe('LinkedDesignSection', () => {
         width: 2,
         depth: 3,
         height: 5,
-        thumbnail: null,
+        updatedAt: '2026-01-01T00:00:00.000Z',
       },
       isStale: false,
       hasLink: true,

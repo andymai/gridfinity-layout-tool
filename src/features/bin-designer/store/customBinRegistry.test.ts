@@ -14,7 +14,6 @@ function makeRef(id: string, name: string = 'Test Bin'): CustomBinRef {
     width: 2,
     depth: 2,
     height: 3,
-    thumbnail: null,
     updatedAt: '2026-01-22T00:00:00.000Z',
   };
 }
@@ -43,6 +42,25 @@ describe('customBinRegistry', () => {
     it('handles non-array data gracefully', () => {
       localStorage.setItem('gridfinity-custom-bins-v1', JSON.stringify({ foo: 'bar' }));
       expect(loadRegistry()).toEqual([]);
+    });
+
+    it('strips legacy thumbnail field from stored entries', () => {
+      const legacyRefs = [
+        {
+          id: 'bin-1',
+          name: 'Old Bin',
+          width: 2,
+          depth: 2,
+          height: 3,
+          thumbnail: 'data:image/webp;base64,AAAA',
+          updatedAt: '2026-01-22T00:00:00.000Z',
+        },
+      ];
+      localStorage.setItem('gridfinity-custom-bins-v1', JSON.stringify(legacyRefs));
+      const loaded = loadRegistry();
+      expect(loaded).toHaveLength(1);
+      expect(loaded[0].id).toBe('bin-1');
+      expect('thumbnail' in loaded[0]).toBe(false);
     });
   });
 

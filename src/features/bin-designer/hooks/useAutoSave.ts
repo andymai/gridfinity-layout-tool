@@ -125,7 +125,6 @@ export function useAutoSave(): void {
           width: paramsToSave.width,
           depth: paramsToSave.depth,
           height: paramsToSave.height,
-          thumbnail: result.value.thumbnail,
           updatedAt: result.value.updatedAt,
         });
       } else {

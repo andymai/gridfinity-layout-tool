@@ -13,6 +13,7 @@ import { useDesignerStore } from '../store';
 import { captureThumbnailAtPreset } from '../utils/thumbnail';
 import { updateDesignThumbnail } from '../storage/DesignerStorage';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
+import { updateThumbnailCache } from './useDesignThumbnail';
 import { isOk } from '@/core/result';
 
 /**
@@ -64,16 +65,18 @@ export function useThumbnailCapture(): void {
       // Update IndexedDB and registry
       void updateDesignThumbnail(currentDesignId, thumbnail).then((result) => {
         if (isOk(result)) {
-          // Update registry with new thumbnail
+          // Update registry (lightweight ref, no thumbnail)
           upsertRegistryEntry({
             id: currentDesignId,
             name: designName,
             width: params.width,
             depth: params.depth,
             height: params.height,
-            thumbnail,
             updatedAt: result.value.updatedAt,
           });
+
+          // Keep in-memory thumbnail cache fresh
+          updateThumbnailCache(currentDesignId, thumbnail);
 
           // Clear the flag
           setNeedsThumbnailUpdate(false);

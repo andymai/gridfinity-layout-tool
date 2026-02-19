@@ -11,6 +11,8 @@ export { useLayoutSwitcher } from './useLayoutSwitcher';
 export { useLayoutRouting } from '@/features/layout-library/hooks/useLayoutRouting';
 export { useAnalytics } from './useAnalytics';
 export { useStorageMigration } from './useStorageMigration';
+export { useIndexedDBRecovery } from './useIndexedDBRecovery';
+export { useSnapshotAutoSave } from './useSnapshotAutoSave';
 export { useTabletPanels } from './useTabletPanels';
 export type { TabletPanelsState } from './useTabletPanels';
 export { useFeatureFlag, isFeatureEnabled } from './useFeatureFlag';

@@ -213,6 +213,37 @@ const en: Record<string, string> = {
   'rightPanel.selection': 'Selection',
   'rightPanel.splitInto': 'Split into',
   'rightPanel.unknownCategory': 'Unknown category',
+  'rightPanel.inspectorTab': 'Inspector',
+  'rightPanel.historyTab': 'History',
+
+  // ===========================================================================
+  // Snapshots / Version History
+  // ===========================================================================
+  'snapshots.title': 'Version history',
+  'snapshots.empty': 'No snapshots yet',
+  'snapshots.emptyDescription': 'Snapshots are saved automatically every 2 minutes',
+  'snapshots.restore': 'Restore',
+  'snapshots.createCopy': 'Create as new layout',
+  'snapshots.replaceWarning':
+    'This will replace your current layout. Your undo history will be cleared.',
+  'snapshots.restored': 'Layout restored from snapshot',
+  'snapshots.createdCopy': 'Created new layout from snapshot',
+  'snapshots.restoreFailed': 'Failed to restore snapshot',
+  'snapshots.editLabel': 'Edit label',
+  'snapshots.labelPlaceholder': 'Add a label...',
+  'snapshots.bins': '{count} bins',
+  'snapshots.layers': '{count} layers',
+  'snapshots.autoSaved': 'Auto-saved',
+  'snapshots.justNow': 'Just now',
+  'snapshots.minutesAgo': '{count} min ago',
+  'snapshots.hoursAgo': '{count}h ago',
+  'snapshots.daysAgo': '{count}d ago',
+  'snapshots.saveCheckpoint': 'Save checkpoint',
+  'snapshots.checkpointSaved': 'Checkpoint saved',
+  'snapshots.createSnapshotNow': 'Create snapshot now',
+  'snapshots.deleted': 'Snapshot deleted',
+  'snapshots.deleteSnapshot': 'Delete snapshot',
+  'snapshots.undoDelete': 'Undo',
 
   // ===========================================================================
   // Bin Inspector
@@ -957,6 +988,7 @@ const en: Record<string, string> = {
   'toast.layoutDuplicated': 'Layout duplicated',
   'toast.layoutDeleted': 'Layout deleted',
   'toast.layoutImported': 'Imported "{name}"',
+  'toast.layoutRecovered': 'Layout recovered from backup storage',
   'toast.layoutNotFound': 'Layout not found',
   'toast.layoutSwitchFailed': 'Failed to switch layout',
   'toast.layoutCreateFailed': 'Failed to create layout',

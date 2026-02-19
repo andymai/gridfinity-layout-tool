@@ -13,6 +13,8 @@ import {
   useLayoutRouting,
   useAnalytics,
   useStorageMigration,
+  useIndexedDBRecovery,
+  useSnapshotAutoSave,
   useTabletPanels,
   useKeyboard,
 } from './hooks';
@@ -106,8 +108,13 @@ let hasRenderedInitialLayout = false;
 
 // Initialize layout library once at module level to avoid effect setState issues
 let initialLoadError: Error | null = null;
+let initialNeedsAsyncRecovery = false;
+let initialRecoveryLayoutIds: string[] = [];
 try {
-  const { library, activeLayout } = initializeLayoutLibrary();
+  const { library, activeLayout, needsAsyncRecovery, recoveryLayoutIds } =
+    initializeLayoutLibrary();
+  initialNeedsAsyncRecovery = needsAsyncRecovery;
+  initialRecoveryLayoutIds = recoveryLayoutIds;
   useLibraryStore.getState().initLibrary(library);
   useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
 
@@ -233,6 +240,12 @@ export default function App() {
 
   // Storage migration (localStorage → IndexedDB)
   useStorageMigration();
+
+  // Async IndexedDB recovery (restores layout data lost from localStorage)
+  useIndexedDBRecovery(initialNeedsAsyncRecovery, initialRecoveryLayoutIds);
+
+  // Periodic layout snapshots for version history (every 2 minutes)
+  useSnapshotAutoSave();
 
   // Prefetch lazy-loaded chunks during idle time (desktop only)
   usePrefetchChunks();

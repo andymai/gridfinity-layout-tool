@@ -21,6 +21,7 @@
  */
 
 import * as backend from './backend';
+import { deleteSnapshotsForLayout } from './SnapshotService';
 import { validateImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
 import { CONSTRAINTS } from '@/core/constants';
@@ -404,6 +405,11 @@ export async function deleteLayoutWithEntry(
   if (isErr(deleteResult)) {
     return deleteResult;
   }
+
+  // 2b. Delete associated snapshots (fire-and-forget, non-critical)
+  void deleteSnapshotsForLayout(layoutId).catch(() => {
+    // Snapshot cleanup is best-effort; orphaned snapshots don't cause issues
+  });
 
   // 3. Build updated library
   const remainingEntries = library.entries.filter((e) => e.id !== layoutId);

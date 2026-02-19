@@ -25,6 +25,9 @@ export type { HalfBinModeStore } from './halfBinMode';
 export { useSharedPreviewStore } from './sharedPreview';
 export type { SharedPreviewStore } from './sharedPreview';
 
+export { useSnapshotStore } from './snapshots';
+export type { SnapshotState } from './snapshots';
+
 // Legacy re-export for backwards compatibility
 // Production code has been migrated to specific stores.
 // Test files still use this facade for convenience.

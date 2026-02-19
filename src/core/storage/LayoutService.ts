@@ -522,7 +522,13 @@ function persistNewLayout(layoutId: string, layout: Layout, library: LayoutLibra
   });
 }
 
-export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayout: Layout } {
+export function initializeLayoutLibrary(): {
+  library: LayoutLibrary;
+  activeLayout: Layout;
+  needsAsyncRecovery: boolean;
+  /** Original layout IDs to scan in IndexedDB during async recovery. */
+  recoveryLayoutIds: string[];
+} {
   let library = loadLibrary() ?? migrateFromLegacyStorage();
 
   if (!library) {
@@ -564,6 +570,10 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
     }
 
     if (!activeLayout) {
+      // Preserve original IDs before overwriting — IndexedDB may still
+      // have data under these keys even though localStorage lost them.
+      const recoveryLayoutIds = library.entries.map((e) => e.id);
+
       const layoutId = generateLayoutId();
       const recoveredLayout: Layout = {
         version: '1.0',
@@ -580,11 +590,15 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
       activeLayout = recoveredLayout;
       library.activeLayoutId = layoutId;
       library.entries = [createLibraryEntry(layoutId, recoveredLayout)];
-      persistNewLayout(layoutId, recoveredLayout, library);
+      // Only write to localStorage — skip IndexedDB so async recovery can
+      // still find the real layout data there (see useIndexedDBRecovery).
+      saveLayoutSync(layoutId, recoveredLayout);
+      saveLibrary(library);
+      return { library, activeLayout, needsAsyncRecovery: true, recoveryLayoutIds };
     }
   }
 
-  return { library, activeLayout };
+  return { library, activeLayout, needsAsyncRecovery: false, recoveryLayoutIds: [] };
 }
 
 // === Legacy API (Deprecated) ===
