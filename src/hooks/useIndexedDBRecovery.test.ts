@@ -181,15 +181,13 @@ describe('useIndexedDBRecovery', () => {
     expect(mockImportLayout).not.toHaveBeenCalled();
   });
 
-  it('skips layouts with 0 bins and continues scanning', async () => {
-    const emptyLayout = { bins: [] };
-    const realLayout = { name: 'Real', bins: [{ id: 'b1' }] };
+  it('recovers empty layouts (0 bins) without skipping them', async () => {
+    const emptyLayout = { bins: [], name: 'Empty' };
+    const mockImportLayout = vi.fn();
 
-    vi.mocked(storage.loadLayoutAsync)
-      .mockResolvedValueOnce(emptyLayout as never)
-      .mockResolvedValueOnce(realLayout as never);
+    vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(emptyLayout as never);
     vi.mocked(layoutStore.useLayoutStore.getState).mockReturnValue({
-      importLayout: vi.fn(),
+      importLayout: mockImportLayout,
     } as never);
     vi.mocked(layoutStore.useLibraryStore.getState).mockReturnValue({
       library: { activeLayoutId: 'placeholder-id' },
@@ -203,8 +201,9 @@ describe('useIndexedDBRecovery', () => {
 
     await vi.runAllTimersAsync();
 
-    // Should have tried both IDs
-    expect(storage.loadLayoutAsync).toHaveBeenCalledTimes(2);
+    // Should recover the first layout found, even if empty
+    expect(mockImportLayout).toHaveBeenCalled();
+    expect(storage.loadLayoutAsync).toHaveBeenCalledTimes(1);
   });
 
   it('does not throw when loadLayoutAsync rejects', async () => {

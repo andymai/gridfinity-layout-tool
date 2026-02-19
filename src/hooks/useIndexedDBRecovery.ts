@@ -44,7 +44,7 @@ export function useIndexedDBRecovery(needsRecovery: boolean, originalLayoutIds: 
         for (const originalId of originalLayoutIds) {
           const recovered = await loadLayoutAsync(originalId);
 
-          if (recovered && recovered.bins.length > 0) {
+          if (recovered) {
             const activeLayoutId = useLibraryStore.getState().library.activeLayoutId;
             useLayoutStore.getState().importLayout(recovered, activeLayoutId, 'init');
 

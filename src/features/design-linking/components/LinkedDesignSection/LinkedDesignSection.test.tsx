@@ -4,6 +4,7 @@ import { LinkedDesignSection } from './LinkedDesignSection';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
 import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
+import { useDesignThumbnail } from '@/features/bin-designer/hooks/useDesignThumbnail';
 
 // Mock hooks
 vi.mock('../../hooks');
@@ -113,6 +114,10 @@ describe('LinkedDesignSection', () => {
   });
 
   it('renders linked design with thumbnail and actions', () => {
+    vi.mocked(useDesignThumbnail).mockReturnValue({
+      thumbnail: 'data:image/png;base64,abc123',
+      isLoading: false,
+    });
     vi.mocked(useLinkedDesign).mockReturnValue({
       linkedDesign: {
         id: 'design-1',
@@ -132,6 +137,9 @@ describe('LinkedDesignSection', () => {
     expect(screen.getByText(/2×3×5u/)).toBeInTheDocument();
     expect(screen.getByText('designLinking.inspector.editDesign')).toBeInTheDocument();
     expect(screen.getByText('common.export')).toBeInTheDocument();
+
+    const img = screen.getByRole('img', { name: 'My Design' });
+    expect(img).toHaveAttribute('src', 'data:image/png;base64,abc123');
   });
 
   it('shows placeholder thumbnail when no thumbnail available', () => {

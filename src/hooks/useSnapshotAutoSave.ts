@@ -59,6 +59,7 @@ export function useSnapshotAutoSave(): void {
     layoutRef.current = layout;
     if (activeLayoutIdRef.current !== activeLayoutId) {
       initialSnapshotCreatedRef.current = false;
+      lastSnapshotHashRef.current = computeLayoutHash(layout);
     }
     activeLayoutIdRef.current = activeLayoutId;
   }, [layout, activeLayoutId]);
@@ -71,11 +72,14 @@ export function useSnapshotAutoSave(): void {
 
     initialSnapshotCreatedRef.current = true;
 
+    const capturedLayoutId = activeLayoutId;
     const store = useSnapshotStore.getState();
-    void store.loadForLayout(activeLayoutId).then(() => {
+    void store.loadForLayout(capturedLayoutId).then(() => {
+      // Verify layout hasn't switched while we were loading
+      if (activeLayoutIdRef.current !== capturedLayoutId) return;
       const { snapshots } = useSnapshotStore.getState();
       if (snapshots.length === 0) {
-        void store.addSnapshot(activeLayoutId, layout);
+        void store.addSnapshot(capturedLayoutId, layoutRef.current);
       }
     });
   }, [activeLayoutId, layout]);
@@ -107,7 +111,12 @@ export function useSnapshotAutoSave(): void {
       lastSnapshotHashRef.current = hash;
 
       idleRef.current = scheduleIdleCallback(() => {
-        void useSnapshotStore.getState().addSnapshot(currentLayoutId, currentLayout);
+        useSnapshotStore
+          .getState()
+          .addSnapshot(currentLayoutId, currentLayout)
+          .catch(() => {
+            // Swallow IndexedDB failures during auto-save — not user-facing
+          });
       });
     }, SNAPSHOT_INTERVAL_MS);
 

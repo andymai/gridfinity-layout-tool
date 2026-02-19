@@ -39,15 +39,19 @@ export const useSnapshotStore = create<SnapshotState>((set) => ({
 
   loadForLayout: async (layoutId: string) => {
     set({ isLoading: true });
-    const snapshots = await loadSnapshotsService(layoutId);
-    set({ snapshots, isLoading: false });
+    try {
+      const snapshots = await loadSnapshotsService(layoutId);
+      set({ snapshots });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   addSnapshot: async (layoutId: string, layout: Layout, label?: string) => {
-    const snapshot = await createSnapshotService(layoutId, layout, label);
-    set((state) => ({
-      snapshots: [snapshot, ...state.snapshots],
-    }));
+    await createSnapshotService(layoutId, layout, label);
+    // Reload from IndexedDB to mirror any rolling-window evictions
+    const snapshots = await loadSnapshotsService(layoutId);
+    set({ snapshots });
   },
 
   removeSnapshot: async (snapshotId: string) => {

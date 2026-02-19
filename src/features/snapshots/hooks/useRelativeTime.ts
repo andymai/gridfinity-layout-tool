@@ -1,20 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useTranslation } from '@/i18n';
 
 /**
+ * Shared tick counter — one 30-second interval for all useRelativeTime instances.
+ * Uses useSyncExternalStore to avoid per-instance setInterval overhead.
+ */
+let tick = 0;
+let listenerCount = 0;
+let intervalId: ReturnType<typeof setInterval> | undefined;
+const listeners = new Set<() => void>();
+
+function subscribe(callback: () => void): () => void {
+  listeners.add(callback);
+  listenerCount++;
+  if (listenerCount === 1) {
+    intervalId = setInterval(() => {
+      tick++;
+      for (const listener of listeners) listener();
+    }, 30_000);
+  }
+  return () => {
+    listeners.delete(callback);
+    listenerCount--;
+    if (listenerCount === 0 && intervalId !== undefined) {
+      clearInterval(intervalId);
+      intervalId = undefined;
+    }
+  };
+}
+
+function getSnapshot(): number {
+  return tick;
+}
+
+/**
  * Formats a timestamp as a relative time string ("2 min ago", "1 hour ago", etc.).
- * Re-renders periodically to keep the string fresh.
+ * All instances share a single 30-second interval for re-renders.
  */
 export function useRelativeTime(timestamp: number): string {
   const t = useTranslation();
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    // Refresh every 30 seconds to keep relative times current
-    const interval = setInterval(() => setTick((n) => n + 1), 30_000);
-    return () => clearInterval(interval);
-  }, []);
-
+  useSyncExternalStore(subscribe, getSnapshot);
   return formatRelativeTime(timestamp, t);
 }
 

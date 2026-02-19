@@ -65,12 +65,14 @@ describe('useSnapshotStore', () => {
   });
 
   describe('addSnapshot', () => {
-    it('creates snapshot and prepends to list', async () => {
+    it('creates snapshot and reloads list from service', async () => {
       const existing = makeSnapshot({ id: 'layout-1-1000', timestamp: 1000 });
       useSnapshotStore.setState({ snapshots: [existing] });
 
       const newSnapshot = makeSnapshot({ id: 'layout-1-2000', timestamp: 2000 });
       mockService.createSnapshot.mockResolvedValue(newSnapshot);
+      // After create, the store reloads from service to mirror any evictions
+      mockService.loadSnapshots.mockResolvedValue([newSnapshot, existing]);
 
       const layout = createTestLayout();
       await useSnapshotStore.getState().addSnapshot('layout-1', layout);
@@ -83,6 +85,7 @@ describe('useSnapshotStore', () => {
 
     it('passes label to createSnapshot', async () => {
       mockService.createSnapshot.mockResolvedValue(makeSnapshot({ label: 'Before change' }));
+      mockService.loadSnapshots.mockResolvedValue([makeSnapshot({ label: 'Before change' })]);
 
       const layout = createTestLayout();
       await useSnapshotStore.getState().addSnapshot('layout-1', layout, 'Before change');
