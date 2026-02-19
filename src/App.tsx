@@ -203,11 +203,15 @@ export default function App() {
   // Deferred orphan cleanup — remove library entries whose layouts no longer exist in IndexedDB
   useEffect(() => {
     const library = useLibraryStore.getState().library;
-    void reconcileLibraryAsync(library).then((cleaned) => {
-      if (cleaned) {
-        useLibraryStore.getState().setLibrary(cleaned);
-      }
-    });
+    void reconcileLibraryAsync(library)
+      .then((cleaned) => {
+        if (cleaned) {
+          useLibraryStore.getState().setLibrary(cleaned);
+        }
+      })
+      .catch(() => {
+        // Best-effort orphan cleanup — non-critical if IndexedDB is unavailable
+      });
   }, []);
 
   // Tablet panel state (auto-collapses on tablet mode entry)

@@ -323,7 +323,7 @@ function validateLibraryStructure(parsed: LayoutLibrary): LayoutLibrary | null {
 
   // Ensure activeLayoutId references a valid entry
   if (!parsed.entries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
-    parsed.activeLayoutId = parsed.entries[0].id;
+    return { ...parsed, activeLayoutId: parsed.entries[0].id };
   }
 
   return parsed;
@@ -363,10 +363,11 @@ export async function reconcileLibraryAsync(library: LayoutLibrary): Promise<Lay
       : validEntries[0].id,
   };
 
-  // Persist cleaned library
+  // Persist cleaned library and notify other tabs
   await indexedDB.saveLibraryIndex(cleaned).catch(() => {
     // Best-effort
   });
+  notifyLibraryChanged();
 
   return cleaned;
 }
