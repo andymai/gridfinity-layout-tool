@@ -1,8 +1,10 @@
+import { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Analytics } from '@vercel/analytics/react';
 import './index.css';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { LoadingFallback } from './shared/components/LoadingFallback';
 import { LocaleProvider } from './i18n/context.tsx';
 import { detectBrowserLocale } from './i18n/detection.ts';
 import { isLocale } from './i18n/types.ts';
@@ -66,7 +68,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <ErrorBoundary>
     <LocaleProvider initialLocale={initialLocale} onLocaleChange={handleLocaleChange}>
-      <App />
+      <Suspense fallback={<LoadingFallback variant="fullscreen" />}>
+        <App />
+      </Suspense>
     </LocaleProvider>
     <Analytics />
   </ErrorBoundary>

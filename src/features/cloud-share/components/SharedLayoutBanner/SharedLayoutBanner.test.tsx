@@ -323,7 +323,7 @@ describe('SharedLayoutBanner', () => {
       expect(screen.getByText('Discard shared layout?')).toBeInTheDocument();
     });
 
-    it('clears shared preview state after confirming discard', () => {
+    it('clears shared preview state after confirming discard', async () => {
       render(<SharedLayoutBanner />);
 
       // Click discard to show dialog
@@ -333,12 +333,14 @@ describe('SharedLayoutBanner', () => {
       const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
       fireEvent.click(confirmButton);
 
-      const state = useSharedPreviewStore.getState();
-      expect(state.sharedLayoutPreview).toBeNull();
-      expect(state.sharedLayoutOriginalName).toBeNull();
+      await waitFor(() => {
+        const state = useSharedPreviewStore.getState();
+        expect(state.sharedLayoutPreview).toBeNull();
+        expect(state.sharedLayoutOriginalName).toBeNull();
+      });
     });
 
-    it('shows info toast after confirming discard', () => {
+    it('shows info toast after confirming discard', async () => {
       render(<SharedLayoutBanner />);
 
       // Click discard to show dialog
@@ -348,12 +350,14 @@ describe('SharedLayoutBanner', () => {
       const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
       fireEvent.click(confirmButton);
 
-      const toasts = useToastStore.getState().toasts;
-      expect(toasts.length).toBeGreaterThan(0);
-      expect(toasts[0].type).toBe('info');
+      await waitFor(() => {
+        const toasts = useToastStore.getState().toasts;
+        expect(toasts.length).toBeGreaterThan(0);
+        expect(toasts[0].type).toBe('info');
+      });
     });
 
-    it('restores previous layout after confirming discard', () => {
+    it('restores previous layout after confirming discard', async () => {
       render(<SharedLayoutBanner />);
 
       // Click discard to show dialog
@@ -363,9 +367,11 @@ describe('SharedLayoutBanner', () => {
       const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
       fireEvent.click(confirmButton);
 
-      // Check that layout store was updated
-      const layoutState = useLayoutStore.getState();
-      expect(layoutState.activeLayoutId).toBe('previous-layout');
+      // Check that layout store was updated (handleDiscard is async)
+      await waitFor(() => {
+        const layoutState = useLayoutStore.getState();
+        expect(layoutState.activeLayoutId).toBe('previous-layout');
+      });
     });
 
     it('does not discard when clicking Keep viewing', () => {

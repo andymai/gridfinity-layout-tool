@@ -106,32 +106,37 @@ export function SharedLayoutBanner() {
     announceToScreenReader(`Layout saved: ${savedLayout.name}`);
   };
 
-  const handleDiscard = () => {
-    // Restore the user's previous layout
-    const { library: restoredLibrary, activeLayout } = initializeLayoutLibrary();
+  const handleDiscard = async () => {
+    try {
+      // Restore the user's previous layout
+      const { library: restoredLibrary, activeLayout } = await initializeLayoutLibrary();
 
-    // Import the previous active layout
-    importLayout(activeLayout, restoredLibrary.activeLayoutId, 'init');
-    setActiveLayoutId(restoredLibrary.activeLayoutId);
+      // Import the previous active layout
+      importLayout(activeLayout, restoredLibrary.activeLayoutId, 'init');
+      setActiveLayoutId(restoredLibrary.activeLayoutId);
 
-    // Reset UI state
-    clearSelection();
-    if (activeLayout.layers[0]) {
-      setActiveLayer(activeLayout.layers[0].id);
+      // Reset UI state
+      clearSelection();
+      if (activeLayout.layers[0]) {
+        setActiveLayer(activeLayout.layers[0].id);
+      }
+      if (activeLayout.categories[0]) {
+        setActiveCategory(activeLayout.categories[0].id);
+      }
+
+      // Clear history
+      clearHistory();
+
+      // Clear the shared preview state
+      clearSharedLayoutPreview();
+
+      // Show feedback
+      addToast(t('share.banner.discarded'), 'info');
+      announceToScreenReader('Shared layout discarded, returned to your layouts');
+    } catch (error) {
+      console.error('[SharedLayoutBanner] Failed to restore layout:', error);
+      addToast(t('toast.genericError'), 'error');
     }
-    if (activeLayout.categories[0]) {
-      setActiveCategory(activeLayout.categories[0].id);
-    }
-
-    // Clear history
-    clearHistory();
-
-    // Clear the shared preview state
-    clearSharedLayoutPreview();
-
-    // Show feedback
-    addToast(t('share.banner.discarded'), 'info');
-    announceToScreenReader('Shared layout discarded, returned to your layouts');
   };
 
   return (

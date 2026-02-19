@@ -22,6 +22,7 @@
 
 import * as backend from './backend';
 import { deleteSnapshotsForLayout } from './SnapshotService';
+import * as indexedDB from './backends/indexedDB';
 import { validateImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
 import { CONSTRAINTS } from '@/core/constants';
@@ -48,10 +49,11 @@ import {
 } from '@/core/result';
 import { classifyStorageError, createStorageErrorClassifier } from './errorUtils';
 import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
+import { notifyLibraryChanged } from './librarySync';
 
 // === Storage Keys ===
 
-const LIBRARY_STORAGE_KEY = 'gridfinity-library-v1';
+const ACTIVE_ID_STORAGE_KEY = 'gridfinity-library-active-id';
 const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
 
 function getLayoutKey(id: string): string {
@@ -146,14 +148,44 @@ export function computePreview(layout: Layout): LayoutPreview {
 // === Internal Helpers ===
 
 /**
- * Save library to localStorage.
+ * Save library to IndexedDB (primary) with localStorage stub for activeLayoutId.
+ * Use this from async callers that can await the result.
  */
-function saveLibraryInternal(library: LayoutLibrary): Result<void, StorageError> {
+async function saveLibraryAsync(library: LayoutLibrary): Promise<Result<void, StorageError>> {
+  const result = await tryCatchAsync(
+    () => indexedDB.saveLibraryIndex(library),
+    (error) => classifyStorageError(error, 'indexedDB')
+  );
+
+  if (isErr(result)) return result;
+
+  // Best-effort: keep activeLayoutId in localStorage for cross-tab recovery
   try {
-    backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
-    return ok(undefined);
-  } catch (error) {
-    return err(classifyStorageError(error, 'localStorage'));
+    window.localStorage.setItem(ACTIVE_ID_STORAGE_KEY, library.activeLayoutId);
+  } catch {
+    // localStorage may be full; IndexedDB holds the authoritative data
+  }
+  notifyLibraryChanged();
+  return ok(undefined);
+}
+
+/**
+ * Save library to IndexedDB in the background (fire-and-forget).
+ * Use this from sync callers that cannot await. Falls back silently on error.
+ */
+function saveLibraryFireAndForget(library: LayoutLibrary): void {
+  indexedDB
+    .saveLibraryIndex(library)
+    .then(() => {
+      notifyLibraryChanged();
+    })
+    .catch((error: unknown) => {
+      console.warn('[LayoutManager] Background library save failed:', error);
+    });
+  try {
+    window.localStorage.setItem(ACTIVE_ID_STORAGE_KEY, library.activeLayoutId);
+  } catch {
+    // Best-effort
   }
 }
 
@@ -271,7 +303,7 @@ export async function saveLayoutWithMetadata(
   const updatedEntry = updatedLibrary.entries[found.index];
 
   // 5. Save library
-  const librarySaveResult = saveLibraryInternal(updatedLibrary);
+  const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
     // Layout saved but library failed - data is preserved but metadata may be stale
     return librarySaveResult;
@@ -348,7 +380,7 @@ export async function createLayoutEntry(
   };
 
   // 4. Save library
-  const librarySaveResult = saveLibraryInternal(updatedLibrary);
+  const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
     // Rollback: delete the layout we just saved
     await deleteLayoutInternal(layoutId).catch(() => {
@@ -429,7 +461,7 @@ export async function deleteLayoutWithEntry(
   };
 
   // 4. Save library
-  const librarySaveResult = saveLibraryInternal(updatedLibrary);
+  const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
     // Layout already deleted, but library save failed
     // This leaves us in an inconsistent state, but the entry will be cleaned up on next load
@@ -560,7 +592,7 @@ export async function switchActiveLayout(
   };
 
   // 5. Save library with new active ID
-  const librarySaveResult = saveLibraryInternal(updatedLibrary);
+  const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
     return librarySaveResult;
   }
@@ -593,10 +625,7 @@ export function updateCloudShare(
     cloudShare,
   });
 
-  const saveResult = saveLibraryInternal(updatedLibrary);
-  if (isErr(saveResult)) {
-    return saveResult;
-  }
+  saveLibraryFireAndForget(updatedLibrary);
 
   return ok(updatedLibrary);
 }
@@ -623,10 +652,7 @@ export function renameLayoutEntry(
     modifiedAt: Date.now(),
   });
 
-  const saveResult = saveLibraryInternal(updatedLibrary);
-  if (isErr(saveResult)) {
-    return saveResult;
-  }
+  saveLibraryFireAndForget(updatedLibrary);
 
   return ok(updatedLibrary);
 }

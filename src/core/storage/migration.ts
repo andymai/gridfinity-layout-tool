@@ -7,7 +7,7 @@
  *
  * Migration strategy:
  * - Individual layouts are moved to IndexedDB
- * - Library index stays in localStorage (small, needs cross-tab sync)
+ * - Library index is migrated to IndexedDB (cross-tab sync via BroadcastChannel)
  * - Migration is idempotent (safe to run multiple times)
  * - A flag tracks completion to avoid re-running
  */
@@ -15,7 +15,7 @@
 import * as backend from './backend';
 import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
-import type { Layout } from '@/core/types';
+import type { Layout, LayoutLibrary } from '@/core/types';
 import type { Result, Unit, StorageError } from '@/core/result';
 import {
   ok,
@@ -208,6 +208,40 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
  */
 export function clearMigrationFlag(): void {
   window.localStorage.removeItem(MIGRATION_FLAG_KEY);
+}
+
+/**
+ * Migrate the library index from localStorage to IndexedDB if not already there.
+ * Safe to call multiple times — skips if IndexedDB already has the library.
+ */
+export async function migrateLibraryToIndexedDB(): Promise<boolean> {
+  try {
+    // Check if already in IndexedDB
+    const existing = await indexedDB.loadLibraryIndex();
+    if (existing) return false; // Already migrated
+
+    // Load from localStorage
+    const LIBRARY_KEY = 'gridfinity-library-v1';
+    const raw = window.localStorage.getItem(LIBRARY_KEY);
+    if (!raw) return false; // Nothing to migrate
+
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+
+    // Basic structural validation before writing to IndexedDB
+    if (
+      !parsed.version ||
+      !parsed.activeLayoutId ||
+      !Array.isArray(parsed.entries) ||
+      parsed.entries.length === 0
+    ) {
+      return false;
+    }
+
+    await indexedDB.saveLibraryIndex(parsed as unknown as LayoutLibrary);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // =============================================================================

@@ -7,12 +7,12 @@
  * - Object stores:
  *   - 'layouts': Local layout data (key: layout id)
  *   - 'snapshots': Periodic layout snapshots for version history (key: snapshot id)
+ *   - 'library': Library index metadata (key: 'index')
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
 import { compressLayout, decompressLayout } from '@/shared/utils';
-import type { Layout } from '@/core/types';
-import type { CompressedSnapshot } from '@/core/types';
+import type { Layout, LayoutLibrary, CompressedSnapshot } from '@/core/types';
 
 const DB_NAME = 'gridfinity-db';
 const DB_VERSION = 2;
@@ -20,6 +20,8 @@ const DB_VERSION = 2;
 // Store names
 const LAYOUTS_STORE = 'layouts';
 const SNAPSHOTS_STORE = 'snapshots';
+const LIBRARY_STORE = 'library';
+const LIBRARY_KEY = 'index';
 
 // Database instance cache
 let dbInstance: IDBPDatabase | null = null;
@@ -63,6 +65,10 @@ export async function openLayoutDatabase(): Promise<IDBPDatabase> {
       if (!db.objectStoreNames.contains(SNAPSHOTS_STORE)) {
         const store = db.createObjectStore(SNAPSHOTS_STORE, { keyPath: 'id' });
         store.createIndex('byLayoutId', 'layoutId', { unique: false });
+      }
+      // v2: Create library store for library index metadata
+      if (!db.objectStoreNames.contains(LIBRARY_STORE)) {
+        db.createObjectStore(LIBRARY_STORE);
       }
     },
   });
@@ -116,6 +122,27 @@ export async function getAllLayoutIds(): Promise<string[]> {
   const db = await getDb();
   const keys = await db.getAllKeys(LAYOUTS_STORE);
   return keys as string[];
+}
+
+// === Library Index Operations ===
+
+/**
+ * Save the library index to IndexedDB (no compression — small data).
+ */
+export async function saveLibraryIndex(library: LayoutLibrary): Promise<void> {
+  const db = await getDb();
+  await db.put(LIBRARY_STORE, library, LIBRARY_KEY);
+}
+
+/**
+ * Load the library index from IndexedDB.
+ * @returns The library or null if not found
+ */
+export async function loadLibraryIndex(): Promise<LayoutLibrary | null> {
+  const db = await getDb();
+  const data: unknown = await db.get(LIBRARY_STORE, LIBRARY_KEY);
+  if (!data) return null;
+  return data as LayoutLibrary;
 }
 
 /**

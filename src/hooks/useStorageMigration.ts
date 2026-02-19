@@ -8,7 +8,7 @@
  * Migration strategy:
  * - Runs in background (doesn't block app startup)
  * - Individual layouts are moved to IndexedDB
- * - Library index stays in localStorage (small, needs cross-tab sync)
+ * - Library index is migrated to IndexedDB (cross-tab sync via BroadcastChannel)
  * - A flag tracks completion to avoid re-running
  */
 
