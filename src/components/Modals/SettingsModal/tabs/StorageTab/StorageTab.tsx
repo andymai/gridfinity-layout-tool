@@ -44,7 +44,11 @@ export function StorageTab() {
         <div className="flex items-center gap-2 text-sm">
           <span
             className={`inline-block w-2 h-2 rounded-full ${
-              info.backend === 'indexeddb' ? 'bg-success' : 'bg-warning'
+              info.loading
+                ? 'bg-content-disabled'
+                : info.backend === 'indexeddb'
+                  ? 'bg-success'
+                  : 'bg-warning'
             }`}
           />
           <span className="text-content">
@@ -55,11 +59,13 @@ export function StorageTab() {
                 : t('settings.storage.statusLimited')}
           </span>
         </div>
-        <p className="text-xs text-content-disabled mt-1">
-          {info.backend === 'indexeddb'
-            ? t('settings.storage.statusHealthyHint')
-            : t('settings.storage.statusLimitedHint')}
-        </p>
+        {!info.loading && (
+          <p className="text-xs text-content-disabled mt-1">
+            {info.backend === 'indexeddb'
+              ? t('settings.storage.statusHealthyHint')
+              : t('settings.storage.statusLimitedHint')}
+          </p>
+        )}
       </section>
 
       {/* Layout Count */}
