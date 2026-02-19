@@ -9,11 +9,13 @@ vi.mock('./backends/localStorage', () => ({
 
 vi.mock('./backends/indexedDB', () => ({
   isIndexedDBAvailable: vi.fn(),
-  getAllLayoutIds: vi.fn(),
+  loadLayout: vi.fn(),
 }));
 
 import * as localStorageBackend from './backends/localStorage';
 import * as indexedDBBackend from './backends/indexedDB';
+
+const DUMMY_LAYOUT = { name: 'Test', version: '1.0' };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -51,14 +53,11 @@ describe('cleanupLocalStorageBackups', () => {
     expect(window.localStorage.getItem('gridfinity-localstorage-cleaned')).toBe('true');
   });
 
-  it('removes localStorage copies confirmed in IndexedDB', async () => {
+  it('removes localStorage copies confirmed readable in IndexedDB', async () => {
     vi.mocked(indexedDBBackend.isIndexedDBAvailable).mockResolvedValue(true);
     vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
-    // IndexedDB stores with prefixed keys (via getLayoutStorageKey)
-    vi.mocked(indexedDBBackend.getAllLayoutIds).mockResolvedValue([
-      'gridfinity-layout-layout-1',
-      'gridfinity-layout-layout-2',
-    ]);
+    // loadLayout returns data for both layouts (confirmed readable)
+    vi.mocked(indexedDBBackend.loadLayout).mockResolvedValue(DUMMY_LAYOUT);
 
     // Mock the raw localStorage to calculate freed bytes
     window.localStorage.setItem('gridfinity-layout-layout-1', JSON.stringify({ name: 'Test 1' }));
@@ -79,11 +78,13 @@ describe('cleanupLocalStorageBackups', () => {
     );
   });
 
-  it('keeps localStorage copies not in IndexedDB', async () => {
+  it('keeps localStorage copies when IndexedDB data is missing or corrupt', async () => {
     vi.mocked(indexedDBBackend.isIndexedDBAvailable).mockResolvedValue(true);
     vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
-    // IndexedDB stores with prefixed keys — only layout-1 confirmed
-    vi.mocked(indexedDBBackend.getAllLayoutIds).mockResolvedValue(['gridfinity-layout-layout-1']);
+    // layout-1 loads fine; layout-2 returns null (missing or corrupt)
+    vi.mocked(indexedDBBackend.loadLayout)
+      .mockResolvedValueOnce(DUMMY_LAYOUT)
+      .mockResolvedValueOnce(null);
 
     window.localStorage.setItem('gridfinity-layout-layout-1', JSON.stringify({ name: 'Test 1' }));
 
@@ -101,7 +102,7 @@ describe('cleanupLocalStorageBackups', () => {
   it('sets cleanup flag after successful cleanup', async () => {
     vi.mocked(indexedDBBackend.isIndexedDBAvailable).mockResolvedValue(true);
     vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1']);
-    vi.mocked(indexedDBBackend.getAllLayoutIds).mockResolvedValue(['gridfinity-layout-layout-1']);
+    vi.mocked(indexedDBBackend.loadLayout).mockResolvedValue(DUMMY_LAYOUT);
     window.localStorage.setItem('gridfinity-layout-layout-1', '{}');
 
     await cleanupLocalStorageBackups();
@@ -112,8 +113,10 @@ describe('cleanupLocalStorageBackups', () => {
   it('does not set cleanup flag when some copies were kept', async () => {
     vi.mocked(indexedDBBackend.isIndexedDBAvailable).mockResolvedValue(true);
     vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
-    // Only layout-1 confirmed in IndexedDB — layout-2 kept
-    vi.mocked(indexedDBBackend.getAllLayoutIds).mockResolvedValue(['gridfinity-layout-layout-1']);
+    // Only layout-1 loadable — layout-2 returns null
+    vi.mocked(indexedDBBackend.loadLayout)
+      .mockResolvedValueOnce(DUMMY_LAYOUT)
+      .mockResolvedValueOnce(null);
     window.localStorage.setItem('gridfinity-layout-layout-1', '{}');
 
     await cleanupLocalStorageBackups();
@@ -124,7 +127,7 @@ describe('cleanupLocalStorageBackups', () => {
   it('does not re-run after flag is set', async () => {
     vi.mocked(indexedDBBackend.isIndexedDBAvailable).mockResolvedValue(true);
     vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1']);
-    vi.mocked(indexedDBBackend.getAllLayoutIds).mockResolvedValue(['gridfinity-layout-layout-1']);
+    vi.mocked(indexedDBBackend.loadLayout).mockResolvedValue(DUMMY_LAYOUT);
     window.localStorage.setItem('gridfinity-layout-layout-1', '{}');
 
     await cleanupLocalStorageBackups();
@@ -133,6 +136,18 @@ describe('cleanupLocalStorageBackups', () => {
     const result = await cleanupLocalStorageBackups();
     expect(result).toBeNull();
     expect(localStorageBackend.getAllLayoutIds).not.toHaveBeenCalled();
+  });
+
+  it('verifies each layout by loading from IndexedDB', async () => {
+    vi.mocked(indexedDBBackend.isIndexedDBAvailable).mockResolvedValue(true);
+    vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1']);
+    vi.mocked(indexedDBBackend.loadLayout).mockResolvedValue(DUMMY_LAYOUT);
+    window.localStorage.setItem('gridfinity-layout-layout-1', '{}');
+
+    await cleanupLocalStorageBackups();
+
+    // Verify loadLayout was called with the prefixed key
+    expect(indexedDBBackend.loadLayout).toHaveBeenCalledWith('gridfinity-layout-layout-1');
   });
 });
 

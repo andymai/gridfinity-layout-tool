@@ -86,8 +86,6 @@ export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null>
     return null;
   }
 
-  const indexedDBIds = new Set(await indexedDB.getAllLayoutIds());
-
   const stats: CleanupStats = {
     removedCount: 0,
     keptCount: 0,
@@ -95,17 +93,20 @@ export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null>
   };
 
   for (const layoutId of localStorageIds) {
-    if (indexedDBIds.has(`${LAYOUT_KEY_PREFIX}${layoutId}`)) {
-      // Confirmed in IndexedDB — safe to remove localStorage copy
-      const key = `${LAYOUT_KEY_PREFIX}${layoutId}`;
-      const value = getLocalStorageValue(key);
+    const prefixedKey = `${LAYOUT_KEY_PREFIX}${layoutId}`;
+    // Verify the layout actually loads from IndexedDB (not just key exists)
+    // to avoid deleting localStorage backup when IndexedDB data is corrupt.
+    const loaded = await indexedDB.loadLayout(prefixedKey);
+    if (loaded) {
+      // Confirmed readable in IndexedDB — safe to remove localStorage copy
+      const value = getLocalStorageValue(prefixedKey);
       if (value) {
-        stats.freedBytes += (key.length + value.length) * 2; // UTF-16
+        stats.freedBytes += (prefixedKey.length + value.length) * 2; // UTF-16
       }
-      localStorage.deleteFromLocalStorage(key);
+      localStorage.deleteFromLocalStorage(prefixedKey);
       stats.removedCount++;
     } else {
-      // Not in IndexedDB — keep the localStorage copy
+      // Not in IndexedDB or corrupt — keep the localStorage copy
       stats.keptCount++;
     }
   }
