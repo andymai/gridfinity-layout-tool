@@ -17,11 +17,17 @@ import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
 const SNAPSHOT_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 
 /**
- * Compute a hash for change detection.
- * Uses the full JSON serialization — acceptable at 2-minute intervals.
+ * Cheap change-detection hash. Uses string length as a fast proxy —
+ * sufficient for 2-minute intervals where exact dedup isn't critical.
  */
-function computeLayoutHash(layout: object): string {
-  return JSON.stringify(layout);
+function computeLayoutHash(layout: object): number {
+  const str = JSON.stringify(layout);
+  // djb2 hash — fast, low collision for structural changes
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0;
+  }
+  return hash;
 }
 
 /**
@@ -41,7 +47,7 @@ export function useSnapshotAutoSave(): void {
     }))
   );
 
-  const lastSnapshotHashRef = useRef<string>(computeLayoutHash(layout));
+  const lastSnapshotHashRef = useRef<number>(computeLayoutHash(layout));
   const intervalRef = useRef<number | undefined>(undefined);
   const idleRef = useRef<number | undefined>(undefined);
   const layoutRef = useRef(layout);
