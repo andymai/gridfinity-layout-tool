@@ -10,8 +10,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLibraryStore } from '@/core/store';
-import { getStorageBackend } from '@/core/storage';
-import { getStorageUsage } from '@/core/storage';
+import { getStorageBackend, getStorageUsage } from '@/core/storage';
 
 export interface StorageInfo {
   /** Which backend is active for async operations */
