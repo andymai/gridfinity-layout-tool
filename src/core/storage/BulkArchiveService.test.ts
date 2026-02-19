@@ -130,9 +130,11 @@ describe('exportAllLayouts', () => {
     mockLoadLayoutAsync.mockResolvedValueOnce(layout1).mockResolvedValueOnce(layout2);
 
     const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
-    const json = await exportAllLayouts(library);
-    const parsed = JSON.parse(json);
+    const result = await exportAllLayouts(library);
+    const parsed = JSON.parse(result.json);
 
+    expect(result.exported).toBe(2);
+    expect(result.skipped).toBe(0);
     expect(isArchiveFormat(parsed)).toBe(true);
     expect(parsed._archive.layoutCount).toBe(2);
     expect(parsed.layouts).toHaveLength(2);
@@ -152,13 +154,15 @@ describe('exportAllLayouts', () => {
     expect(progress[1]).toEqual({ current: 2, total: 2 });
   });
 
-  it('skips layouts that fail to load', async () => {
+  it('skips layouts that fail to load and reports skipped count', async () => {
     mockLoadLayoutAsync.mockResolvedValueOnce(null).mockResolvedValueOnce(makeLayout('Beta'));
     const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
 
-    const json = await exportAllLayouts(library);
-    const parsed = JSON.parse(json);
+    const result = await exportAllLayouts(library);
+    const parsed = JSON.parse(result.json);
 
+    expect(result.exported).toBe(1);
+    expect(result.skipped).toBe(1);
     expect(parsed._archive.layoutCount).toBe(1);
     expect(parsed.layouts[0].name).toBe('Beta');
   });
@@ -245,6 +249,24 @@ describe('importArchive', () => {
     expect(result.imported).toBe(0);
     expect(result.skipped).toBe(1);
     expect(result.errors[0]).toContain('storage error');
+  });
+
+  it('returns early when library is already at LAYOUTS_MAX', async () => {
+    // Create a library with 100 entries (LAYOUTS_MAX)
+    const entries = Array.from({ length: 100 }, (_, i) => makeEntry(`id-${i}`, `Layout ${i}`));
+    const library = makeLibrary(entries);
+
+    const archive = {
+      _archive: { version: '1.0' as const, exportedFrom: 'x', exportedAt: 'now', layoutCount: 1 },
+      layouts: [{ name: 'New', layout: makeLayout('New') }],
+    };
+
+    const { result } = await importArchive(archive, library);
+
+    expect(result.imported).toBe(0);
+    expect(result.skipped).toBe(1);
+    expect(result.errors[0]).toContain('full');
+    expect(mockCreateLayoutEntry).not.toHaveBeenCalled();
   });
 
   it('calls onProgress for each layout entry', async () => {

@@ -898,6 +898,7 @@
   "layouts.forkedFromName": "Geforkt van {name}",
   "layouts.exportAll": "Alles exporteren",
   "layouts.exportedAll": "{count} indelingen geëxporteerd",
+  "layouts.exportFailed": "Exporteren van indelingen mislukt",
   "layouts.gridView": "Rasterweergave",
   "layouts.import.bins": "{count} bins",
   "layouts.import.browseFiles": "Bestanden bladeren",

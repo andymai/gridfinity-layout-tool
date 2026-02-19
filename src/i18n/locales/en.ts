@@ -601,6 +601,7 @@ const en: Record<string, string> = {
   'layouts.archiveImportFailed': 'Failed to import archive',
   'layouts.exportAll': 'Export All',
   'layouts.exportedAll': 'Exported {count} layouts',
+  'layouts.exportFailed': 'Failed to export layouts',
   'layouts.importAll': 'Import All ({count} layouts)',
   'layouts.importLayout': 'Import Layout',
   'layouts.jsonPlaceholder': 'Paste JSON here',

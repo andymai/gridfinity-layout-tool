@@ -85,7 +85,12 @@ export {
   parseArchive,
   isArchiveFormat,
 } from './BulkArchiveService';
-export type { LayoutArchive, ImportArchiveResult, ExportProgress } from './BulkArchiveService';
+export type {
+  LayoutArchive,
+  ImportArchiveResult,
+  ExportProgress,
+  ExportResult,
+} from './BulkArchiveService';
 
 // === URL Sharing ===
 export {

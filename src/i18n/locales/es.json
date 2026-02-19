@@ -896,6 +896,7 @@
   "layouts.dropFileHere": "Suelta el archivo aquí",
   "layouts.exportAll": "Exportar todo",
   "layouts.exportedAll": "{count} diseños exportados",
+  "layouts.exportFailed": "Error al exportar los diseños",
   "layouts.forkedFrom": "Bifurcado de",
   "layouts.forkedFromName": "Bifurcado de {name}",
   "layouts.gridView": "Vista de cuadrícula",

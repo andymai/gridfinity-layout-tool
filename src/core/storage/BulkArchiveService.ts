@@ -11,6 +11,7 @@
 import type { Layout, LayoutLibrary } from '@/core/types';
 import type { Result, StorageError, LayoutLibraryLimitError } from '@/core/result';
 import { isOk, isErr } from '@/core/result';
+import { CONSTRAINTS } from '@/core/constants';
 import { loadLayoutAsync } from './LayoutService';
 import { createLayoutEntry } from './LayoutManager';
 import { validateImport } from '@/shared/utils/validation';
@@ -44,6 +45,12 @@ export interface ExportProgress {
   total: number;
 }
 
+export interface ExportResult {
+  json: string;
+  exported: number;
+  skipped: number;
+}
+
 export interface ImportArchiveResult {
   imported: number;
   skipped: number;
@@ -72,9 +79,10 @@ export function isArchiveFormat(data: unknown): data is LayoutArchive {
 export async function exportAllLayouts(
   library: LayoutLibrary,
   onProgress?: (progress: ExportProgress) => void
-): Promise<string> {
+): Promise<ExportResult> {
   const total = library.entries.length;
   const layouts: ArchiveLayoutEntry[] = [];
+  let skipped = 0;
 
   for (let i = 0; i < library.entries.length; i++) {
     const entry = library.entries[i];
@@ -82,7 +90,10 @@ export async function exportAllLayouts(
 
     try {
       const layout = await loadLayoutAsync(entry.id);
-      if (!layout) continue;
+      if (!layout) {
+        skipped++;
+        continue;
+      }
 
       // Collect linked designs if any bins reference them
       const designIds = new Set<string>();
@@ -120,6 +131,7 @@ export async function exportAllLayouts(
       });
     } catch {
       // Skip layouts that can't be loaded
+      skipped++;
     }
   }
 
@@ -133,7 +145,11 @@ export async function exportAllLayouts(
     layouts,
   };
 
-  return JSON.stringify(archive, null, 2);
+  return {
+    json: JSON.stringify(archive, null, 2),
+    exported: layouts.length,
+    skipped,
+  };
 }
 
 /**
@@ -142,9 +158,9 @@ export async function exportAllLayouts(
 export async function downloadArchive(
   library: LayoutLibrary,
   onProgress?: (progress: ExportProgress) => void
-): Promise<void> {
-  const json = await exportAllLayouts(library, onProgress);
-  const blob = new Blob([json], { type: 'application/json' });
+): Promise<ExportResult> {
+  const result = await exportAllLayouts(library, onProgress);
+  const blob = new Blob([result.json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement('a');
@@ -155,6 +171,7 @@ export async function downloadArchive(
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  return result;
 }
 
 // === Import ===
@@ -191,9 +208,30 @@ export async function importArchive(
   const errors: string[] = [];
   let currentLibrary = library;
 
+  // Pre-check: how many slots are available?
+  const availableSlots = CONSTRAINTS.LAYOUTS_MAX - currentLibrary.entries.length;
+  if (availableSlots <= 0) {
+    return {
+      result: {
+        imported: 0,
+        skipped: total,
+        errors: [`Library is full (${CONSTRAINTS.LAYOUTS_MAX} layouts maximum)`],
+      },
+      library: currentLibrary,
+    };
+  }
+
   for (let i = 0; i < archive.layouts.length; i++) {
     const archiveEntry = archive.layouts[i];
     onProgress?.({ current: i + 1, total });
+
+    // Stop early if we've hit the library limit
+    if (currentLibrary.entries.length >= CONSTRAINTS.LAYOUTS_MAX) {
+      const remaining = total - i;
+      errors.push(`Library full — ${remaining} layout(s) not imported`);
+      skipped += remaining;
+      break;
+    }
 
     // Validate the layout data
     const validation = validateImport(archiveEntry.layout);

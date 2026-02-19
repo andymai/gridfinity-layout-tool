@@ -898,6 +898,7 @@
   "layouts.forkedFromName": "Bifurcado de {name}",
   "layouts.exportAll": "Exportar tudo",
   "layouts.exportedAll": "{count} layouts exportados",
+  "layouts.exportFailed": "Falha ao exportar layouts",
   "layouts.gridView": "Visualização em grade",
   "layouts.import.bins": "{count} bins",
   "layouts.import.browseFiles": "Procurar arquivos",

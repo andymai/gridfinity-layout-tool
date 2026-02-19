@@ -192,23 +192,27 @@ function LayoutManagerModalContent({
   const handleImportArchive = useCallback(
     async (archive: LayoutArchive) => {
       const addToast = useToastStore.getState().addToast;
-      const currentLibrary = useLibraryStore.getState().library;
 
-      const { result, library: updatedLibrary } = await importArchive(archive, currentLibrary);
+      try {
+        const currentLibrary = useLibraryStore.getState().library;
+        const { result, library: updatedLibrary } = await importArchive(archive, currentLibrary);
 
-      setLibrary(updatedLibrary);
+        setLibrary(updatedLibrary);
 
-      if (result.imported > 0) {
-        addToast(
-          t('layouts.archiveImported', {
-            count: result.imported,
-            skipped: result.skipped,
-          }),
-          'success'
-        );
-        announceToScreenReader(`Imported ${result.imported} layouts`);
-        onClose();
-      } else {
+        if (result.imported > 0) {
+          addToast(
+            t('layouts.archiveImported', {
+              count: result.imported,
+              skipped: result.skipped,
+            }),
+            'success'
+          );
+          announceToScreenReader(`Imported ${result.imported} layouts`);
+          onClose();
+        } else {
+          addToast(t('layouts.archiveImportFailed'), 'error');
+        }
+      } catch {
         addToast(t('layouts.archiveImportFailed'), 'error');
       }
     },
@@ -221,9 +225,16 @@ function LayoutManagerModalContent({
     setIsExporting(true);
     try {
       const currentLibrary = useLibraryStore.getState().library;
-      await downloadArchive(currentLibrary);
+      const { exported, skipped } = await downloadArchive(currentLibrary);
       const addToast = useToastStore.getState().addToast;
-      addToast(t('layouts.exportedAll', { count: currentLibrary.entries.length }), 'success');
+      if (skipped > 0) {
+        addToast(t('layouts.exportedAll', { count: exported }) + ` (${skipped} skipped)`, 'info');
+      } else {
+        addToast(t('layouts.exportedAll', { count: exported }), 'success');
+      }
+    } catch {
+      const addToast = useToastStore.getState().addToast;
+      addToast(t('layouts.exportFailed'), 'error');
     } finally {
       setIsExporting(false);
     }

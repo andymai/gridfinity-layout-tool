@@ -898,6 +898,7 @@
   "layouts.forkedFromName": "Dérivé de {name}",
   "layouts.exportAll": "Tout exporter",
   "layouts.exportedAll": "{count} mises en page exportées",
+  "layouts.exportFailed": "Échec de l'exportation des agencements",
   "layouts.gridView": "Vue grille",
   "layouts.import.bins": "{count} bins",
   "layouts.import.browseFiles": "Parcourir les fichiers",

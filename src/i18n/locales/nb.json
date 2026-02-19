@@ -898,6 +898,7 @@
   "layouts.forkedFromName": "Forgrenet fra {name}",
   "layouts.exportAll": "Eksporter alle",
   "layouts.exportedAll": "{count} layouter eksportert",
+  "layouts.exportFailed": "Kunne ikke eksportere oppsett",
   "layouts.gridView": "Rutenettvisning",
   "layouts.import.bins": "{count} bins",
   "layouts.import.browseFiles": "Bla gjennom filer",
