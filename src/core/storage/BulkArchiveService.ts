@@ -14,7 +14,7 @@ import { isOk, isErr } from '@/core/result';
 import { CONSTRAINTS } from '@/core/constants';
 import { loadLayoutAsync } from './LayoutService';
 import { createLayoutEntry } from './LayoutManager';
-import { validateImport } from '@/shared/utils/validation';
+import { importLayoutJSON } from './ShareService';
 
 // === Types ===
 
@@ -61,15 +61,21 @@ export interface ImportArchiveResult {
 
 /**
  * Check if parsed JSON is a bulk archive (vs. a single layout).
+ * Validates structural shape and version to fail fast on malformed archives.
  */
 export function isArchiveFormat(data: unknown): data is LayoutArchive {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    '_archive' in data &&
-    'layouts' in data &&
-    Array.isArray((data as LayoutArchive).layouts)
-  );
+  if (typeof data !== 'object' || data === null) return false;
+  if (!('_archive' in data) || !('layouts' in data)) return false;
+
+  const root = data as { _archive: unknown; layouts: unknown };
+
+  // Validate _archive metadata
+  if (typeof root._archive !== 'object' || root._archive === null) return false;
+  const meta = root._archive as { version?: unknown };
+  if (meta.version !== '1.0') return false;
+
+  // Validate layouts array
+  return Array.isArray(root.layouts);
 }
 
 /**
@@ -235,10 +241,11 @@ export async function importArchive(
       break;
     }
 
-    // Validate the layout data
-    const validation = validateImport(archiveEntry.layout);
-    if (!validation.valid) {
-      errors.push(`"${archiveEntry.name}": ${validation.errors.join(', ')}`);
+    // Validate and regenerate all IDs to prevent collisions
+    const layoutJson = JSON.stringify(archiveEntry.layout);
+    const { layout: importedLayout, errors: validationErrors } = importLayoutJSON(layoutJson);
+    if (!importedLayout) {
+      errors.push(`"${archiveEntry.name}": ${validationErrors.join(', ')}`);
       skipped++;
       continue;
     }
@@ -247,7 +254,7 @@ export async function importArchive(
     const createResult: Result<
       { library: LayoutLibrary; layoutId: string },
       StorageError | LayoutLibraryLimitError
-    > = await createLayoutEntry(validation.layout, currentLibrary, {
+    > = await createLayoutEntry(importedLayout, currentLibrary, {
       name: archiveEntry.name,
     });
 
@@ -260,13 +267,13 @@ export async function importArchive(
     currentLibrary = createResult.value.library;
     imported++;
 
-    // Restore linked designs if present
+    // Restore linked designs if present (uses regenerated layout for correct ID mapping)
     if (archiveEntry.linkedDesigns && archiveEntry.linkedDesigns.length > 0) {
       try {
         const { restoreEmbeddedDesigns } = await import('./ShareService');
         // restoreEmbeddedDesigns expects raw JSON with linkedDesigns array
         const designsJson = JSON.stringify({ linkedDesigns: archiveEntry.linkedDesigns });
-        await restoreEmbeddedDesigns(designsJson, validation.layout);
+        await restoreEmbeddedDesigns(designsJson, importedLayout);
       } catch {
         // Design restoration is best-effort
       }

@@ -20,9 +20,9 @@ vi.mock('@/core/storage/LayoutManager', () => ({
   createLayoutEntry: (...args: unknown[]) => mockCreateLayoutEntry(...args),
 }));
 
-const mockValidateImport = vi.fn();
-vi.mock('@/shared/utils/validation', () => ({
-  validateImport: (...args: unknown[]) => mockValidateImport(...args),
+const mockImportLayoutJSON = vi.fn();
+vi.mock('@/core/storage/ShareService', () => ({
+  importLayoutJSON: (...args: unknown[]) => mockImportLayoutJSON(...args),
 }));
 
 // === Fixtures ===
@@ -86,7 +86,20 @@ describe('isArchiveFormat', () => {
   });
 
   it('returns false when layouts is not an array', () => {
-    expect(isArchiveFormat({ _archive: {}, layouts: 'bad' })).toBe(false);
+    expect(isArchiveFormat({ _archive: { version: '1.0' }, layouts: 'bad' })).toBe(false);
+  });
+
+  it('returns false for unknown version', () => {
+    expect(
+      isArchiveFormat({
+        _archive: { version: '2.0', exportedFrom: 'x', exportedAt: 'now', layoutCount: 0 },
+        layouts: [],
+      })
+    ).toBe(false);
+  });
+
+  it('returns false when _archive is not an object', () => {
+    expect(isArchiveFormat({ _archive: 'bad', layouts: [] })).toBe(false);
   });
 });
 
@@ -177,6 +190,7 @@ describe('importArchive', () => {
 
   it('imports valid layouts and skips invalid ones', async () => {
     const layout1 = makeLayout('Valid');
+    const regeneratedLayout1 = makeLayout('Valid');
     const layout2 = makeLayout('Invalid');
     const library = makeLibrary([makeEntry('existing', 'Existing')]);
     const updatedLibrary = makeLibrary([
@@ -184,9 +198,9 @@ describe('importArchive', () => {
       makeEntry('new-id', 'Valid'),
     ]);
 
-    mockValidateImport
-      .mockReturnValueOnce({ valid: true, errors: [], layout: layout1 })
-      .mockReturnValueOnce({ valid: false, errors: ['bad data'] });
+    mockImportLayoutJSON
+      .mockReturnValueOnce({ layout: regeneratedLayout1, errors: [] })
+      .mockReturnValueOnce({ layout: null, errors: ['bad data'] });
     mockCreateLayoutEntry.mockResolvedValueOnce(
       ok({ library: updatedLibrary, layoutId: 'new-id' })
     );
@@ -207,15 +221,47 @@ describe('importArchive', () => {
     expect(result.errors[0]).toContain('Invalid');
   });
 
-  it('returns updated library after successful imports', async () => {
+  it('passes serialized layout JSON to importLayoutJSON for ID regeneration', async () => {
     const layout = makeLayout('My Layout');
+    const regeneratedLayout = makeLayout('My Layout');
     const library = makeLibrary([makeEntry('existing', 'Existing')]);
     const updatedLibrary = makeLibrary([
       makeEntry('existing', 'Existing'),
       makeEntry('new-id', 'My Layout'),
     ]);
 
-    mockValidateImport.mockReturnValueOnce({ valid: true, errors: [], layout });
+    mockImportLayoutJSON.mockReturnValueOnce({ layout: regeneratedLayout, errors: [] });
+    mockCreateLayoutEntry.mockResolvedValueOnce(
+      ok({ library: updatedLibrary, layoutId: 'new-id' })
+    );
+
+    const archive = {
+      _archive: { version: '1.0' as const, exportedFrom: 'x', exportedAt: 'now', layoutCount: 1 },
+      layouts: [{ name: 'My Layout', layout }],
+    };
+
+    await importArchive(archive, library);
+
+    // Should pass serialized JSON (not the raw object) so importLayoutJSON can parse + regenerate IDs
+    expect(mockImportLayoutJSON).toHaveBeenCalledWith(JSON.stringify(layout));
+    // Should pass the regenerated layout (not original) to createLayoutEntry
+    expect(mockCreateLayoutEntry).toHaveBeenCalledWith(
+      regeneratedLayout,
+      expect.anything(),
+      expect.objectContaining({ name: 'My Layout' })
+    );
+  });
+
+  it('returns updated library after successful imports', async () => {
+    const layout = makeLayout('My Layout');
+    const regeneratedLayout = makeLayout('My Layout');
+    const library = makeLibrary([makeEntry('existing', 'Existing')]);
+    const updatedLibrary = makeLibrary([
+      makeEntry('existing', 'Existing'),
+      makeEntry('new-id', 'My Layout'),
+    ]);
+
+    mockImportLayoutJSON.mockReturnValueOnce({ layout: regeneratedLayout, errors: [] });
     mockCreateLayoutEntry.mockResolvedValueOnce(
       ok({ library: updatedLibrary, layoutId: 'new-id' })
     );
@@ -232,9 +278,10 @@ describe('importArchive', () => {
 
   it('skips and records error when createLayoutEntry fails', async () => {
     const layout = makeLayout('Layout');
+    const regeneratedLayout = makeLayout('Layout');
     const library = makeLibrary([makeEntry('existing', 'Existing')]);
 
-    mockValidateImport.mockReturnValueOnce({ valid: true, errors: [], layout });
+    mockImportLayoutJSON.mockReturnValueOnce({ layout: regeneratedLayout, errors: [] });
     mockCreateLayoutEntry.mockResolvedValueOnce(
       err({ code: 'STORAGE_QUOTA_EXCEEDED', message: 'full' })
     );
@@ -271,13 +318,14 @@ describe('importArchive', () => {
 
   it('calls onProgress for each layout entry', async () => {
     const layout = makeLayout();
+    const regeneratedLayout = makeLayout();
     const library = makeLibrary([makeEntry('existing', 'Existing')]);
     const updatedLibrary = makeLibrary([
       makeEntry('existing', 'Existing'),
       makeEntry('new-id', 'New'),
     ]);
 
-    mockValidateImport.mockReturnValue({ valid: true, errors: [], layout });
+    mockImportLayoutJSON.mockReturnValue({ layout: regeneratedLayout, errors: [] });
     mockCreateLayoutEntry.mockResolvedValue(ok({ library: updatedLibrary, layoutId: 'new-id' }));
 
     const archive = {
