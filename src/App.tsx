@@ -14,6 +14,7 @@ import {
   useAnalytics,
   useStorageMigration,
   useSnapshotAutoSave,
+  useLocalStorageCleanup,
   useTabletPanels,
   useKeyboard,
 } from './hooks';
@@ -274,6 +275,9 @@ export default function App() {
 
   // Periodic layout snapshots for version history (every 2 minutes)
   useSnapshotAutoSave();
+
+  // Clean up stale localStorage layout backup copies (frees ~5 MB quota)
+  useLocalStorageCleanup();
 
   // Prefetch lazy-loaded chunks during idle time (desktop only)
   usePrefetchChunks();

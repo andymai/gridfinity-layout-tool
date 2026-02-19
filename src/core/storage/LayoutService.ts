@@ -8,7 +8,7 @@
  * - Result-based operations (*Result suffix): Type-safe error handling
  *
  * Naming convention:
- * - *Async suffix: Uses IndexedDB + localStorage dual-write, returns Promise
+ * - *Async suffix: Uses IndexedDB (primary), returns Promise
  * - *Sync suffix: Uses localStorage only, synchronous
  * - *Result suffix: Returns Result<T, StorageError> for explicit error handling
  */
@@ -126,8 +126,8 @@ function validateLoadedData(layoutId: string, data: unknown, silent = false): La
 // === Async Layout Operations (Primary API) ===
 
 /**
- * Save a layout asynchronously using dual-write pattern.
- * Uses IndexedDB as primary with localStorage backup.
+ * Save a layout asynchronously to IndexedDB.
+ * Falls back to localStorage when IndexedDB is unavailable.
  */
 export async function saveLayoutAsync(layoutId: string, layout: Layout): Promise<void> {
   const key = getLayoutStorageKey(layoutId);

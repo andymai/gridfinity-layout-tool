@@ -1,15 +1,14 @@
 /**
- * Unified storage backend with dual-write strategy.
+ * Unified storage backend abstraction.
  *
- * This module provides the primary interface for storage operations,
- * implementing a dual-write pattern:
- * - Async operations: IndexedDB primary + localStorage backup
+ * This module provides the primary interface for storage operations:
+ * - Async operations: IndexedDB (primary, large capacity)
  * - Sync operations: localStorage only (for initialization)
  *
- * The dual-write pattern ensures:
- * - Large layouts work (IndexedDB has 50MB+ capacity)
- * - Fast sync initialization (localStorage is synchronous)
- * - Resilience (if one backend fails, the other still works)
+ * When IndexedDB is available, async saves go ONLY to IndexedDB to avoid
+ * filling the ~5 MB localStorage quota. The sync init path reads from
+ * localStorage for fast startup; if a layout is missing there but exists
+ * in IndexedDB, useIndexedDBRecovery restores it asynchronously.
  */
 
 import * as localStorage from './backends/localStorage';
@@ -47,24 +46,25 @@ export function resetStorageBackendCache(): void {
 }
 
 // === Async Operations (Primary API) ===
-// Use IndexedDB as primary with localStorage backup
+// IndexedDB only — no localStorage backup (saves ~5 MB quota for other uses)
 
 /**
- * Save a layout asynchronously using dual-write pattern.
- * Primary: IndexedDB (large capacity)
- * Backup: localStorage (may fail for large layouts, that's OK)
+ * Save a layout asynchronously.
+ * When IndexedDB is available, writes ONLY to IndexedDB.
+ * Falls back to localStorage when IndexedDB is unavailable.
  */
 export async function saveAsync(key: string, layout: Layout): Promise<void> {
   const backend = await getStorageBackend();
 
   if (backend === 'indexeddb') {
-    // Primary: IndexedDB
-    await indexedDB.saveLayout(key, layout);
-
-    // Backup: localStorage (ignore errors - IndexedDB has it)
-    const backupResult = localStorage.saveLayout(key, layout);
-    if (isErr(backupResult)) {
-      console.warn(`[Storage] localStorage backup failed for ${key} - using IndexedDB only`);
+    try {
+      await indexedDB.saveLayout(key, layout);
+    } catch {
+      // IndexedDB write failed — fall back to localStorage so data isn't lost
+      const result = localStorage.saveLayout(key, layout);
+      if (isErr(result)) {
+        throw new Error('Storage full. Export your layout to save it.');
+      }
     }
   } else {
     // Fallback: localStorage only

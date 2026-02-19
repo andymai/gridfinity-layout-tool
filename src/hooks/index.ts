@@ -13,6 +13,7 @@ export { useAnalytics } from './useAnalytics';
 export { useStorageMigration } from './useStorageMigration';
 export { useIndexedDBRecovery } from './useIndexedDBRecovery';
 export { useSnapshotAutoSave } from './useSnapshotAutoSave';
+export { useLocalStorageCleanup } from './useLocalStorageCleanup';
 export { useTabletPanels } from './useTabletPanels';
 export type { TabletPanelsState } from './useTabletPanels';
 export { useFeatureFlag, isFeatureEnabled } from './useFeatureFlag';
