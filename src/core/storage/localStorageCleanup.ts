@@ -1,0 +1,92 @@
+/**
+ * Cleanup utility for removing localStorage layout backup copies.
+ *
+ * After IndexedDB migration, layout data exists in both IndexedDB and
+ * localStorage. Since async saves now go only to IndexedDB, the localStorage
+ * copies are stale and waste the ~5 MB quota.
+ *
+ * This module provides a one-time cleanup that:
+ * 1. Verifies each localStorage layout exists in IndexedDB
+ * 2. Removes confirmed copies from localStorage
+ * 3. Sets a flag to avoid re-running
+ *
+ * Safety: The sync init path (initializeLayoutLibrary) may still read from
+ * localStorage if a layout hasn't been saved via IndexedDB yet (e.g. freshly
+ * created during init). Only copies that are confirmed in IndexedDB are removed.
+ */
+
+import * as localStorage from './backends/localStorage';
+import * as indexedDB from './backends/indexedDB';
+import { isIndexedDBAvailable } from './backends/indexedDB';
+
+const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
+const CLEANUP_FLAG_KEY = 'gridfinity-localstorage-cleaned';
+
+export interface CleanupStats {
+  removedCount: number;
+  keptCount: number;
+  freedBytes: number;
+}
+
+/**
+ * Remove localStorage layout copies that are confirmed in IndexedDB.
+ *
+ * Returns cleanup statistics, or null if cleanup was skipped
+ * (already done, IndexedDB unavailable, or no copies to clean).
+ */
+export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null> {
+  // Skip if already cleaned this browser
+  if (window.localStorage.getItem(CLEANUP_FLAG_KEY) === 'true') {
+    return null;
+  }
+
+  // Only clean when IndexedDB is available
+  if (!(await isIndexedDBAvailable())) {
+    return null;
+  }
+
+  // Get layout keys from both backends
+  const localStorageIds = localStorage.getAllLayoutIds(LAYOUT_KEY_PREFIX);
+
+  if (localStorageIds.length === 0) {
+    // Nothing to clean — set flag and return
+    window.localStorage.setItem(CLEANUP_FLAG_KEY, 'true');
+    return null;
+  }
+
+  const indexedDBIds = new Set(await indexedDB.getAllLayoutIds());
+
+  const stats: CleanupStats = {
+    removedCount: 0,
+    keptCount: 0,
+    freedBytes: 0,
+  };
+
+  for (const layoutId of localStorageIds) {
+    if (indexedDBIds.has(layoutId)) {
+      // Confirmed in IndexedDB — safe to remove localStorage copy
+      const key = `${LAYOUT_KEY_PREFIX}${layoutId}`;
+      const value = window.localStorage.getItem(key);
+      if (value) {
+        stats.freedBytes += (key.length + value.length) * 2; // UTF-16
+      }
+      localStorage.deleteFromLocalStorage(key);
+      stats.removedCount++;
+    } else {
+      // Not in IndexedDB — keep the localStorage copy
+      stats.keptCount++;
+    }
+  }
+
+  // Set flag to avoid re-running
+  window.localStorage.setItem(CLEANUP_FLAG_KEY, 'true');
+
+  return stats;
+}
+
+/**
+ * Clear the cleanup flag (for testing or re-running cleanup).
+ */
+export function clearCleanupFlag(): void {
+  window.localStorage.removeItem(CLEANUP_FLAG_KEY);
+}

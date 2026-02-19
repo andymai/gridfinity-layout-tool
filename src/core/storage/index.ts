@@ -134,6 +134,10 @@ export {
   updateSnapshotLabel,
 } from './SnapshotService';
 
+// === localStorage Cleanup ===
+export { cleanupLocalStorageBackups, clearCleanupFlag } from './localStorageCleanup';
+export type { CleanupStats } from './localStorageCleanup';
+
 // === Backend (Internal - for useStorageMigration hook) ===
 export { getStorageBackend, resetStorageBackendCache } from './backend';
 

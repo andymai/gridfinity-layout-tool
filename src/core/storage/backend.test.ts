@@ -1,6 +1,6 @@
 /**
  * Tests for the storage backend layer.
- * Tests the dual-write strategy and backend abstraction.
+ * Tests the IndexedDB-primary strategy and backend abstraction.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -115,26 +115,15 @@ describe('storage backend', () => {
   });
 
   describe('saveAsync', () => {
-    it('saves to both IndexedDB and localStorage', async () => {
+    it('saves only to IndexedDB when available (no localStorage backup)', async () => {
       const layout = createTestLayout();
       vi.mocked(indexedDB.saveLayout).mockResolvedValueOnce(undefined);
 
       await backend.saveAsync('test-key', layout);
 
       expect(indexedDB.saveLayout).toHaveBeenCalledWith('test-key', layout);
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('test-key', JSON.stringify(layout));
-    });
-
-    it('continues if localStorage backup fails', async () => {
-      const layout = createTestLayout();
-      vi.mocked(indexedDB.saveLayout).mockResolvedValueOnce(undefined);
-      localStorageMock.setItem.mockImplementationOnce(() => {
-        throw new Error('QuotaExceededError');
-      });
-
-      // Should not throw
-      await expect(backend.saveAsync('test-key', layout)).resolves.toBeUndefined();
-      expect(indexedDB.saveLayout).toHaveBeenCalled();
+      // Should NOT write to localStorage (no dual-write)
+      expect(localStorageMock.setItem).not.toHaveBeenCalled();
     });
   });
 
