@@ -184,7 +184,8 @@ function useActionHandlers(): Record<string, ActionHandler> {
       'open-settings': () => dispatchWindowEvent('open-settings-modal'),
       'open-help': () => dispatchWindowEvent('open-help-modal'),
       'open-print': () => setPrintModalOpen(true),
-      'send-feedback': () => dispatchWindowEvent('open-feedback-modal'),
+      'send-feedback': () =>
+        window.open('https://github.com/andymai/gridfinity-layout-tool/issues', '_blank'),
       'switch-to-designer': () => dispatchWindowEvent('switch-to-designer'),
       'new-layout': () => {
         void createNewLayout();
