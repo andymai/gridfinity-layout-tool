@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.17.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.16.1...gridfinity-layout-tool-v3.17.0) (2026-02-19)
+
+
+### Features
+
+* optimize localStorage with key consolidation and IDB migration ([#806](https://github.com/andymai/gridfinity-layout-tool/issues/806)) ([41f954d](https://github.com/andymai/gridfinity-layout-tool/commit/41f954dcc22483fe56e2b2cbe575b9f5115cc70f))
+
 ## [3.16.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.16.0...gridfinity-layout-tool-v3.16.1) (2026-02-19)
 
 
