@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.6...gridfinity-layout-tool-v3.13.7) (2026-02-19)
+
+
+### Bug Fixes
+
+* **bin-designer:** enable scrolling in saved designs dialog with 9+ designs ([#790](https://github.com/andymai/gridfinity-layout-tool/issues/790)) ([c31fc6b](https://github.com/andymai/gridfinity-layout-tool/commit/c31fc6bc87ab13fd9e4541fe82ca09160b681b9b))
+
 ## [3.13.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.5...gridfinity-layout-tool-v3.13.6) (2026-02-19)
 
 
