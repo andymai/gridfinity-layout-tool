@@ -57,7 +57,15 @@ export async function saveAsync(key: string, layout: Layout): Promise<void> {
   const backend = await getStorageBackend();
 
   if (backend === 'indexeddb') {
-    await indexedDB.saveLayout(key, layout);
+    try {
+      await indexedDB.saveLayout(key, layout);
+    } catch {
+      // IndexedDB write failed — fall back to localStorage so data isn't lost
+      const result = localStorage.saveLayout(key, layout);
+      if (isErr(result)) {
+        throw new Error('Storage full. Export your layout to save it.');
+      }
+    }
   } else {
     // Fallback: localStorage only
     const result = localStorage.saveLayout(key, layout);

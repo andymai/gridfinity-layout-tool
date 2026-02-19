@@ -109,6 +109,18 @@ describe('cleanupLocalStorageBackups', () => {
     expect(window.localStorage.getItem('gridfinity-localstorage-cleaned')).toBe('true');
   });
 
+  it('does not set cleanup flag when some copies were kept', async () => {
+    vi.mocked(indexedDBBackend.isIndexedDBAvailable).mockResolvedValue(true);
+    vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
+    // Only layout-1 confirmed in IndexedDB — layout-2 kept
+    vi.mocked(indexedDBBackend.getAllLayoutIds).mockResolvedValue(['gridfinity-layout-layout-1']);
+    window.localStorage.setItem('gridfinity-layout-layout-1', '{}');
+
+    await cleanupLocalStorageBackups();
+
+    expect(window.localStorage.getItem('gridfinity-localstorage-cleaned')).toBeNull();
+  });
+
   it('does not re-run after flag is set', async () => {
     vi.mocked(indexedDBBackend.isIndexedDBAvailable).mockResolvedValue(true);
     vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1']);

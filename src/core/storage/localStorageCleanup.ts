@@ -22,6 +22,38 @@ import { isIndexedDBAvailable } from './backends/indexedDB';
 const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
 const CLEANUP_FLAG_KEY = 'gridfinity-localstorage-cleaned';
 
+function getCleanupFlag(): boolean {
+  try {
+    return window.localStorage.getItem(CLEANUP_FLAG_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function setCleanupFlag(): void {
+  try {
+    window.localStorage.setItem(CLEANUP_FLAG_KEY, 'true');
+  } catch {
+    // Best-effort — flag avoids redundant work but isn't critical
+  }
+}
+
+function removeCleanupFlag(): void {
+  try {
+    window.localStorage.removeItem(CLEANUP_FLAG_KEY);
+  } catch {
+    // Best-effort
+  }
+}
+
+function getLocalStorageValue(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
 export interface CleanupStats {
   removedCount: number;
   keptCount: number;
@@ -36,7 +68,7 @@ export interface CleanupStats {
  */
 export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null> {
   // Skip if already cleaned this browser
-  if (window.localStorage.getItem(CLEANUP_FLAG_KEY) === 'true') {
+  if (getCleanupFlag()) {
     return null;
   }
 
@@ -50,7 +82,7 @@ export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null>
 
   if (localStorageIds.length === 0) {
     // Nothing to clean — set flag and return
-    window.localStorage.setItem(CLEANUP_FLAG_KEY, 'true');
+    setCleanupFlag();
     return null;
   }
 
@@ -66,7 +98,7 @@ export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null>
     if (indexedDBIds.has(`${LAYOUT_KEY_PREFIX}${layoutId}`)) {
       // Confirmed in IndexedDB — safe to remove localStorage copy
       const key = `${LAYOUT_KEY_PREFIX}${layoutId}`;
-      const value = window.localStorage.getItem(key);
+      const value = getLocalStorageValue(key);
       if (value) {
         stats.freedBytes += (key.length + value.length) * 2; // UTF-16
       }
@@ -78,8 +110,11 @@ export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null>
     }
   }
 
-  // Set flag to avoid re-running
-  window.localStorage.setItem(CLEANUP_FLAG_KEY, 'true');
+  // Only mark as done when all copies were cleaned; if some were kept
+  // (not yet in IndexedDB), re-run next session to clean the rest.
+  if (stats.keptCount === 0) {
+    setCleanupFlag();
+  }
 
   return stats;
 }
@@ -88,5 +123,5 @@ export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null>
  * Clear the cleanup flag (for testing or re-running cleanup).
  */
 export function clearCleanupFlag(): void {
-  window.localStorage.removeItem(CLEANUP_FLAG_KEY);
+  removeCleanupFlag();
 }
