@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   saveLayoutSync,
   loadLayoutSync,
+  loadLayoutAsync,
   deleteLayoutSync,
   saveLibrary,
   loadLibrary,
@@ -509,11 +510,9 @@ describe('storage-library', () => {
       // Start with nothing — initializeLayoutLibrary creates a fresh library
       const result = await initializeLayoutLibrary();
 
-      // The newly created library should be loadable from localStorage
-      // (initializeLayoutLibrary saves via saveLibrary which writes to IndexedDB,
-      // but also writes activeLayoutId to localStorage; verify the layout was saved)
+      // The newly created layout is saved to IndexedDB (primary storage)
       const activeId = result.library.activeLayoutId;
-      const loaded = loadLayoutSync(activeId);
+      const loaded = await loadLayoutAsync(activeId);
       expect(loaded).not.toBeNull();
       expect(loaded!.name).toBe('Untitled layout');
     });

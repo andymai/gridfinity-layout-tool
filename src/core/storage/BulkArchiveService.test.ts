@@ -313,8 +313,8 @@ describe('importArchive', () => {
   });
 
   it('returns early when library is already at LAYOUTS_MAX', async () => {
-    // Create a library with 100 entries (LAYOUTS_MAX)
-    const entries = Array.from({ length: 100 }, (_, i) => makeEntry(`id-${i}`, `Layout ${i}`));
+    // Create a library with 500 entries (LAYOUTS_MAX)
+    const entries = Array.from({ length: 500 }, (_, i) => makeEntry(`id-${i}`, `Layout ${i}`));
     const library = makeLibrary(entries);
 
     const archive = {
@@ -331,13 +331,13 @@ describe('importArchive', () => {
   });
 
   it('stops importing when library limit is reached mid-loop', async () => {
-    // Start with 99 entries, try to import 3 => should import 1, skip 2
-    const entries = Array.from({ length: 99 }, (_, i) => makeEntry(`id-${i}`, `L${i}`));
+    // Start with 499 entries, try to import 3 => should import 1, skip 2
+    const entries = Array.from({ length: 499 }, (_, i) => makeEntry(`id-${i}`, `L${i}`));
     const library = makeLibrary(entries);
 
     const regenerated = makeLayout('Import');
     mockImportLayoutJSON.mockReturnValue({ layout: regenerated, errors: [] });
-    // After importing the first, the library has 100 entries (at the limit)
+    // After importing the first, the library has 500 entries (at the limit)
     const fullLibrary = makeLibrary([...entries, makeEntry('new-1', 'Import 1')]);
     mockCreateLayoutEntry.mockResolvedValueOnce(ok({ library: fullLibrary, layoutId: 'new-1' }));
 

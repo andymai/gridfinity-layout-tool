@@ -54,7 +54,7 @@ describe('StorageTab', () => {
     render(<StorageTab />);
     expect(screen.getByText('settings.storage.layoutCount')).toBeInTheDocument();
     const bar = screen.getAllByRole('progressbar')[0];
-    expect(bar).toHaveAttribute('aria-valuenow', '5');
+    expect(bar).toHaveAttribute('aria-valuenow', '1');
   });
 
   it('shows database size section when indexeddb backend and indexedDBBytes available', () => {
@@ -80,7 +80,7 @@ describe('StorageTab', () => {
   });
 
   it('shows warning styling on layout count when count exceeds warning threshold', () => {
-    mockUseStorageInfo.mockReturnValue({ ...baseInfo, layoutCount: 85 });
+    mockUseStorageInfo.mockReturnValue({ ...baseInfo, layoutCount: 460 });
     render(<StorageTab />);
     const maxLabel = screen.getByText('settings.storage.layoutMax');
     expect(maxLabel).toHaveClass('text-warning');
