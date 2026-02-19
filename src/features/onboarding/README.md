@@ -31,10 +31,10 @@ All state managed via `useSyncExternalStore` backed by localStorage, ensuring sy
 
 ## localStorage Keys
 
-- `gridfinity_onboarding_welcome_seen` - welcome modal completion
-- `gridfinity_onboarding_draw_tutorial_seen` - draw tutorial dismissal
-- `gridfinity_onboarding_sidebar_pulse_dismissed` - pulse animation dismissed
-- `gridfinity_onboarding_chose_blank` - user picked blank canvas (not template)
+- `gridfinity-onboarding-welcome-seen` - welcome modal completion
+- `gridfinity-onboarding-draw-tutorial-seen` - draw tutorial dismissal
+- `gridfinity-onboarding-sidebar-pulse-dismissed` - pulse animation dismissed
+- `gridfinity-onboarding-chose-blank` - user picked blank canvas (not template)
 
 ## Public API
 

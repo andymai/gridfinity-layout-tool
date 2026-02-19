@@ -5,6 +5,7 @@ import { PrivacyTab } from './PrivacyTab';
 const mockUpdateSetting = vi.hoisted(() => vi.fn());
 const mockOptIn = vi.hoisted(() => vi.fn());
 const mockOptOut = vi.hoisted(() => vi.fn());
+const mockPruneAnalytics = vi.hoisted(() => vi.fn());
 const mockState = vi.hoisted(() => ({ analyticsEnabled: true }));
 
 vi.mock('@/i18n', () => ({
@@ -32,6 +33,7 @@ vi.mock('@/shared/components/Checkbox', () => ({
 vi.mock('@/shared/analytics/posthog', () => ({
   optInAnalytics: mockOptIn,
   optOutAnalytics: mockOptOut,
+  pruneAnalyticsData: mockPruneAnalytics,
 }));
 
 describe('PrivacyTab', () => {
@@ -39,6 +41,7 @@ describe('PrivacyTab', () => {
     mockUpdateSetting.mockClear();
     mockOptIn.mockClear();
     mockOptOut.mockClear();
+    mockPruneAnalytics.mockClear();
     mockState.analyticsEnabled = true;
   });
 
@@ -66,6 +69,22 @@ describe('PrivacyTab', () => {
     expect(mockUpdateSetting).toHaveBeenCalledWith('analyticsEnabled', false);
     expect(mockOptOut).toHaveBeenCalled();
     expect(mockOptIn).not.toHaveBeenCalled();
+  });
+
+  it('prunes analytics data when disabling analytics', () => {
+    mockState.analyticsEnabled = true;
+    render(<PrivacyTab />);
+    const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
+    fireEvent.click(toggle);
+    expect(mockPruneAnalytics).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not prune analytics data when enabling analytics', () => {
+    mockState.analyticsEnabled = false;
+    render(<PrivacyTab />);
+    const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
+    fireEvent.click(toggle);
+    expect(mockPruneAnalytics).not.toHaveBeenCalled();
   });
 
   it('clicking when disabled calls updateSetting(true) and optInAnalytics', () => {

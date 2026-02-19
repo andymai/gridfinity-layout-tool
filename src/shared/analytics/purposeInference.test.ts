@@ -1,4 +1,12 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import type { Layout, Bin, Drawer, Layer, Category } from '@/core/types';
+
+// Mock the IndexedDB backend before importing the module under test
+vi.mock('@/core/storage/backends/indexedDB', () => ({
+  saveMlData: vi.fn().mockResolvedValue(undefined),
+  loadMlData: vi.fn().mockResolvedValue(null),
+}));
+
 import {
   inferDrawerPurpose,
   loadLabelSizes,
@@ -6,39 +14,9 @@ import {
   recordLayoutLabelSizes,
   getLabelSizeConsistency,
   calculateConsistencyRate,
+  initLabelSizesCache,
+  clearLabelSizesCache,
 } from '@/shared/analytics/purposeInference';
-import type { Layout, Bin, Drawer, Layer, Category } from '@/core/types';
-
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: vi.fn((key: string) => {
-      // Use Reflect.deleteProperty to satisfy ESLint no-dynamic-delete rule
-      Reflect.deleteProperty(store, key);
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    }),
-  };
-})();
-
-Object.defineProperty(global, 'localStorage', {
-  value: localStorageMock,
-});
-
-const STORAGE_KEY = 'gridfinity-ml-label-sizes-v1';
-
-// Helper to get only label-size storage calls (filtering out availability check calls)
-function getStorageCalls(): Array<[string, string]> {
-  return localStorageMock.setItem.mock.calls.filter(
-    (call: [string, string]) => call[0] === STORAGE_KEY
-  );
-}
 
 // Helper to create test layouts
 function createTestLayout(bins: Partial<Bin>[], drawer?: Partial<Drawer>): Layout {
@@ -84,13 +62,15 @@ function createTestLayout(bins: Partial<Bin>[], drawer?: Partial<Drawer>): Layou
 }
 
 describe('purposeInference', () => {
-  beforeEach(() => {
-    localStorageMock.clear();
+  beforeEach(async () => {
     vi.clearAllMocks();
+    // Reset the in-memory cache before each test
+    clearLabelSizesCache();
+    await initLabelSizesCache();
   });
 
   afterEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('inferDrawerPurpose', () => {
@@ -187,24 +167,16 @@ describe('purposeInference', () => {
   });
 
   describe('loadLabelSizes', () => {
-    it('returns empty object when localStorage is empty', () => {
+    it('returns empty object when cache is empty', () => {
       const result = loadLabelSizes();
       expect(result).toEqual({});
     });
 
-    it('returns stored data when available', () => {
-      const data = { abc12345: ['2x2x3', '3x3x6'] };
-      localStorageMock.setItem('gridfinity-ml-label-sizes-v1', JSON.stringify(data));
+    it('returns cached data after recording', () => {
+      recordLabelSize('abc12345', '2x2x3');
 
       const result = loadLabelSizes();
-      expect(result).toEqual(data);
-    });
-
-    it('returns empty object on parse error', () => {
-      localStorageMock.setItem('gridfinity-ml-label-sizes-v1', 'invalid json');
-
-      const result = loadLabelSizes();
-      expect(result).toEqual({});
+      expect(result['abc12345']).toContain('2x2x3');
     });
   });
 
@@ -212,9 +184,7 @@ describe('purposeInference', () => {
     it('records a new label-size association', () => {
       recordLabelSize('abc12345', '2x2x3');
 
-      const storageCalls = getStorageCalls();
-      expect(storageCalls.length).toBeGreaterThan(0);
-      const stored = JSON.parse(storageCalls[0][1]);
+      const stored = loadLabelSizes();
       expect(stored['abc12345']).toContain('2x2x3');
     });
 
@@ -222,9 +192,7 @@ describe('purposeInference', () => {
       recordLabelSize('abc12345', '2x2x3');
       recordLabelSize('abc12345', '2x2x3');
 
-      const storageCalls = getStorageCalls();
-      const lastCall = storageCalls[storageCalls.length - 1];
-      const stored = JSON.parse(lastCall[1]);
+      const stored = loadLabelSizes();
       expect(stored['abc12345'].filter((s: string) => s === '2x2x3').length).toBe(1);
     });
 
@@ -232,9 +200,7 @@ describe('purposeInference', () => {
       recordLabelSize('abc12345', '2x2x3');
       recordLabelSize('abc12345', '3x3x6');
 
-      const storageCalls = getStorageCalls();
-      const lastCall = storageCalls[storageCalls.length - 1];
-      const stored = JSON.parse(lastCall[1]);
+      const stored = loadLabelSizes();
       expect(stored['abc12345']).toContain('2x2x3');
       expect(stored['abc12345']).toContain('3x3x6');
     });
@@ -249,8 +215,8 @@ describe('purposeInference', () => {
 
       recordLayoutLabelSizes(layout);
 
-      // Should have called setItem for each labeled bin
-      expect(localStorageMock.setItem).toHaveBeenCalled();
+      const stored = loadLabelSizes();
+      expect(Object.keys(stored).length).toBe(2);
     });
 
     it('skips bins without labels', () => {
@@ -261,10 +227,7 @@ describe('purposeInference', () => {
 
       recordLayoutLabelSizes(layout);
 
-      // Only one label recorded
-      const lastCall =
-        localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
-      const stored = JSON.parse(lastCall[1]);
+      const stored = loadLabelSizes();
       expect(Object.keys(stored).length).toBe(1);
     });
 
@@ -276,10 +239,7 @@ describe('purposeInference', () => {
 
       recordLayoutLabelSizes(layout);
 
-      // Only non-staging bin recorded
-      const lastCall =
-        localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
-      const stored = JSON.parse(lastCall[1]);
+      const stored = loadLabelSizes();
       expect(Object.keys(stored).length).toBe(1);
     });
   });

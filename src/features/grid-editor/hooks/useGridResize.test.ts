@@ -2,21 +2,18 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGridResize } from '@/features/grid-editor/hooks/useGridResize';
 import { useLayoutStore } from '@/core/store/layout';
+import { useSettingsStore } from '@/core/store/settings';
 import { STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 
 describe('useGridResize', () => {
-  const HINT_KEY = 'gridfinity-grid-resize-hint-shown';
-
   beforeEach(() => {
     vi.useFakeTimers();
     resetAllStores();
-    localStorage.removeItem(HINT_KEY);
   });
 
   afterEach(() => {
     vi.useRealTimers();
-    localStorage.removeItem(HINT_KEY);
   });
 
   describe('initial state', () => {
@@ -65,8 +62,10 @@ describe('useGridResize', () => {
       expect(result.current.shouldPulseResizeHandles).toBe(false);
     });
 
-    it('does not pulse if hint was already shown', () => {
-      localStorage.setItem(HINT_KEY, 'true');
+    it('does not pulse if hint was already dismissed', () => {
+      useSettingsStore.setState((state) => ({
+        settings: { ...state.settings, dismissedHints: ['grid-resize'] },
+      }));
 
       const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
@@ -77,11 +76,11 @@ describe('useGridResize', () => {
       expect(result.current.shouldPulseResizeHandles).toBe(false);
     });
 
-    it('sets localStorage flag after first load', () => {
+    it('marks hint as dismissed in settings after first load', () => {
       renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
-      // Flag should be set immediately on mount
-      expect(localStorage.getItem(HINT_KEY)).toBe('true');
+      const { dismissedHints } = useSettingsStore.getState().settings;
+      expect(dismissedHints).toContain('grid-resize');
     });
   });
 

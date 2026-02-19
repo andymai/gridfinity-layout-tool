@@ -11,6 +11,7 @@
 import type { Layout, Bin } from '@/core/types';
 import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { processLabel, type LabelDomain } from './labelVocabulary';
+import { saveMlData, loadMlData } from '@/core/storage/backends/indexedDB';
 
 // ============================================
 // TYPES
@@ -122,7 +123,7 @@ function getSizePatternSignals(bins: Bin[]): PurposeSignal[] {
 
   if (gridBins.length === 0) return signals;
 
-  for (const [_patternName, pattern] of Object.entries(SIZE_PATTERNS)) {
+  for (const pattern of Object.values(SIZE_PATTERNS)) {
     const matchingBins = gridBins.filter((b) => matchesSizePattern(b, pattern));
     const matchRatio = matchingBins.length / gridBins.length;
 
@@ -282,10 +283,7 @@ export function inferDrawerPurpose(layout: Layout): PurposeInferenceResult {
 // CROSS-LAYOUT LABEL SIZE TRACKING
 // ============================================
 
-/**
- * Storage key for cross-layout label sizes.
- */
-const LABEL_SIZES_STORAGE_KEY = 'gridfinity-ml-label-sizes-v1';
+const ML_LABEL_SIZES_KEY = 'label-sizes';
 
 /**
  * Maximum entries to store (prevents unbounded storage growth).
@@ -297,88 +295,96 @@ const MAX_LABEL_ENTRIES = 500;
  */
 const MAX_SIZES_PER_LABEL = 5;
 
+// Module-level cache — loaded from IDB at startup
+let labelSizesCache: Record<string, string[]> | null = null;
+let cacheLoaded = false;
+
 /**
- * Check if localStorage is available.
+ * Initialize the label sizes cache from IndexedDB.
+ * Called once at app startup.
  */
-function isLocalStorageAvailable(): boolean {
+export async function initLabelSizesCache(): Promise<void> {
+  if (cacheLoaded) return;
   try {
-    const testKey = '__storage_test__';
-    localStorage.setItem(testKey, testKey);
-    localStorage.removeItem(testKey);
-    return true;
+    const stored = await loadMlData<Record<string, string[]>>(ML_LABEL_SIZES_KEY);
+    labelSizesCache = stored ?? {};
   } catch {
-    return false;
+    labelSizesCache = {};
   }
+  cacheLoaded = true;
 }
 
 /**
- * Load stored label sizes from localStorage.
+ * Load stored label sizes (sync read from cache).
  */
 export function loadLabelSizes(): Record<string, string[]> {
-  if (!isLocalStorageAvailable()) return {};
-
-  try {
-    const stored = localStorage.getItem(LABEL_SIZES_STORAGE_KEY);
-    if (!stored) return {};
-    return JSON.parse(stored) as Record<string, string[]>;
-  } catch {
-    return {};
-  }
+  return labelSizesCache ?? {};
 }
 
 /**
- * Save label sizes to localStorage.
+ * Save label sizes (sync cache update + async write-behind to IDB).
  */
 function saveLabelSizes(data: Record<string, string[]>): void {
-  try {
-    // Prune to max entries if needed
-    const entries = Object.entries(data);
-    if (entries.length > MAX_LABEL_ENTRIES) {
-      // Keep most recent entries (approximated by keeping last entries)
-      const pruned = Object.fromEntries(entries.slice(-MAX_LABEL_ENTRIES));
-      localStorage.setItem(LABEL_SIZES_STORAGE_KEY, JSON.stringify(pruned));
-    } else {
-      localStorage.setItem(LABEL_SIZES_STORAGE_KEY, JSON.stringify(data));
+  const entries = Object.entries(data);
+  labelSizesCache =
+    entries.length > MAX_LABEL_ENTRIES
+      ? Object.fromEntries(entries.slice(-MAX_LABEL_ENTRIES))
+      : data;
+
+  saveMlData(ML_LABEL_SIZES_KEY, labelSizesCache).catch(() => {
+    // Silent — storage may be unavailable
+  });
+}
+
+/**
+ * Clear the label sizes cache.
+ * Used by the "clear all data" feature.
+ */
+export function clearLabelSizesCache(): void {
+  labelSizesCache = null;
+  cacheLoaded = false;
+}
+
+/**
+ * Add a size to a label hash entry in the given data map, deduplicating
+ * and capping at MAX_SIZES_PER_LABEL.
+ */
+function addSizeToLabel(data: Record<string, string[]>, labelHash: string, size: string): void {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- labelHash may not exist in data from storage
+  if (!data[labelHash]) {
+    data[labelHash] = [];
+  }
+
+  if (!data[labelHash].includes(size)) {
+    data[labelHash].push(size);
+    if (data[labelHash].length > MAX_SIZES_PER_LABEL) {
+      data[labelHash] = data[labelHash].slice(-MAX_SIZES_PER_LABEL);
     }
-  } catch {
-    // Silently fail - storage may be full or disabled
   }
 }
 
 /**
- * Record a label→size association from the current layout.
+ * Record a label->size association from the current layout.
  *
  * @param labelHash - Hash of the label
  * @param size - Bin size as "WxDxH" string
  */
 export function recordLabelSize(labelHash: string, size: string): void {
+  if (!cacheLoaded) return; // Skip until cache is initialized from IDB
   const data = loadLabelSizes();
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- labelHash may not exist in data from localStorage
-  if (!data[labelHash]) {
-    data[labelHash] = [];
-  }
-
-  // Add size if not already tracked
-  if (!data[labelHash].includes(size)) {
-    data[labelHash].push(size);
-
-    // Limit sizes per label
-    if (data[labelHash].length > MAX_SIZES_PER_LABEL) {
-      data[labelHash] = data[labelHash].slice(-MAX_SIZES_PER_LABEL);
-    }
-  }
-
+  addSizeToLabel(data, labelHash, size);
   saveLabelSizes(data);
 }
 
 /**
- * Extract and record all label→size associations from a layout.
- * Uses batched localStorage operations for better performance.
+ * Extract and record all label->size associations from a layout.
+ * Batches reads and writes for better performance.
  *
  * @param layout - Layout to process
  */
 export function recordLayoutLabelSizes(layout: Layout): void {
+  if (!cacheLoaded) return; // Skip until cache is initialized from IDB
+
   const gridBins = getGridBins(layout.bins);
   const labeledBins = getLabeledBins(gridBins);
 
@@ -388,25 +394,9 @@ export function recordLayoutLabelSizes(layout: Layout): void {
   const data = loadLabelSizes();
 
   for (const bin of labeledBins) {
-    // bin.label is guaranteed non-null by the filter above
-    const label = bin.label;
-    const labelData = processLabel(label);
+    const labelData = processLabel(bin.label);
     const size = `${bin.width}x${bin.depth}x${bin.height}`;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- labelData.hash may not exist in data from localStorage
-    if (!data[labelData.hash]) {
-      data[labelData.hash] = [];
-    }
-
-    // Add size if not already tracked
-    if (!data[labelData.hash].includes(size)) {
-      data[labelData.hash].push(size);
-
-      // Limit sizes per label
-      if (data[labelData.hash].length > MAX_SIZES_PER_LABEL) {
-        data[labelData.hash] = data[labelData.hash].slice(-MAX_SIZES_PER_LABEL);
-      }
-    }
+    addSizeToLabel(data, labelData.hash, size);
   }
 
   saveLabelSizes(data);

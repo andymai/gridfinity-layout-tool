@@ -232,6 +232,13 @@ export interface UserSettings {
   uiDensity: 'compact' | 'default' | 'comfortable';
   /** Override to reduce animations and transitions. */
   reduceMotion: boolean;
+
+  /**
+   * One-time UI hints that have been dismissed.
+   * Replaces individual localStorage keys for hint tracking.
+   * IDs: 'grid-resize', 'paint-mode', 'bin-resize', 'designer-touch'
+   */
+  dismissedHints: string[];
 }
 
 /**
@@ -283,6 +290,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
   accentColor: 'amber',
   uiDensity: 'default',
   reduceMotion: false,
+
+  // Dismissed hints
+  dismissedHints: [],
 };
 
 /**

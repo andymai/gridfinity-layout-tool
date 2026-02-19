@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useUndoableAction } from '@/core/store';
+import { useSettingsStore } from '@/core/store/settings';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -93,9 +94,9 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
 
   // Pulse grid resize handles on first load
   useEffect(() => {
-    const hintShown = localStorage.getItem('gridfinity-grid-resize-hint-shown');
-    if (!hintShown) {
-      localStorage.setItem('gridfinity-grid-resize-hint-shown', 'true');
+    const { settings, updateSetting } = useSettingsStore.getState();
+    if (!settings.dismissedHints.includes('grid-resize')) {
+      updateSetting('dismissedHints', [...settings.dismissedHints, 'grid-resize']);
       // Defer state update to avoid cascading renders
       pulseTimeoutRef.current = setTimeout(() => {
         setShouldPulseResizeHandles(true);

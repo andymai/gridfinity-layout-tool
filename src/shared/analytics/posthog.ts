@@ -27,11 +27,64 @@ import { getFeature } from '@/core/labs';
 import { generateUUID, splitBinsByLocation, getGridBins } from '@/shared/utils';
 
 // ============================================
-// STABLE USER IDENTITY
+// CONSOLIDATED ANALYTICS STORAGE
 // ============================================
 
-const USER_ID_KEY = 'gridfinity_user_id';
-const USER_FIRST_SEEN_KEY = 'gridfinity_first_seen';
+export const ANALYTICS_STORAGE_KEY = 'gridfinity-analytics-v1';
+
+interface AnalyticsData {
+  userId: string;
+  firstSeen: string;
+  featureFlags: Record<string, boolean>;
+  milestones: Record<string, string>;
+}
+
+let analyticsCache: AnalyticsData | null = null;
+
+function createEmptyAnalyticsData(): AnalyticsData {
+  return { userId: '', firstSeen: '', featureFlags: {}, milestones: {} };
+}
+
+function loadAnalyticsData(): AnalyticsData {
+  if (analyticsCache) return analyticsCache;
+  try {
+    const raw = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+    if (raw) {
+      analyticsCache = JSON.parse(raw) as AnalyticsData;
+      return analyticsCache;
+    }
+  } catch {
+    /* ignore */
+  }
+  analyticsCache = createEmptyAnalyticsData();
+  return analyticsCache;
+}
+
+function saveAnalyticsData(data: AnalyticsData): void {
+  analyticsCache = data;
+  try {
+    localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    /* storage may be full */
+  }
+}
+
+/**
+ * Remove all analytics data from localStorage and clear the in-memory cache.
+ * Use when analytics is disabled or data should be pruned.
+ */
+export function pruneAnalyticsData(): void {
+  analyticsCache = null;
+  try {
+    localStorage.removeItem(ANALYTICS_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+// ============================================
+// STABLE USER IDENTITY
+// ============================================
 
 /**
  * Get or create a stable user ID for anonymous users.
@@ -40,14 +93,16 @@ const USER_FIRST_SEEN_KEY = 'gridfinity_first_seen';
  */
 function getStableUserId(): string {
   try {
-    let id = localStorage.getItem(USER_ID_KEY);
-    if (!id) {
+    const data = loadAnalyticsData();
+    if (!data.userId) {
       // eslint-disable-next-line @typescript-eslint/no-deprecated -- user IDs must remain UUIDs for PostHog identity stability
-      id = generateUUID();
-      localStorage.setItem(USER_ID_KEY, id);
-      localStorage.setItem(USER_FIRST_SEEN_KEY, new Date().toISOString());
+      data.userId = generateUUID();
+      if (!data.firstSeen) {
+        data.firstSeen = new Date().toISOString();
+      }
+      saveAnalyticsData(data);
     }
-    return id;
+    return data.userId;
   } catch {
     // localStorage unavailable (private browsing, storage full, etc.)
     // Fall back to a session-only ID
@@ -62,12 +117,12 @@ function getStableUserId(): string {
  */
 function getFirstSeenDate(): string {
   try {
-    let firstSeen = localStorage.getItem(USER_FIRST_SEEN_KEY);
-    if (!firstSeen) {
-      firstSeen = new Date().toISOString();
-      localStorage.setItem(USER_FIRST_SEEN_KEY, firstSeen);
+    const data = loadAnalyticsData();
+    if (!data.firstSeen) {
+      data.firstSeen = new Date().toISOString();
+      saveAnalyticsData(data);
     }
-    return firstSeen;
+    return data.firstSeen;
   } catch {
     return new Date().toISOString();
   }
@@ -75,14 +130,13 @@ function getFirstSeenDate(): string {
 
 /**
  * Check if this is the user's first session (within 30 minutes of first_seen).
- * Uses the existing gridfinity_first_seen timestamp.
  */
 function isFirstSession(): boolean {
   try {
-    const firstSeen = localStorage.getItem(USER_FIRST_SEEN_KEY);
-    if (!firstSeen) return true;
+    const data = loadAnalyticsData();
+    if (!data.firstSeen) return true;
 
-    const firstSeenTime = new Date(firstSeen).getTime();
+    const firstSeenTime = new Date(data.firstSeen).getTime();
     const thirtyMinutes = 30 * 60 * 1000;
 
     return Date.now() - firstSeenTime < thirtyMinutes;
@@ -488,7 +542,7 @@ export function trackLayoutSnapshot(
       is_first_session: isFirstSession(),
       ...metrics,
       ...labsMetrics,
-      ...(sessionContext || {}),
+      ...sessionContext,
     });
   } catch {
     // Analytics should never break the app
@@ -570,7 +624,7 @@ export interface BinCreatedProperties {
  */
 export function trackBinCreated(props: BinCreatedProperties): void {
   try {
-    const isFirstBin = !localStorage.getItem('gridfinity_milestone_first_bin');
+    const isFirstBin = !loadAnalyticsData().milestones['first_bin'];
     const hasDimensions =
       props.width !== undefined && props.depth !== undefined && props.height !== undefined;
 
@@ -609,13 +663,19 @@ function checkEngagementMilestones(): void {
   try {
     const bins = useLayoutStore.getState().layout.bins;
     const binsOnGrid = getGridBins(bins).length;
+    const data = loadAnalyticsData();
+    let changed = false;
 
     for (const { key, min } of MILESTONE_THRESHOLDS) {
-      const storageKey = `gridfinity_milestone_${key}`;
-      if (binsOnGrid >= min && !localStorage.getItem(storageKey)) {
-        localStorage.setItem(storageKey, new Date().toISOString());
+      if (binsOnGrid >= min && !data.milestones[key]) {
+        data.milestones[key] = new Date().toISOString();
+        changed = true;
         trackEngagementMilestone(key);
       }
+    }
+
+    if (changed) {
+      saveAnalyticsData(data);
     }
   } catch {
     // Silently ignore - analytics should never break the app
@@ -699,6 +759,9 @@ export function updatePersonProperties(): void {
     const savedBinsEstimate = layoutCount * 10; // Rough average
     const totalBinsEstimate = currentBins + savedBinsEstimate;
 
+    const data = loadAnalyticsData();
+    const flags = data.featureFlags;
+
     // Properties that can change ($set)
     posthogInstance.setPersonProperties({
       // Usage metrics
@@ -707,18 +770,14 @@ export function updatePersonProperties(): void {
       last_active: new Date().toISOString(),
 
       // Feature adoption (has ever used)
-      uses_multi_layer:
-        metrics.feature_multi_layer || localStorage.getItem('has_used_multi_layer') === 'true',
-      uses_half_bins:
-        metrics.feature_half_bins || localStorage.getItem('has_used_half_bins') === 'true',
-      uses_custom_categories:
-        metrics.feature_custom_categories ||
-        localStorage.getItem('has_used_custom_categories') === 'true',
-      uses_labels: metrics.feature_labels || localStorage.getItem('has_used_labels') === 'true',
-      uses_3d_preview: localStorage.getItem('has_used_3d_preview') === 'true',
-      uses_cloud_share: localStorage.getItem('has_used_cloud_share') === 'true',
-      uses_fill_operations: localStorage.getItem('has_used_fill') === 'true',
-      uses_paint_mode: localStorage.getItem('has_used_paint_mode') === 'true',
+      uses_multi_layer: metrics.feature_multi_layer || flags['multi_layer'],
+      uses_half_bins: metrics.feature_half_bins || flags['half_bins'],
+      uses_custom_categories: metrics.feature_custom_categories || flags['custom_categories'],
+      uses_labels: metrics.feature_labels || flags['labels'],
+      uses_3d_preview: flags['3d_preview'],
+      uses_cloud_share: flags['cloud_share'],
+      uses_fill_operations: flags['fill'],
+      uses_paint_mode: flags['paint_mode'],
 
       // Engagement tier
       engagement_tier: computeEngagementTier(layoutCount, totalBinsEstimate),
@@ -734,12 +793,24 @@ export function updatePersonProperties(): void {
       initial_device: getDeviceType(),
     });
 
-    // Track feature adoption in localStorage for persistence
-    if (metrics.feature_multi_layer) localStorage.setItem('has_used_multi_layer', 'true');
-    if (metrics.feature_half_bins) localStorage.setItem('has_used_half_bins', 'true');
-    if (metrics.feature_custom_categories)
-      localStorage.setItem('has_used_custom_categories', 'true');
-    if (metrics.feature_labels) localStorage.setItem('has_used_labels', 'true');
+    // Track feature adoption in consolidated storage for persistence
+    const adoptionChecks: Array<[boolean, string]> = [
+      [metrics.feature_multi_layer, 'multi_layer'],
+      [metrics.feature_half_bins, 'half_bins'],
+      [metrics.feature_custom_categories, 'custom_categories'],
+      [metrics.feature_labels, 'labels'],
+    ];
+
+    let flagsChanged = false;
+    for (const [isActive, key] of adoptionChecks) {
+      if (isActive && !flags[key]) {
+        flags[key] = true;
+        flagsChanged = true;
+      }
+    }
+    if (flagsChanged) {
+      saveAnalyticsData(data);
+    }
   } catch {
     // Never break the app for analytics
   }
@@ -760,7 +831,10 @@ export function markFeatureUsed(
     | 'paint_mode'
 ): void {
   try {
-    localStorage.setItem(`has_used_${feature}`, 'true');
+    const data = loadAnalyticsData();
+    if (data.featureFlags[feature]) return; // Already tracked
+    data.featureFlags[feature] = true;
+    saveAnalyticsData(data);
   } catch {
     // Ignore storage errors
   }

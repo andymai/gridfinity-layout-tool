@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { CONSTRAINTS } from '@/core/constants';
+import { clearAllAppData } from '@/core/storage';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useStorageInfo } from './useStorageInfo';
 
 function formatBytes(bytes: number): string {
@@ -8,7 +11,12 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function UsageBar({ percent, warn }: { percent: number; warn: boolean }) {
+interface UsageBarProps {
+  percent: number;
+  warn: boolean;
+}
+
+function UsageBar({ percent, warn }: UsageBarProps) {
   return (
     <div
       className="w-full h-2 rounded-full bg-surface-elevated overflow-hidden"
@@ -34,6 +42,17 @@ export function StorageTab() {
   const layoutWarn = info.layoutCount >= CONSTRAINTS.LAYOUTS_WARNING_THRESHOLD;
   const localStorageWarn = info.localStoragePercent >= 80;
 
+  const isHealthy = info.backend === 'indexeddb';
+
+  let statusDotColor = 'bg-content-disabled';
+  let statusLabel = t('common.loading');
+  if (!info.loading) {
+    statusDotColor = isHealthy ? 'bg-success' : 'bg-warning';
+    statusLabel = isHealthy
+      ? t('settings.storage.statusHealthy')
+      : t('settings.storage.statusLimited');
+  }
+
   return (
     <div className="space-y-8">
       {/* Storage Status */}
@@ -42,26 +61,12 @@ export function StorageTab() {
           {t('settings.storage.status')}
         </h3>
         <div className="flex items-center gap-2 text-sm">
-          <span
-            className={`inline-block w-2 h-2 rounded-full ${
-              info.loading
-                ? 'bg-content-disabled'
-                : info.backend === 'indexeddb'
-                  ? 'bg-success'
-                  : 'bg-warning'
-            }`}
-          />
-          <span className="text-content">
-            {info.loading
-              ? t('common.loading')
-              : info.backend === 'indexeddb'
-                ? t('settings.storage.statusHealthy')
-                : t('settings.storage.statusLimited')}
-          </span>
+          <span className={`inline-block w-2 h-2 rounded-full ${statusDotColor}`} />
+          <span className="text-content">{statusLabel}</span>
         </div>
         {!info.loading && (
           <p className="text-xs text-content-disabled mt-1">
-            {info.backend === 'indexeddb'
+            {isHealthy
               ? t('settings.storage.statusHealthyHint')
               : t('settings.storage.statusLimitedHint')}
           </p>
@@ -139,6 +144,54 @@ export function StorageTab() {
           {t('settings.storage.settingsCacheNote')}
         </p>
       </section>
+
+      {/* Danger Zone */}
+      <section>
+        <h3 className="text-base font-semibold text-error mb-3">
+          {t('settings.storage.dangerZone')}
+        </h3>
+        <div className="flex items-center justify-between">
+          <div className="text-sm">
+            <span className="text-content">{t('settings.storage.clearAllData')}</span>
+            <p className="text-xs text-content-disabled mt-0.5">
+              {t('settings.storage.clearAllDataHint')}
+            </p>
+          </div>
+          <ClearAllDataButton />
+        </div>
+      </section>
     </div>
+  );
+}
+
+function ClearAllDataButton() {
+  const t = useTranslation();
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleConfirm = () => {
+    clearAllAppData();
+    // Force reload to reset all in-memory state (Zustand stores, caches, etc.)
+    // This is the only reliable way to ensure no stale data writes back.
+    window.location.reload();
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        className="px-3 py-1.5 text-sm rounded-md border border-error text-error hover:bg-error/10 transition-colors"
+        onClick={() => setShowConfirm(true)}
+      >
+        {t('settings.storage.clearAllData')}
+      </button>
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title={t('settings.storage.clearAllData')}
+        message={t('settings.storage.confirmClearAll')}
+        onConfirm={handleConfirm}
+        onCancel={() => setShowConfirm(false)}
+        destructive
+      />
+    </>
   );
 }

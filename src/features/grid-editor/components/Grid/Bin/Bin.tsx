@@ -10,6 +10,7 @@ import {
   useMobileStore,
 } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getBinTextColors, clamp, formatDimension } from '@/shared/utils';
@@ -511,10 +512,10 @@ function BinComponent({
         if (!isSelected) {
           setSelectedBin(bin.id);
           // Show first-time hint about resize handles
-          const hintShown = localStorage.getItem('gridfinity-resize-hint-shown');
-          if (!hintShown) {
+          const { settings, updateSetting } = useSettingsStore.getState();
+          if (!settings.dismissedHints.includes('bin-resize')) {
             addToast(t('toast.resizeTip'), 'info');
-            localStorage.setItem('gridfinity-resize-hint-shown', 'true');
+            updateSetting('dismissedHints', [...settings.dismissedHints, 'bin-resize']);
           }
         }
         onStartDrag(bin.id, e.clientX, e.clientY, e.pointerId, isDuplicateDrag, isSwapDrag);

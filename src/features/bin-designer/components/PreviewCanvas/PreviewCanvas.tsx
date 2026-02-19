@@ -41,6 +41,7 @@ import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore } from '@/core/store/settings';
 import { useThreeColors } from '@/hooks/useThemeEffect';
 
 /** localStorage key for persisting the user's preview color preference */
@@ -568,30 +569,21 @@ export function PreviewCanvas() {
   );
 }
 
-const TOUCH_HINT_KEY = 'gridfinity-designer-touch-hint-dismissed';
-
-function getStoredHintDismissed(): boolean {
-  try {
-    return !!localStorage.getItem(TOUCH_HINT_KEY);
-  } catch {
-    return false;
-  }
-}
-
 function TouchHint() {
   const t = useTranslation();
   const { isTouchDevice, isDesktop } = useResponsive();
   const [dismissed, setDismissed] = useState(false);
 
-  const visible = !dismissed && isTouchDevice && !isDesktop && !getStoredHintDismissed();
+  const visible =
+    !dismissed &&
+    isTouchDevice &&
+    !isDesktop &&
+    !useSettingsStore.getState().settings.dismissedHints.includes('designer-touch');
 
   const dismiss = useCallback(() => {
     setDismissed(true);
-    try {
-      localStorage.setItem(TOUCH_HINT_KEY, '1');
-    } catch {
-      /* storage unavailable */
-    }
+    const { settings, updateSetting } = useSettingsStore.getState();
+    updateSetting('dismissedHints', [...settings.dismissedHints, 'designer-touch']);
   }, []);
 
   if (!visible) return null;
