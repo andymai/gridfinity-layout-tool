@@ -344,7 +344,7 @@ function saveLabelSizes(data: Record<string, string[]>): void {
  * Used by the "clear all data" feature.
  */
 export function clearLabelSizesCache(): void {
-  labelSizesCache = {};
+  labelSizesCache = null;
   cacheLoaded = false;
 }
 
@@ -373,6 +373,7 @@ function addSizeToLabel(data: Record<string, string[]>, labelHash: string, size:
  * @param size - Bin size as "WxDxH" string
  */
 export function recordLabelSize(labelHash: string, size: string): void {
+  if (!cacheLoaded) return; // Skip until cache is initialized from IDB
   const data = loadLabelSizes();
   addSizeToLabel(data, labelHash, size);
   saveLabelSizes(data);
@@ -385,6 +386,8 @@ export function recordLabelSize(labelHash: string, size: string): void {
  * @param layout - Layout to process
  */
 export function recordLayoutLabelSizes(layout: Layout): void {
+  if (!cacheLoaded) return; // Skip until cache is initialized from IDB
+
   const gridBins = getGridBins(layout.bins);
   const labeledBins = getLabeledBins(gridBins);
 
