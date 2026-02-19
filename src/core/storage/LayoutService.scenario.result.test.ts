@@ -20,14 +20,7 @@ import {
 } from '@/core/storage';
 import { createDefaultLayout } from '@/core/constants';
 import { expectOk, expectErr } from '@/test/testUtils';
-import {
-  ok,
-  err,
-  getUserMessage,
-  isRetryable,
-  storageQuotaExceeded,
-  storageUnavailable,
-} from '@/core/result';
+import { ok, err, getUserMessage, isRetryable, storageQuotaExceeded } from '@/core/result';
 import type { Layout, LayoutLibrary } from '@/core/types';
 
 // Mock the backend module
@@ -51,9 +44,16 @@ vi.mock('@/core/storage/backends/localStorage', () => ({
   loadLayout: vi.fn(),
 }));
 
-// Mock the indexedDB backend for migration
+// Mock the indexedDB backend for migration and library
 vi.mock('@/core/storage/backends/indexedDB', () => ({
   saveLayout: vi.fn(),
+  saveLibraryIndex: vi.fn().mockResolvedValue(undefined),
+  loadLibraryIndex: vi.fn().mockResolvedValue(null),
+}));
+
+// Mock librarySync (used by saveLibrary fire-and-forget)
+vi.mock('@/core/storage/librarySync', () => ({
+  notifyLibraryChanged: vi.fn(),
 }));
 
 // Import the mocked modules
@@ -225,33 +225,11 @@ describe('Result-based storage functions', () => {
       entries: [],
     };
 
-    it('returns Ok on successful save', () => {
-      vi.mocked(backend.saveSyncGeneric).mockReturnValue(ok(undefined));
-
+    it('returns void (delegates to saveLibrary fire-and-forget)', () => {
       const result = saveLibraryResult(testLibrary);
 
-      expectOk(result);
-    });
-
-    it('returns Err with quota exceeded error', () => {
-      vi.mocked(backend.saveSyncGeneric).mockReturnValue(err(storageQuotaExceeded()));
-
-      const result = saveLibraryResult(testLibrary);
-
-      expect(expectErr(result).code).toBe('STORAGE_QUOTA_EXCEEDED');
-    });
-
-    it('returns Err with unavailable error for generic failures', () => {
-      vi.mocked(backend.saveSyncGeneric).mockReturnValue(err(storageUnavailable('localStorage')));
-
-      const result = saveLibraryResult(testLibrary);
-
-      const error = expectErr(result);
-      expect(error.code).toBe('STORAGE_UNAVAILABLE');
-      // For localStorage errors, backend should be localStorage
-      if ('backend' in error) {
-        expect(error.backend).toBe('localStorage');
-      }
+      // saveLibraryResult now returns void (delegates to saveLibrary)
+      expect(result).toBeUndefined();
     });
   });
 

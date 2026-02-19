@@ -64,6 +64,12 @@ describe('indexedDB backend', () => {
       expect(db.objectStoreNames.contains('layouts')).toBe(true);
     });
 
+    it('creates library object store', async () => {
+      const db = await openLayoutDatabase();
+
+      expect(db.objectStoreNames.contains('library')).toBe(true);
+    });
+
     it('returns cached instance on subsequent calls', async () => {
       const db1 = await openLayoutDatabase();
       const db2 = await openLayoutDatabase();

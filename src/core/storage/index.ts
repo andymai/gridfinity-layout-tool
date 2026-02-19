@@ -55,8 +55,11 @@ export {
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
   saveLibraryResult,
   loadLibrary,
+  loadLibraryAsync,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
   loadLibraryResult,
   initializeLayoutLibrary,
+  reconcileLibraryAsync,
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
   computeLayoutPreview,
   getLayoutStorageKey,
@@ -108,6 +111,7 @@ export {
   isMigrationNeeded,
   migrateAllLayoutsToIndexedDB,
   migrateLayoutToIndexedDB,
+  migrateLibraryToIndexedDB,
   getMigrationStatus,
   clearMigrationFlag,
 } from './migration';

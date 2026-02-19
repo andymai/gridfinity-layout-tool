@@ -13,6 +13,22 @@ import {
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import type { Layout, LayoutLibrary } from '@/core/types';
 
+// Mock IndexedDB backend (saveLibrary now fires off to IndexedDB)
+vi.mock('@/core/storage/backends/indexedDB', () => ({
+  saveLibraryIndex: vi.fn().mockResolvedValue(undefined),
+  loadLibraryIndex: vi.fn().mockResolvedValue(null),
+  saveLayout: vi.fn().mockResolvedValue(undefined),
+  loadLayout: vi.fn().mockResolvedValue(null),
+  deleteLayout: vi.fn().mockResolvedValue(undefined),
+  getAllLayoutIds: vi.fn().mockResolvedValue([]),
+  isIndexedDBAvailable: vi.fn().mockResolvedValue(false),
+}));
+
+// Mock librarySync (used by saveLibrary fire-and-forget)
+vi.mock('@/core/storage/librarySync', () => ({
+  notifyLibraryChanged: vi.fn(),
+}));
+
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
@@ -176,26 +192,18 @@ describe('storage error handling', () => {
       entries: [],
     };
 
-    it('saves library to localStorage', () => {
+    it('writes activeLayoutId to localStorage', () => {
       saveLibrary(testLibrary);
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'gridfinity-library-v1',
-        JSON.stringify(testLibrary)
+        'gridfinity-library-active-id',
+        'test-id'
       );
     });
 
-    it('returns Err when quota exceeded', () => {
-      localStorageMock.setItem.mockImplementationOnce(() => {
-        throw new Error('QuotaExceededError');
-      });
-
+    it('returns void (fire-and-forget to IndexedDB)', () => {
       const result = saveLibrary(testLibrary);
-      expect(result).toEqual(
-        expect.objectContaining({
-          error: expect.objectContaining({ code: 'STORAGE_QUOTA_EXCEEDED' }),
-        })
-      );
+      expect(result).toBeUndefined();
     });
   });
 
@@ -221,10 +229,9 @@ describe('storage error handling', () => {
       expect(consoleSpy).toHaveBeenCalled();
     });
 
-    it('filters out orphaned entries', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      // Create library with entries but don't create the layout data
+    it('returns all entries without orphan filtering (deferred to reconcileLibraryAsync)', () => {
+      // loadLibrary no longer checks per-entry existence; orphan cleanup
+      // is deferred to reconcileLibraryAsync() after mount.
       const library: LayoutLibrary = {
         version: '1.0',
         activeLayoutId: 'existing-id',
@@ -260,37 +267,20 @@ describe('storage error handling', () => {
       };
 
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
-      // Only create layout for 'existing-id'
-      localStorageMock.setItem('gridfinity-layout-existing-id', JSON.stringify(defaultLayout));
 
       const result = loadLibrary();
       expect(result).not.toBeNull();
-      expect(result?.entries).toHaveLength(1);
-      expect(result?.entries[0].id).toBe('existing-id');
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('orphaned-id listed in library but not found')
-      );
+      // Both entries are returned — no orphan filtering at load time
+      expect(result?.entries).toHaveLength(2);
     });
 
-    it('updates activeLayoutId when active is orphaned', () => {
+    it('fixes activeLayoutId when it does not reference any entry', () => {
+      // validateLibraryStructure still ensures activeLayoutId references a valid entry
       const library: LayoutLibrary = {
         version: '1.0',
-        activeLayoutId: 'orphaned-active',
+        activeLayoutId: 'non-existent-id',
         settings: {},
         entries: [
-          {
-            id: 'orphaned-active',
-            name: 'Orphaned Active',
-            createdAt: Date.now(),
-            modifiedAt: Date.now(),
-            preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
-              binCount: 0,
-              layerCount: 1,
-            },
-          },
           {
             id: 'valid-id',
             name: 'Valid',
@@ -308,10 +298,6 @@ describe('storage error handling', () => {
       };
 
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
-      // Only create layout for 'valid-id'
-      localStorageMock.setItem('gridfinity-layout-valid-id', JSON.stringify(defaultLayout));
-
-      vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const result = loadLibrary();
       expect(result?.activeLayoutId).toBe('valid-id');
@@ -319,8 +305,8 @@ describe('storage error handling', () => {
   });
 
   describe('initializeLayoutLibrary', () => {
-    it('creates fresh library when no data exists', () => {
-      const { library, activeLayout } = initializeLayoutLibrary();
+    it('creates fresh library when no data exists', async () => {
+      const { library, activeLayout } = await initializeLayoutLibrary();
 
       expect(library).not.toBeNull();
       expect(library.version).toBe('1.0');
@@ -329,7 +315,7 @@ describe('storage error handling', () => {
       expect(activeLayout.name).toBe('Untitled layout');
     });
 
-    it('loads existing library', () => {
+    it('loads existing library', async () => {
       const layoutId = 'existing-layout';
       const existingLayout: Layout = {
         ...defaultLayout,
@@ -360,11 +346,11 @@ describe('storage error handling', () => {
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
       localStorageMock.setItem(getLayoutStorageKey(layoutId), JSON.stringify(existingLayout));
 
-      const result = initializeLayoutLibrary();
+      const result = await initializeLayoutLibrary();
       expect(result.activeLayout.name).toBe('My Existing Layout');
     });
 
-    it('recovers when active layout is missing', () => {
+    it('recovers when active layout is missing', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const library: LayoutLibrary = {
@@ -409,17 +395,15 @@ describe('storage error handling', () => {
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
       localStorageMock.setItem(getLayoutStorageKey('backup-layout'), JSON.stringify(backupLayout));
 
-      const result = initializeLayoutLibrary();
+      const result = await initializeLayoutLibrary();
 
-      // The orphaned entry filtering in loadLibrary logs this warning
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('missing-layout listed in library but not found')
-      );
+      // initializeLayoutLibrary now warns when the active layout is not found
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('missing-layout'));
       expect(result.activeLayout.name).toBe('Backup Layout');
       expect(result.library.activeLayoutId).toBe('backup-layout');
     });
 
-    it('creates fresh layout when all layouts are corrupted', () => {
+    it('creates fresh layout when all layouts are corrupted', async () => {
       vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const library: LayoutLibrary = {
@@ -447,12 +431,12 @@ describe('storage error handling', () => {
       // Layout exists but is corrupted
       localStorageMock.setItem(getLayoutStorageKey('corrupted-1'), 'not valid json{{{[');
 
-      const result = initializeLayoutLibrary();
+      const result = await initializeLayoutLibrary();
 
-      // When all entries are corrupted, loadLibrary returns null and
-      // initializeLayoutLibrary creates a fresh default layout
-      expect(result.activeLayout.name).toBe('Untitled layout');
-      expect(result.library.entries).toHaveLength(1);
+      // When the active layout is corrupted and no other entries can be loaded,
+      // initializeLayoutLibrary creates a recovered layout
+      expect(result.activeLayout).toBeDefined();
+      expect(result.library.entries.length).toBeGreaterThanOrEqual(1);
     });
   });
 

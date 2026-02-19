@@ -21,6 +21,7 @@ import {
 import { useLabsStore } from '@/core/store/labs';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library';
 import { useSettingsStore } from '@/core/store/settings';
 import { getFeature } from '@/core/labs';
 import { generateUUID, splitBinsByLocation, getGridBins } from '@/shared/utils';
@@ -686,13 +687,8 @@ export function updatePersonProperties(): void {
 
   try {
     // Get library data for usage metrics
-    const libraryData = localStorage.getItem('gridfinity-library-v1');
-    const library: unknown = libraryData ? JSON.parse(libraryData) : null;
-    const libraryObj =
-      typeof library === 'object' && library !== null ? (library as Record<string, unknown>) : null;
-    const entries =
-      libraryObj !== null && Array.isArray(libraryObj.entries) ? libraryObj.entries : [];
-    const layoutCount = entries.length;
+    const libraryEntries = useLibraryStore.getState().library.entries;
+    const layoutCount = libraryEntries.length;
 
     // Get current layout for feature detection
     const layout = useLayoutStore.getState().layout;

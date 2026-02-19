@@ -13,7 +13,6 @@ import {
   useLayoutRouting,
   useAnalytics,
   useStorageMigration,
-  useIndexedDBRecovery,
   useSnapshotAutoSave,
   useTabletPanels,
   useKeyboard,
@@ -27,7 +26,12 @@ import {
 } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
-import { initializeLayoutLibrary, loadSharedWithMe, downloadLayoutAsFile } from '@/core/storage';
+import {
+  initializeLayoutLibrary,
+  loadSharedWithMe,
+  downloadLayoutAsFile,
+  reconcileLibraryAsync,
+} from '@/core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './features/grid-editor';
 import { Sidebar } from './components/Sidebar';
@@ -106,23 +110,35 @@ const CollabProvider = lazyWithRetry(() =>
 // animation on first app load (not when switching between tools).
 let hasRenderedInitialLayout = false;
 
-// Initialize layout library once at module level to avoid effect setState issues
-let initialLoadError: Error | null = null;
-let initialNeedsAsyncRecovery = false;
-let initialRecoveryLayoutIds: string[] = [];
-try {
-  const { library, activeLayout, needsAsyncRecovery, recoveryLayoutIds } =
-    initializeLayoutLibrary();
-  initialNeedsAsyncRecovery = needsAsyncRecovery;
-  initialRecoveryLayoutIds = recoveryLayoutIds;
-  useLibraryStore.getState().initLibrary(library);
-  useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
+// Initialize layout library asynchronously at module level.
+// The promise is thrown by useAppInit() to trigger React Suspense.
+let _appInitialized = false;
+let _appInitError: Error | null = null;
+const _appInitPromise = initializeLayoutLibrary()
+  .then(({ library, activeLayout }) => {
+    useLibraryStore.getState().initLibrary(library);
+    useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
 
-  // Initialize "Shared with me" entries from localStorage
-  const sharedWithMeEntries = loadSharedWithMe();
-  useLibraryStore.getState().initSharedWithMe(sharedWithMeEntries);
-} catch (e) {
-  initialLoadError = e as Error;
+    // Initialize "Shared with me" entries from localStorage
+    const sharedWithMeEntries = loadSharedWithMe();
+    useLibraryStore.getState().initSharedWithMe(sharedWithMeEntries);
+
+    _appInitialized = true;
+  })
+  .catch((e: unknown) => {
+    _appInitError = e instanceof Error ? e : new Error(String(e));
+    _appInitialized = true; // Allow render so error UI can show
+  });
+
+/**
+ * Hook that suspends rendering until async app initialization completes.
+ * Throws the init promise for React Suspense to catch.
+ */
+function useAppInit(): void {
+  if (!_appInitialized) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- React Suspense protocol
+    throw _appInitPromise;
+  }
 }
 
 /**
@@ -136,6 +152,7 @@ try {
  * @returns The top-level React element for the application UI, including layout, panels, modals, and global providers.
  */
 export default function App() {
+  useAppInit(); // Suspends until async init completes
   const t = useTranslation();
   useThemeEffect();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -181,6 +198,20 @@ export default function App() {
   // Initialize layout analytics subscriber (tracks feature usage from state changes)
   useEffect(() => {
     return initLayoutAnalytics();
+  }, []);
+
+  // Deferred orphan cleanup — remove library entries whose layouts no longer exist in IndexedDB
+  useEffect(() => {
+    const library = useLibraryStore.getState().library;
+    void reconcileLibraryAsync(library)
+      .then((cleaned) => {
+        if (cleaned) {
+          useLibraryStore.getState().setLibrary(cleaned);
+        }
+      })
+      .catch(() => {
+        // Best-effort orphan cleanup — non-critical if IndexedDB is unavailable
+      });
   }, []);
 
   // Tablet panel state (auto-collapses on tablet mode entry)
@@ -240,9 +271,6 @@ export default function App() {
 
   // Storage migration (localStorage → IndexedDB)
   useStorageMigration();
-
-  // Async IndexedDB recovery (restores layout data lost from localStorage)
-  useIndexedDBRecovery(initialNeedsAsyncRecovery, initialRecoveryLayoutIds);
 
   // Periodic layout snapshots for version history (every 2 minutes)
   useSnapshotAutoSave();
@@ -325,7 +353,7 @@ export default function App() {
     );
   };
 
-  if (initialLoadError) {
+  if (_appInitError) {
     return (
       <div className="h-screen flex items-center justify-center bg-surface p-8" role="alert">
         <div className="max-w-md text-center">
@@ -351,7 +379,7 @@ export default function App() {
             storage. Try clearing your browser data for this site.
           </p>
           <pre className="text-left text-xs rounded-lg p-3 mb-4 overflow-auto max-h-24 text-error bg-surface-elevated border border-stroke-subtle">
-            {initialLoadError.message}
+            {_appInitError.message}
           </pre>
           <button
             onClick={() => {

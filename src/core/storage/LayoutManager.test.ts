@@ -27,6 +27,17 @@ vi.mock('@/core/storage/backend', () => ({
   deleteAsync: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Mock the IndexedDB backend
+vi.mock('@/core/storage/backends/indexedDB', () => ({
+  saveLibraryIndex: vi.fn().mockResolvedValue(undefined),
+  loadLibraryIndex: vi.fn().mockResolvedValue(null),
+}));
+
+// Mock librarySync
+vi.mock('@/core/storage/librarySync', () => ({
+  notifyLibraryChanged: vi.fn(),
+}));
+
 // Mock validation to always pass
 vi.mock('@/utils/validation', () => ({
   validateImport: vi.fn(() => ({ valid: true })),
@@ -38,6 +49,7 @@ vi.mock('@/shared/utils/uuid', () => ({
 }));
 
 import * as backend from '@/core/storage/backend';
+import * as indexedDBBackend from '@/core/storage/backends/indexedDB';
 
 // === Test Fixtures ===
 
@@ -693,13 +705,11 @@ describe('switchActiveLayout', () => {
   });
 
   it('returns error when library save fails after loading target', async () => {
-    // First saveSyncGeneric call (from saveLayoutWithMetadata) succeeds,
+    // First saveLibraryIndex call (from saveLayoutWithMetadata) succeeds,
     // second call (switchActiveLayout's own library save) fails
-    vi.mocked(backend.saveSyncGeneric)
-      .mockImplementationOnce(() => {})
-      .mockImplementationOnce(() => {
-        throw new Error('Storage full');
-      });
+    vi.mocked(indexedDBBackend.saveLibraryIndex)
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('Storage full'));
     const fromLayout = createTestLayout();
     const library = createTestLibrary([
       createTestEntry('from-id', 'From'),
@@ -766,8 +776,7 @@ describe('updateCloudShare', () => {
       library
     );
 
-    expect(backend.saveSyncGeneric).toHaveBeenCalledWith(
-      'gridfinity-library-v1',
+    expect(indexedDBBackend.saveLibraryIndex).toHaveBeenCalledWith(
       expect.objectContaining({
         entries: expect.arrayContaining([
           expect.objectContaining({ cloudShare: expect.any(Object) }),
@@ -776,10 +785,8 @@ describe('updateCloudShare', () => {
     );
   });
 
-  it('returns error when library save fails', () => {
-    vi.mocked(backend.saveSyncGeneric).mockImplementationOnce(() => {
-      throw new Error('Storage full');
-    });
+  it('succeeds even when background library save would fail (fire-and-forget)', () => {
+    vi.mocked(indexedDBBackend.saveLibraryIndex).mockRejectedValueOnce(new Error('Storage full'));
     const library = createTestLibrary([createTestEntry('layout-1', 'Layout 1')]);
 
     const result = updateCloudShare(
@@ -788,7 +795,8 @@ describe('updateCloudShare', () => {
       library
     );
 
-    expectErr(result);
+    // Fire-and-forget: sync caller always returns ok
+    expectOk(result);
   });
 });
 
@@ -844,22 +852,20 @@ describe('renameLayoutEntry', () => {
 
     renameLayoutEntry('layout-1', 'New', library);
 
-    expect(backend.saveSyncGeneric).toHaveBeenCalledWith(
-      'gridfinity-library-v1',
+    expect(indexedDBBackend.saveLibraryIndex).toHaveBeenCalledWith(
       expect.objectContaining({
         entries: expect.arrayContaining([expect.objectContaining({ name: 'New' })]),
       })
     );
   });
 
-  it('returns error when library save fails', () => {
-    vi.mocked(backend.saveSyncGeneric).mockImplementationOnce(() => {
-      throw new Error('Storage full');
-    });
+  it('succeeds even when background library save would fail (fire-and-forget)', () => {
+    vi.mocked(indexedDBBackend.saveLibraryIndex).mockRejectedValueOnce(new Error('Storage full'));
     const library = createTestLibrary([createTestEntry('layout-1', 'Old')]);
 
     const result = renameLayoutEntry('layout-1', 'New', library);
 
-    expectErr(result);
+    // Fire-and-forget: sync caller always returns ok
+    expectOk(result);
   });
 });

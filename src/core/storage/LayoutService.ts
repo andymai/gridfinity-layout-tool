@@ -14,6 +14,7 @@
  */
 
 import * as backend from './backend';
+import * as indexedDB from './backends/indexedDB';
 import { validateImport } from '@/shared/utils/validation';
 import { generateCategoryId, generateLayerId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
@@ -30,10 +31,12 @@ import {
   storageUnavailable,
 } from '@/core/result';
 import { createStorageErrorClassifier } from './errorUtils';
+import { notifyLibraryChanged } from './librarySync';
 
 // Storage keys
 const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';
 const LIBRARY_STORAGE_KEY = 'gridfinity-library-v1';
+const ACTIVE_ID_STORAGE_KEY = 'gridfinity-library-active-id';
 const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
 
 /**
@@ -272,83 +275,125 @@ export function deleteLayoutSync(layoutId: string): void {
 // === Library Management ===
 
 /**
- * Save the layout library index to localStorage.
- * Returns Result with StorageError if storage is full.
+ * Save the layout library index to IndexedDB (fire-and-forget).
+ * Also writes activeLayoutId to localStorage for recovery.
  */
-export function saveLibrary(library: LayoutLibrary): Result<void, StorageError> {
-  return backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
+export function saveLibrary(library: LayoutLibrary): void {
+  indexedDB
+    .saveLibraryIndex(library)
+    .then(() => {
+      notifyLibraryChanged();
+    })
+    .catch((error: unknown) => {
+      console.warn('[LayoutService] Library save to IndexedDB failed:', error);
+    });
+  try {
+    window.localStorage.setItem(ACTIVE_ID_STORAGE_KEY, library.activeLayoutId);
+  } catch {
+    // Best-effort
+  }
 }
 
 /**
  * Save the layout library index with Result-based error handling.
- * @deprecated Use saveLibrary directly — it now returns Result.
+ * @deprecated Use saveLibrary directly.
  */
-export function saveLibraryResult(library: LayoutLibrary): Result<void, StorageError> {
-  return saveLibrary(library);
+export function saveLibraryResult(library: LayoutLibrary): void {
+  saveLibrary(library);
 }
 
 /**
- * Validate and clean a parsed library object.
- * Removes orphaned entries (layout data missing from storage) and
- * fixes the activeLayoutId if it points to a removed entry.
+ * Validate the structural integrity of a parsed library object.
+ * Does NOT check whether individual layouts exist in storage — that
+ * is deferred to reconcileLibraryAsync() after mount.
  *
- * Returns null if the library is structurally invalid or has no surviving entries.
+ * Returns null if the library is structurally invalid or has no entries.
  */
-function validateAndCleanLibrary(parsed: LayoutLibrary): LayoutLibrary | null {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- validate structure from localStorage
+function validateLibraryStructure(parsed: LayoutLibrary): LayoutLibrary | null {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- validate structure from storage
   if (!parsed.version || !parsed.activeLayoutId || !Array.isArray(parsed.entries)) {
     console.warn('Invalid library format');
     return null;
   }
 
-  // Validate each entry exists in storage (clean up orphaned entries)
-  const validEntries = parsed.entries.filter((entry: LayoutEntry) => {
-    const key = getLayoutStorageKey(entry.id);
-    try {
-      const exists = backend.loadSync(key) !== null;
-      if (!exists) {
-        console.warn(`Layout ${entry.id} listed in library but not found in storage, removing`);
-      }
-      return exists;
-    } catch {
-      console.warn(`Layout ${entry.id} listed in library but corrupted, removing`);
-      return false;
-    }
-  });
+  if (parsed.entries.length === 0) {
+    console.warn('Library has no entries, will recreate');
+    return null;
+  }
 
-  // If we lost some entries, persist the cleaned library
-  if (validEntries.length < parsed.entries.length) {
-    parsed.entries = validEntries;
-
-    if (validEntries.length === 0) {
-      console.warn('All library entries are corrupted/missing, will recreate');
-      return null;
-    }
-
-    // If active layout was removed, switch to first available
-    if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
-      parsed.activeLayoutId = validEntries[0].id;
-    }
-
-    // Persist cleanup so orphaned entries don't reappear on next load
-    try {
-      backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, parsed);
-    } catch {
-      // Best-effort: cleanup will re-run on next load if save fails
-    }
+  // Ensure activeLayoutId references a valid entry
+  if (!parsed.entries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
+    return { ...parsed, activeLayoutId: parsed.entries[0].id };
   }
 
   return parsed;
 }
 
 /**
- * Load the layout library index from localStorage.
+ * Reconcile library entries against actual layout data in storage.
+ * Removes orphaned entries whose layout data is missing from IndexedDB.
+ * Call this after mount to clean up without blocking startup.
+ */
+export async function reconcileLibraryAsync(library: LayoutLibrary): Promise<LayoutLibrary | null> {
+  const storedIds = new Set(await indexedDB.getAllLayoutIds());
+
+  const validEntries = library.entries.filter((entry: LayoutEntry) => {
+    const key = getLayoutStorageKey(entry.id);
+    const exists = storedIds.has(key);
+    if (!exists) {
+      console.warn(`Layout ${entry.id} listed in library but not found in IndexedDB, removing`);
+    }
+    return exists;
+  });
+
+  if (validEntries.length === library.entries.length) {
+    return null; // No changes needed
+  }
+
+  if (validEntries.length === 0) {
+    console.warn('All library entries are orphaned — will not clear library');
+    return null;
+  }
+
+  const cleaned: LayoutLibrary = {
+    ...library,
+    entries: validEntries,
+    activeLayoutId: validEntries.some((e) => e.id === library.activeLayoutId)
+      ? library.activeLayoutId
+      : validEntries[0].id,
+  };
+
+  // Persist cleaned library and notify other tabs
+  await indexedDB.saveLibraryIndex(cleaned).catch(() => {
+    // Best-effort
+  });
+  notifyLibraryChanged();
+
+  return cleaned;
+}
+
+/**
+ * Load the layout library index from IndexedDB.
+ */
+export async function loadLibraryAsync(): Promise<LayoutLibrary | null> {
+  try {
+    const parsed = await indexedDB.loadLibraryIndex();
+    if (!parsed) return null;
+    return validateLibraryStructure(parsed);
+  } catch (error) {
+    console.error('Failed to load library from IndexedDB:', error);
+    return null;
+  }
+}
+
+/**
+ * Load the layout library index from localStorage (sync fallback).
  */
 export function loadLibrary(): LayoutLibrary | null {
   try {
     const parsed = backend.loadSyncGeneric<LayoutLibrary>(LIBRARY_STORAGE_KEY);
     if (!parsed) return null;
-    return validateAndCleanLibrary(parsed);
+    return validateLibraryStructure(parsed);
   } catch (error) {
     console.error('Failed to load library:', error);
     return null;
@@ -357,6 +402,7 @@ export function loadLibrary(): LayoutLibrary | null {
 
 /**
  * Load the layout library index with Result-based error handling.
+ * @deprecated Reads from localStorage only. Use loadLibraryAsync() for IndexedDB reads.
  * Distinguishes between "not found" (no library saved yet) and "corrupted" (invalid data).
  *
  * @example
@@ -382,7 +428,7 @@ export function loadLibraryResult(): Result<LayoutLibrary, StorageError> {
       return err(storageNotFound(LIBRARY_STORAGE_KEY));
     }
 
-    const cleaned = validateAndCleanLibrary(parsed);
+    const cleaned = validateLibraryStructure(parsed);
     if (!cleaned) {
       return err(
         storageCorrupted(LIBRARY_STORAGE_KEY, [
@@ -475,24 +521,12 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
   if (isErr(layoutSaveResult)) {
     return err(layoutSaveResult.error);
   }
-  const librarySaveResult = saveLibrary(library);
-  if (isErr(librarySaveResult)) {
-    return err(librarySaveResult.error);
-  }
+  saveLibrary(library);
   backend.deleteSync(LEGACY_STORAGE_KEY);
 
   return ok(library);
 }
 
-/**
- * Initialize the layout library system.
- * Handles migration from legacy storage if needed.
- * Returns the library and the active layout.
- *
- * Note: This function is synchronous for fast startup. It reads/writes to
- * localStorage for immediate availability. New layouts are also saved to
- * IndexedDB asynchronously for future-proofing.
- */
 function createLibraryEntry(layoutId: LayoutId, layout: Layout): LayoutEntry {
   const now = Date.now();
   return {
@@ -514,22 +548,45 @@ function createLibraryWithLayout(layoutId: LayoutId, layout: Layout): LayoutLibr
   };
 }
 
-function persistNewLayout(layoutId: string, layout: Layout, library: LayoutLibrary): void {
-  saveLayoutSync(layoutId, layout);
+async function persistNewLayoutAsync(
+  layoutId: string,
+  layout: Layout,
+  library: LayoutLibrary
+): Promise<void> {
+  await saveLayoutAsync(layoutId, layout);
   saveLibrary(library);
-  saveLayoutAsync(layoutId, layout).catch(() => {
-    // Ignore errors - localStorage save is sufficient for now
-  });
 }
 
-export function initializeLayoutLibrary(): {
+/**
+ * Initialize the layout library system.
+ * Handles migration from legacy storage if needed.
+ * Returns the library and the active layout.
+ *
+ * Loads from IndexedDB (primary), falling back to localStorage for migration.
+ * Uses React Suspense via throw-promise pattern in App.tsx.
+ */
+export async function initializeLayoutLibrary(): Promise<{
   library: LayoutLibrary;
   activeLayout: Layout;
-  needsAsyncRecovery: boolean;
-  /** Original layout IDs to scan in IndexedDB during async recovery. */
-  recoveryLayoutIds: string[];
-} {
-  let library = loadLibrary() ?? migrateFromLegacyStorage();
+}> {
+  // Try IndexedDB first (primary), then localStorage fallback, then legacy migration
+  const idbLibrary = await loadLibraryAsync();
+  let library = idbLibrary ?? loadLibrary() ?? migrateFromLegacyStorage();
+
+  // If library came from localStorage (not IDB), migrate it to IndexedDB now
+  if (library && !idbLibrary) {
+    try {
+      await indexedDB.saveLibraryIndex(library);
+      // Migration succeeded — remove stale localStorage copy to prevent future fallback reads
+      try {
+        window.localStorage.removeItem(LIBRARY_STORAGE_KEY);
+      } catch {
+        // Best-effort cleanup
+      }
+    } catch {
+      // Best-effort migration — localStorage copy remains as fallback
+    }
+  }
 
   if (!library) {
     const layoutId = generateLayoutId();
@@ -552,16 +609,17 @@ export function initializeLayoutLibrary(): {
     };
 
     library = createLibraryWithLayout(layoutId, defaultLayout);
-    persistNewLayout(layoutId, defaultLayout, library);
+    await persistNewLayoutAsync(layoutId, defaultLayout, library);
   }
 
-  let activeLayout = loadLayoutSync(library.activeLayoutId);
+  // Load active layout from IndexedDB, then localStorage fallback
+  let activeLayout = await loadLayoutAsync(library.activeLayoutId);
 
   if (!activeLayout) {
     console.warn(`Active layout ${library.activeLayoutId} not found, attempting recovery`);
 
     for (const entry of library.entries) {
-      activeLayout = loadLayoutSync(entry.id);
+      activeLayout = await loadLayoutAsync(entry.id);
       if (activeLayout) {
         library.activeLayoutId = entry.id;
         saveLibrary(library);
@@ -570,10 +628,6 @@ export function initializeLayoutLibrary(): {
     }
 
     if (!activeLayout) {
-      // Preserve original IDs before overwriting — IndexedDB may still
-      // have data under these keys even though localStorage lost them.
-      const recoveryLayoutIds = library.entries.map((e) => e.id);
-
       const layoutId = generateLayoutId();
       const recoveredLayout: Layout = {
         version: '1.0',
@@ -590,15 +644,11 @@ export function initializeLayoutLibrary(): {
       activeLayout = recoveredLayout;
       library.activeLayoutId = layoutId;
       library.entries = [createLibraryEntry(layoutId, recoveredLayout)];
-      // Only write to localStorage — skip IndexedDB so async recovery can
-      // still find the real layout data there (see useIndexedDBRecovery).
-      saveLayoutSync(layoutId, recoveredLayout);
-      saveLibrary(library);
-      return { library, activeLayout, needsAsyncRecovery: true, recoveryLayoutIds };
+      await persistNewLayoutAsync(layoutId, recoveredLayout, library);
     }
   }
 
-  return { library, activeLayout, needsAsyncRecovery: false, recoveryLayoutIds: [] };
+  return { library, activeLayout };
 }
 
 // === Legacy API (Deprecated) ===

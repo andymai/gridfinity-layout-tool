@@ -10,19 +10,30 @@ import { useLabsStore, LABS_STORAGE_KEY } from '@/core/store/labs';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import * as validation from '@/shared/utils/validation';
-
 vi.mock('../../core/storage', () => ({
   loadLayoutAsync: vi.fn(),
-  loadLibrary: vi.fn(),
+  loadLibraryAsync: vi.fn(),
 }));
 
 vi.mock('../../shared/utils/validation', () => ({
   validateLayoutIntegrity: vi.fn(),
 }));
 
+// Capture the listener so tests can trigger it
+let capturedLibraryListener: (() => void) | null = null;
+vi.mock('../../core/storage/librarySync', () => ({
+  listenForLibraryChanges: vi.fn((cb: () => void) => {
+    capturedLibraryListener = cb;
+    return () => {
+      capturedLibraryListener = null;
+    };
+  }),
+}));
+
 describe('useCrossTabSync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    capturedLibraryListener = null;
 
     // Reset all stores for isolation
     resetAllStores();
@@ -37,7 +48,7 @@ describe('useCrossTabSync', () => {
     vi.restoreAllMocks();
   });
 
-  it('syncs library when library storage key changes', () => {
+  it('syncs library when BroadcastChannel notification received', async () => {
     const mockLibrary = {
       version: '1.0',
       activeLayoutId: 'new-layout',
@@ -58,24 +69,22 @@ describe('useCrossTabSync', () => {
         },
       ],
     };
-    vi.mocked(storage.loadLibrary).mockReturnValue(mockLibrary);
+    vi.mocked(storage.loadLibraryAsync).mockResolvedValue(mockLibrary);
 
     const setLibrarySpy = vi.spyOn(useLibraryStore.getState(), 'setLibrary');
 
     renderHook(() => useCrossTabSync());
 
+    // Trigger the captured BroadcastChannel listener
+    expect(capturedLibraryListener).not.toBeNull();
     act(() => {
-      window.dispatchEvent(
-        new StorageEvent('storage', {
-          key: 'gridfinity-library-v1',
-          newValue: JSON.stringify(mockLibrary),
-          oldValue: null,
-        })
-      );
+      capturedLibraryListener!();
     });
 
-    expect(storage.loadLibrary).toHaveBeenCalled();
-    expect(setLibrarySpy).toHaveBeenCalledWith(mockLibrary);
+    await vi.waitFor(() => {
+      expect(storage.loadLibraryAsync).toHaveBeenCalled();
+      expect(setLibrarySpy).toHaveBeenCalledWith(mockLibrary);
+    });
   });
 
   it('syncs active layout when its storage key changes', async () => {
@@ -172,7 +181,7 @@ describe('useCrossTabSync', () => {
       );
     });
 
-    expect(storage.loadLibrary).not.toHaveBeenCalled();
+    expect(storage.loadLibraryAsync).not.toHaveBeenCalled();
     expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
   });
 

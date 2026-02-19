@@ -23,8 +23,8 @@ export const CONSTRAINTS = {
   MIN_BIN_HEIGHT: 2, // Minimum bin height in units (1U = base only, no usable cavity)
   PRINT_GAP_MM: 10, // Gap between bins on print bed
   // Layout library constraints
-  LAYOUTS_MAX: 100, // Max layouts in library (localStorage limit)
-  LAYOUTS_WARNING_THRESHOLD: 80, // Show warning at this count
+  LAYOUTS_MAX: 500, // Max layouts in library (IndexedDB storage)
+  LAYOUTS_WARNING_THRESHOLD: 450, // Show warning at this count
   RECENT_LAYOUTS_COUNT: 5, // Number of recent layouts to show
   // Custom properties constraints
   CUSTOM_PROPERTY_MAX_COUNT: 50, // Max custom properties per bin

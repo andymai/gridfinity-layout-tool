@@ -7,7 +7,8 @@ import {
   LABS_STORAGE_KEY,
 } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
-import { loadLayoutAsync, loadLibrary } from '@/core/storage';
+import { loadLayoutAsync, loadLibraryAsync } from '@/core/storage';
+import { listenForLibraryChanges } from '@/core/storage/librarySync';
 import { layoutId as toLayoutId } from '@/core/types';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import { createDefaultLabsPreferences } from '@/core/labs';
@@ -19,6 +20,19 @@ import type { LabsPreferences } from '@/core/labs';
  */
 export function useCrossTabSync() {
   useEffect(() => {
+    // BroadcastChannel for library index sync (IndexedDB has no storage events)
+    const cleanupLibraryChannel = listenForLibraryChanges(() => {
+      loadLibraryAsync()
+        .then((newLibrary) => {
+          if (newLibrary) {
+            useLibraryStore.getState().setLibrary(newLibrary);
+          }
+        })
+        .catch((error: unknown) => {
+          console.error('[CrossTabSync] Failed to reload library:', error);
+        });
+    });
+
     const handleStorageChange = (e: StorageEvent) => {
       // Labs preferences changed - sync them
       if (e.key === LABS_STORAGE_KEY) {
@@ -32,15 +46,6 @@ export function useCrossTabSync() {
           });
         } catch {
           // Ignore parse errors
-        }
-        return;
-      }
-
-      // Library index changed - reload it
-      if (e.key === 'gridfinity-library-v1') {
-        const newLibrary = loadLibrary();
-        if (newLibrary) {
-          useLibraryStore.getState().setLibrary(newLibrary);
         }
         return;
       }
@@ -98,6 +103,9 @@ export function useCrossTabSync() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      cleanupLibraryChannel();
+    };
   }, []);
 }
