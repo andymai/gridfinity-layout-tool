@@ -213,7 +213,7 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
             depth: currentRect.depth,
           });
         }
-      });
+      }, 'Resize bin');
 
       // Track once per batch operation (not per bin)
       if (firstResize) {

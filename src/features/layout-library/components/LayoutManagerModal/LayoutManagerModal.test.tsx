@@ -599,6 +599,23 @@ describe('LayoutManagerModal Accessibility', () => {
         fireEvent.click(newLayoutButton);
       });
 
+      // Should show the drawer preset picker
+      await waitFor(() => {
+        expect(screen.getByText(/Choose a drawer size/i)).toBeInTheDocument();
+      });
+
+      // Select "My Defaults" preset
+      const customButton = screen.getByRole('button', { name: /My Defaults/i });
+      act(() => {
+        fireEvent.click(customButton);
+      });
+
+      // Click "Create Layout" to confirm
+      const createButton = screen.getByRole('button', { name: /Create Layout/i });
+      act(() => {
+        fireEvent.click(createButton);
+      });
+
       await waitFor(() => {
         expect(mockOnClose).toHaveBeenCalled();
       });

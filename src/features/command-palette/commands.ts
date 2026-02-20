@@ -130,7 +130,21 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     labelKey: 'commandPalette.duplicateSelected',
     category: 'edit',
     shortcut: { keys: SHORTCUTS.DUPLICATE.toUpperCase(), modifier: true },
-    keywords: ['copy', 'clone'],
+    keywords: ['clone'],
+  },
+  {
+    id: 'copy-bins',
+    labelKey: 'commandPalette.copyBins',
+    category: 'edit',
+    shortcut: { keys: SHORTCUTS.COPY.toUpperCase(), modifier: true },
+    keywords: ['clipboard', 'copy'],
+  },
+  {
+    id: 'paste-bins',
+    labelKey: 'commandPalette.pasteBins',
+    category: 'edit',
+    shortcut: { keys: SHORTCUTS.PASTE.toUpperCase(), modifier: true },
+    keywords: ['clipboard', 'paste'],
   },
   {
     id: 'rotate-bin',

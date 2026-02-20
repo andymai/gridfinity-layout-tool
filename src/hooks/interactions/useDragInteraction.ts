@@ -287,7 +287,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
             x: draggedBin.x,
             y: draggedBin.y,
           });
-        });
+        }, 'Move bins');
 
         // Show toast (operation is undoable via Ctrl+Z)
         const message = requiresRotation ? t('toast.binsSwappedRotated') : t('toast.binsSwapped');
@@ -317,7 +317,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
         for (const binId of interaction.binIds) {
           deleteBin(binId);
         }
-      });
+      }, 'Move bins');
       setSelectedBins([]);
       setDropTarget(null);
       setInteraction(null);
@@ -337,7 +337,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
           for (const binId of interaction.binIds) {
             updateBin(binId, { layerId: STAGING_ID });
           }
-        });
+        }, 'Move bins');
 
         // Track layer movement to staging
         mlTracking.trackLayerMove(firstBin, fromLayerId, STAGING_ID, 'drag', binsToStage.length);
@@ -380,7 +380,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
                 newBinIds.push(addResult.value);
               }
             }
-          });
+          }, 'Move bins');
           // Track ML telemetry for newly created duplicates
           if (newBinIds.length > 0) {
             const currentLayout = useLayoutStore.getState().layout;
@@ -425,7 +425,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
                 // Keep original height - don't auto-adjust to layer minimum
               });
             }
-          });
+          }, 'Move bins');
         }
       }
     }

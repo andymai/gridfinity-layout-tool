@@ -88,7 +88,7 @@ describe('history store', () => {
 
       const state = useHistoryStore.getState();
       expect(state.future).toHaveLength(1);
-      expect(state.future[0].name).toBe('Modified');
+      expect(state.future[0].layout.name).toBe('Modified');
       expect(state.canRedo).toBe(true);
     });
 
@@ -196,6 +196,92 @@ describe('history store', () => {
       expect(state.future).toHaveLength(0);
       expect(state.canUndo).toBe(false);
       expect(state.canRedo).toBe(false);
+    });
+  });
+
+  describe('descriptions', () => {
+    it('stores description with push', () => {
+      const { push } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      push(JSON.parse(JSON.stringify(layout)), 'Draw bin');
+
+      const state = useHistoryStore.getState();
+      expect(state.past[0].description).toBe('Draw bin');
+      expect(state.undoDescription).toBe('Draw bin');
+    });
+
+    it('defaults to empty string when no description', () => {
+      const { push } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      push(JSON.parse(JSON.stringify(layout)));
+
+      expect(useHistoryStore.getState().past[0].description).toBe('');
+    });
+
+    it('sets redoDescription after undo', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      push(JSON.parse(JSON.stringify(layout)), 'Add bin');
+      useLayoutStore.getState().setName('Modified');
+
+      undo();
+
+      const state = useHistoryStore.getState();
+      expect(state.redoDescription).toBe('Add bin');
+      expect(state.undoDescription).toBeNull();
+    });
+
+    it('updates undoDescription after redo', () => {
+      const { push, undo, redo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      push(JSON.parse(JSON.stringify(layout)), 'First action');
+      useLayoutStore.getState().setName('Modified');
+
+      undo();
+      redo();
+
+      const state = useHistoryStore.getState();
+      expect(state.undoDescription).toBe('First action');
+      expect(state.redoDescription).toBeNull();
+    });
+
+    it('tracks description through multiple undo/redo steps', () => {
+      const { push, undo, redo } = useHistoryStore.getState();
+
+      push(JSON.parse(JSON.stringify(createDefaultLayout())), 'Step 1');
+      useLayoutStore.getState().setName('State 2');
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'Step 2');
+      useLayoutStore.getState().setName('State 3');
+
+      expect(useHistoryStore.getState().undoDescription).toBe('Step 2');
+
+      undo();
+      expect(useHistoryStore.getState().undoDescription).toBe('Step 1');
+      expect(useHistoryStore.getState().redoDescription).toBe('Step 2');
+
+      undo();
+      expect(useHistoryStore.getState().undoDescription).toBeNull();
+      expect(useHistoryStore.getState().redoDescription).toBe('Step 1');
+
+      redo();
+      expect(useHistoryStore.getState().undoDescription).toBe('Step 1');
+    });
+
+    it('clears descriptions on clear()', () => {
+      const { push, clear } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      push(JSON.parse(JSON.stringify(layout)), 'Some action');
+
+      clear();
+
+      const state = useHistoryStore.getState();
+      expect(state.undoDescription).toBeNull();
+      expect(state.redoDescription).toBeNull();
     });
   });
 

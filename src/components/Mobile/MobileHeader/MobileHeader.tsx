@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore, useMobileStore } from '@/core/store';
+import { useShallow } from 'zustand/react/shallow';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { PresenceAvatars } from '@/components/Collab';
@@ -23,10 +24,16 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
   const layout = useLayoutStore((state) => state.layout);
   const setName = useLayoutStore((state) => state.setName);
 
-  const canUndo = useHistoryStore((state) => state.canUndo);
-  const canRedo = useHistoryStore((state) => state.canRedo);
-  const undo = useHistoryStore((state) => state.undo);
-  const redo = useHistoryStore((state) => state.redo);
+  const { canUndo, canRedo, undo, redo, undoDescription, redoDescription } = useHistoryStore(
+    useShallow((state) => ({
+      canUndo: state.canUndo,
+      canRedo: state.canRedo,
+      undo: state.undo,
+      redo: state.redo,
+      undoDescription: state.undoDescription,
+      redoDescription: state.redoDescription,
+    }))
+  );
 
   const toggleMobilePanel = useMobileStore((state) => state.toggleMobilePanel);
 
@@ -177,7 +184,13 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
             onClick={undo}
             disabled={!canUndo}
             className="btn btn-ghost btn-icon"
-            aria-label={canUndo ? t('common.undo') : t('mobile.header.nothingToUndo')}
+            aria-label={
+              canUndo
+                ? undoDescription
+                  ? `${t('common.undo')}: ${undoDescription}`
+                  : t('common.undo')
+                : t('mobile.header.nothingToUndo')
+            }
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -192,7 +205,13 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
             onClick={redo}
             disabled={!canRedo}
             className="btn btn-ghost btn-icon"
-            aria-label={canRedo ? t('common.redo') : t('mobile.header.nothingToRedo')}
+            aria-label={
+              canRedo
+                ? redoDescription
+                  ? `${t('common.redo')}: ${redoDescription}`
+                  : t('common.redo')
+                : t('mobile.header.nothingToRedo')
+            }
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

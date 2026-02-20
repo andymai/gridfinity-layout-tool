@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import {
   useLayoutStore,
@@ -15,7 +15,7 @@ import { useMutations } from '@/shared/contexts';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
-import type { BinId } from '@/core/types';
+import type { Bin, BinId, LayerId } from '@/core/types';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useGridNavigation } from '@/features/grid-editor';
@@ -122,7 +122,11 @@ export function useKeyboard() {
   const { handleNavigationKey } = useGridNavigation();
 
   const layout = useLayoutStore((state) => state.layout);
-  const { deleteBin, duplicateBin, updateBin } = useMutations();
+  const { addBin, deleteBin, duplicateBin, updateBin } = useMutations();
+
+  // Clipboard for copy/paste (session-only, no re-renders needed)
+  const clipboardRef = useRef<Bin[]>([]);
+  const pasteCountRef = useRef(0);
 
   // History store - use useShallow for multiple selectors
   const { undo, redo, canUndo, canRedo } = useHistoryStore(
@@ -161,7 +165,7 @@ export function useKeyboard() {
           for (const binId of selectedBinIds) {
             deleteBin(binId);
           }
-        });
+        }, 'Delete bins');
         setSelectedBins([]);
         return;
       }
@@ -216,7 +220,70 @@ export function useKeyboard() {
           if (newIds.length > 0) {
             setSelectedBins(newIds);
           }
+        }, 'Duplicate bins');
+        return;
+      }
+
+      // Copy selected bins (Ctrl+C)
+      if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.COPY && selectedBinIds.length > 0) {
+        e.preventDefault();
+        const bins = findBinsByIds(layout, selectedBinIds);
+        clipboardRef.current = bins;
+        pasteCountRef.current = 0;
+        addToast(t('toast.binsCopied', { count: bins.length }), 'info');
+        return;
+      }
+
+      // Paste bins (Ctrl+V)
+      if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.PASTE && clipboardRef.current.length > 0) {
+        e.preventDefault();
+        pasteCountRef.current += 1;
+        const offset = pasteCountRef.current;
+        const gridIds: BinId[] = [];
+        const stagingIds: BinId[] = [];
+
+        const makeBinParams = (bin: Bin, targetLayerId: LayerId, x: number, y: number) => ({
+          layerId: targetLayerId,
+          x,
+          y,
+          width: bin.width,
+          depth: bin.depth,
+          height: bin.height,
+          clearanceHeight: bin.clearanceHeight,
+          category: bin.category,
+          label: bin.label,
+          notes: bin.notes,
+          customProperties: bin.customProperties ? { ...bin.customProperties } : undefined,
+          linkedDesignId: bin.linkedDesignId,
         });
+
+        const pasteBinsTo = (
+          targetLayerId: LayerId,
+          getPosition: (bin: Bin) => { x: number; y: number },
+          ids: BinId[]
+        ) => {
+          for (const bin of clipboardRef.current) {
+            const { x, y } = getPosition(bin);
+            // Placement failures (collisions) are expected — collect successes
+            const r = addBin(makeBinParams(bin, targetLayerId, x, y)); // isErr → skip
+            if (isErr(r)) continue;
+            ids.push(r.value);
+          }
+        };
+
+        execute(() => {
+          pasteBinsTo(activeLayerId, (bin) => ({ x: bin.x + offset, y: bin.y + offset }), gridIds);
+          if (gridIds.length === 0) {
+            pasteBinsTo(STAGING_ID, () => ({ x: 0, y: 0 }), stagingIds);
+          }
+        }, 'Paste bins');
+
+        if (gridIds.length > 0) {
+          setSelectedBins(gridIds);
+          addToast(t('toast.binsPasted', { count: gridIds.length }), 'info');
+        } else if (stagingIds.length > 0) {
+          addToast(t('toast.binsPastedToStash', { count: stagingIds.length }), 'info');
+        }
         return;
       }
 
@@ -241,7 +308,7 @@ export function useKeyboard() {
             updates.y = result.movedTo.y;
           }
           updateBin(bin.id, updates);
-        });
+        }, 'Rotate bin');
 
         // Show toast if bin was relocated to fit rotation
         if (result.movedTo) {
@@ -284,6 +351,19 @@ export function useKeyboard() {
       if (key === SHORTCUTS.TOOL_SWITCH && e.shiftKey && !ctrlOrMeta) {
         e.preventDefault();
         navigateToDesigner();
+        return;
+      }
+
+      // Select all bins on active layer (Ctrl+A)
+      if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.SELECT_ALL) {
+        e.preventDefault();
+        const layerBins = layout.bins.filter(
+          (b) => b.layerId === activeLayerId && b.layerId !== STAGING_ID
+        );
+        if (layerBins.length > 0) {
+          setSelectedBins(layerBins.map((b) => b.id));
+          addToast(t('toast.selectedAll', { count: layerBins.length }), 'info');
+        }
         return;
       }
 
@@ -346,7 +426,7 @@ export function useKeyboard() {
             for (const bin of binsToUpdate) {
               updateBin(bin.id, { category: newCategoryId });
             }
-          });
+          }, 'Change category');
 
           // Track once per batch (not per bin)
           mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
@@ -466,7 +546,7 @@ export function useKeyboard() {
                 if (!bin) continue;
                 updateBin(binId, { x: bin.x + dx, y: bin.y + dy });
               }
-            });
+            }, 'Move bins');
           }
         }
         return;
@@ -482,6 +562,7 @@ export function useKeyboard() {
       redo,
       zoomIn,
       zoomOut,
+      addBin,
       deleteBin,
       duplicateBin,
       updateBin,

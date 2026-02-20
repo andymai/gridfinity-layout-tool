@@ -54,7 +54,7 @@ export interface InteractionContext {
   deleteBin: (id: BinId) => void;
 
   // Undo/redo wrapper
-  execute: (fn: () => void) => void;
+  execute: (fn: () => void, description?: string) => void;
 
   // Shared refs for pointer tracking (managed by parent)
   activePointerIdRef: RefObject<number | null>;

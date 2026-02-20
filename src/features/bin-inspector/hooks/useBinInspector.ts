@@ -67,6 +67,10 @@ export interface UseBinInspectorReturn {
   clearSelection: () => void;
   rotateBin: () => boolean;
 
+  // Alignment
+  alignBins: (direction: 'left' | 'right' | 'top' | 'bottom') => void;
+  matchDimension: (dim: 'width' | 'depth') => void;
+
   // Confirmation state
   deleteConfirmState: ConfirmDeleteState | null;
 
@@ -230,7 +234,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         } else {
           updateBin(bin.id, { notes: value as string });
         }
-      });
+      }, 'Update bin');
     },
     [
       bin,
@@ -256,7 +260,7 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       execute(() => {
         updateBin(bin.id, { customProperties: properties });
-      });
+      }, 'Update properties');
     },
     [bin, execute, updateBin, addToast]
   );
@@ -277,7 +281,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         for (const b of binsToUpdate) {
           if (isErr(updateBin(b.id, { category: brandedCategoryId }))) break;
         }
-      });
+      }, 'Change category');
 
       // Track once per batch with category name (not per bin)
       if (category && binsToUpdate.length > 0) {
@@ -302,7 +306,7 @@ export function useBinInspector(): UseBinInspectorReturn {
             customProperties: { ...existing, [trimmedKey]: trimmedValue },
           });
         }
-      });
+      }, 'Update properties');
 
       addToast(
         t('toast.customPropertySet', { key: trimmedKey, count: selectedBins.length }),
@@ -332,7 +336,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           const newHeight = clamp(b.height + delta, minHeight, binMaxHeight);
           updateBin(b.id, { height: newHeight });
         }
-      });
+      }, 'Change height');
     },
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
   );
@@ -354,7 +358,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           const newClearance = clamp((b.clearanceHeight || 0) + delta, 0, maxClearance);
           updateBin(b.id, { clearanceHeight: newClearance });
         }
-      });
+      }, 'Change height');
     },
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
   );
@@ -398,7 +402,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           layerId: targetLayerId,
           // Keep bin's original height - don't auto-adjust to layer minimum
         });
-      });
+      }, 'Move to layer');
 
       // Track layer movement after execution
       mlTracking.trackLayerMove(bin, fromLayerId, targetLayerId, 'inspector', 1);
@@ -458,7 +462,7 @@ export function useBinInspector(): UseBinInspectorReturn {
             // Keep bin's original height - don't auto-adjust to layer minimum
           });
         }
-      });
+      }, 'Move to layer');
 
       // Track layer movement after execution
       mlTracking.trackLayerMove(firstBin, fromLayerId, targetLayerId, 'inspector', movable.length);
@@ -568,6 +572,149 @@ export function useBinInspector(): UseBinInspectorReturn {
     return true;
   }, [bin, layout, execute, updateBin, addToast, t]);
 
+  const alignBins = useCallback(
+    (direction: 'left' | 'right' | 'top' | 'bottom') => {
+      const nonStagingBins = selectedBins.filter((b) => b.layerId !== STAGING_ID);
+      if (nonStagingBins.length < 2) return;
+
+      const excludeIds = new Set(nonStagingBins.map((b) => b.id));
+
+      // Compute target position based on direction
+      let target: number;
+      switch (direction) {
+        case 'left':
+          target = Math.min(...nonStagingBins.map((b) => b.x));
+          break;
+        case 'right':
+          target = Math.max(...nonStagingBins.map((b) => b.x + b.width));
+          break;
+        case 'top':
+          target = Math.max(...nonStagingBins.map((b) => b.y + b.depth));
+          break;
+        case 'bottom':
+          target = Math.min(...nonStagingBins.map((b) => b.y));
+          break;
+      }
+
+      const moves: Array<{ id: (typeof nonStagingBins)[0]['id']; x: number; y: number }> = [];
+      let skipped = 0;
+
+      for (const b of nonStagingBins) {
+        let newX = b.x;
+        let newY = b.y;
+        switch (direction) {
+          case 'left':
+            newX = target;
+            break;
+          case 'right':
+            newX = target - b.width;
+            break;
+          case 'top':
+            newY = target - b.depth;
+            break;
+          case 'bottom':
+            newY = target;
+            break;
+        }
+
+        if (newX === b.x && newY === b.y) continue; // Already aligned
+
+        const check = canPlaceBin(
+          { x: newX, y: newY, width: b.width, depth: b.depth, height: b.height },
+          b.layerId,
+          layout,
+          b.id,
+          excludeIds
+        );
+        if (check.valid) {
+          moves.push({ id: b.id, x: newX, y: newY });
+        } else {
+          skipped++;
+        }
+      }
+
+      if (moves.length > 0) {
+        execute(() => {
+          for (const move of moves) {
+            const result = updateBin(move.id, { x: move.x, y: move.y });
+            if (isErr(result)) break;
+          }
+        }, `Align ${direction}`);
+      }
+
+      if (skipped > 0 && moves.length > 0) {
+        addToast(t('toast.alignmentPartial', { moved: moves.length, skipped }), 'info');
+      } else if (skipped > 0 && moves.length === 0) {
+        addToast(t('toast.alignmentBlocked'), 'error');
+      }
+    },
+    [selectedBins, layout, execute, updateBin, addToast, t]
+  );
+
+  const matchDimension = useCallback(
+    (dim: 'width' | 'depth') => {
+      const nonStagingBins = selectedBins.filter((b) => b.layerId !== STAGING_ID);
+      if (nonStagingBins.length < 2) return;
+
+      // Target = most common value
+      const counts = new Map<number, number>();
+      for (const b of nonStagingBins) {
+        const val = b[dim];
+        counts.set(val, (counts.get(val) ?? 0) + 1);
+      }
+      let targetVal = nonStagingBins[0][dim];
+      let maxCount = 0;
+      for (const [val, count] of counts) {
+        if (count > maxCount) {
+          maxCount = count;
+          targetVal = val;
+        }
+      }
+
+      const excludeIds = new Set(nonStagingBins.map((b) => b.id));
+      const updates: Array<{ id: (typeof nonStagingBins)[0]['id']; update: Partial<Bin> }> = [];
+      let skipped = 0;
+
+      for (const b of nonStagingBins) {
+        if (b[dim] === targetVal) continue;
+
+        const newDims = { ...b, [dim]: targetVal };
+        const check = canPlaceBin(
+          {
+            x: newDims.x,
+            y: newDims.y,
+            width: newDims.width,
+            depth: newDims.depth,
+            height: newDims.height,
+          },
+          b.layerId,
+          layout,
+          b.id,
+          excludeIds
+        );
+        if (check.valid) {
+          updates.push({ id: b.id, update: { [dim]: targetVal } });
+        } else {
+          skipped++;
+        }
+      }
+
+      if (updates.length > 0) {
+        execute(() => {
+          for (const u of updates) {
+            const result = updateBin(u.id, u.update);
+            if (isErr(result)) break;
+          }
+        }, `Match ${dim}`);
+      }
+
+      if (skipped > 0) {
+        addToast(t('toast.matchBlocked', { skipped }), 'info');
+      }
+    },
+    [selectedBins, layout, execute, updateBin, addToast, t]
+  );
+
   return {
     // Selection state
     selectedBins,
@@ -598,6 +745,10 @@ export function useBinInspector(): UseBinInspectorReturn {
     moveToStaging,
     clearSelection,
     rotateBin,
+
+    // Alignment
+    alignBins,
+    matchDimension,
 
     // Confirmation state
     deleteConfirmState,

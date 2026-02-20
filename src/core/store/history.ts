@@ -6,11 +6,6 @@ import { useSelectionStore } from './selection';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
-/**
- * Deep clone a layout object.
- * Uses structuredClone for performance when available (modern browsers),
- * falls back to JSON serialization for older environments.
- */
 function cloneLayout(layout: Layout): Layout {
   if (typeof structuredClone === 'function') {
     return structuredClone(layout);
@@ -24,11 +19,6 @@ function cloneLayout(layout: Layout): Layout {
   }
 }
 
-/**
- * Remove stale bin references from the selection store after layout restoration.
- * Called after undo/redo to prevent selectedBinIds, focusedBinId, etc. from
- * referencing bins that no longer exist in the restored layout.
- */
 function pruneStaleSelections(restoredLayout: Layout): void {
   const binIds = new Set(restoredLayout.bins.map((b) => b.id));
   const layerIds = new Set(restoredLayout.layers.map((l) => l.id));
@@ -59,14 +49,21 @@ function pruneStaleSelections(restoredLayout: Layout): void {
   }
 }
 
+export interface HistoryEntry {
+  layout: Layout;
+  description: string;
+}
+
 interface HistoryState {
-  past: Layout[];
-  future: Layout[];
+  past: HistoryEntry[];
+  future: HistoryEntry[];
 
   canUndo: boolean;
   canRedo: boolean;
+  undoDescription: string | null;
+  redoDescription: string | null;
 
-  push: (layout: Layout) => void;
+  push: (layout: Layout, description?: string) => void;
   undo: () => void;
   redo: () => void;
   clear: () => void;
@@ -77,18 +74,23 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   future: [],
   canUndo: false,
   canRedo: false,
+  undoDescription: null,
+  redoDescription: null,
 
-  push: (layout) => {
+  push: (layout, description) => {
     set((state) => {
-      const newPast = [...state.past, layout];
+      const entry: HistoryEntry = { layout, description: description ?? '' };
+      const newPast = [...state.past, entry];
       if (newPast.length > CONSTRAINTS.UNDO_LIMIT) {
         newPast.shift();
       }
       return {
         past: newPast,
-        future: [], // Clear future on new action
+        future: [],
         canUndo: true,
         canRedo: false,
+        undoDescription: description ?? null,
+        redoDescription: null,
       };
     });
   },
@@ -98,21 +100,30 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     if (past.length === 0) return;
 
     const current = useLayoutStore.getState().layout;
-    const previous = past[past.length - 1];
+    const previousEntry = past[past.length - 1];
 
-    set((state) => ({
-      past: state.past.slice(0, -1),
-      future: [current, ...state.future],
-      canUndo: state.past.length > 1,
-      canRedo: true,
-    }));
+    set((state) => {
+      const newPast = state.past.slice(0, -1);
+      const currentEntry: HistoryEntry = {
+        layout: current,
+        description: previousEntry.description,
+      };
+      return {
+        past: newPast,
+        future: [currentEntry, ...state.future],
+        canUndo: newPast.length > 0,
+        canRedo: true,
+        undoDescription:
+          newPast.length > 0 ? newPast[newPast.length - 1].description || null : null,
+        redoDescription: previousEntry.description || null,
+      };
+    });
 
-    useLayoutStore.setState({ layout: previous });
-    pruneStaleSelections(previous);
+    useLayoutStore.setState({ layout: previousEntry.layout });
+    pruneStaleSelections(previousEntry.layout);
 
     // Track undo for ML telemetry
-    // previousLayout = state we're reverting TO, currentLayout = state we had BEFORE undo
-    mlTracking.trackUndoOp(previous, current);
+    mlTracking.trackUndoOp(previousEntry.layout, current);
   },
 
   redo: () => {
@@ -120,21 +131,37 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     if (future.length === 0) return;
 
     const current = useLayoutStore.getState().layout;
-    const next = future[0];
+    const nextEntry = future[0];
 
-    set((state) => ({
-      past: [...state.past, current],
-      future: state.future.slice(1),
-      canUndo: true,
-      canRedo: state.future.length > 1,
-    }));
+    set((state) => {
+      const newFuture = state.future.slice(1);
+      const currentEntry: HistoryEntry = {
+        layout: current,
+        description: nextEntry.description,
+      };
+      return {
+        past: [...state.past, currentEntry],
+        future: newFuture,
+        canUndo: true,
+        canRedo: newFuture.length > 0,
+        undoDescription: nextEntry.description || null,
+        redoDescription: newFuture.length > 0 ? newFuture[0].description || null : null,
+      };
+    });
 
-    useLayoutStore.setState({ layout: next });
-    pruneStaleSelections(next);
+    useLayoutStore.setState({ layout: nextEntry.layout });
+    pruneStaleSelections(nextEntry.layout);
   },
 
   clear: () => {
-    set({ past: [], future: [], canUndo: false, canRedo: false });
+    set({
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false,
+      undoDescription: null,
+      redoDescription: null,
+    });
   },
 }));
 
@@ -147,7 +174,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
  *
  * @example
  * ```ts
- * const result = execute(() => addBin({ ... }));
+ * const result = execute(() => addBin({ ... }), 'Draw bin');
  * if (isOk(result)) {
  *   // handle success
  * } else {
@@ -166,15 +193,15 @@ export function useUndoableAction() {
   }, [layout]);
 
   const execute = useCallback(
-    <T>(action: () => T): T => {
-      push(cloneLayout(layoutRef.current));
+    <T>(action: () => T, description?: string): T => {
+      push(cloneLayout(layoutRef.current), description);
       const result = action();
       // Record timestamp AFTER action executes for accurate undo timing
       mlTracking.recordAction();
       return result;
     },
     [push]
-  ); // Only depends on push, which is stable from Zustand
+  );
 
   return { execute };
 }

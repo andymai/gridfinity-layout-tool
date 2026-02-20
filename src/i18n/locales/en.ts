@@ -116,6 +116,8 @@ const en: Record<string, string> = {
   'header.undo': 'Undo ({mod}+Z)',
   'header.redoAction': 'Redo last undone action ({mod}+Y or {mod}+Shift+Z)',
   'header.redo': 'Redo ({mod}+Y)',
+  'header.undoWithDesc': 'Undo: {desc} ({mod}+Z)',
+  'header.redoWithDesc': 'Redo: {desc} ({mod}+Y)',
   'header.showHelp': 'Show keyboard shortcuts (? or /)',
   'header.helpAndShortcuts': 'Show help and keyboard shortcuts',
   'header.pressForHelp': 'Press',
@@ -268,6 +270,7 @@ const en: Record<string, string> = {
   'inspector.multi.duplicate': 'Duplicate All',
   'inspector.multi.toStash': 'All to Stash',
   'inspector.multi.clearanceTooltip': 'Extra blocked space above bins for tall contents',
+  'inspector.multi.dragHint': 'Drag to move together, or use arrow keys to nudge.',
   'inspector.split.title': 'Oversized for print bed',
   'inspector.split.message':
     'This {width}×{depth} bin ({widthMm}×{depthMm}mm) exceeds your print bed ({bedSize}mm). It will be split into smaller pieces for printing.',
@@ -301,6 +304,15 @@ const en: Record<string, string> = {
   'inspector.customPropertiesCount': '{count} custom properties',
   'inspector.deleteAll': 'Delete All',
   'inspector.deselectAllBins': 'Deselect all bins',
+  'inspector.alignment': 'Alignment',
+  'inspector.alignLeft': 'Align left edges',
+  'inspector.alignRight': 'Align right edges',
+  'inspector.alignTop': 'Align top edges',
+  'inspector.alignBottom': 'Align bottom edges',
+  'inspector.matchWidth': 'Match width',
+  'inspector.matchWidthShort': 'W=',
+  'inspector.matchDepth': 'Match depth',
+  'inspector.matchDepthShort': 'D=',
   'inspector.deselectBin': 'Deselect bin',
   'inspector.fitsPrintBedDimensions': '{binWidth}×{binDepth} fits print bed ({max}mm)',
   'inspector.layer': 'Layer',
@@ -554,6 +566,20 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Layout Library
   // ===========================================================================
+  // ===========================================================================
+  // Drawer Presets
+  // ===========================================================================
+  'presets.chooseSize': 'Choose a drawer size preset or use your saved defaults:',
+  'presets.ikeaAlex': 'IKEA Alex',
+  'presets.ikeaHelmer': 'IKEA Helmer',
+  'presets.harborFreight44': 'Harbor Freight 44"',
+  'presets.small': 'Small',
+  'presets.medium': 'Medium',
+  'presets.large': 'Large',
+  'presets.custom': 'My Defaults',
+  'presets.savedDefaults': 'From settings',
+  'presets.createLayout': 'Create Layout',
+
   'layouts.title': 'Layouts',
   'layouts.newLayout': 'New Layout',
   'layouts.createNewLayoutDescription': 'Start fresh with an empty drawer',
@@ -818,6 +844,8 @@ const en: Record<string, string> = {
   'help.shortcut.frontView': 'Front view',
   'help.shortcut.sideView': 'Side view',
   'help.shortcut.rotate': 'Rotate selected bin',
+  'help.shortcut.copy': 'Copy selected bins',
+  'help.shortcut.paste': 'Paste bins',
   'help.shortcut.selectAll': 'Select all bins on layer',
   'help.shortcut.togglePaintMode': 'Toggle paint mode',
   'help.shortcut.toolSwitch': 'Switch Grid Planner / Bin Designer',
@@ -1088,6 +1116,12 @@ const en: Record<string, string> = {
   'toast.selectedByCategory': 'Selected {count} {name} bin(s)',
   'toast.categoriesSavedAsDefaults': 'Categories saved as defaults',
   'toast.categoriesResetToBuiltIn': 'Reset to built-in categories',
+  'toast.binsCopied': 'Copied {count} bin(s)',
+  'toast.binsPasted': 'Pasted {count} bin(s)',
+  'toast.binsPastedToStash': 'Pasted {count} bin(s) to stash (no room on layer)',
+  'toast.alignmentBlocked': 'Cannot align: bins would collide',
+  'toast.alignmentPartial': 'Aligned {moved} bin(s), {skipped} skipped (collisions)',
+  'toast.matchBlocked': '{skipped} bin(s) could not be resized (collisions)',
 
   // ===========================================================================
   // Grid Editor
@@ -1671,6 +1705,8 @@ const en: Record<string, string> = {
   'commandPalette.redo': 'Redo',
   'commandPalette.deleteSelected': 'Delete Selected',
   'commandPalette.duplicateSelected': 'Duplicate Selected',
+  'commandPalette.copyBins': 'Copy Bins',
+  'commandPalette.pasteBins': 'Paste Bins',
   'commandPalette.rotateBin': 'Rotate Bin',
   'commandPalette.quickLabel': 'Quick Label',
   'commandPalette.clearSelection': 'Clear Selection',

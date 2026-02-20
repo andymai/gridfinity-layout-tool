@@ -197,14 +197,22 @@ export function useLayoutSwitcher() {
    */
   const createNewLayout = useCallback(
     async (
-      name?: string
+      options?: string | { name?: string; drawer?: Partial<Layout['drawer']> }
     ): Promise<Result<string, StorageError | UnknownError | LayoutLibraryLimitError>> => {
+      // Normalize string arg (backwards compat) to options object
+      const opts = typeof options === 'string' ? { name: options } : options;
+
       // Save current layout first
       await saveCurrentLayout();
 
       // Create new layout with user's default settings
       const newLayout = createLayoutWithSettings(settings);
-      newLayout.name = name || 'Untitled layout';
+      newLayout.name = opts?.name || 'Untitled layout';
+
+      // Apply drawer overrides from presets
+      if (opts?.drawer) {
+        newLayout.drawer = { ...newLayout.drawer, ...opts.drawer };
+      }
 
       try {
         // Get fresh library state after saveCurrentLayout (may have updated it)

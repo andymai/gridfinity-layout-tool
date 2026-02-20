@@ -313,4 +313,8 @@ export const SHORTCUTS = {
   LAYOUT_MANAGER: 'o', // with Ctrl/Cmd - "Open" layouts
   // Tool switching
   TOOL_SWITCH: 'D', // Shift+D — toggle between Grid Editor and Bin Designer
+  // Clipboard
+  SELECT_ALL: 'a', // with Ctrl/Cmd
+  COPY: 'c', // with Ctrl/Cmd
+  PASTE: 'v', // with Ctrl/Cmd
 } as const;

@@ -224,7 +224,7 @@ export function useStagingDragInteraction(
     if (currentDropTarget === 'trash') {
       execute(() => {
         deleteBin(interaction.binId);
-      });
+      }, 'Delete from stash');
       setDropTarget(null);
       setInteraction(null);
       return;
@@ -244,7 +244,7 @@ export function useStagingDragInteraction(
             layerId: activeLayerId,
             // Keep bin's original height - don't auto-adjust to layer minimum
           });
-        });
+        }, 'Restore from stash');
         setSelectedBin(interaction.binId);
         // Track for ML telemetry (bin moved from staging to grid)
         mlTracking.trackPlacement({ ...bin, x, y, layerId: activeLayerId }, 'staging');

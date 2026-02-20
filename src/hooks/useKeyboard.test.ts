@@ -248,7 +248,7 @@ describe('useKeyboard', () => {
       const pastLayout = createDefaultLayout();
       pastLayout.name = 'Past State';
       useHistoryStore.setState({
-        past: [pastLayout],
+        past: [{ layout: pastLayout, description: '' }],
         future: [],
         canUndo: true,
       });
@@ -267,7 +267,7 @@ describe('useKeyboard', () => {
     it('triggers undo on Meta+Z (Mac)', () => {
       const pastLayout = createDefaultLayout();
       useHistoryStore.setState({
-        past: [pastLayout],
+        past: [{ layout: pastLayout, description: '' }],
         future: [],
         canUndo: true,
       });
@@ -286,7 +286,7 @@ describe('useKeyboard', () => {
       futureLayout.name = 'Future State';
       useHistoryStore.setState({
         past: [],
-        future: [futureLayout],
+        future: [{ layout: futureLayout, description: '' }],
         canRedo: true,
       });
 
@@ -304,7 +304,7 @@ describe('useKeyboard', () => {
       const futureLayout = createDefaultLayout();
       useHistoryStore.setState({
         past: [],
-        future: [futureLayout],
+        future: [{ layout: futureLayout, description: '' }],
         canRedo: true,
       });
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '@/core/constants';
 import { getGridBins } from '@/shared/utils';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
@@ -6,6 +6,57 @@ import type { Layer } from '@/core/types';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
 import { useTranslation } from '@/i18n';
+
+const ALIGN_BUTTONS: Array<{
+  direction: 'left' | 'right' | 'top' | 'bottom';
+  titleKey: string;
+  icon: ReactNode;
+}> = [
+  {
+    direction: 'left',
+    titleKey: 'inspector.alignLeft',
+    icon: (
+      <>
+        <line x1="4" y1="4" x2="4" y2="20" />
+        <rect x="7" y="6" width="10" height="4" rx="1" />
+        <rect x="7" y="14" width="6" height="4" rx="1" />
+      </>
+    ),
+  },
+  {
+    direction: 'right',
+    titleKey: 'inspector.alignRight',
+    icon: (
+      <>
+        <line x1="20" y1="4" x2="20" y2="20" />
+        <rect x="7" y="6" width="10" height="4" rx="1" />
+        <rect x="11" y="14" width="6" height="4" rx="1" />
+      </>
+    ),
+  },
+  {
+    direction: 'bottom',
+    titleKey: 'inspector.alignBottom',
+    icon: (
+      <>
+        <line x1="4" y1="20" x2="20" y2="20" />
+        <rect x="6" y="7" width="4" height="10" rx="1" />
+        <rect x="14" y="11" width="4" height="6" rx="1" />
+      </>
+    ),
+  },
+  {
+    direction: 'top',
+    titleKey: 'inspector.alignTop',
+    icon: (
+      <>
+        <line x1="4" y1="4" x2="20" y2="4" />
+        <rect x="6" y="7" width="4" height="10" rx="1" />
+        <rect x="14" y="7" width="4" height="6" rx="1" />
+      </>
+    ),
+  },
+];
 
 interface MultiBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -139,7 +190,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
       </div>
 
       <p className={`${isMobile ? 'text-base' : 'text-sm'} text-content-secondary mb-4`}>
-        Drag to move together, or use arrow keys to nudge.
+        {t('inspector.multi.dragHint')}
       </p>
 
       <div className="space-y-3">
@@ -301,6 +352,52 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
             </p>
           )}
         </div>
+
+        {/* Alignment - only for 2+ non-staging bins */}
+        {gridBins.length >= 2 && (
+          <div>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              {t('inspector.alignment')}
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {ALIGN_BUTTONS.map(({ direction, titleKey, icon }) => (
+                <button
+                  key={direction}
+                  type="button"
+                  onClick={() => inspector.alignBins(direction)}
+                  className={`btn btn-secondary ${isMobile ? 'h-10' : 'h-8'}`}
+                  title={t(titleKey)}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    {icon}
+                  </svg>
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => inspector.matchDimension('width')}
+                className={`btn btn-secondary text-[10px] font-medium ${isMobile ? 'h-10' : 'h-8'}`}
+                title={t('inspector.matchWidth')}
+              >
+                {t('inspector.matchWidthShort')}
+              </button>
+              <button
+                type="button"
+                onClick={() => inspector.matchDimension('depth')}
+                className={`btn btn-secondary text-[10px] font-medium ${isMobile ? 'h-10' : 'h-8'}`}
+                title={t('inspector.matchDepth')}
+              >
+                {t('inspector.matchDepthShort')}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-2">

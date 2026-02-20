@@ -56,12 +56,14 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
     }))
   );
 
-  const { canUndo, canRedo, undo, redo } = useHistoryStore(
+  const { canUndo, canRedo, undo, redo, undoDescription, redoDescription } = useHistoryStore(
     useShallow((state) => ({
       canUndo: state.canUndo,
       canRedo: state.canRedo,
       undo: state.undo,
       redo: state.redo,
+      undoDescription: state.undoDescription,
+      redoDescription: state.redoDescription,
     }))
   );
 
@@ -280,7 +282,11 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             onClick={undo}
             disabled={!canUndo}
             className="btn btn-ghost btn-icon"
-            title={t('header.undoAction', { mod: modKey })}
+            title={
+              undoDescription
+                ? t('header.undoWithDesc', { desc: undoDescription, mod: modKey })
+                : t('header.undoAction', { mod: modKey })
+            }
             aria-label={t('header.undo', { mod: modKey })}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -296,7 +302,11 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             onClick={redo}
             disabled={!canRedo}
             className="btn btn-ghost btn-icon"
-            title={t('header.redoAction', { mod: modKey })}
+            title={
+              redoDescription
+                ? t('header.redoWithDesc', { desc: redoDescription, mod: modKey })
+                : t('header.redoAction', { mod: modKey })
+            }
             aria-label={t('header.redo', { mod: modKey })}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

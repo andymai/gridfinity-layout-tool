@@ -15,10 +15,11 @@ import { downloadArchive, importArchive } from '@/core/storage';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
+import { DrawerPresetPicker } from './DrawerPresetPicker/DrawerPresetPicker';
 
 export type SortOption = 'recent' | 'name' | 'size' | 'binCount';
 
-type Tab = 'layouts' | 'import';
+type Tab = 'layouts' | 'import' | 'new-layout';
 
 export interface ShareModalRenderProps {
   isOpen: boolean;
@@ -140,13 +141,20 @@ function LayoutManagerModalContent({
     [library.entries, switchLayout, announceToScreenReader, onClose]
   );
 
-  const handleCreate = useCallback(async () => {
-    const result = await createNewLayout();
-    if (isOk(result)) {
-      announceToScreenReader('New layout created');
-      onClose();
-    }
-  }, [createNewLayout, announceToScreenReader, onClose]);
+  const handleCreate = useCallback(() => {
+    setActiveTab('new-layout');
+  }, []);
+
+  const handlePresetSelect = useCallback(
+    async (drawer: { width: number; depth: number; height: number }) => {
+      const result = await createNewLayout({ drawer });
+      if (isOk(result)) {
+        announceToScreenReader('New layout created');
+        onClose();
+      }
+    },
+    [createNewLayout, announceToScreenReader, onClose]
+  );
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -266,7 +274,7 @@ function LayoutManagerModalContent({
         {/* Header */}
         <div className="flex justify-between items-center border-b border-stroke-subtle px-6 py-4">
           <div className="flex items-center gap-3">
-            {activeTab === 'import' && (
+            {(activeTab === 'import' || activeTab === 'new-layout') && (
               <button
                 onClick={() => setActiveTab('layouts')}
                 className="p-1 text-content-secondary hover:text-content transition-colors rounded hover:bg-surface"
@@ -289,7 +297,11 @@ function LayoutManagerModalContent({
               </button>
             )}
             <h2 id="layout-manager-title" className="text-2xl font-bold text-content">
-              {activeTab === 'layouts' ? t('layouts.layouts') : t('common.import')}
+              {activeTab === 'layouts'
+                ? t('layouts.layouts')
+                : activeTab === 'new-layout'
+                  ? t('layouts.newLayout')
+                  : t('common.import')}
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -355,6 +367,15 @@ function LayoutManagerModalContent({
                 onDuplicate={handleDuplicate}
                 onDelete={handleDelete}
                 onShare={handleShare}
+              />
+            </div>
+          )}
+
+          {activeTab === 'new-layout' && (
+            <div className="pt-4">
+              <DrawerPresetPicker
+                onSelect={handlePresetSelect}
+                onCancel={() => setActiveTab('layouts')}
               />
             </div>
           )}

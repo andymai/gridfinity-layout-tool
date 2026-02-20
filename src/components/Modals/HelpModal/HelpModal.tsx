@@ -109,6 +109,8 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     nameKey: 'help.category.editing',
     icon: <HelpCategoryIcon paths={ICON_PATHS.edit} />,
     shortcuts: [
+      { keys: 'C', descriptionKey: 'help.shortcut.copy', modifier: true },
+      { keys: 'V', descriptionKey: 'help.shortcut.paste', modifier: true },
       { keys: 'D', descriptionKey: 'help.shortcut.duplicate', modifier: true },
       { keys: formatKey(SHORTCUTS.DELETE), descriptionKey: 'help.shortcut.delete' },
       { keys: formatKey(SHORTCUTS.ROTATE).toUpperCase(), descriptionKey: 'help.shortcut.rotate' },

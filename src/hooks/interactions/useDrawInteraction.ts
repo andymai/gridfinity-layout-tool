@@ -149,7 +149,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             // Track for PostHog analytics
             trackBinCreated({ method: 'draw', count: 1, width, depth, height: layer.height });
           }
-        });
+        }, 'Draw bin');
       }
     } else if (interaction.type === 'paint') {
       // Paint mode - fill the selected area with bins of paintSize
@@ -202,7 +202,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             });
             trackPaintMode('exited', 1);
           }
-        });
+        }, 'Draw bin');
         return;
       }
 
@@ -266,7 +266,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
                 }
               }
             }
-          });
+          }, 'Draw bin');
 
           // Select all placed bins
           if (placedBinIds.length > 0) {
