@@ -28,6 +28,7 @@ import {
   hasComplexGeometry,
   getComplexityReasons,
   getBinsLinkedToDesign,
+  dimensionsMatch,
   compareDimensions,
   extractBinDimensions,
   checkBatchSyncEligibility,
@@ -112,7 +113,7 @@ export function useBinResizedListener(): void {
           height: newDimensions.height,
         };
 
-        const updateResult = await updateDesignParams(linkedDesignId, newParams, null);
+        const updateResult = await updateDesignParams(linkedDesignId, newParams);
         if (isErr(updateResult)) {
           addToastRef.current({
             message: tRef.current('designLinking.toast.designUpdateFailed'),
@@ -134,8 +135,13 @@ export function useBinResizedListener(): void {
 
         // Cascade to sibling bins (other bins linked to the same design)
         const layout = layoutRef.current;
-        const siblingBins = getBinsLinkedToDesign(layout.bins, linkedDesignId).filter(
+        const allSiblings = getBinsLinkedToDesign(layout.bins, linkedDesignId).filter(
           (b) => b.id !== binId
+        );
+
+        // Only cascade to siblings whose dimensions actually differ
+        const siblingBins = allSiblings.filter(
+          (b) => !dimensionsMatch(extractBinDimensions(b), newDimensions)
         );
 
         if (siblingBins.length === 0) {
@@ -147,7 +153,7 @@ export function useBinResizedListener(): void {
           return;
         }
 
-        // Check eligibility for sibling bins
+        // Check eligibility for sibling bins that need syncing
         const eligibility = checkBatchSyncEligibility(siblingBins, newDimensions, layout);
         const allEligible = eligibility.every((e) => e.canSync);
 
