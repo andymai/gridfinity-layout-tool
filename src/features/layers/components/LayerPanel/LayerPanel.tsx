@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUndoableAction } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
@@ -13,9 +13,16 @@ import { useToastStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
 import { layerId as toLayerId } from '@/core/types';
+import { UnusedSpaceRow } from './UnusedSpaceRow';
+import { computeProportionalHeights } from '@/features/layers/utils/proportionalHeights';
 
 // Drop position indicator for drag-and-drop reordering
 type DropPosition = { index: number; position: 'above' | 'below' } | null;
+
+/** Minimum row height in pixels to keep controls usable */
+const MIN_ROW_HEIGHT_PX = 32;
+/** Total container height for the proportional layer stack */
+const STACK_CONTAINER_HEIGHT_PX = 160;
 
 export function LayerPanel() {
   const t = useTranslation();
@@ -46,6 +53,7 @@ export function LayerPanel() {
   const drawerHeight = layout.drawer.height;
   const canAddLayer = layers.length < CONSTRAINTS.LAYERS_MAX && totalLayerHeight < drawerHeight;
   const heightFull = totalLayerHeight >= drawerHeight;
+  const unusedHeight = Math.max(0, drawerHeight - totalLayerHeight);
 
   const totalCells = layout.drawer.width * layout.drawer.depth;
   const hasMultipleLayers = layers.length > 1;
@@ -67,6 +75,18 @@ export function LayerPanel() {
   // Display is reversed: index 0 in display = last in array (top layer)
   const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;
   const displayLayers = getDisplayLayers(layers);
+
+  // Proportional heights for the visual stack
+  // Depend on `layers` (stable store ref) not `displayLayers` (new array each render)
+  const proportionalHeights = useMemo(() => {
+    const displayLayerHeights = getDisplayLayers(layers).map((l) => l.height);
+    return computeProportionalHeights(
+      displayLayerHeights,
+      unusedHeight,
+      STACK_CONTAINER_HEIGHT_PX,
+      MIN_ROW_HEIGHT_PX
+    );
+  }, [layers, unusedHeight]);
 
   const handleAddLayer = () => {
     const topLayer = layers[layers.length - 1];
@@ -275,29 +295,14 @@ export function LayerPanel() {
     </button>
   );
 
+  // Height totals for the summary line
+  const heightUnitMm = layout.heightUnitMm;
+  const usedMm = Math.round(totalLayerHeight * heightUnitMm);
+  const totalMm = Math.round(drawerHeight * heightUnitMm);
+
   return (
     <div>
       <CollapsibleSection title={t('common.layers')} variant="default" actions={addLayerButton}>
-        {/* Height capacity indicator - only show for multiple layers */}
-        {hasMultipleLayers && (
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-surface-elevated">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{
-                  width: `${Math.min(100, (totalLayerHeight / drawerHeight) * 100)}%`,
-                  backgroundColor: heightFull ? 'var(--color-warning)' : 'var(--color-info)',
-                }}
-              />
-            </div>
-            <span
-              className={`text-xs tabular-nums ${heightFull ? 'text-warning' : 'text-content-tertiary'}`}
-            >
-              {totalLayerHeight}/{drawerHeight}u
-            </span>
-          </div>
-        )}
-
         {/* Reorder error message */}
         {reorderError && (
           <div className="mb-3 p-2 rounded-md flex items-center gap-2 animate-shake bg-error-muted border border-error text-error text-xs">
@@ -318,8 +323,19 @@ export function LayerPanel() {
           </div>
         )}
 
-        {/* Layer list - always visible */}
-        <div className="flex flex-col gap-1 mb-3">
+        {/* Proportional layer stack — layers displayed top-to-bottom (visual top layer first) */}
+        <div
+          className="flex flex-col gap-0.5 mb-3 rounded overflow-hidden border border-stroke-subtle"
+          style={{ height: `${STACK_CONTAINER_HEIGHT_PX}px` }}
+        >
+          {/* Unused drawer space at top */}
+          {unusedHeight > 0 && (
+            <div className="flex-shrink-0" style={{ height: `${proportionalHeights.unusedPx}px` }}>
+              <UnusedSpaceRow unusedHeight={unusedHeight} heightUnitMm={heightUnitMm} />
+            </div>
+          )}
+
+          {/* Layer rows — proportionally sized */}
           {displayLayers.map((layer, displayIndex) => {
             const isActive = layer.id === activeLayerId;
             const isEditing = editingLayerId === layer.id;
@@ -333,9 +349,14 @@ export function LayerPanel() {
               dropPosition?.index === displayIndex && dropPosition.position === 'above';
             const showDropBelow =
               dropPosition?.index === displayIndex && dropPosition.position === 'below';
+            const rowHeight = proportionalHeights.layerPxHeights[displayIndex] ?? MIN_ROW_HEIGHT_PX;
 
             return (
-              <div key={layer.id} className="relative">
+              <div
+                key={layer.id}
+                className="relative flex-shrink-0"
+                style={{ height: `${rowHeight}px` }}
+              >
                 {/* Drop indicator - above (absolute so no layout shift) */}
                 {showDropAbove && (
                   <div className="absolute -top-0.5 left-0 right-0 h-1 bg-accent z-10 pointer-events-none" />
@@ -350,7 +371,7 @@ export function LayerPanel() {
                   onDrop={handleDrop}
                   onDragEnd={handleDragEnd}
                   onClick={() => !isEditing && setActiveLayer(layer.id)}
-                  className={`group flex items-center gap-2 px-2 py-1.5 text-xs transition-all border-l-2 ${
+                  className={`group flex items-center gap-2 px-2 h-full text-xs transition-all border-l-2 ${
                     isActive
                       ? 'bg-accent/15 border-l-accent text-content font-medium'
                       : 'bg-surface-elevated/50 text-content-tertiary hover:bg-surface-elevated hover:text-content-secondary cursor-pointer border-l-transparent'
@@ -509,6 +530,23 @@ export function LayerPanel() {
               </div>
             );
           })}
+        </div>
+
+        {/* Height totals line */}
+        <div className="flex justify-between text-[10px] text-content-disabled tabular-nums mb-3">
+          <span>
+            {t('layers.heightTotal', {
+              used: totalLayerHeight,
+              total: drawerHeight,
+              usedMm,
+              totalMm,
+            })}
+          </span>
+          {heightFull && (
+            <span className="text-warning">
+              {t('layers.maxHeightFull', { current: totalLayerHeight, max: drawerHeight })}
+            </span>
+          )}
         </div>
 
         {/* Stats line */}

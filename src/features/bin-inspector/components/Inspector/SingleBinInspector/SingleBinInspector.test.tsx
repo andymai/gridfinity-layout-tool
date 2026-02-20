@@ -67,6 +67,8 @@ describe('SingleBinInspector', () => {
       maxClearance: 5,
       maxGridUnits: 6,
       heightRange: '3-12u',
+      minHeightReason: 'layer_height',
+      maxHeightReason: 'remaining_space',
     },
     updateField: vi.fn(),
     updateMultiCategory: vi.fn(),
@@ -124,7 +126,7 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByText('4u')).toBeInTheDocument();
+      expect(screen.getByText('4u (28mm)')).toBeInTheDocument();
     });
 
     it('renders clearance control when maxClearance > 0', () => {
@@ -143,6 +145,8 @@ describe('SingleBinInspector', () => {
           maxClearance: 0,
           maxGridUnits: 6,
           heightRange: '3-12u',
+          minHeightReason: 'layer_height' as const,
+          maxHeightReason: 'remaining_space' as const,
         },
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);

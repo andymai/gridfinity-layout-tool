@@ -98,6 +98,8 @@ describe('useBinInspector', () => {
         maxGridUnits: 5,
         needsSplit: false,
         heightRange: '2u',
+        minHeightReason: 'global_minimum',
+        maxHeightReason: 'drawer_height',
       });
     });
 

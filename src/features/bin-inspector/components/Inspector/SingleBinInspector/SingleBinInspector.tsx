@@ -9,6 +9,7 @@ import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
+import { formatHeight } from '@/shared/utils/heightFormat';
 
 // Lazy load LinkedDesignSection
 const LinkedDesignSection = lazy(() =>
@@ -198,10 +199,26 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               max={constraints.maxHeight}
               variant={variant}
               ariaLabel="Bin height"
-              displayValue={`${bin.height}u`}
+              displayValue={formatHeight(bin.height, layout.heightUnitMm)}
             />
-            <div className="text-center mt-1 text-[10px] text-content-disabled">
-              {constraints.heightRange}
+            <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
+              <div>
+                {constraints.minHeightReason === 'layer_height'
+                  ? t('inspector.minHeightHint', {
+                      min: constraints.minHeight,
+                      reason: t('inspector.heightReasonLayerHeight'),
+                    })
+                  : t('inspector.minHeightHintNoReason', { min: constraints.minHeight })}
+              </div>
+              <div>
+                {t('inspector.maxHeightHint', {
+                  max: constraints.maxHeight,
+                  reason:
+                    constraints.maxHeightReason === 'remaining_space'
+                      ? t('inspector.heightReasonRemainingSpace')
+                      : t('inspector.heightReasonDrawerHeight'),
+                })}
+              </div>
             </div>
           </div>
 

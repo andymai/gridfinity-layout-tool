@@ -44,6 +44,9 @@ export type BinField =
   | 'label'
   | 'notes';
 
+export type MinHeightReason = 'layer_height' | 'global_minimum';
+export type MaxHeightReason = 'remaining_space' | 'drawer_height';
+
 export interface BinConstraints {
   minHeight: number;
   maxHeight: number;
@@ -51,6 +54,10 @@ export interface BinConstraints {
   maxGridUnits: number;
   needsSplit: boolean;
   heightRange: string;
+  /** Why the minimum height is what it is */
+  minHeightReason: MinHeightReason;
+  /** Why the maximum height is what it is */
+  maxHeightReason: MaxHeightReason;
 }
 
 export interface ConfirmDeleteState {
@@ -150,6 +157,8 @@ export function useBinInspector(): UseBinInspectorReturn {
         maxGridUnits: 5,
         needsSplit: false,
         heightRange: `${CONSTRAINTS.MIN_BIN_HEIGHT}u`,
+        minHeightReason: 'global_minimum',
+        maxHeightReason: 'drawer_height',
       };
     }
 
@@ -169,6 +178,8 @@ export function useBinInspector(): UseBinInspectorReturn {
         maxGridUnits,
         needsSplit,
         heightRange: `${minHeight}u – ${maxHeight}u`,
+        minHeightReason: 'global_minimum',
+        maxHeightReason: 'drawer_height',
       };
     }
 
@@ -185,6 +196,9 @@ export function useBinInspector(): UseBinInspectorReturn {
       maxGridUnits,
       needsSplit,
       heightRange: `${minHeight}u – ${maxHeight}u`,
+      minHeightReason:
+        layer.height > CONSTRAINTS.MIN_BIN_HEIGHT ? 'layer_height' : 'global_minimum',
+      maxHeightReason: 'remaining_space',
     };
   }, [bin, layer, layout.drawer.height, layout.layers, layout.printBedSize, layout.gridUnitMm]);
 
