@@ -13,7 +13,6 @@ import { HalfBinModeBlockedModal } from '@/components/Modals';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
-import { formatHeight } from '@/shared/utils/heightFormat';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
@@ -298,7 +297,7 @@ export function Sidebar() {
                         max={CONSTRAINTS.GRID_MAX}
                         variant="compact"
                         ariaLabel="Drawer height in units"
-                        displayValue={formatHeight(drawer.height, heightUnitMm)}
+                        displayValue={`${drawer.height}u`}
                       />
                     </div>
                   </div>

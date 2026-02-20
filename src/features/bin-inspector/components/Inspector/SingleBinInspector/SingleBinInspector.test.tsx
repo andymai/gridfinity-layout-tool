@@ -126,7 +126,7 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByText('4u (28mm)')).toBeInTheDocument();
+      expect(screen.getByText('4u')).toBeInTheDocument();
     });
 
     it('renders clearance control when maxClearance > 0', () => {

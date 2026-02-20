@@ -298,11 +298,6 @@ export function LayerPanel() {
     </button>
   );
 
-  // Height totals for the summary line
-  const heightUnitMm = layout.heightUnitMm;
-  const usedMm = Math.round(totalLayerHeight * heightUnitMm);
-  const totalMm = Math.round(drawerHeight * heightUnitMm);
-
   return (
     <div>
       <CollapsibleSection title={t('common.layers')} variant="default" actions={addLayerButton}>
@@ -334,7 +329,7 @@ export function LayerPanel() {
           {/* Unused drawer space at top */}
           {unusedHeight > 0 && (
             <div className="flex-shrink-0" style={{ height: `${proportionalHeights.unusedPx}px` }}>
-              <UnusedSpaceRow unusedHeight={unusedHeight} heightUnitMm={heightUnitMm} />
+              <UnusedSpaceRow unusedHeight={unusedHeight} />
             </div>
           )}
 
@@ -541,8 +536,6 @@ export function LayerPanel() {
             {t('layers.heightTotal', {
               used: totalLayerHeight,
               total: drawerHeight,
-              usedMm,
-              totalMm,
             })}
           </span>
           {heightFull && (

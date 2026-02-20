@@ -9,7 +9,6 @@ import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
-import { formatHeight } from '@/shared/utils/heightFormat';
 
 // Lazy load LinkedDesignSection
 const LinkedDesignSection = lazy(() =>
@@ -199,7 +198,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               max={constraints.maxHeight}
               variant={variant}
               ariaLabel="Bin height"
-              displayValue={formatHeight(bin.height, layout.heightUnitMm)}
+              displayValue={`${bin.height}u`}
             />
             <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
               <div>
