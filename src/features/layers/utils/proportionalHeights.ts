@@ -1,9 +1,9 @@
 /**
  * Compute proportional pixel heights for layers + unused space.
  *
- * Two-pass approach:
- *  1. Give every segment the minimum pixel height.
- *  2. Distribute the remaining pixels proportionally by unit height.
+ * Layers are the primary content and get allocated first. Unused space
+ * is a passive indicator that gets whatever remains, capped so it never
+ * dominates the visual hierarchy.
  */
 export function computeProportionalHeights(
   layerHeights: number[],
@@ -12,35 +12,41 @@ export function computeProportionalHeights(
   minPx: number,
   gapPx: number = 0
 ): { layerPxHeights: number[]; unusedPx: number } {
-  // Build segment list: layers + optional unused space
-  const segments = unusedHeight > 0 ? [...layerHeights, unusedHeight] : [...layerHeights];
-  const count = segments.length;
+  const layerCount = layerHeights.length;
 
-  if (count === 0) {
+  if (layerCount === 0) {
     return { layerPxHeights: [], unusedPx: 0 };
   }
 
+  const hasUnused = unusedHeight > 0;
+  const segmentCount = layerCount + (hasUnused ? 1 : 0);
+
   // Subtract inter-segment gaps from available space
-  const availablePx = Math.max(0, containerPx - (count - 1) * gapPx);
+  const availablePx = Math.max(0, containerPx - (segmentCount - 1) * gapPx);
 
-  // Pass 1: assign minimum to each segment
-  const results = segments.map(() => minPx);
-  const surplusPx = Math.max(0, availablePx - count * minPx);
+  // Reserve space for unused row: a small fixed portion, never more than 30%
+  // of available space and never less than minPx (when present)
+  const maxUnusedPx = Math.round(availablePx * 0.3);
+  const unusedPx = hasUnused ? Math.min(minPx, maxUnusedPx) : 0;
 
-  // Pass 2: distribute surplus proportionally by unit height
-  const totalUnits = segments.reduce((sum, h) => sum + h, 0);
-  if (surplusPx > 0 && totalUnits > 0) {
+  // Remaining space goes entirely to layers
+  const layerAvailablePx = availablePx - unusedPx;
+
+  // Distribute among layers proportionally with minimum guarantee
+  const results = layerHeights.map(() => minPx);
+  const surplusPx = Math.max(0, layerAvailablePx - layerCount * minPx);
+
+  const totalLayerUnits = layerHeights.reduce((sum, h) => sum + h, 0);
+  if (surplusPx > 0 && totalLayerUnits > 0) {
     let distributed = 0;
-    for (let i = 0; i < count; i++) {
-      const share = Math.round((segments[i] / totalUnits) * surplusPx);
+    for (let i = 0; i < layerCount; i++) {
+      const share = Math.round((layerHeights[i] / totalLayerUnits) * surplusPx);
       results[i] += share;
       distributed += share;
     }
-    // Assign any rounding remainder to the last segment
-    results[count - 1] += surplusPx - distributed;
+    // Assign any rounding remainder to the last layer
+    results[layerCount - 1] += surplusPx - distributed;
   }
 
-  const layerPxHeights = results.slice(0, layerHeights.length);
-  const unusedPx = unusedHeight > 0 ? results[count - 1] : 0;
-  return { layerPxHeights, unusedPx };
+  return { layerPxHeights: results, unusedPx };
 }

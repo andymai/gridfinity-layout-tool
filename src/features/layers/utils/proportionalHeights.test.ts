@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { computeProportionalHeights } from './proportionalHeights';
 
 describe('computeProportionalHeights', () => {
-  const CONTAINER = 160;
-  const MIN = 32;
+  const CONTAINER = 200;
+  const MIN = 40;
 
   it('returns empty for no layers', () => {
     const result = computeProportionalHeights([], 0, CONTAINER, MIN);
@@ -25,18 +25,8 @@ describe('computeProportionalHeights', () => {
   it('distributes unequal layers proportionally', () => {
     // 3u and 6u — 1:2 ratio
     const result = computeProportionalHeights([3, 6], 0, CONTAINER, MIN);
-    // Both get min (32) + surplus distributed 1:2
-    // surplus = 160 - 64 = 96, layer1 gets 32, layer2 gets 64
     expect(result.layerPxHeights[0]).toBeLessThan(result.layerPxHeights[1]);
     expect(result.layerPxHeights[0] + result.layerPxHeights[1]).toBe(CONTAINER);
-  });
-
-  it('includes unused space as last segment', () => {
-    const result = computeProportionalHeights([3], 3, CONTAINER, MIN);
-    // 2 equal segments — should split evenly
-    expect(result.layerPxHeights).toHaveLength(1);
-    expect(result.unusedPx).toBeGreaterThan(0);
-    expect(result.layerPxHeights[0] + result.unusedPx).toBe(CONTAINER);
   });
 
   it('handles zero unused space without adding segment', () => {
@@ -46,9 +36,8 @@ describe('computeProportionalHeights', () => {
   });
 
   it('guarantees minimum height when many layers overflow', () => {
-    // 6 layers at minPx=32 need 192px but container is only 160px
+    // 6 layers at minPx=40 need 240px but container is only 200px
     const result = computeProportionalHeights([1, 1, 1, 1, 1, 1], 0, CONTAINER, MIN);
-    // Every segment should get at least minPx
     for (const px of result.layerPxHeights) {
       expect(px).toBeGreaterThanOrEqual(MIN);
     }
@@ -60,49 +49,62 @@ describe('computeProportionalHeights', () => {
     expect(result.layerPxHeights).toEqual([MIN, MIN]);
   });
 
-  it('handles single layer with unused space', () => {
-    const result = computeProportionalHeights([3], 9, CONTAINER, MIN);
-    // 3u layer + 9u unused — 1:3 ratio
-    expect(result.unusedPx).toBeGreaterThan(result.layerPxHeights[0]);
-    expect(result.layerPxHeights[0] + result.unusedPx).toBe(CONTAINER);
-  });
+  describe('unused space', () => {
+    it('gives unused space a compact fixed size, not proportional', () => {
+      // 6u unused vs 6u layers — unused should NOT get 50% of space
+      const result = computeProportionalHeights([3, 3], 6, CONTAINER, MIN);
+      expect(result.unusedPx).toBe(MIN); // capped at minPx
+      // Layers get the rest
+      const layerTotal = result.layerPxHeights.reduce((s, h) => s + h, 0);
+      expect(layerTotal + result.unusedPx).toBeLessThanOrEqual(CONTAINER);
+    });
 
-  it('total pixels always equal container when segments fit', () => {
-    // Various configurations
-    const configs = [
-      { layers: [1], unused: 0 },
-      { layers: [3, 6], unused: 3 },
-      { layers: [2, 4, 6], unused: 0 },
-      { layers: [1, 1, 1, 1], unused: 8 },
-    ];
-    for (const { layers, unused } of configs) {
-      const result = computeProportionalHeights(layers, unused, CONTAINER, MIN);
-      const total = result.layerPxHeights.reduce((s, h) => s + h, 0) + result.unusedPx;
-      expect(total).toBe(CONTAINER);
-    }
+    it('layers dominate the space even with large unused height', () => {
+      const result = computeProportionalHeights([3], 9, CONTAINER, MIN);
+      // Unused should be compact, not 75% of the container
+      expect(result.unusedPx).toBeLessThanOrEqual(MIN);
+      expect(result.layerPxHeights[0]).toBeGreaterThan(result.unusedPx);
+    });
+
+    it('unused space is zero when no unused height', () => {
+      const result = computeProportionalHeights([6, 6], 0, CONTAINER, MIN);
+      expect(result.unusedPx).toBe(0);
+    });
   });
 
   describe('with gap', () => {
-    const GAP = 2;
+    const GAP = 4;
 
     it('subtracts gap space from available pixels', () => {
-      // 2 segments with 2px gap = 2px reserved for gaps
+      // 2 layers, 1 gap = 4px reserved
       const result = computeProportionalHeights([3, 3], 0, CONTAINER, MIN, GAP);
       const total = result.layerPxHeights.reduce((s, h) => s + h, 0);
-      // Row heights should sum to container minus gap space
-      expect(total).toBe(CONTAINER - GAP); // 160 - 2 = 158
+      expect(total).toBe(CONTAINER - GAP); // 200 - 4 = 196
     });
 
-    it('subtracts multiple gaps for multiple segments', () => {
-      // 3 layers + unused = 4 segments, 3 gaps = 6px
-      const result = computeProportionalHeights([2, 2, 2], 6, CONTAINER, MIN, GAP);
+    it('subtracts multiple gaps for segments including unused', () => {
+      // 2 layers + unused = 3 segments, 2 gaps = 8px
+      const result = computeProportionalHeights([3, 3], 6, CONTAINER, MIN, GAP);
       const total = result.layerPxHeights.reduce((s, h) => s + h, 0) + result.unusedPx;
-      expect(total).toBe(CONTAINER - 3 * GAP); // 160 - 6 = 154
+      expect(total).toBe(CONTAINER - 2 * GAP); // 200 - 8 = 192
     });
 
     it('single segment has no gap', () => {
       const result = computeProportionalHeights([6], 0, CONTAINER, MIN, GAP);
       expect(result.layerPxHeights).toEqual([CONTAINER]); // no gaps to subtract
     });
+  });
+
+  it('layer pixel total is consistent across configurations', () => {
+    const configs = [
+      { layers: [1], unused: 0 },
+      { layers: [3, 6], unused: 0 },
+      { layers: [2, 4, 6], unused: 0 },
+    ];
+    for (const { layers, unused } of configs) {
+      const result = computeProportionalHeights(layers, unused, CONTAINER, MIN);
+      const total = result.layerPxHeights.reduce((s, h) => s + h, 0) + result.unusedPx;
+      expect(total).toBe(CONTAINER);
+    }
   });
 });
