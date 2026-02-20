@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateDesignerShare } from './designerValidation';
+import { validateDesignerShare } from './designerValidation.js';
 
 function validPayload() {
   return {
@@ -28,7 +28,7 @@ function validPayload() {
       compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
       label: { enabled: false, support: 'bracket', depth: 12, width: 100, alignment: 'center' },
       walls: { front: 0, back: 0, left: 0, right: 0 },
-      inserts: [],
+      inserts: [] as Record<string, unknown>[],
     },
   };
 }
