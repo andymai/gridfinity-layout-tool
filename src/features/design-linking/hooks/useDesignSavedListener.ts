@@ -111,7 +111,11 @@ export function useDesignSavedListener(): void {
       );
     }
 
-    // Reconcile on mount: catch design changes that happened while the listener was unmounted
+    // Subscribe first so no events are dropped during reconciliation
+    const unsubscribe = onSyncEvent<DesignSavedEvent>('design-saved', handleDesignSaved);
+
+    // Reconcile on mount: catch design changes that happened while the listener was unmounted.
+    // Safe to run after subscribing because handleDesignSaved is idempotent (dimensionsMatch guard).
     const layout = layoutRef.current;
     const designIds = getLinkedDesignIds(layout.bins);
     for (const designId of designIds) {
@@ -124,6 +128,6 @@ export function useDesignSavedListener(): void {
       }
     }
 
-    return onSyncEvent<DesignSavedEvent>('design-saved', handleDesignSaved);
+    return unsubscribe;
   }, [layoutRef, tRef, updateBinRef, executeRef, addToastRef, showSyncDialogRef, registryRef]);
 }
