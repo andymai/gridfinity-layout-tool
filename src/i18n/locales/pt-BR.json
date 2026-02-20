@@ -854,7 +854,7 @@
   "layers.increaseHeight": "Aumentar altura de {name}",
   "layers.layerButtonAria": "{name}, altura {height}u, {coverage}% preenchido{suffix}",
   "layers.layerNamePlaceholder": "Nome do layer",
-  "layers.maxHeightFull": "Altura máxima ({max} unidades)",
+  "layers.maxHeightFull": "Altura da gaveta cheia ({current}/{max}u)",
   "layers.maxLayersReached": "Máximo de layers atingido",
   "layers.noBins": "Nenhum bin",
   "layers.noBinsToClear": "Nenhum bin para limpar",

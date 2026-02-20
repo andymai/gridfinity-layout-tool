@@ -854,7 +854,7 @@
   "layers.increaseHeight": "{name} Höhe erhöhen",
   "layers.layerButtonAria": "{name}, {height}u Höhe, {coverage}% gefüllt{suffix}",
   "layers.layerNamePlaceholder": "Layer-Name",
-  "layers.maxHeightFull": "Maximale Höhe ({max} Einheiten)",
+  "layers.maxHeightFull": "Schubladenhöhe voll ({current}/{max}u)",
   "layers.maxLayersReached": "Maximale Layers erreicht",
   "layers.noBins": "Keine Bins",
   "layers.noBinsToClear": "Keine Bins zum Löschen",

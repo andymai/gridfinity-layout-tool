@@ -854,7 +854,7 @@
   "layers.increaseHeight": "Augmenter la hauteur de {name}",
   "layers.layerButtonAria": "{name}, hauteur {height}u, {coverage}% rempli{suffix}",
   "layers.layerNamePlaceholder": "Nom du layer",
-  "layers.maxHeightFull": "Hauteur maximale ({max} unités)",
+  "layers.maxHeightFull": "Hauteur du tiroir pleine ({current}/{max}u)",
   "layers.maxLayersReached": "Maximum de layers atteint",
   "layers.noBins": "Aucun bin",
   "layers.noBinsToClear": "Aucun bin à effacer",

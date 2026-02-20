@@ -854,7 +854,7 @@
   "layers.increaseHeight": "{name} hoogte verhogen",
   "layers.layerButtonAria": "{name}, {height}u hoogte, {coverage}% gevuld{suffix}",
   "layers.layerNamePlaceholder": "Layernaam",
-  "layers.maxHeightFull": "Maximale hoogte ({max} eenheden)",
+  "layers.maxHeightFull": "Ladehoogte vol ({current}/{max}u)",
   "layers.maxLayersReached": "Maximaal aantal layers bereikt",
   "layers.noBins": "Geen bins",
   "layers.noBinsToClear": "Geen bins om te wissen",
