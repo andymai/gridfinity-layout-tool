@@ -33,7 +33,7 @@ function createMockRequest(overrides: Partial<VercelRequest> = {}): VercelReques
 function createMockResponse(): VercelResponse & { _status: number; _body: unknown } {
   const res = {
     _status: 0,
-    _body: null,
+    _body: null as unknown,
     _headers: {} as Record<string, string>,
     status(code: number) {
       res._status = code;
@@ -99,7 +99,7 @@ describe('liveblocks-auth handler', () => {
       getClientIP: vi.fn().mockReturnValue('127.0.0.1'),
     }));
 
-    const mod = await import('./liveblocks-auth');
+    const mod = await import('./liveblocks-auth.js');
     handler = mod.default;
   });
 

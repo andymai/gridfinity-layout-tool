@@ -4,7 +4,21 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateShareLayout, validateExpiration } from '../../api/lib/validation';
+import { validateShareLayout, validateExpiration } from '../../api/lib/validation.js';
+
+interface TestBin {
+  id: string;
+  layerId: string;
+  x: number;
+  y: number;
+  width: number;
+  depth: number;
+  height: number;
+  category: string;
+  label: string;
+  notes: string;
+  customProperties?: Record<string, string>;
+}
 
 // Helper to create a valid layout for testing
 function createValidLayout() {
@@ -30,7 +44,7 @@ function createValidLayout() {
         label: 'Test',
         notes: '',
       },
-    ],
+    ] as TestBin[],
   };
 }
 

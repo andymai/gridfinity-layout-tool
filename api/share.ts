@@ -70,9 +70,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const result = validateDesignerShare(designerPayload, payloadJson.length);
 
       if (!result.valid) {
+        const { error } = result;
         return res.status(400).json({
-          error: result.error.message,
-          code: result.error.code,
+          error: error.message,
+          code: error.code,
         });
       }
 

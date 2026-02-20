@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { filterLayoutContent } from '../../api/lib/contentFilter';
+import { filterLayoutContent } from '../../api/lib/contentFilter.js';
 
 describe('filterLayoutContent', () => {
   describe('clean content', () => {
