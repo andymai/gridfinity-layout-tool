@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.18.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.1...gridfinity-layout-tool-v3.18.2) (2026-02-20)
+
+
+### Performance
+
+* reduce main bundle size by 27% via lazy loading ([#817](https://github.com/andymai/gridfinity-layout-tool/issues/817)) ([5c0696b](https://github.com/andymai/gridfinity-layout-tool/commit/5c0696b68786872fb5214db948759d65588e22b9))
+
 ## [3.18.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.0...gridfinity-layout-tool-v3.18.1) (2026-02-20)
 
 
