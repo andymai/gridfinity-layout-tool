@@ -82,8 +82,9 @@ import { getPatternDescriptors } from './wallPatterns';
 function collectOrigins(shape: Shape3D, tag: FeatureTag, map: Map<number, number>): void {
   const m = mesh(shape, { tolerance: 5, angularTolerance: 45 });
   for (const fg of m.faceGroups) {
-    if (!map.has(fg.origin)) {
-      map.set(fg.origin, tag);
+    const origin = (fg as { origin?: number }).origin;
+    if (origin !== undefined && !map.has(origin)) {
+      map.set(origin, tag);
     }
   }
 }
