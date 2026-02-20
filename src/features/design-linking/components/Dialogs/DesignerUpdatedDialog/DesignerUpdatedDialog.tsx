@@ -6,6 +6,7 @@
  */
 
 import { useCallback } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { Dialog, Button, InfoIcon } from '@/design-system';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
@@ -13,12 +14,13 @@ import { useTranslation } from '@/i18n';
 
 export function DesignerUpdatedDialog() {
   const t = useTranslation();
-  const { pendingDesignerUpdated, hideDesignerUpdatedDialog } = useLinkingStore();
+  const { pendingDesignerUpdated, hideDesignerUpdatedDialog } = useLinkingStore(
+    useShallow((s) => ({
+      pendingDesignerUpdated: s.pendingDesignerUpdated,
+      hideDesignerUpdatedDialog: s.hideDesignerUpdatedDialog,
+    }))
+  );
   const { editLinkedDesign } = useBinLinking();
-
-  const handleDismiss = useCallback(() => {
-    hideDesignerUpdatedDialog();
-  }, [hideDesignerUpdatedDialog]);
 
   const handleGoToDesigner = useCallback(() => {
     if (!pendingDesignerUpdated) return;
@@ -27,7 +29,11 @@ export function DesignerUpdatedDialog() {
   }, [pendingDesignerUpdated, hideDesignerUpdatedDialog, editLinkedDesign]);
 
   return (
-    <Dialog.Root open={pendingDesignerUpdated !== null} onClose={handleDismiss} size="sm">
+    <Dialog.Root
+      open={pendingDesignerUpdated !== null}
+      onClose={hideDesignerUpdatedDialog}
+      size="sm"
+    >
       <Dialog.Header title={t('designLinking.designerUpdated.title')} showCloseButton={false}>
         <InfoIcon size="sm" className="text-status-info" />
       </Dialog.Header>
@@ -39,7 +45,7 @@ export function DesignerUpdatedDialog() {
         </p>
       </Dialog.Body>
       <Dialog.Footer>
-        <Button variant="ghost" onClick={handleDismiss}>
+        <Button variant="ghost" onClick={hideDesignerUpdatedDialog}>
           {t('common.dismiss')}
         </Button>
         <Button variant="primary" onClick={handleGoToDesigner}>

@@ -14,6 +14,27 @@ import type { Bin, Category, Layer, Layout, LayerId, CategoryId } from '@/core/t
 import { layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
+/** Emit a bin-resized sync event if the bin is linked and dimensions changed. */
+function emitLinkedBinResize(
+  bin: Bin,
+  newDimensions: { width: number; depth: number; height: number }
+): void {
+  if (!bin.linkedDesignId) return;
+  if (
+    newDimensions.width === bin.width &&
+    newDimensions.depth === bin.depth &&
+    newDimensions.height === bin.height
+  ) {
+    return;
+  }
+  emitSyncEvent({
+    type: 'bin-resized',
+    binId: bin.id,
+    linkedDesignId: bin.linkedDesignId,
+    newDimensions,
+  });
+}
+
 export type BinField =
   | 'width'
   | 'depth'
@@ -194,18 +215,11 @@ export function useBinInspector(): UseBinInspectorReturn {
           if (isErr(updateBin(bin.id, { [field]: clampedValue }))) return;
 
           // Sync dimension change to linked design and sibling bins
-          if (bin.linkedDesignId && clampedValue !== bin[field]) {
-            emitSyncEvent({
-              type: 'bin-resized',
-              binId: bin.id,
-              linkedDesignId: bin.linkedDesignId,
-              newDimensions: {
-                width: field === 'width' ? clampedValue : bin.width,
-                depth: field === 'depth' ? clampedValue : bin.depth,
-                height: bin.height,
-              },
-            });
-          }
+          emitLinkedBinResize(bin, {
+            width: field === 'width' ? clampedValue : bin.width,
+            depth: field === 'depth' ? clampedValue : bin.depth,
+            height: bin.height,
+          });
         } else if (field === 'height') {
           const newHeight = clamp(
             typeof value === 'number' ? value : parseInt(value, 10) || constraints.minHeight,
@@ -223,18 +237,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           }
 
           // Sync height change to linked design and sibling bins
-          if (bin.linkedDesignId && newHeight !== bin.height) {
-            emitSyncEvent({
-              type: 'bin-resized',
-              binId: bin.id,
-              linkedDesignId: bin.linkedDesignId,
-              newDimensions: {
-                width: bin.width,
-                depth: bin.depth,
-                height: newHeight,
-              },
-            });
-          }
+          emitLinkedBinResize(bin, { width: bin.width, depth: bin.depth, height: newHeight });
         } else if (field === 'clearanceHeight') {
           const newClearance = clamp(
             typeof value === 'number' ? value : parseInt(value, 10) || 0,
@@ -345,9 +348,8 @@ export function useBinInspector(): UseBinInspectorReturn {
     (delta: number) => {
       if (selectedBins.length === 0) return;
 
-      // Pre-compute new heights for sync events (before execute mutates state)
-      const heightUpdates = new Map<Bin['id'], { bin: Bin; newHeight: number }>();
-      for (const b of selectedBins) {
+      // Pre-compute new heights before execute mutates state (needed for sync events)
+      const updates = selectedBins.map((b) => {
         const binLayer = layout.layers.find((l) => l.id === b.layerId);
         const minHeight = Math.max(
           CONSTRAINTS.MIN_BIN_HEIGHT,
@@ -359,32 +361,23 @@ export function useBinInspector(): UseBinInspectorReturn {
           binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
         }
         const newHeight = clamp(b.height + delta, minHeight, binMaxHeight);
-        heightUpdates.set(b.id, { bin: b, newHeight });
-      }
+        return { bin: b, newHeight };
+      });
 
       execute(() => {
-        for (const [binId, { newHeight }] of heightUpdates) {
-          if (isErr(updateBin(binId, { height: newHeight }))) break;
+        for (const { bin: b, newHeight } of updates) {
+          if (isErr(updateBin(b.id, { height: newHeight }))) break;
         }
       });
 
       // Emit sync events for linked bins whose height actually changed.
       // Deduplicate by linkedDesignId to avoid concurrent IDB writes.
       const emittedDesigns = new Set<string>();
-      for (const [, { bin: b, newHeight }] of heightUpdates) {
+      for (const { bin: b, newHeight } of updates) {
         if (!b.linkedDesignId || newHeight === b.height) continue;
         if (emittedDesigns.has(b.linkedDesignId)) continue;
         emittedDesigns.add(b.linkedDesignId);
-        emitSyncEvent({
-          type: 'bin-resized',
-          binId: b.id,
-          linkedDesignId: b.linkedDesignId,
-          newDimensions: {
-            width: b.width,
-            depth: b.depth,
-            height: newHeight,
-          },
-        });
+        emitLinkedBinResize(b, { width: b.width, depth: b.depth, height: newHeight });
       }
     },
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
@@ -612,6 +605,9 @@ export function useBinInspector(): UseBinInspectorReturn {
       }
       updateBin(bin.id, updates);
     });
+
+    // Sync swapped dimensions to linked design
+    emitLinkedBinResize(bin, { width: bin.depth, depth: bin.width, height: bin.height });
 
     // Show toast if bin was relocated to fit rotation
     if (result.movedTo) {

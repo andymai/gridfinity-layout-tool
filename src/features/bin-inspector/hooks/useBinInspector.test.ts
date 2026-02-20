@@ -645,6 +645,29 @@ describe('useBinInspector', () => {
 
       expect(rotateResult).toBe(false);
     });
+
+    it('emits bin-resized event when rotating a linked bin', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        { ...createBin('bin1', 'layer1'), width: 2, depth: 3, linkedDesignId: 'design-1' },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.rotateBin();
+      });
+
+      expect(emitSyncEvent).toHaveBeenCalledWith({
+        type: 'bin-resized',
+        binId: 'bin1',
+        linkedDesignId: 'design-1',
+        newDimensions: { width: 3, depth: 2, height: 3 },
+      });
+    });
   });
 
   describe('moveToLayer', () => {
