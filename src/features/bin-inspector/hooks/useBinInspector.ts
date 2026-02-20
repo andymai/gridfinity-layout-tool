@@ -228,16 +228,23 @@ export function useBinInspector(): UseBinInspectorReturn {
           );
 
           // Preserve clearance total if bin has clearance
+          let heightUpdateFailed = false;
           if (bin.clearanceHeight && bin.clearanceHeight > 0) {
             const currentTotal = bin.height + bin.clearanceHeight;
             const newClearance = Math.max(0, currentTotal - newHeight);
-            updateBin(bin.id, { height: newHeight, clearanceHeight: newClearance });
+            if (isErr(updateBin(bin.id, { height: newHeight, clearanceHeight: newClearance }))) {
+              heightUpdateFailed = true;
+            }
           } else {
-            updateBin(bin.id, { height: newHeight });
+            if (isErr(updateBin(bin.id, { height: newHeight }))) {
+              heightUpdateFailed = true;
+            }
           }
 
           // Sync height change to linked design and sibling bins
-          emitLinkedBinResize(bin, { width: bin.width, depth: bin.depth, height: newHeight });
+          if (!heightUpdateFailed) {
+            emitLinkedBinResize(bin, { width: bin.width, depth: bin.depth, height: newHeight });
+          }
         } else if (field === 'clearanceHeight') {
           const newClearance = clamp(
             typeof value === 'number' ? value : parseInt(value, 10) || 0,
@@ -364,16 +371,19 @@ export function useBinInspector(): UseBinInspectorReturn {
         return { bin: b, newHeight };
       });
 
+      const succeededBinIds = new Set<string>();
       execute(() => {
         for (const { bin: b, newHeight } of updates) {
           if (isErr(updateBin(b.id, { height: newHeight }))) break;
+          succeededBinIds.add(b.id);
         }
       });
 
-      // Emit sync events for linked bins whose height actually changed.
+      // Emit sync events only for bins that were successfully updated.
       // Deduplicate by linkedDesignId to avoid concurrent IDB writes.
       const emittedDesigns = new Set<string>();
       for (const { bin: b, newHeight } of updates) {
+        if (!succeededBinIds.has(b.id)) continue;
         if (!b.linkedDesignId || newHeight === b.height) continue;
         if (emittedDesigns.has(b.linkedDesignId)) continue;
         emittedDesigns.add(b.linkedDesignId);
