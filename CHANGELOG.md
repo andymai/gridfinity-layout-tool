@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.18.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.2...gridfinity-layout-tool-v3.18.3) (2026-02-20)
+
+
+### Bug Fixes
+
+* **storage:** salvage layouts with bin collisions instead of rejecting ([#819](https://github.com/andymai/gridfinity-layout-tool/issues/819)) ([fb65d19](https://github.com/andymai/gridfinity-layout-tool/commit/fb65d19ab417512a373e18e2a656f12dd2805886))
+
 ## [3.18.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.1...gridfinity-layout-tool-v3.18.2) (2026-02-20)
 
 
