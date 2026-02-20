@@ -7,6 +7,10 @@
  * the existing SyncDimensionsDialog is shown for user confirmation.
  *
  * Mount once at app level (in DesignLinkingDialogs).
+ *
+ * On mount, performs a one-time reconciliation: checks all linked bins against the
+ * CustomBinRegistry to catch design changes that occurred while the listener was
+ * unmounted (e.g. during navigation to the bin designer route).
  */
 
 import { useEffect } from 'react';
@@ -19,6 +23,7 @@ import { onSyncEvent } from '../events';
 import type { DesignSavedEvent } from '../events';
 import { useLinkingStore } from '../store';
 import {
+  getLinkedDesignIds,
   getBinsLinkedToDesign,
   dimensionsMatch,
   extractBinDimensions,
@@ -44,7 +49,7 @@ export function useDesignSavedListener(): void {
   const registryRef = useLatestRef(registry);
 
   useEffect(() => {
-    return onSyncEvent<DesignSavedEvent>('design-saved', (event) => {
+    function handleDesignSaved(event: Pick<DesignSavedEvent, 'designId' | 'dimensions'>): void {
       const layout = layoutRef.current;
       const linkedBins = getBinsLinkedToDesign(layout.bins, event.designId);
       if (linkedBins.length === 0) return;
@@ -104,6 +109,25 @@ export function useDesignSavedListener(): void {
         checkBatchSyncEligibility(linkedBins, event.dimensions, layout),
         binsHaveVaryingDimensions
       );
-    });
+    }
+
+    // Subscribe first so no events are dropped during reconciliation
+    const unsubscribe = onSyncEvent<DesignSavedEvent>('design-saved', handleDesignSaved);
+
+    // Reconcile on mount: catch design changes that happened while the listener was unmounted.
+    // Safe to run after subscribing because handleDesignSaved is idempotent (dimensionsMatch guard).
+    const layout = layoutRef.current;
+    const designIds = getLinkedDesignIds(layout.bins);
+    for (const designId of designIds) {
+      const ref = registryRef.current.find((r) => r.id === designId);
+      if (ref) {
+        handleDesignSaved({
+          designId,
+          dimensions: { width: ref.width, depth: ref.depth, height: ref.height },
+        });
+      }
+    }
+
+    return unsubscribe;
   }, [layoutRef, tRef, updateBinRef, executeRef, addToastRef, showSyncDialogRef, registryRef]);
 }
