@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.18.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.0...gridfinity-layout-tool-v3.18.1) (2026-02-20)
+
+
+### Bug Fixes
+
+* **design-linking:** sync inspector dimension changes to linked designs ([#814](https://github.com/andymai/gridfinity-layout-tool/issues/814)) ([9b94f53](https://github.com/andymai/gridfinity-layout-tool/commit/9b94f53146a8e0de7f41fdb1f3ef46c3b8c8a5f5))
+
 ## [3.18.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.17.1...gridfinity-layout-tool-v3.18.0) (2026-02-20)
 
 
