@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.18.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.17.1...gridfinity-layout-tool-v3.18.0) (2026-02-20)
+
+
+### Features
+
+* **design-linking:** auto-sync linked bin design dimensions ([#812](https://github.com/andymai/gridfinity-layout-tool/issues/812)) ([e31a86c](https://github.com/andymai/gridfinity-layout-tool/commit/e31a86c826c85aa87253ad034199d7f424090104))
+
 ## [3.17.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.17.0...gridfinity-layout-tool-v3.17.1) (2026-02-20)
 
 
