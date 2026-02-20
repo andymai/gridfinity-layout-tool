@@ -60,7 +60,11 @@ function getMlTelemetry(): Promise<MlTelemetryModule> {
 function track(fn: (m: MlTelemetryModule) => void): void {
   void getMlTelemetry()
     .then(fn)
-    .catch(() => {});
+    .catch((error: unknown) => {
+      if (import.meta.env.DEV) {
+        console.error('[mlTelemetry] tracking failed:', error);
+      }
+    });
 }
 
 /**

@@ -129,7 +129,7 @@ function interpolate(template: string, vars?: TranslationVars): string {
  * Lazy-load locale modules. Vite splits these into separate chunks.
  * Only called for non-English locales.
  */
-const localeLoaders: Record<string, () => Promise<{ default: Translations }>> = {
+const localeLoaders: Record<Locale, () => Promise<{ default: Translations }>> = {
   en: () => import('./locales/en.json'),
   de: () => import('./locales/de.json'),
   nl: () => import('./locales/nl.json'),
