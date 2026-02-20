@@ -27,6 +27,11 @@ vi.mock('@/shared/components/CollapsibleSection', () => ({
   ),
 }));
 
+// Mock HeightCrossSectionDiagram — the diagram is the primary layer UI
+vi.mock('./HeightCrossSectionDiagram', () => ({
+  HeightCrossSectionDiagram: () => <div data-testid="cross-section-diagram" />,
+}));
+
 // Mock ConfirmDialog
 vi.mock('@/shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({
@@ -80,29 +85,40 @@ describe('LayerPanel', () => {
       expect(screen.getByLabelText('Add new layer')).toBeInTheDocument();
     });
 
-    it('renders active layer', () => {
+    it('renders cross-section diagram as primary layer UI', () => {
       render(<LayerPanel />);
 
-      // Default has one layer called "Layer 1"
+      const sections = screen.getAllByTestId('collapsible-section');
+      expect(sections).toHaveLength(1);
+      expect(screen.getByTestId('cross-section-diagram')).toBeInTheDocument();
+    });
+
+    it('renders active layer controls panel', () => {
+      render(<LayerPanel />);
+
+      expect(screen.getByTestId('layer-controls')).toBeInTheDocument();
       expect(screen.getByText('Layer 1')).toBeInTheDocument();
     });
 
-    it('shows coverage stats', () => {
+    it('shows coverage stats in aggregate row', () => {
       render(<LayerPanel />);
 
-      // Should show coverage percentage
       expect(screen.getByText(/% filled/)).toBeInTheDocument();
     });
 
-    it('shows bin count in stats', () => {
+    it('shows bin count in aggregate stats', () => {
       render(<LayerPanel />);
 
-      // Should show bin count (0 bins initially)
       expect(screen.getByText(/0 bins/)).toBeInTheDocument();
     });
 
+    it('shows height total in aggregate stats', () => {
+      render(<LayerPanel />);
+
+      expect(screen.getByText(/\d+\/\d+u/)).toBeInTheDocument();
+    });
+
     it('returns null when no active layer', () => {
-      // Clear all layers (edge case)
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
         layout: { ...layout, layers: [] },
@@ -112,6 +128,77 @@ describe('LayerPanel', () => {
       const { container } = render(<LayerPanel />);
 
       expect(container.firstChild).toBeNull();
+    });
+  });
+
+  describe('controls panel', () => {
+    it('shows active layer name in controls', () => {
+      render(<LayerPanel />);
+
+      const controls = screen.getByTestId('layer-controls');
+      expect(controls).toHaveTextContent('Layer 1');
+    });
+
+    it('shows active layer height in controls', () => {
+      render(<LayerPanel />);
+
+      const controls = screen.getByTestId('layer-controls');
+      expect(controls).toHaveTextContent(/\du/);
+    });
+
+    it('shows height stepper in controls', () => {
+      render(<LayerPanel />);
+
+      expect(screen.getByLabelText('Increase Layer 1 height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease Layer 1 height')).toBeInTheDocument();
+    });
+
+    it('shows active layer height value', () => {
+      render(<LayerPanel />);
+
+      const controls = screen.getByTestId('layer-controls');
+      const heightDisplay = controls.querySelector('[title]');
+      expect(heightDisplay).toBeTruthy();
+    });
+  });
+
+  describe('layer name editing', () => {
+    it('shows input when clicking active layer name', () => {
+      render(<LayerPanel />);
+
+      fireEvent.click(screen.getByText('Layer 1'));
+
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+    });
+
+    it('updates layer name on change', () => {
+      render(<LayerPanel />);
+
+      fireEvent.click(screen.getByText('Layer 1'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'New Name' } });
+
+      expect(useLayoutStore.getState().layout.layers[0].name).toBe('New Name');
+    });
+
+    it('exits edit mode on blur', () => {
+      render(<LayerPanel />);
+
+      fireEvent.click(screen.getByText('Layer 1'));
+      const input = screen.getByRole('textbox');
+      fireEvent.blur(input);
+
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('exits edit mode on Enter', () => {
+      render(<LayerPanel />);
+
+      fireEvent.click(screen.getByText('Layer 1'));
+      const input = screen.getByRole('textbox');
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     });
   });
 
@@ -126,7 +213,6 @@ describe('LayerPanel', () => {
     });
 
     it('disables add button when max layers reached', () => {
-      // Add layers until we hit the max (10)
       const layout = useLayoutStore.getState().layout;
       const layers: Layer[] = [];
       for (let i = 0; i < 10; i++) {
@@ -143,7 +229,6 @@ describe('LayerPanel', () => {
     });
 
     it('disables add button when drawer height is full', () => {
-      // Set up layers that use all drawer height
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
         layout: {
@@ -171,7 +256,6 @@ describe('LayerPanel', () => {
 
   describe('deleting layers', () => {
     beforeEach(() => {
-      // Set up two layers for delete tests
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
         layout: {
@@ -237,7 +321,6 @@ describe('LayerPanel', () => {
     });
 
     it('does not show delete button for single layer', () => {
-      // Reset to single layer
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
         layout: {
@@ -253,88 +336,7 @@ describe('LayerPanel', () => {
     });
   });
 
-  describe('layer selection', () => {
-    beforeEach(() => {
-      // Set up two layers
-      const layout = useLayoutStore.getState().layout;
-      useLayoutStore.setState({
-        layout: {
-          ...layout,
-          layers: [
-            { id: 'layer-1', name: 'Layer 1', height: 3 },
-            { id: 'layer-2', name: 'Layer 2', height: 3 },
-          ],
-        },
-      });
-      useSelectionStore.setState({ activeLayerId: 'layer-1' });
-    });
-
-    it('clicking layer name sets it as active', () => {
-      render(<LayerPanel />);
-
-      // Click on the inner name button for Layer 2 (filter by aria-pressed to
-      // distinguish from the outer draggable div which also has role="button")
-      const layer2Buttons = screen.getAllByRole('button', { name: /Layer 2/ });
-      const layer2NameButton = layer2Buttons.find((btn) => btn.hasAttribute('aria-pressed'));
-      expect(layer2NameButton).toBeTruthy();
-      fireEvent.click(layer2NameButton!);
-
-      expect(useSelectionStore.getState().activeLayerId).toBe('layer-2');
-    });
-  });
-
-  describe('layer name editing', () => {
-    it('shows input when clicking active layer name', () => {
-      render(<LayerPanel />);
-
-      // Click on the active layer's name button to start editing
-      const nameButton = screen.getByText('Layer 1');
-      fireEvent.click(nameButton);
-
-      expect(screen.getByRole('textbox')).toBeInTheDocument();
-    });
-
-    it('updates layer name on change', () => {
-      render(<LayerPanel />);
-
-      // Start editing
-      fireEvent.click(screen.getByText('Layer 1'));
-
-      const input = screen.getByRole('textbox');
-      fireEvent.change(input, { target: { value: 'New Name' } });
-
-      expect(useLayoutStore.getState().layout.layers[0].name).toBe('New Name');
-    });
-
-    it('exits edit mode on blur', () => {
-      render(<LayerPanel />);
-
-      fireEvent.click(screen.getByText('Layer 1'));
-      const input = screen.getByRole('textbox');
-      fireEvent.blur(input);
-
-      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    });
-
-    it('exits edit mode on Enter', () => {
-      render(<LayerPanel />);
-
-      fireEvent.click(screen.getByText('Layer 1'));
-      const input = screen.getByRole('textbox');
-      fireEvent.keyDown(input, { key: 'Enter' });
-
-      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    });
-  });
-
   describe('layer height', () => {
-    it('shows layer height', () => {
-      render(<LayerPanel />);
-
-      // Default layer height is shown (may match multiple elements including unused space)
-      expect(screen.getAllByText(/\du/).length).toBeGreaterThan(0);
-    });
-
     it('shows height controls for active layer', () => {
       render(<LayerPanel />);
 
@@ -352,7 +354,6 @@ describe('LayerPanel', () => {
     });
 
     it('decreases height when minus clicked', () => {
-      // Set initial height > 1
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
         layout: {
@@ -385,7 +386,7 @@ describe('LayerPanel', () => {
     });
   });
 
-  describe('multiple layers UI', () => {
+  describe('multiple layers', () => {
     beforeEach(() => {
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
@@ -400,19 +401,10 @@ describe('LayerPanel', () => {
       useSelectionStore.setState({ activeLayerId: 'layer-1' });
     });
 
-    it('shows height capacity indicator for multiple layers', () => {
+    it('shows height total in aggregate stats', () => {
       render(<LayerPanel />);
 
-      // Should show total height like "6/12u"
       expect(screen.getByText(/\d+\/\d+u/)).toBeInTheDocument();
-    });
-
-    it('shows coverage percentage for each layer', () => {
-      render(<LayerPanel />);
-
-      // Multiple "%" elements should exist for layer coverages
-      const percentages = screen.getAllByText(/%/);
-      expect(percentages.length).toBeGreaterThanOrEqual(1);
     });
 
     it('shows total stats for multiple layers', () => {
@@ -420,93 +412,11 @@ describe('LayerPanel', () => {
 
       expect(screen.getByText(/bins total/)).toBeInTheDocument();
     });
-  });
 
-  describe('drag and drop reordering', () => {
-    beforeEach(() => {
-      const layout = useLayoutStore.getState().layout;
-      useLayoutStore.setState({
-        layout: {
-          ...layout,
-          layers: [
-            { id: 'layer-1', name: 'Layer 1', height: 3 },
-            { id: 'layer-2', name: 'Layer 2', height: 3 },
-          ],
-        },
-      });
-      useSelectionStore.setState({ activeLayerId: 'layer-1' });
-    });
-
-    it('layers are draggable when multiple exist', () => {
+    it('shows delete button in controls for active layer', () => {
       render(<LayerPanel />);
 
-      // Find layer items by their parent div structure
-      const layerItems = document.querySelectorAll('[draggable="true"]');
-      expect(layerItems.length).toBe(2);
-    });
-
-    it('handles drag start', () => {
-      render(<LayerPanel />);
-
-      const layerItem = document.querySelector('[draggable="true"]');
-      const dataTransfer = {
-        effectAllowed: '',
-        setData: vi.fn(),
-      };
-
-      fireEvent.dragStart(layerItem!, { dataTransfer });
-
-      expect(dataTransfer.effectAllowed).toBe('move');
-      expect(dataTransfer.setData).toHaveBeenCalled();
-    });
-
-    it('handles drag over', () => {
-      render(<LayerPanel />);
-
-      const layerItems = document.querySelectorAll('[draggable="true"]');
-      const dataTransfer = { dropEffect: '' };
-
-      fireEvent.dragOver(layerItems[1], { dataTransfer });
-
-      expect(dataTransfer.dropEffect).toBe('move');
-    });
-
-    it('handles drag leave', () => {
-      render(<LayerPanel />);
-
-      const layerItem = document.querySelector('[draggable="true"]');
-      fireEvent.dragLeave(layerItem!);
-
-      // Should not throw
-    });
-
-    it('handles drop', () => {
-      render(<LayerPanel />);
-
-      const layerItems = document.querySelectorAll('[draggable="true"]');
-
-      // Start drag from first item
-      fireEvent.dragStart(layerItems[0], {
-        dataTransfer: { effectAllowed: '', setData: vi.fn() },
-      });
-
-      // Drop on second item
-      fireEvent.drop(layerItems[1], { dataTransfer: {} });
-
-      // Layers should be reordered (or error shown if constraints prevent it)
-    });
-
-    it('handles drag end', () => {
-      render(<LayerPanel />);
-
-      const layerItem = document.querySelector('[draggable="true"]');
-
-      fireEvent.dragStart(layerItem!, {
-        dataTransfer: { effectAllowed: '', setData: vi.fn() },
-      });
-      fireEvent.dragEnd(layerItem!);
-
-      // Should clean up drag state (no visual indication of dragging)
+      expect(screen.getByLabelText('Delete Layer 1 layer')).toBeInTheDocument();
     });
   });
 
@@ -521,7 +431,6 @@ describe('LayerPanel', () => {
       const layout = useLayoutStore.getState().layout;
       const layerId = layout.layers[0].id;
 
-      // Add bins that cover half the drawer
       useLayoutStore.setState({
         layout: {
           ...layout,
@@ -546,29 +455,6 @@ describe('LayerPanel', () => {
 
       // 5×4 = 20 cells out of 10×8 = 80 cells = 25%
       expect(screen.getByText(/25% filled/)).toBeInTheDocument();
-    });
-  });
-
-  describe('accessibility', () => {
-    it('layers have aria-pressed attribute', () => {
-      render(<LayerPanel />);
-
-      const layerButton = screen.getByRole('button', { name: /Layer 1.*Active/ });
-      expect(layerButton).toHaveAttribute('aria-pressed');
-    });
-
-    it('active layer has aria-pressed true', () => {
-      render(<LayerPanel />);
-
-      const layerButton = screen.getByRole('button', { name: /Layer 1.*Active/ });
-      expect(layerButton).toHaveAttribute('aria-pressed', 'true');
-    });
-
-    it('height controls have aria-labels', () => {
-      render(<LayerPanel />);
-
-      expect(screen.getByLabelText('Increase Layer 1 height')).toBeInTheDocument();
-      expect(screen.getByLabelText('Decrease Layer 1 height')).toBeInTheDocument();
     });
   });
 });
