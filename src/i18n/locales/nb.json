@@ -1536,5 +1536,7 @@
   "designLinking.blockedResize.description": "Beholderen ble endret i størrelse, men det tilkoblede designet \"{name}\" har tilpasset geometri som kan bli påvirket. Rediger designet manuelt for å oppdatere dimensjonene.",
   "designLinking.blockedResize.reasons.inserts": "Har bunninnsatser",
   "designLinking.blockedResize.reasons.cutouts": "Har utskjæringer",
-  "designLinking.blockedResize.reasons.compartments": "Har tilpasset romoppsett"
+  "designLinking.blockedResize.reasons.compartments": "Har tilpasset romoppsett",
+  "designLinking.designerUpdated.title": "Designer oppdatert",
+  "designLinking.designerUpdated.description": "Dimensjonene til \"{name}\" i designeren er oppdatert for å matche beholderendringen. Du kan se over endringene i designeren."
 }

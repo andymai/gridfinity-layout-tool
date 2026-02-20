@@ -9,9 +9,31 @@ import { isOk, isErr } from '@/core/result';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import type { Bin, Category, Layer, Layout, LayerId, CategoryId } from '@/core/types';
 import { layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+
+/** Emit a bin-resized sync event if the bin is linked and dimensions changed. */
+function emitLinkedBinResize(
+  bin: Bin,
+  newDimensions: { width: number; depth: number; height: number }
+): void {
+  if (!bin.linkedDesignId) return;
+  if (
+    newDimensions.width === bin.width &&
+    newDimensions.depth === bin.depth &&
+    newDimensions.height === bin.height
+  ) {
+    return;
+  }
+  emitSyncEvent({
+    type: 'bin-resized',
+    binId: bin.id,
+    linkedDesignId: bin.linkedDesignId,
+    newDimensions,
+  });
+}
 
 export type BinField =
   | 'width'
@@ -189,8 +211,15 @@ export function useBinInspector(): UseBinInspectorReturn {
         if (field === 'width' || field === 'depth') {
           // Support fractional values for half-bin mode
           const numValue = typeof value === 'number' ? value : parseFloat(value) || 0.5;
-          // Minimum 0.5 (for half-bin mode compatibility)
-          updateBin(bin.id, { [field]: Math.max(0.5, numValue) });
+          const clampedValue = Math.max(0.5, numValue);
+          if (isErr(updateBin(bin.id, { [field]: clampedValue }))) return;
+
+          // Sync dimension change to linked design and sibling bins
+          emitLinkedBinResize(bin, {
+            width: field === 'width' ? clampedValue : bin.width,
+            depth: field === 'depth' ? clampedValue : bin.depth,
+            height: bin.height,
+          });
         } else if (field === 'height') {
           const newHeight = clamp(
             typeof value === 'number' ? value : parseInt(value, 10) || constraints.minHeight,
@@ -199,12 +228,22 @@ export function useBinInspector(): UseBinInspectorReturn {
           );
 
           // Preserve clearance total if bin has clearance
+          let heightUpdateFailed = false;
           if (bin.clearanceHeight && bin.clearanceHeight > 0) {
             const currentTotal = bin.height + bin.clearanceHeight;
             const newClearance = Math.max(0, currentTotal - newHeight);
-            updateBin(bin.id, { height: newHeight, clearanceHeight: newClearance });
+            if (isErr(updateBin(bin.id, { height: newHeight, clearanceHeight: newClearance }))) {
+              heightUpdateFailed = true;
+            }
           } else {
-            updateBin(bin.id, { height: newHeight });
+            if (isErr(updateBin(bin.id, { height: newHeight }))) {
+              heightUpdateFailed = true;
+            }
+          }
+
+          // Sync height change to linked design and sibling bins
+          if (!heightUpdateFailed) {
+            emitLinkedBinResize(bin, { width: bin.width, depth: bin.depth, height: newHeight });
           }
         } else if (field === 'clearanceHeight') {
           const newClearance = clamp(
@@ -316,23 +355,40 @@ export function useBinInspector(): UseBinInspectorReturn {
     (delta: number) => {
       if (selectedBins.length === 0) return;
 
+      // Pre-compute new heights before execute mutates state (needed for sync events)
+      const updates = selectedBins.map((b) => {
+        const binLayer = layout.layers.find((l) => l.id === b.layerId);
+        const minHeight = Math.max(
+          CONSTRAINTS.MIN_BIN_HEIGHT,
+          binLayer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
+        );
+        let binMaxHeight = layout.drawer.height;
+        if (b.layerId !== STAGING_ID && binLayer) {
+          const zR = getLayerZStartResult(b.layerId, layout.layers);
+          binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
+        }
+        const newHeight = clamp(b.height + delta, minHeight, binMaxHeight);
+        return { bin: b, newHeight };
+      });
+
+      const succeededBinIds = new Set<string>();
       execute(() => {
-        for (const b of selectedBins) {
-          const binLayer = layout.layers.find((l) => l.id === b.layerId);
-          const minHeight = Math.max(
-            CONSTRAINTS.MIN_BIN_HEIGHT,
-            binLayer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
-          );
-          // For staging bins, use full drawer height; for placed bins, account for layer position
-          let binMaxHeight = layout.drawer.height;
-          if (b.layerId !== STAGING_ID && binLayer) {
-            const zR = getLayerZStartResult(b.layerId, layout.layers);
-            binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
-          }
-          const newHeight = clamp(b.height + delta, minHeight, binMaxHeight);
-          updateBin(b.id, { height: newHeight });
+        for (const { bin: b, newHeight } of updates) {
+          if (isErr(updateBin(b.id, { height: newHeight }))) break;
+          succeededBinIds.add(b.id);
         }
       });
+
+      // Emit sync events only for bins that were successfully updated.
+      // Deduplicate by linkedDesignId to avoid concurrent IDB writes.
+      const emittedDesigns = new Set<string>();
+      for (const { bin: b, newHeight } of updates) {
+        if (!succeededBinIds.has(b.id)) continue;
+        if (!b.linkedDesignId || newHeight === b.height) continue;
+        if (emittedDesigns.has(b.linkedDesignId)) continue;
+        emittedDesigns.add(b.linkedDesignId);
+        emitLinkedBinResize(b, { width: b.width, depth: b.depth, height: newHeight });
+      }
     },
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
   );
@@ -559,6 +615,9 @@ export function useBinInspector(): UseBinInspectorReturn {
       }
       updateBin(bin.id, updates);
     });
+
+    // Sync swapped dimensions to linked design
+    emitLinkedBinResize(bin, { width: bin.depth, depth: bin.width, height: bin.height });
 
     // Show toast if bin was relocated to fit rotation
     if (result.movedTo) {

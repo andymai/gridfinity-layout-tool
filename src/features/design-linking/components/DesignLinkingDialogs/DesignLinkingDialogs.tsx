@@ -12,6 +12,7 @@ import { SyncDimensionsDialog } from '../Dialogs/SyncDimensionsDialog';
 import { DeleteDesignWarningDialog } from '../Dialogs/DeleteDesignWarningDialog';
 import { LinkDesignDialog } from '../Dialogs/LinkDesignDialog';
 import { BlockedResizeDialog } from '../Dialogs/BlockedResizeDialog';
+import { DesignerUpdatedDialog } from '../Dialogs/DesignerUpdatedDialog';
 import { useDesignSavedListener, useBinResizedListener } from '../../hooks';
 
 export function DesignLinkingDialogs() {
@@ -26,6 +27,7 @@ export function DesignLinkingDialogs() {
       <DeleteDesignWarningDialog />
       <LinkDesignDialog />
       <BlockedResizeDialog />
+      <DesignerUpdatedDialog />
     </>
   );
 }

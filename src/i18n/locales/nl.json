@@ -1536,5 +1536,7 @@
   "designLinking.blockedResize.description": "De bak is van formaat veranderd, maar het gekoppelde ontwerp \"{name}\" heeft aangepaste geometrie die beïnvloed kan worden. Bewerk het ontwerp handmatig om de afmetingen bij te werken.",
   "designLinking.blockedResize.reasons.inserts": "Heeft bodeminzetstukken",
   "designLinking.blockedResize.reasons.cutouts": "Heeft uitsparingen",
-  "designLinking.blockedResize.reasons.compartments": "Heeft aangepaste vakindeling"
+  "designLinking.blockedResize.reasons.compartments": "Heeft aangepaste vakindeling",
+  "designLinking.designerUpdated.title": "Ontwerper bijgewerkt",
+  "designLinking.designerUpdated.description": "De afmetingen van \"{name}\" in de ontwerper zijn bijgewerkt om overeen te komen met de bakverkleining. Je kunt de wijzigingen in de ontwerper bekijken."
 }

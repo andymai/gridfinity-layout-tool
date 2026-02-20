@@ -12,6 +12,7 @@ import type {
   PendingCreateDesignState,
   PendingLinkDesignState,
   PendingBlockedResizeState,
+  PendingDesignerUpdatedState,
   DimensionComparison,
   SyncEligibility,
   BinId,
@@ -27,6 +28,7 @@ interface LinkingStoreState {
   pendingCreateDesign: PendingCreateDesignState | null;
   pendingLinkDesign: PendingLinkDesignState | null;
   pendingBlockedResize: PendingBlockedResizeState | null;
+  pendingDesignerUpdated: PendingDesignerUpdatedState | null;
 
   // Sync dialog actions
   showSyncDialog: (
@@ -70,6 +72,10 @@ interface LinkingStoreState {
     reasons: ComplexityReason[]
   ) => void;
   hideBlockedResizeDialog: () => void;
+
+  // Designer-updated dialog actions
+  showDesignerUpdatedDialog: (designId: DesignId, designName: string) => void;
+  hideDesignerUpdatedDialog: () => void;
 }
 
 export const useLinkingStore = create<LinkingStoreState>()((set) => ({
@@ -79,6 +85,7 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
   pendingCreateDesign: null,
   pendingLinkDesign: null,
   pendingBlockedResize: null,
+  pendingDesignerUpdated: null,
 
   // Sync dialog
   showSyncDialog: (
@@ -148,4 +155,11 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
       },
     }),
   hideBlockedResizeDialog: () => set({ pendingBlockedResize: null }),
+
+  // Designer-updated dialog
+  showDesignerUpdatedDialog: (designId, designName) =>
+    set({
+      pendingDesignerUpdated: { designId, designName },
+    }),
+  hideDesignerUpdatedDialog: () => set({ pendingDesignerUpdated: null }),
 }));

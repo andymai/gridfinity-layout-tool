@@ -42,6 +42,7 @@ export function useBinResizedListener(): void {
   const addToast = useToastStore((s) => s.addToast);
   const showSyncDialog = useLinkingStore((s) => s.showSyncDialog);
   const showBlockedResizeDialog = useLinkingStore((s) => s.showBlockedResizeDialog);
+  const showDesignerUpdatedDialog = useLinkingStore((s) => s.showDesignerUpdatedDialog);
   const registry = useCustomBins();
 
   const layoutRef = useLayoutRef();
@@ -51,6 +52,7 @@ export function useBinResizedListener(): void {
   const addToastRef = useLatestRef(addToast);
   const showSyncDialogRef = useLatestRef(showSyncDialog);
   const showBlockedResizeDialogRef = useLatestRef(showBlockedResizeDialog);
+  const showDesignerUpdatedDialogRef = useLatestRef(showDesignerUpdatedDialog);
   const registryRef = useLatestRef(registry);
 
   // Guard against concurrent processing of the same design
@@ -67,14 +69,20 @@ export function useBinResizedListener(): void {
       // Skip if already processing this design (prevents concurrent IDB writes)
       if (inFlightDesigns.current.has(linkedDesignId)) return;
 
-      // Skip if the designer is currently open for this design — the designer
-      // store would become stale, and the next auto-save would revert our update.
+      // If the designer is currently open for this design, push dimensions
+      // directly into the designer store. This triggers auto-save naturally,
+      // which persists to IDB and emits `design-saved` for sibling cascade.
       if (useDesignerStore.getState().currentDesignId === linkedDesignId) {
-        addToastRef.current({
-          message: tRef.current('designLinking.toast.designOpenInEditor'),
-          type: 'info',
-          duration: 3000,
+        const designerSetParams = useDesignerStore.getState().setParams;
+        designerSetParams({
+          width: newDimensions.width,
+          depth: newDimensions.depth,
+          height: newDimensions.height,
         });
+
+        const designName =
+          registryRef.current.find((r) => r.id === linkedDesignId)?.name ?? linkedDesignId;
+        showDesignerUpdatedDialogRef.current(linkedDesignId, designName);
         return;
       }
 
@@ -198,6 +206,7 @@ export function useBinResizedListener(): void {
     addToastRef,
     showSyncDialogRef,
     showBlockedResizeDialogRef,
+    showDesignerUpdatedDialogRef,
     registryRef,
   ]);
 }

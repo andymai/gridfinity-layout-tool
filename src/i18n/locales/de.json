@@ -1536,5 +1536,7 @@
   "designLinking.blockedResize.description": "Das Bin wurde in der Größe geändert, aber das verknüpfte Design \"{name}\" hat benutzerdefinierte Geometrie, die betroffen sein könnte. Bearbeite das Design manuell, um seine Abmessungen zu aktualisieren.",
   "designLinking.blockedResize.reasons.inserts": "Hat Bodeneinsätze",
   "designLinking.blockedResize.reasons.cutouts": "Hat Ausschnitte",
-  "designLinking.blockedResize.reasons.compartments": "Hat benutzerdefiniertes Fach-Layout"
+  "designLinking.blockedResize.reasons.compartments": "Hat benutzerdefiniertes Fach-Layout",
+  "designLinking.designerUpdated.title": "Designer aktualisiert",
+  "designLinking.designerUpdated.description": "Die Abmessungen von \"{name}\" im Designer wurden an die Bin-Größenänderung angepasst. Du kannst die Änderungen im Designer überprüfen."
 }

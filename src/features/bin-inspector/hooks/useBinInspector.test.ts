@@ -3,8 +3,13 @@ import { renderHook, act } from '@testing-library/react';
 import { useBinInspector } from '@/features/bin-inspector';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
+import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { resetAllStores } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
+
+vi.mock('@/shared/events/syncEventBus', () => ({
+  emitSyncEvent: vi.fn(),
+}));
 
 describe('useBinInspector', () => {
   // Helper to create bins at specific positions
@@ -238,6 +243,106 @@ describe('useBinInspector', () => {
         });
       }).not.toThrow();
     });
+
+    it('emits bin-resized event when changing height of a linked bin', () => {
+      const bin = { ...createBin('bin1', 'layer1'), height: 3, linkedDesignId: 'design-1' };
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [bin];
+      layout.drawer.height = 12;
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateField('height', 5);
+      });
+
+      expect(emitSyncEvent).toHaveBeenCalledWith({
+        type: 'bin-resized',
+        binId: 'bin1',
+        linkedDesignId: 'design-1',
+        newDimensions: { width: 2, depth: 2, height: 5 },
+      });
+    });
+
+    it('does not emit bin-resized event when height unchanged on linked bin', () => {
+      const bin = { ...createBin('bin1', 'layer1'), height: 3, linkedDesignId: 'design-1' };
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [bin];
+      layout.drawer.height = 12;
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateField('height', 3); // Same height
+      });
+
+      expect(emitSyncEvent).not.toHaveBeenCalled();
+    });
+
+    it('does not emit bin-resized event for unlinked bins', () => {
+      const bin = createBin('bin1', 'layer1'); // No linkedDesignId
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [bin];
+      layout.drawer.height = 12;
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateField('height', 5);
+      });
+
+      expect(emitSyncEvent).not.toHaveBeenCalled();
+    });
+
+    it('emits bin-resized event when changing width of a linked bin', () => {
+      const bin = { ...createBin('bin1', 'layer1'), linkedDesignId: 'design-1' };
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [bin];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateField('width', 4);
+      });
+
+      expect(emitSyncEvent).toHaveBeenCalledWith({
+        type: 'bin-resized',
+        binId: 'bin1',
+        linkedDesignId: 'design-1',
+        newDimensions: { width: 4, depth: 2, height: 3 },
+      });
+    });
+
+    it('emits bin-resized event when changing depth of a linked bin', () => {
+      const bin = { ...createBin('bin1', 'layer1'), linkedDesignId: 'design-1' };
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [bin];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateField('depth', 5);
+      });
+
+      expect(emitSyncEvent).toHaveBeenCalledWith({
+        type: 'bin-resized',
+        binId: 'bin1',
+        linkedDesignId: 'design-1',
+        newDimensions: { width: 2, depth: 5, height: 3 },
+      });
+    });
   });
 
   describe('updateMultiCategory', () => {
@@ -306,6 +411,54 @@ describe('useBinInspector', () => {
       });
 
       expect(useLayoutStore.getState().layout.bins[0].height).toBeLessThanOrEqual(6);
+    });
+
+    it('emits bin-resized events for linked bins', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer.height = 12;
+      layout.bins = [
+        { ...createBin('bin1', 'layer1', 0, 0), height: 3, linkedDesignId: 'design-1' },
+        { ...createBin('bin2', 'layer1', 3, 0), height: 4 }, // unlinked
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateMultiHeight(2);
+      });
+
+      // Only linked bin should emit
+      expect(emitSyncEvent).toHaveBeenCalledTimes(1);
+      expect(emitSyncEvent).toHaveBeenCalledWith({
+        type: 'bin-resized',
+        binId: 'bin1',
+        linkedDesignId: 'design-1',
+        newDimensions: { width: 2, depth: 2, height: 5 },
+      });
+    });
+
+    it('deduplicates sync events by linkedDesignId', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer.height = 12;
+      layout.bins = [
+        { ...createBin('bin1', 'layer1', 0, 0), height: 3, linkedDesignId: 'design-1' },
+        { ...createBin('bin2', 'layer1', 3, 0), height: 3, linkedDesignId: 'design-1' },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateMultiHeight(2);
+      });
+
+      // Only one event per design, not per bin
+      expect(emitSyncEvent).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -491,6 +644,29 @@ describe('useBinInspector', () => {
       });
 
       expect(rotateResult).toBe(false);
+    });
+
+    it('emits bin-resized event when rotating a linked bin', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        { ...createBin('bin1', 'layer1'), width: 2, depth: 3, linkedDesignId: 'design-1' },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.rotateBin();
+      });
+
+      expect(emitSyncEvent).toHaveBeenCalledWith({
+        type: 'bin-resized',
+        binId: 'bin1',
+        linkedDesignId: 'design-1',
+        newDimensions: { width: 3, depth: 2, height: 3 },
+      });
     });
   });
 

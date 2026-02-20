@@ -1536,5 +1536,7 @@
   "designLinking.blockedResize.description": "Le bac a été redimensionné, mais le design lié \"{name}\" a une géométrie personnalisée qui pourrait être affectée. Modifiez le design manuellement pour mettre à jour ses dimensions.",
   "designLinking.blockedResize.reasons.inserts": "A des inserts de fond",
   "designLinking.blockedResize.reasons.cutouts": "A des découpes",
-  "designLinking.blockedResize.reasons.compartments": "A une disposition de compartiments personnalisée"
+  "designLinking.blockedResize.reasons.compartments": "A une disposition de compartiments personnalisée",
+  "designLinking.designerUpdated.title": "Concepteur mis à jour",
+  "designLinking.designerUpdated.description": "Les dimensions de \"{name}\" dans le concepteur ont été mises à jour pour correspondre au redimensionnement du bac. Vous pouvez vérifier les changements dans le concepteur."
 }

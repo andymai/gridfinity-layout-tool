@@ -1536,5 +1536,7 @@
   "designLinking.blockedResize.description": "El contenedor se redimensionó, pero el diseño vinculado \"{name}\" tiene geometría personalizada que podría verse afectada. Edita el diseño manualmente para actualizar sus dimensiones.",
   "designLinking.blockedResize.reasons.inserts": "Tiene insertos de piso",
   "designLinking.blockedResize.reasons.cutouts": "Tiene recortes",
-  "designLinking.blockedResize.reasons.compartments": "Tiene diseño de compartimentos personalizado"
+  "designLinking.blockedResize.reasons.compartments": "Tiene diseño de compartimentos personalizado",
+  "designLinking.designerUpdated.title": "Diseñador actualizado",
+  "designLinking.designerUpdated.description": "Las dimensiones de \"{name}\" en el diseñador se han actualizado para coincidir con el redimensionado del contenedor. Puedes revisar los cambios en el diseñador."
 }
