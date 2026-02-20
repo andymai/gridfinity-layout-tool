@@ -1526,5 +1526,15 @@
   "toolbar.zoomOutKey": "Zoom ut (−)",
   "binDesigner.cutoutDesktopOnly": "Utskjæringsredigereren er tilgjengelig på datamaskinen. Bytt til en bredere skjerm for å bruke denne funksjonen.",
   "binDesigner.newDesignConfirm": "Starte et nytt design? Det nåværende designet ditt er lagret og kan lastes inn igjen senere.",
-  "binDesigner.newDesignCreated": "Nytt design opprettet"
+  "binDesigner.newDesignCreated": "Nytt design opprettet",
+  "designLinking.toast.autoSynced": "Auto-synkroniserte {count} beholder(e) fra designet",
+  "designLinking.toast.designUpdated": "Oppdaterte design \"{name}\"",
+  "designLinking.toast.designUpdateFailed": "Kunne ikke oppdatere tilkoblet design",
+  "designLinking.toast.cascadedResize": "Oppdaterte design + {count} tilkoblede beholder(e)",
+  "designLinking.toast.designOpenInEditor": "Designet er åpent i editoren — endre størrelse der for å synkronisere",
+  "designLinking.blockedResize.title": "Design ikke oppdatert",
+  "designLinking.blockedResize.description": "Beholderen ble endret i størrelse, men det tilkoblede designet \"{name}\" har tilpasset geometri som kan bli påvirket. Rediger designet manuelt for å oppdatere dimensjonene.",
+  "designLinking.blockedResize.reasons.inserts": "Har bunninnsatser",
+  "designLinking.blockedResize.reasons.cutouts": "Har utskjæringer",
+  "designLinking.blockedResize.reasons.compartments": "Har tilpasset romoppsett"
 }

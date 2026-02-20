@@ -1526,5 +1526,15 @@
   "toolbar.zoomOutKey": "Dézoomer (−)",
   "binDesigner.cutoutDesktopOnly": "L'éditeur de découpes est disponible sur ordinateur. Veuillez passer à un écran plus large pour utiliser cette fonctionnalité.",
   "binDesigner.newDesignConfirm": "Commencer un nouveau design ? Votre design actuel est sauvegardé et peut être chargé ultérieurement.",
-  "binDesigner.newDesignCreated": "Nouveau design créé"
+  "binDesigner.newDesignCreated": "Nouveau design créé",
+  "designLinking.toast.autoSynced": "Synchronisé automatiquement {count} bac(s) depuis le design",
+  "designLinking.toast.designUpdated": "Design \"{name}\" mis à jour",
+  "designLinking.toast.designUpdateFailed": "Erreur lors de la mise à jour du design lié",
+  "designLinking.toast.cascadedResize": "Design + {count} bac(s) lié(s) mis à jour",
+  "designLinking.toast.designOpenInEditor": "Le design est ouvert dans l’éditeur — redimensionnez-le là pour synchroniser",
+  "designLinking.blockedResize.title": "Design non mis à jour",
+  "designLinking.blockedResize.description": "Le bac a été redimensionné, mais le design lié \"{name}\" a une géométrie personnalisée qui pourrait être affectée. Modifiez le design manuellement pour mettre à jour ses dimensions.",
+  "designLinking.blockedResize.reasons.inserts": "A des inserts de fond",
+  "designLinking.blockedResize.reasons.cutouts": "A des découpes",
+  "designLinking.blockedResize.reasons.compartments": "A une disposition de compartiments personnalisée"
 }

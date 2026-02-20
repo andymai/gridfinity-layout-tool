@@ -1526,5 +1526,15 @@
   "toolbar.zoomOutKey": "Alejar (−)",
   "binDesigner.cutoutDesktopOnly": "El editor de recortes está disponible en escritorio. Cambie a una pantalla más ancha para usar esta función.",
   "binDesigner.newDesignConfirm": "¿Iniciar un nuevo diseño? Tu diseño actual se guarda y se puede cargar más tarde.",
-  "binDesigner.newDesignCreated": "Nuevo diseño creado"
+  "binDesigner.newDesignCreated": "Nuevo diseño creado",
+  "designLinking.toast.autoSynced": "Auto-sincronizados {count} contenedor(es) desde el diseño",
+  "designLinking.toast.designUpdated": "Diseño \"{name}\" actualizado",
+  "designLinking.toast.designUpdateFailed": "Error al actualizar el diseño vinculado",
+  "designLinking.toast.cascadedResize": "Diseño + {count} contenedor(es) vinculado(s) actualizados",
+  "designLinking.toast.designOpenInEditor": "El diseño está abierto en el editor — redimensiónalo allí para sincronizar",
+  "designLinking.blockedResize.title": "Diseño no actualizado",
+  "designLinking.blockedResize.description": "El contenedor se redimensionó, pero el diseño vinculado \"{name}\" tiene geometría personalizada que podría verse afectada. Edita el diseño manualmente para actualizar sus dimensiones.",
+  "designLinking.blockedResize.reasons.inserts": "Tiene insertos de piso",
+  "designLinking.blockedResize.reasons.cutouts": "Tiene recortes",
+  "designLinking.blockedResize.reasons.compartments": "Tiene diseño de compartimentos personalizado"
 }

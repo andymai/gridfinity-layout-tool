@@ -11,12 +11,14 @@ import type {
   PendingDeleteWarningState,
   PendingCreateDesignState,
   PendingLinkDesignState,
+  PendingBlockedResizeState,
   DimensionComparison,
   SyncEligibility,
   BinId,
   DesignId,
   SyncableDimensions,
 } from '../types';
+import type { ComplexityReason } from '../domain/complexGeometry';
 
 interface LinkingStoreState {
   // Dialog states
@@ -24,6 +26,7 @@ interface LinkingStoreState {
   pendingDeleteWarning: PendingDeleteWarningState | null;
   pendingCreateDesign: PendingCreateDesignState | null;
   pendingLinkDesign: PendingLinkDesignState | null;
+  pendingBlockedResize: PendingBlockedResizeState | null;
 
   // Sync dialog actions
   showSyncDialog: (
@@ -58,6 +61,15 @@ interface LinkingStoreState {
   // Link existing design dialog actions
   showLinkDesignDialog: (binId: BinId, width: number, depth: number, height: number) => void;
   hideLinkDesignDialog: () => void;
+
+  // Blocked resize dialog actions
+  showBlockedResizeDialog: (
+    binId: BinId,
+    designId: DesignId,
+    designName: string,
+    reasons: ComplexityReason[]
+  ) => void;
+  hideBlockedResizeDialog: () => void;
 }
 
 export const useLinkingStore = create<LinkingStoreState>()((set) => ({
@@ -66,6 +78,7 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
   pendingDeleteWarning: null,
   pendingCreateDesign: null,
   pendingLinkDesign: null,
+  pendingBlockedResize: null,
 
   // Sync dialog
   showSyncDialog: (
@@ -123,4 +136,16 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
       },
     }),
   hideLinkDesignDialog: () => set({ pendingLinkDesign: null }),
+
+  // Blocked resize dialog
+  showBlockedResizeDialog: (binId, designId, designName, reasons) =>
+    set({
+      pendingBlockedResize: {
+        binId,
+        designId,
+        designName,
+        reasons,
+      },
+    }),
+  hideBlockedResizeDialog: () => set({ pendingBlockedResize: null }),
 }));

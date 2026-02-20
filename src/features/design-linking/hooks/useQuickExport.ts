@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { GenerationBridge } from '@/features/generation/bridge';
+import { GenerationBridge } from '@/shared/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useToastStore } from '@/core/store';

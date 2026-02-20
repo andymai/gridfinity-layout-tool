@@ -16,6 +16,7 @@ import {
 import { useDesignerStore } from '../store';
 import { captureThumbnailAtPreset } from '../utils/thumbnail';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
+import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import type { BinParams, ExportFileNameConfig, GenerationStatus } from '../types';
 
 const AUTO_SAVE_DELAY_MS = 1000;
@@ -126,6 +127,16 @@ export function useAutoSave(): void {
           depth: paramsToSave.depth,
           height: paramsToSave.height,
           updatedAt: result.value.updatedAt,
+        });
+        // Notify design-linking to auto-sync linked bins
+        emitSyncEvent({
+          type: 'design-saved',
+          designId: result.value.id,
+          dimensions: {
+            width: paramsToSave.width,
+            depth: paramsToSave.depth,
+            height: paramsToSave.height,
+          },
         });
       } else {
         setSaveStatus('error');
