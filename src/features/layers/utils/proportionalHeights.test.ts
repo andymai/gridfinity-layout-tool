@@ -81,4 +81,28 @@ describe('computeProportionalHeights', () => {
       expect(total).toBe(CONTAINER);
     }
   });
+
+  describe('with gap', () => {
+    const GAP = 2;
+
+    it('subtracts gap space from available pixels', () => {
+      // 2 segments with 2px gap = 2px reserved for gaps
+      const result = computeProportionalHeights([3, 3], 0, CONTAINER, MIN, GAP);
+      const total = result.layerPxHeights.reduce((s, h) => s + h, 0);
+      // Row heights should sum to container minus gap space
+      expect(total).toBe(CONTAINER - GAP); // 160 - 2 = 158
+    });
+
+    it('subtracts multiple gaps for multiple segments', () => {
+      // 3 layers + unused = 4 segments, 3 gaps = 6px
+      const result = computeProportionalHeights([2, 2, 2], 6, CONTAINER, MIN, GAP);
+      const total = result.layerPxHeights.reduce((s, h) => s + h, 0) + result.unusedPx;
+      expect(total).toBe(CONTAINER - 3 * GAP); // 160 - 6 = 154
+    });
+
+    it('single segment has no gap', () => {
+      const result = computeProportionalHeights([6], 0, CONTAINER, MIN, GAP);
+      expect(result.layerPxHeights).toEqual([CONTAINER]); // no gaps to subtract
+    });
+  });
 });

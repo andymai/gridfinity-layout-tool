@@ -9,7 +9,8 @@ export function computeProportionalHeights(
   layerHeights: number[],
   unusedHeight: number,
   containerPx: number,
-  minPx: number
+  minPx: number,
+  gapPx: number = 0
 ): { layerPxHeights: number[]; unusedPx: number } {
   // Build segment list: layers + optional unused space
   const segments = unusedHeight > 0 ? [...layerHeights, unusedHeight] : [...layerHeights];
@@ -19,9 +20,12 @@ export function computeProportionalHeights(
     return { layerPxHeights: [], unusedPx: 0 };
   }
 
+  // Subtract inter-segment gaps from available space
+  const availablePx = Math.max(0, containerPx - (count - 1) * gapPx);
+
   // Pass 1: assign minimum to each segment
   const results = segments.map(() => minPx);
-  const surplusPx = Math.max(0, containerPx - count * minPx);
+  const surplusPx = Math.max(0, availablePx - count * minPx);
 
   // Pass 2: distribute surplus proportionally by unit height
   const totalUnits = segments.reduce((sum, h) => sum + h, 0);

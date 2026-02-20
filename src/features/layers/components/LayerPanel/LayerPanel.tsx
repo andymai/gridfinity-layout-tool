@@ -23,6 +23,8 @@ type DropPosition = { index: number; position: 'above' | 'below' } | null;
 const MIN_ROW_HEIGHT_PX = 32;
 /** Total container height for the proportional layer stack */
 const STACK_CONTAINER_HEIGHT_PX = 160;
+/** Gap between rows in the stack (matches Tailwind gap-0.5 = 2px) */
+const STACK_GAP_PX = 2;
 
 export function LayerPanel() {
   const t = useTranslation();
@@ -84,7 +86,8 @@ export function LayerPanel() {
       displayLayerHeights,
       unusedHeight,
       STACK_CONTAINER_HEIGHT_PX,
-      MIN_ROW_HEIGHT_PX
+      MIN_ROW_HEIGHT_PX,
+      STACK_GAP_PX
     );
   }, [layers, unusedHeight]);
 
