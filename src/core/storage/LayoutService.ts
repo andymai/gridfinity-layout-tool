@@ -15,7 +15,7 @@
 
 import * as backend from './backend';
 import * as indexedDB from './backends/indexedDB';
-import { validateImport } from '@/shared/utils/validation';
+import { salvageImport } from '@/shared/utils/validation';
 import { generateCategoryId, generateLayerId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from './LayoutManager';
@@ -89,10 +89,9 @@ type ParseResult = { success: true; layout: Layout } | { success: false; errors:
 
 /**
  * Parse and validate raw storage data into a typed Layout.
- * Migrates the schema and validates the data structure.
- *
- * The type assertion is justified by the validateImport check which
- * verifies all required Layout properties are present and valid.
+ * Migrates the schema and uses lenient validation (salvageImport) so that
+ * bins with placement issues (collisions, out-of-bounds) are moved to staging
+ * instead of rejecting the entire layout.
  */
 function parseLayoutData(data: unknown): ParseResult {
   if (!data || typeof data !== 'object') {
@@ -100,13 +99,20 @@ function parseLayoutData(data: unknown): ParseResult {
   }
 
   const migrated = migrateLayout(data as Record<string, unknown>);
-  const validation = validateImport(migrated);
+  const result = salvageImport(migrated);
 
-  if (!validation.valid) {
-    return { success: false, errors: validation.errors };
+  if (!result.valid) {
+    return { success: false, errors: ['Layout structure is invalid'] };
   }
 
-  return { success: true, layout: validation.layout };
+  if (result.salvaged.length > 0) {
+    console.warn(
+      `[LayoutService] Layout loaded with ${result.salvaged.length} bin(s) moved to staging:`,
+      result.salvaged
+    );
+  }
+
+  return { success: true, layout: result.layout };
 }
 
 function validateLoadedData(layoutId: string, data: unknown, silent = false): Layout | null {
