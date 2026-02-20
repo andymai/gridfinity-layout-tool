@@ -113,10 +113,10 @@ export function findUntranslatedValues(
   return untranslated.sort((a, b) => a.key.localeCompare(b.key));
 }
 
-// Find locale JSON files
+// Find locale JSON files (en.json is generated from en.ts, so skip it)
 function getLocaleFiles(): string[] {
   return readdirSync(LOCALES_DIR)
-    .filter((f) => f.endsWith('.json'))
+    .filter((f) => f.endsWith('.json') && f !== 'en.json')
     .sort();
 }
 

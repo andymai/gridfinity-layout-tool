@@ -691,46 +691,48 @@ describe('mlTelemetry', () => {
       label: 'Test Bin',
     };
 
-    it('trackPlacement tracks a single bin', () => {
+    // mlTracking methods use lazy dynamic imports, so they are async.
+    // We need to flush microtasks before checking side effects.
+    it('trackPlacement tracks a single bin', async () => {
       forceFlush();
       mlTracking.trackPlacement(testBin, 'draw');
-      expect(getBufferSize()).toBeGreaterThan(0);
+      await vi.waitFor(() => expect(getBufferSize()).toBeGreaterThan(0));
     });
 
-    it('trackLabel tracks label updates', () => {
+    it('trackLabel tracks label updates', async () => {
       forceFlush();
       mlTracking.trackLabel(testBin, 'old', 'new');
-      expect(getBufferSize()).toBeGreaterThan(0);
+      await vi.waitFor(() => expect(getBufferSize()).toBeGreaterThan(0));
     });
 
-    it('trackBulk tracks multiple bins', () => {
+    it('trackBulk tracks multiple bins', async () => {
       forceFlush();
       mlTracking.trackBulk([testBin], 'fill');
-      expect(getBufferSize()).toBeGreaterThan(0);
+      await vi.waitFor(() => expect(getBufferSize()).toBeGreaterThan(0));
     });
 
-    it('trackSnapshot tracks layout snapshots', () => {
+    it('trackSnapshot tracks layout snapshots', async () => {
       forceFlush();
       mlTracking.trackSnapshot('save');
-      expect(getBufferSize()).toBeGreaterThan(0);
+      await vi.waitFor(() => expect(getBufferSize()).toBeGreaterThan(0));
     });
 
-    it('trackQuality tracks quality signals', () => {
+    it('trackQuality tracks quality signals', async () => {
       forceFlush();
       mlTracking.trackQuality('shared');
-      expect(getBufferSize()).toBeGreaterThan(0);
+      await vi.waitFor(() => expect(getBufferSize()).toBeGreaterThan(0));
     });
 
-    it('trackPurpose tracks drawer purpose', () => {
+    it('trackPurpose tracks drawer purpose', async () => {
       forceFlush();
       mlTracking.trackPurpose('workshop');
-      expect(getBufferSize()).toBeGreaterThan(0);
+      await vi.waitFor(() => expect(getBufferSize()).toBeGreaterThan(0));
     });
 
-    it('incrementEdit increments edit count', () => {
+    it('incrementEdit increments edit count', async () => {
       const before = getSessionContext().editCount;
       mlTracking.incrementEdit();
-      expect(getSessionContext().editCount).toBe(before + 1);
+      await vi.waitFor(() => expect(getSessionContext().editCount).toBe(before + 1));
     });
 
     it('markActivity marks edit activity', () => {

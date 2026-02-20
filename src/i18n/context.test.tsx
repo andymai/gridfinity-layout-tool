@@ -2,7 +2,7 @@
  * Tests for i18n context and provider.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import { renderHook, render, screen, waitFor, act } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import {
@@ -11,8 +11,18 @@ import {
   useLocale,
   useFormatting,
   getStaticTranslation,
+  _setLoadedEn,
 } from '@/i18n/context';
 import en from '@/i18n/locales/en';
+
+// Seed the English translation cache so getStaticTranslation works in tests
+beforeAll(() => {
+  _setLoadedEn(en);
+});
+
+afterAll(() => {
+  _setLoadedEn(null);
+});
 
 describe('getStaticTranslation', () => {
   it('returns translated string for valid key', () => {
@@ -47,79 +57,93 @@ describe('getStaticTranslation', () => {
 });
 
 describe('LocaleProvider + useTranslation', () => {
-  it('provides translation function that returns translated strings', () => {
+  it('provides translation function that returns translated strings', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <LocaleProvider initialLocale="en">{children}</LocaleProvider>
     );
 
     const { result } = renderHook(() => useTranslation(), { wrapper });
 
-    expect(result.current('common.save')).toBe('Save');
+    await waitFor(() => {
+      expect(result.current('common.save')).toBe('Save');
+    });
     expect(result.current('common.cancel')).toBe('Cancel');
   });
 
-  it('falls back to key for missing translation keys', () => {
+  it('falls back to key for missing translation keys', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <LocaleProvider initialLocale="en">{children}</LocaleProvider>
     );
 
     const { result } = renderHook(() => useTranslation(), { wrapper });
 
-    expect(result.current('missing.key')).toBe('missing.key');
+    await waitFor(() => {
+      expect(result.current('missing.key')).toBe('missing.key');
+    });
   });
 
-  it('interpolates variables in translations', () => {
+  it('interpolates variables in translations', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <LocaleProvider initialLocale="en">{children}</LocaleProvider>
     );
 
     const { result } = renderHook(() => useTranslation(), { wrapper });
 
-    expect(result.current('common.deleteBins', { count: 7 })).toBe('Delete 7 bin(s)');
+    await waitFor(() => {
+      expect(result.current('common.deleteBins', { count: 7 })).toBe('Delete 7 bin(s)');
+    });
   });
 
-  it('handles undefined vars parameter', () => {
+  it('handles undefined vars parameter', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <LocaleProvider initialLocale="en">{children}</LocaleProvider>
     );
 
     const { result } = renderHook(() => useTranslation(), { wrapper });
 
-    expect(result.current('common.save')).toBe('Save');
+    await waitFor(() => {
+      expect(result.current('common.save')).toBe('Save');
+    });
   });
 });
 
 describe('LocaleProvider + useLocale', () => {
-  it('provides locale, setLocale, and isLoading', () => {
+  it('provides locale, setLocale, and isLoading', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <LocaleProvider initialLocale="en">{children}</LocaleProvider>
     );
 
     const { result } = renderHook(() => useLocale(), { wrapper });
 
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
     expect(result.current.locale).toBe('en');
     expect(typeof result.current.setLocale).toBe('function');
-    expect(result.current.isLoading).toBe(false);
   });
 
-  it('provides translation function via context', () => {
+  it('provides translation function via context', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <LocaleProvider initialLocale="en">{children}</LocaleProvider>
     );
 
     const { result } = renderHook(() => useLocale(), { wrapper });
 
-    expect(result.current.t('common.save')).toBe('Save');
+    await waitFor(() => {
+      expect(result.current.t('common.save')).toBe('Save');
+    });
   });
 
-  it('has isLoading false for English locale', () => {
+  it('has isLoading false after English locale loads', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <LocaleProvider initialLocale="en">{children}</LocaleProvider>
     );
 
     const { result } = renderHook(() => useLocale(), { wrapper });
 
-    expect(result.current.isLoading).toBe(false);
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
   });
 });
 
@@ -157,12 +181,20 @@ describe('useFormatting', () => {
     vi.useRealTimers();
   });
 
-  it('provides formatting functions and locale', () => {
+  /** Render useFormatting and wait for locale to load (vi.waitFor works with fake timers) */
+  async function renderFormattingHook() {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <LocaleProvider initialLocale="en">{children}</LocaleProvider>
     );
-
     const { result } = renderHook(() => useFormatting(), { wrapper });
+    await vi.waitFor(() => {
+      expect(result.current).not.toBeNull();
+    });
+    return result;
+  }
+
+  it('provides formatting functions and locale', async () => {
+    const result = await renderFormattingHook();
 
     expect(typeof result.current.formatDate).toBe('function');
     expect(typeof result.current.formatNumber).toBe('function');
@@ -171,50 +203,31 @@ describe('useFormatting', () => {
   });
 
   describe('formatDate', () => {
-    it('formats Date object', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('formats Date object', async () => {
+      const result = await renderFormattingHook();
 
       const date = new Date('2024-01-15T12:00:00Z');
       const formatted = result.current.formatDate(date);
-
       expect(formatted).toMatch(/1\/15\/2024/);
     });
 
-    it('formats date string', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('formats date string', async () => {
+      const result = await renderFormattingHook();
 
       const formatted = result.current.formatDate('2024-01-15T12:00:00Z');
-
       expect(formatted).toMatch(/1\/15\/2024/);
     });
 
-    it('formats timestamp number', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('formats timestamp number', async () => {
+      const result = await renderFormattingHook();
 
       const timestamp = new Date('2024-01-15T12:00:00Z').getTime();
       const formatted = result.current.formatDate(timestamp);
-
       expect(formatted).toMatch(/1\/15\/2024/);
     });
 
-    it('respects options parameter', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('respects options parameter', async () => {
+      const result = await renderFormattingHook();
 
       const date = new Date('2024-01-15T12:00:00Z');
       const formatted = result.current.formatDate(date, {
@@ -222,180 +235,116 @@ describe('useFormatting', () => {
         month: 'long',
         day: 'numeric',
       });
-
       expect(formatted).toMatch(/January/);
     });
   });
 
   describe('formatNumber', () => {
-    it('formats numbers according to locale', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('formats numbers according to locale', async () => {
+      const result = await renderFormattingHook();
 
       const formatted = result.current.formatNumber(1234.56);
-
       expect(formatted).toBe('1,234.56');
     });
 
-    it('respects options parameter', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('respects options parameter', async () => {
+      const result = await renderFormattingHook();
 
       const formatted = result.current.formatNumber(1234.56, {
         style: 'currency',
         currency: 'USD',
       });
-
       expect(formatted).toMatch(/\$1,234\.56/);
     });
   });
 
   describe('formatRelativeDate', () => {
-    it('returns "Today" for today', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('returns "Today" for today', async () => {
+      const result = await renderFormattingHook();
 
       const today = new Date('2024-01-15T12:00:00Z');
       const formatted = result.current.formatRelativeDate(today);
-
       expect(formatted).toBe('Today');
     });
 
-    it('returns "Yesterday" for yesterday', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('returns "Yesterday" for yesterday', async () => {
+      const result = await renderFormattingHook();
 
       const yesterday = new Date('2024-01-14T12:00:00Z');
       const formatted = result.current.formatRelativeDate(yesterday);
-
       expect(formatted).toBe('Yesterday');
     });
 
-    it('returns "Xd ago" for days within a week (short format)', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('returns "Xd ago" for days within a week (short format)', async () => {
+      const result = await renderFormattingHook();
 
       const threeDaysAgo = new Date('2024-01-12T12:00:00Z');
       const formatted = result.current.formatRelativeDate(threeDaysAgo, true);
-
       expect(formatted).toBe('3d ago');
     });
 
-    it('returns "X days ago" for days within a week (long format)', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('returns "X days ago" for days within a week (long format)', async () => {
+      const result = await renderFormattingHook();
 
       const threeDaysAgo = new Date('2024-01-12T12:00:00Z');
       const formatted = result.current.formatRelativeDate(threeDaysAgo, false);
-
       expect(formatted).toBe('3 days ago');
     });
 
-    it('returns formatted date for dates older than 7 days', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('returns formatted date for dates older than 7 days', async () => {
+      const result = await renderFormattingHook();
 
       const tenDaysAgo = new Date('2024-01-05T12:00:00Z');
       const formatted = result.current.formatRelativeDate(tenDaysAgo);
-
       expect(formatted).toMatch(/1\/5\/2024/);
     });
 
-    it('handles string dates', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('handles string dates', async () => {
+      const result = await renderFormattingHook();
 
       const formatted = result.current.formatRelativeDate('2024-01-14T12:00:00Z');
-
       expect(formatted).toBe('Yesterday');
     });
 
-    it('handles timestamp numbers', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('handles timestamp numbers', async () => {
+      const result = await renderFormattingHook();
 
       const yesterday = new Date('2024-01-14T12:00:00Z').getTime();
       const formatted = result.current.formatRelativeDate(yesterday);
-
       expect(formatted).toBe('Yesterday');
     });
 
-    it('returns "Just now" for dates less than 1 minute ago with includeTime', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('returns "Just now" for dates less than 1 minute ago with includeTime', async () => {
+      const result = await renderFormattingHook();
 
       const justNow = new Date('2024-01-15T11:59:30Z');
       const formatted = result.current.formatRelativeDate(justNow, { includeTime: true });
-
       expect(formatted).toBe('Just now');
     });
 
-    it('returns "Xm ago" for minutes with includeTime', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('returns "Xm ago" for minutes with includeTime', async () => {
+      const result = await renderFormattingHook();
 
       const fifteenMinutesAgo = new Date('2024-01-15T11:45:00Z');
-      const formatted = result.current.formatRelativeDate(fifteenMinutesAgo, { includeTime: true });
-
+      const formatted = result.current.formatRelativeDate(fifteenMinutesAgo, {
+        includeTime: true,
+      });
       expect(formatted).toBe('15m ago');
     });
 
-    it('returns "Xh ago" for hours with includeTime', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('returns "Xh ago" for hours with includeTime', async () => {
+      const result = await renderFormattingHook();
 
       const threeHoursAgo = new Date('2024-01-15T09:00:00Z');
       const formatted = result.current.formatRelativeDate(threeHoursAgo, { includeTime: true });
-
       expect(formatted).toBe('3h ago');
     });
 
-    it('respects shortFormat option in object form', () => {
-      const wrapper = ({ children }: { children: ReactNode }) => (
-        <LocaleProvider initialLocale="en">{children}</LocaleProvider>
-      );
-
-      const { result } = renderHook(() => useFormatting(), { wrapper });
+    it('respects shortFormat option in object form', async () => {
+      const result = await renderFormattingHook();
 
       const threeDaysAgo = new Date('2024-01-12T12:00:00Z');
       const formatted = result.current.formatRelativeDate(threeDaysAgo, { shortFormat: false });
-
       expect(formatted).toBe('3 days ago');
     });
   });
@@ -413,6 +362,11 @@ describe('LocaleProvider setLocale', () => {
 
     const { result } = renderHook(() => useLocale(), { wrapper });
 
+    // Wait for initial locale load before interacting
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
     await act(async () => {
       result.current.setLocale('de');
     });
@@ -428,6 +382,10 @@ describe('LocaleProvider setLocale', () => {
 
     const { result } = renderHook(() => useLocale(), { wrapper });
 
+    // Wait for initial locale load
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
     expect(result.current.locale).toBe('en');
 
     await act(async () => {
@@ -468,6 +426,11 @@ describe('LocaleProvider setLocale', () => {
 
     const { result } = renderHook(() => useLocale(), { wrapper });
 
+    // Wait for initial locale load before interacting
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
     await act(async () => {
       result.current.setLocale('de');
       result.current.setLocale('fr');
@@ -492,15 +455,16 @@ describe('LocaleProvider with non-English initial locale', () => {
     expect(loader).toBeInTheDocument();
   });
 
-  it('does not show loading state for English locale', () => {
+  it('shows content after English locale loads', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div data-testid="content">Content</div>
       </LocaleProvider>
     );
 
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.getByTestId('content')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('content')).toBeInTheDocument();
+    });
   });
 
   it('eventually loads non-English locale and shows content', async () => {
@@ -578,89 +542,105 @@ describe('LocaleProvider document updates', () => {
     });
   });
 
-  it('updates document lang attribute', () => {
+  it('updates document lang attribute', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div>Content</div>
       </LocaleProvider>
     );
 
-    expect(document.documentElement.lang).toBe('en');
+    await waitFor(() => {
+      expect(document.documentElement.lang).toBe('en');
+    });
   });
 
-  it('updates document title with SEO title', () => {
+  it('updates document title with SEO title', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div>Content</div>
       </LocaleProvider>
     );
 
-    expect(document.title).toBe(en['seo.title']);
+    await waitFor(() => {
+      expect(document.title).toBe(en['seo.title']);
+    });
   });
 
-  it('updates meta description', () => {
+  it('updates meta description', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div>Content</div>
       </LocaleProvider>
     );
 
-    const meta = document.querySelector('meta[name="description"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.description']);
+    await waitFor(() => {
+      const meta = document.querySelector('meta[name="description"]');
+      expect(meta?.getAttribute('content')).toBe(en['seo.description']);
+    });
   });
 
-  it('updates OG locale meta tag', () => {
+  it('updates OG locale meta tag', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div>Content</div>
       </LocaleProvider>
     );
 
-    const meta = document.querySelector('meta[property="og:locale"]');
-    expect(meta?.getAttribute('content')).toBe('en_US');
+    await waitFor(() => {
+      const meta = document.querySelector('meta[property="og:locale"]');
+      expect(meta?.getAttribute('content')).toBe('en_US');
+    });
   });
 
-  it('updates OG title meta tag', () => {
+  it('updates OG title meta tag', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div>Content</div>
       </LocaleProvider>
     );
 
-    const meta = document.querySelector('meta[property="og:title"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.title']);
+    await waitFor(() => {
+      const meta = document.querySelector('meta[property="og:title"]');
+      expect(meta?.getAttribute('content')).toBe(en['seo.title']);
+    });
   });
 
-  it('updates OG description meta tag', () => {
+  it('updates OG description meta tag', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div>Content</div>
       </LocaleProvider>
     );
 
-    const meta = document.querySelector('meta[property="og:description"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.description']);
+    await waitFor(() => {
+      const meta = document.querySelector('meta[property="og:description"]');
+      expect(meta?.getAttribute('content')).toBe(en['seo.description']);
+    });
   });
 
-  it('updates Twitter title meta tag', () => {
+  it('updates Twitter title meta tag', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div>Content</div>
       </LocaleProvider>
     );
 
-    const meta = document.querySelector('meta[name="twitter:title"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.title']);
+    await waitFor(() => {
+      const meta = document.querySelector('meta[name="twitter:title"]');
+      expect(meta?.getAttribute('content')).toBe(en['seo.title']);
+    });
   });
 
-  it('updates Twitter description meta tag', () => {
+  it('updates Twitter description meta tag', async () => {
     render(
       <LocaleProvider initialLocale="en">
         <div>Content</div>
       </LocaleProvider>
     );
 
-    const meta = document.querySelector('meta[name="twitter:description"]');
-    expect(meta?.getAttribute('content')).toBe(en['seo.description']);
+    await waitFor(() => {
+      const meta = document.querySelector('meta[name="twitter:description"]');
+      expect(meta?.getAttribute('content')).toBe(en['seo.description']);
+    });
   });
 });
