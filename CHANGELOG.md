@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.18.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.3...gridfinity-layout-tool-v3.18.4) (2026-02-20)
+
+
+### Bug Fixes
+
+* **design-linking:** reconcile design→grid sync on navigation return ([#821](https://github.com/andymai/gridfinity-layout-tool/issues/821)) ([4405181](https://github.com/andymai/gridfinity-layout-tool/commit/440518123e7d0c5ffa3a5ada21f3f4fc6fc00e58))
+
 ## [3.18.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.2...gridfinity-layout-tool-v3.18.3) (2026-02-20)
 
 
