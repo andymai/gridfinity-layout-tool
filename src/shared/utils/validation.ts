@@ -393,6 +393,159 @@ export function validateImport(data: unknown): ImportValidationResult {
 }
 
 /**
+ * Lenient validation for loading layouts from local storage.
+ *
+ * Unlike `validateImport` (which rejects the entire layout if any bin is invalid),
+ * this function moves problematic bins to staging so the layout still loads.
+ * Structural issues (missing drawer, invalid layers, etc.) still reject.
+ *
+ * Returns the salvaged layout plus a list of human-readable messages about
+ * which bins were moved and why.
+ */
+export type SalvageSuccess = { valid: true; layout: Layout; salvaged: string[] };
+export type SalvageFailure = { valid: false; salvaged?: undefined; layout?: undefined };
+export type SalvageResult = SalvageSuccess | SalvageFailure;
+
+export function salvageImport(data: unknown): SalvageResult {
+  // Run strict validation first — if it passes, no salvaging needed
+  const strict = validateImport(data);
+  if (strict.valid) {
+    return { valid: true, layout: strict.layout, salvaged: [] };
+  }
+
+  // Check if the structural shape is valid (drawer, layers, etc.)
+  // We re-validate the core structure but handle bin errors leniently
+  if (!data || typeof data !== 'object') {
+    return { valid: false };
+  }
+
+  const raw = data as Record<string, unknown>;
+
+  // Structural checks — these are fatal (can't salvage without them)
+  if (!raw.version || !raw.name) return { valid: false };
+  if (!isValidDrawer(raw.drawer)) return { valid: false };
+  if (!Array.isArray(raw.layers) || !Array.isArray(raw.bins) || !Array.isArray(raw.categories)) {
+    return { valid: false };
+  }
+
+  const drawer = raw.drawer;
+  if (drawer.width < CONSTRAINTS.GRID_MIN || drawer.width > CONSTRAINTS.GRID_MAX) {
+    return { valid: false };
+  }
+  if (drawer.depth < CONSTRAINTS.GRID_MIN || drawer.depth > CONSTRAINTS.GRID_MAX) {
+    return { valid: false };
+  }
+
+  const layers = raw.layers as unknown[];
+  if (layers.length < CONSTRAINTS.LAYERS_MIN || layers.length > CONSTRAINTS.LAYERS_MAX) {
+    return { valid: false };
+  }
+
+  const validLayers = layers.filter(isValidLayer);
+  if (validLayers.length !== layers.length) return { valid: false };
+
+  const layerIds = new Set(validLayers.map((l) => l.id));
+  layerIds.add(STAGING_ID);
+
+  const totalHeight = validLayers.reduce((sum, layer) => sum + layer.height, 0);
+  if (totalHeight > drawer.height) return { valid: false };
+
+  // Validate categories (fatal if structurally invalid)
+  const categories = raw.categories as unknown[];
+  for (const cat of categories) {
+    if (!isValidCategory(cat)) return { valid: false };
+  }
+
+  // Now handle bins leniently — invalid bins get moved to staging
+  const bins = raw.bins as unknown[];
+  const salvaged: string[] = [];
+  const resultBins: Bin[] = [];
+  const validatedGridBins: Bin[] = []; // Pool for collision checking
+
+  bins.forEach((bin, i) => {
+    if (!isValidBin(bin)) {
+      // Structurally invalid bins can't be salvaged (missing required fields)
+      salvaged.push(`Bin ${i} is structurally invalid and was removed`);
+      return;
+    }
+
+    const typedBin: Bin = {
+      id: toBinId(bin.id),
+      layerId: toLayerId(bin.layerId),
+      x: bin.x,
+      y: bin.y,
+      width: bin.width,
+      depth: bin.depth,
+      height: bin.height,
+      category: toCategoryId(bin.category || ''),
+      label: bin.label || '',
+      notes: bin.notes || '',
+      customProperties: bin.customProperties,
+    };
+
+    // Staging bins pass through
+    if (bin.layerId === STAGING_ID) {
+      resultBins.push(typedBin);
+      return;
+    }
+
+    // Check if layer exists
+    if (!layerIds.has(bin.layerId)) {
+      salvaged.push(`Bin ${i} references invalid layer and was moved to staging`);
+      resultBins.push({ ...typedBin, layerId: STAGING_ID });
+      return;
+    }
+
+    // Check placement (bounds, height, collisions, blocked zones)
+    const partialLayout: Layout = {
+      version: '1.0',
+      name: 'salvage-validation',
+      drawer: drawer as Layout['drawer'],
+      layers: validLayers as Layout['layers'],
+      bins: validatedGridBins,
+      categories: [] as Layout['categories'],
+      printBedSize: 256,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+    };
+
+    const placementResult = canPlaceBin(
+      { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
+      toLayerId(bin.layerId),
+      partialLayout
+    );
+
+    if (!placementResult.valid) {
+      const reasonMap: Record<string, string> = {
+        out_of_bounds: 'is out of bounds',
+        exceeds_width: 'exceeds drawer width',
+        exceeds_depth: 'exceeds drawer depth',
+        exceeds_height: 'exceeds available height',
+        invalid_layer: 'references invalid layer',
+        blocked_zone: 'overlaps with blocked zone from upper layer',
+        collision: 'collides with another bin',
+      };
+      const message = reasonMap[placementResult.reason] || 'has invalid placement';
+      salvaged.push(`Bin ${i} ${message} and was moved to staging`);
+      resultBins.push({ ...typedBin, layerId: STAGING_ID });
+      return;
+    }
+
+    // Valid bin — add to grid and collision pool
+    validatedGridBins.push(typedBin);
+    resultBins.push(typedBin);
+  });
+
+  // Build salvaged layout
+  const salvageLayout: Layout = {
+    ...(data as Layout),
+    bins: resultBins,
+  };
+
+  return { valid: true, layout: salvageLayout, salvaged };
+}
+
+/**
  * Validate layout integrity for switching.
  * Checks that all bins reference valid layers and categories.
  * This is a lighter check than full import validation, used before switching layouts.

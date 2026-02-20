@@ -23,7 +23,7 @@
 import * as backend from './backend';
 import { deleteSnapshotsForLayout } from './SnapshotService';
 import * as indexedDB from './backends/indexedDB';
-import { validateImport } from '@/shared/utils/validation';
+import { salvageImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins } from '@/shared/utils/bins';
@@ -221,10 +221,17 @@ async function loadLayoutInternal(layoutId: string): Promise<Result<Layout, Stor
     return err(storageNotFound(key));
   }
 
-  // Validate the loaded layout
-  const validation = validateImport(data);
+  // Validate the loaded layout (lenient: moves problematic bins to staging)
+  const validation = salvageImport(data);
   if (!validation.valid) {
-    return err(storageCorrupted(key, validation.errors));
+    return err(storageCorrupted(key, ['Layout structure is invalid']));
+  }
+
+  if (validation.salvaged.length > 0) {
+    console.warn(
+      `[LayoutManager] Layout ${layoutId} loaded with ${validation.salvaged.length} bin(s) moved to staging:`,
+      validation.salvaged
+    );
   }
 
   return ok(validation.layout);

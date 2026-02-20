@@ -38,9 +38,9 @@ vi.mock('@/core/storage/librarySync', () => ({
   notifyLibraryChanged: vi.fn(),
 }));
 
-// Mock validation to always pass
-vi.mock('@/utils/validation', () => ({
-  validateImport: vi.fn(() => ({ valid: true })),
+// Mock validation to always pass (salvageImport is used for storage loads)
+vi.mock('@/shared/utils/validation', () => ({
+  salvageImport: vi.fn((data: unknown) => ({ valid: true, layout: data, salvaged: [] })),
 }));
 
 // Mock UUID generation for predictable IDs

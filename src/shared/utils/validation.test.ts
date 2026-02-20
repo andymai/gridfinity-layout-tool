@@ -2,13 +2,14 @@ import { describe, it, expect } from 'vitest';
 import {
   canPlaceBin,
   validateImport,
+  salvageImport,
   clamp,
   truncate,
   validateLayoutIntegrity,
   validateCustomProperties,
   isValidBin,
 } from '@/shared/utils/validation';
-import { CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { isOk, isErr } from '@/core/result';
 import { createTestLayout as baseCreateTestLayout, createTestBin } from '@/test/testUtils';
 
@@ -305,6 +306,121 @@ describe('validateImport', () => {
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('Category 0 is invalid'))).toBe(true);
+  });
+});
+
+describe('salvageImport', () => {
+  it('passes valid layout through unchanged', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      createTestBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 2 }),
+      createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2 }),
+    ];
+    const result = salvageImport(layout);
+    expect(result.valid).toBe(true);
+    expect(result.layout.bins).toHaveLength(2);
+    expect(result.salvaged).toHaveLength(0);
+  });
+
+  it('moves colliding bins to staging instead of rejecting the layout', () => {
+    const layout = createTestLayout();
+    // Two bins that overlap on the same layer
+    layout.bins = [
+      createTestBin({ id: 'bin1', x: 0, y: 0, width: 3, depth: 3 }),
+      createTestBin({ id: 'bin2', x: 1, y: 1, width: 3, depth: 3 }),
+    ];
+    // validateImport would reject this entirely
+    expect(validateImport(layout).valid).toBe(false);
+
+    // salvageImport should succeed, moving the colliding bin to staging
+    const result = salvageImport(layout);
+    expect(result.valid).toBe(true);
+    expect(result.layout.bins).toHaveLength(2);
+    expect(result.salvaged).toHaveLength(1);
+    expect(result.salvaged[0]).toContain('collides');
+
+    // The first bin stays on its layer, the colliding one goes to staging
+    const gridBins = result.layout.bins.filter((b) => b.layerId !== STAGING_ID);
+    const stagedBins = result.layout.bins.filter((b) => b.layerId === STAGING_ID);
+    expect(gridBins).toHaveLength(1);
+    expect(stagedBins).toHaveLength(1);
+    expect(stagedBins[0].id).toBe('bin2');
+  });
+
+  it('moves out-of-bounds bins to staging', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      createTestBin({ id: 'good', x: 0, y: 0, width: 2, depth: 2 }),
+      createTestBin({ id: 'oob', x: 15, y: 0, width: 2, depth: 2 }),
+    ];
+    const result = salvageImport(layout);
+    expect(result.valid).toBe(true);
+    expect(result.salvaged).toHaveLength(1);
+    expect(result.salvaged[0]).toContain('Bin 1');
+
+    const stagedBins = result.layout.bins.filter((b) => b.layerId === STAGING_ID);
+    expect(stagedBins).toHaveLength(1);
+    expect(stagedBins[0].id).toBe('oob');
+  });
+
+  it('still rejects structurally invalid data (missing drawer, layers, etc.)', () => {
+    const result = salvageImport({ version: '1.0', name: 'Bad' });
+    expect(result.valid).toBe(false);
+  });
+
+  it('preserves all bin properties when moving to staging', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      createTestBin({ id: 'bin1', x: 0, y: 0, width: 3, depth: 3 }),
+      createTestBin({
+        id: 'bin2',
+        x: 1,
+        y: 1,
+        width: 3,
+        depth: 3,
+        label: 'My Bin',
+        notes: 'Important',
+        category: 'cat1',
+      }),
+    ];
+    const result = salvageImport(layout);
+    expect(result.valid).toBe(true);
+
+    const staged = result.layout.bins.find((b) => b.layerId === STAGING_ID);
+    expect(staged).toBeDefined();
+    expect(staged!.label).toBe('My Bin');
+    expect(staged!.notes).toBe('Important');
+    expect(staged!.width).toBe(3);
+    expect(staged!.depth).toBe(3);
+  });
+
+  it('handles all bins being invalid — layout still loads with empty grid', () => {
+    const layout = createTestLayout();
+    // Both bins out of bounds
+    layout.bins = [
+      createTestBin({ id: 'oob1', x: 50, y: 0, width: 2, depth: 2 }),
+      createTestBin({ id: 'oob2', x: 0, y: 50, width: 2, depth: 2 }),
+    ];
+    const result = salvageImport(layout);
+    expect(result.valid).toBe(true);
+    expect(result.salvaged).toHaveLength(2);
+
+    const stagedBins = result.layout.bins.filter((b) => b.layerId === STAGING_ID);
+    expect(stagedBins).toHaveLength(2);
+  });
+
+  it('leaves staging bins untouched', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      createTestBin({ id: 'staged', layerId: '__staging__', x: 0, y: 0, width: 2, depth: 2 }),
+      createTestBin({ id: 'grid', x: 0, y: 0, width: 2, depth: 2 }),
+    ];
+    const result = salvageImport(layout);
+    expect(result.valid).toBe(true);
+    // The already-staged bin should remain staged, not be double-staged
+    const stagedBins = result.layout.bins.filter((b) => b.layerId === STAGING_ID);
+    expect(stagedBins).toHaveLength(1);
+    expect(stagedBins[0].id).toBe('staged');
   });
 });
 
