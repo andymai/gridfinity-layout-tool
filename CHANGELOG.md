@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.17.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.17.0...gridfinity-layout-tool-v3.17.1) (2026-02-20)
+
+
+### Bug Fixes
+
+* resolve TypeScript errors in Vercel API build ([#808](https://github.com/andymai/gridfinity-layout-tool/issues/808)) ([1a39d8b](https://github.com/andymai/gridfinity-layout-tool/commit/1a39d8b6649063eccb73b6af131c01f048062c29))
+
 ## [3.17.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.16.1...gridfinity-layout-tool-v3.17.0) (2026-02-19)
 
 
