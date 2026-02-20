@@ -1852,6 +1852,11 @@ const en: Record<string, string> = {
   'designLinking.blockedResize.reasons.inserts': 'Has floor inserts',
   'designLinking.blockedResize.reasons.cutouts': 'Has cutouts',
   'designLinking.blockedResize.reasons.compartments': 'Has custom compartment layout',
+
+  // Designer-updated dialog (shown when bin resize pushes to open designer)
+  'designLinking.designerUpdated.title': 'Designer Updated',
+  'designLinking.designerUpdated.description':
+    'The dimensions of "{name}" in the designer have been updated to match the bin resize. You can review the changes in the designer.',
 };
 
 export default en;

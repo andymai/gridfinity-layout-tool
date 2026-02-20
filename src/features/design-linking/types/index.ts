@@ -140,6 +140,14 @@ export interface PendingCreateDesignState {
   readonly dimensions: SyncableDimensions;
 }
 
+/** State for the designer-updated notification dialog */
+export interface PendingDesignerUpdatedState {
+  /** Design that was updated */
+  readonly designId: DesignId;
+  /** Design name for display */
+  readonly designName: string;
+}
+
 /** State for the link existing design dialog */
 export interface PendingLinkDesignState {
   /** Bin to link a design to */
