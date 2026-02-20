@@ -50,7 +50,12 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
-import { CommandPalette, useCommandPalette } from '@/features/command-palette';
+import { useCommandPalette } from '@/features/command-palette';
+
+// Lazy load command palette - only opened via Ctrl+K, no need to eagerly load
+const CommandPalette = lazyWithRetry(() =>
+  import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
+);
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 import { useThemeEffect } from '@/hooks/useThemeEffect';
 
@@ -604,8 +609,10 @@ export default function App() {
     <>
       {routeContent}
       <ToastContainer />
-      {!isMobile && (
-        <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+      {!isMobile && commandPaletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+        </Suspense>
       )}
       {isLabsDrawerOpen && (
         <Suspense fallback={null}>

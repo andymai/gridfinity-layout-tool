@@ -67,7 +67,7 @@ function getEnglishTranslations(): Map<string, string> {
 
 function getLocaleFiles(): string[] {
   return readdirSync(LOCALES_DIR)
-    .filter((f) => f.endsWith('.json'))
+    .filter((f) => f.endsWith('.json') && f !== 'en.json')
     .sort();
 }
 
