@@ -91,7 +91,7 @@
     "ioredis": "^5.9.3",
     "jszip": "^3.10.1",
     "lz-string": "^1.5.0",
-    "posthog-js": "^1.347.2",
+    "posthog-js": "^1.351.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tailwind-merge": "^3.4.1",
