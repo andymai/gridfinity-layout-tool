@@ -1526,5 +1526,15 @@
   "toolbar.zoomOutKey": "Uitzoomen (−)",
   "binDesigner.cutoutDesktopOnly": "De uitsnijdingseditor is beschikbaar op desktop. Schakel over naar een breder scherm om deze functie te gebruiken.",
   "binDesigner.newDesignConfirm": "Een nieuw ontwerp starten? Je huidige ontwerp is opgeslagen en kan later worden geladen.",
-  "binDesigner.newDesignCreated": "Nieuw ontwerp aangemaakt"
+  "binDesigner.newDesignCreated": "Nieuw ontwerp aangemaakt",
+  "designLinking.toast.autoSynced": "Automatisch {count} bak(ken) gesynchroniseerd vanuit ontwerp",
+  "designLinking.toast.designUpdated": "Ontwerp \"{name}\" bijgewerkt",
+  "designLinking.toast.designUpdateFailed": "Kan gekoppeld ontwerp niet bijwerken",
+  "designLinking.toast.cascadedResize": "Ontwerp + {count} gekoppelde bak(ken) bijgewerkt",
+  "designLinking.toast.designOpenInEditor": "Ontwerp is geopend in de editor — pas het daar aan om te synchroniseren",
+  "designLinking.blockedResize.title": "Ontwerp niet bijgewerkt",
+  "designLinking.blockedResize.description": "De bak is van formaat veranderd, maar het gekoppelde ontwerp \"{name}\" heeft aangepaste geometrie die beïnvloed kan worden. Bewerk het ontwerp handmatig om de afmetingen bij te werken.",
+  "designLinking.blockedResize.reasons.inserts": "Heeft bodeminzetstukken",
+  "designLinking.blockedResize.reasons.cutouts": "Heeft uitsparingen",
+  "designLinking.blockedResize.reasons.compartments": "Heeft aangepaste vakindeling"
 }

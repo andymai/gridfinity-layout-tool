@@ -1526,5 +1526,15 @@
   "toolbar.zoomOutKey": "Verkleinern (−)",
   "binDesigner.cutoutDesktopOnly": "Der Ausschnitt-Editor ist auf dem Desktop verfügbar. Bitte wechseln Sie zu einem breiteren Bildschirm, um diese Funktion zu nutzen.",
   "binDesigner.newDesignConfirm": "Neues Design starten? Dein aktuelles Design wird gespeichert und kann später geladen werden.",
-  "binDesigner.newDesignCreated": "Neues Design erstellt"
+  "binDesigner.newDesignCreated": "Neues Design erstellt",
+  "designLinking.toast.autoSynced": "Automatisch {count} Bin(s) vom Design synchronisiert",
+  "designLinking.toast.designUpdated": "Design \"{name}\" aktualisiert",
+  "designLinking.toast.designUpdateFailed": "Fehler beim Aktualisieren des verknüpften Designs",
+  "designLinking.toast.cascadedResize": "Design + {count} verknüpfte(s) Bin(s) aktualisiert",
+  "designLinking.toast.designOpenInEditor": "Design ist im Editor geöffnet — passe es dort an, um zu synchronisieren",
+  "designLinking.blockedResize.title": "Design nicht aktualisiert",
+  "designLinking.blockedResize.description": "Das Bin wurde in der Größe geändert, aber das verknüpfte Design \"{name}\" hat benutzerdefinierte Geometrie, die betroffen sein könnte. Bearbeite das Design manuell, um seine Abmessungen zu aktualisieren.",
+  "designLinking.blockedResize.reasons.inserts": "Hat Bodeneinsätze",
+  "designLinking.blockedResize.reasons.cutouts": "Hat Ausschnitte",
+  "designLinking.blockedResize.reasons.compartments": "Hat benutzerdefiniertes Fach-Layout"
 }

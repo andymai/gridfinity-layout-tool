@@ -23,6 +23,10 @@ export {
   formatDimensionChange,
 } from './syncOperations';
 
+// Complex geometry detection
+export { hasComplexGeometry, getComplexityReasons } from './complexGeometry';
+export type { ComplexityReason } from './complexGeometry';
+
 // Linkage queries
 export {
   getLinkedDesignId,

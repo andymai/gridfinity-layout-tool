@@ -44,7 +44,19 @@ export interface DimensionComparison {
 // =============================================================================
 
 /** Direction of dimension sync */
-export type SyncDirection = 'design-to-bin';
+export type SyncDirection = 'design-to-bin' | 'bin-to-design';
+
+/** Reasons a design has complex geometry (used in BlockedResizeDialog) */
+import type { ComplexityReason } from '../domain/complexGeometry';
+export type { ComplexityReason };
+
+/** State for the blocked resize dialog */
+export interface PendingBlockedResizeState {
+  readonly binId: BinId;
+  readonly designId: DesignId;
+  readonly designName: string;
+  readonly reasons: ComplexityReason[];
+}
 
 /** Result of sync eligibility check for a bin */
 export interface SyncEligibility {

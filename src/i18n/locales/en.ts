@@ -1839,6 +1839,19 @@ const en: Record<string, string> = {
   'designLinking.toast.exportFailed': 'Failed to export bin design',
   'designLinking.toast.deleted': 'Deleted "{name}"',
   'designLinking.toast.deleteFailed': 'Failed to delete bin design',
+  'designLinking.toast.autoSynced': 'Auto-synced {count} bin(s) from design',
+  'designLinking.toast.designUpdated': 'Updated design "{name}"',
+  'designLinking.toast.designUpdateFailed': 'Failed to update linked design',
+  'designLinking.toast.cascadedResize': 'Updated design + {count} linked bin(s)',
+  'designLinking.toast.designOpenInEditor': 'Design is open in editor — resize it there to sync',
+
+  // Blocked resize dialog
+  'designLinking.blockedResize.title': 'Design Not Updated',
+  'designLinking.blockedResize.description':
+    'The bin was resized, but the linked design "{name}" has custom geometry that could be affected. Edit the design manually to update its dimensions.',
+  'designLinking.blockedResize.reasons.inserts': 'Has floor inserts',
+  'designLinking.blockedResize.reasons.cutouts': 'Has cutouts',
+  'designLinking.blockedResize.reasons.compartments': 'Has custom compartment layout',
 };
 
 export default en;

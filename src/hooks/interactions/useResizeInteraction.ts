@@ -4,6 +4,7 @@ import { canPlaceBin } from '@/shared/utils/validation';
 import { calculateResizeRect, capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';
 import type { BinId, Coord, Rect, ValidationReason, BlockingInfo } from '@/core/types';
 
@@ -233,6 +234,33 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
               height: bin.height,
             });
           }
+        }
+      }
+
+      // Emit sync events for linked bins that changed dimensions.
+      // Deduplicate by linkedDesignId — when multiple bins share the same
+      // design, emit only one event (the first encountered) to avoid
+      // concurrent IDB writes and duplicate cascade attempts.
+      const emittedDesigns = new Set<string>();
+      for (const binId of interaction.binIds) {
+        const bin = findBinById(layout, binId);
+        const startRect = interaction.startRects.get(binId);
+        const currentRect = interaction.currentRects.get(binId);
+        if (!bin?.linkedDesignId || !startRect || !currentRect) continue;
+        if (emittedDesigns.has(bin.linkedDesignId)) continue;
+
+        if (startRect.width !== currentRect.width || startRect.depth !== currentRect.depth) {
+          emittedDesigns.add(bin.linkedDesignId);
+          emitSyncEvent({
+            type: 'bin-resized',
+            binId,
+            linkedDesignId: bin.linkedDesignId,
+            newDimensions: {
+              width: currentRect.width,
+              depth: currentRect.depth,
+              height: bin.height,
+            },
+          });
         }
       }
     }
