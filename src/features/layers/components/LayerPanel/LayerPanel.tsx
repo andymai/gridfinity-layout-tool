@@ -19,12 +19,12 @@ import { computeProportionalHeights } from '@/features/layers/utils/proportional
 // Drop position indicator for drag-and-drop reordering
 type DropPosition = { index: number; position: 'above' | 'below' } | null;
 
-/** Minimum row height in pixels to keep controls usable */
-const MIN_ROW_HEIGHT_PX = 32;
+/** Minimum row height in pixels — matches the ~38px natural height of the old rows */
+const MIN_ROW_HEIGHT_PX = 40;
 /** Total container height for the proportional layer stack */
-const STACK_CONTAINER_HEIGHT_PX = 160;
-/** Gap between rows in the stack (matches Tailwind gap-0.5 = 2px) */
-const STACK_GAP_PX = 2;
+const STACK_CONTAINER_HEIGHT_PX = 200;
+/** Gap between rows in the stack (matches Tailwind gap-1 = 4px) */
+const STACK_GAP_PX = 4;
 
 export function LayerPanel() {
   const t = useTranslation();
@@ -328,7 +328,7 @@ export function LayerPanel() {
 
         {/* Proportional layer stack — layers displayed top-to-bottom (visual top layer first) */}
         <div
-          className="flex flex-col gap-0.5 mb-3 rounded overflow-hidden border border-stroke-subtle"
+          className="flex flex-col gap-1 mb-3 rounded overflow-hidden border border-stroke-subtle"
           style={{ height: `${STACK_CONTAINER_HEIGHT_PX}px` }}
         >
           {/* Unused drawer space at top */}
