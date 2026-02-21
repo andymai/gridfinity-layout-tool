@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { CONSTRAINTS } from '@/core/constants';
-import { clearAllAppData } from '@/core/storage';
+import { clearAllAppData } from '@/core/storage/clearAppData';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useStorageInfo } from './useStorageInfo';
 
