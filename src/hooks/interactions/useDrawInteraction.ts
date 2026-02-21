@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { snapToGrid } from '@/core/constants';
+import { snapDrawRect } from '@/shared/utils/snap';
 import { capturePointer } from './interaction';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -45,6 +46,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
     execute,
     activePointerIdRef,
     capturedPointerRef,
+    ctrlKeyRef,
   } = context;
 
   /**
@@ -88,12 +90,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       const interaction = useInteractionStore.getState().interaction;
       if (!interaction) return;
 
-      if (interaction.type === 'draw') {
-        setInteraction({
-          ...interaction,
-          current: clamped,
-        });
-      } else if (interaction.type === 'paint') {
+      if (interaction.type === 'draw' || interaction.type === 'paint') {
         setInteraction({
           ...interaction,
           current: clamped,
@@ -121,11 +118,27 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       // In half-bin mode, minimum size is 0.5; otherwise it's 1
       const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
       const minSizeNow = halfBinModeNow ? 0.5 : 1;
-      const width = x2 - x1 + minSizeNow;
-      const depth = y2 - y1 + minSizeNow;
+      let width = x2 - x1 + minSizeNow;
+      let depth = y2 - y1 + minSizeNow;
 
       const layer = layout.layers.find((l) => l.id === activeLayerId);
       if (layer) {
+        // Smart snap: clamp drawn rect to avoid collision (unless Ctrl held)
+        if (!ctrlKeyRef.current) {
+          const snapped = snapDrawRect(
+            x1,
+            y1,
+            width,
+            depth,
+            layer.height,
+            activeLayerId,
+            layout,
+            minSizeNow
+          );
+          width = snapped.width;
+          depth = snapped.depth;
+        }
+
         execute(() => {
           const binData = {
             layerId: activeLayerId,
@@ -293,7 +306,16 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
     }
 
     // Note: setInteraction(null) is called by the parent hook
-  }, [layout, activeLayerId, activeCategoryId, addBin, execute, setSelectedBin, setSelectedBins]);
+  }, [
+    layout,
+    activeLayerId,
+    activeCategoryId,
+    addBin,
+    execute,
+    setSelectedBin,
+    setSelectedBins,
+    ctrlKeyRef,
+  ]);
 
   return { start, handleMove, handleUp };
 }

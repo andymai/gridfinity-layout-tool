@@ -27,6 +27,7 @@ describe('useStagingDragInteraction', () => {
   const mockExecute = vi.fn((fn: () => void) => fn());
   const mockActivePointerIdRef = { current: null };
   const mockCapturedPointerRef = { current: null };
+  const mockCtrlKeyRef = { current: false };
 
   const createContext = (): InteractionContext => {
     const { layout } = useLayoutStore.getState();
@@ -44,6 +45,7 @@ describe('useStagingDragInteraction', () => {
       execute: mockExecute,
       activePointerIdRef: mockActivePointerIdRef,
       capturedPointerRef: mockCapturedPointerRef,
+      ctrlKeyRef: mockCtrlKeyRef,
     };
   };
 
@@ -263,9 +265,9 @@ describe('useStagingDragInteraction', () => {
       expect(call.currentCoord).toEqual({ x: 2, y: 2 });
     });
 
-    it('still shows invalid when directly on top of another bin', () => {
+    it('snaps to valid position when directly on top of another bin (within radius 2)', () => {
       const binId = addStagingBin(); // 2x2 bin
-      // Add a bin at (2,2) — same position, no room to nudge by just 1 step
+      // Add a bin at (2,2) — same position
       addGridBin(2, 2);
 
       useInteractionStore.setState({
@@ -281,19 +283,15 @@ describe('useStagingDragInteraction', () => {
       const context = createContext();
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
-      // Directly on top — all ±1 nudges still overlap because both bins are 2×2:
-      // (-1,0)→(1,2): [1,3)∩[2,4)=overlap  (+1,0)→(3,2): [3,5)∩[2,4)=overlap
-      // (0,-1)→(2,1): [1,3)∩[2,4)=overlap  (0,+1)→(2,3): [3,5)∩[2,4)=overlap
-      // Diagonals also overlap → no valid position within 1 step
+      // With SNAP_RADIUS=2, the 2x2 bin can snap 2 steps away (e.g., to (4,2) or (0,0))
+      // where it no longer overlaps the grid bin at [2,4)×[2,4)
       act(() => {
         result.current.handleMove({ x: 2, y: 2 }, { x: 2, y: 2 });
       });
 
-      expect(mockSetInteraction).toHaveBeenCalledWith(
-        expect.objectContaining({
-          valid: false,
-        })
-      );
+      const call = mockSetInteraction.mock.calls[0][0];
+      expect(call.valid).toBe(true);
+      expect(call.isSnapped).toBe(true);
     });
 
     it('marks invalid when no nearby valid position exists', () => {

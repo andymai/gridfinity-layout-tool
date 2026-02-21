@@ -59,6 +59,9 @@ export interface InteractionContext {
   // Shared refs for pointer tracking (managed by parent)
   activePointerIdRef: RefObject<number | null>;
   capturedPointerRef: RefObject<PointerCaptureHandle | null>;
+
+  /** Ref tracking whether Ctrl key is held (for disabling smart snap) */
+  ctrlKeyRef: RefObject<boolean>;
 }
 
 /**

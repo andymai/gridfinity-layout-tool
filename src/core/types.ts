@@ -154,6 +154,8 @@ export type Interaction =
       swapMode?: boolean;
       /** Target bin for swap if hovering over a compatible bin */
       swapTarget?: SwapTarget;
+      /** True when position was auto-adjusted to nearest valid spot (shows amber tint) */
+      isSnapped?: boolean;
       /** Why placement is invalid (for user feedback) */
       invalidReason?: ValidationReason;
       /** Details about what's blocking placement */
@@ -166,6 +168,8 @@ export type Interaction =
       startRects: Map<BinId, Rect>;
       currentRects: Map<BinId, Rect>;
       valid: boolean;
+      /** True when size was auto-constrained to collision boundary (shows amber tint) */
+      isSnapped?: boolean;
       /** Why resize is invalid (for user feedback) */
       invalidReason?: ValidationReason;
       /** Details about what's blocking the resize */
@@ -176,6 +180,8 @@ export type Interaction =
       binId: BinId;
       currentCoord: Coord | null;
       valid: boolean;
+      /** True when position was auto-adjusted to nearest valid spot (shows amber tint) */
+      isSnapped?: boolean;
       /** Why placement is invalid (for user feedback) */
       invalidReason?: ValidationReason;
       /** Details about what's blocking placement */

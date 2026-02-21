@@ -28,7 +28,7 @@ export interface SwapCompatibility {
  * @param step - Position increment (0.5 for half-bin mode, 1 for normal)
  * @yields Coordinate offsets in spiral order
  */
-function* spiralOffsets(
+export function* spiralOffsets(
   maxRadius: number,
   step: number
 ): Generator<{ dx: number; dy: number; distance: number }> {
