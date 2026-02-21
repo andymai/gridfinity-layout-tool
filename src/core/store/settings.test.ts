@@ -10,6 +10,7 @@ import {
 } from '@/core/store/settings';
 import type { BinListSortOrder, STLSearchSite } from '@/core/store/settings';
 import { resetAllStores, createIsolatedLocalStorageMock } from '@/test/testUtils';
+import { isOk, isErr } from '@/core/result';
 
 describe('settings store', () => {
   let localStorageMock: ReturnType<typeof createIsolatedLocalStorageMock>;
@@ -195,40 +196,45 @@ describe('settings store', () => {
   });
 
   describe('error handling', () => {
-    it('handles save errors gracefully', () => {
+    it('returns Err result when save fails due to quota', () => {
       // Make setItem throw
       localStorageMock.mock.setItem = vi.fn(() => {
         throw new Error('QuotaExceededError');
       });
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Try to update a setting
       const { updateSetting } = useSettingsStore.getState();
-      expect(() => updateSetting('defaultDrawerWidth', 20)).not.toThrow();
+      const result = updateSetting('defaultDrawerWidth', 20);
 
-      // State should still be updated even if save failed
+      // State should still be updated in memory even if save failed
       expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(20);
-      expect(warnSpy).toHaveBeenCalledWith('Failed to save settings:', expect.any(Error));
-      warnSpy.mockRestore();
+      // But the Result signals the persistence failure
+      expect(isErr(result)).toBe(true);
     });
 
-    it('handles resetSettings save errors gracefully', () => {
+    it('returns Ok result when save succeeds', () => {
+      const { updateSetting } = useSettingsStore.getState();
+      const result = updateSetting('defaultDrawerWidth', 20);
+
+      expect(isOk(result)).toBe(true);
+    });
+
+    it('handles resetSettings save errors gracefully with Result', () => {
       // Make setItem throw
       localStorageMock.mock.setItem = vi.fn(() => {
         throw new Error('QuotaExceededError');
       });
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Try to reset settings
       const { resetSettings } = useSettingsStore.getState();
-      expect(() => resetSettings()).not.toThrow();
+      const result = resetSettings();
 
-      // State should still be reset
+      // State should still be reset in memory
       expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(
         DEFAULT_SETTINGS.defaultDrawerWidth
       );
-      expect(warnSpy).toHaveBeenCalledWith('Failed to save settings:', expect.any(Error));
-      warnSpy.mockRestore();
+      // Result signals the persistence failure
+      expect(isErr(result)).toBe(true);
     });
   });
 

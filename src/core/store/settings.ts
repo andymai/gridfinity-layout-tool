@@ -3,6 +3,9 @@ import type { Locale } from '@/i18n/types';
 import type { Category } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
+import type { Result, StorageError } from '@/core/result';
+import { isOk } from '@/core/result';
+import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 
 // Storage key for settings
 const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
@@ -378,137 +381,138 @@ function normalizeViewMode(value: unknown, fallback: 'grid' | 'list'): 'grid' | 
 
 /**
  * Load settings from localStorage.
+ * Uses Result internally for structured error handling, but always returns
+ * a valid UserSettings (falling back to defaults on any error).
  */
 function loadSettings(): UserSettings {
-  try {
-    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored) as Partial<UserSettings>;
-      // Deep merge printViewSettings to handle new fields
-      const printViewSettings: PrintViewSettings = {
-        ...DEFAULT_PRINT_VIEW_SETTINGS,
-        ...parsed.printViewSettings,
-        binListSortOrder: normalizeSortOrder(parsed.printViewSettings?.binListSortOrder),
-      };
-      // Normalize STL search sites
-      const stlSearchSites = normalizeSTLSearchSites(parsed.stlSearchSites);
-      // Normalize default categories
-      const defaultCategories = normalizeCategories(parsed.defaultCategories);
-      // Normalize view mode settings
-      const layoutManagerViewMode = normalizeViewMode(
-        parsed.layoutManagerViewMode,
-        DEFAULT_SETTINGS.layoutManagerViewMode
-      );
-      const designListViewMode = normalizeViewMode(
-        parsed.designListViewMode,
-        DEFAULT_SETTINGS.designListViewMode
-      );
-      // Normalize print settings
-      const printSettings: PrintSettings = {
-        ...DEFAULT_PRINT_SETTINGS,
-        ...parsed.printSettings,
-      };
-      // Merge with defaults to handle any missing fields
-      const merged: UserSettings = {
-        ...DEFAULT_SETTINGS,
-        ...parsed,
-        printViewSettings,
-        stlSearchSites,
-        defaultCategories,
-        layoutManagerViewMode,
-        designListViewMode,
-        printSettings,
-      };
-      return merged;
-    }
-  } catch (e) {
-    console.warn('Failed to load settings:', e);
+  const result = loadFromLocalStorage<Partial<UserSettings>>(SETTINGS_STORAGE_KEY);
+
+  if (isOk(result) && result.value) {
+    const parsed = result.value;
+    // Deep merge printViewSettings to handle new fields
+    const printViewSettings: PrintViewSettings = {
+      ...DEFAULT_PRINT_VIEW_SETTINGS,
+      ...parsed.printViewSettings,
+      binListSortOrder: normalizeSortOrder(parsed.printViewSettings?.binListSortOrder),
+    };
+    // Normalize STL search sites
+    const stlSearchSites = normalizeSTLSearchSites(parsed.stlSearchSites);
+    // Normalize default categories
+    const defaultCategories = normalizeCategories(parsed.defaultCategories);
+    // Normalize view mode settings
+    const layoutManagerViewMode = normalizeViewMode(
+      parsed.layoutManagerViewMode,
+      DEFAULT_SETTINGS.layoutManagerViewMode
+    );
+    const designListViewMode = normalizeViewMode(
+      parsed.designListViewMode,
+      DEFAULT_SETTINGS.designListViewMode
+    );
+    // Normalize print settings
+    const printSettings: PrintSettings = {
+      ...DEFAULT_PRINT_SETTINGS,
+      ...parsed.printSettings,
+    };
+    // Merge with defaults to handle any missing fields
+    const merged: UserSettings = {
+      ...DEFAULT_SETTINGS,
+      ...parsed,
+      printViewSettings,
+      stlSearchSites,
+      defaultCategories,
+      layoutManagerViewMode,
+      designListViewMode,
+      printSettings,
+    };
+    return merged;
   }
+
   return { ...DEFAULT_SETTINGS };
 }
 
 /**
  * Save settings to localStorage.
+ * Returns Result to let callers know if persistence succeeded.
+ * On Err, settings are still updated in memory but won't survive a page reload.
  */
-function saveSettings(settings: UserSettings): void {
-  try {
-    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-  } catch (e) {
-    console.warn('Failed to save settings:', e);
-  }
+function saveSettings(settings: UserSettings): Result<void, StorageError> {
+  return saveToLocalStorage(SETTINGS_STORAGE_KEY, settings);
 }
 
 interface SettingsState {
   settings: UserSettings;
 
-  updateSetting: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => void;
-  updateSettings: (updates: Partial<UserSettings>) => void;
-  resetSettings: () => void;
+  /**
+   * Update a single setting. Returns Result indicating persistence success.
+   * State is always updated in memory; Err means it won't survive reload.
+   */
+  updateSetting: <K extends keyof UserSettings>(
+    key: K,
+    value: UserSettings[K]
+  ) => Result<void, StorageError>;
+  /**
+   * Update multiple settings. Returns Result indicating persistence success.
+   */
+  updateSettings: (updates: Partial<UserSettings>) => Result<void, StorageError>;
+  /** Reset all settings to defaults. Returns Result indicating persistence success. */
+  resetSettings: () => Result<void, StorageError>;
 
-  // Save current layout defaults from the current layout
+  /** Save current layout defaults. Returns Result indicating persistence success. */
   saveCurrentAsDefaults: (
     drawer: { width: number; depth: number; height: number },
     printBedSize: number,
     gridUnitMm: number,
     heightUnitMm: number,
     layerHeight: number
-  ) => void;
+  ) => Result<void, StorageError>;
 
-  // Save current categories as defaults for new layouts
-  saveCategoriesAsDefaults: (categories: Category[]) => void;
+  /** Save categories as defaults for new layouts. Returns Result indicating persistence success. */
+  saveCategoriesAsDefaults: (categories: Category[]) => Result<void, StorageError>;
 }
 
-export const useSettingsStore = create<SettingsState>()((set) => ({
+export const useSettingsStore = create<SettingsState>()((set, get) => ({
   settings: loadSettings(),
 
   updateSetting: (key, value) => {
-    set((state) => {
-      const newSettings = { ...state.settings, [key]: value };
-      saveSettings(newSettings);
-      return { settings: newSettings };
-    });
+    const newSettings = { ...get().settings, [key]: value };
+    set({ settings: newSettings });
+    return saveSettings(newSettings);
   },
 
   updateSettings: (updates) => {
-    set((state) => {
-      const newSettings = { ...state.settings, ...updates };
-      saveSettings(newSettings);
-      return { settings: newSettings };
-    });
+    const newSettings = { ...get().settings, ...updates };
+    set({ settings: newSettings });
+    return saveSettings(newSettings);
   },
 
   resetSettings: () => {
     const newSettings = { ...DEFAULT_SETTINGS };
-    saveSettings(newSettings);
     set({ settings: newSettings });
+    return saveSettings(newSettings);
   },
 
   saveCurrentAsDefaults: (drawer, printBedSize, gridUnitMm, heightUnitMm, layerHeight) => {
-    set((state) => {
-      const newSettings = {
-        ...state.settings,
-        defaultDrawerWidth: drawer.width,
-        defaultDrawerDepth: drawer.depth,
-        defaultDrawerHeight: drawer.height,
-        defaultLayerHeight: layerHeight,
-        defaultPrintBedSize: printBedSize,
-        defaultGridUnitMm: gridUnitMm,
-        defaultHeightUnitMm: heightUnitMm,
-      };
-      saveSettings(newSettings);
-      return { settings: newSettings };
-    });
+    const newSettings = {
+      ...get().settings,
+      defaultDrawerWidth: drawer.width,
+      defaultDrawerDepth: drawer.depth,
+      defaultDrawerHeight: drawer.height,
+      defaultLayerHeight: layerHeight,
+      defaultPrintBedSize: printBedSize,
+      defaultGridUnitMm: gridUnitMm,
+      defaultHeightUnitMm: heightUnitMm,
+    };
+    set({ settings: newSettings });
+    return saveSettings(newSettings);
   },
 
   saveCategoriesAsDefaults: (categories) => {
-    set((state) => {
-      // Deep copy categories to avoid reference issues
-      const newSettings = {
-        ...state.settings,
-        defaultCategories: categories.length > 0 ? categories.map((c) => ({ ...c })) : null,
-      };
-      saveSettings(newSettings);
-      return { settings: newSettings };
-    });
+    // Deep copy categories to avoid reference issues
+    const newSettings = {
+      ...get().settings,
+      defaultCategories: categories.length > 0 ? categories.map((c) => ({ ...c })) : null,
+    };
+    set({ settings: newSettings });
+    return saveSettings(newSettings);
   },
 }));

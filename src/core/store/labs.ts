@@ -10,32 +10,30 @@ import { create } from 'zustand';
 import type { LabsPreferences, FeatureId } from '@/core/labs';
 import { createDefaultLabsPreferences, getFeature } from '@/core/labs';
 import { trackEvent } from '@/shared/analytics/posthog';
+import type { Result, StorageError } from '@/core/result';
+import { isOk } from '@/core/result';
+import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 
 export const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
 
 function loadPreferences(): LabsPreferences {
-  try {
-    const stored = localStorage.getItem(LABS_STORAGE_KEY);
-    if (stored) {
-      const parsed: unknown = JSON.parse(stored);
-      return { ...createDefaultLabsPreferences(), ...(parsed as Partial<LabsPreferences>) };
-    }
-  } catch (e) {
-    console.warn('Failed to load Labs preferences:', e);
+  const result = loadFromLocalStorage<Partial<LabsPreferences>>(LABS_STORAGE_KEY);
+  if (isOk(result) && result.value) {
+    return { ...createDefaultLabsPreferences(), ...result.value };
   }
   return createDefaultLabsPreferences();
 }
 
-function savePreferences(prefs: LabsPreferences): void {
-  try {
-    const toSave: LabsPreferences = {
-      ...prefs,
-      lastModified: new Date().toISOString(),
-    };
-    localStorage.setItem(LABS_STORAGE_KEY, JSON.stringify(toSave));
-  } catch (e) {
-    console.warn('Failed to save Labs preferences:', e);
-  }
+/**
+ * Save labs preferences to localStorage.
+ * Returns Result to let callers know if persistence succeeded.
+ */
+function savePreferences(prefs: LabsPreferences): Result<void, StorageError> {
+  const toSave: LabsPreferences = {
+    ...prefs,
+    lastModified: new Date().toISOString(),
+  };
+  return saveToLocalStorage(LABS_STORAGE_KEY, toSave);
 }
 
 interface LabsState {

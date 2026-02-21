@@ -18,10 +18,14 @@ vi.mock('@/core/api/share', () => ({
 }));
 
 // Mock result helpers
-vi.mock('@/core/result', () => ({
-  isOk: vi.fn(() => true),
-  getUserMessage: vi.fn(() => 'Error message'),
-}));
+vi.mock('@/core/result', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    isOk: vi.fn(() => true),
+    getUserMessage: vi.fn(() => 'Error message'),
+  };
+});
 
 // Mock computePreview
 vi.mock('@/core/store/library', async () => {

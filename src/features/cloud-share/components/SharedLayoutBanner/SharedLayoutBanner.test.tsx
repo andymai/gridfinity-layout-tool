@@ -123,11 +123,15 @@ vi.mock('@/core/api/share', () => ({
 }));
 
 // Mock result helpers (used by SharedLayoutBanner for atomic API)
-vi.mock('@/core/result', () => ({
-  isOk: vi.fn((result) => result?.ok === true),
-  isErr: vi.fn((result) => result?.ok !== true),
-  getUserMessage: vi.fn(() => 'An error occurred'),
-}));
+vi.mock('@/core/result', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    isOk: vi.fn((result) => result?.ok === true),
+    isErr: vi.fn((result) => result?.ok !== true),
+    getUserMessage: vi.fn(() => 'An error occurred'),
+  };
+});
 
 const mockLayout: Layout = {
   version: '1.0',

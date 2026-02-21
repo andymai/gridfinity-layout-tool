@@ -39,10 +39,14 @@ vi.mock('@/core/storage/backend', () => ({
 }));
 
 // Mock the localStorage backend for migration
-vi.mock('@/core/storage/backends/localStorage', () => ({
-  getAllLayoutIds: vi.fn(),
-  loadLayout: vi.fn(),
-}));
+vi.mock('@/core/storage/backends/localStorage', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    getAllLayoutIds: vi.fn(),
+    loadLayout: vi.fn(),
+  };
+});
 
 // Mock the indexedDB backend for migration and library
 vi.mock('@/core/storage/backends/indexedDB', () => ({
