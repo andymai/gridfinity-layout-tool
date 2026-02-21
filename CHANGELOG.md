@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.22.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.22.0...gridfinity-layout-tool-v3.22.1) (2026-02-21)
+
+
+### Bug Fixes
+
+* stash rotate button clipping and move-to-grid context menu ([#837](https://github.com/andymai/gridfinity-layout-tool/issues/837)) ([f14cc84](https://github.com/andymai/gridfinity-layout-tool/commit/f14cc841d4a579d46e12b8be6776ea1185fe2e79))
+
 ## [3.22.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.21.0...gridfinity-layout-tool-v3.22.0) (2026-02-21)
 
 
