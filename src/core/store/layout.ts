@@ -350,7 +350,7 @@ export const useLayoutStore = create<LayoutState>()(
 
         const totalHeight = layout.layers.reduce((sum, l) => sum + l.height, 0);
         const remaining = layout.drawer.height - totalHeight;
-        if (remaining < 1) {
+        if (remaining < CONSTRAINTS.MIN_LAYER_HEIGHT) {
           return err(layoutInvalidOperation('addLayer', 'No remaining height in drawer'));
         }
 
@@ -383,7 +383,7 @@ export const useLayoutStore = create<LayoutState>()(
                 .filter((layer) => layer.id !== id)
                 .reduce((sum, layer) => sum + layer.height, 0);
               const maxHeight = state.layout.drawer.height - othersHeight;
-              updates.height = clamp(updates.height, 1, maxHeight);
+              updates.height = clamp(updates.height, CONSTRAINTS.MIN_LAYER_HEIGHT, maxHeight);
             }
             Object.assign(l, updates);
           }

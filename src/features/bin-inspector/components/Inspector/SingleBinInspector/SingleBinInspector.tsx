@@ -200,8 +200,24 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               ariaLabel="Bin height"
               displayValue={`${bin.height}u`}
             />
-            <div className="text-center mt-1 text-[10px] text-content-disabled">
-              {constraints.heightRange}
+            <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
+              <div>
+                {constraints.minHeightReason === 'layer_height'
+                  ? t('inspector.minHeightHint', {
+                      min: constraints.minHeight,
+                      reason: t('inspector.heightReasonLayerHeight'),
+                    })
+                  : t('inspector.minHeightHintNoReason', { min: constraints.minHeight })}
+              </div>
+              <div>
+                {t('inspector.maxHeightHint', {
+                  max: constraints.maxHeight,
+                  reason:
+                    constraints.maxHeightReason === 'remaining_space'
+                      ? t('inspector.heightReasonRemainingSpace')
+                      : t('inspector.heightReasonDrawerHeight'),
+                })}
+              </div>
             </div>
           </div>
 

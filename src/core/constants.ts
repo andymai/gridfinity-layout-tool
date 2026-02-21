@@ -21,6 +21,7 @@ export const CONSTRAINTS = {
   QUICK_FILL_MAX_BINS: 2500,
   QUICK_FILL_CONFIRM_THRESHOLD: 100,
   MIN_BIN_HEIGHT: 2, // Minimum bin height in units (1U = base only, no usable cavity)
+  MIN_LAYER_HEIGHT: 2, // Minimum layer height in units (1U = socket base only)
   PRINT_GAP_MM: 10, // Gap between bins on print bed
   // Layout library constraints
   LAYOUTS_MAX: 500, // Max layouts in library (IndexedDB storage)

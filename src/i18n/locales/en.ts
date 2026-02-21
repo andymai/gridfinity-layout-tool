@@ -297,6 +297,12 @@ const en: Record<string, string> = {
   'inspector.binNotes': 'Bin notes',
   'inspector.binsSelected': 'bins selected',
   'inspector.clearanceMm': 'Clearance: {mm}mm',
+  'inspector.minHeightHint': 'Min {min}u: {reason}',
+  'inspector.minHeightHintNoReason': 'Min {min}u',
+  'inspector.maxHeightHint': 'Max {max}u: {reason}',
+  'inspector.heightReasonLayerHeight': 'layer height',
+  'inspector.heightReasonDrawerHeight': 'drawer height',
+  'inspector.heightReasonRemainingSpace': 'remaining space',
   'inspector.customProperties': 'Custom Properties',
   'inspector.customPropertiesCount': '{count} custom properties',
   'inspector.deleteAll': 'Delete All',
@@ -364,6 +370,11 @@ const en: Record<string, string> = {
   'layers.squares': 'Squares',
   'layers.stats': '{coverage}% filled · {count} bins',
   'layers.statsTotal': '{coverage}% filled · {count} bins total',
+  'layers.crossSection': 'Cross-section',
+  'layers.segmentTooltip': '{name} — {coverage}% filled, {count} bins',
+  'layers.deleteLayerAria': 'Delete {name} layer',
+  'layers.unusedSpace': '{height}u headroom',
+  'layers.heightTotal': '{used}/{total}u',
   'layers.switchToTall': 'Switch to tall',
   'layers.switchToWide': 'Switch to wide',
   'layers.tall': 'Tall',
@@ -681,7 +692,7 @@ const en: Record<string, string> = {
   'settings.printEstimatesHint':
     'Adjust these to match your printer profile for more accurate estimates:',
   'settings.filamentCostPerKg': 'Filament cost',
-  'settings.printLayerHeight': 'Layer height',
+  'settings.printLayerHeight': 'Layer height (slicer)',
   'settings.infillPercent': 'Infill',
 
   // Default Categories
@@ -728,7 +739,7 @@ const en: Record<string, string> = {
   'settings.confirmCopyFromLayout.message':
     'Replace all default values with your current layout settings?\n\nCurrent layout: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
   'settings.confirmCopyFromLayout.confirm': 'Copy',
-  'settings.defaultLayerHeight': 'Bin Height',
+  'settings.defaultLayerHeight': 'Default Layer Height',
   'settings.defaultPrintBedSize': 'Print Bed',
   'settings.defaultGridUnit': 'Grid Unit',
   'settings.resetGeneral': 'Language reset to auto',

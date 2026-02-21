@@ -2,118 +2,102 @@
 
 ## [3.18.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.3...gridfinity-layout-tool-v3.18.4) (2026-02-20)
 
-
 ### Bug Fixes
 
-* **design-linking:** reconcile design→grid sync on navigation return ([#821](https://github.com/andymai/gridfinity-layout-tool/issues/821)) ([4405181](https://github.com/andymai/gridfinity-layout-tool/commit/440518123e7d0c5ffa3a5ada21f3f4fc6fc00e58))
+- **design-linking:** reconcile design→grid sync on navigation return ([#821](https://github.com/andymai/gridfinity-layout-tool/issues/821)) ([4405181](https://github.com/andymai/gridfinity-layout-tool/commit/440518123e7d0c5ffa3a5ada21f3f4fc6fc00e58))
 
 ## [3.18.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.2...gridfinity-layout-tool-v3.18.3) (2026-02-20)
 
-
 ### Bug Fixes
 
-* **storage:** salvage layouts with bin collisions instead of rejecting ([#819](https://github.com/andymai/gridfinity-layout-tool/issues/819)) ([fb65d19](https://github.com/andymai/gridfinity-layout-tool/commit/fb65d19ab417512a373e18e2a656f12dd2805886))
+- **storage:** salvage layouts with bin collisions instead of rejecting ([#819](https://github.com/andymai/gridfinity-layout-tool/issues/819)) ([fb65d19](https://github.com/andymai/gridfinity-layout-tool/commit/fb65d19ab417512a373e18e2a656f12dd2805886))
 
 ## [3.18.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.1...gridfinity-layout-tool-v3.18.2) (2026-02-20)
 
-
 ### Performance
 
-* reduce main bundle size by 27% via lazy loading ([#817](https://github.com/andymai/gridfinity-layout-tool/issues/817)) ([5c0696b](https://github.com/andymai/gridfinity-layout-tool/commit/5c0696b68786872fb5214db948759d65588e22b9))
+- reduce main bundle size by 27% via lazy loading ([#817](https://github.com/andymai/gridfinity-layout-tool/issues/817)) ([5c0696b](https://github.com/andymai/gridfinity-layout-tool/commit/5c0696b68786872fb5214db948759d65588e22b9))
 
 ## [3.18.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.0...gridfinity-layout-tool-v3.18.1) (2026-02-20)
 
-
 ### Bug Fixes
 
-* **design-linking:** sync inspector dimension changes to linked designs ([#814](https://github.com/andymai/gridfinity-layout-tool/issues/814)) ([9b94f53](https://github.com/andymai/gridfinity-layout-tool/commit/9b94f53146a8e0de7f41fdb1f3ef46c3b8c8a5f5))
+- **design-linking:** sync inspector dimension changes to linked designs ([#814](https://github.com/andymai/gridfinity-layout-tool/issues/814)) ([9b94f53](https://github.com/andymai/gridfinity-layout-tool/commit/9b94f53146a8e0de7f41fdb1f3ef46c3b8c8a5f5))
 
 ## [3.18.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.17.1...gridfinity-layout-tool-v3.18.0) (2026-02-20)
 
-
 ### Features
 
-* **design-linking:** auto-sync linked bin design dimensions ([#812](https://github.com/andymai/gridfinity-layout-tool/issues/812)) ([e31a86c](https://github.com/andymai/gridfinity-layout-tool/commit/e31a86c826c85aa87253ad034199d7f424090104))
+- **design-linking:** auto-sync linked bin design dimensions ([#812](https://github.com/andymai/gridfinity-layout-tool/issues/812)) ([e31a86c](https://github.com/andymai/gridfinity-layout-tool/commit/e31a86c826c85aa87253ad034199d7f424090104))
 
 ## [3.17.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.17.0...gridfinity-layout-tool-v3.17.1) (2026-02-20)
 
-
 ### Bug Fixes
 
-* resolve TypeScript errors in Vercel API build ([#808](https://github.com/andymai/gridfinity-layout-tool/issues/808)) ([1a39d8b](https://github.com/andymai/gridfinity-layout-tool/commit/1a39d8b6649063eccb73b6af131c01f048062c29))
+- resolve TypeScript errors in Vercel API build ([#808](https://github.com/andymai/gridfinity-layout-tool/issues/808)) ([1a39d8b](https://github.com/andymai/gridfinity-layout-tool/commit/1a39d8b6649063eccb73b6af131c01f048062c29))
 
 ## [3.17.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.16.1...gridfinity-layout-tool-v3.17.0) (2026-02-19)
 
-
 ### Features
 
-* optimize localStorage with key consolidation and IDB migration ([#806](https://github.com/andymai/gridfinity-layout-tool/issues/806)) ([41f954d](https://github.com/andymai/gridfinity-layout-tool/commit/41f954dcc22483fe56e2b2cbe575b9f5115cc70f))
+- optimize localStorage with key consolidation and IDB migration ([#806](https://github.com/andymai/gridfinity-layout-tool/issues/806)) ([41f954d](https://github.com/andymai/gridfinity-layout-tool/commit/41f954dcc22483fe56e2b2cbe575b9f5115cc70f))
 
 ## [3.16.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.16.0...gridfinity-layout-tool-v3.16.1) (2026-02-19)
 
-
 ### Bug Fixes
 
-* update tests for post-merge API changes ([1e0debc](https://github.com/andymai/gridfinity-layout-tool/commit/1e0debc6988f7850dc2978afee35cb6881b1a65a))
+- update tests for post-merge API changes ([1e0debc](https://github.com/andymai/gridfinity-layout-tool/commit/1e0debc6988f7850dc2978afee35cb6881b1a65a))
 
 ## [3.16.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.15.0...gridfinity-layout-tool-v3.16.0) (2026-02-19)
 
-
 ### Features
 
-* add bulk export/import for all layouts ([#802](https://github.com/andymai/gridfinity-layout-tool/issues/802)) ([a6c5bc7](https://github.com/andymai/gridfinity-layout-tool/commit/a6c5bc75aeed22e68fba71751bf9982c2f085afc))
-* add Storage dashboard tab in Settings ([#801](https://github.com/andymai/gridfinity-layout-tool/issues/801)) ([60447b7](https://github.com/andymai/gridfinity-layout-tool/commit/60447b7d5382b76d35165645842102a6df66c112))
-* auto-clean localStorage layout backups ([#800](https://github.com/andymai/gridfinity-layout-tool/issues/800)) ([6391445](https://github.com/andymai/gridfinity-layout-tool/commit/6391445e4d37feea3aa1be6a72cdbfc749e4ed58))
+- add bulk export/import for all layouts ([#802](https://github.com/andymai/gridfinity-layout-tool/issues/802)) ([a6c5bc7](https://github.com/andymai/gridfinity-layout-tool/commit/a6c5bc75aeed22e68fba71751bf9982c2f085afc))
+- add Storage dashboard tab in Settings ([#801](https://github.com/andymai/gridfinity-layout-tool/issues/801)) ([60447b7](https://github.com/andymai/gridfinity-layout-tool/commit/60447b7d5382b76d35165645842102a6df66c112))
+- auto-clean localStorage layout backups ([#800](https://github.com/andymai/gridfinity-layout-tool/issues/800)) ([6391445](https://github.com/andymai/gridfinity-layout-tool/commit/6391445e4d37feea3aa1be6a72cdbfc749e4ed58))
 
 ## [3.15.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.14.0...gridfinity-layout-tool-v3.15.0) (2026-02-19)
 
-
 ### Features
 
-* migrate library index from localStorage to IndexedDB ([#799](https://github.com/andymai/gridfinity-layout-tool/issues/799)) ([e1068bd](https://github.com/andymai/gridfinity-layout-tool/commit/e1068bda1f034e13e725b75e9b0dd346ca5f7696))
+- migrate library index from localStorage to IndexedDB ([#799](https://github.com/andymai/gridfinity-layout-tool/issues/799)) ([e1068bd](https://github.com/andymai/gridfinity-layout-tool/commit/e1068bda1f034e13e725b75e9b0dd346ca5f7696))
 
 ## [3.14.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.9...gridfinity-layout-tool-v3.14.0) (2026-02-19)
 
-
 ### Features
 
-* snapshot history with auto-save, restore, and IndexedDB recovery ([#797](https://github.com/andymai/gridfinity-layout-tool/issues/797)) ([f2bf4ec](https://github.com/andymai/gridfinity-layout-tool/commit/f2bf4ec0596682897403ab02b6082cd94829835a))
+- snapshot history with auto-save, restore, and IndexedDB recovery ([#797](https://github.com/andymai/gridfinity-layout-tool/issues/797)) ([f2bf4ec](https://github.com/andymai/gridfinity-layout-tool/commit/f2bf4ec0596682897403ab02b6082cd94829835a))
 
 ## [3.13.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.8...gridfinity-layout-tool-v3.13.9) (2026-02-19)
 
-
 ### Bug Fixes
 
-* **bin-designer:** use scrollbar-thin style in saved designs dialog ([#794](https://github.com/andymai/gridfinity-layout-tool/issues/794)) ([f1b8551](https://github.com/andymai/gridfinity-layout-tool/commit/f1b85512e36322314ab33071f74d8a387cb8745e))
+- **bin-designer:** use scrollbar-thin style in saved designs dialog ([#794](https://github.com/andymai/gridfinity-layout-tool/issues/794)) ([f1b8551](https://github.com/andymai/gridfinity-layout-tool/commit/f1b85512e36322314ab33071f74d8a387cb8745e))
 
 ## [3.13.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.7...gridfinity-layout-tool-v3.13.8) (2026-02-19)
 
-
 ### Bug Fixes
 
-* **bin-designer:** enable scrolling in saved designs dialog with 9+ designs ([#792](https://github.com/andymai/gridfinity-layout-tool/issues/792)) ([872de41](https://github.com/andymai/gridfinity-layout-tool/commit/872de417d9712533f9743033d077bc5862289d6f))
+- **bin-designer:** enable scrolling in saved designs dialog with 9+ designs ([#792](https://github.com/andymai/gridfinity-layout-tool/issues/792)) ([872de41](https://github.com/andymai/gridfinity-layout-tool/commit/872de417d9712533f9743033d077bc5862289d6f))
 
 ## [3.13.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.6...gridfinity-layout-tool-v3.13.7) (2026-02-19)
 
-
 ### Bug Fixes
 
-* **bin-designer:** enable scrolling in saved designs dialog with 9+ designs ([#790](https://github.com/andymai/gridfinity-layout-tool/issues/790)) ([c31fc6b](https://github.com/andymai/gridfinity-layout-tool/commit/c31fc6bc87ab13fd9e4541fe82ca09160b681b9b))
+- **bin-designer:** enable scrolling in saved designs dialog with 9+ designs ([#790](https://github.com/andymai/gridfinity-layout-tool/issues/790)) ([c31fc6b](https://github.com/andymai/gridfinity-layout-tool/commit/c31fc6bc87ab13fd9e4541fe82ca09160b681b9b))
 
 ## [3.13.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.5...gridfinity-layout-tool-v3.13.6) (2026-02-19)
 
-
 ### Bug Fixes
 
-* **bin-designer:** use dimension-based tessellation with tight lip tolerance ([#787](https://github.com/andymai/gridfinity-layout-tool/issues/787)) ([54aab1a](https://github.com/andymai/gridfinity-layout-tool/commit/54aab1ab501a5eb2d8fcd73c1834b06fec59fcee))
+- **bin-designer:** use dimension-based tessellation with tight lip tolerance ([#787](https://github.com/andymai/gridfinity-layout-tool/issues/787)) ([54aab1a](https://github.com/andymai/gridfinity-layout-tool/commit/54aab1ab501a5eb2d8fcd73c1834b06fec59fcee))
 
 ## [3.13.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.4...gridfinity-layout-tool-v3.13.5) (2026-02-18)
 
-
 ### Bug Fixes
 
-* **bin-designer:** optimize 3D preview for mobile web ([#780](https://github.com/andymai/gridfinity-layout-tool/issues/780)) ([611f257](https://github.com/andymai/gridfinity-layout-tool/commit/611f2570074ae064571a94515047d7c3e0734ece))
-* **bin-designer:** preserve stacking lip wall in preview tessellation ([#782](https://github.com/andymai/gridfinity-layout-tool/issues/782)) ([c813a61](https://github.com/andymai/gridfinity-layout-tool/commit/c813a61c1e98c4d7174cd9b080433fe1b79d0980))
+- **bin-designer:** optimize 3D preview for mobile web ([#780](https://github.com/andymai/gridfinity-layout-tool/issues/780)) ([611f257](https://github.com/andymai/gridfinity-layout-tool/commit/611f2570074ae064571a94515047d7c3e0734ece))
+- **bin-designer:** preserve stacking lip wall in preview tessellation ([#782](https://github.com/andymai/gridfinity-layout-tool/issues/782)) ([c813a61](https://github.com/andymai/gridfinity-layout-tool/commit/c813a61c1e98c4d7174cd9b080433fe1b79d0980))
 
 ## [3.13.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.13.3...gridfinity-layout-tool-v3.13.4) (2026-02-17)
 

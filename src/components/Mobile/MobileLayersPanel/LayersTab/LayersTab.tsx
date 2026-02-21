@@ -179,7 +179,7 @@ export function LayersTab() {
   const handleHeightChange = (id: LayerId, delta: number) => {
     const layer = layers.find((l) => l.id === id);
     if (!layer) return;
-    const newHeight = Math.max(1, layer.height + delta);
+    const newHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + delta);
     execute(() => {
       updateLayer(id, { height: newHeight });
     });
@@ -203,7 +203,7 @@ export function LayersTab() {
 
   const layerToDelete = deleteLayerId ? layers.find((l) => l.id === deleteLayerId) : null;
   const binsInLayer = deleteLayerId ? getLayerBins(bins, deleteLayerId).length : 0;
-  const canAddLayer = totalLayerHeight < drawer.height;
+  const canAddLayer = layers.length < CONSTRAINTS.LAYERS_MAX && totalLayerHeight < drawer.height;
 
   const cancelDeleteLayer = () => {
     setDeleteLayerId(null);
@@ -299,7 +299,7 @@ export function LayersTab() {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleHeightChange(layer.id, -1)}
-                  disabled={layer.height <= 1}
+                  disabled={layer.height <= CONSTRAINTS.MIN_LAYER_HEIGHT}
                   className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover disabled:opacity-30 transition-colors"
                   aria-label={t('layers.decreaseHeight', { name: layer.name })}
                 >
