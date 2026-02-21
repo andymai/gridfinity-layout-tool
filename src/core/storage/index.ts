@@ -116,8 +116,11 @@ export {
   saveSharedWithMe,
   loadSharedWithMe,
   clearSharedWithMe,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
   saveSharedWithMeResult,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
   loadSharedWithMeResult,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
   clearSharedWithMeResult,
   saveSharedWithMeAsync,
   loadSharedWithMeAsync,

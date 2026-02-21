@@ -33,6 +33,7 @@ import {
   downloadLayoutAsFile,
   reconcileLibraryAsync,
 } from '@/core/storage';
+import { isOk } from '@/core/result';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './features/grid-editor';
 import { Sidebar } from './components/Sidebar';
@@ -126,8 +127,10 @@ const _appInitPromise = initializeLayoutLibrary()
     useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
 
     // Initialize "Shared with me" entries from localStorage
-    const sharedWithMeEntries = loadSharedWithMe();
-    useLibraryStore.getState().initSharedWithMe(sharedWithMeEntries);
+    const sharedWithMeResult = loadSharedWithMe();
+    useLibraryStore
+      .getState()
+      .initSharedWithMe(isOk(sharedWithMeResult) ? sharedWithMeResult.value : []);
 
     _appInitialized = true;
   })
