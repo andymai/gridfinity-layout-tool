@@ -51,7 +51,6 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
     setSelectedBins,
     addBin,
     updateBin,
-    deleteBin,
     execute,
     activePointerIdRef,
     capturedPointerRef,
@@ -340,31 +339,6 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
       return;
     }
 
-    // Handle drop to trash
-    if (currentDropTarget === 'trash') {
-      // Track deletion BEFORE executing (need bin data)
-      // Note: drag-to-trash deletions are categorized under 'context_menu' method
-      // to group all explicit user-initiated deletions in a single analytics bucket
-      const binsToDelete = findBinsByIds(layout, interaction.binIds);
-      if (binsToDelete.length > 0) {
-        mlTracking.trackDeletion(binsToDelete[0], 'context_menu', binsToDelete.length);
-        // Check for quick-correction (deleted shortly after creation)
-        for (const bin of binsToDelete) {
-          mlTracking.trackQuickCorrect('delete', bin.id, bin);
-        }
-      }
-
-      execute(() => {
-        for (const binId of interaction.binIds) {
-          deleteBin(binId);
-        }
-      });
-      setSelectedBins([]);
-      setDropTarget(null);
-      setInteraction(null);
-      return;
-    }
-
     // Handle drop to staging
     if (currentDropTarget === 'staging') {
       // Capture original layer for tracking (use first bin as representative)
@@ -478,7 +452,6 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
     activeLayerId,
     addBin,
     updateBin,
-    deleteBin,
     execute,
     setSelectedBins,
     setDropTarget,

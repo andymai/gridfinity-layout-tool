@@ -40,10 +40,8 @@ export function useStagingDragInteraction(
     layout,
     activeLayerId,
     setInteraction,
-    setDropTarget,
     setSelectedBin,
     updateBin,
-    deleteBin,
     execute,
     activePointerIdRef,
     capturedPointerRef,
@@ -182,18 +180,6 @@ export function useStagingDragInteraction(
     const interaction = useInteractionStore.getState().interaction;
     if (!interaction || interaction.type !== 'stagingDrag') return;
 
-    const currentDropTarget = useInteractionStore.getState().dropTarget;
-
-    // Handle drop to trash
-    if (currentDropTarget === 'trash') {
-      execute(() => {
-        deleteBin(interaction.binId);
-      });
-      setDropTarget(null);
-      setInteraction(null);
-      return;
-    }
-
     // Place bin on grid if valid position
     if (interaction.valid && interaction.currentCoord) {
       const bin = findBinById(layout, interaction.binId);
@@ -219,16 +205,7 @@ export function useStagingDragInteraction(
     // If invalid or no position, bin stays in staging (no action needed)
 
     // Note: setInteraction(null) is called by the parent hook
-  }, [
-    layout,
-    activeLayerId,
-    updateBin,
-    deleteBin,
-    execute,
-    setDropTarget,
-    setSelectedBin,
-    setInteraction,
-  ]);
+  }, [layout, activeLayerId, updateBin, execute, setSelectedBin]);
 
   return { start, handleMove, handleUp };
 }

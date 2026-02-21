@@ -40,7 +40,6 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Staging } from './features/staging/components/Staging';
 import { RightPanel } from './components/RightPanel';
-import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './shared/components/Toast';
 import { LoadingFallback } from './shared/components/LoadingFallback';
@@ -475,9 +474,6 @@ export default function App() {
             </PanelErrorBoundary>
           </TabletPanelOverlay>
 
-          {/* Drop zones (appear when dragging) */}
-          <DropZones />
-
           {/* Floating drag preview */}
           <DragPreview />
 
@@ -564,9 +560,6 @@ export default function App() {
             <RightPanel />
           </PanelErrorBoundary>
         </div>
-
-        {/* Drop zones (appear when dragging) */}
-        <DropZones />
 
         {/* Floating drag preview */}
         <DragPreview />

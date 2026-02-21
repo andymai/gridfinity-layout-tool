@@ -4,7 +4,6 @@ import { useViewStore } from '@/core/store/view';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { Grid } from '@/features/grid-editor';
 import { Staging } from '@/features/staging/components/Staging';
-import { DropZones } from '@/components/DropZones';
 import { DragPreview } from '@/components/DragPreview';
 import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
 import { SharedLayoutImporter, SharedLayoutBanner } from '@/features/cloud-share/components';
@@ -80,9 +79,6 @@ export function MobileLayout({
           <MobilePanelContent panel={activeMobilePanel} />
         </BottomSheet>
       )}
-
-      {/* Drop zones (appear when dragging) */}
-      <DropZones />
 
       {/* Floating drag preview */}
       <DragPreview />

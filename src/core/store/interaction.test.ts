@@ -68,18 +68,13 @@ describe('interaction store', () => {
   });
 
   describe('drop target', () => {
-    it('setDropTarget sets trash target', () => {
-      getState().setDropTarget('trash');
-      expect(getState().dropTarget).toBe('trash');
-    });
-
     it('setDropTarget sets staging target', () => {
       getState().setDropTarget('staging');
       expect(getState().dropTarget).toBe('staging');
     });
 
     it('setDropTarget clears with null', () => {
-      getState().setDropTarget('trash');
+      getState().setDropTarget('staging');
       getState().setDropTarget(null);
       expect(getState().dropTarget).toBeNull();
     });
