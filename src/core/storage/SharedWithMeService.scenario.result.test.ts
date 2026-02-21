@@ -3,9 +3,6 @@ import {
   saveSharedWithMe,
   loadSharedWithMe,
   clearSharedWithMe,
-  saveSharedWithMeResult,
-  loadSharedWithMeResult,
-  clearSharedWithMeResult,
 } from '@/core/storage/SharedWithMeService';
 import type { SharedWithMeEntry } from '@/core/types';
 import { createIsolatedLocalStorageMock, expectOk, expectErr } from '@/test/testUtils';
@@ -51,8 +48,9 @@ describe('SharedWithMeService', () => {
   ];
 
   describe('saveSharedWithMe', () => {
-    it('saves entries to localStorage', () => {
-      saveSharedWithMe(mockEntries);
+    it('returns Ok and saves entries to localStorage', () => {
+      const result = saveSharedWithMe(mockEntries);
+      expectOk(result);
 
       const stored = JSON.parse(localStorageMock.mock._store[STORAGE_KEY]);
       expect(stored.version).toBe('1.0');
@@ -60,164 +58,84 @@ describe('SharedWithMeService', () => {
     });
 
     it('handles empty array', () => {
-      saveSharedWithMe([]);
+      const result = saveSharedWithMe([]);
+      expectOk(result);
 
       const stored = JSON.parse(localStorageMock.mock._store[STORAGE_KEY]);
       expect(stored.entries).toEqual([]);
     });
 
-    it('handles localStorage errors gracefully', () => {
-      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('returns Err with StorageError on localStorage failure', () => {
       localStorageMock.mock.setItem = vi.fn(() => {
         throw new Error('QuotaExceededError');
       });
 
-      expect(() => saveSharedWithMe(mockEntries)).not.toThrow();
-      expect(errorSpy).toHaveBeenCalledWith(
-        'Failed to save shared-with-me entries:',
-        expect.any(Error)
-      );
+      const result = saveSharedWithMe(mockEntries);
+      const error = expectErr(result);
+      expect(error.kind).toBe('StorageError');
     });
   });
 
   describe('loadSharedWithMe', () => {
-    it('returns entries from localStorage', () => {
+    it('returns Ok with entries from localStorage', () => {
       localStorageMock.mock._store[STORAGE_KEY] = JSON.stringify({
         version: '1.0',
         entries: mockEntries,
       });
 
       const result = loadSharedWithMe();
-      expect(result).toEqual(mockEntries);
+      const value = expectOk(result);
+      expect(value).toEqual(mockEntries);
     });
 
-    it('returns empty array when key does not exist', () => {
+    it('returns Ok with empty array when key does not exist', () => {
       const result = loadSharedWithMe();
-      expect(result).toEqual([]);
+      const value = expectOk(result);
+      expect(value).toEqual([]);
     });
 
-    it('returns empty array for invalid data structure', () => {
+    it('returns Err for invalid data structure', () => {
       localStorageMock.mock._store[STORAGE_KEY] = JSON.stringify({
         version: '1.0',
         // missing entries field
       });
 
       const result = loadSharedWithMe();
-      expect(result).toEqual([]);
-    });
-
-    it('returns empty array when entries is not an array', () => {
-      localStorageMock.mock._store[STORAGE_KEY] = JSON.stringify({
-        version: '1.0',
-        entries: 'not-an-array',
-      });
-
-      const result = loadSharedWithMe();
-      expect(result).toEqual([]);
-    });
-
-    it('handles JSON parse errors gracefully', () => {
-      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      localStorageMock.mock._store[STORAGE_KEY] = 'invalid json {{{';
-
-      const result = loadSharedWithMe();
-      expect(result).toEqual([]);
-      expect(errorSpy).toHaveBeenCalledWith(
-        'Failed to load shared-with-me entries:',
-        expect.any(Error)
-      );
-    });
-  });
-
-  describe('clearSharedWithMe', () => {
-    it('removes key from localStorage', () => {
-      localStorageMock.mock._store[STORAGE_KEY] = JSON.stringify({
-        version: '1.0',
-        entries: mockEntries,
-      });
-
-      clearSharedWithMe();
-      expect(localStorageMock.mock._store[STORAGE_KEY]).toBeUndefined();
-    });
-
-    it('handles localStorage errors gracefully', () => {
-      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      localStorageMock.mock.removeItem = vi.fn(() => {
-        throw new Error('Storage error');
-      });
-
-      expect(() => clearSharedWithMe()).not.toThrow();
-      expect(errorSpy).toHaveBeenCalledWith(
-        'Failed to clear shared-with-me entries:',
-        expect.any(Error)
-      );
-    });
-  });
-
-  describe('saveSharedWithMeResult', () => {
-    it('returns Ok on success', () => {
-      const result = saveSharedWithMeResult(mockEntries);
-      expectOk(result);
-
-      const stored = JSON.parse(localStorageMock.mock._store[STORAGE_KEY]);
-      expect(stored.entries).toEqual(mockEntries);
-    });
-
-    it('returns Err with StorageError on failure', () => {
-      localStorageMock.mock.setItem = vi.fn(() => {
-        throw new Error('QuotaExceededError');
-      });
-
-      const result = saveSharedWithMeResult(mockEntries);
       const error = expectErr(result);
       expect(error.kind).toBe('StorageError');
-    });
-  });
-
-  describe('loadSharedWithMeResult', () => {
-    it('returns Ok with entries on success', () => {
-      localStorageMock.mock._store[STORAGE_KEY] = JSON.stringify({
-        version: '1.0',
-        entries: mockEntries,
-      });
-
-      const result = loadSharedWithMeResult();
-      const value = expectOk(result);
-      expect(value).toEqual(mockEntries);
+      expect(error.code).toBe('STORAGE_CORRUPTED');
     });
 
-    it('returns Ok with empty array when key missing', () => {
-      const result = loadSharedWithMeResult();
-      const value = expectOk(result);
-      expect(value).toEqual([]);
-    });
-
-    it('returns Err for invalid structure', () => {
+    it('returns Err when entries is not an array', () => {
       localStorageMock.mock._store[STORAGE_KEY] = JSON.stringify({
         version: '1.0',
         entries: 'not-an-array',
       });
 
-      const result = loadSharedWithMeResult();
+      const result = loadSharedWithMe();
       const error = expectErr(result);
       expect(error.kind).toBe('StorageError');
       expect(error.code).toBe('STORAGE_CORRUPTED');
     });
 
     it('returns Err for malformed JSON', () => {
-      localStorageMock.mock._store[STORAGE_KEY] = 'not json';
+      localStorageMock.mock._store[STORAGE_KEY] = 'invalid json {{{';
 
-      const result = loadSharedWithMeResult();
+      const result = loadSharedWithMe();
       const error = expectErr(result);
       expect(error.kind).toBe('StorageError');
       expect(error.code).toBe('STORAGE_CORRUPTED');
     });
   });
 
-  describe('clearSharedWithMeResult', () => {
-    it('returns Ok on success', () => {
-      localStorageMock.mock._store[STORAGE_KEY] = 'data';
-      const result = clearSharedWithMeResult();
+  describe('clearSharedWithMe', () => {
+    it('returns Ok and removes key from localStorage', () => {
+      localStorageMock.mock._store[STORAGE_KEY] = JSON.stringify({
+        version: '1.0',
+        entries: mockEntries,
+      });
+
+      const result = clearSharedWithMe();
       expectOk(result);
       expect(localStorageMock.mock._store[STORAGE_KEY]).toBeUndefined();
     });
@@ -227,7 +145,7 @@ describe('SharedWithMeService', () => {
         throw new Error('Storage error');
       });
 
-      const result = clearSharedWithMeResult();
+      const result = clearSharedWithMe();
       const error = expectErr(result);
       expect(error.kind).toBe('StorageError');
     });

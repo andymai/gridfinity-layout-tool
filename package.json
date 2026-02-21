@@ -1,7 +1,7 @@
 {
   "name": "gridfinity-layout-tool",
   "private": true,
-  "version": "3.18.0",
+  "version": "3.18.4",
   "description": "A web app for designing and planning Gridfinity drawer organizer layouts",
   "license": "AGPL-3.0-only",
   "type": "module",
@@ -20,9 +20,10 @@
     "threejs"
   ],
   "scripts": {
-    "dev": "npm run build:content && vite",
-    "build": "npm run build:content && tsc -b && vite build",
+    "dev": "npm run build:content && npm run build:en-locale && vite",
+    "build": "npm run build:content && npm run build:en-locale && tsc -b && vite build",
     "build:content": "tsx scripts/build-content.ts",
+    "build:en-locale": "tsx scripts/build-en-locale.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"e2e/**/*.ts\" \"*.{json,md}\"",
@@ -61,13 +62,13 @@
       "name": "Main bundle (gzip)",
       "path": "dist/assets/main-*.js",
       "gzip": true,
-      "limit": "190 kB"
+      "limit": "135 kB"
     },
     {
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "1218 kB"
+      "limit": "1225 kB"
     }
   ],
   "dependencies": {

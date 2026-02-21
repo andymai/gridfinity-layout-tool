@@ -15,7 +15,7 @@
 
 import * as backend from './backend';
 import * as indexedDB from './backends/indexedDB';
-import { validateImport } from '@/shared/utils/validation';
+import { salvageImport } from '@/shared/utils/validation';
 import { generateCategoryId, generateLayerId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from './LayoutManager';
@@ -24,13 +24,13 @@ import type { Result, StorageError } from '@/core/result';
 import {
   ok,
   err,
+  isOk,
   isErr,
   tryCatchAsync,
   storageNotFound,
   storageCorrupted,
   storageUnavailable,
 } from '@/core/result';
-import { createStorageErrorClassifier } from './errorUtils';
 import { notifyLibraryChanged } from './librarySync';
 
 // Storage keys
@@ -89,10 +89,9 @@ type ParseResult = { success: true; layout: Layout } | { success: false; errors:
 
 /**
  * Parse and validate raw storage data into a typed Layout.
- * Migrates the schema and validates the data structure.
- *
- * The type assertion is justified by the validateImport check which
- * verifies all required Layout properties are present and valid.
+ * Migrates the schema and uses lenient validation (salvageImport) so that
+ * bins with placement issues (collisions, out-of-bounds) are moved to staging
+ * instead of rejecting the entire layout.
  */
 function parseLayoutData(data: unknown): ParseResult {
   if (!data || typeof data !== 'object') {
@@ -100,13 +99,20 @@ function parseLayoutData(data: unknown): ParseResult {
   }
 
   const migrated = migrateLayout(data as Record<string, unknown>);
-  const validation = validateImport(migrated);
+  const result = salvageImport(migrated);
 
-  if (!validation.valid) {
-    return { success: false, errors: validation.errors };
+  if (!result.valid) {
+    return { success: false, errors: ['Layout structure is invalid'] };
   }
 
-  return { success: true, layout: validation.layout };
+  if (result.salvaged.length > 0) {
+    console.warn(
+      `[LayoutService] Layout loaded with ${result.salvaged.length} bin(s) moved to staging:`,
+      result.salvaged
+    );
+  }
+
+  return { success: true, layout: result.layout };
 }
 
 function validateLoadedData(layoutId: string, data: unknown, silent = false): Layout | null {
@@ -128,10 +134,14 @@ function validateLoadedData(layoutId: string, data: unknown, silent = false): La
 /**
  * Save a layout asynchronously to IndexedDB.
  * Falls back to localStorage when IndexedDB is unavailable.
+ * Returns Result indicating success or storage failure.
  */
-export async function saveLayoutAsync(layoutId: string, layout: Layout): Promise<void> {
+export async function saveLayoutAsync(
+  layoutId: string,
+  layout: Layout
+): Promise<Result<void, StorageError>> {
   const key = getLayoutStorageKey(layoutId);
-  await backend.saveAsync(key, layout);
+  return backend.saveAsync(key, layout);
 }
 
 /**
@@ -172,12 +182,7 @@ export async function saveLayoutResult(
   layoutId: string,
   layout: Layout
 ): Promise<Result<void, StorageError>> {
-  const key = getLayoutStorageKey(layoutId);
-
-  return tryCatchAsync(
-    () => backend.saveAsync(key, layout),
-    createStorageErrorClassifier('indexedDB')
-  );
+  return saveLayoutAsync(layoutId, layout);
 }
 
 /**
@@ -252,16 +257,15 @@ export function saveLayoutSync(layoutId: string, layout: Layout): Result<void, S
 /**
  * Load a layout synchronously from localStorage.
  * Use only during initialization.
+ *
+ * Note: backend.loadSync already handles JSON parse errors internally,
+ * and validateLoadedData returns null for invalid data, so no try-catch
+ * is needed here.
  */
 export function loadLayoutSync(layoutId: string): Layout | null {
-  try {
-    const key = getLayoutStorageKey(layoutId);
-    const data = backend.loadSync(key);
-    return validateLoadedData(layoutId, data);
-  } catch (error) {
-    console.error(`Failed to load layout ${layoutId}:`, error);
-    return null;
-  }
+  const key = getLayoutStorageKey(layoutId);
+  const data = backend.loadSync(key);
+  return validateLoadedData(layoutId, data);
 }
 
 /**
@@ -287,10 +291,13 @@ export function saveLibrary(library: LayoutLibrary): void {
     .catch((error: unknown) => {
       console.warn('[LayoutService] Library save to IndexedDB failed:', error);
     });
+  // Best-effort write of activeLayoutId for recovery on next load.
+  // Uses raw setItem to store as plain string (not JSON) since this is
+  // a simple recovery breadcrumb, not structured data.
   try {
     window.localStorage.setItem(ACTIVE_ID_STORAGE_KEY, library.activeLayoutId);
   } catch {
-    // Best-effort
+    // localStorage may be full; IndexedDB holds the authoritative data
   }
 }
 
@@ -380,24 +387,19 @@ export async function loadLibraryAsync(): Promise<LayoutLibrary | null> {
     const parsed = await indexedDB.loadLibraryIndex();
     if (!parsed) return null;
     return validateLibraryStructure(parsed);
-  } catch (error) {
-    console.error('Failed to load library from IndexedDB:', error);
+  } catch {
+    // IndexedDB unavailable or read failed — caller falls back to localStorage
     return null;
   }
 }
 
 /**
  * Load the layout library index from localStorage (sync fallback).
+ * Routes through loadLibraryResult internally for consistent error handling.
  */
 export function loadLibrary(): LayoutLibrary | null {
-  try {
-    const parsed = backend.loadSyncGeneric<LayoutLibrary>(LIBRARY_STORAGE_KEY);
-    if (!parsed) return null;
-    return validateLibraryStructure(parsed);
-  } catch (error) {
-    console.error('Failed to load library:', error);
-    return null;
-  }
+  const result = loadLibraryResult();
+  return isOk(result) ? result.value : null;
 }
 
 /**
@@ -553,7 +555,10 @@ async function persistNewLayoutAsync(
   layout: Layout,
   library: LayoutLibrary
 ): Promise<void> {
-  await saveLayoutAsync(layoutId, layout);
+  const result = await saveLayoutAsync(layoutId, layout);
+  if (isErr(result)) {
+    throw new Error(`Failed to persist layout ${layoutId} during initialization`);
+  }
   saveLibrary(library);
 }
 
@@ -658,13 +663,8 @@ export async function initializeLayoutLibrary(): Promise<{
  * @deprecated Use loadLayoutSync for multi-layout support.
  */
 function loadLegacyLayout(): Layout | null {
-  try {
-    const data = backend.loadSync(LEGACY_STORAGE_KEY);
-    return validateLoadedData('legacy', data, true);
-  } catch (error) {
-    console.error('Failed to load legacy layout:', error);
-    return null;
-  }
+  const data = backend.loadSync(LEGACY_STORAGE_KEY);
+  return validateLoadedData('legacy', data, true);
 }
 
 /**

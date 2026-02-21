@@ -23,7 +23,7 @@
 import * as backend from './backend';
 import { deleteSnapshotsForLayout } from './SnapshotService';
 import * as indexedDB from './backends/indexedDB';
-import { validateImport } from '@/shared/utils/validation';
+import { salvageImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins } from '@/shared/utils/bins';
@@ -47,7 +47,7 @@ import {
   storageUnavailable,
   layoutLibraryLimit,
 } from '@/core/result';
-import { classifyStorageError, createStorageErrorClassifier } from './errorUtils';
+import { classifyStorageError } from './errorUtils';
 import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
 import { notifyLibraryChanged } from './librarySync';
 
@@ -159,7 +159,8 @@ async function saveLibraryAsync(library: LayoutLibrary): Promise<Result<void, St
 
   if (isErr(result)) return result;
 
-  // Best-effort: keep activeLayoutId in localStorage for cross-tab recovery
+  // Best-effort: keep activeLayoutId in localStorage for cross-tab recovery.
+  // Uses raw setItem (not JSON) since this is a simple recovery breadcrumb.
   try {
     window.localStorage.setItem(ACTIVE_ID_STORAGE_KEY, library.activeLayoutId);
   } catch {
@@ -182,6 +183,7 @@ function saveLibraryFireAndForget(library: LayoutLibrary): void {
     .catch((error: unknown) => {
       console.warn('[LayoutManager] Background library save failed:', error);
     });
+  // Best-effort: keep activeLayoutId in localStorage for cross-tab recovery
   try {
     window.localStorage.setItem(ACTIVE_ID_STORAGE_KEY, library.activeLayoutId);
   } catch {
@@ -197,11 +199,7 @@ async function saveLayoutInternal(
   layout: Layout
 ): Promise<Result<void, StorageError>> {
   const key = getLayoutKey(layoutId);
-
-  return tryCatchAsync(
-    () => backend.saveAsync(key, layout),
-    createStorageErrorClassifier('indexedDB')
-  );
+  return backend.saveAsync(key, layout);
 }
 
 /**
@@ -221,10 +219,17 @@ async function loadLayoutInternal(layoutId: string): Promise<Result<Layout, Stor
     return err(storageNotFound(key));
   }
 
-  // Validate the loaded layout
-  const validation = validateImport(data);
+  // Validate the loaded layout (lenient: moves problematic bins to staging)
+  const validation = salvageImport(data);
   if (!validation.valid) {
-    return err(storageCorrupted(key, validation.errors));
+    return err(storageCorrupted(key, ['Layout structure is invalid']));
+  }
+
+  if (validation.salvaged.length > 0) {
+    console.warn(
+      `[LayoutManager] Layout ${layoutId} loaded with ${validation.salvaged.length} bin(s) moved to staging:`,
+      validation.salvaged
+    );
   }
 
   return ok(validation.layout);

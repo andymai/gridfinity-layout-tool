@@ -33,6 +33,7 @@ import {
   downloadLayoutAsFile,
   reconcileLibraryAsync,
 } from '@/core/storage';
+import { isOk } from '@/core/result';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './features/grid-editor';
 import { Sidebar } from './components/Sidebar';
@@ -50,7 +51,12 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
-import { CommandPalette, useCommandPalette } from '@/features/command-palette';
+import { useCommandPalette } from '@/features/command-palette';
+
+// Lazy load command palette - only opened via Ctrl+K, no need to eagerly load
+const CommandPalette = lazyWithRetry(() =>
+  import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
+);
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 import { useThemeEffect } from '@/hooks/useThemeEffect';
 
@@ -121,8 +127,10 @@ const _appInitPromise = initializeLayoutLibrary()
     useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
 
     // Initialize "Shared with me" entries from localStorage
-    const sharedWithMeEntries = loadSharedWithMe();
-    useLibraryStore.getState().initSharedWithMe(sharedWithMeEntries);
+    const sharedWithMeResult = loadSharedWithMe();
+    useLibraryStore
+      .getState()
+      .initSharedWithMe(isOk(sharedWithMeResult) ? sharedWithMeResult.value : []);
 
     _appInitialized = true;
   })
@@ -604,8 +612,10 @@ export default function App() {
     <>
       {routeContent}
       <ToastContainer />
-      {!isMobile && (
-        <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+      {!isMobile && commandPaletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+        </Suspense>
       )}
       {isLabsDrawerOpen && (
         <Suspense fallback={null}>

@@ -94,6 +94,51 @@ describe('storage', () => {
       expect(loadLayout()).toBeNull();
     });
 
+    it('salvages layout with colliding bins instead of returning null', () => {
+      const layout = {
+        ...defaultLayout,
+        bins: [
+          {
+            id: 'bin1',
+            layerId: defaultLayout.layers[0].id,
+            x: 0,
+            y: 0,
+            width: 3,
+            depth: 3,
+            height: 3,
+            category: defaultLayout.categories[0].id,
+            label: 'Good Bin',
+            notes: '',
+          },
+          {
+            id: 'bin2',
+            layerId: defaultLayout.layers[0].id,
+            x: 1,
+            y: 1,
+            width: 3,
+            depth: 3,
+            height: 3,
+            category: defaultLayout.categories[0].id,
+            label: 'Colliding Bin',
+            notes: '',
+          },
+        ],
+      };
+      localStorageMock.setItem('gridfinity-layout-v1', JSON.stringify(layout));
+
+      const loaded = loadLayout();
+      // Should NOT be null — the layout should load with the colliding bin moved to staging
+      expect(loaded).not.toBeNull();
+      expect(loaded!.bins).toHaveLength(2);
+
+      // The first bin stays on its layer, the colliding bin is moved to staging
+      const gridBins = loaded!.bins.filter((b) => b.layerId !== '__staging__');
+      const stagedBins = loaded!.bins.filter((b) => b.layerId === '__staging__');
+      expect(gridBins).toHaveLength(1);
+      expect(stagedBins).toHaveLength(1);
+      expect(stagedBins[0].label).toBe('Colliding Bin');
+    });
+
     it('migrates old data without gridUnitMm', () => {
       const oldLayout = { ...defaultLayout };
 

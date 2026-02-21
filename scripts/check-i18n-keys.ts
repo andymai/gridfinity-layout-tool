@@ -32,10 +32,10 @@ function getJsonKeys(filename: string): string[] {
   return Object.keys(data).sort();
 }
 
-// Find locale JSON files
+// Find locale JSON files (en.json is generated from en.ts, so skip it)
 function getLocaleFiles(): string[] {
   return readdirSync(LOCALES_DIR)
-    .filter((f) => f.endsWith('.json'))
+    .filter((f) => f.endsWith('.json') && f !== 'en.json')
     .sort();
 }
 

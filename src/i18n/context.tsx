@@ -32,7 +32,23 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
-import en from './locales/en';
+
+/**
+ * Minimal inline translations for ErrorBoundary and initial render.
+ * The full English locale is lazy-loaded like all other locales.
+ */
+const fallback: Translations = {
+  'errorBoundary.heading': 'Something went wrong',
+  'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',
+  'errorBoundary.hint':
+    'Try refreshing the page. If the problem persists, resetting app data will restore defaults while your browser may still have cached data.',
+  'errorBoundary.tryAgain': 'Try Again',
+  'errorBoundary.resetAppData': 'Reset App Data',
+  'common.loading': 'Loading...',
+  'seo.title': 'Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers',
+  'seo.description':
+    'Plan and visualize Gridfinity drawer layouts for 3D printing. Custom bins, multi-layer support, and 3D preview.',
+};
 
 /**
  * Map of locale codes to Open Graph locale format.
@@ -76,13 +92,24 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
  * ```
  */
 export function getStaticTranslation(key: string, vars?: TranslationVars): string {
-  const template = en[key] ?? key;
+  const template = _loadedEn?.[key] ?? fallback[key] ?? key;
   if (!vars) return template;
   let result = template;
   for (const [k, value] of Object.entries(vars)) {
     result = result.replaceAll(`{${k}}`, String(value));
   }
   return result;
+}
+
+/**
+ * Cache for the full English translations (loaded lazily).
+ * Used by getStaticTranslation and as fallback in t().
+ */
+let _loadedEn: Translations | null = null;
+
+/** @internal Test-only: seed the English translation cache */
+export function _setLoadedEn(translations: Translations | null): void {
+  _loadedEn = translations;
 }
 
 /**
@@ -102,7 +129,8 @@ function interpolate(template: string, vars?: TranslationVars): string {
  * Lazy-load locale modules. Vite splits these into separate chunks.
  * Only called for non-English locales.
  */
-const localeLoaders: Partial<Record<string, () => Promise<{ default: Translations }>>> = {
+const localeLoaders: Record<Locale, () => Promise<{ default: Translations }>> = {
+  en: () => import('./locales/en.json'),
   de: () => import('./locales/de.json'),
   nl: () => import('./locales/nl.json'),
   es: () => import('./locales/es.json'),
@@ -121,50 +149,61 @@ interface LocaleProviderProps {
 
 export function LocaleProvider({ children, initialLocale, onLocaleChange }: LocaleProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
-  const [translations, setTranslations] = useState<Translations>(en);
-  const [isLoading, setIsLoading] = useState(initialLocale !== 'en');
+  const [translations, setTranslations] = useState<Translations>(fallback);
+  const [isLoading, setIsLoading] = useState(true);
   const latestLocaleRef = useRef<Locale>(initialLocale);
 
   const loadLocale = useCallback(async (target: Locale) => {
     latestLocaleRef.current = target;
 
-    if (target === 'en') {
-      setTranslations(en);
-      setIsLoading(false);
-      return;
-    }
-
     const loader = localeLoaders[target];
     if (!loader) {
-      setTranslations(en);
-      setIsLoading(false);
+      // Unknown locale — fall back to loading English
+      setIsLoading(true);
+      try {
+        const enModule = await localeLoaders.en();
+        _loadedEn = enModule.default;
+        if (latestLocaleRef.current === target) {
+          setTranslations(enModule.default);
+          setIsLoading(false);
+        }
+      } catch {
+        if (latestLocaleRef.current === target) {
+          setTranslations(fallback);
+          setIsLoading(false);
+        }
+      }
       return;
     }
 
     setIsLoading(true);
     try {
-      const module = await loader();
-      // Only apply if this is still the latest requested locale
+      // For non-English, also ensure English is loaded (for fallback keys)
+      const [module, enModule] = await Promise.all([
+        loader(),
+        _loadedEn ? Promise.resolve(null) : localeLoaders.en(),
+      ]);
+      if (enModule) {
+        _loadedEn = enModule.default;
+      }
       if (latestLocaleRef.current === target) {
         setTranslations(module.default);
         setIsLoading(false);
       }
     } catch {
-      // Fall back to English on load failure
+      // Fall back to English (or fallback) on load failure
       if (latestLocaleRef.current === target) {
-        setTranslations(en);
+        setTranslations(_loadedEn ?? fallback);
         setIsLoading(false);
       }
     }
   }, []);
 
-  // Load initial non-English locale on mount
+  // Load initial locale on mount (all locales including English are lazy-loaded)
   useEffect(() => {
-    if (initialLocale !== 'en') {
-      // Schedule for next microtask to avoid sync setState during effect
-      // (React Compiler flags sync state updates in effects as problematic)
-      void Promise.resolve().then(() => loadLocale(initialLocale));
-    }
+    // Schedule for next microtask to avoid sync setState during effect
+    // (React Compiler flags sync state updates in effects as problematic)
+    void Promise.resolve().then(() => loadLocale(initialLocale));
   }, [initialLocale, loadLocale]);
 
   const setLocale = useCallback(
@@ -184,8 +223,11 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     document.documentElement.lang = locale;
 
     // Page title and meta description
-    const seoTitle = translations['seo.title'] ?? en['seo.title'];
-    const seoDesc = translations['seo.description'] ?? en['seo.description'];
+    const seoTitle = translations['seo.title'] ?? _loadedEn?.['seo.title'] ?? fallback['seo.title'];
+    const seoDesc =
+      translations['seo.description'] ??
+      _loadedEn?.['seo.description'] ??
+      fallback['seo.description'];
 
     document.title = seoTitle;
     document.querySelector('meta[name="description"]')?.setAttribute('content', seoDesc);
@@ -205,7 +247,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
   const t: TFunction = useCallback(
     (key: string, vars?: TranslationVars): string => {
       // Try current locale, fall back to English, then show key
-      const template = translations[key] || en[key] || key;
+      const template = translations[key] || _loadedEn?.[key] || key;
       return interpolate(template, vars);
     },
     [translations]
