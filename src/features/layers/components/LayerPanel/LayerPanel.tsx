@@ -36,20 +36,17 @@ export function LayerPanel() {
 
   const layers = layout.layers;
   const activeLayer = layers.find((l) => l.id === activeLayerId);
-  // Height capacity tracking
   const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
   const drawerHeight = layout.drawer.height;
   const canAddLayer = layers.length < CONSTRAINTS.LAYERS_MAX && totalLayerHeight < drawerHeight;
-  const heightFull = totalLayerHeight >= drawerHeight;
+  const heightFull = totalLayerHeight > drawerHeight;
 
   const totalCells = layout.drawer.width * layout.drawer.depth;
   const hasMultipleLayers = layers.length > 1;
 
-  // Display is reversed: index 0 in display = last in array (top layer)
   const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;
   const displayLayers = getDisplayLayers(layers);
 
-  // Build per-layer stats for the diagram tooltips
   const layerStats = useMemo(() => {
     const stats: Record<string, { coverage: number; binCount: number }> = {};
     for (const layer of layers) {
@@ -63,7 +60,6 @@ export function LayerPanel() {
     return stats;
   }, [layers, layout.bins, totalCells]);
 
-  // Aggregate stats
   const allPlacedBins = getGridBins(layout.bins);
   const totalBinCount = allPlacedBins.length;
   const totalCoveredCells = allPlacedBins.reduce((sum, b) => sum + b.width * b.depth, 0);
@@ -71,7 +67,6 @@ export function LayerPanel() {
   const totalCoverage =
     totalAvailableCells > 0 ? Math.round((totalCoveredCells / totalAvailableCells) * 100) : 0;
 
-  // Active layer stats (for single-layer display and controls)
   const activeStat = activeLayerId ? layerStats[activeLayerId] : undefined;
   const effectiveCoverage = hasMultipleLayers ? totalCoverage : (activeStat?.coverage ?? 0);
   const effectiveBinCount = hasMultipleLayers ? totalBinCount : (activeStat?.binCount ?? 0);
@@ -200,7 +195,6 @@ export function LayerPanel() {
   return (
     <div>
       <CollapsibleSection title={t('common.layers')} variant="default" actions={addLayerButton}>
-        {/* Cross-section diagram — primary layer UI */}
         <div className="mb-3">
           <HeightCrossSectionDiagram
             layers={displayLayers}
@@ -215,7 +209,7 @@ export function LayerPanel() {
             onReorder={handleReorder}
             onNameChange={handleNameChange}
             onHeightChange={handleHeightChange}
-            onDeleteLayer={(id) => setDeleteLayerId(id)}
+            onDeleteLayer={setDeleteLayerId}
             onEditingStart={(id) => {
               setActiveLayer(id);
               setEditingLayerId(id);
@@ -225,7 +219,6 @@ export function LayerPanel() {
           />
         </div>
 
-        {/* Aggregate stats row */}
         <div className="h-1 rounded-full overflow-hidden bg-surface-elevated mb-1.5">
           <div
             className="h-full rounded-full transition-all"
@@ -266,7 +259,6 @@ export function LayerPanel() {
         </div>
       </CollapsibleSection>
 
-      {/* Delete layer confirmation */}
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
         title={t('layers.confirmDelete.title')}

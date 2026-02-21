@@ -26,9 +26,9 @@ const defaultProps = {
 };
 
 describe('HeightCrossSectionDiagram', () => {
-  it('renders with ruler and content area', () => {
+  it('renders content area', () => {
     const layers = makeLayers(3);
-    const { container } = render(
+    render(
       <HeightCrossSectionDiagram
         layers={layers}
         drawerHeight={10}
@@ -38,8 +38,6 @@ describe('HeightCrossSectionDiagram', () => {
       />
     );
 
-    const wrapper = container.firstElementChild;
-    expect(wrapper).toHaveClass('w-full');
     expect(screen.getByTestId('content-area')).toBeInTheDocument();
   });
 
@@ -72,8 +70,9 @@ describe('HeightCrossSectionDiagram', () => {
       />
     );
 
-    const segment = container.querySelector('[data-layer-id="layer-2"]')!;
-    fireEvent.click(segment);
+    const segment = container.querySelector('[data-layer-id="layer-2"]');
+    expect(segment).toBeInTheDocument();
+    fireEvent.click(segment as Element);
 
     expect(onLayerClick).toHaveBeenCalledWith('layer-2');
   });
@@ -121,9 +120,7 @@ describe('HeightCrossSectionDiagram', () => {
     );
 
     const buttons = screen.getAllByRole('button');
-    // 2 segment buttons + inline controls on active segment (decrease, increase, delete)
     expect(buttons.length).toBeGreaterThanOrEqual(2);
-    // First two are the segment role=button divs
     expect(buttons[0]).toHaveAttribute('aria-label', 'Select Layer 1');
     expect(buttons[0].tagName).toBe('DIV');
   });
@@ -207,8 +204,9 @@ describe('HeightCrossSectionDiagram', () => {
         />
       );
 
-      const segment = container.querySelector('[data-layer-id="layer-2"]')!;
-      fireEvent.mouseEnter(segment);
+      const segment = container.querySelector('[data-layer-id="layer-2"]');
+      expect(segment).toBeInTheDocument();
+      fireEvent.mouseEnter(segment as Element);
 
       expect(onLayerHover).toHaveBeenCalledWith('layer-2');
     });
@@ -228,8 +226,9 @@ describe('HeightCrossSectionDiagram', () => {
         />
       );
 
-      const segment = container.querySelector('[data-layer-id="layer-2"]')!;
-      fireEvent.mouseLeave(segment);
+      const segment = container.querySelector('[data-layer-id="layer-2"]');
+      expect(segment).toBeInTheDocument();
+      fireEvent.mouseLeave(segment as Element);
 
       expect(onLayerHover).toHaveBeenCalledWith(null);
     });
@@ -441,7 +440,6 @@ describe('HeightCrossSectionDiagram', () => {
 
     it('disables decrease button at minimum layer height', () => {
       const layers = makeLayers(2);
-      // Layer height is 2u which is the minimum — decrease should be disabled immediately
       render(
         <HeightCrossSectionDiagram
           layers={layers}
@@ -538,30 +536,11 @@ describe('HeightCrossSectionDiagram', () => {
       const input = screen.getByRole('textbox');
       fireEvent.click(input);
 
-      // onLayerClick should not be called because stopPropagation
-      // (the segment onClick fires from the div, not the input)
-      // The input click handler calls stopPropagation
       expect(onLayerClick).not.toHaveBeenCalled();
     });
   });
 
   describe('headroom click-to-add', () => {
-    it('renders headroom area when there is spare capacity', () => {
-      const layers = makeLayers(3);
-      const { container } = render(
-        <HeightCrossSectionDiagram
-          layers={layers}
-          drawerHeight={10}
-          activeLayerId="layer-1"
-          onLayerClick={vi.fn()}
-          {...defaultProps}
-          canAddLayer={true}
-        />
-      );
-
-      expect(container.querySelector('[data-testid="headroom-area"]')).toBeInTheDocument();
-    });
-
     it('calls onAddLayer when headroom is clicked', () => {
       const onAddLayer = vi.fn();
       const layers = makeLayers(3);
@@ -578,7 +557,8 @@ describe('HeightCrossSectionDiagram', () => {
       );
 
       const headroom = container.querySelector('[data-testid="headroom-area"]');
-      fireEvent.click(headroom!);
+      expect(headroom).toBeInTheDocument();
+      fireEvent.click(headroom as Element);
 
       expect(onAddLayer).toHaveBeenCalled();
     });

@@ -158,10 +158,10 @@ export function DefaultsTab() {
               onChange={(value) =>
                 updateSetting(
                   'defaultLayerHeight',
-                  Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, value))
+                  Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, Math.min(CONSTRAINTS.GRID_MAX, value))
                 )
               }
-              min={1}
+              min={CONSTRAINTS.MIN_LAYER_HEIGHT}
               max={CONSTRAINTS.GRID_MAX}
               className="input w-14 py-0.5 px-1 text-xs text-right"
             />

@@ -4,17 +4,9 @@ import type { Layer, LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
-/**
- * Power exponent for sublinear height scaling.
- * 1.0 = linear, 0.5 = sqrt. 0.55 means a 12u layer appears ~4x taller
- * than a 1u layer (instead of 12x), keeping proportional feel without extremes.
- */
 const HEIGHT_EXPONENT = 0.55;
-/** Width of the accent stripe on the active segment's left edge */
 const ACCENT_STRIPE_WIDTH = 2.5;
-/** Transition duration for segment animations */
 const TRANSITION = '0.2s ease-out';
-/** Debounce delay for height stepper clicks (ms) */
 const HEIGHT_DEBOUNCE_MS = 400;
 
 interface LayerStat {
@@ -41,15 +33,30 @@ interface HeightCrossSectionDiagramProps {
   layerStats: Record<string, LayerStat>;
 }
 
-/** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-/**
- * Interactive cross-section diagram with inline editing controls.
- * SVG ruler as a flex sibling + HTML content area — no overlap, no ResizeObserver.
- */
+function GripIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="10"
+      height="14"
+      viewBox="0 0 10 14"
+      data-testid="grip-icon"
+      aria-hidden="true"
+      className={className}
+    >
+      {[3, 7, 11].map((cy) => (
+        <g key={cy} fill="var(--text-disabled)">
+          <circle cx={2.5} cy={cy} r={1.2} />
+          <circle cx={7.5} cy={cy} r={1.2} />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 export function HeightCrossSectionDiagram({
   layers,
   drawerHeight,
@@ -73,8 +80,6 @@ export function HeightCrossSectionDiagram({
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // Debounced height stepper: accumulate rapid clicks, flush once after delay.
-  // Pending deltas are tracked per-layer so the segment doesn't resize mid-click.
   const [pendingDeltas, setPendingDeltas] = useState<Record<string, number>>({});
   const flushTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -97,7 +102,6 @@ export function HeightCrossSectionDiagram({
     [onHeightChange]
   );
 
-  // Clean up timers on unmount
   useEffect(() => {
     const timers = flushTimers.current;
     return () => Object.values(timers).forEach(clearTimeout);
@@ -106,25 +110,20 @@ export function HeightCrossSectionDiagram({
   const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
   const unusedHeight = Math.max(0, drawerHeight - totalLayerHeight);
 
-  // Sublinear scaling: h^exponent compresses tall segments so they don't dominate.
-  // All segments share proportional visual space based on their compressed heights.
   const compress = (h: number) => Math.pow(h, HEIGHT_EXPONENT);
   const compressedTotal =
     layers.reduce((sum, l) => sum + compress(l.height), 0) + compress(unusedHeight);
 
-  // Dynamic height bounds based on segment count
   const segmentCount = layers.length + (unusedHeight > 0 ? 1 : 0);
   const minHeight = clamp(segmentCount * 28, 48, 100);
   const maxHeight = clamp(segmentCount * 60, 100, 240);
 
-  // Diagram height: scale from compressed total, clamped to dynamic bounds
   const diagramHeight = Math.max(
     minHeight,
     Math.min(maxHeight, compressedTotal * (minHeight / compress(drawerHeight)))
   );
   const pxPerCompressedUnit = compressedTotal > 0 ? diagramHeight / compressedTotal : 1;
 
-  // Build segments top-to-bottom: unused space first, then layers (top layer first)
   const unusedPx = compress(unusedHeight) * pxPerCompressedUnit;
 
   const layerSegments = layers.reduce<{ layer: Layer; y: number; height: number }[]>(
@@ -149,7 +148,6 @@ export function HeightCrossSectionDiagram({
 
   const handleMouseLeave = useCallback(() => onLayerHover(null), [onLayerHover]);
 
-  // Focus name input when editing starts
   useEffect(() => {
     if (editingLayerId !== null && nameInputRef.current) {
       nameInputRef.current.focus();
@@ -157,7 +155,6 @@ export function HeightCrossSectionDiagram({
     }
   }, [editingLayerId]);
 
-  // Drag-to-reorder handlers
   const handleDragStart = (e: React.DragEvent, displayIndex: number) => {
     setDragSourceIndex(displayIndex);
     e.dataTransfer.effectAllowed = 'move';
@@ -195,7 +192,6 @@ export function HeightCrossSectionDiagram({
     setDropTargetIndex(null);
   };
 
-  // Segment fill — use design system selection/hover tokens
   const getFill = (isActive: boolean, isHovered: boolean) => {
     if (isActive) return 'var(--color-accent-muted)';
     if (isHovered) return 'var(--bg-active)';
@@ -204,19 +200,16 @@ export function HeightCrossSectionDiagram({
 
   return (
     <div className="w-full">
-      {/* Content area */}
       <div
         className="flex-1 relative overflow-hidden"
         style={{ height: diagramHeight }}
         data-testid="content-area"
       >
-        {/* Outer border — rendered first so segments paint on top */}
         <div
           className="absolute inset-0 border pointer-events-none"
           style={{ borderColor: 'var(--border-subtle)' }}
         />
 
-        {/* Headroom — CSS crosshatch */}
         {unusedHeight > 0 && (
           <div
             onClick={canAddLayer ? onAddLayer : undefined}
@@ -230,7 +223,6 @@ export function HeightCrossSectionDiagram({
             }}
             title={canAddLayer ? t('layers.addNewLayer') : undefined}
           >
-            {/* Crosshatch background */}
             <div
               className="absolute inset-0"
               style={{
@@ -247,7 +239,6 @@ export function HeightCrossSectionDiagram({
           </div>
         )}
 
-        {/* Headroom bottom border — separate element so it renders above segments */}
         {unusedHeight > 0 && (
           <div
             className="absolute left-0 right-0 pointer-events-none"
@@ -260,7 +251,6 @@ export function HeightCrossSectionDiagram({
           />
         )}
 
-        {/* Layer segments */}
         {layerSegments.map(({ layer, y: segY, height: segH }, displayIndex) => {
           const isActive = layer.id === activeLayerId;
           const isHovered = !isActive && layer.id === hoveredLayerId;
@@ -309,7 +299,6 @@ export function HeightCrossSectionDiagram({
                 transition: `top ${TRANSITION}, height ${TRANSITION}, opacity ${TRANSITION}`,
               }}
             >
-              {/* Accent stripe on active segment's left edge */}
               {isActive && (
                 <div
                   className="absolute left-0 top-0 h-full"
@@ -320,11 +309,9 @@ export function HeightCrossSectionDiagram({
                 />
               )}
 
-              {/* Content — inline controls for active, plain label for others */}
               {segH >= 16 && (
                 <div className="flex items-center justify-between h-full pl-3 pr-2">
                   {isActive && segH >= 20 ? (
-                    /* Active segment: inline editing controls */
                     <>
                       {isEditing ? (
                         <input
@@ -358,8 +345,10 @@ export function HeightCrossSectionDiagram({
                         </span>
                       )}
 
-                      <div className="flex items-center gap-1 ml-1 flex-shrink-0">
-                        {/* Height stepper — larger hit targets (20×20px) */}
+                      <div
+                        className="flex items-center gap-1 ml-1 flex-shrink-0"
+                        onDoubleClick={(e) => e.stopPropagation()}
+                      >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -416,7 +405,6 @@ export function HeightCrossSectionDiagram({
                           </svg>
                         </button>
 
-                        {/* Delete button — multi-layer only, extra left margin for separation */}
                         {hasMultipleLayers && (
                           <button
                             onClick={(e) => {
@@ -443,33 +431,14 @@ export function HeightCrossSectionDiagram({
                           </button>
                         )}
 
-                        {showGrip && !isEditing && (
-                          <svg
-                            width="10"
-                            height="14"
-                            viewBox="0 0 10 14"
-                            data-testid="grip-icon"
-                            aria-hidden="true"
-                            className="ml-0.5"
-                          >
-                            {[3, 7, 11].map((cy) => (
-                              <g key={cy} fill="var(--text-disabled)">
-                                <circle cx={2.5} cy={cy} r={1.2} />
-                                <circle cx={7.5} cy={cy} r={1.2} />
-                              </g>
-                            ))}
-                          </svg>
-                        )}
+                        {showGrip && !isEditing && <GripIcon className="ml-0.5" />}
                       </div>
                     </>
                   ) : (
-                    /* Non-active segment: plain label */
                     <>
                       <span
                         className="truncate text-xs font-medium"
-                        style={{
-                          color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                        }}
+                        style={{ color: 'var(--text-secondary)' }}
                       >
                         {layer.name}
                       </span>
@@ -478,34 +447,18 @@ export function HeightCrossSectionDiagram({
                           className="text-[11px]"
                           style={{
                             fontFamily: 'ui-monospace, monospace',
-                            color: isActive ? 'var(--text-tertiary)' : 'var(--text-disabled)',
+                            color: 'var(--text-disabled)',
                           }}
                         >
                           {layer.height}u
                         </span>
-                        {showGrip && (
-                          <svg
-                            width="10"
-                            height="14"
-                            viewBox="0 0 10 14"
-                            data-testid="grip-icon"
-                            aria-hidden="true"
-                          >
-                            {[3, 7, 11].map((cy) => (
-                              <g key={cy} fill="var(--text-disabled)">
-                                <circle cx={2.5} cy={cy} r={1.2} />
-                                <circle cx={7.5} cy={cy} r={1.2} />
-                              </g>
-                            ))}
-                          </svg>
-                        )}
+                        {showGrip && <GripIcon />}
                       </div>
                     </>
                   )}
                 </div>
               )}
 
-              {/* Drop indicator line */}
               {isDropTarget && dragSourceIndex !== null && (
                 <div
                   className="absolute left-0 right-0"

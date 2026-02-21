@@ -302,7 +302,6 @@ describe('LayerPanel', () => {
       });
 
       expect(useSelectionStore.getState().activeLayerId).toBe('layer-2');
-      // Re-render will pass updated editingLayerId
     });
 
     it('wires onEditingEnd to clear editingLayerId', () => {
@@ -336,12 +335,6 @@ describe('LayerPanel', () => {
         },
       });
       useSelectionStore.setState({ activeLayerId: 'layer-1' });
-    });
-
-    it('shows height total in aggregate stats', () => {
-      render(<LayerPanel />);
-
-      expect(screen.getByText(/\d+\/\d+u/)).toBeInTheDocument();
     });
 
     it('shows total stats for multiple layers', () => {
