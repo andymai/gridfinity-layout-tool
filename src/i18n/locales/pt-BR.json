@@ -974,6 +974,7 @@
   "mobile.binMenu.editProperties": "Editar Propriedades",
   "mobile.binMenu.rotate": "Rotacionar",
   "mobile.binMenu.toStash": "Para Stash",
+  "mobile.binMenu.moveToGrid": "Mover para a grade",
   "mobile.bottomSheet.closePanel": "Fechar painel",
   "mobile.bottomSheet.releaseToClose": "Solte para fechar",
   "mobile.bottomSheet.swipeToClose": "Deslize para fechar",

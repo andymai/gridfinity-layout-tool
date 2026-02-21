@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import {
   useLayoutStore,
   useSelectionStore,
@@ -22,7 +22,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById } from '@/utils/entity';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
-import type { Bin } from '@/core/types';
+import type { Bin, LayerId } from '@/core/types';
 
 // Lazy load design-linking section
 const BinContextMenuDesignSection = lazy(() =>
@@ -140,6 +140,18 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
     onClose();
   };
 
+  const [showLayerPicker, setShowLayerPicker] = useState(false);
+
+  const handleMoveToGrid = (targetLayerId: LayerId) => {
+    const layer = layout.layers.find((l) => l.id === targetLayerId);
+    if (!layer) return;
+    execute(() => {
+      updateBin(bin.id, { layerId: targetLayerId, x: 0, y: 0, height: layer.height });
+    });
+    addToast(t('toast.binsMovedToLayer', { count: 1 }), 'success');
+    onClose();
+  };
+
   // On desktop, only show Edit Properties when right panel is collapsed
   const showEditOption = !isDesktop || rightPanelCollapsed;
 
@@ -237,6 +249,69 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
             label={t('mobile.binMenu.toStash')}
             onClick={handleToStaging}
           />
+        )}
+
+        {isInStash && (
+          <div>
+            <button
+              onClick={() => {
+                if (layout.layers.length === 1) {
+                  handleMoveToGrid(layout.layers[0].id);
+                } else {
+                  setShowLayerPicker(!showLayerPicker);
+                }
+              }}
+              className="w-full px-4 py-3 flex items-center justify-between transition-colors text-content hover:bg-surface-hover"
+            >
+              <div className="flex items-center gap-3">
+                <svg
+                  className="w-5 h-5 text-content-tertiary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                  />
+                </svg>
+                {t('mobile.binMenu.moveToGrid')}
+              </div>
+              {layout.layers.length > 1 && (
+                <svg
+                  className={`w-4 h-4 ml-3 transition-transform ${showLayerPicker ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              )}
+            </button>
+            {showLayerPicker && (
+              <div className="px-2 py-1 bg-surface-secondary">
+                {layout.layers.map((layer) => (
+                  <button
+                    key={layer.id}
+                    onClick={() => handleMoveToGrid(layer.id)}
+                    className="w-full px-3 py-2 text-left rounded transition-colors hover:bg-surface-hover"
+                  >
+                    <div className="text-sm text-content">{layer.name}</div>
+                    <div className="text-xs text-content-tertiary">
+                      {t('mobile.contextMenu.minHeight', { height: layer.height })}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         <STLSearchDropdown

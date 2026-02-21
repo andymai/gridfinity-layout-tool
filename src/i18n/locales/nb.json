@@ -974,6 +974,7 @@
   "mobile.binMenu.editProperties": "Rediger egenskaper",
   "mobile.binMenu.rotate": "Roter",
   "mobile.binMenu.toStash": "Til Stash",
+  "mobile.binMenu.moveToGrid": "Flytt til rutenett",
   "mobile.bottomSheet.closePanel": "Lukk panel",
   "mobile.bottomSheet.releaseToClose": "Slipp for å lukke",
   "mobile.bottomSheet.swipeToClose": "Sveip for å lukke",
