@@ -119,10 +119,11 @@ describe('HeightCrossSectionDiagram', () => {
       />
     );
 
-    const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBeGreaterThanOrEqual(2);
-    expect(buttons[0]).toHaveAttribute('aria-label', 'Select Layer 1');
-    expect(buttons[0].tagName).toBe('DIV');
+    const layerButton = screen.getByRole('button', { name: 'Select Layer 1' });
+    expect(layerButton).toBeInTheDocument();
+    expect(layerButton.tagName).toBe('DIV');
+    // At least 2 layer segments rendered as buttons
+    expect(screen.getByRole('button', { name: 'Select Layer 2' })).toBeInTheDocument();
   });
 
   it('activates layer on Enter key', () => {
@@ -138,7 +139,7 @@ describe('HeightCrossSectionDiagram', () => {
       />
     );
 
-    const button = screen.getAllByRole('button')[0];
+    const button = screen.getByRole('button', { name: 'Select Layer 1' });
     fireEvent.keyDown(button, { key: 'Enter' });
 
     expect(onLayerClick).toHaveBeenCalledWith('layer-1');
@@ -285,7 +286,7 @@ describe('HeightCrossSectionDiagram', () => {
         />
       );
 
-      const button = screen.getAllByRole('button')[0];
+      const button = screen.getByRole('button', { name: 'Select Layer 1' });
       fireEvent.doubleClick(button);
 
       expect(onEditingStart).toHaveBeenCalledWith('layer-1');

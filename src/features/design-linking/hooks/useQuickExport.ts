@@ -26,7 +26,7 @@ interface UseQuickExportReturn {
  */
 export function useQuickExport(): UseQuickExportReturn {
   const t = useTranslation();
-  const { addToast } = useToastStore();
+  const addToast = useToastStore((s) => s.addToast);
   const [isExporting, setIsExporting] = useState(false);
 
   const exportToSTL = useCallback(

@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
 import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';

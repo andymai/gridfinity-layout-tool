@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';

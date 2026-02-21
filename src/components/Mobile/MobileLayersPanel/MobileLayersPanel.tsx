@@ -1,4 +1,4 @@
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useMobileStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { TabBar } from './TabBar';

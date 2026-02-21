@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import type { STLSearchSite } from '@/core/store/settings';
 import { Checkbox } from '@/shared/components/Checkbox';

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLabsStore } from '@/core/store';
 import { getToggleableFeatures, getGraduatedFeatures, type FeatureId } from '@/core/labs';
 import { FeatureCard } from '../FeatureCard';

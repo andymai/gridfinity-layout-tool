@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 
 const MQ = '(prefers-color-scheme: light)';

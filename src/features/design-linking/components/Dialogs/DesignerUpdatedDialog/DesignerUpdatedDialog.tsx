@@ -6,7 +6,7 @@
  */
 
 import { useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { Dialog, Button, InfoIcon } from '@/design-system';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';

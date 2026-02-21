@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';

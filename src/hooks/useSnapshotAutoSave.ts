@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSnapshotStore } from '@/core/store/snapshots';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';

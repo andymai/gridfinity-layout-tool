@@ -1,4 +1,4 @@
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { useTranslation } from '@/i18n';

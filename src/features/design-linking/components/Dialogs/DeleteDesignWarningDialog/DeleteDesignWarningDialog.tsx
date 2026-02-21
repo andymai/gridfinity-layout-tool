@@ -6,12 +6,18 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useTranslation } from '@/i18n';
 
 export function DeleteDesignWarningDialog() {
   const t = useTranslation();
-  const { pendingDeleteWarning, hideDeleteWarning } = useLinkingStore();
+  const { pendingDeleteWarning, hideDeleteWarning } = useLinkingStore(
+    useShallow((s) => ({
+      pendingDeleteWarning: s.pendingDeleteWarning,
+      hideDeleteWarning: s.hideDeleteWarning,
+    }))
+  );
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);

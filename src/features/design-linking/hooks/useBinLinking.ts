@@ -68,13 +68,19 @@ export function useBinLinking(): UseBinLinkingReturn {
   const layout = useLayoutStore(useShallow((state) => state.layout));
   const { updateBin } = useMutations();
   const { execute } = useUndoableAction();
-  const { addToast } = useToastStore();
+  const addToast = useToastStore((s) => s.addToast);
   const registry = useCustomBins();
   const {
     showSyncDialog,
     showCreateDesignDialog: showCreateDialog,
     hideCreateDesignDialog,
-  } = useLinkingStore();
+  } = useLinkingStore(
+    useShallow((s) => ({
+      showSyncDialog: s.showSyncDialog,
+      showCreateDesignDialog: s.showCreateDesignDialog,
+      hideCreateDesignDialog: s.hideCreateDesignDialog,
+    }))
+  );
 
   // Link a bin to a design
   const linkBin = useCallback(

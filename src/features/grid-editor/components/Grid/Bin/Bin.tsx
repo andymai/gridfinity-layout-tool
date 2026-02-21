@@ -1,6 +1,6 @@
 import type { PointerEvent } from 'react';
 import { memo, useRef, useState, useCallback, useMemo } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import type { Bin as BinType, BinId, Category, Layer, Drawer, ResizeHandle } from '@/core/types';
 import {
   useLayoutStore,

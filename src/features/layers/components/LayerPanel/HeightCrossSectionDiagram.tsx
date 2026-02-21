@@ -30,7 +30,7 @@ interface HeightCrossSectionDiagramProps {
   onDeleteLayer: (layerId: LayerId) => void;
   onEditingStart: (layerId: LayerId) => void;
   onEditingEnd: () => void;
-  layerStats: Record<string, LayerStat>;
+  layerStats: Partial<Record<string, LayerStat>>;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -86,8 +86,7 @@ export function HeightCrossSectionDiagram({
   const handleDebouncedHeightChange = useCallback(
     (layerId: LayerId, delta: number) => {
       setPendingDeltas((prev) => ({ ...prev, [layerId]: (prev[layerId] ?? 0) + delta }));
-      const existing = flushTimers.current[layerId];
-      if (existing) clearTimeout(existing);
+      clearTimeout(flushTimers.current[layerId]);
       flushTimers.current[layerId] = setTimeout(() => {
         setPendingDeltas((prev) => {
           const accumulated = prev[layerId] ?? 0;
@@ -212,7 +211,19 @@ export function HeightCrossSectionDiagram({
 
         {unusedHeight > 0 && (
           <div
+            role={canAddLayer ? 'button' : undefined}
+            tabIndex={canAddLayer ? 0 : undefined}
             onClick={canAddLayer ? onAddLayer : undefined}
+            onKeyDown={
+              canAddLayer
+                ? (e: KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onAddLayer();
+                    }
+                  }
+                : undefined
+            }
             data-testid="headroom-area"
             className="absolute left-0 right-0 flex items-center justify-center overflow-hidden"
             style={{
@@ -333,11 +344,20 @@ export function HeightCrossSectionDiagram({
                         />
                       ) : (
                         <span
+                          role="button"
+                          tabIndex={0}
                           className="truncate text-xs font-medium cursor-text"
                           style={{ color: 'var(--text-primary)' }}
                           onClick={(e) => {
                             e.stopPropagation();
                             onEditingStart(layer.id);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onEditingStart(layer.id);
+                            }
                           }}
                           title={t('layers.clickToRename')}
                         >

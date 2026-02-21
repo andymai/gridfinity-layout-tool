@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": ["src/main.tsx", "api/**/*.ts", "scripts/**/*.ts"],
+  "entry": ["api/**/*.ts", "scripts/**/*.ts"],
   "project": ["src/**/*.{ts,tsx}", "api/**/*.ts", "scripts/**/*.ts"],
   "ignore": ["src/test/**", "**/*.test.{ts,tsx}", "e2e/**", "**/index.ts"],
   "ignoreDependencies": ["three-stdlib", "axe-core", "postcss"],

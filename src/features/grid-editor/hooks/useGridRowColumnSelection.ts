@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useSelectionStore } from '@/core/store/selection';
 import type { Bin } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';

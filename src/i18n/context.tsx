@@ -92,7 +92,7 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
  * ```
  */
 export function getStaticTranslation(key: string, vars?: TranslationVars): string {
-  const template = _loadedEn?.[key] ?? fallback[key] ?? key;
+  const template = _loadedEn?.[key] ?? lookupKey(fallback, key) ?? key;
   if (!vars) return template;
   let result = template;
   for (const [k, value] of Object.entries(vars)) {
@@ -116,6 +116,15 @@ export function _setLoadedEn(translations: Translations | null): void {
  * Interpolate variables into a translation string.
  * Replaces {variableName} placeholders with provided values.
  */
+/**
+ * Look up a key in a translations map, returning undefined when absent.
+ * Needed because Record<string, string> tells TS every key exists,
+ * but at runtime a locale file may not contain every possible key.
+ */
+function lookupKey(map: Translations, key: string): string | undefined {
+  return key in map ? map[key] : undefined;
+}
+
 function interpolate(template: string, vars?: TranslationVars): string {
   if (!vars) return template;
   let result = template;
@@ -157,25 +166,6 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     latestLocaleRef.current = target;
 
     const loader = localeLoaders[target];
-    if (!loader) {
-      // Unknown locale — fall back to loading English
-      setIsLoading(true);
-      try {
-        const enModule = await localeLoaders.en();
-        _loadedEn = enModule.default;
-        if (latestLocaleRef.current === target) {
-          setTranslations(enModule.default);
-          setIsLoading(false);
-        }
-      } catch {
-        if (latestLocaleRef.current === target) {
-          setTranslations(fallback);
-          setIsLoading(false);
-        }
-      }
-      return;
-    }
-
     setIsLoading(true);
     try {
       // For non-English, also ensure English is loaded (for fallback keys)
@@ -223,9 +213,10 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     document.documentElement.lang = locale;
 
     // Page title and meta description
-    const seoTitle = translations['seo.title'] ?? _loadedEn?.['seo.title'] ?? fallback['seo.title'];
+    const seoTitle =
+      lookupKey(translations, 'seo.title') ?? _loadedEn?.['seo.title'] ?? fallback['seo.title'];
     const seoDesc =
-      translations['seo.description'] ??
+      lookupKey(translations, 'seo.description') ??
       _loadedEn?.['seo.description'] ??
       fallback['seo.description'];
 

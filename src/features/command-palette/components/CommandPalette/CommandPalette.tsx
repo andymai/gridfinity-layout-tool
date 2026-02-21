@@ -18,7 +18,7 @@ import {
   useUndoableAction,
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutSwitcher } from '@/hooks';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
 import { getStagingBins } from '@/shared/utils';
@@ -465,7 +465,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const t = useTranslation();
 
   // Frecency tracking
-  const { recordUsage } = useRecentCommandsStore();
+  const recordUsage = useRecentCommandsStore((s) => s.recordUsage);
 
   // Build all action handlers via extracted hook
   const actionHandlers = useActionHandlers();

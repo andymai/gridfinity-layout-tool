@@ -1,4 +1,4 @@
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLabsStore } from '@/core/store';
 import { getToggleableFeatures, getGraduatedFeatures } from '@/core/labs';
 import type { FeatureId } from '@/core/labs';

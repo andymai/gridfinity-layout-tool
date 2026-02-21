@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useInteractionStore, useViewStore, useLayoutStore } from '@/core/store';
 import { getBaseCellSize, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getContrastColor } from '@/shared/utils';

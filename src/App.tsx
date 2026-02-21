@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import {
   useLayoutStore,
   useLibraryStore,

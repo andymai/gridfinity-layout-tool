@@ -190,8 +190,6 @@ export function parseArchive(json: string): LayoutArchive | null {
   try {
     const data = JSON.parse(json) as unknown;
     if (!isArchiveFormat(data)) return null;
-    // Only accept archives with known version
-    if (data._archive.version !== '1.0') return null;
     return data;
   } catch {
     return null;

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORIES } from '@/core/constants';

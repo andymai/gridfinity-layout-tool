@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useSettingsStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { calcMaxGridUnits } from '@/core/constants';
