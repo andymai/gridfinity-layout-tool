@@ -18,7 +18,7 @@ import {
   updateSnapshot,
 } from './backends/indexedDB';
 import { compressLayout, decompressLayout } from '@/shared/utils';
-import { computePreview } from './LayoutManager';
+import { computePreview } from './preview';
 import type { Layout, Snapshot, CompressedSnapshot } from '@/core/types';
 
 /** Maximum number of unlabeled (auto-created) snapshots per layout */

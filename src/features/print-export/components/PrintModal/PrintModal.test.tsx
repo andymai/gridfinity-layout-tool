@@ -107,20 +107,20 @@ describe('PrintModal', () => {
       // Print portal still renders for Cmd+P support
       expect(screen.getByTestId('print-layout')).toBeInTheDocument();
       // But modal is not visible
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('print-modal-dialog')).not.toBeInTheDocument();
     });
 
     it('renders modal when open', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByTestId('print-modal-dialog')).toBeInTheDocument();
       expect(screen.getByText('Print Layout')).toBeInTheDocument();
     });
 
     it('has accessible modal attributes', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      const dialog = screen.getByRole('dialog');
+      const dialog = screen.getByTestId('print-modal-dialog');
       expect(dialog).toHaveAttribute('aria-modal', 'true');
       expect(dialog).toHaveAttribute('aria-labelledby', 'print-modal-title');
     });
@@ -256,7 +256,7 @@ describe('PrintModal', () => {
       render(<PrintModal isOpen={true} onClose={onClose} />);
 
       // Click the overlay (outer div)
-      const overlay = screen.getByRole('dialog').closest('.animate-fade-in');
+      const overlay = screen.getByTestId('print-modal-dialog').closest('.animate-fade-in');
       fireEvent.click(overlay!);
 
       expect(onClose).toHaveBeenCalled();
@@ -266,7 +266,7 @@ describe('PrintModal', () => {
       const onClose = vi.fn();
       render(<PrintModal isOpen={true} onClose={onClose} />);
 
-      const dialog = screen.getByRole('dialog');
+      const dialog = screen.getByTestId('print-modal-dialog');
       fireEvent.click(dialog);
 
       expect(onClose).not.toHaveBeenCalled();
