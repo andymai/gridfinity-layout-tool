@@ -214,6 +214,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     previews.push(
       <div
         key="draw-preview"
+        data-interaction-preview="draw"
         style={{
           position: 'absolute',
           left,
@@ -346,6 +347,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         previews.push(
           <div
             key={`drag-preview-${binId}`}
+            data-interaction-preview="drag"
+            data-snap-state={valid ? (interaction.isSnapped ? 'snapped' : 'valid') : 'invalid'}
             style={{
               position: 'absolute',
               left,
@@ -444,6 +447,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       previews.push(
         <div
           key={`resize-preview-${binId}`}
+          data-interaction-preview="resize"
+          data-snap-state={valid ? (interaction.isSnapped ? 'snapped' : 'valid') : 'invalid'}
           style={{
             position: 'absolute',
             left,
@@ -496,6 +501,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       previews.push(
         <div
           key={`staging-drag-preview-${binId}`}
+          data-interaction-preview="stagingDrag"
+          data-snap-state={valid ? (interaction.isSnapped ? 'snapped' : 'valid') : 'invalid'}
           style={{
             position: 'absolute',
             left,

@@ -151,15 +151,19 @@ export function useOnboarding(): UseOnboardingReturn {
   const entryCount = useLibraryStore((state) => state.library.entries.length);
   const binCount = useLayoutStore((state) => state.layout.bins.length);
 
+  // Skip onboarding in dev mode (covers local dev and E2E tests against dev server).
+  // Exclude Vitest so unit tests can still verify onboarding logic.
+  const isDev = import.meta.env.DEV && !import.meta.env.VITEST;
+
   // Welcome: show only for brand-new users (1 layout, 0 bins, never seen)
-  const shouldShowWelcome = !flags.welcomeSeen && entryCount === 1 && binCount === 0;
+  const shouldShowWelcome = !isDev && !flags.welcomeSeen && entryCount === 1 && binCount === 0;
 
   // Draw tutorial: show on any empty grid until user creates their first bin
-  const shouldShowDrawTutorial = !flags.drawTutorialSeen && binCount === 0;
+  const shouldShowDrawTutorial = !isDev && !flags.drawTutorialSeen && binCount === 0;
 
   // Sidebar pulse: show for low-engagement returning users
   const shouldPulseGallery =
-    !flags.pulseDismissed && flags.welcomeSeen && binCount < ENGAGEMENT_BIN_THRESHOLD;
+    !isDev && !flags.pulseDismissed && flags.welcomeSeen && binCount < ENGAGEMENT_BIN_THRESHOLD;
 
   // Auto-dismiss pulse when engagement threshold is reached
   useEffect(() => {
