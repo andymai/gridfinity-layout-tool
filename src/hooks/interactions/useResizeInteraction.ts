@@ -132,7 +132,9 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
         );
 
         if (!result.valid) {
-          // Smart snap: find max valid size if Ctrl not held
+          // Smart snap: find max valid size if Ctrl not held.
+          // Each bin snaps independently — a uniform delta would over-constrain
+          // groups where bins face different collision contexts.
           if (!ctrlKeyRef.current) {
             const snapResult = snapResizeRect(
               startRect,

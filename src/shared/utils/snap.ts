@@ -1,7 +1,7 @@
 import type { Bin, BinId, LayerId, Layout, Rect, ResizeHandle } from '@/core/types';
 import { canPlaceBin } from './validation';
 import { spiralOffsets } from './position';
-import { calculateResizeRect } from '@/hooks/interactions/interaction';
+import { calculateResizeRect } from './resize';
 
 /** Maximum grid steps searched outward from cursor position. */
 export const SNAP_RADIUS = 2;
@@ -50,6 +50,11 @@ function searchSpiral(
   moveDirY: number,
   predicate: (dx: number, dy: number) => boolean
 ): { dx: number; dy: number } | null {
+  // Collect all offsets and sort by true distance so that e.g. distance=1.5
+  // cardinals from a later radius ring are tested before distance=2.0 corners
+  // from an earlier ring (matters for half-bin step=0.5).
+  const allOffsets = [...spiralOffsets(SNAP_RADIUS, step)].sort((a, b) => a.distance - b.distance);
+
   let currentDistance = -1;
   let batch: Array<{ dx: number; dy: number; distance: number }> = [];
 
@@ -63,7 +68,7 @@ function searchSpiral(
     return null;
   };
 
-  for (const offset of spiralOffsets(SNAP_RADIUS, step)) {
+  for (const offset of allOffsets) {
     if (offset.distance !== currentDistance) {
       if (batch.length > 0) {
         const found = processBatch();

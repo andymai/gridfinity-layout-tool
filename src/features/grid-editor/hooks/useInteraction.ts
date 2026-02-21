@@ -365,16 +365,25 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     // have minimal deps while still using current handler implementations.
   }, [interaction, setInteraction, setDropTarget, getGridCoords, clampCoords]);
 
-  // Track Ctrl key state for smart snap override (hold Ctrl to disable snapping)
+  // Track Ctrl key state for smart snap override (hold Ctrl to disable snapping).
+  // Reset on blur/visibilitychange to prevent stale state when tab loses focus
+  // while Ctrl is held (keyup never fires in that case).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       ctrlKeyRef.current = e.ctrlKey;
     };
+    const resetCtrlKey = () => {
+      ctrlKeyRef.current = false;
+    };
     document.addEventListener('keydown', onKey);
     document.addEventListener('keyup', onKey);
+    window.addEventListener('blur', resetCtrlKey);
+    document.addEventListener('visibilitychange', resetCtrlKey);
     return () => {
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('keyup', onKey);
+      window.removeEventListener('blur', resetCtrlKey);
+      document.removeEventListener('visibilitychange', resetCtrlKey);
     };
   }, [ctrlKeyRef]);
 

@@ -67,3 +67,5 @@ export { fillAllWithSize, fillGaps } from './fill';
 
 export { snapPosition, snapGroupDelta, snapResizeRect, snapDrawRect, SNAP_RADIUS } from './snap';
 export type { SnapResult } from './snap';
+
+export { calculateResizeRect } from './resize';
