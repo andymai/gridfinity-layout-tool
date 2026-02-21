@@ -715,49 +715,6 @@ describe('pointer events', () => {
     expect(useUIStore.getState().interaction).toBeNull();
   });
 
-  it('drag to trash deletes bins', () => {
-    const { addBin, layout } = useLayoutStore.getState();
-    const layerId = layout.layers[0].id;
-    const categoryId = layout.categories[0].id;
-
-    const binId = getBinId(
-      addBin({
-        layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      })
-    );
-
-    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
-
-    const gridRef = createMockGridRef();
-    const { result } = renderHook(() => useInteraction(gridRef));
-
-    act(() => {
-      result.current.startDrag(binId, 68, 68);
-    });
-
-    // Set drop target to trash
-    act(() => {
-      useUIStore.getState().setDropTarget('trash');
-    });
-
-    // Simulate pointer up
-    act(() => {
-      const upEvent = new PointerEvent('pointerup', { bubbles: true });
-      document.dispatchEvent(upEvent);
-    });
-
-    // Bin should be deleted
-    expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
-  });
-
   it('drag to staging moves bin to staging', () => {
     const { addBin, layout } = useLayoutStore.getState();
     const layerId = layout.layers[0].id;
@@ -919,10 +876,10 @@ describe('pointer events', () => {
       result.current.startDrag(binId, 36, 36);
     });
     act(() => {
-      useUIStore.getState().setDropTarget('trash');
+      useUIStore.getState().setDropTarget('staging');
     });
 
-    expect(useUIStore.getState().dropTarget).toBe('trash');
+    expect(useUIStore.getState().dropTarget).toBe('staging');
 
     // Simulate pointer cancel
     act(() => {
@@ -1086,52 +1043,6 @@ describe('stagingDrag interaction', () => {
     expect(bin?.layerId).toBe(layerId);
     expect(bin?.x).toBe(2);
     expect(bin?.y).toBe(2);
-  });
-
-  it('stagingDrag deletes bin when dropped on trash', () => {
-    const { addBin, layout } = useLayoutStore.getState();
-    const categoryId = layout.categories[0].id;
-
-    // Add bin to staging
-    const binId = getBinId(
-      addBin({
-        layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      })
-    );
-
-    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
-
-    // Set up stagingDrag interaction
-    useInteractionStore.setState({
-      ...useInteractionStore.getState(),
-      interaction: {
-        type: 'stagingDrag',
-        binId: binId,
-        currentCoord: { x: 0, y: 0 },
-        valid: false,
-      },
-      dropTarget: 'trash',
-    });
-
-    const gridRef = createMockGridRef();
-    renderHook(() => useInteraction(gridRef));
-
-    // Simulate pointer up
-    act(() => {
-      const upEvent = new PointerEvent('pointerup', { bubbles: true });
-      document.dispatchEvent(upEvent);
-    });
-
-    // Bin should be deleted
-    expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
   });
 
   it('stagingDrag keeps bin in staging when dropped at invalid position', () => {
@@ -1553,57 +1464,6 @@ describe('duplicate drag (Alt+drag)', () => {
 
     // Should still have only 1 bin (no duplication on zero movement)
     expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
-  });
-
-  it('duplicate drag to trash deletes original bins (not duplicate)', () => {
-    const { addBin, layout } = useLayoutStore.getState();
-    const layerId = layout.layers[0].id;
-    const categoryId = layout.categories[0].id;
-
-    const binId = getBinId(
-      addBin({
-        layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      })
-    );
-
-    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
-
-    const gridRef = createMockGridRef();
-    renderHook(() => useInteraction(gridRef));
-
-    // Set up duplicate drag
-    act(() => {
-      useInteractionStore.setState({
-        ...useInteractionStore.getState(),
-        interaction: {
-          type: 'drag',
-          binIds: [binId],
-          startCoord: { x: 2, y: 2 },
-          currentCoord: { x: 3, y: 3 },
-          valid: true,
-          isOverGrid: true,
-          duplicate: true,
-        },
-        dropTarget: 'trash',
-      });
-    });
-
-    // Simulate pointer up
-    act(() => {
-      const upEvent = new PointerEvent('pointerup', { bubbles: true });
-      document.dispatchEvent(upEvent);
-    });
-
-    // Trash should still delete the bins (duplicate mode doesn't change trash behavior)
-    expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
   });
 
   it('selects duplicated bins after successful duplicate drag', () => {

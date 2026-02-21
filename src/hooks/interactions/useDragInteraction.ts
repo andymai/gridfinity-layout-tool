@@ -24,7 +24,7 @@ import type { BinId, Coord, SwapTarget, ValidationReason, BlockingInfo } from '@
  * - **Group constraints**: Group is constrained to stay within bounds
  * - **Duplicate mode**: Alt+drag creates copies instead of moving
  * - **Swap mode**: Shift+drag (desktop) or long-press (mobile) to swap with compatible bin
- * - **Drop targets**: Can drop to trash (delete) or staging (stash)
+ * - **Drop targets**: Can drop to staging (stash)
  *
  * ## Validation
  *
@@ -51,7 +51,6 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
     setSelectedBins,
     addBin,
     updateBin,
-    deleteBin,
     execute,
     activePointerIdRef,
     capturedPointerRef,
@@ -295,7 +294,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
 
   /**
    * Complete the drag interaction.
-   * Handles drop targets (trash, staging), swaps, or commits bin movement/duplication.
+   * Handles drop targets (staging), swaps, or commits bin movement/duplication.
    */
   const handleUp = useCallback(() => {
     const interaction = useInteractionStore.getState().interaction;
@@ -336,31 +335,6 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
       }
 
       setSelectedBins([]);
-      setInteraction(null);
-      return;
-    }
-
-    // Handle drop to trash
-    if (currentDropTarget === 'trash') {
-      // Track deletion BEFORE executing (need bin data)
-      // Note: drag-to-trash deletions are categorized under 'context_menu' method
-      // to group all explicit user-initiated deletions in a single analytics bucket
-      const binsToDelete = findBinsByIds(layout, interaction.binIds);
-      if (binsToDelete.length > 0) {
-        mlTracking.trackDeletion(binsToDelete[0], 'context_menu', binsToDelete.length);
-        // Check for quick-correction (deleted shortly after creation)
-        for (const bin of binsToDelete) {
-          mlTracking.trackQuickCorrect('delete', bin.id, bin);
-        }
-      }
-
-      execute(() => {
-        for (const binId of interaction.binIds) {
-          deleteBin(binId);
-        }
-      });
-      setSelectedBins([]);
-      setDropTarget(null);
       setInteraction(null);
       return;
     }
@@ -478,7 +452,6 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
     activeLayerId,
     addBin,
     updateBin,
-    deleteBin,
     execute,
     setSelectedBins,
     setDropTarget,

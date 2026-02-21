@@ -472,33 +472,6 @@ describe('useStagingDragInteraction', () => {
   });
 
   describe('handleUp()', () => {
-    it('deletes bin when dropped on trash', () => {
-      const binId = addStagingBin();
-
-      // Set up interaction and drop target
-      useInteractionStore.setState({
-        ...useInteractionStore.getState(),
-        interaction: {
-          type: 'stagingDrag',
-          binId,
-          currentCoord: { x: 2, y: 2 },
-          valid: true,
-        },
-        dropTarget: 'trash',
-      });
-
-      const context = createContext();
-      const { result } = renderHook(() => useStagingDragInteraction(context));
-
-      act(() => {
-        result.current.handleUp();
-      });
-
-      expect(mockDeleteBin).toHaveBeenCalledWith(binId);
-      expect(mockSetDropTarget).toHaveBeenCalledWith(null);
-      expect(mockSetInteraction).toHaveBeenCalledWith(null);
-    });
-
     it('places bin on grid if valid position', () => {
       const binId = addStagingBin();
 
@@ -658,30 +631,6 @@ describe('useStagingDragInteraction', () => {
       });
 
       // execute should have been called to wrap the action
-      expect(mockExecute).toHaveBeenCalled();
-    });
-
-    it('executes undoable action for trash deletion', () => {
-      const binId = addStagingBin();
-
-      useInteractionStore.setState({
-        ...useInteractionStore.getState(),
-        interaction: {
-          type: 'stagingDrag',
-          binId,
-          currentCoord: { x: 2, y: 2 },
-          valid: true,
-        },
-        dropTarget: 'trash',
-      });
-
-      const context = createContext();
-      const { result } = renderHook(() => useStagingDragInteraction(context));
-
-      act(() => {
-        result.current.handleUp();
-      });
-
       expect(mockExecute).toHaveBeenCalled();
     });
   });

@@ -44,7 +44,7 @@ export interface InteractionContext {
 
   // Store actions (from useInteractionStore and useSelectionStore)
   setInteraction: (interaction: Interaction | null) => void;
-  setDropTarget: (target: 'trash' | 'staging' | null) => void;
+  setDropTarget: (target: 'staging' | null) => void;
   setSelectedBin: (id: BinId | null) => void;
   setSelectedBins: (ids: BinId[]) => void;
 

@@ -16,7 +16,7 @@ import type { Interaction } from '@/core/types';
  * - 3D Preview: isometric preview state (grouped here as a view mode)
  */
 
-export type DropTarget = 'trash' | 'staging' | null;
+export type DropTarget = 'staging' | null;
 
 // Module-level timeout ID for screen reader announcements
 let liveMessageTimeoutId: ReturnType<typeof setTimeout> | null = null;

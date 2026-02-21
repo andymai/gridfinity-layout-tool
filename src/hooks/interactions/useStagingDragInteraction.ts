@@ -17,7 +17,7 @@ import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types'
  * - **Staging to grid**: Drag bins from the staging area (stash) onto the main grid
  * - **Ghost preview**: Shows a preview of where the bin would be placed
  * - **Validation**: Validates placement against bounds and collisions
- * - **Drop to trash**: Can drop bin on trash to delete it
+ * - **Staging to grid**: Drag bins from the staging area (stash) onto the main grid
  *
  * ## Usage
  *
@@ -40,10 +40,8 @@ export function useStagingDragInteraction(
     layout,
     activeLayerId,
     setInteraction,
-    setDropTarget,
     setSelectedBin,
     updateBin,
-    deleteBin,
     execute,
     activePointerIdRef,
     capturedPointerRef,
@@ -176,23 +174,11 @@ export function useStagingDragInteraction(
 
   /**
    * Complete the staging drag interaction.
-   * Places the bin on the grid if valid, or deletes if dropped on trash.
+   * Places the bin on the grid if valid.
    */
   const handleUp = useCallback(() => {
     const interaction = useInteractionStore.getState().interaction;
     if (!interaction || interaction.type !== 'stagingDrag') return;
-
-    const currentDropTarget = useInteractionStore.getState().dropTarget;
-
-    // Handle drop to trash
-    if (currentDropTarget === 'trash') {
-      execute(() => {
-        deleteBin(interaction.binId);
-      });
-      setDropTarget(null);
-      setInteraction(null);
-      return;
-    }
 
     // Place bin on grid if valid position
     if (interaction.valid && interaction.currentCoord) {
@@ -219,16 +205,7 @@ export function useStagingDragInteraction(
     // If invalid or no position, bin stays in staging (no action needed)
 
     // Note: setInteraction(null) is called by the parent hook
-  }, [
-    layout,
-    activeLayerId,
-    updateBin,
-    deleteBin,
-    execute,
-    setDropTarget,
-    setSelectedBin,
-    setInteraction,
-  ]);
+  }, [layout, activeLayerId, updateBin, execute, setSelectedBin]);
 
   return { start, handleMove, handleUp };
 }
