@@ -1,23 +1,21 @@
-import { useState, useEffect, useRef, useCallback, useId } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Layer, LayerId } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
-/** Left-side ruler width in px */
-const RULER_WIDTH = 20;
-/** Fallback bar width before first measurement */
-const DEFAULT_BAR_WIDTH = 200;
-/** Base scale: pixels per height unit before clamping */
-const PX_PER_UNIT = 10;
-/** Min/max diagram height in px */
-const MIN_HEIGHT = 80;
-const MAX_HEIGHT = 200;
-/** Vertical padding so top/bottom ruler labels aren't clipped */
-const PADDING_Y = 8;
+/**
+ * Power exponent for sublinear height scaling.
+ * 1.0 = linear, 0.5 = sqrt. 0.55 means a 12u layer appears ~4x taller
+ * than a 1u layer (instead of 12x), keeping proportional feel without extremes.
+ */
+const HEIGHT_EXPONENT = 0.55;
 /** Width of the accent stripe on the active segment's left edge */
 const ACCENT_STRIPE_WIDTH = 2.5;
 /** Transition duration for segment animations */
 const TRANSITION = '0.2s ease-out';
+/** Debounce delay for height stepper clicks (ms) */
+const HEIGHT_DEBOUNCE_MS = 400;
 
 interface LayerStat {
   coverage: number;
@@ -30,18 +28,27 @@ interface HeightCrossSectionDiagramProps {
   activeLayerId: LayerId | null;
   hoveredLayerId: LayerId | null;
   canAddLayer: boolean;
+  editingLayerId: LayerId | null;
   onLayerClick: (layerId: LayerId) => void;
-  onLayerDoubleClick: (layerId: LayerId) => void;
   onLayerHover: (layerId: LayerId | null) => void;
   onAddLayer: () => void;
   onReorder: (fromDisplayIndex: number, toDisplayIndex: number) => void;
+  onNameChange: (layerId: LayerId, name: string) => void;
+  onHeightChange: (layerId: LayerId, delta: number) => void;
+  onDeleteLayer: (layerId: LayerId) => void;
+  onEditingStart: (layerId: LayerId) => void;
+  onEditingEnd: () => void;
   layerStats: Record<string, LayerStat>;
 }
 
+/** Clamp a value between min and max */
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 /**
- * Interactive SVG cross-section diagram — the primary layer UI.
- * Supports click-to-select, double-click-to-rename, drag-to-reorder,
- * and click-headroom-to-add.
+ * Interactive cross-section diagram with inline editing controls.
+ * SVG ruler as a flex sibling + HTML content area — no overlap, no ResizeObserver.
  */
 export function HeightCrossSectionDiagram({
   layers,
@@ -49,47 +56,80 @@ export function HeightCrossSectionDiagram({
   activeLayerId,
   hoveredLayerId,
   canAddLayer,
+  editingLayerId,
   onLayerClick,
-  onLayerDoubleClick,
   onLayerHover,
   onAddLayer,
   onReorder,
+  onNameChange,
+  onHeightChange,
+  onDeleteLayer,
+  onEditingStart,
+  onEditingEnd,
   layerStats,
 }: HeightCrossSectionDiagramProps) {
   const t = useTranslation();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
+  // Debounced height stepper: accumulate rapid clicks, flush once after delay.
+  // Pending deltas are tracked per-layer so the segment doesn't resize mid-click.
+  const [pendingDeltas, setPendingDeltas] = useState<Record<string, number>>({});
+  const flushTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const handleDebouncedHeightChange = useCallback(
+    (layerId: LayerId, delta: number) => {
+      setPendingDeltas((prev) => ({ ...prev, [layerId]: (prev[layerId] ?? 0) + delta }));
+      const existing = flushTimers.current[layerId];
+      if (existing) clearTimeout(existing);
+      flushTimers.current[layerId] = setTimeout(() => {
+        setPendingDeltas((prev) => {
+          const accumulated = prev[layerId] ?? 0;
+          if (accumulated !== 0) onHeightChange(layerId, accumulated);
+          const { [layerId]: _, ...rest } = prev;
+          return rest;
+        });
+        const { [layerId]: _, ...restTimers } = flushTimers.current;
+        flushTimers.current = restTimers;
+      }, HEIGHT_DEBOUNCE_MS);
+    },
+    [onHeightChange]
+  );
+
+  // Clean up timers on unmount
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const measure = () => setContainerWidth(el.clientWidth);
-    measure();
-
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
+    const timers = flushTimers.current;
+    return () => Object.values(timers).forEach(clearTimeout);
   }, []);
-
-  const barWidth = containerWidth > RULER_WIDTH ? containerWidth - RULER_WIDTH : DEFAULT_BAR_WIDTH;
 
   const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
   const unusedHeight = Math.max(0, drawerHeight - totalLayerHeight);
 
-  // Dynamic height: scale to drawer size, clamped
-  const rawHeight = drawerHeight * PX_PER_UNIT;
-  const diagramHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, rawHeight));
-  const scale = diagramHeight / drawerHeight; // px per height unit
+  // Sublinear scaling: h^exponent compresses tall segments so they don't dominate.
+  // All segments share proportional visual space based on their compressed heights.
+  const compress = (h: number) => Math.pow(h, HEIGHT_EXPONENT);
+  const compressedTotal =
+    layers.reduce((sum, l) => sum + compress(l.height), 0) + compress(unusedHeight);
+
+  // Dynamic height bounds based on segment count
+  const segmentCount = layers.length + (unusedHeight > 0 ? 1 : 0);
+  const minHeight = clamp(segmentCount * 28, 48, 100);
+  const maxHeight = clamp(segmentCount * 60, 100, 240);
+
+  // Diagram height: scale from compressed total, clamped to dynamic bounds
+  const diagramHeight = Math.max(
+    minHeight,
+    Math.min(maxHeight, compressedTotal * (minHeight / compress(drawerHeight)))
+  );
+  const pxPerCompressedUnit = compressedTotal > 0 ? diagramHeight / compressedTotal : 1;
 
   // Build segments top-to-bottom: unused space first, then layers (top layer first)
-  const unusedPx = unusedHeight * scale;
+  const unusedPx = compress(unusedHeight) * pxPerCompressedUnit;
 
   const layerSegments = layers.reduce<{ layer: Layer; y: number; height: number }[]>(
     (acc, layer) => {
-      const segmentHeight = layer.height * scale;
+      const segmentHeight = compress(layer.height) * pxPerCompressedUnit;
       const segmentY =
         acc.length === 0 ? unusedPx : acc[acc.length - 1].y + acc[acc.length - 1].height;
       acc.push({ layer, y: segmentY, height: segmentHeight });
@@ -98,16 +138,7 @@ export function HeightCrossSectionDiagram({
     []
   );
 
-  // Build ruler: boundary ticks with unit values
-  const boundaries: { y: number; unit: number }[] = [{ y: diagramHeight, unit: 0 }];
-  let cumulative = 0;
-  for (const seg of [...layerSegments].reverse()) {
-    cumulative += seg.layer.height;
-    boundaries.push({ y: diagramHeight - cumulative * scale, unit: cumulative });
-  }
-  if (unusedHeight > 0) {
-    boundaries.push({ y: 0, unit: drawerHeight });
-  }
+  const hasMultipleLayers = layers.length > 1;
 
   const handleKeyDown = (layerId: LayerId) => (e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -117,6 +148,14 @@ export function HeightCrossSectionDiagram({
   };
 
   const handleMouseLeave = useCallback(() => onLayerHover(null), [onLayerHover]);
+
+  // Focus name input when editing starts
+  useEffect(() => {
+    if (editingLayerId !== null && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingLayerId]);
 
   // Drag-to-reorder handlers
   const handleDragStart = (e: React.DragEvent, displayIndex: number) => {
@@ -156,13 +195,7 @@ export function HeightCrossSectionDiagram({
     setDropTargetIndex(null);
   };
 
-  const svgHeight = diagramHeight + PADDING_Y * 2;
-  const uniqueId = useId();
-  const clipId = `cross-section-clip-${uniqueId}`;
-  const hatchId = `cross-section-hatch-${uniqueId}`;
-  const hasMultipleLayers = layers.length > 1;
-
-  // Segment fill — use design system selection/hover tokens for clear state distinction
+  // Segment fill — use design system selection/hover tokens
   const getFill = (isActive: boolean, isHovered: boolean) => {
     if (isActive) return 'var(--color-accent-muted)';
     if (isHovered) return 'var(--bg-active)';
@@ -170,257 +203,323 @@ export function HeightCrossSectionDiagram({
   };
 
   return (
-    <div ref={containerRef} className="w-full">
-      <svg
-        width="100%"
-        height={svgHeight}
-        role="img"
-        aria-label={t('layers.crossSection')}
-        className="block"
+    <div className="w-full">
+      {/* Content area */}
+      <div
+        className="flex-1 relative overflow-hidden"
+        style={{ height: diagramHeight }}
+        data-testid="content-area"
       >
-        <defs>
-          <clipPath id={clipId}>
-            <rect x={RULER_WIDTH} y={0} width={barWidth} height={diagramHeight} />
-          </clipPath>
-          {/* Subtle crosshatch for unused/headroom area */}
-          <pattern id={hatchId} patternUnits="userSpaceOnUse" width="6" height="6">
-            <path
-              d="M-1,1 l2,-2 M0,6 l6,-6 M5,7 l2,-2"
-              stroke="var(--text-disabled)"
-              strokeWidth="0.5"
-              opacity="0.25"
-            />
-          </pattern>
-        </defs>
-
-        <g transform={`translate(0, ${PADDING_Y})`}>
-          {/* Left ruler — tick marks with unit values */}
-          <g aria-hidden="true">
-            {boundaries.map((b, i) => (
-              <g key={i}>
-                <line
-                  x1={RULER_WIDTH - 3}
-                  y1={b.y}
-                  x2={RULER_WIDTH}
-                  y2={b.y}
-                  stroke="var(--text-disabled)"
-                  strokeWidth="1"
-                />
-                <text
-                  x={RULER_WIDTH - 5}
-                  y={b.y + 3}
-                  textAnchor="end"
-                  fontSize="10"
-                  fill="var(--text-disabled)"
-                  fontFamily="ui-monospace, monospace"
-                >
-                  {b.unit}
-                </text>
-              </g>
-            ))}
-          </g>
-
-          {/* Clipped bar area */}
-          <g clipPath={`url(#${clipId})`}>
-            {/* Unused space / headroom at top */}
-            {unusedHeight > 0 && (
-              <g
-                onClick={canAddLayer ? onAddLayer : undefined}
-                cursor={canAddLayer ? 'pointer' : 'default'}
-                data-testid="headroom-area"
-              >
-                <rect
-                  x={RULER_WIDTH}
-                  width={barWidth}
-                  fill={`url(#${hatchId})`}
-                  stroke="var(--border-subtle)"
-                  strokeWidth="0.5"
-                  strokeDasharray="4 3"
-                  style={{
-                    y: 0,
-                    height: unusedPx,
-                    transition: `y ${TRANSITION}, height ${TRANSITION}`,
-                  }}
-                />
-                {unusedPx >= 18 && (
-                  <text
-                    x={RULER_WIDTH + barWidth / 2}
-                    y={unusedPx / 2 + 4}
-                    textAnchor="middle"
-                    fontSize="11"
-                    fill="var(--text-disabled)"
-                  >
-                    {t('layers.unusedSpace', { height: unusedHeight })}
-                  </text>
-                )}
-                {canAddLayer && <title>{t('layers.addNewLayer')}</title>}
-              </g>
-            )}
-
-            {/* Layer segments */}
-            {layerSegments.map(({ layer, y: segY, height: segH }, displayIndex) => {
-              const isActive = layer.id === activeLayerId;
-              const isHovered = !isActive && layer.id === hoveredLayerId;
-              const isDragging = dragSourceIndex === displayIndex;
-              const isDropTarget = dropTargetIndex === displayIndex;
-              const stat = layerStats[layer.id];
-              const tooltipText = stat
-                ? t('layers.segmentTooltip', {
-                    name: layer.name,
-                    coverage: stat.coverage,
-                    count: stat.binCount,
-                  })
-                : layer.name;
-
-              return (
-                <g
-                  key={layer.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={t('layers.selectLayer', { name: layer.name })}
-                  onClick={() => onLayerClick(layer.id)}
-                  onDoubleClick={() => onLayerDoubleClick(layer.id)}
-                  onKeyDown={handleKeyDown(layer.id)}
-                  onMouseEnter={() => onLayerHover(layer.id)}
-                  onMouseLeave={handleMouseLeave}
-                  cursor="pointer"
-                  data-layer-id={layer.id}
-                  opacity={isDragging ? 0.4 : 1}
-                >
-                  <title>{tooltipText}</title>
-
-                  {/* Segment fill — single rect, color encodes state */}
-                  <rect
-                    x={RULER_WIDTH}
-                    width={barWidth}
-                    fill={getFill(isActive, isHovered)}
-                    data-testid={isHovered ? 'hover-highlight' : undefined}
-                    style={{
-                      y: segY,
-                      height: segH,
-                      transition: `y ${TRANSITION}, height ${TRANSITION}`,
-                    }}
-                  />
-
-                  {/* Segment divider line (bottom edge) */}
-                  <line
-                    x1={RULER_WIDTH}
-                    x2={RULER_WIDTH + barWidth}
-                    y1={segY + segH}
-                    y2={segY + segH}
-                    stroke="var(--border-subtle)"
-                    strokeWidth="0.5"
-                    style={{
-                      transition: `y1 ${TRANSITION}, y2 ${TRANSITION}`,
-                    }}
-                  />
-
-                  {/* Accent stripe on active segment's left edge */}
-                  {isActive && (
-                    <rect
-                      x={RULER_WIDTH}
-                      width={ACCENT_STRIPE_WIDTH}
-                      fill="var(--color-accent)"
-                      style={{
-                        y: segY,
-                        height: segH,
-                        transition: `y ${TRANSITION}, height ${TRANSITION}`,
-                      }}
-                    />
-                  )}
-
-                  {/* Layer name (left-aligned, offset accounts for accent stripe) */}
-                  {segH >= 16 && (
-                    <text
-                      x={RULER_WIDTH + 8}
-                      y={segY + segH / 2 + 4}
-                      fontSize="12"
-                      fill={isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}
-                      fontWeight={400}
-                    >
-                      {layer.name}
-                    </text>
-                  )}
-
-                  {/* Height label (right-aligned) */}
-                  {segH >= 16 && (
-                    <text
-                      x={RULER_WIDTH + barWidth - 8}
-                      y={segY + segH / 2 + 4}
-                      textAnchor="end"
-                      fontSize="11"
-                      fill={isActive ? 'var(--text-tertiary)' : 'var(--text-disabled)'}
-                      fontFamily="ui-monospace, monospace"
-                    >
-                      {layer.height}u
-                    </text>
-                  )}
-
-                  {/* Drop indicator line */}
-                  {isDropTarget && dragSourceIndex !== null && (
-                    <line
-                      x1={RULER_WIDTH}
-                      x2={RULER_WIDTH + barWidth}
-                      y1={dragSourceIndex < displayIndex ? segY + segH : segY}
-                      y2={dragSourceIndex < displayIndex ? segY + segH : segY}
-                      stroke="var(--color-accent)"
-                      strokeWidth="2"
-                    />
-                  )}
-                </g>
-              );
-            })}
-          </g>
-
-          {/* Outer border (on top, outside clip) */}
-          <rect
-            x={RULER_WIDTH}
-            y={0}
-            width={barWidth}
-            height={diagramHeight}
-            fill="none"
-            stroke="var(--border-subtle)"
-            strokeWidth="1"
-          />
-        </g>
-      </svg>
-
-      {/* Invisible drag overlay divs — positioned over each segment for HTML5 DnD */}
-      {hasMultipleLayers && (
+        {/* Outer border — rendered first so segments paint on top */}
         <div
-          className="relative"
-          style={{
-            marginTop: -svgHeight + PADDING_Y,
-            height: diagramHeight,
-            pointerEvents: 'none',
-          }}
-        >
-          {layerSegments.map(({ layer, y: segY, height: segH }, displayIndex) => (
+          className="absolute inset-0 border pointer-events-none"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        />
+
+        {/* Headroom — CSS crosshatch */}
+        {unusedHeight > 0 && (
+          <div
+            onClick={canAddLayer ? onAddLayer : undefined}
+            data-testid="headroom-area"
+            className="absolute left-0 right-0 flex items-center justify-center overflow-hidden"
+            style={{
+              top: 0,
+              height: unusedPx,
+              cursor: canAddLayer ? 'pointer' : 'default',
+              transition: `height ${TRANSITION}`,
+            }}
+            title={canAddLayer ? t('layers.addNewLayer') : undefined}
+          >
+            {/* Crosshatch background */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'repeating-linear-gradient(45deg, transparent, transparent 3px, var(--text-disabled) 3px, var(--text-disabled) 3.5px)',
+                opacity: 0.15,
+              }}
+            />
+            {unusedPx >= 18 && (
+              <span className="relative text-[11px]" style={{ color: 'var(--text-disabled)' }}>
+                {t('layers.unusedSpace', { height: unusedHeight })}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Headroom bottom border — separate element so it renders above segments */}
+        {unusedHeight > 0 && (
+          <div
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{
+              top: unusedPx - 1,
+              height: 1,
+              borderBottom: '1px dashed var(--border-subtle)',
+              zIndex: 1,
+            }}
+          />
+        )}
+
+        {/* Layer segments */}
+        {layerSegments.map(({ layer, y: segY, height: segH }, displayIndex) => {
+          const isActive = layer.id === activeLayerId;
+          const isHovered = !isActive && layer.id === hoveredLayerId;
+          const isDragging = dragSourceIndex === displayIndex;
+          const isDropTarget = dropTargetIndex === displayIndex;
+          const isEditing = editingLayerId === layer.id;
+          const isLastSegment = displayIndex === layerSegments.length - 1;
+          const pendingDelta = pendingDeltas[layer.id] ?? 0;
+          const previewHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + pendingDelta);
+          const stat = layerStats[layer.id];
+          const tooltipText = stat
+            ? t('layers.segmentTooltip', {
+                name: layer.name,
+                coverage: stat.coverage,
+                count: stat.binCount,
+              })
+            : layer.name;
+          const showGrip = hasMultipleLayers && segH >= 16;
+
+          return (
             <div
               key={layer.id}
-              draggable
               role="button"
-              tabIndex={-1}
+              tabIndex={0}
+              aria-label={t('layers.selectLayer', { name: layer.name })}
+              title={tooltipText}
+              data-layer-id={layer.id}
+              data-testid={isHovered ? 'hover-highlight' : undefined}
+              draggable={hasMultipleLayers && !isEditing}
               onClick={() => onLayerClick(layer.id)}
-              onDoubleClick={() => onLayerDoubleClick(layer.id)}
+              onDoubleClick={() => onEditingStart(layer.id)}
+              onKeyDown={handleKeyDown(layer.id)}
               onMouseEnter={() => onLayerHover(layer.id)}
               onMouseLeave={handleMouseLeave}
               onDragStart={(e) => handleDragStart(e, displayIndex)}
               onDragOver={(e) => handleDragOver(e, displayIndex)}
               onDrop={handleDrop}
               onDragEnd={handleDragEnd}
-              className="absolute cursor-pointer active:cursor-grabbing"
+              className={`absolute left-0 right-0 ${hasMultipleLayers && !isEditing ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
               style={{
-                left: RULER_WIDTH,
                 top: segY,
-                width: barWidth,
                 height: segH,
-                pointerEvents: 'auto',
+                backgroundColor: getFill(isActive, isHovered),
+                opacity: isDragging ? 0.4 : 1,
+                borderBottom: isLastSegment ? 'none' : '1px solid var(--border-strong)',
+                transition: `top ${TRANSITION}, height ${TRANSITION}, opacity ${TRANSITION}`,
               }}
-            />
-          ))}
-        </div>
-      )}
+            >
+              {/* Accent stripe on active segment's left edge */}
+              {isActive && (
+                <div
+                  className="absolute left-0 top-0 h-full"
+                  style={{
+                    width: ACCENT_STRIPE_WIDTH,
+                    backgroundColor: 'var(--color-accent)',
+                  }}
+                />
+              )}
+
+              {/* Content — inline controls for active, plain label for others */}
+              {segH >= 16 && (
+                <div className="flex items-center justify-between h-full pl-3 pr-2">
+                  {isActive && segH >= 20 ? (
+                    /* Active segment: inline editing controls */
+                    <>
+                      {isEditing ? (
+                        <input
+                          ref={nameInputRef}
+                          type="text"
+                          value={layer.name}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            onNameChange(layer.id, e.target.value);
+                          }}
+                          onBlur={onEditingEnd}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === 'Enter') onEditingEnd();
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex-1 bg-surface-elevated rounded px-1 py-0.5 text-xs font-medium outline-none text-content min-w-0"
+                          aria-label={t('layers.layerNamePlaceholder')}
+                        />
+                      ) : (
+                        <span
+                          className="truncate text-xs font-medium cursor-text"
+                          style={{ color: 'var(--text-primary)' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditingStart(layer.id);
+                          }}
+                          title={t('layers.clickToRename')}
+                        >
+                          {layer.name}
+                        </span>
+                      )}
+
+                      <div className="flex items-center gap-1 ml-1 flex-shrink-0">
+                        {/* Height stepper — larger hit targets (20×20px) */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDebouncedHeightChange(layer.id, -1);
+                          }}
+                          disabled={previewHeight <= CONSTRAINTS.MIN_LAYER_HEIGHT}
+                          className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          aria-label={t('layers.decreaseHeight', { name: layer.name })}
+                        >
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M20 12H4"
+                            />
+                          </svg>
+                        </button>
+                        <span
+                          className="text-[10px] tabular-nums min-w-[20px] text-center"
+                          style={{
+                            fontFamily: 'ui-monospace, monospace',
+                            color: 'var(--text-tertiary)',
+                          }}
+                          title={t('layers.heightTooltip')}
+                        >
+                          {previewHeight}u
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDebouncedHeightChange(layer.id, 1);
+                          }}
+                          className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-content hover:bg-surface-hover transition-colors"
+                          aria-label={t('layers.increaseHeight', { name: layer.name })}
+                        >
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 4v16m8-8H4"
+                            />
+                          </svg>
+                        </button>
+
+                        {/* Delete button — multi-layer only, extra left margin for separation */}
+                        {hasMultipleLayers && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteLayer(layer.id);
+                            }}
+                            className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-error hover:bg-surface-hover transition-colors ml-1"
+                            title={t('layers.deleteTooltip')}
+                            aria-label={t('layers.deleteLayerAria', { name: layer.name })}
+                          >
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        )}
+
+                        {showGrip && !isEditing && (
+                          <svg
+                            width="10"
+                            height="14"
+                            viewBox="0 0 10 14"
+                            data-testid="grip-icon"
+                            aria-hidden="true"
+                            className="ml-0.5"
+                          >
+                            {[3, 7, 11].map((cy) => (
+                              <g key={cy} fill="var(--text-disabled)">
+                                <circle cx={2.5} cy={cy} r={1.2} />
+                                <circle cx={7.5} cy={cy} r={1.2} />
+                              </g>
+                            ))}
+                          </svg>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    /* Non-active segment: plain label */
+                    <>
+                      <span
+                        className="truncate text-xs font-medium"
+                        style={{
+                          color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                        }}
+                      >
+                        {layer.name}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <span
+                          className="text-[11px]"
+                          style={{
+                            fontFamily: 'ui-monospace, monospace',
+                            color: isActive ? 'var(--text-tertiary)' : 'var(--text-disabled)',
+                          }}
+                        >
+                          {layer.height}u
+                        </span>
+                        {showGrip && (
+                          <svg
+                            width="10"
+                            height="14"
+                            viewBox="0 0 10 14"
+                            data-testid="grip-icon"
+                            aria-hidden="true"
+                          >
+                            {[3, 7, 11].map((cy) => (
+                              <g key={cy} fill="var(--text-disabled)">
+                                <circle cx={2.5} cy={cy} r={1.2} />
+                                <circle cx={7.5} cy={cy} r={1.2} />
+                              </g>
+                            ))}
+                          </svg>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Drop indicator line */}
+              {isDropTarget && dragSourceIndex !== null && (
+                <div
+                  className="absolute left-0 right-0"
+                  style={{
+                    [dragSourceIndex < displayIndex ? 'bottom' : 'top']: -1,
+                    height: 2,
+                    backgroundColor: 'var(--color-accent)',
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

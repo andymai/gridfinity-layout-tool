@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
@@ -27,9 +27,13 @@ vi.mock('@/shared/components/CollapsibleSection', () => ({
   ),
 }));
 
-// Mock HeightCrossSectionDiagram — the diagram is the primary layer UI
+// Capture props passed to diagram for testing callback wiring
+let capturedProps: Record<string, unknown> = {};
 vi.mock('./HeightCrossSectionDiagram', () => ({
-  HeightCrossSectionDiagram: () => <div data-testid="cross-section-diagram" />,
+  HeightCrossSectionDiagram: (props: Record<string, unknown>) => {
+    capturedProps = props;
+    return <div data-testid="cross-section-diagram" />;
+  },
 }));
 
 // Mock ConfirmDialog
@@ -64,6 +68,7 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
 describe('LayerPanel', () => {
   beforeEach(() => {
     resetAllStores();
+    capturedProps = {};
     vi.clearAllMocks();
     // Set activeLayerId to match the default layer
     const defaultLayerId = useLayoutStore.getState().layout.layers[0]?.id;
@@ -93,11 +98,10 @@ describe('LayerPanel', () => {
       expect(screen.getByTestId('cross-section-diagram')).toBeInTheDocument();
     });
 
-    it('renders active layer controls panel', () => {
+    it('passes editingLayerId to diagram', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByTestId('layer-controls')).toBeInTheDocument();
-      expect(screen.getByText('Layer 1')).toBeInTheDocument();
+      expect(capturedProps.editingLayerId).toBeNull();
     });
 
     it('shows coverage stats in aggregate row', () => {
@@ -128,77 +132,6 @@ describe('LayerPanel', () => {
       const { container } = render(<LayerPanel />);
 
       expect(container.firstChild).toBeNull();
-    });
-  });
-
-  describe('controls panel', () => {
-    it('shows active layer name in controls', () => {
-      render(<LayerPanel />);
-
-      const controls = screen.getByTestId('layer-controls');
-      expect(controls).toHaveTextContent('Layer 1');
-    });
-
-    it('shows active layer height in controls', () => {
-      render(<LayerPanel />);
-
-      const controls = screen.getByTestId('layer-controls');
-      expect(controls).toHaveTextContent(/\du/);
-    });
-
-    it('shows height stepper in controls', () => {
-      render(<LayerPanel />);
-
-      expect(screen.getByLabelText('Increase Layer 1 height')).toBeInTheDocument();
-      expect(screen.getByLabelText('Decrease Layer 1 height')).toBeInTheDocument();
-    });
-
-    it('shows active layer height value', () => {
-      render(<LayerPanel />);
-
-      const controls = screen.getByTestId('layer-controls');
-      const heightDisplay = controls.querySelector('[title]');
-      expect(heightDisplay).toBeTruthy();
-    });
-  });
-
-  describe('layer name editing', () => {
-    it('shows input when clicking active layer name', () => {
-      render(<LayerPanel />);
-
-      fireEvent.click(screen.getByText('Layer 1'));
-
-      expect(screen.getByRole('textbox')).toBeInTheDocument();
-    });
-
-    it('updates layer name on change', () => {
-      render(<LayerPanel />);
-
-      fireEvent.click(screen.getByText('Layer 1'));
-      const input = screen.getByRole('textbox');
-      fireEvent.change(input, { target: { value: 'New Name' } });
-
-      expect(useLayoutStore.getState().layout.layers[0].name).toBe('New Name');
-    });
-
-    it('exits edit mode on blur', () => {
-      render(<LayerPanel />);
-
-      fireEvent.click(screen.getByText('Layer 1'));
-      const input = screen.getByRole('textbox');
-      fireEvent.blur(input);
-
-      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    });
-
-    it('exits edit mode on Enter', () => {
-      render(<LayerPanel />);
-
-      fireEvent.click(screen.getByText('Layer 1'));
-      const input = screen.getByRole('textbox');
-      fireEvent.keyDown(input, { key: 'Enter' });
-
-      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     });
   });
 
@@ -269,16 +202,12 @@ describe('LayerPanel', () => {
       useSelectionStore.setState({ activeLayerId: 'layer-2' });
     });
 
-    it('shows delete button for active layer when multiple layers exist', () => {
+    it('shows confirm dialog when onDeleteLayer callback is triggered', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Delete Layer 2 layer')).toBeInTheDocument();
-    });
-
-    it('shows confirm dialog when delete button clicked', () => {
-      render(<LayerPanel />);
-
-      fireEvent.click(screen.getByLabelText('Delete Layer 2 layer'));
+      act(() => {
+        (capturedProps.onDeleteLayer as (id: string) => void)('layer-2');
+      });
 
       expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
     });
@@ -286,7 +215,9 @@ describe('LayerPanel', () => {
     it('shows layer name in confirm dialog', () => {
       render(<LayerPanel />);
 
-      fireEvent.click(screen.getByLabelText('Delete Layer 2 layer'));
+      act(() => {
+        (capturedProps.onDeleteLayer as (id: string) => void)('layer-2');
+      });
 
       expect(screen.getByTestId('confirm-message')).toHaveTextContent('Layer 2');
     });
@@ -294,7 +225,9 @@ describe('LayerPanel', () => {
     it('deletes layer when confirmed', () => {
       render(<LayerPanel />);
 
-      fireEvent.click(screen.getByLabelText('Delete Layer 2 layer'));
+      act(() => {
+        (capturedProps.onDeleteLayer as (id: string) => void)('layer-2');
+      });
       fireEvent.click(screen.getByTestId('confirm-button'));
 
       const layers = useLayoutStore.getState().layout.layers;
@@ -305,7 +238,9 @@ describe('LayerPanel', () => {
     it('closes dialog when cancelled', () => {
       render(<LayerPanel />);
 
-      fireEvent.click(screen.getByLabelText('Delete Layer 2 layer'));
+      act(() => {
+        (capturedProps.onDeleteLayer as (id: string) => void)('layer-2');
+      });
       fireEvent.click(screen.getByTestId('cancel-button'));
 
       expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument();
@@ -314,75 +249,77 @@ describe('LayerPanel', () => {
     it('switches to remaining layer after delete', () => {
       render(<LayerPanel />);
 
-      fireEvent.click(screen.getByLabelText('Delete Layer 2 layer'));
+      act(() => {
+        (capturedProps.onDeleteLayer as (id: string) => void)('layer-2');
+      });
       fireEvent.click(screen.getByTestId('confirm-button'));
 
       expect(useSelectionStore.getState().activeLayerId).toBe('layer-1');
     });
-
-    it('does not show delete button for single layer', () => {
-      const layout = useLayoutStore.getState().layout;
-      useLayoutStore.setState({
-        layout: {
-          ...layout,
-          layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
-        },
-      });
-      useSelectionStore.setState({ activeLayerId: 'layer-1' });
-
-      render(<LayerPanel />);
-
-      expect(screen.queryByLabelText(/Delete.*layer/)).not.toBeInTheDocument();
-    });
   });
 
-  describe('layer height', () => {
-    it('shows height controls for active layer', () => {
+  describe('diagram callback wiring', () => {
+    it('wires onNameChange to update layer name in store', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Increase Layer 1 height')).toBeInTheDocument();
-      expect(screen.getByLabelText('Decrease Layer 1 height')).toBeInTheDocument();
+      const layerId = useLayoutStore.getState().layout.layers[0].id;
+      act(() => {
+        (capturedProps.onNameChange as (id: string, name: string) => void)(layerId, 'New Name');
+      });
+
+      expect(useLayoutStore.getState().layout.layers[0].name).toBe('New Name');
     });
 
-    it('increases height when plus clicked', () => {
+    it('wires onHeightChange to update layer height in store', () => {
       render(<LayerPanel />);
 
+      const layerId = useLayoutStore.getState().layout.layers[0].id;
       const initialHeight = useLayoutStore.getState().layout.layers[0].height;
-      fireEvent.click(screen.getByLabelText('Increase Layer 1 height'));
+      act(() => {
+        (capturedProps.onHeightChange as (id: string, delta: number) => void)(layerId, 1);
+      });
 
       expect(useLayoutStore.getState().layout.layers[0].height).toBe(initialHeight + 1);
     });
 
-    it('decreases height when minus clicked', () => {
+    it('wires onEditingStart to set activeLayer and editingLayerId', () => {
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
         layout: {
           ...layout,
-          layers: [{ id: 'layer-1', name: 'Layer 1', height: 5 }],
+          layers: [
+            { id: 'layer-1', name: 'Layer 1', height: 3 },
+            { id: 'layer-2', name: 'Layer 2', height: 3 },
+          ],
         },
       });
       useSelectionStore.setState({ activeLayerId: 'layer-1' });
 
       render(<LayerPanel />);
 
-      fireEvent.click(screen.getByLabelText('Decrease Layer 1 height'));
+      act(() => {
+        (capturedProps.onEditingStart as (id: string) => void)('layer-2');
+      });
 
-      expect(useLayoutStore.getState().layout.layers[0].height).toBe(4);
+      expect(useSelectionStore.getState().activeLayerId).toBe('layer-2');
+      // Re-render will pass updated editingLayerId
     });
 
-    it('disables decrease button when height is 1', () => {
-      const layout = useLayoutStore.getState().layout;
-      useLayoutStore.setState({
-        layout: {
-          ...layout,
-          layers: [{ id: 'layer-1', name: 'Layer 1', height: 1 }],
-        },
-      });
-      useSelectionStore.setState({ activeLayerId: 'layer-1' });
-
+    it('wires onEditingEnd to clear editingLayerId', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Decrease Layer 1 height')).toBeDisabled();
+      // Start editing
+      const layerId = useLayoutStore.getState().layout.layers[0].id;
+      act(() => {
+        (capturedProps.onEditingStart as (id: string) => void)(layerId);
+      });
+
+      // End editing
+      act(() => {
+        (capturedProps.onEditingEnd as () => void)();
+      });
+
+      expect(capturedProps.editingLayerId).toBeNull();
     });
   });
 
@@ -411,12 +348,6 @@ describe('LayerPanel', () => {
       render(<LayerPanel />);
 
       expect(screen.getByText(/bins total/)).toBeInTheDocument();
-    });
-
-    it('shows delete button in controls for active layer', () => {
-      render(<LayerPanel />);
-
-      expect(screen.getByLabelText('Delete Layer 1 layer')).toBeInTheDocument();
     });
   });
 

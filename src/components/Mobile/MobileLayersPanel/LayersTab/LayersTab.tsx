@@ -179,7 +179,7 @@ export function LayersTab() {
   const handleHeightChange = (id: LayerId, delta: number) => {
     const layer = layers.find((l) => l.id === id);
     if (!layer) return;
-    const newHeight = Math.max(1, layer.height + delta);
+    const newHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + delta);
     execute(() => {
       updateLayer(id, { height: newHeight });
     });

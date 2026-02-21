@@ -36,9 +36,6 @@ export function LayerPanel() {
 
   const layers = layout.layers;
   const activeLayer = layers.find((l) => l.id === activeLayerId);
-  // Derive edit mode: only active when the editing layer matches the active layer
-  const editingName = editingLayerId === activeLayerId && editingLayerId !== null;
-
   // Height capacity tracking
   const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
   const drawerHeight = layout.drawer.height;
@@ -154,7 +151,7 @@ export function LayerPanel() {
   const handleHeightChange = (layerId: LayerId, delta: number) => {
     const layer = layers.find((l) => l.id === layerId);
     if (!layer) return;
-    const newHeight = Math.max(1, layer.height + delta);
+    const newHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + delta);
     execute(() => {
       const result = updateLayer(layerId, { height: newHeight });
       if (isErr(result)) {
@@ -172,11 +169,6 @@ export function LayerPanel() {
         addToast(getUserMessage(result.error), 'error');
       }
     });
-  };
-
-  const handleLayerDoubleClick = (layerId: LayerId) => {
-    setActiveLayer(layerId);
-    setEditingLayerId(layerId);
   };
 
   const layerToDelete = deleteLayerId ? layers.find((l) => l.id === deleteLayerId) : null;
@@ -216,103 +208,21 @@ export function LayerPanel() {
             activeLayerId={activeLayerId}
             hoveredLayerId={hoveredLayerId}
             canAddLayer={canAddLayer}
+            editingLayerId={editingLayerId}
             onLayerClick={setActiveLayer}
-            onLayerDoubleClick={handleLayerDoubleClick}
             onLayerHover={setHoveredLayerId}
             onAddLayer={handleAddLayer}
             onReorder={handleReorder}
+            onNameChange={handleNameChange}
+            onHeightChange={handleHeightChange}
+            onDeleteLayer={(id) => setDeleteLayerId(id)}
+            onEditingStart={(id) => {
+              setActiveLayer(id);
+              setEditingLayerId(id);
+            }}
+            onEditingEnd={() => setEditingLayerId(null)}
             layerStats={layerStats}
           />
-        </div>
-
-        {/* Active layer controls — lightweight inline row, subordinate to diagram */}
-        <div
-          className="flex items-center gap-1.5 text-xs mb-3"
-          data-testid="layer-controls"
-          onMouseEnter={() => setHoveredLayerId(activeLayerId)}
-          onMouseLeave={() => setHoveredLayerId(null)}
-        >
-          {/* Editable name */}
-          {editingName ? (
-            <input
-              type="text"
-              value={activeLayer.name}
-              onChange={(e) => handleNameChange(activeLayer.id, e.target.value)}
-              onBlur={() => setEditingLayerId(null)}
-              onKeyDown={(e) => e.key === 'Enter' && setEditingLayerId(null)}
-              className="flex-1 bg-surface-elevated rounded px-1 py-0.5 text-xs font-medium outline-none text-content min-w-0"
-              // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional: user triggered edit via double-click
-              autoFocus
-              aria-label={t('layers.layerNamePlaceholder')}
-            />
-          ) : (
-            <button
-              className="flex-1 text-left truncate bg-transparent border-none p-0 font-medium cursor-text text-content min-w-0"
-              onClick={() => setEditingLayerId(activeLayerId)}
-              title={t('layers.clickToRename')}
-              aria-label={t('layers.layerButtonAria', {
-                name: activeLayer.name,
-                height: activeLayer.height,
-                coverage: activeStat?.coverage ?? 0,
-                suffix: t('layers.activeClickToRename'),
-              })}
-            >
-              {activeLayer.name}
-            </button>
-          )}
-
-          {/* Height stepper */}
-          <div className="flex items-center gap-0.5" role="presentation">
-            <button
-              onClick={() => handleHeightChange(activeLayer.id, -1)}
-              disabled={activeLayer.height <= 1}
-              className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              aria-label={t('layers.decreaseHeight', { name: activeLayer.name })}
-            >
-              <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-              </svg>
-            </button>
-            <span
-              className="text-[10px] tabular-nums min-w-[20px] text-center text-content-tertiary"
-              title={t('layers.heightTooltip')}
-            >
-              {activeLayer.height}u
-            </span>
-            <button
-              onClick={() => handleHeightChange(activeLayer.id, 1)}
-              className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-content hover:bg-surface-hover transition-colors"
-              aria-label={t('layers.increaseHeight', { name: activeLayer.name })}
-            >
-              <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Delete button — only when multiple layers */}
-          {hasMultipleLayers && (
-            <button
-              onClick={() => setDeleteLayerId(activeLayer.id)}
-              className="p-1 rounded text-content-disabled hover:text-error hover:bg-surface-hover transition-colors"
-              title={t('layers.deleteTooltip')}
-              aria-label={t('layers.deleteLayerAria', { name: activeLayer.name })}
-            >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
-          )}
         </div>
 
         {/* Aggregate stats row */}
