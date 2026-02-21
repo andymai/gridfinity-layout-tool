@@ -13,6 +13,7 @@ interface StagingBinProps {
   isDragging: boolean;
   isHovered: boolean;
   isTouchDevice: boolean;
+  isTopRow: boolean;
   cellSize: number;
   gap: number;
   gridHeight: number;
@@ -91,6 +92,7 @@ export const StagingBin = memo(function StagingBin({
   isDragging,
   isHovered,
   isTouchDevice,
+  isTopRow,
   cellSize,
   gap,
   gridHeight,
@@ -282,7 +284,7 @@ export const StagingBin = memo(function StagingBin({
           className="absolute transition-opacity duration-150"
           style={{
             right: -22,
-            top: -22,
+            ...(isTopRow ? { bottom: -22 } : { top: -22 }),
             width: 44,
             height: 44,
             zIndex: 30,

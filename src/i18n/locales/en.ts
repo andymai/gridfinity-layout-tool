@@ -922,6 +922,7 @@ const en: Record<string, string> = {
   'mobile.binMenu.editProperties': 'Edit Properties',
   'mobile.binMenu.rotate': 'Rotate',
   'mobile.binMenu.toStash': 'To Stash',
+  'mobile.binMenu.moveToGrid': 'Move to Grid',
   'mobile.tools.instructions': 'Select a size, then tap or drag on grid to place bins.',
   'mobile.tools.squares': 'Squares',
   'mobile.tools.rectangles': 'Rectangles',
