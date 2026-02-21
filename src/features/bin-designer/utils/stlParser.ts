@@ -10,6 +10,9 @@
  *   Per tri: 50 bytes (normal 3×f32 + 3 vertices × 3×f32 + attr uint16)
  */
 
+import { err, ok, validationImportFailed } from '@/core/result';
+import type { Result, ValidationError } from '@/core/result';
+
 /** Parsed mesh arrays from binary STL */
 export interface ParsedSTLMesh {
   /** Flat vertex array (every 9 floats = 1 triangle, 3 vertices × XYZ) */
@@ -30,11 +33,13 @@ const MIN_FILE_SIZE = HEADER_SIZE + COUNT_SIZE;
  * Each triangle's face normal is replicated to all three vertices
  * (flat shading), matching the layout expected by threemfExporter.
  *
- * @throws If the buffer is too small or triangle count doesn't match buffer size
+ * Returns Err(validationImportFailed) if the buffer is malformed.
  */
-export function parseSTLBinary(buffer: ArrayBuffer): ParsedSTLMesh {
+export function parseSTLBinary(buffer: ArrayBuffer): Result<ParsedSTLMesh, ValidationError> {
   if (buffer.byteLength < MIN_FILE_SIZE) {
-    throw new Error(`Invalid STL: buffer too small (${buffer.byteLength} bytes)`);
+    return err(
+      validationImportFailed([`Invalid STL: buffer too small (${buffer.byteLength} bytes)`])
+    );
   }
 
   const view = new DataView(buffer);
@@ -44,16 +49,20 @@ export function parseSTLBinary(buffer: ArrayBuffer): ParsedSTLMesh {
 
   // Ensure payload length aligns with fixed per-triangle record size
   if (payloadBytes % TRIANGLE_SIZE !== 0) {
-    throw new Error(
-      `Invalid STL: payload size (${payloadBytes} bytes) is not a multiple of triangle record size (${TRIANGLE_SIZE} bytes)`
+    return err(
+      validationImportFailed([
+        `Invalid STL: payload size (${payloadBytes} bytes) is not a multiple of triangle record size (${TRIANGLE_SIZE} bytes)`,
+      ])
     );
   }
 
   const expectedSize = MIN_FILE_SIZE + triangleCount * TRIANGLE_SIZE;
   if (buffer.byteLength !== expectedSize) {
     const actualTriangleCount = payloadBytes / TRIANGLE_SIZE;
-    throw new Error(
-      `Invalid STL: triangle count header (${triangleCount}) does not match payload (${actualTriangleCount} triangles)`
+    return err(
+      validationImportFailed([
+        `Invalid STL: triangle count header (${triangleCount}) does not match payload (${actualTriangleCount} triangles)`,
+      ])
     );
   }
 
@@ -87,5 +96,5 @@ export function parseSTLBinary(buffer: ArrayBuffer): ParsedSTLMesh {
     offset += 2;
   }
 
-  return { vertices, normals };
+  return ok({ vertices, normals });
 }

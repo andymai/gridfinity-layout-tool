@@ -1477,6 +1477,8 @@
   "toast.layoutDuplicateFailed": "Dupliceren van layout mislukt",
   "toast.layoutDuplicated": "Layout gedupliceerd",
   "toast.layoutImportFailed": "Importeren van layout mislukt",
+  "toast.layoutSaveFailed": "Opslaan van layout mislukt",
+  "toast.layoutRenameFailed": "Hernoemen van layout mislukt",
   "toast.layoutImported": "\"{name}\" geïmporteerd",
   "toast.layoutNotFound": "Layout niet gevonden",
   "toast.layoutRecovered": "Layout hersteld uit back-upopslag",

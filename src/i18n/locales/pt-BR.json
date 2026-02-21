@@ -1477,6 +1477,8 @@
   "toast.layoutDuplicateFailed": "Falha ao duplicar layout",
   "toast.layoutDuplicated": "Layout duplicado",
   "toast.layoutImportFailed": "Falha ao importar layout",
+  "toast.layoutSaveFailed": "Falha ao salvar layout",
+  "toast.layoutRenameFailed": "Falha ao renomear layout",
   "toast.layoutImported": "\"{name}\" importado",
   "toast.layoutNotFound": "Layout não encontrado",
   "toast.layoutRecovered": "Layout recuperado do armazenamento de backup",

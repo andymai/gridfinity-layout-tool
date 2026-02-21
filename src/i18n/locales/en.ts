@@ -1053,6 +1053,8 @@ const en: Record<string, string> = {
   'toast.layoutDeleteFailed': 'Failed to delete layout',
   'toast.layoutDuplicateFailed': 'Failed to duplicate layout',
   'toast.layoutImportFailed': 'Failed to import layout',
+  'toast.layoutSaveFailed': 'Failed to save layout',
+  'toast.layoutRenameFailed': 'Failed to rename layout',
   'toast.binsDeleted': 'Deleted {count} bin(s)',
   'toast.binRotated': 'Bin rotated',
   'toast.clearComplete': 'Cleared {count} bin(s) from layer',

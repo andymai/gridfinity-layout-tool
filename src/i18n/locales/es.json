@@ -1477,6 +1477,8 @@
   "toast.layoutDuplicateFailed": "Error al duplicar diseño",
   "toast.layoutDuplicated": "Diseño duplicado",
   "toast.layoutImportFailed": "Error al importar diseño",
+  "toast.layoutSaveFailed": "Error al guardar el diseño",
+  "toast.layoutRenameFailed": "Error al renombrar el diseño",
   "toast.layoutImported": "\"{name}\" importado",
   "toast.layoutNotFound": "Diseño no encontrado",
   "toast.layoutRecovered": "Diseño recuperado del almacenamiento de respaldo",

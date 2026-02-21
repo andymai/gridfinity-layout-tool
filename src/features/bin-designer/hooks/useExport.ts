@@ -28,6 +28,8 @@ import {
 import { packageSplitPiecesAsZip } from '@/features/bin-designer/utils/splitExport';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
+import { isErr, getUserMessage } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 
@@ -141,7 +143,12 @@ export function useExport(): UseExportReturn {
         if (format === '3mf') {
           // 3MF: get high-quality STL from worker, parse, then package as 3MF
           const stlResult = await bridge.exportBin(params, 'stl');
-          const { vertices, normals } = parseSTLBinary(stlResult.data);
+          const parseResult = parseSTLBinary(stlResult.data);
+          if (isErr(parseResult)) {
+            useToastStore.getState().addToast(getUserMessage(parseResult.error), 'error');
+            return;
+          }
+          const { vertices, normals } = parseResult.value;
 
           // Read print settings at call time to avoid capturing reactive values
           const currentPrintSettings = useSettingsStore.getState().settings.printSettings;

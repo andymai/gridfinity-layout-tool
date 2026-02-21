@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { isOk } from '@/core/result';
+import { isOk, getUserMessage } from '@/core/result';
 import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
@@ -59,8 +59,7 @@ export function useDesignerUrlSync(): void {
       if (isOk(result)) {
         storeLoadDesign(result.value);
       } else {
-        // Design not found — notify user and clean URL
-        addToast({ message: 'Design not found — starting fresh', type: 'info', duration: 4000 });
+        addToast({ message: getUserMessage(result.error), type: 'error', duration: 4000 });
         syncUrlToDesign(null);
       }
       loadingFromUrlRef.current = false;

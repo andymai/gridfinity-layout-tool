@@ -19,6 +19,8 @@ import {
 } from './backends/indexedDB';
 import { compressLayout, decompressLayout } from '@/shared/utils';
 import { computePreview } from './preview';
+import { err, ok, storageNotFound } from '@/core/result';
+import type { Result, StorageError } from '@/core/result';
 import type { Layout, Snapshot, CompressedSnapshot } from '@/core/types';
 
 /** Maximum number of unlabeled (auto-created) snapshots per layout */
@@ -117,11 +119,16 @@ export async function deleteSnapshotsForLayout(layoutId: string): Promise<void> 
 
 /**
  * Update the label on an existing snapshot.
+ * Returns Err(storageNotFound) if the snapshot does not exist.
  */
-export async function updateSnapshotLabel(snapshotId: string, label: string): Promise<void> {
+export async function updateSnapshotLabel(
+  snapshotId: string,
+  label: string
+): Promise<Result<void, StorageError>> {
   const existing = await getSnapshot(snapshotId);
   if (!existing) {
-    throw new Error('Snapshot not found');
+    return err(storageNotFound(snapshotId));
   }
   await updateSnapshot({ ...existing, label });
+  return ok(undefined);
 }

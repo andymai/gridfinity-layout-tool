@@ -193,7 +193,7 @@ export function useCreateFromBin(): void {
           // Design saved but linking failed
           addToast({
             message: t('binDesigner.designCreatedLinkFailed'),
-            type: 'info',
+            type: 'error',
             duration: 5000,
           });
         }

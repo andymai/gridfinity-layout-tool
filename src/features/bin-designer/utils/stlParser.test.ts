@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseSTLBinary } from './stlParser';
+import { isOk, isErr } from '@/core/result';
 import { buildSTLBuffer } from '@/features/generation/export/stlExporter';
 
 describe('parseSTLBinary', () => {
@@ -13,7 +14,10 @@ describe('parseSTLBinary', () => {
     const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
 
     const buffer = makeSTL(vertices, normals);
-    const parsed = parseSTLBinary(buffer);
+    const result = parseSTLBinary(buffer);
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const parsed = result.value;
 
     // Vertices should match exactly
     expect(parsed.vertices).toHaveLength(9);
@@ -45,7 +49,10 @@ describe('parseSTLBinary', () => {
     const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1]);
 
     const buffer = makeSTL(vertices, normals);
-    const parsed = parseSTLBinary(buffer);
+    const result = parseSTLBinary(buffer);
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const parsed = result.value;
 
     expect(parsed.vertices).toHaveLength(18);
     expect(parsed.normals).toHaveLength(18);
@@ -59,24 +66,34 @@ describe('parseSTLBinary', () => {
     expect(parsed.normals[11]).toBeCloseTo(-1);
   });
 
-  it('throws on buffer too small', () => {
-    expect(() => parseSTLBinary(new ArrayBuffer(10))).toThrow(/too small/);
+  it('returns Err on buffer too small', () => {
+    const result = parseSTLBinary(new ArrayBuffer(10));
+    expect(isErr(result)).toBe(true);
+    if (!isErr(result)) return;
+    expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+    expect(result.error.errors[0]).toMatch(/too small/);
   });
 
-  it('throws on triangle count mismatch', () => {
+  it('returns Err on triangle count mismatch', () => {
     // Build a buffer with header claiming 100 triangles but only 84 bytes total (0 payload)
     const buffer = new ArrayBuffer(84);
     const view = new DataView(buffer);
     view.setUint32(80, 100, true); // claim 100 triangles
-    expect(() => parseSTLBinary(buffer)).toThrow(/does not match/);
+    const result = parseSTLBinary(buffer);
+    expect(isErr(result)).toBe(true);
+    if (!isErr(result)) return;
+    expect(result.error.errors[0]).toMatch(/does not match/);
   });
 
-  it('throws on misaligned payload size', () => {
+  it('returns Err on misaligned payload size', () => {
     // 84-byte header + 30 bytes of junk (not a multiple of 50-byte triangle records)
     const buffer = new ArrayBuffer(84 + 30);
     const view = new DataView(buffer);
     view.setUint32(80, 0, true);
-    expect(() => parseSTLBinary(buffer)).toThrow(/not a multiple/);
+    const result = parseSTLBinary(buffer);
+    expect(isErr(result)).toBe(true);
+    if (!isErr(result)) return;
+    expect(result.error.errors[0]).toMatch(/not a multiple/);
   });
 
   it('handles empty mesh (0 triangles)', () => {
@@ -84,8 +101,10 @@ describe('parseSTLBinary', () => {
     const view = new DataView(buffer);
     view.setUint32(80, 0, true);
 
-    const parsed = parseSTLBinary(buffer);
-    expect(parsed.vertices).toHaveLength(0);
-    expect(parsed.normals).toHaveLength(0);
+    const result = parseSTLBinary(buffer);
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.vertices).toHaveLength(0);
+    expect(result.value.normals).toHaveLength(0);
   });
 });
