@@ -467,8 +467,11 @@ const en: Record<string, string> = {
   'print.summary.costLabel': 'Cost',
   'print.summary.timeLabel': 'Time',
   'print.summary.spoolLabel': 'Spool',
+  'print.summary.spoolCount': '{count} spools',
+  'print.summary.spoolCountOne': '1 spool',
   'print.summary.bins': '{count} bins',
   'print.summary.binsAndPieces': '{bins} bins & {pieces} pieces',
+  'print.uncategorized': 'Uncategorized',
   'print.empty.title': 'No bins to print',
   'print.empty.message': 'Add bins to the grid to see the print list',
   'print.sort.dragToReorder': 'Drag to reorder',
@@ -499,6 +502,9 @@ const en: Record<string, string> = {
   'print.propEntry': '{key}: {value}',
   'print.selectAtLeastOneLayerToPrint': 'Select at least one layer to print',
   'print.sortingBy': 'Sorting by',
+  'print.orientation': 'Page orientation',
+  'print.portrait': 'Portrait',
+  'print.landscape': 'Landscape',
 
   // ===========================================================================
   // Cloud Share

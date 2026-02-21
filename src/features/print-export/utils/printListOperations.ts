@@ -57,7 +57,8 @@ export function sortRows(
  */
 export function groupByCategory(
   rows: EnhancedPrintRow[],
-  categories: Category[]
+  categories: Category[],
+  uncategorizedLabel = 'Uncategorized'
 ): PrintListGroup[] {
   const groups = new Map<CategoryId, EnhancedPrintRow[]>();
 
@@ -78,7 +79,7 @@ export function groupByCategory(
     const category = categories.find((c) => c.id === catId);
     result.push({
       categoryId: catId,
-      categoryName: category?.name || 'Uncategorized',
+      categoryName: category?.name || uncategorizedLabel,
       categoryColor: category?.color || DEFAULT_CATEGORY_COLOR,
       rows: catRows,
       totalFilament: Math.round(catRows.reduce((sum, r) => sum + r.filament, 0) * 10) / 10,

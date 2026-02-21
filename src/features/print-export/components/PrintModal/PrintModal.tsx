@@ -13,10 +13,13 @@ import { PrintLayout } from '../PrintLayout';
 import { SortOrderConfig } from '../SortOrderConfig';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { getBinCountByLayer } from '@/features/print-export/utils/printLayout';
+import { getDisplayLayers } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import '@/styles/print.css';
 
 // Style constants
+const ORIENTATION_OPTIONS = ['portrait', 'landscape'] as const;
+
 const STYLES = {
   overlay: { backgroundColor: 'var(--overlay-dark)' } as CSSProperties,
   modal: {
@@ -87,6 +90,9 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
     () => getBinCountByLayer(layout.bins, layout.layers),
     [layout.bins, layout.layers]
   );
+
+  // Display layers in top-to-bottom order (matching the editor UI)
+  const displayLayers = useMemo(() => getDisplayLayers(layout.layers), [layout.layers]);
 
   // Measure preview container for scaling
   const previewRef = useRef<HTMLDivElement>(null);
@@ -176,11 +182,19 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
   // Always render the print portal so Cmd+P works even when modal is closed
   // Don't pass availableWidth - let PrintLayout use full page width based on orientation
+  // When modal is closed, use all layers so Cmd+P always includes everything
+  const allLayerIds = useMemo(() => layout.layers.map((l) => l.id), [layout.layers]);
+  const printPortalLayerIds = isOpen ? selectedLayerIds : allLayerIds;
+  // Dynamic @page CSS to sync orientation with the print dialog
+  // Value is safe: printViewSettings.orientation is typed as 'portrait' | 'landscape'
+  const pageOrientationCss = `@page { size: ${printViewSettings.orientation}; margin: 0.5in; }`;
+
   const printPortal = createPortal(
     <div className="print-portal hidden">
+      <style dangerouslySetInnerHTML={{ __html: pageOrientationCss }} />
       <PrintLayout
         layout={layout}
-        selectedLayerIds={selectedLayerIds}
+        selectedLayerIds={printPortalLayerIds}
         settings={printViewSettings}
       />
     </div>,
@@ -251,7 +265,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                   )}
                 </div>
                 <div className="space-y-2">
-                  {layout.layers.map((layer) => {
+                  {displayLayers.map((layer) => {
                     const binCount = binCountByLayer.get(layer.id) ?? 0;
                     const isChecked = selectedLayerIds.includes(layer.id);
                     return (
@@ -384,6 +398,28 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                       checked={printViewSettings.showBinList}
                       onChange={(v) => updatePrintSetting('showBinList', v)}
                     />
+                  </div>
+                </div>
+
+                {/* Page Orientation */}
+                <div className="mt-4">
+                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
+                    {t('print.orientation')}
+                  </div>
+                  <div className="flex gap-1">
+                    {ORIENTATION_OPTIONS.map((o) => (
+                      <button
+                        key={o}
+                        onClick={() => updatePrintSetting('orientation', o)}
+                        className={`flex-1 text-xs py-1.5 px-2 rounded-md transition-colors ${
+                          printViewSettings.orientation === o
+                            ? 'bg-accent text-white font-medium'
+                            : 'bg-surface-hover text-content-secondary hover:text-content'
+                        }`}
+                      >
+                        {t(`print.${o}`)}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>

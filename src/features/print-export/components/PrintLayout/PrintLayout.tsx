@@ -10,6 +10,7 @@ import {
   formatPrintDate,
   sortBinsForPrint,
 } from '@/features/print-export/utils/printLayout';
+import { getDisplayLayers } from '@/shared/utils';
 import { useGridTemplate } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 
@@ -61,9 +62,9 @@ export function PrintLayout({
   const calculatedCellSize = (gridAreaWidth - (gridCols - 1) * gap) / gridCols;
   const cellSize = Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, Math.floor(calculatedCellSize)));
 
-  // Get visible layers and bins
+  // Get visible layers in display order (top layer first, matching editor UI)
   const visibleLayers = useMemo(
-    () => getVisibleLayers(layers, selectedLayerIds),
+    () => getDisplayLayers(getVisibleLayers(layers, selectedLayerIds)),
     [layers, selectedLayerIds]
   );
 
