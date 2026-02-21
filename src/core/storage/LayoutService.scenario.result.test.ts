@@ -39,10 +39,14 @@ vi.mock('@/core/storage/backend', () => ({
 }));
 
 // Mock the localStorage backend for migration
-vi.mock('@/core/storage/backends/localStorage', () => ({
-  getAllLayoutIds: vi.fn(),
-  loadLayout: vi.fn(),
-}));
+vi.mock('@/core/storage/backends/localStorage', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    getAllLayoutIds: vi.fn(),
+    loadLayout: vi.fn(),
+  };
+});
 
 // Mock the indexedDB backend for migration and library
 vi.mock('@/core/storage/backends/indexedDB', () => ({
@@ -75,7 +79,7 @@ describe('Result-based storage functions', () => {
 
   describe('saveLayoutResult', () => {
     it('returns Ok on successful save', async () => {
-      vi.mocked(backend.saveAsync).mockResolvedValue(undefined);
+      vi.mocked(backend.saveAsync).mockResolvedValue(ok(undefined));
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
@@ -84,7 +88,7 @@ describe('Result-based storage functions', () => {
     });
 
     it('returns Err with quota exceeded error', async () => {
-      vi.mocked(backend.saveAsync).mockRejectedValue(new Error('QuotaExceededError: Storage full'));
+      vi.mocked(backend.saveAsync).mockResolvedValue(err(storageQuotaExceeded()));
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
@@ -95,22 +99,15 @@ describe('Result-based storage functions', () => {
       expect(getUserMessage(error)).toBeTruthy();
     });
 
-    it('returns Err with unavailable error for generic failures', async () => {
-      vi.mocked(backend.saveAsync).mockRejectedValue(new Error('Unknown storage error'));
-
-      const result = await saveLayoutResult('test-id', defaultLayout);
-
-      expect(expectErr(result).code).toBe('STORAGE_UNAVAILABLE');
-    });
-
-    it('preserves original error as cause', async () => {
-      const originalError = new Error('Original error');
-      vi.mocked(backend.saveAsync).mockRejectedValue(originalError);
+    it('propagates StorageError from backend', async () => {
+      const storageErr = storageQuotaExceeded(undefined, undefined, new Error('Disk full'));
+      vi.mocked(backend.saveAsync).mockResolvedValue(err(storageErr));
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
       const error = expectErr(result);
-      expect(error.cause).toBe(originalError);
+      expect(error.code).toBe('STORAGE_QUOTA_EXCEEDED');
+      expect(error.cause).toBeInstanceOf(Error);
     });
   });
 
