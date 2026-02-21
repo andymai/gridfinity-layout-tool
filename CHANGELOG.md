@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.20.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.19.0...gridfinity-layout-tool-v3.20.0) (2026-02-21)
+
+
+### Features
+
+* **print:** unify filament estimates with analytical volume model, add nozzle size setting ([#829](https://github.com/andymai/gridfinity-layout-tool/issues/829)) ([284548c](https://github.com/andymai/gridfinity-layout-tool/commit/284548ca6b529a5d40d6d1909a0eb05293cd79fd))
+
 ## [3.19.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.4...gridfinity-layout-tool-v3.19.0) (2026-02-21)
 
 
