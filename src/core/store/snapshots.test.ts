@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useSnapshotStore } from './snapshots';
 import * as SnapshotService from '@/core/storage/SnapshotService';
+import { ok } from '@/core/result';
 import { createTestLayout } from '@/test/testUtils';
 import type { Snapshot } from '@/core/types';
 
@@ -114,7 +115,7 @@ describe('useSnapshotStore', () => {
 
   describe('updateLabel', () => {
     it('updates label in service and local state', async () => {
-      mockService.updateSnapshotLabel.mockResolvedValue(undefined);
+      mockService.updateSnapshotLabel.mockResolvedValue(ok(undefined));
       useSnapshotStore.setState({
         snapshots: [makeSnapshot({ id: 'layout-1-1000' })],
       });

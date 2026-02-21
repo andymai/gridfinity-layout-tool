@@ -40,7 +40,12 @@ export function useQuickExport(): UseQuickExportReturn {
         // Load full design from IndexedDB
         const designResult = await loadDesign(designId);
         if (!isOk(designResult)) {
-          throw new Error('Failed to load design');
+          addToast({
+            message: t('designLinking.toast.exportFailed'),
+            type: 'error',
+            duration: 4000,
+          });
+          return;
         }
         const design = designResult.value;
 

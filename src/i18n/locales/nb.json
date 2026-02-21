@@ -1477,6 +1477,8 @@
   "toast.layoutDuplicateFailed": "Kunne ikke duplisere layout",
   "toast.layoutDuplicated": "Layout duplisert",
   "toast.layoutImportFailed": "Kunne ikke importere layout",
+  "toast.layoutSaveFailed": "Kunne ikke lagre layout",
+  "toast.layoutRenameFailed": "Kunne ikke gi nytt navn til layout",
   "toast.layoutImported": "Importert \"{name}\"",
   "toast.layoutNotFound": "Layout ikke funnet",
   "toast.layoutRecovered": "Layout gjenopprettet fra sikkerhetskopi",

@@ -133,7 +133,7 @@ describe('useCreateFromBin', () => {
     await waitFor(() => {
       const toasts = useToastStore.getState().toasts;
       expect(toasts.length).toBeGreaterThan(0);
-      expect(toasts[0].type).toBe('info');
+      expect(toasts[0].type).toBe('error');
     });
   });
 

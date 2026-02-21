@@ -223,12 +223,15 @@ describe('SnapshotService', () => {
       );
     });
 
-    it('throws for non-existent snapshot', async () => {
+    it('returns Err(storageNotFound) for non-existent snapshot', async () => {
       mockIndexedDB.getSnapshot.mockResolvedValue(undefined);
 
-      await expect(updateSnapshotLabel('non-existent', 'Label')).rejects.toThrow(
-        'Snapshot not found'
-      );
+      const result = await updateSnapshotLabel('non-existent', 'Label');
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('STORAGE_NOT_FOUND');
+        expect(result.error.key).toBe('non-existent');
+      }
     });
   });
 });

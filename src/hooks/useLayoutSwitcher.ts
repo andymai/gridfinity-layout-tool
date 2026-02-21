@@ -94,12 +94,12 @@ export function useLayoutSwitcher() {
 
     const result = await saveLayoutWithMetadata(currentActiveId, currentLayout, currentLibrary);
     if (isErr(result)) {
-      console.error('Failed to save current layout:', result.error);
+      addToast(t('toast.layoutSaveFailed'), 'error');
       return;
     }
 
     setLibrary(result.value.library);
-  }, [setLibrary]);
+  }, [setLibrary, addToast, t]);
 
   /**
    * Switch to a different layout.
@@ -366,9 +366,11 @@ export function useLayoutSwitcher() {
         }
 
         trackLayoutAction('renamed');
+      } else {
+        addToast(t('toast.layoutRenameFailed'), 'error');
       }
     },
-    [setLibrary]
+    [setLibrary, addToast, t]
   );
 
   /**

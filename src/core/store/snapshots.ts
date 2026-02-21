@@ -12,6 +12,8 @@ import {
   deleteSnapshot as deleteSnapshotService,
   updateSnapshotLabel as updateSnapshotLabelService,
 } from '@/core/storage/SnapshotService';
+import { isErr, getUserMessage } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import type { Layout, Snapshot } from '@/core/types';
 
 export interface SnapshotState {
@@ -75,7 +77,11 @@ export const useSnapshotStore = create<SnapshotState>((set) => ({
   },
 
   updateLabel: async (snapshotId: string, label: string) => {
-    await updateSnapshotLabelService(snapshotId, label);
+    const result = await updateSnapshotLabelService(snapshotId, label);
+    if (isErr(result)) {
+      useToastStore.getState().addToast(getUserMessage(result.error), 'error');
+      return;
+    }
     set((state) => ({
       snapshots: state.snapshots.map((s) => (s.id === snapshotId ? { ...s, label } : s)),
     }));
