@@ -39,6 +39,7 @@ describe('shared printSettings', () => {
       expect(DEFAULT_PRINT_SETTINGS.filamentCostPerKg).toBe(20);
       expect(DEFAULT_PRINT_SETTINGS.layerHeightMm).toBe(0.2);
       expect(DEFAULT_PRINT_SETTINGS.infillPercent).toBe(15);
+      expect(DEFAULT_PRINT_SETTINGS.nozzleSizeMm).toBe(0.4);
     });
   });
 
@@ -72,6 +73,12 @@ describe('shared printSettings', () => {
       expect(DEFAULT_PRINT_SETTINGS.infillPercent).toBeLessThanOrEqual(
         PRINT_SETTINGS_CONSTRAINTS.INFILL_MAX
       );
+      expect(DEFAULT_PRINT_SETTINGS.nozzleSizeMm).toBeGreaterThanOrEqual(
+        PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN
+      );
+      expect(DEFAULT_PRINT_SETTINGS.nozzleSizeMm).toBeLessThanOrEqual(
+        PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX
+      );
     });
   });
 
@@ -101,31 +108,49 @@ describe('shared printSettings', () => {
     });
 
     it('increases time for higher infill', () => {
-      // 100% infill: scale = 1 + 0.005 * (100 - 15) = 1.425
+      // 100% infill: scale = 1 + 0.003 * (100 - 15) = 1.255
       const result = scalePrintTime(100, {
         ...DEFAULT_PRINT_SETTINGS,
         infillPercent: 100,
       });
-      expect(result).toBeCloseTo(142.5, 0);
+      expect(result).toBeCloseTo(125.5, 0);
     });
 
     it('decreases time for lower infill', () => {
-      // 5% infill: scale = 1 + 0.005 * (5 - 15) = 0.95
+      // 5% infill: scale = 1 + 0.003 * (5 - 15) = 0.97
       const result = scalePrintTime(100, {
         ...DEFAULT_PRINT_SETTINGS,
         infillPercent: 5,
       });
-      expect(result).toBeCloseTo(95, 0);
+      expect(result).toBeCloseTo(97, 0);
     });
 
     it('combines layer height and infill scaling', () => {
-      // 0.1mm layers (2×) + 100% infill (1.425×) = 2.85×
+      // 0.1mm layers (2×) + 100% infill (1.255×) = 2.51×
       const result = scalePrintTime(100, {
         ...DEFAULT_PRINT_SETTINGS,
         layerHeightMm: 0.1,
         infillPercent: 100,
       });
-      expect(result).toBeCloseTo(285, 0);
+      expect(result).toBeCloseTo(251, 0);
+    });
+
+    it('decreases time for larger nozzle', () => {
+      // 0.6mm nozzle: factor = 0.4 / 0.6 ≈ 0.667 → faster
+      const result = scalePrintTime(100, {
+        ...DEFAULT_PRINT_SETTINGS,
+        nozzleSizeMm: 0.6,
+      });
+      expect(result).toBeCloseTo(66.7, 0);
+    });
+
+    it('increases time for smaller nozzle', () => {
+      // 0.2mm nozzle: factor = 0.4 / 0.2 = 2.0 → slower
+      const result = scalePrintTime(100, {
+        ...DEFAULT_PRINT_SETTINGS,
+        nozzleSizeMm: 0.2,
+      });
+      expect(result).toBeCloseTo(200, 0);
     });
 
     it('handles 0 input gracefully', () => {

@@ -62,6 +62,7 @@ export interface UsePrintListReturn {
 
   // Config
   config: PrintListConfig;
+  nozzleSizeMm: number;
   setFilamentCostPerKg: (cost: number) => void;
 
   // Actions
@@ -99,8 +100,8 @@ export function usePrintList(): UsePrintListReturn {
 
   // Base enhanced rows (memoized - expensive operation)
   const baseRows = useMemo(
-    () => generateEnhancedPrintList(layout.bins, maxGridUnits, layout.heightUnitMm, config),
-    [layout.bins, maxGridUnits, layout.heightUnitMm, config]
+    () => generateEnhancedPrintList(layout.bins, maxGridUnits, printSettings, config),
+    [layout.bins, maxGridUnits, printSettings, config]
   );
 
   // Filtered and sorted rows
@@ -192,6 +193,7 @@ export function usePrintList(): UsePrintListReturn {
     toggleGroupByCategory,
     resetFilters,
     config,
+    nozzleSizeMm: printSettings.nozzleSizeMm,
     setFilamentCostPerKg,
     selectBinsByRow,
     categories: layout.categories,

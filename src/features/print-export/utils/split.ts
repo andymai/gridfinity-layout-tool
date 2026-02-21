@@ -14,38 +14,11 @@ import {
   DEFAULT_METERS_PER_KG,
   DEFAULT_COST_PER_KG,
 } from '@/features/print-export/utils/printEstimates';
-
-// Default height unit size in mm (used as reference for scaling)
-const DEFAULT_HEIGHT_UNIT_MM = 7;
-
-/**
- * Estimate filament usage in meters for a single bin.
- *
- * Calibrated against real Prusa Slicer data:
- * - 4×4×3u light bin = 11.67m (walls only, minimal base)
- * - We target ~15m for "typical" bin (middle ground between light and filled/dividers)
- *
- * Formula uses grid units directly:
- * - Base: 0.5m per grid unit² (floor, stacking features, internal structure)
- * - Walls: 0.15m per perimeter unit per height unit (scaled by heightUnitMm)
- *
- * Examples (at default 7mm height units):
- * - 1×1×3u: 0.5 + 1.8 = 2.3m
- * - 2×2×3u: 2 + 3.6 = 5.6m
- * - 4×4×3u: 8 + 7.2 = 15.2m (vs 11.67m light = ~30% buffer for dividers)
- */
-function calcFilament(width: number, depth: number, height: number, heightUnitMm: number): number {
-  // Base: floor, stacking lip, and internal grid structure
-  const baseContribution = 0.5 * width * depth;
-
-  // Walls: perimeter walls scaled by height
-  // Scale the wall coefficient by heightUnitMm so taller height units use more filament
-  const perimeter = 2 * (width + depth);
-  const wallCoefficient = 0.15 * (heightUnitMm / DEFAULT_HEIGHT_UNIT_MM);
-  const wallContribution = wallCoefficient * perimeter * height;
-
-  return Math.round((baseContribution + wallContribution) * 10) / 10;
-}
+import {
+  estimateStandardBinFilament,
+  DEFAULT_PRINT_SETTINGS,
+  type PrintSettings,
+} from '@/shared/printSettings';
 
 /**
  * Split a dimension in half, rounding appropriately.
@@ -192,7 +165,7 @@ function mergeCustomProperties(
 export function generatePrintList(
   bins: Bin[],
   maxPrintSize: number,
-  heightUnitMm: number = DEFAULT_HEIGHT_UNIT_MM
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
 ): PrintRow[] {
   const placedBins = getGridBins(bins);
 
@@ -245,12 +218,15 @@ export function generatePrintList(
     const needsSplit = group.width > maxPrintSize || group.depth > maxPrintSize;
     const totalPieces = mergedPieces.reduce((sum, p) => sum + p.count, 0) * group.count;
 
-    // Calculate filament for all pieces in this row
+    // Calculate filament for all pieces in this row (analytical volume model)
     const filamentPerBin = mergedPieces.reduce(
-      (sum, p) => sum + calcFilament(p.width, p.depth, group.height, heightUnitMm) * p.count,
+      (sum, p) =>
+        sum +
+        estimateStandardBinFilament(p.width, p.depth, group.height, printSettings).metersFilament *
+          p.count,
       0
     );
-    const filament = Math.round(filamentPerBin * group.count * 10) / 10; // Round to 1 decimal
+    const filament = Math.round(filamentPerBin * group.count * 100) / 100;
 
     // Merge notes and custom properties from all bins in the group
     const mergedNotes = mergeUniqueValues(group.notesList);
@@ -319,13 +295,13 @@ export function getSpoolEstimate(totalFilament: number): number {
 export function generateEnhancedPrintList(
   bins: Bin[],
   maxPrintSize: number,
-  heightUnitMm: number = DEFAULT_HEIGHT_UNIT_MM,
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS,
   config: PrintListConfig = {
     filamentCostPerKg: DEFAULT_COST_PER_KG,
     metersPerKg: DEFAULT_METERS_PER_KG,
   }
 ): EnhancedPrintRow[] {
-  const baseRows = generatePrintList(bins, maxPrintSize, heightUnitMm);
+  const baseRows = generatePrintList(bins, maxPrintSize, printSettings);
 
   return baseRows.map((row) => {
     const [width, depth] = row.size.split('×').map(Number);

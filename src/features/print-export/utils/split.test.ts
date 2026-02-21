@@ -9,6 +9,7 @@ import {
 } from '@/features/print-export/utils/split';
 import type { Bin, PrintRow } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
+import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 describe('splitBinSize', () => {
   const maxSize = 4;
@@ -638,6 +639,33 @@ describe('generatePrintList', () => {
     // Empty customProperties should not cause separation
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
+  });
+
+  it('uses nozzle size from printSettings for filament estimates', () => {
+    const bins: Bin[] = [
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+    ];
+    const rows04 = generatePrintList(bins, 4, {
+      ...DEFAULT_PRINT_SETTINGS,
+      nozzleSizeMm: 0.4,
+    });
+    const rows06 = generatePrintList(bins, 4, {
+      ...DEFAULT_PRINT_SETTINGS,
+      nozzleSizeMm: 0.6,
+    });
+    // 0.6mm nozzle → thicker walls → more filament
+    expect(rows06[0].filament).toBeGreaterThan(rows04[0].filament);
   });
 });
 

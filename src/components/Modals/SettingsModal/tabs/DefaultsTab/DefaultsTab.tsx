@@ -278,6 +278,25 @@ export function DefaultsTab() {
               className="input w-14 py-0.5 px-1 text-xs text-right"
             />
           </SettingsRow>
+          <SettingsRow label={t('settings.nozzleSize')} htmlFor="nozzleSize" unit="mm">
+            <DeferredNumberInput
+              id="nozzleSize"
+              value={settings.printSettings.nozzleSizeMm}
+              onChange={(value) =>
+                updatePrintSetting(
+                  'nozzleSizeMm',
+                  Math.max(
+                    PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN,
+                    Math.min(PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX, value)
+                  )
+                )
+              }
+              min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
+              max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
+              step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
+              className="input w-14 py-0.5 px-1 text-xs text-right"
+            />
+          </SettingsRow>
         </div>
       </section>
 

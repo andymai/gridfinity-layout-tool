@@ -460,7 +460,7 @@ const en: Record<string, string> = {
   'print.summary.cost': '~{cost}',
   'print.summary.costTooltip': 'Based on $15/kg filament cost',
   'print.summary.printTime': '~{hours} print time',
-  'print.summary.printTimeTooltip': 'Based on 0.4mm nozzle, 0.2mm layer height, 15% infill',
+  'print.summary.printTimeTooltip': 'Based on {nozzle}mm nozzle, 0.2mm layer height, 15% infill',
   'print.summary.spoolTooltip': 'Based on 1kg spool (~330m of 1.75mm PLA)',
   'print.summary.total': 'Total',
   'print.summary.filamentLabel': 'Filament',
@@ -700,6 +700,7 @@ const en: Record<string, string> = {
   'settings.filamentCostPerKg': 'Filament cost',
   'settings.printLayerHeight': 'Layer height (slicer)',
   'settings.infillPercent': 'Infill',
+  'settings.nozzleSize': 'Nozzle size',
 
   // Default Categories
   'settings.defaultCategories': 'Default Categories',
@@ -1517,7 +1518,7 @@ const en: Record<string, string> = {
     'Your printer bed size. Bins larger than this will offer split export.',
   'binDesigner.printEstimatesPla': 'Print Estimates (PLA)',
   'binDesigner.printEstimatesDisclaimer':
-    'Approximate values based on {infill}% infill, {layerHeight}mm layers. Actual results depend on slicer settings.',
+    'Approximate values based on {nozzle}mm nozzle, {infill}% infill, {layerHeight}mm layers. Actual results depend on slicer settings.',
   'binDesigner.radius': 'Radius',
   'binDesigner.resetCameraViewKeyboardShortcutR': 'Reset camera view, keyboard shortcut R',
   'binDesigner.resetCompartmentLayoutToUniformGrid': 'Reset compartment layout to uniform grid',

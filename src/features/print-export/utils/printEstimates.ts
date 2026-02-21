@@ -10,8 +10,8 @@ import {
   METERS_PER_KG,
   OVERHEAD_MINUTES,
   MINUTES_PER_METER,
-  DEFAULT_PRINT_SETTINGS,
   scalePrintTime,
+  DEFAULT_PRINT_SETTINGS,
   type PrintSettings,
 } from '@/shared/printSettings';
 
@@ -44,25 +44,21 @@ export function calcSpoolPercentage(
 /**
  * Print time estimate based on filament length and number of print jobs.
  *
- * Calibrated via least-squares regression on real prints (0.4mm nozzle, 0.2mm layer height, 15% infill):
- * - 1×1×3u (2.3m) = 24 min
- * - 1×2×3u (3.7m) = 30 min
- * - 2×2×3u (5.6m) = 35 min
- * - 3×3×3u (9.9m) = 52 min
+ * Computes base extrusion time from filament length, scales it via
+ * `scalePrintTime` for nozzle/layer/infill settings, then adds
+ * per-job overhead (bed heating, first layer, cooling).
  *
- * Model: time = (numJobs × overhead) + (filament × rate)
- * Then scaled by user's layer height and infill settings.
- *
- * Returns hours.
+ * Returns hours (1 decimal place).
  */
 export function calcPrintTimeHours(
   filamentMeters: number,
   numPrintJobs: number = 1,
   printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
 ): number {
-  const baseMinutes = numPrintJobs * OVERHEAD_MINUTES + filamentMeters * MINUTES_PER_METER;
-  const scaledMinutes = scalePrintTime(baseMinutes, printSettings);
-  return Math.round((scaledMinutes / 60) * 10) / 10; // 1 decimal hour
+  const baseExtrusionMinutes = filamentMeters * MINUTES_PER_METER;
+  const scaledExtrusion = scalePrintTime(baseExtrusionMinutes, printSettings);
+  const totalMinutes = numPrintJobs * OVERHEAD_MINUTES + scaledExtrusion;
+  return Math.round((totalMinutes / 60) * 10) / 10; // 1 decimal hour
 }
 
 /**

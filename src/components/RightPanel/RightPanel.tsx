@@ -523,6 +523,7 @@ export function RightPanel() {
                     totalPrintTimeHours={printList.totalPrintTimeHours}
                     spoolPercentage={printList.spoolPercentage}
                     hasAnySplits={printList.hasAnySplits}
+                    nozzleSizeMm={printList.nozzleSizeMm}
                   />
                 )}
               </div>

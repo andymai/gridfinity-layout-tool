@@ -1,59 +1,14 @@
 /**
- * Gridfinity dimension constants.
+ * Gridfinity dimension constants for the bin designer.
+ *
+ * Core spec constants are defined in the shared module and re-exported here
+ * so that existing bin-designer code continues to work without import changes.
  *
  * Source of truth: Kennetek's gridfinity-rebuilt-openscad
  * https://github.com/kennetek/gridfinity-rebuilt-openscad
  */
 
-/** All Gridfinity dimension constants in millimeters.
- *
- * Source: Kennetek's gridfinity-rebuilt-openscad (standard.scad)
- * https://github.com/kennetek/gridfinity-rebuilt-openscad
- *
- * Height convention: height units INCLUDE the base.
- * A "3U" bin is 3×7=21mm tall (body), with lip adding 4.4mm on top.
- * Cavity height = (height - 1) × 7mm.
- */
-export const GRIDFINITY = {
-  // Base grid
-  GRID_SIZE: 42, // mm per 1x1 unit
-  HEIGHT_UNIT: 7, // mm per height unit (includes base in first unit)
-
-  // Tolerances
-  TOLERANCE: 0.5, // mm clearance for bin-to-baseplate fit (BASE_GAP_MM)
-
-  // Base profile (total dead space from bottom to cavity floor)
-  BASE_HEIGHT: 7, // mm total (profile + bridge structure per spec)
-
-  // Stacking lip (sits on top of bin body) - per spec v5
-  LIP_HEIGHT: 4.4, // mm total (0.7 + 1.8 + 1.9)
-  LIP_SMALL_TAPER: 0.7, // mm bottom 45° chamfer
-  LIP_VERTICAL_PART: 1.8, // mm vertical section
-  LIP_BIG_TAPER: 1.9, // mm top 45° chamfer
-
-  // Magnet holes (spec defaults; configurable via BinParams.base)
-  MAGNET_DIAMETER: 6.5, // mm (6mm magnet + tolerance)
-  MAGNET_DEPTH: 2.4, // mm (MAGNET_HEIGHT + 2*LAYER_HEIGHT)
-
-  // Screw holes (spec defaults; configurable via BinParams.base)
-  SCREW_DIAMETER: 3, // mm (M3)
-
-  // Walls
-  WALL_THICKNESS: 0.95, // mm (d_wall from spec: outer_fillet - inner_fillet)
-
-  // Base socket (per-cell interface that slides onto baseplate grid)
-  SOCKET_HEIGHT: 5, // mm total socket depth below bin floor
-  SOCKET_SMALL_TAPER: 0.8, // mm bottom 45° chamfer (matches BASE_BOTTOM_FILLET)
-  SOCKET_BIG_TAPER: 2.4, // mm upper 45° chamfer
-  // Derived: SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SMALL_TAPER - BIG_TAPER = 1.8mm
-  // Derived: SOCKET_TAPER_WIDTH = SMALL_TAPER + BIG_TAPER = 3.2mm (inset from outer edge)
-
-  // Corner radius for socket profile
-  SOCKET_CORNER_RADIUS: 4, // mm (r_base from spec)
-
-  // Fillets (used for BREP generation)
-  TOP_FILLET: 0.6, // mm fillet at stacking lip junction
-} as const;
+export { GRIDFINITY_SPEC as GRIDFINITY } from '@/shared/printSettings/gridfinityGeometry';
 
 /** Wall thickness per bin style (mm) */
 export const STYLE_WALL_THICKNESS: Record<string, number> = {
