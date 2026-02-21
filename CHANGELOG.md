@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.21.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.20.0...gridfinity-layout-tool-v3.21.0) (2026-02-21)
+
+
+### Features
+
+* smart snap placement for bins near collisions ([#832](https://github.com/andymai/gridfinity-layout-tool/issues/832)) ([7e4fdbb](https://github.com/andymai/gridfinity-layout-tool/commit/7e4fdbb5f641078e4a9477ad08366bf63bdf1b89))
+
 ## [3.20.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.19.0...gridfinity-layout-tool-v3.20.0) (2026-02-21)
 
 
