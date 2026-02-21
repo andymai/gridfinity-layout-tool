@@ -26,14 +26,13 @@ import * as indexedDB from './backends/indexedDB';
 import { salvageImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
 import { CONSTRAINTS } from '@/core/constants';
-import { getGridBins } from '@/shared/utils/bins';
+import { computePreview } from './preview';
 import { layoutId } from '@/core/types';
 import type {
   Layout,
   LayoutEntry,
   LayoutLibrary,
   LayoutPreview,
-  ThumbnailBin,
   CloudShareInfo,
 } from '@/core/types';
 import type { Result, StorageError, LayoutLibraryLimitError } from '@/core/result';
@@ -111,39 +110,9 @@ export interface DuplicateResult extends SaveResult {
   layout: Layout;
 }
 
-// === Preview Computation (Single Source of Truth) ===
-
-/**
- * Compute preview data from a layout.
- * Includes binMap for thumbnail rendering (top-down view of all bins).
- *
- * This is the canonical implementation - use this instead of duplicating
- * preview computation logic elsewhere.
- */
-export function computePreview(layout: Layout): LayoutPreview {
-  const categoryColors = new Map<string, string>();
-  for (const cat of layout.categories) {
-    categoryColors.set(cat.id, cat.color);
-  }
-
-  const binMap: ThumbnailBin[] = getGridBins(layout.bins).map((bin) => ({
-    x: bin.x,
-    y: bin.y,
-    w: bin.width,
-    d: bin.depth,
-    c: categoryColors.get(bin.category) || '#6B7280',
-    l: bin.label || undefined, // Include label if present
-  }));
-
-  return {
-    drawerWidth: layout.drawer.width,
-    drawerDepth: layout.drawer.depth,
-    drawerHeight: layout.drawer.height,
-    binCount: layout.bins.length,
-    layerCount: layout.layers.length,
-    binMap,
-  };
-}
+// Re-export computePreview from its own module (extracted to break
+// circular dependency with SnapshotService)
+export { computePreview } from './preview';
 
 // === Internal Helpers ===
 

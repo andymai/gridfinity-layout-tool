@@ -223,6 +223,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="print-modal-title"
+          data-testid="print-modal-dialog"
           tabIndex={-1}
         >
           {/* Header */}

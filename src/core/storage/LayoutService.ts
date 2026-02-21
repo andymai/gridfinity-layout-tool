@@ -18,7 +18,7 @@ import * as indexedDB from './backends/indexedDB';
 import { salvageImport } from '@/shared/utils/validation';
 import { generateCategoryId, generateLayerId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
-import { computePreview } from './LayoutManager';
+import { computePreview } from './preview';
 import type { Layout, LayoutId, LayoutLibrary, LayoutEntry } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
 import {
