@@ -61,9 +61,9 @@ export function estimatePrint(
   const gramsFilament = volumeCm3 * PLA_DENSITY;
   const metersFilament = volumeMm3 / FILAMENT_AREA_MM2 / 1000; // mm³ → mm length → m
 
-  // Base time at calibration settings, then scale for user's layer height / infill
-  const baseTimeMinutes = OVERHEAD_MINUTES + metersFilament * MINUTES_PER_METER;
-  const printTimeMinutes = scalePrintTime(baseTimeMinutes, printSettings);
+  // Scale only the extrusion portion; overhead (bed heat, etc.) is constant
+  const baseExtrusionMinutes = metersFilament * MINUTES_PER_METER;
+  const printTimeMinutes = OVERHEAD_MINUTES + scalePrintTime(baseExtrusionMinutes, printSettings);
 
   const costUSD = (gramsFilament / 1000) * printSettings.filamentCostPerKg; // g → kg × $/kg
 

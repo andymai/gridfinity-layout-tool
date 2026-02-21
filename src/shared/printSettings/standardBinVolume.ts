@@ -133,9 +133,9 @@ export function estimateStandardBinFilament(
   const gramsFilament = volumeCm3 * PLA_DENSITY;
   const metersFilament = volumeMm3 / FILAMENT_AREA_MM2 / 1000;
 
-  // Base time at calibration settings, then scale for user's settings
-  const baseTimeMinutes = OVERHEAD_MINUTES + metersFilament * MINUTES_PER_METER;
-  const printTimeMinutes = scalePrintTime(baseTimeMinutes, settings);
+  // Scale only the extrusion portion; overhead (bed heat, etc.) is constant
+  const baseExtrusionMinutes = metersFilament * MINUTES_PER_METER;
+  const printTimeMinutes = OVERHEAD_MINUTES + scalePrintTime(baseExtrusionMinutes, settings);
 
   const costUSD = (gramsFilament / 1000) * settings.filamentCostPerKg;
 
