@@ -17,7 +17,7 @@ import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types'
  * - **Staging to grid**: Drag bins from the staging area (stash) onto the main grid
  * - **Ghost preview**: Shows a preview of where the bin would be placed
  * - **Validation**: Validates placement against bounds and collisions
- * - **Drop to trash**: Can drop bin on trash to delete it
+ * - **Staging to grid**: Drag bins from the staging area (stash) onto the main grid
  *
  * ## Usage
  *
@@ -174,7 +174,7 @@ export function useStagingDragInteraction(
 
   /**
    * Complete the staging drag interaction.
-   * Places the bin on the grid if valid, or deletes if dropped on trash.
+   * Places the bin on the grid if valid.
    */
   const handleUp = useCallback(() => {
     const interaction = useInteractionStore.getState().interaction;

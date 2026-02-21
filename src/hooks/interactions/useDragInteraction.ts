@@ -24,7 +24,7 @@ import type { BinId, Coord, SwapTarget, ValidationReason, BlockingInfo } from '@
  * - **Group constraints**: Group is constrained to stay within bounds
  * - **Duplicate mode**: Alt+drag creates copies instead of moving
  * - **Swap mode**: Shift+drag (desktop) or long-press (mobile) to swap with compatible bin
- * - **Drop targets**: Can drop to trash (delete) or staging (stash)
+ * - **Drop targets**: Can drop to staging (stash)
  *
  * ## Validation
  *
@@ -294,7 +294,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
 
   /**
    * Complete the drag interaction.
-   * Handles drop targets (trash, staging), swaps, or commits bin movement/duplication.
+   * Handles drop targets (staging), swaps, or commits bin movement/duplication.
    */
   const handleUp = useCallback(() => {
     const interaction = useInteractionStore.getState().interaction;
