@@ -16,13 +16,14 @@ import {
   renameLayoutEntry,
 } from '@/core/storage/LayoutManager';
 import { expectOk, expectErr } from '@/test/testUtils';
+import { ok, err, storageQuotaExceeded, storageUnavailable } from '@/core/result';
 import { createDefaultLayout, STAGING_ID, CONSTRAINTS } from '@/core/constants';
 import type { Layout, LayoutLibrary, LayoutEntry, Bin } from '@/core/types';
 
 // Mock the backend module
 vi.mock('@/core/storage/backend', () => ({
   saveSyncGeneric: vi.fn(),
-  saveAsync: vi.fn().mockResolvedValue(undefined),
+  saveAsync: vi.fn(),
   loadAsync: vi.fn(),
   deleteAsync: vi.fn().mockResolvedValue(undefined),
 }));
@@ -50,6 +51,12 @@ vi.mock('@/shared/utils/uuid', () => ({
 
 import * as backend from '@/core/storage/backend';
 import * as indexedDBBackend from '@/core/storage/backends/indexedDB';
+
+// Helper to reset backend.saveAsync to its default mock behavior.
+// Called in each describe's beforeEach since vi.clearAllMocks() resets implementations.
+function resetSaveAsyncMock(): void {
+  vi.mocked(backend.saveAsync).mockResolvedValue(ok(undefined));
+}
 
 // === Test Fixtures ===
 
@@ -209,6 +216,7 @@ describe('computePreview', () => {
 describe('saveLayoutWithMetadata', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetSaveAsyncMock();
   });
 
   it('saves layout and updates library entry', async () => {
@@ -261,7 +269,7 @@ describe('saveLayoutWithMetadata', () => {
   });
 
   it('returns error when backend save fails', async () => {
-    vi.mocked(backend.saveAsync).mockRejectedValueOnce(new Error('quota exceeded'));
+    vi.mocked(backend.saveAsync).mockResolvedValueOnce(err(storageQuotaExceeded()));
 
     const layout = createTestLayout();
     const entry = createTestEntry('layout-1', 'Test');
@@ -337,6 +345,7 @@ describe('saveLayoutWithMetadata', () => {
 describe('createLayoutEntry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetSaveAsyncMock();
   });
 
   it('creates new layout with generated ID', async () => {
@@ -423,7 +432,7 @@ describe('createLayoutEntry', () => {
   });
 
   it('returns error when backend save fails', async () => {
-    vi.mocked(backend.saveAsync).mockRejectedValueOnce(new Error('Storage unavailable'));
+    vi.mocked(backend.saveAsync).mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
 
     const layout = createTestLayout();
     const library = createTestLibrary([]);
@@ -451,6 +460,7 @@ describe('createLayoutEntry', () => {
 describe('deleteLayoutWithEntry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetSaveAsyncMock();
   });
 
   it('deletes layout and removes from library', async () => {
@@ -530,6 +540,7 @@ describe('deleteLayoutWithEntry', () => {
 describe('duplicateLayoutEntry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetSaveAsyncMock();
     // Mock loadAsync to return a layout when called
     vi.mocked(backend.loadAsync).mockResolvedValue(createTestLayout('Source Layout'));
   });
@@ -597,6 +608,7 @@ describe('duplicateLayoutEntry', () => {
 describe('switchActiveLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetSaveAsyncMock();
     // Mock loadAsync to return a target layout
     vi.mocked(backend.loadAsync).mockResolvedValue(createTestLayout('Target Layout'));
   });
@@ -692,7 +704,7 @@ describe('switchActiveLayout', () => {
   });
 
   it('returns error when saving current layout fails during switch', async () => {
-    vi.mocked(backend.saveAsync).mockRejectedValueOnce(new Error('quota exceeded'));
+    vi.mocked(backend.saveAsync).mockResolvedValueOnce(err(storageQuotaExceeded()));
     const fromLayout = createTestLayout();
     const library = createTestLibrary([
       createTestEntry('from-id', 'From'),
@@ -727,6 +739,7 @@ describe('switchActiveLayout', () => {
 describe('updateCloudShare', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetSaveAsyncMock();
   });
 
   it('sets cloud share info on entry', () => {
@@ -805,6 +818,7 @@ describe('updateCloudShare', () => {
 describe('renameLayoutEntry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetSaveAsyncMock();
   });
 
   it('renames layout entry', () => {

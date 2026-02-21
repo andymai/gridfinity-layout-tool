@@ -15,7 +15,8 @@ import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
 import type { Layout } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
-import { isErr, isOk } from '@/core/result';
+import { ok, err, isErr, isOk } from '@/core/result';
+import { classifyStorageError } from './errorUtils';
 
 // Cache the backend determination for async operations
 let cachedBackend: 'indexeddb' | 'localstorage' | null = null;
@@ -52,26 +53,28 @@ export function resetStorageBackendCache(): void {
  * Save a layout asynchronously.
  * When IndexedDB is available, writes ONLY to IndexedDB.
  * Falls back to localStorage when IndexedDB is unavailable.
+ *
+ * Returns Result<void, StorageError> so callers can handle storage
+ * errors without catching exceptions.
  */
-export async function saveAsync(key: string, layout: Layout): Promise<void> {
+export async function saveAsync(key: string, layout: Layout): Promise<Result<void, StorageError>> {
   const backend = await getStorageBackend();
 
   if (backend === 'indexeddb') {
     try {
       await indexedDB.saveLayout(key, layout);
-    } catch {
+      return ok(undefined);
+    } catch (idbError) {
       // IndexedDB write failed — fall back to localStorage so data isn't lost
       const result = localStorage.saveLayout(key, layout);
       if (isErr(result)) {
-        throw new Error('Storage full. Export your layout to save it.');
+        return err(classifyStorageError(idbError, 'indexedDB'));
       }
+      return ok(undefined);
     }
   } else {
     // Fallback: localStorage only
-    const result = localStorage.saveLayout(key, layout);
-    if (isErr(result)) {
-      throw new Error('Storage full. Export your layout to save it.');
-    }
+    return localStorage.saveLayout(key, layout);
   }
 }
 
