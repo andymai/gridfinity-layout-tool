@@ -14,12 +14,17 @@ interface PrintListSummaryProps {
 }
 
 /** Format spool usage: percentage if under 100%, spool count if over */
-function formatSpoolUsage(percentage: number): string {
+function formatSpoolUsage(
+  percentage: number,
+  t: (key: string, params?: Record<string, string | number>) => string
+): string {
   if (percentage < 100) {
     return `${percentage}%`;
   }
   const spools = Math.round(percentage / 10) / 10;
-  return spools === 1 ? '1 spool' : `${spools} spools`;
+  return spools === 1
+    ? t('print.summary.spoolCountOne')
+    : t('print.summary.spoolCount', { count: spools });
 }
 
 /** Get progress bar color based on spool usage level */
@@ -85,7 +90,9 @@ export function PrintListSummary({
           </span>
           <div className="flex items-center gap-2" title={t('print.summary.spoolTooltip')}>
             <span className="text-content-tertiary">{t('print.summary.spoolLabel')}:</span>
-            <span className="text-content tabular-nums">{formatSpoolUsage(spoolPercentage)}</span>
+            <span className="text-content tabular-nums">
+              {formatSpoolUsage(spoolPercentage, t)}
+            </span>
             {spoolPercentage < 100 && (
               <div
                 className="w-12 h-1.5 rounded-full overflow-hidden bg-surface"
@@ -154,7 +161,7 @@ export function PrintListSummary({
         </span>
         <div className="flex items-center gap-2" title={t('print.summary.spoolTooltip')}>
           <span className="text-content-tertiary">{t('print.summary.spoolLabel')}</span>
-          <span className="text-content tabular-nums">{formatSpoolUsage(spoolPercentage)}</span>
+          <span className="text-content tabular-nums">{formatSpoolUsage(spoolPercentage, t)}</span>
           {spoolPercentage < 100 && (
             <div
               className="w-16 h-1.5 rounded-full overflow-hidden bg-surface"

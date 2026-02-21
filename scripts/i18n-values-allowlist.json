@@ -78,6 +78,7 @@
     "mobile.tools.rectangles",
     "print.layoutOptions",
     "print.options",
+    "print.portrait",
     "print.position",
     "print.showDate",
     "print.sort.field.position",

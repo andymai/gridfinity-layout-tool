@@ -28,6 +28,7 @@ import type {
   CategoryId,
 } from '@/core/types';
 import { categoryId as toCategoryId } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 const DEFAULT_FILTERS: PrintListFilters = {
   hiddenCategoryIds: new Set<CategoryId>(),
@@ -71,6 +72,7 @@ export interface UsePrintListReturn {
 }
 
 export function usePrintList(): UsePrintListReturn {
+  const t = useTranslation();
   const [filters, setFilters] = useState<PrintListFilters>(DEFAULT_FILTERS);
 
   const printSettings = useSettingsStore((s) => s.settings.printSettings);
@@ -111,8 +113,8 @@ export function usePrintList(): UsePrintListReturn {
   // Grouped rows (only computed when grouping is enabled)
   const groupedRows = useMemo(() => {
     if (!filters.groupByCategory) return null;
-    return groupByCategory(rows, layout.categories);
-  }, [rows, filters.groupByCategory, layout.categories]);
+    return groupByCategory(rows, layout.categories, t('print.uncategorized'));
+  }, [rows, filters.groupByCategory, layout.categories, t]);
 
   // Compute all aggregates in a single memo to reduce memoization overhead
   const aggregates = useMemo(() => {

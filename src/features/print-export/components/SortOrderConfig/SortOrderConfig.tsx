@@ -98,25 +98,32 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
 
       {/* Reorderable list */}
       <div className="space-y-1">
-        {sortOrder.map((config, index) => (
-          <SortFieldItem
-            key={config.field}
-            config={config}
-            index={index}
-            isFirst={index === 0}
-            isLast={index === sortOrder.length - 1}
-            isDragging={draggedIndex === index}
-            isDragOver={dragOverIndex === index}
-            onToggle={() => toggleField(config.field)}
-            onMoveUp={() => moveUp(index)}
-            onMoveDown={() => moveDown(index)}
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
-            onDragLeave={handleDragLeave}
-            t={t}
-          />
-        ))}
+        {sortOrder.map((config, index) => {
+          // Compute rank among enabled fields (1-indexed)
+          let enabledRank = 0;
+          if (config.enabled) {
+            enabledRank = sortOrder.slice(0, index + 1).filter((s) => s.enabled).length;
+          }
+          return (
+            <SortFieldItem
+              key={config.field}
+              config={config}
+              enabledRank={enabledRank}
+              isFirst={index === 0}
+              isLast={index === sortOrder.length - 1}
+              isDragging={draggedIndex === index}
+              isDragOver={dragOverIndex === index}
+              onToggle={() => toggleField(config.field)}
+              onMoveUp={() => moveUp(index)}
+              onMoveDown={() => moveDown(index)}
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              onDragLeave={handleDragLeave}
+              t={t}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -124,7 +131,8 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
 
 interface SortFieldItemProps {
   config: SortFieldConfig;
-  index: number;
+  /** Position among enabled fields only (1-indexed), or 0 if disabled */
+  enabledRank: number;
   isFirst: boolean;
   isLast: boolean;
   isDragging: boolean;
@@ -141,7 +149,7 @@ interface SortFieldItemProps {
 
 function SortFieldItem({
   config,
-  index,
+  enabledRank,
   isFirst,
   isLast,
   isDragging,
@@ -207,10 +215,10 @@ function SortFieldItem({
         <Checkbox checked={config.enabled} variant="desktop" />
       </div>
 
-      {/* Priority indicator for enabled fields */}
+      {/* Priority indicator for enabled fields - show position among enabled fields only */}
       {config.enabled && (
         <span className="text-xs text-accent font-medium min-w-[1.5rem] text-center">
-          {index + 1}
+          {enabledRank}
         </span>
       )}
 
