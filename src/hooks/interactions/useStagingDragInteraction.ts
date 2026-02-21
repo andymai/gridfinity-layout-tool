@@ -17,7 +17,6 @@ import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types'
  * - **Staging to grid**: Drag bins from the staging area (stash) onto the main grid
  * - **Ghost preview**: Shows a preview of where the bin would be placed
  * - **Validation**: Validates placement against bounds and collisions
- * - **Staging to grid**: Drag bins from the staging area (stash) onto the main grid
  *
  * ## Usage
  *

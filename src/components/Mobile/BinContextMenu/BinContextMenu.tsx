@@ -59,7 +59,8 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const { menuRef } = useContextMenu();
 
   const layout = useLayoutStore((state) => state.layout);
-  const { deleteBin, moveBinToStaging, duplicateBin, updateBin } = useMutations();
+  const { deleteBin, moveBinToStaging, moveBinFromStaging, duplicateBin, updateBin } =
+    useMutations();
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
   const toggleMobilePanel = useMobileStore((state) => state.toggleMobilePanel);
   const rightPanelCollapsed = useViewStore((state) => state.rightPanelCollapsed);
@@ -143,13 +144,18 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const [showLayerPicker, setShowLayerPicker] = useState(false);
 
   const handleMoveToGrid = (targetLayerId: LayerId) => {
-    const layer = layout.layers.find((l) => l.id === targetLayerId);
-    if (!layer) return;
+    let placed = false;
     execute(() => {
-      updateBin(bin.id, { layerId: targetLayerId, x: 0, y: 0, height: layer.height });
+      const result = moveBinFromStaging(bin.id, targetLayerId, 0, 0);
+      placed = isOk(result);
     });
-    addToast(t('toast.binsMovedToLayer', { count: 1 }), 'success');
-    onClose();
+    if (placed) {
+      addToast(t('toast.binsMovedToLayer', { count: 1 }), 'success');
+      onClose();
+    } else {
+      addToast(t('toast.dragFromStash'), 'info');
+      onClose();
+    }
   };
 
   // On desktop, only show Edit Properties when right panel is collapsed
