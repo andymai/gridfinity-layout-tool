@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import {
   useLayoutStore,
   useSettingsStore,

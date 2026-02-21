@@ -7,6 +7,7 @@
  */
 
 import { useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Dialog, Button, AlertTriangleIcon } from '@/design-system';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
@@ -21,7 +22,12 @@ const REASON_KEYS: Record<ComplexityReason, string> = {
 
 export function BlockedResizeDialog() {
   const t = useTranslation();
-  const { pendingBlockedResize, hideBlockedResizeDialog } = useLinkingStore();
+  const { pendingBlockedResize, hideBlockedResizeDialog } = useLinkingStore(
+    useShallow((s) => ({
+      pendingBlockedResize: s.pendingBlockedResize,
+      hideBlockedResizeDialog: s.hideBlockedResizeDialog,
+    }))
+  );
   const { editLinkedDesign } = useBinLinking();
 
   const handleDismiss = useCallback(() => {

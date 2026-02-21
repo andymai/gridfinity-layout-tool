@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { isOk } from '@/core/result';
 import { listDesigns } from '@/features/bin-designer/storage/DesignerStorage';
+import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { useTranslation } from '@/i18n';
@@ -16,7 +17,12 @@ import type { SavedDesign } from '@/features/bin-designer/types';
 
 export function LinkDesignDialog() {
   const t = useTranslation();
-  const { pendingLinkDesign, hideLinkDesignDialog } = useLinkingStore();
+  const { pendingLinkDesign, hideLinkDesignDialog } = useLinkingStore(
+    useShallow((s) => ({
+      pendingLinkDesign: s.pendingLinkDesign,
+      hideLinkDesignDialog: s.hideLinkDesignDialog,
+    }))
+  );
   const { linkBin } = useBinLinking();
 
   const [designs, setDesigns] = useState<SavedDesign[]>([]);

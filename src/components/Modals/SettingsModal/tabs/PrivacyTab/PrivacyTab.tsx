@@ -1,4 +1,4 @@
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { optInAnalytics, optOutAnalytics, pruneAnalyticsData } from '@/shared/analytics/posthog';

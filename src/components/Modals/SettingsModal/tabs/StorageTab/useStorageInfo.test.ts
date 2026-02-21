@@ -22,13 +22,12 @@ describe('useStorageInfo', () => {
       library: { entries: [{ id: 'l1' }, { id: 'l2' }] },
     } as never);
 
-    // Mock navigator.storage.estimate
-    vi.stubGlobal('navigator', {
-      ...navigator,
-      storage: {
-        estimate: vi.fn().mockResolvedValue({ usage: 500_000, quota: 1_000_000_000 }),
-      },
-    });
+    // Mock navigator.storage.estimate (use Object.create to preserve prototype chain)
+    const nav = Object.create(navigator);
+    nav.storage = {
+      estimate: vi.fn().mockResolvedValue({ usage: 500_000, quota: 1_000_000_000 }),
+    };
+    vi.stubGlobal('navigator', nav);
   });
 
   it('returns loading state initially', () => {
@@ -53,12 +52,11 @@ describe('useStorageInfo', () => {
   });
 
   it('handles Storage API unavailable', async () => {
-    vi.stubGlobal('navigator', {
-      ...navigator,
-      storage: {
-        estimate: vi.fn().mockRejectedValue(new Error('Not supported')),
-      },
-    });
+    const nav = Object.create(navigator);
+    nav.storage = {
+      estimate: vi.fn().mockRejectedValue(new Error('Not supported')),
+    };
+    vi.stubGlobal('navigator', nav);
 
     const { result } = renderHook(() => useStorageInfo());
 

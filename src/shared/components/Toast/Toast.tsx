@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import type { Toast, ToastType } from '@/core/store/toast';
 import { useToastStore } from '@/core/store/toast';
 import { useResponsive } from '@/shared/hooks';

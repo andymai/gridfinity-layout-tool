@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useUndoableAction } from '@/core/store';
 import { useSettingsStore } from '@/core/store/settings';

@@ -398,6 +398,7 @@ export async function loadLibraryAsync(): Promise<LayoutLibrary | null> {
  * Routes through loadLibraryResult internally for consistent error handling.
  */
 export function loadLibrary(): LayoutLibrary | null {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional sync fallback path
   const result = loadLibraryResult();
   return isOk(result) ? result.value : null;
 }

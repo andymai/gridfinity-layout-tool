@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore, useHistoryStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';

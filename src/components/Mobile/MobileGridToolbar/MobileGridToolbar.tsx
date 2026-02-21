@@ -1,4 +1,4 @@
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useViewStore, useSelectionStore, useInteractionStore, useMobileStore } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';

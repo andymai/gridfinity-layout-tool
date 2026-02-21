@@ -1,6 +1,6 @@
 import type { RefObject, PointerEvent, JSX } from 'react';
 import { useMemo } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
 import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';

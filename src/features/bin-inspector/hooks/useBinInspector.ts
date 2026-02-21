@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';

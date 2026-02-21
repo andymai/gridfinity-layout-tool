@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { formatDimensions } from '../../../domain';
@@ -13,7 +14,12 @@ import { useTranslation } from '@/i18n';
 
 export function SyncDimensionsDialog() {
   const t = useTranslation();
-  const { pendingSync, hideSyncDialog } = useLinkingStore();
+  const { pendingSync, hideSyncDialog } = useLinkingStore(
+    useShallow((s) => ({
+      pendingSync: s.pendingSync,
+      hideSyncDialog: s.hideSyncDialog,
+    }))
+  );
   const { executeSyncFromDesign } = useBinLinking();
 
   const dialogRef = useRef<HTMLDivElement>(null);

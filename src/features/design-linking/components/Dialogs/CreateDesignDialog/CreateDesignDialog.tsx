@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { formatDimensions } from '../../../domain';
@@ -14,7 +15,12 @@ import { useTranslation } from '@/i18n';
 
 export function CreateDesignDialog() {
   const t = useTranslation();
-  const { pendingCreateDesign, hideCreateDesignDialog } = useLinkingStore();
+  const { pendingCreateDesign, hideCreateDesignDialog } = useLinkingStore(
+    useShallow((s) => ({
+      pendingCreateDesign: s.pendingCreateDesign,
+      hideCreateDesignDialog: s.hideCreateDesignDialog,
+    }))
+  );
   const { navigateToCreateDesign } = useBinLinking();
 
   const [name, setName] = useState('');

@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useRef, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';

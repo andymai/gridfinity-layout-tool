@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
 import { saveLayoutWithMetadata } from '@/core/storage';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';

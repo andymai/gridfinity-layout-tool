@@ -719,7 +719,7 @@ export function DesignerPage() {
             <PreviewCanvas />
           </div>
         </main>
-      ) : !isDesktop && isLandscape ? (
+      ) : isLandscape ? (
         /* Landscape tablet/mobile: side-by-side */
         <main className="flex flex-1 flex-col overflow-hidden">
           {cutoutEditorOpen && <CutoutDesktopOnlyBanner />}
