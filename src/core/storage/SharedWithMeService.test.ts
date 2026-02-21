@@ -5,6 +5,7 @@ import {
   clearSharedWithMe,
 } from '@/core/storage/SharedWithMeService';
 import type { SharedWithMeEntry } from '@/core/types';
+import { isOk, isErr } from '@/core/result';
 
 describe('SharedWithMeService', () => {
   const STORAGE_KEY = 'gridfinity-shared-with-me-v1';
@@ -33,7 +34,8 @@ describe('SharedWithMeService', () => {
     it('saves entries to localStorage', () => {
       const entries = [createTestEntry('1'), createTestEntry('2')];
 
-      saveSharedWithMe(entries);
+      const result = saveSharedWithMe(entries);
+      expect(isOk(result)).toBe(true);
 
       const stored = localStorage.getItem(STORAGE_KEY);
       expect(stored).not.toBeNull();
@@ -46,7 +48,8 @@ describe('SharedWithMeService', () => {
     });
 
     it('saves empty array', () => {
-      saveSharedWithMe([]);
+      const result = saveSharedWithMe([]);
+      expect(isOk(result)).toBe(true);
 
       const stored = localStorage.getItem(STORAGE_KEY);
       const parsed = JSON.parse(stored!);
@@ -63,21 +66,15 @@ describe('SharedWithMeService', () => {
       expect(parsed.entries[0].id).toBe('2');
     });
 
-    it('handles localStorage errors gracefully', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('returns Err on localStorage failure', () => {
       const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw new Error('Storage quota exceeded');
       });
 
-      // Should not throw
-      expect(() => saveSharedWithMe([createTestEntry('1')])).not.toThrow();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to save shared-with-me entries:',
-        expect.any(Error)
-      );
+      const result = saveSharedWithMe([createTestEntry('1')]);
+      expect(isErr(result)).toBe(true);
 
       setItemSpy.mockRestore();
-      consoleSpy.mockRestore();
     });
   });
 
@@ -86,41 +83,42 @@ describe('SharedWithMeService', () => {
       const entries = [createTestEntry('1'), createTestEntry('2')];
       saveSharedWithMe(entries);
 
-      const loaded = loadSharedWithMe();
+      const result = loadSharedWithMe();
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
 
-      expect(loaded).toHaveLength(2);
-      expect(loaded[0].id).toBe('1');
-      expect(loaded[1].id).toBe('2');
+      expect(result.value).toHaveLength(2);
+      expect(result.value[0].id).toBe('1');
+      expect(result.value[1].id).toBe('2');
     });
 
-    it('returns empty array when no data exists', () => {
-      const loaded = loadSharedWithMe();
-      expect(loaded).toEqual([]);
+    it('returns Ok with empty array when no data exists', () => {
+      const result = loadSharedWithMe();
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value).toEqual([]);
+      }
     });
 
-    it('returns empty array for invalid JSON', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('returns Err for invalid JSON', () => {
       localStorage.setItem(STORAGE_KEY, 'not valid json');
 
-      const loaded = loadSharedWithMe();
-
-      expect(loaded).toEqual([]);
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      const result = loadSharedWithMe();
+      expect(isErr(result)).toBe(true);
     });
 
-    it('returns empty array for missing entries field', () => {
+    it('returns Err for missing entries field', () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: '1.0' }));
 
-      const loaded = loadSharedWithMe();
-      expect(loaded).toEqual([]);
+      const result = loadSharedWithMe();
+      expect(isErr(result)).toBe(true);
     });
 
-    it('returns empty array when entries is not an array', () => {
+    it('returns Err when entries is not an array', () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: '1.0', entries: 'not array' }));
 
-      const loaded = loadSharedWithMe();
-      expect(loaded).toEqual([]);
+      const result = loadSharedWithMe();
+      expect(isErr(result)).toBe(true);
     });
 
     it('preserves all entry properties', () => {
@@ -136,9 +134,11 @@ describe('SharedWithMeService', () => {
       };
       saveSharedWithMe([entry]);
 
-      const loaded = loadSharedWithMe();
-
-      expect(loaded[0]).toEqual(entry);
+      const result = loadSharedWithMe();
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value[0]).toEqual(entry);
+      }
     });
   });
 
@@ -147,31 +147,26 @@ describe('SharedWithMeService', () => {
       saveSharedWithMe([createTestEntry('1')]);
       expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull();
 
-      clearSharedWithMe();
+      const result = clearSharedWithMe();
+      expect(isOk(result)).toBe(true);
 
       expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
     });
 
     it('handles non-existent key gracefully', () => {
-      // Should not throw when key doesn't exist
-      expect(() => clearSharedWithMe()).not.toThrow();
+      const result = clearSharedWithMe();
+      expect(isOk(result)).toBe(true);
     });
 
-    it('handles localStorage errors gracefully', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('returns Err on localStorage failure', () => {
       const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
         throw new Error('Storage error');
       });
 
-      // Should not throw
-      expect(() => clearSharedWithMe()).not.toThrow();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to clear shared-with-me entries:',
-        expect.any(Error)
-      );
+      const result = clearSharedWithMe();
+      expect(isErr(result)).toBe(true);
 
       removeItemSpy.mockRestore();
-      consoleSpy.mockRestore();
     });
   });
 });

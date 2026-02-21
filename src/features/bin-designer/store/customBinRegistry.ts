@@ -7,6 +7,11 @@
  * Registry is updated whenever the Bin Designer saves or deletes a design.
  */
 
+import type { Result } from '@/core/result';
+import type { StorageError } from '@/core/result/errors';
+import { isOk } from '@/core/result';
+import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
+
 const REGISTRY_KEY = 'gridfinity-custom-bins-v1';
 
 /** Subscribers notified when the registry changes */
@@ -43,41 +48,34 @@ export interface CustomBinRef {
  * @returns The array of saved `CustomBinRef` entries; returns an empty array if no registry is stored, the stored value is not a valid array, or reading/parsing fails.
  */
 export function loadRegistry(): CustomBinRef[] {
-  try {
-    const raw = localStorage.getItem(REGISTRY_KEY);
-    if (!raw) return [];
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    // Strip legacy thumbnail field to reduce localStorage usage
-    return (parsed as Array<Record<string, unknown>>).map(
-      ({ thumbnail: _, ...rest }) => rest as unknown as CustomBinRef
-    );
-  } catch {
-    return [];
-  }
+  const result = loadFromLocalStorage<Array<Record<string, unknown>>>(REGISTRY_KEY);
+  if (!isOk(result) || !result.value) return [];
+  if (!Array.isArray(result.value)) return [];
+
+  // Strip legacy thumbnail field to reduce localStorage usage
+  return result.value.map(({ thumbnail: _, ...rest }) => rest as unknown as CustomBinRef);
 }
 
 /**
  * Persist the provided registry array to localStorage, replacing any previously stored registry.
  *
- * This operation swallows storage errors (e.g., quota exceeded or unavailable storage) and does not throw.
+ * Returns Result with StorageError if storage is full or unavailable.
  *
  * @param refs - The list of `CustomBinRef` objects to store as the full registry
  */
-function saveRegistry(refs: CustomBinRef[]): void {
-  try {
-    localStorage.setItem(REGISTRY_KEY, JSON.stringify(refs));
-  } catch {
-    // Storage full or unavailable - silently fail
-  }
+function saveRegistry(refs: CustomBinRef[]): Result<void, StorageError> {
+  return saveToLocalStorage(REGISTRY_KEY, refs);
 }
 
 /**
  * Inserts a custom bin reference into the local registry or replaces an existing entry with the same `id`.
  *
+ * Returns Result with StorageError if persistence fails. The in-memory registry
+ * and subscribers are always updated regardless of storage outcome.
+ *
  * @param ref - The CustomBinRef to add or update in the registry
  */
-export function upsertRegistryEntry(ref: CustomBinRef): void {
+export function upsertRegistryEntry(ref: CustomBinRef): Result<void, StorageError> {
   const refs = loadRegistry();
   const idx = refs.findIndex((r) => r.id === ref.id);
   if (idx >= 0) {
@@ -85,29 +83,35 @@ export function upsertRegistryEntry(ref: CustomBinRef): void {
   } else {
     refs.push(ref);
   }
-  saveRegistry(refs);
+  const result = saveRegistry(refs);
   notifySubscribers();
+  return result;
 }
 
 /**
  * Removes the registry entry with the given id.
  *
  * If no entry matches `id`, the registry is unchanged.
+ * Returns Result with StorageError if persistence fails.
  *
  * @param id - The identifier of the design to remove
  */
-export function removeRegistryEntry(id: string): void {
+export function removeRegistryEntry(id: string): Result<void, StorageError> {
   const refs = loadRegistry().filter((r) => r.id !== id);
-  saveRegistry(refs);
+  const result = saveRegistry(refs);
   notifySubscribers();
+  return result;
 }
 
 /**
  * Replace the stored custom bin registry with the provided list of references.
  *
+ * Returns Result with StorageError if persistence fails.
+ *
  * @param refs - Array of CustomBinRef objects to persist as the new registry
  */
-export function rebuildRegistry(refs: CustomBinRef[]): void {
-  saveRegistry(refs);
+export function rebuildRegistry(refs: CustomBinRef[]): Result<void, StorageError> {
+  const result = saveRegistry(refs);
   notifySubscribers();
+  return result;
 }
