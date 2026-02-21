@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useLayoutStore } from './layout';
-import type { Result, Unit, LayoutError } from '@/core/result';
-import { err, layoutInvalidOperation, OK } from '@/core/result';
+import type { Result, Unit, LayoutError, StorageError } from '@/core/result';
+import { err, isOk, layoutInvalidOperation, OK } from '@/core/result';
+import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 
 /**
  * Half-Bin Mode Store
@@ -24,23 +25,19 @@ const STORAGE_KEY = 'gridfinity-half-bin-mode';
  * Defaults to false if not set or on error.
  */
 function loadFromStorage(): boolean {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === 'true';
-  } catch {
-    return false;
+  const result = loadFromLocalStorage<boolean>(STORAGE_KEY);
+  if (isOk(result) && result.value !== null) {
+    return result.value;
   }
+  return false;
 }
 
 /**
  * Save half-bin mode preference to localStorage.
- * Silently ignores storage errors (e.g., quota exceeded, private browsing).
+ * Returns Result to indicate if persistence succeeded.
  */
-function saveToStorage(enabled: boolean): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, enabled.toString());
-  } catch {
-    // Ignore storage errors
-  }
+function saveToStorage(enabled: boolean): Result<void, StorageError> {
+  return saveToLocalStorage(STORAGE_KEY, enabled);
 }
 
 interface HalfBinModeState {
@@ -60,8 +57,9 @@ interface HalfBinModeActions {
   /**
    * Set half-bin mode directly without validation.
    * Use with caution - caller is responsible for ensuring valid state.
+   * Returns Result indicating if persistence succeeded.
    */
-  setHalfBinMode: (enabled: boolean) => void;
+  setHalfBinMode: (enabled: boolean) => Result<void, StorageError>;
 }
 
 export type HalfBinModeStore = HalfBinModeState & HalfBinModeActions;
@@ -100,7 +98,8 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
   },
 
   setHalfBinMode: (enabled) => {
-    saveToStorage(enabled);
+    const result = saveToStorage(enabled);
     set({ halfBinMode: enabled });
+    return result;
   },
 }));

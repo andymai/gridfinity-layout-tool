@@ -8,10 +8,14 @@ vi.mock('@/core/storage/backend', () => ({
   getIndexedDBLayoutIds: vi.fn(),
 }));
 
-vi.mock('@/core/storage/backends/localStorage', () => ({
-  getAllLayoutIds: vi.fn(),
-  loadLayout: vi.fn(),
-}));
+vi.mock('@/core/storage/backends/localStorage', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    getAllLayoutIds: vi.fn(),
+    loadLayout: vi.fn(),
+  };
+});
 
 vi.mock('@/core/storage/backends/indexedDB', () => ({
   saveLayout: vi.fn(),

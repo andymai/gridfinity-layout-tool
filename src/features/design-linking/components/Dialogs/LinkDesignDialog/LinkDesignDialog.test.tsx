@@ -14,9 +14,13 @@ vi.mock('../../../hooks', () => ({
   }),
 }));
 
-vi.mock('@/core/result', () => ({
-  isOk: vi.fn(() => true),
-}));
+vi.mock('@/core/result', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    isOk: vi.fn(() => true),
+  };
+});
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
   listDesigns: (...args: unknown[]) => mockListDesigns(...args),
