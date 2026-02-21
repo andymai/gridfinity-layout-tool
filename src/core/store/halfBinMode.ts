@@ -57,8 +57,9 @@ interface HalfBinModeActions {
   /**
    * Set half-bin mode directly without validation.
    * Use with caution - caller is responsible for ensuring valid state.
+   * Returns Result indicating if persistence succeeded.
    */
-  setHalfBinMode: (enabled: boolean) => void;
+  setHalfBinMode: (enabled: boolean) => Result<void, StorageError>;
 }
 
 export type HalfBinModeStore = HalfBinModeState & HalfBinModeActions;
@@ -97,7 +98,8 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
   },
 
   setHalfBinMode: (enabled) => {
-    saveToStorage(enabled);
+    const result = saveToStorage(enabled);
     set({ halfBinMode: enabled });
+    return result;
   },
 }));

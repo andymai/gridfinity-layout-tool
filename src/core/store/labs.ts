@@ -11,7 +11,7 @@ import type { LabsPreferences, FeatureId } from '@/core/labs';
 import { createDefaultLabsPreferences, getFeature } from '@/core/labs';
 import { trackEvent } from '@/shared/analytics/posthog';
 import type { Result, StorageError } from '@/core/result';
-import { isOk } from '@/core/result';
+import { isOk, OK } from '@/core/result';
 import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 
 export const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
@@ -42,9 +42,9 @@ interface LabsState {
   openDrawer: () => void;
   closeDrawer: () => void;
   toggleDrawer: () => void;
-  toggleFeature: (featureId: FeatureId) => void;
-  enableFeature: (featureId: FeatureId) => void;
-  disableFeature: (featureId: FeatureId) => void;
+  toggleFeature: (featureId: FeatureId) => Result<void, StorageError>;
+  enableFeature: (featureId: FeatureId) => Result<void, StorageError>;
+  disableFeature: (featureId: FeatureId) => Result<void, StorageError>;
   isFeatureEnabled: (featureId: FeatureId) => boolean;
   getEnabledCount: () => number;
   syncFromStorage: (prefs: LabsPreferences) => void;
@@ -77,7 +77,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     const feature = getFeature(featureId);
 
     // Coming Soon features cannot be toggled
-    if (feature?.comingSoon) return;
+    if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
     const currentlyEnabled = preferences.enabledFeatures[featureId] ?? false;
@@ -92,7 +92,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
       lastModified: new Date().toISOString(),
     };
 
-    savePreferences(newPrefs);
+    const result = savePreferences(newPrefs);
     set({ preferences: newPrefs });
 
     trackEvent('labs_feature_toggle', {
@@ -100,16 +100,18 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
       enabled: newEnabled,
       feature_status: getFeature(featureId)?.status ?? 'unknown',
     });
+
+    return result;
   },
 
   enableFeature: (featureId) => {
     const feature = getFeature(featureId);
 
     // Coming Soon features cannot be enabled
-    if (feature?.comingSoon) return;
+    if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    if (preferences.enabledFeatures[featureId]) return;
+    if (preferences.enabledFeatures[featureId]) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -120,18 +122,20 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
       lastModified: new Date().toISOString(),
     };
 
-    savePreferences(newPrefs);
+    const result = savePreferences(newPrefs);
     set({ preferences: newPrefs });
 
     trackEvent('labs_feature_enabled', {
       feature_id: featureId,
       feature_status: getFeature(featureId)?.status ?? 'unknown',
     });
+
+    return result;
   },
 
   disableFeature: (featureId) => {
     const { preferences } = get();
-    if (!preferences.enabledFeatures[featureId]) return;
+    if (!preferences.enabledFeatures[featureId]) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -142,13 +146,15 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
       lastModified: new Date().toISOString(),
     };
 
-    savePreferences(newPrefs);
+    const result = savePreferences(newPrefs);
     set({ preferences: newPrefs });
 
     trackEvent('labs_feature_disabled', {
       feature_id: featureId,
       feature_status: getFeature(featureId)?.status ?? 'unknown',
     });
+
+    return result;
   },
 
   isFeatureEnabled: (featureId) => {
