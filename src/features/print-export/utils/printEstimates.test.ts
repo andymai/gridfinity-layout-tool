@@ -95,12 +95,12 @@ describe('printEstimates', () => {
 
   describe('calcPrintTimeHours', () => {
     it('calculates time for single job at baseline settings', () => {
-      // Model: time = (1 × 16 min) + (0 × 3.6 min/m) = 16 min = 0.3h
+      // Model: time = (1 × 16 min) + (0 × 3.6 × 1.0 × 1.0 × 1.0) = 16 min = 0.3h
       expect(calcPrintTimeHours(0, 1)).toBe(0.3);
     });
 
-    it('calculates time based on filament', () => {
-      // 2.3m: (1 × 16) + (2.3 × 3.6) = 16 + 8.28 = 24.28 min = 0.4h
+    it('calculates time based on filament at baseline', () => {
+      // 2.3m: overhead=16 + extrusion=2.3×3.6×1.0×1.0×1.0 = 16 + 8.28 = 24.28 min = 0.4h
       expect(calcPrintTimeHours(2.3)).toBe(0.4);
     });
 
@@ -128,7 +128,7 @@ describe('printEstimates', () => {
     });
 
     it('defaults to 1 print job', () => {
-      // 10m: (1 × 16) + (10 × 3.6) = 16 + 36 = 52 min = 0.9h
+      // 10m at baseline: 16 + 10×3.6 = 52 min = 0.9h
       expect(calcPrintTimeHours(10)).toBe(0.9);
     });
 
@@ -137,13 +137,11 @@ describe('printEstimates', () => {
     });
 
     it('rounds to 1 decimal hour', () => {
-      // Should be rounded, not showing many decimal places
       const time = calcPrintTimeHours(5);
       expect(time.toString()).toMatch(/^\d+(\.\d)?$/);
     });
 
     it('scales time for thinner layer height', () => {
-      // 0.1mm layers = 2× baseline (0.2mm), so time should roughly double
       const baseTime = calcPrintTimeHours(10, 1);
       const thinTime = calcPrintTimeHours(10, 1, {
         ...DEFAULT_PRINT_SETTINGS,
@@ -153,13 +151,24 @@ describe('printEstimates', () => {
     });
 
     it('scales time for higher infill', () => {
-      // Higher infill should take longer
       const baseTime = calcPrintTimeHours(10, 1);
       const denseTime = calcPrintTimeHours(10, 1, {
         ...DEFAULT_PRINT_SETTINGS,
         infillPercent: 100,
       });
       expect(denseTime).toBeGreaterThan(baseTime);
+    });
+
+    it('larger nozzle reduces extrusion time', () => {
+      const time04 = calcPrintTimeHours(10, 1, {
+        ...DEFAULT_PRINT_SETTINGS,
+        nozzleSizeMm: 0.4,
+      });
+      const time06 = calcPrintTimeHours(10, 1, {
+        ...DEFAULT_PRINT_SETTINGS,
+        nozzleSizeMm: 0.6,
+      });
+      expect(time06).toBeLessThan(time04);
     });
   });
 

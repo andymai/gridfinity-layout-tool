@@ -11,6 +11,7 @@ describe('PrintListSummary', () => {
     totalPrintTimeHours: 8.5,
     spoolPercentage: 45,
     hasAnySplits: true,
+    nozzleSizeMm: 0.4,
   };
 
   describe('desktop layout', () => {

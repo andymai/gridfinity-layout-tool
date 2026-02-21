@@ -287,6 +287,7 @@ export function ExportDialog() {
             </div>
             <p className="mt-2 text-[10px] text-content-disabled">
               {t('binDesigner.printEstimatesDisclaimer', {
+                nozzle: printSettings.nozzleSizeMm,
                 infill: printSettings.infillPercent,
                 layerHeight: printSettings.layerHeightMm,
               })}

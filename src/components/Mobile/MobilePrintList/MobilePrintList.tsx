@@ -255,6 +255,7 @@ export function MobilePrintList() {
           totalPrintTimeHours={printList.totalPrintTimeHours}
           spoolPercentage={printList.spoolPercentage}
           hasAnySplits={printList.hasAnySplits}
+          nozzleSizeMm={printList.nozzleSizeMm}
           compact
         />
       </div>

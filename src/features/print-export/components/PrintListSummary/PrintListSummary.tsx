@@ -9,6 +9,8 @@ interface PrintListSummaryProps {
   totalPrintTimeHours: number;
   spoolPercentage: number;
   hasAnySplits: boolean;
+  /** Nozzle size in mm for tooltip display */
+  nozzleSizeMm: number;
   /** Compact mode for mobile */
   compact?: boolean;
 }
@@ -40,6 +42,7 @@ export function PrintListSummary({
   totalPrintTimeHours,
   spoolPercentage,
   hasAnySplits,
+  nozzleSizeMm,
   compact = false,
 }: PrintListSummaryProps) {
   const t = useTranslation();
@@ -53,7 +56,7 @@ export function PrintListSummary({
           <div className="flex items-baseline gap-3">
             <span
               className="text-sm font-semibold text-content tabular-nums"
-              title={t('print.summary.printTimeTooltip')}
+              title={t('print.summary.printTimeTooltip', { nozzle: nozzleSizeMm })}
             >
               ~{formatPrintTime(totalPrintTimeHours)}
             </span>
@@ -116,7 +119,7 @@ export function PrintListSummary({
       {/* Primary row: Time & Cost (emphasized) + Bins */}
       <div className="flex justify-between items-baseline mb-2">
         <div className="flex items-baseline gap-4">
-          <div title={t('print.summary.printTimeTooltip')}>
+          <div title={t('print.summary.printTimeTooltip', { nozzle: nozzleSizeMm })}>
             <span className="text-xs text-content-tertiary mr-1">
               {t('print.summary.timeLabel')}
             </span>
