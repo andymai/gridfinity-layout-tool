@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.19.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.4...gridfinity-layout-tool-v3.19.0) (2026-02-21)
+
+
+### Features
+
+* **layers:** layer height UX overhaul ([#816](https://github.com/andymai/gridfinity-layout-tool/issues/816)) ([af597c0](https://github.com/andymai/gridfinity-layout-tool/commit/af597c088fbb0115ee1aa262481f4bb38d462374))
+
+
+### Bug Fixes
+
+* **print-export:** fix multiple bugs and i18n issues in print modal ([#827](https://github.com/andymai/gridfinity-layout-tool/issues/827)) ([89117a1](https://github.com/andymai/gridfinity-layout-tool/commit/89117a1bcd4960612b65ae82b898c46974a485fa))
+
 ## [3.18.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.3...gridfinity-layout-tool-v3.18.4) (2026-02-20)
 
 ### Bug Fixes
