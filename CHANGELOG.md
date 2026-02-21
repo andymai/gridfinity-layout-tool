@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.22.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.21.0...gridfinity-layout-tool-v3.22.0) (2026-02-21)
+
+
+### Features
+
+* remove delete bin drop zone ([#835](https://github.com/andymai/gridfinity-layout-tool/issues/835)) ([c6bcb69](https://github.com/andymai/gridfinity-layout-tool/commit/c6bcb6931077ba92140f565d39ac958a92a36991))
+
 ## [3.21.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.20.0...gridfinity-layout-tool-v3.21.0) (2026-02-21)
 
 
