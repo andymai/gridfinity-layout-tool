@@ -31,6 +31,7 @@ describe('useDrawInteraction', () => {
   const mockExecute = vi.fn((fn: () => void) => fn());
   const mockActivePointerIdRef = { current: null };
   const mockCapturedPointerRef = { current: null };
+  const mockCtrlKeyRef = { current: false };
 
   const createContext = (paintSize?: { width: number; depth: number }): InteractionContext => {
     const { layout } = useLayoutStore.getState();
@@ -48,6 +49,7 @@ describe('useDrawInteraction', () => {
       execute: mockExecute,
       activePointerIdRef: mockActivePointerIdRef,
       capturedPointerRef: mockCapturedPointerRef,
+      ctrlKeyRef: mockCtrlKeyRef,
     };
   };
 

@@ -95,6 +95,8 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const activePointerIdRef = useRef<number | null>(null);
   // Track captured pointer for reliable event delivery
   const capturedPointerRef = useRef<{ element: HTMLElement; pointerId: number } | null>(null);
+  // Track Ctrl key state for disabling smart snap
+  const ctrlKeyRef = useRef<boolean>(false);
   const { getGridCoords, clampCoords, isInBounds } = useGridCoords(gridRef);
   const { updateInteraction } = useCollabPresence();
   // Interaction state
@@ -135,6 +137,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       execute,
       activePointerIdRef,
       capturedPointerRef,
+      ctrlKeyRef,
     }),
     [
       getGridCoords,
@@ -154,6 +157,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       updateBin,
       deleteBin,
       execute,
+      ctrlKeyRef,
     ]
   );
 
@@ -360,6 +364,28 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     // always current. The refs are updated on every render, allowing this effect to
     // have minimal deps while still using current handler implementations.
   }, [interaction, setInteraction, setDropTarget, getGridCoords, clampCoords]);
+
+  // Track Ctrl key state for smart snap override (hold Ctrl to disable snapping).
+  // Reset on blur/visibilitychange to prevent stale state when tab loses focus
+  // while Ctrl is held (keyup never fires in that case).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      ctrlKeyRef.current = e.ctrlKey;
+    };
+    const resetCtrlKey = () => {
+      ctrlKeyRef.current = false;
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('keyup', onKey);
+    window.addEventListener('blur', resetCtrlKey);
+    document.addEventListener('visibilitychange', resetCtrlKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keyup', onKey);
+      window.removeEventListener('blur', resetCtrlKey);
+      document.removeEventListener('visibilitychange', resetCtrlKey);
+    };
+  }, [ctrlKeyRef]);
 
   // Broadcast interaction state to remote users for collaborative previews
   useEffect(() => {

@@ -1,7 +1,9 @@
 import { useCallback } from 'react';
 import { useInteractionStore, useViewStore, useLayoutStore, useToastStore } from '@/core/store';
+import { useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { canSwapBins, findBinAtPosition } from '@/shared/utils/position';
+import { snapGroupDelta } from '@/shared/utils/snap';
 import { constrainGroupDelta } from './selection';
 import { capturePointer } from './interaction';
 import { findBinById, findBinsByIds } from '@/utils/entity';
@@ -53,6 +55,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
     execute,
     activePointerIdRef,
     capturedPointerRef,
+    ctrlKeyRef,
   } = context;
 
   /**
@@ -179,6 +182,9 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
       let swapTarget: SwapTarget | undefined;
       let invalidReason: ValidationReason | undefined;
       let blockingInfo: BlockingInfo | undefined;
+      let isSnapped = false;
+      let finalDeltaX = deltaX;
+      let finalDeltaY = deltaY;
 
       if (overGrid) {
         // Check for swap target when in swap mode (single bin only)
@@ -221,6 +227,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
                 width: bin.width,
                 depth: bin.depth,
                 height: bin.height,
+                clearanceHeight: bin.clearanceHeight,
               },
               activeLayerId,
               layout,
@@ -235,21 +242,55 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
               break;
             }
           }
+
+          // Smart snap: if placement is invalid due to collision and Ctrl not held, try nearby positions
+          if (
+            !allValid &&
+            !ctrlKeyRef.current &&
+            (invalidReason === 'collision' || invalidReason === 'blocked_zone')
+          ) {
+            const halfBinMode = useHalfBinModeStore.getState().halfBinMode;
+            const step = halfBinMode ? 0.5 : 1;
+            const moveDirX = Math.sign(rawDeltaX);
+            const moveDirY = Math.sign(rawDeltaY);
+
+            const snapResult = snapGroupDelta(
+              draggedBins,
+              deltaX,
+              deltaY,
+              activeLayerId,
+              layout,
+              otherBinIds,
+              moveDirX,
+              moveDirY,
+              step
+            );
+
+            if (snapResult) {
+              finalDeltaX = snapResult.x;
+              finalDeltaY = snapResult.y;
+              isSnapped = snapResult.isSnapped;
+              allValid = true;
+              invalidReason = undefined;
+              blockingInfo = undefined;
+            }
+          }
         }
       }
 
       // Store the constrained delta (not absolute position) for use in drop and overlay
       setInteraction({
         ...interaction,
-        currentCoord: { x: deltaX, y: deltaY },
+        currentCoord: { x: finalDeltaX, y: finalDeltaY },
         valid: allValid,
         isOverGrid: overGrid,
+        isSnapped,
         swapTarget,
         invalidReason,
         blockingInfo,
       });
     },
-    [layout, activeLayerId, isInBounds, setInteraction]
+    [layout, activeLayerId, isInBounds, setInteraction, ctrlKeyRef]
   );
 
   /**

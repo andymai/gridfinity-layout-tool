@@ -214,6 +214,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     previews.push(
       <div
         key="draw-preview"
+        data-interaction-preview="draw"
         style={{
           position: 'absolute',
           left,
@@ -306,8 +307,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const primaryBin = binMap.get(binIds[0]);
       if (!primaryBin) return null;
 
-      const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
-      const bgColor = valid ? 'var(--color-success-muted)' : 'var(--color-error-muted)';
+      const borderColor = valid
+        ? interaction.isSnapped
+          ? 'var(--color-warning)'
+          : 'var(--color-success)'
+        : 'var(--color-error)';
+      const bgColor = valid
+        ? interaction.isSnapped
+          ? 'var(--color-warning-muted)'
+          : 'var(--color-success-muted)'
+        : 'var(--color-error-muted)';
 
       // currentCoord now stores the constrained delta (not absolute position)
       const deltaX = currentCoord.x;
@@ -338,6 +347,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         previews.push(
           <div
             key={`drag-preview-${binId}`}
+            data-interaction-preview="drag"
+            data-snap-state={valid ? (interaction.isSnapped ? 'snapped' : 'valid') : 'invalid'}
             style={{
               position: 'absolute',
               left,
@@ -367,8 +378,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     }
   } else if (interaction.type === 'resize') {
     const { binIds, currentRects, valid } = interaction;
-    const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
-    const bgColor = valid ? 'var(--color-success-muted)' : 'var(--color-error-muted)';
+    const borderColor = valid
+      ? interaction.isSnapped
+        ? 'var(--color-warning)'
+        : 'var(--color-success)'
+      : 'var(--color-error)';
+    const bgColor = valid
+      ? interaction.isSnapped
+        ? 'var(--color-warning-muted)'
+        : 'var(--color-success-muted)'
+      : 'var(--color-error-muted)';
 
     let firstPreviewLeft = 0;
     let firstPreviewTop = 0;
@@ -428,6 +447,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       previews.push(
         <div
           key={`resize-preview-${binId}`}
+          data-interaction-preview="resize"
+          data-snap-state={valid ? (interaction.isSnapped ? 'snapped' : 'valid') : 'invalid'}
           style={{
             position: 'absolute',
             left,
@@ -461,8 +482,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Only show preview if we have a valid coordinate (mouse is over grid)
     if (bin && currentCoord) {
-      const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
-      const bgColor = valid ? 'var(--color-success-muted)' : 'var(--color-error-muted)';
+      const borderColor = valid
+        ? interaction.isSnapped
+          ? 'var(--color-warning)'
+          : 'var(--color-success)'
+        : 'var(--color-error)';
+      const bgColor = valid
+        ? interaction.isSnapped
+          ? 'var(--color-warning-muted)'
+          : 'var(--color-success-muted)'
+        : 'var(--color-error-muted)';
 
       const left = calcLeft(currentCoord.x);
       const top = calcTop(currentCoord.y, bin.depth);
@@ -472,6 +501,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       previews.push(
         <div
           key={`staging-drag-preview-${binId}`}
+          data-interaction-preview="stagingDrag"
+          data-snap-state={valid ? (interaction.isSnapped ? 'snapped' : 'valid') : 'invalid'}
           style={{
             position: 'absolute',
             left,

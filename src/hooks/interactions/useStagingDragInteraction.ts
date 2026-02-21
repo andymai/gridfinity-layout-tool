@@ -1,74 +1,13 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useInteractionStore } from '@/core/store';
 import { useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin, clamp } from '@/shared/utils/validation';
+import { snapPosition } from '@/shared/utils/snap';
 import { capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
-import type {
-  Bin,
-  Coord,
-  Layout,
-  LayerId,
-  ValidationReason,
-  BlockingInfo,
-  BinId,
-} from '@/core/types';
-
-/**
- * When a staging drag position collides with an existing bin, try nudging
- * by ±1 step (or ±0.5 in half-bin mode) in each axis to find the nearest
- * valid position. This prevents flickering at bin boundaries.
- *
- * Returns the nudged valid position, or null if no nearby valid position exists.
- */
-function findNearestValidPosition(
-  targetX: number,
-  targetY: number,
-  bin: Bin,
-  activeLayerId: LayerId,
-  layout: Layout,
-  step: number
-): { x: number; y: number } | null {
-  const maxX = layout.drawer.width - bin.width;
-  const maxY = layout.drawer.depth - bin.depth;
-
-  // Try nudges in order of increasing distance: axis-aligned first, then diagonal
-  const nudges = [
-    { dx: -step, dy: 0 },
-    { dx: step, dy: 0 },
-    { dx: 0, dy: -step },
-    { dx: 0, dy: step },
-    { dx: -step, dy: -step },
-    { dx: step, dy: -step },
-    { dx: -step, dy: step },
-    { dx: step, dy: step },
-  ];
-
-  for (const { dx, dy } of nudges) {
-    const nx = clamp(targetX + dx, 0, maxX);
-    const ny = clamp(targetY + dy, 0, maxY);
-    // Skip if clamping brought us back to the same position
-    if (nx === targetX && ny === targetY) continue;
-    const result = canPlaceBin(
-      {
-        x: nx,
-        y: ny,
-        width: bin.width,
-        depth: bin.depth,
-        height: bin.height,
-        clearanceHeight: bin.clearanceHeight,
-      },
-      activeLayerId,
-      layout,
-      bin.id
-    );
-    if (result.valid) return { x: nx, y: ny };
-  }
-
-  return null;
-}
+import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types';
 
 /**
  * Hook for staging drag mode interactions: dragging bins from the stash onto the grid.
@@ -108,7 +47,11 @@ export function useStagingDragInteraction(
     execute,
     activePointerIdRef,
     capturedPointerRef,
+    ctrlKeyRef,
   } = context;
+
+  // Track previous cursor position for movement direction
+  const prevCoordRef = useRef<Coord | null>(null);
 
   /**
    * Start dragging a bin from staging.
@@ -124,6 +67,9 @@ export function useStagingDragInteraction(
 
       // Capture pointer at document level for reliable event delivery
       capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
+
+      // Reset movement direction tracking for fresh drag
+      prevCoordRef.current = null;
 
       setInteraction({
         type: 'stagingDrag',
@@ -171,43 +117,61 @@ export function useStagingDragInteraction(
       let finalX = targetX;
       let finalY = targetY;
       let finalValid = result.valid;
+      let isSnapped = false;
       let invalidReason: ValidationReason | undefined;
       let blockingInfo: BlockingInfo | undefined;
 
-      if (!result.valid && (result.reason === 'collision' || result.reason === 'blocked_zone')) {
-        // Snap to nearest valid position to prevent flickering at bin boundaries
-        const halfBinMode = useHalfBinModeStore.getState().halfBinMode;
-        const step = halfBinMode ? 0.5 : 1;
-        const snapped = findNearestValidPosition(
-          targetX,
-          targetY,
-          bin,
-          activeLayerId,
-          layout,
-          step
-        );
-        if (snapped) {
-          finalX = snapped.x;
-          finalY = snapped.y;
-          finalValid = true;
-        } else {
+      if (!result.valid) {
+        if (!ctrlKeyRef.current) {
+          // Smart snap: search nearby for a valid position
+          const halfBinMode = useHalfBinModeStore.getState().halfBinMode;
+          const step = halfBinMode ? 0.5 : 1;
+          const prevCoord = prevCoordRef.current;
+          const moveDirX = prevCoord ? Math.sign(targetX - prevCoord.x) : 0;
+          const moveDirY = prevCoord ? Math.sign(targetY - prevCoord.y) : 0;
+
+          const snapResult = snapPosition(
+            targetX,
+            targetY,
+            bin.width,
+            bin.depth,
+            bin.height,
+            activeLayerId,
+            layout,
+            bin.id,
+            moveDirX,
+            moveDirY,
+            step,
+            bin.clearanceHeight
+          );
+
+          if (snapResult) {
+            finalX = snapResult.x;
+            finalY = snapResult.y;
+            finalValid = true;
+            isSnapped = snapResult.isSnapped;
+          }
+        }
+
+        // Propagate validation failure info when snap didn't find a position
+        if (!finalValid) {
           invalidReason = result.reason;
           blockingInfo = result.blockingInfo;
         }
-      } else if (!result.valid) {
-        invalidReason = result.reason;
-        blockingInfo = result.blockingInfo;
       }
+
+      prevCoordRef.current = { x: targetX, y: targetY };
 
       setInteraction({
         ...interaction,
         currentCoord: { x: finalX, y: finalY },
         valid: finalValid,
+        isSnapped,
         invalidReason,
         blockingInfo,
       });
     },
-    [layout, activeLayerId, setInteraction]
+    [layout, activeLayerId, setInteraction, ctrlKeyRef]
   );
 
   /**

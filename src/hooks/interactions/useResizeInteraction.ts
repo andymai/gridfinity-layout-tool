@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { snapResizeRect } from '@/shared/utils/snap';
 import { calculateResizeRect, capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -38,6 +39,7 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
     execute,
     activePointerIdRef,
     capturedPointerRef,
+    ctrlKeyRef,
   } = context;
 
   /**
@@ -100,17 +102,19 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
       // Resize all selected bins by same delta
       const newRects = new Map<BinId, Rect>();
       let allValid = true;
+      let isSnapped = false;
       let invalidReason: ValidationReason | undefined;
       let blockingInfo: BlockingInfo | undefined;
       const otherBinIds = new Set(interaction.binIds);
+
+      const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
+      const minSizeNow = halfBinModeNow ? 0.5 : 1;
 
       for (const binId of interaction.binIds) {
         const bin = findBinById(layout, binId);
         const startRect = interaction.startRects.get(binId);
         if (!bin || !startRect) continue;
 
-        const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
-        const minSizeNow = halfBinModeNow ? 0.5 : 1;
         const newRect = calculateResizeRect(
           startRect,
           interaction.handle,
@@ -118,10 +122,9 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
           layout.drawer,
           minSizeNow
         );
-        newRects.set(binId, newRect);
 
         const result = canPlaceBin(
-          { ...newRect, height: bin.height },
+          { ...newRect, height: bin.height, clearanceHeight: bin.clearanceHeight },
           activeLayerId,
           layout,
           binId,
@@ -129,10 +132,36 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
         );
 
         if (!result.valid) {
-          allValid = false;
-          invalidReason = result.reason;
-          blockingInfo = result.blockingInfo;
-          break; // Preserve first blocking reason, consistent with drag interaction
+          // Smart snap: find max valid size if Ctrl not held.
+          // Each bin snaps independently — a uniform delta would over-constrain
+          // groups where bins face different collision contexts.
+          if (!ctrlKeyRef.current) {
+            const snapResult = snapResizeRect(
+              startRect,
+              interaction.handle,
+              newRect,
+              bin.height,
+              activeLayerId,
+              layout,
+              binId,
+              otherBinIds,
+              minSizeNow,
+              layout.drawer,
+              bin.clearanceHeight
+            );
+            newRects.set(binId, snapResult.rect);
+            if (snapResult.isSnapped) {
+              isSnapped = true;
+            }
+          } else {
+            newRects.set(binId, newRect);
+            allValid = false;
+            invalidReason = result.reason;
+            blockingInfo = result.blockingInfo;
+            break;
+          }
+        } else {
+          newRects.set(binId, newRect);
         }
       }
 
@@ -140,11 +169,12 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
         ...interaction,
         currentRects: newRects,
         valid: allValid,
+        isSnapped,
         invalidReason,
         blockingInfo,
       });
     },
-    [layout, activeLayerId, setInteraction]
+    [layout, activeLayerId, setInteraction, ctrlKeyRef]
   );
 
   /**
