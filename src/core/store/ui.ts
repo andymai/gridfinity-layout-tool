@@ -84,13 +84,6 @@ interface UIState {
   // Half-bin mode (delegated to useHalfBinModeStore)
   halfBinMode: boolean;
 
-  // Shared preview (delegated to useSharedPreviewStore)
-  sharedLayoutPreview: Layout | null;
-  sharedLayoutOriginalName: string | null;
-  sharedLayoutAuthorName: string | null;
-  sharedLayoutCloudShareId: string | null;
-  sharedLayoutPermission: 'view' | 'edit' | null;
-
   // Selection actions
   setActiveLayer: (id: LayerId) => void;
   setSelectedBin: (id: BinId | null) => void;
@@ -213,7 +206,6 @@ function getCombinedState(): Omit<
   const interaction = useInteractionStore.getState();
   const mobile = useMobileStore.getState();
   const halfBin = useHalfBinModeStore.getState();
-  const sharedPreview = useSharedPreviewStore.getState();
 
   return {
     // Selection
@@ -248,17 +240,6 @@ function getCombinedState(): Omit<
     mobileLayersTab: mobile.mobileLayersTab,
     // Half-bin mode
     halfBinMode: halfBin.halfBinMode,
-    // Shared preview
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
-    sharedLayoutPreview: sharedPreview.sharedLayoutPreview,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
-    sharedLayoutOriginalName: sharedPreview.sharedLayoutOriginalName,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
-    sharedLayoutAuthorName: sharedPreview.sharedLayoutAuthorName,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
-    sharedLayoutCloudShareId: sharedPreview.sharedLayoutCloudShareId,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- bridge for backward compat
-    sharedLayoutPermission: sharedPreview.sharedLayoutPermission,
   };
 }
 

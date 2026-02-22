@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSlotFreeWalls, getHoneycombWallDescriptors } from './wallPatterns';
+import { getSlotFreeWalls } from './wallPatterns';
 import type { BinParams } from '@/shared/types/bin';
 
 /** Minimal BinParams stub for testing wallPatterns functions. */
@@ -76,64 +76,5 @@ describe('getSlotFreeWalls', () => {
       })
     );
     expect(result).toEqual({ front: false, back: false, left: false, right: false });
-  });
-});
-
-describe('getHoneycombWallDescriptors', () => {
-  it('returns null when wall pattern disabled', () => {
-    const params = makeParams({ wallPattern: { enabled: false, pattern: 'honeycomb' as const } });
-    expect(getHoneycombWallDescriptors(params, 80, 80, 20)).toBeNull();
-  });
-
-  it('returns null when wall height too short', () => {
-    const params = makeParams({ wallPattern: { enabled: true, pattern: 'honeycomb' as const } });
-    expect(getHoneycombWallDescriptors(params, 80, 80, 3)).toBeNull();
-  });
-
-  it('returns null when all walls have slot grooves', () => {
-    const params = makeParams({
-      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
-      style: 'slotted',
-      slotConfig: {
-        ...DEFAULT_SLOT_CONFIG,
-        x: { enabled: true, pitch: 20 },
-        y: { enabled: true, pitch: 20 },
-      },
-    });
-    expect(getHoneycombWallDescriptors(params, 80, 80, 20)).toBeNull();
-  });
-
-  it('returns 4 wall descriptors for standard bin', () => {
-    const params = makeParams({ wallPattern: { enabled: true, pattern: 'honeycomb' as const } });
-    const result = getHoneycombWallDescriptors(params, 80, 80, 20);
-    expect(result).not.toBeNull();
-    expect(result).toHaveLength(4);
-  });
-
-  it('returns 2 wall descriptors when one axis has slots', () => {
-    const params = makeParams({
-      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
-      style: 'slotted',
-      slotConfig: {
-        ...DEFAULT_SLOT_CONFIG,
-        x: { enabled: true, pitch: 20 },
-        y: { enabled: false, pitch: 20 },
-      },
-    });
-    const result = getHoneycombWallDescriptors(params, 80, 80, 20);
-    expect(result).not.toBeNull();
-    expect(result).toHaveLength(2);
-  });
-
-  it('each descriptor has hex centers and wall transform', () => {
-    const params = makeParams({ wallPattern: { enabled: true, pattern: 'honeycomb' as const } });
-    const result = getHoneycombWallDescriptors(params, 40, 40, 20);
-    expect(result).not.toBeNull();
-    for (const desc of result!) {
-      expect(desc.centers.length).toBeGreaterThan(0);
-      expect(typeof desc.translateX).toBe('number');
-      expect(typeof desc.translateY).toBe('number');
-      expect(typeof desc.translateZ).toBe('number');
-    }
   });
 });

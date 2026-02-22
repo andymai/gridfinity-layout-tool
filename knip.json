@@ -4,7 +4,6 @@
   "project": ["src/**/*.{ts,tsx}", "api/**/*.ts", "scripts/**/*.ts"],
   "ignore": ["src/test/**", "**/*.test.{ts,tsx}", "e2e/**", "**/index.ts"],
   "ignoreDependencies": ["three-stdlib", "axe-core", "postcss"],
-  "ignoreBinaries": ["partykit"],
   "exclude": ["exports", "types", "duplicates"],
   "vite": {
     "config": ["vite.config.ts"]

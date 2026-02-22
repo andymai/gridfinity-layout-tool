@@ -28,18 +28,6 @@ export interface SharedPreviewData {
 interface SharedPreviewState {
   /** The shared preview data, or null if not in preview mode */
   sharedPreview: SharedPreviewData | null;
-
-  // Legacy accessors for backward compatibility
-  /** @deprecated Access via sharedPreview?.layout */
-  sharedLayoutPreview: Layout | null;
-  /** @deprecated Access via sharedPreview?.originalName */
-  sharedLayoutOriginalName: string | null;
-  /** @deprecated Access via sharedPreview?.authorName */
-  sharedLayoutAuthorName: string | null;
-  /** @deprecated Access via sharedPreview?.cloudShareId */
-  sharedLayoutCloudShareId: string | null;
-  /** @deprecated Access via sharedPreview?.permission */
-  sharedLayoutPermission: 'view' | 'edit' | null;
 }
 
 interface SharedPreviewActions {
@@ -65,52 +53,23 @@ interface SharedPreviewActions {
 export type SharedPreviewStore = SharedPreviewState & SharedPreviewActions;
 
 export const useSharedPreviewStore = create<SharedPreviewStore>((set) => ({
-  // Initial state
   sharedPreview: null,
-  sharedLayoutPreview: null,
-  sharedLayoutOriginalName: null,
-  sharedLayoutAuthorName: null,
-  sharedLayoutCloudShareId: null,
-  sharedLayoutPermission: null,
 
-  // Actions
   setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) => {
     if (layout) {
-      const data: SharedPreviewData = {
-        layout,
-        originalName: originalName ?? layout.name,
-        authorName: authorName ?? null,
-        cloudShareId: cloudShareId ?? null,
-        permission: permission ?? null,
-      };
       set({
-        sharedPreview: data,
-        // Keep legacy fields in sync
-        sharedLayoutPreview: data.layout,
-        sharedLayoutOriginalName: data.originalName,
-        sharedLayoutAuthorName: data.authorName,
-        sharedLayoutCloudShareId: data.cloudShareId,
-        sharedLayoutPermission: data.permission,
+        sharedPreview: {
+          layout,
+          originalName: originalName ?? layout.name,
+          authorName: authorName ?? null,
+          cloudShareId: cloudShareId ?? null,
+          permission: permission ?? null,
+        },
       });
     } else {
-      set({
-        sharedPreview: null,
-        sharedLayoutPreview: null,
-        sharedLayoutOriginalName: null,
-        sharedLayoutAuthorName: null,
-        sharedLayoutCloudShareId: null,
-        sharedLayoutPermission: null,
-      });
+      set({ sharedPreview: null });
     }
   },
 
-  clearSharedLayoutPreview: () =>
-    set({
-      sharedPreview: null,
-      sharedLayoutPreview: null,
-      sharedLayoutOriginalName: null,
-      sharedLayoutAuthorName: null,
-      sharedLayoutCloudShareId: null,
-      sharedLayoutPermission: null,
-    }),
+  clearSharedLayoutPreview: () => set({ sharedPreview: null }),
 }));

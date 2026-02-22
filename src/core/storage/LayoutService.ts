@@ -24,7 +24,6 @@ import type { Result, StorageError } from '@/core/result';
 import {
   ok,
   err,
-  isOk,
   isErr,
   tryCatchAsync,
   storageNotFound,
@@ -302,14 +301,6 @@ export function saveLibrary(library: LayoutLibrary): void {
 }
 
 /**
- * Save the layout library index with Result-based error handling.
- * @deprecated Use saveLibrary directly.
- */
-export function saveLibraryResult(library: LayoutLibrary): void {
-  saveLibrary(library);
-}
-
-/**
  * Validate the structural integrity of a parsed library object.
  * Does NOT check whether individual layouts exist in storage — that
  * is deferred to reconcileLibraryAsync() after mount.
@@ -395,62 +386,17 @@ export async function loadLibraryAsync(): Promise<LayoutLibrary | null> {
 
 /**
  * Load the layout library index from localStorage (sync fallback).
- * Routes through loadLibraryResult internally for consistent error handling.
+ * Distinguishes between "not found" and "corrupted" for correct initialization behavior.
  */
 export function loadLibrary(): LayoutLibrary | null {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional sync fallback path
-  const result = loadLibraryResult();
-  return isOk(result) ? result.value : null;
-}
-
-/**
- * Load the layout library index with Result-based error handling.
- * @deprecated Reads from localStorage only. Use loadLibraryAsync() for IndexedDB reads.
- * Distinguishes between "not found" (no library saved yet) and "corrupted" (invalid data).
- *
- * @example
- * ```ts
- * const result = loadLibraryResult();
- * match(result, {
- *   ok: (library) => initializeStore(library),
- *   err: (error) => {
- *     if (error.code === 'STORAGE_NOT_FOUND') {
- *       // First time user, create fresh library
- *     } else if (error.code === 'STORAGE_CORRUPTED') {
- *       // Offer recovery options
- *     }
- *   }
- * });
- * ```
- */
-export function loadLibraryResult(): Result<LayoutLibrary, StorageError> {
   try {
     const parsed = backend.loadSyncGeneric<LayoutLibrary>(LIBRARY_STORAGE_KEY);
-
-    if (!parsed) {
-      return err(storageNotFound(LIBRARY_STORAGE_KEY));
-    }
-
-    const cleaned = validateLibraryStructure(parsed);
-    if (!cleaned) {
-      return err(
-        storageCorrupted(LIBRARY_STORAGE_KEY, [
-          'Invalid library format or all entries corrupted/missing',
-        ])
-      );
-    }
-
-    return ok(cleaned);
-  } catch (error) {
-    return err(storageUnavailable('localStorage', error));
+    if (!parsed) return null;
+    return validateLibraryStructure(parsed);
+  } catch {
+    return null;
   }
 }
-
-/**
- * Compute preview data from a layout.
- * @deprecated Use computePreview from LayoutManager instead
- */
-export const computeLayoutPreview = computePreview;
 
 /**
  * Check if legacy single-layout storage exists.
@@ -459,12 +405,16 @@ export function hasLegacyLayout(): boolean {
   return backend.loadSync(LEGACY_STORAGE_KEY) !== null;
 }
 
+function loadLegacyLayout(): Layout | null {
+  const data = backend.loadSync(LEGACY_STORAGE_KEY);
+  return validateLoadedData('legacy', data, true);
+}
+
 /**
  * Migrate from legacy single-layout storage to library system.
  * Returns the migrated library, or null if no legacy layout exists.
  */
 export function migrateFromLegacyStorage(): LayoutLibrary | null {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration from legacy format
   const legacyLayout = loadLegacyLayout();
   if (!legacyLayout) return null;
 
@@ -537,8 +487,7 @@ function createLibraryEntry(layoutId: LayoutId, layout: Layout): LayoutEntry {
     name: layout.name || 'Untitled layout',
     createdAt: now,
     modifiedAt: now,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration helper
-    preview: computeLayoutPreview(layout),
+    preview: computePreview(layout),
   };
 }
 
@@ -655,40 +604,4 @@ export async function initializeLayoutLibrary(): Promise<{
   }
 
   return { library, activeLayout };
-}
-
-// === Legacy API (Deprecated) ===
-
-/**
- * Load layout from legacy single-layout storage.
- * @deprecated Use loadLayoutSync for multi-layout support.
- */
-function loadLegacyLayout(): Layout | null {
-  const data = backend.loadSync(LEGACY_STORAGE_KEY);
-  return validateLoadedData('legacy', data, true);
-}
-
-/**
- * Save layout to legacy single-layout storage.
- * @deprecated Use saveLayoutSync for multi-layout support.
- */
-export function saveLayout(layout: Layout): void {
-  backend.saveSync(LEGACY_STORAGE_KEY, layout);
-}
-
-/**
- * Load layout from legacy single-layout storage.
- * @deprecated Use loadLayoutSync for multi-layout support.
- */
-export function loadLayout(): Layout | null {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy compat wrapper
-  return loadLegacyLayout();
-}
-
-/**
- * Clear legacy storage.
- * @deprecated Use deleteLayoutSync for multi-layout support.
- */
-export function clearStorage(): void {
-  backend.deleteSync(LEGACY_STORAGE_KEY);
 }

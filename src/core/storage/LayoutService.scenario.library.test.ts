@@ -6,7 +6,6 @@ import {
   deleteLayoutSync,
   saveLibrary,
   loadLibrary,
-  computeLayoutPreview,
   hasLegacyLayout,
   migrateFromLegacyStorage,
   initializeLayoutLibrary,
@@ -289,103 +288,6 @@ describe('storage-library', () => {
       // loadLibrary validates structure only; orphan cleanup is in reconcileLibraryAsync
       expect(loaded).not.toBeNull();
       expect(loaded!.entries).toHaveLength(3);
-    });
-  });
-
-  describe('computeLayoutPreview', () => {
-    it('computes correct preview with binMap', () => {
-      const layout = createTestLayout();
-      layout.drawer = { width: 15, depth: 12, height: 10 };
-      layout.categories = [{ id: 'cat1', name: 'Category 1', color: '#FF0000' }];
-      layout.bins = [
-        {
-          id: '1',
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          layerId: 'l1',
-          category: 'cat1',
-          label: '',
-          notes: '',
-        },
-        {
-          id: '2',
-          x: 1,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
-          layerId: 'l1',
-          category: 'cat1',
-          label: '',
-          notes: '',
-        },
-        {
-          id: '3',
-          x: 2,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          layerId: 'l1',
-          category: 'cat1',
-          label: '',
-          notes: '',
-        },
-      ];
-      layout.layers = [
-        { id: 'l1', name: 'L1', height: 3 },
-        { id: 'l2', name: 'L2', height: 5 },
-      ];
-
-      const preview = computeLayoutPreview(layout);
-
-      expect(preview.drawerWidth).toBe(15);
-      expect(preview.drawerDepth).toBe(12);
-      expect(preview.drawerHeight).toBe(10);
-      expect(preview.binCount).toBe(3);
-      expect(preview.layerCount).toBe(2);
-      expect(preview.binMap).toHaveLength(3);
-      expect(preview.binMap![0]).toEqual({ x: 0, y: 0, w: 1, d: 1, c: '#FF0000' });
-      expect(preview.binMap![1]).toEqual({ x: 1, y: 0, w: 2, d: 2, c: '#FF0000' });
-    });
-
-    it('excludes staged bins from binMap', () => {
-      const layout = createTestLayout();
-      layout.categories = [{ id: 'cat1', name: 'Cat', color: '#00FF00' }];
-      layout.bins = [
-        {
-          id: '1',
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          layerId: 'l1',
-          category: 'cat1',
-          label: '',
-          notes: '',
-        },
-        {
-          id: '2',
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          layerId: '__staging__',
-          category: 'cat1',
-          label: '',
-          notes: '',
-        },
-      ];
-
-      const preview = computeLayoutPreview(layout);
-
-      expect(preview.binCount).toBe(2); // Total bins including staged
-      expect(preview.binMap).toHaveLength(1); // Only non-staged in binMap
     });
   });
 
