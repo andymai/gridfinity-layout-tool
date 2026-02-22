@@ -6,6 +6,7 @@ import { useLibraryStore } from '@/core/store/library';
 import { useUIStore } from '@/core/store/ui';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { createDefaultLayout } from '@/core/constants';
 import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
 import * as storage from '@/core/storage';
@@ -403,9 +404,14 @@ describe('useLayoutSwitcher', () => {
     it('clears sharedLayoutPreview state when switching', async () => {
       // Set up shared layout preview state
       const mockLayout = createTestLayout('Shared');
-      useUIStore.setState({
-        sharedLayoutPreview: mockLayout,
-        sharedLayoutOriginalName: 'Shared Layout',
+      useSharedPreviewStore.setState({
+        sharedPreview: {
+          layout: mockLayout,
+          originalName: 'Shared Layout',
+          authorName: null,
+          cloudShareId: null,
+          permission: null,
+        },
       });
 
       const { result } = renderHook(() => useLayoutSwitcher());
@@ -414,8 +420,7 @@ describe('useLayoutSwitcher', () => {
         await result.current.switchLayout(SECOND_LAYOUT_ID);
       });
 
-      expect(useUIStore.getState().sharedLayoutPreview).toBeNull();
-      expect(useUIStore.getState().sharedLayoutOriginalName).toBeNull();
+      expect(useSharedPreviewStore.getState().sharedPreview).toBeNull();
     });
 
     it('skips saving when current layout is __shared_preview__', async () => {

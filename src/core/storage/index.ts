@@ -52,16 +52,10 @@ export { saveLayoutSync, loadLayoutSync, deleteLayoutSync } from './LayoutServic
 // === Library Management ===
 export {
   saveLibrary,
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
-  saveLibraryResult,
   loadLibrary,
   loadLibraryAsync,
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
-  loadLibraryResult,
   initializeLayoutLibrary,
   reconcileLibraryAsync,
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
-  computeLayoutPreview,
   getLayoutStorageKey,
   getStorageUsage,
   hasLegacyLayout,
@@ -116,12 +110,6 @@ export {
   saveSharedWithMe,
   loadSharedWithMe,
   clearSharedWithMe,
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
-  saveSharedWithMeResult,
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
-  loadSharedWithMeResult,
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- re-exported for backward compat
-  clearSharedWithMeResult,
   saveSharedWithMeAsync,
   loadSharedWithMeAsync,
   clearSharedWithMeAsync,
@@ -167,8 +155,3 @@ export type { CleanupStats } from './localStorageCleanup';
 
 // === Backend (Internal - for useStorageMigration hook) ===
 export { getStorageBackend, resetStorageBackendCache } from './backend';
-
-// === Legacy API (Deprecated) ===
-// These are kept for backward compatibility only
-// eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy compat re-exports
-export { saveLayout, loadLayout, clearStorage } from './LayoutService';

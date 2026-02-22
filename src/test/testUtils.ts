@@ -90,11 +90,7 @@ export function resetAllStores(): void {
 
   // Shared preview store
   useSharedPreviewStore.setState({
-    sharedLayoutPreview: null,
-    sharedLayoutOriginalName: null,
-    sharedLayoutAuthorName: null,
-    sharedLayoutCloudShareId: null,
-    sharedLayoutPermission: null,
+    sharedPreview: null,
   });
 
   // History store
@@ -436,13 +432,8 @@ export function createStorageMock() {
     deleteLayoutSync: vi.fn(),
     deleteLayoutAsync: vi.fn().mockResolvedValue(undefined),
     saveLibrary: vi.fn(),
-    computeLayoutPreview: vi.fn(() => mockPreview),
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
     saveLayoutResult: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
-    saveLibraryResult: vi.fn(() => ({ ok: true, value: undefined })),
-    saveLayout: vi.fn(),
-    loadLayout: vi.fn(),
-    clearStorage: vi.fn(),
     exportLayout: vi.fn(),
     importLayout: vi.fn(),
     downloadLayoutAsFile: vi.fn(),

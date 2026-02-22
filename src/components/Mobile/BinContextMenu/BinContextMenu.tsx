@@ -144,18 +144,13 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const [showLayerPicker, setShowLayerPicker] = useState(false);
 
   const handleMoveToGrid = (targetLayerId: LayerId) => {
-    let placed = false;
-    execute(() => {
-      const result = moveBinFromStaging(bin.id, targetLayerId, 0, 0);
-      placed = isOk(result);
-    });
+    const placed = execute(() => isOk(moveBinFromStaging(bin.id, targetLayerId, 0, 0)));
     if (placed) {
       addToast(t('toast.binsMovedToLayer', { count: 1 }), 'success');
-      onClose();
     } else {
       addToast(t('toast.dragFromStash'), 'info');
-      onClose();
     }
+    onClose();
   };
 
   // On desktop, only show Edit Properties when right panel is collapsed

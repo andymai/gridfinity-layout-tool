@@ -267,9 +267,7 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
 
       await waitFor(() => {
-        const state = useSharedPreviewStore.getState();
-        expect(state.sharedLayoutPreview).toBeNull();
-        expect(state.sharedLayoutOriginalName).toBeNull();
+        expect(useSharedPreviewStore.getState().sharedPreview).toBeNull();
       });
     });
 
@@ -338,9 +336,7 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        const state = useSharedPreviewStore.getState();
-        expect(state.sharedLayoutPreview).toBeNull();
-        expect(state.sharedLayoutOriginalName).toBeNull();
+        expect(useSharedPreviewStore.getState().sharedPreview).toBeNull();
       });
     });
 
@@ -387,9 +383,8 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Keep viewing/i }));
 
       // State should remain unchanged
-      const state = useSharedPreviewStore.getState();
-      expect(state.sharedLayoutPreview).not.toBeNull();
-      expect(state.sharedLayoutOriginalName).toBe('Shared Layout');
+      expect(useSharedPreviewStore.getState().sharedPreview).not.toBeNull();
+      expect(useSharedPreviewStore.getState().sharedPreview?.originalName).toBe('Shared Layout');
     });
   });
 

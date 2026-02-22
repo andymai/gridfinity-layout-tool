@@ -8,15 +8,7 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import type { PatternCenter, PatternCalculator } from './patterns';
-import {
-  getPatternCalculator,
-  PATTERN_REGISTRY,
-  HoneycombPatternCalculator,
-  DEFAULT_HEX_WEB_THICKNESS,
-} from './patterns';
-
-// Re-export for backward compatibility
-export { calculateHexCenters, type HexCenter, type HexGridConfig } from './hexGrid';
+import { getPatternCalculator, PATTERN_REGISTRY } from './patterns';
 
 /**
  * Identifies which walls are free of divider slot grooves.
@@ -41,9 +33,6 @@ export interface WallPatternDescriptor {
   readonly zRotation?: number;
 }
 
-/** @deprecated Use WallPatternDescriptor instead */
-export type WallHexDescriptor = WallPatternDescriptor;
-
 /**
  * Determine which walls are free of slot grooves.
  */
@@ -61,11 +50,6 @@ export function getSlotFreeWalls(params: BinParams): SlotFreeWalls {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/** @deprecated Use DEFAULT_HEX_RADIUS from patterns/honeycombPattern instead */
-export const HEX_RADIUS = 1.8;
-/** @deprecated Use DEFAULT_HEX_WEB_THICKNESS from patterns/honeycombPattern instead */
-export const WEB_THICKNESS = 0.8;
-
 /** Keep-out from wall top edge (stacking lip interface). */
 export const TOP_KEEP_OUT = 1.5;
 
@@ -75,14 +59,6 @@ export const TOP_KEEP_OUT = 1.5;
  * cut into the floor at the wall-floor junction.
  */
 export const MIN_BOTTOM_KEEP_OUT = 1.0;
-
-/**
- * Calculate minimum pattern height for a given calculator.
- * Delegates to the calculator's own method for pattern-specific calculations.
- */
-function getMinPatternHeight(calculator: PatternCalculator): number {
-  return calculator.getMinPatternHeight();
-}
 
 /**
  * Calculate wall pattern descriptors for any pattern type.
@@ -114,7 +90,7 @@ export function getWallPatternDescriptors(
   const bottomKeepOut = Math.max(MIN_BOTTOM_KEEP_OUT, params.wallThickness);
 
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
-  const minHeight = getMinPatternHeight(calculator);
+  const minHeight = calculator.getMinPatternHeight();
 
   if (patternHeight < minHeight) {
     return null;
@@ -152,45 +128,6 @@ export function getWallPatternDescriptors(
   if (slotFree.right) addWall(innerD, innerW / 2, 0, -90);
 
   return descriptors.length > 0 ? descriptors : null;
-}
-
-/**
- * Calculate honeycomb wall descriptors for wall pattern mode.
- *
- * @deprecated Use getWallPatternDescriptors with getPatternCalculator instead.
- * This function is kept for backward compatibility.
- *
- * @returns Array of wall descriptors, or null if disabled/no valid walls
- */
-export function getHoneycombWallDescriptors(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number,
-  hexRadiusOverride?: number
-): WallPatternDescriptor[] | null {
-  // Runtime guard: wallPattern may be missing from old saved data
-  const wallPattern = params.wallPattern as typeof params.wallPattern | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime guard for old data
-  if (!wallPattern?.enabled || wallPattern.pattern !== 'honeycomb') {
-    return null;
-  }
-
-  // Use legacy path with override support
-  const calculator = hexRadiusOverride
-    ? getPatternCalculator('honeycomb', 1) // Base calculator, radius ignored
-    : getPatternCalculator('honeycomb', params.height);
-
-  // If override provided, create custom calculator with that radius
-  if (hexRadiusOverride) {
-    const customCalculator = new HoneycombPatternCalculator(
-      hexRadiusOverride,
-      DEFAULT_HEX_WEB_THICKNESS
-    );
-    return getWallPatternDescriptors(params, innerW, innerD, wallHeight, customCalculator);
-  }
-
-  return getWallPatternDescriptors(params, innerW, innerD, wallHeight, calculator);
 }
 
 /**

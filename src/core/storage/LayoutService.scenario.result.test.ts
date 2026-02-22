@@ -10,8 +10,6 @@ import {
   saveLayoutResult,
   loadLayoutResult,
   deleteLayoutResult,
-  saveLibraryResult,
-  loadLibraryResult,
   migrateFromLegacyStorageResult,
   migrateLayoutToIndexedDBResult,
   migrateAllLayoutsToIndexedDBResult,
@@ -21,7 +19,7 @@ import {
 import { createDefaultLayout } from '@/core/constants';
 import { expectOk, expectErr } from '@/test/testUtils';
 import { ok, err, getUserMessage, isRetryable, storageQuotaExceeded } from '@/core/result';
-import type { Layout, LayoutLibrary } from '@/core/types';
+import type { Layout } from '@/core/types';
 
 // Mock the backend module
 vi.mock('@/core/storage/backend', () => ({
@@ -214,22 +212,6 @@ describe('Result-based storage functions', () => {
     });
   });
 
-  describe('saveLibraryResult', () => {
-    const testLibrary: LayoutLibrary = {
-      version: '1.0',
-      activeLayoutId: 'test-id',
-      settings: {},
-      entries: [],
-    };
-
-    it('returns void (delegates to saveLibrary fire-and-forget)', () => {
-      const result = saveLibraryResult(testLibrary);
-
-      // saveLibraryResult now returns void (delegates to saveLibrary)
-      expect(result).toBeUndefined();
-    });
-  });
-
   describe('error properties', () => {
     it('storage errors have timestamp', async () => {
       vi.mocked(backend.loadAsync).mockResolvedValue(null);
@@ -260,67 +242,6 @@ describe('Result-based storage functions', () => {
 
       const error = expectErr(result);
       expect(isRetryable(error.code)).toBe(false);
-    });
-  });
-
-  describe('loadLibraryResult', () => {
-    it('returns Ok with library on successful load', () => {
-      const testLibrary: LayoutLibrary = {
-        version: '1.0',
-        activeLayoutId: 'test-id',
-        settings: {},
-        entries: [
-          {
-            id: 'test-id',
-            name: 'Test Layout',
-            createdAt: Date.now(),
-            modifiedAt: Date.now(),
-            preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
-              binCount: 0,
-              layerCount: 1,
-            },
-          },
-        ],
-      };
-      vi.mocked(backend.loadSyncGeneric).mockReturnValue(testLibrary);
-      vi.mocked(backend.loadSync).mockReturnValue({}); // Layout exists
-
-      const result = loadLibraryResult();
-
-      const value = expectOk(result);
-      expect(value.version).toBe('1.0');
-      expect(value.activeLayoutId).toBe('test-id');
-    });
-
-    it('returns Err with not found error when library does not exist', () => {
-      vi.mocked(backend.loadSyncGeneric).mockReturnValue(null);
-
-      const result = loadLibraryResult();
-
-      expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
-    });
-
-    it('returns Err with corrupted error for invalid library structure', () => {
-      vi.mocked(backend.loadSyncGeneric).mockReturnValue({
-        invalid: 'structure',
-      });
-
-      const result = loadLibraryResult();
-
-      expect(expectErr(result).code).toBe('STORAGE_CORRUPTED');
-    });
-
-    it('returns Err with unavailable error on exception', () => {
-      vi.mocked(backend.loadSyncGeneric).mockImplementation(() => {
-        throw new Error('Access denied');
-      });
-
-      const result = loadLibraryResult();
-
-      expect(expectErr(result).code).toBe('STORAGE_UNAVAILABLE');
     });
   });
 

@@ -141,14 +141,3 @@ export async function clearSharedWithMeAsync(): Promise<void> {
   }
   clearSharedWithMe();
 }
-
-// === Deprecated Aliases ===
-// These are kept for backward compatibility during the Result migration.
-// Prefer the non-suffixed versions above.
-
-/** @deprecated Use saveSharedWithMe instead */
-export const saveSharedWithMeResult = saveSharedWithMe;
-/** @deprecated Use loadSharedWithMe instead */
-export const loadSharedWithMeResult = loadSharedWithMe;
-/** @deprecated Use clearSharedWithMe instead */
-export const clearSharedWithMeResult = clearSharedWithMe;
