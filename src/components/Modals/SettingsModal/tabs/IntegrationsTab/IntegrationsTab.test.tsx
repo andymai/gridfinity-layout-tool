@@ -20,6 +20,10 @@ vi.mock('@/core/store', () => ({
           { id: 'thangs', name: 'Thangs', enabled: true, urlTemplate: '' },
           { id: 'printables', name: 'Printables', enabled: false, urlTemplate: '' },
         ],
+        slicerSites: [
+          { id: 'prusaslicer', name: 'PrusaSlicer', protocol: 'prusaslicer', enabled: true },
+          { id: 'orcaslicer', name: 'OrcaSlicer', protocol: 'orcaslicer', enabled: false },
+        ],
       },
       updateSetting: mockUpdateSetting,
     }),
@@ -80,5 +84,36 @@ describe('IntegrationsTab', () => {
     const thangsRow = screen.getByText('Thangs').closest('[role="checkbox"]')!;
     fireEvent.keyDown(thangsRow, { key: ' ' });
     expect(mockUpdateSetting).toHaveBeenCalledWith('stlSearchSites', expect.any(Array));
+  });
+
+  it('renders slicers heading', () => {
+    render(<IntegrationsTab />);
+    expect(screen.getByText('settings.slicers')).toBeInTheDocument();
+  });
+
+  it('renders slicer names', () => {
+    render(<IntegrationsTab />);
+    expect(screen.getByText('PrusaSlicer')).toBeInTheDocument();
+    expect(screen.getByText('OrcaSlicer')).toBeInTheDocument();
+  });
+
+  it('clicking enabled slicer calls updateSetting with slicer toggled off', () => {
+    render(<IntegrationsTab />);
+    const prusaRow = screen.getByText('PrusaSlicer').closest('[role="checkbox"]')!;
+    fireEvent.click(prusaRow);
+    expect(mockUpdateSetting).toHaveBeenCalledWith('slicerSites', [
+      { id: 'prusaslicer', name: 'PrusaSlicer', protocol: 'prusaslicer', enabled: false },
+      { id: 'orcaslicer', name: 'OrcaSlicer', protocol: 'orcaslicer', enabled: false },
+    ]);
+  });
+
+  it('clicking disabled slicer calls updateSetting with slicer toggled on', () => {
+    render(<IntegrationsTab />);
+    const orcaRow = screen.getByText('OrcaSlicer').closest('[role="checkbox"]')!;
+    fireEvent.click(orcaRow);
+    expect(mockUpdateSetting).toHaveBeenCalledWith('slicerSites', [
+      { id: 'prusaslicer', name: 'PrusaSlicer', protocol: 'prusaslicer', enabled: true },
+      { id: 'orcaslicer', name: 'OrcaSlicer', protocol: 'orcaslicer', enabled: true },
+    ]);
   });
 });
