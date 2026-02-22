@@ -2,6 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
   "trailingSlash": false,
+  "crons": [
+    {
+      "path": "/api/slicer-cleanup",
+      "schedule": "0 * * * *"
+    }
+  ],
   "redirects": [
     { "source": "/generator", "destination": "/gridfinity-bin-generator", "permanent": true },
     { "source": "/sizes", "destination": "/gridfinity-sizes", "permanent": true }
