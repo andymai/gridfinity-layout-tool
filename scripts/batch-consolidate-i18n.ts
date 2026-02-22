@@ -9,7 +9,6 @@
  *
  * Usage:
  *   npx tsx scripts/batch-consolidate-i18n.ts --dry-run   # preview
- *   npx tsx scripts/batch-consolidate-i18n.ts --fix-bugs  # fix Priority 3 value bugs first
  *   npx tsx scripts/batch-consolidate-i18n.ts             # execute all
  */
 
@@ -22,7 +21,6 @@ const SRC_DIR = join(ROOT_DIR, 'src');
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
-const FIX_BUGS = args.includes('--fix-bugs') || !DRY_RUN; // always fix bugs when executing
 
 // ---------------------------------------------------------------------------
 // Dedup pairs: [from (remove), to (keep)]
@@ -296,12 +294,9 @@ for (const [key, wrongValue, correctValue] of VALUE_FIXES) {
   }
 }
 
-// Reload en.ts and all JSON locale data after fixes
+// Reload en.ts after fixes (in-memory locale data is already updated above)
 if (!DRY_RUN) {
   enTranslations = getEnglishTranslations();
-  for (const file of localeFiles) {
-    localeData.set(file, getJsonTranslations(file));
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -416,26 +411,24 @@ if (DRY_RUN) {
 // ---------------------------------------------------------------------------
 console.log('\n\n🚀 Phase 2: Executing consolidations\n');
 
-const callSiteUpdates: [string, string][] = [];
-
-for (const [from, to] of fullConsolidate) {
+for (const [from] of fullConsolidate) {
   const removed = removeFromEnTs(from);
   console.log(`  ${removed ? '✅' : '⚠️ '} en.ts: removed '${from}'`);
 
   for (const file of localeFiles) {
     const data = localeData.get(file)!;
-    if (from in data) {
-      delete data[from];
-      writeJsonTranslations(file, data);
-    }
+    delete data[from];
   }
-  callSiteUpdates.push([from, to]);
 }
 
-for (const [from, to] of enOnlyRemove) {
+// Write each locale file once after all deletions
+for (const file of localeFiles) {
+  writeJsonTranslations(file, localeData.get(file)!);
+}
+
+for (const [from] of enOnlyRemove) {
   const removed = removeFromEnTs(from);
   console.log(`  ${removed ? '✅' : '⚠️ '} en.ts-only: removed '${from}'`);
-  callSiteUpdates.push([from, to]);
 }
 
 // ---------------------------------------------------------------------------
@@ -443,7 +436,8 @@ for (const [from, to] of enOnlyRemove) {
 // ---------------------------------------------------------------------------
 console.log('\n\n🔄 Phase 3: Updating source code call sites\n');
 
-for (const [from, to] of callSiteUpdates) {
+const allPairs = [...fullConsolidate, ...enOnlyRemove];
+for (const [from, to] of allPairs) {
   const count = replaceKeyInSourceFiles(from, to);
   if (count > 0) {
     console.log(`  ✅ '${from}' → '${to}' (${count} file${count !== 1 ? 's' : ''})`);
@@ -452,7 +446,7 @@ for (const [from, to] of callSiteUpdates) {
   }
 }
 
-console.log(`\n✅ Done! Processed ${callSiteUpdates.length} key pairs.`);
+console.log(`\n✅ Done! Processed ${allPairs.length} key pairs.`);
 console.log('\nNext steps:');
 console.log('  npm run check:i18n');
 console.log('  npm run check:i18n:unused');
