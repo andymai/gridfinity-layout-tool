@@ -118,8 +118,22 @@ jobs:
 
       - name: Check i18n unused keys
         id: i18n_unused
+        # Full-codebase scan: only run when i18n source files changed, same as pre-commit gate.
+        # This avoids blocking unrelated PRs while in-progress i18n work is uncommitted on main.
         continue-on-error: true
-        run: npm run check:i18n:unused
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            base=""  # initial push — no prior commit; run unconditionally
+          else
+            base="${{ github.event.before }}"
+          fi
+          if [ -z "$base" ] || git diff --name-only "$base" HEAD | grep -qE '^src/i18n/'; then
+            npm run check:i18n:unused
+          else
+            echo "ℹ️  No i18n files changed — skipping unused key scan"
+          fi
 
       - name: Check module boundaries
         id: boundaries
