@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.26.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.25.0...gridfinity-layout-tool-v3.26.0) (2026-02-22)
+
+
+### Features
+
+* **api:** add hourly cron to clean up expired slicer-temp blobs ([#848](https://github.com/andymai/gridfinity-layout-tool/issues/848)) ([4bac1f8](https://github.com/andymai/gridfinity-layout-tool/commit/4bac1f86a3c1c10eb4524b6d20e6d9af3cd4c294))
+
 ## [3.25.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.24.0...gridfinity-layout-tool-v3.25.0) (2026-02-22)
 
 
