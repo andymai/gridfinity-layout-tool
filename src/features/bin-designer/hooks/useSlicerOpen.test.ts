@@ -66,6 +66,7 @@ const PARSE_OK = { ok: true as const, value: { vertices: MOCK_VERTICES, normals:
 const PARSE_ERR = { ok: false as const, error: 'parse failed' };
 
 const originalURL = globalThis.URL;
+const originalLocation = window.location;
 const mockCreateObjectURL = vi.fn().mockReturnValue('blob:mock-url');
 const mockRevokeObjectURL = vi.fn();
 
@@ -145,7 +146,7 @@ describe('useSlicerOpen', () => {
     Object.defineProperty(window, 'location', {
       configurable: true,
       writable: true,
-      value: location,
+      value: originalLocation,
     });
   });
 

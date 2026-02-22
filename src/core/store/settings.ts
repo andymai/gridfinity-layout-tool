@@ -89,7 +89,7 @@ export interface SlicerSite {
 export const DEFAULT_SLICER_SITES: SlicerSite[] = [
   { id: 'prusaslicer', name: 'PrusaSlicer', protocol: 'prusaslicer', enabled: true },
   { id: 'orcaslicer', name: 'OrcaSlicer', protocol: 'orcaslicer', enabled: true },
-  { id: 'bambu', name: 'Bambu Studio', protocol: 'bambustudio', enabled: true },
+  { id: 'bambustudio', name: 'Bambu Studio', protocol: 'bambustudio', enabled: true },
 ];
 
 /**

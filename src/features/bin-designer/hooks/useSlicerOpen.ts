@@ -145,11 +145,14 @@ export function useSlicerOpen(): UseSlicerOpenReturn {
         protocolFired = true;
         window.location.href = buildSlicerUrl(slicer.protocol, url);
       } catch {
-        // If upload or generation failed, fall back to direct download
         if (threeMFBlob) {
+          // Upload failed — 3MF was generated successfully, so fall back to direct download
           triggerFallbackDownload(threeMFBlob);
+          addToast({ message: t('slicerOpen.uploadFailed'), type: 'error', duration: 5000 });
+        } else {
+          // Generation failed — no 3MF available to download
+          addToast({ message: t('slicerOpen.generationFailed'), type: 'error', duration: 5000 });
         }
-        addToast({ message: t('slicerOpen.uploadFailed'), type: 'error', duration: 5000 });
       } finally {
         // Only reset state here for early-exit paths (errors, parse failures).
         // The normal protocol-fired path delegates reset to the timer/blur callbacks.

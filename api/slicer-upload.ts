@@ -13,22 +13,35 @@
 import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
-import { getBaseUrl } from './lib/shared.js';
+import { getBaseUrl, methodNotAllowed } from './lib/shared.js';
 
 /** Maximum accepted file size: 2MB (well above any realistic 3MF bin file) */
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return methodNotAllowed(res, 'POST');
   }
 
   // Enforce same-origin requests to prevent third-party file hosting abuse.
   // Requests without an Origin header (e.g. curl, server-side scripts) are also
   // rejected — this endpoint is intentionally browser-only.
-  const origin = req.headers['origin'];
+  // Comparison is hostname-based (not full URL) to handle http/https and port
+  // differences across dev (localhost:5173) and production environments.
+  const originHeader = req.headers['origin'];
+  const origin = Array.isArray(originHeader) ? originHeader[0] : originHeader;
   const appBaseUrl = getBaseUrl();
-  if (!origin || origin !== appBaseUrl) {
+  let originAllowed = false;
+  if (origin) {
+    try {
+      const originHost = new URL(origin).hostname;
+      const appHost = new URL(appBaseUrl).hostname;
+      originAllowed = originHost === 'localhost' || originHost === appHost;
+    } catch {
+      /* malformed Origin — denied */
+    }
+  }
+  if (!originAllowed) {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
