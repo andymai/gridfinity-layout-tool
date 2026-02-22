@@ -111,6 +111,16 @@ describe('slicer-cleanup handler', () => {
     expect(json).toHaveBeenCalledWith(expect.objectContaining({ deleted: 0 }));
   });
 
+  it('returns 500 when blob storage throws', async () => {
+    mockList.mockRejectedValueOnce(new Error('Blob unavailable'));
+
+    const { default: handler } = await import('./slicer-cleanup.js');
+    const { res, status } = makeRes();
+    await handler(makeReq(), res);
+
+    expect(status).toHaveBeenCalledWith(500);
+  });
+
   it('paginates through all results when hasMore is true', async () => {
     const now = Date.now();
     const oldBlob1 = {
