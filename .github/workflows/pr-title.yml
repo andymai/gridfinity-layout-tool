@@ -1,6 +1,10 @@
 name: PR Title
 
 on:
+  # pull_request_target runs in the base branch context with access to secrets.
+  # This is intentional for title validation (no code checkout needed), but NEVER
+  # add actions/checkout here without understanding the security implications:
+  # https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
   pull_request_target:
     types: [opened, reopened, edited, synchronize]
 

@@ -36,7 +36,7 @@ interface Mismatch {
   codeParams: string[];
   file: string;
   line: number;
-  type: 'unused-params' | 'missing-placeholders';
+  type: 'unused-params' | 'missing-placeholders' | 'no-params';
 }
 
 // Remove ICU blocks from a string by counting braces
@@ -227,8 +227,8 @@ function extractTranslationCalls(filePath: string): TranslationCall[] {
   const content = readFileSync(filePath, 'utf-8');
   const calls: TranslationCall[] = [];
 
-  // Find t('key', { starts - then use brace matching to find the full params object
-  const callStartRegex = /\bt\(\s*['"]([^'"]+)['"]\s*,\s*\{/g;
+  // Find t('key', { and getStaticTranslation('key', { — use brace matching for the params object
+  const callStartRegex = /\b(?:t|getStaticTranslation)\(\s*['"]([^'"]+)['"]\s*,\s*\{/g;
 
   let match;
   while ((match = callStartRegex.exec(content)) !== null) {
@@ -241,30 +241,13 @@ function extractTranslationCalls(filePath: string): TranslationCall[] {
     const paramsStr = content.slice(braceStart + 1, braceEnd);
     const matchLine = content.slice(0, match.index).split('\n').length;
 
-    // Extract param names from object notation
-    // Handles: { count }, { count: 5 }, { count, name }, { count: x, name: y }
-    // Only capture valid JavaScript identifiers at the start of properties
+    // Extract param names: handles { count }, { count: 5 }, { count, name }, { count: x, name: y }
     const params: string[] = [];
-
-    // Use regex to find property names at the start of each property
-    // This handles nested values better than splitting by comma
-    const propRegex = /(?:^|,)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?::|,|$)/g;
-    let propMatch;
-    while ((propMatch = propRegex.exec(paramsStr)) !== null) {
-      params.push(propMatch[1]);
-    }
-
-    // Also try the original approach for simple cases
-    const parts = paramsStr.split(',');
-    for (const part of parts) {
+    for (const part of paramsStr.split(',')) {
       const trimmed = part.trim();
       if (!trimmed) continue;
-
-      // Match property name (must start with letter or underscore, not a number)
       const propMatch = trimmed.match(/^([a-zA-Z_][a-zA-Z0-9_]*)(?:\s*:|(?=\s*$))/);
-      if (propMatch) {
-        params.push(propMatch[1]);
-      }
+      if (propMatch) params.push(propMatch[1]);
     }
 
     if (params.length > 0) {
@@ -332,6 +315,39 @@ function findMismatches(
   return mismatches;
 }
 
+// Find t('key') / getStaticTranslation('key') calls with NO params where the string has placeholders.
+// These would render placeholder tokens like {count} literally in the UI.
+function findZeroParamCalls(
+  sourceFiles: string[],
+  translations: Map<string, TranslationString>
+): Mismatch[] {
+  const mismatches: Mismatch[] = [];
+  // Matches t('key') or getStaticTranslation('key') with no second argument
+  const noParamsRegex = /\b(?:t|getStaticTranslation)\(\s*['"]([^'"]+)['"]\s*\)/g;
+
+  for (const filePath of sourceFiles) {
+    const content = readFileSync(filePath, 'utf-8');
+    let match;
+    noParamsRegex.lastIndex = 0;
+    while ((match = noParamsRegex.exec(content)) !== null) {
+      const key = match[1];
+      const translation = translations.get(key);
+      if (!translation || translation.placeholders.length === 0) continue;
+      const line = content.slice(0, match.index).split('\n').length;
+      mismatches.push({
+        key,
+        stringPlaceholders: translation.placeholders,
+        codeParams: [],
+        file: relative(ROOT_DIR, filePath),
+        line,
+        type: 'no-params',
+      });
+    }
+  }
+
+  return mismatches;
+}
+
 // Main execution
 console.log('\n🔍 Checking i18n interpolation placeholders...\n');
 
@@ -353,7 +369,10 @@ for (const file of sourceFiles) {
 
 console.log(`   └─ Found ${allCalls.length} translation calls with parameters\n`);
 
-const mismatches = findMismatches(translations, allCalls);
+const mismatches = [
+  ...findMismatches(translations, allCalls),
+  ...findZeroParamCalls(sourceFiles, translations),
+];
 
 if (mismatches.length === 0) {
   console.log('✅ All interpolation placeholders match code usage.\n');
@@ -364,6 +383,7 @@ if (mismatches.length === 0) {
   // Group by type
   const unusedParams = mismatches.filter((m) => m.type === 'unused-params');
   const missingPlaceholders = mismatches.filter((m) => m.type === 'missing-placeholders');
+  const noParams = mismatches.filter((m) => m.type === 'no-params');
 
   if (unusedParams.length > 0) {
     console.log('⚠️  Params passed but not used in translation string:');
@@ -389,6 +409,17 @@ if (mismatches.length === 0) {
       console.log(`     Key: ${m.key}`);
       console.log(`     Missing params: ${missing.join(', ')}`);
       console.log(`     Code provides: ${m.codeParams.join(', ')}`);
+      console.log('');
+    }
+  }
+
+  if (noParams.length > 0) {
+    console.log('⚠️  Strings with placeholders called without any params:');
+    console.log('   (Placeholder tokens like {count} will render literally in the UI)\n');
+    for (const m of noParams) {
+      console.log(`   ${m.file}:${m.line}`);
+      console.log(`     Key: ${m.key}`);
+      console.log(`     Expected params: ${m.stringPlaceholders.join(', ')}`);
       console.log('');
     }
   }

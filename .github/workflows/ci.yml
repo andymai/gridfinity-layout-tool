@@ -19,7 +19,7 @@ env:
   NODE_VERSION: 24
 
 jobs:
-  # PRs: Just verify the build works (lint/format/tests run via pre-commit hooks)
+  # PRs + main: Build and bundle size check
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -52,11 +52,10 @@ jobs:
           project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
           api-key: ${{ secrets.POSTHOG_API_KEY }}
 
-  # Main branch only: Full test suite with coverage (safety net)
+  # PRs + main: Full test suite with coverage
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v6
 
@@ -69,6 +68,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate artifacts
+        # en.json is generated from en.ts at build/dev time and gitignored.
+        # Tests import it via lazy-loading, so it must exist before vitest runs.
+        run: npm run build:en-locale
+
       - name: Run tests with coverage
         run: npm run test:coverage
 
@@ -79,3 +83,96 @@ jobs:
           name: coverage-report
           path: coverage/
           retention-days: 5
+
+  # PRs + main: Lint, i18n, module boundaries, union exhaustiveness
+  # All checks run to completion so every failure is visible in one pass
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        id: lint
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Check i18n keys
+        id: i18n_keys
+        continue-on-error: true
+        run: npm run check:i18n
+
+      - name: Check i18n values
+        id: i18n_values
+        continue-on-error: true
+        run: npm run check:i18n:values
+
+      - name: Check i18n interpolation
+        id: i18n_interpolation
+        continue-on-error: true
+        run: npm run check:i18n:interpolation
+
+      - name: Check i18n unused keys
+        id: i18n_unused
+        # Full-codebase scan: only run when i18n source files changed, same as pre-commit gate.
+        # This avoids blocking unrelated PRs while in-progress i18n work is uncommitted on main.
+        continue-on-error: true
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            base=""  # initial push — no prior commit; run unconditionally
+          else
+            base="${{ github.event.before }}"
+          fi
+          if [ -z "$base" ] || git diff --name-only "$base" HEAD | grep -qE '^src/i18n/'; then
+            npm run check:i18n:unused
+          else
+            echo "ℹ️  No i18n files changed — skipping unused key scan"
+          fi
+
+      - name: Check module boundaries
+        id: boundaries
+        continue-on-error: true
+        run: npm run check:boundaries
+
+      - name: Check union exhaustiveness
+        id: exhaustiveness
+        continue-on-error: true
+        run: npm run check:exhaustiveness -- --all
+
+      - name: Fail if any check failed or was skipped
+        # 'skipped' means a prior non-continue-on-error step (e.g. npm ci) failed,
+        # causing all downstream steps to be skipped. Treat skipped == failure here
+        # so the job doesn't pass vacuously when dependency installation breaks.
+        if: always()
+        run: |
+          failed=0
+          check_step() {
+            local name="$1" outcome="$2"
+            if [ "$outcome" = "failure" ] || [ "$outcome" = "skipped" ]; then
+              echo "  ✗ $name ($outcome)"
+              failed=1
+            fi
+          }
+          check_step "lint"                "${{ steps.lint.outcome }}"
+          check_step "i18n keys"           "${{ steps.i18n_keys.outcome }}"
+          check_step "i18n values"         "${{ steps.i18n_values.outcome }}"
+          check_step "i18n interpolation"  "${{ steps.i18n_interpolation.outcome }}"
+          check_step "i18n unused keys"    "${{ steps.i18n_unused.outcome }}"
+          check_step "module boundaries"   "${{ steps.boundaries.outcome }}"
+          check_step "union exhaustiveness" "${{ steps.exhaustiveness.outcome }}"
+          if [ "$failed" = "1" ]; then
+            echo "One or more quality checks failed or were skipped."
+            exit 1
+          fi
+          echo "All quality checks passed."
