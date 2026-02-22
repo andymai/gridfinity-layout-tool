@@ -1063,7 +1063,7 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Slicer Open
   // ===========================================================================
-  'slicerOpen.notDetected': '{slicer} not detected — file downloaded instead',
+  'slicerOpen.notDetected': '{slicer} not detected — is it installed?',
   'slicerOpen.uploadFailed': 'Upload failed — file downloaded instead',
   'slicerOpen.generationFailed': 'Failed to generate file for slicer',
   'slicerOpen.opening': 'Opening...',

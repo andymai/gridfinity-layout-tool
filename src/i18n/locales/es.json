@@ -1277,7 +1277,7 @@
   "stlSearch.searchFor": "Buscar bin {width}×{depth}",
   "stlSearch.searchForSplit": "Buscar generadores de split bin",
   "slicerOpen.generationFailed": "No se pudo generar el archivo para el slicer",
-  "slicerOpen.notDetected": "{slicer} no detectado — archivo descargado en su lugar",
+  "slicerOpen.notDetected": "{slicer} no detectado — ¿está instalado?",
   "slicerOpen.opening": "Abriendo...",
   "slicerOpen.uploadFailed": "Error al subir — archivo descargado en su lugar",
   "tablet.layersCategories": "Layers y Categorías",

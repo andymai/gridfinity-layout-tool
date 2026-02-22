@@ -66,13 +66,11 @@ const PARSE_OK = { ok: true as const, value: { vertices: MOCK_VERTICES, normals:
 const PARSE_ERR = { ok: false as const, error: 'parse failed' };
 
 const originalURL = globalThis.URL;
-const originalLocation = window.location;
 const mockCreateObjectURL = vi.fn().mockReturnValue('blob:mock-url');
 const mockRevokeObjectURL = vi.fn();
 
 describe('useSlicerOpen', () => {
   let mockFetch: ReturnType<typeof vi.fn>;
-  let mockHref: string;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -97,19 +95,14 @@ describe('useSlicerOpen', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    // Capture window.location.href writes via a configurable mock
-    mockHref = '';
-    const mockLocation = {} as Location;
-    Object.defineProperty(mockLocation, 'href', {
-      get: () => mockHref,
-      set: (v: string) => {
-        mockHref = v;
-      },
-      configurable: true,
-    });
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: mockLocation,
+    // Stub anchor clicks so protocol URLs don't cause jsdom navigation errors
+    const realCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const el = realCreateElement(tag);
+      if (tag === 'a') {
+        vi.spyOn(el as HTMLAnchorElement, 'click').mockImplementation(() => {});
+      }
+      return el;
     });
 
     // Set up store state
@@ -137,16 +130,11 @@ describe('useSlicerOpen', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     Object.defineProperty(globalThis, 'URL', {
       value: originalURL,
       writable: true,
       configurable: true,
-    });
-    // Restore original location
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      writable: true,
-      value: originalLocation,
     });
   });
 
@@ -240,22 +228,23 @@ describe('useSlicerOpen', () => {
     expect(result.current.isOpening).toBe(false);
   });
 
-  it('triggers fallback download and info toast after 2s timeout', async () => {
+  it('shows not-detected info toast and resets state after 5s timeout (no download)', async () => {
     const { result } = renderHook(() => useSlicerOpen());
     await act(async () => {
       await result.current.openInSlicer(MOCK_SLICER);
     });
 
     await act(async () => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(5000);
     });
 
-    expect(mockCreateObjectURL).toHaveBeenCalledWith(MOCK_BLOB);
+    // No automatic download — user can download manually from the export dialog
+    expect(mockCreateObjectURL).not.toHaveBeenCalledWith(MOCK_BLOB);
     expect(result.current.isOpening).toBe(false);
     expect(result.current.openingSlicerId).toBeNull();
   });
 
-  it('does not trigger fallback download when blur fires before the timer', async () => {
+  it('does not show not-detected toast when blur fires before the timer', async () => {
     const { result } = renderHook(() => useSlicerOpen());
     await act(async () => {
       await result.current.openInSlicer(MOCK_SLICER);
@@ -268,7 +257,7 @@ describe('useSlicerOpen', () => {
 
     // Timer fires after — but blur already cancelled it
     await act(async () => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(5000);
     });
 
     expect(mockCreateObjectURL).not.toHaveBeenCalled();

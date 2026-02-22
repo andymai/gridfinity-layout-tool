@@ -1277,7 +1277,7 @@
   "stlSearch.searchFor": "Søk etter {width}×{depth} bin",
   "stlSearch.searchForSplit": "Søk etter delte bin-generatorer",
   "slicerOpen.generationFailed": "Klarte ikke å generere fil for slicer",
-  "slicerOpen.notDetected": "{slicer} ikke funnet — filen ble lastet ned i stedet",
+  "slicerOpen.notDetected": "{slicer} ikke funnet — er det installert?",
   "slicerOpen.opening": "Åpner...",
   "slicerOpen.uploadFailed": "Opplasting mislyktes — filen ble lastet ned i stedet",
   "tablet.layersCategories": "Lag og kategorier",

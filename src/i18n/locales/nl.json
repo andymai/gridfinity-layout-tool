@@ -1277,7 +1277,7 @@
   "stlSearch.searchFor": "Zoeken naar {width}×{depth} bin",
   "stlSearch.searchForSplit": "Zoeken naar split bin generatoren",
   "slicerOpen.generationFailed": "Bestand aanmaken voor slicer mislukt",
-  "slicerOpen.notDetected": "{slicer} niet gevonden — bestand gedownload als alternatief",
+  "slicerOpen.notDetected": "{slicer} niet gevonden — is het geïnstalleerd?",
   "slicerOpen.opening": "Openen...",
   "slicerOpen.uploadFailed": "Upload mislukt — bestand gedownload als alternatief",
   "tablet.layersCategories": "Layers & categorieën",
