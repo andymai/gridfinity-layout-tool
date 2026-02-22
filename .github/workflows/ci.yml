@@ -68,6 +68,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate artifacts
+        # en.json is generated from en.ts at build/dev time and gitignored.
+        # Tests import it via lazy-loading, so it must exist before vitest runs.
+        run: npm run build:en-locale
+
       - name: Run tests with coverage
         run: npm run test:coverage
 
