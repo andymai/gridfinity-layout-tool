@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.26.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.1...gridfinity-layout-tool-v3.26.2) (2026-02-22)
+
+
+### Bug Fixes
+
+* **bin-designer:** fix Open in Slicer firing download instead of opening app ([#852](https://github.com/andymai/gridfinity-layout-tool/issues/852)) ([9654a00](https://github.com/andymai/gridfinity-layout-tool/commit/9654a003c965bf82ab912bbb1b7f76e4c2fb4dd5))
+
 ## [3.26.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.0...gridfinity-layout-tool-v3.26.1) (2026-02-22)
 
 
