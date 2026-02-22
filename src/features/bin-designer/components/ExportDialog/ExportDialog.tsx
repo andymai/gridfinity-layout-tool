@@ -65,6 +65,8 @@ export function ExportDialog() {
     canExportDividers,
     estimates,
     isExporting,
+    isExportingBin,
+    isExportingDividers,
     downloadBin,
     downloadDividersSTL,
     needsSplit,
@@ -151,9 +153,6 @@ export function ExportDialog() {
       onClick={(e) => {
         if (e.target === e.currentTarget) closeDialog();
       }}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') closeDialog();
-      }}
     >
       <div
         className="mx-4 w-full max-w-md max-h-[85vh] overflow-y-auto rounded-xl bg-surface-elevated p-6 shadow-2xl"
@@ -167,7 +166,7 @@ export function ExportDialog() {
             {t('common.export')}
           </h2>
           <button
-            onClick={() => setExportDialogOpen(false)}
+            onClick={closeDialog}
             className="rounded-md p-1 text-content-tertiary hover:bg-surface-hover hover:text-content-secondary"
             aria-label={t('common.close')}
           >
@@ -223,10 +222,8 @@ export function ExportDialog() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') handleStyleChange('custom');
                   }}
-                  onFocus={() => handleStyleChange('custom')}
-                  role="textbox"
+                  role="button"
                   tabIndex={0}
-                  aria-readonly="true"
                   aria-label={t('binDesigner.customFileName')}
                 >
                   {fileNameWithoutExt}
@@ -240,17 +237,17 @@ export function ExportDialog() {
               <NameStyleButton
                 active={exportFileNameConfig.style === 'descriptive'}
                 onClick={() => handleStyleChange('descriptive')}
-                label="Descriptive"
+                label={t('binDesigner.nameStyle.descriptive')}
               />
               <NameStyleButton
                 active={exportFileNameConfig.style === 'compact'}
                 onClick={() => handleStyleChange('compact')}
-                label="Compact"
+                label={t('binDesigner.nameStyle.compact')}
               />
               <NameStyleButton
                 active={exportFileNameConfig.style === 'custom'}
                 onClick={() => handleStyleChange('custom')}
-                label="Custom"
+                label={t('binDesigner.nameStyle.custom')}
               />
             </div>
           </div>
@@ -284,12 +281,27 @@ export function ExportDialog() {
               {t('binDesigner.printEstimatesPla')}
             </h3>
             <div className="grid grid-cols-2 gap-y-1.5 text-sm">
-              <EstimateRow label="Filament" value={formatFilament(estimates.metersFilament)} />
-              <EstimateRow label="Weight" value={`${estimates.gramsFilament}g`} />
-              <EstimateRow label="Time" value={formatPrintTime(estimates.printTimeMinutes)} />
-              <EstimateRow label="Cost" value={`$${estimates.costUSD.toFixed(2)}`} />
-              <EstimateRow label="Triangles" value={triangleCount.toLocaleString()} />
-              <EstimateRow label="File Size" value={fileSizeLabel} />
+              <EstimateRow
+                label={t('binDesigner.estimate.filament')}
+                value={formatFilament(estimates.metersFilament)}
+              />
+              <EstimateRow
+                label={t('binDesigner.estimate.weight')}
+                value={`${estimates.gramsFilament}g`}
+              />
+              <EstimateRow
+                label={t('binDesigner.estimate.time')}
+                value={formatPrintTime(estimates.printTimeMinutes)}
+              />
+              <EstimateRow
+                label={t('binDesigner.estimate.cost')}
+                value={`$${estimates.costUSD.toFixed(2)}`}
+              />
+              <EstimateRow
+                label={t('binDesigner.estimate.triangles')}
+                value={triangleCount.toLocaleString()}
+              />
+              <EstimateRow label={t('binDesigner.estimate.fileSize')} value={fileSizeLabel} />
             </div>
             <p className="mt-2 text-[10px] text-content-disabled">
               {t('binDesigner.printEstimatesDisclaimer', {
@@ -322,9 +334,9 @@ export function ExportDialog() {
                   });
                 }
                 closeDialog();
-              } catch {
+              } catch (err) {
                 addToast({
-                  message: t('binDesigner.exportFailed'),
+                  message: err instanceof Error ? err.message : t('binDesigner.exportFailed'),
                   type: 'error',
                   duration: 5000,
                 });
@@ -333,8 +345,8 @@ export function ExportDialog() {
             disabled={!canExport || isExporting}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-info px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
           >
-            {isExporting && <ExportSpinner />}
-            {isExporting
+            {isExportingBin && <ExportSpinner />}
+            {isExportingBin
               ? t('binDesigner.exporting')
               : useSplitExport
                 ? t('binDesigner.splitExport.downloadSplitSTL')
@@ -363,7 +375,10 @@ export function ExportDialog() {
               disabled={isExporting}
               className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-info bg-transparent px-4 py-2.5 text-sm font-medium text-info transition-colors hover:bg-info-muted disabled:cursor-not-allowed disabled:border-stroke-subtle disabled:text-content-disabled"
             >
-              {t('binDesigner.downloadDividersSTL')}
+              {isExportingDividers && <ExportSpinner />}
+              {isExportingDividers
+                ? t('binDesigner.exporting')
+                : t('binDesigner.downloadDividersSTL')}
             </button>
           )}
 

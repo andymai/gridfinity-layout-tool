@@ -131,7 +131,10 @@
     "staging.stash",
     "staging.title",
     "toast.notifications",
-    "toolSwitcher.gridfinityLayoutTool"
+    "toolSwitcher.gridfinityLayoutTool",
+    "binDesigner.estimate.filament",
+    "binDesigner.estimate.triangles",
+    "binDesigner.nameStyle.compact"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",
