@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.23.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.23.0...gridfinity-layout-tool-v3.23.1) (2026-02-22)
+
+
+### Bug Fixes
+
+* **icons:** eliminate transparent corners in favicon and PWA icons ([#840](https://github.com/andymai/gridfinity-layout-tool/issues/840)) ([3c7c03c](https://github.com/andymai/gridfinity-layout-tool/commit/3c7c03cfb371a2f7009fe003acb62563de3d42da))
+
 ## [3.23.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.22.1...gridfinity-layout-tool-v3.23.0) (2026-02-22)
 
 
