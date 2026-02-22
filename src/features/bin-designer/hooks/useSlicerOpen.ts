@@ -4,9 +4,11 @@
  * Flow:
  * 1. Generate a 3MF file via the generation worker
  * 2. Upload it to a temporary public URL via /api/slicer-upload
- * 3. Fire the slicer's protocol handler: <protocol>://open?file_url=<url>
+ * 3. Fire the slicer's protocol handler via a hidden anchor click:
+ *    <protocol>://open?file_url=<url>
  * 4. Detect whether the slicer opened via a window blur event. If no blur
- *    fires within 2s, fall back to triggering a browser download + toast.
+ *    fires within 5s, show a toast suggesting the slicer may not be installed.
+ *    No automatic download — the user can download manually from the dialog.
  *
  * Note: The blur-detection heuristic may not fire on Firefox/Safari for
  * some protocol handlers. This is an accepted trade-off given Chrome/Edge
@@ -28,8 +30,8 @@ import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import type { SlicerSite } from '@/core/store/settings';
 
-/** How long to wait for the slicer protocol to respond before falling back to download */
-const SLICER_DETECTION_TIMEOUT_MS = 2000;
+/** How long to wait for the slicer protocol to respond before showing a "not detected" toast */
+const SLICER_DETECTION_TIMEOUT_MS = 5000;
 
 interface UseSlicerOpenReturn {
   /** Whether a slicer upload is currently in progress */
@@ -122,10 +124,8 @@ export function useSlicerOpen(): UseSlicerOpenReturn {
         // Step 3: Set up blur detection (slicer opened = page loses focus)
         // and a fallback timer for when the slicer isn't installed.
         // Both callbacks own the state reset to prevent premature re-enabling.
-        const capturedBlob = threeMFBlob;
-        const fallbackTimer = setTimeout(() => {
+        const notDetectedTimer = setTimeout(() => {
           window.removeEventListener('blur', onSlicerOpened);
-          triggerFallbackDownload(capturedBlob);
           addToast({
             message: t('slicerOpen.notDetected', { slicer: slicer.name }),
             type: 'info',
@@ -135,15 +135,23 @@ export function useSlicerOpen(): UseSlicerOpenReturn {
         }, SLICER_DETECTION_TIMEOUT_MS);
 
         const onSlicerOpened = () => {
-          clearTimeout(fallbackTimer);
+          clearTimeout(notDetectedTimer);
           setOpeningSlicerId(null);
         };
 
         window.addEventListener('blur', onSlicerOpened, { once: true });
 
-        // Step 4: Fire protocol handler (state reset is now owned by the callbacks above)
+        // Step 4: Fire protocol handler via anchor click — more reliable than
+        // window.location.href for custom protocol URLs because it's treated
+        // as a user-gesture-initiated navigation in all major browsers.
+        // State reset is now owned by the callbacks above.
         protocolFired = true;
-        window.location.href = buildSlicerUrl(slicer.protocol, url);
+        const protocolAnchor = document.createElement('a');
+        protocolAnchor.href = buildSlicerUrl(slicer.protocol, url);
+        protocolAnchor.style.display = 'none';
+        document.body.appendChild(protocolAnchor);
+        protocolAnchor.click();
+        protocolAnchor.remove();
       } catch {
         if (threeMFBlob) {
           // Upload failed — 3MF was generated successfully, so fall back to direct download
