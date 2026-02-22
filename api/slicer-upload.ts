@@ -6,8 +6,8 @@
  * handler (e.g. prusaslicer://open?file_url=<url>) uses this URL to
  * fetch and open the file.
  *
- * Files accumulate in Blob storage; a future cleanup job can prune
- * entries older than 1 hour using the `slicer-temp/` prefix listing.
+ * Files accumulate in Blob storage; the cleanup cron job prunes
+ * entries older than 2 hours using the `slicer-temp/` prefix listing.
  */
 
 import { put } from '@vercel/blob';
