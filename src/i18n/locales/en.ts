@@ -1350,6 +1350,15 @@ const en: Record<string, string> = {
   'binDesigner.previewColorOptions': 'Preview color options',
   'binDesigner.printBedTooltip':
     'Your printer bed size. Bins larger than this will offer split export.',
+  'binDesigner.nameStyle.descriptive': 'Descriptive',
+  'binDesigner.nameStyle.compact': 'Compact',
+  'binDesigner.nameStyle.custom': 'Custom',
+  'binDesigner.estimate.filament': 'Filament',
+  'binDesigner.estimate.weight': 'Weight',
+  'binDesigner.estimate.time': 'Time',
+  'binDesigner.estimate.cost': 'Cost',
+  'binDesigner.estimate.triangles': 'Triangles',
+  'binDesigner.estimate.fileSize': 'File Size',
   'binDesigner.printEstimatesPla': 'Print Estimates (PLA)',
   'binDesigner.printEstimatesDisclaimer':
     'Approximate values based on {nozzle}mm nozzle, {infill}% infill, {layerHeight}mm layers. Actual results depend on slicer settings.',

@@ -247,7 +247,7 @@ describe('ExportDialog', () => {
     render(<ExportDialog />);
 
     // In descriptive mode, the file name display should be clickable
-    const nameDisplay = screen.getByRole('textbox', { name: 'Custom file name' });
+    const nameDisplay = screen.getByRole('button', { name: 'Custom file name' });
     expect(nameDisplay.tagName).toBe('SPAN');
 
     // Click the display name

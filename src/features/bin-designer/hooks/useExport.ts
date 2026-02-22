@@ -29,7 +29,6 @@ import { packageSplitPiecesAsZip } from '@/features/bin-designer/utils/splitExpo
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
-import { useToastStore } from '@/core/store/toast';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 
@@ -41,7 +40,11 @@ const FORMAT_MIME_TYPES: Record<ExportFileFormat, string> = {
 };
 
 interface UseExportReturn {
-  /** Whether an export is currently being generated */
+  /** Whether a main bin or split export is currently in progress */
+  readonly isExportingBin: boolean;
+  /** Whether a dividers export is currently in progress */
+  readonly isExportingDividers: boolean;
+  /** Whether any export is currently in progress */
   readonly isExporting: boolean;
   /** Whether mesh data is available for export (bridge active + mesh exists) */
   readonly canExport: boolean;
@@ -86,7 +89,9 @@ export function useExport(): UseExportReturn {
     }))
   );
 
-  const [isExporting, setIsExporting] = useState(false);
+  const [isExportingBin, setIsExportingBin] = useState(false);
+  const [isExportingDividers, setIsExportingDividers] = useState(false);
+  const isExporting = isExportingBin || isExportingDividers;
 
   // Export requires both a preview mesh (to show UI) and an active bridge (to regenerate)
   const canExport =
@@ -135,7 +140,7 @@ export function useExport(): UseExportReturn {
       const bridge = getActiveBridge();
       if (!bridge) return;
 
-      setIsExporting(true);
+      setIsExportingBin(true);
 
       try {
         const fileName = generateFileName(params, format, config, designName);
@@ -145,8 +150,7 @@ export function useExport(): UseExportReturn {
           const stlResult = await bridge.exportBin(params, 'stl');
           const parseResult = parseSTLBinary(stlResult.data);
           if (isErr(parseResult)) {
-            useToastStore.getState().addToast(getUserMessage(parseResult.error), 'error');
-            return;
+            throw new Error(getUserMessage(parseResult.error));
           }
           const { vertices, normals } = parseResult.value;
 
@@ -174,7 +178,7 @@ export function useExport(): UseExportReturn {
           triggerDownload(blob, fileName);
         }
       } finally {
-        setIsExporting(false);
+        setIsExportingBin(false);
       }
     },
     [params, triggerDownload]
@@ -188,7 +192,7 @@ export function useExport(): UseExportReturn {
       const bridge = getActiveBridge();
       if (!bridge) return;
 
-      setIsExporting(true);
+      setIsExportingDividers(true);
 
       try {
         const result = await bridge.exportDividers(params);
@@ -196,7 +200,7 @@ export function useExport(): UseExportReturn {
         const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES.stl });
         triggerDownload(blob, fileName);
       } finally {
-        setIsExporting(false);
+        setIsExportingDividers(false);
       }
     },
     [params, triggerDownload]
@@ -212,7 +216,7 @@ export function useExport(): UseExportReturn {
       const bridge = getActiveBridge();
       if (!bridge) return;
 
-      setIsExporting(true);
+      setIsExportingBin(true);
 
       try {
         const gridSizeMm = params.gridUnitMm;
@@ -227,7 +231,7 @@ export function useExport(): UseExportReturn {
         const blob = await packageSplitPiecesAsZip(result.pieces, baseName);
         triggerDownload(blob, `${baseName}_split.zip`);
       } finally {
-        setIsExporting(false);
+        setIsExportingBin(false);
       }
     },
     [params, maxGridUnits, triggerDownload]
@@ -235,6 +239,8 @@ export function useExport(): UseExportReturn {
 
   return {
     isExporting,
+    isExportingBin,
+    isExportingDividers,
     canExport,
     canExportDividers,
     estimates,
