@@ -1,3 +1,4 @@
+import { timingSafeEqual as nodeTimingSafeEqual } from 'node:crypto';
 import type { VercelResponse } from '@vercel/node';
 
 /**
@@ -45,17 +46,21 @@ export async function hashToken(token: string): Promise<string> {
 }
 
 /**
- * Constant-time comparison for hash strings.
- * Prevents timing attacks by always comparing all characters
- * regardless of where the first difference occurs.
+ * Constant-time comparison for strings.
+ * Uses Node's native `timingSafeEqual` to prevent timing attacks.
+ * When lengths differ, a dummy comparison is performed to keep the
+ * execution path consistent and avoid leaking length via timing.
  */
 export function timingSafeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  const encoder = new TextEncoder();
+  const aBuf = Buffer.from(encoder.encode(a));
+  const bBuf = Buffer.from(encoder.encode(b));
+  if (aBuf.length !== bBuf.length) {
+    // Dummy comparison — keeps timing consistent regardless of length mismatch
+    nodeTimingSafeEqual(bBuf, bBuf);
+    return false;
   }
-  return result === 0;
+  return nodeTimingSafeEqual(aBuf, bBuf);
 }
 
 /**

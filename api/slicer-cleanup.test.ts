@@ -51,6 +51,15 @@ describe('slicer-cleanup handler', () => {
     expect(status).toHaveBeenCalledWith(503);
   });
 
+  it('returns 503 in production when CRON_SECRET is not set', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('CRON_SECRET', '');
+    const { default: handler } = await import('./slicer-cleanup.js');
+    const { res, status } = makeRes();
+    await handler(makeReq(), res);
+    expect(status).toHaveBeenCalledWith(503);
+  });
+
   it('returns 401 when CRON_SECRET is set but Authorization header is wrong', async () => {
     vi.stubEnv('CRON_SECRET', 'secret123');
     const { default: handler } = await import('./slicer-cleanup.js');

@@ -36,7 +36,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const originHost = new URL(origin).hostname;
       const appHost = new URL(appBaseUrl).hostname;
-      originAllowed = originHost === 'localhost' || originHost === appHost;
+      const isProduction = process.env.VERCEL_ENV === 'production';
+      originAllowed = (!isProduction && originHost === 'localhost') || originHost === appHost;
     } catch {
       /* malformed Origin — denied */
     }
@@ -87,7 +88,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({ url: blob.url });
   } catch (error) {
-    console.error('Slicer upload failed:', error);
+    console.error(
+      'Slicer upload failed:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     return res.status(500).json({ error: 'Upload failed' });
   }
 }

@@ -21,8 +21,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Verify the request originates from Vercel's cron scheduler.
-  // CRON_SECRET is optional in local dev; always required in production.
+  // CRON_SECRET is required in production; optional in local dev.
   const cronSecret = process.env.CRON_SECRET;
+  const isProduction = process.env.VERCEL_ENV === 'production';
+  if (isProduction && !cronSecret) {
+    return res.status(503).json({ error: 'Service not configured' });
+  }
   if (
     cronSecret &&
     !timingSafeCompare(req.headers['authorization'] ?? '', `Bearer ${cronSecret}`)
@@ -51,11 +55,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       cursor = result.hasMore ? result.cursor : undefined;
     } while (cursor);
 
-    if (toDelete.length > 0) {
-      await del(toDelete);
+    // Batch deletions to avoid hitting API limits
+    const BATCH_SIZE = 100;
+    for (let i = 0; i < toDelete.length; i += BATCH_SIZE) {
+      await del(toDelete.slice(i, i + BATCH_SIZE));
     }
   } catch (error) {
-    console.error('Slicer cleanup failed:', error);
+    console.error(
+      'Slicer cleanup failed:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     return res.status(500).json({ error: 'Cleanup failed' });
   }
 
