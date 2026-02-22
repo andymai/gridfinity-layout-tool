@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.23.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.22.1...gridfinity-layout-tool-v3.23.0) (2026-02-22)
+
+
+### Features
+
+* **ux:** communicate grid interaction failures and surface the stash to new users ([5cd6b46](https://github.com/andymai/gridfinity-layout-tool/commit/5cd6b465ecca9f498b3746a20fd4d957b01d2022))
+
 ## [3.22.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.22.0...gridfinity-layout-tool-v3.22.1) (2026-02-21)
 
 
