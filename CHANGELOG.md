@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.26.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.0...gridfinity-layout-tool-v3.26.1) (2026-02-22)
+
+
+### Bug Fixes
+
+* **bin-designer:** fix export dialog bugs and UX issues ([#850](https://github.com/andymai/gridfinity-layout-tool/issues/850)) ([9b1ba6b](https://github.com/andymai/gridfinity-layout-tool/commit/9b1ba6ba87ba3a29fd0cc32f40a9931b76b990d6))
+
 ## [3.26.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.25.0...gridfinity-layout-tool-v3.26.0) (2026-02-22)
 
 
