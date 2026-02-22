@@ -14,6 +14,8 @@
     </linearGradient>
   </defs>
 
+  <!-- Solid fill for corners (prevents white edges when composited against white backgrounds, e.g. Google Search) -->
+  <rect width="512" height="512" fill="#0f0f12"/>
   <!-- Background with rounded corners -->
   <rect width="512" height="512" rx="96" fill="url(#bg)"/>
 
