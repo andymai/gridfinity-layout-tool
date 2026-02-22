@@ -9,7 +9,8 @@ export type RateLimitAction =
   | 'delete'
   | 'report'
   | 'telemetry'
-  | 'suggest';
+  | 'suggest'
+  | 'slicer';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -40,6 +41,7 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   report: { limit: 10, windowSeconds: 3600 }, // 10/hour
   telemetry: { limit: 100, windowSeconds: 60 }, // 100/minute (ML telemetry)
   suggest: { limit: 20, windowSeconds: 3600 }, // 20/hour (LLM calls are expensive)
+  slicer: { limit: 30, windowSeconds: 3600 }, // 30/hour (temporary blob uploads)
 };
 
 interface RateLimitResult {

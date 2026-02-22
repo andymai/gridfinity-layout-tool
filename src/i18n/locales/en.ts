@@ -624,6 +624,9 @@ const en: Record<string, string> = {
   'settings.stlSearch': 'STL Search',
   'settings.stlSearchHint': 'Choose which sites to search for Gridfinity STL files:',
   'settings.toggleSite': 'Toggle {name}',
+  'settings.slicers': 'Slicers',
+  'settings.slicersHint': 'Choose which slicers appear as quick-launch options when exporting:',
+  'settings.toggleSlicer': 'Toggle {name}',
   'settings.privacy': 'Privacy',
   'settings.helpImprove': 'Help improve suggestions',
   'settings.helpImproveHint': 'Share bin sizes and placement patterns (no personal data)',
@@ -1058,6 +1061,14 @@ const en: Record<string, string> = {
   'stlSearch.searchForSplit': 'Search for split bin generators',
 
   // ===========================================================================
+  // Slicer Open
+  // ===========================================================================
+  'slicerOpen.notDetected': '{slicer} not detected — file downloaded instead',
+  'slicerOpen.uploadFailed': 'Upload failed — file downloaded instead',
+  'slicerOpen.generationFailed': 'Failed to generate file for slicer',
+  'slicerOpen.opening': 'Opening...',
+
+  // ===========================================================================
   // Drawer Settings
   // ===========================================================================
 
@@ -1305,6 +1316,7 @@ const en: Record<string, string> = {
   'binDesigner.exportBinAsStl': 'Export bin as STL',
   'binDesigner.exporting': 'Exporting...',
   'binDesigner.exportFailed': 'Export failed — please try again',
+  'binDesigner.openInSlicer': 'Open in Slicer',
   'binDesigner.fileName': 'File Name',
   'binDesigner.format': 'Format',
   'binDesigner.generateAMeshFirstToEnableExport': 'Generate a mesh first to enable export',

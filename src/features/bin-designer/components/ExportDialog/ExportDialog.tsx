@@ -11,9 +11,11 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
+import { useSlicerOpen } from '@/features/bin-designer/hooks/useSlicerOpen';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import type { FileNameStyle, ExportFileFormat } from '@/features/bin-designer/types';
+import type { SlicerSite } from '@/core/store/settings';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
@@ -34,12 +36,15 @@ const FORMAT_LABELS: Record<ExportFileFormat, string> = { stl: 'STL', step: 'STE
 
 export function ExportDialog() {
   const t = useTranslation();
-  const { printSettings, defaultPrintBedSize } = useSettingsStore(
+  const { printSettings, defaultPrintBedSize, slicerSites } = useSettingsStore(
     useShallow((s) => ({
       printSettings: s.settings.printSettings,
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
+      slicerSites: s.settings.slicerSites,
     }))
   );
+
+  const enabledSlicers = useMemo(() => slicerSites.filter((s) => s.enabled), [slicerSites]);
   const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
     useDesignerStore(
       useShallow((state) => ({
@@ -66,6 +71,7 @@ export function ExportDialog() {
     splitPieceCount,
     downloadSplitSTL,
   } = useExport();
+  const { isOpening, openingSlicerId, openInSlicer } = useSlicerOpen();
   const [splitEnabled, setSplitEnabled] = useState(true);
   const addToast = useToastStore((s) => s.addToast);
 
@@ -367,6 +373,26 @@ export function ExportDialog() {
             </p>
           )}
         </div>
+
+        {/* Open in Slicer Section */}
+        {enabledSlicers.length > 0 && (
+          <div className="mt-5 border-t border-stroke-subtle pt-5">
+            <h3 className="mb-3 text-sm font-semibold text-content">
+              {t('binDesigner.openInSlicer')}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {enabledSlicers.map((slicer) => (
+                <SlicerButton
+                  key={slicer.id}
+                  slicer={slicer}
+                  disabled={!canExport || isExporting || isOpening}
+                  isOpening={openingSlicerId === slicer.id}
+                  onClick={() => openInSlicer(slicer)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -518,5 +544,38 @@ function ExportSpinner() {
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
       />
     </svg>
+  );
+}
+
+/** Button for a single slicer in the "Open in Slicer" section */
+function SlicerButton({
+  slicer,
+  disabled,
+  isOpening,
+  onClick,
+}: {
+  slicer: SlicerSite;
+  disabled: boolean;
+  isOpening: boolean;
+  onClick: () => void;
+}) {
+  const t = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex items-center gap-1.5 rounded-md border border-stroke-subtle bg-surface px-3 py-2 text-sm font-medium text-content transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:text-content-disabled"
+      aria-label={`${t('binDesigner.openInSlicer')}: ${slicer.name}`}
+    >
+      {isOpening ? (
+        <>
+          <ExportSpinner />
+          {t('slicerOpen.opening')}
+        </>
+      ) : (
+        slicer.name
+      )}
+    </button>
   );
 }

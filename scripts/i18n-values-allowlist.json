@@ -1,6 +1,7 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "settings.slicers",
     "binDesigner.cart.cost",
     "binDesigner.wallCutouts.summary",
     "binDesigner.compartmentsShort",
