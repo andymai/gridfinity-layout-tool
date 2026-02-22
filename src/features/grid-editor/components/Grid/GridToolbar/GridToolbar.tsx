@@ -374,10 +374,10 @@ export const GridToolbar = memo(function GridToolbar({
             <button
               onClick={() => setOverflowMenuOpen(!overflowMenuOpen)}
               className={`btn ${overflowMenuOpen ? 'btn-primary' : 'btn-ghost'} p-1.5`}
-              aria-label={t('toolbar.moreOptions')}
+              aria-label={t('common.moreOptions')}
               aria-expanded={overflowMenuOpen}
               aria-haspopup="menu"
-              title={t('toolbar.moreOptions')}
+              title={t('common.moreOptions')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path

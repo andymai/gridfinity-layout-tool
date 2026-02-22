@@ -213,7 +213,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
                 className="bg-error/10 border border-error rounded p-3 max-h-32 overflow-y-auto"
               >
                 <div className="text-sm font-semibold text-error mb-1">
-                  {t('layouts.import.validationErrors')}
+                  {t('layouts.validationErrors')}
                 </div>
                 <ul className="text-sm text-error/80 space-y-1">
                   {errors.map((error) => (

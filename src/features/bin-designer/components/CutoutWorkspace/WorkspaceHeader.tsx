@@ -386,8 +386,8 @@ export function WorkspaceHeader({
     if (selection.size === 1 && singleCutout) {
       return (
         <div className="flex items-center gap-0.5">
-          {textBtn(() => onDuplicate(selectedIds), t('binDesigner.cutouts.duplicate'))}
-          {textBtn(() => onRemove(singleCutout.id), t('binDesigner.cutouts.delete'), true)}
+          {textBtn(() => onDuplicate(selectedIds), t('common.duplicate'))}
+          {textBtn(() => onRemove(singleCutout.id), t('common.delete'), true)}
           {cutouts.length > 1 && <Separator />}
           {cutouts.length > 1 && textBtn(onClearAll, t('binDesigner.cutouts.clearAll'), true)}
         </div>
@@ -450,7 +450,7 @@ export function WorkspaceHeader({
         {/* Center, Auto, Duplicate, Group/Ungroup */}
         {textBtn(handleCenterInBin, t('binDesigner.cutouts.centerInBin'))}
         <AutoArrangePopover onArrange={handleAutoArrange} />
-        {textBtn(() => onDuplicate(selectedIds), t('binDesigner.cutouts.duplicate'))}
+        {textBtn(() => onDuplicate(selectedIds), t('common.duplicate'))}
         {hasGroup
           ? textBtn(() => onUngroup(selectedIds), t('binDesigner.cutouts.ungroup'))
           : textBtn(() => onGroup(selectedIds), t('binDesigner.cutouts.combine'))}

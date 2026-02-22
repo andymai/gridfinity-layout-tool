@@ -265,14 +265,14 @@ describe('Header', () => {
     it('does not show half-bin badge when mode is off', () => {
       render(<Header {...defaultProps} />);
 
-      expect(screen.queryByText('Half-Bin Mode')).not.toBeInTheDocument();
+      expect(screen.queryByText('Half-bin mode')).not.toBeInTheDocument();
     });
 
     it('shows half-bin badge when mode is on', () => {
       useUIStore.getState().toggleHalfBinMode();
       render(<Header {...defaultProps} />);
 
-      expect(screen.getByText('Half-Bin Mode')).toBeInTheDocument();
+      expect(screen.getByText('Half-bin mode')).toBeInTheDocument();
     });
   });
 

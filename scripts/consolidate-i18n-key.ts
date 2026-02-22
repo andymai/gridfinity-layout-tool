@@ -11,7 +11,7 @@
  * Usage: npx tsx scripts/consolidate-i18n-key.ts --from old.key --to common.key [--dry-run]
  */
 
-import { readFileSync, readdirSync, writeFileSync } from 'fs';
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
 const ROOT_DIR = join(import.meta.dirname, '..');

@@ -144,7 +144,7 @@ export function MobileSettingsPanel() {
           onClick={handleHalfBinToggle}
           role="checkbox"
           aria-checked={halfBinMode}
-          aria-label={t('mobile.settings.toggleHalfBinMode')}
+          aria-label={t('sidebar.toggleHalfBinMode')}
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === ' ' || e.key === 'Enter') {

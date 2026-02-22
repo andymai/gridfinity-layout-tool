@@ -357,7 +357,7 @@ export function useFormatting() {
       // If includeTime is true, show minutes/hours for recent times
       if (opts.includeTime) {
         const diffMinutes = Math.floor(diffMs / 60000);
-        if (diffMinutes < 1) return t('date.justNow');
+        if (diffMinutes < 1) return t('snapshots.justNow');
         if (diffMinutes < 60) return t('date.minutesAgo', { minutes: diffMinutes });
 
         const diffHours = Math.floor(diffMinutes / 60);

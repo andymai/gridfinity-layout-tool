@@ -75,7 +75,7 @@ describe('AlignmentToolbar', () => {
 
   it('calls onDuplicate with selectedIds', () => {
     render(<AlignmentToolbar {...defaultProps} />);
-    fireEvent.click(screen.getByText('binDesigner.cutouts.duplicate'));
+    fireEvent.click(screen.getByText('common.duplicate'));
     expect(onDuplicate).toHaveBeenCalledWith(['a', 'b']);
   });
 

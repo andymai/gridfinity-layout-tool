@@ -340,7 +340,7 @@ function LayoutListItem({
                 </span>
                 {isActive && (
                   <span className="text-xs px-2 py-0.5 bg-accent text-on-dark rounded flex-shrink-0">
-                    {t('mobile.layouts.active')}
+                    {t('layouts.active')}
                   </span>
                 )}
               </div>
@@ -353,7 +353,7 @@ function LayoutListItem({
 
               {entry.forkedFrom && (
                 <div className="text-xs text-content-disabled">
-                  {t('mobile.layouts.forkedFrom')}
+                  {t('layouts.forkedFrom')}
                   {entry.forkedFrom.name}
                 </div>
               )}
@@ -627,9 +627,7 @@ export function MobileLayoutsPanel() {
           <SvgIcon path={ICON_PATHS.grid} className="w-5 h-5 text-accent" />
         </div>
         <div className="flex-1 text-left">
-          <div className="text-sm font-medium text-content">
-            {t('mobile.layouts.inspirationGallery')}
-          </div>
+          <div className="text-sm font-medium text-content">{t('gallery.title')}</div>
           <div className="text-xs text-content-tertiary">
             {t('mobile.layouts.getIdeasForYourDrawer')}
           </div>
@@ -639,7 +637,7 @@ export function MobileLayoutsPanel() {
 
       <button onClick={handleCreateNew} className="btn btn-secondary w-full mt-3 h-12">
         <SvgIcon path={ICON_PATHS.plus} className="w-5 h-5 mr-2" />
-        {t('mobile.layouts.newLayout')}
+        {t('layouts.newLayout')}
       </button>
 
       <ConfirmDialog
@@ -878,9 +876,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             </div>
 
             <div className="bg-surface rounded-lg p-3">
-              <p className="text-sm text-content-secondary mb-2">
-                {t('mobile.layouts.linkCopiedToClipboard')}
-              </p>
+              <p className="text-sm text-content-secondary mb-2">{t('toast.linkCopied')}</p>
               <p className="text-xs text-content-tertiary break-all font-mono">{result.url}</p>
             </div>
 
@@ -931,7 +927,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
               onClick={handleShare}
               className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
             >
-              {t('mobile.layouts.shareToCloud')}
+              {t('share.shareToCloud')}
             </button>
           </div>
         )}
@@ -999,7 +995,7 @@ function LayoutPreviewInfo({ entry }: { entry: LayoutEntry }) {
       <span>{t('mobile.layouts.previewBins', { count: preview.binCount })}</span>
 
       {preview.layerCount > 1 && (
-        <span>{t('mobile.layouts.previewLayers', { count: preview.layerCount })}</span>
+        <span>{t('layouts.import.layers', { count: preview.layerCount })}</span>
       )}
     </div>
   );

@@ -134,7 +134,7 @@ export function CutoutPropertyPanel({
           onClick={() => onDuplicate([cutout.id])}
           disabled={disabled}
         >
-          {t('binDesigner.cutouts.duplicate')}
+          {t('common.duplicate')}
         </button>
         <button
           type="button"
@@ -142,7 +142,7 @@ export function CutoutPropertyPanel({
           onClick={() => onRemove(cutout.id)}
           disabled={disabled}
         >
-          {t('binDesigner.cutouts.delete')}
+          {t('common.delete')}
         </button>
       </div>
     </div>

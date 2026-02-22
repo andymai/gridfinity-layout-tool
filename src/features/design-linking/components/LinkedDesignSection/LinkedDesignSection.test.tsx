@@ -83,7 +83,7 @@ describe('LinkedDesignSection', () => {
 
   it('shows experimental badge', () => {
     render(<LinkedDesignSection bin={testBin} variant="desktop" />);
-    expect(screen.getByText('designLinking.experimental')).toBeInTheDocument();
+    expect(screen.getByText('settings.experimental')).toBeInTheDocument();
   });
 
   it('calls showCreateDesignDialog when create button clicked', () => {

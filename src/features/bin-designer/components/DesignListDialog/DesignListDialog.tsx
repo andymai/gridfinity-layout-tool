@@ -366,7 +366,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
               onClick={() => setShowImport(true)}
               className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
             >
-              {t('binDesigner.importDesign')}
+              {t('common.import')}
             </button>
             <button
               onClick={handleNewDesign}
@@ -474,12 +474,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
               sortOptions={localizedSortOptions}
               sortValue={sortBy}
               onSortChange={(value) => setSortBy(value as SortOption)}
-              sortAriaLabel={t('binDesigner.sortBy')}
+              sortAriaLabel={t('layouts.sortBy')}
               viewMode={effectiveViewMode}
               onViewModeChange={setViewMode}
               showViewToggle={!isMobile}
               viewModeLabels={{
-                ariaLabel: t('binDesigner.viewMode'),
+                ariaLabel: t('layouts.viewMode'),
                 listLabel: t('binDesigner.listView'),
                 gridLabel: t('binDesigner.gridView'),
               }}

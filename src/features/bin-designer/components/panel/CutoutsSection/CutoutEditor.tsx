@@ -291,10 +291,10 @@ export function CutoutEditor() {
     const actions: ContextMenuAction[] = [];
 
     if (hasSelection) {
-      actions.push({ label: t('binDesigner.cutouts.copy'), onClick: copySelected });
-      actions.push({ label: t('binDesigner.cutouts.duplicate'), onClick: duplicateSelected });
+      actions.push({ label: t('common.copy'), onClick: copySelected });
+      actions.push({ label: t('common.duplicate'), onClick: duplicateSelected });
       actions.push({
-        label: t('binDesigner.cutouts.delete'),
+        label: t('common.delete'),
         onClick: deleteSelected,
         danger: true,
         dividerAfter: true,

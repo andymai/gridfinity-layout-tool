@@ -263,7 +263,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         {/* Category */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>
-            {t('inspector.category')}
+            {t('common.category')}
           </label>
           <SelectDropdown
             value={bin.category}
@@ -297,9 +297,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Label */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>
-            {t('inspector.label')}
-          </label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('common.label')}</label>
           <input
             type="text"
             value={bin.label}
@@ -328,9 +326,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Notes */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>
-            {t('inspector.notes')}
-          </label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('common.notes')}</label>
           <textarea
             value={bin.notes}
             onChange={(e) =>

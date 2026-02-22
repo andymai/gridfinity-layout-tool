@@ -244,7 +244,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                 }
                 className={`input w-full ${inputHeight}`}
                 placeholder={t('inspector.customProps.multiKeyPlaceholder')}
-                aria-label={t('inspector.propertyName')}
+                aria-label={t('inspector.customProps.multiKeyPlaceholder')}
                 list="property-key-suggestions"
                 // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                 autoFocus

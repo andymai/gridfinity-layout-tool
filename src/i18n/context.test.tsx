@@ -36,8 +36,8 @@ describe('getStaticTranslation', () => {
   });
 
   it('interpolates variables correctly', () => {
-    const result = getStaticTranslation('common.deleteBins', { count: 5 });
-    expect(result).toBe('Delete 5 bin(s)');
+    const result = getStaticTranslation('toast.binsDeleted', { count: 5 });
+    expect(result).toBe('Deleted 5 bin(s)');
   });
 
   it('interpolates multiple variables', () => {
@@ -51,8 +51,8 @@ describe('getStaticTranslation', () => {
   });
 
   it('converts non-string variable values to strings', () => {
-    const result = getStaticTranslation('common.deleteBins', { count: 42 });
-    expect(result).toBe('Delete 42 bin(s)');
+    const result = getStaticTranslation('toast.binsDeleted', { count: 42 });
+    expect(result).toBe('Deleted 42 bin(s)');
   });
 });
 
@@ -90,7 +90,7 @@ describe('LocaleProvider + useTranslation', () => {
     const { result } = renderHook(() => useTranslation(), { wrapper });
 
     await waitFor(() => {
-      expect(result.current('common.deleteBins', { count: 7 })).toBe('Delete 7 bin(s)');
+      expect(result.current('toast.binsDeleted', { count: 7 })).toBe('Deleted 7 bin(s)');
     });
   });
 

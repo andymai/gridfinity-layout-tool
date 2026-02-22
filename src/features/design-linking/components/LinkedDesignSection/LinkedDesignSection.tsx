@@ -109,7 +109,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
             {t('designLinking.inspector.linkedDesign')}
           </label>
           <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-            {t('designLinking.experimental')}
+            {t('settings.experimental')}
           </span>
         </div>
         <div className="flex gap-2">
@@ -156,7 +156,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
             {t('designLinking.inspector.linkedDesign')}
           </label>
           <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-            {t('designLinking.experimental')}
+            {t('settings.experimental')}
           </span>
         </div>
         <div className="p-3 rounded-lg bg-status-warning/10 border border-status-warning/30">
@@ -203,7 +203,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           {t('designLinking.inspector.linkedDesign')}
         </label>
         <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-          {t('designLinking.experimental')}
+          {t('settings.experimental')}
         </span>
       </div>
 
