@@ -4,6 +4,10 @@ npm run check:boundaries:staged
 npm run check:i18n
 npm run check:i18n:values
 npm run check:i18n:interpolation
+# check:i18n:unused scans all source files — only run when i18n files are staged
+if git diff --cached --name-only | grep -qE '^src/i18n/'; then
+  npm run check:i18n:unused
+fi
 npm run check:exhaustiveness
 npm run test:affected
 npm run check:component-structure

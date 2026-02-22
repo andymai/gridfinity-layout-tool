@@ -23,6 +23,12 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Allowed cross-feature imports — format: "source-feature:target-feature"
+# Add entries here (with explanation) when intentional coupling is required.
+ALLOWED_CROSS_FEATURE=(
+  "design-linking:bin-designer" # design-linking links layout bins to bin-designer designs
+)
+
 VIOLATIONS_FOUND=0
 
 # Get files to check
@@ -71,25 +77,29 @@ check_file() {
     local target_feature
     target_feature=$(echo "$import_path" | sed 's|@/features/||' | cut -d'/' -f1)
 
-    # Known allowed cross-feature dependencies (tightly coupled by design)
-    # design-linking links bin designs to layout bins, so it needs bin-designer types
-    if [[ "$source_feature" == "design-linking" && "$target_feature" == "bin-designer" ]]; then
-      continue
-    fi
+    # Skip same-feature imports
+    [[ "$target_feature" == "$source_feature" ]] && continue
 
-    # Check for cross-feature import
-    if [[ "$target_feature" != "$source_feature" ]]; then
-      # Get line number (match the actual import statement with fixed-string matching)
-      local line_num
-      line_num=$(grep -nE "from ['\"]$import_path['\"]" "$file" | head -1 | cut -d':' -f1)
+    # Check against allowlist
+    local allowed=false
+    for pair in "${ALLOWED_CROSS_FEATURE[@]}"; do
+      if [[ "$pair" == "$source_feature:$target_feature" ]]; then
+        allowed=true
+        break
+      fi
+    done
+    [[ "$allowed" == "true" ]] && continue
 
-      echo -e "${RED}VIOLATION${NC} $file:$line_num"
-      echo -e "  ${BLUE}features/$source_feature${NC} → ${YELLOW}features/$target_feature${NC}"
-      echo -e "  Import: $import_path"
-      echo ""
+    # Cross-feature import violation
+    local line_num
+    line_num=$(grep -nE "from ['\"]$import_path['\"]" "$file" | head -1 | cut -d':' -f1)
 
-      ((VIOLATIONS_FOUND++))
-    fi
+    echo -e "${RED}VIOLATION${NC} $file:$line_num"
+    echo -e "  ${BLUE}features/$source_feature${NC} → ${YELLOW}features/$target_feature${NC}"
+    echo -e "  Import: $import_path"
+    echo ""
+
+    ((VIOLATIONS_FOUND++))
   done <<< "$imports"
 
   return 0
