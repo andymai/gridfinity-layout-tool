@@ -1430,6 +1430,7 @@
   "staging.collapseStash": "Réduire le stash",
   "staging.dropHereToStash": "Déposer ici pour stocker",
   "staging.dropToStash": "Déposer dans le stash",
+  "staging.emptyHint": "Faites glisser un bac ici pour le mettre en réserve",
   "staging.expandStash": "Développer le stash",
   "staging.resizeHandle": "Glisser pour redimensionner le panneau de stash",
   "staging.rotateBin": "Pivoter le bin (R)",

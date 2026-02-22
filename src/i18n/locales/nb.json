@@ -1430,6 +1430,7 @@
   "staging.collapseStash": "Skjul stash",
   "staging.dropHereToStash": "Slipp her for å stashe",
   "staging.dropToStash": "Slipp til stash",
+  "staging.emptyHint": "Dra et element hit for å legge det i stashen",
   "staging.expandStash": "Utvid stash",
   "staging.resizeHandle": "Dra for å endre størrelse på stash-panel",
   "staging.rotateBin": "Roter bin (R)",

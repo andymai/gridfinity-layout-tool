@@ -1,11 +1,12 @@
 import { useCallback, useRef } from 'react';
-import { useInteractionStore } from '@/core/store';
+import { useInteractionStore, useToastStore } from '@/core/store';
 import { useHalfBinModeStore } from '@/core/store';
-import { canPlaceBin, clamp } from '@/shared/utils/validation';
+import { canPlaceBin, clamp, getPlacementErrorMessage } from '@/shared/utils/validation';
 import { snapPosition } from '@/shared/utils/snap';
 import { capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useTranslation } from '@/i18n';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
 import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types';
 
@@ -35,6 +36,8 @@ import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types'
 export function useStagingDragInteraction(
   context: InteractionContext
 ): ModeHandlers<StagingDragStartArgs> {
+  const t = useTranslation();
+  const addToast = useToastStore((state) => state.addToast);
   const {
     layout,
     activeLayerId,
@@ -200,11 +203,18 @@ export function useStagingDragInteraction(
         // Also track layer movement (from staging to active layer)
         mlTracking.trackLayerMove(bin, fromLayerId, activeLayerId, 'drag', 1);
       }
+    } else if (interaction.currentCoord && interaction.invalidReason) {
+      // Bin was dragged over the grid but couldn't be placed — show why.
+      // Only fires when hovering the grid (currentCoord set) with a specific failure reason.
+      addToast(
+        getPlacementErrorMessage(t, interaction.invalidReason, interaction.blockingInfo),
+        'info'
+      );
     }
-    // If invalid or no position, bin stays in staging (no action needed)
+    // Otherwise (released before reaching the grid): stays in staging silently — obvious to user.
 
     // Note: setInteraction(null) is called by the parent hook
-  }, [layout, activeLayerId, updateBin, execute, setSelectedBin]);
+  }, [layout, activeLayerId, updateBin, execute, setSelectedBin, t, addToast]);
 
   return { start, handleMove, handleUp };
 }

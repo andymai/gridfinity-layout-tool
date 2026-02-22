@@ -1430,6 +1430,7 @@
   "staging.collapseStash": "Stash invouwen",
   "staging.dropHereToStash": "Hier neerzetten om op te slaan",
   "staging.dropToStash": "Naar stash slepen",
+  "staging.emptyHint": "Sleep een bak hiernaartoe om het op te slaan",
   "staging.expandStash": "Stash uitvouwen",
   "staging.resizeHandle": "Sleep om het stash-paneel te vergroten/verkleinen",
   "staging.rotateBin": "Bin roteren (R)",

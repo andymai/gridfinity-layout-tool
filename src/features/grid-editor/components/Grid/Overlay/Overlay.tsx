@@ -7,6 +7,7 @@ import {
   type FractionalGridContext,
 } from '@/features/grid-editor/utils/fractionalPixels';
 import { useTranslation } from '@/i18n';
+import { getPlacementErrorMessage } from '@/shared/utils/validation';
 import type { ValidationReason, BlockingInfo } from '@/core/types';
 
 interface OverlayProps {
@@ -30,26 +31,7 @@ function PlacementIndicator({
   top: number;
 }) {
   const t = useTranslation();
-
-  // Generate message based on reason
-  let message: string;
-  if (reason === 'blocked_zone' && blockingInfo) {
-    message = t('grid.blockedByBin', { layer: blockingInfo.layerName });
-  } else if (reason === 'collision') {
-    message = t('grid.collision');
-  } else if (
-    reason === 'out_of_bounds' ||
-    reason === 'exceeds_width' ||
-    reason === 'exceeds_depth' ||
-    reason === 'exceeds_height'
-  ) {
-    message = t('grid.outOfBounds');
-  } else if (reason === 'invalid_layer') {
-    message = t('grid.invalidLayer');
-  } else {
-    // Exhaustive check - should never reach here with current ValidationReason type
-    return null;
-  }
+  const message = getPlacementErrorMessage(t, reason, blockingInfo);
 
   return (
     <div

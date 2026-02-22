@@ -372,7 +372,33 @@ export function Staging() {
 
   const hasBins = stagingBins.length > 0;
   if (!hasBins && !showAsDropTarget) {
-    return null;
+    // Show a persistent hint so new users can discover the stash feature.
+    // Kept minimal to avoid clutter when the stash is unused.
+    return (
+      <div
+        data-stash
+        role="status"
+        aria-label={t('staging.stash')}
+        className="flex-shrink-0 border-t border-stroke px-4 py-2 flex items-center gap-2 text-xs text-content-disabled"
+      >
+        <svg
+          className="w-3.5 h-3.5 flex-shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+          />
+        </svg>
+        <span className="font-medium text-content-tertiary">{t('staging.stash')}</span>
+        <span className="text-content-disabled">—</span>
+        <span>{t('staging.emptyHint')}</span>
+      </div>
+    );
   }
 
   // Empty drop zone when dragging but no bins stashed

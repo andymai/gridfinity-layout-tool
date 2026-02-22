@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useInteractionStore, useViewStore, useLayoutStore, useToastStore } from '@/core/store';
 import { useHalfBinModeStore } from '@/core/store';
-import { canPlaceBin } from '@/shared/utils/validation';
+import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
 import { canSwapBins, findBinAtPosition } from '@/shared/utils/position';
 import { snapGroupDelta } from '@/shared/utils/snap';
 import { constrainGroupDelta } from './selection';
@@ -443,8 +443,15 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
           });
         }
       }
+    } else if (interaction.invalidReason) {
+      // Placement failed on the grid — show brief feedback so the user knows why nothing happened.
+      // Only fires when there's a specific validation reason (not for off-grid drops, which are obvious).
+      addToast(
+        getPlacementErrorMessage(t, interaction.invalidReason, interaction.blockingInfo),
+        'info'
+      );
     }
-    // If not valid, interaction ends without changes (bins stay in original positions)
+    // Otherwise (off-grid drop): ends without changes silently — off-grid is visually obvious.
 
     // Note: setInteraction(null) is called by the parent hook
   }, [

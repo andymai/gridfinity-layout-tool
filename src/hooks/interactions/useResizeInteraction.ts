@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
-import { useInteractionStore, useHalfBinModeStore } from '@/core/store';
-import { canPlaceBin } from '@/shared/utils/validation';
+import { useInteractionStore, useHalfBinModeStore, useToastStore } from '@/core/store';
+import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
 import { snapResizeRect } from '@/shared/utils/snap';
 import { calculateResizeRect, capturePointer } from './interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
+import { useTranslation } from '@/i18n';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';
 import type { BinId, Coord, Rect, ValidationReason, BlockingInfo } from '@/core/types';
 
@@ -29,6 +30,8 @@ import type { BinId, Coord, Rect, ValidationReason, BlockingInfo } from '@/core/
  * @returns ModeHandlers for resize interactions
  */
 export function useResizeInteraction(context: InteractionContext): ModeHandlers<ResizeStartArgs> {
+  const t = useTranslation();
+  const addToast = useToastStore((state) => state.addToast);
   const {
     layout,
     activeLayerId,
@@ -185,8 +188,16 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
     const interaction = useInteractionStore.getState().interaction;
     if (!interaction || interaction.type !== 'resize') return;
 
-    // Only commit if the resize was valid
-    if (!interaction.valid) return;
+    // Only commit if the resize was valid; show feedback when it isn't
+    if (!interaction.valid) {
+      if (interaction.invalidReason) {
+        addToast(
+          getPlacementErrorMessage(t, interaction.invalidReason, interaction.blockingInfo),
+          'info'
+        );
+      }
+      return;
+    }
 
     let hasChanges = false;
 
@@ -296,7 +307,7 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
     }
 
     // Note: setInteraction(null) is called by the parent hook
-  }, [layout, execute, updateBin]);
+  }, [layout, execute, updateBin, t, addToast]);
 
   return { start, handleMove, handleUp };
 }

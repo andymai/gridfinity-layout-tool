@@ -43,6 +43,7 @@ export {
   isValidBin,
   isValidCategory,
   canPlaceBin,
+  getPlacementErrorMessage,
   validateImport,
   validateLayoutIntegrity,
   validateCustomProperties,

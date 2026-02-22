@@ -1430,6 +1430,7 @@
   "staging.collapseStash": "Stash einklappen",
   "staging.dropHereToStash": "Hier ablegen zum Stashen",
   "staging.dropToStash": "Zum Stash ablegen",
+  "staging.emptyHint": "Ziehe einen Behälter hierher, um ihn zu stashen",
   "staging.expandStash": "Stash ausklappen",
   "staging.resizeHandle": "Ziehen um Stash-Panel zu vergrößern",
   "staging.rotateBin": "Bin drehen (R)",

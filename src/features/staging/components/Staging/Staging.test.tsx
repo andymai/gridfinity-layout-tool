@@ -75,10 +75,10 @@ describe('Staging', () => {
   }
 
   describe('rendering', () => {
-    it('returns null when no staged bins and not dragging', () => {
-      const { container } = render(<Staging />);
+    it('shows empty hint when no staged bins and not dragging', () => {
+      render(<Staging />);
 
-      expect(container.firstChild).toBeNull();
+      expect(screen.getByText('Drag a bin here to stash it')).toBeInTheDocument();
     });
 
     it('renders when bins are staged', () => {

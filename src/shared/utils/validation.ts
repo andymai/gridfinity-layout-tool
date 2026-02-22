@@ -1,4 +1,14 @@
-import type { Bin, Layout, ValidationResult, Rect, BinId, LayerId } from '@/core/types';
+import type {
+  Bin,
+  Layout,
+  ValidationResult,
+  ValidationReason,
+  BlockingInfo,
+  Rect,
+  BinId,
+  LayerId,
+} from '@/core/types';
+import type { TFunction } from '@/i18n';
 import { binId as toBinId, layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '@/core/constants';
 import type { Result, ValidationError } from '@/core/result';
@@ -667,4 +677,27 @@ export function truncate(str: string, maxLength: number): string {
 /** Format a dimension value, showing decimals only for fractional values (half-bin mode). */
 export function formatDimension(val: number): string {
   return val % 1 === 0 ? val.toString() : val.toFixed(1);
+}
+
+/**
+ * Maps a placement validation failure to a user-facing translated message.
+ * Used by drag interactions and grid overlay to explain why a bin can't be placed.
+ */
+export function getPlacementErrorMessage(
+  t: TFunction,
+  reason: ValidationReason,
+  blockingInfo?: BlockingInfo
+): string {
+  if (reason === 'blocked_zone') {
+    return blockingInfo
+      ? t('grid.blockedByBin', { layer: blockingInfo.layerName })
+      : t('grid.blockedZone');
+  }
+  if (reason === 'collision') {
+    return t('grid.collision');
+  }
+  if (reason === 'invalid_layer') {
+    return t('grid.invalidLayer');
+  }
+  return t('grid.outOfBounds');
 }

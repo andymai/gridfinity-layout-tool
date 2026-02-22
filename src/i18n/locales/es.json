@@ -1430,6 +1430,7 @@
   "staging.collapseStash": "Contraer stash",
   "staging.dropHereToStash": "Suelta aquí para guardar en stash",
   "staging.dropToStash": "Suelta en stash",
+  "staging.emptyHint": "Arrastra un contenedor aquí para guardarlo",
   "staging.expandStash": "Expandir stash",
   "staging.resizeHandle": "Arrastra para cambiar el tamaño del panel de stash",
   "staging.rotateBin": "Rotar bin (R)",
