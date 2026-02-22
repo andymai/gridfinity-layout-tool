@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.25.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.24.0...gridfinity-layout-tool-v3.25.0) (2026-02-22)
+
+
+### Features
+
+* **bin-designer:** add Open in Slicer deep-link export ([#846](https://github.com/andymai/gridfinity-layout-tool/issues/846)) ([39d70df](https://github.com/andymai/gridfinity-layout-tool/commit/39d70df3ca6e33b5e7684389e3bba8763f8bd08f))
+
 ## [3.24.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.23.1...gridfinity-layout-tool-v3.24.0) (2026-02-22)
 
 
