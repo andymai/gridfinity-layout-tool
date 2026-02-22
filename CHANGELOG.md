@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.24.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.23.1...gridfinity-layout-tool-v3.24.0) (2026-02-22)
+
+
+### Features
+
+* **i18n:** consolidate redundant keys and remove 152 orphaned translations ([#843](https://github.com/andymai/gridfinity-layout-tool/issues/843)) ([aec5e9a](https://github.com/andymai/gridfinity-layout-tool/commit/aec5e9a949b1c97ace78a0a5cf1aa2081fa5c071))
+
 ## [3.23.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.23.0...gridfinity-layout-tool-v3.23.1) (2026-02-22)
 
 
