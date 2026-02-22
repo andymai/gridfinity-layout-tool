@@ -314,7 +314,7 @@ export function AlignmentToolbar({
           className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
           onClick={() => onDuplicate(selectedIds)}
         >
-          {t('binDesigner.cutouts.duplicate')}
+          {t('common.duplicate')}
         </button>
         {hasGroup ? (
           <button

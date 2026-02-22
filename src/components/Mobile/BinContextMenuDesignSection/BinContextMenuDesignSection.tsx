@@ -50,7 +50,7 @@ export function BinContextMenuDesignSection({ bin, onClose }: BinContextMenuDesi
           {t('designLinking.menu.sectionTitle')}
         </span>
         <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-          {t('designLinking.experimental')}
+          {t('settings.experimental')}
         </span>
       </div>
       {hasLink && linkedDesign ? (

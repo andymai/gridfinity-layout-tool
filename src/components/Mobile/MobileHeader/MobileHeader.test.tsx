@@ -43,7 +43,7 @@ vi.mock('@/shared/components/ToolSwitcher', () => ({
 describe('MobileHeader', () => {
   it('renders the GitHub link', () => {
     render(<MobileHeader onMenuClick={vi.fn()} onHelpClick={vi.fn()} saveStatus="idle" />);
-    const githubLink = screen.getByText('mobile.header.github');
+    const githubLink = screen.getByText('sidebar.github');
     expect(githubLink.closest('a')).toHaveAttribute(
       'href',
       'https://github.com/andymai/gridfinity-layout-tool'
@@ -52,6 +52,6 @@ describe('MobileHeader', () => {
 
   it('renders the tip link', () => {
     render(<MobileHeader onMenuClick={vi.fn()} onHelpClick={vi.fn()} saveStatus="idle" />);
-    expect(screen.getByText('mobile.header.tip')).toBeInTheDocument();
+    expect(screen.getByText('sidebar.tip')).toBeInTheDocument();
   });
 });

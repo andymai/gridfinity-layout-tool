@@ -118,7 +118,7 @@ export function SnapshotHistory() {
       type: 'info',
       duration: 5000,
       action: {
-        label: t('snapshots.undoDelete'),
+        label: t('common.undo'),
         onClick: () => {
           // Cancel the scheduled IndexedDB deletion
           const pendingTimer = pendingDeleteTimers.current.get(snapshotId);

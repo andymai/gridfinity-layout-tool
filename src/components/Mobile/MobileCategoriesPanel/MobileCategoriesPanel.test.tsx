@@ -23,6 +23,6 @@ describe('MobileCategoriesPanel', () => {
 
   it('displays add category button', () => {
     render(<MobileCategoriesPanel />);
-    expect(screen.getByText('mobile.categories.addCategory')).toBeInTheDocument();
+    expect(screen.getByText('categories.addCategory')).toBeInTheDocument();
   });
 });

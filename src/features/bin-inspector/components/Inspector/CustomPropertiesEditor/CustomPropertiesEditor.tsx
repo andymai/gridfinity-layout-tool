@@ -125,7 +125,7 @@ export function CustomPropertiesEditor({
       <div className="flex items-center justify-between mb-2">
         <label className={`block ${labelSize} text-content-tertiary`}>
           {hasProperties
-            ? t('inspector.customPropertiesCount', { count: properties.length })
+            ? t('rightPanel.customPropertiesCount', { count: properties.length })
             : t('inspector.customProperties')}
         </label>
         {!isAdding && (
@@ -188,7 +188,7 @@ export function CustomPropertiesEditor({
                 }
                 maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
                 className={`input w-full ${inputHeight}`}
-                placeholder={t('inspector.customProps.valuePlaceholder')}
+                placeholder={t('inspector.customProps.multiValuePlaceholder')}
                 aria-label={`Value for ${key}`}
               />
             </div>
@@ -224,7 +224,7 @@ export function CustomPropertiesEditor({
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
             className={`input w-full ${inputHeight}`}
-            placeholder={t('inspector.customProps.valuePlaceholder')}
+            placeholder={t('inspector.customProps.multiValuePlaceholder')}
             aria-label={t('inspector.newPropertyValue')}
           />
           {error && (

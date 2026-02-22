@@ -322,7 +322,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                     <button
                       onClick={() => setSearchQuery('')}
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-content-tertiary hover:text-content focus-visible:ring-2 focus-visible:ring-accent"
-                      aria-label={t('help.clearSearch')}
+                      aria-label={t('layouts.clearSearch')}
                     >
                       <svg
                         className="w-4 h-4"

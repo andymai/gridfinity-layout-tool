@@ -89,7 +89,7 @@ export function DesignGridItem({
       {/* Active badge */}
       {isActive && (
         <span className="absolute top-1.5 right-1.5 z-10 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">
-          {t('binDesigner.active')}
+          {t('layouts.active')}
         </span>
       )}
 

@@ -154,7 +154,7 @@ export function ToolsTab() {
             : 'bg-surface-elevated hover:bg-surface-hover'
         }`}
         aria-label={t('mobile.tools.selectForPaint', {
-          action: t(isActive ? 'mobile.tools.deselect' : 'mobile.tools.select'),
+          action: t(isActive ? 'layers.deselect' : 'mobile.tools.select'),
           width: w,
           depth: d,
         })}
@@ -183,7 +183,7 @@ export function ToolsTab() {
 
       {/* Squares section */}
       <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-        {t('mobile.tools.squares')}
+        {t('layers.squares')}
       </div>
       <div className="grid grid-cols-6 gap-2">
         {SQUARE_SIZES.map((size) => (
@@ -194,7 +194,7 @@ export function ToolsTab() {
       {/* Rectangles section */}
       <div className="flex items-center justify-between mt-4 mb-2">
         <span className="text-xs text-content-tertiary uppercase tracking-wide">
-          {t('mobile.tools.rectangles')}
+          {t('layers.rectangles')}
         </span>
         <button
           onClick={() => setRotated(!rotated)}
@@ -209,7 +209,7 @@ export function ToolsTab() {
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          {t(rotated ? 'mobile.tools.tall' : 'mobile.tools.wide')}
+          {t(rotated ? 'layers.tall' : 'layers.wide')}
         </button>
       </div>
       <div className="grid grid-cols-5 gap-2">

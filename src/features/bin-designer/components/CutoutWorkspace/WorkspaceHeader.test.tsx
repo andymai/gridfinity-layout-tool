@@ -109,8 +109,8 @@ describe('WorkspaceHeader', () => {
       hidden: false,
     };
     render(<WorkspaceHeader {...defaultProps} cutouts={[cutout]} selection={new Set(['c1'])} />);
-    expect(screen.getByText('binDesigner.cutouts.duplicate')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.delete')).toBeInTheDocument();
+    expect(screen.getByText('common.duplicate')).toBeInTheDocument();
+    expect(screen.getByText('common.delete')).toBeInTheDocument();
   });
 
   it('shows alignment buttons for multi-selection', () => {

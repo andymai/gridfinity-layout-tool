@@ -103,7 +103,7 @@ export function SharedWithMeItem({
               }
             `}
             >
-              {entry.permission === 'edit' ? t('layouts.canEdit') : t('layouts.viewOnly')}
+              {entry.permission === 'edit' ? t('share.cloud.canEdit') : t('layouts.viewOnly')}
             </span>
 
             {/* Deleted badge */}

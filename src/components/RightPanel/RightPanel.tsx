@@ -134,7 +134,7 @@ export function RightPanel() {
               }`}
               onClick={() => setActiveTab('inspector')}
             >
-              {t('rightPanel.inspectorTab')}
+              {t('rightPanel.inspector')}
             </button>
             <button
               id="tab-history"

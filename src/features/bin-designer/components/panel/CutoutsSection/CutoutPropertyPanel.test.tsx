@@ -89,19 +89,19 @@ describe('CutoutPropertyPanel', () => {
   it('renders duplicate and delete buttons', () => {
     render(<CutoutPropertyPanel {...defaultProps} />);
 
-    expect(screen.getByText('binDesigner.cutouts.duplicate')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.delete')).toBeInTheDocument();
+    expect(screen.getByText('common.duplicate')).toBeInTheDocument();
+    expect(screen.getByText('common.delete')).toBeInTheDocument();
   });
 
   it('calls onDuplicate with cutout id', () => {
     render(<CutoutPropertyPanel {...defaultProps} />);
-    fireEvent.click(screen.getByText('binDesigner.cutouts.duplicate'));
+    fireEvent.click(screen.getByText('common.duplicate'));
     expect(onDuplicate).toHaveBeenCalledWith(['test-cutout']);
   });
 
   it('calls onRemove with cutout id', () => {
     render(<CutoutPropertyPanel {...defaultProps} />);
-    fireEvent.click(screen.getByText('binDesigner.cutouts.delete'));
+    fireEvent.click(screen.getByText('common.delete'));
     expect(onRemove).toHaveBeenCalledWith('test-cutout');
   });
 });

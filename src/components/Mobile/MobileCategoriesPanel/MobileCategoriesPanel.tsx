@@ -220,7 +220,7 @@ export function MobileCategoriesPanel() {
                   )}
                   {isActive && (
                     <span className="px-2 py-1 rounded text-xs font-medium bg-accent text-black">
-                      {t('mobile.categories.active')}
+                      {t('layouts.active')}
                     </span>
                   )}
                   <button
@@ -229,7 +229,7 @@ export function MobileCategoriesPanel() {
                       setEditingId(category.id);
                     }}
                     className="btn btn-ghost w-10 h-10 p-0"
-                    aria-label={t('mobile.categories.editCategory')}
+                    aria-label={t('categories.editCategory')}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -256,7 +256,7 @@ export function MobileCategoriesPanel() {
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        {t('mobile.categories.addCategory')}
+        {t('categories.addCategory')}
       </button>
 
       <ConfirmDialog
