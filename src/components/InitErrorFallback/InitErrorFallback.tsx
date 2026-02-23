@@ -1,5 +1,7 @@
 /* eslint-disable i18next/no-literal-string -- Catastrophic fallback; i18n may not be available */
 
+import { clearAllAppData } from '@/core/storage';
+
 /** Shown when IndexedDB initialization fails and the app cannot load saved data. */
 export function InitErrorFallback({ error }: { error: Error }) {
   return (
@@ -32,7 +34,7 @@ export function InitErrorFallback({ error }: { error: Error }) {
         <button
           onClick={() => {
             try {
-              localStorage.clear();
+              clearAllAppData();
             } catch {
               /* ignore */
             }

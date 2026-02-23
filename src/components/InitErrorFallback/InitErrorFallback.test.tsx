@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { InitErrorFallback } from './InitErrorFallback';
 
+vi.mock('@/core/storage', () => ({
+  clearAllAppData: vi.fn(),
+}));
+
 describe('InitErrorFallback', () => {
   it('renders error message and recovery button', () => {
     const error = new Error('IndexedDB is unavailable');
@@ -13,9 +17,9 @@ describe('InitErrorFallback', () => {
     expect(screen.getByRole('button', { name: /clear data/i })).toBeInTheDocument();
   });
 
-  it('clears localStorage and reloads on button click', async () => {
+  it('clears app data and reloads on button click', async () => {
+    const { clearAllAppData } = await import('@/core/storage');
     const user = userEvent.setup();
-    const clearSpy = vi.spyOn(Storage.prototype, 'clear');
     const reloadMock = vi.fn();
     Object.defineProperty(window, 'location', {
       value: { reload: reloadMock },
@@ -25,9 +29,7 @@ describe('InitErrorFallback', () => {
     render(<InitErrorFallback error={new Error('test')} />);
     await user.click(screen.getByRole('button', { name: /clear data/i }));
 
-    expect(clearSpy).toHaveBeenCalled();
+    expect(clearAllAppData).toHaveBeenCalled();
     expect(reloadMock).toHaveBeenCalled();
-
-    clearSpy.mockRestore();
   });
 });
