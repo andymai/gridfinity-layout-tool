@@ -18,6 +18,15 @@ vi.mock('./lib/rateLimit.js', () => ({
 /** Minimal valid 3MF buffer: ZIP magic bytes (PK\x03\x04) + padding */
 const VALID_3MF = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00]);
 
+/** Mock global fetch so waitForUrl resolves without real HTTP */
+function mockFetchOk() {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }));
+}
+
+function mockFetchFail() {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+}
+
 function makeReq(overrides: Partial<VercelRequest> = {}): VercelRequest {
   return {
     method: 'POST',
@@ -44,12 +53,15 @@ describe('slicer-upload handler', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
     vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'test-token');
     vi.stubEnv('VERCEL_ENV', 'production');
     vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'myapp.vercel.app');
     mockGetClientIP.mockReturnValue('127.0.0.1');
     mockCheckRateLimit.mockResolvedValue({ allowed: true });
     mockPut.mockResolvedValue({ url: 'https://blob.vercel.com/slicer-temp/test.3mf' });
+    // By default, URL availability check succeeds immediately
+    mockFetchOk();
   });
 
   it('returns 405 for non-POST methods', async () => {
@@ -189,5 +201,18 @@ describe('slicer-upload handler', () => {
     const { res, status } = makeRes();
     await handler(makeReq(), res);
     expect(status).toHaveBeenCalledWith(500);
+  });
+
+  it('returns 503 when blob URL is not accessible after upload (CDN propagation failure)', async () => {
+    mockFetchFail();
+    vi.useFakeTimers();
+    const { default: handler } = await import('./slicer-upload.js');
+    const { res, status } = makeRes();
+    // Run handler and advance all timers concurrently so retries resolve fast
+    const handlerPromise = handler(makeReq(), res);
+    await vi.runAllTimersAsync();
+    await handlerPromise;
+    vi.useRealTimers();
+    expect(status).toHaveBeenCalledWith(503);
   });
 });
