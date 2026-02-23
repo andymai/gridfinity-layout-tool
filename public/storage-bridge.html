@@ -211,13 +211,7 @@
           }
         }
 
-        /**
-         * Check if a record exists and write it if not.
-         * For stores with inline keys (keyPath), the key is inside the value.
-         * For stores with out-of-line keys, the key is in record.key.
-         * When mergeFn is provided, reads existing value first and merges before writing
-         * (used for singleton stores like 'library' so canonical-only entries are preserved).
-         */
+        /** Check if a record exists and write/merge it accordingly. */
         function checkAndWrite(store, record, stats, mergeFn) {
           const key = store.keyPath ? record.value[store.keyPath] : record.key;
 

@@ -184,7 +184,6 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
       if (msg.type !== 'www-migration-complete' && msg.type !== 'www-migration-error') return;
 
       cleanup();
-      // msg is loosely typed (postMessage data is unknown) but we've validated msg.type above
       resolve(msg as unknown as BridgeResponse);
     }
 
@@ -234,7 +233,6 @@ function showError(error: string): void {
   const overlay = document.getElementById('www-migration-overlay');
   if (!overlay) return;
 
-  // Clear existing content safely
   while (overlay.firstChild) overlay.removeChild(overlay.firstChild);
 
   const container = document.createElement('div');
@@ -319,7 +317,6 @@ export async function runWwwMigration(): Promise<void> {
     // Success — set flag so future visits redirect immediately
     localStorage.setItem(MIGRATION_FLAG, 'true');
 
-    // Redirect to canonical domain
     const redirectUrl =
       CANONICAL_ORIGIN + window.location.pathname + window.location.search + window.location.hash;
     window.location.replace(redirectUrl);
