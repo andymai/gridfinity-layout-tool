@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.6...gridfinity-layout-tool-v3.27.7) (2026-02-23)
+
+
+### Bug Fixes
+
+* **slicer:** use correct `file=` parameter in protocol handler URLs ([#872](https://github.com/andymai/gridfinity-layout-tool/issues/872)) ([87e5118](https://github.com/andymai/gridfinity-layout-tool/commit/87e51187a4ce16d9319ed7566b130e024a15d2ec))
+
 ## [3.27.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.5...gridfinity-layout-tool-v3.27.6) (2026-02-23)
 
 
