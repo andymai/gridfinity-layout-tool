@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.2...gridfinity-layout-tool-v3.27.3) (2026-02-23)
+
+
+### Bug Fixes
+
+* **www-migration:** handle blank iframe onload before bridge navigates ([#864](https://github.com/andymai/gridfinity-layout-tool/issues/864)) ([98ff871](https://github.com/andymai/gridfinity-layout-tool/commit/98ff871989fca2ae2f10dfbc0a3bbe281ef4e4cb))
+
 ## [3.27.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.1...gridfinity-layout-tool-v3.27.2) (2026-02-23)
 
 
