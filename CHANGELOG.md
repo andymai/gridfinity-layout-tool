@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.3...gridfinity-layout-tool-v3.27.0) (2026-02-23)
+
+
+### Features
+
+* **storage:** www → canonical domain storage migration ([#856](https://github.com/andymai/gridfinity-layout-tool/issues/856)) ([582f3e3](https://github.com/andymai/gridfinity-layout-tool/commit/582f3e309cc7c3ccf6ffdd4d34192ff066494412))
+
 ## [3.26.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.2...gridfinity-layout-tool-v3.26.3) (2026-02-23)
 
 
