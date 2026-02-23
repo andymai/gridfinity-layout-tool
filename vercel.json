@@ -14,7 +14,7 @@
   ],
   "headers": [
     {
-      "source": "/((?!storage-bridge\\.html$).*)",
+      "source": "/(.*)",
       "headers": [
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
         { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" }
@@ -25,8 +25,6 @@
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
         { "key": "Cross-Origin-Resource-Policy", "value": "cross-origin" },
-        { "key": "Cross-Origin-Opener-Policy", "value": "unsafe-none" },
-        { "key": "Cross-Origin-Embedder-Policy", "value": "unsafe-none" },
         {
           "key": "Content-Security-Policy",
           "value": "frame-ancestors https://www.gridfinitylayouttool.com"
