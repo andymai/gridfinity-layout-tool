@@ -23,18 +23,6 @@ import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useSnapshotStore } from '@/core/store/snapshots';
 
 /**
- * Reset all Zustand stores to their initial state.
- * Call this in beforeEach for complete test isolation.
- *
- * This prevents cross-test pollution by resetting:
- * - Layout store (layout data and activeLayoutId)
- * - UI store (selection, zoom, panels, interaction state)
- * - History store (undo/redo stacks)
- * - Toast store (notifications)
- * - Settings store (user preferences)
- * - Library store (layout library and metadata)
- */
-/**
  * Reset individual stores for tests that only need partial isolation.
  * Use these instead of resetAllStores() when your test only touches 1-2 stores.
  */
@@ -42,6 +30,8 @@ export function resetLayoutStore(): void {
   useLayoutStore.setState({
     layout: createDefaultLayout(),
     activeLayoutId: null,
+    lastEditSource: null,
+    _fillMeta: null,
   });
 }
 
@@ -98,14 +88,22 @@ export function resetLibraryStore(): void {
     library: createTestLibrary(),
     isLoaded: false,
     showLayoutManager: false,
+    sharedWithMe: [],
+    sharedWithMeLoaded: false,
   });
 }
 
+/**
+ * Reset all Zustand stores to their initial state.
+ * Call this in beforeEach for complete test isolation.
+ */
 export function resetAllStores(): void {
   // Layout store
   useLayoutStore.setState({
     layout: createDefaultLayout(),
     activeLayoutId: null,
+    lastEditSource: null,
+    _fillMeta: null,
   });
 
   // Selection store
@@ -179,6 +177,8 @@ export function resetAllStores(): void {
     library: createTestLibrary(),
     isLoaded: false,
     showLayoutManager: false,
+    sharedWithMe: [],
+    sharedWithMeLoaded: false,
   });
 
   // Labs store
