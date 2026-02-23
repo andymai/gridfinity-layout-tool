@@ -92,6 +92,7 @@ export default defineConfig({
           /^\/guide(?:\/|$)/,
           /^\/privacy(?:\/|$)/,
           /^\/terms(?:\/|$)/,
+          /^\/storage-bridge\.html$/,
         ],
         runtimeCaching: [
           {
