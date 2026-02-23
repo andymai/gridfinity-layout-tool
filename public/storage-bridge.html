@@ -233,6 +233,10 @@
               }
               stats.idbWritten++;
             };
+            getReq.onerror = function (e) {
+              e.preventDefault(); // keep transaction alive; skip this record
+              stats.idbSkipped++;
+            };
             return;
           }
 
@@ -248,6 +252,10 @@
               }
               stats.idbWritten++;
             }
+          };
+          getReq.onerror = function (e) {
+            e.preventDefault(); // keep transaction alive; skip this record
+            stats.idbSkipped++;
           };
         }
       })();

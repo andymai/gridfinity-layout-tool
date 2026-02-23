@@ -217,15 +217,42 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
   });
 }
 
-/** Show the migration overlay. */
+/** Show the migration overlay, rebuilding spinner UI if showError() replaced it. */
 function showOverlay(message?: string): void {
   const overlay = document.getElementById('www-migration-overlay');
   if (!overlay) return;
-  overlay.style.display = 'flex';
-  if (message) {
-    const msgEl = overlay.querySelector('[data-migration-message]');
-    if (msgEl) msgEl.textContent = message;
+
+  let msgEl = overlay.querySelector('[data-migration-message]');
+
+  if (!msgEl) {
+    // showError() removed all overlay children — rebuild the spinner UI using safe DOM APIs
+    // to match the inline HTML in index.html exactly.
+    while (overlay.firstChild) overlay.removeChild(overlay.firstChild);
+
+    const heading = document.createElement('p');
+    heading.setAttribute('data-migration-message', '');
+    heading.style.cssText = 'font-size:18px;margin:0;font-weight:500';
+    heading.textContent = "We've updated our domain";
+
+    const subtitle = document.createElement('p');
+    subtitle.style.cssText =
+      'font-size:14px;margin:0;color:#a1a1aa;max-width:340px;text-align:center;line-height:1.5';
+    subtitle.textContent =
+      'Your layouts are being copied to gridfinitylayouttool.com. Nothing will be lost.';
+
+    const spinner = document.createElement('div');
+    spinner.style.cssText =
+      'width:32px;height:32px;border:3px solid #3f3f46;border-top-color:#3b82f6;border-radius:50%;animation:www-spin 0.8s linear infinite;margin-top:4px';
+
+    overlay.appendChild(heading);
+    overlay.appendChild(subtitle);
+    overlay.appendChild(spinner);
+
+    msgEl = heading;
   }
+
+  overlay.style.display = 'flex';
+  if (message) msgEl.textContent = message;
 }
 
 /** Show error state with retry/continue buttons using safe DOM APIs. */
