@@ -205,7 +205,27 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
         );
         return;
       }
-      iframe.contentWindow.postMessage(data, CANONICAL_ORIGIN);
+
+      // contentDocument is accessible (non-null) when the iframe is same-origin (about:blank).
+      // This fires either on an initial blank load before the bridge URL navigates in, or when
+      // the navigation was blocked (e.g. CSP). When the bridge loads successfully it is
+      // cross-origin, so contentDocument is null. Wait for the real load in either case.
+      let isBlankPage: boolean;
+      try {
+        isBlankPage = iframe.contentDocument !== null;
+      } catch {
+        isBlankPage = false; // SecurityError → cross-origin → bridge loaded
+      }
+      if (isBlankPage) return;
+
+      try {
+        iframe.contentWindow.postMessage(data, CANONICAL_ORIGIN);
+      } catch (e) {
+        cleanup();
+        reject(
+          new Error(`Failed to send data to bridge: ${e instanceof Error ? e.message : String(e)}`)
+        );
+      }
     };
 
     iframe.onerror = () => {
