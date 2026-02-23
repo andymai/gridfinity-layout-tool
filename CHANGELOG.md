@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.5...gridfinity-layout-tool-v3.27.6) (2026-02-23)
+
+
+### Bug Fixes
+
+* **bin-designer:** poll blob URL after upload to handle CDN propagation delay ([#870](https://github.com/andymai/gridfinity-layout-tool/issues/870)) ([f07bb3c](https://github.com/andymai/gridfinity-layout-tool/commit/f07bb3cd77ed1e976bb7b101d3add0209c4d46a6))
+
 ## [3.27.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.4...gridfinity-layout-tool-v3.27.5) (2026-02-23)
 
 
