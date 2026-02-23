@@ -2,52 +2,45 @@
 
 ## [3.27.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.7...gridfinity-layout-tool-v3.27.8) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **cls:** eliminate loading spinner CLS regression from IndexedDB migration ([#874](https://github.com/andymai/gridfinity-layout-tool/issues/874)) ([a4b2241](https://github.com/andymai/gridfinity-layout-tool/commit/a4b2241f1d72186d5c23d383dea5db496fad8876))
+- **cls:** eliminate loading spinner CLS regression from IndexedDB migration ([#874](https://github.com/andymai/gridfinity-layout-tool/issues/874)) ([a4b2241](https://github.com/andymai/gridfinity-layout-tool/commit/a4b2241f1d72186d5c23d383dea5db496fad8876))
 
 ## [3.27.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.6...gridfinity-layout-tool-v3.27.7) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **slicer:** use correct `file=` parameter in protocol handler URLs ([#872](https://github.com/andymai/gridfinity-layout-tool/issues/872)) ([87e5118](https://github.com/andymai/gridfinity-layout-tool/commit/87e51187a4ce16d9319ed7566b130e024a15d2ec))
+- **slicer:** use correct `file=` parameter in protocol handler URLs ([#872](https://github.com/andymai/gridfinity-layout-tool/issues/872)) ([87e5118](https://github.com/andymai/gridfinity-layout-tool/commit/87e51187a4ce16d9319ed7566b130e024a15d2ec))
 
 ## [3.27.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.5...gridfinity-layout-tool-v3.27.6) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **bin-designer:** poll blob URL after upload to handle CDN propagation delay ([#870](https://github.com/andymai/gridfinity-layout-tool/issues/870)) ([f07bb3c](https://github.com/andymai/gridfinity-layout-tool/commit/f07bb3cd77ed1e976bb7b101d3add0209c4d46a6))
+- **bin-designer:** poll blob URL after upload to handle CDN propagation delay ([#870](https://github.com/andymai/gridfinity-layout-tool/issues/870)) ([f07bb3c](https://github.com/andymai/gridfinity-layout-tool/commit/f07bb3cd77ed1e976bb7b101d3add0209c4d46a6))
 
 ## [3.27.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.4...gridfinity-layout-tool-v3.27.5) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **bin-designer:** use Override in 3MF content types for slicer compatibility ([#868](https://github.com/andymai/gridfinity-layout-tool/issues/868)) ([4d69971](https://github.com/andymai/gridfinity-layout-tool/commit/4d699713eb25cf250c7a13ba712f5a1f49a83566))
+- **bin-designer:** use Override in 3MF content types for slicer compatibility ([#868](https://github.com/andymai/gridfinity-layout-tool/issues/868)) ([4d69971](https://github.com/andymai/gridfinity-layout-tool/commit/4d699713eb25cf250c7a13ba712f5a1f49a83566))
 
 ## [3.27.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.3...gridfinity-layout-tool-v3.27.4) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **sw:** exclude wwwMigration chunk from service worker precache ([#866](https://github.com/andymai/gridfinity-layout-tool/issues/866)) ([7081a81](https://github.com/andymai/gridfinity-layout-tool/commit/7081a81060e8e8058265c71fc1219d35089cd246))
+- **sw:** exclude wwwMigration chunk from service worker precache ([#866](https://github.com/andymai/gridfinity-layout-tool/issues/866)) ([7081a81](https://github.com/andymai/gridfinity-layout-tool/commit/7081a81060e8e8058265c71fc1219d35089cd246))
 
 ## [3.27.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.2...gridfinity-layout-tool-v3.27.3) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **www-migration:** handle blank iframe onload before bridge navigates ([#864](https://github.com/andymai/gridfinity-layout-tool/issues/864)) ([98ff871](https://github.com/andymai/gridfinity-layout-tool/commit/98ff871989fca2ae2f10dfbc0a3bbe281ef4e4cb))
+- **www-migration:** handle blank iframe onload before bridge navigates ([#864](https://github.com/andymai/gridfinity-layout-tool/issues/864)) ([98ff871](https://github.com/andymai/gridfinity-layout-tool/commit/98ff871989fca2ae2f10dfbc0a3bbe281ef4e4cb))
 
 ## [3.27.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.1...gridfinity-layout-tool-v3.27.2) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **www-migration:** fix empty-layout bug and add canonical IDB integrity verification ([#862](https://github.com/andymai/gridfinity-layout-tool/issues/862)) ([fa72d5c](https://github.com/andymai/gridfinity-layout-tool/commit/fa72d5c95bdad9933e0cadd390fe2cebc1f48cc3))
+- **www-migration:** fix empty-layout bug and add canonical IDB integrity verification ([#862](https://github.com/andymai/gridfinity-layout-tool/issues/862)) ([fa72d5c](https://github.com/andymai/gridfinity-layout-tool/commit/fa72d5c95bdad9933e0cadd390fe2cebc1f48cc3))
 
 ## [3.27.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.0...gridfinity-layout-tool-v3.27.1) (2026-02-23)
 

@@ -21,15 +21,24 @@ describe('InitErrorFallback', () => {
     const { clearAllAppData } = await import('@/core/storage');
     const user = userEvent.setup();
     const reloadMock = vi.fn();
+    const originalLocation = window.location;
     Object.defineProperty(window, 'location', {
       value: { reload: reloadMock },
       writable: true,
     });
 
-    render(<InitErrorFallback error={new Error('test')} />);
-    await user.click(screen.getByRole('button', { name: /clear data/i }));
+    try {
+      render(<InitErrorFallback error={new Error('test')} />);
+      await user.click(screen.getByRole('button', { name: /clear data/i }));
 
-    expect(clearAllAppData).toHaveBeenCalled();
-    expect(reloadMock).toHaveBeenCalled();
+      expect(clearAllAppData).toHaveBeenCalled();
+      // Reload is delayed 100ms to let IndexedDB deletion start
+      await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
+    } finally {
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+      });
+    }
   });
 });

@@ -154,9 +154,9 @@ test.describe('Mobile Touch Interactions', () => {
     const binBox = await bin.boundingBox();
     if (!binBox) throw new Error('Bin not found');
 
-    // Find a resize handle and attempt to drag it
-    // Use the east (right-edge) handle for a horizontal resize
-    const handle = handles.first();
+    // Find the east (right-edge) resize handle for a horizontal resize
+    const handle = page.getByLabel('Resize right edge');
+    await expect(handle).toBeVisible({ timeout: 3000 });
     const handleBox = await handle.boundingBox();
     if (!handleBox) throw new Error('Resize handle not found');
 
@@ -168,6 +168,11 @@ test.describe('Mobile Touch Interactions', () => {
     await page.mouse.down();
     await page.mouse.move(handleCenterX + 50, handleCenterY, { steps: 5 });
     await page.mouse.up();
+
+    // Verify the bin actually changed size (width should have increased)
+    const binBoxAfter = await bin.boundingBox();
+    if (!binBoxAfter) throw new Error('Bin not found after resize');
+    expect(binBoxAfter.width).toBeGreaterThan(binBox.width);
 
     // After releasing, interaction should be cleared - verify by checking
     // the bin is still selectable and handles reappear

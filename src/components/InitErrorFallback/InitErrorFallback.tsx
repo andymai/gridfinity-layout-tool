@@ -38,7 +38,8 @@ export function InitErrorFallback({ error }: { error: Error }) {
             } catch {
               /* ignore */
             }
-            window.location.reload();
+            // Brief delay to let IndexedDB deletion start before page unloads
+            setTimeout(() => window.location.reload(), 100);
           }}
           className="btn btn-primary"
         >
