@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.7...gridfinity-layout-tool-v3.27.8) (2026-02-23)
+
+
+### Bug Fixes
+
+* **cls:** eliminate loading spinner CLS regression from IndexedDB migration ([#874](https://github.com/andymai/gridfinity-layout-tool/issues/874)) ([a4b2241](https://github.com/andymai/gridfinity-layout-tool/commit/a4b2241f1d72186d5c23d383dea5db496fad8876))
+
 ## [3.27.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.6...gridfinity-layout-tool-v3.27.7) (2026-02-23)
 
 
