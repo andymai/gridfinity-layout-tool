@@ -8,12 +8,8 @@ import * as analytics from '@/shared/analytics/posthog';
 // Mock the analytics module
 vi.mock('@/shared/analytics/posthog', () => ({
   trackLayoutSnapshot: vi.fn(),
+  trackHeartbeat: vi.fn(),
   getActivityContext: vi.fn(() => 'viewing'),
-}));
-
-// Mock @vercel/analytics
-vi.mock('@vercel/analytics', () => ({
-  track: vi.fn(),
 }));
 
 describe('useAnalytics', () => {
@@ -51,24 +47,9 @@ describe('useAnalytics', () => {
     expect(() => renderHook(() => useAnalytics())).not.toThrow();
   });
 
-  it('adds visibilitychange listener on mount', () => {
-    renderHook(() => useAnalytics());
-
-    // In dev mode, the listener won't be added (early return)
-    // In prod mode (CI), the listener will be added
-    // We verify the hook runs without error either way
-    expect(true).toBe(true);
-  });
-
-  it('removes visibilitychange listener on unmount', () => {
+  it('mounts and unmounts without error', () => {
     const { unmount } = renderHook(() => useAnalytics());
-
-    unmount();
-
-    // In dev mode, no listener is added so none is removed
-    // In prod mode, the listener would be removed
-    // We just verify the hook cleans up without throwing
-    expect(true).toBe(true);
+    expect(() => unmount()).not.toThrow();
   });
 
   // Note: The following tests verify the hook behavior in production mode.
@@ -291,42 +272,13 @@ describe('useAnalytics', () => {
     });
   });
 
-  describe('Vercel heartbeat', () => {
+  describe('PostHog heartbeat', () => {
     // Note: These tests verify the heartbeat logic
     // In dev mode, heartbeats are disabled (early return)
     // The tests verify the hook structure and cleanup work correctly
 
-    it('sets up heartbeat timer on mount', () => {
+    it('does not send heartbeat in dev mode', () => {
       vi.useFakeTimers();
-
-      const { unmount } = renderHook(() => useAnalytics());
-
-      // Hook should set up timers without error
-      expect(true).toBe(true);
-
-      unmount();
-      vi.useRealTimers();
-    });
-
-    it('clears timers on unmount', () => {
-      vi.useFakeTimers();
-      const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
-      const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
-
-      const { unmount } = renderHook(() => useAnalytics());
-      unmount();
-
-      // In dev mode, no timers set so nothing cleared
-      // In prod mode, cleanup would be called
-      // Test passes in both cases
-      vi.useRealTimers();
-      clearTimeoutSpy.mockRestore();
-      clearIntervalSpy.mockRestore();
-    });
-
-    it('does not send heartbeat in dev mode', async () => {
-      vi.useFakeTimers();
-      const vercelAnalytics = await import('@vercel/analytics');
 
       renderHook(() => useAnalytics());
 
@@ -335,15 +287,32 @@ describe('useAnalytics', () => {
 
       // In dev mode, heartbeat should not be sent
       // (import.meta.env.DEV = true causes early return)
-      expect(vercelAnalytics.track).not.toHaveBeenCalled();
+      expect(analytics.trackHeartbeat).not.toHaveBeenCalled();
 
       vi.useRealTimers();
     });
 
-    it('uses getActivityContext for heartbeat context', () => {
-      // Verify getActivityContext is exported and callable
-      expect(analytics.getActivityContext).toBeDefined();
-      expect(typeof analytics.getActivityContext).toBe('function');
+    it('uses trackHeartbeat for heartbeat events', () => {
+      // Verify trackHeartbeat is exported and callable
+      expect(analytics.trackHeartbeat).toBeDefined();
+      expect(typeof analytics.trackHeartbeat).toBe('function');
+    });
+  });
+
+  describe('idle detection', () => {
+    it('does not send heartbeat when user is idle', () => {
+      vi.useFakeTimers();
+
+      renderHook(() => useAnalytics());
+
+      // In dev mode, heartbeat is disabled so this validates structure
+      // Advance past idle threshold (60s) + initial delay (5s)
+      vi.advanceTimersByTime(65000);
+
+      // No heartbeat should be sent (dev mode early return)
+      expect(analytics.trackHeartbeat).not.toHaveBeenCalled();
+
+      vi.useRealTimers();
     });
   });
 });

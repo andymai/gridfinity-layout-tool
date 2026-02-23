@@ -49,7 +49,7 @@ graph TB
 
 | Hook                      | Purpose                                                          |
 | ------------------------- | ---------------------------------------------------------------- |
-| `useAnalytics.ts`         | Vercel heartbeat (3 min) + PostHog session tracking              |
+| `useAnalytics.ts`         | PostHog heartbeat (3 min) + session tracking with idle detection |
 | `useFeatureFlag.ts`       | Reactive flag check + non-reactive `isFeatureEnabled()`          |
 | `useStorageMigration.ts`  | One-time localStorage → IndexedDB migration (idle, non-blocking) |
 | `useTabletPanels.ts`      | Tablet overlay panel open/close with auto-collapse on mode entry |
