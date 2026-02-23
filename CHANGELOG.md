@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.1...gridfinity-layout-tool-v3.27.2) (2026-02-23)
+
+
+### Bug Fixes
+
+* **www-migration:** fix empty-layout bug and add canonical IDB integrity verification ([#862](https://github.com/andymai/gridfinity-layout-tool/issues/862)) ([fa72d5c](https://github.com/andymai/gridfinity-layout-tool/commit/fa72d5c95bdad9933e0cadd390fe2cebc1f48cc3))
+
 ## [3.27.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.0...gridfinity-layout-tool-v3.27.1) (2026-02-23)
 
 ### Bug Fixes
