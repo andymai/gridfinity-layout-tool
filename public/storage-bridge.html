@@ -18,7 +18,7 @@
       (function () {
         'use strict';
 
-        var ALLOWED_ORIGIN = 'https://www.gridfinitylayouttool.com';
+        const ALLOWED_ORIGIN = 'https://www.gridfinitylayouttool.com';
 
         function reply(source, message) {
           if (!source || typeof source.postMessage !== 'function') return;
@@ -29,16 +29,14 @@
           if (event.origin !== ALLOWED_ORIGIN) return;
           if (!event.data || event.data.type !== 'www-migration-data') return;
 
-          var source = event.source;
-          var payload = event.data;
-          var stats = { localStorageWritten: 0, localStorageSkipped: 0, idbWritten: 0, idbSkipped: 0 };
+          const source = event.source;
+          const payload = event.data;
+          const stats = { localStorageWritten: 0, localStorageSkipped: 0, idbWritten: 0, idbSkipped: 0 };
 
           try {
             // --- localStorage ---
-            var lsData = payload.localStorage || {};
-            var keys = Object.keys(lsData);
-            for (var i = 0; i < keys.length; i++) {
-              var key = keys[i];
+            const lsData = payload.localStorage || {};
+            for (const key of Object.keys(lsData)) {
               if (localStorage.getItem(key) !== null) {
                 stats.localStorageSkipped++;
               } else {
@@ -62,10 +60,13 @@
 
         /**
          * Write IndexedDB records for both databases.
-         * Schema is duplicated here because this page has no access to the app's idb wrapper.
+         * Schema is duplicated here because this page has no bundler/imports.
+         * Must match: src/core/storage/backends/indexedDB.ts (gridfinity-db v3)
+         *             src/features/bin-designer/storage/DesignerStorage.ts (gridfinity-designer-v1 v1)
+         *             src/core/storage/wwwMigration.ts (IDB_DATABASES)
          */
         function writeIndexedDB(idbData, stats, callback) {
-          var databases = [
+          const databases = [
             {
               name: 'gridfinity-db',
               version: 3,
@@ -75,7 +76,7 @@
                   db.createObjectStore('layouts');
                 }
                 if (!db.objectStoreNames.contains('snapshots')) {
-                  var ss = db.createObjectStore('snapshots', { keyPath: 'id' });
+                  const ss = db.createObjectStore('snapshots', { keyPath: 'id' });
                   ss.createIndex('byLayoutId', 'layoutId', { unique: false });
                 }
                 if (!db.objectStoreNames.contains('library')) {
@@ -95,40 +96,36 @@
               data: idbData['gridfinity-designer-v1'],
               setup: function (db) {
                 if (!db.objectStoreNames.contains('designs')) {
-                  var ds = db.createObjectStore('designs', { keyPath: 'id' });
+                  const ds = db.createObjectStore('designs', { keyPath: 'id' });
                   ds.createIndex('updatedAt', 'updatedAt');
                 }
               },
             },
           ];
 
-          var pending = 0;
-          var errored = false;
+          let pending = 0;
+          let errored = false;
 
-          for (var i = 0; i < databases.length; i++) {
-            var dbDef = databases[i];
+          for (const dbDef of databases) {
             if (!dbDef.data || Object.keys(dbDef.data).length === 0) continue;
             pending++;
-            // Pass dbDef as argument to avoid var-in-loop closure capture issue
-            (function (def) {
-              openAndWrite(def, stats, function (err) {
-                if (errored) return;
-                if (err) {
-                  errored = true;
-                  callback(err);
-                  return;
-                }
-                pending--;
-                if (pending === 0 && !errored) callback(null);
-              });
-            })(dbDef);
+            openAndWrite(dbDef, stats, function (err) {
+              if (errored) return;
+              if (err) {
+                errored = true;
+                callback(err);
+                return;
+              }
+              pending--;
+              if (pending === 0 && !errored) callback(null);
+            });
           }
 
           if (pending === 0) callback(null);
         }
 
         function openAndWrite(dbDef, stats, done) {
-          var request = indexedDB.open(dbDef.name, dbDef.version);
+          const request = indexedDB.open(dbDef.name, dbDef.version);
 
           request.onupgradeneeded = function (e) {
             dbDef.setup(e.target.result);
@@ -139,36 +136,32 @@
           };
 
           request.onsuccess = function () {
-            var db = request.result;
-            var storeNames = Object.keys(dbDef.data);
-            var storePending = 0;
-            var storeErrored = false;
+            const db = request.result;
+            const storeNames = Object.keys(dbDef.data);
+            let storePending = 0;
+            let storeErrored = false;
 
-            for (var s = 0; s < storeNames.length; s++) {
-              var storeName = storeNames[s];
+            for (const storeName of storeNames) {
               if (!db.objectStoreNames.contains(storeName)) continue;
 
-              var records = dbDef.data[storeName];
+              const records = dbDef.data[storeName];
               if (!records || records.length === 0) continue;
 
               storePending++;
-              // Pass storeName/records as arguments to avoid var-in-loop capture
-              (function (name, recs) {
-                writeStore(db, name, recs, stats, function (err) {
-                  if (storeErrored) return;
-                  if (err) {
-                    storeErrored = true;
-                    db.close();
-                    done(err);
-                    return;
-                  }
-                  storePending--;
-                  if (storePending === 0) {
-                    db.close();
-                    done(null);
-                  }
-                });
-              })(storeName, records);
+              writeStore(db, storeName, records, stats, function (err) {
+                if (storeErrored) return;
+                if (err) {
+                  storeErrored = true;
+                  db.close();
+                  done(err);
+                  return;
+                }
+                storePending--;
+                if (storePending === 0) {
+                  db.close();
+                  done(null);
+                }
+              });
             }
 
             if (storePending === 0) {
@@ -180,8 +173,8 @@
 
         function writeStore(db, storeName, records, stats, done) {
           try {
-            var tx = db.transaction(storeName, 'readwrite');
-            var store = tx.objectStore(storeName);
+            const tx = db.transaction(storeName, 'readwrite');
+            const store = tx.objectStore(storeName);
 
             tx.oncomplete = function () {
               done(null);
@@ -190,8 +183,8 @@
               done(tx.error || new Error('Transaction failed for ' + storeName));
             };
 
-            for (var r = 0; r < records.length; r++) {
-              checkAndWrite(store, records[r], stats);
+            for (const record of records) {
+              checkAndWrite(store, record, stats);
             }
           } catch (e) {
             done(e);
@@ -204,9 +197,9 @@
          * For stores with out-of-line keys, the key is in record.key.
          */
         function checkAndWrite(store, record, stats) {
-          var key = store.keyPath ? record.value[store.keyPath] : record.key;
+          const key = store.keyPath ? record.value[store.keyPath] : record.key;
 
-          var getReq = store.get(key);
+          const getReq = store.get(key);
           getReq.onsuccess = function () {
             if (getReq.result !== undefined) {
               stats.idbSkipped++;

@@ -16,7 +16,18 @@ import type { Locale } from './i18n/types.ts';
 // WWW → canonical migration: if the inline script in index.html detected www with data,
 // dynamically import the migration module and skip the normal React boot entirely.
 if ((window as unknown as { __wwwMigrationPending?: boolean }).__wwwMigrationPending) {
-  void import('./core/storage/wwwMigration').then(({ runWwwMigration }) => runWwwMigration());
+  void import('./core/storage/wwwMigration')
+    .then(({ runWwwMigration }) => runWwwMigration())
+    .catch(() => {
+      // If the migration module fails to load (network error, CSP), show the overlay
+      // with an error so the user isn't stuck on a blank page.
+      const overlay = document.getElementById('www-migration-overlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        const msg = overlay.querySelector('[data-migration-message]');
+        if (msg) msg.textContent = 'Something went wrong. Please refresh the page.';
+      }
+    });
   // Stop here — don't initialize analytics or mount React
 } else {
   // Initialize Posthog analytics (no-op in dev)

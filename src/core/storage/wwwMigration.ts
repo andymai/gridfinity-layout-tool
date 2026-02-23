@@ -17,7 +17,10 @@ const MIGRATION_FLAG = 'gridfinity-www-migrated';
 const GRIDFINITY_PREFIX = 'gridfinity-';
 const BRIDGE_TIMEOUT_MS = 30_000;
 
-// IDB database schemas (duplicated from app — bridge page needs the same)
+// IDB database schemas — must match:
+//   src/core/storage/backends/indexedDB.ts (gridfinity-db v3)
+//   src/features/bin-designer/storage/DesignerStorage.ts (gridfinity-designer-v1 v1)
+// Also duplicated in public/storage-bridge.html
 const IDB_DATABASES = [
   {
     name: 'gridfinity-db',
@@ -299,11 +302,12 @@ export async function runWwwMigration(): Promise<void> {
       return;
     }
 
+    // Clean up service worker on www so stale cache doesn't interfere.
+    // Do this before setting the flag — if SW cleanup fails, we retry next visit.
+    await unregisterServiceWorkers();
+
     // Success — set flag so future visits redirect immediately
     localStorage.setItem(MIGRATION_FLAG, 'true');
-
-    // Clean up service worker on www so stale cache doesn't interfere
-    await unregisterServiceWorkers();
 
     // Redirect to canonical domain
     const redirectUrl =
