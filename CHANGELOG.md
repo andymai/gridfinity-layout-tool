@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.4...gridfinity-layout-tool-v3.27.5) (2026-02-23)
+
+
+### Bug Fixes
+
+* **bin-designer:** use Override in 3MF content types for slicer compatibility ([#868](https://github.com/andymai/gridfinity-layout-tool/issues/868)) ([4d69971](https://github.com/andymai/gridfinity-layout-tool/commit/4d699713eb25cf250c7a13ba712f5a1f49a83566))
+
 ## [3.27.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.3...gridfinity-layout-tool-v3.27.4) (2026-02-23)
 
 
