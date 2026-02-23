@@ -147,8 +147,10 @@ function buildContentTypes(hasThumbnail: boolean): string {
   xml += '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n';
   xml +=
     '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />\n';
+  // Use Override (specific path) rather than Default (extension) for the model file.
+  // PrusaSlicer and other slicers generate Override elements; some parsers only handle Override.
   xml +=
-    '  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n';
+    '  <Override PartName="/3D/3dmodel.model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n';
   if (hasThumbnail) {
     xml += '  <Default Extension="png" ContentType="image/png" />\n';
   }
