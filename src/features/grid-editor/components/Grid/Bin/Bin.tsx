@@ -485,7 +485,9 @@ function BinComponent({
       longPressTimerRef.current = window.setTimeout(() => {
         longPressTriggeredRef.current = true;
         // Vibrate if supported (haptic feedback)
-        navigator.vibrate(50);
+        if (typeof navigator.vibrate === 'function') {
+          navigator.vibrate(50);
+        }
         // Show context menu
         showContextMenu([bin.id], { x: e.clientX, y: e.clientY }, 'grid');
       }, LONG_PRESS_DURATION);
@@ -596,7 +598,7 @@ function BinComponent({
       e.stopPropagation();
       if (e.button === 0) {
         // Haptic feedback on touch devices when starting resize
-        if (isTouchDevice) {
+        if (isTouchDevice && typeof navigator.vibrate === 'function') {
           navigator.vibrate(30);
         }
         onStartResize(bin.id, handle, e.pointerId);
@@ -840,14 +842,18 @@ function BinComponent({
       {/* Resize handles - only for single selected bin, not during multi-select */}
       {/* Touch targets are 44px (Apple HIG minimum) with smaller visual indicators */}
       {/* Handles automatically position externally for bins with width≤1 OR depth≤1 */}
-      {isSelected && !isGhost && !isMultiSelect && !interaction && (
-        <ResizeHandles
-          binWidth={bin.width}
-          binDepth={bin.depth}
-          variant="primary"
-          onResizePointerDown={handleResizePointerDown}
-        />
-      )}
+      {isSelected &&
+        !isGhost &&
+        !isMultiSelect &&
+        (!interaction ||
+          (interaction.type === 'resize' && interaction.binIds.includes(bin.id))) && (
+          <ResizeHandles
+            binWidth={bin.width}
+            binDepth={bin.depth}
+            variant="primary"
+            onResizePointerDown={handleResizePointerDown}
+          />
+        )}
 
       {/* Ghost resize handles - show on hover when nothing is selected (desktop only) */}
       {/* Hidden when any bins are selected to avoid interfering with multi-selection clicks */}
