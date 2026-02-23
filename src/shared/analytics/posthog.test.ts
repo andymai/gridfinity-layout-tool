@@ -5,6 +5,8 @@ import {
   computeLabsMetrics,
   getDeviceType,
   getActivityContext,
+  buildHeartbeatPayload,
+  trackHeartbeat,
   trackLayoutSnapshot,
   trackEvent,
   track3DPreview,
@@ -13,7 +15,8 @@ import {
   trackPaintMode,
   initAnalytics,
 } from '@/shared/analytics/posthog';
-import { useInteractionStore, useLabsStore } from '@/core/store';
+import { useInteractionStore, useLabsStore, useViewStore, useHalfBinModeStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
 import { STAGING_ID } from '@/core/constants';
 
 // Helper to create a test layout
@@ -1007,5 +1010,175 @@ describe('computeLabsMetrics', () => {
     const metrics = computeLabsMetrics();
     // Unknown features should be excluded since getFeature returns null
     expect(metrics.labs_enabled_features).not.toContain('unknown_feature');
+  });
+});
+
+describe('buildHeartbeatPayload', () => {
+  beforeEach(() => {
+    // Reset stores to known state
+    useInteractionStore.setState({
+      interaction: null,
+      paintSize: null,
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      showIsometricPreview: false,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+    });
+    useViewStore.setState({
+      leftPanelCollapsed: false,
+      rightPanelCollapsed: false,
+    });
+    useHalfBinModeStore.setState({ halfBinMode: false });
+  });
+
+  it('returns correct engagement fields', () => {
+    const payload = buildHeartbeatPayload(5);
+
+    expect(payload.session_minutes).toBe(5);
+    expect(payload.context).toBe('viewing');
+  });
+
+  it('reads layout complexity from layout store', () => {
+    const layout = useLayoutStore.getState().layout;
+    layout.drawer = { width: 10, depth: 8, height: 12 };
+    layout.layers = [
+      { id: 'layer1', name: 'Layer 1', height: 3 },
+      { id: 'layer2', name: 'Layer 2', height: 6 },
+    ];
+    layout.categories = [
+      { id: 'coral', name: 'Coral', color: '#FF6B6B' },
+      { id: 'sky', name: 'Sky', color: '#38bdf8' },
+      { id: 'custom1', name: 'Custom', color: '#00FF00' },
+    ];
+    layout.bins = [
+      {
+        id: 'bin1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      },
+      {
+        id: 'bin2',
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 1,
+        depth: 1,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      },
+    ];
+    useLayoutStore.setState({ layout });
+
+    const payload = buildHeartbeatPayload(0);
+
+    expect(payload.bin_count).toBe(2);
+    expect(payload.bins_in_staging).toBe(1);
+    expect(payload.layer_count).toBe(2);
+    expect(payload.category_count).toBe(3);
+    expect(payload.drawer_width).toBe(10);
+    expect(payload.drawer_depth).toBe(8);
+  });
+
+  it('computes grid utilization correctly', () => {
+    const layout = useLayoutStore.getState().layout;
+    layout.drawer = { width: 10, depth: 8, height: 12 }; // 80 sq units
+    layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
+    layout.bins = [
+      // 2x2 = 4 sq units on grid
+      {
+        id: 'bin1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      },
+      // 4x2 = 8 sq units on grid
+      {
+        id: 'bin2',
+        layerId: 'layer1',
+        x: 2,
+        y: 0,
+        width: 4,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      },
+    ];
+    useLayoutStore.setState({ layout });
+
+    const payload = buildHeartbeatPayload(0);
+
+    // (4 + 8) / 80 = 0.15
+    expect(payload.grid_utilization).toBe(0.15);
+  });
+
+  it('returns 0 grid utilization for empty drawer', () => {
+    const layout = useLayoutStore.getState().layout;
+    layout.drawer = { width: 0, depth: 0, height: 12 };
+    layout.bins = [];
+    useLayoutStore.setState({ layout });
+
+    const payload = buildHeartbeatPayload(0);
+
+    expect(payload.grid_utilization).toBe(0);
+  });
+
+  it('reads feature flags from interaction and view stores', () => {
+    useInteractionStore.setState({
+      showIsometricPreview: true,
+      isPreviewExpanded: true,
+      layerViewMode: 'all',
+      paintSize: { width: 2, depth: 2 },
+    });
+    useViewStore.setState({
+      leftPanelCollapsed: true,
+      rightPanelCollapsed: false,
+    });
+    useHalfBinModeStore.setState({ halfBinMode: true });
+
+    const payload = buildHeartbeatPayload(0);
+
+    expect(payload.half_bin_mode).toBe(true);
+    expect(payload.layer_view_mode).toBe('all');
+    expect(payload.is_3d_preview_open).toBe(true);
+    expect(payload.is_preview_expanded).toBe(true);
+    expect(payload.paint_mode_active).toBe(true);
+    expect(payload.left_panel_collapsed).toBe(true);
+    expect(payload.right_panel_collapsed).toBe(false);
+  });
+
+  it('defaults feature flags to inactive states', () => {
+    const payload = buildHeartbeatPayload(0);
+
+    expect(payload.half_bin_mode).toBe(false);
+    expect(payload.layer_view_mode).toBe('stack');
+    expect(payload.is_3d_preview_open).toBe(false);
+    expect(payload.is_preview_expanded).toBe(false);
+    expect(payload.paint_mode_active).toBe(false);
+    expect(payload.left_panel_collapsed).toBe(false);
+    expect(payload.right_panel_collapsed).toBe(false);
+  });
+});
+
+describe('trackHeartbeat', () => {
+  it('does not throw', () => {
+    expect(() => trackHeartbeat(5)).not.toThrow();
   });
 });
