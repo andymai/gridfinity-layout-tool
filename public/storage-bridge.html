@@ -78,6 +78,7 @@
               // canonical-only layout entries appended so nothing is lost.
               mergeStores: {
                 library: function (existing, incoming) {
+                  if (!incoming || !Array.isArray(incoming.entries)) return existing || incoming;
                   if (!existing || !Array.isArray(existing.entries) || existing.entries.length === 0) {
                     return incoming;
                   }

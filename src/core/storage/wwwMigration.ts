@@ -124,8 +124,8 @@ function openDatabase(name: string, version: number): Promise<IDBDatabase | null
 
     request.onupgradeneeded = () => {
       // If we're triggering an upgrade, the database didn't exist at this version.
-      // Abort the transaction and close to avoid creating empty stores on the www origin.
-      request.result.close();
+      // Abort the transaction first (rolls back the version bump), then the connection
+      // closes naturally. Calling .close() before .abort() can commit the empty upgrade.
       request.transaction?.abort();
       resolve(null);
     };
