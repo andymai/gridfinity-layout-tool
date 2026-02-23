@@ -2,11 +2,10 @@
 
 ## [3.27.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.0...gridfinity-layout-tool-v3.27.1) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **bin-designer:** fix Open in Slicer 400 error and clean up test warnings ([#859](https://github.com/andymai/gridfinity-layout-tool/issues/859)) ([f0f4398](https://github.com/andymai/gridfinity-layout-tool/commit/f0f4398e68d7c1b846d7f470a7c36a92b1e339ea))
-* **storage:** fix www→canonical migration library merge and edge cases ([#860](https://github.com/andymai/gridfinity-layout-tool/issues/860)) ([a391b6c](https://github.com/andymai/gridfinity-layout-tool/commit/a391b6cc3d06ae69a7d4d7165a784c71bdbb9c6b))
+- **bin-designer:** fix Open in Slicer 400 error and clean up test warnings ([#859](https://github.com/andymai/gridfinity-layout-tool/issues/859)) ([f0f4398](https://github.com/andymai/gridfinity-layout-tool/commit/f0f4398e68d7c1b846d7f470a7c36a92b1e339ea))
+- **storage:** fix www→canonical migration library merge and edge cases ([#860](https://github.com/andymai/gridfinity-layout-tool/issues/860)) ([a391b6c](https://github.com/andymai/gridfinity-layout-tool/commit/a391b6cc3d06ae69a7d4d7165a784c71bdbb9c6b))
 
 ## [3.27.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.3...gridfinity-layout-tool-v3.27.0) (2026-02-23)
 

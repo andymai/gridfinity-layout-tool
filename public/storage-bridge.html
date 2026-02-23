@@ -35,8 +35,17 @@
 
           try {
             // --- localStorage ---
+            // Skip origin-specific migration-state flags that must NOT be transferred:
+            // - gridfinity-indexeddb-migrated: set on www after its LS→IDB migration.
+            //   If copied to canonical, isMigrationNeeded() returns false and canonical
+            //   never migrates www's LS-copied layouts to canonical IDB.
+            //   reconcileLibraryAsync then removes those entries (not in IDB) → empty layout.
+            // - gridfinity-localstorage-cleaned: set on www after its LS cleanup.
+            //   If copied, canonical skips cleaning up its own LS copies.
+            var LS_SKIP_KEYS = { 'gridfinity-indexeddb-migrated': true, 'gridfinity-localstorage-cleaned': true };
             const lsData = payload.localStorage || {};
             for (const key of Object.keys(lsData)) {
+              if (LS_SKIP_KEYS[key]) continue;
               if (localStorage.getItem(key) !== null) {
                 stats.localStorageSkipped++;
               } else {
@@ -49,6 +58,27 @@
             writeIndexedDB(payload.indexedDB || {}, stats, function (error) {
               if (error) {
                 reply(source, { type: 'www-migration-error', error: error.message || String(error) });
+                return;
+              }
+
+              // Verify canonical IDB is readable before telling www to redirect.
+              // Only needed if library data was part of the payload.
+              var libRecords =
+                payload.indexedDB &&
+                payload.indexedDB['gridfinity-db'] &&
+                payload.indexedDB['gridfinity-db']['library'];
+
+              if (libRecords && libRecords.length > 0) {
+                verifyIntegrity(function (verifyErr) {
+                  if (verifyErr) {
+                    reply(source, {
+                      type: 'www-migration-error',
+                      error: verifyErr.message || String(verifyErr),
+                    });
+                  } else {
+                    reply(source, { type: 'www-migration-complete', stats: stats });
+                  }
+                });
               } else {
                 reply(source, { type: 'www-migration-complete', stats: stats });
               }
@@ -256,6 +286,119 @@
           getReq.onerror = function (e) {
             e.preventDefault(); // keep transaction alive; skip this record
             stats.idbSkipped++;
+          };
+        }
+
+        /**
+         * After writes: verify the library and every referenced layout are readable
+         * in canonical IDB. Only called when library data was in the migration payload.
+         * Reports an error if anything is missing so www shows retry instead of redirecting
+         * to a broken state.
+         *
+         * Key format for layouts: 'gridfinity-layout-{uuid}' — must match
+         * getLayoutStorageKey() in src/core/storage/LayoutService.ts.
+         */
+        function verifyIntegrity(callback) {
+          // Once-guard: onupgradeneeded aborting the transaction fires both the
+          // upgrade handler and req.onerror (AbortError), which would invoke callback
+          // twice. The tx.onerror/tx.onabort path also shares finish(), so we guard
+          // across all code paths with a single 'done' flag.
+          var done = false;
+          function finish(err) {
+            if (done) return;
+            done = true;
+            callback(err);
+          }
+
+          var req = indexedDB.open('gridfinity-db', 3);
+
+          req.onerror = function () {
+            finish(new Error('Verification failed: could not open canonical database'));
+          };
+
+          req.onupgradeneeded = function () {
+            if (req.transaction) req.transaction.abort();
+            finish(new Error('Verification failed: database not available at expected version'));
+          };
+
+          req.onsuccess = function () {
+            var db = req.result;
+            if (!db.objectStoreNames.contains('library') || !db.objectStoreNames.contains('layouts')) {
+              db.close();
+              finish(new Error('Verification failed: required object stores missing'));
+              return;
+            }
+
+            var tx = db.transaction(['library', 'layouts'], 'readonly');
+
+            // If the readonly transaction aborts unexpectedly (e.g. IDB internal error),
+            // per-request callbacks may never fire. Catch it here so www gets an error
+            // reply rather than hanging until the 30-second bridge timeout.
+            tx.onerror = function () {
+              db.close();
+              finish(new Error('Verification failed: read transaction failed'));
+            };
+            tx.onabort = function () {
+              db.close();
+              finish(new Error('Verification failed: read transaction aborted'));
+            };
+
+            var libStore = tx.objectStore('library');
+            var layoutStore = tx.objectStore('layouts');
+
+            var libReq = libStore.get('index');
+            libReq.onsuccess = function () {
+              var lib = libReq.result;
+              if (!lib || !lib.activeLayoutId || !Array.isArray(lib.entries) || lib.entries.length === 0) {
+                db.close();
+                finish(new Error('Verification failed: library not found or empty in canonical storage'));
+                return;
+              }
+
+              var activeExists = lib.entries.some(function (e) { return e.id === lib.activeLayoutId; });
+              if (!activeExists) {
+                db.close();
+                finish(new Error('Verification failed: activeLayoutId does not match any library entry'));
+                return;
+              }
+
+              var pending = lib.entries.length;
+              var missing = [];
+
+              lib.entries.forEach(function (entry) {
+                var layoutReq = layoutStore.get('gridfinity-layout-' + entry.id);
+                layoutReq.onsuccess = function () {
+                  if (layoutReq.result === undefined) missing.push(entry.id);
+                  if (--pending === 0) {
+                    db.close();
+                    if (missing.length > 0) {
+                      finish(
+                        new Error(
+                          'Verification failed: ' +
+                            missing.length +
+                            ' layout(s) referenced in library are missing from canonical storage'
+                        )
+                      );
+                    } else {
+                      finish(null);
+                    }
+                  }
+                };
+                layoutReq.onerror = function (e) {
+                  e.preventDefault();
+                  missing.push(entry.id);
+                  if (--pending === 0) {
+                    db.close();
+                    finish(new Error('Verification failed: could not read layout records'));
+                  }
+                };
+              });
+            };
+
+            libReq.onerror = function () {
+              db.close();
+              finish(new Error('Verification failed: could not read library from canonical storage'));
+            };
           };
         }
       })();
