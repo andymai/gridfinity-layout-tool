@@ -1,7 +1,5 @@
 {
-  "app.clearDataReload": "Daten löschen & neu laden",
   "app.skipToGridEditor": "Zum Grid-Planner springen",
-  "app.unableToLoadApp": "App konnte nicht geladen werden",
   "binDesigner.alignment.center": "Mitte",
   "binDesigner.alignment.left": "Links",
   "binDesigner.alignment.right": "Rechts",

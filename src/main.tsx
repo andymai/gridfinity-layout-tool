@@ -1,18 +1,20 @@
-import { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Analytics } from '@vercel/analytics/react';
 import './index.css';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { LoadingFallback } from './shared/components/LoadingFallback';
 import { LocaleProvider } from './i18n/context.tsx';
 import { detectBrowserLocale } from './i18n/detection.ts';
 import { isLocale } from './i18n/types.ts';
 import { useSettingsStore } from './core/store/settings.ts';
 import { initAnalytics } from './shared/analytics/posthog.ts';
 import { useLayoutStore } from './core/store/layout.ts';
+import { useLibraryStore } from './core/store/library.ts';
+import { initializeLayoutLibrary, loadSharedWithMe } from '@/core/storage';
+import { isOk } from '@/core/result';
 import type { Locale } from './i18n/types.ts';
 import { recoverFromBadWwwMigration } from './core/storage/wwwMigrationRecovery';
+import { InitErrorFallback } from './components/InitErrorFallback';
 
 // Recovery for canonical users who went through a broken www→canonical migration
 // (before the fix that excluded migration-state flags from bridge LS copy).
@@ -84,16 +86,33 @@ if (recoverFromBadWwwMigration()) {
     throw new Error('Root element not found');
   }
 
-  // Note: StrictMode disabled due to react-three-fiber WebGL context issues
-  // R3F's Canvas doesn't handle StrictMode's double-mount cycle well
-  createRoot(rootElement).render(
-    <ErrorBoundary>
-      <LocaleProvider initialLocale={initialLocale} onLocaleChange={handleLocaleChange}>
-        <Suspense fallback={<LoadingFallback variant="fullscreen" />}>
-          <App />
-        </Suspense>
-      </LocaleProvider>
-      <Analytics />
-    </ErrorBoundary>
-  );
+  // Hydrate stores from IndexedDB before mounting React so the first paint
+  // renders the real app layout — no Suspense spinner, no CLS.
+  let initError: Error | undefined;
+
+  void initializeLayoutLibrary()
+    .then(({ library, activeLayout }) => {
+      useLibraryStore.getState().initLibrary(library);
+      useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
+
+      const sharedWithMeResult = loadSharedWithMe();
+      useLibraryStore
+        .getState()
+        .initSharedWithMe(isOk(sharedWithMeResult) ? sharedWithMeResult.value : []);
+    })
+    .catch((e: unknown) => {
+      initError = e instanceof Error ? e : new Error(String(e));
+    })
+    .finally(() => {
+      // Note: StrictMode disabled due to react-three-fiber WebGL context issues
+      // R3F's Canvas doesn't handle StrictMode's double-mount cycle well
+      createRoot(rootElement).render(
+        <ErrorBoundary>
+          <LocaleProvider initialLocale={initialLocale} onLocaleChange={handleLocaleChange}>
+            {initError ? <InitErrorFallback error={initError} /> : <App />}
+          </LocaleProvider>
+          <Analytics />
+        </ErrorBoundary>
+      );
+    });
 } // end else — www migration check

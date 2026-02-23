@@ -1,7 +1,5 @@
 {
-  "app.clearDataReload": "Tøm data og last på nytt",
   "app.skipToGridEditor": "Gå til rutenettplanlegger",
-  "app.unableToLoadApp": "Kan ikke laste app",
   "binDesigner.alignment.center": "Midtstilt",
   "binDesigner.alignment.left": "Venstre",
   "binDesigner.alignment.right": "Høyre",

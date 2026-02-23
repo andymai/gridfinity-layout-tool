@@ -83,9 +83,7 @@ const en: Record<string, string> = {
   // ===========================================================================
   // App
   // ===========================================================================
-  'app.clearDataReload': 'Clear Data & Reload',
   'app.skipToGridEditor': 'Skip to grid planner',
-  'app.unableToLoadApp': 'Unable to load app',
 
   // ===========================================================================
   // Header
