@@ -12,10 +12,15 @@ import { useSettingsStore } from './core/store/settings.ts';
 import { initAnalytics } from './shared/analytics/posthog.ts';
 import { useLayoutStore } from './core/store/layout.ts';
 import type { Locale } from './i18n/types.ts';
+import { recoverFromBadWwwMigration } from './core/storage/wwwMigrationRecovery';
 
-// WWW → canonical migration: if the inline script in index.html detected www with data,
-// dynamically import the migration module and skip the normal React boot entirely.
-if ((window as unknown as { __wwwMigrationPending?: boolean }).__wwwMigrationPending) {
+// Recovery for canonical users who went through a broken www→canonical migration
+// (before the fix that excluded migration-state flags from bridge LS copy).
+// Must run before React boots so corrected flags take effect during store hydration.
+// Returns true and triggers a page reload if stranded LS layouts are detected.
+if (recoverFromBadWwwMigration()) {
+  // Reload triggered — stop all further initialization.
+} else if ((window as unknown as { __wwwMigrationPending?: boolean }).__wwwMigrationPending) {
   void import('./core/storage/wwwMigration')
     .then(({ runWwwMigration }) => runWwwMigration())
     .catch(() => {
