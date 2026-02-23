@@ -9,6 +9,7 @@ import {
   DEFAULT_CATEGORY_COLOR,
   getBaseCellSize,
   BREAKPOINTS,
+  getDefaultDrawerSize,
 } from '@/core/constants';
 
 describe('calcMaxGridUnits', () => {
@@ -247,5 +248,26 @@ describe('getBaseCellSize', () => {
     expect(getBaseCellSize(BREAKPOINTS.LG - 1)).toBe(36);
     // At LG threshold
     expect(getBaseCellSize(BREAKPOINTS.LG)).toBe(32);
+  });
+});
+
+describe('getDefaultDrawerSize', () => {
+  it('returns portrait dimensions for mobile viewports', () => {
+    const size = getDefaultDrawerSize(375);
+    expect(size.depth).toBeGreaterThan(size.width);
+    expect(size).toEqual({ width: 6, depth: 9, height: 12 });
+  });
+
+  it('returns landscape dimensions for desktop viewports', () => {
+    const size = getDefaultDrawerSize(1024);
+    expect(size.width).toBeGreaterThan(size.depth);
+    expect(size).toEqual({ width: 10, depth: 8, height: 12 });
+  });
+
+  it('uses MD breakpoint as the threshold', () => {
+    const mobile = getDefaultDrawerSize(BREAKPOINTS.MD - 1);
+    const desktop = getDefaultDrawerSize(BREAKPOINTS.MD);
+    expect(mobile.depth).toBeGreaterThan(mobile.width);
+    expect(desktop.width).toBeGreaterThan(desktop.depth);
   });
 });

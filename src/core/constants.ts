@@ -184,10 +184,29 @@ export function generateCategoryId(): CategoryId {
 
 // === Default Layout ===
 
+/**
+ * Get default drawer dimensions based on viewport width.
+ * Mobile devices get a portrait-oriented layout (like an IKEA Alex drawer)
+ * since phones are typically held in portrait.
+ */
+export function getDefaultDrawerSize(viewportWidth?: number): {
+  width: number;
+  depth: number;
+  height: number;
+} {
+  const vw = viewportWidth ?? (typeof window !== 'undefined' ? window.innerWidth : BREAKPOINTS.LG);
+  if (vw < BREAKPOINTS.MD) {
+    // Mobile: portrait orientation (narrower, deeper) — similar to IKEA Alex drawer
+    return { width: 6, depth: 9, height: 12 };
+  }
+  // Desktop/tablet: landscape orientation
+  return { width: 10, depth: 8, height: 12 };
+}
+
 export const createDefaultLayout = (): Layout => ({
   version: '1.0',
   name: DEFAULT_LAYOUT_NAME,
-  drawer: { width: 10, depth: 8, height: 12 },
+  drawer: getDefaultDrawerSize(),
   printBedSize: 256, // mm - typical print bed size
   gridUnitMm: 42,
   heightUnitMm: 7,

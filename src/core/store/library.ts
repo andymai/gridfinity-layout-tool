@@ -10,7 +10,7 @@ import type {
   NameSuggestionState,
   LayoutId,
 } from '@/core/types';
-import { CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS, getDefaultDrawerSize } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutLastEntity, OK } from '@/core/result';
@@ -27,6 +27,7 @@ export function createDefaultLibrary(
   initialLayoutId: LayoutId,
   initialLayoutName: string
 ): LayoutLibrary {
+  const drawer = getDefaultDrawerSize();
   return {
     version: '1.0',
     activeLayoutId: initialLayoutId,
@@ -38,9 +39,9 @@ export function createDefaultLibrary(
         createdAt: Date.now(),
         modifiedAt: Date.now(),
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: drawer.width,
+          drawerDepth: drawer.depth,
+          drawerHeight: drawer.height,
           binCount: 0,
           layerCount: 1,
         },
