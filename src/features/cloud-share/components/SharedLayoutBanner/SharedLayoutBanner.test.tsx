@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SharedLayoutBanner } from '@/features/cloud-share/components/SharedLayoutBanner';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useLayoutStore } from '@/core/store/layout';
@@ -191,7 +191,6 @@ describe('SharedLayoutBanner', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, cleanup } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 
 // Mock the storage module before importing the hook
 vi.mock('@/core/storage', () => ({
@@ -45,7 +45,6 @@ describe('useStorageMigration', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.useRealTimers();
     vi.restoreAllMocks();
 

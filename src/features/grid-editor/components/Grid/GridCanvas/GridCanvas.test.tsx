@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, cleanup } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import { createRef } from 'react';
 import { GridCanvas } from '@/features/grid-editor/components/Grid/GridCanvas';
 import { useLayoutStore } from '@/core/store/layout';
@@ -57,7 +57,6 @@ describe('GridCanvas', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 

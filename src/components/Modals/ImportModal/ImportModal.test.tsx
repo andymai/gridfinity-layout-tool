@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react';
+import { render, fireEvent, waitFor, act } from '@testing-library/react';
 import { ImportModal } from '@/components/Modals/ImportModal';
 import { createDefaultLayout } from '@/core/constants';
 import { encodeLayoutForURL } from '@/core/storage';
@@ -13,7 +13,6 @@ describe('ImportModal', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 
@@ -300,8 +299,6 @@ describe('ImportModal', () => {
 
       await act(async () => {
         fireEvent.change(fileInput, { target: { files: [file] } });
-        // Wait for FileReader to complete
-        await new Promise((resolve) => setTimeout(resolve, 50));
       });
 
       expect(await findByText('Preview')).not.toBeNull();

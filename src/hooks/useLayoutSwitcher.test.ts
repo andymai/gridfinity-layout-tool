@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act, cleanup } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useLayoutSwitcher } from '@/hooks/useLayoutSwitcher';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
@@ -260,7 +260,6 @@ describe('useLayoutSwitcher', () => {
   });
 
   afterEach(() => {
-    cleanup(); // Clean up React Testing Library
     vi.restoreAllMocks();
   });
 

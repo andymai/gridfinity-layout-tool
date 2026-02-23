@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { Layout } from '@/core/types';
 import { ImportView } from '@/features/layout-library/components/LayoutManagerModal/ImportView';
 import * as validation from '@/shared/utils/validation';
@@ -66,10 +66,6 @@ describe('ImportView', () => {
       errors: [],
       layout: data as Layout,
     }));
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   describe('rendering', () => {

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LayoutActions } from '@/features/layout-library/components/LayoutManagerModal/LayoutActions';
 import type { LayoutEntry } from '@/core/types';
 
@@ -39,10 +39,6 @@ describe('LayoutActions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   describe('rendering', () => {

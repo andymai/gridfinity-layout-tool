@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CloudShareTab } from '@/features/cloud-share/components/CloudShareTab';
 import { useLibraryStore } from '@/core/store/library';
 import { resetAllStores } from '@/test/testUtils';
@@ -76,7 +76,6 @@ describe('CloudShareTab', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act, cleanup } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useCrossTabSync } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
@@ -44,7 +44,6 @@ describe('useCrossTabSync', () => {
   });
 
   afterEach(() => {
-    cleanup(); // Unmount all renderHook instances
     vi.restoreAllMocks();
   });
 

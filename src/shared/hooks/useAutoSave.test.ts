@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act, cleanup } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useAutoSave } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
@@ -106,7 +106,6 @@ describe('useAutoSave', () => {
   });
 
   afterEach(() => {
-    cleanup(); // Unmount all renderHook instances
     timerUtils.cleanup(); // Restore real timers
     vi.restoreAllMocks();
   });

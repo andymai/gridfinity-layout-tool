@@ -34,6 +34,73 @@ import { useSnapshotStore } from '@/core/store/snapshots';
  * - Settings store (user preferences)
  * - Library store (layout library and metadata)
  */
+/**
+ * Reset individual stores for tests that only need partial isolation.
+ * Use these instead of resetAllStores() when your test only touches 1-2 stores.
+ */
+export function resetLayoutStore(): void {
+  useLayoutStore.setState({
+    layout: createDefaultLayout(),
+    activeLayoutId: null,
+  });
+}
+
+export function resetSelectionStore(): void {
+  useSelectionStore.setState({
+    selectedBinIds: [],
+    activeLayerId: layerId(''),
+    activeCategoryId: categoryId('coral'),
+    focusedBinId: null,
+    quickLabelBinId: null,
+  });
+}
+
+export function resetInteractionStore(): void {
+  useInteractionStore.setState({
+    interaction: null,
+    dropTarget: null,
+    paintSize: null,
+    keyboardDragMode: false,
+    keyboardResizeMode: false,
+    liveMessage: null,
+    showIsometricPreview: false,
+    isometricRotation: 0,
+    layerViewMode: 'stack',
+    isPreviewExpanded: false,
+  });
+}
+
+export function resetHistoryStore(): void {
+  useHistoryStore.setState({
+    past: [],
+    future: [],
+    canUndo: false,
+    canRedo: false,
+  });
+}
+
+export function resetViewStore(): void {
+  useViewStore.setState({
+    zoom: 1,
+    showOtherLayers: true,
+    leftPanelCollapsed: false,
+    rightPanelCollapsed: false,
+    contextMenu: null,
+    highlightedCategoryId: null,
+    highlightedRowLabel: null,
+    highlightedColLabel: null,
+    printModalOpen: false,
+  });
+}
+
+export function resetLibraryStore(): void {
+  useLibraryStore.setState({
+    library: createTestLibrary(),
+    isLoaded: false,
+    showLayoutManager: false,
+  });
+}
+
 export function resetAllStores(): void {
   // Layout store
   useLayoutStore.setState({

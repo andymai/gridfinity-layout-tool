@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useCreateFromBin } from './useCreateFromBin';
 import { useDesignerStore } from '../store/designer';
 import { useToastStore } from '@/core/store/toast';
@@ -187,8 +187,8 @@ describe('useCreateFromBin', () => {
 
     renderHook(() => useCreateFromBin());
 
-    // Wait a bit to ensure nothing happens
-    await new Promise((r) => setTimeout(r, 50));
+    // Flush microtasks to ensure hook effects complete
+    await act(() => Promise.resolve());
 
     const state = useDesignerStore.getState();
     expect(state.pendingBinLink).toBeNull();
@@ -205,7 +205,7 @@ describe('useCreateFromBin', () => {
 
     renderHook(() => useCreateFromBin());
 
-    await new Promise((r) => setTimeout(r, 50));
+    await act(() => Promise.resolve());
 
     const state = useDesignerStore.getState();
     expect(state.pendingBinLink).toBeNull();
@@ -224,7 +224,7 @@ describe('useCreateFromBin', () => {
 
     renderHook(() => useCreateFromBin());
 
-    await new Promise((r) => setTimeout(r, 50));
+    await act(() => Promise.resolve());
 
     const state = useDesignerStore.getState();
     expect(state.pendingBinLink).toBeNull();
@@ -242,7 +242,7 @@ describe('useCreateFromBin', () => {
 
     renderHook(() => useCreateFromBin());
 
-    await new Promise((r) => setTimeout(r, 50));
+    await act(() => Promise.resolve());
 
     const state = useDesignerStore.getState();
     expect(state.pendingBinLink).toBeNull();
@@ -271,7 +271,7 @@ describe('useCreateFromBin', () => {
     // Rerender shouldn't re-process URL params
     rerender();
 
-    await new Promise((r) => setTimeout(r, 50));
+    await act(() => Promise.resolve());
     expect(useDesignerStore.getState().pendingBinLink).toBeNull();
   });
 

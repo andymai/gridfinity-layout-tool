@@ -41,13 +41,8 @@ describe('useFocusTrap', () => {
       (result2.current as { current: HTMLDivElement | null }).current = container;
     });
 
-    // Wait for the setTimeout(0) in the hook
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 10));
-    });
-
-    // The hook uses setTimeout(0) so we can't easily test the auto-focus
-    // without a more complex setup. Test the Escape handler instead.
+    // The hook uses setTimeout(0) for auto-focus which can't be easily tested
+    // in this setup. The Escape handler is tested below instead.
   });
 
   it('calls onEscape when Escape is pressed', () => {
