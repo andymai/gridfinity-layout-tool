@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Storage Bridge</title>
+    <meta name="robots" content="noindex, nofollow">
+  </head>
+  <body>
+    <script>
+      /**
+       * Storage bridge page — runs on the canonical domain (gridfinitylayouttool.com)
+       * inside a hidden iframe loaded from the www subdomain.
+       *
+       * Receives gridfinity-* localStorage keys and IndexedDB records via postMessage,
+       * writes them into canonical-origin storage (skipping keys/records that already exist),
+       * and sends back a confirmation message.
+       */
+      (function () {
+        'use strict';
+
+        const ALLOWED_ORIGIN = 'https://www.gridfinitylayouttool.com';
+
+        function reply(source, message) {
+          if (!source || typeof source.postMessage !== 'function') return;
+          source.postMessage(message, ALLOWED_ORIGIN);
+        }
+
+        window.addEventListener('message', function (event) {
+          if (event.origin !== ALLOWED_ORIGIN) return;
+          if (!event.data || event.data.type !== 'www-migration-data') return;
+
+          const source = event.source;
+          const payload = event.data;
+          const stats = { localStorageWritten: 0, localStorageSkipped: 0, idbWritten: 0, idbSkipped: 0 };
+
+          try {
+            // --- localStorage ---
+            const lsData = payload.localStorage || {};
+            for (const key of Object.keys(lsData)) {
+              if (localStorage.getItem(key) !== null) {
+                stats.localStorageSkipped++;
+              } else {
+                localStorage.setItem(key, lsData[key]);
+                stats.localStorageWritten++;
+              }
+            }
+
+            // --- IndexedDB ---
+            writeIndexedDB(payload.indexedDB || {}, stats, function (error) {
+              if (error) {
+                reply(source, { type: 'www-migration-error', error: error.message || String(error) });
+              } else {
+                reply(source, { type: 'www-migration-complete', stats: stats });
+              }
+            });
+          } catch (e) {
+            reply(source, { type: 'www-migration-error', error: e.message || String(e) });
+          }
+        });
+
+        /**
+         * Write IndexedDB records for both databases.
+         * Schema is duplicated here because this page has no bundler/imports.
+         * Must match: src/core/storage/backends/indexedDB.ts (gridfinity-db v3)
+         *             src/features/bin-designer/storage/DesignerStorage.ts (gridfinity-designer-v1 v1)
+         *             src/core/storage/wwwMigration.ts (IDB_DATABASES)
+         */
+        function writeIndexedDB(idbData, stats, callback) {
+          const databases = [
+            {
+              name: 'gridfinity-db',
+              version: 3,
+              data: idbData['gridfinity-db'],
+              setup: function (db) {
+                if (!db.objectStoreNames.contains('layouts')) {
+                  db.createObjectStore('layouts');
+                }
+                if (!db.objectStoreNames.contains('snapshots')) {
+                  const ss = db.createObjectStore('snapshots', { keyPath: 'id' });
+                  ss.createIndex('byLayoutId', 'layoutId', { unique: false });
+                }
+                if (!db.objectStoreNames.contains('library')) {
+                  db.createObjectStore('library');
+                }
+                if (!db.objectStoreNames.contains('ml-data')) {
+                  db.createObjectStore('ml-data');
+                }
+                if (!db.objectStoreNames.contains('shared-with-me')) {
+                  db.createObjectStore('shared-with-me');
+                }
+              },
+            },
+            {
+              name: 'gridfinity-designer-v1',
+              version: 1,
+              data: idbData['gridfinity-designer-v1'],
+              setup: function (db) {
+                if (!db.objectStoreNames.contains('designs')) {
+                  const ds = db.createObjectStore('designs', { keyPath: 'id' });
+                  ds.createIndex('updatedAt', 'updatedAt');
+                }
+              },
+            },
+          ];
+
+          let pending = 0;
+          let errored = false;
+
+          for (const dbDef of databases) {
+            if (!dbDef.data || Object.keys(dbDef.data).length === 0) continue;
+            pending++;
+            openAndWrite(dbDef, stats, function (err) {
+              if (errored) return;
+              if (err) {
+                errored = true;
+                callback(err);
+                return;
+              }
+              pending--;
+              if (pending === 0 && !errored) callback(null);
+            });
+          }
+
+          if (pending === 0) callback(null);
+        }
+
+        function openAndWrite(dbDef, stats, done) {
+          const request = indexedDB.open(dbDef.name, dbDef.version);
+
+          request.onupgradeneeded = function (e) {
+            dbDef.setup(e.target.result);
+          };
+
+          request.onerror = function () {
+            done(request.error || new Error('Failed to open ' + dbDef.name));
+          };
+
+          request.onsuccess = function () {
+            const db = request.result;
+            const storeNames = Object.keys(dbDef.data);
+            let storePending = 0;
+            let storeErrored = false;
+
+            for (const storeName of storeNames) {
+              if (!db.objectStoreNames.contains(storeName)) continue;
+
+              const records = dbDef.data[storeName];
+              if (!records || records.length === 0) continue;
+
+              storePending++;
+              writeStore(db, storeName, records, stats, function (err) {
+                if (storeErrored) return;
+                if (err) {
+                  storeErrored = true;
+                  db.close();
+                  done(err);
+                  return;
+                }
+                storePending--;
+                if (storePending === 0) {
+                  db.close();
+                  done(null);
+                }
+              });
+            }
+
+            if (storePending === 0) {
+              db.close();
+              done(null);
+            }
+          };
+        }
+
+        function writeStore(db, storeName, records, stats, done) {
+          try {
+            const tx = db.transaction(storeName, 'readwrite');
+            const store = tx.objectStore(storeName);
+
+            tx.oncomplete = function () {
+              done(null);
+            };
+            tx.onerror = function () {
+              done(tx.error || new Error('Transaction failed for ' + storeName));
+            };
+
+            for (const record of records) {
+              checkAndWrite(store, record, stats);
+            }
+          } catch (e) {
+            done(e);
+          }
+        }
+
+        /**
+         * Check if a record exists and write it if not.
+         * For stores with inline keys (keyPath), the key is inside the value.
+         * For stores with out-of-line keys, the key is in record.key.
+         */
+        function checkAndWrite(store, record, stats) {
+          const key = store.keyPath ? record.value[store.keyPath] : record.key;
+
+          const getReq = store.get(key);
+          getReq.onsuccess = function () {
+            if (getReq.result !== undefined) {
+              stats.idbSkipped++;
+            } else {
+              if (store.keyPath) {
+                store.put(record.value);
+              } else {
+                store.put(record.value, record.key);
+              }
+              stats.idbWritten++;
+            }
+          };
+        }
+      })();
+    </script>
+  </body>
+</html>

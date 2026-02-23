@@ -381,8 +381,43 @@
         }
       } catch(e) {}
     </script>
+    <!-- WWW → canonical domain migration: detect www hostname early, before any
+         bundled JS loads. Either redirect immediately (no data / already migrated)
+         or set a flag so main.tsx can run the migration instead of booting React. -->
+    <script>
+      (function() {
+        if (location.hostname !== 'www.gridfinitylayouttool.com') return;
+        var canonical = 'https://gridfinitylayouttool.com' + location.pathname + location.search + location.hash;
+        if (localStorage.getItem('gridfinity-www-migrated') === 'true') {
+          location.replace(canonical);
+          return;
+        }
+        // Session bypass: user clicked "Continue on www" during a failed migration
+        if (sessionStorage.getItem('gridfinity-www-migration-bypass') === 'true') return;
+        var hasData = false;
+        for (var i = 0; i < localStorage.length; i++) {
+          if ((localStorage.key(i) || '').indexOf('gridfinity-') === 0) { hasData = true; break; }
+        }
+        if (!hasData) {
+          location.replace(canonical);
+          return;
+        }
+        window.__wwwMigrationPending = true;
+      })();
+    </script>
   </head>
   <body>
+    <!-- Migration overlay: shown only during www→canonical data transfer.
+         Styled inline because it must render before any CSS bundles load. -->
+    <div
+      id="www-migration-overlay"
+      style="position:fixed;inset:0;z-index:99999;background:#0f0f12;color:#e4e4e7;font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;flex-direction:column;align-items:center;justify-content:center;gap:12px;display:none"
+    >
+      <p data-migration-message style="font-size:18px;margin:0;font-weight:500">We've updated our domain</p>
+      <p style="font-size:14px;margin:0;color:#a1a1aa;max-width:340px;text-align:center;line-height:1.5">Your layouts are being copied to gridfinitylayouttool.com. Nothing will be lost.</p>
+      <div style="width:32px;height:32px;border:3px solid #3f3f46;border-top-color:#3b82f6;border-radius:50%;animation:www-spin 0.8s linear infinite;margin-top:4px"></div>
+      <style>@keyframes www-spin{to{transform:rotate(360deg)}}</style>
+    </div>
     <!-- SEO: Content for crawlers/noscript. Hidden by inline script; shown only if JS is disabled. -->
     <div id="root">
       <div id="seo-fallback" style="display:none; max-width: 800px; margin: 40px auto; padding: 20px; font-family: system-ui, sans-serif; line-height: 1.6;">

@@ -21,6 +21,17 @@
       ]
     },
     {
+      "source": "/storage-bridge.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "cross-origin" },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors https://www.gridfinitylayouttool.com"
+        }
+      ]
+    },
+    {
       "source": "/what-is-gridfinity",
       "headers": [
         {

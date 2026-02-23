@@ -70,7 +70,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Exclude manifest icons from glob - they're auto-added via manifest.icons
         // This prevents duplicate precache entries
-        globIgnores: ['icons/icon-192.png', 'icons/icon-512.png'],
+        globIgnores: ['icons/icon-192.png', 'icons/icon-512.png', 'storage-bridge.html'],
         // Prefix all cache names to prevent conflicts
         cacheId: 'gridfinity-v1',
         // Prevent accidentally precaching huge assets
@@ -92,6 +92,7 @@ export default defineConfig({
           /^\/guide(?:\/|$)/,
           /^\/privacy(?:\/|$)/,
           /^\/terms(?:\/|$)/,
+          /^\/storage-bridge\.html$/,
         ],
         runtimeCaching: [
           {
