@@ -64,8 +64,8 @@ describe('useDesignerInit', () => {
 
     renderHook(() => useDesignerInit());
 
-    // Give it time to potentially call initializeDesigner
-    await new Promise((r) => setTimeout(r, 50));
+    // Flush microtasks to ensure hook effects complete
+    await act(() => Promise.resolve());
 
     expect(DesignerStorage.initializeDesigner).not.toHaveBeenCalled();
   });

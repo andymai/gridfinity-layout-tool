@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Bin } from '@/features/grid-editor/components/Grid/Bin';
 import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
@@ -128,7 +128,6 @@ describe('Bin', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 

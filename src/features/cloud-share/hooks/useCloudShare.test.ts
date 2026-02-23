@@ -437,7 +437,7 @@ describe('useCloudShare', () => {
       );
 
       // Should not throw or cause issues
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await Promise.resolve();
     });
   });
 

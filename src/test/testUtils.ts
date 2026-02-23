@@ -23,22 +23,87 @@ import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useSnapshotStore } from '@/core/store/snapshots';
 
 /**
+ * Reset individual stores for tests that only need partial isolation.
+ * Use these instead of resetAllStores() when your test only touches 1-2 stores.
+ */
+export function resetLayoutStore(): void {
+  useLayoutStore.setState({
+    layout: createDefaultLayout(),
+    activeLayoutId: null,
+    lastEditSource: null,
+    _fillMeta: null,
+  });
+}
+
+export function resetSelectionStore(): void {
+  useSelectionStore.setState({
+    selectedBinIds: [],
+    activeLayerId: layerId(''),
+    activeCategoryId: categoryId('coral'),
+    focusedBinId: null,
+    quickLabelBinId: null,
+  });
+}
+
+export function resetInteractionStore(): void {
+  useInteractionStore.setState({
+    interaction: null,
+    dropTarget: null,
+    paintSize: null,
+    keyboardDragMode: false,
+    keyboardResizeMode: false,
+    liveMessage: null,
+    showIsometricPreview: false,
+    isometricRotation: 0,
+    layerViewMode: 'stack',
+    isPreviewExpanded: false,
+  });
+}
+
+export function resetHistoryStore(): void {
+  useHistoryStore.setState({
+    past: [],
+    future: [],
+    canUndo: false,
+    canRedo: false,
+  });
+}
+
+export function resetViewStore(): void {
+  useViewStore.setState({
+    zoom: 1,
+    showOtherLayers: true,
+    leftPanelCollapsed: false,
+    rightPanelCollapsed: false,
+    contextMenu: null,
+    highlightedCategoryId: null,
+    highlightedRowLabel: null,
+    highlightedColLabel: null,
+    printModalOpen: false,
+  });
+}
+
+export function resetLibraryStore(): void {
+  useLibraryStore.setState({
+    library: createTestLibrary(),
+    isLoaded: false,
+    showLayoutManager: false,
+    sharedWithMe: [],
+    sharedWithMeLoaded: false,
+  });
+}
+
+/**
  * Reset all Zustand stores to their initial state.
  * Call this in beforeEach for complete test isolation.
- *
- * This prevents cross-test pollution by resetting:
- * - Layout store (layout data and activeLayoutId)
- * - UI store (selection, zoom, panels, interaction state)
- * - History store (undo/redo stacks)
- * - Toast store (notifications)
- * - Settings store (user preferences)
- * - Library store (layout library and metadata)
  */
 export function resetAllStores(): void {
   // Layout store
   useLayoutStore.setState({
     layout: createDefaultLayout(),
     activeLayoutId: null,
+    lastEditSource: null,
+    _fillMeta: null,
   });
 
   // Selection store
@@ -112,6 +177,8 @@ export function resetAllStores(): void {
     library: createTestLibrary(),
     isLoaded: false,
     showLayoutManager: false,
+    sharedWithMe: [],
+    sharedWithMeLoaded: false,
   });
 
   // Labs store

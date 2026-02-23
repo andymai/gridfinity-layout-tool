@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { InspirationGallery } from '.';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useMobileStore } from '@/core/store/mobile';
@@ -255,7 +255,6 @@ describe('InspirationGallery', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 

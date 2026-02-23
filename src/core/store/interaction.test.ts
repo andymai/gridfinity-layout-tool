@@ -8,7 +8,7 @@ const getState = () => useInteractionStore.getState();
 describe('interaction store', () => {
   beforeEach(() => {
     resetAllStores();
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.useFakeTimers();
   });
 
   afterEach(() => {

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { renderHook, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
 import * as THREE from 'three';
 import { createBinGeometry, useBinGeometry } from '@/hooks/useBinGeometry';
 
@@ -341,10 +341,6 @@ describe('useBinGeometry', () => {
   });
 
   describe('useBinGeometry hook', () => {
-    afterEach(() => {
-      cleanup();
-    });
-
     it('returns a BufferGeometry', () => {
       const { result } = renderHook(() =>
         useBinGeometry({ width: 1, depth: 1, height: 1, baseColor: '#ff0000' })

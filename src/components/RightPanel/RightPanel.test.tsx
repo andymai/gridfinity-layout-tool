@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { RightPanel } from '@/components/RightPanel';
 import { useUIStore, useLayoutStore, useViewStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -223,7 +223,6 @@ describe('RightPanel', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 

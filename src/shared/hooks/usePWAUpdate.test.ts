@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
-import { renderHook, act, cleanup } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { usePWAUpdate } from '@/shared/hooks';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useSelectionStore } from '@/core/store/selection';
@@ -84,7 +84,6 @@ describe('usePWAUpdate', () => {
   });
 
   afterEach(() => {
-    cleanup();
     timerUtils.cleanup();
     vi.restoreAllMocks();
   });

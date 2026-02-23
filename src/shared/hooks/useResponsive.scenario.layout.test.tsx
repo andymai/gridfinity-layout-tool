@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useResponsive, type ResponsiveState } from '@/shared/hooks';
-import { renderHook, cleanup } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 
 // Mock matchMedia
 const createMatchMedia = (matches: Record<string, boolean>) => {
@@ -22,7 +22,6 @@ describe('Responsive Layout Switching', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 

@@ -66,7 +66,7 @@ describe('useDesignerUrlSync', () => {
 
       // Give it time to potentially fire
       await act(async () => {
-        await new Promise((r) => setTimeout(r, 50));
+        await Promise.resolve();
       });
 
       expect(DesignerStorage.loadDesign).not.toHaveBeenCalled();
@@ -79,7 +79,7 @@ describe('useDesignerUrlSync', () => {
       renderHook(() => useDesignerUrlSync());
 
       await act(async () => {
-        await new Promise((r) => setTimeout(r, 50));
+        await Promise.resolve();
       });
 
       expect(DesignerStorage.loadDesign).not.toHaveBeenCalled();
@@ -140,7 +140,7 @@ describe('useDesignerUrlSync', () => {
 
       // Wait for mount to complete
       await act(async () => {
-        await new Promise((r) => setTimeout(r, 50));
+        await Promise.resolve();
       });
 
       // Simulate auto-save creating a new design ID

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, cleanup } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 
 // Mock dependencies before importing the hook
 vi.mock('@/core/storage', () => ({
@@ -63,7 +63,6 @@ describe('useIndexedDBRecovery', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.useRealTimers();
     vi.restoreAllMocks();
 

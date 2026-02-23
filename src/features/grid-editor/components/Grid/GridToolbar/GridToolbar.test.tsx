@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { GridToolbar } from './GridToolbar';
 import { useViewStore, useInteractionStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -77,7 +77,6 @@ describe('GridToolbar', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 
