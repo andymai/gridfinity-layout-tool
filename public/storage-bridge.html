@@ -25,11 +25,9 @@
           source.postMessage(message, ALLOWED_ORIGIN);
         }
 
-        window.addEventListener('message', function handler(event) {
+        window.addEventListener('message', function (event) {
           if (event.origin !== ALLOWED_ORIGIN) return;
           if (!event.data || event.data.type !== 'www-migration-data') return;
-
-          window.removeEventListener('message', handler);
 
           var source = event.source;
           var payload = event.data;

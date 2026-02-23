@@ -15,7 +15,7 @@ import type { Locale } from './i18n/types.ts';
 
 // WWW → canonical migration: if the inline script in index.html detected www with data,
 // dynamically import the migration module and skip the normal React boot entirely.
-if ((window as unknown as Record<string, unknown>).__wwwMigrationPending) {
+if ((window as unknown as { __wwwMigrationPending?: boolean }).__wwwMigrationPending) {
   void import('./core/storage/wwwMigration').then(({ runWwwMigration }) => runWwwMigration());
   // Stop here — don't initialize analytics or mount React
 } else {
