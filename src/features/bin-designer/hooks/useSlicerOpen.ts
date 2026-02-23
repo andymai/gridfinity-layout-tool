@@ -108,11 +108,13 @@ export function useSlicerOpen(): UseSlicerOpenReturn {
         });
 
         // Step 2: Upload to temporary public URL
-        const arrayBuffer = await threeMFBlob.arrayBuffer();
+        // Send the Blob directly — fetch converts it to binary automatically.
+        // Using application/octet-stream so Vercel's body-parser populates req.body
+        // as a Buffer (it only auto-parses this content type for binary data).
         const uploadResponse = await fetch('/api/slicer-upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml' },
-          body: arrayBuffer,
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: threeMFBlob,
         });
 
         if (!uploadResponse.ok) {

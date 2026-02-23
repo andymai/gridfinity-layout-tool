@@ -74,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  // Read raw body (Vercel parses body as Buffer for non-JSON content types)
+  // Read raw body (Vercel parses application/octet-stream as a Buffer into req.body)
   const body = req.body as Buffer | undefined;
   if (!body || body.length === 0) {
     return res.status(400).json({ error: 'Missing file body' });

@@ -17,7 +17,7 @@ import { layoutSession } from './sessionState';
  * Filters out "just trying it out" data.
  */
 export function assessLayoutQuality(layout: Layout): LayoutQualityTier {
-  const bins = getGridBins(layout.bins);
+  const bins = getGridBins(layout.bins ?? []);
 
   // Skip if too few bins (probably just testing)
   if (bins.length < 3) return 'skip';
@@ -71,7 +71,7 @@ export function isSubstantialLayout(layout: Layout): boolean {
  * Uses bin composition, not positions (order-independent).
  */
 export function computeLayoutHash(layout: Layout): string {
-  const bins = getGridBins(layout.bins);
+  const bins = getGridBins(layout.bins ?? []);
 
   // Create a deterministic representation of bin composition
   const binSignatures = bins
