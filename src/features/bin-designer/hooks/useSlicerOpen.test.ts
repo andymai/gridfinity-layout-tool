@@ -39,7 +39,7 @@ vi.mock('@/features/bin-designer/utils/fileNaming', async (importOriginal) => {
 });
 
 const mockBuildSlicerUrl = vi.hoisted(() =>
-  vi.fn((protocol: string, url: string) => `${protocol}://open?file_url=${url}`)
+  vi.fn((protocol: string, url: string) => `${protocol}://open?file=${url}`)
 );
 vi.mock('@/features/bin-designer/utils/slicerConfig', () => ({
   buildSlicerUrl: mockBuildSlicerUrl,
@@ -123,7 +123,7 @@ describe('useSlicerOpen', () => {
     mockParseSTLBinary.mockReturnValue(PARSE_OK);
     mockExport3MF.mockReturnValue(MOCK_BLOB);
     mockBuildSlicerUrl.mockImplementation(
-      (protocol: string, url: string) => `${protocol}://open?file_url=${url}`
+      (protocol: string, url: string) => `${protocol}://open?file=${url}`
     );
   });
 

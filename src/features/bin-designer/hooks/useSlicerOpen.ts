@@ -5,7 +5,7 @@
  * 1. Generate a 3MF file via the generation worker
  * 2. Upload it to a temporary public URL via /api/slicer-upload
  * 3. Fire the slicer's protocol handler via a hidden anchor click:
- *    <protocol>://open?file_url=<url>
+ *    <protocol>://open?file=<url>
  * 4. Detect whether the slicer opened via a window blur event. If no blur
  *    fires within 5s, show a toast suggesting the slicer may not be installed.
  *    No automatic download — the user can download manually from the dialog.
