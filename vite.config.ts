@@ -70,7 +70,16 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Exclude manifest icons from glob - they're auto-added via manifest.icons
         // This prevents duplicate precache entries
-        globIgnores: ['icons/icon-192.png', 'icons/icon-512.png', 'storage-bridge.html'],
+        globIgnores: [
+          'icons/icon-192.png',
+          'icons/icon-512.png',
+          'storage-bridge.html',
+          // wwwMigration is a one-shot dynamic import (www → canonical migration).
+          // Precaching it causes SW install failures when the hash changes between
+          // deployments: the new SW's manifest still references the old hash which
+          // 404s, leaving the old SW in control and blocking the fix from reaching users.
+          'assets/wwwMigration-*.js',
+        ],
         // Prefix all cache names to prevent conflicts
         cacheId: 'gridfinity-v1',
         // Prevent accidentally precaching huge assets
