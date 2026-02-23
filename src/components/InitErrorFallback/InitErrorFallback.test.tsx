@@ -30,6 +30,7 @@ describe('InitErrorFallback', () => {
     await user.click(screen.getByRole('button', { name: /clear data/i }));
 
     expect(clearAllAppData).toHaveBeenCalled();
-    expect(reloadMock).toHaveBeenCalled();
+    // Reload is delayed 100ms to let IndexedDB deletion start
+    await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
   });
 });
