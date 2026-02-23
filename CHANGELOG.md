@@ -2,106 +2,91 @@
 
 ## [3.27.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.3...gridfinity-layout-tool-v3.27.0) (2026-02-23)
 
-
 ### Features
 
-* **storage:** www → canonical domain storage migration ([#856](https://github.com/andymai/gridfinity-layout-tool/issues/856)) ([582f3e3](https://github.com/andymai/gridfinity-layout-tool/commit/582f3e309cc7c3ccf6ffdd4d34192ff066494412))
+- **storage:** www → canonical domain storage migration ([#856](https://github.com/andymai/gridfinity-layout-tool/issues/856)) ([582f3e3](https://github.com/andymai/gridfinity-layout-tool/commit/582f3e309cc7c3ccf6ffdd4d34192ff066494412))
 
 ## [3.26.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.2...gridfinity-layout-tool-v3.26.3) (2026-02-23)
 
-
 ### Bug Fixes
 
-* **bin-designer:** fix Open in Slicer 403 by checking all Vercel URL env vars ([#854](https://github.com/andymai/gridfinity-layout-tool/issues/854)) ([13dea6a](https://github.com/andymai/gridfinity-layout-tool/commit/13dea6af95a7e7eeaa60bede353007032150742b))
+- **bin-designer:** fix Open in Slicer 403 by checking all Vercel URL env vars ([#854](https://github.com/andymai/gridfinity-layout-tool/issues/854)) ([13dea6a](https://github.com/andymai/gridfinity-layout-tool/commit/13dea6af95a7e7eeaa60bede353007032150742b))
 
 ## [3.26.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.1...gridfinity-layout-tool-v3.26.2) (2026-02-22)
 
-
 ### Bug Fixes
 
-* **bin-designer:** fix Open in Slicer firing download instead of opening app ([#852](https://github.com/andymai/gridfinity-layout-tool/issues/852)) ([9654a00](https://github.com/andymai/gridfinity-layout-tool/commit/9654a003c965bf82ab912bbb1b7f76e4c2fb4dd5))
+- **bin-designer:** fix Open in Slicer firing download instead of opening app ([#852](https://github.com/andymai/gridfinity-layout-tool/issues/852)) ([9654a00](https://github.com/andymai/gridfinity-layout-tool/commit/9654a003c965bf82ab912bbb1b7f76e4c2fb4dd5))
 
 ## [3.26.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.0...gridfinity-layout-tool-v3.26.1) (2026-02-22)
 
-
 ### Bug Fixes
 
-* **bin-designer:** fix export dialog bugs and UX issues ([#850](https://github.com/andymai/gridfinity-layout-tool/issues/850)) ([9b1ba6b](https://github.com/andymai/gridfinity-layout-tool/commit/9b1ba6ba87ba3a29fd0cc32f40a9931b76b990d6))
+- **bin-designer:** fix export dialog bugs and UX issues ([#850](https://github.com/andymai/gridfinity-layout-tool/issues/850)) ([9b1ba6b](https://github.com/andymai/gridfinity-layout-tool/commit/9b1ba6ba87ba3a29fd0cc32f40a9931b76b990d6))
 
 ## [3.26.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.25.0...gridfinity-layout-tool-v3.26.0) (2026-02-22)
 
-
 ### Features
 
-* **api:** add hourly cron to clean up expired slicer-temp blobs ([#848](https://github.com/andymai/gridfinity-layout-tool/issues/848)) ([4bac1f8](https://github.com/andymai/gridfinity-layout-tool/commit/4bac1f86a3c1c10eb4524b6d20e6d9af3cd4c294))
+- **api:** add hourly cron to clean up expired slicer-temp blobs ([#848](https://github.com/andymai/gridfinity-layout-tool/issues/848)) ([4bac1f8](https://github.com/andymai/gridfinity-layout-tool/commit/4bac1f86a3c1c10eb4524b6d20e6d9af3cd4c294))
 
 ## [3.25.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.24.0...gridfinity-layout-tool-v3.25.0) (2026-02-22)
 
-
 ### Features
 
-* **bin-designer:** add Open in Slicer deep-link export ([#846](https://github.com/andymai/gridfinity-layout-tool/issues/846)) ([39d70df](https://github.com/andymai/gridfinity-layout-tool/commit/39d70df3ca6e33b5e7684389e3bba8763f8bd08f))
+- **bin-designer:** add Open in Slicer deep-link export ([#846](https://github.com/andymai/gridfinity-layout-tool/issues/846)) ([39d70df](https://github.com/andymai/gridfinity-layout-tool/commit/39d70df3ca6e33b5e7684389e3bba8763f8bd08f))
 
 ## [3.24.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.23.1...gridfinity-layout-tool-v3.24.0) (2026-02-22)
 
-
 ### Features
 
-* **i18n:** consolidate redundant keys and remove 152 orphaned translations ([#843](https://github.com/andymai/gridfinity-layout-tool/issues/843)) ([aec5e9a](https://github.com/andymai/gridfinity-layout-tool/commit/aec5e9a949b1c97ace78a0a5cf1aa2081fa5c071))
+- **i18n:** consolidate redundant keys and remove 152 orphaned translations ([#843](https://github.com/andymai/gridfinity-layout-tool/issues/843)) ([aec5e9a](https://github.com/andymai/gridfinity-layout-tool/commit/aec5e9a949b1c97ace78a0a5cf1aa2081fa5c071))
 
 ## [3.23.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.23.0...gridfinity-layout-tool-v3.23.1) (2026-02-22)
 
-
 ### Bug Fixes
 
-* **icons:** eliminate transparent corners in favicon and PWA icons ([#840](https://github.com/andymai/gridfinity-layout-tool/issues/840)) ([3c7c03c](https://github.com/andymai/gridfinity-layout-tool/commit/3c7c03cfb371a2f7009fe003acb62563de3d42da))
+- **icons:** eliminate transparent corners in favicon and PWA icons ([#840](https://github.com/andymai/gridfinity-layout-tool/issues/840)) ([3c7c03c](https://github.com/andymai/gridfinity-layout-tool/commit/3c7c03cfb371a2f7009fe003acb62563de3d42da))
 
 ## [3.23.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.22.1...gridfinity-layout-tool-v3.23.0) (2026-02-22)
 
-
 ### Features
 
-* **ux:** communicate grid interaction failures and surface the stash to new users ([5cd6b46](https://github.com/andymai/gridfinity-layout-tool/commit/5cd6b465ecca9f498b3746a20fd4d957b01d2022))
+- **ux:** communicate grid interaction failures and surface the stash to new users ([5cd6b46](https://github.com/andymai/gridfinity-layout-tool/commit/5cd6b465ecca9f498b3746a20fd4d957b01d2022))
 
 ## [3.22.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.22.0...gridfinity-layout-tool-v3.22.1) (2026-02-21)
 
-
 ### Bug Fixes
 
-* stash rotate button clipping and move-to-grid context menu ([#837](https://github.com/andymai/gridfinity-layout-tool/issues/837)) ([f14cc84](https://github.com/andymai/gridfinity-layout-tool/commit/f14cc841d4a579d46e12b8be6776ea1185fe2e79))
+- stash rotate button clipping and move-to-grid context menu ([#837](https://github.com/andymai/gridfinity-layout-tool/issues/837)) ([f14cc84](https://github.com/andymai/gridfinity-layout-tool/commit/f14cc841d4a579d46e12b8be6776ea1185fe2e79))
 
 ## [3.22.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.21.0...gridfinity-layout-tool-v3.22.0) (2026-02-21)
 
-
 ### Features
 
-* remove delete bin drop zone ([#835](https://github.com/andymai/gridfinity-layout-tool/issues/835)) ([c6bcb69](https://github.com/andymai/gridfinity-layout-tool/commit/c6bcb6931077ba92140f565d39ac958a92a36991))
+- remove delete bin drop zone ([#835](https://github.com/andymai/gridfinity-layout-tool/issues/835)) ([c6bcb69](https://github.com/andymai/gridfinity-layout-tool/commit/c6bcb6931077ba92140f565d39ac958a92a36991))
 
 ## [3.21.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.20.0...gridfinity-layout-tool-v3.21.0) (2026-02-21)
 
-
 ### Features
 
-* smart snap placement for bins near collisions ([#832](https://github.com/andymai/gridfinity-layout-tool/issues/832)) ([7e4fdbb](https://github.com/andymai/gridfinity-layout-tool/commit/7e4fdbb5f641078e4a9477ad08366bf63bdf1b89))
+- smart snap placement for bins near collisions ([#832](https://github.com/andymai/gridfinity-layout-tool/issues/832)) ([7e4fdbb](https://github.com/andymai/gridfinity-layout-tool/commit/7e4fdbb5f641078e4a9477ad08366bf63bdf1b89))
 
 ## [3.20.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.19.0...gridfinity-layout-tool-v3.20.0) (2026-02-21)
 
-
 ### Features
 
-* **print:** unify filament estimates with analytical volume model, add nozzle size setting ([#829](https://github.com/andymai/gridfinity-layout-tool/issues/829)) ([284548c](https://github.com/andymai/gridfinity-layout-tool/commit/284548ca6b529a5d40d6d1909a0eb05293cd79fd))
+- **print:** unify filament estimates with analytical volume model, add nozzle size setting ([#829](https://github.com/andymai/gridfinity-layout-tool/issues/829)) ([284548c](https://github.com/andymai/gridfinity-layout-tool/commit/284548ca6b529a5d40d6d1909a0eb05293cd79fd))
 
 ## [3.19.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.4...gridfinity-layout-tool-v3.19.0) (2026-02-21)
 
-
 ### Features
 
-* **layers:** layer height UX overhaul ([#816](https://github.com/andymai/gridfinity-layout-tool/issues/816)) ([af597c0](https://github.com/andymai/gridfinity-layout-tool/commit/af597c088fbb0115ee1aa262481f4bb38d462374))
-
+- **layers:** layer height UX overhaul ([#816](https://github.com/andymai/gridfinity-layout-tool/issues/816)) ([af597c0](https://github.com/andymai/gridfinity-layout-tool/commit/af597c088fbb0115ee1aa262481f4bb38d462374))
 
 ### Bug Fixes
 
-* **print-export:** fix multiple bugs and i18n issues in print modal ([#827](https://github.com/andymai/gridfinity-layout-tool/issues/827)) ([89117a1](https://github.com/andymai/gridfinity-layout-tool/commit/89117a1bcd4960612b65ae82b898c46974a485fa))
+- **print-export:** fix multiple bugs and i18n issues in print modal ([#827](https://github.com/andymai/gridfinity-layout-tool/issues/827)) ([89117a1](https://github.com/andymai/gridfinity-layout-tool/commit/89117a1bcd4960612b65ae82b898c46974a485fa))
 
 ## [3.18.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.18.3...gridfinity-layout-tool-v3.18.4) (2026-02-20)
 

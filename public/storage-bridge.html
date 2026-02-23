@@ -71,6 +71,25 @@
               name: 'gridfinity-db',
               version: 3,
               data: idbData['gridfinity-db'],
+              // 'library' is a singleton store (one record, key='index'). Canonical always
+              // has a default 'index' entry from its first page load, so skip-if-exists would
+              // silently drop the www library index. Instead of skipping or blindly overwriting,
+              // we merge: www library as the base (entries + activeLayoutId), with any
+              // canonical-only layout entries appended so nothing is lost.
+              mergeStores: {
+                library: function (existing, incoming) {
+                  if (!incoming || !Array.isArray(incoming.entries)) return existing || incoming;
+                  if (!existing || !Array.isArray(existing.entries) || existing.entries.length === 0) {
+                    return incoming;
+                  }
+                  var incomingIds = {};
+                  incoming.entries.forEach(function (e) { incomingIds[e.id] = true; });
+                  var canonicalOnly = existing.entries.filter(function (e) { return !incomingIds[e.id]; });
+                  return Object.assign({}, incoming, {
+                    entries: incoming.entries.concat(canonicalOnly),
+                  });
+                },
+              },
               setup: function (db) {
                 if (!db.objectStoreNames.contains('layouts')) {
                   db.createObjectStore('layouts');
@@ -148,6 +167,7 @@
               if (!records || records.length === 0) continue;
 
               storePending++;
+              const mergeFn = dbDef.mergeStores && dbDef.mergeStores[storeName];
               writeStore(db, storeName, records, stats, function (err) {
                 if (storeErrored) return;
                 if (err) {
@@ -161,7 +181,7 @@
                   db.close();
                   done(null);
                 }
-              });
+              }, mergeFn || null);
             }
 
             if (storePending === 0) {
@@ -171,7 +191,7 @@
           };
         }
 
-        function writeStore(db, storeName, records, stats, done) {
+        function writeStore(db, storeName, records, stats, done, mergeFn) {
           try {
             const tx = db.transaction(storeName, 'readwrite');
             const store = tx.objectStore(storeName);
@@ -184,20 +204,41 @@
             };
 
             for (const record of records) {
-              checkAndWrite(store, record, stats);
+              checkAndWrite(store, record, stats, mergeFn);
             }
           } catch (e) {
             done(e);
           }
         }
 
-        /**
-         * Check if a record exists and write it if not.
-         * For stores with inline keys (keyPath), the key is inside the value.
-         * For stores with out-of-line keys, the key is in record.key.
-         */
-        function checkAndWrite(store, record, stats) {
+        /** Check if a record exists and write/merge it accordingly. */
+        function checkAndWrite(store, record, stats, mergeFn) {
           const key = store.keyPath ? record.value[store.keyPath] : record.key;
+
+          if (mergeFn) {
+            const getReq = store.get(key);
+            getReq.onsuccess = function () {
+              // Wrap mergeFn: a thrown exception inside onsuccess is NOT caught by
+              // tx.onerror — it becomes an uncaught error and silently drops the write.
+              var toWrite;
+              try {
+                toWrite = mergeFn(getReq.result, record.value);
+              } catch (_) {
+                toWrite = record.value; // fallback: write www data as-is
+              }
+              if (store.keyPath) {
+                store.put(toWrite);
+              } else {
+                store.put(toWrite, record.key);
+              }
+              stats.idbWritten++;
+            };
+            getReq.onerror = function (e) {
+              e.preventDefault(); // keep transaction alive; skip this record
+              stats.idbSkipped++;
+            };
+            return;
+          }
 
           const getReq = store.get(key);
           getReq.onsuccess = function () {
@@ -211,6 +252,10 @@
               }
               stats.idbWritten++;
             }
+          };
+          getReq.onerror = function (e) {
+            e.preventDefault(); // keep transaction alive; skip this record
+            stats.idbSkipped++;
           };
         }
       })();

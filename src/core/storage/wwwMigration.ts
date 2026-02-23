@@ -124,8 +124,8 @@ function openDatabase(name: string, version: number): Promise<IDBDatabase | null
 
     request.onupgradeneeded = () => {
       // If we're triggering an upgrade, the database didn't exist at this version.
-      // Abort the transaction and close to avoid creating empty stores on the www origin.
-      request.result.close();
+      // Abort the transaction first (rolls back the version bump), then the connection
+      // closes naturally. Calling .close() before .abort() can commit the empty upgrade.
       request.transaction?.abort();
       resolve(null);
     };
@@ -184,7 +184,6 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
       if (msg.type !== 'www-migration-complete' && msg.type !== 'www-migration-error') return;
 
       cleanup();
-      // msg is loosely typed (postMessage data is unknown) but we've validated msg.type above
       resolve(msg as unknown as BridgeResponse);
     }
 
@@ -197,7 +196,16 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
     window.addEventListener('message', onMessage);
 
     iframe.onload = () => {
-      iframe.contentWindow?.postMessage(data, CANONICAL_ORIGIN);
+      if (!iframe.contentWindow) {
+        cleanup();
+        reject(
+          new Error(
+            'Bridge iframe loaded but contentWindow is unavailable — cross-origin isolation may be blocking communication'
+          )
+        );
+        return;
+      }
+      iframe.contentWindow.postMessage(data, CANONICAL_ORIGIN);
     };
 
     iframe.onerror = () => {
@@ -209,15 +217,42 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
   });
 }
 
-/** Show the migration overlay. */
+/** Show the migration overlay, rebuilding spinner UI if showError() replaced it. */
 function showOverlay(message?: string): void {
   const overlay = document.getElementById('www-migration-overlay');
   if (!overlay) return;
-  overlay.style.display = 'flex';
-  if (message) {
-    const msgEl = overlay.querySelector('[data-migration-message]');
-    if (msgEl) msgEl.textContent = message;
+
+  let msgEl = overlay.querySelector('[data-migration-message]');
+
+  if (!msgEl) {
+    // showError() removed all overlay children — rebuild the spinner UI using safe DOM APIs
+    // to match the inline HTML in index.html exactly.
+    while (overlay.firstChild) overlay.removeChild(overlay.firstChild);
+
+    const heading = document.createElement('p');
+    heading.setAttribute('data-migration-message', '');
+    heading.style.cssText = 'font-size:18px;margin:0;font-weight:500';
+    heading.textContent = "We've updated our domain";
+
+    const subtitle = document.createElement('p');
+    subtitle.style.cssText =
+      'font-size:14px;margin:0;color:#a1a1aa;max-width:340px;text-align:center;line-height:1.5';
+    subtitle.textContent =
+      'Your layouts are being copied to gridfinitylayouttool.com. Nothing will be lost.';
+
+    const spinner = document.createElement('div');
+    spinner.style.cssText =
+      'width:32px;height:32px;border:3px solid #3f3f46;border-top-color:#3b82f6;border-radius:50%;animation:www-spin 0.8s linear infinite;margin-top:4px';
+
+    overlay.appendChild(heading);
+    overlay.appendChild(subtitle);
+    overlay.appendChild(spinner);
+
+    msgEl = heading;
   }
+
+  overlay.style.display = 'flex';
+  if (message) msgEl.textContent = message;
 }
 
 /** Show error state with retry/continue buttons using safe DOM APIs. */
@@ -225,7 +260,6 @@ function showError(error: string): void {
   const overlay = document.getElementById('www-migration-overlay');
   if (!overlay) return;
 
-  // Clear existing content safely
   while (overlay.firstChild) overlay.removeChild(overlay.firstChild);
 
   const container = document.createElement('div');
@@ -310,7 +344,6 @@ export async function runWwwMigration(): Promise<void> {
     // Success — set flag so future visits redirect immediately
     localStorage.setItem(MIGRATION_FLAG, 'true');
 
-    // Redirect to canonical domain
     const redirectUrl =
       CANONICAL_ORIGIN + window.location.pathname + window.location.search + window.location.hash;
     window.location.replace(redirectUrl);
