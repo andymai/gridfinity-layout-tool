@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.3...gridfinity-layout-tool-v3.27.4) (2026-02-23)
+
+
+### Bug Fixes
+
+* **sw:** exclude wwwMigration chunk from service worker precache ([#866](https://github.com/andymai/gridfinity-layout-tool/issues/866)) ([7081a81](https://github.com/andymai/gridfinity-layout-tool/commit/7081a81060e8e8058265c71fc1219d35089cd246))
+
 ## [3.27.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.2...gridfinity-layout-tool-v3.27.3) (2026-02-23)
 
 
