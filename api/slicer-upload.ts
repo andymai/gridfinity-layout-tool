@@ -103,6 +103,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       addRandomSuffix: false,
     });
 
+    // Vercel Blob CDN may take a moment to propagate after upload.
+    // Poll until the URL is accessible so PrusaSlicer/OrcaSlicer can
+    // download the file immediately after the protocol handler fires.
+    const accessible = await waitForUrl(blob.url);
+    if (!accessible) {
+      console.error('Slicer upload: URL not accessible after polling', blob.url);
+      return res.status(503).json({ error: 'Upload not yet accessible' });
+    }
+
     return res.status(200).json({ url: blob.url });
   } catch (error) {
     console.error(
@@ -111,4 +120,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
     return res.status(500).json({ error: 'Upload failed' });
   }
+}
+
+/**
+ * Polls a URL with HEAD requests until it returns 2xx or retries are exhausted.
+ * Handles CDN propagation delay after Vercel Blob upload.
+ */
+async function waitForUrl(url: string, maxAttempts = 8, initialDelayMs = 150): Promise<boolean> {
+  for (let i = 0; i < maxAttempts; i++) {
+    if (i > 0) {
+      // Exponential backoff: 150ms, 300ms, 600ms, ...
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, initialDelayMs * Math.pow(2, i - 1))
+      );
+    }
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+      if (res.ok) return true;
+    } catch {
+      // Network error — retry
+    }
+  }
+  return false;
 }
