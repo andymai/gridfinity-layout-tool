@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.27.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.8...gridfinity-layout-tool-v3.27.9) (2026-02-23)
+
+
+### Bug Fixes
+
+* cls loading spinner, mobile resize, and vibrate guards ([#876](https://github.com/andymai/gridfinity-layout-tool/issues/876)) ([74074ba](https://github.com/andymai/gridfinity-layout-tool/commit/74074ba795fa878c2f4f6ce6b79cf00bf39437e2))
+* **mobile:** use portrait-oriented default drawer size on mobile ([#878](https://github.com/andymai/gridfinity-layout-tool/issues/878)) ([94b0313](https://github.com/andymai/gridfinity-layout-tool/commit/94b031391d3da1fd079bc0300528b4fc92bea126))
+
 ## [3.27.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.7...gridfinity-layout-tool-v3.27.8) (2026-02-23)
 
 ### Bug Fixes
