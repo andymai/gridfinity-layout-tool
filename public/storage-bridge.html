@@ -331,6 +331,13 @@
                 return;
               }
 
+              var activeExists = lib.entries.some(function (e) { return e.id === lib.activeLayoutId; });
+              if (!activeExists) {
+                db.close();
+                callback(new Error('Verification failed: activeLayoutId does not match any library entry'));
+                return;
+              }
+
               var pending = lib.entries.length;
               var missing = [];
 
