@@ -411,10 +411,11 @@
          Styled inline because it must render before any CSS bundles load. -->
     <div
       id="www-migration-overlay"
-      style="position:fixed;inset:0;z-index:99999;background:#0f0f12;color:#e4e4e7;font-family:system-ui,-apple-system,sans-serif;flex-direction:column;align-items:center;justify-content:center;gap:16px;display:none"
+      style="position:fixed;inset:0;z-index:99999;background:#0f0f12;color:#e4e4e7;font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;flex-direction:column;align-items:center;justify-content:center;gap:12px;display:none"
     >
-      <p data-migration-message style="font-size:18px;margin:0">Moving your saved layouts…</p>
-      <div style="width:32px;height:32px;border:3px solid #3f3f46;border-top-color:#3b82f6;border-radius:50%;animation:www-spin 0.8s linear infinite"></div>
+      <p data-migration-message style="font-size:18px;margin:0;font-weight:500">We've updated our domain</p>
+      <p style="font-size:14px;margin:0;color:#a1a1aa;max-width:340px;text-align:center;line-height:1.5">Your layouts are being copied to gridfinitylayouttool.com. Nothing will be lost.</p>
+      <div style="width:32px;height:32px;border:3px solid #3f3f46;border-top-color:#3b82f6;border-radius:50%;animation:www-spin 0.8s linear infinite;margin-top:4px"></div>
       <style>@keyframes www-spin{to{transform:rotate(360deg)}}</style>
     </div>
     <!-- SEO: Content for crawlers/noscript. Hidden by inline script; shown only if JS is disabled. -->

@@ -228,12 +228,16 @@ function showError(error: string): void {
   container.style.cssText = 'text-align:center;max-width:400px';
 
   const title = document.createElement('p');
-  title.style.cssText = 'color:#ef4444;font-size:18px;margin-bottom:8px';
-  title.textContent = 'Migration failed';
+  title.style.cssText = 'color:#ef4444;font-size:18px;margin-bottom:4px;font-weight:500';
+  title.textContent = "We couldn't transfer your data";
 
   const detail = document.createElement('p');
-  detail.style.cssText = 'color:#a1a1aa;font-size:14px;margin-bottom:24px';
+  detail.style.cssText = 'color:#a1a1aa;font-size:14px;margin-bottom:8px';
   detail.textContent = error;
+
+  const reassurance = document.createElement('p');
+  reassurance.style.cssText = 'color:#a1a1aa;font-size:14px;margin-bottom:24px';
+  reassurance.textContent = 'Your layouts are still safe on this domain.';
 
   const buttons = document.createElement('div');
   buttons.style.cssText = 'display:flex;gap:12px;justify-content:center';
@@ -242,6 +246,7 @@ function showError(error: string): void {
   retryBtn.style.cssText =
     'padding:10px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px';
   retryBtn.textContent = 'Try again';
+  retryBtn.type = 'button';
   retryBtn.addEventListener('click', () => {
     void runWwwMigration();
   });
@@ -249,7 +254,8 @@ function showError(error: string): void {
   const continueBtn = document.createElement('button');
   continueBtn.style.cssText =
     'padding:10px 20px;background:#27272a;color:#a1a1aa;border:1px solid #3f3f46;border-radius:8px;cursor:pointer;font-size:14px';
-  continueBtn.textContent = 'Continue on www';
+  continueBtn.textContent = 'Continue without transferring';
+  continueBtn.type = 'button';
   continueBtn.addEventListener('click', () => {
     // Set session-only bypass so the detection script skips migration on reload
     sessionStorage.setItem('gridfinity-www-migration-bypass', 'true');
@@ -260,6 +266,7 @@ function showError(error: string): void {
   buttons.appendChild(continueBtn);
   container.appendChild(title);
   container.appendChild(detail);
+  container.appendChild(reassurance);
   container.appendChild(buttons);
   overlay.appendChild(container);
 }
