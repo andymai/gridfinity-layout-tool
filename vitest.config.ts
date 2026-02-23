@@ -48,6 +48,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
       // Mock virtual PWA module for tests
       'virtual:pwa-register/react': path.resolve(__dirname, 'src/test/mocks/pwa-register.ts'),
+      // Force all three imports (including nested copies from stats-gl) to resolve
+      // to a single instance — prevents "THREE.WARNING: Multiple instances" noise.
+      three: path.resolve(__dirname, 'node_modules/three'),
     },
+    dedupe: ['three'],
   },
 });

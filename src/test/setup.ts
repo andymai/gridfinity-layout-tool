@@ -61,6 +61,19 @@ vi.mock('@/i18n', async () => {
   };
 });
 
+// Suppress Three.js's "Multiple instances" warning in jsdom tests.
+// The CJS build of three checks window.__THREE__ and warns when the module
+// is loaded more than once in the same global (vitest's thread pool can
+// cause this when a component imports three as ESM and a dependency loads
+// it via CommonJS). Tests are unaffected — this is pure noise.
+if (typeof window !== 'undefined') {
+  const originalWarn = console.warn.bind(console);
+  console.warn = (...args: unknown[]) => {
+    if (typeof args[0] === 'string' && args[0].includes('Multiple instances of Three.js')) return;
+    originalWarn(...args);
+  };
+}
+
 // Guard DOM-specific mocks for tests running in Node.js environment
 if (typeof Element !== 'undefined') {
   // Mock pointer capture methods not implemented in jsdom
