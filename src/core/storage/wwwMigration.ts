@@ -184,7 +184,8 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
       if (msg.type !== 'www-migration-complete' && msg.type !== 'www-migration-error') return;
 
       cleanup();
-      resolve(msg as BridgeResponse);
+      // msg is loosely typed (postMessage data is unknown) but we've validated msg.type above
+      resolve(msg as unknown as BridgeResponse);
     }
 
     function cleanup(): void {
