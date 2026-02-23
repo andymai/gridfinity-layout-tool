@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.27.10](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.9...gridfinity-layout-tool-v3.27.10) (2026-02-23)
+
+
+### Performance
+
+* **tests:** eliminate redundant cleanup, real-timer sleeps, and unnecessary overhead ([#884](https://github.com/andymai/gridfinity-layout-tool/issues/884)) ([fc5a19d](https://github.com/andymai/gridfinity-layout-tool/commit/fc5a19dea820cd33b086b1eef2ea351ececde698))
+
 ## [3.27.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.8...gridfinity-layout-tool-v3.27.9) (2026-02-23)
 
 
