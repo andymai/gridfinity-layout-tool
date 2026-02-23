@@ -404,14 +404,17 @@ describe('threemfExporter', () => {
       expect(rels).toContain('3dmanufacturing');
     });
 
-    it('declares model content type', () => {
+    it('declares model content type using Override (not Default Extension)', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, { name: 'test' });
       const files = unzipSync(buffer);
       const contentTypes = strFromU8(files['[Content_Types].xml']);
 
-      expect(contentTypes).toContain('Extension="model"');
+      // Override element is required for PrusaSlicer/OrcaSlicer compatibility;
+      // Default Extension="model" is valid per spec but not all parsers support it.
+      expect(contentTypes).toContain('Override PartName="/3D/3dmodel.model"');
       expect(contentTypes).toContain('3dmanufacturing-3dmodel+xml');
+      expect(contentTypes).not.toContain('Extension="model"');
     });
 
     it('declares rels content type', () => {
