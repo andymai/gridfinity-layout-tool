@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.26.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.2...gridfinity-layout-tool-v3.26.3) (2026-02-23)
+
+
+### Bug Fixes
+
+* **bin-designer:** fix Open in Slicer 403 by checking all Vercel URL env vars ([#854](https://github.com/andymai/gridfinity-layout-tool/issues/854)) ([13dea6a](https://github.com/andymai/gridfinity-layout-tool/commit/13dea6af95a7e7eeaa60bede353007032150742b))
+
 ## [3.26.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.26.1...gridfinity-layout-tool-v3.26.2) (2026-02-22)
 
 
