@@ -1,7 +1,5 @@
 {
-  "app.clearDataReload": "Borrar Datos y Recargar",
   "app.skipToGridEditor": "Ir al planificador de cuadrícula",
-  "app.unableToLoadApp": "No se puede cargar la aplicación",
   "binDesigner.alignment.center": "Centro",
   "binDesigner.alignment.left": "Izquierda",
   "binDesigner.alignment.right": "Derecha",

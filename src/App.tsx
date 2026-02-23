@@ -27,13 +27,7 @@ import {
 } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
-import {
-  initializeLayoutLibrary,
-  loadSharedWithMe,
-  downloadLayoutAsFile,
-  reconcileLibraryAsync,
-} from '@/core/storage';
-import { isOk } from '@/core/result';
+import { downloadLayoutAsFile, reconcileLibraryAsync } from '@/core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './features/grid-editor';
 import { Sidebar } from './components/Sidebar';
@@ -116,39 +110,6 @@ const CollabProvider = lazyWithRetry(() =>
 // animation on first app load (not when switching between tools).
 let hasRenderedInitialLayout = false;
 
-// Initialize layout library asynchronously at module level.
-// The promise is thrown by useAppInit() to trigger React Suspense.
-let _appInitialized = false;
-let _appInitError: Error | null = null;
-const _appInitPromise = initializeLayoutLibrary()
-  .then(({ library, activeLayout }) => {
-    useLibraryStore.getState().initLibrary(library);
-    useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
-
-    // Initialize "Shared with me" entries from localStorage
-    const sharedWithMeResult = loadSharedWithMe();
-    useLibraryStore
-      .getState()
-      .initSharedWithMe(isOk(sharedWithMeResult) ? sharedWithMeResult.value : []);
-
-    _appInitialized = true;
-  })
-  .catch((e: unknown) => {
-    _appInitError = e instanceof Error ? e : new Error(String(e));
-    _appInitialized = true; // Allow render so error UI can show
-  });
-
-/**
- * Hook that suspends rendering until async app initialization completes.
- * Throws the init promise for React Suspense to catch.
- */
-function useAppInit(): void {
-  if (!_appInitialized) {
-    // eslint-disable-next-line @typescript-eslint/only-throw-error -- React Suspense protocol
-    throw _appInitPromise;
-  }
-}
-
 /**
  * Root application component that composes and renders the responsive app UI, providers, and feature-gated lazy modules.
  *
@@ -160,7 +121,6 @@ function useAppInit(): void {
  * @returns The top-level React element for the application UI, including layout, panels, modals, and global providers.
  */
 export default function App() {
-  useAppInit(); // Suspends until async init completes
   const t = useTranslation();
   useThemeEffect();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -363,52 +323,6 @@ export default function App() {
       </LocalMutationsProvider>
     );
   };
-
-  if (_appInitError) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-surface p-8" role="alert">
-        <div className="max-w-md text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-error-muted flex items-center justify-center">
-            <svg
-              className="w-7 h-7 text-error"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-          </div>
-          <h1 className="text-lg font-semibold mb-2 text-content">{t('app.unableToLoadApp')}</h1>
-          <p className="text-sm text-content-secondary mb-4">
-            There was a problem loading your saved data. This is usually caused by corrupted
-            storage. Try clearing your browser data for this site.
-          </p>
-          <pre className="text-left text-xs rounded-lg p-3 mb-4 overflow-auto max-h-24 text-error bg-surface-elevated border border-stroke-subtle">
-            {_appInitError.message}
-          </pre>
-          <button
-            onClick={() => {
-              try {
-                localStorage.clear();
-              } catch {
-                /* ignore */
-              }
-              window.location.reload();
-            }}
-            className="btn btn-primary"
-          >
-            {t('app.clearDataReload')}
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // Route-specific content (shared overlays rendered once below)
   const routeContent = (() => {

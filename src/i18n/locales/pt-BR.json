@@ -1,7 +1,5 @@
 {
-  "app.clearDataReload": "Limpar Dados e Recarregar",
   "app.skipToGridEditor": "Pular para o planejador de grade",
-  "app.unableToLoadApp": "Não foi possível carregar o aplicativo",
   "binDesigner.alignment.center": "Centro",
   "binDesigner.alignment.left": "Esquerda",
   "binDesigner.alignment.right": "Direita",

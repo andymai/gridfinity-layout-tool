@@ -1,7 +1,5 @@
 {
-  "app.clearDataReload": "Effacer les données et recharger",
   "app.skipToGridEditor": "Passer au planificateur de grille",
-  "app.unableToLoadApp": "Impossible de charger l'application",
   "binDesigner.alignment.center": "Centre",
   "binDesigner.alignment.left": "Gauche",
   "binDesigner.alignment.right": "Droite",

@@ -1,0 +1,1 @@
+export { InitErrorFallback } from './InitErrorFallback';

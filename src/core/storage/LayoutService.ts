@@ -518,7 +518,7 @@ async function persistNewLayoutAsync(
  * Returns the library and the active layout.
  *
  * Loads from IndexedDB (primary), falling back to localStorage for migration.
- * Uses React Suspense via throw-promise pattern in App.tsx.
+ * Called in main.tsx before React mounts to avoid CLS from loading spinners.
  */
 export async function initializeLayoutLibrary(): Promise<{
   library: LayoutLibrary;
