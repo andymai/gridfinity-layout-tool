@@ -224,11 +224,18 @@
           if (mergeFn) {
             const getReq = store.get(key);
             getReq.onsuccess = function () {
-              const merged = mergeFn(getReq.result, record.value);
+              // Wrap mergeFn: a thrown exception inside onsuccess is NOT caught by
+              // tx.onerror — it becomes an uncaught error and silently drops the write.
+              var toWrite;
+              try {
+                toWrite = mergeFn(getReq.result, record.value);
+              } catch (_) {
+                toWrite = record.value; // fallback: write www data as-is
+              }
               if (store.keyPath) {
-                store.put(merged);
+                store.put(toWrite);
               } else {
-                store.put(merged, record.key);
+                store.put(toWrite, record.key);
               }
               stats.idbWritten++;
             };

@@ -197,7 +197,16 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
     window.addEventListener('message', onMessage);
 
     iframe.onload = () => {
-      iframe.contentWindow?.postMessage(data, CANONICAL_ORIGIN);
+      if (!iframe.contentWindow) {
+        cleanup();
+        reject(
+          new Error(
+            'Bridge iframe loaded but contentWindow is unavailable — cross-origin isolation may be blocking communication'
+          )
+        );
+        return;
+      }
+      iframe.contentWindow.postMessage(data, CANONICAL_ORIGIN);
     };
 
     iframe.onerror = () => {
