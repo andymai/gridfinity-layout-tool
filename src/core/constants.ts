@@ -1,4 +1,4 @@
-import type { Layout, Category, BinId, LayerId, CategoryId } from './types';
+import type { Layout, Category, BaseplateParams, BinId, LayerId, CategoryId } from './types';
 import { binId, layerId, categoryId } from './types';
 
 // === Constraints (from PRD) ===
@@ -144,6 +144,52 @@ export const CATEGORY_COLOR_PALETTE = [
   { color: '#94a3b8', name: 'Slate' },
   { color: '#a8a29e', name: 'Stone' },
 ] as const;
+
+/** Default baseplate parameters: no magnets, no padding */
+export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
+  magnetHoles: false,
+  magnetDiameter: 6.5,
+  magnetDepth: 2,
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingFront: 0,
+  paddingBack: 0,
+} as const;
+
+/**
+ * Migrate old baseplateParams to current shape.
+ * Returns DEFAULT_BASEPLATE_PARAMS if the stored data lacks paddingLeft,
+ * preserving magnet settings when possible.
+ */
+export function migrateBaseplateParams(stored: unknown): BaseplateParams {
+  if (!stored || typeof stored !== 'object') return DEFAULT_BASEPLATE_PARAMS;
+  const obj = stored as Record<string, unknown>;
+  // Current shape has paddingLeft — if missing, it's an old format
+  if (typeof obj.paddingLeft !== 'number') {
+    return {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
+      magnetDiameter: clampNumber(obj.magnetDiameter, 0.5, 20, 6.5),
+      magnetDepth: clampNumber(obj.magnetDepth, 0.5, 10, 2),
+    };
+  }
+  // Validate and clamp all fields from persisted/imported data
+  return {
+    magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
+    magnetDiameter: clampNumber(obj.magnetDiameter, 0.5, 20, 6.5),
+    magnetDepth: clampNumber(obj.magnetDepth, 0.5, 10, 2),
+    paddingLeft: clampNumber(obj.paddingLeft, 0, 100, 0),
+    paddingRight: clampNumber(obj.paddingRight, 0, 100, 0),
+    paddingFront: clampNumber(obj.paddingFront, 0, 100, 0),
+    paddingBack: clampNumber(obj.paddingBack, 0, 100, 0),
+  };
+}
+
+/** Clamp a possibly-invalid value to [min, max], falling back to defaultVal if not a number. */
+function clampNumber(value: unknown, min: number, max: number, defaultVal: number): number {
+  if (typeof value !== 'number' || Number.isNaN(value)) return defaultVal;
+  return Math.min(max, Math.max(min, value));
+}
 
 /** Default layout name for new layouts */
 export const DEFAULT_LAYOUT_NAME = 'Untitled layout';

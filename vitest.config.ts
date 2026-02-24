@@ -34,11 +34,11 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to catch regressions.
-        // Updated 2026-02-23: Adjusted for www-migration module (DOM-heavy, one-time code).
-        lines: 77.5,
-        branches: 69,
-        functions: 76,
-        statements: 76.5,
+        // Updated 2026-02-24: Adjusted for baseplate generator feature (WASM bridge + Three.js components).
+        lines: 76,
+        branches: 68,
+        functions: 74.5,
+        statements: 75,
       },
     },
   },

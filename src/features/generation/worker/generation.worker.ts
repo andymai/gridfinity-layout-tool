@@ -5,18 +5,17 @@
  * runs BREP geometry generation, and posts tessellated mesh results back.
  *
  * Protocol:
- * - INIT → (load WASM) → INIT_READY
- * - GENERATE → PROGRESS* → MESH_RESULT | ERROR
- * - EXPORT → EXPORT_RESULT | ERROR (uses cached solid or regenerates)
- * - CANCEL → (silently aborts current generation)
+ * - INIT -> (load WASM) -> INIT_READY
+ * - GENERATE -> PROGRESS* -> MESH_RESULT | ERROR
+ * - EXPORT -> EXPORT_RESULT | ERROR (uses cached solid or regenerates)
+ * - CANCEL -> (silently aborts current generation)
  */
 
 import { initFromOC } from 'brepjs';
-import type { WorkerMessage, WorkerResponse } from '../bridge/types';
-import type { BinParams } from '@/shared/types/bin';
-import type { ExportPayload, ExportDividersPayload, ExportSplitPayload } from '../bridge/types';
+import type { WorkerMessage, WorkerResponse, MeshData } from '../bridge/types';
 import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
+import { generateBaseplate, exportBaseplate } from './generators/baseplateGenerator';
 import { detectWasmCapabilities } from '../utils/wasmCapabilities';
 
 // Single-threaded WASM (always available)
@@ -125,18 +124,36 @@ async function initOpenCascade(): Promise<void> {
   ocInitialized = true;
 }
 
-/**
- * Main generation pipeline using brepjs BREP operations.
- */
-function generate(params: BinParams, requestId: string): void {
+/** Format an error message from an unknown thrown value */
+function formatError(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
+/** Check OCCT init state, responding with error if not ready. Returns true if initialized. */
+function requireOCCT(requestId: string): boolean {
   if (!ocInitialized) {
-    respond({
-      type: 'ERROR',
-      requestId,
-      error: 'OpenCascade not initialized',
-    });
-    return;
+    respond({ type: 'ERROR', requestId, error: 'OpenCascade not initialized' });
+    return false;
   }
+  return true;
+}
+
+/**
+ * Unified generation pipeline for both bin and baseplate mesh generation.
+ *
+ * @param generator - Function that produces MeshData from params
+ * @param requestId - Unique request ID for cancellation tracking
+ * @param logPrefix - Prefix for error logging (e.g. 'BinGen', 'BaseplateGen')
+ * @param copyBuffers - Whether to copy buffers before transferring (needed when
+ *   the generator caches the mesh result internally, e.g. baseplateGenerator)
+ */
+function runGeneration(
+  generator: (signal: AbortSignal) => MeshData,
+  requestId: string,
+  logPrefix: string,
+  copyBuffers: boolean
+): void {
+  if (!requireOCCT(requestId)) return;
 
   activeRequestId = requestId;
   activeController = new AbortController();
@@ -144,57 +161,45 @@ function generate(params: BinParams, requestId: string): void {
   const startTime = performance.now();
 
   try {
-    const meshData = generateBin(
-      params,
-      (stage, progress) => {
-        if (activeRequestId !== requestId) return; // Cancelled
-        reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
-      },
-      false,
-      signal
-    );
+    const meshData = generator(signal);
 
     // Check for cancellation before posting result
     if (activeRequestId !== requestId) return;
 
     const timingMs = performance.now() - startTime;
 
+    const verts = copyBuffers ? meshData.vertices.slice() : meshData.vertices;
+    const norms = copyBuffers ? meshData.normals.slice() : meshData.normals;
+    const idxs = copyBuffers ? meshData.indices.slice() : meshData.indices;
+    const edges = copyBuffers ? meshData.edgeVertices.slice() : meshData.edgeVertices;
+
     const response: WorkerResponse = {
       type: 'MESH_RESULT',
       requestId,
-      vertices: meshData.vertices,
-      normals: meshData.normals,
-      indices: meshData.indices,
-      edgeVertices: meshData.edgeVertices,
+      vertices: verts,
+      normals: norms,
+      indices: idxs,
+      edgeVertices: edges,
       triangleCount: meshData.triangleCount,
       timingMs,
       faceGroups: meshData.faceGroups,
     };
     // Transfer typed array buffers for zero-copy to main thread
     self.postMessage(response, {
-      transfer: [
-        meshData.vertices.buffer,
-        meshData.normals.buffer,
-        meshData.indices.buffer,
-        meshData.edgeVertices.buffer,
-      ].filter((b) => b.byteLength > 0),
+      transfer: [verts.buffer, norms.buffer, idxs.buffer, edges.buffer].filter(
+        (b) => b.byteLength > 0
+      ),
     });
   } catch (e) {
-    // AbortError = expected cancellation — silently discard
+    // AbortError = expected cancellation -- silently discard
     if (e instanceof DOMException && e.name === 'AbortError') return;
-    if (activeRequestId !== requestId) return; // Cancelled during generation
-    const errorMsg = e instanceof Error ? e.message : String(e);
-    // Log detailed error info for debugging
-    console.error('[BinGen] Generation failed:', errorMsg);
-    console.error('[BinGen] Params:', JSON.stringify(params, null, 2));
+    if (activeRequestId !== requestId) return;
+    const errorMsg = formatError(e);
+    console.error(`[${logPrefix}] Generation failed:`, errorMsg);
     if (e instanceof Error && e.stack) {
-      console.error('[BinGen] Stack:', e.stack);
+      console.error(`[${logPrefix}] Stack:`, e.stack);
     }
-    respond({
-      type: 'ERROR',
-      requestId,
-      error: errorMsg,
-    });
+    respond({ type: 'ERROR', requestId, error: errorMsg });
   } finally {
     if (activeRequestId === requestId) {
       activeRequestId = null;
@@ -204,118 +209,32 @@ function generate(params: BinParams, requestId: string): void {
 }
 
 /**
- * Export pipeline — generates file (STL/STEP) from BREP solid.
- * Uses the cached solid from the last GENERATE call if available.
+ * Unified export handler for all export types.
+ *
+ * @param requestId - Unique request ID for error responses
+ * @param responseType - The WorkerResponse type discriminant to use on success
+ * @param exportFn - Async function that performs the export and returns the response payload
+ * @param errorPrefix - Human-readable prefix for error messages
+ * @param transferFn - Extracts ArrayBuffers to transfer from the response payload
  */
-async function handleExport(payload: ExportPayload): Promise<void> {
-  if (!ocInitialized) {
-    respond({
-      type: 'ERROR',
-      requestId: payload.requestId,
-      error: 'OpenCascade not initialized',
-    });
-    return;
-  }
+async function runExport<TPayload extends Record<string, unknown>>(
+  requestId: string,
+  responseType: string,
+  exportFn: () => Promise<TPayload>,
+  errorPrefix: string,
+  transferFn: (payload: TPayload) => ArrayBuffer[]
+): Promise<void> {
+  if (!requireOCCT(requestId)) return;
 
   try {
-    const result = await exportBin(
-      payload.params,
-      payload.format,
-      payload.tolerance,
-      payload.angularTolerance
-    );
-
-    // Transfer the ArrayBuffer (zero-copy to main thread)
-    const response = {
-      type: 'EXPORT_RESULT' as const,
-      requestId: payload.requestId,
-      data: result.data,
-      format: payload.format,
-      fileName: result.fileName,
-      faceGroups: result.faceGroups,
-    };
-    self.postMessage(response, { transfer: [result.data] });
+    const payload = await exportFn();
+    const response = { type: responseType, requestId, ...payload };
+    self.postMessage(response, { transfer: transferFn(payload) });
   } catch (e) {
     respond({
       type: 'ERROR',
-      requestId: payload.requestId,
-      error: `Export failed: ${e instanceof Error ? e.message : String(e)}`,
-    });
-  }
-}
-
-/**
- * Export pipeline for divider pieces — generates combined STL of all dividers.
- */
-async function handleExportDividers(payload: ExportDividersPayload): Promise<void> {
-  if (!ocInitialized) {
-    respond({
-      type: 'ERROR',
-      requestId: payload.requestId,
-      error: 'OpenCascade not initialized',
-    });
-    return;
-  }
-
-  try {
-    const result = await exportDividers(payload.params);
-
-    const response = {
-      type: 'DIVIDERS_EXPORT_RESULT' as const,
-      requestId: payload.requestId,
-      data: result.data,
-      fileName: result.fileName,
-    };
-    self.postMessage(response, { transfer: [result.data] });
-  } catch (e) {
-    respond({
-      type: 'ERROR',
-      requestId: payload.requestId,
-      error: `Divider export failed: ${e instanceof Error ? e.message : String(e)}`,
-    });
-  }
-}
-
-/**
- * Export pipeline for split bin — generates one STL per piece via boolean cuts.
- */
-async function handleExportSplit(payload: ExportSplitPayload): Promise<void> {
-  if (!ocInitialized) {
-    respond({
-      type: 'ERROR',
-      requestId: payload.requestId,
-      error: 'OpenCascade not initialized',
-    });
-    return;
-  }
-
-  try {
-    reportProgress(payload.requestId, 'splitting', 0);
-
-    const result = await exportSplitBin(
-      payload.params,
-      payload.cutPlanesX,
-      payload.cutPlanesY,
-      payload.tolerance,
-      payload.angularTolerance
-    );
-
-    reportProgress(payload.requestId, 'splitting', 1);
-
-    const response = {
-      type: 'SPLIT_EXPORT_RESULT' as const,
-      requestId: payload.requestId,
-      pieces: result.pieces,
-    };
-
-    // Transfer all ArrayBuffers for zero-copy
-    const transferables = result.pieces.map((p) => p.data);
-    self.postMessage(response, { transfer: transferables });
-  } catch (e) {
-    respond({
-      type: 'ERROR',
-      requestId: payload.requestId,
-      error: `Split export failed: ${e instanceof Error ? e.message : String(e)}`,
+      requestId,
+      error: `${errorPrefix}: ${formatError(e)}`,
     });
   }
 }
@@ -335,26 +254,141 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
           respond({
             type: 'ERROR',
             requestId: '__init__',
-            error: `OpenCascade init failed: ${e instanceof Error ? e.message : String(e)}`,
+            error: `OpenCascade init failed: ${formatError(e)}`,
           });
         }
         break;
 
-      case 'GENERATE':
-        generate(message.payload.params, message.payload.requestId);
+      case 'GENERATE': {
+        const { params, requestId } = message.payload;
+        runGeneration(
+          (signal) =>
+            generateBin(
+              params,
+              (stage, progress) => {
+                if (activeRequestId !== requestId) return;
+                reportProgress(
+                  requestId,
+                  stage as 'base' | 'shell' | 'features' | 'merge',
+                  progress
+                );
+              },
+              false,
+              signal
+            ),
+          requestId,
+          'BinGen',
+          false
+        );
         break;
+      }
 
-      case 'EXPORT':
-        await handleExport(message.payload);
+      case 'GENERATE_BASEPLATE': {
+        const { params, requestId } = message.payload;
+        runGeneration(
+          (signal) =>
+            generateBaseplate(
+              params,
+              (stage, progress) => {
+                if (activeRequestId !== requestId) return;
+                reportProgress(
+                  requestId,
+                  stage as 'base' | 'shell' | 'features' | 'merge',
+                  progress
+                );
+              },
+              false,
+              signal
+            ),
+          requestId,
+          'BaseplateGen',
+          true // Copy buffers -- baseplateGenerator caches mesh results internally
+        );
         break;
+      }
 
-      case 'EXPORT_DIVIDERS':
-        await handleExportDividers(message.payload);
+      case 'EXPORT': {
+        const exportPayload = message.payload;
+        await runExport(
+          exportPayload.requestId,
+          'EXPORT_RESULT',
+          async () => {
+            const result = await exportBin(
+              exportPayload.params,
+              exportPayload.format,
+              exportPayload.tolerance,
+              exportPayload.angularTolerance
+            );
+            return {
+              data: result.data,
+              format: exportPayload.format,
+              fileName: result.fileName,
+              faceGroups: result.faceGroups,
+            };
+          },
+          'Export failed',
+          (p) => [p.data]
+        );
         break;
+      }
 
-      case 'EXPORT_SPLIT':
-        await handleExportSplit(message.payload);
+      case 'EXPORT_BASEPLATE': {
+        const bpPayload = message.payload;
+        await runExport(
+          bpPayload.requestId,
+          'BASEPLATE_EXPORT_RESULT',
+          async () => {
+            const result = await exportBaseplate(
+              bpPayload.params,
+              bpPayload.format,
+              bpPayload.tolerance,
+              bpPayload.angularTolerance
+            );
+            return { data: result.data, format: bpPayload.format, fileName: result.fileName };
+          },
+          'Baseplate export failed',
+          (p) => [p.data]
+        );
         break;
+      }
+
+      case 'EXPORT_DIVIDERS': {
+        const divPayload = message.payload;
+        await runExport(
+          divPayload.requestId,
+          'DIVIDERS_EXPORT_RESULT',
+          async () => {
+            const result = await exportDividers(divPayload.params);
+            return { data: result.data, fileName: result.fileName };
+          },
+          'Divider export failed',
+          (p) => [p.data]
+        );
+        break;
+      }
+
+      case 'EXPORT_SPLIT': {
+        const splitPayload = message.payload;
+        await runExport(
+          splitPayload.requestId,
+          'SPLIT_EXPORT_RESULT',
+          async () => {
+            reportProgress(splitPayload.requestId, 'splitting', 0);
+            const result = await exportSplitBin(
+              splitPayload.params,
+              splitPayload.cutPlanesX,
+              splitPayload.cutPlanesY,
+              splitPayload.tolerance,
+              splitPayload.angularTolerance
+            );
+            reportProgress(splitPayload.requestId, 'splitting', 1);
+            return { pieces: result.pieces };
+          },
+          'Split export failed',
+          (p) => (p.pieces as Array<{ data: ArrayBuffer }>).map((piece) => piece.data)
+        );
+        break;
+      }
 
       case 'CANCEL':
         if (activeRequestId === message.requestId) {

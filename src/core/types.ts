@@ -29,6 +29,20 @@ export interface Layout {
   layers: Layer[]; // 1-10 items, index 0 = bottom
   bins: Bin[];
   purpose?: string; // Optional drawer purpose (e.g., "workshop", "electronics")
+  baseplateParams?: BaseplateParams; // Per-layout baseplate configuration
+}
+
+/** Baseplate generation parameters stored per-layout.
+ * Width/depth/gridUnitMm are derived from the layout's drawer at generation time, not stored here.
+ * Per-side padding in mm — user enters directly, total drawer = grid + padding. */
+export interface BaseplateParams {
+  readonly magnetHoles: boolean;
+  readonly magnetDiameter: number;
+  readonly magnetDepth: number;
+  readonly paddingLeft: number;
+  readonly paddingRight: number;
+  readonly paddingFront: number;
+  readonly paddingBack: number;
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */

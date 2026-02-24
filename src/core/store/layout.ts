@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type {
   Layout,
+  BaseplateParams,
   Bin,
   Layer,
   Category,
@@ -19,6 +20,7 @@ import {
   STAGING_ID,
   CONSTRAINTS,
   calcMaxGridUnits,
+  migrateBaseplateParams,
 } from '@/core/constants';
 import { canPlaceBin, clamp } from '@/shared/utils/validation';
 import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
@@ -106,6 +108,9 @@ interface LayoutState {
 
   // Name
   setName: (name: string) => void;
+
+  // Baseplate
+  setBaseplateParams: (params: BaseplateParams) => void;
 
   // Settings
   setPrintBedSize: (size: number) => void;
@@ -582,6 +587,10 @@ export const useLayoutStore = create<LayoutState>()(
       importLayout: (newLayout, layoutId, source = 'local') => {
         set((state) => {
           state.layout = newLayout;
+          // Migrate old baseplateParams format (paddingMm → ratio-based) on load
+          if (newLayout.baseplateParams) {
+            state.layout.baseplateParams = migrateBaseplateParams(newLayout.baseplateParams);
+          }
           state.activeLayoutId = layoutId ?? null;
           state.lastEditSource = source;
         });
@@ -596,6 +605,20 @@ export const useLayoutStore = create<LayoutState>()(
       setName: (name) => {
         setLocal((state) => {
           state.layout.name = name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
+        });
+      },
+
+      setBaseplateParams: (params) => {
+        setLocal((state) => {
+          state.layout.baseplateParams = {
+            ...params,
+            paddingLeft: Math.max(0, params.paddingLeft),
+            paddingRight: Math.max(0, params.paddingRight),
+            paddingFront: Math.max(0, params.paddingFront),
+            paddingBack: Math.max(0, params.paddingBack),
+            magnetDiameter: clamp(params.magnetDiameter, 0.5, 20),
+            magnetDepth: clamp(params.magnetDepth, 0.5, 10),
+          };
         });
       },
 

@@ -26,6 +26,7 @@ import {
   usePrefetchChunks,
 } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
+import { useFeatureFlag } from './hooks/useFeatureFlag';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
 import { downloadLayoutAsFile, reconcileLibraryAsync } from '@/core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
@@ -87,6 +88,12 @@ const DesignerPage = lazyWithRetry(() =>
   import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
 import { useDesignerRouting } from './hooks/useDesignerRouting';
+
+// Lazy load Baseplate Generator page - only loaded when navigating to /baseplate
+const BaseplatePage = lazyWithRetry(() =>
+  import('./features/baseplate/components/BaseplatePage').then(namedExport('BaseplatePage'))
+);
+import { useBaseplateRouting } from './hooks/useBaseplateRouting';
 import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';
 import { SHORTCUTS } from './core/constants';
 
@@ -129,9 +136,14 @@ export default function App() {
   // Bin Designer route detection
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
 
-  // Command palette state (⌘K / Ctrl+K) — disabled on designer route
+  // Baseplate Generator route detection (gated behind feature flag)
+  const { isBaseplateRoute } = useBaseplateRouting();
+  const baseplateEnabled = useFeatureFlag('baseplate_generator');
+  const isBaseplateActive = isBaseplateRoute && baseplateEnabled;
+
+  // Command palette state (⌘K / Ctrl+K) — disabled on designer/baseplate routes
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
-    disabled: isDesignerRoute,
+    disabled: isDesignerRoute || isBaseplateActive,
   });
   const { isMobile, isTablet } = useResponsive();
 
@@ -228,8 +240,8 @@ export default function App() {
   useCrossTabSync();
 
   // URL-based layout routing (bookmarkable URLs)
-  // Skip URL manipulation when on the designer route (it owns its own URL)
-  useLayoutRouting({ skip: isDesignerRoute });
+  // Skip URL manipulation when on designer/baseplate routes (they own their own URLs)
+  useLayoutRouting({ skip: isDesignerRoute || isBaseplateActive });
 
   // PWA update detection and auto-reload
   usePWAUpdate();
@@ -331,6 +343,15 @@ export default function App() {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>
           <DesignerPage />
+        </Suspense>
+      );
+    }
+
+    // Baseplate Generator route - lazy loaded
+    if (isBaseplateActive) {
+      return (
+        <Suspense fallback={<LoadingFallback label={t('loading.baseplate')} />}>
+          <BaseplatePage />
         </Suspense>
       );
     }

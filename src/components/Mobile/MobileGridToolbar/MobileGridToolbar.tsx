@@ -35,7 +35,6 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
 
   const layers = useLayoutStore((state) => state.layout.layers);
   const activeLayer = layers.find((l) => l.id === activeLayerId);
-
   const canZoomOut = zoom > CONSTRAINTS.ZOOM_MIN;
   const canZoomIn = zoom < CONSTRAINTS.ZOOM_MAX;
 
@@ -88,7 +87,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         </button>
       )}
 
-      {/* Right: 3D preview + Zoom controls */}
+      {/* Right: Baseplate + 3D preview + Zoom controls */}
       <div className="flex items-center gap-1 flex-shrink-0">
         {/* 3D Preview toggle */}
         <button

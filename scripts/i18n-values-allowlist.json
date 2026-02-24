@@ -134,7 +134,19 @@
     "toolSwitcher.gridfinityLayoutTool",
     "binDesigner.estimate.filament",
     "binDesigner.estimate.triangles",
-    "binDesigner.nameStyle.compact"
+    "binDesigner.nameStyle.compact",
+    "baseplate.gridDimensions",
+    "baseplate.paddingLeft",
+    "baseplate.paddingRight",
+    "baseplate.paddingFront",
+    "baseplate.paddingBack",
+    "baseplate.totalDimensions",
+    "baseplate.magnetDiameterInfo",
+    "baseplate.magnetDepthInfo",
+    "baseplate.gridUnitTooltip",
+    "baseplate.printBedTooltip",
+    "baseplate.sectionBase",
+    "baseplate.sideView"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

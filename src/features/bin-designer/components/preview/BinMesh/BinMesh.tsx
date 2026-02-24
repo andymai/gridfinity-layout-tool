@@ -9,11 +9,12 @@
  * - polygonOffset to prevent z-fighting with edge lines
  */
 
-import { useMemo, useEffect } from 'react';
+import { useEffect } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
+import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 
 /** Edge line color (black for sketch look) */
 const EDGE_COLOR = '#000000';
@@ -35,44 +36,12 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     }))
   );
 
-  // Check if we have precomputed normals (small bins/export) or empty (large bins)
-  const hasPrecomputedNormals = normals && normals.length > 0;
-
-  const geometry = useMemo(() => {
-    if (!vertices || vertices.length === 0) return null;
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
-    if (indices && indices.length > 0) {
-      geo.setIndex(new THREE.BufferAttribute(indices, 1));
-    }
-
-    if (hasPrecomputedNormals) {
-      geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    } else {
-      // Compute normals for flat shading
-      geo.computeVertexNormals();
-    }
-
-    return geo;
-  }, [vertices, normals, indices, hasPrecomputedNormals]);
-
-  // Create edge geometry from pre-computed BREP topology edges (computed in worker)
-  const edgesGeometry = useMemo(() => {
-    if (!edgeVertices || edgeVertices.length === 0) return null;
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
-    return geo;
-  }, [edgeVertices]);
-
-  // Dispose old geometry on unmount or change
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      edgesGeometry?.dispose();
-    };
-  }, [geometry, edgesGeometry]);
+  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
+    vertices,
+    normals,
+    indices,
+    edgeVertices,
+  });
 
   // Invalidate frame when mesh data changes
   useEffect(() => {

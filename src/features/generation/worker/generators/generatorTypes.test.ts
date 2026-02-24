@@ -107,6 +107,17 @@ describe('forEachCell', () => {
     expect(cells[0].centerX).toBe(0);
     expect(cells[0].centerY).toBe(0);
   });
+
+  it('uses custom gridUnitMm for position calculations', () => {
+    const cells: CellInfo[] = [];
+    forEachCell(2, 1, (cell) => cells.push(cell), { gridUnitMm: 50 });
+
+    expect(cells).toHaveLength(2);
+    // 2 cells × 50mm = 100mm total width, centers at ±25mm
+    expect(cells[0].centerX).toBe(-25);
+    expect(cells[1].centerX).toBe(25);
+    expect(cells[0].centerY).toBe(0);
+  });
 });
 
 describe('toIndexedMeshData', () => {

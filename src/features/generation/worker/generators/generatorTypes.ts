@@ -85,31 +85,66 @@ export function decomposeHalfCells(gridUnits: number): number[] {
 }
 
 /**
+ * Options for {@link forEachCell}.
+ */
+export interface ForEachCellOptions {
+  /** Decompose every cell into 0.5-unit sub-cells (bin half-sockets mode). */
+  readonly halfSockets?: boolean;
+  /**
+   * Which side the fractional (half-unit) column sits on.
+   * `'end'` (default) = right/positive-X. `'start'` = left/negative-X.
+   */
+  readonly fractionalEdgeX?: 'start' | 'end';
+  /**
+   * Which side the fractional (half-unit) row sits on.
+   * `'end'` (default) = back/positive-Y. `'start'` = front/negative-Y.
+   */
+  readonly fractionalEdgeY?: 'start' | 'end';
+  /** Grid unit size in mm. Defaults to standard Gridfinity 42mm. */
+  readonly gridUnitMm?: number;
+}
+
+/**
  * Iterate over all cells in a grid, calling the callback with cell info.
  * Encapsulates the common pattern of nested cell iteration with position tracking.
  *
  * When `halfSockets` is true, every cell is decomposed into 0.5-unit sub-cells,
  * so a 1x1 bin yields a 2x2 grid of 0.5x0.5 sockets.
+ *
+ * `fractionalEdgeX` / `fractionalEdgeY` control which side the half-unit cell
+ * appears on. Default `'end'` places the half cell at the positive coordinate
+ * side; `'start'` places it at the negative side.
  */
 export function forEachCell(
   gridW: number,
   gridD: number,
   callback: (cell: CellInfo) => void,
-  halfSockets = false
+  optionsOrHalfSockets: ForEachCellOptions | boolean = false
 ): void {
-  const decompose = halfSockets ? decomposeHalfCells : decomposeCells;
+  const opts: ForEachCellOptions =
+    typeof optionsOrHalfSockets === 'boolean'
+      ? { halfSockets: optionsOrHalfSockets }
+      : optionsOrHalfSockets;
+
+  const decompose = opts.halfSockets ? decomposeHalfCells : decomposeCells;
   const cellsW = decompose(gridW);
   const cellsD = decompose(gridD);
-  const totalW_mm = gridW * SIZE;
-  const totalD_mm = gridD * SIZE;
+
+  // When fractionalEdge is 'start', reverse so the half cell is first (negative side)
+  if (opts.fractionalEdgeX === 'start') cellsW.reverse();
+  if (opts.fractionalEdgeY === 'start') cellsD.reverse();
+
+  const unit = opts.gridUnitMm ?? SIZE;
+  const totalW_mm = gridW * unit;
+  const totalD_mm = gridD * unit;
 
   let xOffset = 0;
   for (const cellW_units of cellsW) {
-    const centerX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
+    const centerX = xOffset + (cellW_units * unit) / 2 - totalW_mm / 2;
     let yOffset = 0;
 
     for (const cellD_units of cellsD) {
-      const centerY = yOffset + (cellD_units * SIZE) / 2 - totalD_mm / 2;
+      const centerY = yOffset + (cellD_units * unit) / 2 - totalD_mm / 2;
 
       callback({
         widthUnits: cellW_units,
@@ -118,9 +153,9 @@ export function forEachCell(
         centerY,
       });
 
-      yOffset += cellD_units * SIZE;
+      yOffset += cellD_units * unit;
     }
-    xOffset += cellW_units * SIZE;
+    xOffset += cellW_units * unit;
   }
 }
 

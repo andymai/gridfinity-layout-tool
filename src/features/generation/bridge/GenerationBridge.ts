@@ -5,7 +5,7 @@
  * request cancellation via AbortController pattern.
  */
 
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, BaseplateParams } from '@/shared/types/bin';
 import type {
   WorkerMessage,
   WorkerResponse,
@@ -45,12 +45,29 @@ export interface SplitExportResult {
   readonly pieces: readonly SplitExportPiece[];
 }
 
+/** Result from a successful baseplate export */
+export interface BaseplateExportResult {
+  readonly data: ArrayBuffer;
+  readonly fileName: string;
+  readonly format: ExportFormat;
+}
+
 /** Information about the WASM threading capabilities */
 export interface ThreadingInfo {
   /** Whether multi-threaded WASM is being used */
   readonly isThreaded: boolean;
   /** Number of CPU cores available */
   readonly hardwareConcurrency: number;
+}
+
+/** Keys for the pending export request slots */
+type ExportSlot = 'export' | 'dividers' | 'split';
+
+/** A pending export request: resolve/reject callbacks + request ID */
+interface PendingExport<T> {
+  readonly resolve: (result: T) => void;
+  readonly reject: (error: Error) => void;
+  readonly requestId: string;
 }
 
 /**
@@ -71,17 +88,12 @@ export class GenerationBridge {
   private onProgress: ProgressCallback | null = null;
   private requestCounter = 0;
   private destroyed = false;
-  private pendingExportResolve: ((result: ExportResult) => void) | null = null;
-  private pendingExportReject: ((error: Error) => void) | null = null;
-  private exportRequestId: string | null = null;
-  private pendingDividersResolve: ((result: DividersExportResult) => void) | null = null;
-  private pendingDividersReject: ((error: Error) => void) | null = null;
-  private dividersRequestId: string | null = null;
-  private pendingSplitResolve: ((result: SplitExportResult) => void) | null = null;
-  private pendingSplitReject: ((error: Error) => void) | null = null;
-  private splitRequestId: string | null = null;
   private adaptiveDebounce = new AdaptiveDebounce();
   private threadingInfo: ThreadingInfo | null = null;
+
+  /** Pending export requests keyed by slot. Only one per slot at a time. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Values are PendingExport<T> with different T per slot; type safety is enforced at each call site
+  private pendingExports = new Map<ExportSlot, PendingExport<any>>();
 
   /**
    * Initialize the worker. Resolves when the worker signals INIT_READY.
@@ -115,6 +127,9 @@ export class GenerationBridge {
             this.threadingInfo = { isThreaded, hardwareConcurrency };
             this.setupMessageHandler();
             resolve();
+          } else if (event.data.type === 'ERROR') {
+            this.worker?.removeEventListener('message', onInitMessage);
+            reject(new Error(event.data.error));
           }
         };
 
@@ -204,25 +219,11 @@ export class GenerationBridge {
 
     this.cancel();
 
-    // Reject pending exports
-    if (this.pendingExportReject) {
-      this.pendingExportReject(new Error('Bridge destroyed'));
-      this.pendingExportResolve = null;
-      this.pendingExportReject = null;
-      this.exportRequestId = null;
+    // Reject all pending exports
+    for (const pending of this.pendingExports.values()) {
+      pending.reject(new Error('Bridge destroyed'));
     }
-    if (this.pendingDividersReject) {
-      this.pendingDividersReject(new Error('Bridge destroyed'));
-      this.pendingDividersResolve = null;
-      this.pendingDividersReject = null;
-      this.dividersRequestId = null;
-    }
-    if (this.pendingSplitReject) {
-      this.pendingSplitReject(new Error('Bridge destroyed'));
-      this.pendingSplitResolve = null;
-      this.pendingSplitReject = null;
-      this.splitRequestId = null;
-    }
+    this.pendingExports.clear();
 
     if (this.worker) {
       this.worker.terminate();
@@ -246,26 +247,10 @@ export class GenerationBridge {
     format: ExportFormat,
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<ExportResult> {
-    if (this.destroyed) {
-      throw new Error('Bridge has been destroyed');
-    }
-
-    // Ensure worker is initialized
-    await this.init();
-
-    // Reject any pending export (only one at a time)
-    if (this.pendingExportReject) {
-      this.pendingExportReject(new Error('Export superseded'));
-      this.pendingExportResolve = null;
-      this.pendingExportReject = null;
-    }
-
-    const requestId = this.nextRequestId();
-    this.exportRequestId = requestId;
+    const requestId = await this.prepareExport('export');
 
     return new Promise<ExportResult>((resolve, reject) => {
-      this.pendingExportResolve = resolve;
-      this.pendingExportReject = reject;
+      this.pendingExports.set('export', { resolve, reject, requestId });
       this.postMessage({
         type: 'EXPORT',
         payload: {
@@ -284,25 +269,10 @@ export class GenerationBridge {
    * Returns a Promise that resolves with the binary file data.
    */
   async exportDividers(params: BinParams): Promise<DividersExportResult> {
-    if (this.destroyed) {
-      throw new Error('Bridge has been destroyed');
-    }
-
-    await this.init();
-
-    // Reject any pending dividers export
-    if (this.pendingDividersReject) {
-      this.pendingDividersReject(new Error('Dividers export superseded'));
-      this.pendingDividersResolve = null;
-      this.pendingDividersReject = null;
-    }
-
-    const requestId = this.nextRequestId();
-    this.dividersRequestId = requestId;
+    const requestId = await this.prepareExport('dividers');
 
     return new Promise<DividersExportResult>((resolve, reject) => {
-      this.pendingDividersResolve = resolve;
-      this.pendingDividersReject = reject;
+      this.pendingExports.set('dividers', { resolve, reject, requestId });
       this.postMessage({
         type: 'EXPORT_DIVIDERS',
         payload: { params, requestId },
@@ -320,25 +290,10 @@ export class GenerationBridge {
     cutPlanesY: readonly number[],
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<SplitExportResult> {
-    if (this.destroyed) {
-      throw new Error('Bridge has been destroyed');
-    }
-
-    await this.init();
-
-    // Reject any pending split export
-    if (this.pendingSplitReject) {
-      this.pendingSplitReject(new Error('Split export superseded'));
-      this.pendingSplitResolve = null;
-      this.pendingSplitReject = null;
-    }
-
-    const requestId = this.nextRequestId();
-    this.splitRequestId = requestId;
+    const requestId = await this.prepareExport('split');
 
     return new Promise<SplitExportResult>((resolve, reject) => {
-      this.pendingSplitResolve = resolve;
-      this.pendingSplitReject = reject;
+      this.pendingExports.set('split', { resolve, reject, requestId });
       this.postMessage({
         type: 'EXPORT_SPLIT',
         payload: {
@@ -346,6 +301,67 @@ export class GenerationBridge {
           requestId,
           cutPlanesX,
           cutPlanesY,
+          tolerance: options?.tolerance,
+          angularTolerance: options?.angularTolerance,
+        },
+      });
+    });
+  }
+
+  /**
+   * Generate baseplate mesh from baseplate parameters.
+   * Uses the same debounce and cancellation as bin generation.
+   */
+  generateBaseplate(
+    params: BaseplateParams,
+    onProgress?: ProgressCallback
+  ): Promise<GenerationResult> {
+    if (this.destroyed) {
+      return Promise.reject(new Error('Bridge has been destroyed'));
+    }
+
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+
+    this.cancelCurrentRequest();
+    this.onProgress = onProgress ?? null;
+
+    return new Promise<GenerationResult>((resolve, reject) => {
+      this.pendingResolve = resolve;
+      this.pendingReject = reject;
+
+      this.debounceTimer = setTimeout(() => {
+        this.debounceTimer = null;
+        const requestId = this.nextRequestId();
+        this.currentRequestId = requestId;
+        this.postMessage({
+          type: 'GENERATE_BASEPLATE',
+          payload: { params, requestId },
+        });
+      }, this.adaptiveDebounce.getDelay());
+    });
+  }
+
+  /**
+   * Export baseplate in the specified format.
+   */
+  async exportBaseplate(
+    params: BaseplateParams,
+    format: ExportFormat,
+    options?: { tolerance?: number; angularTolerance?: number }
+  ): Promise<BaseplateExportResult> {
+    const requestId = await this.prepareExport('export');
+
+    return new Promise<BaseplateExportResult>((resolve, reject) => {
+      this.pendingExports.set('export', { resolve, reject, requestId });
+      this.postMessage({
+        type: 'EXPORT_BASEPLATE',
+        payload: {
+          params,
+          requestId,
+          format,
           tolerance: options?.tolerance,
           angularTolerance: options?.angularTolerance,
         },
@@ -367,6 +383,56 @@ export class GenerationBridge {
   }
 
   // ─── Private ────────────────────────────────────────────────────────────────
+
+  /**
+   * Prepare an export slot: check destroyed state, ensure worker is initialized,
+   * reject any existing pending export on the same slot, and return a new request ID.
+   */
+  private async prepareExport(slot: ExportSlot): Promise<string> {
+    if (this.destroyed) {
+      throw new Error('Bridge has been destroyed');
+    }
+
+    await this.init();
+
+    // Reject any pending export on this slot (only one at a time)
+    const existing = this.pendingExports.get(slot);
+    if (existing) {
+      existing.reject(new Error('Export superseded'));
+      this.pendingExports.delete(slot);
+    }
+
+    return this.nextRequestId();
+  }
+
+  /**
+   * Resolve a pending export by slot, if the request ID matches.
+   * Returns true if the export was resolved, false if stale/missing.
+   */
+  private resolveExport(slot: ExportSlot, requestId: string, result: unknown): boolean {
+    const pending = this.pendingExports.get(slot);
+    if (pending && pending.requestId === requestId) {
+      this.pendingExports.delete(slot);
+      pending.resolve(result);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Reject a pending export by request ID, checking all slots.
+   * Returns true if a matching export was found and rejected.
+   */
+  private rejectExportByRequestId(requestId: string, error: Error): boolean {
+    for (const [slot, pending] of this.pendingExports) {
+      if (pending.requestId === requestId) {
+        this.pendingExports.delete(slot);
+        pending.reject(error);
+        return true;
+      }
+    }
+    return false;
+  }
 
   private sendGenerateMessage(params: BinParams): void {
     const requestId = this.nextRequestId();
@@ -415,65 +481,39 @@ export class GenerationBridge {
             const reject = this.pendingReject;
             this.clearPending();
             reject(new Error(response.error));
-          } else if (response.requestId === this.exportRequestId && this.pendingExportReject) {
-            const reject = this.pendingExportReject;
-            this.pendingExportResolve = null;
-            this.pendingExportReject = null;
-            this.exportRequestId = null;
-            reject(new Error(response.error));
-          } else if (response.requestId === this.dividersRequestId && this.pendingDividersReject) {
-            const reject = this.pendingDividersReject;
-            this.pendingDividersResolve = null;
-            this.pendingDividersReject = null;
-            this.dividersRequestId = null;
-            reject(new Error(response.error));
-          } else if (response.requestId === this.splitRequestId && this.pendingSplitReject) {
-            const reject = this.pendingSplitReject;
-            this.pendingSplitResolve = null;
-            this.pendingSplitReject = null;
-            this.splitRequestId = null;
-            reject(new Error(response.error));
+          } else {
+            this.rejectExportByRequestId(response.requestId, new Error(response.error));
           }
           break;
 
         case 'EXPORT_RESULT':
-          if (response.requestId === this.exportRequestId && this.pendingExportResolve) {
-            const resolve = this.pendingExportResolve;
-            this.pendingExportResolve = null;
-            this.pendingExportReject = null;
-            this.exportRequestId = null;
-            resolve({
-              data: response.data,
-              fileName: response.fileName,
-              format: response.format,
-              faceGroups: response.faceGroups,
-            });
-          }
+          this.resolveExport('export', response.requestId, {
+            data: response.data,
+            fileName: response.fileName,
+            format: response.format,
+            faceGroups: response.faceGroups,
+          });
+          break;
+
+        case 'BASEPLATE_EXPORT_RESULT':
+          this.resolveExport('export', response.requestId, {
+            data: response.data,
+            fileName: response.fileName,
+            format: response.format,
+          });
           break;
 
         case 'DIVIDERS_EXPORT_RESULT':
-          if (response.requestId === this.dividersRequestId && this.pendingDividersResolve) {
-            const resolve = this.pendingDividersResolve;
-            this.pendingDividersResolve = null;
-            this.pendingDividersReject = null;
-            this.dividersRequestId = null;
-            resolve({
-              data: response.data,
-              fileName: response.fileName,
-            });
-          }
+          this.resolveExport('dividers', response.requestId, {
+            data: response.data,
+            fileName: response.fileName,
+          });
           break;
 
         case 'SPLIT_EXPORT_RESULT':
-          if (response.requestId === this.splitRequestId && this.pendingSplitResolve) {
-            const resolve = this.pendingSplitResolve;
-            this.pendingSplitResolve = null;
-            this.pendingSplitReject = null;
-            this.splitRequestId = null;
-            resolve({
-              pieces: response.pieces,
-            });
-          }
+          this.resolveExport('split', response.requestId, {
+            pieces: response.pieces,
+          });
           break;
 
         case 'INIT_READY':

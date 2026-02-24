@@ -1,11 +1,11 @@
 export { BinMesh } from './BinMesh';
-export { BinAxisLabels } from './BinAxisLabels';
+export { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 export { BinDimensions } from './BinDimensions';
-export { BinNameLabel } from './BinNameLabel';
+export { BinNameLabel } from '@/shared/components/preview/BinNameLabel';
 export { PreviewControls, type CameraPreset } from './PreviewControls';
 export { PreviewSkeleton } from './PreviewSkeleton';
-export { GradientBackground } from './GradientBackground';
-export { FootprintGrid } from './FootprintGrid';
+export { GradientBackground } from '@/shared/components/preview/GradientBackground';
+export { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 export { GhostDividers } from './GhostDividers';
 export { GhostWireframe } from './GhostWireframe';
 export { GhostCompartmentPreview } from './GhostCompartmentPreview';

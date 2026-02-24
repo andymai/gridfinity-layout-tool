@@ -323,16 +323,18 @@ export function ExportDialog() {
                     type: 'success',
                     duration: 3000,
                   });
+                  closeDialog();
+                  return;
                 } else {
                   await downloadBin(activeFormat, exportFileNameConfig, designName);
-                  addToast({
-                    message: t('binDesigner.exportSuccess', {
-                      format: activeFormat.toUpperCase(),
-                    }),
-                    type: 'success',
-                    duration: 3000,
-                  });
                 }
+                addToast({
+                  message: t('binDesigner.exportSuccess', {
+                    format: activeFormat.toUpperCase(),
+                  }),
+                  type: 'success',
+                  duration: 3000,
+                });
                 closeDialog();
               } catch (err) {
                 addToast({

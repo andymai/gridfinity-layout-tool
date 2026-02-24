@@ -5,15 +5,17 @@
  * (GenerationBridge) and the Web Worker (generation.worker.ts).
  */
 
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, BaseplateParams } from '@/shared/types/bin';
 
 // ─── Main → Worker Messages ──────────────────────────────────────────────────
 
 export type WorkerMessage =
   | InitMessage
   | GenerateMessage
+  | GenerateBaseplateMessage
   | CancelMessage
   | ExportMessage
+  | ExportBaseplateMessage
   | ExportDividersMessage
   | ExportSplitMessage;
 
@@ -34,6 +36,29 @@ export interface CancelMessage {
 export interface GeneratePayload {
   readonly params: BinParams;
   readonly requestId: string;
+}
+
+export interface GenerateBaseplateMessage {
+  readonly type: 'GENERATE_BASEPLATE';
+  readonly payload: GenerateBaseplatePayload;
+}
+
+export interface GenerateBaseplatePayload {
+  readonly params: BaseplateParams;
+  readonly requestId: string;
+}
+
+export interface ExportBaseplateMessage {
+  readonly type: 'EXPORT_BASEPLATE';
+  readonly payload: ExportBaseplatePayload;
+}
+
+export interface ExportBaseplatePayload {
+  readonly params: BaseplateParams;
+  readonly requestId: string;
+  readonly format: ExportFormat;
+  readonly tolerance?: number;
+  readonly angularTolerance?: number;
 }
 
 export interface ExportMessage {
@@ -98,6 +123,7 @@ export type WorkerResponse =
   | InitReadyResponse
   | ProgressResponse
   | MeshResultResponse
+  | BaseplateExportResultResponse
   | ExportResultResponse
   | DividersExportResultResponse
   | SplitExportResultResponse
@@ -139,6 +165,14 @@ export interface ExportResultResponse {
   readonly fileName: string;
   /** Face groups for provenance coloring (reserved for future use). */
   readonly faceGroups?: readonly FaceGroupData[];
+}
+
+export interface BaseplateExportResultResponse {
+  readonly type: 'BASEPLATE_EXPORT_RESULT';
+  readonly requestId: string;
+  readonly data: ArrayBuffer;
+  readonly format: ExportFormat;
+  readonly fileName: string;
 }
 
 export interface DividersExportResultResponse {

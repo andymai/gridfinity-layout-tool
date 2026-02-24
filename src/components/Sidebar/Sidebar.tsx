@@ -18,6 +18,9 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
+import { useLibraryStore } from '@/core/store/library';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
@@ -90,6 +93,11 @@ export function Sidebar() {
 
   // Onboarding — sidebar gallery pulse for low-engagement users
   const { shouldPulseGallery, dismissGalleryPulse } = useOnboarding();
+
+  // Baseplate generator entry point
+  const baseplateEnabled = useFeatureFlag('baseplate_generator');
+  const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
+  const { navigateToBaseplate } = useBaseplateRouting();
 
   // Listen for command palette open-settings-modal event (supports optional tab)
   useEffect(() => {
@@ -323,6 +331,32 @@ export function Sidebar() {
                       {realWorldDimensions.height.toFixed(0)} mm
                     </span>
                   </div>
+
+                  {/* Generate Baseplate button */}
+                  {baseplateEnabled && (
+                    <button
+                      onClick={() => navigateToBaseplate(activeLayoutId)}
+                      className="btn btn-secondary w-full py-1.5 text-xs flex items-center justify-center gap-1.5"
+                      aria-label={t('baseplate.generateBaseplate')}
+                    >
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <line x1="3" y1="9" x2="21" y2="9" />
+                        <line x1="3" y1="15" x2="21" y2="15" />
+                        <line x1="9" y1="3" x2="9" y2="21" />
+                        <line x1="15" y1="3" x2="15" y2="21" />
+                      </svg>
+                      {t('baseplate.generateBaseplate')}
+                    </button>
+                  )}
 
                   {/* Half-bin mode toggle */}
                   <div

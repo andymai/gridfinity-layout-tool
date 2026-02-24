@@ -3,6 +3,9 @@ export { Icon } from './Icon';
 export type { IconProps } from './Icon';
 
 // Individual icons
+export { ArrowLeftIcon } from './icons/ArrowLeft';
+export type { ArrowLeftIconProps } from './icons/ArrowLeft';
+
 export { ChevronDownIcon } from './icons/ChevronDown';
 export type { ChevronDownIconProps } from './icons/ChevronDown';
 
@@ -27,5 +30,17 @@ export type { TrashIconProps } from './icons/Trash';
 export { AlertTriangleIcon } from './icons/AlertTriangle';
 export type { AlertTriangleIconProps } from './icons/AlertTriangle';
 
+export { Grid3x3Icon } from './icons/Grid3x3';
+export type { Grid3x3IconProps } from './icons/Grid3x3';
+
 export { InfoIcon } from './icons/Info';
 export type { InfoIconProps } from './icons/Info';
+
+export { LayoutGridIcon } from './icons/LayoutGrid';
+export type { LayoutGridIconProps } from './icons/LayoutGrid';
+
+export { MagnetIcon } from './icons/Magnet';
+export type { MagnetIconProps } from './icons/Magnet';
+
+export { RotateCcwIcon } from './icons/RotateCcw';
+export type { RotateCcwIconProps } from './icons/RotateCcw';
