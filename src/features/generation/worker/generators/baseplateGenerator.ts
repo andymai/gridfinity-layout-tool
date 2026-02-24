@@ -22,7 +22,6 @@ import {
   translate,
   mesh,
   meshEdges,
-  exportSTL,
   exportSTEP,
 } from 'brepjs';
 import type { Shape3D, Sketch, Drawing } from 'brepjs';
@@ -43,6 +42,7 @@ import {
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
+import { buildSTLBufferFromIndexed } from '../../export/stlExporter';
 
 // ─── Baseplate Constants ──────────────────────────────────────────────────────
 
@@ -470,15 +470,18 @@ export async function exportBaseplate(
     return { data, fileName: `${name}.step` };
   }
 
-  // STL export
-  const blob = unwrap(
-    exportSTL(baseplate, {
-      tolerance: tolerance ?? 0.01,
-      angularTolerance: angularTolerance ?? 5,
-      binary: true,
-    })
+  // STL export — mesh the BREP solid and build binary STL from indexed data.
+  // Uses the same mesh() path as the preview renderer, bypassing OCCT's
+  // StlAPI.Write which can fail on certain baseplate geometries.
+  const tol = tolerance ?? 0.01;
+  const angTol = angularTolerance ?? 5;
+  const meshResult = mesh(baseplate, { tolerance: tol, angularTolerance: angTol });
+  const indexed = toIndexedMeshData(meshResult, false, new Float32Array(0));
+  const buffer = buildSTLBufferFromIndexed(
+    indexed.vertices,
+    indexed.normals,
+    indexed.indices,
+    name
   );
-  const data = await blob.arrayBuffer();
-
-  return { data, fileName: `${name}.stl` };
+  return { data: buffer, fileName: `${name}.stl` };
 }
