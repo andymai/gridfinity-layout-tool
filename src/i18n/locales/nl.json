@@ -1387,7 +1387,7 @@
   "baseplate.pageTitle": "Basisplaat-generator",
   "baseplate.backToLayout": "Terug naar layout",
   "baseplate.exportButton": "Basisplaat exporteren",
-  "baseplate.toolbarButton": "Basisplaat",
+  "baseplate.generateBaseplate": "Basisplaat genereren",
   "baseplate.splitInfo": "{cols} kol × {rows} rij — {count} stukken",
   "baseplate.viewAssembled": "Samengevoegd",
   "baseplate.viewExploded": "Uiteengezet",
@@ -1399,5 +1399,11 @@
   "baseplate.sectionFitToDrawer": "Randvulling",
   "baseplate.sectionMagnets": "Magneten",
   "baseplate.sectionPrintSettings": "Printinstellingen",
-  "baseplate.sectionSplit": "Gesplitste delen"
+  "baseplate.sectionSplit": "Gesplitste delen",
+  "baseplate.paddingHelp": "Extra materiaal rond het raster zodat het in je lade past.",
+  "baseplate.magnetHelp": "Werkt samen met bins met magneten om ze op hun plek te houden.",
+  "baseplate.magnetDiameterInfo": "6mm is standaard voor Gridfinity",
+  "baseplate.magnetDepthInfo": "2mm voor typische 6×2mm-magneten",
+  "baseplate.gridUnitTooltip": "Breedte van één rastervak (standaard: 42mm)",
+  "baseplate.printBedTooltip": "Basisplaten groter dan dit worden automatisch gesplitst."
 }

@@ -16,6 +16,7 @@ import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { isErr, getUserMessage } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { pieceToBaseplateParams } from '../utils/splitPlanner';
@@ -149,6 +150,9 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             triggerDownload(blob, `${baseName}${extension}`);
           }
         }
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Export failed';
+        useToastStore.getState().addToast(message, 'error');
       } finally {
         setIsExporting(false);
       }

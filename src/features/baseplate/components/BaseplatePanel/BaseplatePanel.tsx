@@ -140,6 +140,7 @@ export function BaseplatePanel() {
         {/* 2. Drawer Fit — primary configuration */}
         <StickyGroupHeader title={t('baseplate.sectionFitToDrawer')} summary={paddingSummary}>
           <div className="space-y-3 px-4 py-3">
+            <p className="text-xs text-content-tertiary">{t('baseplate.paddingHelp')}</p>
             {/* Per-side padding steppers — 2x2 grid */}
             <div className="grid grid-cols-2 gap-x-3 gap-y-2">
               <PaddingStepper
@@ -199,7 +200,8 @@ export function BaseplatePanel() {
               : undefined
           }
         >
-          <div className="px-4 py-3">
+          <div className="space-y-3 px-4 py-3">
+            <p className="text-xs text-content-tertiary">{t('baseplate.magnetHelp')}</p>
             <FeatureToggle
               label={t('baseplate.magnetHoles')}
               checked={baseplateParams.magnetHoles}
@@ -214,6 +216,7 @@ export function BaseplatePanel() {
                 max={20}
                 step={0.1}
                 unit="mm"
+                info={t('baseplate.magnetDiameterInfo')}
               />
               <SliderInput
                 label={t('baseplate.magnetDepth')}
@@ -223,6 +226,7 @@ export function BaseplatePanel() {
                 max={10}
                 step={0.1}
                 unit="mm"
+                info={t('baseplate.magnetDepthInfo')}
               />
             </FeatureToggle>
           </div>
@@ -232,7 +236,12 @@ export function BaseplatePanel() {
         <StickyGroupHeader title={t('baseplate.sectionPrintSettings')}>
           <div className="space-y-3 px-4 py-3">
             <div className="text-xs text-content-secondary space-y-2">
-              <SettingsRow label={t('baseplate.gridUnit')} htmlFor="bp-gridUnit" unit="mm">
+              <SettingsRow
+                label={t('baseplate.gridUnit')}
+                htmlFor="bp-gridUnit"
+                unit="mm"
+                tooltip={t('baseplate.gridUnitTooltip')}
+              >
                 <DeferredNumberInput
                   id="bp-gridUnit"
                   value={gridUnitMm}
@@ -242,7 +251,12 @@ export function BaseplatePanel() {
                   className="input w-14 py-0.5 px-1 text-xs text-right"
                 />
               </SettingsRow>
-              <SettingsRow label={t('baseplate.printBedSize')} htmlFor="bp-printBedSize" unit="mm">
+              <SettingsRow
+                label={t('baseplate.printBedSize')}
+                htmlFor="bp-printBedSize"
+                unit="mm"
+                tooltip={t('baseplate.printBedTooltip')}
+              >
                 <DeferredNumberInput
                   id="bp-printBedSize"
                   value={printBedSize}
@@ -398,7 +412,7 @@ function PaddingStepper({
         onStep={(delta) => onChange(Math.max(0, value + delta))}
         min={0}
         max={100}
-        step={0.5}
+        step={0.1}
         aria-label={label}
       />
     </div>

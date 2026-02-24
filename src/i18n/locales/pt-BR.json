@@ -1387,7 +1387,7 @@
   "baseplate.pageTitle": "Gerador de placa base",
   "baseplate.backToLayout": "Voltar ao layout",
   "baseplate.exportButton": "Exportar placa base",
-  "baseplate.toolbarButton": "Placa base",
+  "baseplate.generateBaseplate": "Gerar placa base",
   "baseplate.splitInfo": "{cols} col × {rows} lin — {count} peças",
   "baseplate.viewAssembled": "Montado",
   "baseplate.viewExploded": "Explodido",
@@ -1399,5 +1399,11 @@
   "baseplate.sectionFitToDrawer": "Preenchimento de borda",
   "baseplate.sectionMagnets": "Ímãs",
   "baseplate.sectionPrintSettings": "Configurações de impressão",
-  "baseplate.sectionSplit": "Peças divididas"
+  "baseplate.sectionSplit": "Peças divididas",
+  "baseplate.paddingHelp": "Material extra ao redor da grade para encaixar na gaveta.",
+  "baseplate.magnetHelp": "Combina com bins com ímãs para fixá-los no lugar.",
+  "baseplate.magnetDiameterInfo": "6mm é padrão para Gridfinity",
+  "baseplate.magnetDepthInfo": "2mm para ímãs típicos de 6×2mm",
+  "baseplate.gridUnitTooltip": "Largura de um quadrado da grade (padrão: 42mm)",
+  "baseplate.printBedTooltip": "Placas maiores que isso são divididas automaticamente."
 }

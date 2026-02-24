@@ -1,10 +1,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useViewStore, useSelectionStore, useInteractionStore, useMobileStore } from '@/core/store';
-import { useLibraryStore } from '@/core/store/library';
 import { CONSTRAINTS } from '@/core/constants';
-import { useFeatureFlag } from '@/hooks/useFeatureFlag';
-import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useTranslation } from '@/i18n';
 
 interface MobileGridToolbarProps {
@@ -38,10 +35,6 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
 
   const layers = useLayoutStore((state) => state.layout.layers);
   const activeLayer = layers.find((l) => l.id === activeLayerId);
-  const baseplateEnabled = useFeatureFlag('baseplate_generator');
-  const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
-  const { navigateToBaseplate } = useBaseplateRouting();
-
   const canZoomOut = zoom > CONSTRAINTS.ZOOM_MIN;
   const canZoomIn = zoom < CONSTRAINTS.ZOOM_MAX;
 
@@ -96,31 +89,6 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
 
       {/* Right: Baseplate + 3D preview + Zoom controls */}
       <div className="flex items-center gap-1 flex-shrink-0">
-        {/* Baseplate Generator button - feature gated */}
-        {baseplateEnabled && (
-          <button
-            onClick={() => navigateToBaseplate(activeLayoutId)}
-            className="btn btn-secondary w-10 h-10 p-0"
-            aria-label={t('baseplate.toolbarButton')}
-            title={t('baseplate.toolbarButton')}
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <line x1="3" y1="9" x2="21" y2="9" />
-              <line x1="3" y1="15" x2="21" y2="15" />
-              <line x1="9" y1="3" x2="9" y2="21" />
-              <line x1="15" y1="3" x2="15" y2="21" />
-            </svg>
-          </button>
-        )}
         {/* 3D Preview toggle */}
         <button
           onClick={toggleIsometricPreview}

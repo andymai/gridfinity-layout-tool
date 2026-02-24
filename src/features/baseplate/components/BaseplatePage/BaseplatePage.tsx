@@ -136,7 +136,7 @@ export function BaseplatePage() {
   return (
     <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-stroke-subtle px-4 py-3">
+      <header className="flex h-12 items-center justify-between border-b border-stroke-subtle bg-surface-secondary px-4">
         <div className="flex items-center gap-3">
           <button
             onClick={handleBack}

@@ -11,6 +11,8 @@ describe('baseplatePageStore', () => {
       tiling: null,
       pieceMeshes: [],
       splitViewMode: 'assembled',
+      hoveredPieceLabel: null,
+      selectedPieceLabel: null,
     });
   });
 
@@ -244,6 +246,89 @@ describe('baseplatePageStore', () => {
       useBaseplatePageStore.getState().setSplitViewMode('exploded');
       useBaseplatePageStore.getState().setSplitViewMode('assembled');
       expect(useBaseplatePageStore.getState().splitViewMode).toBe('assembled');
+    });
+  });
+
+  describe('hoveredPieceLabel', () => {
+    it('starts as null', () => {
+      expect(useBaseplatePageStore.getState().hoveredPieceLabel).toBeNull();
+    });
+
+    it('sets hovered piece label', () => {
+      useBaseplatePageStore.getState().setHoveredPieceLabel('A1');
+      expect(useBaseplatePageStore.getState().hoveredPieceLabel).toBe('A1');
+    });
+
+    it('clears hovered piece label', () => {
+      useBaseplatePageStore.getState().setHoveredPieceLabel('A1');
+      useBaseplatePageStore.getState().setHoveredPieceLabel(null);
+      expect(useBaseplatePageStore.getState().hoveredPieceLabel).toBeNull();
+    });
+  });
+
+  describe('selectedPieceLabel', () => {
+    it('starts as null', () => {
+      expect(useBaseplatePageStore.getState().selectedPieceLabel).toBeNull();
+    });
+
+    it('sets selected piece label', () => {
+      useBaseplatePageStore.getState().setSelectedPieceLabel('B2');
+      expect(useBaseplatePageStore.getState().selectedPieceLabel).toBe('B2');
+    });
+
+    it('clears selected piece label', () => {
+      useBaseplatePageStore.getState().setSelectedPieceLabel('B2');
+      useBaseplatePageStore.getState().setSelectedPieceLabel(null);
+      expect(useBaseplatePageStore.getState().selectedPieceLabel).toBeNull();
+    });
+  });
+
+  describe('auto-reset on regeneration', () => {
+    const makePiece = (label: string): PieceMeshEntry => ({
+      label,
+      col: 0,
+      row: 0,
+      offsetX: 0,
+      offsetY: 0,
+      widthUnits: 5,
+      depthUnits: 4,
+      mesh: {
+        vertices: null,
+        normals: null,
+        indices: null,
+        edgeVertices: null,
+        error: null,
+        timingMs: 0,
+      },
+    });
+
+    it('resets hover and selection when setTiling is called', () => {
+      useBaseplatePageStore.getState().setHoveredPieceLabel('A1');
+      useBaseplatePageStore.getState().setSelectedPieceLabel('B1');
+
+      useBaseplatePageStore.getState().setTiling({
+        isSplit: true,
+        pieces: [],
+        cols: 2,
+        rows: 2,
+        totalWidthUnits: 10,
+        totalDepthUnits: 8,
+        stackCount: 1,
+        stackSeparatorThickness: 0,
+      });
+
+      expect(useBaseplatePageStore.getState().hoveredPieceLabel).toBeNull();
+      expect(useBaseplatePageStore.getState().selectedPieceLabel).toBeNull();
+    });
+
+    it('resets hover and selection when setPieceMeshes is called', () => {
+      useBaseplatePageStore.getState().setHoveredPieceLabel('A1');
+      useBaseplatePageStore.getState().setSelectedPieceLabel('B1');
+
+      useBaseplatePageStore.getState().setPieceMeshes([makePiece('C1')]);
+
+      expect(useBaseplatePageStore.getState().hoveredPieceLabel).toBeNull();
+      expect(useBaseplatePageStore.getState().selectedPieceLabel).toBeNull();
     });
   });
 });

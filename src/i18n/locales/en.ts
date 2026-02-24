@@ -1418,7 +1418,7 @@ const en: Record<string, string> = {
   'baseplate.dimensionsUnits': '{width}\u00d7{depth} units',
   'baseplate.gridPlusPadding': '{width}\u00d7{depth} grid + padding',
   'baseplate.exportButton': 'Export Baseplate',
-  'baseplate.toolbarButton': 'Baseplate',
+  'baseplate.generateBaseplate': 'Generate Baseplate',
   'baseplate.generating': 'Generating...',
   'baseplate.generatingSplit': 'Generating {current}/{total}...',
   'baseplate.printBedSize': 'Print bed size',
@@ -1431,6 +1431,12 @@ const en: Record<string, string> = {
   'baseplate.viewExploded': 'Exploded',
   'baseplate.pieceLabel': 'Piece {label}',
   'baseplate.pieceDimensions': '{width}\u00d7{depth} units ({widthMm}\u00d7{depthMm}mm)',
+  'baseplate.paddingHelp': 'Extra material around the grid so it fits your drawer.',
+  'baseplate.magnetHelp': 'Pairs with magnet-equipped bins to snap them in place.',
+  'baseplate.magnetDiameterInfo': '6mm is standard for Gridfinity',
+  'baseplate.magnetDepthInfo': '2mm for typical 6\u00d72mm magnets',
+  'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
+  'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
 
   // ===========================================================================
   // Collaboration

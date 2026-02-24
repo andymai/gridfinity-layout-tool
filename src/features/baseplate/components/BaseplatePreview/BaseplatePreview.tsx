@@ -8,7 +8,7 @@
  * The slab extends asymmetrically when padding differs per side.
  */
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useCallback } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
@@ -22,6 +22,7 @@ import { GradientBackground } from '@/shared/components/preview/GradientBackgrou
 import { Spinner } from '@/shared/components/preview/Spinner';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
+import { GhostPaddingOutline } from './GhostPaddingOutline';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useThreeColors } from '@/hooks/useThemeEffect';
 import { useTranslation } from '@/i18n';
@@ -391,33 +392,35 @@ export function BaseplatePreview({
   const controlsRef = useRef<OrbitControlsType>(null);
   const { isDesktop } = useResponsive();
 
-  const { wasmStatus, hasMesh, hasSplitMeshes, isSplit, generationStatus, splitProgress } =
-    useBaseplatePageStore(
-      useShallow((s) => ({
-        wasmStatus: s.wasmStatus,
-        hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
-        hasSplitMeshes: s.pieceMeshes.length > 0,
-        isSplit: s.tiling?.isSplit ?? false,
-        generationStatus: s.generation.status,
-        splitProgress: s.splitProgress,
-      }))
-    );
+  const {
+    wasmStatus,
+    hasMesh,
+    hasSplitMeshes,
+    isSplit,
+    splitViewMode,
+    generationStatus,
+    splitProgress,
+  } = useBaseplatePageStore(
+    useShallow((s) => ({
+      wasmStatus: s.wasmStatus,
+      hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
+      hasSplitMeshes: s.pieceMeshes.length > 0,
+      isSplit: s.tiling?.isSplit ?? false,
+      splitViewMode: s.splitViewMode,
+      generationStatus: s.generation.status,
+      splitProgress: s.splitProgress,
+    }))
+  );
+
+  const setSelectedPieceLabel = useBaseplatePageStore((s) => s.setSelectedPieceLabel);
+  const handlePointerMissed = useCallback(() => {
+    setSelectedPieceLabel(null);
+  }, [setSelectedPieceLabel]);
 
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
-  const showSkeleton = !hasAnyMesh || wasmStatus !== 'ready';
-  const showOverlay = generationStatus === 'generating' && hasAnyMesh;
-
-  if (showSkeleton) {
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-surface-elevated">
-        <div className="flex flex-col items-center gap-2 text-content-secondary">
-          <Spinner className="h-6 w-6 text-accent" />
-          <span className="text-xs">{t('loading.baseplate')}</span>
-        </div>
-      </div>
-    );
-  }
+  const isInitialLoading = !hasAnyMesh || wasmStatus !== 'ready';
+  const showOverlay = isInitialLoading || (generationStatus === 'generating' && hasAnyMesh);
 
   return (
     <div
@@ -438,6 +441,7 @@ export function BaseplatePreview({
           camera.lookAt(0, 0, totalH / 2);
         }}
         gl={{ antialias: true }}
+        onPointerMissed={handlePointerMissed}
       >
         <GradientBackground />
         <SceneLighting />
@@ -453,25 +457,39 @@ export function BaseplatePreview({
         />
 
         {isSplit ? (
-          <SplitBaseplateMeshes
-            color={DEFAULT_COLOR}
-            totalWidthUnits={width}
-            totalDepthUnits={depth}
-          />
+          <SplitBaseplateMeshes totalWidthUnits={width} totalDepthUnits={depth} />
         ) : (
           <BaseplateMesh color={DEFAULT_COLOR} />
         )}
 
+        {/* Ghost outline only in assembled mode — exploded scatters pieces beyond slab bounds */}
+        {splitViewMode !== 'exploded' && (
+          <GhostPaddingOutline
+            width={width}
+            depth={depth}
+            paddingLeft={paddingLeft}
+            paddingRight={paddingRight}
+            paddingFront={paddingFront}
+            paddingBack={paddingBack}
+            isGenerating={generationStatus === 'generating'}
+          />
+        )}
+
         <FootprintGrid width={width} depth={depth} />
-        <BinAxisLabels width={width} depth={depth} />
-        <DimensionLabels
-          width={width}
-          depth={depth}
-          paddingLeft={paddingLeft}
-          paddingRight={paddingRight}
-          paddingFront={paddingFront}
-          paddingBack={paddingBack}
-        />
+        {/* Hide measurement labels in exploded mode — pieces scatter beyond these positions */}
+        {splitViewMode !== 'exploded' && (
+          <>
+            <BinAxisLabels width={width} depth={depth} />
+            <DimensionLabels
+              width={width}
+              depth={depth}
+              paddingLeft={paddingLeft}
+              paddingRight={paddingRight}
+              paddingFront={paddingFront}
+              paddingBack={paddingBack}
+            />
+          </>
+        )}
 
         <OrbitControls
           ref={controlsRef}
@@ -497,12 +515,14 @@ export function BaseplatePreview({
           <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
             <Spinner className="h-4 w-4 shrink-0 text-accent motion-reduce:animate-none" />
             <span className="text-content-secondary">
-              {splitProgress
-                ? t('baseplate.generatingSplit', {
-                    current: splitProgress.current,
-                    total: splitProgress.total,
-                  })
-                : t('baseplate.generating')}
+              {isInitialLoading
+                ? t('baseplate.generating')
+                : splitProgress
+                  ? t('baseplate.generatingSplit', {
+                      current: splitProgress.current,
+                      total: splitProgress.total,
+                    })
+                  : t('baseplate.generating')}
             </span>
           </div>
         </div>

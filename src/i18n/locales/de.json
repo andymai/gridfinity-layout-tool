@@ -1395,9 +1395,15 @@
   "baseplate.sectionPrintSettings": "Druckeinstellungen",
   "baseplate.sectionSplit": "Geteilte Teile",
   "baseplate.splitInfo": "{cols} Sp. × {rows} Z. — {count} Teile",
-  "baseplate.toolbarButton": "Grundplatte",
+  "baseplate.generateBaseplate": "Grundplatte generieren",
   "baseplate.viewAssembled": "Zusammengebaut",
   "baseplate.viewExploded": "Explodiert",
   "baseplate.pieceLabel": "Teil {label}",
-  "baseplate.pieceDimensions": "{width}×{depth} Einheiten ({widthMm}×{depthMm}mm)"
+  "baseplate.pieceDimensions": "{width}×{depth} Einheiten ({widthMm}×{depthMm}mm)",
+  "baseplate.paddingHelp": "Zusätzliches Material um das Gitter, passend für Ihre Schublade.",
+  "baseplate.magnetHelp": "Hält Bins mit Magneten sicher an Ort und Stelle.",
+  "baseplate.magnetDiameterInfo": "6mm ist Standard für Gridfinity",
+  "baseplate.magnetDepthInfo": "2mm für typische 6×2mm-Magnete",
+  "baseplate.gridUnitTooltip": "Breite eines Gitterquadrats (Standard: 42mm)",
+  "baseplate.printBedTooltip": "Grundplatten größer als dies werden automatisch aufgeteilt."
 }

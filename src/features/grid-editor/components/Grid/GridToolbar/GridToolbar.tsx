@@ -2,11 +2,8 @@ import { memo, useState, useEffect, useRef, type RefObject } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useLibraryStore } from '@/core/store/library';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { track3DPreview, markFeatureUsed } from '@/shared/analytics/posthog';
-import { useFeatureFlag } from '@/hooks/useFeatureFlag';
-import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useTranslation } from '@/i18n';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
@@ -102,10 +99,6 @@ export const GridToolbar = memo(function GridToolbar({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [overflowMenuOpen]);
-
-  const baseplateEnabled = useFeatureFlag('baseplate_generator');
-  const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
-  const { navigateToBaseplate } = useBaseplateRouting();
 
   return (
     <div
@@ -374,33 +367,6 @@ export const GridToolbar = memo(function GridToolbar({
           </svg>
           {!isNarrowToolbar && <span className="text-sm">{t('toolbar.3dView')}</span>}
         </button>
-
-        {/* Baseplate Generator button - feature gated */}
-        {baseplateEnabled && (
-          <button
-            onClick={() => navigateToBaseplate(activeLayoutId)}
-            className="btn btn-ghost px-2.5 py-1.5 flex items-center gap-1.5"
-            aria-label={t('baseplate.toolbarButton')}
-            title={t('baseplate.toolbarButton')}
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <line x1="3" y1="9" x2="21" y2="9" />
-              <line x1="3" y1="15" x2="21" y2="15" />
-              <line x1="9" y1="3" x2="9" y2="21" />
-              <line x1="15" y1="3" x2="15" y2="21" />
-            </svg>
-            {!isNarrowToolbar && <span className="text-sm">{t('baseplate.toolbarButton')}</span>}
-          </button>
-        )}
 
         {/* Overflow menu button - only when narrow */}
         {isNarrowToolbar && layers.length > 1 && (

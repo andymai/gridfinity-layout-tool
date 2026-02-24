@@ -58,6 +58,11 @@ interface BaseplatePageState {
   /** Progress for multi-piece generation: null when not splitting */
   splitProgress: { current: number; total: number } | null;
 
+  /** Currently hovered piece label (e.g. "A1"), synced between panel and 3D */
+  hoveredPieceLabel: string | null;
+  /** Currently selected (sticky) piece label */
+  selectedPieceLabel: string | null;
+
   setGenerationStatus: (status: GenerationStatus) => void;
   setGenerationResult: (result: MeshResult) => void;
   setWasmStatus: (status: WasmStatus) => void;
@@ -66,6 +71,8 @@ interface BaseplatePageState {
   setPieceMeshes: (meshes: readonly PieceMeshEntry[]) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitProgress: (progress: { current: number; total: number } | null) => void;
+  setHoveredPieceLabel: (label: string | null) => void;
+  setSelectedPieceLabel: (label: string | null) => void;
 }
 
 export const useBaseplatePageStore = create<BaseplatePageState>()(
@@ -80,6 +87,8 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     pieceMeshes: [],
     splitViewMode: 'assembled',
     splitProgress: null,
+    hoveredPieceLabel: null,
+    selectedPieceLabel: null,
 
     setGenerationStatus: (status) => {
       set((state) => {
@@ -109,6 +118,8 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
       set((state) => {
         // Cast needed: immer wraps readonly arrays in BaseplateTiling.pieces
         state.tiling = tiling as typeof state.tiling;
+        state.hoveredPieceLabel = null;
+        state.selectedPieceLabel = null;
       });
     },
 
@@ -116,6 +127,8 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
       set((state) => {
         // Cast needed: immer wraps readonly arrays
         state.pieceMeshes = meshes as PieceMeshEntry[];
+        state.hoveredPieceLabel = null;
+        state.selectedPieceLabel = null;
       });
     },
 
@@ -128,6 +141,18 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     setSplitProgress: (progress) => {
       set((state) => {
         state.splitProgress = progress;
+      });
+    },
+
+    setHoveredPieceLabel: (label) => {
+      set((state) => {
+        state.hoveredPieceLabel = label;
+      });
+    },
+
+    setSelectedPieceLabel: (label) => {
+      set((state) => {
+        state.selectedPieceLabel = label;
       });
     },
   }))

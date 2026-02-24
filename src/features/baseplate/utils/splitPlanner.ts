@@ -22,29 +22,76 @@ export function colToLetter(col: number): string {
  * If the axis has a fractional 0.5 unit, it's absorbed into the last chunk
  * when it fits, otherwise becomes a separate 0.5-unit piece.
  *
+ * Edge pieces carry padding that reduces the available space for grid units:
+ * - The first chunk must fit with `paddingStart`
+ * - The last chunk must fit with `paddingEnd`
+ * - Middle chunks use the full print bed
+ * - A single chunk must fit with both paddings
+ *
  * @returns Array of chunk sizes in grid units (may include 0.5 fractions)
  */
-export function splitAxis(totalUnits: number, gridUnitMm: number, printBedMm: number): number[] {
-  const maxUnits = Math.floor(printBedMm / gridUnitMm);
-  if (maxUnits < 1) return [totalUnits]; // degenerate case
+export function splitAxis(
+  totalUnits: number,
+  gridUnitMm: number,
+  printBedMm: number,
+  paddingStart = 0,
+  paddingEnd = 0
+): number[] {
+  const maxUnits = (overhead: number) => Math.floor((printBedMm - overhead) / gridUnitMm);
+
+  const maxBoth = maxUnits(paddingStart + paddingEnd);
+  const maxFirst = maxUnits(paddingStart);
+  const maxLast = maxUnits(paddingEnd);
+  const maxMiddle = maxUnits(0);
+
+  if (maxBoth < 1 || maxFirst < 1 || maxLast < 1 || maxMiddle < 1) {
+    return [totalUnits]; // degenerate: bed can't even hold 1 unit
+  }
 
   const integerPart = Math.floor(totalUnits);
   const hasFraction = totalUnits - integerPart >= 0.49;
 
   const splits: number[] = [];
-  let remaining = integerPart;
-  while (remaining > 0) {
-    const chunk = Math.min(remaining, maxUnits);
-    splits.push(chunk);
-    remaining -= chunk;
+
+  if (integerPart <= maxBoth) {
+    // Single piece fits with both paddings
+    if (integerPart > 0) splits.push(integerPart);
+  } else {
+    // First chunk (carries paddingStart overhead)
+    let remaining = integerPart;
+    const first = Math.min(remaining, maxFirst);
+    splits.push(first);
+    remaining -= first;
+
+    // Middle chunks (no padding overhead)
+    while (remaining > 0) {
+      const chunk = Math.min(remaining, maxMiddle);
+      splits.push(chunk);
+      remaining -= chunk;
+    }
+
+    // Fix the last chunk if it exceeds maxLast (carries paddingEnd overhead)
+    const lastIdx = splits.length - 1;
+    if (lastIdx > 0 && splits[lastIdx] > maxLast) {
+      const overflow = splits[lastIdx] - maxLast;
+      splits[lastIdx] = maxLast;
+      // Insert overflow before last as a middle piece (overflow < maxMiddle always)
+      splits.splice(lastIdx, 0, overflow);
+    }
   }
 
+  // Handle fractional 0.5 unit
   if (hasFraction) {
-    const lastIdx = splits.length - 1;
-    if (lastIdx >= 0 && (splits[lastIdx] + 0.5) * gridUnitMm <= printBedMm) {
-      splits[lastIdx] += 0.5;
-    } else {
+    if (splits.length === 0) {
       splits.push(0.5);
+    } else {
+      const lastIdx = splits.length - 1;
+      const lastOverhead = splits.length === 1 ? paddingStart + paddingEnd : paddingEnd;
+      if ((splits[lastIdx] + 0.5) * gridUnitMm + lastOverhead <= printBedMm) {
+        splits[lastIdx] += 0.5;
+      } else {
+        splits.push(0.5);
+      }
     }
   }
 
@@ -74,9 +121,17 @@ export function computeBaseplateTiling(
     fractionalEdgeY,
   } = params;
 
-  // Split each axis
-  let colSizes = splitAxis(width, gridUnitMm, printBedMm);
-  let rowSizes = splitAxis(depth, gridUnitMm, printBedMm);
+  // Split each axis, accounting for edge padding.
+  // When fractionalEdge is 'start' we reverse the splits, so we swap the padding
+  // parameters to match: the original "first" chunk (with paddingStart) becomes the
+  // last after reversal, and vice versa.
+  const colPadStart = fractionalEdgeX === 'start' ? paddingRight : paddingLeft;
+  const colPadEnd = fractionalEdgeX === 'start' ? paddingLeft : paddingRight;
+  const rowPadStart = fractionalEdgeY === 'start' ? paddingBack : paddingFront;
+  const rowPadEnd = fractionalEdgeY === 'start' ? paddingFront : paddingBack;
+
+  let colSizes = splitAxis(width, gridUnitMm, printBedMm, colPadStart, colPadEnd);
+  let rowSizes = splitAxis(depth, gridUnitMm, printBedMm, rowPadStart, rowPadEnd);
 
   // If fractional edge is at 'start', reverse so the fraction lands on the first piece
   if (fractionalEdgeX === 'start') colSizes = colSizes.reverse();

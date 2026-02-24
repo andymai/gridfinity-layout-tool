@@ -1387,7 +1387,7 @@
   "baseplate.pageTitle": "Generador de placa base",
   "baseplate.backToLayout": "Volver al diseño",
   "baseplate.exportButton": "Exportar placa base",
-  "baseplate.toolbarButton": "Placa base",
+  "baseplate.generateBaseplate": "Generar placa base",
   "baseplate.splitInfo": "{cols} col × {rows} fila — {count} piezas",
   "baseplate.viewAssembled": "Ensamblado",
   "baseplate.viewExploded": "Explosionado",
@@ -1399,5 +1399,11 @@
   "baseplate.sectionFitToDrawer": "Relleno de bordes",
   "baseplate.sectionMagnets": "Imanes",
   "baseplate.sectionPrintSettings": "Ajustes de impresión",
-  "baseplate.sectionSplit": "Piezas divididas"
+  "baseplate.sectionSplit": "Piezas divididas",
+  "baseplate.paddingHelp": "Material extra alrededor de la cuadrícula para ajustar al cajón.",
+  "baseplate.magnetHelp": "Se combina con bins con imanes para fijarlos en su sitio.",
+  "baseplate.magnetDiameterInfo": "6mm es estándar para Gridfinity",
+  "baseplate.magnetDepthInfo": "2mm para imanes típicos de 6×2mm",
+  "baseplate.gridUnitTooltip": "Ancho de un cuadrado de la cuadrícula (estándar: 42mm)",
+  "baseplate.printBedTooltip": "Las placas más grandes se dividen automáticamente."
 }

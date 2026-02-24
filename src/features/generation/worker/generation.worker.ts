@@ -354,24 +354,30 @@ function generateBaseplateHandler(params: BaseplateParams, requestId: string): v
     if (activeRequestId !== requestId) return;
 
     const timingMs = performance.now() - startTime;
+
+    // Copy buffers before transferring — the originals may be retained by
+    // the baseplateGenerator's mesh result cache. Transferring detaches
+    // the ArrayBuffer, which would corrupt cached entries on cache hits.
+    const verts = meshData.vertices.slice();
+    const norms = meshData.normals.slice();
+    const idxs = meshData.indices.slice();
+    const edges = meshData.edgeVertices.slice();
+
     const response: WorkerResponse = {
       type: 'MESH_RESULT',
       requestId,
-      vertices: meshData.vertices,
-      normals: meshData.normals,
-      indices: meshData.indices,
-      edgeVertices: meshData.edgeVertices,
+      vertices: verts,
+      normals: norms,
+      indices: idxs,
+      edgeVertices: edges,
       triangleCount: meshData.triangleCount,
       timingMs,
       faceGroups: meshData.faceGroups,
     };
     self.postMessage(response, {
-      transfer: [
-        meshData.vertices.buffer,
-        meshData.normals.buffer,
-        meshData.indices.buffer,
-        meshData.edgeVertices.buffer,
-      ].filter((b) => b.byteLength > 0),
+      transfer: [verts.buffer, norms.buffer, idxs.buffer, edges.buffer].filter(
+        (b) => b.byteLength > 0
+      ),
     });
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') return;
