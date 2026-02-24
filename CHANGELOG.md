@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.29.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.28.1...gridfinity-layout-tool-v3.29.0) (2026-02-24)
+
+
+### Features
+
+* **bin-designer:** auto-enable half-bin mode when fractional dimension is typed ([#893](https://github.com/andymai/gridfinity-layout-tool/issues/893)) ([d26a4bc](https://github.com/andymai/gridfinity-layout-tool/commit/d26a4bcc4ef822e6943370e872c535c715dcf2c3))
+
 ## [3.28.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.28.0...gridfinity-layout-tool-v3.28.1) (2026-02-24)
 
 
