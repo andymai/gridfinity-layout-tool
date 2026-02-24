@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.28.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.10...gridfinity-layout-tool-v3.28.0) (2026-02-24)
+
+
+### Features
+
+* **analytics:** replace Vercel heartbeat with rich PostHog heartbeat ([#886](https://github.com/andymai/gridfinity-layout-tool/issues/886)) ([ec2070f](https://github.com/andymai/gridfinity-layout-tool/commit/ec2070f8dcbc49c88bca9764eed918dcace53739))
+
+
+### Bug Fixes
+
+* **storage:** make clearAllData async to prevent IndexedDB reload race ([#889](https://github.com/andymai/gridfinity-layout-tool/issues/889)) ([c4cf9c9](https://github.com/andymai/gridfinity-layout-tool/commit/c4cf9c929f392401ff1429a487615214fca48b3f))
+
 ## [3.27.10](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.9...gridfinity-layout-tool-v3.27.10) (2026-02-23)
 
 
