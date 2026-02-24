@@ -1,26 +1,17 @@
 /**
- * Converts stored baseplate params (with ratios) into fully resolved
- * per-side padding values for the generation engine.
+ * Converts stored baseplate params into fully resolved generation params.
+ *
+ * With direct per-side padding, the conversion is a straightforward pass-through.
+ * The centered-params variant still exists for the preview optimization:
+ * BREP geometry is generated with symmetric padding, and the asymmetric offset
+ * is applied in Three.js.
  */
 
 import type { BaseplateParams as CoreBaseplateParams } from '@/core/types';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
 
 /**
- * Resolve a user-entered drawer dimension.
- * 0 means "derive from grid" — returns gridUnits × gridUnitMm.
- */
-export function resolveDrawerMm(stored: number, gridUnits: number, gridUnitMm: number): number {
-  return stored > 0 ? stored : gridUnits * gridUnitMm;
-}
-
-/**
  * Build full generation params from the stored per-layout config.
- *
- * Computes per-side padding from the drawer remainder and distribution ratio:
- * - remainder = drawerMm − gridUnits × gridUnitMm
- * - paddingStart = remainder × ratio
- * - paddingEnd   = remainder × (1 − ratio)
  */
 export function buildFullParams(
   stored: CoreBaseplateParams,
@@ -30,11 +21,6 @@ export function buildFullParams(
   fractionalEdgeX: 'start' | 'end',
   fractionalEdgeY: 'start' | 'end'
 ): FullBaseplateParams {
-  const drawerWmm = resolveDrawerMm(stored.drawerWidthMm, drawerWidth, gridUnitMm);
-  const drawerDmm = resolveDrawerMm(stored.drawerDepthMm, drawerDepth, gridUnitMm);
-  const remainderX = Math.max(0, drawerWmm - drawerWidth * gridUnitMm);
-  const remainderY = Math.max(0, drawerDmm - drawerDepth * gridUnitMm);
-
   return {
     width: drawerWidth,
     depth: drawerDepth,
@@ -42,11 +28,52 @@ export function buildFullParams(
     magnetHoles: stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
-    paddingLeft: remainderX * stored.paddingRatioX,
-    paddingRight: remainderX * (1 - stored.paddingRatioX),
-    paddingFront: remainderY * stored.paddingRatioY,
-    paddingBack: remainderY * (1 - stored.paddingRatioY),
+    paddingLeft: stored.paddingLeft,
+    paddingRight: stored.paddingRight,
+    paddingFront: stored.paddingFront,
+    paddingBack: stored.paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
+  };
+}
+
+/**
+ * Build generation params with centered padding.
+ *
+ * For preview, the BREP geometry is identical regardless of how padding is
+ * distributed — only the slab dimensions (total per axis) matter. By always
+ * generating centered, we can skip BREP regeneration when only the distribution
+ * changes and apply the offset in Three.js instead.
+ *
+ * Returns both the centered params and the slab offset for the actual distribution.
+ */
+export function buildCenteredParams(
+  stored: CoreBaseplateParams,
+  drawerWidth: number,
+  drawerDepth: number,
+  gridUnitMm: number,
+  fractionalEdgeX: 'start' | 'end',
+  fractionalEdgeY: 'start' | 'end'
+): { params: FullBaseplateParams; slabOffsetX: number; slabOffsetY: number } {
+  const halfX = (stored.paddingLeft + stored.paddingRight) / 2;
+  const halfY = (stored.paddingFront + stored.paddingBack) / 2;
+
+  return {
+    params: {
+      width: drawerWidth,
+      depth: drawerDepth,
+      gridUnitMm,
+      magnetHoles: stored.magnetHoles,
+      magnetDiameter: stored.magnetDiameter,
+      magnetDepth: stored.magnetDepth,
+      paddingLeft: halfX,
+      paddingRight: halfX,
+      paddingFront: halfY,
+      paddingBack: halfY,
+      fractionalEdgeX,
+      fractionalEdgeY,
+    },
+    slabOffsetX: (stored.paddingLeft - stored.paddingRight) / 2,
+    slabOffsetY: (stored.paddingFront - stored.paddingBack) / 2,
   };
 }

@@ -145,27 +145,27 @@ export const CATEGORY_COLOR_PALETTE = [
   { color: '#a8a29e', name: 'Stone' },
 ] as const;
 
-/** Default baseplate parameters: no magnets, drawer dims derived from grid, centered padding */
+/** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   magnetHoles: false,
   magnetDiameter: 6.5,
   magnetDepth: 2,
-  drawerWidthMm: 0,
-  drawerDepthMm: 0,
-  paddingRatioX: 0.5,
-  paddingRatioY: 0.5,
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingFront: 0,
+  paddingBack: 0,
 } as const;
 
 /**
- * Migrate old baseplateParams (with paddingMm) to new shape.
- * Returns DEFAULT_BASEPLATE_PARAMS if the stored data lacks the new fields,
+ * Migrate old baseplateParams to current shape.
+ * Returns DEFAULT_BASEPLATE_PARAMS if the stored data lacks paddingLeft,
  * preserving magnet settings when possible.
  */
 export function migrateBaseplateParams(stored: unknown): BaseplateParams {
   if (!stored || typeof stored !== 'object') return DEFAULT_BASEPLATE_PARAMS;
   const obj = stored as Record<string, unknown>;
-  // New shape has drawerWidthMm — if missing, it's the old format
-  if (typeof obj.drawerWidthMm !== 'number') {
+  // Current shape has paddingLeft — if missing, it's an old format
+  if (typeof obj.paddingLeft !== 'number') {
     return {
       ...DEFAULT_BASEPLATE_PARAMS,
       magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,

@@ -59,12 +59,13 @@ function calculateIdealDistance(
  */
 function BaseplateMesh({ color }: { color: string }) {
   const { invalidate } = useThree();
-  const { vertices, normals, indices, edgeVertices } = useBaseplatePageStore(
+  const { vertices, normals, indices, edgeVertices, slabOffset } = useBaseplatePageStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
       normals: s.generation.mesh?.normals ?? null,
       indices: s.generation.mesh?.indices ?? null,
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
+      slabOffset: s.slabOffset,
     }))
   );
 
@@ -109,13 +110,13 @@ function BaseplateMesh({ color }: { color: string }) {
 
   useEffect(() => {
     invalidate();
-  }, [color, invalidate]);
+  }, [color, slabOffset, invalidate]);
 
   if (!geometry) return null;
 
   return (
     <>
-      <mesh geometry={geometry} position={[0, 0, 0.1]}>
+      <mesh geometry={geometry} position={[slabOffset.x, slabOffset.y, 0.1]}>
         <meshStandardMaterial
           color={color}
           roughness={0.45}
@@ -130,7 +131,11 @@ function BaseplateMesh({ color }: { color: string }) {
         />
       </mesh>
       {edgesGeometry && (
-        <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
+        <lineSegments
+          geometry={edgesGeometry}
+          position={[slabOffset.x, slabOffset.y, 0.1]}
+          renderOrder={1}
+        >
           <lineBasicMaterial color="#000000" depthTest={true} />
         </lineSegments>
       )}

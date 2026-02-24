@@ -57,6 +57,13 @@ const PLATE_CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
 
 const pocketTemplateCache = new LRUCache<Shape3D>(8);
 
+// ─── Mesh Result Cache ──────────────────────────────────────────────────────
+// Caches the fully tessellated mesh data (vertices, normals, indices, edges)
+// keyed by generation params. Skips BREP booleans + tessellation entirely on
+// cache hit — the most expensive operations in the pipeline.
+
+const meshResultCache = new LRUCache<MeshData>(4);
+
 function pocketCacheKey(
   cellW: number,
   cellD: number,
@@ -231,6 +238,24 @@ function buildMagnetHoles(
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
+function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
+  return [
+    params.width,
+    params.depth,
+    params.gridUnitMm,
+    params.magnetHoles,
+    params.magnetDiameter,
+    params.magnetDepth,
+    params.paddingLeft,
+    params.paddingRight,
+    params.paddingFront,
+    params.paddingBack,
+    params.fractionalEdgeX,
+    params.fractionalEdgeY,
+    forExport,
+  ].join('|');
+}
+
 /**
  * Generate baseplate mesh for preview or export.
  */
@@ -243,6 +268,14 @@ export function generateBaseplate(
   onProgress('base', 0);
   checkCancelled(signal);
 
+  // Check mesh cache — skips BREP booleans + tessellation entirely
+  const cacheKey = meshCacheKey(params, forExport);
+  const cached = meshResultCache.get(cacheKey);
+  if (cached !== undefined) {
+    onProgress('base', 1);
+    return cached;
+  }
+
   const baseplate = buildBaseplateSolid(params, forExport, (progress) => {
     onProgress('base', progress);
     checkCancelled(signal);
@@ -251,16 +284,18 @@ export function generateBaseplate(
   onProgress('base', 0.9);
   checkCancelled(signal);
 
-  // Tessellate
-  const tolerance = forExport ? 0.01 : 0.1;
-  const angularTolerance = forExport ? 5 : 20;
+  // Tessellate — baseplates are mostly flat slabs, so preview can use very coarse settings
+  const tolerance = forExport ? 0.01 : 0.5;
+  const angularTolerance = forExport ? 5 : 45;
   const meshResult = mesh(baseplate, { tolerance, angularTolerance });
-  const edgeMesh = forExport ? null : meshEdges(baseplate, { tolerance });
+  const edgeMesh = forExport ? null : meshEdges(baseplate, { tolerance: 0.5 });
   const edgeVerts = edgeMesh ? new Float32Array(edgeMesh.lines) : new Float32Array(0);
 
   onProgress('base', 1);
 
-  return toIndexedMeshData(meshResult, false, edgeVerts);
+  const result = toIndexedMeshData(meshResult, false, edgeVerts);
+  meshResultCache.set(cacheKey, result);
+  return result;
 }
 
 /**

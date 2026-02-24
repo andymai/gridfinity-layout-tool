@@ -27,10 +27,13 @@ interface BaseplatePageState {
     epoch: number;
   };
   wasmStatus: WasmStatus;
+  /** Slab offset for asymmetric padding — applied in Three.js, not BREP */
+  slabOffset: { x: number; y: number };
 
   setGenerationStatus: (status: GenerationStatus) => void;
   setGenerationResult: (result: MeshResult) => void;
   setWasmStatus: (status: WasmStatus) => void;
+  setSlabOffset: (x: number, y: number) => void;
   bumpEpoch: () => void;
 }
 
@@ -42,6 +45,7 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
       epoch: 0,
     },
     wasmStatus: 'unloaded',
+    slabOffset: { x: 0, y: 0 },
 
     setGenerationStatus: (status) => {
       set((state) => {
@@ -58,6 +62,13 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     setWasmStatus: (status) => {
       set((state) => {
         state.wasmStatus = status;
+      });
+    },
+
+    setSlabOffset: (x, y) => {
+      set((state) => {
+        state.slabOffset.x = x;
+        state.slabOffset.y = y;
       });
     },
 

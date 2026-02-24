@@ -1,9 +1,9 @@
 /**
  * Parameter panel for the standalone baseplate page.
  *
- * Reads baseplateParams from the layout store (with DEFAULT_BASEPLATE_PARAMS fallback)
- * and writes changes back via setBaseplateParams. Features "Fit to Drawer" controls
- * for editable drawer dimensions and asymmetric padding distribution.
+ * Shows grid dimensions (read-only), per-side padding steppers, magnet options,
+ * and a summary card. Padding values are stored directly — the total drawer
+ * dimension is computed for display as grid + left + right / front + back.
  */
 
 import { useCallback } from 'react';
@@ -11,9 +11,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { Checkbox } from '@/design-system/Checkbox';
+import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
-import { resolveDrawerMm } from '../../utils/buildFullParams';
-import { PaddingDistributionControl } from '../PaddingDistributionControl/PaddingDistributionControl';
 import type { BaseplateParams } from '@/core/types';
 
 export function BaseplatePanel() {
@@ -36,21 +35,16 @@ export function BaseplatePanel() {
     []
   );
 
-  // Effective drawer dimensions in mm
-  const effectiveWidthMm = resolveDrawerMm(baseplateParams.drawerWidthMm, drawerWidth, gridUnitMm);
-  const effectiveDepthMm = resolveDrawerMm(baseplateParams.drawerDepthMm, drawerDepth, gridUnitMm);
-
   const gridWidthMm = drawerWidth * gridUnitMm;
   const gridDepthMm = drawerDepth * gridUnitMm;
 
-  // Compute per-side padding for summary display
-  const remainderX = Math.max(0, effectiveWidthMm - gridWidthMm);
-  const remainderY = Math.max(0, effectiveDepthMm - gridDepthMm);
-  const padLeft = Math.round(remainderX * baseplateParams.paddingRatioX * 10) / 10;
-  const padRight = Math.round(remainderX * (1 - baseplateParams.paddingRatioX) * 10) / 10;
-  const padFront = Math.round(remainderY * baseplateParams.paddingRatioY * 10) / 10;
-  const padBack = Math.round(remainderY * (1 - baseplateParams.paddingRatioY) * 10) / 10;
-  const hasPadding = remainderX > 0 || remainderY > 0;
+  const totalWidthMm = gridWidthMm + baseplateParams.paddingLeft + baseplateParams.paddingRight;
+  const totalDepthMm = gridDepthMm + baseplateParams.paddingFront + baseplateParams.paddingBack;
+  const hasPadding =
+    baseplateParams.paddingLeft > 0 ||
+    baseplateParams.paddingRight > 0 ||
+    baseplateParams.paddingFront > 0 ||
+    baseplateParams.paddingBack > 0;
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -67,7 +61,6 @@ export function BaseplatePanel() {
 
         {baseplateParams.magnetHoles && (
           <div className="ml-6 flex flex-col gap-2">
-            {/* Magnet diameter */}
             <label className="flex items-center justify-between gap-2 text-xs text-content-secondary">
               <span>{t('baseplate.magnetDiameter')}</span>
               <input
@@ -86,7 +79,6 @@ export function BaseplatePanel() {
               />
             </label>
 
-            {/* Magnet depth */}
             <label className="flex items-center justify-between gap-2 text-xs text-content-secondary">
               <span>{t('baseplate.magnetDepth')}</span>
               <input
@@ -108,31 +100,41 @@ export function BaseplatePanel() {
         )}
       </fieldset>
 
-      {/* Fit to Drawer */}
+      {/* Padding */}
       <div className="flex flex-col gap-3">
-        <h3 className="text-xs font-semibold text-content-secondary">
-          {t('baseplate.fitToDrawer')}
-        </h3>
+        <h3 className="text-xs font-semibold text-content-secondary">{t('baseplate.padding')}</h3>
 
-        {/* Width axis */}
-        <PaddingDistributionControl
-          axis="width"
-          drawerMm={effectiveWidthMm}
-          gridMm={gridWidthMm}
-          ratio={baseplateParams.paddingRatioX}
-          onDrawerMmChange={(v) => updateParam('drawerWidthMm', v)}
-          onRatioChange={(v) => updateParam('paddingRatioX', v)}
-        />
+        {/* Grid dimensions (read-only) */}
+        <div className="text-[11px] text-content-tertiary">
+          {t('baseplate.gridDimensions', {
+            width: Math.round(gridWidthMm),
+            depth: Math.round(gridDepthMm),
+          })}
+        </div>
 
-        {/* Depth axis */}
-        <PaddingDistributionControl
-          axis="depth"
-          drawerMm={effectiveDepthMm}
-          gridMm={gridDepthMm}
-          ratio={baseplateParams.paddingRatioY}
-          onDrawerMmChange={(v) => updateParam('drawerDepthMm', v)}
-          onRatioChange={(v) => updateParam('paddingRatioY', v)}
-        />
+        {/* Per-side padding steppers */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+          <PaddingStepper
+            label={t('baseplate.paddingLeft')}
+            value={baseplateParams.paddingLeft}
+            onChange={(v) => updateParam('paddingLeft', v)}
+          />
+          <PaddingStepper
+            label={t('baseplate.paddingRight')}
+            value={baseplateParams.paddingRight}
+            onChange={(v) => updateParam('paddingRight', v)}
+          />
+          <PaddingStepper
+            label={t('baseplate.paddingFront')}
+            value={baseplateParams.paddingFront}
+            onChange={(v) => updateParam('paddingFront', v)}
+          />
+          <PaddingStepper
+            label={t('baseplate.paddingBack')}
+            value={baseplateParams.paddingBack}
+            onChange={(v) => updateParam('paddingBack', v)}
+          />
+        </div>
       </div>
 
       {/* Summary */}
@@ -147,17 +149,52 @@ export function BaseplatePanel() {
               : `${t('baseplate.magnetHoles')}: ---`}
           </li>
           {hasPadding && (
-            <li>
-              {t('baseplate.paddingSummary', {
-                left: padLeft.toFixed(1),
-                right: padRight.toFixed(1),
-                front: padFront.toFixed(1),
-                back: padBack.toFixed(1),
-              })}
-            </li>
+            <>
+              <li>
+                {t('baseplate.paddingSummary', {
+                  left: baseplateParams.paddingLeft.toFixed(1),
+                  right: baseplateParams.paddingRight.toFixed(1),
+                  front: baseplateParams.paddingFront.toFixed(1),
+                  back: baseplateParams.paddingBack.toFixed(1),
+                })}
+              </li>
+              <li className="text-content-tertiary">
+                {t('baseplate.totalDimensions', {
+                  width: Math.round(totalWidthMm),
+                  depth: Math.round(totalDepthMm),
+                })}
+              </li>
+            </>
           )}
         </ul>
       </div>
+    </div>
+  );
+}
+
+/** Compact stepper for a single padding value (mm). */
+function PaddingStepper({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[11px] text-content-tertiary">{label}</span>
+      <Stepper
+        size="sm"
+        value={value}
+        onChange={onChange}
+        onStep={(delta) => onChange(Math.max(0, value + delta))}
+        min={0}
+        max={100}
+        step={0.5}
+        aria-label={label}
+      />
     </div>
   );
 }

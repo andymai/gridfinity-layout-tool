@@ -14,7 +14,6 @@ import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
-import { resolveDrawerMm } from '../../utils/buildFullParams';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
 import type { ExportFileFormat } from '@/shared/types/bin';
@@ -123,11 +122,10 @@ export function BaseplatePage() {
   const t = useTranslation();
   const { isMobile } = useResponsive();
 
-  const { drawerWidth, drawerDepth, gridUnitMm, baseplateParams } = useLayoutStore(
+  const { drawerWidth, drawerDepth, baseplateParams } = useLayoutStore(
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
-      gridUnitMm: state.layout.gridUnitMm,
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
@@ -149,17 +147,7 @@ export function BaseplatePage() {
     window.history.back();
   }, []);
 
-  // Compute per-side padding for the preview
-  const effectiveWidthMm = resolveDrawerMm(baseplateParams.drawerWidthMm, drawerWidth, gridUnitMm);
-  const effectiveDepthMm = resolveDrawerMm(baseplateParams.drawerDepthMm, drawerDepth, gridUnitMm);
-  const gridWidthMm = drawerWidth * gridUnitMm;
-  const gridDepthMm = drawerDepth * gridUnitMm;
-  const remainderX = Math.max(0, effectiveWidthMm - gridWidthMm);
-  const remainderY = Math.max(0, effectiveDepthMm - gridDepthMm);
-  const paddingLeft = remainderX * baseplateParams.paddingRatioX;
-  const paddingRight = remainderX * (1 - baseplateParams.paddingRatioX);
-  const paddingFront = remainderY * baseplateParams.paddingRatioY;
-  const paddingBack = remainderY * (1 - baseplateParams.paddingRatioY);
+  const { paddingLeft, paddingRight, paddingFront, paddingBack } = baseplateParams;
 
   return (
     <div className="flex h-screen flex-col bg-surface">
