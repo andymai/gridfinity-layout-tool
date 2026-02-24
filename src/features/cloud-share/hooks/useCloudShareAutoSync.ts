@@ -5,12 +5,12 @@
  * This hook ensures those changes are also persisted to Vercel Blob
  * so that new viewers get the latest layout data.
  *
- * Any collaborator can trigger the sync since the deleteToken is shared
- * via Liveblocks storage by the owner.
+ * Only the share owner can trigger the sync — the delete token is passed
+ * from the owner's local library store and is never stored in Liveblocks
+ * shared storage where collaborators could read it.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useStorage } from '@/liveblocks.config';
 import { useLayoutStore } from '@/core/store/layout';
 import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
@@ -22,22 +22,23 @@ const CLOUD_SYNC_DEBOUNCE_MS = 1000;
 /**
  * Auto-syncs layout changes to cloud share storage.
  *
- * Reads the deleteToken from Liveblocks storage (set by owner) so any
- * collaborator can persist changes to Vercel Blob.
+ * Only runs when deleteToken is defined (i.e., for the share owner).
+ * Non-owners receive undefined and this hook becomes a no-op.
  *
  * @param shareId - The cloud share ID to sync to
- * @param enabled - Whether auto-sync is enabled (should be true in collab mode)
+ * @param deleteToken - The owner's delete token from their local library store.
+ *   Pass undefined for non-owners to disable sync.
  */
-export function useCloudShareAutoSync(shareId: string | null, enabled: boolean): void {
+export function useCloudShareAutoSync(
+  shareId: string | null,
+  deleteToken: string | undefined
+): void {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSyncedRef = useRef<string | null>(null);
   const isSyncingRef = useRef(false);
 
   const layout = useLayoutStore((state) => state.layout);
   const lastEditSource = useLayoutStore((state) => state.lastEditSource);
-
-  // Get deleteToken from Liveblocks storage (shared by owner)
-  const deleteToken = useStorage((root) => root.metadata.deleteToken) as string | undefined;
 
   const syncToCloud = useCallback(async () => {
     if (!shareId || !deleteToken || isSyncingRef.current) return;
@@ -69,7 +70,7 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
 
   // Debounced sync effect
   useEffect(() => {
-    if (!enabled || !shareId || !deleteToken) return;
+    if (!shareId || !deleteToken) return;
 
     // Only sync local edits (from collaborative mutations)
     // Don't sync 'init' or 'remote' changes
@@ -90,17 +91,17 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [enabled, shareId, deleteToken, layout, lastEditSource, syncToCloud]);
+  }, [shareId, deleteToken, layout, lastEditSource, syncToCloud]);
 
-  // Sync on unmount (collaborator leaving the session)
+  // Sync on unmount (owner leaving the session)
   useEffect(() => {
     return () => {
-      if (enabled && shareId && deleteToken && debounceTimerRef.current) {
+      if (shareId && deleteToken && debounceTimerRef.current) {
         // Clear pending timer and do immediate sync
         clearTimeout(debounceTimerRef.current);
         // Note: Can't await in cleanup, but fire-and-forget is acceptable here
         void syncToCloud();
       }
     };
-  }, [enabled, shareId, deleteToken, syncToCloud]);
+  }, [shareId, deleteToken, syncToCloud]);
 }

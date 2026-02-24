@@ -1,6 +1,6 @@
 import { put, del, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { validateShareLayout, isValidationError } from '../lib/validation.js';
 import { filterLayoutContent } from '../lib/contentFilter.js';
 import {
@@ -10,6 +10,8 @@ import {
   ErrorCode,
   methodNotAllowed,
   getBaseUrl,
+  shareHashKey,
+  shareReportKey,
   type ShareData,
 } from '../lib/shared.js';
 
@@ -154,9 +156,21 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
 
     const existingData = (await response.json()) as ShareData;
 
+    // Fetch the stored hash — check Redis first (new shares), fall back to blob (pre-migration shares)
+    const redis = getRedis();
+    const storedHash =
+      (redis ? await redis.get(shareHashKey(id)) : null) ?? existingData.metadata.deleteTokenHash;
+
+    if (!storedHash) {
+      return res.status(404).json({
+        error: 'Share not found',
+        code: ErrorCode.NOT_FOUND,
+      });
+    }
+
     // Verify delete token (constant-time comparison prevents timing attacks)
     const tokenHash = await hashToken(deleteToken);
-    if (!timingSafeCompare(tokenHash, existingData.metadata.deleteTokenHash)) {
+    if (!timingSafeCompare(tokenHash, storedHash)) {
       return res.status(401).json({
         error: 'Invalid delete token',
         code: ErrorCode.UNAUTHORIZED,
@@ -308,17 +322,32 @@ async function handleDelete(
 
     const existingData = (await response.json()) as ShareData;
 
+    // Fetch the stored hash — check Redis first (new shares), fall back to blob (pre-migration shares)
+    const redis = getRedis();
+    const storedHash =
+      (redis ? await redis.get(shareHashKey(_id)) : null) ?? existingData.metadata.deleteTokenHash;
+
+    if (!storedHash) {
+      return res.status(404).json({
+        error: 'Share not found',
+        code: ErrorCode.NOT_FOUND,
+      });
+    }
+
     // Verify delete token (constant-time comparison prevents timing attacks)
     const tokenHash = await hashToken(deleteToken);
-    if (!timingSafeCompare(tokenHash, existingData.metadata.deleteTokenHash)) {
+    if (!timingSafeCompare(tokenHash, storedHash)) {
       return res.status(401).json({
         error: 'Invalid delete token',
         code: ErrorCode.UNAUTHORIZED,
       });
     }
 
-    // Delete the blob
+    // Delete the blob and clean up Redis keys
     await del(blobPath);
+    if (redis) {
+      await redis.del(shareHashKey(_id), shareReportKey(_id));
+    }
 
     return res.status(200).json({
       success: true,

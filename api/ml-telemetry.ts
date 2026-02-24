@@ -505,8 +505,8 @@ async function checkRateLimitInternal(ip: string, client: Redis): Promise<boolea
 
     return true;
   } catch {
-    // On error, allow the request
-    return true;
+    // On error, deny the request (fail-closed, consistent with main rate limiter)
+    return false;
   }
 }
 

@@ -1,6 +1,6 @@
-import { put } from '@vercel/blob';
+import { put, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { validateShareLayout, isValidationError } from './lib/validation.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import { filterLayoutContent } from './lib/contentFilter.js';
@@ -11,6 +11,7 @@ import {
   ErrorCode,
   methodNotAllowed,
   getBaseUrl,
+  shareHashKey,
   type ShareData,
 } from './lib/shared.js';
 
@@ -111,23 +112,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Use client-provided layoutId as the share ID
     const shareId = layoutId;
+
+    // Prevent overwriting an existing share with the same ID
+    const existing = await head(`shares/${shareId}.json`).catch(() => null);
+    if (existing) {
+      return res.status(409).json({
+        error: 'A share with this ID already exists.',
+        code: ErrorCode.VALIDATION_ERROR,
+      });
+    }
+
     const deleteToken = generateDeleteToken();
     const deleteTokenHash = await hashToken(deleteToken);
 
     const now = new Date();
     const nowIso = now.toISOString();
 
-    // Prepare data to store (shares are permanent, no expiration)
+    // Store deleteTokenHash in Redis (not in the public blob)
+    const redis = getRedis();
+    if (redis) {
+      await redis.set(shareHashKey(shareId), deleteTokenHash);
+    }
+
+    // Prepare data to store — deleteTokenHash and reportCount are in Redis,
+    // not in the public blob, to prevent exposure via the CDN URL.
     const shareData: ShareData = {
       layout: sharePayload,
       metadata: {
-        deleteTokenHash,
         createdAt: nowIso,
         lastUpdatedAt: nowIso,
         lastAccessedAt: nowIso,
         permission,
         authorName: typeof authorName === 'string' ? authorName.slice(0, 64) : undefined,
-        reportCount: 0,
       },
     };
 

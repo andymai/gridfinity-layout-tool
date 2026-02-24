@@ -54,14 +54,13 @@ export interface LiveblocksStorage {
     permission: 'view' | 'edit';
     /** Schema version for migrations */
     version: number;
-    /** Delete token for cloud share updates (set by owner, used by all collaborators) */
-    deleteToken?: string;
   };
 }
 
 /**
  * Check if Liveblocks is configured.
  * Collaborative features are disabled when the public key is not set.
+ * Requires VITE_LIVEBLOCKS_PUBLIC_KEY (client) and LIVEBLOCKS_SECRET_KEY (server).
  */
 const LIVEBLOCKS_PUBLIC_KEY = import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY as string | undefined;
 export const isLiveblocksConfigured = Boolean(LIVEBLOCKS_PUBLIC_KEY);
@@ -69,15 +68,16 @@ export const isLiveblocksConfigured = Boolean(LIVEBLOCKS_PUBLIC_KEY);
 /**
  * Liveblocks client configuration.
  *
- * Uses public key for simpler setup. For production with server-side
- * permission control, switch to authEndpoint: '/api/liveblocks-auth'
- * and set LIVEBLOCKS_SECRET_KEY environment variable.
+ * Uses server-side auth endpoint for permission enforcement:
+ * - 'edit' shares grant FULL_ACCESS to all collaborators
+ * - 'view' shares grant READ_ACCESS to non-owners
  *
+ * Requires LIVEBLOCKS_SECRET_KEY on the server side.
  * Client is only created when the public key is available.
  */
 const client = isLiveblocksConfigured
   ? createClient({
-      publicApiKey: LIVEBLOCKS_PUBLIC_KEY as string,
+      authEndpoint: '/api/liveblocks-auth',
       // Throttle presence updates to 20fps (50ms) to balance smoothness and bandwidth
       throttle: 50,
     })

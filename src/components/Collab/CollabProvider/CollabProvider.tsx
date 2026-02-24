@@ -6,6 +6,10 @@
  *
  * Mutations go through the local store and are synced to Liveblocks
  * via the useCollabSync hook (bidirectional sync).
+ *
+ * Security note: the delete token is NOT stored in Liveblocks shared storage.
+ * Cloud sync is restricted to the share owner (the user who has the delete token
+ * in their local library). Non-owners cannot write to Vercel Blob.
  */
 
 import type { ReactNode } from 'react';
@@ -135,7 +139,8 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   );
 
   // Initial storage - the layout data to sync
-  // If user is owner, include deleteToken so any collaborator can sync to blob
+  // The delete token is intentionally NOT stored in shared storage.
+  // Cloud sync is owner-only: the delete token stays in the owner's local library.
   const initialStorage: LiveblocksStorage = useMemo(
     () => ({
       layout,
@@ -143,8 +148,6 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
         ownerId: userId,
         permission: cloudShare?.permission ?? 'edit',
         version: 1,
-        // Owner shares the deleteToken so any collaborator can persist to blob
-        deleteToken: cloudShare?.deleteToken,
       },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only use layout on initial mount, not on every change
@@ -153,7 +156,9 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
 
   return (
     <RoomProvider id={roomId} initialPresence={initialPresence} initialStorage={initialStorage}>
-      <PresenceProvider shareId={shareId}>{children}</PresenceProvider>
+      <PresenceProvider shareId={shareId} ownerDeleteToken={cloudShare?.deleteToken}>
+        {children}
+      </PresenceProvider>
     </RoomProvider>
   );
 }
@@ -164,15 +169,26 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
  *
  * Mutations now go through LocalMutationsProvider (which uses the store directly).
  * The useCollabSync hook handles bidirectional sync between store and Liveblocks.
+ *
+ * ownerDeleteToken is only defined for the share owner. It enables cloud sync
+ * from this client without broadcasting the token to other collaborators.
  */
-function PresenceProvider({ shareId, children }: { shareId: string; children: ReactNode }) {
+function PresenceProvider({
+  shareId,
+  ownerDeleteToken,
+  children,
+}: {
+  shareId: string;
+  ownerDeleteToken: string | undefined;
+  children: ReactNode;
+}) {
   const updateMyPresence = useUpdateMyPresence();
 
   // Enable bidirectional sync between Liveblocks and Zustand
   useCollabSync();
 
-  // Auto-sync layout changes to cloud share storage (only owner has cloudShare info)
-  useCloudShareAutoSync(shareId, true);
+  // Auto-sync layout changes to cloud share storage (owner-only: token only present for owner)
+  useCloudShareAutoSync(shareId, ownerDeleteToken);
 
   // Auto-dismiss Liveblocks badge (injected asynchronously by Liveblocks SDK)
   useEffect(() => {
