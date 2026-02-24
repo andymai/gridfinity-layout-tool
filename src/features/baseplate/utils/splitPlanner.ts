@@ -122,20 +122,30 @@ export function computeBaseplateTiling(
   } = params;
 
   // Split each axis, accounting for edge padding.
-  // When fractionalEdge is 'start' we reverse the splits, so we swap the padding
-  // parameters to match: the original "first" chunk (with paddingStart) becomes the
-  // last after reversal, and vice versa.
+  // When fractionalEdge is 'start' we swap the padding parameters so splitAxis
+  // places the fraction at the end (its default), then reorderLargestFirst moves
+  // it to position 0 while sorting the rest descending.
   const colPadStart = fractionalEdgeX === 'start' ? paddingRight : paddingLeft;
   const colPadEnd = fractionalEdgeX === 'start' ? paddingLeft : paddingRight;
   const rowPadStart = fractionalEdgeY === 'start' ? paddingBack : paddingFront;
   const rowPadEnd = fractionalEdgeY === 'start' ? paddingFront : paddingBack;
 
-  let colSizes = splitAxis(width, gridUnitMm, printBedMm, colPadStart, colPadEnd);
-  let rowSizes = splitAxis(depth, gridUnitMm, printBedMm, rowPadStart, rowPadEnd);
-
-  // If fractional edge is at 'start', reverse so the fraction lands on the first piece
-  if (fractionalEdgeX === 'start') colSizes = colSizes.reverse();
-  if (fractionalEdgeY === 'start') rowSizes = rowSizes.reverse();
+  const colSizes = reorderLargestFirst(
+    splitAxis(width, gridUnitMm, printBedMm, colPadStart, colPadEnd),
+    gridUnitMm,
+    printBedMm,
+    paddingLeft,
+    paddingRight,
+    fractionalEdgeX === 'start'
+  );
+  const rowSizes = reorderLargestFirst(
+    splitAxis(depth, gridUnitMm, printBedMm, rowPadStart, rowPadEnd),
+    gridUnitMm,
+    printBedMm,
+    paddingFront,
+    paddingBack,
+    fractionalEdgeY === 'start'
+  );
 
   const isSplit = colSizes.length > 1 || rowSizes.length > 1;
 
@@ -223,6 +233,67 @@ export function pieceToBaseplateParams(
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
+
+/**
+ * Reorder split sizes so the largest pieces are at the lowest indices (front/left),
+ * while respecting edge constraints and fractional edge placement.
+ *
+ * When `fractionAtStart` is true and a fractional piece exists, it is pinned to
+ * position 0 with the remaining pieces sorted descending.
+ * In all other cases, pieces are sorted descending with edge constraints validated.
+ */
+function reorderLargestFirst(
+  sizes: number[],
+  gridUnitMm: number,
+  printBedMm: number,
+  paddingFirst: number,
+  paddingLast: number,
+  fractionAtStart: boolean
+): number[] {
+  if (sizes.length <= 1) return sizes;
+
+  const maxAtFirst = Math.floor((printBedMm - paddingFirst) / gridUnitMm);
+  const maxAtLast = Math.floor((printBedMm - paddingLast) / gridUnitMm);
+
+  // When fractionAtStart, pin the fractional piece (always last from splitAxis) to position 0.
+  // The remaining pieces occupy positions 1..N where position N carries paddingLast.
+  if (fractionAtStart) {
+    const lastIdx = sizes.length - 1;
+    if (isFractional(sizes[lastIdx])) {
+      const maxMiddle = Math.floor(printBedMm / gridUnitMm);
+      const sortedRest = sortDescWithEdges(sizes.slice(0, lastIdx), maxMiddle, maxAtLast);
+      return [sizes[lastIdx], ...sortedRest];
+    }
+  }
+
+  return sortDescWithEdges(sizes, maxAtFirst, maxAtLast);
+}
+
+/**
+ * Sort sizes descending while ensuring position 0 fits within paddingFirst
+ * and the last position fits within paddingLast.
+ *
+ * Falls back to the original order if constraints cannot be satisfied.
+ */
+function sortDescWithEdges(sizes: number[], maxFirst: number, maxLast: number): number[] {
+  const pool = [...sizes].sort((a, b) => b - a);
+
+  // Position 0: largest piece that fits with paddingFirst
+  const firstIdx = pool.findIndex((v) => v <= maxFirst);
+  if (firstIdx < 0) return sizes;
+  const first = pool.splice(firstIdx, 1)[0];
+
+  // If the smallest remaining piece already fits paddingLast, we're done
+  if (pool.length === 0 || pool[pool.length - 1] <= maxLast) {
+    return [first, ...pool];
+  }
+
+  // Last element too large — find a valid one and move it to the end
+  const validLastIdx = pool.findIndex((v) => v <= maxLast);
+  if (validLastIdx < 0) return sizes;
+  const lastPiece = pool.splice(validLastIdx, 1)[0];
+  return [first, ...pool, lastPiece];
+}
 
 function cumulativeOffsets(sizes: number[]): number[] {
   const offsets: number[] = [0];

@@ -248,15 +248,69 @@ describe('computeBaseplateTiling', () => {
     expect(rightPiece?.fractionalEdgeX).toBe('end');
   });
 
-  it('fractional edge at start (7.5x4) reverses splits', () => {
+  it('fractional edge at start (7.5x4) pins fraction at col 0', () => {
     const params = makeParams({ width: 7.5, depth: 4, fractionalEdgeX: 'start' });
     const tiling = computeBaseplateTiling(params, 256);
 
-    // splitAxis → [6, 1.5], reversed → [1.5, 6]
+    // splitAxis → [6, 1.5], fraction pinned at col 0 → [1.5, 6]
     expect(tiling.cols).toBe(2);
     const leftPiece = tiling.pieces.find((p) => p.col === 0);
     expect(leftPiece?.widthUnits).toBe(1.5);
     expect(leftPiece?.fractionalEdgeX).toBe('start');
+  });
+
+  it('largest pieces at front even with fractionalEdge=start and integer dims', () => {
+    // Integer-only dims with fractionalEdge='start': old code would reverse [6, 4] → [4, 6],
+    // making A1 the small piece. New code sorts descending → [6, 4], A1 is the large piece.
+    const params = makeParams({
+      width: 10,
+      depth: 10,
+      fractionalEdgeX: 'start',
+      fractionalEdgeY: 'start',
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.cols).toBe(2);
+    expect(tiling.rows).toBe(2);
+
+    const a1 = tiling.pieces.find((p) => p.col === 0 && p.row === 0);
+    const b2 = tiling.pieces.find((p) => p.col === 1 && p.row === 1);
+    // A1 (front-left) should be the largest piece
+    expect(a1?.widthUnits).toBe(6);
+    expect(a1?.depthUnits).toBe(6);
+    // B2 (back-right) should be the smallest
+    expect(b2?.widthUnits).toBe(4);
+    expect(b2?.depthUnits).toBe(4);
+  });
+
+  it('largest pieces at front in 3-piece split with padding', () => {
+    // splitAxis(10, 42, 256, 0, 100) → [6, 1, 3]
+    // reorderLargestFirst sorts to → [6, 3, 1]
+    const params = makeParams({ width: 10, depth: 4, paddingRight: 100 });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.cols).toBe(3);
+    const widths = tiling.pieces
+      .filter((p) => p.row === 0)
+      .sort((a, b) => a.col - b.col)
+      .map((p) => p.widthUnits);
+    // Largest (6) at front (col 0), then 3, then 1 at back (col 2)
+    expect(widths).toEqual([6, 3, 1]);
+  });
+
+  it('fractional edge at start with 3+ splits pins fraction and sorts rest', () => {
+    // 13.5 → splitAxis(13.5, 42, 256, 0, 0) → [6, 6, 1.5]
+    // fraction pinned at col 0, rest sorted desc → [1.5, 6, 6]
+    const params = makeParams({ width: 13.5, depth: 4, fractionalEdgeX: 'start' });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.cols).toBe(3);
+    const widths = tiling.pieces
+      .filter((p) => p.row === 0)
+      .sort((a, b) => a.col - b.col)
+      .map((p) => p.widthUnits);
+    expect(widths[0]).toBe(1.5); // fractional piece pinned at col 0
+    expect(widths[1]).toBeGreaterThanOrEqual(widths[2]); // rest sorted descending
   });
 
   it('large 3+ splits (16x16)', () => {
@@ -322,13 +376,11 @@ describe('computeBaseplateTiling', () => {
     expect(tiling.isSplit).toBe(true);
     expect(tiling.cols).toBe(2);
     // Verify both pieces physically fit
-    const a1 = tiling.pieces.find((p) => p.col === 0);
-    const b1 = tiling.pieces.find((p) => p.col === 1);
-    expect(a1).toBeDefined();
-    expect(b1).toBeDefined();
-    expect(a1!.widthUnits * 42 + a1!.paddingLeft + a1!.paddingRight).toBeLessThanOrEqual(256);
-    expect(b1!.widthUnits * 42 + b1!.paddingLeft + b1!.paddingRight).toBeLessThanOrEqual(256);
-    expect(a1!.widthUnits + b1!.widthUnits).toBe(6);
+    // Verify both pieces physically fit on the print bed
+    const [a1, b1] = tiling.pieces.sort((a, b) => a.col - b.col);
+    expect(a1.widthUnits * 42 + a1.paddingLeft + a1.paddingRight).toBeLessThanOrEqual(256);
+    expect(b1.widthUnits * 42 + b1.paddingLeft + b1.paddingRight).toBeLessThanOrEqual(256);
+    expect(a1.widthUnits + b1.widthUnits).toBe(6);
   });
 
   it('no split when padding still fits', () => {
@@ -376,12 +428,10 @@ describe('pieceToBaseplateParams', () => {
   it('defaults fractionalEdge to end when piece has none', () => {
     const parent = makeParams({ width: 10, depth: 4 });
     const tiling = computeBaseplateTiling(parent, 256);
-    // All integer pieces should default to 'end'
     const integerPiece = tiling.pieces.find((p) => p.fractionalEdgeX === 'none');
-    if (integerPiece) {
-      const result = pieceToBaseplateParams(integerPiece, parent);
-      expect(result.fractionalEdgeX).toBe('end');
-    }
+    expect(integerPiece).toBeDefined();
+    const result = pieceToBaseplateParams(integerPiece as NonNullable<typeof integerPiece>, parent);
+    expect(result.fractionalEdgeX).toBe('end');
   });
 
   it('passes through edge classification to params', () => {
@@ -414,9 +464,7 @@ describe('pieceToBaseplateParams', () => {
     const tiling = computeBaseplateTiling(parent, 256);
     const fracPiece = tiling.pieces.find((p) => p.fractionalEdgeX !== 'none');
     expect(fracPiece).toBeDefined();
-    if (fracPiece) {
-      const result = pieceToBaseplateParams(fracPiece, parent);
-      expect(result.fractionalEdgeX).toBe('start');
-    }
+    const result = pieceToBaseplateParams(fracPiece as NonNullable<typeof fracPiece>, parent);
+    expect(result.fractionalEdgeX).toBe('start');
   });
 });
