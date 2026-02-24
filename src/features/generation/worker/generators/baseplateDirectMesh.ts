@@ -7,13 +7,15 @@
  *
  * The output is geometrically equivalent to the simplified BREP version
  * (buildSimplifiedPocketCutter) — a waffle-grid slab with tapered pockets,
- * optional magnet boss pads, and a rounded outer perimeter.
+ * optional magnet holes in a perimeter frame, and a rounded outer perimeter.
  *
  * Coordinate system (matches baseplateGenerator.ts):
- * - Z=0: slab bottom face
- * - Z=SOCKET_HEIGHT (5mm): slab top / pocket opening
+ * - Z=0: bottom face of baseplate
+ * - Z=totalHeight: top face / pocket opening
+ * - Pockets cut through the full slab height
+ * - With magnets: slab is taller by (MAGNET_FLOOR + magnetDepth); magnet holes
+ *   are blind cylindrical pockets from Z=0 upward by magnetDepth
  * - Grid centered at XY origin; slab offset by padding
- * - With magnets: bosses extend below Z=0 by (MAGNET_FLOOR + magnetDepth)
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
@@ -39,10 +41,7 @@ const PLATE_CORNER_RADIUS = CORNER_RADIUS; // 4mm
 /** Magnet position offset from cell center (mm) */
 const HOLE_OFFSET = 13;
 
-/** Wall thickness around magnet hole inside boss pad (mm) */
-const BOSS_WALL = 1;
-
-/** Solid floor above magnet — magnets glue against this (mm) */
+/** Solid ceiling above each magnet hole — magnets glue against this (mm) */
 const MAGNET_FLOOR = 0.5;
 
 /** Number of line segments per rounded corner arc */
@@ -50,6 +49,14 @@ const CORNER_SEGMENTS = 4;
 
 /** Number of segments for magnet hole circle approximation */
 const CIRCLE_SEGMENTS = 16;
+
+/** Magnet position offsets relative to cell center (4 corners per cell) */
+const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+  [-HOLE_OFFSET, -HOLE_OFFSET],
+  [HOLE_OFFSET, -HOLE_OFFSET],
+  [HOLE_OFFSET, HOLE_OFFSET],
+  [-HOLE_OFFSET, HOLE_OFFSET],
+];
 
 // ─── Mesh Builder ───────────────────────────────────────────────────────────
 
@@ -297,10 +304,9 @@ function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
 /**
  * Add pocket inner walls for one cell.
  *
- * Simplified pocket (matches buildSimplifiedPocketCutter):
- * - Top ring at Z=SOCKET_HEIGHT: full cell size, corner_radius
- * - Bottom ring at Z=0: inset by INSET_BOT, reduced corner_radius
- * - Through-cut extends to Z=-1 (but we just use Z=0 since the bottom is open)
+ * Two wall sections:
+ * - Tapered: Z=totalHeight (full cell size) to Z=floorDepth (inset by INSET_BOT)
+ * - Straight: Z=floorDepth to Z=0 (constant INSET_BOT) — only when floorDepth > 0
  *
  * Walls face INWARD (normals point toward cell center = into the pocket).
  * Since these are interior pocket walls, the "outside of the solid" is
@@ -311,24 +317,26 @@ function addPocketWalls(
   cx: number,
   cy: number,
   cellW_mm: number,
-  cellD_mm: number
+  cellD_mm: number,
+  totalHeight: number,
+  floorDepth: number
 ): void {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const botR = Math.max(cornerR - INSET_BOT, 0.1);
 
-  // Top profile at Z = SOCKET_HEIGHT (full cell size)
+  // Top profile at Z = totalHeight (full cell size)
   const topPts = roundedRectPoints(cellW_mm, cellD_mm, cornerR, CORNER_SEGMENTS);
-  // Bottom profile at Z = 0 (inset)
+  // Bottom profile at Z = floorDepth (inset by INSET_BOT)
   const botW = cellW_mm - 2 * INSET_BOT;
   const botD = cellD_mm - 2 * INSET_BOT;
   const botPts = roundedRectPoints(botW, botD, botR, CORNER_SEGMENTS);
 
-  const zTop = SOCKET_HEIGHT;
-  const zBot = 0;
+  const zTop = totalHeight;
+  const zMid = floorDepth;
 
   const n = topPts.length;
 
-  // Stitch wall quads between top and bottom rings.
+  // Tapered section: stitch wall quads between top and mid rings.
   // Normals point INWARD (toward pocket center), which for a pocket means
   // toward the outside of the solid. Since the profile goes CCW when viewed
   // from +Z, inward-facing quads need CW winding from outside = we reverse.
@@ -344,14 +352,28 @@ function addPocketWalls(
     const bx1 = botPts[j][0] + cx,
       by1 = botPts[j][1] + cy;
 
-    // Quad: top0, top1, bot1, bot0 — but we want normals pointing INTO the pocket.
     // From outside the solid (= inside the pocket), CCW is: top1, top0, bot0, bot1
-    mb.pushFlatQuad(tx1, ty1, zTop, tx0, ty0, zTop, bx0, by0, zBot, bx1, by1, zBot);
+    mb.pushFlatQuad(tx1, ty1, zTop, tx0, ty0, zTop, bx0, by0, zMid, bx1, by1, zMid);
   }
 
-  // Bottom opening face — ring at Z=0 forms the pocket bottom opening.
-  // For through-cut pockets the bottom is open, so we don't cap it.
-  // The slab bottom face (Z=0) is generated separately as the waffle grid.
+  // Straight section: Z=floorDepth to Z=0 at constant INSET_BOT profile.
+  // Only needed when floorDepth > 0 (magnets enabled, perimeter frame exists).
+  if (floorDepth > 0) {
+    const zBot = 0;
+
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+
+      const bx0 = botPts[i][0] + cx,
+        by0 = botPts[i][1] + cy;
+      const bx1 = botPts[j][0] + cx,
+        by1 = botPts[j][1] + cy;
+
+      // Same INSET_BOT profile at both top and bottom of this section
+      // Normals point inward (toward pocket center)
+      mb.pushFlatQuad(bx1, by1, zMid, bx0, by0, zMid, bx0, by0, zBot, bx1, by1, zBot);
+    }
+  }
 }
 
 // ─── Outer Perimeter Walls ──────────────────────────────────────────────────
@@ -359,7 +381,7 @@ function addPocketWalls(
 /**
  * Add outer perimeter walls.
  *
- * Vertical walls from Z=SOCKET_HEIGHT down to Z=0 following the outer profile.
+ * Vertical walls from Z=totalHeight down to Z=0 following the outer profile.
  * Normals point OUTWARD (away from slab center).
  *
  * The outer profile goes CCW from +Z view. Outward-facing walls from a CCW
@@ -369,10 +391,11 @@ function addOuterWalls(
   mb: MeshBuilder,
   outerPts: ReadonlyArray<readonly [number, number]>,
   offsetX: number,
-  offsetY: number
+  offsetY: number,
+  totalHeight: number
 ): void {
   const n = outerPts.length;
-  const zTop = SOCKET_HEIGHT;
+  const zTop = totalHeight;
   const zBot = 0;
 
   for (let i = 0; i < n; i++) {
@@ -391,22 +414,12 @@ function addOuterWalls(
 // ─── Top Face ───────────────────────────────────────────────────────────────
 
 /**
- * Add the top face of the slab (Z=SOCKET_HEIGHT).
+ * Add the top face of the slab (Z=totalHeight).
  *
  * The top face is the outer perimeter minus the pocket top openings.
  * For the waffle grid, the top face is just the wall material between pockets.
  *
- * Strategy: emit the wall strips between pocket openings and between the
- * outer perimeter and the nearest pocket edges. For the top face, pocket
- * openings fill nearly the full cell area (INSET_TOP=0), so wall material
- * is minimal. But with padding, there are perimeter strips.
- *
- * We decompose the top face into rectangular wall segments, ignoring rounded
- * corners for simplicity (the wall strips at the top are paper-thin since
- * INSET_TOP=0, meaning pocket tops = cell size = grid unit). The only
- * visible top material is the padding perimeter and half-cell edges.
- *
- * Actually, pocket top openings ARE the full cell size (no inset at top).
+ * Pocket top openings ARE the full cell size (no inset at top).
  * So between adjacent pockets, there is ZERO wall width at the top face.
  * The only top-face material is the padding perimeter around the grid.
  * We generate that as a strip polygon.
@@ -419,32 +432,18 @@ function addTopFace(
   cells: ReadonlyArray<CellInfo>,
   gridUnitMm: number,
   gridW: number,
-  gridD: number
+  gridD: number,
+  totalHeight: number
 ): void {
-  const z = SOCKET_HEIGHT;
+  const z = totalHeight;
   const nx = 0,
     ny = 0,
     nz = 1;
 
   // If there's no padding beyond the grid, the pocket openings tile the entire
-  // top face, leaving nothing to fill. Check if outer profile extends beyond grid.
+  // top face, leaving nothing to fill.
   const gridHalfW = (gridW * gridUnitMm) / 2;
   const gridHalfD = (gridD * gridUnitMm) / 2;
-
-  // For simplicity, triangulate the outer perimeter polygon, then cut out pockets.
-  // But since pocket tops = cell size = wall width 0 between cells at top,
-  // we just need the perimeter strip.
-
-  // Fan-triangulate the entire outer profile as a face, then we'll add pocket
-  // openings as holes. For the top face, since pockets tile perfectly on the
-  // grid portion, we only have material where padding exists.
-
-  // Simple approach: if padding is nonzero, emit the perimeter strip between
-  // outer edge and grid edge as a ring of quads/triangles.
-  // If no padding, there's no top face material (pockets consume it all).
-
-  // Check if there's any padding material by comparing outer profile extents
-  // to grid extents. The outer polygon may be rounded, but the grid is rectangular.
 
   // Generate a grid-boundary rectangle profile
   const gridPts: Array<readonly [number, number]> = [
@@ -469,21 +468,10 @@ function addTopFace(
 
   if (!hasPadding) return;
 
-  // With padding: emit a strip between the outer profile and the grid boundary.
-  // This is a polygon-with-hole (outer perimeter with grid-sized rectangular hole).
-  // Triangulate by connecting corresponding segments.
-
-  // Simplified approach: emit 4 trapezoidal strips (front, right, back, left perimeter).
-  // Each strip goes from the outer profile edge to the grid boundary edge.
-  // Because the outer profile is rounded, we approximate by connecting each outer
-  // point to the nearest grid boundary point.
-
-  // Even simpler: fan triangulate the outer polygon, then subtract pocket areas.
-  // Since we don't have CSG on 2D polygons, we use fan triangulation of the full
-  // outer area and accept that pockets will z-fight at exactly Z=SOCKET_HEIGHT.
-  // Three.js renders the pocket walls on top, making this acceptable for preview.
-
-  // Fan triangulation from centroid
+  // With padding: fan triangulate the outer polygon at Z=totalHeight.
+  // Since pockets tile perfectly on the grid portion, we only have material
+  // where padding exists. The pocket walls obscure the top face from any
+  // viewing angle, so minor overdraw is acceptable for preview.
   const centroidX = offsetX;
   const centroidY = offsetY;
   const center = mb.pushVertex(centroidX, centroidY, z, nx, ny, nz);
@@ -499,11 +487,6 @@ function addTopFace(
     mb.pushTriangle(center, outerVerts[i], outerVerts[j]);
   }
 
-  // Now punch holes: for each cell, add a downward-facing polygon at Z=SOCKET_HEIGHT
-  // to cancel the top face inside pockets. Instead of this cancellation approach
-  // (which doesn't work with indexed meshes), we accept the minor overdraw.
-  // The pocket walls obscure the top face from any viewing angle, so the
-  // visual result is correct.
   void cells;
   void gridPts;
 }
@@ -514,30 +497,12 @@ function addTopFace(
  * Add the bottom face of the slab (Z=0), which is the waffle grid:
  * solid material everywhere EXCEPT inside pocket bottom openings.
  *
- * Strategy: fan-triangulate the outer perimeter polygon at Z=0 (facing -Z),
- * then for each pocket, add an inward-facing cap to cancel the floor inside.
+ * Strategy: emit the full outer polygon as downward-facing triangles at Z=0,
+ * then for each pocket, emit the bottom footprint (INSET_BOT profile) as
+ * upward-facing triangles to cancel the floor inside the pocket opening.
  *
  * Since pocket bottoms are inset (INSET_BOT=2.95mm), there IS wall material
  * between adjacent pockets at Z=0, unlike the top face.
- *
- * Simpler approach: emit the full outer polygon as a floor, then emit each
- * pocket bottom opening as a reverse-wound polygon. The z-fighting at pocket
- * boundaries is hidden by the pocket walls. However, this creates double
- * geometry. Instead, we accept minor overdraw for a clean implementation.
- *
- * Best approach: Build the waffle grid explicitly.
- * - Emit the full outer profile as downward-facing triangles
- * - Emit each pocket bottom footprint as upward-facing triangles (cancels floor)
- *
- * Actually for a manifold mesh, the bottom face should only exist WHERE the
- * solid has material. The correct approach is to emit ONLY the wall strips.
- * But since Three.js renders both sides for preview, and the pocket walls
- * already define the pocket openings, fan-triangulating the full floor then
- * capping pocket holes inward gives correct visual appearance.
- *
- * For correctness: we emit the outer polygon at Z=0 facing DOWN, then
- * each pocket bottom at Z=0 facing UP. This way looking from below you see
- * the waffle grid (floor minus pocket holes).
  */
 function addBottomFace(
   mb: MeshBuilder,
@@ -607,18 +572,7 @@ function addBottomFace(
   }
 }
 
-// ─── Magnet Boss Geometry ───────────────────────────────────────────────────
-
-/**
- * Offsets for 4 magnet positions per cell: [dx, dy, signX, signY].
- * signX/signY indicate the quadrant direction toward the pocket corner.
- */
-const BOSS_OFFSETS: ReadonlyArray<readonly [number, number, number, number]> = [
-  [-HOLE_OFFSET, -HOLE_OFFSET, -1, -1],
-  [HOLE_OFFSET, -HOLE_OFFSET, 1, -1],
-  [HOLE_OFFSET, HOLE_OFFSET, 1, 1],
-  [-HOLE_OFFSET, HOLE_OFFSET, -1, 1],
-];
+// ─── Magnet Hole Geometry ───────────────────────────────────────────────────
 
 /**
  * Generate circle points (CCW from +Z) centered at origin.
@@ -633,80 +587,34 @@ function circlePoints(radius: number, segments: number): ReadonlyArray<readonly 
 }
 
 /**
- * Add magnet boss pads and holes for one cell.
+ * Add magnet holes for one cell.
  *
- * Each boss is a rectangular box protruding below Z=0, with a cylindrical
- * magnet hole. The top face (at Z=0) is coincident with the slab bottom,
- * so we skip it to avoid double geometry.
+ * Each magnet hole is a blind cylindrical pocket cut from the bottom face (Z=0)
+ * upward by magnetDepth. The thin ceiling at Z=magnetDepth (with MAGNET_FLOOR
+ * of solid material above it) is the glue surface.
  *
- * Boss dimensions:
- * - innerExtent = magnetRadius + BOSS_WALL (toward pocket interior past magnet center)
- * - outerExtent = gridUnitMm/2 - HOLE_OFFSET - 0.1 (toward pocket corner)
- * - total size = innerExtent + outerExtent
- * - height = MAGNET_FLOOR + magnetDepth (below Z=0)
- *
- * The boss is shifted so its center is offset from the magnet position:
- * shift = (outerExtent - innerExtent) / 2 toward the corner.
+ * For each magnet position in a full cell:
+ * - Cylinder wall from Z=0 to Z=magnetDepth (normals pointing inward toward axis)
+ * - Floor circle at Z=magnetDepth facing down (normal -Z) — the glue surface
+ * - Cancel circle at Z=0 facing up (normal +Z) — punches hole in bottom face
  */
-function addMagnetBosses(
+function addMagnetHoles(
   mb: MeshBuilder,
   cx: number,
   cy: number,
   magnetRadius: number,
-  magnetDepth: number,
-  gridUnitMm: number
+  magnetDepth: number
 ): void {
-  const outerExtent = gridUnitMm / 2 - HOLE_OFFSET - 0.1;
-  const innerExtent = magnetRadius + BOSS_WALL;
-  const totalSize = innerExtent + outerExtent;
-  const halfSize = totalSize / 2;
-  const shift = (outerExtent - innerExtent) / 2;
-  const bossHeight = MAGNET_FLOOR + magnetDepth;
-  const zTop = 0; // coincident with slab bottom
-  const zBot = -bossHeight;
-  const zFloor = -MAGNET_FLOOR; // magnet floor (glue surface)
+  const zBot = 0;
+  const zTop = magnetDepth; // ceiling of magnet pocket
 
   const circlePts = circlePoints(magnetRadius, CIRCLE_SEGMENTS);
 
-  for (const [dx, dy, sx, sy] of BOSS_OFFSETS) {
+  for (const [dx, dy] of MAGNET_OFFSETS) {
     const mx = cx + dx; // magnet center position
     const my = cy + dy;
-    const bx = mx + sx * shift; // boss center position
-    const by = my + sy * shift;
 
-    // Boss box corners at top and bottom
-    const x0 = bx - halfSize,
-      x1 = bx + halfSize;
-    const y0 = by - halfSize,
-      y1 = by + halfSize;
-
-    // 4 side faces of the boss box
-    // Front face (y = y0, normal -Y)
-    mb.pushFlatQuad(x0, y0, zTop, x1, y0, zTop, x1, y0, zBot, x0, y0, zBot);
-    // Right face (x = x1, normal +X)
-    mb.pushFlatQuad(x1, y0, zTop, x1, y1, zTop, x1, y1, zBot, x1, y0, zBot);
-    // Back face (y = y1, normal +Y)
-    mb.pushFlatQuad(x1, y1, zTop, x0, y1, zTop, x0, y1, zBot, x1, y1, zBot);
-    // Left face (x = x0, normal -X)
-    mb.pushFlatQuad(x0, y1, zTop, x0, y0, zTop, x0, y0, zBot, x0, y1, zBot);
-
-    // Bottom face of boss: rectangle with circular hole (annular)
-    // We triangulate as a fan from each circle point to the rectangle edges.
-    // Simpler approach: triangulate the annulus by connecting circle vertices
-    // to rectangle edges via a triangle fan pattern.
-
-    // Bottom face approach: Create rectangle outline + circle outline, then
-    // triangulate the region between them.
-    // For simplicity, use a "connect to nearest rectangle point" approach.
-
-    // Actually simplest correct approach:
-    // Emit the full rectangle bottom facing -Z, then emit the circle facing +Z
-    // to cancel the hole, then emit the cylinder wall and magnet floor.
-
-    // Full rectangle bottom (facing -Z: CCW from below = CW from above)
-    mb.pushFlatQuad(x0, y0, zBot, x0, y1, zBot, x1, y1, zBot, x1, y0, zBot);
-
-    // Circle at Z=zBot facing +Z (cancels the hole in the rectangle)
+    // 1. Cancel circle at Z=0 facing UP — punches hole in the bottom face
     {
       const nx = 0,
         ny = 0,
@@ -723,8 +631,7 @@ function addMagnetBosses(
       }
     }
 
-    // Cylinder inner wall of magnet hole (from Z=zBot to Z=zFloor)
-    // Normals point inward (toward cylinder axis = toward magnet center)
+    // 2. Cylinder wall from Z=0 to Z=magnetDepth (normals point inward toward axis)
     for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
       const j = (i + 1) % CIRCLE_SEGMENTS;
       const px0 = circlePts[i][0] + mx,
@@ -732,25 +639,21 @@ function addMagnetBosses(
       const px1 = circlePts[j][0] + mx,
         py1 = circlePts[j][1] + my;
 
-      // Inward-facing: from outside the solid (= inside the cylinder), CCW
-      // The circle goes CCW from +Z, so from inside looking outward the
-      // wall quads go: bot_i, bot_j, top_j, top_i (where top = zFloor, bot = zBot)
-      // But we want normals pointing INTO the cylinder (toward center) which
-      // is the outward direction of the solid. So:
-      // From outside the solid: top_j, top_i, bot_i, bot_j
-      mb.pushFlatQuad(px1, py1, zFloor, px0, py0, zFloor, px0, py0, zBot, px1, py1, zBot);
+      // Inward-facing: from outside the solid (= inside the cylinder), CCW.
+      // The circle goes CCW from +Z, so from inside looking outward:
+      // top_j, top_i, bot_i, bot_j
+      mb.pushFlatQuad(px1, py1, zTop, px0, py0, zTop, px0, py0, zBot, px1, py1, zBot);
     }
 
-    // Magnet floor face (circle at Z=zFloor, facing -Z = toward magnet)
-    // This is the glue surface; normal faces down into the magnet cavity.
+    // 3. Floor circle at Z=magnetDepth facing DOWN — glue surface / ceiling
     {
       const nx = 0,
         ny = 0,
         nz = -1;
-      const center = mb.pushVertex(mx, my, zFloor, nx, ny, nz);
+      const center = mb.pushVertex(mx, my, zTop, nx, ny, nz);
       const verts: number[] = [];
       for (const pt of circlePts) {
-        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, zFloor, nx, ny, nz));
+        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, zTop, nx, ny, nz));
       }
       const nPts = verts.length;
       // Facing -Z: CCW from below = CW from above → center, v_{j}, v_{i}
@@ -758,43 +661,6 @@ function addMagnetBosses(
         const j = (i + 1) % nPts;
         mb.pushTriangle(center, verts[j], verts[i]);
       }
-    }
-
-    // Top face of boss at Z=0 is coincident with slab bottom.
-    // We SKIP it to avoid z-fighting. The slab bottom face covers this area.
-    // However, we need the circular hole in the slab bottom above the magnet.
-    // The slab bottom is emitted as a full polygon, so the boss top merges with it.
-    // The magnet hole cylinder already extends through — the through-cut pocket
-    // will expose the magnet hole from the pocket side.
-
-    // For the region at Z=0 above the magnet hole, we need to cancel the
-    // slab bottom floor inside the magnet cylinder. Add upward-facing circle.
-    {
-      const nx = 0,
-        ny = 0,
-        nz = 1;
-      const center = mb.pushVertex(mx, my, zTop, nx, ny, nz);
-      const verts: number[] = [];
-      for (const pt of circlePts) {
-        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, zTop, nx, ny, nz));
-      }
-      const nPts = verts.length;
-      for (let i = 0; i < nPts; i++) {
-        const j = (i + 1) % nPts;
-        mb.pushTriangle(center, verts[i], verts[j]);
-      }
-    }
-
-    // Cylinder wall from Z=0 down to Z=zFloor (upper part of magnet hole,
-    // through the slab floor). Normals point inward.
-    for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
-      const j = (i + 1) % CIRCLE_SEGMENTS;
-      const px0 = circlePts[i][0] + mx,
-        py0 = circlePts[i][1] + my;
-      const px1 = circlePts[j][0] + mx,
-        py1 = circlePts[j][1] + my;
-
-      mb.pushFlatQuad(px1, py1, zTop, px0, py0, zTop, px0, py0, zFloor, px1, py1, zFloor);
     }
   }
 }
@@ -804,8 +670,8 @@ function addMagnetBosses(
 /**
  * Generate baseplate mesh data procedurally without BREP boolean operations.
  *
- * Produces a waffle-grid slab with tapered pockets, optional magnet bosses,
- * and a rounded outer perimeter. Targets <50ms for any grid size.
+ * Produces a waffle-grid slab with tapered pockets, optional magnet holes in a
+ * perimeter frame, and a rounded outer perimeter. Targets <50ms for any grid size.
  */
 export function generateBaseplateDirect(
   params: BaseplateParams,
@@ -833,7 +699,9 @@ export function generateBaseplateDirect(
 
   const mb = new MeshBuilder();
 
-  // Slab dimensions
+  // Slab dimensions — taller when magnets need a perimeter frame
+  const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
+  const totalHeight = SOCKET_HEIGHT + floorDepth;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMm + paddingFront + paddingBack;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
@@ -855,8 +723,8 @@ export function generateBaseplateDirect(
   // 1. Outer perimeter profile (with selective corner rounding for split baseplates)
   const outerPts = roundedRectPointsSelective(totalW, totalD, cornerR, CORNER_SEGMENTS, edges);
 
-  // 2. Outer perimeter walls (Z=SOCKET_HEIGHT to Z=0)
-  addOuterWalls(mb, outerPts, slabOffsetX, slabOffsetY);
+  // 2. Outer perimeter walls (Z=totalHeight to Z=0)
+  addOuterWalls(mb, outerPts, slabOffsetX, slabOffsetY, totalHeight);
 
   onProgress('base', 0.2);
   checkCancelled(signal);
@@ -865,14 +733,14 @@ export function generateBaseplateDirect(
   for (const cell of cells) {
     const cellW_mm = cell.widthUnits * gridUnitMm;
     const cellD_mm = cell.depthUnits * gridUnitMm;
-    addPocketWalls(mb, cell.centerX, cell.centerY, cellW_mm, cellD_mm);
+    addPocketWalls(mb, cell.centerX, cell.centerY, cellW_mm, cellD_mm, totalHeight, floorDepth);
   }
 
   onProgress('base', 0.5);
   checkCancelled(signal);
 
-  // 4. Top face (Z=SOCKET_HEIGHT) — only visible with padding
-  addTopFace(mb, outerPts, slabOffsetX, slabOffsetY, cells, gridUnitMm, width, depth);
+  // 4. Top face (Z=totalHeight) — only visible with padding
+  addTopFace(mb, outerPts, slabOffsetX, slabOffsetY, cells, gridUnitMm, width, depth, totalHeight);
 
   onProgress('base', 0.6);
   checkCancelled(signal);
@@ -883,13 +751,13 @@ export function generateBaseplateDirect(
   onProgress('base', 0.7);
   checkCancelled(signal);
 
-  // 6. Magnet bosses (when enabled, only for full-size cells)
+  // 6. Magnet holes (when enabled, only for full-size cells)
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
     for (const cell of cells) {
-      // Only place bosses in full-size cells (skip fractional edge cells)
+      // Only place magnet holes in full-size cells (skip fractional edge cells)
       if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
-      addMagnetBosses(mb, cell.centerX, cell.centerY, magnetRadius, magnetDepth, gridUnitMm);
+      addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, magnetDepth);
     }
   }
 

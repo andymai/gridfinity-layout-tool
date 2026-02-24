@@ -52,7 +52,7 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
   depth: 2,
   gridUnitMm: 42,
   magnetHoles: false,
-  magnetDiameter: 6.5, // actual UI default
+  magnetDiameter: 6.5,
   magnetDepth: 2,
   paddingLeft: 0,
   paddingRight: 0,
@@ -64,6 +64,21 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
 });
 
 const noop = (): void => {};
+
+/** Extract Z bounding box from mesh vertices */
+function zBounds(vertices: Float32Array): { minZ: number; maxZ: number } {
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (let i = 2; i < vertices.length; i += 3) {
+    const z = vertices[i];
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  return { minZ, maxZ };
+}
+
+const SOCKET_HEIGHT = 5;
+const MAGNET_FLOOR = 0.5;
 
 describe('baseplateGenerator', () => {
   // ─── Without magnets ──────────────────────────────────────────────────────
@@ -141,42 +156,37 @@ describe('baseplateGenerator', () => {
     expect(mesh.vertices.length).toBeGreaterThan(0);
   });
 
-  // ─── Boss geometry verification ──────────────────────────────────────────
-  it('magnet bosses extend below Z=0 by magnetDepth', () => {
+  // ─── Z-range verification ─────────────────────────────────────────────────
+  it('with magnets, slab extends from Z=0 to Z=SOCKET_HEIGHT+floor+depth', () => {
     const magnetDepth = 2;
     const mesh = generateBaseplate(
       defaults({ width: 1, depth: 1, magnetHoles: true, magnetDepth }),
       noop,
       false
     );
-    // Find Z bounding box from vertices
-    let minZ = Infinity;
-    let maxZ = -Infinity;
-    for (let i = 2; i < mesh.vertices.length; i += 3) {
-      const z = mesh.vertices[i];
-      if (z < minZ) minZ = z;
-      if (z > maxZ) maxZ = z;
-    }
-    // With magnets, bosses should protrude below Z=0 (slab bottom)
-    expect(minZ).toBeLessThan(-0.5);
-    // Boss should extend approximately MAGNET_FLOOR + magnetDepth below slab
-    const MAGNET_FLOOR = 0.5;
-    expect(minZ).toBeCloseTo(-(MAGNET_FLOOR + magnetDepth), 0);
-    // Top should be at SOCKET_HEIGHT (5mm)
-    expect(maxZ).toBeCloseTo(5, 0);
+    const { minZ, maxZ } = zBounds(mesh.vertices);
+    const expectedHeight = SOCKET_HEIGHT + MAGNET_FLOOR + magnetDepth;
+    // Bottom face at Z=0
+    expect(minZ).toBeCloseTo(0, 0);
+    // Top face at full height
+    expect(maxZ).toBeCloseTo(expectedHeight, 0);
   });
 
   it('without magnets, Z range is 0 to SOCKET_HEIGHT', () => {
     const mesh = generateBaseplate(defaults(), noop, false);
-    let minZ = Infinity;
-    let maxZ = -Infinity;
-    for (let i = 2; i < mesh.vertices.length; i += 3) {
-      const z = mesh.vertices[i];
-      if (z < minZ) minZ = z;
-      if (z > maxZ) maxZ = z;
-    }
+    const { minZ, maxZ } = zBounds(mesh.vertices);
     expect(minZ).toBeCloseTo(0, 0);
-    expect(maxZ).toBeCloseTo(5, 0);
+    expect(maxZ).toBeCloseTo(SOCKET_HEIGHT, 0);
+  });
+
+  it('magnet depth affects total height', () => {
+    const depth3 = generateBaseplate(defaults({ magnetHoles: true, magnetDepth: 3 }), noop, false);
+    const depth5 = generateBaseplate(defaults({ magnetHoles: true, magnetDepth: 5 }), noop, false);
+    const bounds3 = zBounds(depth3.vertices);
+    const bounds5 = zBounds(depth5.vertices);
+    // Deeper magnets = taller slab
+    expect(bounds5.maxZ).toBeGreaterThan(bounds3.maxZ);
+    expect(bounds5.maxZ - bounds3.maxZ).toBeCloseTo(2, 0); // 5 - 3 = 2mm difference
   });
 
   // ─── Different magnet sizes ───────────────────────────────────────────────
