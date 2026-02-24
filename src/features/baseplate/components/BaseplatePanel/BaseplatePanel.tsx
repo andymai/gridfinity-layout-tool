@@ -4,8 +4,8 @@
  * Top-to-bottom information hierarchy:
  * 1. Hero dimensions strip (total mm primary, grid context secondary — always visible)
  * 2. Fit to Drawer: per-side padding steppers
- * 3. Split Pieces: split info, toggle, mini-map (conditional on tiling)
- * 4. Magnets: magnet holes toggle with customize expand
+ * 3. Base: magnet holes toggle with customize expand
+ * 4. View: inline strip with assembled/exploded toggle + mini-map (conditional on split)
  * 5. Print Settings: grid unit, print bed size (rarely changed)
  *
  * Uses shared components (StickyGroupHeader, FeatureToggle, SliderInput,
@@ -23,12 +23,10 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
-import { SegmentedControl } from '@/shared/components/SegmentedControl';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { colToLetter } from '../../utils/splitPlanner';
 import type { BaseplateParams } from '@/core/types';
-import type { BaseplateTiling, BaseplatePiece } from '../../types/tiling';
-import type { SplitViewMode } from '../../store/baseplatePageStore';
+import type { BaseplateTiling } from '../../types/tiling';
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -45,15 +43,13 @@ export function BaseplatePanel() {
     }))
   );
 
-  const { tiling, splitViewMode, hoveredPieceLabel, selectedPieceLabel } = useBaseplatePageStore(
+  const { tiling, hoveredPieceLabel, selectedPieceLabel } = useBaseplatePageStore(
     useShallow((s) => ({
       tiling: s.tiling,
-      splitViewMode: s.splitViewMode,
       hoveredPieceLabel: s.hoveredPieceLabel,
       selectedPieceLabel: s.selectedPieceLabel,
     }))
   );
-  const setSplitViewMode = useBaseplatePageStore((s) => s.setSplitViewMode);
   const setHoveredPieceLabel = useBaseplatePageStore((s) => s.setHoveredPieceLabel);
   const setSelectedPieceLabel = useBaseplatePageStore((s) => s.setSelectedPieceLabel);
 
@@ -83,11 +79,6 @@ export function BaseplatePanel() {
     baseplateParams.paddingRight > 0 ||
     baseplateParams.paddingFront > 0 ||
     baseplateParams.paddingBack > 0;
-
-  const viewModeOptions: ReadonlyArray<{ value: SplitViewMode; label: string }> = [
-    { value: 'assembled', label: t('baseplate.viewAssembled') },
-    { value: 'exploded', label: t('baseplate.viewExploded') },
-  ];
 
   // Padding section summary
   const paddingSummary = hasPadding
@@ -159,33 +150,9 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* 3. Split Pieces — conditional, directly after padding */}
-        {tiling?.isSplit && (
-          <StickyGroupHeader
-            title={t('baseplate.sectionSplit')}
-            summary={t('baseplate.splitInfo', {
-              cols: tiling.cols,
-              rows: tiling.rows,
-              count: tiling.pieces.length,
-            })}
-          >
-            <SplitInfoContent
-              tiling={tiling}
-              viewMode={splitViewMode}
-              viewModeOptions={viewModeOptions}
-              onViewModeChange={setSplitViewMode}
-              hoveredPieceLabel={hoveredPieceLabel}
-              selectedPieceLabel={selectedPieceLabel}
-              onHoverPiece={setHoveredPieceLabel}
-              onSelectPiece={setSelectedPieceLabel}
-              gridUnitMm={gridUnitMm}
-            />
-          </StickyGroupHeader>
-        )}
-
-        {/* 4. Magnets — secondary toggle */}
+        {/* 3. Base — magnet holes toggle */}
         <StickyGroupHeader
-          title={t('baseplate.sectionMagnets')}
+          title={t('baseplate.sectionBase')}
           summary={
             baseplateParams.magnetHoles
               ? `\u00f8${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm`
@@ -224,7 +191,7 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* 5. Print Settings — advanced, rarely changed */}
+        {/* 4. Print Settings — advanced, rarely changed */}
         <StickyGroupHeader title={t('baseplate.sectionPrintSettings')}>
           <div className="space-y-3 px-4 py-3">
             <div className="text-xs text-content-secondary space-y-2">
@@ -262,6 +229,18 @@ export function BaseplatePanel() {
             </div>
           </div>
         </StickyGroupHeader>
+
+        {/* 5. Split pieces mini-map — only when baseplate is split */}
+        {tiling?.isSplit && (
+          <SplitViewStrip
+            tiling={tiling}
+            hoveredPieceLabel={hoveredPieceLabel}
+            selectedPieceLabel={selectedPieceLabel}
+            onHoverPiece={setHoveredPieceLabel}
+            onSelectPiece={setSelectedPieceLabel}
+            printBedSize={printBedSize}
+          />
+        )}
       </div>
     </div>
   );
@@ -269,121 +248,77 @@ export function BaseplatePanel() {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-/** Content for the split info section. */
-function SplitInfoContent({
+/** Non-collapsible inline strip for the split view control. */
+function SplitViewStrip({
   tiling,
-  viewMode,
-  viewModeOptions,
-  onViewModeChange,
   hoveredPieceLabel,
   selectedPieceLabel,
   onHoverPiece,
   onSelectPiece,
-  gridUnitMm,
+  printBedSize,
 }: {
   tiling: BaseplateTiling;
-  viewMode: SplitViewMode;
-  viewModeOptions: ReadonlyArray<{ value: SplitViewMode; label: string }>;
-  onViewModeChange: (mode: SplitViewMode) => void;
   hoveredPieceLabel: string | null;
   selectedPieceLabel: string | null;
   onHoverPiece: (label: string | null) => void;
   onSelectPiece: (label: string | null) => void;
-  gridUnitMm: number;
+  printBedSize: number;
 }) {
   const t = useTranslation();
 
-  const activePieceLabel = hoveredPieceLabel ?? selectedPieceLabel;
-  const activePiece = activePieceLabel
-    ? (tiling.pieces.find((p) => p.label === activePieceLabel) ?? null)
-    : null;
-
   return (
-    <div className="space-y-3 px-4 py-3">
-      {/* Split info line */}
-      <div className="text-xs tabular-nums text-content-secondary">
-        {t('baseplate.splitInfo', {
-          cols: tiling.cols,
-          rows: tiling.rows,
-          count: tiling.pieces.length,
-        })}
+    <div className="border-b border-stroke-subtle">
+      {/* Info + reason */}
+      <div className="flex items-baseline justify-between gap-2 px-4 pt-3 pb-1">
+        <span className="text-xs text-content-secondary">
+          {t('baseplate.splitInfo', { count: tiling.pieces.length })}
+        </span>
+        <span className="text-[11px] text-content-tertiary whitespace-nowrap">
+          {t('baseplate.splitReason', { printBed: printBedSize })}
+        </span>
       </div>
-
-      {/* Assembled / Exploded toggle */}
-      <SegmentedControl
-        options={viewModeOptions}
-        value={viewMode}
-        onChange={onViewModeChange}
-        ariaLabel={t('baseplate.sectionSplit')}
-      />
 
       {/* Piece mini-map */}
-      <div
-        className="grid gap-1"
-        aria-label={t('baseplate.sectionSplit')}
-        style={{
-          gridTemplateColumns: `repeat(${tiling.cols}, 1fr)`,
-        }}
-      >
-        {Array.from({ length: tiling.rows }, (_, ri) => {
-          // Flip Y so row 1 (front/bottom in 3D) is at the bottom of the mini-map
-          const r = tiling.rows - 1 - ri;
-          return Array.from({ length: tiling.cols }, (_, c) => {
-            const label = `${colToLetter(c)}${r + 1}`;
-            const isHovered = hoveredPieceLabel === label;
-            const isSelected = selectedPieceLabel === label;
+      <div className="px-4 pb-3">
+        <div
+          className="grid gap-1"
+          aria-label={t('baseplate.sectionView')}
+          style={{
+            gridTemplateColumns: `repeat(${tiling.cols}, 1fr)`,
+          }}
+        >
+          {Array.from({ length: tiling.rows }, (_, ri) => {
+            // Flip Y so row 1 (front/bottom in 3D) is at the bottom of the mini-map
+            const r = tiling.rows - 1 - ri;
+            return Array.from({ length: tiling.cols }, (_, c) => {
+              const label = `${colToLetter(c)}${r + 1}`;
+              const isHovered = hoveredPieceLabel === label;
+              const isSelected = selectedPieceLabel === label;
 
-            return (
-              <button
-                key={label}
-                type="button"
-                className={`flex items-center justify-center rounded border bg-surface-elevated py-1 text-[10px] font-mono transition-shadow ${
-                  isSelected
-                    ? 'ring-2 ring-accent border-accent text-content-primary'
-                    : isHovered
-                      ? 'ring-1 ring-accent/50 border-accent/50 text-content-secondary'
-                      : 'border-stroke-subtle text-content-tertiary'
-                }`}
-                onPointerEnter={() => onHoverPiece(label)}
-                onPointerLeave={() => onHoverPiece(null)}
-                onClick={() => onSelectPiece(selectedPieceLabel === label ? null : label)}
-                aria-pressed={isSelected}
-                aria-label={t('baseplate.pieceLabel', { label })}
-              >
-                {label}
-              </button>
-            );
-          });
-        })}
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  className={`flex items-center justify-center rounded border bg-surface-elevated py-1 text-[10px] font-mono transition-shadow ${
+                    isSelected
+                      ? 'ring-2 ring-accent border-accent text-content-primary'
+                      : isHovered
+                        ? 'ring-1 ring-accent/50 border-accent/50 text-content-secondary'
+                        : 'border-stroke-subtle text-content-tertiary'
+                  }`}
+                  onPointerEnter={() => onHoverPiece(label)}
+                  onPointerLeave={() => onHoverPiece(null)}
+                  onClick={() => onSelectPiece(selectedPieceLabel === label ? null : label)}
+                  aria-pressed={isSelected}
+                  aria-label={t('baseplate.pieceLabel', { label })}
+                >
+                  {label}
+                </button>
+              );
+            });
+          })}
+        </div>
       </div>
-
-      {/* Piece detail strip */}
-      {activePiece && <PieceDetailStrip piece={activePiece} gridUnitMm={gridUnitMm} />}
-    </div>
-  );
-}
-
-/** Shows dimensions for the active (hovered or selected) piece. */
-function PieceDetailStrip({ piece, gridUnitMm }: { piece: BaseplatePiece; gridUnitMm: number }) {
-  const t = useTranslation();
-  const widthMm = Math.round(
-    piece.widthUnits * gridUnitMm + piece.paddingLeft + piece.paddingRight
-  );
-  const depthMm = Math.round(
-    piece.depthUnits * gridUnitMm + piece.paddingFront + piece.paddingBack
-  );
-
-  return (
-    <div className="flex items-center justify-between rounded bg-surface-elevated px-2 py-1.5 text-[11px] tabular-nums">
-      <span className="font-mono font-medium text-content-primary">{piece.label}</span>
-      <span className="text-content-tertiary">
-        {t('baseplate.pieceDimensions', {
-          width: piece.widthUnits,
-          depth: piece.depthUnits,
-          widthMm,
-          depthMm,
-        })}
-      </span>
     </div>
   );
 }

@@ -127,29 +127,26 @@ describe('BaseplatePanel', () => {
     expect(screen.getByText('baseplate.sectionFitToDrawer')).toBeInTheDocument();
   });
 
-  it('renders magnet section', () => {
+  it('renders base section', () => {
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.sectionMagnets')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.sectionBase')).toBeInTheDocument();
   });
 
-  it('does not render split section when tiling is null', () => {
+  it('does not render view strip when tiling is null', () => {
     render(<BaseplatePanel />);
-    expect(screen.queryByText('baseplate.sectionSplit')).not.toBeInTheDocument();
+    expect(screen.queryByText('baseplate.splitInfo')).not.toBeInTheDocument();
   });
 
-  it('renders split section when tiling is split', () => {
+  it('renders view strip when tiling is split', () => {
     mockTiling = splitTiling;
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.sectionSplit')).toBeInTheDocument();
-    expect(screen.getByText('A1')).toBeInTheDocument();
-    expect(screen.getByText('B1')).toBeInTheDocument();
-  });
-
-  it('renders segmented control for split view mode', () => {
-    mockTiling = splitTiling;
-    render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.viewAssembled')).toBeInTheDocument();
-    expect(screen.getByText('baseplate.viewExploded')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.splitInfo')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.splitReason')).toBeInTheDocument();
+    // Mini-map buttons exist for each piece
+    const pieceButtons = screen
+      .getAllByRole('button')
+      .filter((b) => b.getAttribute('aria-label')?.startsWith('baseplate.pieceLabel'));
+    expect(pieceButtons.length).toBe(2);
   });
 
   it('renders magnet toggle as switch', () => {
@@ -177,7 +174,10 @@ describe('BaseplatePanel', () => {
     it('calls setHoveredPieceLabel on pointer enter/leave', () => {
       mockTiling = splitTiling;
       render(<BaseplatePanel />);
-      const a1Button = screen.getByText('A1');
+      const pieceButtons = screen
+        .getAllByRole('button')
+        .filter((b) => b.getAttribute('aria-label')?.startsWith('baseplate.pieceLabel'));
+      const a1Button = pieceButtons[0];
       fireEvent.pointerEnter(a1Button);
       expect(mockSetHoveredPieceLabel).toHaveBeenCalledWith('A1');
       fireEvent.pointerLeave(a1Button);
@@ -187,7 +187,10 @@ describe('BaseplatePanel', () => {
     it('calls setSelectedPieceLabel on click (toggle)', () => {
       mockTiling = splitTiling;
       render(<BaseplatePanel />);
-      const a1Button = screen.getByText('A1');
+      const pieceButtons = screen
+        .getAllByRole('button')
+        .filter((b) => b.getAttribute('aria-label')?.startsWith('baseplate.pieceLabel'));
+      const a1Button = pieceButtons[0];
       fireEvent.click(a1Button);
       expect(mockSetSelectedPieceLabel).toHaveBeenCalledWith('A1');
     });
@@ -196,25 +199,9 @@ describe('BaseplatePanel', () => {
       mockTiling = splitTiling;
       mockSelectedPieceLabel = 'A1';
       render(<BaseplatePanel />);
-      // Multiple "A1" elements exist (button + detail strip), pick the button
-      const a1Elements = screen.getAllByText('A1');
-      const a1Button = a1Elements.find((el) => el.tagName === 'BUTTON') as HTMLElement;
+      const a1Button = screen.getByText('A1');
       fireEvent.click(a1Button);
       expect(mockSetSelectedPieceLabel).toHaveBeenCalledWith(null);
-    });
-
-    it('renders piece detail strip when a piece is hovered', () => {
-      mockTiling = splitTiling;
-      mockHoveredPieceLabel = 'A1';
-      render(<BaseplatePanel />);
-      // Detail strip shows the label and dimensions
-      expect(screen.getByText('baseplate.pieceDimensions')).toBeInTheDocument();
-    });
-
-    it('does not render piece detail strip when no piece is active', () => {
-      mockTiling = splitTiling;
-      render(<BaseplatePanel />);
-      expect(screen.queryByText('baseplate.pieceDimensions')).not.toBeInTheDocument();
     });
   });
 });

@@ -8,11 +8,11 @@
  * The slab extends asymmetrically when padding differs per side.
  */
 
-import { useRef, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import { Vector3 } from 'three';
+import { Vector3, Spherical } from 'three';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -27,6 +27,22 @@ import { useMeshGeometry } from './useMeshGeometry';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useThreeColors } from '@/hooks/useThemeEffect';
 import { useTranslation } from '@/i18n';
+import type { SplitViewMode } from '../../store/baseplatePageStore';
+
+// ─── Camera Constants ────────────────────────────────────────────────────────
+
+type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
+
+/** Camera positions for each preset (eye position looking toward center) */
+const CAMERA_PRESETS: Record<CameraPreset, [number, number, number]> = {
+  front: [0, -1, 0.3],
+  side: [1, 0, 0.3],
+  top: [0, -0.01, 1],
+  isometric: [0.6, -0.6, 0.5],
+};
+
+/** Animation duration for camera preset transitions (ms) */
+const TRANSITION_DURATION = 500;
 
 /** Margin factor: how much of the viewport the baseplate should fill */
 const FRAME_FILL = 0.65;
@@ -37,14 +53,15 @@ const FRAME_FILL = 0.65;
 function calculateIdealDistance(
   width: number,
   depth: number,
+  gridUnitMm: number,
   paddingLeft: number,
   paddingRight: number,
   paddingFront: number,
   paddingBack: number,
   fov: number
 ): number {
-  const outerW = width * GRIDFINITY_SPEC.GRID_SIZE + paddingLeft + paddingRight;
-  const outerD = depth * GRIDFINITY_SPEC.GRID_SIZE + paddingFront + paddingBack;
+  const outerW = width * gridUnitMm + paddingLeft + paddingRight;
+  const outerD = depth * gridUnitMm + paddingFront + paddingBack;
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 
   const halfW = outerW / 2;
@@ -71,6 +88,7 @@ const DIM_TICK_SIZE = 3;
 function DimensionLabels({
   width,
   depth,
+  gridUnitMm,
   paddingLeft,
   paddingRight,
   paddingFront,
@@ -78,13 +96,14 @@ function DimensionLabels({
 }: {
   width: number;
   depth: number;
+  gridUnitMm: number;
   paddingLeft: number;
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
 }) {
   const colors = useThreeColors();
-  const GS = GRIDFINITY_SPEC.GRID_SIZE;
+  const GS = gridUnitMm;
 
   const gridW = width * GS;
   const gridD = depth * GS;
@@ -227,26 +246,48 @@ function SceneLighting() {
 
 /**
  * Camera controller that frames the baseplate on mount.
+ * Also exposes invalidate to hooks outside Canvas context via invalidateRef.
  */
 function CameraController({
   controlsRef,
+  invalidateRef,
   width,
   depth,
+  gridUnitMm,
   paddingLeft,
   paddingRight,
   paddingFront,
   paddingBack,
+  onOrbitStart,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
+  invalidateRef: React.RefObject<(() => void) | null>;
   width: number;
   depth: number;
+  gridUnitMm: number;
   paddingLeft: number;
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
+  onOrbitStart?: () => void;
 }) {
   const { camera, invalidate } = useThree();
   const initializedRef = useRef(false);
+
+  // Expose invalidate to hooks outside Canvas context
+  useEffect(() => {
+    invalidateRef.current = invalidate;
+  }, [invalidate, invalidateRef]);
+
+  // Wire up orbit start callback
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls || !onOrbitStart) return;
+    controls.addEventListener('start', onOrbitStart);
+    return () => {
+      controls.removeEventListener('start', onOrbitStart);
+    };
+  }, [controlsRef, onOrbitStart]);
 
   const fov = 45;
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
@@ -256,13 +297,14 @@ function CameraController({
       calculateIdealDistance(
         width,
         depth,
+        gridUnitMm,
         paddingLeft,
         paddingRight,
         paddingFront,
         paddingBack,
         fov
       ),
-    [width, depth, paddingLeft, paddingRight, paddingFront, paddingBack]
+    [width, depth, gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack]
   );
 
   const animRef = useRef<{
@@ -335,11 +377,403 @@ function CameraController({
   return null;
 }
 
+// ─── Camera Preset Transition Hook ──────────────────────────────────────────
+
+/**
+ * Manages smooth camera preset transitions using spherical coordinate interpolation.
+ * Adapted from the bin designer's usePresetTransition — uses baseplate's
+ * calculateIdealDistance (with padding params) and fixed SOCKET_HEIGHT center.
+ */
+function useBaseplatePresetTransition(
+  controlsRef: React.RefObject<OrbitControlsType | null>,
+  invalidateRef: React.RefObject<(() => void) | null>,
+  width: number,
+  depth: number,
+  gridUnitMm: number,
+  paddingLeft: number,
+  paddingRight: number,
+  paddingFront: number,
+  paddingBack: number
+) {
+  const animFrameRef = useRef<number | null>(null);
+
+  const setCameraPreset = useCallback(
+    (preset: CameraPreset) => {
+      const controls = controlsRef.current;
+      if (!controls) return;
+
+      const camera = controls.object;
+      const fov = 45;
+      const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+      const binCenter = new Vector3(0, 0, totalH / 2);
+      const idealDistance = calculateIdealDistance(
+        width,
+        depth,
+        gridUnitMm,
+        paddingLeft,
+        paddingRight,
+        paddingFront,
+        paddingBack,
+        fov
+      );
+
+      const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
+      const targetPosition = direction.multiplyScalar(idealDistance).add(binCenter);
+
+      const startPosition = camera.position.clone();
+      const target = binCenter.clone();
+
+      // Convert to spherical for smooth arc interpolation
+      const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
+      const targetSpherical = new Spherical().setFromVector3(targetPosition.clone().sub(target));
+
+      const startTime = performance.now();
+
+      if (animFrameRef.current !== null) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+
+      const animate = () => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        const currentSpherical = new Spherical(
+          startSpherical.radius + (targetSpherical.radius - startSpherical.radius) * eased,
+          startSpherical.phi + (targetSpherical.phi - startSpherical.phi) * eased,
+          startSpherical.theta + (targetSpherical.theta - startSpherical.theta) * eased
+        );
+
+        const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
+        camera.position.copy(newPosition);
+        camera.up.set(0, 0, 1);
+        camera.lookAt(target);
+        controls.target.copy(target);
+        controls.update();
+        invalidateRef.current?.();
+
+        if (progress < 1) {
+          animFrameRef.current = requestAnimationFrame(animate);
+        } else {
+          animFrameRef.current = null;
+        }
+      };
+
+      animate();
+    },
+    [
+      controlsRef,
+      invalidateRef,
+      width,
+      depth,
+      gridUnitMm,
+      paddingLeft,
+      paddingRight,
+      paddingFront,
+      paddingBack,
+    ]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current !== null) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, []);
+
+  return setCameraPreset;
+}
+
+// ─── Preview Controls Overlay ───────────────────────────────────────────────
+
+/** SVG icon for Assembled — 2×2 grid of squares packed tight */
+function IconAssembled() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="8.5" y="3" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="3" y="8.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="8.5" y="8.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+    </svg>
+  );
+}
+
+/** SVG icon for Exploded — 2×2 grid of squares spread to corners */
+function IconExploded() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1" y="1" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="10.5" y="1" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="1" y="10.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="10.5" y="10.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+    </svg>
+  );
+}
+
+const VIEW_MODE_ICONS: Record<SplitViewMode, () => React.ReactNode> = {
+  assembled: IconAssembled,
+  exploded: IconExploded,
+};
+
+/** SVG icon for Front preset — cube with front face highlighted */
+function IconFront() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 5l6-3 6 3v6l-6 3-6-3V5z" stroke="currentColor" strokeWidth="1.2" opacity="0.4" />
+      <path d="M2 5l6 3v6l-6-3V5z" fill="currentColor" opacity="0.6" />
+      <path d="M2 5l6 3v6l-6-3V5z" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+/** SVG icon for Side preset — cube with side face highlighted */
+function IconSide() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 5l6-3 6 3v6l-6 3-6-3V5z" stroke="currentColor" strokeWidth="1.2" opacity="0.4" />
+      <path d="M14 5l-6 3v6l6-3V5z" fill="currentColor" opacity="0.6" />
+      <path d="M14 5l-6 3v6l6-3V5z" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+/** SVG icon for Top preset — cube with top face highlighted */
+function IconTop() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 5l6-3 6 3v6l-6 3-6-3V5z" stroke="currentColor" strokeWidth="1.2" opacity="0.4" />
+      <path d="M2 5l6-3 6 3-6 3-6-3z" fill="currentColor" opacity="0.6" />
+      <path d="M2 5l6-3 6 3-6 3-6-3z" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+/** SVG icon for Isometric preset — cube corner perspective */
+function IconIso() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M2 5l6-3 6 3v6l-6 3-6-3V5z"
+        fill="currentColor"
+        opacity="0.15"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <path d="M8 8v6M2 5l6 3M14 5l-6 3" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+    </svg>
+  );
+}
+
+/** SVG icon for Reset — circular arrow */
+function IconReset() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M3.5 2.5v3.5H7"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3.5 6C4.5 3.5 6.8 2 9 2c3 0 5 2.5 5 5.5S12 13 9 13c-2 0-3.7-1-4.5-2.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+const PRESET_ICONS: Record<CameraPreset, () => React.ReactNode> = {
+  front: IconFront,
+  side: IconSide,
+  top: IconTop,
+  isometric: IconIso,
+};
+
+const PRESETS: Array<{ key: CameraPreset; labelKey: string }> = [
+  { key: 'front', labelKey: 'baseplate.frontView' },
+  { key: 'side', labelKey: 'baseplate.sideView' },
+  { key: 'top', labelKey: 'baseplate.topView' },
+  { key: 'isometric', labelKey: 'baseplate.isoView' },
+];
+
+/** Floating toolbar overlay for camera presets and assembled/exploded toggle. */
+function BaseplatePreviewControls({
+  activePreset,
+  isSplit,
+  splitViewMode,
+  onCameraPreset,
+  onResetView,
+  onViewModeChange,
+}: {
+  activePreset: CameraPreset | null;
+  isSplit: boolean;
+  splitViewMode: SplitViewMode;
+  onCameraPreset: (preset: CameraPreset) => void;
+  onResetView: () => void;
+  onViewModeChange: (mode: SplitViewMode) => void;
+}) {
+  const t = useTranslation();
+  const { isDesktop } = useResponsive();
+
+  const viewModes: Array<{ value: SplitViewMode; labelKey: string }> = [
+    { value: 'assembled', labelKey: 'baseplate.viewAssembled' },
+    { value: 'exploded', labelKey: 'baseplate.viewExploded' },
+  ];
+
+  if (isDesktop) {
+    return (
+      <div className="absolute right-2 top-2 hidden md:flex items-center gap-2">
+        {/* Assembled / Exploded toggle — separate pill (only when split) */}
+        {isSplit && (
+          <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
+            {viewModes.map(({ value, labelKey }) => {
+              const Icon = VIEW_MODE_ICONS[value];
+              const isActive = splitViewMode === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => onViewModeChange(value)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                    isActive
+                      ? 'bg-accent text-on-accent'
+                      : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+                  }`}
+                  aria-pressed={isActive}
+                >
+                  <Icon />
+                  <span>{t(labelKey)}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Camera presets + reset — separate pill */}
+        <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
+          {PRESETS.map(({ key, labelKey }) => {
+            const Icon = PRESET_ICONS[key];
+            const isActive = activePreset === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onCameraPreset(key)}
+                className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                  isActive
+                    ? 'bg-accent text-on-accent'
+                    : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+                }`}
+                title={t(labelKey)}
+                aria-label={t(labelKey)}
+                aria-pressed={isActive}
+              >
+                <Icon />
+                <span>{t(labelKey)}</span>
+              </button>
+            );
+          })}
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-stroke-subtle/50" />
+
+          {/* Reset button */}
+          <button
+            type="button"
+            onClick={onResetView}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            title={t('baseplate.resetView')}
+            aria-label={t('baseplate.resetView')}
+          >
+            <IconReset />
+            <span>{t('common.reset')}</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Mobile: two separate rows when split, single row otherwise
+  return (
+    <div className="absolute inset-x-2 top-2 z-30 md:hidden flex flex-wrap gap-2">
+      {/* Assembled / Exploded toggle — separate pill (only when split) */}
+      {isSplit && (
+        <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
+          {viewModes.map(({ value, labelKey }) => {
+            const Icon = VIEW_MODE_ICONS[value];
+            const isActive = splitViewMode === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => onViewModeChange(value)}
+                className={`flex items-center justify-center gap-1 px-3 min-h-[44px] text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                  isActive
+                    ? 'bg-accent text-on-accent'
+                    : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+                }`}
+                aria-pressed={isActive}
+              >
+                <Icon />
+                <span>{t(labelKey)}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Camera presets + reset — separate pill */}
+      <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
+        {PRESETS.map(({ key, labelKey }) => {
+          const Icon = PRESET_ICONS[key];
+          const isActive = activePreset === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onCameraPreset(key)}
+              className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                isActive
+                  ? 'bg-accent text-on-accent'
+                  : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+              }`}
+              title={t(labelKey)}
+              aria-label={t(labelKey)}
+              aria-pressed={isActive}
+            >
+              <Icon />
+            </button>
+          );
+        })}
+
+        {/* Divider */}
+        <div className="w-px h-5 bg-stroke-subtle/50" />
+
+        {/* Reset */}
+        <button
+          type="button"
+          onClick={onResetView}
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+          title={t('baseplate.resetView')}
+          aria-label={t('baseplate.resetView')}
+        >
+          <IconReset />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 interface BaseplatePreviewProps {
   width: number;
   depth: number;
+  gridUnitMm: number;
   paddingLeft: number;
   paddingRight: number;
   paddingFront: number;
@@ -351,6 +785,7 @@ const DEFAULT_COLOR = '#d4d8dc';
 export function BaseplatePreview({
   width,
   depth,
+  gridUnitMm,
   paddingLeft,
   paddingRight,
   paddingFront,
@@ -358,6 +793,7 @@ export function BaseplatePreview({
 }: BaseplatePreviewProps) {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
+  const invalidateRef = useRef<(() => void) | null>(null);
   const { isDesktop } = useResponsive();
 
   const {
@@ -380,10 +816,43 @@ export function BaseplatePreview({
     }))
   );
 
+  const setSplitViewMode = useBaseplatePageStore((s) => s.setSplitViewMode);
   const setSelectedPieceLabel = useBaseplatePageStore((s) => s.setSelectedPieceLabel);
   const handlePointerMissed = useCallback(() => {
     setSelectedPieceLabel(null);
   }, [setSelectedPieceLabel]);
+
+  // Camera preset state
+  const [activePreset, setActivePreset] = useState<CameraPreset | null>(null);
+
+  const setCameraPreset = useBaseplatePresetTransition(
+    controlsRef,
+    invalidateRef,
+    width,
+    depth,
+    gridUnitMm,
+    paddingLeft,
+    paddingRight,
+    paddingFront,
+    paddingBack
+  );
+
+  const handleCameraPreset = useCallback(
+    (preset: CameraPreset) => {
+      setActivePreset(preset);
+      setCameraPreset(preset);
+    },
+    [setCameraPreset]
+  );
+
+  const handleResetView = useCallback(() => {
+    setActivePreset('isometric');
+    setCameraPreset('isometric');
+  }, [setCameraPreset]);
+
+  const handleOrbitStart = useCallback(() => {
+    setActivePreset(null);
+  }, []);
 
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
@@ -417,16 +886,23 @@ export function BaseplatePreview({
 
         <CameraController
           controlsRef={controlsRef}
+          invalidateRef={invalidateRef}
           width={width}
           depth={depth}
+          gridUnitMm={gridUnitMm}
           paddingLeft={paddingLeft}
           paddingRight={paddingRight}
           paddingFront={paddingFront}
           paddingBack={paddingBack}
+          onOrbitStart={handleOrbitStart}
         />
 
         {isSplit ? (
-          <SplitBaseplateMeshes totalWidthUnits={width} totalDepthUnits={depth} />
+          <SplitBaseplateMeshes
+            totalWidthUnits={width}
+            totalDepthUnits={depth}
+            gridUnitMm={gridUnitMm}
+          />
         ) : (
           <BaseplateMesh color={DEFAULT_COLOR} />
         )}
@@ -436,6 +912,7 @@ export function BaseplatePreview({
           <GhostPaddingOutline
             width={width}
             depth={depth}
+            gridUnitMm={gridUnitMm}
             paddingLeft={paddingLeft}
             paddingRight={paddingRight}
             paddingFront={paddingFront}
@@ -444,14 +921,15 @@ export function BaseplatePreview({
           />
         )}
 
-        <FootprintGrid width={width} depth={depth} />
+        <FootprintGrid width={width} depth={depth} gridUnitMm={gridUnitMm} />
         {/* Hide measurement labels in exploded mode — pieces scatter beyond these positions */}
         {splitViewMode !== 'exploded' && (
           <>
-            <BinAxisLabels width={width} depth={depth} />
+            <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
             <DimensionLabels
               width={width}
               depth={depth}
+              gridUnitMm={gridUnitMm}
               paddingLeft={paddingLeft}
               paddingRight={paddingRight}
               paddingFront={paddingFront}
@@ -474,6 +952,16 @@ export function BaseplatePreview({
           enablePan={isDesktop}
         />
       </Canvas>
+
+      {/* Camera controls + view toggle overlay */}
+      <BaseplatePreviewControls
+        activePreset={activePreset}
+        isSplit={isSplit}
+        splitViewMode={splitViewMode}
+        onCameraPreset={handleCameraPreset}
+        onResetView={handleResetView}
+        onViewModeChange={setSplitViewMode}
+      />
 
       {hasError && (
         <div className="absolute inset-0 flex items-center justify-center" role="alert">

@@ -144,7 +144,9 @@
     "baseplate.magnetDiameterInfo",
     "baseplate.magnetDepthInfo",
     "baseplate.gridUnitTooltip",
-    "baseplate.printBedTooltip"
+    "baseplate.printBedTooltip",
+    "baseplate.sectionBase",
+    "baseplate.sideView"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",
