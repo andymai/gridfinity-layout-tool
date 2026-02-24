@@ -152,11 +152,31 @@ export async function loadLibraryIndex(): Promise<LayoutLibrary | null> {
 }
 
 /**
- * Clear all data by deleting and recreating the database.
+ * Clear all data by clearing every object store in a single transaction.
+ *
+ * Preferred over deleteDatabase because:
+ * - deleteDatabase is fire-and-forget (async, no await), so window.location.reload()
+ *   can race against a still-pending delete. On the next page load, openDB() can be
+ *   queued behind that delete; if the delete is blocked (another tab, service worker),
+ *   openDB() hangs forever with no blocked-event handler — leaving the app stuck on
+ *   the loading spinner.
+ * - store.clear() completes within the existing connection and commits before the
+ *   caller reloads, so the fresh page always opens a valid, empty database.
  */
-export function clearAllData(): void {
-  closeDatabase();
-  indexedDB.deleteDatabase(DB_NAME);
+export async function clearAllData(): Promise<void> {
+  const db = await openLayoutDatabase();
+  const stores = [
+    LAYOUTS_STORE,
+    SNAPSHOTS_STORE,
+    LIBRARY_STORE,
+    ML_DATA_STORE,
+    SHARED_WITH_ME_STORE,
+  ] as const;
+  const tx = db.transaction(stores, 'readwrite');
+  for (const store of stores) {
+    void tx.objectStore(store).clear();
+  }
+  await tx.done;
 }
 
 // === Snapshot Operations ===

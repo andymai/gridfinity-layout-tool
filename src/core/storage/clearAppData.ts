@@ -22,19 +22,18 @@ const PRESERVED_KEYS = new Set(['gridfinity-settings-v1']);
 
 /**
  * Clear all app data except settings.
- * After calling this, the user should reload the page for a clean state.
+ * Awaits IndexedDB clearing before returning so callers can safely reload.
  */
-export function clearAllAppData(): void {
-  // 1. Clear IndexedDB (layouts, snapshots, ml-data, shared-with-me, library)
-  clearIndexedDB();
+export async function clearAllAppData(): Promise<void> {
+  // Sync operations first so they always complete regardless of IDB timing.
 
-  // 2. Clear analytics data and in-memory cache
+  // 1. Clear analytics data and in-memory cache
   pruneAnalyticsData();
 
-  // 3. Clear ML label sizes in-memory cache
+  // 2. Clear ML label sizes in-memory cache
   clearLabelSizesCache();
 
-  // 4. Clear all localStorage keys except preserved ones
+  // 3. Clear all localStorage keys except preserved ones
   // Keys are collected before removal because deleting during iteration skips entries.
   try {
     const keysToRemove = Array.from({ length: localStorage.length }, (_, i) =>
@@ -47,4 +46,7 @@ export function clearAllAppData(): void {
   } catch {
     /* localStorage may be unavailable */
   }
+
+  // 4. Clear IndexedDB last — async, must complete before the caller reloads.
+  await clearIndexedDB();
 }

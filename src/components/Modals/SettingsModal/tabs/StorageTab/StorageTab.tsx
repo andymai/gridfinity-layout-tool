@@ -169,10 +169,15 @@ function ClearAllDataButton() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleConfirm = () => {
-    clearAllAppData();
-    // Force reload to reset all in-memory state (Zustand stores, caches, etc.)
-    // This is the only reliable way to ensure no stale data writes back.
-    window.location.reload();
+    // Await the async clear before reloading to guarantee IDB is empty before
+    // the new page load opens the database.
+    void clearAllAppData()
+      .then(() => {
+        window.location.reload();
+      })
+      .catch(() => {
+        window.location.reload();
+      });
   };
 
   return (

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { clearAllAppData } from './clearAppData';
 
-const mockClearIndexedDB = vi.hoisted(() => vi.fn());
+const mockClearIndexedDB = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockPruneAnalyticsData = vi.hoisted(() => vi.fn());
 const mockClearLabelSizesCache = vi.hoisted(() => vi.fn());
 
@@ -30,23 +30,23 @@ describe('clearAllAppData', () => {
   });
 
   describe('cleanup function calls', () => {
-    it('calls clearAllData (IndexedDB)', () => {
-      clearAllAppData();
+    it('calls clearAllData (IndexedDB)', async () => {
+      await clearAllAppData();
       expect(mockClearIndexedDB).toHaveBeenCalledTimes(1);
     });
 
-    it('calls pruneAnalyticsData', () => {
-      clearAllAppData();
+    it('calls pruneAnalyticsData', async () => {
+      await clearAllAppData();
       expect(mockPruneAnalyticsData).toHaveBeenCalledTimes(1);
     });
 
-    it('calls clearLabelSizesCache', () => {
-      clearAllAppData();
+    it('calls clearLabelSizesCache', async () => {
+      await clearAllAppData();
       expect(mockClearLabelSizesCache).toHaveBeenCalledTimes(1);
     });
 
-    it('calls all three cleanup functions on a single invocation', () => {
-      clearAllAppData();
+    it('calls all three cleanup functions on a single invocation', async () => {
+      await clearAllAppData();
       expect(mockClearIndexedDB).toHaveBeenCalledTimes(1);
       expect(mockPruneAnalyticsData).toHaveBeenCalledTimes(1);
       expect(mockClearLabelSizesCache).toHaveBeenCalledTimes(1);
@@ -54,55 +54,55 @@ describe('clearAllAppData', () => {
   });
 
   describe('localStorage clearing', () => {
-    it('removes a non-preserved localStorage key', () => {
+    it('removes a non-preserved localStorage key', async () => {
       localStorage.setItem('gridfinity-layout-abc123', '{"some":"data"}');
-      clearAllAppData();
+      await clearAllAppData();
       expect(localStorage.getItem('gridfinity-layout-abc123')).toBeNull();
     });
 
-    it('removes multiple non-preserved localStorage keys', () => {
+    it('removes multiple non-preserved localStorage keys', async () => {
       localStorage.setItem('gridfinity-layout-abc', '{}');
       localStorage.setItem('gridfinity-library', '[]');
       localStorage.setItem('gridfinity-onboarding', 'true');
-      clearAllAppData();
+      await clearAllAppData();
       expect(localStorage.getItem('gridfinity-layout-abc')).toBeNull();
       expect(localStorage.getItem('gridfinity-library')).toBeNull();
       expect(localStorage.getItem('gridfinity-onboarding')).toBeNull();
     });
 
-    it('preserves gridfinity-settings-v1', () => {
+    it('preserves gridfinity-settings-v1', async () => {
       const settingsValue = '{"theme":"dark","language":"en"}';
       localStorage.setItem('gridfinity-settings-v1', settingsValue);
-      clearAllAppData();
+      await clearAllAppData();
       expect(localStorage.getItem('gridfinity-settings-v1')).toBe(settingsValue);
     });
 
-    it('preserves gridfinity-settings-v1 while removing other keys', () => {
+    it('preserves gridfinity-settings-v1 while removing other keys', async () => {
       const settingsValue = '{"theme":"dark"}';
       localStorage.setItem('gridfinity-settings-v1', settingsValue);
       localStorage.setItem('gridfinity-layout-xyz', '{"bins":[]}');
       localStorage.setItem('some-migration-flag', 'done');
-      clearAllAppData();
+      await clearAllAppData();
       expect(localStorage.getItem('gridfinity-settings-v1')).toBe(settingsValue);
       expect(localStorage.getItem('gridfinity-layout-xyz')).toBeNull();
       expect(localStorage.getItem('some-migration-flag')).toBeNull();
     });
 
-    it('handles empty localStorage gracefully', () => {
+    it('handles empty localStorage gracefully', async () => {
       // localStorage is already empty from beforeEach
-      expect(() => clearAllAppData()).not.toThrow();
+      await expect(clearAllAppData()).resolves.toBeUndefined();
     });
 
-    it('handles localStorage with only the preserved key', () => {
+    it('handles localStorage with only the preserved key', async () => {
       localStorage.setItem('gridfinity-settings-v1', '{"theme":"light"}');
-      clearAllAppData();
+      await clearAllAppData();
       expect(localStorage.length).toBe(1);
       expect(localStorage.getItem('gridfinity-settings-v1')).toBe('{"theme":"light"}');
     });
   });
 
   describe('localStorage error handling', () => {
-    it('does not throw when localStorage.key throws', () => {
+    it('does not throw when localStorage.key throws', async () => {
       const originalKey = localStorage.key.bind(localStorage);
       Object.defineProperty(localStorage, 'key', {
         configurable: true,
@@ -112,7 +112,7 @@ describe('clearAllAppData', () => {
       });
 
       // Even though localStorage.key throws, the function should not propagate
-      expect(() => clearAllAppData()).not.toThrow();
+      await expect(clearAllAppData()).resolves.toBeUndefined();
 
       Object.defineProperty(localStorage, 'key', {
         configurable: true,
@@ -120,7 +120,7 @@ describe('clearAllAppData', () => {
       });
     });
 
-    it('does not throw when localStorage.removeItem throws', () => {
+    it('does not throw when localStorage.removeItem throws', async () => {
       localStorage.setItem('some-key', 'value');
 
       const originalRemoveItem = localStorage.removeItem.bind(localStorage);
@@ -131,7 +131,7 @@ describe('clearAllAppData', () => {
         },
       });
 
-      expect(() => clearAllAppData()).not.toThrow();
+      await expect(clearAllAppData()).resolves.toBeUndefined();
 
       Object.defineProperty(localStorage, 'removeItem', {
         configurable: true,
@@ -139,7 +139,7 @@ describe('clearAllAppData', () => {
       });
     });
 
-    it('still calls all cleanup functions even when localStorage throws', () => {
+    it('still calls all cleanup functions even when localStorage throws', async () => {
       Object.defineProperty(localStorage, 'key', {
         configurable: true,
         value: () => {
@@ -147,9 +147,9 @@ describe('clearAllAppData', () => {
         },
       });
 
-      clearAllAppData();
+      await clearAllAppData();
 
-      // These run before the try/catch, so they must still be called
+      // Sync cleanup runs before/after the try/catch; IDB runs last but is still called
       expect(mockClearIndexedDB).toHaveBeenCalledTimes(1);
       expect(mockPruneAnalyticsData).toHaveBeenCalledTimes(1);
       expect(mockClearLabelSizesCache).toHaveBeenCalledTimes(1);
