@@ -7,14 +7,14 @@
  *
  * The output is geometrically equivalent to the simplified BREP version
  * (buildSimplifiedPocketCutter) — a waffle-grid slab with tapered pockets,
- * optional magnet holes in a perimeter frame, and a rounded outer perimeter.
+ * optional magnet holes, and a rounded outer perimeter.
  *
  * Coordinate system (matches baseplateGenerator.ts):
  * - Z=0: bottom face of baseplate
  * - Z=totalHeight: top face / pocket opening
- * - Pockets cut through the full slab height
- * - With magnets: slab is taller by (MAGNET_FLOOR + magnetDepth); magnet holes
- *   are blind cylindrical pockets from Z=0 upward by magnetDepth
+ * - Without magnets: pockets through-cut (no floor)
+ * - With magnets: slab is taller by (MAGNET_FLOOR + magnetDepth); pockets
+ *   stop at SOCKET_HEIGHT depth leaving a solid floor for magnet holes
  * - Grid centered at XY origin; slab offset by padding
  */
 
@@ -304,13 +304,11 @@ function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
 /**
  * Add pocket inner walls for one cell.
  *
- * Two wall sections:
- * - Tapered: Z=totalHeight (full cell size) to Z=floorDepth (inset by INSET_BOT)
- * - Straight: Z=floorDepth to Z=0 (constant INSET_BOT) — only when floorDepth > 0
+ * Tapered walls from Z=totalHeight (full cell size) to Z=floorDepth (inset by INSET_BOT).
+ * When floorDepth > 0 (magnets enabled), the pocket has a solid floor at Z=floorDepth.
+ * When floorDepth = 0 (no magnets), the pocket is through-cut (no floor).
  *
  * Walls face INWARD (normals point toward cell center = into the pocket).
- * Since these are interior pocket walls, the "outside of the solid" is
- * toward the cell center.
  */
 function addPocketWalls(
   mb: MeshBuilder,
@@ -332,14 +330,12 @@ function addPocketWalls(
   const botPts = roundedRectPoints(botW, botD, botR, CORNER_SEGMENTS);
 
   const zTop = totalHeight;
-  const zMid = floorDepth;
+  const zBot = floorDepth;
 
   const n = topPts.length;
 
-  // Tapered section: stitch wall quads between top and mid rings.
-  // Normals point INWARD (toward pocket center), which for a pocket means
-  // toward the outside of the solid. Since the profile goes CCW when viewed
-  // from +Z, inward-facing quads need CW winding from outside = we reverse.
+  // Tapered wall quads from top to bottom of pocket.
+  // Normals point INWARD (toward pocket center).
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
 
@@ -353,25 +349,26 @@ function addPocketWalls(
       by1 = botPts[j][1] + cy;
 
     // From outside the solid (= inside the pocket), CCW is: top1, top0, bot0, bot1
-    mb.pushFlatQuad(tx1, ty1, zTop, tx0, ty0, zTop, bx0, by0, zMid, bx1, by1, zMid);
+    mb.pushFlatQuad(tx1, ty1, zTop, tx0, ty0, zTop, bx0, by0, zBot, bx1, by1, zBot);
   }
 
-  // Straight section: Z=floorDepth to Z=0 at constant INSET_BOT profile.
-  // Only needed when floorDepth > 0 (magnets enabled, perimeter frame exists).
+  // Pocket floor: when magnets are enabled (floorDepth > 0), cap the pocket bottom
+  // with a face at Z=floorDepth facing UP into the pocket.
   if (floorDepth > 0) {
-    const zBot = 0;
-
-    for (let i = 0; i < n; i++) {
-      const j = (i + 1) % n;
-
-      const bx0 = botPts[i][0] + cx,
-        by0 = botPts[i][1] + cy;
-      const bx1 = botPts[j][0] + cx,
-        by1 = botPts[j][1] + cy;
-
-      // Same INSET_BOT profile at both top and bottom of this section
-      // Normals point inward (toward pocket center)
-      mb.pushFlatQuad(bx1, by1, zMid, bx0, by0, zMid, bx0, by0, zBot, bx1, by1, zBot);
+    const nx = 0,
+      ny = 0,
+      nz = 1;
+    if (botW >= 0.2 && botD >= 0.2) {
+      const center = mb.pushVertex(cx, cy, zBot, nx, ny, nz);
+      const verts: number[] = [];
+      for (const pt of botPts) {
+        verts.push(mb.pushVertex(pt[0] + cx, pt[1] + cy, zBot, nx, ny, nz));
+      }
+      const nPts = verts.length;
+      for (let i = 0; i < nPts; i++) {
+        const j = (i + 1) % nPts;
+        mb.pushTriangle(center, verts[i], verts[j]);
+      }
     }
   }
 }
@@ -494,15 +491,14 @@ function addTopFace(
 // ─── Bottom Face (Z=0) ─────────────────────────────────────────────────────
 
 /**
- * Add the bottom face of the slab (Z=0), which is the waffle grid:
- * solid material everywhere EXCEPT inside pocket bottom openings.
+ * Add the bottom face of the slab (Z=0).
  *
- * Strategy: emit the full outer polygon as downward-facing triangles at Z=0,
- * then for each pocket, emit the bottom footprint (INSET_BOT profile) as
- * upward-facing triangles to cancel the floor inside the pocket opening.
+ * When throughCut is true (no magnets): waffle grid — solid everywhere EXCEPT
+ * inside pocket bottom openings (pocket cancellation holes punched via
+ * upward-facing polygons).
  *
- * Since pocket bottoms are inset (INSET_BOT=2.95mm), there IS wall material
- * between adjacent pockets at Z=0, unlike the top face.
+ * When throughCut is false (magnets enabled): solid floor — pockets don't
+ * reach the bottom, so the entire bottom face is solid material.
  */
 function addBottomFace(
   mb: MeshBuilder,
@@ -510,7 +506,8 @@ function addBottomFace(
   offsetX: number,
   offsetY: number,
   cells: ReadonlyArray<CellInfo>,
-  gridUnitMm: number
+  gridUnitMm: number,
+  throughCut: boolean
 ): void {
   const z = 0;
 
@@ -529,16 +526,14 @@ function addBottomFace(
     }
 
     const nOuter = outerVerts.length;
-    // CCW from below = CW from above. Fan from center:
-    // For -Z facing: triangle center, v_{i+1}, v_i (reverses winding)
     for (let i = 0; i < nOuter; i++) {
       const j = (i + 1) % nOuter;
       mb.pushTriangle(center, outerVerts[j], outerVerts[i]);
     }
   }
 
-  // 2. For each pocket, emit bottom footprint at Z=0 facing UP to cancel floor
-  {
+  // 2. When through-cut (no magnets), punch pocket holes in the bottom face
+  if (throughCut) {
     const nx = 0,
       ny = 0,
       nz = 1;
@@ -551,7 +546,6 @@ function addBottomFace(
       const botW = cellW_mm - 2 * INSET_BOT;
       const botD = cellD_mm - 2 * INSET_BOT;
 
-      // Skip if pocket bottom is too small
       if (botW < 0.2 || botD < 0.2) continue;
 
       const pts = roundedRectPoints(botW, botD, botR, CORNER_SEGMENTS);
@@ -562,7 +556,6 @@ function addBottomFace(
         verts.push(mb.pushVertex(pt[0] + cell.centerX, pt[1] + cell.centerY, z, nx, ny, nz));
       }
 
-      // CCW from above
       const nPts = verts.length;
       for (let i = 0; i < nPts; i++) {
         const j = (i + 1) % nPts;
@@ -745,8 +738,9 @@ export function generateBaseplateDirect(
   onProgress('base', 0.6);
   checkCancelled(signal);
 
-  // 5. Bottom face (Z=0) — waffle grid with pocket openings
-  addBottomFace(mb, outerPts, slabOffsetX, slabOffsetY, cells, gridUnitMm);
+  // 5. Bottom face (Z=0) — solid when magnets (floor), waffle grid when no magnets
+  const throughCut = !magnetHoles;
+  addBottomFace(mb, outerPts, slabOffsetX, slabOffsetY, cells, gridUnitMm, throughCut);
 
   onProgress('base', 0.7);
   checkCancelled(signal);
