@@ -79,4 +79,52 @@ describe('useDimensionsSection', () => {
     // Should stay at 16 (MAX_DIMENSION)
     expect(useDesignerStore.getState().params.width).toBe(16);
   });
+
+  it('auto-enables half-bin mode when width is set to a fractional value', () => {
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.setParam('width', 1.5);
+    });
+
+    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().params.width).toBe(1.5);
+  });
+
+  it('auto-enables half-bin mode when depth is set to a fractional value', () => {
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.setParam('depth', 2.5);
+    });
+
+    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().params.depth).toBe(2.5);
+  });
+
+  it('does not toggle half-bin mode when an integer value is set', () => {
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.setParam('width', 3);
+    });
+
+    expect(useDesignerStore.getState().ui.halfBinMode).toBe(false);
+    expect(useDesignerStore.getState().params.width).toBe(3);
+  });
+
+  it('does not double-toggle half-bin mode when already enabled', () => {
+    useDesignerStore.setState({
+      ui: { ...DEFAULT_UI_STATE, halfBinMode: true },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.setParam('width', 1.5);
+    });
+
+    // Should still be enabled (not toggled off)
+    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().params.width).toBe(1.5);
+  });
 });
