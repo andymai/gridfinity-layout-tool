@@ -20,6 +20,7 @@ import {
   STAGING_ID,
   CONSTRAINTS,
   calcMaxGridUnits,
+  migrateBaseplateParams,
 } from '@/core/constants';
 import { canPlaceBin, clamp } from '@/shared/utils/validation';
 import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
@@ -586,6 +587,10 @@ export const useLayoutStore = create<LayoutState>()(
       importLayout: (newLayout, layoutId, source = 'local') => {
         set((state) => {
           state.layout = newLayout;
+          // Migrate old baseplateParams format (paddingMm → ratio-based) on load
+          if (newLayout.baseplateParams) {
+            state.layout.baseplateParams = migrateBaseplateParams(newLayout.baseplateParams);
+          }
           state.activeLayoutId = layoutId ?? null;
           state.lastEditSource = source;
         });

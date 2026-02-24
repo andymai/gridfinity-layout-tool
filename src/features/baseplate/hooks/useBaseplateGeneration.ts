@@ -10,7 +10,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { migrateBaseplateParams } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
 import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
@@ -39,7 +39,7 @@ export function useBaseplateGeneration(): void {
       gridUnitMm: state.layout.gridUnitMm,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
-      baseplateParams: migrateBaseplateParams(state.layout.baseplateParams),
+      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
 
@@ -109,7 +109,7 @@ export function useBaseplateGeneration(): void {
 
         // Trigger initial generation
         const layoutState = useLayoutStore.getState();
-        const stored = migrateBaseplateParams(layoutState.layout.baseplateParams);
+        const stored = layoutState.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
         const fullParams = buildFullParams(
           stored,
           layoutState.layout.drawer.width,

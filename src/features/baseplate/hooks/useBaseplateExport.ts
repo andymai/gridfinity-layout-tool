@@ -9,7 +9,7 @@ import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
-import { migrateBaseplateParams } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { getActiveBridge } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
@@ -60,7 +60,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       gridUnitMm: state.layout.gridUnitMm,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
-      baseplateParams: migrateBaseplateParams(state.layout.baseplateParams),
+      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
 

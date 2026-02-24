@@ -9,7 +9,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { migrateBaseplateParams } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
@@ -128,7 +128,7 @@ export function BaseplatePage() {
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
       gridUnitMm: state.layout.gridUnitMm,
-      baseplateParams: migrateBaseplateParams(state.layout.baseplateParams),
+      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
 

@@ -9,7 +9,7 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BASEPLATE_PARAMS, migrateBaseplateParams } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { Checkbox } from '@/design-system/Checkbox';
 import { useTranslation } from '@/i18n';
 import { resolveDrawerMm } from '../../utils/buildFullParams';
@@ -24,7 +24,7 @@ export function BaseplatePanel() {
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
       gridUnitMm: state.layout.gridUnitMm,
-      baseplateParams: migrateBaseplateParams(state.layout.baseplateParams),
+      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
 
