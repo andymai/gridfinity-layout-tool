@@ -172,7 +172,7 @@ export async function clearAllData(): Promise<void> {
     ML_DATA_STORE,
     SHARED_WITH_ME_STORE,
   ] as const;
-  const tx = db.transaction([...stores], 'readwrite');
+  const tx = db.transaction(stores, 'readwrite');
   for (const store of stores) {
     void tx.objectStore(store).clear();
   }

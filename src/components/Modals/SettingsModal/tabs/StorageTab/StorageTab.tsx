@@ -171,9 +171,13 @@ function ClearAllDataButton() {
   const handleConfirm = () => {
     // Await the async clear before reloading to guarantee IDB is empty before
     // the new page load opens the database.
-    void clearAllAppData().then(() => {
-      window.location.reload();
-    });
+    void clearAllAppData()
+      .then(() => {
+        window.location.reload();
+      })
+      .catch(() => {
+        window.location.reload();
+      });
   };
 
   return (
