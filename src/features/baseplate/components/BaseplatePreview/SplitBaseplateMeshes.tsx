@@ -22,10 +22,21 @@ import type { PieceMeshEntry, SplitViewMode } from '../../store/baseplatePageSto
 /** Default mesh color shared by all pieces. */
 const PIECE_COLOR = '#d4d8dc';
 
+/** Fallback accent hex (amber-500) when CSS var is unavailable. */
+const FALLBACK_ACCENT = '#f59e0b';
+
+/** Read the current accent color from CSS custom properties. */
+function getAccentHex(): string {
+  if (typeof document === 'undefined') return FALLBACK_ACCENT;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
+  return raw || FALLBACK_ACCENT;
+}
+
 interface PieceMeshProps {
   readonly entry: PieceMeshEntry;
   readonly totalWidthMm: number;
   readonly totalDepthMm: number;
+  readonly gridUnitMm: number;
   readonly explodeX: number;
   readonly explodeY: number;
   readonly splitViewMode: SplitViewMode;
@@ -38,6 +49,7 @@ function PieceMesh({
   entry,
   totalWidthMm,
   totalDepthMm,
+  gridUnitMm,
   explodeX,
   explodeY,
   splitViewMode,
@@ -46,6 +58,7 @@ function PieceMesh({
 }: PieceMeshProps) {
   const { invalidate } = useThree();
   const colors = useThreeColors();
+  const accentHex = useMemo(() => getAccentHex(), []);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(entry.mesh);
 
@@ -90,9 +103,8 @@ function PieceMesh({
 
   // Invisible hit-test plane covering the full piece footprint.
   // Catches pointer events over socket holes and empty areas within the piece.
-  const GS = GRIDFINITY_SPEC.GRID_SIZE;
-  const pieceWidthMm = entry.widthUnits * GS;
-  const pieceDepthMm = entry.depthUnits * GS;
+  const pieceWidthMm = entry.widthUnits * gridUnitMm;
+  const pieceDepthMm = entry.depthUnits * gridUnitMm;
 
   const hitPlaneGeometry = useMemo(
     () => new THREE.PlaneGeometry(pieceWidthMm, pieceDepthMm),
@@ -108,8 +120,8 @@ function PieceMesh({
   if (!geometry) return null;
 
   // Position: piece's grid center relative to the total baseplate center
-  const pieceCenterX = entry.offsetX * GS + pieceWidthMm / 2 - totalWidthMm / 2;
-  const pieceCenterY = entry.offsetY * GS + pieceDepthMm / 2 - totalDepthMm / 2;
+  const pieceCenterX = entry.offsetX * gridUnitMm + pieceWidthMm / 2 - totalWidthMm / 2;
+  const pieceCenterY = entry.offsetY * gridUnitMm + pieceDepthMm / 2 - totalDepthMm / 2;
 
   const x = pieceCenterX + explodeX;
   const y = pieceCenterY + explodeY;
@@ -150,7 +162,7 @@ function PieceMesh({
         <Text
           position={[0, 0, GRIDFINITY_SPEC.SOCKET_HEIGHT + 3]}
           fontSize={5}
-          color={colors.labelColor}
+          color={accentHex}
           fillOpacity={isActive ? 1 : 0.6}
           anchorX="center"
           anchorY="middle"
@@ -169,6 +181,7 @@ function PieceMesh({
 interface SplitBaseplateMeshesProps {
   readonly totalWidthUnits: number;
   readonly totalDepthUnits: number;
+  readonly gridUnitMm: number;
 }
 
 /**
@@ -177,6 +190,7 @@ interface SplitBaseplateMeshesProps {
 export function SplitBaseplateMeshes({
   totalWidthUnits,
   totalDepthUnits,
+  gridUnitMm,
 }: SplitBaseplateMeshesProps) {
   const { pieceMeshes, splitViewMode, hoveredPieceLabel, selectedPieceLabel } =
     useBaseplatePageStore(
@@ -188,9 +202,8 @@ export function SplitBaseplateMeshes({
       }))
     );
 
-  const GS = GRIDFINITY_SPEC.GRID_SIZE;
-  const totalWidthMm = totalWidthUnits * GS;
-  const totalDepthMm = totalDepthUnits * GS;
+  const totalWidthMm = totalWidthUnits * gridUnitMm;
+  const totalDepthMm = totalDepthUnits * gridUnitMm;
 
   return (
     <>
@@ -204,6 +217,7 @@ export function SplitBaseplateMeshes({
             entry={entry}
             totalWidthMm={totalWidthMm}
             totalDepthMm={totalDepthMm}
+            gridUnitMm={gridUnitMm}
             explodeX={explodeX}
             explodeY={explodeY}
             splitViewMode={splitViewMode}

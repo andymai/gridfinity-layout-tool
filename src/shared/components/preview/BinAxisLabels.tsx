@@ -22,6 +22,8 @@ interface BinAxisLabelsProps {
   width: number;
   /** Bin depth in grid units (can be fractional for half-bin mode) */
   depth: number;
+  /** Grid unit size in mm (defaults to standard 42mm) */
+  gridUnitMm?: number;
 }
 
 // Styling constants matched to planner's AxisLabels proportions
@@ -40,9 +42,9 @@ const FRACTIONAL_LABEL = '+.5'; // Display label for half-unit cells
  * Grid axis labels showing column/row numbers along bin edges.
  * Matches the architectural drawing style of the layout planner.
  */
-export function BinAxisLabels({ width, depth }: BinAxisLabelsProps) {
+export function BinAxisLabels({ width, depth, gridUnitMm }: BinAxisLabelsProps) {
   const colors = useThreeColors();
-  const GS = GRIDFINITY.GRID_SIZE; // 42mm
+  const GS = gridUnitMm ?? GRIDFINITY.GRID_SIZE;
 
   const halfW = (width * GS) / 2;
   const halfD = (depth * GS) / 2;

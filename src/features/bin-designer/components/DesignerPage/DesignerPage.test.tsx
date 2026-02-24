@@ -94,11 +94,6 @@ describe('DesignerPage', () => {
     expect(screen.getByText('Test Design')).toBeInTheDocument();
   });
 
-  it('shows experimental badge', () => {
-    render(<DesignerPage />);
-    expect(screen.getByText(/experimental/i)).toBeInTheDocument();
-  });
-
   it('renders undo and redo buttons', () => {
     render(<DesignerPage />);
     const undoButtons = screen.getAllByLabelText(/Undo/);

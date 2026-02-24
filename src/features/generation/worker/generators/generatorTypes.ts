@@ -100,6 +100,8 @@ export interface ForEachCellOptions {
    * `'end'` (default) = back/positive-Y. `'start'` = front/negative-Y.
    */
   readonly fractionalEdgeY?: 'start' | 'end';
+  /** Grid unit size in mm. Defaults to standard Gridfinity 42mm. */
+  readonly gridUnitMm?: number;
 }
 
 /**
@@ -132,16 +134,17 @@ export function forEachCell(
   if (opts.fractionalEdgeX === 'start') cellsW.reverse();
   if (opts.fractionalEdgeY === 'start') cellsD.reverse();
 
-  const totalW_mm = gridW * SIZE;
-  const totalD_mm = gridD * SIZE;
+  const unit = opts.gridUnitMm ?? SIZE;
+  const totalW_mm = gridW * unit;
+  const totalD_mm = gridD * unit;
 
   let xOffset = 0;
   for (const cellW_units of cellsW) {
-    const centerX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
+    const centerX = xOffset + (cellW_units * unit) / 2 - totalW_mm / 2;
     let yOffset = 0;
 
     for (const cellD_units of cellsD) {
-      const centerY = yOffset + (cellD_units * SIZE) / 2 - totalD_mm / 2;
+      const centerY = yOffset + (cellD_units * unit) / 2 - totalD_mm / 2;
 
       callback({
         widthUnits: cellW_units,
@@ -150,9 +153,9 @@ export function forEachCell(
         centerY,
       });
 
-      yOffset += cellD_units * SIZE;
+      yOffset += cellD_units * unit;
     }
-    xOffset += cellW_units * SIZE;
+    xOffset += cellW_units * unit;
   }
 }
 

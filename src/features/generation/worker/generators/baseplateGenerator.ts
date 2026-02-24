@@ -29,7 +29,6 @@ import type { BaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import {
-  SIZE,
   CORNER_RADIUS,
   SOCKET_HEIGHT,
   SOCKET_BIG_TAPER,
@@ -202,7 +201,7 @@ function buildMagnetHoles(
   cellOpts?: ForEachCellOptions
 ): Shape3D[] {
   const totalHeight = SOCKET_HEIGHT + BASE_THICKNESS;
-  const HOLE_OFFSET = 13; // mm from cell center
+  const HOLE_OFFSET = 13; // mm from cell center (Gridfinity spec constant)
 
   const holeOffsets: ReadonlyArray<readonly [number, number]> = [
     [-HOLE_OFFSET, -HOLE_OFFSET],
@@ -375,6 +374,7 @@ function buildBaseplateSolid(
   const {
     width,
     depth,
+    gridUnitMm,
     magnetHoles,
     magnetDiameter,
     magnetDepth,
@@ -388,8 +388,8 @@ function buildBaseplateSolid(
   } = params;
 
   // 1. Build solid block — only add BASE_THICKNESS when magnets need a floor
-  const totalW = width * SIZE + paddingLeft + paddingRight;
-  const totalD = depth * SIZE + paddingFront + paddingBack;
+  const totalW = width * gridUnitMm + paddingLeft + paddingRight;
+  const totalD = depth * gridUnitMm + paddingFront + paddingBack;
   const totalHeight = magnetHoles ? SOCKET_HEIGHT + BASE_THICKNESS : SOCKET_HEIGHT;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
   const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
@@ -414,14 +414,14 @@ function buildBaseplateSolid(
   // When no magnets, pockets cut all the way through (throughCut)
   const throughCut = !magnetHoles;
   const pockets: Shape3D[] = [];
-  const cellOpts = { fractionalEdgeX, fractionalEdgeY };
+  const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
   forEachCell(
     width,
     depth,
     (cell) => {
       // Full cell size — no CLEARANCE reduction (clearance is on the bin side)
-      const cellW_mm = cell.widthUnits * SIZE;
-      const cellD_mm = cell.depthUnits * SIZE;
+      const cellW_mm = cell.widthUnits * gridUnitMm;
+      const cellD_mm = cell.depthUnits * gridUnitMm;
       const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
       pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
     },
@@ -463,8 +463,8 @@ export async function exportBaseplate(
   // tessellate or export. The simplified version is geometrically equivalent
   // for 3D printing (same outer profile, slightly simplified taper).
   const baseplate = buildBaseplateSolid(params, false);
-  const totalW = params.width * SIZE + params.paddingLeft + params.paddingRight;
-  const totalD = params.depth * SIZE + params.paddingFront + params.paddingBack;
+  const totalW = params.width * params.gridUnitMm + params.paddingLeft + params.paddingRight;
+  const totalD = params.depth * params.gridUnitMm + params.paddingFront + params.paddingBack;
   const name = `baseplate_${params.width}x${params.depth}_${Math.round(totalW)}x${Math.round(totalD)}mm`;
 
   if (format === 'step') {

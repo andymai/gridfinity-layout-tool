@@ -42,10 +42,10 @@ export function SegmentedControl<T extends string>({
           type="button"
           aria-pressed={value === opt.value}
           onClick={() => onChange(opt.value)}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded px-2 py-1.5 text-xs font-medium transition-colors ${
+          className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none ${
             value === opt.value
               ? 'bg-surface-elevated text-content shadow-sm'
-              : 'text-content-secondary hover:text-content'
+              : 'text-content-tertiary hover:bg-surface-hover hover:text-content-secondary'
           }`}
         >
           {opt.icon}
