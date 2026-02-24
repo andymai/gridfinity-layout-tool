@@ -1376,7 +1376,6 @@
   "baseplate.magnetHoles": "Furos de ímã",
   "baseplate.magnetDiameter": "Diâmetro do ímã",
   "baseplate.magnetDepth": "Profundidade do ímã",
-  "baseplate.halfCellPegs": "Elementos de meia célula",
   "baseplate.padding": "Preenchimento",
   "baseplate.summary": "Grade {width}×{depth}",
   "baseplate.pageTitle": "Gerador de placa base",

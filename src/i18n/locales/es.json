@@ -1376,7 +1376,6 @@
   "baseplate.magnetHoles": "Agujeros de imán",
   "baseplate.magnetDiameter": "Diámetro del imán",
   "baseplate.magnetDepth": "Profundidad del imán",
-  "baseplate.halfCellPegs": "Características de media celda",
   "baseplate.padding": "Relleno",
   "baseplate.summary": "Cuadrícula {width}×{depth}",
   "baseplate.pageTitle": "Generador de placa base",

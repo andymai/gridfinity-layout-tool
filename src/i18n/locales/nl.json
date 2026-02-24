@@ -1376,7 +1376,6 @@
   "baseplate.magnetHoles": "Magneetgaten",
   "baseplate.magnetDiameter": "Magneetdiameter",
   "baseplate.magnetDepth": "Magneetdiepte",
-  "baseplate.halfCellPegs": "Halve cel-elementen",
   "baseplate.padding": "Opvulling",
   "baseplate.summary": "{width}×{depth} raster",
   "baseplate.pageTitle": "Basisplaat-generator",

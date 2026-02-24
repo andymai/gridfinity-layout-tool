@@ -74,7 +74,6 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           magnetHoles: baseplateParams.magnetHoles,
           magnetDiameter: baseplateParams.magnetDiameter,
           magnetDepth: baseplateParams.magnetDepth,
-          halfCellPegs: baseplateParams.halfCellPegs,
           paddingMm: baseplateParams.paddingMm,
         };
 

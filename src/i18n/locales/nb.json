@@ -1376,7 +1376,6 @@
   "baseplate.magnetHoles": "Magnethull",
   "baseplate.magnetDiameter": "Magnetdiameter",
   "baseplate.magnetDepth": "Magnetdybde",
-  "baseplate.halfCellPegs": "Halvcelledetaljer",
   "baseplate.padding": "Marg",
   "baseplate.summary": "{width}×{depth} rutenett",
   "baseplate.pageTitle": "Bunnplate-generator",

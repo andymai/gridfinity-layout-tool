@@ -1376,7 +1376,6 @@
   "baseplate.magnetHoles": "Trous d'aimant",
   "baseplate.magnetDiameter": "Diamètre de l'aimant",
   "baseplate.magnetDepth": "Profondeur de l'aimant",
-  "baseplate.halfCellPegs": "Éléments demi-cellule",
   "baseplate.padding": "Marge",
   "baseplate.summary": "Grille {width}×{depth}",
   "baseplate.pageTitle": "Générateur de plaque de base",

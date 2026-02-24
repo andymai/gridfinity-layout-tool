@@ -46,6 +46,5 @@ export interface BaseplateParams {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
-  readonly halfCellPegs: boolean;
   readonly paddingMm: number;
 }

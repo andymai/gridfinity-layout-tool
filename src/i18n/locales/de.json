@@ -1376,7 +1376,6 @@
   "baseplate.magnetHoles": "Magnetlöcher",
   "baseplate.magnetDiameter": "Magnetdurchmesser",
   "baseplate.magnetDepth": "Magnettiefe",
-  "baseplate.halfCellPegs": "Halbzellen-Elemente",
   "baseplate.padding": "Abstand",
   "baseplate.summary": "{width}×{depth} Raster",
   "baseplate.pageTitle": "Grundplatten-Generator",

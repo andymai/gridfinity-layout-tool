@@ -150,7 +150,6 @@ export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   magnetHoles: false,
   magnetDiameter: 6.5,
   magnetDepth: 2,
-  halfCellPegs: false,
   paddingMm: 0,
 } as const;
 

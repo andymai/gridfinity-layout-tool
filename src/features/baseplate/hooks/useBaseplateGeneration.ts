@@ -25,7 +25,6 @@ function buildFullParams(
     magnetHoles: boolean;
     magnetDiameter: number;
     magnetDepth: number;
-    halfCellPegs: boolean;
     paddingMm: number;
   },
   drawerWidth: number,
@@ -39,7 +38,6 @@ function buildFullParams(
     magnetHoles: stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
-    halfCellPegs: stored.halfCellPegs,
     paddingMm: stored.paddingMm,
   };
 }

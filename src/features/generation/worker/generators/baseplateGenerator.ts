@@ -17,6 +17,7 @@ import {
   drawCircle,
   unwrap,
   cutAll,
+  clone,
   translate,
   mesh,
   meshEdges,
@@ -37,8 +38,10 @@ import {
   forEachCell,
   toIndexedMeshData,
   checkCancelled,
+  sketch,
 } from './generatorTypes';
 import type { ProgressFn } from './generatorTypes';
+import { LRUCache } from './lruCache';
 
 // ─── Baseplate Constants ──────────────────────────────────────────────────────
 
@@ -47,6 +50,21 @@ const BASE_THICKNESS = 1.4;
 
 /** Corner radius for the baseplate outer perimeter */
 const PLATE_CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
+
+// ─── Pocket Template Cache ──────────────────────────────────────────────────
+// LRU cache for pocket templates keyed by cell size + forExport + throughCut.
+// Build one loft per unique cell size, then clone+translate for each grid position.
+
+const pocketTemplateCache = new LRUCache<Shape3D>(8);
+
+function pocketCacheKey(
+  cellW: number,
+  cellD: number,
+  forExport: boolean,
+  throughCut: boolean
+): string {
+  return `${cellW}|${cellD}|${forExport}|${throughCut}`;
+}
 
 // ─── Pocket Builders ────────────────────────────────────────────────────────
 
@@ -141,11 +159,35 @@ function buildSimplifiedPocketCutter(
   return s0.loftWith(sections, { ruled: true });
 }
 
+/**
+ * Get or build a pocket template for the given cell dimensions.
+ * Uses an LRU cache keyed on cell size + quality mode + throughCut.
+ * Returns a clone of the cached template (safe for translate).
+ */
+function getPocketTemplate(
+  cellW_mm: number,
+  cellD_mm: number,
+  forExport: boolean,
+  throughCut: boolean
+): Shape3D {
+  const key = pocketCacheKey(cellW_mm, cellD_mm, forExport, throughCut);
+  const cached = pocketTemplateCache.get(key);
+  if (cached !== undefined) {
+    return clone(cached);
+  }
+  const template = forExport
+    ? buildPocketCutter(cellW_mm, cellD_mm, throughCut)
+    : buildSimplifiedPocketCutter(cellW_mm, cellD_mm, throughCut);
+  pocketTemplateCache.set(key, template);
+  return clone(template);
+}
+
 // ─── Magnet Holes ───────────────────────────────────────────────────────────
 
 /**
  * Build magnet hole cutouts for the underside of the baseplate.
  *
+ * Builds one template cylinder and clones it for each hole position.
  * Magnet holes are placed at the standard 4-corner positions within each
  * full-size (1.0 x 1.0 unit) cell. Holes cut upward from the bottom face.
  */
@@ -165,19 +207,16 @@ function buildMagnetHoles(
     [HOLE_OFFSET, -HOLE_OFFSET],
   ];
 
+  // Build one template cylinder, clone for each position
+  const magnetTemplate = sketch(drawCircle(magnetRadius), 'XY', -totalHeight).extrude(magnetDepth);
+
   const holes: Shape3D[] = [];
   forEachCell(gridW, gridD, (cell) => {
     // Only place holes in full-size cells
     if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
-    const magnetCylinder = (
-      drawCircle(magnetRadius).sketchOnPlane('XY', -totalHeight) as {
-        extrude: (h: number) => Shape3D;
-      }
-    ).extrude(magnetDepth);
-
     for (const [dx, dy] of holeOffsets) {
-      holes.push(translate(magnetCylinder, [cell.centerX + dx, cell.centerY + dy, 0]));
+      holes.push(translate(clone(magnetTemplate), [cell.centerX + dx, cell.centerY + dy, 0]));
     }
   });
 
@@ -232,8 +271,7 @@ function buildBaseplateSolid(
   forExport: boolean = true,
   onProgress?: (progress: number) => void
 ): Shape3D {
-  const { width, depth, magnetHoles, magnetDiameter, magnetDepth, halfCellPegs, paddingMm } =
-    params;
+  const { width, depth, magnetHoles, magnetDiameter, magnetDepth, paddingMm } = params;
 
   // 1. Build solid block — only add BASE_THICKNESS when magnets need a floor
   const totalW = width * SIZE + 2 * paddingMm;
@@ -249,24 +287,17 @@ function buildBaseplateSolid(
 
   onProgress?.(0.2);
 
-  // 2. Build pocket cutters for each cell and cut from block
+  // 2. Build pocket cutters using template cloning (one loft per unique cell size)
   // When no magnets, pockets cut all the way through (throughCut)
   const throughCut = !magnetHoles;
   const pockets: Shape3D[] = [];
-  forEachCell(
-    width,
-    depth,
-    (cell) => {
-      // Full cell size — no CLEARANCE reduction (clearance is on the bin side)
-      const cellW_mm = cell.widthUnits * SIZE;
-      const cellD_mm = cell.depthUnits * SIZE;
-      const pocket = forExport
-        ? buildPocketCutter(cellW_mm, cellD_mm, throughCut)
-        : buildSimplifiedPocketCutter(cellW_mm, cellD_mm, throughCut);
-      pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
-    },
-    halfCellPegs
-  );
+  forEachCell(width, depth, (cell) => {
+    // Full cell size — no CLEARANCE reduction (clearance is on the bin side)
+    const cellW_mm = cell.widthUnits * SIZE;
+    const cellD_mm = cell.depthUnits * SIZE;
+    const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
+    pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
+  });
 
   if (pockets.length > 0) {
     baseplate = unwrap(cutAll(baseplate, pockets));

@@ -1409,7 +1409,6 @@ const en: Record<string, string> = {
   'baseplate.magnetHoles': 'Magnet holes',
   'baseplate.magnetDiameter': 'Magnet diameter',
   'baseplate.magnetDepth': 'Magnet depth',
-  'baseplate.halfCellPegs': 'Half-cell features',
   'baseplate.padding': 'Padding',
   'baseplate.summary': '{width}×{depth} grid',
   'baseplate.exportButton': 'Export Baseplate',

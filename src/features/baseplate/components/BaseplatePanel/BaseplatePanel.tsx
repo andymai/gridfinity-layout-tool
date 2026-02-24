@@ -96,13 +96,6 @@ export function BaseplatePanel() {
         )}
       </fieldset>
 
-      {/* Half-cell pegs */}
-      <Checkbox
-        checked={baseplateParams.halfCellPegs}
-        onChange={(checked) => updateParam('halfCellPegs', checked)}
-        label={t('baseplate.halfCellPegs')}
-      />
-
       {/* Padding */}
       <label className="flex items-center justify-between gap-2 text-xs text-content-secondary">
         <span>{t('baseplate.padding')}</span>
@@ -133,7 +126,6 @@ export function BaseplatePanel() {
               ? `${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm ${t('baseplate.magnetHoles')}`
               : `${t('baseplate.magnetHoles')}: ---`}
           </li>
-          {baseplateParams.halfCellPegs && <li>{t('baseplate.halfCellPegs')}</li>}
           {baseplateParams.paddingMm > 0 && (
             <li>
               {t('baseplate.padding')}: {baseplateParams.paddingMm}mm
