@@ -2,11 +2,11 @@
  * Parameter panel for the standalone baseplate page.
  *
  * Top-to-bottom information hierarchy:
- * 1. Dimensions strip (read-only context — always visible, non-collapsible)
+ * 1. Hero dimensions strip (total mm primary, grid context secondary — always visible)
  * 2. Fit to Drawer: per-side padding steppers
  * 3. Split Pieces: split info, toggle, mini-map (conditional on tiling)
  * 4. Magnets: magnet holes toggle with customize expand
- * 5. Print Settings: grid unit, print bed size, reset (rarely changed)
+ * 5. Print Settings: grid unit, print bed size (rarely changed)
  *
  * Uses shared components (StickyGroupHeader, FeatureToggle, SliderInput,
  * SegmentedControl) for consistency with the bin designer.
@@ -17,8 +17,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { Stepper } from '@/design-system/Stepper';
-import { Button } from '@/design-system/Button';
-import { RotateCcwIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
@@ -33,18 +31,6 @@ import type { BaseplateTiling, BaseplatePiece } from '../../types/tiling';
 import type { SplitViewMode } from '../../store/baseplatePageStore';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function paramsAreDefault(params: BaseplateParams): boolean {
-  return (
-    params.magnetHoles === DEFAULT_BASEPLATE_PARAMS.magnetHoles &&
-    params.magnetDiameter === DEFAULT_BASEPLATE_PARAMS.magnetDiameter &&
-    params.magnetDepth === DEFAULT_BASEPLATE_PARAMS.magnetDepth &&
-    params.paddingLeft === DEFAULT_BASEPLATE_PARAMS.paddingLeft &&
-    params.paddingRight === DEFAULT_BASEPLATE_PARAMS.paddingRight &&
-    params.paddingFront === DEFAULT_BASEPLATE_PARAMS.paddingFront &&
-    params.paddingBack === DEFAULT_BASEPLATE_PARAMS.paddingBack
-  );
-}
 
 const VIEW_MODE_OPTIONS: ReadonlyArray<{ value: SplitViewMode; label: string }> = [
   { value: 'assembled', label: '' }, // labels filled at render time via t()
@@ -86,10 +72,6 @@ export function BaseplatePanel() {
     []
   );
 
-  const handleReset = useCallback(() => {
-    useLayoutStore.getState().setBaseplateParams(DEFAULT_BASEPLATE_PARAMS);
-  }, []);
-
   const handleGridUnitChange = useCallback((mm: number) => {
     useLayoutStore.getState().setGridUnitMm(mm);
   }, []);
@@ -109,16 +91,11 @@ export function BaseplatePanel() {
     baseplateParams.paddingFront > 0 ||
     baseplateParams.paddingBack > 0;
 
-  const isDefault = paramsAreDefault(baseplateParams);
-
   // Build view-mode options with translated labels
   const viewModeOptions = VIEW_MODE_OPTIONS.map((opt) => ({
     ...opt,
     label: opt.value === 'assembled' ? t('baseplate.viewAssembled') : t('baseplate.viewExploded'),
   }));
-
-  // Grid section summary
-  const gridSummary = `${drawerWidth}\u00d7${drawerDepth} \u2014 ${Math.round(gridWidthMm)}\u00d7${Math.round(gridDepthMm)}mm`;
 
   // Padding section summary
   const paddingSummary = hasPadding
@@ -128,9 +105,36 @@ export function BaseplatePanel() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {/* 1. Dimensions strip — always visible, non-collapsible context */}
+        {/* 1. Dimensions strip — always visible, non-collapsible hero */}
         <div className="border-b border-stroke-subtle px-4 py-2.5">
-          <div className="text-xs tabular-nums text-content-secondary">{gridSummary}</div>
+          {hasPadding ? (
+            <>
+              <div className="text-sm font-semibold tabular-nums text-content">
+                {t('baseplate.totalDimensions', {
+                  width: Math.round(totalWidthMm),
+                  depth: Math.round(totalDepthMm),
+                })}
+              </div>
+              <div className="text-xs tabular-nums text-content-tertiary">
+                {t('baseplate.gridPlusPadding', {
+                  width: drawerWidth,
+                  depth: drawerDepth,
+                })}
+              </div>
+            </>
+          ) : (
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs tabular-nums text-content-secondary">
+                {t('baseplate.dimensionsUnits', {
+                  width: drawerWidth,
+                  depth: drawerDepth,
+                })}
+              </span>
+              <span className="text-sm font-semibold tabular-nums text-content">
+                {Math.round(gridWidthMm)} &times; {Math.round(gridDepthMm)} mm
+              </span>
+            </div>
+          )}
         </div>
 
         {/* 2. Drawer Fit — primary configuration */}
@@ -159,16 +163,6 @@ export function BaseplatePanel() {
                 onChange={(v) => updateParam('paddingBack', v)}
               />
             </div>
-
-            {/* Total dimensions when padding is set */}
-            {hasPadding && (
-              <div className="text-[11px] tabular-nums text-content-tertiary">
-                {t('baseplate.totalDimensions', {
-                  width: Math.round(totalWidthMm),
-                  depth: Math.round(totalDepthMm),
-                })}
-              </div>
-            )}
           </div>
         </StickyGroupHeader>
 
@@ -260,19 +254,6 @@ export function BaseplatePanel() {
                 />
               </SettingsRow>
             </div>
-
-            {/* Reset button */}
-            {!isDefault && (
-              <Button
-                variant="ghost"
-                size="sm"
-                leftIcon={<RotateCcwIcon size="xs" />}
-                onClick={handleReset}
-                aria-label={t('baseplate.resetParams')}
-              >
-                {t('common.reset')}
-              </Button>
-            )}
           </div>
         </StickyGroupHeader>
       </div>

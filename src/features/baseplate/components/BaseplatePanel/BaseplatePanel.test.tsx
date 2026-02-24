@@ -98,10 +98,23 @@ describe('BaseplatePanel', () => {
     mockSelectedPieceLabel = null;
   });
 
-  it('renders dimensions strip with grid summary', () => {
+  it('renders dimensions strip with grid and mm values (no padding)', () => {
     render(<BaseplatePanel />);
-    // Dimensions strip shows "WxD — WmmxDmm" inline (no collapsible header)
-    expect(screen.getByText('4\u00d76 \u2014 168\u00d7252mm')).toBeInTheDocument();
+    // No padding: single line with grid units and mm dimensions
+    expect(screen.getByText('baseplate.dimensionsUnits')).toBeInTheDocument();
+    expect(screen.getByText(/168\s*×\s*252\s*mm/)).toBeInTheDocument();
+  });
+
+  it('renders hero total dimensions when padding is set', () => {
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: 5,
+      paddingRight: 3,
+    };
+    render(<BaseplatePanel />);
+    // With padding: total mm is primary, grid+padding is secondary
+    expect(screen.getByText('baseplate.totalDimensions')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.gridPlusPadding')).toBeInTheDocument();
   });
 
   it('renders print settings section', () => {
@@ -117,20 +130,6 @@ describe('BaseplatePanel', () => {
   it('renders magnet section', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.sectionMagnets')).toBeInTheDocument();
-  });
-
-  it('hides reset button when params are default', () => {
-    render(<BaseplatePanel />);
-    expect(screen.queryByLabelText('baseplate.resetParams')).not.toBeInTheDocument();
-  });
-
-  it('shows reset button when params differ from defaults', () => {
-    mockLayoutState.layout.baseplateParams = {
-      ...DEFAULT_BASEPLATE_PARAMS,
-      paddingLeft: 5,
-    };
-    render(<BaseplatePanel />);
-    expect(screen.getByLabelText('baseplate.resetParams')).toBeInTheDocument();
   });
 
   it('does not render split section when tiling is null', () => {
