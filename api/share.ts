@@ -25,6 +25,7 @@ import {
  * rate limiting, or content blocking, and 500 on unexpected failures.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
     return methodNotAllowed(res, 'POST');
   }
@@ -128,10 +129,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const now = new Date();
     const nowIso = now.toISOString();
 
-    // Store deleteTokenHash in Redis (not in the public blob)
+    // Store deleteTokenHash in Redis (not in the public blob).
+    // Fail-closed in production: if Redis is unavailable the hash can't be persisted,
+    // which would make the share permanently unmodifiable.
     const redis = getRedis();
     if (redis) {
       await redis.set(shareHashKey(shareId), deleteTokenHash);
+    } else if (process.env.VERCEL_ENV === 'production') {
+      console.error('Share creation failed: Redis unavailable, cannot persist delete token hash');
+      return res.status(503).json({
+        error: 'Service temporarily unavailable. Please try again.',
+        code: ErrorCode.SERVER_ERROR,
+      });
     }
 
     // Prepare data to store — deleteTokenHash and reportCount are in Redis,

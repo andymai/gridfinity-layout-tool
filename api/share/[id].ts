@@ -28,6 +28,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const blobPath = `shares/${id}.json`;
 
   switch (req.method) {
+    case 'OPTIONS':
+      return res.status(200).end();
     case 'GET':
       return handleGet(req, res, id, blobPath);
     case 'PUT':
@@ -89,7 +91,9 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
-    }).catch(() => {});
+    }).catch((err: unknown) => {
+      console.warn('Failed to update lastAccessedAt for share:', { id: _id, error: err });
+    });
 
     // Return layout with public metadata (exclude sensitive fields)
     return res.status(200).json({

@@ -2073,7 +2073,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   // Get Redis client
   const client = getRedis();
   if (!client) {
-    // Silently accept if Redis not configured (dev mode)
+    if (process.env.VERCEL_ENV === 'production') {
+      console.warn('ml-telemetry: Redis unavailable in production, telemetry discarded');
+    }
     res.status(200).json({ ok: true, processed: 0 });
     return;
   }
