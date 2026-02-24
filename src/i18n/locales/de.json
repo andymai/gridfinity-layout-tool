@@ -1376,7 +1376,7 @@
   "baseplate.magnetHoles": "Magnetlöcher",
   "baseplate.magnetDiameter": "Magnetdurchmesser",
   "baseplate.magnetDepth": "Magnettiefe",
-  "baseplate.gridDimensions": "Raster: {width}mm × {depth}mm",
+  "baseplate.gridUnit": "Rastereinheit",
   "baseplate.paddingLeft": "Links",
   "baseplate.paddingRight": "Rechts",
   "baseplate.paddingFront": "Vorne",
@@ -1389,12 +1389,14 @@
   "baseplate.generatingSplit": "Generiere {current}/{total}...",
   "baseplate.printBedSize": "Druckbettgröße",
   "baseplate.resetParams": "Auf Standard zurücksetzen",
-  "baseplate.sectionFitToDrawer": "An Schublade anpassen",
-  "baseplate.sectionGrid": "Raster",
+  "baseplate.sectionFitToDrawer": "Randpolsterung",
   "baseplate.sectionMagnets": "Magnete",
+  "baseplate.sectionPrintSettings": "Druckeinstellungen",
   "baseplate.sectionSplit": "Geteilte Teile",
-  "baseplate.splitInfo": "Geteilt: {cols}×{rows} Raster ({count} Teile)",
+  "baseplate.splitInfo": "{cols} Sp. × {rows} Z. — {count} Teile",
   "baseplate.toolbarButton": "Grundplatte",
   "baseplate.viewAssembled": "Zusammengebaut",
-  "baseplate.viewExploded": "Explodiert"
+  "baseplate.viewExploded": "Explodiert",
+  "baseplate.pieceLabel": "Teil {label}",
+  "baseplate.pieceDimensions": "{width}×{depth} Einheiten ({widthMm}×{depthMm}mm)"
 }

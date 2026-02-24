@@ -1409,7 +1409,7 @@ const en: Record<string, string> = {
   'baseplate.magnetHoles': 'Magnet holes',
   'baseplate.magnetDiameter': 'Magnet diameter',
   'baseplate.magnetDepth': 'Magnet depth',
-  'baseplate.gridDimensions': 'Grid: {width}mm \u00d7 {depth}mm',
+  'baseplate.gridUnit': 'Grid unit',
   'baseplate.paddingLeft': 'Left',
   'baseplate.paddingRight': 'Right',
   'baseplate.paddingFront': 'Front',
@@ -1421,13 +1421,15 @@ const en: Record<string, string> = {
   'baseplate.generatingSplit': 'Generating {current}/{total}...',
   'baseplate.printBedSize': 'Print bed size',
   'baseplate.resetParams': 'Reset to defaults',
-  'baseplate.sectionGrid': 'Grid',
-  'baseplate.sectionFitToDrawer': 'Fit to Drawer',
+  'baseplate.sectionFitToDrawer': 'Edge Padding',
   'baseplate.sectionMagnets': 'Magnets',
   'baseplate.sectionSplit': 'Split Pieces',
-  'baseplate.splitInfo': 'Split: {cols}\u00d7{rows} grid ({count} pieces)',
+  'baseplate.sectionPrintSettings': 'Print Settings',
+  'baseplate.splitInfo': '{cols} col \u00d7 {rows} row \u2014 {count} pieces',
   'baseplate.viewAssembled': 'Assembled',
   'baseplate.viewExploded': 'Exploded',
+  'baseplate.pieceLabel': 'Piece {label}',
+  'baseplate.pieceDimensions': '{width}\u00d7{depth} units ({widthMm}\u00d7{depthMm}mm)',
 
   // ===========================================================================
   // Collaboration

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BaseplatePanel } from './BaseplatePanel';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 
@@ -44,18 +44,40 @@ const { useLayoutStore } = await import('@/core/store/layout');
 // Mock page store
 let mockTiling: unknown = null;
 let mockSplitViewMode = 'assembled';
+let mockHoveredPieceLabel: string | null = null;
+let mockSelectedPieceLabel: string | null = null;
 const mockSetSplitViewMode = vi.fn();
+const mockSetHoveredPieceLabel = vi.fn();
+const mockSetSelectedPieceLabel = vi.fn();
 
 vi.mock('../../store/baseplatePageStore', () => ({
   useBaseplatePageStore: (selector: (state: Record<string, unknown>) => unknown) => {
     const state = {
       tiling: mockTiling,
       splitViewMode: mockSplitViewMode,
+      hoveredPieceLabel: mockHoveredPieceLabel,
+      selectedPieceLabel: mockSelectedPieceLabel,
       setSplitViewMode: mockSetSplitViewMode,
+      setHoveredPieceLabel: mockSetHoveredPieceLabel,
+      setSelectedPieceLabel: mockSetSelectedPieceLabel,
     };
     return selector(state);
   },
 }));
+
+const splitTiling = {
+  isSplit: true,
+  cols: 2,
+  rows: 1,
+  pieces: [
+    { label: 'A1', col: 0, row: 0, widthUnits: 5, depthUnits: 4, gridOffsetX: 0, gridOffsetY: 0 },
+    { label: 'B1', col: 1, row: 0, widthUnits: 4, depthUnits: 4, gridOffsetX: 5, gridOffsetY: 0 },
+  ],
+  totalWidthUnits: 9,
+  totalDepthUnits: 6,
+  stackCount: 1,
+  stackSeparatorThickness: 0,
+};
 
 describe('BaseplatePanel', () => {
   beforeEach(() => {
@@ -72,15 +94,22 @@ describe('BaseplatePanel', () => {
     };
     mockTiling = null;
     mockSplitViewMode = 'assembled';
+    mockHoveredPieceLabel = null;
+    mockSelectedPieceLabel = null;
   });
 
-  it('renders grid section with dimensions', () => {
+  it('renders dimensions strip with grid summary', () => {
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.sectionGrid')).toBeInTheDocument();
-    expect(screen.getByText('baseplate.gridDimensions')).toBeInTheDocument();
+    // Dimensions strip shows "WxD — WmmxDmm" inline (no collapsible header)
+    expect(screen.getByText('4\u00d76 \u2014 168\u00d7252mm')).toBeInTheDocument();
   });
 
-  it('renders padding section', () => {
+  it('renders print settings section', () => {
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.sectionPrintSettings')).toBeInTheDocument();
+  });
+
+  it('renders edge padding section', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.sectionFitToDrawer')).toBeInTheDocument();
   });
@@ -110,19 +139,7 @@ describe('BaseplatePanel', () => {
   });
 
   it('renders split section when tiling is split', () => {
-    mockTiling = {
-      isSplit: true,
-      cols: 2,
-      rows: 1,
-      pieces: [
-        { label: 'A1', col: 0, row: 0 },
-        { label: 'B1', col: 1, row: 0 },
-      ],
-      totalWidthUnits: 9,
-      totalDepthUnits: 6,
-      stackCount: 1,
-      stackSeparatorThickness: 0,
-    };
+    mockTiling = splitTiling;
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.sectionSplit')).toBeInTheDocument();
     expect(screen.getByText('A1')).toBeInTheDocument();
@@ -130,19 +147,7 @@ describe('BaseplatePanel', () => {
   });
 
   it('renders segmented control for split view mode', () => {
-    mockTiling = {
-      isSplit: true,
-      cols: 2,
-      rows: 1,
-      pieces: [
-        { label: 'A1', col: 0, row: 0 },
-        { label: 'B1', col: 1, row: 0 },
-      ],
-      totalWidthUnits: 9,
-      totalDepthUnits: 6,
-      stackCount: 1,
-      stackSeparatorThickness: 0,
-    };
+    mockTiling = splitTiling;
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.viewAssembled')).toBeInTheDocument();
     expect(screen.getByText('baseplate.viewExploded')).toBeInTheDocument();
@@ -156,5 +161,61 @@ describe('BaseplatePanel', () => {
   it('renders print bed size stepper', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.printBedSize')).toBeInTheDocument();
+  });
+
+  describe('mini-map interaction', () => {
+    it('renders mini-map cells as buttons with aria-label', () => {
+      mockTiling = splitTiling;
+      render(<BaseplatePanel />);
+      const buttons = screen.getAllByRole('button', { pressed: false });
+      const pieceButtons = buttons.filter((b) =>
+        b.getAttribute('aria-label')?.startsWith('baseplate.pieceLabel')
+      );
+      expect(pieceButtons.length).toBe(2);
+      expect(pieceButtons[0].tagName).toBe('BUTTON');
+    });
+
+    it('calls setHoveredPieceLabel on pointer enter/leave', () => {
+      mockTiling = splitTiling;
+      render(<BaseplatePanel />);
+      const a1Button = screen.getByText('A1');
+      fireEvent.pointerEnter(a1Button);
+      expect(mockSetHoveredPieceLabel).toHaveBeenCalledWith('A1');
+      fireEvent.pointerLeave(a1Button);
+      expect(mockSetHoveredPieceLabel).toHaveBeenCalledWith(null);
+    });
+
+    it('calls setSelectedPieceLabel on click (toggle)', () => {
+      mockTiling = splitTiling;
+      render(<BaseplatePanel />);
+      const a1Button = screen.getByText('A1');
+      fireEvent.click(a1Button);
+      expect(mockSetSelectedPieceLabel).toHaveBeenCalledWith('A1');
+    });
+
+    it('deselects on click when already selected', () => {
+      mockTiling = splitTiling;
+      mockSelectedPieceLabel = 'A1';
+      render(<BaseplatePanel />);
+      // Multiple "A1" elements exist (button + detail strip), pick the button
+      const a1Elements = screen.getAllByText('A1');
+      const a1Button = a1Elements.find((el) => el.tagName === 'BUTTON') as HTMLElement;
+      fireEvent.click(a1Button);
+      expect(mockSetSelectedPieceLabel).toHaveBeenCalledWith(null);
+    });
+
+    it('renders piece detail strip when a piece is hovered', () => {
+      mockTiling = splitTiling;
+      mockHoveredPieceLabel = 'A1';
+      render(<BaseplatePanel />);
+      // Detail strip shows the label and dimensions
+      expect(screen.getByText('baseplate.pieceDimensions')).toBeInTheDocument();
+    });
+
+    it('does not render piece detail strip when no piece is active', () => {
+      mockTiling = splitTiling;
+      render(<BaseplatePanel />);
+      expect(screen.queryByText('baseplate.pieceDimensions')).not.toBeInTheDocument();
+    });
   });
 });
