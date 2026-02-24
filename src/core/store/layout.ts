@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type {
   Layout,
+  BaseplateParams,
   Bin,
   Layer,
   Category,
@@ -106,6 +107,9 @@ interface LayoutState {
 
   // Name
   setName: (name: string) => void;
+
+  // Baseplate
+  setBaseplateParams: (params: BaseplateParams) => void;
 
   // Settings
   setPrintBedSize: (size: number) => void;
@@ -596,6 +600,12 @@ export const useLayoutStore = create<LayoutState>()(
       setName: (name) => {
         setLocal((state) => {
           state.layout.name = name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
+        });
+      },
+
+      setBaseplateParams: (params) => {
+        setLocal((state) => {
+          state.layout.baseplateParams = params;
         });
       },
 

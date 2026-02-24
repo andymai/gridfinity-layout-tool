@@ -856,6 +856,7 @@
   "layouts.viewOnly": "Alleen bekijken",
   "loading.collaboration": "Samenwerking laden",
   "loading.designer": "Designer laden",
+  "loading.baseplate": "Basisplaat-generator laden",
   "loading.gallery": "Galerij laden",
   "loading.help": "Hulp laden",
   "loading.mobileLayout": "Mobiele layout laden",
@@ -1370,5 +1371,17 @@
   "toolbar.zoomIn": "Inzoomen",
   "toolbar.zoomInKey": "Inzoomen (+)",
   "toolbar.zoomOut": "Uitzoomen",
-  "toolbar.zoomOutKey": "Uitzoomen (−)"
+  "toolbar.zoomOutKey": "Uitzoomen (−)",
+  "baseplate.title": "Basisplaat",
+  "baseplate.magnetHoles": "Magneetgaten",
+  "baseplate.magnetDiameter": "Magneetdiameter",
+  "baseplate.magnetDepth": "Magneetdiepte",
+  "baseplate.halfCellPegs": "Halve cel-elementen",
+  "baseplate.padding": "Opvulling",
+  "baseplate.summary": "{width}×{depth} raster",
+  "baseplate.pageTitle": "Basisplaat-generator",
+  "baseplate.backToLayout": "Terug naar layout",
+  "baseplate.exportButton": "Basisplaat exporteren",
+  "baseplate.drawerSize": "Lade: {width}×{depth}",
+  "baseplate.toolbarButton": "Basisplaat"
 }

@@ -856,6 +856,7 @@
   "layouts.viewOnly": "Lecture seule",
   "loading.collaboration": "Chargement de la collaboration",
   "loading.designer": "Chargement du concepteur",
+  "loading.baseplate": "Chargement du générateur de plaque de base",
   "loading.gallery": "Chargement de la galerie",
   "loading.help": "Chargement de l'aide",
   "loading.mobileLayout": "Chargement du layout mobile",
@@ -1370,5 +1371,17 @@
   "toolbar.zoomIn": "Zoomer",
   "toolbar.zoomInKey": "Zoomer (+)",
   "toolbar.zoomOut": "Dézoomer",
-  "toolbar.zoomOutKey": "Dézoomer (−)"
+  "toolbar.zoomOutKey": "Dézoomer (−)",
+  "baseplate.title": "Platine de base",
+  "baseplate.magnetHoles": "Trous d'aimant",
+  "baseplate.magnetDiameter": "Diamètre de l'aimant",
+  "baseplate.magnetDepth": "Profondeur de l'aimant",
+  "baseplate.halfCellPegs": "Éléments demi-cellule",
+  "baseplate.padding": "Marge",
+  "baseplate.summary": "Grille {width}×{depth}",
+  "baseplate.pageTitle": "Générateur de plaque de base",
+  "baseplate.backToLayout": "Retour au plan",
+  "baseplate.exportButton": "Exporter la plaque de base",
+  "baseplate.drawerSize": "Tiroir : {width}×{depth}",
+  "baseplate.toolbarButton": "Plaque de base"
 }

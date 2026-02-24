@@ -13,10 +13,16 @@
 
 import { initFromOC } from 'brepjs';
 import type { WorkerMessage, WorkerResponse } from '../bridge/types';
-import type { BinParams } from '@/shared/types/bin';
-import type { ExportPayload, ExportDividersPayload, ExportSplitPayload } from '../bridge/types';
+import type { BinParams, BaseplateParams } from '@/shared/types/bin';
+import type {
+  ExportPayload,
+  ExportDividersPayload,
+  ExportSplitPayload,
+  ExportBaseplatePayload,
+} from '../bridge/types';
 import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
+import { generateBaseplate, exportBaseplate } from './generators/baseplateGenerator';
 import { detectWasmCapabilities } from '../utils/wasmCapabilities';
 
 // Single-threaded WASM (always available)
@@ -320,6 +326,101 @@ async function handleExportSplit(payload: ExportSplitPayload): Promise<void> {
   }
 }
 
+/**
+ * Baseplate generation pipeline.
+ */
+function generateBaseplateHandler(params: BaseplateParams, requestId: string): void {
+  if (!ocInitialized) {
+    respond({ type: 'ERROR', requestId, error: 'OpenCascade not initialized' });
+    return;
+  }
+
+  activeRequestId = requestId;
+  activeController = new AbortController();
+  const { signal } = activeController;
+  const startTime = performance.now();
+
+  try {
+    const meshData = generateBaseplate(
+      params,
+      (stage, progress) => {
+        if (activeRequestId !== requestId) return;
+        reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
+      },
+      false,
+      signal
+    );
+
+    if (activeRequestId !== requestId) return;
+
+    const timingMs = performance.now() - startTime;
+    const response: WorkerResponse = {
+      type: 'MESH_RESULT',
+      requestId,
+      vertices: meshData.vertices,
+      normals: meshData.normals,
+      indices: meshData.indices,
+      edgeVertices: meshData.edgeVertices,
+      triangleCount: meshData.triangleCount,
+      timingMs,
+      faceGroups: meshData.faceGroups,
+    };
+    self.postMessage(response, {
+      transfer: [
+        meshData.vertices.buffer,
+        meshData.normals.buffer,
+        meshData.indices.buffer,
+        meshData.edgeVertices.buffer,
+      ].filter((b) => b.byteLength > 0),
+    });
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') return;
+    if (activeRequestId !== requestId) return;
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    console.error('[BaseplateGen] Generation failed:', errorMsg);
+    respond({ type: 'ERROR', requestId, error: errorMsg });
+  } finally {
+    if (activeRequestId === requestId) {
+      activeRequestId = null;
+      activeController = null;
+    }
+  }
+}
+
+/**
+ * Baseplate export pipeline.
+ */
+async function handleExportBaseplate(payload: ExportBaseplatePayload): Promise<void> {
+  if (!ocInitialized) {
+    respond({ type: 'ERROR', requestId: payload.requestId, error: 'OpenCascade not initialized' });
+    return;
+  }
+
+  try {
+    const result = await exportBaseplate(
+      payload.params,
+      payload.format,
+      payload.tolerance,
+      payload.angularTolerance
+    );
+
+    const response = {
+      type: 'BASEPLATE_EXPORT_RESULT' as const,
+      requestId: payload.requestId,
+      data: result.data,
+      format: payload.format,
+      fileName: result.fileName,
+    };
+    self.postMessage(response, { transfer: [result.data] });
+  } catch (e) {
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: `Baseplate export failed: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
+}
+
 // ─── Message Handler ─────────────────────────────────────────────────────────
 
 self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
@@ -344,8 +445,16 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
         generate(message.payload.params, message.payload.requestId);
         break;
 
+      case 'GENERATE_BASEPLATE':
+        generateBaseplateHandler(message.payload.params, message.payload.requestId);
+        break;
+
       case 'EXPORT':
         await handleExport(message.payload);
+        break;
+
+      case 'EXPORT_BASEPLATE':
+        await handleExportBaseplate(message.payload);
         break;
 
       case 'EXPORT_DIVIDERS':

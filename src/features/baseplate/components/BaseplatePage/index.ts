@@ -1,0 +1,1 @@
+export { BaseplatePage } from './BaseplatePage';

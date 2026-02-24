@@ -1401,6 +1401,22 @@ const en: Record<string, string> = {
   'binDesigner.compartmentsShort': '{count} comp.',
 
   // ===========================================================================
+  // Baseplate Generator (standalone feature)
+  // ===========================================================================
+  'baseplate.pageTitle': 'Baseplate Generator',
+  'baseplate.backToLayout': 'Back to layout',
+  'baseplate.title': 'Baseplate',
+  'baseplate.magnetHoles': 'Magnet holes',
+  'baseplate.magnetDiameter': 'Magnet diameter',
+  'baseplate.magnetDepth': 'Magnet depth',
+  'baseplate.halfCellPegs': 'Half-cell features',
+  'baseplate.padding': 'Padding',
+  'baseplate.summary': '{width}×{depth} grid',
+  'baseplate.exportButton': 'Export Baseplate',
+  'baseplate.drawerSize': 'Drawer: {width}×{depth}',
+  'baseplate.toolbarButton': 'Baseplate',
+
+  // ===========================================================================
   // Collaboration
   // ===========================================================================
   'collab.connected': 'Connected',
@@ -1436,6 +1452,7 @@ const en: Record<string, string> = {
   'loading.settings': 'Loading settings',
   'loading.collaboration': 'Loading collaboration',
   'loading.designer': 'Loading designer',
+  'loading.baseplate': 'Loading baseplate generator',
   'loading.mobileLayout': 'Loading mobile layout',
   'loading.help': 'Loading help',
   'loading.sharedWithMe': 'Loading...',

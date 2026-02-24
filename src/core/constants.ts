@@ -1,4 +1,4 @@
-import type { Layout, Category, BinId, LayerId, CategoryId } from './types';
+import type { Layout, Category, BaseplateParams, BinId, LayerId, CategoryId } from './types';
 import { binId, layerId, categoryId } from './types';
 
 // === Constraints (from PRD) ===
@@ -144,6 +144,15 @@ export const CATEGORY_COLOR_PALETTE = [
   { color: '#94a3b8', name: 'Slate' },
   { color: '#a8a29e', name: 'Stone' },
 ] as const;
+
+/** Default baseplate parameters: magnet holes enabled, no half-cell pegs, no padding */
+export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
+  magnetHoles: false,
+  magnetDiameter: 6.5,
+  magnetDepth: 2,
+  halfCellPegs: false,
+  paddingMm: 0,
+} as const;
 
 /** Default layout name for new layouts */
 export const DEFAULT_LAYOUT_NAME = 'Untitled layout';

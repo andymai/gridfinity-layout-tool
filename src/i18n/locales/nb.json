@@ -856,6 +856,7 @@
   "layouts.viewOnly": "Kun visning",
   "loading.collaboration": "Laster samarbeid",
   "loading.designer": "Laster designer",
+  "loading.baseplate": "Laster bunnplate-generator",
   "loading.gallery": "Laster galleri",
   "loading.help": "Laster hjelp",
   "loading.mobileLayout": "Laster mobil-layout",
@@ -1370,5 +1371,17 @@
   "toolbar.zoomIn": "Zoom inn",
   "toolbar.zoomInKey": "Zoom inn (+)",
   "toolbar.zoomOut": "Zoom ut",
-  "toolbar.zoomOutKey": "Zoom ut (−)"
+  "toolbar.zoomOutKey": "Zoom ut (−)",
+  "baseplate.title": "Bunnplate",
+  "baseplate.magnetHoles": "Magnethull",
+  "baseplate.magnetDiameter": "Magnetdiameter",
+  "baseplate.magnetDepth": "Magnetdybde",
+  "baseplate.halfCellPegs": "Halvcelledetaljer",
+  "baseplate.padding": "Marg",
+  "baseplate.summary": "{width}×{depth} rutenett",
+  "baseplate.pageTitle": "Bunnplate-generator",
+  "baseplate.backToLayout": "Tilbake til layout",
+  "baseplate.exportButton": "Eksporter bunnplate",
+  "baseplate.drawerSize": "Skuff: {width}×{depth}",
+  "baseplate.toolbarButton": "Bunnplate"
 }

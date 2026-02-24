@@ -5,7 +5,7 @@
  * request cancellation via AbortController pattern.
  */
 
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, BaseplateParams } from '@/shared/types/bin';
 import type {
   WorkerMessage,
   WorkerResponse,
@@ -43,6 +43,13 @@ export interface DividersExportResult {
 /** Result from a successful split export */
 export interface SplitExportResult {
   readonly pieces: readonly SplitExportPiece[];
+}
+
+/** Result from a successful baseplate export */
+export interface BaseplateExportResult {
+  readonly data: ArrayBuffer;
+  readonly fileName: string;
+  readonly format: ExportFormat;
 }
 
 /** Information about the WASM threading capabilities */
@@ -353,6 +360,82 @@ export class GenerationBridge {
     });
   }
 
+  /**
+   * Generate baseplate mesh from baseplate parameters.
+   * Uses the same debounce and cancellation as bin generation.
+   */
+  generateBaseplate(
+    params: BaseplateParams,
+    onProgress?: ProgressCallback
+  ): Promise<GenerationResult> {
+    if (this.destroyed) {
+      return Promise.reject(new Error('Bridge has been destroyed'));
+    }
+
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+
+    this.cancelCurrentRequest();
+    this.onProgress = onProgress ?? null;
+
+    return new Promise<GenerationResult>((resolve, reject) => {
+      this.pendingResolve = resolve;
+      this.pendingReject = reject;
+
+      this.debounceTimer = setTimeout(() => {
+        this.debounceTimer = null;
+        const requestId = this.nextRequestId();
+        this.currentRequestId = requestId;
+        this.postMessage({
+          type: 'GENERATE_BASEPLATE',
+          payload: { params, requestId },
+        });
+      }, this.adaptiveDebounce.getDelay());
+    });
+  }
+
+  /**
+   * Export baseplate in the specified format.
+   */
+  async exportBaseplate(
+    params: BaseplateParams,
+    format: ExportFormat,
+    options?: { tolerance?: number; angularTolerance?: number }
+  ): Promise<BaseplateExportResult> {
+    if (this.destroyed) {
+      throw new Error('Bridge has been destroyed');
+    }
+
+    await this.init();
+
+    // Reuse the same export pending slots (only one export at a time)
+    if (this.pendingExportReject) {
+      this.pendingExportReject(new Error('Export superseded'));
+      this.pendingExportResolve = null;
+      this.pendingExportReject = null;
+    }
+
+    const requestId = this.nextRequestId();
+    this.exportRequestId = requestId;
+
+    return new Promise<BaseplateExportResult>((resolve, reject) => {
+      this.pendingExportResolve = resolve as (result: ExportResult) => void;
+      this.pendingExportReject = reject;
+      this.postMessage({
+        type: 'EXPORT_BASEPLATE',
+        payload: {
+          params,
+          requestId,
+          format,
+          tolerance: options?.tolerance,
+          angularTolerance: options?.angularTolerance,
+        },
+      });
+    });
+  }
+
   /** Whether the bridge has been destroyed */
   get isDestroyed(): boolean {
     return this.destroyed;
@@ -447,6 +530,20 @@ export class GenerationBridge {
               fileName: response.fileName,
               format: response.format,
               faceGroups: response.faceGroups,
+            });
+          }
+          break;
+
+        case 'BASEPLATE_EXPORT_RESULT':
+          if (response.requestId === this.exportRequestId && this.pendingExportResolve) {
+            const resolve = this.pendingExportResolve;
+            this.pendingExportResolve = null;
+            this.pendingExportReject = null;
+            this.exportRequestId = null;
+            resolve({
+              data: response.data,
+              fileName: response.fileName,
+              format: response.format,
             });
           }
           break;

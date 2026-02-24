@@ -856,6 +856,7 @@
   "layouts.viewOnly": "Solo lectura",
   "loading.collaboration": "Cargando colaboración",
   "loading.designer": "Cargando diseñador",
+  "loading.baseplate": "Cargando generador de placa base",
   "loading.gallery": "Cargando galería",
   "loading.help": "Cargando ayuda",
   "loading.mobileLayout": "Cargando diseño móvil",
@@ -1370,5 +1371,17 @@
   "toolbar.zoomIn": "Acercar",
   "toolbar.zoomInKey": "Acercar (+)",
   "toolbar.zoomOut": "Alejar",
-  "toolbar.zoomOutKey": "Alejar (−)"
+  "toolbar.zoomOutKey": "Alejar (−)",
+  "baseplate.title": "Base",
+  "baseplate.magnetHoles": "Agujeros de imán",
+  "baseplate.magnetDiameter": "Diámetro del imán",
+  "baseplate.magnetDepth": "Profundidad del imán",
+  "baseplate.halfCellPegs": "Características de media celda",
+  "baseplate.padding": "Relleno",
+  "baseplate.summary": "Cuadrícula {width}×{depth}",
+  "baseplate.pageTitle": "Generador de placa base",
+  "baseplate.backToLayout": "Volver al diseño",
+  "baseplate.exportButton": "Exportar placa base",
+  "baseplate.drawerSize": "Cajón: {width}×{depth}",
+  "baseplate.toolbarButton": "Placa base"
 }

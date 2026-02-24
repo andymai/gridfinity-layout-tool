@@ -6,6 +6,7 @@
  * depend on these types without a cross-feature import violation.
  */
 export type {
+  ExportFileFormat,
   BinParams,
   BaseConfig,
   BaseStyle,
@@ -31,3 +32,20 @@ export type {
 } from '@/features/bin-designer/types';
 
 export { MIN_PATH_POINTS } from '@/features/bin-designer/types';
+
+/**
+ * Full baseplate parameter set for generation bridge.
+ *
+ * Extends core BaseplateParams with drawer dimensions (width, depth, gridUnitMm)
+ * that are merged at generation time from the layout store.
+ */
+export interface BaseplateParams {
+  readonly width: number;
+  readonly depth: number;
+  readonly gridUnitMm: number;
+  readonly magnetHoles: boolean;
+  readonly magnetDiameter: number;
+  readonly magnetDepth: number;
+  readonly halfCellPegs: boolean;
+  readonly paddingMm: number;
+}

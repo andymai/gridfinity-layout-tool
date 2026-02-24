@@ -433,8 +433,10 @@ export function PreviewCanvas() {
     [isDesktop, resetView]
   );
 
-  // Bin dimensions for scene elements
-  const { width, depth, height } = params;
+  // Scene dimensions
+  const width = params.width;
+  const depth = params.depth;
+  const height = params.height;
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
 
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';

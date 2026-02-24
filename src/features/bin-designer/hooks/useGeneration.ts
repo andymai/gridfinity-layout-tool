@@ -44,7 +44,7 @@ export function useGeneration(): void {
   const setGenerationResult = useDesignerStore((state) => state.setGenerationResult);
   const setWasmStatus = useDesignerStore((state) => state.setWasmStatus);
 
-  // Generate mesh from current params
+  // Generate bin mesh from current params
   const runGeneration = useCallback(
     async (currentParams: BinParams) => {
       const bridge = bridgeRef.current;
