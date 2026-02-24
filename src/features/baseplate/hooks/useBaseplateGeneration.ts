@@ -1,16 +1,14 @@
 /**
  * Hook that manages the GenerationBridge lifecycle for the standalone baseplate page.
  *
- * Performance optimization: padding distribution changes do NOT trigger BREP regeneration.
- * The BREP solid is always generated with centered padding (equal on both sides), since
- * only the total padding per axis affects the slab geometry. The actual asymmetric offset
- * is applied in Three.js via slabOffset stored in baseplatePageStore.
- *
  * Lifecycle:
  * 1. Mount: Create bridge, init worker, set wasmStatus
- * 2. Geometry params change: Regenerate BREP (grid dims, total padding, magnets)
- * 3. Distribution changes: Update slabOffset only (no BREP work)
- * 4. Unmount: Destroy bridge
+ * 2. Params change: Regenerate BREP with actual padding values
+ * 3. Unmount: Destroy bridge
+ *
+ * Padding is applied directly — pockets stay centered at origin, the slab
+ * extends asymmetrically. This keeps the grid-aligned footprint stable
+ * regardless of padding distribution.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
@@ -20,18 +18,17 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
 import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
-import { buildCenteredParams } from '../utils/buildFullParams';
+import { buildFullParams } from '../utils/buildFullParams';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
 
 /**
  * Manages the GenerationBridge lifecycle and auto-regeneration
- * when layout params or padding totals change.
+ * when layout params change.
  */
 export function useBaseplateGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const initializedRef = useRef(false);
 
-  // Geometry-affecting params (trigger BREP regeneration)
   const {
     drawerWidth,
     drawerDepth,
@@ -41,8 +38,10 @@ export function useBaseplateGeneration(): void {
     magnetHoles,
     magnetDiameter,
     magnetDepth,
-    totalPaddingX,
-    totalPaddingY,
+    paddingLeft,
+    paddingRight,
+    paddingFront,
+    paddingBack,
   } = useLayoutStore(
     useShallow((state) => {
       const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -55,17 +54,6 @@ export function useBaseplateGeneration(): void {
         magnetHoles: bp.magnetHoles,
         magnetDiameter: bp.magnetDiameter,
         magnetDepth: bp.magnetDepth,
-        totalPaddingX: bp.paddingLeft + bp.paddingRight,
-        totalPaddingY: bp.paddingFront + bp.paddingBack,
-      };
-    })
-  );
-
-  // Distribution params (only affect slab offset, no BREP regeneration)
-  const { paddingLeft, paddingRight, paddingFront, paddingBack } = useLayoutStore(
-    useShallow((state) => {
-      const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-      return {
         paddingLeft: bp.paddingLeft,
         paddingRight: bp.paddingRight,
         paddingFront: bp.paddingFront,
@@ -77,7 +65,6 @@ export function useBaseplateGeneration(): void {
   const setGenerationStatus = useBaseplatePageStore((s) => s.setGenerationStatus);
   const setGenerationResult = useBaseplatePageStore((s) => s.setGenerationResult);
   const setWasmStatus = useBaseplatePageStore((s) => s.setWasmStatus);
-  const setSlabOffset = useBaseplatePageStore((s) => s.setSlabOffset);
 
   const runGeneration = useCallback(
     async (fullParams: FullBaseplateParams) => {
@@ -139,10 +126,10 @@ export function useBaseplateGeneration(): void {
           trackWasmThreadingStatus(threadingInfo.isThreaded, threadingInfo.hardwareConcurrency);
         }
 
-        // Trigger initial generation with centered params
+        // Trigger initial generation
         const layoutState = useLayoutStore.getState();
         const stored = layoutState.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-        const { params, slabOffsetX, slabOffsetY } = buildCenteredParams(
+        const params = buildFullParams(
           stored,
           layoutState.layout.drawer.width,
           layoutState.layout.drawer.depth,
@@ -150,7 +137,6 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.drawer.fractionalEdgeX ?? 'end',
           layoutState.layout.drawer.fractionalEdgeY ?? 'end'
         );
-        setSlabOffset(slabOffsetX, slabOffsetY);
         void runGeneration(params);
       })
       .catch((_e: unknown) => {
@@ -163,14 +149,14 @@ export function useBaseplateGeneration(): void {
       initializedRef.current = false;
       setActiveBridge(null);
     };
-  }, [setWasmStatus, setSlabOffset, runGeneration]);
+  }, [setWasmStatus, runGeneration]);
 
-  // Re-generate when geometry-affecting params change (NOT distribution)
+  // Re-generate when any param changes
   useEffect(() => {
     if (!initializedRef.current) return;
 
     const stored = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-    const { params, slabOffsetX, slabOffsetY } = buildCenteredParams(
+    const params = buildFullParams(
       stored,
       drawerWidth,
       drawerDepth,
@@ -178,7 +164,6 @@ export function useBaseplateGeneration(): void {
       fractionalEdgeX,
       fractionalEdgeY
     );
-    setSlabOffset(slabOffsetX, slabOffsetY);
     void runGeneration(params);
   }, [
     drawerWidth,
@@ -189,14 +174,10 @@ export function useBaseplateGeneration(): void {
     magnetHoles,
     magnetDiameter,
     magnetDepth,
-    totalPaddingX,
-    totalPaddingY,
+    paddingLeft,
+    paddingRight,
+    paddingFront,
+    paddingBack,
     runGeneration,
-    setSlabOffset,
   ]);
-
-  // Update slab offset instantly when distribution changes (no BREP regeneration)
-  useEffect(() => {
-    setSlabOffset((paddingLeft - paddingRight) / 2, (paddingFront - paddingBack) / 2);
-  }, [paddingLeft, paddingRight, paddingFront, paddingBack, setSlabOffset]);
 }

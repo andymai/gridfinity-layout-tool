@@ -135,13 +135,11 @@
     "binDesigner.estimate.filament",
     "binDesigner.estimate.triangles",
     "binDesigner.nameStyle.compact",
-    "baseplate.padding",
     "baseplate.gridDimensions",
     "baseplate.paddingLeft",
     "baseplate.paddingRight",
     "baseplate.paddingFront",
     "baseplate.paddingBack",
-    "baseplate.paddingSummary",
     "baseplate.totalDimensions"
   ],
   "valuePatterns": [

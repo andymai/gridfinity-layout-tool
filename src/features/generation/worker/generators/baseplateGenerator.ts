@@ -334,8 +334,9 @@ function buildBaseplateSolid(
   const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
 
   // Slab center offset — grid pockets stay at origin, slab shifts to accommodate asymmetric padding
-  const slabOffsetX = (paddingLeft - paddingRight) / 2;
-  const slabOffsetY = (paddingFront - paddingBack) / 2;
+  // paddingRight pushes slab center in +X so the right edge extends further right
+  const slabOffsetX = (paddingRight - paddingLeft) / 2;
+  const slabOffsetY = (paddingBack - paddingFront) / 2;
 
   const profile = drawRoundedRectangle(totalW, totalD, cornerR);
   let baseplate: Shape3D = (

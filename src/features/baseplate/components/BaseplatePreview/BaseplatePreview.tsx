@@ -2,16 +2,15 @@
  * Three.js 3D preview canvas for the standalone baseplate page.
  *
  * Renders the generated baseplate mesh with lighting, gradient background,
- * footprint grid, axis labels, and orbit controls. Simpler than the bin
- * designer's PreviewCanvas since baseplates have no ghost overlays or dimensions.
+ * footprint grid, axis labels, dimension annotations, and orbit controls.
  *
- * When asymmetric padding is present, renders a translucent drawer footprint
- * plane beneath the baseplate to visualize the padding distribution.
+ * Pockets are always centered at origin (aligned with the FootprintGrid).
+ * The slab extends asymmetrically when padding differs per side.
  */
 
 import { useRef, useEffect, useMemo } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Text } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
 import { Vector3 } from 'three';
 import * as THREE from 'three';
@@ -19,7 +18,6 @@ import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
-import { BinNameLabel } from '@/shared/components/preview/BinNameLabel';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -54,18 +52,127 @@ function calculateIdealDistance(
   return (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
 }
 
+// ─── Dimension Labels ───────────────────────────────────────────────────────
+
+const DIM_FONT_SIZE = 4;
+const DIM_OPACITY = 0.5;
+const DIM_OFFSET = 8; // mm from slab edge to label
+const DIM_LINE_OPACITY = 0.25;
+const DIM_TICK_SIZE = 3;
+
+/**
+ * Width and depth dimension annotations along the baseplate edges.
+ * Shows total mm including padding with leader lines and tick marks.
+ */
+function DimensionLabels({
+  width,
+  depth,
+  paddingLeft,
+  paddingRight,
+  paddingFront,
+  paddingBack,
+}: {
+  width: number;
+  depth: number;
+  paddingLeft: number;
+  paddingRight: number;
+  paddingFront: number;
+  paddingBack: number;
+}) {
+  const colors = useThreeColors();
+  const GS = GRIDFINITY_SPEC.GRID_SIZE;
+
+  const gridW = width * GS;
+  const gridD = depth * GS;
+  const totalW = gridW + paddingLeft + paddingRight;
+  const totalD = gridD + paddingFront + paddingBack;
+
+  // Slab edges (pockets centered at origin, slab offset by padding asymmetry)
+  const slabLeft = -gridW / 2 - paddingLeft;
+  const slabRight = gridW / 2 + paddingRight;
+  const slabFront = -gridD / 2 - paddingFront;
+  const slabBack = gridD / 2 + paddingBack;
+
+  const widthY = slabFront - DIM_OFFSET;
+  const depthX = slabLeft - DIM_OFFSET;
+
+  // Build leader line geometry: horizontal line + end ticks for width,
+  // vertical line + end ticks for depth
+  const lineGeometry = useMemo(() => {
+    const positions: number[] = [];
+    const z = 0.5;
+
+    // Width leader line (along front edge)
+    positions.push(slabLeft, widthY, z, slabRight, widthY, z);
+    // Width end ticks
+    positions.push(slabLeft, widthY - DIM_TICK_SIZE, z, slabLeft, widthY + DIM_TICK_SIZE, z);
+    positions.push(slabRight, widthY - DIM_TICK_SIZE, z, slabRight, widthY + DIM_TICK_SIZE, z);
+
+    // Depth leader line (along left edge)
+    positions.push(depthX, slabFront, z, depthX, slabBack, z);
+    // Depth end ticks
+    positions.push(depthX - DIM_TICK_SIZE, slabFront, z, depthX + DIM_TICK_SIZE, slabFront, z);
+    positions.push(depthX - DIM_TICK_SIZE, slabBack, z, depthX + DIM_TICK_SIZE, slabBack, z);
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    return geo;
+  }, [slabLeft, slabRight, slabFront, slabBack, widthY, depthX]);
+
+  useEffect(() => {
+    return () => {
+      lineGeometry.dispose();
+    };
+  }, [lineGeometry]);
+
+  return (
+    <group>
+      {/* Leader lines */}
+      <lineSegments geometry={lineGeometry}>
+        <lineBasicMaterial color={colors.labelColor} transparent opacity={DIM_LINE_OPACITY} />
+      </lineSegments>
+
+      {/* Width label */}
+      <Text
+        position={[(slabLeft + slabRight) / 2, widthY - DIM_FONT_SIZE, 0.5]}
+        fontSize={DIM_FONT_SIZE}
+        color={colors.labelColor}
+        fillOpacity={DIM_OPACITY}
+        anchorX="center"
+        anchorY="top"
+      >
+        {`${Math.round(totalW)}mm`}
+      </Text>
+
+      {/* Depth label */}
+      <Text
+        position={[depthX - DIM_FONT_SIZE, (slabFront + slabBack) / 2, 0.5]}
+        fontSize={DIM_FONT_SIZE}
+        color={colors.labelColor}
+        fillOpacity={DIM_OPACITY}
+        anchorX="right"
+        anchorY="middle"
+      >
+        {`${Math.round(totalD)}mm`}
+      </Text>
+    </group>
+  );
+}
+
+// ─── Mesh Rendering ─────────────────────────────────────────────────────────
+
 /**
  * Renders the baseplate mesh from the page store.
+ * Mesh is positioned at origin — pockets align with the FootprintGrid.
  */
 function BaseplateMesh({ color }: { color: string }) {
   const { invalidate } = useThree();
-  const { vertices, normals, indices, edgeVertices, slabOffset } = useBaseplatePageStore(
+  const { vertices, normals, indices, edgeVertices } = useBaseplatePageStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
       normals: s.generation.mesh?.normals ?? null,
       indices: s.generation.mesh?.indices ?? null,
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
-      slabOffset: s.slabOffset,
     }))
   );
 
@@ -110,13 +217,13 @@ function BaseplateMesh({ color }: { color: string }) {
 
   useEffect(() => {
     invalidate();
-  }, [color, slabOffset, invalidate]);
+  }, [color, invalidate]);
 
   if (!geometry) return null;
 
   return (
     <>
-      <mesh geometry={geometry} position={[slabOffset.x, slabOffset.y, 0.1]}>
+      <mesh geometry={geometry} position={[0, 0, 0.1]}>
         <meshStandardMaterial
           color={color}
           roughness={0.45}
@@ -131,53 +238,11 @@ function BaseplateMesh({ color }: { color: string }) {
         />
       </mesh>
       {edgesGeometry && (
-        <lineSegments
-          geometry={edgesGeometry}
-          position={[slabOffset.x, slabOffset.y, 0.1]}
-          renderOrder={1}
-        >
+        <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
           <lineBasicMaterial color="#000000" depthTest={true} />
         </lineSegments>
       )}
     </>
-  );
-}
-
-/**
- * Translucent plane showing the full drawer footprint.
- * Offset so the grid remains at origin — shifted by (paddingLeft - paddingRight)/2 etc.
- */
-function DrawerFootprint({
-  width,
-  depth,
-  paddingLeft,
-  paddingRight,
-  paddingFront,
-  paddingBack,
-}: {
-  width: number;
-  depth: number;
-  paddingLeft: number;
-  paddingRight: number;
-  paddingFront: number;
-  paddingBack: number;
-}) {
-  const totalW = width * GRIDFINITY_SPEC.GRID_SIZE + paddingLeft + paddingRight;
-  const totalD = depth * GRIDFINITY_SPEC.GRID_SIZE + paddingFront + paddingBack;
-  const offsetX = (paddingLeft - paddingRight) / 2;
-  const offsetY = (paddingFront - paddingBack) / 2;
-
-  return (
-    <mesh position={[offsetX, offsetY, -0.05]} rotation={[0, 0, 0]}>
-      <planeGeometry args={[totalW, totalD]} />
-      <meshStandardMaterial
-        color="#6366f1"
-        transparent
-        opacity={0.12}
-        side={THREE.DoubleSide}
-        depthWrite={false}
-      />
-    </mesh>
   );
 }
 
@@ -303,6 +368,8 @@ function CameraController({
   return null;
 }
 
+// ─── Main Component ─────────────────────────────────────────────────────────
+
 interface BaseplatePreviewProps {
   width: number;
   depth: number;
@@ -337,7 +404,6 @@ export function BaseplatePreview({
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
-  const hasPadding = paddingLeft > 0 || paddingRight > 0 || paddingFront > 0 || paddingBack > 0;
 
   if (showSkeleton) {
     return (
@@ -404,20 +470,16 @@ export function BaseplatePreview({
 
         <BaseplateMesh color={DEFAULT_COLOR} />
 
-        {hasPadding && (
-          <DrawerFootprint
-            width={width}
-            depth={depth}
-            paddingLeft={paddingLeft}
-            paddingRight={paddingRight}
-            paddingFront={paddingFront}
-            paddingBack={paddingBack}
-          />
-        )}
-
         <FootprintGrid width={width} depth={depth} />
         <BinAxisLabels width={width} depth={depth} />
-        <BinNameLabel width={width} depth={depth} name={`${width}\u00d7${depth} Baseplate`} />
+        <DimensionLabels
+          width={width}
+          depth={depth}
+          paddingLeft={paddingLeft}
+          paddingRight={paddingRight}
+          paddingFront={paddingFront}
+          paddingBack={paddingBack}
+        />
 
         <OrbitControls
           ref={controlsRef}
@@ -442,7 +504,7 @@ export function BaseplatePreview({
         >
           <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
             <svg
-              className="h-4 w-4 shrink-0 text-accent animate-spin motion-reduce:animate-none"
+              className="h-4 w-4 shrink-0 animate-spin text-accent motion-reduce:animate-none"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"
