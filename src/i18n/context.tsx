@@ -281,7 +281,10 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
 export function useTranslation(): TFunction {
   const context = useContext(LocaleContext);
   if (!context) {
-    throw new Error('useTranslation must be used within a LocaleProvider');
+    // Degrade gracefully during transitions (navigation, HMR) rather than
+    // crashing. Returns English strings via the static lookup; components
+    // will re-render with the real `t` once the provider is available.
+    return getStaticTranslation;
   }
   return context.t;
 }

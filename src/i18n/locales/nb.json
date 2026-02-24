@@ -1386,7 +1386,6 @@
   "baseplate.gridPlusPadding": "{width}×{depth} rutenett + polstring",
   "baseplate.pageTitle": "Bunnplate-generator",
   "baseplate.backToLayout": "Tilbake til layout",
-  "baseplate.exportButton": "Eksporter bunnplate",
   "baseplate.generateBaseplate": "Generer bunnplate",
   "baseplate.splitInfo": "{cols} kol × {rows} rad — {count} deler",
   "baseplate.viewAssembled": "Samlet",

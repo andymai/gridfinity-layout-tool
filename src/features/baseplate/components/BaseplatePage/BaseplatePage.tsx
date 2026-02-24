@@ -17,9 +17,8 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
-import { Button } from '@/design-system/Button';
 import { Menu } from '@/design-system/Menu';
-import { ArrowLeftIcon, ChevronDownIcon } from '@/design-system/Icon';
+import { ArrowLeftIcon } from '@/design-system/Icon';
 import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
@@ -34,7 +33,7 @@ const EXPORT_FORMATS: ReadonlyArray<{ format: ExportFileFormat; label: string }>
 ];
 
 /**
- * Export dropdown button using the design-system Menu.
+ * Ghost-styled export button with format dropdown, matching the bin designer header.
  */
 function ExportButton({
   canExport,
@@ -58,31 +57,54 @@ function ExportButton({
     setMenuOpen(true);
   }, []);
 
-  const handleExport = useCallback(
-    (format: ExportFileFormat) => {
-      onExport(format);
-    },
-    [onExport]
-  );
-
   return (
     <>
-      <Button
+      <button
         ref={buttonRef}
-        variant="primary"
-        size="md"
-        disabled={!canExport || isExporting}
-        loading={isExporting}
-        rightIcon={<ChevronDownIcon size="sm" />}
         onClick={handleOpen}
+        disabled={!canExport || isExporting}
+        className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-content-secondary transition-all bg-transparent hover:bg-surface-hover hover:text-content disabled:opacity-50 disabled:pointer-events-none"
+        title={t('common.export')}
+        aria-label={t('common.export')}
         aria-expanded={menuOpen}
         aria-haspopup="menu"
       >
-        {t('baseplate.exportButton')}
-      </Button>
+        {isExporting ? (
+          <svg
+            className="h-4 w-4 animate-spin motion-reduce:animate-none"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+        ) : (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+            />
+          </svg>
+        )}
+        <span className="hidden lg:inline">{t('common.export')}</span>
+      </button>
       <Menu.Root open={menuOpen} onClose={() => setMenuOpen(false)} position={menuPos}>
         {EXPORT_FORMATS.map(({ format, label }) => (
-          <Menu.Item key={format} onClick={() => handleExport(format)}>
+          <Menu.Item key={format} onClick={() => onExport(format)}>
             {label}
           </Menu.Item>
         ))}
@@ -138,8 +160,8 @@ export function BaseplatePage() {
   return (
     <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
-      <header className="flex h-12 items-center justify-between border-b border-stroke-subtle bg-surface-secondary px-4">
-        <div className="flex items-center gap-3">
+      <header className="flex h-12 items-center border-b border-stroke-subtle bg-surface-secondary px-4">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={handleBack}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
@@ -152,9 +174,9 @@ export function BaseplatePage() {
           <div className="h-5 w-px bg-stroke-subtle" />
 
           <h1 className="text-sm font-semibold text-content">{t('baseplate.pageTitle')}</h1>
-        </div>
 
-        <ExportButton canExport={canExport} isExporting={isExporting} onExport={handleExport} />
+          <ExportButton canExport={canExport} isExporting={isExporting} onExport={handleExport} />
+        </div>
       </header>
 
       {/* Main content — 4 responsive states */}

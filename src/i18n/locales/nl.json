@@ -1386,7 +1386,6 @@
   "baseplate.gridPlusPadding": "{width}×{depth} raster + vulling",
   "baseplate.pageTitle": "Basisplaat-generator",
   "baseplate.backToLayout": "Terug naar layout",
-  "baseplate.exportButton": "Basisplaat exporteren",
   "baseplate.generateBaseplate": "Basisplaat genereren",
   "baseplate.splitInfo": "{cols} kol × {rows} rij — {count} stukken",
   "baseplate.viewAssembled": "Samengevoegd",

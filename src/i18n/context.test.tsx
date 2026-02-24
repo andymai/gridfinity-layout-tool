@@ -148,10 +148,12 @@ describe('LocaleProvider + useLocale', () => {
 });
 
 describe('useTranslation outside provider', () => {
-  it('throws error when used outside LocaleProvider', () => {
-    expect(() => {
-      renderHook(() => useTranslation());
-    }).toThrow('useTranslation must be used within a LocaleProvider');
+  it('falls back to getStaticTranslation when used outside LocaleProvider', () => {
+    const { result } = renderHook(() => useTranslation());
+    // Returns a working translation function (static English fallback)
+    expect(result.current('common.save')).toBe('Save');
+    // Unknown keys return the key itself
+    expect(result.current('unknown.key')).toBe('unknown.key');
   });
 });
 

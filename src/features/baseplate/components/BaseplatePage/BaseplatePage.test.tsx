@@ -73,7 +73,7 @@ describe('BaseplatePage', () => {
 
   it('renders export button', () => {
     render(<BaseplatePage />);
-    expect(screen.getByText('baseplate.exportButton')).toBeInTheDocument();
+    expect(screen.getByLabelText('common.export')).toBeInTheDocument();
   });
 
   it('renders panel and preview in desktop mode', () => {

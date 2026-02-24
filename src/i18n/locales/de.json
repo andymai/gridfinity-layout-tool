@@ -1386,7 +1386,6 @@
   "baseplate.gridPlusPadding": "{width}×{depth} Raster + Polsterung",
   "baseplate.pageTitle": "Grundplatten-Generator",
   "baseplate.backToLayout": "Zurück zum Layout",
-  "baseplate.exportButton": "Grundplatte exportieren",
   "baseplate.generating": "Generiere...",
   "baseplate.generatingSplit": "Generiere {current}/{total}...",
   "baseplate.printBedSize": "Druckbettgröße",

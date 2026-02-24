@@ -1386,7 +1386,6 @@
   "baseplate.gridPlusPadding": "{width}×{depth} grade + preenchimento",
   "baseplate.pageTitle": "Gerador de placa base",
   "baseplate.backToLayout": "Voltar ao layout",
-  "baseplate.exportButton": "Exportar placa base",
   "baseplate.generateBaseplate": "Gerar placa base",
   "baseplate.splitInfo": "{cols} col × {rows} lin — {count} peças",
   "baseplate.viewAssembled": "Montado",
