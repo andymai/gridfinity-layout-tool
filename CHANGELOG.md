@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.28.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.28.0...gridfinity-layout-tool-v3.28.1) (2026-02-24)
+
+
+### Bug Fixes
+
+* **ci:** resolve post-merge ESLint errors in InitErrorFallback and report handler ([7c38671](https://github.com/andymai/gridfinity-layout-tool/commit/7c386710962da69d7073c7040a2de9d5f7767053))
+* **security:** address 8 security audit findings (H-1 through L-4) ([#888](https://github.com/andymai/gridfinity-layout-tool/issues/888)) ([1599490](https://github.com/andymai/gridfinity-layout-tool/commit/1599490056d3dfbf7c4c7a4709566cd93e717d07))
+
 ## [3.28.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.27.10...gridfinity-layout-tool-v3.28.0) (2026-02-24)
 
 
