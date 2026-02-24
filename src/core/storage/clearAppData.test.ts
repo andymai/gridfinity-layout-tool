@@ -149,7 +149,7 @@ describe('clearAllAppData', () => {
 
       clearAllAppData();
 
-      // These run before the try/catch, so they must still be called
+      // Sync cleanup runs before/after the try/catch; IDB runs last but is still called
       expect(mockClearIndexedDB).toHaveBeenCalledTimes(1);
       expect(mockPruneAnalyticsData).toHaveBeenCalledTimes(1);
       expect(mockClearLabelSizesCache).toHaveBeenCalledTimes(1);

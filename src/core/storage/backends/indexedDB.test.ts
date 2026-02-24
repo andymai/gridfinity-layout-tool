@@ -41,8 +41,7 @@ describe('indexedDB backend', () => {
 
   afterEach(async () => {
     try {
-      closeDatabase();
-      clearAllData();
+      await clearAllData();
     } catch {
       // Ignore cleanup errors
     }
@@ -325,7 +324,7 @@ describe('indexedDB backend', () => {
       await saveLayout('clear-2', createTestLayout());
       await saveLayout('clear-3', createTestLayout());
 
-      clearAllData();
+      await clearAllData();
 
       const ids = await getAllLayoutIds();
       expect(ids).toEqual([]);
@@ -333,7 +332,7 @@ describe('indexedDB backend', () => {
 
     it('allows saving after clearing', async () => {
       await saveLayout('before-clear', createTestLayout({ name: 'Before' }));
-      clearAllData();
+      await clearAllData();
 
       await saveLayout('after-clear', createTestLayout({ name: 'After' }));
 
