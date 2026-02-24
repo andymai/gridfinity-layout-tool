@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
+import type { BinParams } from '@/features/bin-designer/types';
+import { isFractional } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
 export function useDimensionsSection() {
@@ -71,6 +73,16 @@ export function useDimensionsSection() {
     setParams({ width: depth, depth: width });
   }, [width, depth, setParams]);
 
+  const handleSetParam = useCallback(
+    <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
+      if ((key === 'width' || key === 'depth') && isFractional(value as number) && !halfBinMode) {
+        toggleHalfBinMode();
+      }
+      setParam(key, value);
+    },
+    [halfBinMode, toggleHalfBinMode, setParam]
+  );
+
   return {
     state: {
       width,
@@ -84,7 +96,7 @@ export function useDimensionsSection() {
       minDimension,
     },
     handlers: {
-      setParam,
+      setParam: handleSetParam,
       handleWidthStep,
       handleDepthStep,
       handleHeightStep,
