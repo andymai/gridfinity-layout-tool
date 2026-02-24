@@ -21,13 +21,8 @@ import { useTranslation } from '@/i18n';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { pieceToBaseplateParams } from '../utils/splitPlanner';
+import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
-
-const FORMAT_MIME_TYPES: Record<string, string> = {
-  stl: 'application/sla',
-  step: 'application/step',
-  '3mf': 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
-};
 
 interface UseBaseplateExportReturn {
   readonly isExporting: boolean;
@@ -53,17 +48,6 @@ function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
       estimatedGrams: 0,
     },
   });
-}
-
-function triggerDownload(blob: Blob, fileName: string): void {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.parentNode?.removeChild(anchor);
-  URL.revokeObjectURL(url);
 }
 
 export function useBaseplateExport(): UseBaseplateExportReturn {

@@ -29,15 +29,9 @@ import { packageSplitPiecesAsZip } from '@/features/bin-designer/utils/splitExpo
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
+import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
-
-/** MIME types for each export format */
-const FORMAT_MIME_TYPES: Record<ExportFileFormat, string> = {
-  stl: 'application/sla',
-  step: 'application/step',
-  '3mf': 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
-};
 
 interface UseExportReturn {
   /** Whether a main bin or split export is currently in progress */
@@ -117,18 +111,6 @@ export function useExport(): UseExportReturn {
     [params.width, params.depth, maxGridUnits, needsSplit]
   );
 
-  /** Trigger browser download from a Blob */
-  const triggerDownload = useCallback((blob: Blob, fileName: string) => {
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = fileName;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.parentNode?.removeChild(anchor);
-    URL.revokeObjectURL(url);
-  }, []);
-
   /**
    * Download the bin in the specified format.
    *
@@ -181,7 +163,7 @@ export function useExport(): UseExportReturn {
         setIsExportingBin(false);
       }
     },
-    [params, triggerDownload]
+    [params]
   );
 
   /**
@@ -203,7 +185,7 @@ export function useExport(): UseExportReturn {
         setIsExportingDividers(false);
       }
     },
-    [params, triggerDownload]
+    [params]
   );
 
   /**
@@ -234,7 +216,7 @@ export function useExport(): UseExportReturn {
         setIsExportingBin(false);
       }
     },
-    [params, maxGridUnits, triggerDownload]
+    [params, maxGridUnits]
   );
 
   return {
