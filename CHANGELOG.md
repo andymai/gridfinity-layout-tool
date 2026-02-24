@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.30.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.29.0...gridfinity-layout-tool-v3.30.0) (2026-02-24)
+
+
+### Features
+
+* **baseplate:** add standalone baseplate generator ([#892](https://github.com/andymai/gridfinity-layout-tool/issues/892)) ([94c8f49](https://github.com/andymai/gridfinity-layout-tool/commit/94c8f49d5492c3b05c33c51e1430d1ee8f66eb5e))
+
 ## [3.29.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.28.1...gridfinity-layout-tool-v3.29.0) (2026-02-24)
 
 
