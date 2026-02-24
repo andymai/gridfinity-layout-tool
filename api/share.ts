@@ -1,6 +1,6 @@
-import { put } from '@vercel/blob';
+import { put, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { validateShareLayout, isValidationError } from './lib/validation.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import { filterLayoutContent } from './lib/contentFilter.js';
@@ -11,6 +11,7 @@ import {
   ErrorCode,
   methodNotAllowed,
   getBaseUrl,
+  shareHashKey,
   type ShareData,
 } from './lib/shared.js';
 
@@ -24,6 +25,7 @@ import {
  * rate limiting, or content blocking, and 500 on unexpected failures.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
     return methodNotAllowed(res, 'POST');
   }
@@ -111,23 +113,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Use client-provided layoutId as the share ID
     const shareId = layoutId;
+
+    // Prevent overwriting an existing share with the same ID
+    const existing = await head(`shares/${shareId}.json`).catch(() => null);
+    if (existing) {
+      return res.status(409).json({
+        error: 'A share with this ID already exists.',
+        code: ErrorCode.VALIDATION_ERROR,
+      });
+    }
+
     const deleteToken = generateDeleteToken();
     const deleteTokenHash = await hashToken(deleteToken);
 
     const now = new Date();
     const nowIso = now.toISOString();
 
-    // Prepare data to store (shares are permanent, no expiration)
+    // Store deleteTokenHash in Redis (not in the public blob).
+    // Fail-closed in production: if Redis is unavailable the hash can't be persisted,
+    // which would make the share permanently unmodifiable.
+    const redis = getRedis();
+    if (redis) {
+      await redis.set(shareHashKey(shareId), deleteTokenHash);
+    } else if (process.env.VERCEL_ENV === 'production') {
+      console.error('Share creation failed: Redis unavailable, cannot persist delete token hash');
+      return res.status(503).json({
+        error: 'Service temporarily unavailable. Please try again.',
+        code: ErrorCode.SERVER_ERROR,
+      });
+    }
+
+    // Prepare data to store — deleteTokenHash and reportCount are in Redis,
+    // not in the public blob, to prevent exposure via the CDN URL.
     const shareData: ShareData = {
       layout: sharePayload,
       metadata: {
-        deleteTokenHash,
         createdAt: nowIso,
         lastUpdatedAt: nowIso,
         lastAccessedAt: nowIso,
         permission,
         authorName: typeof authorName === 'string' ? authorName.slice(0, 64) : undefined,
-        reportCount: 0,
       },
     };
 

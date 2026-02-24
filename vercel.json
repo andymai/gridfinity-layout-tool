@@ -21,6 +21,14 @@
       ]
     },
     {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://gridfinitylayouttool.com" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, x-delete-token" }
+      ]
+    },
+    {
       "source": "/storage-bridge.html",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },

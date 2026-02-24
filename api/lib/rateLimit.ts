@@ -85,11 +85,13 @@ export async function checkRateLimit(
 
   const client = getRedis();
 
-  // If Redis is not configured, allow all requests
+  // If Redis is not configured, fail closed in production to prevent abuse.
+  // In development/preview, allow requests so local dev works without Redis.
   if (!client) {
+    const isProduction = process.env.VERCEL_ENV === 'production';
     return {
-      allowed: true,
-      remaining: config.limit,
+      allowed: !isProduction,
+      remaining: isProduction ? 0 : config.limit,
       resetAt: now + config.windowSeconds,
     };
   }

@@ -112,15 +112,32 @@ export interface ApiErrorResponse {
 
 /**
  * Shared metadata structure for stored shares.
+ *
+ * deleteTokenHash and reportCount are stored in Redis for new shares
+ * (created after the security migration). For backwards compatibility,
+ * old shares may still carry these fields in the blob — readers should
+ * check Redis first and fall back to the blob value if absent.
  */
 export interface ShareMetadata {
-  deleteTokenHash: string;
+  /** Stored in Redis (share:hash:{id}). May be present in blob for pre-migration shares. */
+  deleteTokenHash?: string;
   createdAt: string;
   lastUpdatedAt: string;
   lastAccessedAt: string;
   permission: 'view' | 'edit';
   authorName?: string;
-  reportCount: number;
+  /** Stored in Redis (share:reports:{id}). May be present in blob for pre-migration shares. */
+  reportCount?: number;
+}
+
+/** Redis key for a share's delete token hash */
+export function shareHashKey(shareId: string): string {
+  return `share:hash:${shareId}`;
+}
+
+/** Redis key for a share's report count */
+export function shareReportKey(shareId: string): string {
+  return `share:reports:${shareId}`;
 }
 
 /**

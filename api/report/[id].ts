@@ -1,10 +1,11 @@
-import { put, head } from '@vercel/blob';
+import { head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
-import { isValidShareId, ErrorCode, methodNotAllowed, type ShareData } from '../lib/shared.js';
+import { isValidShareId, ErrorCode, methodNotAllowed, shareReportKey } from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
     return methodNotAllowed(res, 'POST');
   }
@@ -38,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const blobPath = `shares/${id}.json`;
 
-    // Fetch existing share
+    // Verify the share exists before accepting the report
     const blobInfo = await head(blobPath).catch(() => null);
     if (!blobInfo) {
       return res.status(404).json({
@@ -47,35 +48,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const response = await fetch(blobInfo.url);
-    if (!response.ok) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+    // Increment report count atomically in Redis (fixes TOCTOU race condition).
+    // Falls back to zero-count logging if Redis is unavailable.
+    let newReportCount = 0;
+    const redis = getRedis();
+    if (redis) {
+      const key = shareReportKey(id);
+      // pipeline.exec() is the Redis pipeline flush, not child_process.exec()
+      const pipe = redis.pipeline();
+      pipe.incr(key);
+      pipe.expire(key, 365 * 24 * 60 * 60); // 1-year TTL
+      const results = await pipe.exec();
+      newReportCount = (results?.[0]?.[1] as number) ?? 0;
     }
-
-    const shareData = (await response.json()) as ShareData;
-
-    // Increment report count
-    const newReportCount = shareData.metadata.reportCount + 1;
-
-    // Update metadata with new report count
-    const updatedData: ShareData = {
-      ...shareData,
-      metadata: {
-        ...shareData.metadata,
-        reportCount: newReportCount,
-      },
-    };
-
-    // Save updated data
-    await put(blobPath, JSON.stringify(updatedData), {
-      access: 'public',
-      contentType: 'application/json',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    });
 
     // Log report for manual review
     console.warn('Share reported:', {
@@ -85,9 +70,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       timestamp: new Date().toISOString(),
     });
 
-    // Check if threshold exceeded (could auto-hide in future)
-    const thresholdExceeded = newReportCount >= REPORT_THRESHOLD;
-    if (thresholdExceeded) {
+    // Check if threshold exceeded
+    if (newReportCount >= REPORT_THRESHOLD) {
       console.warn('Share report threshold exceeded:', {
         id,
         reportCount: newReportCount,

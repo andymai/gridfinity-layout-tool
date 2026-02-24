@@ -54,14 +54,13 @@ export interface LiveblocksStorage {
     permission: 'view' | 'edit';
     /** Schema version for migrations */
     version: number;
-    /** Delete token for cloud share updates (set by owner, used by all collaborators) */
-    deleteToken?: string;
   };
 }
 
 /**
  * Check if Liveblocks is configured.
  * Collaborative features are disabled when the public key is not set.
+ * Requires VITE_LIVEBLOCKS_PUBLIC_KEY (client) and LIVEBLOCKS_SECRET_KEY (server).
  */
 const LIVEBLOCKS_PUBLIC_KEY = import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY as string | undefined;
 export const isLiveblocksConfigured = Boolean(LIVEBLOCKS_PUBLIC_KEY);
@@ -69,15 +68,46 @@ export const isLiveblocksConfigured = Boolean(LIVEBLOCKS_PUBLIC_KEY);
 /**
  * Liveblocks client configuration.
  *
- * Uses public key for simpler setup. For production with server-side
- * permission control, switch to authEndpoint: '/api/liveblocks-auth'
- * and set LIVEBLOCKS_SECRET_KEY environment variable.
+ * Uses server-side auth endpoint for permission enforcement:
+ * - 'edit' shares grant FULL_ACCESS to all collaborators
+ * - 'view' shares grant READ_ACCESS to non-owners
  *
+ * Requires LIVEBLOCKS_SECRET_KEY on the server side.
  * Client is only created when the public key is available.
  */
+const LIVEBLOCKS_USER_ID_KEY = 'gridfinity-user-id';
+
+/**
+ * Get or create a stable anonymous user ID for this browser session.
+ * Mirrors the getUserId() logic in CollabProvider.tsx — must stay in sync.
+ */
+function getLiveblocksUserId(): string {
+  try {
+    const stored = localStorage.getItem(LIVEBLOCKS_USER_ID_KEY);
+    if (stored) return stored;
+    const id = crypto.randomUUID();
+    localStorage.setItem(LIVEBLOCKS_USER_ID_KEY, id);
+    return id;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
 const client = isLiveblocksConfigured
   ? createClient({
-      publicApiKey: LIVEBLOCKS_PUBLIC_KEY as string,
+      // authEndpoint must be a function (not a string) so we can send userId.
+      // When given a string, the SDK only POSTs { room }, which causes a 400
+      // from liveblocks-auth.ts ("Missing user ID").
+      authEndpoint: async (room) => {
+        const userId = getLiveblocksUserId();
+        const response = await fetch('/api/liveblocks-auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ room, userId }),
+        });
+        if (!response.ok) throw new Error('Liveblocks authentication failed');
+        return response.json() as Promise<{ token: string }>;
+      },
       // Throttle presence updates to 20fps (50ms) to balance smoothness and bandwidth
       throttle: 50,
     })
