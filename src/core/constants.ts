@@ -169,11 +169,26 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     return {
       ...DEFAULT_BASEPLATE_PARAMS,
       magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
-      magnetDiameter: typeof obj.magnetDiameter === 'number' ? obj.magnetDiameter : 6.5,
-      magnetDepth: typeof obj.magnetDepth === 'number' ? obj.magnetDepth : 2,
+      magnetDiameter: clampNumber(obj.magnetDiameter, 0.5, 20, 6.5),
+      magnetDepth: clampNumber(obj.magnetDepth, 0.5, 10, 2),
     };
   }
-  return stored as BaseplateParams;
+  // Validate and clamp all fields from persisted/imported data
+  return {
+    magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
+    magnetDiameter: clampNumber(obj.magnetDiameter, 0.5, 20, 6.5),
+    magnetDepth: clampNumber(obj.magnetDepth, 0.5, 10, 2),
+    paddingLeft: clampNumber(obj.paddingLeft, 0, 100, 0),
+    paddingRight: clampNumber(obj.paddingRight, 0, 100, 0),
+    paddingFront: clampNumber(obj.paddingFront, 0, 100, 0),
+    paddingBack: clampNumber(obj.paddingBack, 0, 100, 0),
+  };
+}
+
+/** Clamp a possibly-invalid value to [min, max], falling back to defaultVal if not a number. */
+function clampNumber(value: unknown, min: number, max: number, defaultVal: number): number {
+  if (typeof value !== 'number' || Number.isNaN(value)) return defaultVal;
+  return Math.min(max, Math.max(min, value));
 }
 
 /** Default layout name for new layouts */
