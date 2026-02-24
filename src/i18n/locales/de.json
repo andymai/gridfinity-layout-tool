@@ -1405,5 +1405,9 @@
   "baseplate.magnetDiameterInfo": "6mm ist Standard für Gridfinity",
   "baseplate.magnetDepthInfo": "2mm für typische 6×2mm-Magnete",
   "baseplate.gridUnitTooltip": "Breite eines Gitterquadrats (Standard: 42mm)",
-  "baseplate.printBedTooltip": "Grundplatten größer als dies werden automatisch aufgeteilt."
+  "baseplate.printBedTooltip": "Grundplatten größer als dies werden automatisch aufgeteilt.",
+  "baseplate.wasmLoadFailed": "3D-Engine konnte nicht geladen werden",
+  "baseplate.generationFailed": "Baseplate-Generierung fehlgeschlagen",
+  "baseplate.errorRetryHint": "Versuchen Sie, die Seite neu zu laden. Falls das Problem bestehen bleibt, verwenden Sie einen anderen Browser.",
+  "baseplate.exportNotReady": "Generierungs-Engine nicht bereit. Bitte warten und erneut versuchen."
 }

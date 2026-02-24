@@ -30,13 +30,6 @@ import type { BaseplateParams } from '@/core/types';
 import type { BaseplateTiling, BaseplatePiece } from '../../types/tiling';
 import type { SplitViewMode } from '../../store/baseplatePageStore';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const VIEW_MODE_OPTIONS: ReadonlyArray<{ value: SplitViewMode; label: string }> = [
-  { value: 'assembled', label: '' }, // labels filled at render time via t()
-  { value: 'exploded', label: '' },
-];
-
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function BaseplatePanel() {
@@ -91,11 +84,10 @@ export function BaseplatePanel() {
     baseplateParams.paddingFront > 0 ||
     baseplateParams.paddingBack > 0;
 
-  // Build view-mode options with translated labels
-  const viewModeOptions = VIEW_MODE_OPTIONS.map((opt) => ({
-    ...opt,
-    label: opt.value === 'assembled' ? t('baseplate.viewAssembled') : t('baseplate.viewExploded'),
-  }));
+  const viewModeOptions: ReadonlyArray<{ value: SplitViewMode; label: string }> = [
+    { value: 'assembled', label: t('baseplate.viewAssembled') },
+    { value: 'exploded', label: t('baseplate.viewExploded') },
+  ];
 
   // Padding section summary
   const paddingSummary = hasPadding
@@ -374,8 +366,12 @@ function SplitInfoContent({
 /** Shows dimensions for the active (hovered or selected) piece. */
 function PieceDetailStrip({ piece, gridUnitMm }: { piece: BaseplatePiece; gridUnitMm: number }) {
   const t = useTranslation();
-  const widthMm = Math.round(piece.widthUnits * gridUnitMm);
-  const depthMm = Math.round(piece.depthUnits * gridUnitMm);
+  const widthMm = Math.round(
+    piece.widthUnits * gridUnitMm + piece.paddingLeft + piece.paddingRight
+  );
+  const depthMm = Math.round(
+    piece.depthUnits * gridUnitMm + piece.paddingFront + piece.paddingBack
+  );
 
   return (
     <div className="flex items-center justify-between rounded bg-surface-elevated px-2 py-1.5 text-[11px] tabular-nums">

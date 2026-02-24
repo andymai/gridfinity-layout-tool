@@ -1405,5 +1405,9 @@
   "baseplate.magnetDiameterInfo": "6mm es estándar para Gridfinity",
   "baseplate.magnetDepthInfo": "2mm para imanes típicos de 6×2mm",
   "baseplate.gridUnitTooltip": "Ancho de un cuadrado de la cuadrícula (estándar: 42mm)",
-  "baseplate.printBedTooltip": "Las placas más grandes se dividen automáticamente."
+  "baseplate.printBedTooltip": "Las placas más grandes se dividen automáticamente.",
+  "baseplate.wasmLoadFailed": "No se pudo cargar el motor 3D",
+  "baseplate.generationFailed": "Error al generar la placa base",
+  "baseplate.errorRetryHint": "Intenta recargar la página. Si el problema persiste, prueba con otro navegador.",
+  "baseplate.exportNotReady": "Motor de generación no listo. Espera e inténtalo de nuevo."
 }

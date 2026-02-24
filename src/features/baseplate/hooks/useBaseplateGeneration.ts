@@ -16,6 +16,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
 import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
+import { useToastStore } from '@/core/store/toast';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling, pieceToBaseplateParams } from '../utils/splitPlanner';
@@ -40,6 +41,7 @@ const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
 export function useBaseplateGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const initializedRef = useRef(false);
+  const generationEpochRef = useRef(0);
 
   const {
     drawerWidth,
@@ -88,6 +90,10 @@ export function useBaseplateGeneration(): void {
       const bridge = bridgeRef.current;
       if (!bridge || bridge.isDestroyed) return;
 
+      // Increment epoch — any in-flight multi-piece loop with a stale epoch
+      // will discard its results instead of overwriting the new generation.
+      const epoch = ++generationEpochRef.current;
+
       // Compute tiling plan
       const tiling = computeBaseplateTiling(fullParams, bedSizeMm);
       setTiling(tiling);
@@ -98,6 +104,9 @@ export function useBaseplateGeneration(): void {
         if (!tiling.isSplit) {
           // Single piece
           const result = await bridge.generateBaseplate(fullParams, NO_OP_PROGRESS);
+
+          // Discard if superseded
+          if (generationEpochRef.current !== epoch) return;
 
           setGenerationResult({
             vertices: result.mesh.vertices,
@@ -118,10 +127,13 @@ export function useBaseplateGeneration(): void {
             const piece = tiling.pieces[i];
             setSplitProgress({ current: i + 1, total });
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- re-check between async iterations
-            if (bridge.isDestroyed) return;
+            if (bridge.isDestroyed || generationEpochRef.current !== epoch) return;
 
             const pieceParams = pieceToBaseplateParams(piece, fullParams);
             const result = await bridge.generateBaseplate(pieceParams, NO_OP_PROGRESS);
+
+            // Discard if a newer generation started while awaiting
+            if (generationEpochRef.current !== epoch) return;
 
             meshEntries.push({
               label: piece.label,
@@ -152,6 +164,10 @@ export function useBaseplateGeneration(): void {
           return;
         }
 
+        // Only update error state if this is still the active generation
+        if (generationEpochRef.current !== epoch) return;
+
+        setSplitProgress(null);
         setGenerationResult({
           ...EMPTY_MESH,
           error: e instanceof Error ? e.message : String(e),
@@ -195,7 +211,9 @@ export function useBaseplateGeneration(): void {
         );
         void runGeneration(params, layoutState.layout.printBedSize);
       })
-      .catch((_e: unknown) => {
+      .catch((e: unknown) => {
+        const message = e instanceof Error ? e.message : String(e);
+        useToastStore.getState().addToast(`Failed to initialize 3D engine: ${message}`, 'error');
         setWasmStatus('error');
       });
 

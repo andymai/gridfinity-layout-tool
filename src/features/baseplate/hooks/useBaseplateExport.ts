@@ -17,6 +17,7 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
+import { useTranslation } from '@/i18n';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { pieceToBaseplateParams } from '../utils/splitPlanner';
@@ -66,6 +67,7 @@ function triggerDownload(blob: Blob, fileName: string): void {
 }
 
 export function useBaseplateExport(): UseBaseplateExportReturn {
+  const t = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
 
   const {
@@ -97,7 +99,10 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
   const downloadBaseplate = useCallback(
     async (format: ExportFileFormat) => {
       const bridge = getActiveBridge();
-      if (!bridge) return;
+      if (!bridge) {
+        useToastStore.getState().addToast(t('baseplate.exportNotReady'), 'error');
+        return;
+      }
 
       setIsExporting(true);
 
@@ -158,6 +163,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       }
     },
     [
+      t,
       drawerWidth,
       drawerDepth,
       gridUnitMm,

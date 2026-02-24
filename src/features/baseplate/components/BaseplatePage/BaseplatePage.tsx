@@ -20,6 +20,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { Button } from '@/design-system/Button';
 import { Menu } from '@/design-system/Menu';
 import { ArrowLeftIcon, ChevronDownIcon } from '@/design-system/Icon';
+import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
@@ -106,6 +107,7 @@ export function BaseplatePage() {
   useBaseplateGeneration();
 
   const { isExporting, canExport, downloadBaseplate } = useBaseplateExport();
+  const { navigateBack } = useBaseplateRouting();
 
   const handleExport = useCallback(
     (format: ExportFileFormat) => {
@@ -115,8 +117,8 @@ export function BaseplatePage() {
   );
 
   const handleBack = useCallback(() => {
-    window.history.back();
-  }, []);
+    navigateBack();
+  }, [navigateBack]);
 
   const { paddingLeft, paddingRight, paddingFront, paddingBack } = baseplateParams;
 

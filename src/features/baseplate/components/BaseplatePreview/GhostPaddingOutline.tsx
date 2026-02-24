@@ -190,14 +190,12 @@ export function GhostPaddingOutline({
     if (geometry && material) invalidate();
   }, [geometry, material, invalidate]);
 
-  if (!geometry || !material) return null;
+  const lineSegments = useMemo(() => {
+    if (!geometry || !material) return null;
+    return new LineSegments2(geometry, material);
+  }, [geometry, material]);
 
-  return (
-    <primitive
-      ref={lineRef}
-      object={new LineSegments2(geometry, material)}
-      position={[0, 0, 0.1]}
-      renderOrder={3}
-    />
-  );
+  if (!lineSegments) return null;
+
+  return <primitive ref={lineRef} object={lineSegments} position={[0, 0, 0.1]} renderOrder={3} />;
 }

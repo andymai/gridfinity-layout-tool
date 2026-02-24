@@ -23,6 +23,7 @@ import { Spinner } from '@/shared/components/preview/Spinner';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
 import { GhostPaddingOutline } from './GhostPaddingOutline';
+import { useMeshGeometry } from './useMeshGeometry';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useThreeColors } from '@/hooks/useThemeEffect';
 import { useTranslation } from '@/i18n';
@@ -166,11 +167,11 @@ function DimensionLabels({
 
 /**
  * Renders the baseplate mesh from the page store.
- * Mesh is positioned at origin — pockets align with the FootprintGrid.
+ * Mesh is positioned at origin -- pockets align with the FootprintGrid.
  */
 function BaseplateMesh({ color }: { color: string }) {
   const { invalidate } = useThree();
-  const { vertices, normals, indices, edgeVertices } = useBaseplatePageStore(
+  const meshArrays = useBaseplatePageStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
       normals: s.generation.mesh?.normals ?? null,
@@ -179,40 +180,7 @@ function BaseplateMesh({ color }: { color: string }) {
     }))
   );
 
-  const hasPrecomputedNormals = normals !== null && normals.length > 0;
-
-  const geometry = useMemo(() => {
-    if (!vertices || vertices.length === 0) return null;
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
-    if (indices && indices.length > 0) {
-      geo.setIndex(new THREE.BufferAttribute(indices, 1));
-    }
-
-    if (hasPrecomputedNormals) {
-      geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    } else {
-      geo.computeVertexNormals();
-    }
-
-    return geo;
-  }, [vertices, normals, indices, hasPrecomputedNormals]);
-
-  const edgesGeometry = useMemo(() => {
-    if (!edgeVertices || edgeVertices.length === 0) return null;
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
-    return geo;
-  }, [edgeVertices]);
-
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      edgesGeometry?.dispose();
-    };
-  }, [geometry, edgesGeometry]);
+  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(meshArrays);
 
   useEffect(() => {
     invalidate();
@@ -419,7 +387,8 @@ export function BaseplatePreview({
 
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
-  const isInitialLoading = !hasAnyMesh || wasmStatus !== 'ready';
+  const hasError = wasmStatus === 'error' || generationStatus === 'error';
+  const isInitialLoading = !hasError && (!hasAnyMesh || wasmStatus !== 'ready');
   const showOverlay = isInitialLoading || (generationStatus === 'generating' && hasAnyMesh);
 
   return (
@@ -506,6 +475,21 @@ export function BaseplatePreview({
         />
       </Canvas>
 
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center" role="alert">
+          <div className="mx-4 max-w-sm rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-center shadow-lg dark:border-red-800 dark:bg-red-950">
+            <p className="text-sm font-medium text-red-800 dark:text-red-200">
+              {wasmStatus === 'error'
+                ? t('baseplate.wasmLoadFailed')
+                : t('baseplate.generationFailed')}
+            </p>
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              {t('baseplate.errorRetryHint')}
+            </p>
+          </div>
+        </div>
+      )}
+
       {showOverlay && (
         <div
           className="absolute inset-x-0 bottom-4 flex justify-center"
@@ -515,14 +499,12 @@ export function BaseplatePreview({
           <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
             <Spinner className="h-4 w-4 shrink-0 text-accent motion-reduce:animate-none" />
             <span className="text-content-secondary">
-              {isInitialLoading
-                ? t('baseplate.generating')
-                : splitProgress
-                  ? t('baseplate.generatingSplit', {
-                      current: splitProgress.current,
-                      total: splitProgress.total,
-                    })
-                  : t('baseplate.generating')}
+              {splitProgress && !isInitialLoading
+                ? t('baseplate.generatingSplit', {
+                    current: splitProgress.current,
+                    total: splitProgress.total,
+                  })
+                : t('baseplate.generating')}
             </span>
           </div>
         </div>

@@ -1437,6 +1437,11 @@ const en: Record<string, string> = {
   'baseplate.magnetDepthInfo': '2mm for typical 6\u00d72mm magnets',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
+  'baseplate.wasmLoadFailed': 'Failed to load 3D engine',
+  'baseplate.generationFailed': 'Baseplate generation failed',
+  'baseplate.errorRetryHint':
+    'Try refreshing the page. If the problem persists, try a different browser.',
+  'baseplate.exportNotReady': 'Generation engine not ready. Please wait and try again.',
 
   // ===========================================================================
   // Collaboration

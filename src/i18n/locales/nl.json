@@ -1405,5 +1405,9 @@
   "baseplate.magnetDiameterInfo": "6mm is standaard voor Gridfinity",
   "baseplate.magnetDepthInfo": "2mm voor typische 6×2mm-magneten",
   "baseplate.gridUnitTooltip": "Breedte van één rastervak (standaard: 42mm)",
-  "baseplate.printBedTooltip": "Basisplaten groter dan dit worden automatisch gesplitst."
+  "baseplate.printBedTooltip": "Basisplaten groter dan dit worden automatisch gesplitst.",
+  "baseplate.wasmLoadFailed": "Kan 3D-engine niet laden",
+  "baseplate.generationFailed": "Genereren van grondplaat mislukt",
+  "baseplate.errorRetryHint": "Probeer de pagina te vernieuwen. Als het probleem aanhoudt, probeer een andere browser.",
+  "baseplate.exportNotReady": "Generatie-engine niet gereed. Wacht en probeer opnieuw."
 }

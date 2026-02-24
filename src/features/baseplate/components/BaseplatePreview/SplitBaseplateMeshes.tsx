@@ -7,7 +7,7 @@
  * that syncs with the panel mini-map via the page store.
  */
 
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -15,6 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EXPLODE_GAP_MM } from '../../constants';
+import { useMeshGeometry } from './useMeshGeometry';
 import { useThreeColors } from '@/hooks/useThemeEffect';
 import type { PieceMeshEntry, SplitViewMode } from '../../store/baseplatePageStore';
 
@@ -45,50 +46,27 @@ function PieceMesh({
 }: PieceMeshProps) {
   const { invalidate } = useThree();
   const colors = useThreeColors();
-  const { vertices, normals, indices, edgeVertices } = entry.mesh;
-  const hasPrecomputedNormals = normals !== null && normals.length > 0;
+
+  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(entry.mesh);
 
   const setHoveredPieceLabel = useBaseplatePageStore((s) => s.setHoveredPieceLabel);
   const setSelectedPieceLabel = useBaseplatePageStore((s) => s.setSelectedPieceLabel);
+  const isHoveredRef = useRef(false);
+
+  // Reset cursor on unmount
+  useEffect(() => {
+    return () => {
+      if (isHoveredRef.current) {
+        document.body.style.cursor = 'auto';
+      }
+    };
+  }, []);
 
   const activePiece = hoveredPieceLabel ?? selectedPieceLabel;
   const isActive = entry.label === activePiece;
-  // Only dim non-active pieces during hover — when no pointer is over any
+  // Only dim non-active pieces during hover -- when no pointer is over any
   // piece, the full baseplate should render at normal brightness.
   const isDimmed = hoveredPieceLabel !== null && !isActive;
-
-  const geometry = useMemo(() => {
-    if (!vertices || vertices.length === 0) return null;
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
-    if (indices && indices.length > 0) {
-      geo.setIndex(new THREE.BufferAttribute(indices, 1));
-    }
-
-    if (hasPrecomputedNormals) {
-      geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    } else {
-      geo.computeVertexNormals();
-    }
-
-    return geo;
-  }, [vertices, normals, indices, hasPrecomputedNormals]);
-
-  const edgesGeometry = useMemo(() => {
-    if (!edgeVertices || edgeVertices.length === 0) return null;
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
-    return geo;
-  }, [edgeVertices]);
-
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      edgesGeometry?.dispose();
-    };
-  }, [geometry, edgesGeometry]);
 
   useEffect(() => {
     if (geometry) invalidate();
@@ -96,11 +74,13 @@ function PieceMesh({
 
   const handlePointerOver = useCallback(() => {
     setHoveredPieceLabel(entry.label);
+    isHoveredRef.current = true;
     document.body.style.cursor = 'pointer';
   }, [entry.label, setHoveredPieceLabel]);
 
   const handlePointerOut = useCallback(() => {
     setHoveredPieceLabel(null);
+    isHoveredRef.current = false;
     document.body.style.cursor = 'auto';
   }, [setHoveredPieceLabel]);
 
@@ -170,7 +150,7 @@ function PieceMesh({
         <Text
           position={[0, 0, GRIDFINITY_SPEC.SOCKET_HEIGHT + 3]}
           fontSize={5}
-          color={isActive ? colors.labelColor : colors.labelColor}
+          color={colors.labelColor}
           fillOpacity={isActive ? 1 : 0.6}
           anchorX="center"
           anchorY="middle"

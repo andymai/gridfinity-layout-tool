@@ -610,7 +610,15 @@ export const useLayoutStore = create<LayoutState>()(
 
       setBaseplateParams: (params) => {
         setLocal((state) => {
-          state.layout.baseplateParams = params;
+          state.layout.baseplateParams = {
+            ...params,
+            paddingLeft: Math.max(0, params.paddingLeft),
+            paddingRight: Math.max(0, params.paddingRight),
+            paddingFront: Math.max(0, params.paddingFront),
+            paddingBack: Math.max(0, params.paddingBack),
+            magnetDiameter: clamp(params.magnetDiameter, 0.5, 20),
+            magnetDepth: clamp(params.magnetDepth, 0.5, 10),
+          };
         });
       },
 
