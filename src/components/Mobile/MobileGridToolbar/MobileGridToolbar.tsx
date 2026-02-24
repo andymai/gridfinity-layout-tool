@@ -4,6 +4,7 @@ import { useViewStore, useSelectionStore, useInteractionStore, useMobileStore } 
 import { useLibraryStore } from '@/core/store/library';
 import { CONSTRAINTS } from '@/core/constants';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useTranslation } from '@/i18n';
 
 interface MobileGridToolbarProps {
@@ -39,6 +40,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
   const activeLayer = layers.find((l) => l.id === activeLayerId);
   const baseplateEnabled = useFeatureFlag('baseplate_generator');
   const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
+  const { navigateToBaseplate } = useBaseplateRouting();
 
   const canZoomOut = zoom > CONSTRAINTS.ZOOM_MIN;
   const canZoomIn = zoom < CONSTRAINTS.ZOOM_MAX;
@@ -97,14 +99,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         {/* Baseplate Generator button - feature gated */}
         {baseplateEnabled && (
           <button
-            onClick={() => {
-              window.history.pushState(
-                { layoutId: activeLayoutId },
-                '',
-                `/baseplate?layoutId=${encodeURIComponent(activeLayoutId)}`
-              );
-              window.dispatchEvent(new PopStateEvent('popstate'));
-            }}
+            onClick={() => navigateToBaseplate(activeLayoutId)}
             className="btn btn-secondary w-10 h-10 p-0"
             aria-label={t('baseplate.toolbarButton')}
             title={t('baseplate.toolbarButton')}

@@ -75,6 +75,32 @@ function pocketCacheKey(
 
 // ─── Pocket Builders ────────────────────────────────────────────────────────
 
+/** Insets at each Z breakpoint — same taper profile as bin socket but at full cell size */
+const INSET_TOP = 0;
+const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
+const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+
+/** Z extension above/below to avoid coplanar boolean failures */
+const COPLANAR_MARGIN = 1;
+
+function pocketSection(
+  cellW_mm: number,
+  cellD_mm: number,
+  cornerR: number,
+  z: number,
+  inset: number
+): Sketch {
+  const w = cellW_mm - 2 * inset;
+  const d = cellD_mm - 2 * inset;
+  const r = Math.max(cornerR - inset, 0.1);
+  return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
+}
+
+function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
+  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
+  return Math.min(CORNER_RADIUS, maxRadius);
+}
+
 /**
  * Build a single pocket cutter at the origin using multi-section loft.
  *
@@ -94,42 +120,20 @@ function pocketCacheKey(
  * top surface, which would cause BREP boolean failures.
  */
 function buildPocketCutter(cellW_mm: number, cellD_mm: number, throughCut: boolean): Shape3D {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
+  const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
+  const s = (z: number, inset: number): Sketch =>
+    pocketSection(cellW_mm, cellD_mm, cornerR, z, inset);
 
-  // Insets at each Z breakpoint — same taper profile as bin socket
-  // but starting from the full cell size (no CLEARANCE reduction)
-  const INSET_TOP = 0;
-  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
-
-  // Z positions — extends above Z=0 to avoid coplanar boolean failures
-  const Z0 = 1; // above block top face
-  const Z1 = 0;
-  const Z2 = -(CLEARANCE / 2); // -0.25
-  const Z3 = -SOCKET_BIG_TAPER; // -2.4
-  const Z4 = -(SOCKET_BIG_TAPER + (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH)); // -4.2
-  const Z5 = -SOCKET_HEIGHT; // -5.0
-  // When throughCut, extend below block bottom to avoid coplanar faces
-  const Z6 = throughCut ? -SOCKET_HEIGHT - 1 : NaN;
-
-  const sectionAt = (z: number, inset: number): Sketch => {
-    const w = cellW_mm - 2 * inset;
-    const d = cellD_mm - 2 * inset;
-    const r = Math.max(cornerR - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
-  };
-
-  const s0 = sectionAt(Z0, INSET_TOP); // extends above block
-  const s1 = sectionAt(Z1, INSET_TOP);
-  const s2 = sectionAt(Z2, INSET_TOP);
-  const s3 = sectionAt(Z3, INSET_MID);
-  const s4 = sectionAt(Z4, INSET_MID);
-  const s5 = sectionAt(Z5, INSET_BOT);
-
-  const sections = [s1, s2, s3, s4, s5];
+  const s0 = s(COPLANAR_MARGIN, INSET_TOP);
+  const sections = [
+    s(0, INSET_TOP),
+    s(-(CLEARANCE / 2), INSET_TOP), // -0.25
+    s(-SOCKET_BIG_TAPER, INSET_MID), // -2.4
+    s(-(SOCKET_BIG_TAPER + (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH)), INSET_MID), // -4.2
+    s(-SOCKET_HEIGHT, INSET_BOT), // -5.0
+  ];
   if (throughCut) {
-    sections.push(sectionAt(Z6, INSET_BOT));
+    sections.push(s(-SOCKET_HEIGHT - COPLANAR_MARGIN, INSET_BOT));
   }
 
   return s0.loftWith(sections, { ruled: true });
@@ -145,23 +149,15 @@ function buildSimplifiedPocketCutter(
   cellD_mm: number,
   throughCut: boolean
 ): Shape3D {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
+  const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
+  const s = (z: number, inset: number): Sketch =>
+    pocketSection(cellW_mm, cellD_mm, cornerR, z, inset);
 
-  const INSET_TOP = 0;
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
-
-  const sectionAt = (z: number, inset: number): Sketch => {
-    const w = cellW_mm - 2 * inset;
-    const d = cellD_mm - 2 * inset;
-    const r = Math.max(cornerR - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
-  };
-
-  const s0 = sectionAt(1, INSET_TOP); // above block
-  const s1 = sectionAt(-SOCKET_HEIGHT, INSET_BOT);
-  // Extend below block bottom to avoid coplanar boolean failures
-  const sections = throughCut ? [s1, sectionAt(-SOCKET_HEIGHT - 1, INSET_BOT)] : [s1];
+  const s0 = s(COPLANAR_MARGIN, INSET_TOP);
+  const sections = [s(-SOCKET_HEIGHT, INSET_BOT)];
+  if (throughCut) {
+    sections.push(s(-SOCKET_HEIGHT - COPLANAR_MARGIN, INSET_BOT));
+  }
 
   return s0.loftWith(sections, { ruled: true });
 }

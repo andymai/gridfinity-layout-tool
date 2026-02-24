@@ -38,6 +38,7 @@ const en: Record<string, string> = {
   'errorBoundary.tryAgain': 'Try Again',
   'errorBoundary.resetAppData': 'Reset App Data',
 
+  'common.customize': 'Customize',
   'common.copy': 'Copy',
   'common.copied': 'Copied!',
   'common.download': 'Download',
@@ -66,6 +67,7 @@ const en: Record<string, string> = {
   'common.reset': 'Reset',
   'common.share': 'Share',
   'common.size': 'Size',
+  'common.soon': 'Soon',
   'common.undo': 'Undo',
   'common.unknown': 'Unknown',
   'common.width': 'Width',
@@ -1304,7 +1306,6 @@ const en: Record<string, string> = {
   'binDesigner.compartments': 'compartments',
   'binDesigner.copied': 'Copied!',
   'binDesigner.customFileName': 'Custom file name',
-  'binDesigner.customize': 'Customize',
   'binDesigner.designName': 'Design name',
   'binDesigner.designs': 'Designs',
   'binDesigner.dismissTouchHints': 'Dismiss touch hints',
@@ -1371,7 +1372,6 @@ const en: Record<string, string> = {
   'binDesigner.saveFailed': 'Save failed',
   'binDesigner.shareUrl': 'Share URL',
   'binDesigner.shareUrlOrId': 'Share URL or ID',
-  'binDesigner.soon': 'Soon',
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
@@ -1415,9 +1415,19 @@ const en: Record<string, string> = {
   'baseplate.paddingFront': 'Front',
   'baseplate.paddingBack': 'Back',
   'baseplate.totalDimensions': 'Total: {width}mm \u00d7 {depth}mm',
-  'baseplate.customize': 'Customize',
   'baseplate.exportButton': 'Export Baseplate',
   'baseplate.toolbarButton': 'Baseplate',
+  'baseplate.generating': 'Generating...',
+  'baseplate.generatingSplit': 'Generating {current}/{total}...',
+  'baseplate.printBedSize': 'Print bed size',
+  'baseplate.resetParams': 'Reset to defaults',
+  'baseplate.sectionGrid': 'Grid',
+  'baseplate.sectionFitToDrawer': 'Fit to Drawer',
+  'baseplate.sectionMagnets': 'Magnets',
+  'baseplate.sectionSplit': 'Split Pieces',
+  'baseplate.splitInfo': 'Split: {cols}\u00d7{rows} grid ({count} pieces)',
+  'baseplate.viewAssembled': 'Assembled',
+  'baseplate.viewExploded': 'Exploded',
 
   // ===========================================================================
   // Collaboration

@@ -1,15 +1,20 @@
 /**
  * Ephemeral page state for the standalone baseplate page.
  *
- * Tracks WASM worker status, generation progress, and the current mesh result.
+ * Tracks WASM worker status, generation progress, the current mesh result,
+ * and split tiling state for multi-piece baseplates.
  * This store is NOT persisted - it resets when the page unmounts.
  */
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import type { BaseplateTiling } from '../types/tiling';
 
 type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
 type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
+
+/** View mode for split baseplates: assembled (no gaps) or exploded (gaps between pieces). */
+export type SplitViewMode = 'assembled' | 'exploded';
 
 interface MeshResult {
   readonly vertices: Float32Array | null;
@@ -20,6 +25,22 @@ interface MeshResult {
   readonly timingMs: number;
 }
 
+/** A generated mesh for a single piece in a split baseplate. */
+export interface PieceMeshEntry {
+  readonly label: string;
+  readonly col: number;
+  readonly row: number;
+  readonly mesh: MeshResult;
+  /** Grid offset in units from left edge */
+  readonly offsetX: number;
+  /** Grid offset in units from front edge */
+  readonly offsetY: number;
+  /** Piece width in grid units */
+  readonly widthUnits: number;
+  /** Piece depth in grid units */
+  readonly depthUnits: number;
+}
+
 interface BaseplatePageState {
   generation: {
     status: GenerationStatus;
@@ -28,10 +49,23 @@ interface BaseplatePageState {
   };
   wasmStatus: WasmStatus;
 
+  /** Split tiling plan (null if not yet computed) */
+  tiling: BaseplateTiling | null;
+  /** Generated meshes for each piece when split */
+  pieceMeshes: readonly PieceMeshEntry[];
+  /** View mode for split preview */
+  splitViewMode: SplitViewMode;
+  /** Progress for multi-piece generation: null when not splitting */
+  splitProgress: { current: number; total: number } | null;
+
   setGenerationStatus: (status: GenerationStatus) => void;
   setGenerationResult: (result: MeshResult) => void;
   setWasmStatus: (status: WasmStatus) => void;
   bumpEpoch: () => void;
+  setTiling: (tiling: BaseplateTiling | null) => void;
+  setPieceMeshes: (meshes: readonly PieceMeshEntry[]) => void;
+  setSplitViewMode: (mode: SplitViewMode) => void;
+  setSplitProgress: (progress: { current: number; total: number } | null) => void;
 }
 
 export const useBaseplatePageStore = create<BaseplatePageState>()(
@@ -42,6 +76,10 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
       epoch: 0,
     },
     wasmStatus: 'unloaded',
+    tiling: null,
+    pieceMeshes: [],
+    splitViewMode: 'assembled',
+    splitProgress: null,
 
     setGenerationStatus: (status) => {
       set((state) => {
@@ -64,6 +102,32 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     bumpEpoch: () => {
       set((state) => {
         state.generation.epoch += 1;
+      });
+    },
+
+    setTiling: (tiling) => {
+      set((state) => {
+        // Cast needed: immer wraps readonly arrays in BaseplateTiling.pieces
+        state.tiling = tiling as typeof state.tiling;
+      });
+    },
+
+    setPieceMeshes: (meshes) => {
+      set((state) => {
+        // Cast needed: immer wraps readonly arrays
+        state.pieceMeshes = meshes as PieceMeshEntry[];
+      });
+    },
+
+    setSplitViewMode: (mode) => {
+      set((state) => {
+        state.splitViewMode = mode;
+      });
+    },
+
+    setSplitProgress: (progress) => {
+      set((state) => {
+        state.splitProgress = progress;
       });
     },
   }))

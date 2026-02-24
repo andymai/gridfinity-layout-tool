@@ -2,7 +2,8 @@
  * Hook for exporting the baseplate as STL, STEP, or 3MF.
  *
  * Builds full baseplate params from layout store, calls the generation bridge,
- * and triggers a browser download.
+ * and triggers a browser download. When the baseplate is split into multiple
+ * pieces, exports a ZIP archive of individually-named files.
  */
 
 import { useCallback, useState } from 'react';
@@ -13,12 +14,13 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { getActiveBridge } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { isErr, getUserMessage } from '@/core/result';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
+import { pieceToBaseplateParams } from '../utils/splitPlanner';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
-/** MIME types for each export format */
 const FORMAT_MIME_TYPES: Record<string, string> = {
   stl: 'application/sla',
   step: 'application/step',
@@ -31,7 +33,26 @@ interface UseBaseplateExportReturn {
   readonly downloadBaseplate: (format: ExportFileFormat) => Promise<void>;
 }
 
-/** Trigger browser download from a Blob */
+function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
+  const parseResult = parseSTLBinary(stlData);
+  if (isErr(parseResult)) {
+    throw new Error(getUserMessage(parseResult.error));
+  }
+  const { vertices, normals } = parseResult.value;
+  const printSettings = useSettingsStore.getState().settings.printSettings;
+  return export3MF(vertices, normals, {
+    name,
+    printSettings: {
+      layerHeight: printSettings.layerHeightMm,
+      infillPercent: printSettings.infillPercent,
+      material: 'PLA',
+      supportRequired: false,
+      estimatedMinutes: 0,
+      estimatedGrams: 0,
+    },
+  });
+}
+
 function triggerDownload(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
@@ -64,9 +85,13 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
     }))
   );
 
+  const tiling = useBaseplatePageStore((s) => s.tiling);
   const mesh = useBaseplatePageStore((s) => s.generation.mesh);
-  const canExport =
-    mesh !== null && mesh.vertices !== null && mesh.error === null && getActiveBridge() !== null;
+  const pieceMeshes = useBaseplatePageStore((s) => s.pieceMeshes);
+
+  const hasSingleMesh = mesh !== null && mesh.vertices !== null && mesh.error === null;
+  const hasSplitMeshes = pieceMeshes.length > 0;
+  const canExport = (hasSingleMesh || hasSplitMeshes) && getActiveBridge() !== null;
 
   const downloadBaseplate = useCallback(
     async (format: ExportFileFormat) => {
@@ -86,42 +111,57 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
         );
 
         const baseName = `gridfinity-baseplate-${drawerWidth}x${drawerDepth}`;
-        const extension = format === '3mf' ? '.3mf' : format === 'step' ? '.step' : '.stl';
-        const fileName = `${baseName}${extension}`;
+        const extensionMap: Record<ExportFileFormat, string> = {
+          '3mf': '.3mf',
+          step: '.step',
+          stl: '.stl',
+        };
+        const extension = extensionMap[format];
 
-        // Bridge exportBaseplate expects 'stl' | 'step' format
-        if (format === '3mf') {
-          const stlResult = await bridge.exportBaseplate(fullParams, 'stl');
-          const parseResult = parseSTLBinary(stlResult.data);
-          if (isErr(parseResult)) {
-            throw new Error(getUserMessage(parseResult.error));
+        if (tiling?.isSplit) {
+          // Multi-piece ZIP export
+          const bridgeFormat = format === '3mf' ? 'stl' : format;
+          const pieces: { data: ArrayBuffer; label: string }[] = [];
+
+          for (const piece of tiling.pieces) {
+            const pieceParams = pieceToBaseplateParams(piece, fullParams);
+            const result = await bridge.exportBaseplate(pieceParams, bridgeFormat);
+
+            if (format === '3mf') {
+              const blob = convertStlTo3mf(result.data, `${baseName}_${piece.label}`);
+              pieces.push({ data: await blob.arrayBuffer(), label: piece.label });
+            } else {
+              pieces.push({ data: result.data, label: piece.label });
+            }
           }
-          const { vertices, normals } = parseResult.value;
 
-          const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
-          const blob = export3MF(vertices, normals, {
-            name: baseName,
-            printSettings: {
-              layerHeight: currentPrintSettings.layerHeightMm,
-              infillPercent: currentPrintSettings.infillPercent,
-              material: 'PLA',
-              supportRequired: false,
-              estimatedMinutes: 0,
-              estimatedGrams: 0,
-            },
-          });
-
-          triggerDownload(blob, fileName);
+          const zip = await packagePiecesAsZip(pieces, baseName, extension);
+          triggerDownload(zip, `${baseName}.zip`);
         } else {
-          const result = await bridge.exportBaseplate(fullParams, format);
-          const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-          triggerDownload(blob, fileName);
+          // Single piece
+          if (format === '3mf') {
+            const stlResult = await bridge.exportBaseplate(fullParams, 'stl');
+            const blob = convertStlTo3mf(stlResult.data, baseName);
+            triggerDownload(blob, `${baseName}${extension}`);
+          } else {
+            const result = await bridge.exportBaseplate(fullParams, format);
+            const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
+            triggerDownload(blob, `${baseName}${extension}`);
+          }
         }
       } finally {
         setIsExporting(false);
       }
     },
-    [drawerWidth, drawerDepth, gridUnitMm, fractionalEdgeX, fractionalEdgeY, baseplateParams]
+    [
+      drawerWidth,
+      drawerDepth,
+      gridUnitMm,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      baseplateParams,
+      tiling,
+    ]
   );
 
   return {

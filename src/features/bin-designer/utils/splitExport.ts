@@ -1,15 +1,15 @@
 /**
  * ZIP packaging for split bin export.
  *
- * Dynamically imports JSZip to keep it out of the initial bundle,
- * then packages individual STL piece buffers into a single ZIP archive.
+ * Thin wrapper around the shared zipExport utility, hardcoded to `.stl` extension
+ * for backward compatibility with the bin-designer's split export flow.
  */
+
+import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 
 interface SplitPiece {
   readonly data: ArrayBuffer;
   readonly label: string;
-  readonly col: number;
-  readonly row: number;
 }
 
 /**
@@ -23,13 +23,5 @@ export async function packageSplitPiecesAsZip(
   pieces: readonly SplitPiece[],
   baseName: string
 ): Promise<Blob> {
-  const { default: JSZip } = await import('jszip');
-  const zip = new JSZip();
-
-  for (const piece of pieces) {
-    const fileName = `${baseName}_${piece.label}.stl`;
-    zip.file(fileName, piece.data);
-  }
-
-  return zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  return packagePiecesAsZip(pieces, baseName, '.stl');
 }

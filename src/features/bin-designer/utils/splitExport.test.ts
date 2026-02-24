@@ -20,8 +20,8 @@ describe('packageSplitPiecesAsZip', () => {
 
   it('creates a ZIP with one file per piece', async () => {
     const pieces = [
-      { data: new ArrayBuffer(100), label: 'piece-1x1', col: 1, row: 1 },
-      { data: new ArrayBuffer(200), label: 'piece-2x1', col: 2, row: 1 },
+      { data: new ArrayBuffer(100), label: 'piece-1x1' },
+      { data: new ArrayBuffer(200), label: 'piece-2x1' },
     ];
 
     const blob = await packageSplitPiecesAsZip(pieces, 'my-bin');
@@ -37,7 +37,7 @@ describe('packageSplitPiecesAsZip', () => {
   });
 
   it('handles single piece', async () => {
-    const pieces = [{ data: new ArrayBuffer(50), label: 'piece-1x1', col: 1, row: 1 }];
+    const pieces = [{ data: new ArrayBuffer(50), label: 'piece-1x1' }];
 
     await packageSplitPiecesAsZip(pieces, 'test');
 

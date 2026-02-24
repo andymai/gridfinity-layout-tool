@@ -35,7 +35,7 @@ describe('FeatureToggle', () => {
         <div data-testid="child-controls">Controls</div>
       </FeatureToggle>
     );
-    expect(screen.queryByText('binDesigner.customize')).not.toBeInTheDocument();
+    expect(screen.queryByText('common.customize')).not.toBeInTheDocument();
   });
 
   it('shows Customize button when checked and children provided', () => {
@@ -44,7 +44,7 @@ describe('FeatureToggle', () => {
         <div data-testid="child-controls">Controls</div>
       </FeatureToggle>
     );
-    expect(screen.getByText('binDesigner.customize')).toBeInTheDocument();
+    expect(screen.getByText('common.customize')).toBeInTheDocument();
   });
 
   it('clicking Customize reveals children, clicking Done hides them', () => {
@@ -54,7 +54,7 @@ describe('FeatureToggle', () => {
       </FeatureToggle>
     );
     // Initially the customize region exists but is aria-hidden
-    const customizeBtn = screen.getByText('binDesigner.customize');
+    const customizeBtn = screen.getByText('common.customize');
     const region = screen.getByRole('region', { hidden: true });
     expect(region).toHaveAttribute('aria-hidden', 'true');
 
@@ -72,7 +72,7 @@ describe('FeatureToggle', () => {
     render(
       <FeatureToggle label="Test Feature" checked={false} onChange={vi.fn()} comingSoon={true} />
     );
-    expect(screen.getByText('binDesigner.soon')).toBeInTheDocument();
+    expect(screen.getByText('common.soon')).toBeInTheDocument();
     expect(screen.getByRole('switch')).toBeDisabled();
   });
 
@@ -103,7 +103,7 @@ describe('FeatureToggle', () => {
       </FeatureToggle>
     );
     expect(screen.queryByText('Primary')).not.toBeInTheDocument();
-    expect(screen.queryByText('binDesigner.customize')).not.toBeInTheDocument();
+    expect(screen.queryByText('common.customize')).not.toBeInTheDocument();
   });
 
   it('disabledReason takes precedence over comingSoon', () => {
@@ -117,7 +117,7 @@ describe('FeatureToggle', () => {
       />
     );
     expect(screen.getByText('Style incompatible')).toBeInTheDocument();
-    expect(screen.queryByText('binDesigner.soon')).not.toBeInTheDocument();
+    expect(screen.queryByText('common.soon')).not.toBeInTheDocument();
     expect(screen.getByRole('switch')).toBeDisabled();
   });
 
@@ -135,7 +135,7 @@ describe('FeatureToggle', () => {
     expect(screen.getByText('6.5mm × 2mm')).toBeInTheDocument();
 
     // Open customize — summary should be hidden
-    fireEvent.click(screen.getByText('binDesigner.customize'));
+    fireEvent.click(screen.getByText('common.customize'));
     expect(screen.queryByText('6.5mm × 2mm')).not.toBeInTheDocument();
   });
 });

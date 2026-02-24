@@ -6,6 +6,7 @@ import { useLibraryStore } from '@/core/store/library';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { track3DPreview, markFeatureUsed } from '@/shared/analytics/posthog';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useTranslation } from '@/i18n';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
@@ -104,6 +105,7 @@ export const GridToolbar = memo(function GridToolbar({
 
   const baseplateEnabled = useFeatureFlag('baseplate_generator');
   const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
+  const { navigateToBaseplate } = useBaseplateRouting();
 
   return (
     <div
@@ -376,14 +378,7 @@ export const GridToolbar = memo(function GridToolbar({
         {/* Baseplate Generator button - feature gated */}
         {baseplateEnabled && (
           <button
-            onClick={() => {
-              window.history.pushState(
-                { layoutId: activeLayoutId },
-                '',
-                `/baseplate?layoutId=${encodeURIComponent(activeLayoutId)}`
-              );
-              window.dispatchEvent(new PopStateEvent('popstate'));
-            }}
+            onClick={() => navigateToBaseplate(activeLayoutId)}
             className="btn btn-ghost px-2.5 py-1.5 flex items-center gap-1.5"
             aria-label={t('baseplate.toolbarButton')}
             title={t('baseplate.toolbarButton')}

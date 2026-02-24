@@ -3,12 +3,11 @@
  *
  * Lifecycle:
  * 1. Mount: Create bridge, init worker, set wasmStatus
- * 2. Params change: Regenerate BREP with actual padding values
+ * 2. Params change: Compute tiling, regenerate BREP (single or multi-piece)
  * 3. Unmount: Destroy bridge
  *
- * Padding is applied directly — pockets stay centered at origin, the slab
- * extends asymmetrically. This keeps the grid-aligned footprint stable
- * regardless of padding distribution.
+ * When the baseplate exceeds print bed size, it's split into a tiling grid.
+ * Each piece is generated sequentially through the bridge.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
@@ -19,11 +18,24 @@ import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
 import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
+import { computeBaseplateTiling, pieceToBaseplateParams } from '../utils/splitPlanner';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
+import type { PieceMeshEntry } from '../store/baseplatePageStore';
+
+const EMPTY_MESH = {
+  vertices: null,
+  normals: null,
+  indices: null,
+  edgeVertices: null,
+  error: null,
+  timingMs: 0,
+} as const;
+
+const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
 
 /**
  * Manages the GenerationBridge lifecycle and auto-regeneration
- * when layout params change.
+ * when layout params change. Handles both single and multi-piece generation.
  */
 export function useBaseplateGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
@@ -33,6 +45,7 @@ export function useBaseplateGeneration(): void {
     drawerWidth,
     drawerDepth,
     gridUnitMm,
+    printBedSize,
     fractionalEdgeX,
     fractionalEdgeY,
     magnetHoles,
@@ -49,6 +62,7 @@ export function useBaseplateGeneration(): void {
         drawerWidth: state.layout.drawer.width,
         drawerDepth: state.layout.drawer.depth,
         gridUnitMm: state.layout.gridUnitMm,
+        printBedSize: state.layout.printBedSize,
         fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
         fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
         magnetHoles: bp.magnetHoles,
@@ -65,46 +79,88 @@ export function useBaseplateGeneration(): void {
   const setGenerationStatus = useBaseplatePageStore((s) => s.setGenerationStatus);
   const setGenerationResult = useBaseplatePageStore((s) => s.setGenerationResult);
   const setWasmStatus = useBaseplatePageStore((s) => s.setWasmStatus);
+  const setTiling = useBaseplatePageStore((s) => s.setTiling);
+  const setPieceMeshes = useBaseplatePageStore((s) => s.setPieceMeshes);
+  const setSplitProgress = useBaseplatePageStore((s) => s.setSplitProgress);
 
   const runGeneration = useCallback(
-    async (fullParams: FullBaseplateParams) => {
+    async (fullParams: FullBaseplateParams, bedSizeMm: number) => {
       const bridge = bridgeRef.current;
       if (!bridge || bridge.isDestroyed) return;
+
+      // Compute tiling plan
+      const tiling = computeBaseplateTiling(fullParams, bedSizeMm);
+      setTiling(tiling);
 
       setGenerationStatus('generating');
 
       try {
-        const result = await bridge.generateBaseplate(fullParams, (stage, progress) => {
-          void stage;
-          void progress;
-        });
+        if (!tiling.isSplit) {
+          // Single piece
+          const result = await bridge.generateBaseplate(fullParams, NO_OP_PROGRESS);
 
-        setGenerationResult({
-          vertices: result.mesh.vertices,
-          normals: result.mesh.normals,
-          indices: result.mesh.indices,
-          edgeVertices: result.mesh.edgeVertices,
-          error: null,
-          timingMs: result.timingMs,
-        });
-        setGenerationStatus('complete');
+          setGenerationResult({
+            vertices: result.mesh.vertices,
+            normals: result.mesh.normals,
+            indices: result.mesh.indices,
+            edgeVertices: result.mesh.edgeVertices,
+            error: null,
+            timingMs: result.timingMs,
+          });
+          setPieceMeshes([]);
+          setGenerationStatus('complete');
+        } else {
+          // Multi-piece — generate each piece sequentially
+          const meshEntries: PieceMeshEntry[] = [];
+          const total = tiling.pieces.length;
+
+          for (let i = 0; i < tiling.pieces.length; i++) {
+            const piece = tiling.pieces[i];
+            setSplitProgress({ current: i + 1, total });
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- re-check between async iterations
+            if (bridge.isDestroyed) return;
+
+            const pieceParams = pieceToBaseplateParams(piece, fullParams);
+            const result = await bridge.generateBaseplate(pieceParams, NO_OP_PROGRESS);
+
+            meshEntries.push({
+              label: piece.label,
+              col: piece.col,
+              row: piece.row,
+              mesh: {
+                vertices: result.mesh.vertices,
+                normals: result.mesh.normals,
+                indices: result.mesh.indices,
+                edgeVertices: result.mesh.edgeVertices,
+                error: null,
+                timingMs: result.timingMs,
+              },
+              offsetX: piece.gridOffsetX,
+              offsetY: piece.gridOffsetY,
+              widthUnits: piece.widthUnits,
+              depthUnits: piece.depthUnits,
+            });
+          }
+
+          setSplitProgress(null);
+          setPieceMeshes(meshEntries);
+          setGenerationResult(EMPTY_MESH);
+          setGenerationStatus('complete');
+        }
       } catch (e: unknown) {
         if (e instanceof Error && e.message === 'Generation cancelled') {
           return;
         }
 
         setGenerationResult({
-          vertices: null,
-          normals: null,
-          indices: null,
-          edgeVertices: null,
+          ...EMPTY_MESH,
           error: e instanceof Error ? e.message : String(e),
-          timingMs: 0,
         });
+        setPieceMeshes([]);
         setGenerationStatus('error');
       }
     },
-    [setGenerationStatus, setGenerationResult]
+    [setGenerationStatus, setGenerationResult, setTiling, setPieceMeshes, setSplitProgress]
   );
 
   // Initialize bridge on mount
@@ -137,7 +193,7 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.drawer.fractionalEdgeX ?? 'end',
           layoutState.layout.drawer.fractionalEdgeY ?? 'end'
         );
-        void runGeneration(params);
+        void runGeneration(params, layoutState.layout.printBedSize);
       })
       .catch((_e: unknown) => {
         setWasmStatus('error');
@@ -164,11 +220,12 @@ export function useBaseplateGeneration(): void {
       fractionalEdgeX,
       fractionalEdgeY
     );
-    void runGeneration(params);
+    void runGeneration(params, printBedSize);
   }, [
     drawerWidth,
     drawerDepth,
     gridUnitMm,
+    printBedSize,
     fractionalEdgeX,
     fractionalEdgeY,
     magnetHoles,

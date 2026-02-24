@@ -1,25 +1,39 @@
 /**
  * Standalone baseplate generator page.
  *
- * Two-column layout: parameter panel on the left, 3D preview on the right.
+ * Responsive layout matching the bin designer:
+ * - Desktop: side-by-side, panel left (w-72), preview right
+ * - Landscape: side-by-side, preview left, panel right (w-64)
+ * - Tablet portrait: stacked, preview 50vh, panel below
+ * - Mobile portrait: stacked, preview 40vh, panel below
+ *
  * Reads layoutId from the URL query param to load the correct layout.
  * Gated behind the 'baseplate_generator' feature flag.
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { Button } from '@/design-system/Button';
+import { Menu } from '@/design-system/Menu';
+import { ArrowLeftIcon, ChevronDownIcon } from '@/design-system/Icon';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
+const EXPORT_FORMATS: ReadonlyArray<{ format: ExportFileFormat; label: string }> = [
+  { format: 'stl', label: 'STL' },
+  { format: 'step', label: 'STEP' },
+  { format: '3mf', label: '3MF' },
+];
+
 /**
- * Export dropdown button for the baseplate header.
+ * Export dropdown button using the design-system Menu.
  */
 function ExportButton({
   canExport,
@@ -31,96 +45,54 @@ function ExportButton({
   onExport: (format: ExportFileFormat) => void;
 }) {
   const t = useTranslation();
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open]);
+  const handleOpen = useCallback(() => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setMenuPos({ x: rect.left, y: rect.bottom + 4 });
+    }
+    setMenuOpen(true);
+  }, []);
 
-  const handleSelect = useCallback(
+  const handleExport = useCallback(
     (format: ExportFileFormat) => {
-      setOpen(false);
       onExport(format);
     },
     [onExport]
   );
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setOpen(!open)}
+    <>
+      <Button
+        ref={buttonRef}
+        variant="primary"
+        size="md"
         disabled={!canExport || isExporting}
-        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+        loading={isExporting}
+        rightIcon={<ChevronDownIcon size="sm" />}
+        onClick={handleOpen}
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
       >
-        {isExporting ? (
-          <span className="flex items-center gap-2">
-            <svg
-              className="h-4 w-4 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-20"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="3"
-              />
-              <path
-                className="opacity-80"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-            {t('baseplate.exportButton')}
-          </span>
-        ) : (
-          t('baseplate.exportButton')
-        )}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full z-10 mt-1 w-32 rounded-lg border border-stroke-subtle bg-surface-elevated shadow-lg">
-          {/* eslint-disable i18next/no-literal-string -- file format labels, not translatable */}
-          <button
-            onClick={() => handleSelect('stl')}
-            className="w-full px-4 py-2 text-left text-sm text-content hover:bg-surface-hover first:rounded-t-lg"
-          >
-            STL
-          </button>
-          <button
-            onClick={() => handleSelect('step')}
-            className="w-full px-4 py-2 text-left text-sm text-content hover:bg-surface-hover"
-          >
-            STEP
-          </button>
-          <button
-            onClick={() => handleSelect('3mf')}
-            className="w-full px-4 py-2 text-left text-sm text-content hover:bg-surface-hover last:rounded-b-lg"
-          >
-            3MF
-          </button>
-          {/* eslint-enable i18next/no-literal-string */}
-        </div>
-      )}
-    </div>
+        {t('baseplate.exportButton')}
+      </Button>
+      <Menu.Root open={menuOpen} onClose={() => setMenuOpen(false)} position={menuPos}>
+        {EXPORT_FORMATS.map(({ format, label }) => (
+          <Menu.Item key={format} onClick={() => handleExport(format)}>
+            {label}
+          </Menu.Item>
+        ))}
+      </Menu.Root>
+    </>
   );
 }
 
 export function BaseplatePage() {
   const t = useTranslation();
-  const { isMobile } = useResponsive();
+  const { isDesktop, isLandscape, isMobile } = useResponsive();
 
   const { drawerWidth, drawerDepth, baseplateParams } = useLayoutStore(
     useShallow((state) => ({
@@ -143,11 +115,23 @@ export function BaseplatePage() {
   );
 
   const handleBack = useCallback(() => {
-    // Navigate back to the layout editor
     window.history.back();
   }, []);
 
   const { paddingLeft, paddingRight, paddingFront, paddingBack } = baseplateParams;
+
+  const preview = (
+    <BaseplatePreview
+      width={drawerWidth}
+      depth={drawerDepth}
+      paddingLeft={paddingLeft}
+      paddingRight={paddingRight}
+      paddingFront={paddingFront}
+      paddingBack={paddingBack}
+    />
+  );
+
+  const panel = <BaseplatePanel />;
 
   return (
     <div className="flex h-screen flex-col bg-surface">
@@ -159,15 +143,7 @@ export function BaseplatePage() {
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
             aria-label={t('baseplate.backToLayout')}
           >
-            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M10 12L6 8L10 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <ArrowLeftIcon size="sm" />
             <span className="hidden sm:inline">{t('baseplate.backToLayout')}</span>
           </button>
 
@@ -179,29 +155,35 @@ export function BaseplatePage() {
         <ExportButton canExport={canExport} isExporting={isExporting} onExport={handleExport} />
       </header>
 
-      {/* Main content */}
-      <div className={`flex flex-1 overflow-hidden ${isMobile ? 'flex-col' : 'flex-row'}`}>
-        {/* Panel */}
-        <aside
-          className={`${
-            isMobile ? 'h-1/3 border-b' : 'w-72 border-r'
-          } shrink-0 overflow-y-auto border-stroke-subtle`}
-        >
-          <BaseplatePanel />
-        </aside>
-
-        {/* Preview */}
-        <main className="flex-1">
-          <BaseplatePreview
-            width={drawerWidth}
-            depth={drawerDepth}
-            paddingLeft={paddingLeft}
-            paddingRight={paddingRight}
-            paddingFront={paddingFront}
-            paddingBack={paddingBack}
-          />
-        </main>
-      </div>
+      {/* Main content — 4 responsive states */}
+      {isDesktop ? (
+        /* Desktop: side-by-side, panel left */
+        <div className="flex flex-1 overflow-hidden">
+          <aside className="w-72 shrink-0 overflow-hidden border-r border-stroke-subtle bg-surface-secondary">
+            {panel}
+          </aside>
+          <main className="relative flex-1 overflow-hidden">{preview}</main>
+        </div>
+      ) : isLandscape ? (
+        /* Landscape tablet/mobile: side-by-side, panel right */
+        <div className="flex flex-1 overflow-hidden">
+          <main className="relative flex-1 overflow-hidden">{preview}</main>
+          <aside className="w-64 shrink-0 overflow-hidden border-l border-stroke-subtle bg-surface-secondary">
+            {panel}
+          </aside>
+        </div>
+      ) : (
+        /* Portrait tablet/mobile: stacked */
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <main
+            className="relative shrink-0 border-b border-stroke-subtle"
+            style={{ height: isMobile ? '40vh' : '50vh' }}
+          >
+            {preview}
+          </main>
+          <aside className="flex-1 overflow-hidden bg-surface-secondary">{panel}</aside>
+        </div>
+      )}
     </div>
   );
 }

@@ -107,7 +107,7 @@ export function FootprintGrid({ width, depth }: FootprintGridProps) {
   }, [material]);
 
   return (
-    <mesh position={[0, 0, 0]} material={material}>
+    <mesh material={material}>
       <planeGeometry args={[floorSize, floorSize]} />
     </mesh>
   );

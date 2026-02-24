@@ -19,7 +19,9 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
+import { Spinner } from '@/shared/components/preview/Spinner';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
+import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useThreeColors } from '@/hooks/useThemeEffect';
 import { useTranslation } from '@/i18n';
@@ -212,12 +214,8 @@ function BaseplateMesh({ color }: { color: string }) {
   }, [geometry, edgesGeometry]);
 
   useEffect(() => {
-    if (geometry) invalidate();
-  }, [geometry, invalidate]);
-
-  useEffect(() => {
     invalidate();
-  }, [color, invalidate]);
+  }, [geometry, color, invalidate]);
 
   if (!geometry) return null;
 
@@ -239,7 +237,7 @@ function BaseplateMesh({ color }: { color: string }) {
       </mesh>
       {edgesGeometry && (
         <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
-          <lineBasicMaterial color="#000000" depthTest={true} />
+          <lineBasicMaterial color="#000000" />
         </lineSegments>
       )}
     </>
@@ -393,42 +391,28 @@ export function BaseplatePreview({
   const controlsRef = useRef<OrbitControlsType>(null);
   const { isDesktop } = useResponsive();
 
-  const { wasmStatus, hasMesh, generationStatus } = useBaseplatePageStore(
-    useShallow((s) => ({
-      wasmStatus: s.wasmStatus,
-      hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
-      generationStatus: s.generation.status,
-    }))
-  );
+  const { wasmStatus, hasMesh, hasSplitMeshes, isSplit, generationStatus, splitProgress } =
+    useBaseplatePageStore(
+      useShallow((s) => ({
+        wasmStatus: s.wasmStatus,
+        hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
+        hasSplitMeshes: s.pieceMeshes.length > 0,
+        isSplit: s.tiling?.isSplit ?? false,
+        generationStatus: s.generation.status,
+        splitProgress: s.splitProgress,
+      }))
+    );
 
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
-  const showSkeleton = !hasMesh || wasmStatus !== 'ready';
-  const showOverlay = generationStatus === 'generating' && hasMesh;
+  const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
+  const showSkeleton = !hasAnyMesh || wasmStatus !== 'ready';
+  const showOverlay = generationStatus === 'generating' && hasAnyMesh;
 
   if (showSkeleton) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-surface-elevated">
         <div className="flex flex-col items-center gap-2 text-content-secondary">
-          <svg
-            className="h-6 w-6 animate-spin text-accent"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <circle
-              className="opacity-20"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="3"
-            />
-            <path
-              className="opacity-80"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
+          <Spinner className="h-6 w-6 text-accent" />
           <span className="text-xs">{t('loading.baseplate')}</span>
         </div>
       </div>
@@ -468,7 +452,15 @@ export function BaseplatePreview({
           paddingBack={paddingBack}
         />
 
-        <BaseplateMesh color={DEFAULT_COLOR} />
+        {isSplit ? (
+          <SplitBaseplateMeshes
+            color={DEFAULT_COLOR}
+            totalWidthUnits={width}
+            totalDepthUnits={depth}
+          />
+        ) : (
+          <BaseplateMesh color={DEFAULT_COLOR} />
+        )}
 
         <FootprintGrid width={width} depth={depth} />
         <BinAxisLabels width={width} depth={depth} />
@@ -503,27 +495,15 @@ export function BaseplatePreview({
           aria-live="polite"
         >
           <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
-            <svg
-              className="h-4 w-4 shrink-0 animate-spin text-accent motion-reduce:animate-none"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-20"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="3"
-              />
-              <path
-                className="opacity-80"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-            <span className="text-content-secondary">Generating...</span>
+            <Spinner className="h-4 w-4 shrink-0 text-accent motion-reduce:animate-none" />
+            <span className="text-content-secondary">
+              {splitProgress
+                ? t('baseplate.generatingSplit', {
+                    current: splitProgress.current,
+                    total: splitProgress.total,
+                  })
+                : t('baseplate.generating')}
+            </span>
           </div>
         </div>
       )}
