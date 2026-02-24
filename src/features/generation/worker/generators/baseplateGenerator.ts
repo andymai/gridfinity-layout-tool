@@ -14,6 +14,7 @@
 
 import {
   drawRoundedRectangle,
+  drawRectangle,
   drawCircle,
   unwrap,
   cutAll,
@@ -24,7 +25,7 @@ import {
   exportSTL,
   exportSTEP,
 } from 'brepjs';
-import type { Shape3D, Sketch } from 'brepjs';
+import type { Shape3D, Sketch, Drawing } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
@@ -248,8 +249,72 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
     params.paddingBack,
     params.fractionalEdgeX,
     params.fractionalEdgeY,
+    params.edges?.left ?? '',
+    params.edges?.right ?? '',
+    params.edges?.front ?? '',
+    params.edges?.back ?? '',
     forExport,
   ].join('|');
+}
+
+// ─── Slab Profile Builder ──────────────────────────────────────────────────
+
+/**
+ * Build the 2D slab outline, rounding only exterior corners.
+ *
+ * A corner is "exterior" when both adjacent edges are exterior (not join edges).
+ * For an unsplit baseplate (no edges info), all corners are rounded.
+ *
+ * Rectangle corners (centered at origin):
+ *   front-left  (-w/2, -d/2) ← left  + front
+ *   front-right (+w/2, -d/2) ← right + front
+ *   back-right  (+w/2, +d/2) ← right + back
+ *   back-left   (-w/2, +d/2) ← left  + back
+ */
+function buildSlabProfile(
+  totalW: number,
+  totalD: number,
+  cornerR: number,
+  edges?: BaseplateParams['edges']
+): Drawing {
+  // No edges info (unsplit) or all edges exterior → round all corners
+  if (
+    !edges ||
+    (edges.left === 'exterior' &&
+      edges.right === 'exterior' &&
+      edges.front === 'exterior' &&
+      edges.back === 'exterior')
+  ) {
+    return drawRoundedRectangle(totalW, totalD, cornerR);
+  }
+
+  // A corner should be rounded only when BOTH adjacent edges are exterior
+  const hw = totalW / 2;
+  const hd = totalD / 2;
+
+  type Point2D = [number, number];
+  const exteriorCorners: Point2D[] = [];
+
+  if (edges.left === 'exterior' && edges.front === 'exterior') {
+    exteriorCorners.push([-hw, -hd]);
+  }
+  if (edges.right === 'exterior' && edges.front === 'exterior') {
+    exteriorCorners.push([hw, -hd]);
+  }
+  if (edges.right === 'exterior' && edges.back === 'exterior') {
+    exteriorCorners.push([hw, hd]);
+  }
+  if (edges.left === 'exterior' && edges.back === 'exterior') {
+    exteriorCorners.push([-hw, hd]);
+  }
+
+  // No exterior corners → plain rectangle
+  if (exteriorCorners.length === 0) {
+    return drawRectangle(totalW, totalD);
+  }
+
+  // Start with sharp rectangle, then fillet only the exterior corners
+  return drawRectangle(totalW, totalD).fillet(cornerR, (f) => f.inList(exteriorCorners));
 }
 
 /**
@@ -320,6 +385,7 @@ function buildBaseplateSolid(
     paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
+    edges,
   } = params;
 
   // 1. Build solid block — only add BASE_THICKNESS when magnets need a floor
@@ -334,7 +400,8 @@ function buildBaseplateSolid(
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
 
-  const profile = drawRoundedRectangle(totalW, totalD, cornerR);
+  // Build slab profile — selectively round only exterior corners for split pieces
+  const profile = buildSlabProfile(totalW, totalD, cornerR, edges);
   let baseplate: Shape3D = (
     profile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
   ).extrude(-totalHeight);

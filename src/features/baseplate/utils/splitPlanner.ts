@@ -163,6 +163,7 @@ export function pieceToBaseplateParams(
     paddingBack: piece.paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
+    edges: piece.edges,
   };
 }
 

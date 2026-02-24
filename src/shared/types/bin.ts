@@ -33,6 +33,17 @@ export type {
 
 export { MIN_PATH_POINTS } from '@/features/bin-designer/types';
 
+/** Whether an edge is exterior (outside baseplate) or a join between split pieces. */
+export type BaseplateEdgeKind = 'join' | 'exterior';
+
+/** Per-side edge classification for split baseplate pieces. */
+export interface BaseplateEdges {
+  readonly left: BaseplateEdgeKind;
+  readonly right: BaseplateEdgeKind;
+  readonly front: BaseplateEdgeKind;
+  readonly back: BaseplateEdgeKind;
+}
+
 /**
  * Full baseplate parameter set for generation bridge.
  *
@@ -54,4 +65,6 @@ export interface BaseplateParams {
   readonly fractionalEdgeX: 'start' | 'end';
   /** Where the half-unit cell sits on the Y axis ('start' = front, 'end' = back) */
   readonly fractionalEdgeY: 'start' | 'end';
+  /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
+  readonly edges?: BaseplateEdges;
 }

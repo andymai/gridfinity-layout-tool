@@ -322,6 +322,31 @@ describe('pieceToBaseplateParams', () => {
     }
   });
 
+  it('passes through edge classification to params', () => {
+    const parent = makeParams({ width: 10, depth: 8 });
+    const tiling = computeBaseplateTiling(parent, 256);
+
+    // A1 (front-left corner): left+front exterior, right+back join
+    const a1 = tiling.pieces[0];
+    const a1Params = pieceToBaseplateParams(a1, parent);
+    expect(a1Params.edges).toEqual({
+      left: 'exterior',
+      right: 'join',
+      front: 'exterior',
+      back: 'join',
+    });
+
+    // B2 (back-right corner): left+front join, right+back exterior
+    const b2 = tiling.pieces[3];
+    const b2Params = pieceToBaseplateParams(b2, parent);
+    expect(b2Params.edges).toEqual({
+      left: 'join',
+      right: 'exterior',
+      front: 'join',
+      back: 'exterior',
+    });
+  });
+
   it('preserves fractionalEdge from parent for fractional pieces', () => {
     const parent = makeParams({ width: 7.5, depth: 4, fractionalEdgeX: 'start' });
     const tiling = computeBaseplateTiling(parent, 256);
