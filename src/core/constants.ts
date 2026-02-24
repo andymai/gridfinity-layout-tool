@@ -145,13 +145,36 @@ export const CATEGORY_COLOR_PALETTE = [
   { color: '#a8a29e', name: 'Stone' },
 ] as const;
 
-/** Default baseplate parameters: magnet holes enabled, no half-cell pegs, no padding */
+/** Default baseplate parameters: no magnets, drawer dims derived from grid, centered padding */
 export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   magnetHoles: false,
   magnetDiameter: 6.5,
   magnetDepth: 2,
-  paddingMm: 0,
+  drawerWidthMm: 0,
+  drawerDepthMm: 0,
+  paddingRatioX: 0.5,
+  paddingRatioY: 0.5,
 } as const;
+
+/**
+ * Migrate old baseplateParams (with paddingMm) to new shape.
+ * Returns DEFAULT_BASEPLATE_PARAMS if the stored data lacks the new fields,
+ * preserving magnet settings when possible.
+ */
+export function migrateBaseplateParams(stored: unknown): BaseplateParams {
+  if (!stored || typeof stored !== 'object') return DEFAULT_BASEPLATE_PARAMS;
+  const obj = stored as Record<string, unknown>;
+  // New shape has drawerWidthMm — if missing, it's the old format
+  if (typeof obj.drawerWidthMm !== 'number') {
+    return {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
+      magnetDiameter: typeof obj.magnetDiameter === 'number' ? obj.magnetDiameter : 6.5,
+      magnetDepth: typeof obj.magnetDepth === 'number' ? obj.magnetDepth : 2,
+    };
+  }
+  return stored as BaseplateParams;
+}
 
 /** Default layout name for new layouts */
 export const DEFAULT_LAYOUT_NAME = 'Untitled layout';

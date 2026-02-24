@@ -9,14 +9,14 @@ import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { migrateBaseplateParams } from '@/core/constants';
 import { getActiveBridge } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
+import { buildFullParams } from '../utils/buildFullParams';
 import type { ExportFileFormat } from '@/shared/types/bin';
-import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
 
 /** MIME types for each export format */
 const FORMAT_MIME_TYPES: Record<string, string> = {
@@ -60,7 +60,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       gridUnitMm: state.layout.gridUnitMm,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
-      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      baseplateParams: migrateBaseplateParams(state.layout.baseplateParams),
     }))
   );
 
@@ -76,17 +76,14 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       setIsExporting(true);
 
       try {
-        const fullParams: FullBaseplateParams = {
-          width: drawerWidth,
-          depth: drawerDepth,
+        const fullParams = buildFullParams(
+          baseplateParams,
+          drawerWidth,
+          drawerDepth,
           gridUnitMm,
-          magnetHoles: baseplateParams.magnetHoles,
-          magnetDiameter: baseplateParams.magnetDiameter,
-          magnetDepth: baseplateParams.magnetDepth,
-          paddingMm: baseplateParams.paddingMm,
           fractionalEdgeX,
-          fractionalEdgeY,
-        };
+          fractionalEdgeY
+        );
 
         const baseName = `gridfinity-baseplate-${drawerWidth}x${drawerDepth}`;
         const extension = format === '3mf' ? '.3mf' : format === 'step' ? '.step' : '.stl';

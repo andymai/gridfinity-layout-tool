@@ -283,22 +283,32 @@ function buildBaseplateSolid(
     magnetHoles,
     magnetDiameter,
     magnetDepth,
-    paddingMm,
+    paddingLeft,
+    paddingRight,
+    paddingFront,
+    paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
   } = params;
 
   // 1. Build solid block — only add BASE_THICKNESS when magnets need a floor
-  const totalW = width * SIZE + 2 * paddingMm;
-  const totalD = depth * SIZE + 2 * paddingMm;
+  const totalW = width * SIZE + paddingLeft + paddingRight;
+  const totalD = depth * SIZE + paddingFront + paddingBack;
   const totalHeight = magnetHoles ? SOCKET_HEIGHT + BASE_THICKNESS : SOCKET_HEIGHT;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
   const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
+
+  // Slab center offset — grid pockets stay at origin, slab shifts to accommodate asymmetric padding
+  const slabOffsetX = (paddingLeft - paddingRight) / 2;
+  const slabOffsetY = (paddingFront - paddingBack) / 2;
 
   const profile = drawRoundedRectangle(totalW, totalD, cornerR);
   let baseplate: Shape3D = (
     profile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
   ).extrude(-totalHeight);
+
+  // Shift slab so grid portion remains centered at origin
+  baseplate = translate(baseplate, [slabOffsetX, slabOffsetY, 0]);
 
   onProgress?.(0.2);
 
@@ -351,7 +361,9 @@ export async function exportBaseplate(
   angularTolerance?: number
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
   const baseplate = buildBaseplateSolid(params);
-  const name = `baseplate_${params.width}x${params.depth}`;
+  const totalW = params.width * SIZE + params.paddingLeft + params.paddingRight;
+  const totalD = params.depth * SIZE + params.paddingFront + params.paddingBack;
+  const name = `baseplate_${params.width}x${params.depth}_${Math.round(totalW)}x${Math.round(totalD)}mm`;
 
   if (format === 'step') {
     const blob = unwrap(exportSTEP(baseplate));

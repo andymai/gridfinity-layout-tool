@@ -33,12 +33,17 @@ export interface Layout {
 }
 
 /** Baseplate generation parameters stored per-layout.
- * Width/depth/gridUnitMm are derived from the layout's drawer at generation time, not stored here. */
+ * Width/depth/gridUnitMm are derived from the layout's drawer at generation time, not stored here.
+ * drawerWidthMm/drawerDepthMm: user-measured drawer dimensions (0 = derive from grid).
+ * paddingRatioX/Y: how remaining space is distributed (0=start, 0.5=center, 1=end). */
 export interface BaseplateParams {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
-  readonly paddingMm: number;
+  readonly drawerWidthMm: number;
+  readonly drawerDepthMm: number;
+  readonly paddingRatioX: number;
+  readonly paddingRatioY: number;
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */

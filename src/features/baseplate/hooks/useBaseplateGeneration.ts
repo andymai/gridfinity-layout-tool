@@ -10,41 +10,12 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { migrateBaseplateParams } from '@/core/constants';
 import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
 import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
+import { buildFullParams } from '../utils/buildFullParams';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
-
-/**
- * Build full baseplate params by merging stored per-layout params
- * with the layout's drawer dimensions and grid unit.
- */
-function buildFullParams(
-  stored: {
-    magnetHoles: boolean;
-    magnetDiameter: number;
-    magnetDepth: number;
-    paddingMm: number;
-  },
-  drawerWidth: number,
-  drawerDepth: number,
-  gridUnitMm: number,
-  fractionalEdgeX: 'start' | 'end',
-  fractionalEdgeY: 'start' | 'end'
-): FullBaseplateParams {
-  return {
-    width: drawerWidth,
-    depth: drawerDepth,
-    gridUnitMm,
-    magnetHoles: stored.magnetHoles,
-    magnetDiameter: stored.magnetDiameter,
-    magnetDepth: stored.magnetDepth,
-    paddingMm: stored.paddingMm,
-    fractionalEdgeX,
-    fractionalEdgeY,
-  };
-}
 
 /**
  * Manages the GenerationBridge lifecycle and auto-regeneration
@@ -68,7 +39,7 @@ export function useBaseplateGeneration(): void {
       gridUnitMm: state.layout.gridUnitMm,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
-      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      baseplateParams: migrateBaseplateParams(state.layout.baseplateParams),
     }))
   );
 
@@ -138,7 +109,7 @@ export function useBaseplateGeneration(): void {
 
         // Trigger initial generation
         const layoutState = useLayoutStore.getState();
-        const stored = layoutState.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+        const stored = migrateBaseplateParams(layoutState.layout.baseplateParams);
         const fullParams = buildFullParams(
           stored,
           layoutState.layout.drawer.width,

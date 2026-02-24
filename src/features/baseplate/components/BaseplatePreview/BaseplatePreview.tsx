@@ -4,6 +4,9 @@
  * Renders the generated baseplate mesh with lighting, gradient background,
  * footprint grid, axis labels, and orbit controls. Simpler than the bin
  * designer's PreviewCanvas since baseplates have no ghost overlays or dimensions.
+ *
+ * When asymmetric padding is present, renders a translucent drawer footprint
+ * plane beneath the baseplate to visualize the padding distribution.
  */
 
 import { useRef, useEffect, useMemo } from 'react';
@@ -27,11 +30,19 @@ import { useTranslation } from '@/i18n';
 const FRAME_FILL = 0.65;
 
 /**
- * Calculate ideal camera distance to frame the baseplate.
+ * Calculate ideal camera distance to frame the baseplate including padding.
  */
-function calculateIdealDistance(width: number, depth: number, fov: number): number {
-  const outerW = width * GRIDFINITY_SPEC.GRID_SIZE;
-  const outerD = depth * GRIDFINITY_SPEC.GRID_SIZE;
+function calculateIdealDistance(
+  width: number,
+  depth: number,
+  paddingLeft: number,
+  paddingRight: number,
+  paddingFront: number,
+  paddingBack: number,
+  fov: number
+): number {
+  const outerW = width * GRIDFINITY_SPEC.GRID_SIZE + paddingLeft + paddingRight;
+  const outerD = depth * GRIDFINITY_SPEC.GRID_SIZE + paddingFront + paddingBack;
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 
   const halfW = outerW / 2;
@@ -127,6 +138,44 @@ function BaseplateMesh({ color }: { color: string }) {
   );
 }
 
+/**
+ * Translucent plane showing the full drawer footprint.
+ * Offset so the grid remains at origin — shifted by (paddingLeft - paddingRight)/2 etc.
+ */
+function DrawerFootprint({
+  width,
+  depth,
+  paddingLeft,
+  paddingRight,
+  paddingFront,
+  paddingBack,
+}: {
+  width: number;
+  depth: number;
+  paddingLeft: number;
+  paddingRight: number;
+  paddingFront: number;
+  paddingBack: number;
+}) {
+  const totalW = width * GRIDFINITY_SPEC.GRID_SIZE + paddingLeft + paddingRight;
+  const totalD = depth * GRIDFINITY_SPEC.GRID_SIZE + paddingFront + paddingBack;
+  const offsetX = (paddingLeft - paddingRight) / 2;
+  const offsetY = (paddingFront - paddingBack) / 2;
+
+  return (
+    <mesh position={[offsetX, offsetY, -0.05]} rotation={[0, 0, 0]}>
+      <planeGeometry args={[totalW, totalD]} />
+      <meshStandardMaterial
+        color="#6366f1"
+        transparent
+        opacity={0.12}
+        side={THREE.DoubleSide}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
 /** Theme-aware lighting (must be inside Canvas). */
 function SceneLighting() {
   const colors = useThreeColors();
@@ -146,10 +195,18 @@ function CameraController({
   controlsRef,
   width,
   depth,
+  paddingLeft,
+  paddingRight,
+  paddingFront,
+  paddingBack,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
   width: number;
   depth: number;
+  paddingLeft: number;
+  paddingRight: number;
+  paddingFront: number;
+  paddingBack: number;
 }) {
   const { camera, invalidate } = useThree();
   const initializedRef = useRef(false);
@@ -157,7 +214,19 @@ function CameraController({
   const fov = 45;
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const binCenter = useMemo(() => new Vector3(0, 0, totalH / 2), [totalH]);
-  const idealDistance = useMemo(() => calculateIdealDistance(width, depth, fov), [width, depth]);
+  const idealDistance = useMemo(
+    () =>
+      calculateIdealDistance(
+        width,
+        depth,
+        paddingLeft,
+        paddingRight,
+        paddingFront,
+        paddingBack,
+        fov
+      ),
+    [width, depth, paddingLeft, paddingRight, paddingFront, paddingBack]
+  );
 
   const animRef = useRef<{
     startPos: Vector3;
@@ -232,11 +301,22 @@ function CameraController({
 interface BaseplatePreviewProps {
   width: number;
   depth: number;
+  paddingLeft: number;
+  paddingRight: number;
+  paddingFront: number;
+  paddingBack: number;
 }
 
 const DEFAULT_COLOR = '#d4d8dc';
 
-export function BaseplatePreview({ width, depth }: BaseplatePreviewProps) {
+export function BaseplatePreview({
+  width,
+  depth,
+  paddingLeft,
+  paddingRight,
+  paddingFront,
+  paddingBack,
+}: BaseplatePreviewProps) {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
   const { isDesktop } = useResponsive();
@@ -252,6 +332,7 @@ export function BaseplatePreview({ width, depth }: BaseplatePreviewProps) {
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
+  const hasPadding = paddingLeft > 0 || paddingRight > 0 || paddingFront > 0 || paddingBack > 0;
 
   if (showSkeleton) {
     return (
@@ -306,9 +387,28 @@ export function BaseplatePreview({ width, depth }: BaseplatePreviewProps) {
         <GradientBackground />
         <SceneLighting />
 
-        <CameraController controlsRef={controlsRef} width={width} depth={depth} />
+        <CameraController
+          controlsRef={controlsRef}
+          width={width}
+          depth={depth}
+          paddingLeft={paddingLeft}
+          paddingRight={paddingRight}
+          paddingFront={paddingFront}
+          paddingBack={paddingBack}
+        />
 
         <BaseplateMesh color={DEFAULT_COLOR} />
+
+        {hasPadding && (
+          <DrawerFootprint
+            width={width}
+            depth={depth}
+            paddingLeft={paddingLeft}
+            paddingRight={paddingRight}
+            paddingFront={paddingFront}
+            paddingBack={paddingBack}
+          />
+        )}
 
         <FootprintGrid width={width} depth={depth} />
         <BinAxisLabels width={width} depth={depth} />

@@ -9,10 +9,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { migrateBaseplateParams } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
+import { resolveDrawerMm } from '../../utils/buildFullParams';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
 import type { ExportFileFormat } from '@/shared/types/bin';
@@ -121,10 +123,12 @@ export function BaseplatePage() {
   const t = useTranslation();
   const { isMobile } = useResponsive();
 
-  const { drawerWidth, drawerDepth } = useLayoutStore(
+  const { drawerWidth, drawerDepth, gridUnitMm, baseplateParams } = useLayoutStore(
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
+      gridUnitMm: state.layout.gridUnitMm,
+      baseplateParams: migrateBaseplateParams(state.layout.baseplateParams),
     }))
   );
 
@@ -144,6 +148,18 @@ export function BaseplatePage() {
     // Navigate back to the layout editor
     window.history.back();
   }, []);
+
+  // Compute per-side padding for the preview
+  const effectiveWidthMm = resolveDrawerMm(baseplateParams.drawerWidthMm, drawerWidth, gridUnitMm);
+  const effectiveDepthMm = resolveDrawerMm(baseplateParams.drawerDepthMm, drawerDepth, gridUnitMm);
+  const gridWidthMm = drawerWidth * gridUnitMm;
+  const gridDepthMm = drawerDepth * gridUnitMm;
+  const remainderX = Math.max(0, effectiveWidthMm - gridWidthMm);
+  const remainderY = Math.max(0, effectiveDepthMm - gridDepthMm);
+  const paddingLeft = remainderX * baseplateParams.paddingRatioX;
+  const paddingRight = remainderX * (1 - baseplateParams.paddingRatioX);
+  const paddingFront = remainderY * baseplateParams.paddingRatioY;
+  const paddingBack = remainderY * (1 - baseplateParams.paddingRatioY);
 
   return (
     <div className="flex h-screen flex-col bg-surface">
@@ -188,7 +204,14 @@ export function BaseplatePage() {
 
         {/* Preview */}
         <main className="flex-1">
-          <BaseplatePreview width={drawerWidth} depth={drawerDepth} />
+          <BaseplatePreview
+            width={drawerWidth}
+            depth={drawerDepth}
+            paddingLeft={paddingLeft}
+            paddingRight={paddingRight}
+            paddingFront={paddingFront}
+            paddingBack={paddingBack}
+          />
         </main>
       </div>
     </div>
