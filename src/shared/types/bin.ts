@@ -47,4 +47,8 @@ export interface BaseplateParams {
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
   readonly paddingMm: number;
+  /** Where the half-unit cell sits on the X axis ('start' = left, 'end' = right) */
+  readonly fractionalEdgeX: 'start' | 'end';
+  /** Where the half-unit cell sits on the Y axis ('start' = front, 'end' = back) */
+  readonly fractionalEdgeY: 'start' | 'end';
 }

@@ -46,11 +46,20 @@ function triggerDownload(blob: Blob, fileName: string): void {
 export function useBaseplateExport(): UseBaseplateExportReturn {
   const [isExporting, setIsExporting] = useState(false);
 
-  const { drawerWidth, drawerDepth, gridUnitMm, baseplateParams } = useLayoutStore(
+  const {
+    drawerWidth,
+    drawerDepth,
+    gridUnitMm,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    baseplateParams,
+  } = useLayoutStore(
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
       gridUnitMm: state.layout.gridUnitMm,
+      fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
+      fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
@@ -75,6 +84,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           magnetDiameter: baseplateParams.magnetDiameter,
           magnetDepth: baseplateParams.magnetDepth,
           paddingMm: baseplateParams.paddingMm,
+          fractionalEdgeX,
+          fractionalEdgeY,
         };
 
         const baseName = `gridfinity-baseplate-${drawerWidth}x${drawerDepth}`;
@@ -113,7 +124,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
         setIsExporting(false);
       }
     },
-    [drawerWidth, drawerDepth, gridUnitMm, baseplateParams]
+    [drawerWidth, drawerDepth, gridUnitMm, fractionalEdgeX, fractionalEdgeY, baseplateParams]
   );
 
   return {

@@ -40,7 +40,7 @@ import {
   checkCancelled,
   sketch,
 } from './generatorTypes';
-import type { ProgressFn } from './generatorTypes';
+import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
 
 // ─── Baseplate Constants ──────────────────────────────────────────────────────
@@ -195,7 +195,8 @@ function buildMagnetHoles(
   gridW: number,
   gridD: number,
   magnetRadius: number,
-  magnetDepth: number
+  magnetDepth: number,
+  cellOpts?: ForEachCellOptions
 ): Shape3D[] {
   const totalHeight = SOCKET_HEIGHT + BASE_THICKNESS;
   const HOLE_OFFSET = 13; // mm from cell center
@@ -211,14 +212,19 @@ function buildMagnetHoles(
   const magnetTemplate = sketch(drawCircle(magnetRadius), 'XY', -totalHeight).extrude(magnetDepth);
 
   const holes: Shape3D[] = [];
-  forEachCell(gridW, gridD, (cell) => {
-    // Only place holes in full-size cells
-    if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+  forEachCell(
+    gridW,
+    gridD,
+    (cell) => {
+      // Only place holes in full-size cells (skip half-unit fractional edge cells)
+      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
-    for (const [dx, dy] of holeOffsets) {
-      holes.push(translate(clone(magnetTemplate), [cell.centerX + dx, cell.centerY + dy, 0]));
-    }
-  });
+      for (const [dx, dy] of holeOffsets) {
+        holes.push(translate(clone(magnetTemplate), [cell.centerX + dx, cell.centerY + dy, 0]));
+      }
+    },
+    cellOpts
+  );
 
   return holes;
 }
@@ -271,7 +277,16 @@ function buildBaseplateSolid(
   forExport: boolean = true,
   onProgress?: (progress: number) => void
 ): Shape3D {
-  const { width, depth, magnetHoles, magnetDiameter, magnetDepth, paddingMm } = params;
+  const {
+    width,
+    depth,
+    magnetHoles,
+    magnetDiameter,
+    magnetDepth,
+    paddingMm,
+    fractionalEdgeX,
+    fractionalEdgeY,
+  } = params;
 
   // 1. Build solid block — only add BASE_THICKNESS when magnets need a floor
   const totalW = width * SIZE + 2 * paddingMm;
@@ -291,13 +306,19 @@ function buildBaseplateSolid(
   // When no magnets, pockets cut all the way through (throughCut)
   const throughCut = !magnetHoles;
   const pockets: Shape3D[] = [];
-  forEachCell(width, depth, (cell) => {
-    // Full cell size — no CLEARANCE reduction (clearance is on the bin side)
-    const cellW_mm = cell.widthUnits * SIZE;
-    const cellD_mm = cell.depthUnits * SIZE;
-    const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
-    pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
-  });
+  const cellOpts = { fractionalEdgeX, fractionalEdgeY };
+  forEachCell(
+    width,
+    depth,
+    (cell) => {
+      // Full cell size — no CLEARANCE reduction (clearance is on the bin side)
+      const cellW_mm = cell.widthUnits * SIZE;
+      const cellD_mm = cell.depthUnits * SIZE;
+      const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
+      pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
+    },
+    cellOpts
+  );
 
   if (pockets.length > 0) {
     baseplate = unwrap(cutAll(baseplate, pockets));
@@ -307,7 +328,7 @@ function buildBaseplateSolid(
 
   // 3. Cut magnet holes from the bottom
   if (magnetHoles) {
-    const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth);
+    const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
     if (holes.length > 0) {
       baseplate = unwrap(cutAll(baseplate, holes));
     }

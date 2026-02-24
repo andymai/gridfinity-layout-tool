@@ -29,7 +29,9 @@ function buildFullParams(
   },
   drawerWidth: number,
   drawerDepth: number,
-  gridUnitMm: number
+  gridUnitMm: number,
+  fractionalEdgeX: 'start' | 'end',
+  fractionalEdgeY: 'start' | 'end'
 ): FullBaseplateParams {
   return {
     width: drawerWidth,
@@ -39,6 +41,8 @@ function buildFullParams(
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
     paddingMm: stored.paddingMm,
+    fractionalEdgeX,
+    fractionalEdgeY,
   };
 }
 
@@ -50,11 +54,20 @@ export function useBaseplateGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const initializedRef = useRef(false);
 
-  const { drawerWidth, drawerDepth, gridUnitMm, baseplateParams } = useLayoutStore(
+  const {
+    drawerWidth,
+    drawerDepth,
+    gridUnitMm,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    baseplateParams,
+  } = useLayoutStore(
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
       gridUnitMm: state.layout.gridUnitMm,
+      fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
+      fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
@@ -130,7 +143,9 @@ export function useBaseplateGeneration(): void {
           stored,
           layoutState.layout.drawer.width,
           layoutState.layout.drawer.depth,
-          layoutState.layout.gridUnitMm
+          layoutState.layout.gridUnitMm,
+          layoutState.layout.drawer.fractionalEdgeX ?? 'end',
+          layoutState.layout.drawer.fractionalEdgeY ?? 'end'
         );
         void runGeneration(fullParams);
       })
@@ -150,7 +165,22 @@ export function useBaseplateGeneration(): void {
   useEffect(() => {
     if (!initializedRef.current) return;
 
-    const fullParams = buildFullParams(baseplateParams, drawerWidth, drawerDepth, gridUnitMm);
+    const fullParams = buildFullParams(
+      baseplateParams,
+      drawerWidth,
+      drawerDepth,
+      gridUnitMm,
+      fractionalEdgeX,
+      fractionalEdgeY
+    );
     void runGeneration(fullParams);
-  }, [baseplateParams, drawerWidth, drawerDepth, gridUnitMm, runGeneration]);
+  }, [
+    baseplateParams,
+    drawerWidth,
+    drawerDepth,
+    gridUnitMm,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    runGeneration,
+  ]);
 }
