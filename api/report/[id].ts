@@ -59,7 +59,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       pipe.incr(key);
       pipe.expire(key, 365 * 24 * 60 * 60); // 1-year TTL
       const results = await pipe.exec();
-      newReportCount = (results?.[0]?.[1] as number) ?? 0;
+      const rawCount = results?.[0]?.[1];
+      newReportCount = typeof rawCount === 'number' ? rawCount : 0;
     }
 
     // Log report for manual review

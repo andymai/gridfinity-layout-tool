@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { InitErrorFallback } from './InitErrorFallback';
 
 vi.mock('@/core/storage', () => ({
-  clearAllAppData: vi.fn(),
+  clearAllAppData: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('InitErrorFallback', () => {
@@ -32,7 +32,7 @@ describe('InitErrorFallback', () => {
       await user.click(screen.getByRole('button', { name: /clear data/i }));
 
       expect(clearAllAppData).toHaveBeenCalled();
-      // Reload is delayed 100ms to let IndexedDB deletion start
+      // Reload happens after clearAllAppData promise resolves
       await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
     } finally {
       Object.defineProperty(window, 'location', {

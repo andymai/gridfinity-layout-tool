@@ -33,13 +33,10 @@ export function InitErrorFallback({ error }: { error: Error }) {
         </pre>
         <button
           onClick={() => {
-            try {
-              clearAllAppData();
-            } catch {
-              /* ignore */
-            }
-            // Brief delay to let IndexedDB deletion start before page unloads
-            setTimeout(() => window.location.reload(), 100);
+            // clearAllAppData is async and awaits IDB; reload after it completes
+            void clearAllAppData()
+              .catch(() => {})
+              .then(() => window.location.reload());
           }}
           className="btn btn-primary"
         >
