@@ -38,6 +38,16 @@ export interface BaseplatePiece {
   readonly edges: PieceEdges;
 }
 
+/** Hint suggesting a padding reduction that would eliminate a split. */
+export interface PaddingReductionHint {
+  /** Which axis benefits from reduction ('x' = left+right, 'y' = front+back, 'both'). */
+  readonly axis: 'x' | 'y' | 'both';
+  /** How many mm to reduce (applied equally to both sides of the axis). */
+  readonly reductionMm: number;
+  /** How many fewer pieces the reduced padding would produce. */
+  readonly piecesSaved: number;
+}
+
 export interface BaseplateTiling {
   readonly isSplit: boolean;
   readonly pieces: readonly BaseplatePiece[];
@@ -49,4 +59,6 @@ export interface BaseplateTiling {
   readonly stackCount: number;
   /** Future: separator thickness between stacks in mm (default 0) */
   readonly stackSeparatorThickness: number;
+  /** Hint: reducing padding by this amount would save pieces. null if no benefit. */
+  readonly paddingReductionHint: PaddingReductionHint | null;
 }

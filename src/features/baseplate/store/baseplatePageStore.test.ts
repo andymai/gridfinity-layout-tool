@@ -172,6 +172,7 @@ describe('baseplatePageStore', () => {
       totalDepthUnits: 8,
       stackCount: 1,
       stackSeparatorThickness: 0,
+      paddingReductionHint: null,
     };
 
     it('sets a tiling plan', () => {
@@ -315,6 +316,7 @@ describe('baseplatePageStore', () => {
         totalDepthUnits: 8,
         stackCount: 1,
         stackSeparatorThickness: 0,
+        paddingReductionHint: null,
       });
 
       expect(useBaseplatePageStore.getState().hoveredPieceLabel).toBeNull();
