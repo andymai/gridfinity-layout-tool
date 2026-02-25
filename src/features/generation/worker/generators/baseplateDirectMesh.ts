@@ -32,6 +32,11 @@ import {
   MAGNET_OFFSETS,
   INSET_BOT,
   pocketCornerRadius,
+  NUB_DIAMETER,
+  NUB_DEPTH,
+  HOLE_DIAMETER,
+  HOLE_DEPTH,
+  NUB_CIRCLE_SEGMENTS,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
 
@@ -624,6 +629,275 @@ function addMagnetHoles(
   }
 }
 
+// ─── Registration Connector Geometry ─────────────────────────────────────────
+
+/** Connector position with center, outward normal, and male/female classification. */
+interface ConnectorPos {
+  cx: number;
+  cy: number;
+  cz: number;
+  /** Outward normal of the wall face */
+  nx: number;
+  ny: number;
+  nz: number;
+  /** true = nub (male protrusion), false = hole (female indentation) */
+  isMale: boolean;
+}
+
+/**
+ * Compute connector positions along all join edges of a split piece.
+ *
+ * For each join edge, places one connector at every interior cell boundary
+ * along that edge. For N cells along an edge, there are ceil(N)-1 interior
+ * boundaries. Each connector is centered vertically on the wall.
+ *
+ * Convention: left/front edges get nubs (male), right/back edges get holes (female).
+ */
+function computeConnectorPositions(
+  width: number,
+  depth: number,
+  gridUnitMm: number,
+  totalHeight: number,
+  totalW: number,
+  totalD: number,
+  slabOffsetX: number,
+  slabOffsetY: number,
+  edges: NonNullable<BaseplateParams['edges']>
+): ConnectorPos[] {
+  const positions: ConnectorPos[] = [];
+  const zCenter = totalHeight / 2;
+  const halfW = totalW / 2;
+  const halfD = totalD / 2;
+
+  // Each edge: side key, boundary count, position mapper, outward normal, male/female
+  const edgeDefs: Array<{
+    side: keyof typeof edges;
+    numBoundaries: number;
+    position: (k: number) => { cx: number; cy: number };
+    nx: number;
+    ny: number;
+    isMale: boolean;
+  }> = [
+    {
+      side: 'left',
+      numBoundaries: Math.ceil(depth) - 1,
+      position: (k) => ({
+        cx: -halfW + slabOffsetX,
+        cy: k * gridUnitMm - (depth * gridUnitMm) / 2,
+      }),
+      nx: -1,
+      ny: 0,
+      isMale: true,
+    },
+    {
+      side: 'right',
+      numBoundaries: Math.ceil(depth) - 1,
+      position: (k) => ({ cx: halfW + slabOffsetX, cy: k * gridUnitMm - (depth * gridUnitMm) / 2 }),
+      nx: 1,
+      ny: 0,
+      isMale: false,
+    },
+    {
+      side: 'front',
+      numBoundaries: Math.ceil(width) - 1,
+      position: (k) => ({
+        cx: k * gridUnitMm - (width * gridUnitMm) / 2,
+        cy: -halfD + slabOffsetY,
+      }),
+      nx: 0,
+      ny: -1,
+      isMale: true,
+    },
+    {
+      side: 'back',
+      numBoundaries: Math.ceil(width) - 1,
+      position: (k) => ({ cx: k * gridUnitMm - (width * gridUnitMm) / 2, cy: halfD + slabOffsetY }),
+      nx: 0,
+      ny: 1,
+      isMale: false,
+    },
+  ];
+
+  for (const { side, numBoundaries, position, nx, ny, isMale } of edgeDefs) {
+    if (edges[side] !== 'join' || numBoundaries <= 0) continue;
+    for (let k = 1; k <= numBoundaries; k++) {
+      const { cx, cy } = position(k);
+      positions.push({ cx, cy, cz: zCenter, nx, ny, nz: 0, isMale });
+    }
+  }
+
+  return positions;
+}
+
+/**
+ * Add a cylindrical nub (male protrusion) at a wall face.
+ *
+ * The nub protrudes outward from the wall surface along the normal direction.
+ * Circle lies in the plane perpendicular to the normal.
+ */
+function addConnectorNub(
+  mb: MeshBuilder,
+  cx: number,
+  cy: number,
+  cz: number,
+  nx: number,
+  ny: number,
+  nz: number,
+  radius: number,
+  depth: number
+): void {
+  // Tangent vectors perpendicular to the outward normal
+  const [ux, uy, uz, vx, vy, vz] = tangentVectors(nx, ny);
+
+  const tipX = cx + nx * depth;
+  const tipY = cy + ny * depth;
+  const tipZ = cz + nz * depth;
+
+  // Generate circle points at base, tip (cylinder wall normals), and tip cap (face normal).
+  // All three rings share the same XY offsets, so we compute them once per segment.
+  const baseVerts: number[] = [];
+  const tipVerts: number[] = [];
+  const tipCapVerts: number[] = [];
+
+  for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
+    const angle = (i / NUB_CIRCLE_SEGMENTS) * Math.PI * 2;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    // Radial direction in the tangent plane
+    const rnx = cos * ux + sin * vx;
+    const rny = cos * uy + sin * vy;
+    const rnz = cos * uz + sin * vz;
+
+    const dx = radius * rnx;
+    const dy = radius * rny;
+    const dz = radius * rnz;
+
+    baseVerts.push(mb.pushVertex(cx + dx, cy + dy, cz + dz, rnx, rny, rnz));
+    tipVerts.push(mb.pushVertex(tipX + dx, tipY + dy, tipZ + dz, rnx, rny, rnz));
+    tipCapVerts.push(mb.pushVertex(tipX + dx, tipY + dy, tipZ + dz, nx, ny, nz));
+  }
+
+  // Cylinder wall quads (outward-facing)
+  for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
+    const j = (i + 1) % NUB_CIRCLE_SEGMENTS;
+    // CCW from outside: base_i, tip_i, tip_j, base_j
+    mb.pushQuad(baseVerts[i], tipVerts[i], tipVerts[j], baseVerts[j]);
+  }
+
+  // Tip cap (fan, normal = outward direction)
+  const tipCenter = mb.pushVertex(tipX, tipY, tipZ, nx, ny, nz);
+  for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
+    const j = (i + 1) % NUB_CIRCLE_SEGMENTS;
+    mb.pushTriangle(tipCenter, tipCapVerts[i], tipCapVerts[j]);
+  }
+}
+
+/**
+ * Add a cylindrical hole (female indentation) at a wall face.
+ *
+ * Uses the same cancellation pattern as magnet holes: a cancel face punches
+ * through the existing wall, cylinder walls go inward, and a floor closes it.
+ */
+function addConnectorHole(
+  mb: MeshBuilder,
+  cx: number,
+  cy: number,
+  cz: number,
+  nx: number,
+  ny: number,
+  nz: number,
+  radius: number,
+  depth: number
+): void {
+  const [ux, uy, uz, vx, vy, vz] = tangentVectors(nx, ny);
+
+  // Hole goes inward (opposite to outward normal)
+  const floorX = cx - nx * depth;
+  const floorY = cy - ny * depth;
+  const floorZ = cz - nz * depth;
+
+  // Generate circle points
+  const circlePts: Array<[number, number, number]> = [];
+  for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
+    const angle = (i / NUB_CIRCLE_SEGMENTS) * Math.PI * 2;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    circlePts.push([
+      radius * (cos * ux + sin * vx),
+      radius * (cos * uy + sin * vy),
+      radius * (cos * uz + sin * vz),
+    ]);
+  }
+
+  // 1. Cancel circle at wall surface, facing outward — punches hole in wall
+  {
+    const center = mb.pushVertex(cx, cy, cz, nx, ny, nz);
+    const verts: number[] = [];
+    for (const [dx, dy, dz] of circlePts) {
+      verts.push(mb.pushVertex(cx + dx, cy + dy, cz + dz, nx, ny, nz));
+    }
+    // Facing outward: CW from outside (reverse winding to cancel existing wall)
+    for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
+      const j = (i + 1) % NUB_CIRCLE_SEGMENTS;
+      mb.pushTriangle(center, verts[j], verts[i]);
+    }
+  }
+
+  // 2. Cylinder wall from surface to floor (inward-facing = normals toward axis)
+  for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
+    const j = (i + 1) % NUB_CIRCLE_SEGMENTS;
+    const [dx0, dy0, dz0] = circlePts[i];
+    const [dx1, dy1, dz1] = circlePts[j];
+
+    const sx0 = cx + dx0,
+      sy0 = cy + dy0,
+      sz0 = cz + dz0;
+    const sx1 = cx + dx1,
+      sy1 = cy + dy1,
+      sz1 = cz + dz1;
+    const fx0 = floorX + dx0,
+      fy0 = floorY + dy0,
+      fz0 = floorZ + dz0;
+    const fx1 = floorX + dx1,
+      fy1 = floorY + dy1,
+      fz1 = floorZ + dz1;
+
+    // Inward-facing: from inside cylinder looking out, CW winding
+    mb.pushFlatQuad(sx1, sy1, sz1, sx0, sy0, sz0, fx0, fy0, fz0, fx1, fy1, fz1);
+  }
+
+  // 3. Floor circle at hole bottom — normal faces toward wall surface (same as outward normal)
+  {
+    const center = mb.pushVertex(floorX, floorY, floorZ, nx, ny, nz);
+    const verts: number[] = [];
+    for (const [dx, dy, dz] of circlePts) {
+      verts.push(mb.pushVertex(floorX + dx, floorY + dy, floorZ + dz, nx, ny, nz));
+    }
+    for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
+      const j = (i + 1) % NUB_CIRCLE_SEGMENTS;
+      mb.pushTriangle(center, verts[i], verts[j]);
+    }
+  }
+}
+
+/**
+ * Compute two orthogonal tangent vectors for an axis-aligned normal.
+ * Returns [ux,uy,uz, vx,vy,vz] such that u × v = (nx, ny, 0),
+ * ensuring correct cylinder winding for both positive and negative normals.
+ */
+function tangentVectors(nx: number, ny: number): [number, number, number, number, number, number] {
+  if (Math.abs(nx) > 0.9) {
+    const s = Math.sign(nx);
+    return [0, s, 0, 0, 0, 1]; // u=±Y, v=Z → u×v aligns with nx
+  }
+  if (Math.abs(ny) > 0.9) {
+    const s = Math.sign(ny);
+    return [s, 0, 0, 0, 0, 1]; // u=±X, v=Z → u×v aligns with ny
+  }
+  return [1, 0, 0, 0, 1, 0]; // Normal along Z (fallback)
+}
+
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 /**
@@ -654,6 +928,7 @@ export function generateBaseplateDirect(
     fractionalEdgeX,
     fractionalEdgeY,
     edges,
+    connectorNubs,
   } = params;
 
   const mb = new MeshBuilder();
@@ -717,6 +992,40 @@ export function generateBaseplateDirect(
     for (const cell of cells) {
       if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
       addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, floorDepth);
+    }
+  }
+
+  // 7. Registration connectors (when enabled, only for split pieces with join edges)
+  if (connectorNubs && edges) {
+    const nubRadius = NUB_DIAMETER / 2;
+    const holeRadius = HOLE_DIAMETER / 2;
+    const connPositions = computeConnectorPositions(
+      width,
+      depth,
+      gridUnitMm,
+      totalHeight,
+      totalW,
+      totalD,
+      slabOffsetX,
+      slabOffsetY,
+      edges
+    );
+    for (const pos of connPositions) {
+      if (pos.isMale) {
+        addConnectorNub(mb, pos.cx, pos.cy, pos.cz, pos.nx, pos.ny, pos.nz, nubRadius, NUB_DEPTH);
+      } else {
+        addConnectorHole(
+          mb,
+          pos.cx,
+          pos.cy,
+          pos.cz,
+          pos.nx,
+          pos.ny,
+          pos.nz,
+          holeRadius,
+          HOLE_DEPTH
+        );
+      }
     }
   }
 

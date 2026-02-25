@@ -146,7 +146,9 @@
     "baseplate.gridUnitTooltip",
     "baseplate.printBedTooltip",
     "baseplate.sectionBase",
-    "baseplate.sideView"
+    "baseplate.sideView",
+    "baseplate.connectorNubs",
+    "baseplate.connectorNubsHelp"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

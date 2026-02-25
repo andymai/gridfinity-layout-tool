@@ -1417,5 +1417,7 @@
   "baseplate.frontView": "Frente",
   "baseplate.sideView": "Lado",
   "baseplate.topView": "Arriba",
-  "baseplate.isoView": "Iso"
+  "baseplate.isoView": "Iso",
+  "baseplate.connectorNubs": "Alignment pins",
+  "baseplate.connectorNubsHelp": "Tiny pins on split edges so pieces line up when assembled."
 }

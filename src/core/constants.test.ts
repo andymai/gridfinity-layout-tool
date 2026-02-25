@@ -10,6 +10,7 @@ import {
   getBaseCellSize,
   BREAKPOINTS,
   getDefaultDrawerSize,
+  migrateBaseplateParams,
 } from '@/core/constants';
 
 describe('calcMaxGridUnits', () => {
@@ -248,6 +249,51 @@ describe('getBaseCellSize', () => {
     expect(getBaseCellSize(BREAKPOINTS.LG - 1)).toBe(36);
     // At LG threshold
     expect(getBaseCellSize(BREAKPOINTS.LG)).toBe(32);
+  });
+});
+
+describe('migrateBaseplateParams', () => {
+  it('preserves connectorNubs when true', () => {
+    const stored = {
+      magnetHoles: true,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 5,
+      paddingRight: 5,
+      paddingFront: 0,
+      paddingBack: 0,
+      connectorNubs: true,
+    };
+    const result = migrateBaseplateParams(stored);
+    expect(result.connectorNubs).toBe(true);
+  });
+
+  it('omits connectorNubs when not present in stored data', () => {
+    const stored = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+    };
+    const result = migrateBaseplateParams(stored);
+    expect(result.connectorNubs).toBeUndefined();
+  });
+
+  it('returns defaults for null input', () => {
+    const result = migrateBaseplateParams(null);
+    expect(result.magnetHoles).toBe(false);
+    expect(result.connectorNubs).toBeUndefined();
+  });
+
+  it('migrates old format (no paddingLeft) preserving magnets', () => {
+    const stored = { magnetHoles: true, magnetDiameter: 8, magnetDepth: 3 };
+    const result = migrateBaseplateParams(stored);
+    expect(result.magnetHoles).toBe(true);
+    expect(result.paddingLeft).toBe(0);
+    expect(result.connectorNubs).toBeUndefined();
   });
 });
 

@@ -187,6 +187,26 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   return Math.min(CORNER_RADIUS, maxRadius);
 }
 
+// ─── Registration Connector Constants ────────────────────────────────────────
+
+/** Diameter of male registration nub (mm) */
+export const NUB_DIAMETER = 1.5;
+
+/** How far the nub protrudes from the wall face (mm) */
+export const NUB_DEPTH = 0.8;
+
+/** Per-side clearance added to the hole (mm) */
+const HOLE_CLEARANCE = 0.1;
+
+/** Hole diameter = NUB_DIAMETER + 2 * HOLE_CLEARANCE (mm) */
+export const HOLE_DIAMETER = NUB_DIAMETER + 2 * HOLE_CLEARANCE;
+
+/** Hole depth = NUB_DEPTH + HOLE_CLEARANCE (mm) */
+export const HOLE_DEPTH = NUB_DEPTH + HOLE_CLEARANCE;
+
+/** Segments for connector cylinder approximation (smaller than magnet holes) */
+export const NUB_CIRCLE_SEGMENTS = 12;
+
 // ─── Sketch Helper ───────────────────────────────────────────────────────────
 
 /**

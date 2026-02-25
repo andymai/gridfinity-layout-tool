@@ -43,6 +43,8 @@ export interface BaseplateParams {
   readonly paddingRight: number;
   readonly paddingFront: number;
   readonly paddingBack: number;
+  /** Enable registration nubs/holes on split piece join edges (default false). */
+  readonly connectorNubs?: boolean;
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */

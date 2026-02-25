@@ -182,6 +182,7 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     paddingRight: clampNumber(obj.paddingRight, 0, 100, 0),
     paddingFront: clampNumber(obj.paddingFront, 0, 100, 0),
     paddingBack: clampNumber(obj.paddingBack, 0, 100, 0),
+    ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
   };
 }
 

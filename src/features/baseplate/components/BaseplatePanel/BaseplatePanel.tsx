@@ -194,6 +194,18 @@ export function BaseplatePanel() {
                 info={t('baseplate.magnetDepthInfo')}
               />
             </FeatureToggle>
+            {tiling?.isSplit && (
+              <>
+                <p className="text-xs text-content-tertiary">{t('baseplate.connectorNubsHelp')}</p>
+                <FeatureToggle
+                  label={t('baseplate.connectorNubs')}
+                  checked={baseplateParams.connectorNubs === true}
+                  onChange={() =>
+                    updateParam('connectorNubs', baseplateParams.connectorNubs !== true)
+                  }
+                />
+              </>
+            )}
           </div>
         </StickyGroupHeader>
 

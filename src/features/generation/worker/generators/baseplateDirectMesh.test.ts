@@ -225,6 +225,101 @@ describe('baseplateDirectMesh', () => {
     expect(directBB.maxZ).toBeCloseTo(brepBB.maxZ, 0);
   });
 
+  // ─── Connector nubs ────────────────────────────────────────────────────
+
+  it('connector nubs increase triangle count on split piece', () => {
+    const base = defaults({
+      width: 3,
+      depth: 2,
+      edges: { left: 'join', right: 'exterior', front: 'join', back: 'exterior' },
+    });
+    const withNubs = { ...base, connectorNubs: true };
+    const withoutNubs = { ...base, connectorNubs: false };
+
+    const meshWith = generateDirect(withNubs, noop);
+    const meshWithout = generateDirect(withoutNubs, noop);
+
+    expect(meshWith.triangleCount).toBeGreaterThan(meshWithout.triangleCount);
+  });
+
+  it('nubs expand bounding box on left join edge', () => {
+    const base = defaults({
+      width: 3,
+      depth: 2,
+      edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
+      connectorNubs: true,
+    });
+    const noNubs = { ...base, connectorNubs: false };
+
+    const bbWith = computeBounds(generateDirect(base, noop).vertices);
+    const bbWithout = computeBounds(generateDirect(noNubs, noop).vertices);
+
+    // Left-edge nubs protrude in -X direction, so minX should decrease
+    expect(bbWith.minX).toBeLessThan(bbWithout.minX);
+  });
+
+  it('no connectors on unsplit baseplate (no edges)', () => {
+    const withNubs = defaults({ connectorNubs: true });
+    const withoutNubs = defaults({ connectorNubs: false });
+
+    const meshWith = generateDirect(withNubs, noop);
+    const meshWithout = generateDirect(withoutNubs, noop);
+
+    expect(meshWith.triangleCount).toBe(meshWithout.triangleCount);
+  });
+
+  it('no connectors on 1-unit dimension (zero interior boundaries)', () => {
+    const base = defaults({
+      width: 1,
+      depth: 1,
+      edges: { left: 'join', right: 'join', front: 'join', back: 'join' },
+      connectorNubs: true,
+    });
+    const noNubs = { ...base, connectorNubs: false };
+
+    const meshWith = generateDirect(base, noop);
+    const meshWithout = generateDirect(noNubs, noop);
+
+    // 1×1 piece has 0 interior cell boundaries on every edge → 0 connectors
+    expect(meshWith.triangleCount).toBe(meshWithout.triangleCount);
+  });
+
+  it('connectors work alongside magnet holes', () => {
+    const params = defaults({
+      width: 3,
+      depth: 3,
+      magnetHoles: true,
+      edges: { left: 'join', right: 'join', front: 'join', back: 'join' },
+      connectorNubs: true,
+    });
+
+    const mesh = generateDirect(params, noop);
+    expect(mesh.vertices.length).toBeGreaterThan(0);
+    expect(mesh.triangleCount).toBeGreaterThan(0);
+  });
+
+  it('2.5-unit dimension gets 2 connectors (full + fractional boundary)', () => {
+    // 2.5 units → ceil(2.5)-1 = 2 interior boundaries per join edge
+    const withNubs = defaults({
+      width: 2.5,
+      depth: 1,
+      edges: { left: 'exterior', right: 'exterior', front: 'join', back: 'join' },
+      connectorNubs: true,
+    });
+    const noNubs = { ...withNubs, connectorNubs: false };
+
+    const countWith = generateDirect(withNubs, noop).triangleCount;
+    const countWithout = generateDirect(noNubs, noop).triangleCount;
+    const diff = countWith - countWithout;
+
+    // 2 edges (front+back) × 2 boundaries each = 4 connectors total
+    // Each connector adds a fixed number of triangles (cylinder + caps)
+    // Nub: NUB_CIRCLE_SEGMENTS * 2 (wall) + NUB_CIRCLE_SEGMENTS (tip cap) = 36
+    // Hole: NUB_CIRCLE_SEGMENTS (cancel) + NUB_CIRCLE_SEGMENTS * 2 (wall) + NUB_CIRCLE_SEGMENTS (floor) = 48
+    // Front = male (36 each × 2 = 72), Back = female (48 each × 2 = 96) → total 168
+    expect(diff).toBe(168);
+  });
+
   // ─── Speed comparison ──────────────────────────────────────────────────
   it('4×4 with magnets: direct is at least 10x faster than BREP', () => {
     const params = defaults({ width: 4, depth: 4, magnetHoles: true });
