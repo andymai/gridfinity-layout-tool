@@ -211,7 +211,6 @@ export function BaseplatePanel() {
           }
         >
           <div className="space-y-3 px-4 py-3">
-            <p className="text-xs text-content-tertiary">{t('baseplate.magnetHelp')}</p>
             <FeatureToggle
               label={t('baseplate.magnetHoles')}
               checked={baseplateParams.magnetHoles}
@@ -240,16 +239,13 @@ export function BaseplatePanel() {
               />
             </FeatureToggle>
             {tiling?.isSplit && (
-              <>
-                <p className="text-xs text-content-tertiary">{t('baseplate.connectorNubsHelp')}</p>
-                <FeatureToggle
-                  label={t('baseplate.connectorNubs')}
-                  checked={baseplateParams.connectorNubs === true}
-                  onChange={() =>
-                    updateParam('connectorNubs', baseplateParams.connectorNubs !== true)
-                  }
-                />
-              </>
+              <FeatureToggle
+                label={t('baseplate.connectorNubs')}
+                checked={baseplateParams.connectorNubs === true}
+                onChange={() =>
+                  updateParam('connectorNubs', baseplateParams.connectorNubs !== true)
+                }
+              />
             )}
           </div>
         </StickyGroupHeader>

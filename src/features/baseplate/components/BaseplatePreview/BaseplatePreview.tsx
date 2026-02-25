@@ -219,13 +219,19 @@ function BaseplateMesh({ color }: { color: string }) {
           emissiveIntensity={0.08}
           flatShading={!hasPrecomputedNormals}
           polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
+          polygonOffsetFactor={4}
+          polygonOffsetUnits={8}
         />
       </mesh>
       {edgesGeometry && (
         <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
-          <lineBasicMaterial color="#000000" />
+          <lineBasicMaterial
+            color="#000000"
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={-4}
+            polygonOffsetUnits={-8}
+          />
         </lineSegments>
       )}
     </>

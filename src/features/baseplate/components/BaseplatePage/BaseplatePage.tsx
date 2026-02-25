@@ -144,11 +144,14 @@ export function BaseplatePage() {
   }, [navigateBack]);
 
   const { paddingLeft, paddingRight, paddingFront, paddingBack } = baseplateParams;
+  const synced = baseplateParams.syncWithLayout !== false;
+  const effectiveWidth = synced ? drawerWidth : (baseplateParams.baseplateWidth ?? drawerWidth);
+  const effectiveDepth = synced ? drawerDepth : (baseplateParams.baseplateDepth ?? drawerDepth);
 
   const preview = (
     <BaseplatePreview
-      width={drawerWidth}
-      depth={drawerDepth}
+      width={effectiveWidth}
+      depth={effectiveDepth}
       gridUnitMm={gridUnitMm}
       paddingLeft={paddingLeft}
       paddingRight={paddingRight}
