@@ -25,7 +25,6 @@ import {
   drawRoundedRectangle,
   drawRectangle,
   drawCircle,
-  draw,
   unwrap,
   cutAll,
   clone,
@@ -52,11 +51,10 @@ import {
   MAGNET_OFFSETS,
   INSET_BOT,
   pocketCornerRadius,
-  DOVETAIL_PROTRUSION,
-  DOVETAIL_BASE_HALF,
-  DOVETAIL_TIP_HALF,
-  DOVETAIL_CLEARANCE,
-  DOVETAIL_END_MARGIN,
+  TONGUE_PROTRUSION,
+  TONGUE_HALF_HEIGHT,
+  TONGUE_CLEARANCE,
+  TONGUE_END_MARGIN,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
@@ -238,25 +236,20 @@ function buildMagnetHoles(
   return holes;
 }
 
-// ─── Dovetail Connectors ─────────────────────────────────────────────────────
+// ─── Tongue-and-Groove Connectors ────────────────────────────────────────────
 
 /**
- * Build dovetail tongue-and-groove connectors for split baseplate join edges.
+ * Build tongue-and-groove connectors for split baseplate join edges.
  *
- * Each join edge gets one continuous dovetail running its full length (minus end
- * margins at corners where two join edges meet). The tongue has a trapezoidal
- * cross-section — narrower at the wall face (BASE), wider at the tip (TIP) —
- * creating an undercut that prevents pieces from pulling apart.
+ * Each join edge gets one continuous rectangular tongue running its full length
+ * (minus end margins at corners where two join edges meet).
+ *
+ * Rectangular profile (no dovetail taper) allows drop-in assembly from above —
+ * critical for 2x2+ grids where the last piece must engage tongues on two
+ * perpendicular edges simultaneously.
  *
  * Convention: left/front edges = tongue (male, fused on), right/back = groove
- * (female, cut out). Assembly: slide pieces together along the join edge.
- *
- * Cross-section (perpendicular to edge, u = protrusion direction, v = Z):
- *
- *     A─────────D       A,D at wall face (narrower: ±BASE_HALF)
- *    / dovetail  \
- *   B─────────────C     B,C at tip (wider: ±TIP_HALF)
- *   ←── PROTRUSION ──→
+ * (female, cut out).
  *
  * Coordinates are in the pre-Z-shift system (slab top at Z=0, bottom at Z=-totalHeight).
  */
@@ -278,22 +271,14 @@ function buildConnectors(
   const halfD = totalD / 2;
   const zCenter = -totalHeight / 2;
 
-  // Edge definitions: wall coordinate, perpendicular edge length, sketch plane,
-  // extrude sign (outward direction for tongue), and adjacent edges for trimming
   const edgeDefs: ReadonlyArray<{
     side: 'left' | 'right' | 'front' | 'back';
     isMale: boolean;
-    /** Wall coordinate (X for left/right, Y for front/back) */
     wallCoord: number;
-    /** Length of this edge (mm) */
     edgeLen: number;
-    /** Sketch plane for cross-section ('XZ' for Y-edges, 'YZ' for X-edges) */
     sketchPlane: 'XZ' | 'YZ';
-    /** Extrude sign: -1 for left/front (negative axis), +1 for right/back */
     extrudeSign: number;
-    /** Start position for the extrusion (the "other" axis coordinate) */
     edgeStart: number;
-    /** Adjacent edges to check for corner trimming */
     adjStart: 'left' | 'right' | 'front' | 'back';
     adjEnd: 'left' | 'right' | 'front' | 'back';
   }> = [
@@ -347,39 +332,43 @@ function buildConnectors(
     if (edges[def.side] !== 'join') continue;
 
     // Trim ends where adjacent edges are also join edges (avoids corner overlap)
-    const trimStart = edges[def.adjStart] === 'join' ? DOVETAIL_END_MARGIN : 0;
-    const trimEnd = edges[def.adjEnd] === 'join' ? DOVETAIL_END_MARGIN : 0;
+    const trimStart = edges[def.adjStart] === 'join' ? TONGUE_END_MARGIN : 0;
+    const trimEnd = edges[def.adjEnd] === 'join' ? TONGUE_END_MARGIN : 0;
     const len = def.edgeLen - trimStart - trimEnd;
     if (len <= 0) continue;
 
     const startCoord = def.edgeStart + trimStart;
+    const h = TONGUE_HALF_HEIGHT;
 
     if (def.isMale) {
-      // Tongue: trapezoidal cross-section protruding outward from wall
+      // Tongue: rectangular cross-section protruding outward from wall
       const w = def.wallCoord;
-      const p = def.extrudeSign * DOVETAIL_PROTRUSION;
-      const profile = draw([w, zCenter + DOVETAIL_BASE_HALF])
-        .lineTo([w + p, zCenter + DOVETAIL_TIP_HALF])
-        .lineTo([w + p, zCenter - DOVETAIL_TIP_HALF])
-        .lineTo([w, zCenter - DOVETAIL_BASE_HALF])
-        .close();
-      const tongue = sketch(profile, def.sketchPlane, startCoord).extrude(len);
-      tongues.push(tongue);
+      const p = def.extrudeSign * TONGUE_PROTRUSION;
+      const profile = drawRectangle(Math.abs(p), h * 2);
+      // Rectangle is centered at origin; sketch at the edge start, then translate
+      // so the inner face sits on the wall and the tongue is centered in Z.
+      const tongueShape = translate(
+        sketch(profile, def.sketchPlane, startCoord).extrude(len),
+        def.sketchPlane === 'XZ' ? [w + p / 2, 0, zCenter] : [0, w + p / 2, zCenter]
+      );
+      tongues.push(tongueShape);
     } else {
-      // Groove: same dovetail shape + clearance, extended through wall face
+      // Groove: rectangle + clearance, extended through wall face to avoid coplanar
       const w = def.wallCoord;
-      const grooveDepth = DOVETAIL_PROTRUSION + DOVETAIL_CLEARANCE;
-      const ext = def.extrudeSign * COPLANAR_MARGIN; // extend beyond wall face
-      const p = -def.extrudeSign * grooveDepth; // cut inward
-      const bH = DOVETAIL_BASE_HALF + DOVETAIL_CLEARANCE;
-      const tH = DOVETAIL_TIP_HALF + DOVETAIL_CLEARANCE;
-      const profile = draw([w + ext, zCenter + bH])
-        .lineTo([w + p, zCenter + tH])
-        .lineTo([w + p, zCenter - tH])
-        .lineTo([w + ext, zCenter - bH])
-        .close();
-      const groove = sketch(profile, def.sketchPlane, startCoord).extrude(len);
-      grooves.push(groove);
+      const grooveDepth = TONGUE_PROTRUSION + TONGUE_CLEARANCE;
+      const ext = COPLANAR_MARGIN;
+      const totalCutDepth = grooveDepth + ext;
+      const gH = h + TONGUE_CLEARANCE;
+      const profile = drawRectangle(totalCutDepth, gH * 2);
+      // Position: centered on the groove cavity, shifted so the exterior face
+      // extends COPLANAR_MARGIN beyond the wall face.
+      const inwardSign = -def.extrudeSign;
+      const cutCenter = w + inwardSign * (grooveDepth / 2 - ext / 2);
+      const grooveShape = translate(
+        sketch(profile, def.sketchPlane, startCoord).extrude(len),
+        def.sketchPlane === 'XZ' ? [cutCenter, 0, zCenter] : [0, cutCenter, zCenter]
+      );
+      grooves.push(grooveShape);
     }
   }
 

@@ -192,9 +192,9 @@ describe('baseplateGenerator', () => {
     expect(mesh.vertices.length).toBeGreaterThan(0);
   });
 
-  // ─── Dovetail connectors ──────────────────────────────────────────────────
+  // ─── Tongue-and-groove connectors ────────────────────────────────────────
 
-  it('dovetail tongue expands bounding box beyond slab on join edge', () => {
+  it('tongue expands bounding box beyond slab on join edge', () => {
     // Left piece of a 2-column split: right edge = join (groove), all others exterior
     const baseMesh = generateBaseplate(defaults({ width: 3, depth: 3 }), noop, false);
     const withTongue = generateBaseplate(
@@ -213,7 +213,7 @@ describe('baseplateGenerator', () => {
     expect(tongueBB.minX).toBeLessThan(baseBB.minX - 0.5);
   });
 
-  it('dovetail groove does not expand bounding box (cuts inward)', () => {
+  it('groove does not expand bounding box (cuts inward)', () => {
     const baseMesh = generateBaseplate(defaults({ width: 3, depth: 3 }), noop, false);
     const withGroove = generateBaseplate(
       defaults({
@@ -231,7 +231,7 @@ describe('baseplateGenerator', () => {
     expect(grooveBB.maxX).toBeLessThanOrEqual(baseBB.maxX + 0.01);
   });
 
-  it('dovetail connectors with magnets produce valid mesh', () => {
+  it('tongue-and-groove connectors with magnets produce valid mesh', () => {
     const mesh = generateBaseplate(
       defaults({
         width: 3,
@@ -247,8 +247,8 @@ describe('baseplateGenerator', () => {
     expect(mesh.indices.length).toBeGreaterThan(0);
   });
 
-  it('corner pieces trim dovetails at join-edge intersections', () => {
-    // Interior piece: all 4 edges are join → all dovetails trimmed at both ends
+  it('corner pieces trim tongues at join-edge intersections', () => {
+    // Interior piece: all 4 edges are join → all tongues trimmed at both ends
     const mesh = generateBaseplate(
       defaults({
         width: 2,

@@ -187,30 +187,29 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   return Math.min(CORNER_RADIUS, maxRadius);
 }
 
-// ─── Dovetail Connector Constants ────────────────────────────────────────────
+// ─── Tongue-and-Groove Connector Constants ───────────────────────────────────
 //
-// Split baseplate pieces use dovetail tongue-and-groove joints along join edges.
-// The tongue runs the full edge length and has a trapezoidal cross-section:
-// narrower at the wall face (BASE), wider at the protruding tip (TIP).
-// This creates an undercut that prevents pieces from pulling apart.
+// Split baseplate pieces use rectangular tongue-and-groove joints along join
+// edges. The tongue runs the full edge length with a constant rectangular
+// cross-section, providing registration and preventing vertical displacement.
+//
+// Rectangular profile (no dovetail taper) allows drop-in assembly from above
+// for any grid configuration, including 2x2+ grids where the last piece must
+// engage tongues on two perpendicular edges simultaneously.
 //
 // Convention: left/front edges get tongues (male), right/back get grooves (female).
-// Assembly: pieces slide together along the join edge direction.
 
 /** How far the tongue protrudes from the wall face (mm) */
-export const DOVETAIL_PROTRUSION = 1.5;
+export const TONGUE_PROTRUSION = 1.5;
 
-/** Z half-width at the wall face — narrower end of the trapezoid (mm) */
-export const DOVETAIL_BASE_HALF = 1.0;
-
-/** Z half-width at the tip — wider end that creates the dovetail lock (mm) */
-export const DOVETAIL_TIP_HALF = 1.3;
+/** Z half-height of the tongue cross-section (mm) */
+export const TONGUE_HALF_HEIGHT = 1.2;
 
 /** Per-side clearance added to the groove for FDM tolerance (mm) */
-export const DOVETAIL_CLEARANCE = 0.2;
+export const TONGUE_CLEARANCE = 0.15;
 
-/** Trim dovetail at each end where adjacent edge is also a join edge (mm) */
-export const DOVETAIL_END_MARGIN = 2.0;
+/** Trim tongue at each end where adjacent edge is also a join edge (mm) */
+export const TONGUE_END_MARGIN = 2.0;
 
 // ─── Legacy Nub/Hole Constants (used by direct mesh generator) ──────────────
 
