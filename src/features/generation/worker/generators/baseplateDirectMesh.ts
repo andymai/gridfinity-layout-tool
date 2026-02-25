@@ -630,7 +630,7 @@ function addMagnetHoles(
  * Generate baseplate mesh data procedurally without BREP boolean operations.
  *
  * Produces a waffle-grid slab with tapered pockets, optional magnet holes in a
- * perimeter frame, and a rounded outer perimeter. Targets <50ms for any grid size.
+ * solid floor, and a rounded outer perimeter. Targets <50ms for any grid size.
  */
 export function generateBaseplateDirect(
   params: BaseplateParams,
@@ -658,7 +658,7 @@ export function generateBaseplateDirect(
 
   const mb = new MeshBuilder();
 
-  // Slab dimensions — taller when magnets need a perimeter frame
+  // Slab dimensions — taller when magnets require a solid floor
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;

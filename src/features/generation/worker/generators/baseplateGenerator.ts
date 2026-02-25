@@ -209,7 +209,7 @@ function buildMagnetHoles(
 ): Shape3D[] {
   // Cutter starts above the pocket floor (COPLANAR_MARGIN avoids coplanar with
   // pocket bottom at Z=-SOCKET_HEIGHT) and cuts downward by magnetDepth.
-  // This leaves MAGNET_FLOOR of solid material at the bottom of each pad.
+  // This leaves MAGNET_FLOOR of solid material at the bottom of each magnet hole.
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = magnetDepth + COPLANAR_MARGIN;
   const magnetTemplate = sketch(drawCircle(magnetRadius), 'XY', cutterZ).extrude(-cutterDepth);
@@ -392,7 +392,7 @@ function buildBaseplateSolid(
     edges,
   } = params;
 
-  // 1. Build solid slab — taller when magnets need a perimeter frame
+  // 1. Build solid slab — taller when magnets require a solid floor
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMm + paddingFront + paddingBack;
