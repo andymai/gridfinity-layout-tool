@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.33.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.5...gridfinity-layout-tool-v3.33.6) (2026-02-25)
+
+
+### Performance
+
+* **baseplate:** add intermediate slab-with-pockets cache and increase cache sizes ([#910](https://github.com/andymai/gridfinity-layout-tool/issues/910)) ([026deb9](https://github.com/andymai/gridfinity-layout-tool/commit/026deb92a0e62113f6ae79abb154e891a984361a))
+* **baseplate:** add worker pool for parallel split piece generation ([#911](https://github.com/andymai/gridfinity-layout-tool/issues/911)) ([c625f46](https://github.com/andymai/gridfinity-layout-tool/commit/c625f468d303d3d826cfea14cf709ae3128d2036))
+
 ## [3.33.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.4...gridfinity-layout-tool-v3.33.5) (2026-02-25)
 
 
