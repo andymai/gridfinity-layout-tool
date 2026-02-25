@@ -242,6 +242,9 @@ export function useBaseplateGeneration(): void {
     bridgeRef.current = bridge;
     setActiveBridge(bridge);
 
+    // Closure-local so cleanup can destroy a pool that is still initialising
+    let pool: BaseplateWorkerPool | null = null;
+
     setWasmStatus('loading');
 
     bridge
@@ -260,13 +263,18 @@ export function useBaseplateGeneration(): void {
           ? Math.min(threadingInfo.hardwareConcurrency, 4)
           : DEFAULT_POOL_SIZE;
         if (poolSize > 1) {
-          const pool = new BaseplateWorkerPool();
-          poolRef.current = pool;
-          void pool.init(poolSize).catch(() => {
-            // Pool init failure is non-fatal — falls back to sequential generation
-            pool.destroy();
-            poolRef.current = null;
-          });
+          pool = new BaseplateWorkerPool();
+          void pool
+            .init(poolSize)
+            .then(() => {
+              // Expose only after init — uninitialised workers hang forever
+              poolRef.current = pool;
+            })
+            .catch(() => {
+              // Non-fatal — falls back to sequential generation
+              pool?.destroy();
+              pool = null;
+            });
         }
 
         // Trigger initial generation
@@ -294,8 +302,8 @@ export function useBaseplateGeneration(): void {
       initializedRef.current = false;
       setActiveBridge(null);
 
-      // Destroy worker pool
-      poolRef.current?.destroy();
+      pool?.destroy();
+      pool = null;
       poolRef.current = null;
     };
   }, [setWasmStatus, runGeneration]);
