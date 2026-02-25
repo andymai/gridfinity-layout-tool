@@ -26,7 +26,13 @@ import { SliderInput } from '@/shared/components/SliderInput';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { colToLetter } from '../../utils/splitPlanner';
 import type { BaseplateParams } from '@/core/types';
-import type { BaseplateTiling } from '../../types/tiling';
+import type { BaseplateTiling, PaddingReductionHint } from '../../types/tiling';
+
+const PADDING_HINT_AXIS_KEYS: Record<PaddingReductionHint['axis'], string> = {
+  x: 'baseplate.paddingHintAxisX',
+  y: 'baseplate.paddingHintAxisY',
+  both: 'baseplate.paddingHintAxisBoth',
+};
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -248,6 +254,15 @@ export function BaseplatePanel() {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
+interface SplitViewStripProps {
+  readonly tiling: BaseplateTiling;
+  readonly hoveredPieceLabel: string | null;
+  readonly selectedPieceLabel: string | null;
+  readonly onHoverPiece: (label: string | null) => void;
+  readonly onSelectPiece: (label: string | null) => void;
+  readonly printBedSize: number;
+}
+
 /** Non-collapsible inline strip for the split view control. */
 function SplitViewStrip({
   tiling,
@@ -256,14 +271,7 @@ function SplitViewStrip({
   onHoverPiece,
   onSelectPiece,
   printBedSize,
-}: {
-  tiling: BaseplateTiling;
-  hoveredPieceLabel: string | null;
-  selectedPieceLabel: string | null;
-  onHoverPiece: (label: string | null) => void;
-  onSelectPiece: (label: string | null) => void;
-  printBedSize: number;
-}) {
+}: SplitViewStripProps) {
   const t = useTranslation();
 
   return (
@@ -277,6 +285,17 @@ function SplitViewStrip({
           {t('baseplate.splitReason', { printBed: printBedSize })}
         </span>
       </div>
+
+      {/* Padding reduction hint */}
+      {tiling.paddingReductionHint && (
+        <div className="mx-4 mb-2 rounded bg-accent/10 px-2.5 py-1.5 text-[11px] text-accent">
+          {t('baseplate.paddingHint', {
+            axis: t(PADDING_HINT_AXIS_KEYS[tiling.paddingReductionHint.axis]),
+            mm: tiling.paddingReductionHint.reductionMm,
+            count: tiling.paddingReductionHint.piecesSaved,
+          })}
+        </div>
+      )}
 
       {/* Piece mini-map */}
       <div className="px-4 pb-3">
@@ -323,16 +342,14 @@ function SplitViewStrip({
   );
 }
 
+interface PaddingStepperProps {
+  readonly label: string;
+  readonly value: number;
+  readonly onChange: (value: number) => void;
+}
+
 /** Compact stepper for a single padding value (mm). */
-function PaddingStepper({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-}) {
+function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-content-tertiary">{label}</span>

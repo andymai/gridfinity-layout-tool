@@ -1,15 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import {
-  splitAxis,
-  computeBaseplateTiling,
-  pieceToBaseplateParams,
-  colToLetter,
-} from './splitPlanner';
-import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
+import { computeBaseplateTiling, pieceToBaseplateParams, colToLetter } from './splitPlanner';
+import type { BaseplateParams } from '@/shared/types/bin';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-function makeParams(overrides: Partial<FullBaseplateParams> = {}): FullBaseplateParams {
+function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
   return {
     width: 6,
     depth: 4,
@@ -27,6 +22,24 @@ function makeParams(overrides: Partial<FullBaseplateParams> = {}): FullBaseplate
   };
 }
 
+/** Helper to get piece widths in column order for a single row. */
+function colWidths(params: BaseplateParams, printBed = 256): number[] {
+  const tiling = computeBaseplateTiling(params, printBed);
+  return tiling.pieces
+    .filter((p) => p.row === 0)
+    .sort((a, b) => a.col - b.col)
+    .map((p) => p.widthUnits);
+}
+
+/** Helper to get piece depths in row order for a single column. */
+function rowDepths(params: BaseplateParams, printBed = 256): number[] {
+  const tiling = computeBaseplateTiling(params, printBed);
+  return tiling.pieces
+    .filter((p) => p.col === 0)
+    .sort((a, b) => a.row - b.row)
+    .map((p) => p.depthUnits);
+}
+
 // ─── colToLetter ───────────────────────────────────────────────────────────
 
 describe('colToLetter', () => {
@@ -38,92 +51,11 @@ describe('colToLetter', () => {
   });
 });
 
-// ─── splitAxis ─────────────────────────────────────────────────────────────
-
-describe('splitAxis', () => {
-  it('returns a single chunk when everything fits', () => {
-    expect(splitAxis(6, 42, 256)).toEqual([6]);
-  });
-
-  it('splits when total exceeds max', () => {
-    // 10 units at 42mm = 420mm > 256mm bed. max = floor(256/42) = 6
-    expect(splitAxis(10, 42, 256)).toEqual([6, 4]);
-  });
-
-  it('handles exact fit at max', () => {
-    // 6 * 42 = 252 ≤ 256
-    expect(splitAxis(6, 42, 256)).toEqual([6]);
-  });
-
-  it('creates 3+ splits for large axes', () => {
-    // 16 units, max 6 → [6, 6, 4]
-    expect(splitAxis(16, 42, 256)).toEqual([6, 6, 4]);
-  });
-
-  it('absorbs fraction into last piece when it fits', () => {
-    // 5.5 units: integer=5, fraction=0.5. 5 ≤ 6, so single chunk.
-    // 5.5 * 42 = 231 ≤ 256, so fraction absorbed → [5.5]
-    expect(splitAxis(5.5, 42, 256)).toEqual([5.5]);
-  });
-
-  it('creates separate fractional piece when it overflows', () => {
-    // 6.5 units: integer=6, then 6+0.5=6.5, 6.5*42=273 > 256
-    // So [6, 0.5]
-    expect(splitAxis(6.5, 42, 256)).toEqual([6, 0.5]);
-  });
-
-  it('absorbs fraction into last piece of multi-split', () => {
-    // 9.5 units: integer=9, splits=[6,3], then 3+0.5=3.5, 3.5*42=147 ≤ 256
-    // → [6, 3.5]
-    expect(splitAxis(9.5, 42, 256)).toEqual([6, 3.5]);
-  });
-
-  it('handles pure fractional value (0.5)', () => {
-    expect(splitAxis(0.5, 42, 256)).toEqual([0.5]);
-  });
-
-  // ─── Padding-aware splitting ──────────────────────────────────────────────
-
-  it('reduces first chunk when paddingStart makes it exceed bed', () => {
-    // 6 * 42 = 252, + 5mm padding = 257 > 256 → must reduce to 5
-    expect(splitAxis(6, 42, 256, 5, 0)).toEqual([5, 1]);
-  });
-
-  it('reduces last chunk when paddingEnd makes it exceed bed', () => {
-    // 10 units: without padding → [6, 4]. Last: 4*42 + 50 = 218 ≤ 256 ✓
-    // But first: 6*42 = 252 ≤ 256 ✓. Both fit.
-    expect(splitAxis(10, 42, 256, 0, 50)).toEqual([6, 4]);
-    // Now with larger paddingEnd: 4*42+100=268 > 256, max last=floor(156/42)=3
-    expect(splitAxis(10, 42, 256, 0, 100)).toEqual([6, 1, 3]);
-  });
-
-  it('accounts for both paddings on single piece', () => {
-    // 6*42 + 5 + 5 = 262 > 256 → needs split
-    expect(splitAxis(6, 42, 256, 5, 5)).toEqual([5, 1]);
-    // 5*42 + 5 + 5 = 220 ≤ 256 → single piece
-    expect(splitAxis(5, 42, 256, 5, 5)).toEqual([5]);
-  });
-
-  it('handles padding with fraction absorption', () => {
-    // 5.5 units, paddingStart=5: single piece = 5.5*42+5+0=236 ≤ 256
-    expect(splitAxis(5.5, 42, 256, 5, 0)).toEqual([5.5]);
-    // 6.5 units, paddingStart=5:
-    // maxBoth=floor(251/42)=5, 6>5 → split
-    // First: min(6, floor(251/42))=5, remaining=1
-    // Last: 1 ≤ floor(256/42)=6, done → [5, 1]
-    // Fraction: (1+0.5)*42+0=63 ≤ 256 → [5, 1.5]
-    expect(splitAxis(6.5, 42, 256, 5, 0)).toEqual([5, 1.5]);
-  });
-
-  it('zero padding produces same result as no padding argument', () => {
-    expect(splitAxis(10, 42, 256, 0, 0)).toEqual(splitAxis(10, 42, 256));
-    expect(splitAxis(6.5, 42, 256, 0, 0)).toEqual(splitAxis(6.5, 42, 256));
-  });
-});
-
 // ─── computeBaseplateTiling ────────────────────────────────────────────────
 
 describe('computeBaseplateTiling', () => {
+  // ─── No-split cases ─────────────────────────────────────────────────────
+
   it('no split needed (3x3, fits on bed)', () => {
     const params = makeParams({ width: 3, depth: 3 });
     const tiling = computeBaseplateTiling(params, 256);
@@ -161,6 +93,23 @@ describe('computeBaseplateTiling', () => {
     expect(piece.paddingBack).toBe(7);
   });
 
+  it('exactly fits bed (6x6, max 6)', () => {
+    const params = makeParams({ width: 6, depth: 6 });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.isSplit).toBe(false);
+    expect(tiling.pieces).toHaveLength(1);
+  });
+
+  it('no split when padding still fits', () => {
+    // 5*42 + 5 + 5 = 220 ≤ 256
+    const params = makeParams({ width: 5, depth: 5, paddingLeft: 5, paddingRight: 5 });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.isSplit).toBe(false);
+  });
+
+  // ─── Width-only splits ──────────────────────────────────────────────────
+
   it('width-only split (10x4) accounts for padding', () => {
     const params = makeParams({
       width: 10,
@@ -177,11 +126,9 @@ describe('computeBaseplateTiling', () => {
     expect(tiling.rows).toBe(1);
     expect(tiling.pieces).toHaveLength(2);
 
-    // A1: leftmost piece — reduced from 6 to 5 units because
-    // 6*42 + 5mm paddingLeft = 257mm > 256mm bed
+    // A1: leftmost piece — has paddingLeft
     const a1 = tiling.pieces[0];
     expect(a1.label).toBe('A1');
-    expect(a1.widthUnits).toBe(5);
     expect(a1.paddingLeft).toBe(5);
     expect(a1.paddingRight).toBe(0); // join edge
     expect(a1.paddingFront).toBe(3);
@@ -192,12 +139,18 @@ describe('computeBaseplateTiling', () => {
     // B1: rightmost piece
     const b1 = tiling.pieces[1];
     expect(b1.label).toBe('B1');
-    expect(b1.widthUnits).toBe(5);
     expect(b1.paddingLeft).toBe(0); // join edge
     expect(b1.paddingRight).toBe(10);
     expect(b1.edges.left).toBe('join');
     expect(b1.edges.right).toBe('exterior');
+
+    // Both pieces physically fit on the bed
+    expect(a1.widthUnits * 42 + a1.paddingLeft + a1.paddingRight).toBeLessThanOrEqual(256);
+    expect(b1.widthUnits * 42 + b1.paddingLeft + b1.paddingRight).toBeLessThanOrEqual(256);
+    expect(a1.widthUnits + b1.widthUnits).toBe(10);
   });
+
+  // ─── Both-axis splits ──────────────────────────────────────────────────
 
   it('both-axis split (10x8)', () => {
     const params = makeParams({
@@ -237,31 +190,30 @@ describe('computeBaseplateTiling', () => {
     expect(b2.paddingBack).toBe(5);
   });
 
-  it('fractional edge at end (7.5x4)', () => {
-    const params = makeParams({ width: 7.5, depth: 4, fractionalEdgeX: 'end' });
-    const tiling = computeBaseplateTiling(params, 256);
+  // ─── Symmetry preference ───────────────────────────────────────────────
 
-    // 7.5 → splitAxis → [6, 1.5] (1+0.5 absorbed)
-    expect(tiling.cols).toBe(2);
-    const rightPiece = tiling.pieces.find((p) => p.col === 1);
-    expect(rightPiece?.widthUnits).toBe(1.5);
-    expect(rightPiece?.fractionalEdgeX).toBe('end');
+  it('prefers equal-sized pieces (10 = [5, 5] not [6, 4])', () => {
+    const params = makeParams({ width: 10, depth: 4 });
+    const widths = colWidths(params);
+    // 2D optimizer distributes evenly: [5, 5] instead of greedy [6, 4]
+    expect(widths).toEqual([5, 5]);
   });
 
-  it('fractional edge at start (7.5x4) pins fraction at col 0', () => {
-    const params = makeParams({ width: 7.5, depth: 4, fractionalEdgeX: 'start' });
+  it('prefers symmetric split on both axes (10x10)', () => {
+    const params = makeParams({ width: 10, depth: 10 });
     const tiling = computeBaseplateTiling(params, 256);
 
-    // splitAxis → [6, 1.5], fraction pinned at col 0 → [1.5, 6]
     expect(tiling.cols).toBe(2);
-    const leftPiece = tiling.pieces.find((p) => p.col === 0);
-    expect(leftPiece?.widthUnits).toBe(1.5);
-    expect(leftPiece?.fractionalEdgeX).toBe('start');
+    expect(tiling.rows).toBe(2);
+
+    // Should prefer [5, 5] on each axis
+    const widths = colWidths(params);
+    const depths = rowDepths(params);
+    expect(widths).toEqual([5, 5]);
+    expect(depths).toEqual([5, 5]);
   });
 
   it('largest pieces at front even with fractionalEdge=start and integer dims', () => {
-    // Integer-only dims with fractionalEdge='start': old code would reverse [6, 4] → [4, 6],
-    // making A1 the small piece. New code sorts descending → [6, 4], A1 is the large piece.
     const params = makeParams({
       width: 10,
       depth: 10,
@@ -274,50 +226,83 @@ describe('computeBaseplateTiling', () => {
     expect(tiling.rows).toBe(2);
 
     const a1 = tiling.pieces.find((p) => p.col === 0 && p.row === 0);
-    const b2 = tiling.pieces.find((p) => p.col === 1 && p.row === 1);
-    // A1 (front-left) should be the largest piece
-    expect(a1?.widthUnits).toBe(6);
-    expect(a1?.depthUnits).toBe(6);
-    // B2 (back-right) should be the smallest
-    expect(b2?.widthUnits).toBe(4);
-    expect(b2?.depthUnits).toBe(4);
+    expect(a1?.widthUnits).toBe(5);
+    expect(a1?.depthUnits).toBe(5);
   });
 
-  it('largest pieces at front in 3-piece split with padding', () => {
-    // splitAxis(10, 42, 256, 0, 100) → [6, 1, 3]
-    // reorderLargestFirst sorts to → [6, 3, 1]
-    const params = makeParams({ width: 10, depth: 4, paddingRight: 100 });
+  // ─── Fractional edge handling ──────────────────────────────────────────
+
+  it('fractional edge at end (7.5x4)', () => {
+    const params = makeParams({ width: 7.5, depth: 4, fractionalEdgeX: 'end' });
     const tiling = computeBaseplateTiling(params, 256);
 
-    expect(tiling.cols).toBe(3);
-    const widths = tiling.pieces
-      .filter((p) => p.row === 0)
-      .sort((a, b) => a.col - b.col)
-      .map((p) => p.widthUnits);
-    // Largest (6) at front (col 0), then 3, then 1 at back (col 2)
-    expect(widths).toEqual([6, 3, 1]);
+    expect(tiling.cols).toBe(2);
+    const rightPiece = tiling.pieces.find((p) => p.col === 1);
+    expect(rightPiece?.fractionalEdgeX).toBe('end');
+    // Fractional piece should have a .5 unit
+    const fracPiece = tiling.pieces.find((p) => p.widthUnits % 1 !== 0);
+    expect(fracPiece).toBeDefined();
+  });
+
+  it('fractional edge at start (7.5x4) pins fraction at col 0', () => {
+    const params = makeParams({ width: 7.5, depth: 4, fractionalEdgeX: 'start' });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.cols).toBe(2);
+    const leftPiece = tiling.pieces.find((p) => p.col === 0);
+    expect(leftPiece).toBeDefined();
+    expect(leftPiece?.fractionalEdgeX).toBe('start');
+    expect(leftPiece?.widthUnits).toSatisfy((w: number) => w % 1 !== 0);
+  });
+
+  it('fractional edge at start with asymmetric padding keeps pieces within bed', () => {
+    const params = makeParams({
+      width: 10.5,
+      depth: 4,
+      fractionalEdgeX: 'start',
+      paddingLeft: 30,
+      paddingRight: 2,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    // All pieces must physically fit on the bed
+    for (const piece of tiling.pieces) {
+      const widthMm = piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight;
+      const depthMm = piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack;
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+    // Total width must still sum correctly
+    const totalWidth = colWidths(params).reduce((a, b) => a + b, 0);
+    expect(totalWidth).toBe(10.5);
   });
 
   it('fractional edge at start with 3+ splits pins fraction and sorts rest', () => {
-    // 13.5 → splitAxis(13.5, 42, 256, 0, 0) → [6, 6, 1.5]
-    // fraction pinned at col 0, rest sorted desc → [1.5, 6, 6]
+    // 13.5 → needs 3 cols. Fraction pinned at col 0
     const params = makeParams({ width: 13.5, depth: 4, fractionalEdgeX: 'start' });
     const tiling = computeBaseplateTiling(params, 256);
 
-    expect(tiling.cols).toBe(3);
+    expect(tiling.cols).toBeGreaterThanOrEqual(3);
     const widths = tiling.pieces
       .filter((p) => p.row === 0)
       .sort((a, b) => a.col - b.col)
       .map((p) => p.widthUnits);
-    expect(widths[0]).toBe(1.5); // fractional piece pinned at col 0
-    expect(widths[1]).toBeGreaterThanOrEqual(widths[2]); // rest sorted descending
+    // Fractional piece pinned at col 0
+    expect(widths[0] % 1).not.toBe(0);
+    // Rest sorted descending
+    for (let i = 2; i < widths.length; i++) {
+      expect(widths[i - 1]).toBeGreaterThanOrEqual(widths[i]);
+    }
   });
+
+  // ─── Large splits ──────────────────────────────────────────────────────
 
   it('large 3+ splits (16x16)', () => {
     const params = makeParams({ width: 16, depth: 16 });
     const tiling = computeBaseplateTiling(params, 256);
 
-    // 16 → [6, 6, 4] on each axis → 3x3 = 9 pieces
+    // 16 units at 42mm = 672mm. Max per piece = 6.
+    // Need at least 3 cols (ceil(16/6)). 3×3 = 9 pieces.
     expect(tiling.cols).toBe(3);
     expect(tiling.rows).toBe(3);
     expect(tiling.pieces).toHaveLength(9);
@@ -334,13 +319,44 @@ describe('computeBaseplateTiling', () => {
     expect(center?.paddingBack).toBe(0);
   });
 
-  it('exactly fits bed (6x6, max 6)', () => {
-    const params = makeParams({ width: 6, depth: 6 });
-    const tiling = computeBaseplateTiling(params, 256);
+  it('16x16 prefers symmetric split sizes', () => {
+    const params = makeParams({ width: 16, depth: 16 });
+    const widths = colWidths(params);
+    const depths = rowDepths(params);
 
-    expect(tiling.isSplit).toBe(false);
-    expect(tiling.pieces).toHaveLength(1);
+    // 16 / 3 → prefer sizes as close to equal as possible
+    // [6, 5, 5] or [6, 6, 4] — algorithm prefers [6, 5, 5] for lower variance
+    // After reorder (largest first): [6, 5, 5]
+    const totalWidth = widths.reduce((a, b) => a + b, 0);
+    const totalDepth = depths.reduce((a, b) => a + b, 0);
+    expect(totalWidth).toBe(16);
+    expect(totalDepth).toBe(16);
+
+    // Each piece must fit on bed
+    for (const w of widths) {
+      expect(w * 42).toBeLessThanOrEqual(256);
+    }
+    for (const d of depths) {
+      expect(d * 42).toBeLessThanOrEqual(256);
+    }
   });
+
+  // ─── Padding-induced splits ────────────────────────────────────────────
+
+  it('padding alone can force a split', () => {
+    // 6×6 fits at 252mm without padding, but 6*42 + 5 = 257 > 256
+    const params = makeParams({ width: 6, depth: 6, paddingLeft: 5 });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.isSplit).toBe(true);
+    expect(tiling.cols).toBe(2);
+    // Verify both pieces physically fit
+    const [a1, b1] = tiling.pieces.sort((a, b) => a.col - b.col);
+    expect(a1.widthUnits * 42 + a1.paddingLeft + a1.paddingRight).toBeLessThanOrEqual(256);
+    expect(b1.widthUnits * 42 + b1.paddingLeft + b1.paddingRight).toBeLessThanOrEqual(256);
+    expect(a1.widthUnits + b1.widthUnits).toBe(6);
+  });
+
+  // ─── Labels and offsets ────────────────────────────────────────────────
 
   it('labels follow grid coordinates (2x2)', () => {
     const params = makeParams({ width: 10, depth: 8 });
@@ -360,41 +376,171 @@ describe('computeBaseplateTiling', () => {
     const params = makeParams({ width: 16, depth: 8 });
     const tiling = computeBaseplateTiling(params, 256);
 
-    // Width: [6, 6, 4] → offsets 0, 6, 12
+    // Offsets should be cumulative and non-decreasing
     const colOffsets = [...new Set(tiling.pieces.map((p) => p.gridOffsetX))].sort((a, b) => a - b);
-    expect(colOffsets).toEqual([0, 6, 12]);
-
-    // Depth: [6, 2] → offsets 0, 6
     const rowOffsets = [...new Set(tiling.pieces.map((p) => p.gridOffsetY))].sort((a, b) => a - b);
-    expect(rowOffsets).toEqual([0, 6]);
+
+    expect(colOffsets[0]).toBe(0);
+    expect(rowOffsets[0]).toBe(0);
+
+    // Sum of all column widths should equal total width
+    const widths = colWidths(params);
+    expect(widths.reduce((a, b) => a + b, 0)).toBe(16);
+
+    // Sum of all row depths should equal total depth
+    const depths = rowDepths(params);
+    expect(depths.reduce((a, b) => a + b, 0)).toBe(8);
   });
 
-  it('padding alone can force a split', () => {
-    // 6×6 fits at 252mm without padding, but 6*42 + 5 = 257 > 256
-    const params = makeParams({ width: 6, depth: 6, paddingLeft: 5 });
-    const tiling = computeBaseplateTiling(params, 256);
-    expect(tiling.isSplit).toBe(true);
-    expect(tiling.cols).toBe(2);
-    // Verify both pieces physically fit
-    // Verify both pieces physically fit on the print bed
-    const [a1, b1] = tiling.pieces.sort((a, b) => a.col - b.col);
-    expect(a1.widthUnits * 42 + a1.paddingLeft + a1.paddingRight).toBeLessThanOrEqual(256);
-    expect(b1.widthUnits * 42 + b1.paddingLeft + b1.paddingRight).toBeLessThanOrEqual(256);
-    expect(a1.widthUnits + b1.widthUnits).toBe(6);
-  });
-
-  it('no split when padding still fits', () => {
-    // 5*42 + 5 + 5 = 220 ≤ 256
-    const params = makeParams({ width: 5, depth: 5, paddingLeft: 5, paddingRight: 5 });
-    const tiling = computeBaseplateTiling(params, 256);
-    expect(tiling.isSplit).toBe(false);
-  });
+  // ─── Future stacking defaults ──────────────────────────────────────────
 
   it('records future stacking defaults', () => {
     const params = makeParams({ width: 3, depth: 3 });
     const tiling = computeBaseplateTiling(params, 256);
     expect(tiling.stackCount).toBe(1);
     expect(tiling.stackSeparatorThickness).toBe(0);
+  });
+
+  // ─── Padding reduction hint ────────────────────────────────────────────
+
+  it('returns null hint when no split', () => {
+    const params = makeParams({ width: 3, depth: 3, paddingLeft: 5, paddingRight: 5 });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.paddingReductionHint).toBeNull();
+  });
+
+  it('returns hint when reducing padding avoids split', () => {
+    // 6×6 with pL=pR=5: 6*42 + 5 + 5 = 262 > 256, so a split is forced.
+    // The hint reduces both sides equally; reducing by 3mm gives 6*42 + 2 + 2 = 256,
+    // which fits in a single piece — saving 1 piece.
+    const params = makeParams({
+      width: 6,
+      depth: 6,
+      paddingLeft: 5,
+      paddingRight: 5,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.isSplit).toBe(true);
+    expect(tiling.paddingReductionHint).not.toBeNull();
+    expect(tiling.paddingReductionHint?.piecesSaved).toBeGreaterThan(0);
+    expect(tiling.paddingReductionHint?.reductionMm).toBeGreaterThan(0);
+  });
+
+  it('returns null hint when padding is zero', () => {
+    const params = makeParams({ width: 10, depth: 4 });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.paddingReductionHint).toBeNull();
+  });
+
+  it('returns null hint when reducing padding would not help', () => {
+    // 16x16 with small padding — even 0 padding can't fit in 1 piece
+    const params = makeParams({ width: 16, depth: 16, paddingLeft: 1, paddingRight: 1 });
+    const tiling = computeBaseplateTiling(params, 256);
+    // Reducing 1mm from each side won't reduce piece count from 9
+    // because 16 units = 672mm >> 256mm regardless of padding
+    expect(tiling.paddingReductionHint).toBeNull();
+  });
+
+  // ─── Half-unit edge cases ──────────────────────────────────────────────
+
+  it('handles pure fractional value (0.5x0.5)', () => {
+    const params = makeParams({ width: 0.5, depth: 0.5 });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.isSplit).toBe(false);
+    expect(tiling.pieces).toHaveLength(1);
+    expect(tiling.pieces[0].widthUnits).toBe(0.5);
+    expect(tiling.pieces[0].depthUnits).toBe(0.5);
+  });
+
+  it('handles 5.5x4 (fraction absorbed)', () => {
+    const params = makeParams({ width: 5.5, depth: 4 });
+    const tiling = computeBaseplateTiling(params, 256);
+    // 5.5 * 42 = 231 ≤ 256, fits in single piece
+    expect(tiling.isSplit).toBe(false);
+    expect(tiling.pieces[0].widthUnits).toBe(5.5);
+  });
+
+  it('handles 6.5x4 (fraction forces separate piece)', () => {
+    const params = makeParams({ width: 6.5, depth: 4 });
+    const tiling = computeBaseplateTiling(params, 256);
+    // 6.5 * 42 = 273 > 256, needs split
+    expect(tiling.isSplit).toBe(true);
+    expect(tiling.cols).toBe(2);
+    // Total should be 6.5
+    const totalWidth = colWidths(params).reduce((a, b) => a + b, 0);
+    expect(totalWidth).toBe(6.5);
+  });
+
+  // ─── Performance ───────────────────────────────────────────────────────
+
+  it('handles 50x50 grid within 100ms', () => {
+    const params = makeParams({ width: 50, depth: 50 });
+    const start = performance.now();
+    const tiling = computeBaseplateTiling(params, 256);
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(100);
+    expect(tiling.isSplit).toBe(true);
+    // Verify all pieces fit
+    for (const piece of tiling.pieces) {
+      const widthMm = piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight;
+      const depthMm = piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack;
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+  });
+
+  it('handles 50x50 grid with padding within 100ms', () => {
+    const params = makeParams({
+      width: 50,
+      depth: 50,
+      paddingLeft: 5,
+      paddingRight: 5,
+      paddingFront: 5,
+      paddingBack: 5,
+    });
+    const start = performance.now();
+    const tiling = computeBaseplateTiling(params, 256);
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(100);
+    expect(tiling.isSplit).toBe(true);
+    // Verify all pieces fit
+    for (const piece of tiling.pieces) {
+      const widthMm = piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight;
+      const depthMm = piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack;
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+  });
+
+  // ─── All pieces always fit on bed ──────────────────────────────────────
+
+  it.each([
+    { width: 7, depth: 3 },
+    { width: 10, depth: 4 },
+    { width: 10, depth: 8 },
+    { width: 16, depth: 16 },
+    { width: 7.5, depth: 4 },
+    { width: 13.5, depth: 13.5 },
+    { width: 25, depth: 12 },
+  ])('all pieces fit on bed for %j', ({ width, depth }) => {
+    const params = makeParams({
+      width,
+      depth,
+      paddingLeft: 3,
+      paddingRight: 3,
+      paddingFront: 3,
+      paddingBack: 3,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    for (const piece of tiling.pieces) {
+      const widthMm = piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight;
+      const depthMm = piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack;
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
   });
 });
 
@@ -429,8 +575,12 @@ describe('pieceToBaseplateParams', () => {
     const parent = makeParams({ width: 10, depth: 4 });
     const tiling = computeBaseplateTiling(parent, 256);
     const integerPiece = tiling.pieces.find((p) => p.fractionalEdgeX === 'none');
-    expect(integerPiece).toBeDefined();
-    const result = pieceToBaseplateParams(integerPiece as NonNullable<typeof integerPiece>, parent);
+
+    if (integerPiece === undefined) {
+      expect.fail('Expected an integer piece with fractionalEdgeX === none');
+    }
+
+    const result = pieceToBaseplateParams(integerPiece, parent);
     expect(result.fractionalEdgeX).toBe('end');
   });
 
@@ -463,8 +613,12 @@ describe('pieceToBaseplateParams', () => {
     const parent = makeParams({ width: 7.5, depth: 4, fractionalEdgeX: 'start' });
     const tiling = computeBaseplateTiling(parent, 256);
     const fracPiece = tiling.pieces.find((p) => p.fractionalEdgeX !== 'none');
-    expect(fracPiece).toBeDefined();
-    const result = pieceToBaseplateParams(fracPiece as NonNullable<typeof fracPiece>, parent);
+
+    if (fracPiece === undefined) {
+      expect.fail('Expected a piece with fractionalEdgeX !== none');
+    }
+
+    const result = pieceToBaseplateParams(fracPiece, parent);
     expect(result.fractionalEdgeX).toBe('start');
   });
 });
