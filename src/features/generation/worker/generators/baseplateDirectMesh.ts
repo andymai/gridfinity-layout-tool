@@ -893,7 +893,7 @@ function tangentVectors(nx: number, ny: number): [number, number, number, number
   }
   if (Math.abs(ny) > 0.9) {
     const s = Math.sign(ny);
-    return [s, 0, 0, 0, 0, 1]; // u=±X, v=Z → u×v aligns with ny
+    return [-s, 0, 0, 0, 0, 1]; // u=∓X, v=Z → u×v = (0, s, 0) aligns with ny
   }
   return [1, 0, 0, 0, 1, 0]; // Normal along Z (fallback)
 }

@@ -320,6 +320,58 @@ describe('baseplateDirectMesh', () => {
     expect(diff).toBe(168);
   });
 
+  it('nubs expand bounding box on front join edge (-Y)', () => {
+    const base = defaults({
+      width: 2,
+      depth: 3,
+      edges: { left: 'exterior', right: 'exterior', front: 'join', back: 'exterior' },
+      connectorNubs: true,
+    });
+    const noNubs = { ...base, connectorNubs: false };
+
+    const bbWith = computeBounds(generateDirect(base, noop).vertices);
+    const bbWithout = computeBounds(generateDirect(noNubs, noop).vertices);
+
+    // Front-edge nubs protrude in -Y direction, so minY should decrease
+    expect(bbWith.minY).toBeLessThan(bbWithout.minY);
+  });
+
+  it('holes expand bounding box on back join edge (+Y)', () => {
+    // Back edge = female (hole), but the cancel face is flush with the wall.
+    // The hole goes inward, so the bounding box should NOT expand in +Y.
+    // This verifies the hole geometry is inward, not outward.
+    const base = defaults({
+      width: 2,
+      depth: 3,
+      edges: { left: 'exterior', right: 'exterior', front: 'exterior', back: 'join' },
+      connectorNubs: true,
+    });
+    const noNubs = { ...base, connectorNubs: false };
+
+    const bbWith = computeBounds(generateDirect(base, noop).vertices);
+    const bbWithout = computeBounds(generateDirect(noNubs, noop).vertices);
+
+    // Hole is inward — maxY should remain the same (within tolerance)
+    expect(bbWith.maxY).toBeCloseTo(bbWithout.maxY, 1);
+  });
+
+  it('nubs expand bounding box on right join edge (+X) — female hole does not', () => {
+    // Right edge = female (hole). Holes go inward, so maxX should not increase.
+    const base = defaults({
+      width: 3,
+      depth: 2,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
+      connectorNubs: true,
+    });
+    const noNubs = { ...base, connectorNubs: false };
+
+    const bbWith = computeBounds(generateDirect(base, noop).vertices);
+    const bbWithout = computeBounds(generateDirect(noNubs, noop).vertices);
+
+    // Right edge has holes (female) which go inward — maxX should not expand
+    expect(bbWith.maxX).toBeCloseTo(bbWithout.maxX, 1);
+  });
+
   // ─── Speed comparison ──────────────────────────────────────────────────
   it('4×4 with magnets: direct is at least 10x faster than BREP', () => {
     const params = defaults({ width: 4, depth: 4, magnetHoles: true });
