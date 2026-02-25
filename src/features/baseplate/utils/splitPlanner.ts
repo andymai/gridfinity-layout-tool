@@ -480,6 +480,7 @@ export function pieceToBaseplateParams(
     fractionalEdgeX,
     fractionalEdgeY,
     edges: piece.edges,
+    connectorNubs: parentParams.connectorNubs,
   };
 }
 

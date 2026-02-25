@@ -31,5 +31,6 @@ export function buildFullParams(
     paddingBack: stored.paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
+    ...(stored.connectorNubs !== undefined ? { connectorNubs: stored.connectorNubs } : {}),
   };
 }

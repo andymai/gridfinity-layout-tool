@@ -1417,5 +1417,7 @@
   "baseplate.frontView": "Voor",
   "baseplate.sideView": "Zij",
   "baseplate.topView": "Boven",
-  "baseplate.isoView": "Iso"
+  "baseplate.isoView": "Iso",
+  "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.connectorNubsHelp": "Dovetail joints on split edges so pieces lock together when assembled."
 }

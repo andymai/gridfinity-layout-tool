@@ -67,4 +67,6 @@ export interface BaseplateParams {
   readonly fractionalEdgeY: 'start' | 'end';
   /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
   readonly edges?: BaseplateEdges;
+  /** Enable registration nubs/holes on join edges for split piece alignment. */
+  readonly connectorNubs?: boolean;
 }

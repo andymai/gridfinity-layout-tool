@@ -15,8 +15,7 @@ import { initFromOC } from 'brepjs';
 import type { WorkerMessage, WorkerResponse, MeshData } from '../bridge/types';
 import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
-import { exportBaseplate } from './generators/baseplateGenerator';
-import { generateBaseplateDirect } from './generators/baseplateDirectMesh';
+import { generateBaseplate, exportBaseplate } from './generators/baseplateGenerator';
 import { detectWasmCapabilities } from '../utils/wasmCapabilities';
 
 // Single-threaded WASM (always available)
@@ -288,7 +287,7 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
         const { params, requestId } = message.payload;
         runGeneration(
           (signal) =>
-            generateBaseplateDirect(
+            generateBaseplate(
               params,
               (stage, progress) => {
                 if (activeRequestId !== requestId) return;
@@ -298,11 +297,12 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
                   progress
                 );
               },
+              false, // preview mode (not export)
               signal
             ),
           requestId,
           'BaseplateGen',
-          false // Direct mesh returns fresh buffers each call, no copy needed
+          true // BREP tessellation returns shared buffers — must copy
         );
         break;
       }

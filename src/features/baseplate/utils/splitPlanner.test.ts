@@ -621,4 +621,20 @@ describe('pieceToBaseplateParams', () => {
     const result = pieceToBaseplateParams(fracPiece, parent);
     expect(result.fractionalEdgeX).toBe('start');
   });
+
+  it('passes through connectorNubs from parent params', () => {
+    const parent = makeParams({ width: 10, depth: 8, connectorNubs: true });
+    const tiling = computeBaseplateTiling(parent, 256);
+    const piece = tiling.pieces[0];
+    const result = pieceToBaseplateParams(piece, parent);
+    expect(result.connectorNubs).toBe(true);
+  });
+
+  it('connectorNubs defaults to undefined when not set', () => {
+    const parent = makeParams({ width: 10, depth: 8 });
+    const tiling = computeBaseplateTiling(parent, 256);
+    const piece = tiling.pieces[0];
+    const result = pieceToBaseplateParams(piece, parent);
+    expect(result.connectorNubs).toBeUndefined();
+  });
 });

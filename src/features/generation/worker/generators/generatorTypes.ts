@@ -187,6 +187,132 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   return Math.min(CORNER_RADIUS, maxRadius);
 }
 
+// ─── Dovetail Connector Constants ─────────────────────────────────────────────
+//
+// Split baseplate pieces use discrete dovetail connectors at grid cell boundary
+// intersections along join edges. Each connector is a trapezoidal prism with the
+// classic dovetail fan shape visible from the top (X-Y plane): narrower at the
+// wall (BASE_HALF), wider at the protruding tip (TIP_HALF).
+//
+// Assembly: pieces drop in from above (Z-axis). The dovetail taper is in the
+// X-Y plane, so vertical insertion is unimpeded. Once seated, the wider tip
+// prevents horizontal pull-out through the narrower groove opening.
+//
+// Convention: left/front edges get tongues (male), right/back get grooves (female).
+
+/** How far the tongue protrudes horizontally from the wall face (mm) */
+export const TONGUE_PROTRUSION = 1.5;
+
+/** Half-width at the wall face — narrow end of the dovetail (mm) */
+export const TONGUE_BASE_HALF = 1.0;
+
+/** Half-width at the protruding tip — wide end of the dovetail (mm) */
+export const TONGUE_TIP_HALF = 1.3;
+
+/** Per-side clearance added to the groove for FDM tolerance (mm) */
+export const TONGUE_CLEARANCE = 0.15;
+
+// ─── Legacy Nub/Hole Constants (used by direct mesh generator) ──────────────
+
+export const NUB_DIAMETER = 1.5;
+export const NUB_DEPTH = 0.8;
+const HOLE_CLEARANCE = 0.1;
+export const HOLE_DIAMETER = NUB_DIAMETER + 2 * HOLE_CLEARANCE;
+export const HOLE_DEPTH = NUB_DEPTH + HOLE_CLEARANCE;
+export const NUB_CIRCLE_SEGMENTS = 12;
+
+// ─── Legacy Connector Position Computation (used by direct mesh generator) ───
+
+export interface ConnectorPos {
+  cx: number;
+  cy: number;
+  cz: number;
+  nx: number;
+  ny: number;
+  isMale: boolean;
+}
+
+export function computeConnectorPositions(
+  width: number,
+  depth: number,
+  gridUnitMm: number,
+  totalHeight: number,
+  totalW: number,
+  totalD: number,
+  slabOffsetX: number,
+  slabOffsetY: number,
+  edges: { left: string; right: string; front: string; back: string }
+): ConnectorPos[] {
+  const positions: ConnectorPos[] = [];
+  const zCenter = totalHeight / 2;
+  const halfW = totalW / 2;
+  const halfD = totalD / 2;
+
+  const edgeDefs: ReadonlyArray<{
+    side: keyof typeof edges;
+    numBoundaries: number;
+    position: (k: number) => { cx: number; cy: number };
+    nx: number;
+    ny: number;
+    isMale: boolean;
+  }> = [
+    {
+      side: 'left',
+      numBoundaries: Math.ceil(depth) - 1,
+      position: (k) => ({
+        cx: -halfW + slabOffsetX,
+        cy: k * gridUnitMm - (depth * gridUnitMm) / 2,
+      }),
+      nx: -1,
+      ny: 0,
+      isMale: true,
+    },
+    {
+      side: 'right',
+      numBoundaries: Math.ceil(depth) - 1,
+      position: (k) => ({
+        cx: halfW + slabOffsetX,
+        cy: k * gridUnitMm - (depth * gridUnitMm) / 2,
+      }),
+      nx: 1,
+      ny: 0,
+      isMale: false,
+    },
+    {
+      side: 'front',
+      numBoundaries: Math.ceil(width) - 1,
+      position: (k) => ({
+        cx: k * gridUnitMm - (width * gridUnitMm) / 2,
+        cy: -halfD + slabOffsetY,
+      }),
+      nx: 0,
+      ny: -1,
+      isMale: true,
+    },
+    {
+      side: 'back',
+      numBoundaries: Math.ceil(width) - 1,
+      position: (k) => ({
+        cx: k * gridUnitMm - (width * gridUnitMm) / 2,
+        cy: halfD + slabOffsetY,
+      }),
+      nx: 0,
+      ny: 1,
+      isMale: false,
+    },
+  ];
+
+  for (const { side, numBoundaries, position, nx, ny, isMale } of edgeDefs) {
+    if (edges[side] !== 'join' || numBoundaries <= 0) continue;
+    for (let k = 1; k <= numBoundaries; k++) {
+      const { cx, cy } = position(k);
+      positions.push({ cx, cy, cz: zCenter, nx, ny, isMale });
+    }
+  }
+
+  return positions;
+}
+
 // ─── Sketch Helper ───────────────────────────────────────────────────────────
 
 /**
