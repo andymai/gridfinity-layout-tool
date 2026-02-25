@@ -91,7 +91,11 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
       onClick={onClose}
       role="presentation"
     >
-      <div role="presentation" onClick={(e) => e.stopPropagation()}>
+      <div
+        role="presentation"
+        className={isMobile ? 'w-full h-full' : ''}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div
           ref={modalRef}
           className={`flex flex-col animate-scale-in ${
