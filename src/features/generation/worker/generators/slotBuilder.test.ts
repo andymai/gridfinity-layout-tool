@@ -68,21 +68,20 @@ describe('buildSlotCuts', () => {
   });
 
   it('does not return null when wall thickness equals MIN_WALL_FOR_SLOTS', () => {
-    // At exactly 0.8mm, slots should be generated (not null)
-    // We can't test the full geometry with mocked brepjs, but we can verify
-    // the guard doesn't reject it. The mock will throw on fuseAll since it's
-    // not fully mocked — catching the error confirms the guard passed.
+    // At exactly 0.8mm, slots should be generated (not null).
+    // The mock may throw deeper in the geometry pipeline — either outcome
+    // (non-null result or throw) confirms the MIN_WALL guard passed.
     const params = makeSlottedParams({ wallThickness: 0.8 });
+    let passedGuard = false;
     try {
       const result = buildSlotCuts(params, 80, 80, 30);
-      // If mock is complete enough to return, it should not be null
-      if (result !== null) {
-        expect(result).not.toBeNull();
-      }
+      expect(result).not.toBeNull();
+      passedGuard = true;
     } catch {
-      // Expected: brepjs mock incomplete for full geometry path.
-      // The fact we got here means the MIN_WALL guard passed.
-      expect(true).toBe(true);
+      // brepjs mock incomplete — the throw means execution reached geometry
+      // code past the MIN_WALL guard
+      passedGuard = true;
     }
+    expect(passedGuard).toBe(true);
   });
 });

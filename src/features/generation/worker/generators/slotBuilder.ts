@@ -139,10 +139,11 @@ function createMirroredLipCutters(
   const negSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(lipCutHeight);
   const posSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(lipCutHeight);
 
-  // Lip cutter sits inside the wall: centered at halfSpan - lipOverhang/2,
-  // shifted inward by SLOT_EXTENSION/2 for overlap with wall slot cutter
+  // Lip cutter sits inside the interior: centered at halfSpan - lipOverhang/2,
+  // shifted outward by SLOT_EXTENSION/2 so the outer face extends past the
+  // inner wall surface (halfSpan) for overlap with the wall slot cutter.
   const negCenter = -(halfSpan - lipOverhang / 2 + SLOT_EXTENSION / 2);
-  const posCenter = halfSpan - lipOverhang / 2 - SLOT_EXTENSION / 2;
+  const posCenter = halfSpan - lipOverhang / 2 + SLOT_EXTENSION / 2;
 
   if (axis === 'x') {
     return [

@@ -106,8 +106,9 @@ export const MIN_WALL_FOR_SLOTS = 0.8;
  * Compute effective slot dimensions from divider configuration.
  *
  * - Slot opening (width) = divider thickness + 2 × fit tolerance
- * - Slot cut depth = 50% of wall thickness, clamped to [0.5, 1.5]mm,
- *   but never more than 80% of wall thickness to avoid cutting through
+ * - Slot cut depth = 50% of wall thickness, nominally clamped to [0.5, 1.5]mm,
+ *   then capped at 80% of wall thickness. For thin walls (< ~0.63mm) the 80%
+ *   cap produces values below 0.5mm to avoid cutting through the wall.
  */
 export function getEffectiveSlotDimensions(
   wallThickness: number,

@@ -26,13 +26,13 @@ exports[`base styles > 'weighted' base > 'no lip' 1`] = `316`;
 
 exports[`base styles > 'weighted' base > 'with lip' 1`] = `1742`;
 
-exports[`bin styles > 2×2 'slotted' 1`] = `3074`;
+exports[`bin styles > 2×2 'slotted' 1`] = `3086`;
 
 exports[`bin styles > 2×2 'solid' 1`] = `2558`;
 
 exports[`bin styles > 2×2 'standard' 1`] = `2750`;
 
-exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`] = `1802`;
+exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`] = `1814`;
 
 exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `3214`;
 
@@ -116,9 +116,9 @@ exports[`scoop > 2×2 scoop 'disabled' 1`] = `2750`;
 
 exports[`scoop > 2×2 scoop 'radius 10mm' 1`] = `3514`;
 
-exports[`slotted variations > slotted with Y-axis slots 1`] = `3074`;
+exports[`slotted variations > slotted with Y-axis slots 1`] = `3086`;
 
-exports[`slotted variations > slotted with both axes 1`] = `3398`;
+exports[`slotted variations > slotted with both axes 1`] = `3422`;
 
 exports[`slotted variations > slotted without lip 1`] = `1012`;
 
