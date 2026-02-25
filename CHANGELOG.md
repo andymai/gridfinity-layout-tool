@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.33.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.4...gridfinity-layout-tool-v3.33.5) (2026-02-25)
+
+
+### Performance
+
+* **baseplate:** optimize tessellation with adaptive tolerance and skip edge mesh ([#912](https://github.com/andymai/gridfinity-layout-tool/issues/912)) ([20ca5fc](https://github.com/andymai/gridfinity-layout-tool/commit/20ca5fccda82692baf26ffa6b121f9446e66a5b6))
+
 ## [3.33.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.3...gridfinity-layout-tool-v3.33.4) (2026-02-25)
 
 
