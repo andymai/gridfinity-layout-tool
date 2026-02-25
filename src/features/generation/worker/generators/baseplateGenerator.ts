@@ -242,14 +242,16 @@ function buildMagnetHoles(
  * Build tongue-and-groove connectors for split baseplate join edges.
  *
  * Each join edge gets one continuous rectangular tongue running its full length
- * (minus end margins at corners where two join edges meet).
- *
- * Rectangular profile (no dovetail taper) allows drop-in assembly from above —
- * critical for 2x2+ grids where the last piece must engage tongues on two
- * perpendicular edges simultaneously.
+ * (minus end margins at corners where two join edges meet). Rectangular profile
+ * allows drop-in assembly from above for any grid configuration.
  *
  * Convention: left/front edges = tongue (male, fused on), right/back = groove
  * (female, cut out).
+ *
+ * All geometry is built using only the XY sketch plane (normal = +Z) to avoid
+ * the non-intuitive normals of XZ ([0,-1,0]) and YZ ([1,0,0]) planes. Each
+ * connector is a drawRectangle on XY, extruded in +Z, then translated to its
+ * final position.
  *
  * Coordinates are in the pre-Z-shift system (slab top at Z=0, bottom at Z=-totalHeight).
  */
@@ -271,58 +273,60 @@ function buildConnectors(
   const halfD = totalD / 2;
   const zCenter = -totalHeight / 2;
 
+  type Side = 'left' | 'right' | 'front' | 'back';
+
   const edgeDefs: ReadonlyArray<{
-    side: 'left' | 'right' | 'front' | 'back';
+    side: Side;
     isMale: boolean;
-    wallCoord: number;
-    edgeLen: number;
-    sketchPlane: 'XZ' | 'YZ';
-    extrudeSign: number;
-    edgeStart: number;
-    adjStart: 'left' | 'right' | 'front' | 'back';
-    adjEnd: 'left' | 'right' | 'front' | 'back';
+    wallPos: number; // Wall coordinate on the protrude axis
+    edgeStart: number; // Start of edge on the parallel axis
+    edgeEnd: number; // End of edge on the parallel axis
+    protrudeAxis: 'x' | 'y'; // Axis the connector protrudes/cuts along
+    protrudeDir: -1 | 1; // +1 = positive axis direction, -1 = negative
+    adjStart: Side;
+    adjEnd: Side;
   }> = [
     {
       side: 'left',
       isMale: true,
-      wallCoord: -halfW + slabOffsetX,
-      edgeLen: totalD,
-      sketchPlane: 'XZ',
-      extrudeSign: -1,
+      wallPos: -halfW + slabOffsetX,
       edgeStart: -halfD + slabOffsetY,
+      edgeEnd: halfD + slabOffsetY,
+      protrudeAxis: 'x',
+      protrudeDir: -1,
       adjStart: 'front',
       adjEnd: 'back',
     },
     {
       side: 'right',
       isMale: false,
-      wallCoord: halfW + slabOffsetX,
-      edgeLen: totalD,
-      sketchPlane: 'XZ',
-      extrudeSign: 1,
+      wallPos: halfW + slabOffsetX,
       edgeStart: -halfD + slabOffsetY,
+      edgeEnd: halfD + slabOffsetY,
+      protrudeAxis: 'x',
+      protrudeDir: 1,
       adjStart: 'front',
       adjEnd: 'back',
     },
     {
       side: 'front',
       isMale: true,
-      wallCoord: -halfD + slabOffsetY,
-      edgeLen: totalW,
-      sketchPlane: 'YZ',
-      extrudeSign: -1,
+      wallPos: -halfD + slabOffsetY,
       edgeStart: -halfW + slabOffsetX,
+      edgeEnd: halfW + slabOffsetX,
+      protrudeAxis: 'y',
+      protrudeDir: -1,
       adjStart: 'left',
       adjEnd: 'right',
     },
     {
       side: 'back',
       isMale: false,
-      wallCoord: halfD + slabOffsetY,
-      edgeLen: totalW,
-      sketchPlane: 'YZ',
-      extrudeSign: 1,
+      wallPos: halfD + slabOffsetY,
       edgeStart: -halfW + slabOffsetX,
+      edgeEnd: halfW + slabOffsetX,
+      protrudeAxis: 'y',
+      protrudeDir: 1,
       adjStart: 'left',
       adjEnd: 'right',
     },
@@ -334,41 +338,41 @@ function buildConnectors(
     // Trim ends where adjacent edges are also join edges (avoids corner overlap)
     const trimStart = edges[def.adjStart] === 'join' ? TONGUE_END_MARGIN : 0;
     const trimEnd = edges[def.adjEnd] === 'join' ? TONGUE_END_MARGIN : 0;
-    const len = def.edgeLen - trimStart - trimEnd;
+    const start = def.edgeStart + trimStart;
+    const end = def.edgeEnd - trimEnd;
+    const len = end - start;
     if (len <= 0) continue;
-
-    const startCoord = def.edgeStart + trimStart;
-    const h = TONGUE_HALF_HEIGHT;
+    const edgeMid = (start + end) / 2;
 
     if (def.isMale) {
-      // Tongue: rectangular cross-section protruding outward from wall
-      const w = def.wallCoord;
-      const p = def.extrudeSign * TONGUE_PROTRUSION;
-      const profile = drawRectangle(Math.abs(p), h * 2);
-      // Rectangle is centered at origin; sketch at the edge start, then translate
-      // so the inner face sits on the wall and the tongue is centered in Z.
-      const tongueShape = translate(
-        sketch(profile, def.sketchPlane, startCoord).extrude(len),
-        def.sketchPlane === 'XZ' ? [w + p / 2, 0, zCenter] : [0, w + p / 2, zCenter]
+      // Tongue: rectangular box protruding outward from wall face.
+      // Inner face flush with wall, extends TONGUE_PROTRUSION outward.
+      const h = TONGUE_HALF_HEIGHT;
+      const p = TONGUE_PROTRUSION;
+      const center = def.wallPos + def.protrudeDir * (p / 2);
+
+      // drawRectangle(xSize, ySize) centered at origin on XY plane
+      const [sx, sy] = def.protrudeAxis === 'x' ? [p, len] : [len, p];
+      const [cx, cy] = def.protrudeAxis === 'x' ? [center, edgeMid] : [edgeMid, center];
+
+      tongues.push(
+        translate(sketch(drawRectangle(sx, sy), 'XY', zCenter - h).extrude(h * 2), [cx, cy, 0])
       );
-      tongues.push(tongueShape);
     } else {
-      // Groove: rectangle + clearance, extended through wall face to avoid coplanar
-      const w = def.wallCoord;
+      // Groove: slightly oversized rectangle cut inward from wall face.
+      // Extends COPLANAR_MARGIN beyond wall to avoid coplanar boolean failures.
+      const gH = TONGUE_HALF_HEIGHT + TONGUE_CLEARANCE;
       const grooveDepth = TONGUE_PROTRUSION + TONGUE_CLEARANCE;
-      const ext = COPLANAR_MARGIN;
-      const totalCutDepth = grooveDepth + ext;
-      const gH = h + TONGUE_CLEARANCE;
-      const profile = drawRectangle(totalCutDepth, gH * 2);
-      // Position: centered on the groove cavity, shifted so the exterior face
-      // extends COPLANAR_MARGIN beyond the wall face.
-      const inwardSign = -def.extrudeSign;
-      const cutCenter = w + inwardSign * (grooveDepth / 2 - ext / 2);
-      const grooveShape = translate(
-        sketch(profile, def.sketchPlane, startCoord).extrude(len),
-        def.sketchPlane === 'XZ' ? [cutCenter, 0, zCenter] : [0, cutCenter, zCenter]
+      const totalCut = grooveDepth + COPLANAR_MARGIN;
+      // Center sits between (wall + dir*COPLANAR_MARGIN) and (wall - dir*grooveDepth)
+      const center = def.wallPos + (def.protrudeDir * (COPLANAR_MARGIN - grooveDepth)) / 2;
+
+      const [sx, sy] = def.protrudeAxis === 'x' ? [totalCut, len] : [len, totalCut];
+      const [cx, cy] = def.protrudeAxis === 'x' ? [center, edgeMid] : [edgeMid, center];
+
+      grooves.push(
+        translate(sketch(drawRectangle(sx, sy), 'XY', zCenter - gH).extrude(gH * 2), [cx, cy, 0])
       );
-      grooves.push(grooveShape);
     }
   }
 
