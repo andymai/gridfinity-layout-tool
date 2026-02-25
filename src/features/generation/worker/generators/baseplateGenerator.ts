@@ -428,11 +428,15 @@ export function generateBaseplate(
   onProgress('base', 0.9);
   checkCancelled(signal);
 
-  // Tessellate — baseplates are mostly flat slabs, so preview can use very coarse settings
-  const tolerance = forExport ? 0.01 : 0.5;
-  const angularTolerance = forExport ? 5 : 45;
+  // Tessellate — tighter tolerance when connectors are present so the small
+  // cylinders (1.5mm diameter) produce enough facets to be visible.
+  const hasConnectors = params.connectorNubs && params.edges;
+  const tolerance = forExport ? 0.01 : hasConnectors ? 0.1 : 0.5;
+  const angularTolerance = forExport ? 5 : hasConnectors ? 15 : 45;
   const meshResult = mesh(baseplate, { tolerance, angularTolerance });
-  const edgeMesh = forExport ? null : meshEdges(baseplate, { tolerance: 0.5 });
+  const edgeMesh = forExport
+    ? null
+    : meshEdges(baseplate, { tolerance: hasConnectors ? 0.1 : 0.5 });
   const edgeVerts = edgeMesh ? new Float32Array(edgeMesh.lines) : new Float32Array(0);
 
   onProgress('base', 1);
