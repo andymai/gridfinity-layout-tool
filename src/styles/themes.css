@@ -237,7 +237,6 @@ html[data-density='comfortable'] {
 }
 
 /* Section header spacing */
-[data-active-layer-panel] .mb-3,
 [data-layers-panel] .mb-3 {
   margin-bottom: var(--space-section);
 }

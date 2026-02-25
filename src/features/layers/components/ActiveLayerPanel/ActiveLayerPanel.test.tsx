@@ -29,15 +29,15 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-// Mock CollapsibleSection
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ children, title }: { children: React.ReactNode; title: string }) => (
-    <div>
-      <span>{title}</span>
-      {children}
-    </div>
-  ),
-}));
+// Mock Popover to render children inline (avoids portal issues in tests)
+vi.mock('@/design-system', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    Popover: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>
+      isOpen ? <div data-testid="size-popover">{children}</div> : null,
+  };
+});
 
 describe('ActiveLayerPanel', () => {
   beforeEach(() => {
@@ -70,45 +70,23 @@ describe('ActiveLayerPanel', () => {
   });
 
   describe('rendering', () => {
-    it('displays section title', () => {
+    it('renders size selector button', () => {
       render(<ActiveLayerPanel />);
 
       expect(screen.getByText('Bin Palette')).toBeInTheDocument();
     });
 
-    it('displays instruction text', () => {
+    it('renders fill gaps button with count', () => {
       render(<ActiveLayerPanel />);
 
-      expect(screen.getByText(/Select a size, then drag to fill/)).toBeInTheDocument();
+      // 10 * 8 = 80 empty cells
+      expect(screen.getByText('Fill 80 gaps')).toBeInTheDocument();
     });
 
-    it('displays squares section', () => {
+    it('renders clear button', () => {
       render(<ActiveLayerPanel />);
 
-      expect(screen.getByText('Squares')).toBeInTheDocument();
-    });
-
-    it('displays rectangles section', () => {
-      render(<ActiveLayerPanel />);
-
-      expect(screen.getByText('Rectangles')).toBeInTheDocument();
-    });
-
-    it('displays all square sizes', () => {
-      render(<ActiveLayerPanel />);
-
-      // Should have 1×1 through 6×6
-      expect(screen.getByText('1×1')).toBeInTheDocument();
-      expect(screen.getByText('2×2')).toBeInTheDocument();
-      expect(screen.getByText('3×3')).toBeInTheDocument();
-      expect(screen.getByText('6×6')).toBeInTheDocument();
-    });
-
-    it('displays rectangle sizes', () => {
-      render(<ActiveLayerPanel />);
-
-      expect(screen.getByText('1×2')).toBeInTheDocument();
-      expect(screen.getByText('2×3')).toBeInTheDocument();
+      expect(screen.getByText('No bins')).toBeInTheDocument();
     });
 
     it('returns null when no active layer', () => {
@@ -119,25 +97,58 @@ describe('ActiveLayerPanel', () => {
     });
   });
 
-  describe('paint mode', () => {
-    it('toggles paint size when clicking size button', () => {
+  describe('size selector popover', () => {
+    it('opens popover when size button clicked', () => {
       render(<ActiveLayerPanel />);
 
+      fireEvent.click(screen.getByText('Bin Palette'));
+
+      expect(screen.getByTestId('size-popover')).toBeInTheDocument();
+    });
+
+    it('displays sizes in popover', () => {
+      render(<ActiveLayerPanel />);
+
+      fireEvent.click(screen.getByText('Bin Palette'));
+
+      expect(screen.getByText('1×1')).toBeInTheDocument();
+      expect(screen.getByText('2×2')).toBeInTheDocument();
+      expect(screen.getByText('6×6')).toBeInTheDocument();
+      expect(screen.getByText('1×2')).toBeInTheDocument();
+      expect(screen.getByText('2×3')).toBeInTheDocument();
+    });
+
+    it('displays squares and rectangles sections in popover', () => {
+      render(<ActiveLayerPanel />);
+
+      fireEvent.click(screen.getByText('Bin Palette'));
+
+      expect(screen.getByText('Squares')).toBeInTheDocument();
+      expect(screen.getByText('Rectangles')).toBeInTheDocument();
+    });
+  });
+
+  describe('paint mode', () => {
+    it('toggles paint size when clicking size button in popover', () => {
+      render(<ActiveLayerPanel />);
+
+      // Open popover
+      fireEvent.click(screen.getByText('Bin Palette'));
+      // Click a size
       fireEvent.click(screen.getByText('2×2'));
 
       expect(useUIStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
     });
 
-    it('deselects paint size when clicking same button', () => {
+    it('shows selected size in toolbar button', () => {
       useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
 
       render(<ActiveLayerPanel />);
-      fireEvent.click(screen.getByText('2×2'));
 
-      expect(useUIStore.getState().paintSize).toBeNull();
+      expect(screen.getByText('2×2')).toBeInTheDocument();
     });
 
-    it('shows fill button when paint size selected', () => {
+    it('shows fill with size when paint size selected', () => {
       useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
 
       render(<ActiveLayerPanel />);
@@ -145,9 +156,10 @@ describe('ActiveLayerPanel', () => {
       expect(screen.getByText('Fill with 2×2')).toBeInTheDocument();
     });
 
-    it('hides fill button when no paint size selected', () => {
+    it('shows fill gaps when no paint size selected', () => {
       render(<ActiveLayerPanel />);
 
+      expect(screen.getByText('Fill 80 gaps')).toBeInTheDocument();
       expect(screen.queryByText(/Fill with/)).not.toBeInTheDocument();
     });
   });
@@ -292,14 +304,20 @@ describe('ActiveLayerPanel', () => {
   });
 
   describe('rotation toggle', () => {
-    it('shows wide/tall toggle', () => {
+    it('shows wide/tall toggle in popover', () => {
       render(<ActiveLayerPanel />);
+
+      // Open popover
+      fireEvent.click(screen.getByText('Bin Palette'));
 
       expect(screen.getByText('Wide')).toBeInTheDocument();
     });
 
     it('toggles rectangle orientation', () => {
       render(<ActiveLayerPanel />);
+
+      // Open popover
+      fireEvent.click(screen.getByText('Bin Palette'));
 
       // Click to rotate
       fireEvent.click(screen.getByText('Wide'));
@@ -309,8 +327,11 @@ describe('ActiveLayerPanel', () => {
   });
 
   describe('shift+click to stash', () => {
-    it('adds bin to stash on shift+click', () => {
+    it('adds bin to stash on shift+click in popover', () => {
       render(<ActiveLayerPanel />);
+
+      // Open popover
+      fireEvent.click(screen.getByText('Bin Palette'));
 
       // Shift+click on 2×2
       const button = screen.getByText('2×2').closest('button')!;
