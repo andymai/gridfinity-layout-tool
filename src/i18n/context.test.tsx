@@ -446,27 +446,28 @@ describe('LocaleProvider setLocale', () => {
 });
 
 describe('LocaleProvider with non-English initial locale', () => {
-  it('shows loading state initially for non-English locale', () => {
+  it('renders children immediately for non-English locale (no CLS spinner)', () => {
     render(
       <LocaleProvider initialLocale="de">
-        <div>Content</div>
+        <div data-testid="content">Content</div>
       </LocaleProvider>
     );
 
-    const loader = screen.getByRole('status', { name: 'Loading' });
-    expect(loader).toBeInTheDocument();
+    // Children should be visible on the very first render — no loading spinner
+    expect(screen.getByTestId('content')).toBeInTheDocument();
+    expect(screen.queryByRole('status', { name: 'Loading' })).not.toBeInTheDocument();
   });
 
-  it('shows content after English locale loads', async () => {
+  it('renders children immediately for English locale (no CLS spinner)', () => {
     render(
       <LocaleProvider initialLocale="en">
         <div data-testid="content">Content</div>
       </LocaleProvider>
     );
 
-    await waitFor(() => {
-      expect(screen.getByTestId('content')).toBeInTheDocument();
-    });
+    // Children should be visible immediately — no loading spinner
+    expect(screen.getByTestId('content')).toBeInTheDocument();
+    expect(screen.queryByRole('status', { name: 'Loading' })).not.toBeInTheDocument();
   });
 
   it('eventually loads non-English locale and shows content', async () => {

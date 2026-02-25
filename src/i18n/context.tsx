@@ -159,14 +159,25 @@ interface LocaleProviderProps {
 export function LocaleProvider({ children, initialLocale, onLocaleChange }: LocaleProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const [translations, setTranslations] = useState<Translations>(fallback);
-  const [isLoading, setIsLoading] = useState(true);
+  // Start with isLoading=false so the first render shows children immediately
+  // (avoids a fullscreen spinner that causes CLS). The initial locale load
+  // happens in the background; fallback translations cover the brief gap.
+  const [isLoading, setIsLoading] = useState(false);
   const latestLocaleRef = useRef<Locale>(initialLocale);
+  // Track whether the initial locale has loaded (suppresses loading spinner
+  // for the first mount — only explicit locale switches show the spinner).
+  // Uses state (not ref) because it's read during render for conditional UI.
+  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
 
-  const loadLocale = useCallback(async (target: Locale) => {
+  const loadLocale = useCallback(async (target: Locale, isInitial = false) => {
     latestLocaleRef.current = target;
 
     const loader = localeLoaders[target];
-    setIsLoading(true);
+    // Only show loading spinner for explicit locale switches, not the initial load.
+    // The initial load renders children with fallback translations to avoid CLS.
+    if (!isInitial) {
+      setIsLoading(true);
+    }
     try {
       // For non-English, also ensure English is loaded (for fallback keys)
       const [module, enModule] = await Promise.all([
@@ -179,12 +190,14 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
       if (latestLocaleRef.current === target) {
         setTranslations(module.default);
         setIsLoading(false);
+        setHasLoadedInitial(true);
       }
     } catch {
       // Fall back to English (or fallback) on load failure
       if (latestLocaleRef.current === target) {
         setTranslations(_loadedEn ?? fallback);
         setIsLoading(false);
+        setHasLoadedInitial(true);
       }
     }
   }, []);
@@ -193,7 +206,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
   useEffect(() => {
     // Schedule for next microtask to avoid sync setState during effect
     // (React Compiler flags sync state updates in effects as problematic)
-    void Promise.resolve().then(() => loadLocale(initialLocale));
+    void Promise.resolve().then(() => loadLocale(initialLocale, true));
   }, [initialLocale, loadLocale]);
 
   const setLocale = useCallback(
@@ -249,9 +262,9 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     [locale, setLocale, t, isLoading]
   );
 
-  // Show minimal loading state while translations are loading
-  // This prevents flash of English content for non-English users
-  if (isLoading) {
+  // Show minimal loading state only during explicit locale switches (not initial load).
+  // The initial load renders children with fallback translations to avoid CLS.
+  if (isLoading && hasLoadedInitial) {
     return (
       <LocaleContext.Provider value={value}>
         <div className="h-screen flex items-center justify-center bg-surface">
