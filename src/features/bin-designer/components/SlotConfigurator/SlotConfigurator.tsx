@@ -15,6 +15,7 @@ import {
   calculateSlotPositions,
   calculateDividerLength,
   calculateDividerHeight,
+  getEffectiveSlotDimensions,
 } from '@/shared/utils/slotMath';
 import { useTranslation } from '@/i18n';
 import type { DividerPieceConfig } from '../../types';
@@ -115,7 +116,11 @@ export function SlotConfigurator() {
   );
   const maxHeightRounded = Math.round(maxDividerHeight * 10) / 10;
 
-  const effectiveSlotDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
+  const effectiveSlotDepth = getEffectiveSlotDimensions(
+    wallThickness,
+    dividerPieces.thickness,
+    dividerPieces.clearance
+  ).slotDepth;
 
   const dividerLength = useMemo(() => {
     if (!slotConfig.x.enabled && !slotConfig.y.enabled) return null;

@@ -119,9 +119,15 @@ describe('getEffectiveSlotDimensions', () => {
     expect(slotDepth).toBe(1.0);
   });
 
-  it('clamps slot depth to minimum 0.5mm', () => {
+  it('clamps slot depth to 80% of wall thickness for thin walls', () => {
     const { slotDepth } = getEffectiveSlotDimensions(0.6, 1.2, 0.1);
-    // 0.6 * 0.5 = 0.3 → clamped to 0.5
+    // 0.6 * 0.5 = 0.3 → raw clamped to 0.5, then capped at 0.6 * 0.8 = 0.48
+    expect(slotDepth).toBe(0.48);
+  });
+
+  it('clamps slot depth to minimum 0.5mm for adequate walls', () => {
+    const { slotDepth } = getEffectiveSlotDimensions(1.0, 1.2, 0.1);
+    // 1.0 * 0.5 = 0.5 → clamped to 0.5, within 80% cap (0.8)
     expect(slotDepth).toBe(0.5);
   });
 
@@ -131,9 +137,17 @@ describe('getEffectiveSlotDimensions', () => {
     expect(slotDepth).toBe(1.5);
   });
 
-  it('standard wall thickness 0.95mm gives clamped slot depth', () => {
+  it('standard wall thickness 0.95mm respects 80% cap', () => {
     const { slotDepth } = getEffectiveSlotDimensions(0.95, 1.2, 0.1);
-    // 0.95 * 0.5 = 0.475 → clamped to 0.5
+    // 0.95 * 0.5 = 0.475 → raw clamped to 0.5, then capped at 0.95 * 0.8 = 0.76
+    // 0.5 < 0.76, so result is 0.5
     expect(slotDepth).toBe(0.5);
+  });
+
+  it('never exceeds wall thickness (prevents cutting through wall)', () => {
+    // wallThickness = 0.4mm: raw = max(0.5, 0.2) = 0.5, cap = 0.4 * 0.8 = 0.32
+    const { slotDepth } = getEffectiveSlotDimensions(0.4, 1.2, 0.1);
+    expect(slotDepth).toBeCloseTo(0.32, 10);
+    expect(slotDepth).toBeLessThan(0.4);
   });
 });

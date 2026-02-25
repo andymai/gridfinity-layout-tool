@@ -23,6 +23,7 @@ import {
   calculateSlotPositions,
   calculateDividerHeight,
   calculateDividerLength,
+  getEffectiveSlotDimensions,
 } from '@/shared/utils/slotMath';
 
 const GHOST_COLOR = '#22d3ee';
@@ -100,8 +101,7 @@ export function GhostDividerPieces() {
     // X-axis dividers: span width (X), positioned along depth (Y)
     if (slotConfig.x.enabled) {
       const yPositions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
-      // Effective slot depth: 50% of wall thickness, clamped to [0.5, 1.5]mm
-      const slotDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
+      const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
       const divLength = calculateDividerLength(innerW, slotDepth, clearance);
 
       for (const yPos of yPositions) {
@@ -115,7 +115,7 @@ export function GhostDividerPieces() {
     // Y-axis dividers: span depth (Y), positioned along width (X)
     if (slotConfig.y.enabled) {
       const xPositions = calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang);
-      const slotDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
+      const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
       const divLength = calculateDividerLength(innerD, slotDepth, clearance);
 
       for (const xPos of xPositions) {
@@ -195,7 +195,7 @@ export function GhostDividerPieces() {
     if (!shouldShow) return null;
 
     const { thickness, clearance } = dividerPieces;
-    const slotDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
+    const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
     const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
 
     const isXFirst = slotConfig.x.enabled;

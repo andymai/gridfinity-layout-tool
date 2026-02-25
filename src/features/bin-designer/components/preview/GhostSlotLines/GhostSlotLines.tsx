@@ -16,7 +16,7 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { calculateSlotPositions } from '@/shared/utils/slotMath';
+import { calculateSlotPositions, getEffectiveSlotDimensions } from '@/shared/utils/slotMath';
 
 const GHOST_COLOR = '#fbbf24';
 const GHOST_OPACITY = 0.75;
@@ -37,7 +37,7 @@ export function GhostSlotLines() {
     }))
   );
 
-  const { width, depth, height, wallThickness, style, slotConfig } = params;
+  const { width, depth, height, wallThickness, style, slotConfig, dividerPieces } = params;
 
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
@@ -59,8 +59,11 @@ export function GhostSlotLines() {
     if (!shouldShow) return null;
 
     const positions: number[] = [];
-    // Effective slot depth: 50% of wall thickness, clamped to [0.5, 1.5]mm
-    const slotDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
+    const { slotDepth } = getEffectiveSlotDimensions(
+      wallThickness,
+      dividerPieces.thickness,
+      dividerPieces.clearance
+    );
 
     // X-axis slots on left/right walls
     if (slotConfig.x.enabled) {
@@ -89,7 +92,17 @@ export function GhostSlotLines() {
     const geo = new LineSegmentsGeometry();
     geo.setPositions(positions);
     return geo;
-  }, [shouldShow, slotConfig, innerW, innerD, wallThickness, topZ, lipOverhang]);
+  }, [
+    shouldShow,
+    slotConfig,
+    innerW,
+    innerD,
+    wallThickness,
+    topZ,
+    lipOverhang,
+    dividerPieces.thickness,
+    dividerPieces.clearance,
+  ]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;
