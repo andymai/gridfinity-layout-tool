@@ -63,14 +63,21 @@ import { LRUCache } from './lruCache';
 // LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
 // Build one loft per unique cell size, then clone+translate for each grid position.
 
-const pocketTemplateCache = new LRUCache<Shape3D>(8);
+const pocketTemplateCache = new LRUCache<Shape3D>(16);
 
 // ─── Mesh Result Cache ──────────────────────────────────────────────────────
 // Caches the fully tessellated mesh data (vertices, normals, indices, edges)
 // keyed by generation params. Skips BREP booleans + tessellation entirely on
 // cache hit — the most expensive operations in the pipeline.
 
-const meshResultCache = new LRUCache<MeshData>(4);
+const meshResultCache = new LRUCache<MeshData>(8);
+
+// ─── Intermediate Solid Cache ───────────────────────────────────────────────
+// Caches the slab-with-pockets BREP solid BEFORE magnet holes and connectors
+// are applied. This is the most expensive boolean step. When only magnet or
+// connector params change, we skip pocket cuts and resume from this cached solid.
+
+const slabWithPocketsCache = new LRUCache<Shape3D>(4);
 
 function pocketCacheKey(
   cellW: number,
@@ -401,6 +408,32 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
   ].join('|');
 }
 
+/**
+ * Cache key for the intermediate slab-with-pockets solid.
+ * Only includes params that affect slab geometry and pocket cuts — NOT magnet
+ * holes or connectors, so toggling those reuses the cached intermediate.
+ */
+function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): string {
+  return [
+    params.width,
+    params.depth,
+    params.gridUnitMm,
+    params.magnetHoles, // affects throughCut and slab height
+    params.magnetDepth, // affects slab height (floorDepth)
+    params.paddingLeft,
+    params.paddingRight,
+    params.paddingFront,
+    params.paddingBack,
+    params.fractionalEdgeX,
+    params.fractionalEdgeY,
+    params.edges?.left ?? '',
+    params.edges?.right ?? '',
+    params.edges?.front ?? '',
+    params.edges?.back ?? '',
+    forExport,
+  ].join('|');
+}
+
 // ─── Slab Profile Builder ──────────────────────────────────────────────────
 
 /**
@@ -543,50 +576,66 @@ function buildBaseplateSolid(
     edges,
   } = params;
 
-  // 1. Build solid slab — taller when magnets require a solid floor
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMm + paddingFront + paddingBack;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
-  const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
-  const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
-
-  // Slab center offset — grid pockets stay at origin, slab shifts to accommodate asymmetric padding
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
-
-  // Build slab profile — selectively round only exterior corners for split pieces
-  const profile = buildSlabProfile(totalW, totalD, cornerR, edges);
-  let baseplate: Shape3D = (
-    profile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
-  ).extrude(-totalHeight);
-
-  // Shift slab so grid portion remains centered at origin
-  baseplate = translate(baseplate, [slabOffsetX, slabOffsetY, 0]);
-
-  onProgress?.(0.2);
-
-  // 2. Collect all subtractive tools (pockets, magnet holes, connector grooves)
-  // into a single array for one batched cutAll operation. This avoids rebuilding
-  // the BREP topology between separate boolean passes.
-  const throughCut = !magnetHoles;
   const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
+
+  // 1. Get or build the slab-with-pockets intermediate (most expensive step).
+  // This is cached separately so that toggling magnets or connectors doesn't
+  // redo the pocket boolean cuts.
+  const spKey = slabPocketsCacheKey(params, forExport);
+  const cachedSlab = slabWithPocketsCache.get(spKey);
+  let baseplate: Shape3D;
+
+  if (cachedSlab !== undefined) {
+    baseplate = clone(cachedSlab);
+    onProgress?.(0.5);
+  } else {
+    // Build solid slab
+    const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
+    const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
+    const profile = buildSlabProfile(totalW, totalD, cornerR, edges);
+    baseplate = (profile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }).extrude(
+      -totalHeight
+    );
+    baseplate = translate(baseplate, [slabOffsetX, slabOffsetY, 0]);
+
+    onProgress?.(0.2);
+
+    // Cut pockets — through-cut when no magnets, partial when magnets leave a floor
+    const throughCut = !magnetHoles;
+    const pockets: Shape3D[] = [];
+    forEachCell(
+      width,
+      depth,
+      (cell) => {
+        const cellW_mm = cell.widthUnits * gridUnitMm;
+        const cellD_mm = cell.depthUnits * gridUnitMm;
+        const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
+        pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
+      },
+      cellOpts
+    );
+
+    if (pockets.length > 0) {
+      baseplate = unwrap(cutAll(baseplate, pockets));
+    }
+
+    slabWithPocketsCache.set(spKey, baseplate);
+    // Clone after caching so subsequent mutations don't corrupt the cached solid
+    baseplate = clone(baseplate);
+    onProgress?.(0.5);
+  }
+
+  // 2. Collect remaining subtractive tools (magnet holes, connector grooves)
+  // into a single array for one batched cutAll operation.
   const allCuts: Shape3D[] = [];
 
-  // 2a. Pocket cutters
-  forEachCell(
-    width,
-    depth,
-    (cell) => {
-      const cellW_mm = cell.widthUnits * gridUnitMm;
-      const cellD_mm = cell.depthUnits * gridUnitMm;
-      const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
-      allCuts.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
-    },
-    cellOpts
-  );
-
-  // 2b. Magnet hole cutters
+  // 2a. Magnet hole cutters
   if (magnetHoles) {
     const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
     allCuts.push(...holes);
@@ -594,7 +643,7 @@ function buildBaseplateSolid(
 
   onProgress?.(0.4);
 
-  // 2c. Connector groove cutters
+  // 2b. Connector groove cutters
   const { nubs, holes: connHoles } = buildConnectors(
     params,
     totalHeight,
