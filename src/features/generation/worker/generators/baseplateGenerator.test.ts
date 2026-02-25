@@ -261,4 +261,23 @@ describe('baseplateGenerator', () => {
     );
     expect(mesh.vertices.length).toBeGreaterThan(0);
   });
+
+  it('connectors with asymmetric padding produce valid mesh', () => {
+    const mesh = generateBaseplate(
+      defaults({
+        width: 3,
+        depth: 3,
+        paddingLeft: 10,
+        paddingRight: 0,
+        paddingFront: 5,
+        paddingBack: 0,
+        connectorNubs: true,
+        edges: { left: 'join', right: 'exterior', front: 'join', back: 'exterior' },
+      }),
+      noop,
+      false
+    );
+    expect(mesh.vertices.length).toBeGreaterThan(0);
+    expect(mesh.indices.length).toBeGreaterThan(0);
+  });
 });

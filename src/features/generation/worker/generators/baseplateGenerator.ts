@@ -300,7 +300,7 @@ function buildConnectors(
       isMale: true,
       wallPos: -halfW + slabOffsetX,
       numBoundaries: Math.ceil(params.depth) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2 + slabOffsetY,
+      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
       protrudeAxis: 'x',
       protrudeDir: -1,
     },
@@ -309,7 +309,7 @@ function buildConnectors(
       isMale: false,
       wallPos: halfW + slabOffsetX,
       numBoundaries: Math.ceil(params.depth) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2 + slabOffsetY,
+      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
       protrudeAxis: 'x',
       protrudeDir: 1,
     },
@@ -318,7 +318,7 @@ function buildConnectors(
       isMale: true,
       wallPos: -halfD + slabOffsetY,
       numBoundaries: Math.ceil(params.width) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2 + slabOffsetX,
+      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
       protrudeAxis: 'y',
       protrudeDir: -1,
     },
@@ -327,7 +327,7 @@ function buildConnectors(
       isMale: false,
       wallPos: halfD + slabOffsetY,
       numBoundaries: Math.ceil(params.width) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2 + slabOffsetX,
+      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
       protrudeAxis: 'y',
       protrudeDir: 1,
     },
@@ -336,6 +336,13 @@ function buildConnectors(
   for (const def of edgeDefs) {
     if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
 
+    // Build an XY point with wall/boundary coords assigned to the correct axis.
+    // When protruding along X, wall is on X and boundary is on Y; vice versa for Y.
+    const pt =
+      def.protrudeAxis === 'x'
+        ? (wallCoord: number, bpCoord: number): [number, number] => [wallCoord, bpCoord]
+        : (wallCoord: number, bpCoord: number): [number, number] => [bpCoord, wallCoord];
+
     for (let k = 1; k <= def.numBoundaries; k++) {
       const bp = def.boundaryPos(k); // boundary position on parallel axis
       const w = def.wallPos;
@@ -343,37 +350,22 @@ function buildConnectors(
 
       if (def.isMale) {
         // Dovetail tongue: trapezoidal plan view, wider at tip.
-        // draw([X, Y]) on XY plane, extrude downward in -Z.
-        const profile =
-          def.protrudeAxis === 'x'
-            ? draw([w, bp + bW])
-                .lineTo([w + d * P, bp + tW])
-                .lineTo([w + d * P, bp - tW])
-                .lineTo([w, bp - bW])
-                .close()
-            : draw([bp + bW, w])
-                .lineTo([bp + tW, w + d * P])
-                .lineTo([bp - tW, w + d * P])
-                .lineTo([bp - bW, w])
-                .close();
+        const profile = draw(pt(w, bp + bW))
+          .lineTo(pt(w + d * P, bp + tW))
+          .lineTo(pt(w + d * P, bp - tW))
+          .lineTo(pt(w, bp - bW))
+          .close();
         tongues.push(sketch(profile, 'XY', 0).extrude(-totalHeight));
       } else {
         // Dovetail groove: matching shape + clearance, extended beyond wall.
         const gB = bW + cl; // half-width at wall opening (narrow + clearance)
         const gT = tW + cl; // half-width at inner face (wide + clearance)
         const gP = P + cl; // groove depth
-        const profile =
-          def.protrudeAxis === 'x'
-            ? draw([w + d * ext, bp + gB])
-                .lineTo([w - d * gP, bp + gT])
-                .lineTo([w - d * gP, bp - gT])
-                .lineTo([w + d * ext, bp - gB])
-                .close()
-            : draw([bp + gB, w + d * ext])
-                .lineTo([bp + gT, w - d * gP])
-                .lineTo([bp - gT, w - d * gP])
-                .lineTo([bp - gB, w + d * ext])
-                .close();
+        const profile = draw(pt(w + d * ext, bp + gB))
+          .lineTo(pt(w - d * gP, bp + gT))
+          .lineTo(pt(w - d * gP, bp - gT))
+          .lineTo(pt(w + d * ext, bp - gB))
+          .close();
         // Extend groove in Z beyond slab faces to avoid coplanar booleans
         grooves.push(
           sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN))
