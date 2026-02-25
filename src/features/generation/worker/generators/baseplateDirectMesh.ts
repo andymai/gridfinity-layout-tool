@@ -14,7 +14,8 @@
  * - Z=totalHeight: top face / pocket opening
  * - Without magnets: pockets through-cut (no floor)
  * - With magnets: slab is taller by (MAGNET_FLOOR + magnetDepth); pockets
- *   stop at SOCKET_HEIGHT depth leaving a solid floor for magnet holes
+ *   stop at SOCKET_HEIGHT depth. Floor is selectively removed, leaving only
+ *   individual rounded-rect pads at the 4 magnet positions per full cell
  * - Grid centered at XY origin; slab offset by padding
  */
 
@@ -43,6 +44,9 @@ const HOLE_OFFSET = 13;
 
 /** Solid ceiling above each magnet hole — magnets glue against this (mm) */
 const MAGNET_FLOOR = 0.5;
+
+/** Wall thickness around each magnet hole in the pad (mm) */
+const PAD_WALL = 1;
 
 /** Number of line segments per rounded corner arc */
 const CORNER_SEGMENTS = 4;
@@ -305,7 +309,7 @@ function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
  * Add pocket inner walls for one cell.
  *
  * Tapered walls from Z=totalHeight (full cell size) to Z=floorDepth (inset by INSET_BOT).
- * When floorDepth > 0 (magnets enabled), the pocket has a solid floor at Z=floorDepth.
+ * When withFloor is true and floorDepth > 0, a solid floor is added at Z=floorDepth.
  * When floorDepth = 0 (no magnets), the pocket is through-cut (no floor).
  *
  * Walls face INWARD (normals point toward cell center = into the pocket).
@@ -317,7 +321,8 @@ function addPocketWalls(
   cellW_mm: number,
   cellD_mm: number,
   totalHeight: number,
-  floorDepth: number
+  floorDepth: number,
+  withFloor: boolean = true
 ): void {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const botR = Math.max(cornerR - INSET_BOT, 0.1);
@@ -352,9 +357,10 @@ function addPocketWalls(
     mb.pushFlatQuad(tx1, ty1, zTop, tx0, ty0, zTop, bx0, by0, zBot, bx1, by1, zBot);
   }
 
-  // Pocket floor: when magnets are enabled (floorDepth > 0), cap the pocket bottom
+  // Pocket floor: when withFloor is true and floorDepth > 0, cap the pocket bottom
   // with a face at Z=floorDepth facing UP into the pocket.
-  if (floorDepth > 0) {
+  // For full cells with magnets, withFloor is false — individual pads replace the full floor.
+  if (withFloor && floorDepth > 0) {
     const nx = 0,
       ny = 0,
       nz = 1;
@@ -497,8 +503,9 @@ function addTopFace(
  * inside pocket bottom openings (pocket cancellation holes punched via
  * upward-facing polygons).
  *
- * When throughCut is false (magnets enabled): solid floor — pockets don't
- * reach the bottom, so the entire bottom face is solid material.
+ * When magnets are enabled: pocket bottom cancellation for full cells only.
+ * The pads will restore material at magnet positions via addMagnetPads().
+ * Fractional cells keep their solid floor (no cancellation).
  */
 function addBottomFace(
   mb: MeshBuilder,
@@ -507,7 +514,8 @@ function addBottomFace(
   offsetY: number,
   cells: ReadonlyArray<CellInfo>,
   gridUnitMm: number,
-  throughCut: boolean
+  throughCut: boolean,
+  magnetHoles: boolean = false
 ): void {
   const z = 0;
 
@@ -532,13 +540,18 @@ function addBottomFace(
     }
   }
 
-  // 2. When through-cut (no magnets), punch pocket holes in the bottom face
-  if (throughCut) {
+  // 2. Punch pocket bottom holes in the bottom face.
+  // Through-cut: cancel ALL cells (pockets go to Z=0).
+  // Magnets: cancel only full cells (floor removed except at pads; pads restore via addMagnetPads).
+  if (throughCut || magnetHoles) {
     const nx = 0,
       ny = 0,
       nz = 1;
 
     for (const cell of cells) {
+      // When magnets, only cancel full cells (fractional cells keep solid floor)
+      if (magnetHoles && (cell.widthUnits < 1 || cell.depthUnits < 1)) continue;
+
       const cellW_mm = cell.widthUnits * gridUnitMm;
       const cellD_mm = cell.depthUnits * gridUnitMm;
       const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
@@ -560,6 +573,80 @@ function addBottomFace(
       for (let i = 0; i < nPts; i++) {
         const j = (i + 1) % nPts;
         mb.pushTriangle(center, verts[i], verts[j]);
+      }
+    }
+  }
+}
+
+// ─── Magnet Pad Geometry ────────────────────────────────────────────────────
+
+/**
+ * Add magnet pad geometry for one full cell.
+ *
+ * Each full cell gets 4 individual rounded-rect pads at the magnet positions.
+ * The pad geometry consists of three layers per pad:
+ *
+ * 1. Pad top face at Z=floorDepth (facing UP) — the pocket floor at the pad
+ * 2. Pad vertical walls from Z=floorDepth to Z=0 (facing outward from pad)
+ * 3. Pad bottom face at Z=0 (facing DOWN) — restores the bottom face after
+ *    pocket cancellation punched a hole at this position
+ *
+ * The magnet hole (added separately) will cancel the pad bottom with an
+ * upward-facing circle, completing the layered cancellation stack.
+ */
+function addMagnetPads(
+  mb: MeshBuilder,
+  cx: number,
+  cy: number,
+  magnetRadius: number,
+  floorDepth: number
+): void {
+  const padSize = magnetRadius * 2 + PAD_WALL * 2;
+  const padCornerR = Math.min(PLATE_CORNER_RADIUS, padSize / 2 - 0.1);
+  const padPts = roundedRectPoints(padSize, padSize, padCornerR, CORNER_SEGMENTS);
+
+  for (const [dx, dy] of MAGNET_OFFSETS) {
+    const mx = cx + dx;
+    const my = cy + dy;
+
+    // 1. Pad top face at Z=floorDepth facing UP (pocket floor at pad position)
+    {
+      const nx = 0,
+        ny = 0,
+        nz = 1;
+      const center = mb.pushVertex(mx, my, floorDepth, nx, ny, nz);
+      const verts: number[] = [];
+      for (const pt of padPts) {
+        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, floorDepth, nx, ny, nz));
+      }
+      for (let i = 0; i < verts.length; i++) {
+        mb.pushTriangle(center, verts[i], verts[(i + 1) % verts.length]);
+      }
+    }
+
+    // 2. Pad vertical walls from Z=floorDepth to Z=0 (outward facing)
+    for (let i = 0; i < padPts.length; i++) {
+      const j = (i + 1) % padPts.length;
+      const x0 = padPts[i][0] + mx,
+        y0 = padPts[i][1] + my;
+      const x1 = padPts[j][0] + mx,
+        y1 = padPts[j][1] + my;
+      // CCW path outward: top_i, top_j, bot_j, bot_i
+      mb.pushFlatQuad(x0, y0, floorDepth, x1, y1, floorDepth, x1, y1, 0, x0, y0, 0);
+    }
+
+    // 3. Pad bottom face at Z=0 facing DOWN (restores bottom after pocket cancellation)
+    {
+      const nx = 0,
+        ny = 0,
+        nz = -1;
+      const center = mb.pushVertex(mx, my, 0, nx, ny, nz);
+      const verts: number[] = [];
+      for (const pt of padPts) {
+        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, 0, nx, ny, nz));
+      }
+      for (let i = 0; i < verts.length; i++) {
+        mb.pushTriangle(center, verts[(i + 1) % verts.length], verts[i]);
       }
     }
   }
@@ -726,7 +813,19 @@ export function generateBaseplateDirect(
   for (const cell of cells) {
     const cellW_mm = cell.widthUnits * gridUnitMm;
     const cellD_mm = cell.depthUnits * gridUnitMm;
-    addPocketWalls(mb, cell.centerX, cell.centerY, cellW_mm, cellD_mm, totalHeight, floorDepth);
+    // Full cells with magnets: skip the full floor (individual pads replace it)
+    const isFullCell = cell.widthUnits >= 1 && cell.depthUnits >= 1;
+    const withFloor = !magnetHoles || !isFullCell;
+    addPocketWalls(
+      mb,
+      cell.centerX,
+      cell.centerY,
+      cellW_mm,
+      cellD_mm,
+      totalHeight,
+      floorDepth,
+      withFloor
+    );
   }
 
   onProgress('base', 0.5);
@@ -738,19 +837,19 @@ export function generateBaseplateDirect(
   onProgress('base', 0.6);
   checkCancelled(signal);
 
-  // 5. Bottom face (Z=0) — solid when magnets (floor), waffle grid when no magnets
+  // 5. Bottom face (Z=0) — waffle grid holes for through-cut cells, pad-cancelled for magnet cells
   const throughCut = !magnetHoles;
-  addBottomFace(mb, outerPts, slabOffsetX, slabOffsetY, cells, gridUnitMm, throughCut);
+  addBottomFace(mb, outerPts, slabOffsetX, slabOffsetY, cells, gridUnitMm, throughCut, magnetHoles);
 
   onProgress('base', 0.7);
   checkCancelled(signal);
 
-  // 6. Magnet holes (when enabled, only for full-size cells)
+  // 6. Magnet pads + holes (when enabled, only for full-size cells)
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
     for (const cell of cells) {
-      // Only place magnet holes in full-size cells (skip fractional edge cells)
       if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
+      addMagnetPads(mb, cell.centerX, cell.centerY, magnetRadius, floorDepth);
       addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, magnetDepth);
     }
   }

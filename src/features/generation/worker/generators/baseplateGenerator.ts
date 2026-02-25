@@ -10,9 +10,11 @@
  *
  * With magnets: slab height = SOCKET_HEIGHT + MAGNET_FLOOR + magnetDepth.
  * Pockets cut to SOCKET_HEIGHT depth only, leaving a solid floor under each
- * pocket. Magnet holes are blind cylindrical pockets cut upward from the
- * bottom face into this floor, with a thin ceiling (MAGNET_FLOOR = 0.5mm)
- * for gluing magnets in place.
+ * pocket. The floor is then selectively removed — a "floor remover" (pocket
+ * bottom profile with 4 pad-shaped holes) is cut from each full cell, leaving
+ * only individual rounded-rect pads at the 4 magnet positions per cell.
+ * Magnet holes are blind cylindrical pockets cut upward from the bottom face
+ * into each pad, with a thin ceiling (MAGNET_FLOOR = 0.5mm) for gluing.
  *
  * Coordinate system (after final Z-shift):
  * - Z=0: bottom face of baseplate
@@ -57,6 +59,9 @@ const PLATE_CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
 
 /** Solid ceiling above each magnet hole — magnets are inserted from below and glued against this (mm) */
 const MAGNET_FLOOR = 0.5;
+
+/** Wall thickness around each magnet hole in the pad (mm) */
+const PAD_WALL = 1;
 
 /** mm from cell center to magnet position (Gridfinity spec) */
 const HOLE_OFFSET = 13;
@@ -200,7 +205,7 @@ function getPocketTemplate(
   return clone(template);
 }
 
-// ─── Magnet Holes ───────────────────────────────────────────────────────────
+// ─── Magnet Pad Floor Removers ───────────────────────────────────────────────
 
 /** Magnet position offsets relative to cell center (4 corners per cell) */
 const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
@@ -209,6 +214,77 @@ const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
   [HOLE_OFFSET, HOLE_OFFSET],
   [-HOLE_OFFSET, HOLE_OFFSET],
 ];
+
+/**
+ * Build floor remover shapes that cut away the solid floor under each pocket,
+ * leaving only individual rounded-rect pads at the 4 magnet positions per cell.
+ *
+ * Each floor remover is the pocket bottom profile (rounded rect at INSET_BOT)
+ * extruded through the floor thickness, with 4 pad-shaped holes cut from it.
+ * When this remover is cut from the slab, it removes the floor everywhere
+ * EXCEPT at the pad positions.
+ *
+ * Only full-size cells (≥1.0 grid unit in both dimensions) get floor removers.
+ * The template is built once for the standard cell size, then cloned per cell.
+ */
+function buildFloorRemovers(
+  gridW: number,
+  gridD: number,
+  magnetRadius: number,
+  magnetDepth: number,
+  gridUnitMm: number,
+  cellOpts?: ForEachCellOptions
+): Shape3D[] {
+  const padSize = magnetRadius * 2 + PAD_WALL * 2;
+  const padCornerR = Math.min(PLATE_CORNER_RADIUS, padSize / 2 - 0.1);
+  const floorDepth = MAGNET_FLOOR + magnetDepth;
+
+  // Floor remover extends through floor thickness with coplanar margin on both sides
+  const removerZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
+  const removerHeight = floorDepth + 2 * COPLANAR_MARGIN;
+
+  // Full cell pocket bottom profile (standard 1×1 grid unit)
+  const cellW_mm = gridUnitMm;
+  const cellD_mm = gridUnitMm;
+  const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
+  const botR = Math.max(cornerR - INSET_BOT, 0.1);
+  const botW = cellW_mm - 2 * INSET_BOT;
+  const botD = cellD_mm - 2 * INSET_BOT;
+
+  // Build remover template: pocket bottom profile extruded through floor
+  let removerTemplate: Shape3D = sketch(
+    drawRoundedRectangle(botW, botD, botR),
+    'XY',
+    removerZ
+  ).extrude(-removerHeight);
+
+  // Cut pad-shaped holes at each magnet position.
+  // Pad cutters extend past the remover on both sides to avoid coplanar faces.
+  const padCutters: Shape3D[] = [];
+  for (const [dx, dy] of MAGNET_OFFSETS) {
+    const padShape = sketch(
+      drawRoundedRectangle(padSize, padSize, padCornerR),
+      'XY',
+      removerZ + COPLANAR_MARGIN
+    ).extrude(-(removerHeight + 2 * COPLANAR_MARGIN));
+    padCutters.push(translate(padShape, [dx, dy, 0]));
+  }
+  removerTemplate = unwrap(cutAll(removerTemplate, padCutters));
+
+  // Clone and translate to each full cell position
+  const removers: Shape3D[] = [];
+  forEachCell(
+    gridW,
+    gridD,
+    (cell) => {
+      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+      removers.push(translate(clone(removerTemplate), [cell.centerX, cell.centerY, 0]));
+    },
+    cellOpts
+  );
+
+  return removers;
+}
 
 /**
  * Build magnet hole cutters for the underside of the baseplate.
@@ -386,9 +462,9 @@ export function generateBaseplate(
  * (no floor), leaving just walls between cells.
  *
  * With magnets: slab height = SOCKET_HEIGHT + MAGNET_FLOOR + magnetDepth.
- * Pockets cut to SOCKET_HEIGHT depth only, leaving a solid floor under each
- * pocket for the magnet holes. Magnet holes are blind cylindrical pockets cut
- * from the bottom face upward into this floor.
+ * Pockets cut to SOCKET_HEIGHT depth (leaving solid floor), then floor removers
+ * selectively remove material except at 4 individual rounded-rect pads per cell.
+ * Magnet holes are blind cylindrical pockets cut from below into each pad.
  *
  * The slab profile has rounded exterior corners (PLATE_CORNER_RADIUS),
  * which carry through the full height including the magnet floor.
@@ -457,9 +533,26 @@ function buildBaseplateSolid(
     baseplate = unwrap(cutAll(baseplate, pockets));
   }
 
-  onProgress?.(0.6);
+  onProgress?.(0.5);
 
-  // 3. Cut magnet holes from the bottom
+  // 3. Remove floor material except at magnet pad positions
+  if (magnetHoles) {
+    const floorRemovers = buildFloorRemovers(
+      width,
+      depth,
+      magnetDiameter / 2,
+      magnetDepth,
+      gridUnitMm,
+      cellOpts
+    );
+    if (floorRemovers.length > 0) {
+      baseplate = unwrap(cutAll(baseplate, floorRemovers));
+    }
+  }
+
+  onProgress?.(0.7);
+
+  // 4. Cut magnet holes from the bottom
   if (magnetHoles) {
     const holes = buildMagnetHoles(
       width,
@@ -474,7 +567,7 @@ function buildBaseplateSolid(
     }
   }
 
-  // 4. Shift up so bottom face sits at Z=0, matching the bin convention
+  // 5. Shift up so bottom face sits at Z=0, matching the bin convention
   baseplate = translate(baseplate, [0, 0, totalHeight]);
 
   return baseplate;
