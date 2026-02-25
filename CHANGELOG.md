@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.36.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.35.1...gridfinity-layout-tool-v3.36.0) (2026-02-25)
+
+
+### Features
+
+* **layers:** replace bin palette panel with compact popover toolbar ([#929](https://github.com/andymai/gridfinity-layout-tool/issues/929)) ([3a5b6c4](https://github.com/andymai/gridfinity-layout-tool/commit/3a5b6c4febe02f177e09c35748c15a617a2dd718))
+
 ## [3.35.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.35.0...gridfinity-layout-tool-v3.35.1) (2026-02-25)
 
 
