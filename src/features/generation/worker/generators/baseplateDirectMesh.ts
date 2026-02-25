@@ -48,6 +48,13 @@ const CORNER_SEGMENTS = 4;
 /** Number of segments for magnet hole circle approximation */
 const CIRCLE_SEGMENTS = 16;
 
+/**
+ * Tiny offset (mm) applied to cancellation faces to prevent z-fighting.
+ * Cancel faces are nudged toward the solid interior so the depth buffer
+ * can distinguish them from the faces they visually punch through.
+ */
+const CANCEL_EPSILON = 0.01;
+
 // ─── Mesh Builder ───────────────────────────────────────────────────────────
 
 class MeshBuilder {
@@ -503,7 +510,9 @@ function addBottomFace(
   // 2. Punch pocket bottom holes in the bottom face (through-cut only).
   // When magnets are enabled, the slab extends below the pockets so the
   // bottom face is fully solid — no cancellation needed.
+  // Cancel faces are offset by CANCEL_EPSILON toward interior (+Z) to avoid z-fighting.
   if (throughCut) {
+    const cancelZ = z + CANCEL_EPSILON;
     const nx = 0,
       ny = 0,
       nz = 1;
@@ -519,11 +528,11 @@ function addBottomFace(
       if (botW < 0.2 || botD < 0.2) continue;
 
       const pts = roundedRectPoints(botW, botD, botR, CORNER_SEGMENTS);
-      const center = mb.pushVertex(cell.centerX, cell.centerY, z, nx, ny, nz);
+      const center = mb.pushVertex(cell.centerX, cell.centerY, cancelZ, nx, ny, nz);
 
       const verts: number[] = [];
       for (const pt of pts) {
-        verts.push(mb.pushVertex(pt[0] + cell.centerX, pt[1] + cell.centerY, z, nx, ny, nz));
+        verts.push(mb.pushVertex(pt[0] + cell.centerX, pt[1] + cell.centerY, cancelZ, nx, ny, nz));
       }
 
       const nPts = verts.length;
@@ -579,14 +588,16 @@ function addMagnetHoles(
     const my = cy + dy;
 
     // 1. Cancel circle at Z=floorDepth facing DOWN — punches hole in pocket floor
+    // Offset by CANCEL_EPSILON below the pocket floor to avoid z-fighting.
     {
+      const cancelZ = zTop - CANCEL_EPSILON;
       const nx = 0,
         ny = 0,
         nz = -1;
-      const center = mb.pushVertex(mx, my, zTop, nx, ny, nz);
+      const center = mb.pushVertex(mx, my, cancelZ, nx, ny, nz);
       const verts: number[] = [];
       for (const pt of circlePts) {
-        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, zTop, nx, ny, nz));
+        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, cancelZ, nx, ny, nz));
       }
       const nPts = verts.length;
       // Facing -Z: CW from above → center, v_{j}, v_{i}
@@ -831,11 +842,15 @@ function addConnectorHole(
   }
 
   // 1. Cancel circle at wall surface, facing outward — punches hole in wall
+  // Offset inward by CANCEL_EPSILON (opposite to normal) to avoid z-fighting.
   {
-    const center = mb.pushVertex(cx, cy, cz, nx, ny, nz);
+    const cancelCx = cx - nx * CANCEL_EPSILON;
+    const cancelCy = cy - ny * CANCEL_EPSILON;
+    const cancelCz = cz - nz * CANCEL_EPSILON;
+    const center = mb.pushVertex(cancelCx, cancelCy, cancelCz, nx, ny, nz);
     const verts: number[] = [];
     for (const [dx, dy, dz] of circlePts) {
-      verts.push(mb.pushVertex(cx + dx, cy + dy, cz + dz, nx, ny, nz));
+      verts.push(mb.pushVertex(cancelCx + dx, cancelCy + dy, cancelCz + dz, nx, ny, nz));
     }
     // Facing outward: CW from outside (reverse winding to cancel existing wall)
     for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
