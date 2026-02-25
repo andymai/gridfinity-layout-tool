@@ -13,13 +13,14 @@
  * pocket. The floor is then selectively removed — a "floor remover" (pocket
  * bottom profile with 4 pad-shaped holes) is cut from each full cell, leaving
  * only individual rounded-rect pads at the 4 magnet positions per cell.
- * Magnet holes are blind cylindrical pockets cut upward from the bottom face
- * into each pad, with a thin ceiling (MAGNET_FLOOR = 0.5mm) for gluing.
+ * Magnet holes are blind cylindrical pockets cut downward from the pocket
+ * floor into each pad, leaving a thin floor (MAGNET_FLOOR = 0.5mm) at the
+ * bottom to retain the magnets. Magnets are dropped in from the pocket side.
  *
  * Coordinate system (after final Z-shift):
- * - Z=0: bottom face of baseplate
+ * - Z=0: bottom face of baseplate (solid under pads)
  * - Z=totalHeight: top face (bin interface), pockets open here
- * - Magnet holes are blind pockets from Z=0 upward by magnetDepth
+ * - Magnet holes open at Z=floorDepth (pocket floor) down to Z=MAGNET_FLOOR
  */
 
 import {
@@ -287,12 +288,12 @@ function buildFloorRemovers(
 }
 
 /**
- * Build magnet hole cutters for the underside of the baseplate.
+ * Build magnet hole cutters that open from the pocket floor (top side).
  *
- * Each magnet hole is a blind cylindrical pocket cut upward from the bottom
- * face into the solid floor under each pocket. The hole extends upward by
- * magnetDepth, leaving a thin ceiling (MAGNET_FLOOR) between the magnet
- * and the pocket above. Magnets are inserted from below and glued in place.
+ * Each magnet hole is a blind cylindrical pocket cut downward from the pocket
+ * floor into the pad. The hole extends down by magnetDepth, leaving a thin
+ * floor (MAGNET_FLOOR = 0.5mm) at the bottom to hold the magnet in place.
+ * Magnets are dropped in from the pocket side and retained by this floor.
  *
  * Builds one template cylinder and clones it for each hole position.
  * Only full-size (1.0+ unit) cells get magnet holes.
@@ -302,15 +303,15 @@ function buildMagnetHoles(
   gridD: number,
   magnetRadius: number,
   magnetDepth: number,
-  totalHeight: number,
+  _totalHeight: number,
   cellOpts?: ForEachCellOptions
 ): Shape3D[] {
-  // Cutter starts below the slab bottom and cuts upward by magnetDepth.
-  // Position: Z = -totalHeight (slab bottom before shift), up by magnetDepth.
-  // The COPLANAR_MARGIN extends past the bottom face to avoid coplanar issues.
-  const cutterZ = -totalHeight - COPLANAR_MARGIN;
-  const cutterHeight = magnetDepth + COPLANAR_MARGIN;
-  const magnetTemplate = sketch(drawCircle(magnetRadius), 'XY', cutterZ).extrude(cutterHeight);
+  // Cutter starts above the pocket floor (COPLANAR_MARGIN avoids coplanar with
+  // pocket bottom at Z=-SOCKET_HEIGHT) and cuts downward by magnetDepth.
+  // This leaves MAGNET_FLOOR of solid material at the bottom of each pad.
+  const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
+  const cutterDepth = magnetDepth + COPLANAR_MARGIN;
+  const magnetTemplate = sketch(drawCircle(magnetRadius), 'XY', cutterZ).extrude(-cutterDepth);
 
   const holes: Shape3D[] = [];
   forEachCell(

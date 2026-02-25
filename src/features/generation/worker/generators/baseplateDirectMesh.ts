@@ -15,7 +15,9 @@
  * - Without magnets: pockets through-cut (no floor)
  * - With magnets: slab is taller by (MAGNET_FLOOR + magnetDepth); pockets
  *   stop at SOCKET_HEIGHT depth. Floor is selectively removed, leaving only
- *   individual rounded-rect pads at the 4 magnet positions per full cell
+ *   individual rounded-rect pads at the 4 magnet positions per full cell.
+ *   Magnet holes open from the pocket floor (top) with a thin retaining
+ *   floor (MAGNET_FLOOR) at the bottom
  * - Grid centered at XY origin; slab offset by padding
  */
 
@@ -667,65 +669,35 @@ function circlePoints(radius: number, segments: number): ReadonlyArray<readonly 
 }
 
 /**
- * Add magnet holes for one cell.
+ * Add magnet holes for one cell, opening from the pocket floor (top side).
  *
- * Each magnet hole is a blind cylindrical pocket cut from the bottom face (Z=0)
- * upward by magnetDepth. The thin ceiling at Z=magnetDepth (with MAGNET_FLOOR
- * of solid material above it) is the glue surface.
+ * Each magnet hole is a blind cylindrical pocket cut downward from the pocket
+ * floor (Z=floorDepth) into the pad. The hole extends down by magnetDepth,
+ * leaving a thin floor (MAGNET_FLOOR) at the bottom to retain the magnet.
+ * Magnets are dropped in from the pocket side.
  *
  * For each magnet position in a full cell:
- * - Cylinder wall from Z=0 to Z=magnetDepth (normals pointing inward toward axis)
- * - Floor circle at Z=magnetDepth facing down (normal -Z) — the glue surface
- * - Cancel circle at Z=0 facing up (normal +Z) — punches hole in bottom face
+ * - Cancel circle at Z=floorDepth facing DOWN — punches hole in pad top face
+ * - Cylinder wall from Z=floorDepth to Z=MAGNET_FLOOR (inward-facing)
+ * - Floor circle at Z=MAGNET_FLOOR facing UP — the magnet sits on this
  */
 function addMagnetHoles(
   mb: MeshBuilder,
   cx: number,
   cy: number,
   magnetRadius: number,
-  magnetDepth: number
+  floorDepth: number
 ): void {
-  const zBot = 0;
-  const zTop = magnetDepth; // ceiling of magnet pocket
+  const zTop = floorDepth; // pocket floor level (magnet hole opens here)
+  const zBot = MAGNET_FLOOR; // thin floor that retains the magnet
 
   const circlePts = circlePoints(magnetRadius, CIRCLE_SEGMENTS);
 
   for (const [dx, dy] of MAGNET_OFFSETS) {
-    const mx = cx + dx; // magnet center position
+    const mx = cx + dx;
     const my = cy + dy;
 
-    // 1. Cancel circle at Z=0 facing UP — punches hole in the bottom face
-    {
-      const nx = 0,
-        ny = 0,
-        nz = 1;
-      const center = mb.pushVertex(mx, my, zBot, nx, ny, nz);
-      const verts: number[] = [];
-      for (const pt of circlePts) {
-        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, zBot, nx, ny, nz));
-      }
-      const nPts = verts.length;
-      for (let i = 0; i < nPts; i++) {
-        const j = (i + 1) % nPts;
-        mb.pushTriangle(center, verts[i], verts[j]);
-      }
-    }
-
-    // 2. Cylinder wall from Z=0 to Z=magnetDepth (normals point inward toward axis)
-    for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
-      const j = (i + 1) % CIRCLE_SEGMENTS;
-      const px0 = circlePts[i][0] + mx,
-        py0 = circlePts[i][1] + my;
-      const px1 = circlePts[j][0] + mx,
-        py1 = circlePts[j][1] + my;
-
-      // Inward-facing: from outside the solid (= inside the cylinder), CCW.
-      // The circle goes CCW from +Z, so from inside looking outward:
-      // top_j, top_i, bot_i, bot_j
-      mb.pushFlatQuad(px1, py1, zTop, px0, py0, zTop, px0, py0, zBot, px1, py1, zBot);
-    }
-
-    // 3. Floor circle at Z=magnetDepth facing DOWN — glue surface / ceiling
+    // 1. Cancel circle at Z=floorDepth facing DOWN — punches hole in pad top
     {
       const nx = 0,
         ny = 0,
@@ -736,10 +708,41 @@ function addMagnetHoles(
         verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, zTop, nx, ny, nz));
       }
       const nPts = verts.length;
-      // Facing -Z: CCW from below = CW from above → center, v_{j}, v_{i}
+      // Facing -Z: CW from above → center, v_{j}, v_{i}
       for (let i = 0; i < nPts; i++) {
         const j = (i + 1) % nPts;
         mb.pushTriangle(center, verts[j], verts[i]);
+      }
+    }
+
+    // 2. Cylinder wall from Z=floorDepth to Z=MAGNET_FLOOR (inward-facing)
+    for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
+      const j = (i + 1) % CIRCLE_SEGMENTS;
+      const px0 = circlePts[i][0] + mx,
+        py0 = circlePts[i][1] + my;
+      const px1 = circlePts[j][0] + mx,
+        py1 = circlePts[j][1] + my;
+
+      // Inward-facing: from inside the cylinder looking outward.
+      // Circle goes CCW from +Z, so inward quad: top_j, top_i, bot_i, bot_j
+      mb.pushFlatQuad(px1, py1, zTop, px0, py0, zTop, px0, py0, zBot, px1, py1, zBot);
+    }
+
+    // 3. Floor circle at Z=MAGNET_FLOOR facing UP — magnet sits on this
+    {
+      const nx = 0,
+        ny = 0,
+        nz = 1;
+      const center = mb.pushVertex(mx, my, zBot, nx, ny, nz);
+      const verts: number[] = [];
+      for (const pt of circlePts) {
+        verts.push(mb.pushVertex(pt[0] + mx, pt[1] + my, zBot, nx, ny, nz));
+      }
+      const nPts = verts.length;
+      // Facing +Z: CCW from above → center, v_{i}, v_{j}
+      for (let i = 0; i < nPts; i++) {
+        const j = (i + 1) % nPts;
+        mb.pushTriangle(center, verts[i], verts[j]);
       }
     }
   }
@@ -850,7 +853,7 @@ export function generateBaseplateDirect(
     for (const cell of cells) {
       if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
       addMagnetPads(mb, cell.centerX, cell.centerY, magnetRadius, floorDepth);
-      addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, magnetDepth);
+      addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, floorDepth);
     }
   }
 
