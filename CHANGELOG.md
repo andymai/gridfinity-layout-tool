@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.33.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.32.0...gridfinity-layout-tool-v3.33.0) (2026-02-25)
+
+
+### Features
+
+* **baseplate:** add dovetail connectors for split baseplate pieces ([#900](https://github.com/andymai/gridfinity-layout-tool/issues/900)) ([0e36ab9](https://github.com/andymai/gridfinity-layout-tool/commit/0e36ab9850cb77de24c6c4a665890af1f1b7f657))
+
 ## [3.32.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.31.0...gridfinity-layout-tool-v3.32.0) (2026-02-25)
 
 
