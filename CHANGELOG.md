@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.33.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.6...gridfinity-layout-tool-v3.33.7) (2026-02-25)
+
+
+### Bug Fixes
+
+* **ci:** remove duplicate push trigger for release-please branch ([#917](https://github.com/andymai/gridfinity-layout-tool/issues/917)) ([3c3b250](https://github.com/andymai/gridfinity-layout-tool/commit/3c3b2509092a6aec4e37f5f923d713ece86296fd))
+* **i18n:** eliminate CLS from fullscreen loading spinner on initial render ([#915](https://github.com/andymai/gridfinity-layout-tool/issues/915)) ([3adfbe1](https://github.com/andymai/gridfinity-layout-tool/commit/3adfbe1273e22cf86fd4be6eb471315992c692c2))
+
 ## [3.33.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.5...gridfinity-layout-tool-v3.33.6) (2026-02-25)
 
 
