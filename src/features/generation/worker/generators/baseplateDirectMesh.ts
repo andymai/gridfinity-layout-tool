@@ -37,6 +37,7 @@ import {
   HOLE_DIAMETER,
   HOLE_DEPTH,
   NUB_CIRCLE_SEGMENTS,
+  computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
 
@@ -622,104 +623,6 @@ function addMagnetHoles(
 
 // ─── Registration Connector Geometry ─────────────────────────────────────────
 
-/** Connector position with center, outward normal, and male/female classification. */
-interface ConnectorPos {
-  cx: number;
-  cy: number;
-  cz: number;
-  /** Outward normal of the wall face */
-  nx: number;
-  ny: number;
-  nz: number;
-  /** true = nub (male protrusion), false = hole (female indentation) */
-  isMale: boolean;
-}
-
-/**
- * Compute connector positions along all join edges of a split piece.
- *
- * For each join edge, places one connector at every interior cell boundary
- * along that edge. For N cells along an edge, there are ceil(N)-1 interior
- * boundaries. Each connector is centered vertically on the wall.
- *
- * Convention: left/front edges get nubs (male), right/back edges get holes (female).
- */
-function computeConnectorPositions(
-  width: number,
-  depth: number,
-  gridUnitMm: number,
-  totalHeight: number,
-  totalW: number,
-  totalD: number,
-  slabOffsetX: number,
-  slabOffsetY: number,
-  edges: NonNullable<BaseplateParams['edges']>
-): ConnectorPos[] {
-  const positions: ConnectorPos[] = [];
-  const zCenter = totalHeight / 2;
-  const halfW = totalW / 2;
-  const halfD = totalD / 2;
-
-  // Each edge: side key, boundary count, position mapper, outward normal, male/female
-  const edgeDefs: Array<{
-    side: keyof typeof edges;
-    numBoundaries: number;
-    position: (k: number) => { cx: number; cy: number };
-    nx: number;
-    ny: number;
-    isMale: boolean;
-  }> = [
-    {
-      side: 'left',
-      numBoundaries: Math.ceil(depth) - 1,
-      position: (k) => ({
-        cx: -halfW + slabOffsetX,
-        cy: k * gridUnitMm - (depth * gridUnitMm) / 2,
-      }),
-      nx: -1,
-      ny: 0,
-      isMale: true,
-    },
-    {
-      side: 'right',
-      numBoundaries: Math.ceil(depth) - 1,
-      position: (k) => ({ cx: halfW + slabOffsetX, cy: k * gridUnitMm - (depth * gridUnitMm) / 2 }),
-      nx: 1,
-      ny: 0,
-      isMale: false,
-    },
-    {
-      side: 'front',
-      numBoundaries: Math.ceil(width) - 1,
-      position: (k) => ({
-        cx: k * gridUnitMm - (width * gridUnitMm) / 2,
-        cy: -halfD + slabOffsetY,
-      }),
-      nx: 0,
-      ny: -1,
-      isMale: true,
-    },
-    {
-      side: 'back',
-      numBoundaries: Math.ceil(width) - 1,
-      position: (k) => ({ cx: k * gridUnitMm - (width * gridUnitMm) / 2, cy: halfD + slabOffsetY }),
-      nx: 0,
-      ny: 1,
-      isMale: false,
-    },
-  ];
-
-  for (const { side, numBoundaries, position, nx, ny, isMale } of edgeDefs) {
-    if (edges[side] !== 'join' || numBoundaries <= 0) continue;
-    for (let k = 1; k <= numBoundaries; k++) {
-      const { cx, cy } = position(k);
-      positions.push({ cx, cy, cz: zCenter, nx, ny, nz: 0, isMale });
-    }
-  }
-
-  return positions;
-}
-
 /**
  * Add a cylindrical nub (male protrusion) at a wall face.
  *
@@ -1010,19 +913,9 @@ export function generateBaseplateDirect(
     );
     for (const pos of connPositions) {
       if (pos.isMale) {
-        addConnectorNub(mb, pos.cx, pos.cy, pos.cz, pos.nx, pos.ny, pos.nz, nubRadius, NUB_DEPTH);
+        addConnectorNub(mb, pos.cx, pos.cy, pos.cz, pos.nx, pos.ny, 0, nubRadius, NUB_DEPTH);
       } else {
-        addConnectorHole(
-          mb,
-          pos.cx,
-          pos.cy,
-          pos.cz,
-          pos.nx,
-          pos.ny,
-          pos.nz,
-          holeRadius,
-          HOLE_DEPTH
-        );
+        addConnectorHole(mb, pos.cx, pos.cy, pos.cz, pos.nx, pos.ny, 0, holeRadius, HOLE_DEPTH);
       }
     }
   }

@@ -29,6 +29,7 @@ import {
   cutAll,
   clone,
   translate,
+  fuse,
   mesh,
   meshEdges,
   exportSTEP,
@@ -50,6 +51,11 @@ import {
   MAGNET_OFFSETS,
   INSET_BOT,
   pocketCornerRadius,
+  NUB_DIAMETER,
+  NUB_DEPTH,
+  HOLE_DIAMETER,
+  HOLE_DEPTH,
+  computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
@@ -231,6 +237,84 @@ function buildMagnetHoles(
   return holes;
 }
 
+// ─── Registration Connectors ─────────────────────────────────────────────────
+
+/**
+ * Build connector cylinders for split baseplate join edges.
+ *
+ * Nubs (male) protrude outward from the wall; holes (female) are cut inward.
+ * Returns { nubs, holes } arrays of Shape3D to fuse/cut onto the baseplate.
+ *
+ * Coordinates are in the pre-Z-shift system (slab top at Z=0, bottom at Z=-totalHeight).
+ * The caller applies the final Z-shift after all booleans.
+ *
+ * Cylinders are sketched on the plane perpendicular to the wall normal:
+ * - Left/right walls (nx=±1): sketch on YZ plane, extrude along ±X
+ * - Front/back walls (ny=±1): sketch on XZ plane, extrude along ±Y
+ */
+function buildConnectors(
+  params: BaseplateParams,
+  totalHeight: number,
+  totalW: number,
+  totalD: number,
+  slabOffsetX: number,
+  slabOffsetY: number
+): { nubs: Shape3D[]; holes: Shape3D[] } {
+  const { width, depth, gridUnitMm, edges, connectorNubs } = params;
+  const nubs: Shape3D[] = [];
+  const holes: Shape3D[] = [];
+
+  if (!connectorNubs || !edges) return { nubs, holes };
+
+  const positions = computeConnectorPositions(
+    width,
+    depth,
+    gridUnitMm,
+    totalHeight,
+    totalW,
+    totalD,
+    slabOffsetX,
+    slabOffsetY,
+    edges
+  );
+
+  const nubRadius = NUB_DIAMETER / 2;
+  const holeRadius = HOLE_DIAMETER / 2;
+
+  for (const pos of positions) {
+    // Pre-shift Z: cz is in final coords (0 to totalHeight), but booleans happen
+    // before the final translate(0,0,totalHeight), so subtract totalHeight.
+    const z = pos.cz - totalHeight;
+    const radius = pos.isMale ? nubRadius : holeRadius;
+    const cylDepth = pos.isMale ? NUB_DEPTH : HOLE_DEPTH;
+
+    let cyl: Shape3D;
+
+    if (Math.abs(pos.nx) > 0.5) {
+      // Left/right wall: sketch circle on YZ plane at the wall X position
+      // Extrude along +X (positive extrude direction)
+      const wallX = pos.isMale ? pos.cx : pos.cx - pos.nx * cylDepth;
+      const extrudeLen = pos.isMale ? pos.nx * cylDepth : pos.nx * cylDepth;
+      cyl = sketch(drawCircle(radius), 'YZ', wallX).extrude(extrudeLen);
+      cyl = translate(cyl, [0, pos.cy, z]);
+    } else {
+      // Front/back wall: sketch circle on XZ plane at the wall Y position
+      const wallY = pos.isMale ? pos.cy : pos.cy - pos.ny * cylDepth;
+      const extrudeLen = pos.isMale ? pos.ny * cylDepth : pos.ny * cylDepth;
+      cyl = sketch(drawCircle(radius), 'XZ', wallY).extrude(extrudeLen);
+      cyl = translate(cyl, [pos.cx, 0, z]);
+    }
+
+    if (pos.isMale) {
+      nubs.push(cyl);
+    } else {
+      holes.push(cyl);
+    }
+  }
+
+  return { nubs, holes };
+}
+
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
@@ -251,6 +335,7 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
     params.edges?.right ?? '',
     params.edges?.front ?? '',
     params.edges?.back ?? '',
+    params.connectorNubs ?? false,
     forExport,
   ].join('|');
 }
@@ -445,7 +530,25 @@ function buildBaseplateSolid(
     }
   }
 
-  // 4. Shift up so bottom face sits at Z=0, matching the bin convention
+  onProgress?.(0.7);
+
+  // 4. Add registration connectors (nubs fused on, holes cut out)
+  const { nubs, holes: connHoles } = buildConnectors(
+    params,
+    totalHeight,
+    totalW,
+    totalD,
+    slabOffsetX,
+    slabOffsetY
+  );
+  for (const nub of nubs) {
+    baseplate = unwrap(fuse(baseplate, nub));
+  }
+  if (connHoles.length > 0) {
+    baseplate = unwrap(cutAll(baseplate, connHoles));
+  }
+
+  // 5. Shift up so bottom face sits at Z=0, matching the bin convention
   baseplate = translate(baseplate, [0, 0, totalHeight]);
 
   return baseplate;
