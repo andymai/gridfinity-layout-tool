@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.33.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.3...gridfinity-layout-tool-v3.33.4) (2026-02-25)
+
+
+### Performance
+
+* **baseplate:** batch all CSG boolean operations into single passes ([#908](https://github.com/andymai/gridfinity-layout-tool/issues/908)) ([0ca8dca](https://github.com/andymai/gridfinity-layout-tool/commit/0ca8dca1ec12891f9010a7e461e13eedde1ad61e))
+
 ## [3.33.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.2...gridfinity-layout-tool-v3.33.3) (2026-02-25)
 
 
