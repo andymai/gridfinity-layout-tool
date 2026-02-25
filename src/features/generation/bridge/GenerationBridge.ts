@@ -345,6 +345,39 @@ export class GenerationBridge {
   }
 
   /**
+   * Generate baseplate mesh immediately without debounce.
+   * Used by the worker pool for parallel split piece generation.
+   */
+  generateBaseplateImmediate(
+    params: BaseplateParams,
+    onProgress?: ProgressCallback
+  ): Promise<GenerationResult> {
+    if (this.destroyed) {
+      return Promise.reject(new Error('Bridge has been destroyed'));
+    }
+
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+
+    this.cancelCurrentRequest();
+    this.onProgress = onProgress ?? null;
+
+    return new Promise<GenerationResult>((resolve, reject) => {
+      this.pendingResolve = resolve;
+      this.pendingReject = reject;
+
+      const requestId = this.nextRequestId();
+      this.currentRequestId = requestId;
+      this.postMessage({
+        type: 'GENERATE_BASEPLATE',
+        payload: { params, requestId },
+      });
+    });
+  }
+
+  /**
    * Export baseplate in the specified format.
    */
   async exportBaseplate(
