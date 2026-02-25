@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.31.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.30.0...gridfinity-layout-tool-v3.31.0) (2026-02-25)
+
+
+### Features
+
+* **baseplate:** add magnet holes and direct mesh generator ([#896](https://github.com/andymai/gridfinity-layout-tool/issues/896)) ([d7804c4](https://github.com/andymai/gridfinity-layout-tool/commit/d7804c48bfc1bd454439b568f94cba0ce60027ee))
+
 ## [3.30.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.29.0...gridfinity-layout-tool-v3.30.0) (2026-02-24)
 
 
