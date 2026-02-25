@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.33.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.1...gridfinity-layout-tool-v3.33.2) (2026-02-25)
+
+
+### Bug Fixes
+
+* **mobile:** make settings modal responsive on mobile viewports ([#904](https://github.com/andymai/gridfinity-layout-tool/issues/904)) ([a5f3466](https://github.com/andymai/gridfinity-layout-tool/commit/a5f3466c07bb54400e2ea88e8002350898a9ee2e))
+
 ## [3.33.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.0...gridfinity-layout-tool-v3.33.1) (2026-02-25)
 
 
