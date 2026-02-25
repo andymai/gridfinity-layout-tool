@@ -4,13 +4,15 @@
  * Extracted from bin-designer so that print-export and other features
  * can compute accurate bin geometry without importing feature-internal modules.
  *
- * Source of truth: Kennetek's gridfinity-rebuilt-openscad
+ * Dimensions sourced from Kennetek's gridfinity-rebuilt-openscad for
+ * interoperability with the open Gridfinity ecosystem.
  * https://github.com/kennetek/gridfinity-rebuilt-openscad
  */
 
 /** All Gridfinity dimension constants in millimeters.
  *
- * Source: Kennetek's gridfinity-rebuilt-openscad (standard.scad)
+ * Dimensions for interoperability with the open Gridfinity ecosystem.
+ * Reference: Kennetek's gridfinity-rebuilt-openscad (standard.scad)
  * https://github.com/kennetek/gridfinity-rebuilt-openscad
  *
  * Height convention: height units INCLUDE the base.
