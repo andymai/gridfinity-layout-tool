@@ -159,6 +159,34 @@ export function forEachCell(
   }
 }
 
+// ─── Baseplate Constants ────────────────────────────────────────────────────
+
+/** Corner radius for baseplate outer perimeter (same as socket corner radius) */
+export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
+
+/** Thin floor under each magnet hole — retains the magnet (mm) */
+export const MAGNET_FLOOR = 0.5;
+
+/** Distance from cell center to magnet position (Gridfinity spec, mm) */
+export const HOLE_OFFSET = 13;
+
+/** Inset at pocket bottom (same taper profile as bin socket at full cell size) */
+export const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+
+/** Magnet position offsets relative to cell center (4 corners per cell) */
+export const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+  [-HOLE_OFFSET, -HOLE_OFFSET],
+  [HOLE_OFFSET, -HOLE_OFFSET],
+  [HOLE_OFFSET, HOLE_OFFSET],
+  [-HOLE_OFFSET, HOLE_OFFSET],
+];
+
+/** Compute pocket corner radius for a given cell size (clamped to fit) */
+export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
+  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
+  return Math.min(CORNER_RADIUS, maxRadius);
+}
+
 // ─── Sketch Helper ───────────────────────────────────────────────────────────
 
 /**

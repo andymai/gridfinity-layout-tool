@@ -1,15 +1,24 @@
 /**
  * Baseplate geometry generation for Gridfinity baseplates.
  *
- * Builds a baseplate as a solid block with pockets cut from the top surface.
+ * Builds a baseplate as a solid slab with pockets cut from the top surface.
  * Each pocket receives a bin's tapered socket profile. The pocket shape is
  * the bin socket profile at full grid size (no clearance reduction), so that
  * bin sockets (which are reduced by CLEARANCE) fit with the intended gap.
  *
+ * Without magnets: slab height = SOCKET_HEIGHT (5mm). Pockets are through-cut.
+ *
+ * With magnets (matching Gridfinity spec): slab height = SOCKET_HEIGHT +
+ * MAGNET_FLOOR + magnetDepth. Pockets cut to SOCKET_HEIGHT depth only,
+ * leaving a solid continuous floor under each pocket. Magnet holes are blind
+ * cylindrical pockets cut downward from the pocket floor into this solid
+ * floor, leaving a thin retaining floor (MAGNET_FLOOR = 0.5mm) at the
+ * bottom. Magnets are dropped in from the pocket side and held by gravity.
+ *
  * Coordinate system (after final Z-shift):
- * - Z=0: bottom face of baseplate
+ * - Z=0: bottom face of baseplate (solid)
  * - Z=totalHeight: top face (bin interface), pockets open here
- * - Pockets extend from Z=totalHeight down to Z=BASE_THICKNESS (or Z=0 when no magnets)
+ * - Magnet holes open at Z=floorDepth (pocket floor) down to Z=MAGNET_FLOOR
  */
 
 import {
@@ -27,9 +36,7 @@ import {
 import type { Shape3D, Sketch, Drawing } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
-import { GRIDFINITY } from '@/shared/constants/bin';
 import {
-  CORNER_RADIUS,
   SOCKET_HEIGHT,
   SOCKET_BIG_TAPER,
   SOCKET_TAPER_WIDTH,
@@ -38,20 +45,17 @@ import {
   toIndexedMeshData,
   checkCancelled,
   sketch,
+  PLATE_CORNER_RADIUS,
+  MAGNET_FLOOR,
+  MAGNET_OFFSETS,
+  INSET_BOT,
+  pocketCornerRadius,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
 
-// ─── Baseplate Constants ──────────────────────────────────────────────────────
-
-/** Thickness of the solid base under the pockets (mm) */
-const BASE_THICKNESS = 1.4;
-
-/** Corner radius for the baseplate outer perimeter */
-const PLATE_CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
-
 // ─── Pocket Template Cache ──────────────────────────────────────────────────
-// LRU cache for pocket templates keyed by cell size + forExport + throughCut.
+// LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
 // Build one loft per unique cell size, then clone+translate for each grid position.
 
 const pocketTemplateCache = new LRUCache<Shape3D>(8);
@@ -77,7 +81,6 @@ function pocketCacheKey(
 /** Insets at each Z breakpoint — same taper profile as bin socket but at full cell size */
 const INSET_TOP = 0;
 const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
 
 /** Z extension above/below to avoid coplanar boolean failures */
 const COPLANAR_MARGIN = 1;
@@ -95,11 +98,6 @@ function pocketSection(
   return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
 }
 
-function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  return Math.min(CORNER_RADIUS, maxRadius);
-}
-
 /**
  * Build a single pocket cutter at the origin using multi-section loft.
  *
@@ -115,8 +113,12 @@ function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
  *   Z=-4.2:  same inset (vertical wall section)
  *   Z=-5.0:  max inset (bottom, smallest cross-section)
  *
- * The cutter extends above Z=0 to avoid coplanar faces with the block
- * top surface, which would cause BREP boolean failures.
+ * When throughCut is true (no magnets), the cutter extends below SOCKET_HEIGHT
+ * to cut completely through the slab. When false (magnets enabled), the pocket
+ * stops at SOCKET_HEIGHT depth, leaving a solid floor for magnet holes.
+ *
+ * The cutter extends above Z=0 to avoid coplanar faces with the slab top,
+ * which would cause BREP boolean failures.
  */
 function buildPocketCutter(cellW_mm: number, cellD_mm: number, throughCut: boolean): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
@@ -131,6 +133,7 @@ function buildPocketCutter(cellW_mm: number, cellD_mm: number, throughCut: boole
     s(-(SOCKET_BIG_TAPER + (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH)), INSET_MID), // -4.2
     s(-SOCKET_HEIGHT, INSET_BOT), // -5.0
   ];
+
   if (throughCut) {
     sections.push(s(-SOCKET_HEIGHT - COPLANAR_MARGIN, INSET_BOT));
   }
@@ -187,11 +190,15 @@ function getPocketTemplate(
 // ─── Magnet Holes ───────────────────────────────────────────────────────────
 
 /**
- * Build magnet hole cutouts for the underside of the baseplate.
+ * Build magnet hole cutters that open from the pocket floor (top side).
+ *
+ * Each magnet hole is a blind cylindrical pocket cut downward from the pocket
+ * floor into the solid floor below. The hole extends down by magnetDepth,
+ * leaving a thin retaining floor (MAGNET_FLOOR = 0.5mm) at the bottom.
+ * Magnets are dropped in from the pocket side and held by gravity.
  *
  * Builds one template cylinder and clones it for each hole position.
- * Magnet holes are placed at the standard 4-corner positions within each
- * full-size (1.0 x 1.0 unit) cell. Holes cut upward from the bottom face.
+ * Only full-size (1.0+ unit) cells get magnet holes.
  */
 function buildMagnetHoles(
   gridW: number,
@@ -200,28 +207,21 @@ function buildMagnetHoles(
   magnetDepth: number,
   cellOpts?: ForEachCellOptions
 ): Shape3D[] {
-  const totalHeight = SOCKET_HEIGHT + BASE_THICKNESS;
-  const HOLE_OFFSET = 13; // mm from cell center (Gridfinity spec constant)
-
-  const holeOffsets: ReadonlyArray<readonly [number, number]> = [
-    [-HOLE_OFFSET, -HOLE_OFFSET],
-    [-HOLE_OFFSET, HOLE_OFFSET],
-    [HOLE_OFFSET, HOLE_OFFSET],
-    [HOLE_OFFSET, -HOLE_OFFSET],
-  ];
-
-  // Build one template cylinder, clone for each position
-  const magnetTemplate = sketch(drawCircle(magnetRadius), 'XY', -totalHeight).extrude(magnetDepth);
+  // Cutter starts above the pocket floor (COPLANAR_MARGIN avoids coplanar with
+  // pocket bottom at Z=-SOCKET_HEIGHT) and cuts downward by magnetDepth.
+  // This leaves MAGNET_FLOOR of solid material at the bottom of each magnet hole.
+  const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
+  const cutterDepth = magnetDepth + COPLANAR_MARGIN;
+  const magnetTemplate = sketch(drawCircle(magnetRadius), 'XY', cutterZ).extrude(-cutterDepth);
 
   const holes: Shape3D[] = [];
   forEachCell(
     gridW,
     gridD,
     (cell) => {
-      // Only place holes in full-size cells (skip half-unit fractional edge cells)
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
-      for (const [dx, dy] of holeOffsets) {
+      for (const [dx, dy] of MAGNET_OFFSETS) {
         holes.push(translate(clone(magnetTemplate), [cell.centerX + dx, cell.centerY + dy, 0]));
       }
     },
@@ -360,11 +360,16 @@ export function generateBaseplate(
 /**
  * Build the complete baseplate BREP solid.
  *
- * Without magnets: block height = SOCKET_HEIGHT only. Pockets cut all the
- * way through, leaving just walls between cells (no floor).
+ * Without magnets: slab height = SOCKET_HEIGHT (5mm). Pockets are through-cut
+ * (no floor), leaving just walls between cells.
  *
- * With magnets: block height = SOCKET_HEIGHT + BASE_THICKNESS. Pockets cut
- * to SOCKET_HEIGHT depth, leaving a thin floor for magnet hole pockets.
+ * With magnets: slab height = SOCKET_HEIGHT + MAGNET_FLOOR + magnetDepth.
+ * Pockets cut to SOCKET_HEIGHT depth only, leaving a solid continuous floor.
+ * Magnet holes are blind cylindrical pockets cut downward from the pocket
+ * floor, leaving a thin retaining floor (MAGNET_FLOOR) at the bottom.
+ *
+ * The slab profile has rounded exterior corners (PLATE_CORNER_RADIUS),
+ * which carry through the full height including the magnet floor.
  */
 function buildBaseplateSolid(
   params: BaseplateParams,
@@ -387,15 +392,15 @@ function buildBaseplateSolid(
     edges,
   } = params;
 
-  // 1. Build solid block — only add BASE_THICKNESS when magnets need a floor
+  // 1. Build solid slab — taller when magnets require a solid floor
+  const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMm + paddingFront + paddingBack;
-  const totalHeight = magnetHoles ? SOCKET_HEIGHT + BASE_THICKNESS : SOCKET_HEIGHT;
+  const totalHeight = SOCKET_HEIGHT + floorDepth;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
   const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
 
   // Slab center offset — grid pockets stay at origin, slab shifts to accommodate asymmetric padding
-  // paddingRight pushes slab center in +X so the right edge extends further right
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
 
@@ -410,16 +415,14 @@ function buildBaseplateSolid(
 
   onProgress?.(0.2);
 
-  // 2. Build pocket cutters using template cloning (one loft per unique cell size)
-  // When no magnets, pockets cut all the way through (throughCut)
+  // 2. Cut pockets — through-cut when no magnets, partial when magnets leave a floor
   const throughCut = !magnetHoles;
-  const pockets: Shape3D[] = [];
   const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
+  const pockets: Shape3D[] = [];
   forEachCell(
     width,
     depth,
     (cell) => {
-      // Full cell size — no CLEARANCE reduction (clearance is on the bin side)
       const cellW_mm = cell.widthUnits * gridUnitMm;
       const cellD_mm = cell.depthUnits * gridUnitMm;
       const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
@@ -434,7 +437,7 @@ function buildBaseplateSolid(
 
   onProgress?.(0.6);
 
-  // 3. Cut magnet holes from the bottom
+  // 3. Cut magnet holes from the pocket floor (top side)
   if (magnetHoles) {
     const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
     if (holes.length > 0) {
@@ -443,7 +446,6 @@ function buildBaseplateSolid(
   }
 
   // 4. Shift up so bottom face sits at Z=0, matching the bin convention
-  // (pockets open at Z=totalHeight, bottom at Z=0)
   baseplate = translate(baseplate, [0, 0, totalHeight]);
 
   return baseplate;
