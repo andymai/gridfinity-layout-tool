@@ -53,7 +53,7 @@ const CIRCLE_SEGMENTS = 16;
  * Cancel faces are nudged toward the solid interior so the depth buffer
  * can distinguish them from the faces they visually punch through.
  */
-const CANCEL_EPSILON = 0.01;
+const CANCEL_EPSILON = 0.05;
 
 // ─── Mesh Builder ───────────────────────────────────────────────────────────
 
@@ -403,12 +403,12 @@ function addOuterWalls(
  * Add the top face of the slab (Z=totalHeight).
  *
  * The top face is the outer perimeter minus the pocket top openings.
- * For the waffle grid, the top face is just the wall material between pockets.
+ * Pocket openings ARE the full cell size (no inset at top), so between
+ * adjacent pockets there is ZERO wall width at the top. The only top-face
+ * material is the padding margin around the grid.
  *
- * Pocket top openings ARE the full cell size (no inset at top).
- * So between adjacent pockets, there is ZERO wall width at the top face.
- * The only top-face material is the padding perimeter around the grid.
- * We generate that as a strip polygon.
+ * Generated as a ring mesh (outer profile → inner grid rectangle) to avoid
+ * z-fighting from coplanar geometry over pocket openings.
  */
 function addTopFace(
   mb: MeshBuilder,
@@ -430,8 +430,6 @@ function addTopFace(
   const gridHalfW = (gridW * gridUnitMm) / 2;
   const gridHalfD = (gridD * gridUnitMm) / 2;
 
-  // If the outer profile matches the grid boundary, skip top face
-  // (pockets fill the entire top). This is the common case with no padding.
   const hasPadding = outerPts.some((pt) => {
     const x = pt[0] + offsetX;
     const y = pt[1] + offsetY;
@@ -445,10 +443,73 @@ function addTopFace(
 
   if (!hasPadding) return;
 
-  // With padding: fan triangulate the outer polygon at Z=totalHeight.
-  // Since pockets tile perfectly on the grid portion, we only have material
-  // where padding exists. The pocket walls obscure the top face from any
-  // viewing angle, so minor overdraw is acceptable for preview.
+  // Ring mesh: connect each outer perimeter point to its projection on the
+  // inner grid rectangle, producing a strip that covers only the padding.
+  addRingFace(mb, outerPts, offsetX, offsetY, gridHalfW, gridHalfD, z, nx, ny, nz);
+}
+
+/**
+ * Generate a ring mesh between an outer polygon and an inner axis-aligned
+ * rectangle at a fixed Z, with a given face normal. Each outer point is
+ * projected onto the nearest edge of the inner rectangle, and quads are
+ * formed between consecutive outer-inner pairs.
+ */
+function addRingFace(
+  mb: MeshBuilder,
+  outerPts: ReadonlyArray<readonly [number, number]>,
+  offsetX: number,
+  offsetY: number,
+  innerHalfW: number,
+  innerHalfD: number,
+  z: number,
+  fnx: number,
+  fny: number,
+  fnz: number
+): void {
+  const n = outerPts.length;
+
+  // For each outer point, compute its projection onto the inner rectangle.
+  // The projection clamps the point to the nearest edge of the rectangle.
+  const outerVerts: number[] = [];
+  const innerVerts: number[] = [];
+
+  for (const pt of outerPts) {
+    const ox = pt[0] + offsetX;
+    const oy = pt[1] + offsetY;
+    // Clamp to inner rectangle (grid boundary, centered at offset)
+    const ix = Math.max(-innerHalfW + offsetX, Math.min(innerHalfW + offsetX, ox));
+    const iy = Math.max(-innerHalfD + offsetY, Math.min(innerHalfD + offsetY, oy));
+    outerVerts.push(mb.pushVertex(ox, oy, z, fnx, fny, fnz));
+    innerVerts.push(mb.pushVertex(ix, iy, z, fnx, fny, fnz));
+  }
+
+  // Connect consecutive outer-inner pairs as quads (or degenerate tris).
+  // Winding: outer[i], outer[j], inner[j], inner[i] (CCW from +Z for fnz=+1).
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    mb.pushQuad(outerVerts[i], outerVerts[j], innerVerts[j], innerVerts[i]);
+  }
+}
+
+// ─── Bottom Face (Z=0) ─────────────────────────────────────────────────────
+
+/**
+ * Add the bottom face of the slab (Z=0), facing DOWN.
+ *
+ * Only generated when magnets are enabled (solid floor below pockets).
+ * Through-cut baseplates have open pocket bottoms — no bottom face needed,
+ * which avoids the z-fighting caused by the old cancellation mesh approach.
+ */
+function addSolidBottomFace(
+  mb: MeshBuilder,
+  outerPts: ReadonlyArray<readonly [number, number]>,
+  offsetX: number,
+  offsetY: number
+): void {
+  const z = 0;
+  const nx = 0,
+    ny = 0,
+    nz = -1;
   const center = mb.pushVertex(offsetX, offsetY, z, nx, ny, nz);
 
   const outerVerts: number[] = [];
@@ -459,88 +520,7 @@ function addTopFace(
   const nOuter = outerVerts.length;
   for (let i = 0; i < nOuter; i++) {
     const j = (i + 1) % nOuter;
-    mb.pushTriangle(center, outerVerts[i], outerVerts[j]);
-  }
-}
-
-// ─── Bottom Face (Z=0) ─────────────────────────────────────────────────────
-
-/**
- * Add the bottom face of the slab (Z=0).
- *
- * When throughCut is true (no magnets): waffle grid — solid everywhere EXCEPT
- * inside pocket bottom openings (pocket cancellation holes punched via
- * upward-facing polygons).
- *
- * When magnets are enabled (throughCut=false): the bottom face is fully solid.
- * The slab extends below the pockets, so no cancellation is needed.
- */
-function addBottomFace(
-  mb: MeshBuilder,
-  outerPts: ReadonlyArray<readonly [number, number]>,
-  offsetX: number,
-  offsetY: number,
-  cells: ReadonlyArray<CellInfo>,
-  gridUnitMm: number,
-  throughCut: boolean
-): void {
-  const z = 0;
-
-  // 1. Full outer polygon at Z=0, facing DOWN (normal = 0,0,-1)
-  {
-    const nx = 0,
-      ny = 0,
-      nz = -1;
-    const centroidX = offsetX;
-    const centroidY = offsetY;
-    const center = mb.pushVertex(centroidX, centroidY, z, nx, ny, nz);
-
-    const outerVerts: number[] = [];
-    for (const pt of outerPts) {
-      outerVerts.push(mb.pushVertex(pt[0] + offsetX, pt[1] + offsetY, z, nx, ny, nz));
-    }
-
-    const nOuter = outerVerts.length;
-    for (let i = 0; i < nOuter; i++) {
-      const j = (i + 1) % nOuter;
-      mb.pushTriangle(center, outerVerts[j], outerVerts[i]);
-    }
-  }
-
-  // 2. Punch pocket bottom holes in the bottom face (through-cut only).
-  // When magnets are enabled, the slab extends below the pockets so the
-  // bottom face is fully solid — no cancellation needed.
-  // Cancel faces are offset by CANCEL_EPSILON toward interior (+Z) to avoid z-fighting.
-  if (throughCut) {
-    const cancelZ = z + CANCEL_EPSILON;
-    const nx = 0,
-      ny = 0,
-      nz = 1;
-
-    for (const cell of cells) {
-      const cellW_mm = cell.widthUnits * gridUnitMm;
-      const cellD_mm = cell.depthUnits * gridUnitMm;
-      const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
-      const botR = Math.max(cornerR - INSET_BOT, 0.1);
-      const botW = cellW_mm - 2 * INSET_BOT;
-      const botD = cellD_mm - 2 * INSET_BOT;
-
-      if (botW < 0.2 || botD < 0.2) continue;
-
-      const pts = roundedRectPoints(botW, botD, botR, CORNER_SEGMENTS);
-      const center = mb.pushVertex(cell.centerX, cell.centerY, cancelZ, nx, ny, nz);
-
-      const verts: number[] = [];
-      for (const pt of pts) {
-        verts.push(mb.pushVertex(pt[0] + cell.centerX, pt[1] + cell.centerY, cancelZ, nx, ny, nz));
-      }
-
-      const nPts = verts.length;
-      for (let i = 0; i < nPts; i++) {
-        const j = (i + 1) % nPts;
-        mb.pushTriangle(center, verts[i], verts[j]);
-      }
-    }
+    mb.pushTriangle(center, outerVerts[j], outerVerts[i]);
   }
 }
 
@@ -994,9 +974,12 @@ export function generateBaseplateDirect(
   onProgress('base', 0.6);
   checkCancelled(signal);
 
-  // 5. Bottom face (Z=0) — waffle grid holes for through-cut, solid when magnets
-  const throughCut = !magnetHoles;
-  addBottomFace(mb, outerPts, slabOffsetX, slabOffsetY, cells, gridUnitMm, throughCut);
+  // 5. Bottom face (Z=0) — solid when magnets (slab extends below pockets).
+  // Through-cut (no magnets): pockets are open at bottom, no bottom face needed.
+  // This eliminates z-fighting from the old cancellation mesh approach.
+  if (magnetHoles) {
+    addSolidBottomFace(mb, outerPts, slabOffsetX, slabOffsetY);
+  }
 
   onProgress('base', 0.7);
   checkCancelled(signal);
