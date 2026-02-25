@@ -183,6 +183,13 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     paddingFront: clampNumber(obj.paddingFront, 0, 100, 0),
     paddingBack: clampNumber(obj.paddingBack, 0, 100, 0),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
+    ...(typeof obj.syncWithLayout === 'boolean' ? { syncWithLayout: obj.syncWithLayout } : {}),
+    ...(typeof obj.baseplateWidth === 'number'
+      ? { baseplateWidth: Math.min(50, Math.max(0.5, obj.baseplateWidth)) }
+      : {}),
+    ...(typeof obj.baseplateDepth === 'number'
+      ? { baseplateDepth: Math.min(50, Math.max(0.5, obj.baseplateDepth)) }
+      : {}),
   };
 }
 

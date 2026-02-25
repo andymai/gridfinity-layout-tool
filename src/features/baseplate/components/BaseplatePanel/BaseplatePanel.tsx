@@ -15,7 +15,9 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -67,16 +69,30 @@ export function BaseplatePanel() {
     []
   );
 
-  const handleGridUnitChange = useCallback((mm: number) => {
-    useLayoutStore.getState().setGridUnitMm(mm);
-  }, []);
+  const halfBinMode = useHalfBinModeStore((s) => s.halfBinMode);
+  const synced = baseplateParams.syncWithLayout !== false;
+  const effectiveWidth = synced ? drawerWidth : (baseplateParams.baseplateWidth ?? drawerWidth);
+  const effectiveDepth = synced ? drawerDepth : (baseplateParams.baseplateDepth ?? drawerDepth);
 
-  const handlePrintBedChange = useCallback((size: number) => {
-    useLayoutStore.getState().setPrintBedSize(size);
-  }, []);
+  const handleSyncToggle = useCallback(
+    (checked: boolean) => {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      if (checked) {
+        useLayoutStore.getState().setBaseplateParams({ ...current, syncWithLayout: true });
+      } else {
+        useLayoutStore.getState().setBaseplateParams({
+          ...current,
+          syncWithLayout: false,
+          baseplateWidth: drawerWidth,
+          baseplateDepth: drawerDepth,
+        });
+      }
+    },
+    [drawerWidth, drawerDepth]
+  );
 
-  const gridWidthMm = drawerWidth * gridUnitMm;
-  const gridDepthMm = drawerDepth * gridUnitMm;
+  const gridWidthMm = effectiveWidth * gridUnitMm;
+  const gridDepthMm = effectiveDepth * gridUnitMm;
 
   const totalWidthMm = gridWidthMm + baseplateParams.paddingLeft + baseplateParams.paddingRight;
   const totalDepthMm = gridDepthMm + baseplateParams.paddingFront + baseplateParams.paddingBack;
@@ -86,7 +102,6 @@ export function BaseplatePanel() {
     baseplateParams.paddingFront > 0 ||
     baseplateParams.paddingBack > 0;
 
-  // Padding section summary
   const paddingSummary = hasPadding
     ? `L:${baseplateParams.paddingLeft} R:${baseplateParams.paddingRight} F:${baseplateParams.paddingFront} B:${baseplateParams.paddingBack}`
     : undefined;
@@ -106,8 +121,8 @@ export function BaseplatePanel() {
               </div>
               <div className="text-xs tabular-nums text-content-tertiary">
                 {t('baseplate.gridPlusPadding', {
-                  width: drawerWidth,
-                  depth: drawerDepth,
+                  width: effectiveWidth,
+                  depth: effectiveDepth,
                 })}
               </div>
             </>
@@ -115,8 +130,8 @@ export function BaseplatePanel() {
             <div className="flex items-baseline justify-between">
               <span className="text-xs tabular-nums text-content-secondary">
                 {t('baseplate.dimensionsUnits', {
-                  width: drawerWidth,
-                  depth: drawerDepth,
+                  width: effectiveWidth,
+                  depth: effectiveDepth,
                 })}
               </span>
               <span className="text-sm font-semibold tabular-nums text-content">
@@ -126,7 +141,37 @@ export function BaseplatePanel() {
           )}
         </div>
 
-        {/* 2. Drawer Fit — primary configuration */}
+        {/* 2. Grid Size — sync toggle + optional custom width/depth */}
+        <StickyGroupHeader
+          title={t('baseplate.sectionGridSize')}
+          summary={`${effectiveWidth}×${effectiveDepth}`}
+        >
+          <div className="space-y-3 px-4 py-3">
+            <Checkbox
+              checked={synced}
+              onChange={handleSyncToggle}
+              label={t('baseplate.syncWithLayout')}
+            />
+            <div className={`grid grid-cols-2 gap-x-3 gap-y-2${synced ? ' opacity-50' : ''}`}>
+              <GridDimensionStepper
+                label={t('baseplate.gridWidth')}
+                value={effectiveWidth}
+                onChange={(v) => updateParam('baseplateWidth', v)}
+                halfBinMode={halfBinMode}
+                disabled={synced}
+              />
+              <GridDimensionStepper
+                label={t('baseplate.gridDepth')}
+                value={effectiveDepth}
+                onChange={(v) => updateParam('baseplateDepth', v)}
+                halfBinMode={halfBinMode}
+                disabled={synced}
+              />
+            </div>
+          </div>
+        </StickyGroupHeader>
+
+        {/* 3. Drawer Fit — primary configuration */}
         <StickyGroupHeader title={t('baseplate.sectionFitToDrawer')} summary={paddingSummary}>
           <div className="space-y-3 px-4 py-3">
             <p className="text-xs text-content-tertiary">{t('baseplate.paddingHelp')}</p>
@@ -222,7 +267,7 @@ export function BaseplatePanel() {
                 <DeferredNumberInput
                   id="bp-gridUnit"
                   value={gridUnitMm}
-                  onChange={handleGridUnitChange}
+                  onChange={(mm) => useLayoutStore.getState().setGridUnitMm(mm)}
                   min={1}
                   max={200}
                   className="input w-14 py-0.5 px-1 text-xs text-right"
@@ -237,7 +282,7 @@ export function BaseplatePanel() {
                 <DeferredNumberInput
                   id="bp-printBedSize"
                   value={printBedSize}
-                  onChange={handlePrintBedChange}
+                  onChange={(size) => useLayoutStore.getState().setPrintBedSize(size)}
                   min={42}
                   max={500}
                   step={10}
@@ -373,6 +418,45 @@ function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
         min={0}
         max={100}
         step={0.1}
+        aria-label={label}
+      />
+    </div>
+  );
+}
+
+interface GridDimensionStepperProps {
+  readonly label: string;
+  readonly value: number;
+  readonly onChange: (value: number) => void;
+  readonly halfBinMode: boolean;
+  readonly disabled: boolean;
+}
+
+/** Compact stepper for a custom grid width or depth dimension (grid units). */
+function GridDimensionStepper({
+  label,
+  value,
+  onChange,
+  halfBinMode,
+  disabled,
+}: GridDimensionStepperProps) {
+  const step = halfBinMode ? 0.5 : 1;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-content-tertiary">{label}</span>
+      <Stepper
+        size="sm"
+        value={value}
+        onChange={onChange}
+        onStep={(delta) =>
+          onChange(
+            Math.min(CONSTRAINTS.GRID_MAX, Math.max(CONSTRAINTS.GRID_MIN, value + delta * step))
+          )
+        }
+        disabled={disabled}
+        min={CONSTRAINTS.GRID_MIN}
+        max={CONSTRAINTS.GRID_MAX}
+        step={step}
         aria-label={label}
       />
     </div>

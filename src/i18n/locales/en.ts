@@ -1453,6 +1453,10 @@ const en: Record<string, string> = {
   'baseplate.connectorNubs': 'Dovetail connectors',
   'baseplate.connectorNubsHelp':
     'Dovetail joints on split edges so pieces lock together when assembled.',
+  'baseplate.sectionGridSize': 'Grid Size',
+  'baseplate.syncWithLayout': 'Synced with layout',
+  'baseplate.gridWidth': 'Width',
+  'baseplate.gridDepth': 'Depth',
 
   // ===========================================================================
   // Collaboration

@@ -618,6 +618,12 @@ export const useLayoutStore = create<LayoutState>()(
             paddingBack: Math.max(0, params.paddingBack),
             magnetDiameter: clamp(params.magnetDiameter, 0.5, 20),
             magnetDepth: clamp(params.magnetDepth, 0.5, 10),
+            ...(params.baseplateWidth !== undefined
+              ? { baseplateWidth: clamp(params.baseplateWidth, 0.5, 50) }
+              : {}),
+            ...(params.baseplateDepth !== undefined
+              ? { baseplateDepth: clamp(params.baseplateDepth, 0.5, 50) }
+              : {}),
           };
         });
       },

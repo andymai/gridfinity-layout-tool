@@ -41,6 +41,13 @@ const { useLayoutStore } = await import('@/core/store/layout');
 (useLayoutStore as unknown as { getState: () => typeof mockLayoutState }).getState = () =>
   mockLayoutState;
 
+// Mock half-bin mode store
+let mockHalfBinMode = false;
+vi.mock('@/core/store/halfBinMode', () => ({
+  useHalfBinModeStore: (selector: (state: { halfBinMode: boolean }) => unknown) =>
+    selector({ halfBinMode: mockHalfBinMode }),
+}));
+
 // Mock page store
 let mockTiling: unknown = null;
 let mockSplitViewMode = 'assembled';
@@ -92,6 +99,7 @@ describe('BaseplatePanel', () => {
       setBaseplateParams: mockSetBaseplateParams,
       setPrintBedSize: mockSetPrintBedSize,
     };
+    mockHalfBinMode = false;
     mockTiling = null;
     mockSplitViewMode = 'assembled';
     mockHoveredPieceLabel = null;
@@ -202,6 +210,78 @@ describe('BaseplatePanel', () => {
       const a1Button = screen.getByText('A1');
       fireEvent.click(a1Button);
       expect(mockSetSelectedPieceLabel).toHaveBeenCalledWith(null);
+    });
+  });
+
+  describe('grid size sync toggle', () => {
+    it('renders grid size section with sync checkbox checked by default', () => {
+      render(<BaseplatePanel />);
+      expect(screen.getByText('baseplate.sectionGridSize')).toBeInTheDocument();
+      expect(screen.getByText('baseplate.syncWithLayout')).toBeInTheDocument();
+      const checkbox = screen.getByRole('checkbox');
+      expect(checkbox).toBeChecked();
+    });
+
+    it('renders width/depth steppers disabled when synced', () => {
+      render(<BaseplatePanel />);
+      const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
+      const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
+      expect(widthStepper).toBeDisabled();
+      expect(depthStepper).toBeDisabled();
+    });
+
+    it('shows drawer values in steppers when synced', () => {
+      render(<BaseplatePanel />);
+      const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
+      const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
+      expect(widthStepper).toHaveValue('4');
+      expect(depthStepper).toHaveValue('6');
+    });
+
+    it('enables steppers when sync is unchecked', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        syncWithLayout: false,
+        baseplateWidth: 8,
+        baseplateDepth: 10,
+      };
+      render(<BaseplatePanel />);
+      const checkbox = screen.getByRole('checkbox');
+      expect(checkbox).not.toBeChecked();
+      const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
+      const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
+      expect(widthStepper).not.toBeDisabled();
+      expect(depthStepper).not.toBeDisabled();
+      expect(widthStepper).toHaveValue('8');
+      expect(depthStepper).toHaveValue('10');
+    });
+
+    it('initializes custom dims from drawer when unchecking sync', () => {
+      render(<BaseplatePanel />);
+      const checkbox = screen.getByRole('checkbox');
+      fireEvent.click(checkbox);
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          syncWithLayout: false,
+          baseplateWidth: 4,
+          baseplateDepth: 6,
+        })
+      );
+    });
+
+    it('sets syncWithLayout true when re-checking sync', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        syncWithLayout: false,
+        baseplateWidth: 8,
+        baseplateDepth: 10,
+      };
+      render(<BaseplatePanel />);
+      const checkbox = screen.getByRole('checkbox');
+      fireEvent.click(checkbox);
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ syncWithLayout: true })
+      );
     });
   });
 });

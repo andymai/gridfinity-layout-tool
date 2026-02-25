@@ -18,9 +18,13 @@ export function buildFullParams(
   fractionalEdgeX: 'start' | 'end',
   fractionalEdgeY: 'start' | 'end'
 ): FullBaseplateParams {
+  const synced = stored.syncWithLayout !== false;
+  const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
+  const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);
+
   return {
-    width: drawerWidth,
-    depth: drawerDepth,
+    width,
+    depth,
     gridUnitMm,
     magnetHoles: stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
@@ -31,6 +35,6 @@ export function buildFullParams(
     paddingBack: stored.paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
-    ...(stored.connectorNubs !== undefined ? { connectorNubs: stored.connectorNubs } : {}),
+    connectorNubs: stored.connectorNubs,
   };
 }

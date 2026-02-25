@@ -33,7 +33,8 @@ export interface Layout {
 }
 
 /** Baseplate generation parameters stored per-layout.
- * Width/depth/gridUnitMm are derived from the layout's drawer at generation time, not stored here.
+ * Width/depth/gridUnitMm are derived from the layout's drawer at generation time unless
+ * syncWithLayout is false, in which case baseplateWidth/baseplateDepth override drawer dims.
  * Per-side padding in mm — user enters directly, total drawer = grid + padding. */
 export interface BaseplateParams {
   readonly magnetHoles: boolean;
@@ -45,6 +46,12 @@ export interface BaseplateParams {
   readonly paddingBack: number;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
+  /** When true (or undefined), grid dims are derived from the drawer. */
+  readonly syncWithLayout?: boolean;
+  /** Custom grid width in units, only used when syncWithLayout is false. */
+  readonly baseplateWidth?: number;
+  /** Custom grid depth in units, only used when syncWithLayout is false. */
+  readonly baseplateDepth?: number;
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */

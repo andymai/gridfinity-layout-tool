@@ -63,6 +63,9 @@ export function useBaseplateGeneration(): void {
     paddingFront,
     paddingBack,
     connectorNubs,
+    syncWithLayout,
+    baseplateWidth,
+    baseplateDepth,
   } = useLayoutStore(
     useShallow((state) => {
       const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -81,6 +84,9 @@ export function useBaseplateGeneration(): void {
         paddingFront: bp.paddingFront,
         paddingBack: bp.paddingBack,
         connectorNubs: bp.connectorNubs,
+        syncWithLayout: bp.syncWithLayout,
+        baseplateWidth: bp.baseplateWidth,
+        baseplateDepth: bp.baseplateDepth,
       };
     })
   );
@@ -323,6 +329,9 @@ export function useBaseplateGeneration(): void {
     paddingFront,
     paddingBack,
     connectorNubs,
+    syncWithLayout,
+    baseplateWidth,
+    baseplateDepth,
     runGeneration,
   ]);
 }

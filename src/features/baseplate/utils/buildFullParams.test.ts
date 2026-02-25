@@ -83,4 +83,43 @@ describe('buildFullParams', () => {
       fractionalEdgeY: 'start',
     });
   });
+
+  describe('syncWithLayout', () => {
+    it('uses drawer dims when syncWithLayout is undefined', () => {
+      const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end');
+      expect(result.width).toBe(10);
+      expect(result.depth).toBe(8);
+    });
+
+    it('uses drawer dims when syncWithLayout is true', () => {
+      const stored = {
+        ...storedBase,
+        syncWithLayout: true,
+        baseplateWidth: 20,
+        baseplateDepth: 16,
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.width).toBe(10);
+      expect(result.depth).toBe(8);
+    });
+
+    it('uses custom dims when syncWithLayout is false', () => {
+      const stored = {
+        ...storedBase,
+        syncWithLayout: false,
+        baseplateWidth: 20,
+        baseplateDepth: 16,
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.width).toBe(20);
+      expect(result.depth).toBe(16);
+    });
+
+    it('falls back to drawer dims when syncWithLayout is false but custom dims missing', () => {
+      const stored = { ...storedBase, syncWithLayout: false };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.width).toBe(10);
+      expect(result.depth).toBe(8);
+    });
+  });
 });
