@@ -44,12 +44,14 @@ describe('BaseplateWorkerPool', () => {
     await expect(pool.generatePieces([])).rejects.toThrow('Pool has been destroyed');
   });
 
-  it('size remains 0 until init resolves', () => {
-    // Regression: pool.size is not a reliable readiness check — await init() instead
+  it('size is 0 before init is called', async () => {
+    // Regression: callers must await init() before using the pool — pool.size
+    // is not a reliable readiness check (bridges are created synchronously
+    // inside init before WASM loads).
     const pool = new BaseplateWorkerPool();
     expect(pool.size).toBe(0);
-    // init() will fail without WASM in test env — that's expected
-    const initPromise = pool.init(2).catch(() => {});
-    void initPromise.finally(() => pool.destroy());
+    // init() fails without WASM in test env — just ensure cleanup is awaited
+    await pool.init(2).catch(() => {});
+    pool.destroy();
   });
 });
