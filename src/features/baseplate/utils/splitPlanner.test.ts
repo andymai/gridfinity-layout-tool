@@ -277,6 +277,42 @@ describe('computeBaseplateTiling', () => {
     expect(totalWidth).toBe(10.5);
   });
 
+  it('fractional edge at end with 3+ splits pins fraction at last column', () => {
+    // 13.5 → needs 3 cols. Fraction should be pinned at the last col, not the middle.
+    const params = makeParams({ width: 13.5, depth: 4, fractionalEdgeX: 'end' });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.cols).toBeGreaterThanOrEqual(3);
+    const widths = tiling.pieces
+      .filter((p) => p.row === 0)
+      .sort((a, b) => a.col - b.col)
+      .map((p) => p.widthUnits);
+    // Fractional piece pinned at last col
+    expect(widths[widths.length - 1] % 1).not.toBe(0);
+    // Middle pieces should be integer
+    for (let i = 1; i < widths.length - 1; i++) {
+      expect(widths[i] % 1).toBe(0);
+    }
+  });
+
+  it('fractional edge at end on Y-axis pins fraction at last row', () => {
+    // 13.5 depth → needs 3 rows. Fraction should be at last row, not middle.
+    const params = makeParams({ width: 4, depth: 13.5, fractionalEdgeY: 'end' });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.rows).toBeGreaterThanOrEqual(3);
+    const depths = tiling.pieces
+      .filter((p) => p.col === 0)
+      .sort((a, b) => a.row - b.row)
+      .map((p) => p.depthUnits);
+    // Fractional piece pinned at last row
+    expect(depths[depths.length - 1] % 1).not.toBe(0);
+    // Middle pieces should be integer
+    for (let i = 1; i < depths.length - 1; i++) {
+      expect(depths[i] % 1).toBe(0);
+    }
+  });
+
   it('fractional edge at start with 3+ splits pins fraction and sorts rest', () => {
     // 13.5 → needs 3 cols. Fraction pinned at col 0
     const params = makeParams({ width: 13.5, depth: 4, fractionalEdgeX: 'start' });

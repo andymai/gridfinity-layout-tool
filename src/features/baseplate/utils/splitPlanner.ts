@@ -506,16 +506,26 @@ function reorderForDisplay(
   const maxAtFirst = Math.floor((printBedMm - paddingFirst) / gridUnitMm);
   const maxAtLast = Math.floor((printBedMm - paddingLast) / gridUnitMm);
 
+  const fracIdx = sizes.findIndex(isFractional);
+
   // When fractionAtStart, pin the fractional piece to position 0 —
   // but only if it actually fits with paddingFirst at that position.
   if (fractionAtStart) {
-    const fracIdx = sizes.findIndex(isFractional);
     if (fracIdx >= 0 && sizes[fracIdx] <= maxAtFirst) {
       const maxMiddle = Math.floor(printBedMm / gridUnitMm);
       const rest = sizes.filter((_, i) => i !== fracIdx);
       const sortedRest = sortDescWithEdges(rest, maxMiddle, maxAtLast);
       return [sizes[fracIdx], ...sortedRest];
     }
+  }
+
+  // When fraction exists and belongs at the end, pin it to the last position
+  // to prevent sortDescWithEdges from placing it in the middle.
+  if (!fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxAtLast) {
+    const maxMiddle = Math.floor(printBedMm / gridUnitMm);
+    const rest = sizes.filter((_, i) => i !== fracIdx);
+    const sortedRest = sortDescWithEdges(rest, maxAtFirst, maxMiddle);
+    return [...sortedRest, sizes[fracIdx]];
   }
 
   return sortDescWithEdges(sizes, maxAtFirst, maxAtLast);
