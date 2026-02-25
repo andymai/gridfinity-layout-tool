@@ -24,42 +24,24 @@
 import type { BaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import {
-  CORNER_RADIUS,
   SOCKET_HEIGHT,
-  SOCKET_TAPER_WIDTH,
-  CLEARANCE,
   forEachCell,
   checkCancelled,
+  PLATE_CORNER_RADIUS,
+  MAGNET_FLOOR,
+  MAGNET_OFFSETS,
+  INSET_BOT,
+  pocketCornerRadius,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
-
-/** Inset at pocket bottom (same as baseplateGenerator simplified version) */
-const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
-
-/** Corner radius for baseplate outer perimeter */
-const PLATE_CORNER_RADIUS = CORNER_RADIUS; // 4mm
-
-/** Magnet position offset from cell center (mm) */
-const HOLE_OFFSET = 13;
-
-/** Solid ceiling above each magnet hole — magnets glue against this (mm) */
-const MAGNET_FLOOR = 0.5;
 
 /** Number of line segments per rounded corner arc */
 const CORNER_SEGMENTS = 4;
 
 /** Number of segments for magnet hole circle approximation */
 const CIRCLE_SEGMENTS = 16;
-
-/** Magnet position offsets relative to cell center (4 corners per cell) */
-const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
-  [-HOLE_OFFSET, -HOLE_OFFSET],
-  [HOLE_OFFSET, -HOLE_OFFSET],
-  [HOLE_OFFSET, HOLE_OFFSET],
-  [-HOLE_OFFSET, HOLE_OFFSET],
-];
 
 // ─── Mesh Builder ───────────────────────────────────────────────────────────
 
@@ -294,14 +276,6 @@ function roundedRectPointsSelective(
   return pts;
 }
 
-/**
- * Compute the pocket corner radius for a given cell size (matches BREP version).
- */
-function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  return Math.min(CORNER_RADIUS, maxRadius);
-}
-
 // ─── Pocket Mesh Generation ─────────────────────────────────────────────────
 
 /**
@@ -429,7 +403,6 @@ function addTopFace(
   outerPts: ReadonlyArray<readonly [number, number]>,
   offsetX: number,
   offsetY: number,
-  cells: ReadonlyArray<CellInfo>,
   gridUnitMm: number,
   gridW: number,
   gridD: number,
@@ -444,14 +417,6 @@ function addTopFace(
   // top face, leaving nothing to fill.
   const gridHalfW = (gridW * gridUnitMm) / 2;
   const gridHalfD = (gridD * gridUnitMm) / 2;
-
-  // Generate a grid-boundary rectangle profile
-  const gridPts: Array<readonly [number, number]> = [
-    [-gridHalfW + offsetX, -gridHalfD + offsetY],
-    [gridHalfW + offsetX, -gridHalfD + offsetY],
-    [gridHalfW + offsetX, gridHalfD + offsetY],
-    [-gridHalfW + offsetX, gridHalfD + offsetY],
-  ];
 
   // If the outer profile matches the grid boundary, skip top face
   // (pockets fill the entire top). This is the common case with no padding.
@@ -472,9 +437,7 @@ function addTopFace(
   // Since pockets tile perfectly on the grid portion, we only have material
   // where padding exists. The pocket walls obscure the top face from any
   // viewing angle, so minor overdraw is acceptable for preview.
-  const centroidX = offsetX;
-  const centroidY = offsetY;
-  const center = mb.pushVertex(centroidX, centroidY, z, nx, ny, nz);
+  const center = mb.pushVertex(offsetX, offsetY, z, nx, ny, nz);
 
   const outerVerts: number[] = [];
   for (const pt of outerPts) {
@@ -486,9 +449,6 @@ function addTopFace(
     const j = (i + 1) % nOuter;
     mb.pushTriangle(center, outerVerts[i], outerVerts[j]);
   }
-
-  void cells;
-  void gridPts;
 }
 
 // ─── Bottom Face (Z=0) ─────────────────────────────────────────────────────
@@ -739,7 +699,7 @@ export function generateBaseplateDirect(
   checkCancelled(signal);
 
   // 4. Top face (Z=totalHeight) — only visible with padding
-  addTopFace(mb, outerPts, slabOffsetX, slabOffsetY, cells, gridUnitMm, width, depth, totalHeight);
+  addTopFace(mb, outerPts, slabOffsetX, slabOffsetY, gridUnitMm, width, depth, totalHeight);
 
   onProgress('base', 0.6);
   checkCancelled(signal);

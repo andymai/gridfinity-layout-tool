@@ -1,33 +1,14 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-
-interface BaseplateParams {
-  width: number;
-  depth: number;
-  gridUnitMm: number;
-  magnetHoles: boolean;
-  magnetDiameter: number;
-  magnetDepth: number;
-  paddingLeft: number;
-  paddingRight: number;
-  paddingFront: number;
-  paddingBack: number;
-  fractionalEdgeX: 'start' | 'end';
-  fractionalEdgeY: 'start' | 'end';
-  edges?: {
-    left: 'exterior' | 'join';
-    right: 'exterior' | 'join';
-    front: 'exterior' | 'join';
-    back: 'exterior' | 'join';
-  };
-}
+import type { BaseplateParams } from '@/shared/types/bin';
+import type { MeshData } from '../../bridge/types';
 
 type GenerateFn = (
   params: BaseplateParams,
   onProgress: (stage: string, progress: number) => void,
   forExport: boolean,
   signal?: AbortSignal
-) => { vertices: Float32Array; normals: Float32Array; indices: Uint32Array; triangleCount: number };
+) => MeshData;
 
 let generateBaseplate: GenerateFn;
 
@@ -53,7 +34,7 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
   gridUnitMm: 42,
   magnetHoles: false,
   magnetDiameter: 6.5,
-  magnetDepth: 2,
+  magnetDepth: 2.4,
   paddingLeft: 0,
   paddingRight: 0,
   paddingFront: 0,

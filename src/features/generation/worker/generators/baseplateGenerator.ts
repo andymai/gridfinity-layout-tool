@@ -36,9 +36,7 @@ import {
 import type { Shape3D, Sketch, Drawing } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
-import { GRIDFINITY } from '@/shared/constants/bin';
 import {
-  CORNER_RADIUS,
   SOCKET_HEIGHT,
   SOCKET_BIG_TAPER,
   SOCKET_TAPER_WIDTH,
@@ -47,20 +45,14 @@ import {
   toIndexedMeshData,
   checkCancelled,
   sketch,
+  PLATE_CORNER_RADIUS,
+  MAGNET_FLOOR,
+  MAGNET_OFFSETS,
+  INSET_BOT,
+  pocketCornerRadius,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
-
-// ─── Baseplate Constants ──────────────────────────────────────────────────────
-
-/** Corner radius for the baseplate outer perimeter */
-const PLATE_CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
-
-/** Thin floor under each magnet hole — retains the magnet when dropped in from the pocket side (mm) */
-const MAGNET_FLOOR = 0.5;
-
-/** mm from cell center to magnet position (Gridfinity spec) */
-const HOLE_OFFSET = 13;
 
 // ─── Pocket Template Cache ──────────────────────────────────────────────────
 // LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
@@ -89,7 +81,6 @@ function pocketCacheKey(
 /** Insets at each Z breakpoint — same taper profile as bin socket but at full cell size */
 const INSET_TOP = 0;
 const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
 
 /** Z extension above/below to avoid coplanar boolean failures */
 const COPLANAR_MARGIN = 1;
@@ -105,11 +96,6 @@ function pocketSection(
   const d = cellD_mm - 2 * inset;
   const r = Math.max(cornerR - inset, 0.1);
   return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
-}
-
-function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  return Math.min(CORNER_RADIUS, maxRadius);
 }
 
 /**
@@ -203,14 +189,6 @@ function getPocketTemplate(
 
 // ─── Magnet Holes ───────────────────────────────────────────────────────────
 
-/** Magnet position offsets relative to cell center (4 corners per cell) */
-const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
-  [-HOLE_OFFSET, -HOLE_OFFSET],
-  [HOLE_OFFSET, -HOLE_OFFSET],
-  [HOLE_OFFSET, HOLE_OFFSET],
-  [-HOLE_OFFSET, HOLE_OFFSET],
-];
-
 /**
  * Build magnet hole cutters that open from the pocket floor (top side).
  *
@@ -227,7 +205,6 @@ function buildMagnetHoles(
   gridD: number,
   magnetRadius: number,
   magnetDepth: number,
-  _totalHeight: number,
   cellOpts?: ForEachCellOptions
 ): Shape3D[] {
   // Cutter starts above the pocket floor (COPLANAR_MARGIN avoids coplanar with
@@ -462,14 +439,7 @@ function buildBaseplateSolid(
 
   // 3. Cut magnet holes from the pocket floor (top side)
   if (magnetHoles) {
-    const holes = buildMagnetHoles(
-      width,
-      depth,
-      magnetDiameter / 2,
-      magnetDepth,
-      totalHeight,
-      cellOpts
-    );
+    const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
     if (holes.length > 0) {
       baseplate = unwrap(cutAll(baseplate, holes));
     }

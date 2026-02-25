@@ -55,7 +55,7 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
   gridUnitMm: 42,
   magnetHoles: false,
   magnetDiameter: 6.5,
-  magnetDepth: 2,
+  magnetDepth: 2.4,
   paddingLeft: 0,
   paddingRight: 0,
   paddingFront: 0,
