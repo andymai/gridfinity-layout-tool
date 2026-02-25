@@ -32,7 +32,6 @@ import {
   translate,
   fuseAll,
   mesh,
-  meshEdges,
   exportSTEP,
 } from 'brepjs';
 import type { Shape3D, Sketch, Drawing } from 'brepjs';
@@ -491,12 +490,16 @@ export function generateBaseplate(
   checkCancelled(signal);
 
   // Tessellate — baseplates are mostly flat slabs, so preview can use coarse settings.
-  // Dovetail connectors are large prismatic features that tessellate fine at 0.5mm.
-  const tolerance = forExport ? 0.01 : 0.5;
+  // For large baseplates (many cells), use even coarser tolerance since the prismatic
+  // geometry (boxes, cylinders) tessellates well at low resolution.
+  const cellCount = Math.ceil(params.width) * Math.ceil(params.depth);
+  const previewTolerance = cellCount > 12 ? 1.0 : 0.5;
+  const tolerance = forExport ? 0.01 : previewTolerance;
   const angularTolerance = forExport ? 5 : 45;
   const meshResult = mesh(baseplate, { tolerance, angularTolerance });
-  const edgeMesh = forExport ? null : meshEdges(baseplate, { tolerance: 0.5 });
-  const edgeVerts = edgeMesh ? new Float32Array(edgeMesh.lines) : new Float32Array(0);
+  // Skip edge mesh computation for preview — the wireframe overlay is cosmetic
+  // and meshEdges() adds significant overhead on complex baseplates.
+  const edgeVerts = new Float32Array(0);
 
   onProgress('base', 1);
 
