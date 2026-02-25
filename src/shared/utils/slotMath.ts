@@ -96,10 +96,18 @@ export function calculateDividerLength(
 }
 
 /**
+ * Minimum wall thickness required for functional slotted bins (mm).
+ * Below this, the wall is too thin to cut a slot without cutting through.
+ * Exported for UI validation (e.g. disabling slotted style for thin walls).
+ */
+export const MIN_WALL_FOR_SLOTS = 0.8;
+
+/**
  * Compute effective slot dimensions from divider configuration.
  *
  * - Slot opening (width) = divider thickness + 2 × fit tolerance
- * - Slot cut depth = 50% of wall thickness, clamped to [0.5, 1.5]mm
+ * - Slot cut depth = 50% of wall thickness, clamped to [0.5, 1.5]mm,
+ *   but never more than 80% of wall thickness to avoid cutting through
  */
 export function getEffectiveSlotDimensions(
   wallThickness: number,
@@ -107,6 +115,9 @@ export function getEffectiveSlotDimensions(
   dividerClearance: number
 ): { slotWidth: number; slotDepth: number } {
   const slotWidth = dividerThickness + 2 * dividerClearance;
-  const slotDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
+  // Target 50% of wall, clamp to [0.5, 1.5]mm, but cap at 80% of wall
+  // so the slot never cuts through to the outside surface.
+  const rawDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
+  const slotDepth = Math.min(rawDepth, wallThickness * 0.8);
   return { slotWidth, slotDepth };
 }

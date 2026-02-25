@@ -19,6 +19,7 @@ import type { BinParams } from '@/shared/types/bin';
 import {
   calculateSlotPositions,
   getEffectiveSlotDimensions as getEffectiveSlotDimensionsRaw,
+  MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 
 // Re-export shared math for generation-internal consumers
@@ -54,6 +55,108 @@ export interface LipCutInfo {
 }
 
 /**
+ * Slight extension past the inner wall surface into the (hollow) bin interior.
+ * Avoids coplanar faces between the cutter and the bin's inner wall, which
+ * cause OCCT to produce ambiguous/non-manifold topology — leading to slicers
+ * dropping one side of the groove on repair.
+ * The extension cuts into empty space so geometry is unchanged.
+ */
+const SLOT_EXTENSION = 0.01;
+
+/**
+ * Create a mirrored pair of extruded rectangular cutters along one axis.
+ *
+ * Produces two boxes at +/- offset along the primary axis, both centered
+ * on `crossPos` along the cross axis. The primary-axis dimension is extended
+ * by SLOT_EXTENSION; the offset is adjusted so the extension reaches into
+ * the bin interior (avoiding coplanar faces).
+ *
+ * @param primaryDim  Cutter size along the primary axis (before extension)
+ * @param crossDim    Cutter size along the cross axis
+ * @param height      Extrusion height (Z)
+ * @param halfSpan    Half of the interior dimension along the primary axis
+ * @param crossPos    Position along the cross axis
+ * @param z           Z origin of the extrusion
+ * @param axis        'x' places cutters along X (left/right), 'y' along Y (front/back)
+ */
+function createMirroredCutters(
+  primaryDim: number,
+  crossDim: number,
+  height: number,
+  halfSpan: number,
+  crossPos: number,
+  z: number,
+  axis: 'x' | 'y'
+): [Shape3D, Shape3D] {
+  const extDim = primaryDim + SLOT_EXTENSION;
+  const centerOffset = halfSpan + primaryDim / 2;
+
+  // Rectangle dimensions: axis='x' → (extDim, crossDim), axis='y' → (crossDim, extDim)
+  const rectW = axis === 'x' ? extDim : crossDim;
+  const rectD = axis === 'x' ? crossDim : extDim;
+
+  const negSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(height);
+  const posSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(height);
+
+  // Negative side: outer edge at -halfSpan - primaryDim, extended inward by SLOT_EXTENSION
+  const negCenter = -(centerOffset - SLOT_EXTENSION / 2);
+  // Positive side: outer edge at +halfSpan + primaryDim, extended inward by SLOT_EXTENSION
+  const posCenter = centerOffset - SLOT_EXTENSION / 2;
+
+  if (axis === 'x') {
+    return [
+      translate(negSolid, [negCenter, crossPos, z]),
+      translate(posSolid, [posCenter, crossPos, z]),
+    ];
+  }
+  return [
+    translate(negSolid, [crossPos, negCenter, z]),
+    translate(posSolid, [crossPos, posCenter, z]),
+  ];
+}
+
+/**
+ * Create a mirrored pair of lip overhang cutters along one axis.
+ *
+ * These remove the interior lip overhang so dividers can slide in from the
+ * top. Extended by SLOT_EXTENSION into the wall for volumetric fuse overlap
+ * with the wall slot cutter.
+ */
+function createMirroredLipCutters(
+  lipOverhang: number,
+  slotWidth: number,
+  lipCutHeight: number,
+  halfSpan: number,
+  crossPos: number,
+  lipCutStartZ: number,
+  axis: 'x' | 'y'
+): [Shape3D, Shape3D] {
+  const extOverhang = lipOverhang + SLOT_EXTENSION;
+
+  const rectW = axis === 'x' ? extOverhang : slotWidth;
+  const rectD = axis === 'x' ? slotWidth : extOverhang;
+
+  const negSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(lipCutHeight);
+  const posSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(lipCutHeight);
+
+  // Lip cutter sits inside the wall: centered at halfSpan - lipOverhang/2,
+  // shifted inward by SLOT_EXTENSION/2 for overlap with wall slot cutter
+  const negCenter = -(halfSpan - lipOverhang / 2 + SLOT_EXTENSION / 2);
+  const posCenter = halfSpan - lipOverhang / 2 - SLOT_EXTENSION / 2;
+
+  if (axis === 'x') {
+    return [
+      translate(negSolid, [negCenter, crossPos, lipCutStartZ]),
+      translate(posSolid, [posCenter, crossPos, lipCutStartZ]),
+    ];
+  }
+  return [
+    translate(negSolid, [crossPos, negCenter, lipCutStartZ]),
+    translate(posSolid, [crossPos, posCenter, lipCutStartZ]),
+  ];
+}
+
+/**
  * Build a compound of all slot cuts for a slotted bin.
  *
  * Returns null if style is not 'slotted' or no slots are configured.
@@ -79,10 +182,11 @@ export function buildSlotCuts(
 ): Shape3D | null {
   if (params.style !== 'slotted') return null;
 
+  // Wall too thin for functional slots — skip to avoid cutting through
+  if (params.wallThickness < MIN_WALL_FOR_SLOTS) return null;
+
   const { slotConfig } = params;
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
-
-  const slots: Shape3D[] = [];
 
   // The bin floor plate extends from Z=0 to Z=wallThickness (shell thickness).
   // Wall slots must start at the floor surface, not Z=0, to avoid cutting
@@ -104,50 +208,46 @@ export function buildSlotCuts(
   const lipCutStartZ = lipInfo ? lipInfo.wallHeight - lipInfo.lipTaperWidth : 0;
   const lipCutHeight = lipInfo ? lipInfo.lipTaperWidth + lipInfo.lipHeight + 1 : 0;
 
-  // X-axis slots: cut into left and right walls (for Y-direction dividers)
-  if (slotConfig.x.enabled) {
-    const positions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
-    for (const yPos of positions) {
-      // Wall slots (narrow, for tab engagement) — start at floor surface
-      const leftSlot = sketch(drawRectangle(slotDepth, slotWidth), 'XY').extrude(slotHeight);
-      slots.push(translate(leftSlot, [-innerW / 2 - slotDepth / 2, yPos, floorZ]));
+  const slots: Shape3D[] = [];
 
-      const rightSlot = sketch(drawRectangle(slotDepth, slotWidth), 'XY').extrude(slotHeight);
-      slots.push(translate(rightSlot, [innerW / 2 + slotDepth / 2, yPos, floorZ]));
+  const addAxisSlots = (axis: 'x' | 'y', innerCross: number, positions: number[]): void => {
+    const halfSpan = innerCross / 2;
+
+    for (const crossPos of positions) {
+      // Wall slots (narrow, for tab engagement) — start at floor surface
+      slots.push(
+        ...createMirroredCutters(slotDepth, slotWidth, slotHeight, halfSpan, crossPos, floorZ, axis)
+      );
 
       // Lip cutouts: remove the interior overhang above AND below wallHeight.
       // The lip profile extends below wallHeight (wall-replacement extension),
       // so the cutout must reach down to wallHeight - lipTaperWidth.
       if (lipInfo && lipOverhang > 0) {
-        const leftLip = sketch(drawRectangle(lipOverhang, slotWidth), 'XY').extrude(lipCutHeight);
-        slots.push(translate(leftLip, [-(innerW / 2 - lipOverhang / 2), yPos, lipCutStartZ]));
-
-        const rightLip = sketch(drawRectangle(lipOverhang, slotWidth), 'XY').extrude(lipCutHeight);
-        slots.push(translate(rightLip, [innerW / 2 - lipOverhang / 2, yPos, lipCutStartZ]));
+        slots.push(
+          ...createMirroredLipCutters(
+            lipOverhang,
+            slotWidth,
+            lipCutHeight,
+            halfSpan,
+            crossPos,
+            lipCutStartZ,
+            axis
+          )
+        );
       }
     }
+  };
+
+  // X-axis slots: cut into left and right walls (for Y-direction dividers)
+  if (slotConfig.x.enabled) {
+    const positions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
+    addAxisSlots('x', innerW, positions);
   }
 
   // Y-axis slots: cut into front and back walls (for X-direction dividers)
   if (slotConfig.y.enabled) {
     const positions = calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang);
-    for (const xPos of positions) {
-      // Wall slots (narrow) — start at floor surface
-      const frontSlot = sketch(drawRectangle(slotWidth, slotDepth), 'XY').extrude(slotHeight);
-      slots.push(translate(frontSlot, [xPos, -innerD / 2 - slotDepth / 2, floorZ]));
-
-      const backSlot = sketch(drawRectangle(slotWidth, slotDepth), 'XY').extrude(slotHeight);
-      slots.push(translate(backSlot, [xPos, innerD / 2 + slotDepth / 2, floorZ]));
-
-      // Lip cutouts: remove the interior overhang (same Z range as X-axis)
-      if (lipInfo && lipOverhang > 0) {
-        const frontLip = sketch(drawRectangle(slotWidth, lipOverhang), 'XY').extrude(lipCutHeight);
-        slots.push(translate(frontLip, [xPos, -(innerD / 2 - lipOverhang / 2), lipCutStartZ]));
-
-        const backLip = sketch(drawRectangle(slotWidth, lipOverhang), 'XY').extrude(lipCutHeight);
-        slots.push(translate(backLip, [xPos, innerD / 2 - lipOverhang / 2, lipCutStartZ]));
-      }
-    }
+    addAxisSlots('y', innerD, positions);
   }
 
   if (slots.length === 0) return null;
