@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.33.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.2...gridfinity-layout-tool-v3.33.3) (2026-02-25)
+
+
+### Bug Fixes
+
+* **ci:** skip Vercel preview builds for release-please branches ([#906](https://github.com/andymai/gridfinity-layout-tool/issues/906)) ([63919e5](https://github.com/andymai/gridfinity-layout-tool/commit/63919e5cdd21508b87044c3ced6e9fad6f04f2d4))
+
 ## [3.33.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.1...gridfinity-layout-tool-v3.33.2) (2026-02-25)
 
 
