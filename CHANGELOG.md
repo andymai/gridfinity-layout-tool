@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.34.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.7...gridfinity-layout-tool-v3.34.0) (2026-02-25)
+
+
+### Features
+
+* **baseplate:** add custom grid size with "Synced with layout" toggle ([#918](https://github.com/andymai/gridfinity-layout-tool/issues/918)) ([fa18138](https://github.com/andymai/gridfinity-layout-tool/commit/fa181380a560f59b0226b425702fc13c75e48972))
+
 ## [3.33.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.6...gridfinity-layout-tool-v3.33.7) (2026-02-25)
 
 
