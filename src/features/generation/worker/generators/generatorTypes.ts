@@ -189,18 +189,21 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
 
 // ─── Tongue-and-Groove Connector Constants ───────────────────────────────────
 //
-// Split baseplate pieces use rectangular tongue-and-groove joints along join
-// edges. The tongue runs the full edge length with a constant rectangular
-// cross-section, providing registration and preventing vertical displacement.
+// Split baseplate pieces use dovetail tongue-and-groove joints along join
+// edges. The tongue runs the full edge length with a trapezoidal cross-section
+// that tapers along Z: wider protrusion at the bottom, narrower at the top.
 //
-// Rectangular profile (no dovetail taper) allows drop-in assembly from above
-// for any grid configuration, including 2x2+ grids where the last piece must
-// engage tongues on two perpendicular edges simultaneously.
+// This vertical taper allows drop-in assembly from above (narrow top enters
+// the groove first) while the wider bottom prevents horizontal separation
+// once seated. Works for any grid configuration including 2x2+ grids.
 //
 // Convention: left/front edges get tongues (male), right/back get grooves (female).
 
-/** How far the tongue protrudes from the wall face (mm) */
+/** Maximum protrusion from wall face, at the bottom of the tongue (mm) */
 export const TONGUE_PROTRUSION = 1.5;
+
+/** How much less protrusion at the top vs bottom — creates the dovetail lock (mm) */
+export const TONGUE_TAPER = 0.4;
 
 /** Z half-height of the tongue cross-section (mm) */
 export const TONGUE_HALF_HEIGHT = 1.2;

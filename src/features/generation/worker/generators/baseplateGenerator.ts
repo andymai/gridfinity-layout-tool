@@ -25,6 +25,7 @@ import {
   drawRoundedRectangle,
   drawRectangle,
   drawCircle,
+  draw,
   unwrap,
   cutAll,
   clone,
@@ -52,6 +53,7 @@ import {
   INSET_BOT,
   pocketCornerRadius,
   TONGUE_PROTRUSION,
+  TONGUE_TAPER,
   TONGUE_HALF_HEIGHT,
   TONGUE_CLEARANCE,
   TONGUE_END_MARGIN,
@@ -239,19 +241,23 @@ function buildMagnetHoles(
 // ─── Tongue-and-Groove Connectors ────────────────────────────────────────────
 
 /**
- * Build tongue-and-groove connectors for split baseplate join edges.
+ * Build dovetail tongue-and-groove connectors for split baseplate join edges.
  *
- * Each join edge gets one continuous rectangular tongue running its full length
- * (minus end margins at corners where two join edges meet). Rectangular profile
- * allows drop-in assembly from above for any grid configuration.
+ * Each join edge gets one continuous dovetail running its full length (minus
+ * end margins at corners where two join edges meet). The tongue has a
+ * trapezoidal cross-section that tapers along Z: wider protrusion at the
+ * bottom, narrower at the top. This allows drop-in assembly from above —
+ * the narrow top enters the groove first, the wider bottom locks horizontally
+ * once seated.
  *
  * Convention: left/front edges = tongue (male, fused on), right/back = groove
  * (female, cut out).
  *
- * All geometry is built using only the XY sketch plane (normal = +Z) to avoid
- * the non-intuitive normals of XZ ([0,-1,0]) and YZ ([1,0,0]) planes. Each
- * connector is a drawRectangle on XY, extruded in +Z, then translated to its
- * final position.
+ * Sketch planes:
+ * - Left/right edges: cross-section drawn on XZ plane (u=X, v=Z), extruded along Y
+ *   XZ normal = [0,-1,0], so: origin = -Y_start, extrude(-len) → +Y direction
+ * - Front/back edges: cross-section drawn on YZ plane (u=Y, v=Z), extruded along X
+ *   YZ normal = [1,0,0], so: origin = X_start, extrude(len) → +X direction
  *
  * Coordinates are in the pre-Z-shift system (slab top at Z=0, bottom at Z=-totalHeight).
  */
@@ -272,17 +278,20 @@ function buildConnectors(
   const halfW = totalW / 2;
   const halfD = totalD / 2;
   const zCenter = -totalHeight / 2;
+  const h = TONGUE_HALF_HEIGHT;
+  const pBot = TONGUE_PROTRUSION; // max protrusion at bottom
+  const pTop = TONGUE_PROTRUSION - TONGUE_TAPER; // reduced protrusion at top
 
   type Side = 'left' | 'right' | 'front' | 'back';
 
   const edgeDefs: ReadonlyArray<{
     side: Side;
     isMale: boolean;
-    wallPos: number; // Wall coordinate on the protrude axis
-    edgeStart: number; // Start of edge on the parallel axis
-    edgeEnd: number; // End of edge on the parallel axis
-    protrudeAxis: 'x' | 'y'; // Axis the connector protrudes/cuts along
-    protrudeDir: -1 | 1; // +1 = positive axis direction, -1 = negative
+    wallPos: number;
+    edgeStart: number;
+    edgeEnd: number;
+    sketchPlane: 'XZ' | 'YZ';
+    protrudeDir: -1 | 1;
     adjStart: Side;
     adjEnd: Side;
   }> = [
@@ -292,7 +301,7 @@ function buildConnectors(
       wallPos: -halfW + slabOffsetX,
       edgeStart: -halfD + slabOffsetY,
       edgeEnd: halfD + slabOffsetY,
-      protrudeAxis: 'x',
+      sketchPlane: 'XZ',
       protrudeDir: -1,
       adjStart: 'front',
       adjEnd: 'back',
@@ -303,7 +312,7 @@ function buildConnectors(
       wallPos: halfW + slabOffsetX,
       edgeStart: -halfD + slabOffsetY,
       edgeEnd: halfD + slabOffsetY,
-      protrudeAxis: 'x',
+      sketchPlane: 'XZ',
       protrudeDir: 1,
       adjStart: 'front',
       adjEnd: 'back',
@@ -314,7 +323,7 @@ function buildConnectors(
       wallPos: -halfD + slabOffsetY,
       edgeStart: -halfW + slabOffsetX,
       edgeEnd: halfW + slabOffsetX,
-      protrudeAxis: 'y',
+      sketchPlane: 'YZ',
       protrudeDir: -1,
       adjStart: 'left',
       adjEnd: 'right',
@@ -325,7 +334,7 @@ function buildConnectors(
       wallPos: halfD + slabOffsetY,
       edgeStart: -halfW + slabOffsetX,
       edgeEnd: halfW + slabOffsetX,
-      protrudeAxis: 'y',
+      sketchPlane: 'YZ',
       protrudeDir: 1,
       adjStart: 'left',
       adjEnd: 'right',
@@ -335,44 +344,41 @@ function buildConnectors(
   for (const def of edgeDefs) {
     if (edges[def.side] !== 'join') continue;
 
-    // Trim ends where adjacent edges are also join edges (avoids corner overlap)
     const trimStart = edges[def.adjStart] === 'join' ? TONGUE_END_MARGIN : 0;
     const trimEnd = edges[def.adjEnd] === 'join' ? TONGUE_END_MARGIN : 0;
     const start = def.edgeStart + trimStart;
     const end = def.edgeEnd - trimEnd;
     const len = end - start;
     if (len <= 0) continue;
-    const edgeMid = (start + end) / 2;
+
+    // XZ plane: normal=[0,-1,0] → origin = -Y_start, extrude(-len) = +Y
+    // YZ plane: normal=[1,0,0]  → origin =  X_start, extrude(+len) = +X
+    const [origin, extrudeDist] = def.sketchPlane === 'XZ' ? [-start, -len] : [start, len];
+
+    const w = def.wallPos;
+    const d = def.protrudeDir;
 
     if (def.isMale) {
-      // Tongue: rectangular box protruding outward from wall face.
-      // Inner face flush with wall, extends TONGUE_PROTRUSION outward.
-      const h = TONGUE_HALF_HEIGHT;
-      const p = TONGUE_PROTRUSION;
-      const center = def.wallPos + def.protrudeDir * (p / 2);
-
-      // drawRectangle(xSize, ySize) centered at origin on XY plane
-      const [sx, sy] = def.protrudeAxis === 'x' ? [p, len] : [len, p];
-      const [cx, cy] = def.protrudeAxis === 'x' ? [center, edgeMid] : [edgeMid, center];
-
-      tongues.push(
-        translate(sketch(drawRectangle(sx, sy), 'XY', zCenter - h).extrude(h * 2), [cx, cy, 0])
-      );
+      // Tongue: trapezoidal cross-section. u-axis = protrusion direction, v-axis = Z.
+      // Wider protrusion at bottom (pBot), narrower at top (pTop) for top-insertion.
+      const profile = draw([w, zCenter + h])
+        .lineTo([w + d * pTop, zCenter + h])
+        .lineTo([w + d * pBot, zCenter - h])
+        .lineTo([w, zCenter - h])
+        .close();
+      tongues.push(sketch(profile, def.sketchPlane, origin).extrude(extrudeDist));
     } else {
-      // Groove: slightly oversized rectangle cut inward from wall face.
-      // Extends COPLANAR_MARGIN beyond wall to avoid coplanar boolean failures.
-      const gH = TONGUE_HALF_HEIGHT + TONGUE_CLEARANCE;
-      const grooveDepth = TONGUE_PROTRUSION + TONGUE_CLEARANCE;
-      const totalCut = grooveDepth + COPLANAR_MARGIN;
-      // Center sits between (wall + dir*COPLANAR_MARGIN) and (wall - dir*grooveDepth)
-      const center = def.wallPos + (def.protrudeDir * (COPLANAR_MARGIN - grooveDepth)) / 2;
-
-      const [sx, sy] = def.protrudeAxis === 'x' ? [totalCut, len] : [len, totalCut];
-      const [cx, cy] = def.protrudeAxis === 'x' ? [center, edgeMid] : [edgeMid, center];
-
-      grooves.push(
-        translate(sketch(drawRectangle(sx, sy), 'XY', zCenter - gH).extrude(gH * 2), [cx, cy, 0])
-      );
+      // Groove: matching dovetail + clearance, extended beyond wall to avoid coplanar faces.
+      const gH = h + TONGUE_CLEARANCE;
+      const gTop = pTop + TONGUE_CLEARANCE;
+      const gBot = pBot + TONGUE_CLEARANCE;
+      const ext = COPLANAR_MARGIN;
+      const profile = draw([w + d * ext, zCenter + gH])
+        .lineTo([w - d * gTop, zCenter + gH])
+        .lineTo([w - d * gBot, zCenter - gH])
+        .lineTo([w + d * ext, zCenter - gH])
+        .close();
+      grooves.push(sketch(profile, def.sketchPlane, origin).extrude(extrudeDist));
     }
   }
 
