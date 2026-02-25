@@ -23,29 +23,6 @@ import type { ConstraintRule, ImplicationRule } from './types';
  * Symmetric pairs (A disables B, B disables A) model mutual exclusion.
  */
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
-  // ── Base: half sockets ↔ magnet/screw ────────────────────────────────────
-  {
-    description: 'Half sockets too small for attachment holes',
-    source: 'base.halfSockets',
-    when: (p) => p.base.halfSockets,
-    disables: ['base.magnet', 'base.screw'],
-    reason: 'binDesigner.halfSocketsDisablesMagnetHoles',
-  },
-  {
-    description: 'Magnet holes require full-size sockets',
-    source: 'base.magnet',
-    when: (p) => p.base.style === 'magnet' || p.base.style === 'magnet_and_screw',
-    disables: ['base.halfSockets'],
-    reason: 'binDesigner.attachmentDisablesHalfSockets',
-  },
-  {
-    description: 'Screw holes require full-size sockets',
-    source: 'base.screw',
-    when: (p) => p.base.style === 'screw' || p.base.style === 'magnet_and_screw',
-    disables: ['base.halfSockets'],
-    reason: 'binDesigner.attachmentDisablesHalfSockets',
-  },
-
   // ── Base: flat ↔ everything else ─────────────────────────────────────────
   {
     description: 'Flat base disables attachment features',

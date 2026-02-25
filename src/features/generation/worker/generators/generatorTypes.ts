@@ -181,6 +181,17 @@ export const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
   [-HOLE_OFFSET, HOLE_OFFSET],
 ];
 
+/** Single centered magnet offset for half-unit cells (too small for 4-corner layout) */
+export const HALF_CELL_MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [[0, 0]];
+
+/** Get magnet offsets for a cell: 4 corners for full cells, 1 centered for half-unit cells. */
+export function getMagnetOffsets(
+  widthUnits: number,
+  depthUnits: number
+): ReadonlyArray<readonly [number, number]> {
+  return widthUnits < 1 || depthUnits < 1 ? HALF_CELL_MAGNET_OFFSETS : MAGNET_OFFSETS;
+}
+
 /** Compute pocket corner radius for a given cell size (clamped to fit) */
 export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;

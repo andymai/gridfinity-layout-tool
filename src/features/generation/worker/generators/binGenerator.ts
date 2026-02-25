@@ -197,15 +197,10 @@ export function generateBin(
 
   const originToTag = new Map<number, number>();
 
-  // Half sockets do not support magnet/screw holes (0.5x0.5 cells too small)
   const withMagnet =
-    !isFlat &&
-    !halfSockets &&
-    (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
+    !isFlat && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
   const withScrew =
-    !isFlat &&
-    !halfSockets &&
-    (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
+    !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
   // Dynamic quality based on physical dimension (not cell count).
   // Cell count correlates poorly with needed tessellation quality — a 6×2 bin
