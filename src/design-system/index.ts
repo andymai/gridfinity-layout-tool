@@ -69,6 +69,10 @@ export type { SelectProps, SelectOption } from './Select';
 export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';
 
+// Popover
+export { Popover } from './Popover';
+export type { PopoverProps } from './Popover';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Composite Components
 // ─────────────────────────────────────────────────────────────────────────────
