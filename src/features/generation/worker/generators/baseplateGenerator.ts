@@ -30,7 +30,7 @@ import {
   cutAll,
   clone,
   translate,
-  fuse,
+  fuseAll,
   mesh,
   meshEdges,
   exportSTEP,
@@ -563,10 +563,14 @@ function buildBaseplateSolid(
 
   onProgress?.(0.2);
 
-  // 2. Cut pockets — through-cut when no magnets, partial when magnets leave a floor
+  // 2. Collect all subtractive tools (pockets, magnet holes, connector grooves)
+  // into a single array for one batched cutAll operation. This avoids rebuilding
+  // the BREP topology between separate boolean passes.
   const throughCut = !magnetHoles;
   const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
-  const pockets: Shape3D[] = [];
+  const allCuts: Shape3D[] = [];
+
+  // 2a. Pocket cutters
   forEachCell(
     width,
     depth,
@@ -574,28 +578,20 @@ function buildBaseplateSolid(
       const cellW_mm = cell.widthUnits * gridUnitMm;
       const cellD_mm = cell.depthUnits * gridUnitMm;
       const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
-      pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
+      allCuts.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
     },
     cellOpts
   );
 
-  if (pockets.length > 0) {
-    baseplate = unwrap(cutAll(baseplate, pockets));
-  }
-
-  onProgress?.(0.6);
-
-  // 3. Cut magnet holes from the pocket floor (top side)
+  // 2b. Magnet hole cutters
   if (magnetHoles) {
     const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
-    if (holes.length > 0) {
-      baseplate = unwrap(cutAll(baseplate, holes));
-    }
+    allCuts.push(...holes);
   }
 
-  onProgress?.(0.7);
+  onProgress?.(0.4);
 
-  // 4. Add registration connectors (nubs fused on, holes cut out)
+  // 2c. Connector groove cutters
   const { nubs, holes: connHoles } = buildConnectors(
     params,
     totalHeight,
@@ -604,12 +600,21 @@ function buildBaseplateSolid(
     slabOffsetX,
     slabOffsetY
   );
-  for (const nub of nubs) {
-    baseplate = unwrap(fuse(baseplate, nub));
+  allCuts.push(...connHoles);
+
+  // 3. Batch-fuse connector tongues (single fuseAll instead of sequential fuse loop)
+  if (nubs.length > 0) {
+    baseplate = unwrap(fuseAll([baseplate, ...nubs]));
   }
-  if (connHoles.length > 0) {
-    baseplate = unwrap(cutAll(baseplate, connHoles));
+
+  onProgress?.(0.6);
+
+  // 4. Single batched cut of all subtractive tools
+  if (allCuts.length > 0) {
+    baseplate = unwrap(cutAll(baseplate, allCuts));
   }
+
+  onProgress?.(0.8);
 
   // 5. Shift up so bottom face sits at Z=0, matching the bin convention
   baseplate = translate(baseplate, [0, 0, totalHeight]);
