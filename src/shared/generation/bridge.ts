@@ -8,4 +8,4 @@
 export { GenerationBridge } from '@/features/generation/bridge';
 export { setActiveBridge, getActiveBridge } from '@/features/generation/bridge';
 export type { WorkerResponse } from '@/features/generation/bridge/types';
-export type { SplitExportResult } from '@/features/generation/bridge';
+export type { SplitExportResult, GenerationResult } from '@/features/generation/bridge';

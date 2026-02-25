@@ -2,12 +2,12 @@
  * Hook that manages the GenerationBridge lifecycle for the standalone baseplate page.
  *
  * Lifecycle:
- * 1. Mount: Create bridge, init worker, set wasmStatus
+ * 1. Mount: Create bridge + worker pool, init workers, set wasmStatus
  * 2. Params change: Compute tiling, regenerate BREP (single or multi-piece)
- * 3. Unmount: Destroy bridge
+ * 3. Unmount: Destroy bridge + pool
  *
  * When the baseplate exceeds print bed size, it's split into a tiling grid.
- * Each piece is generated sequentially through the bridge.
+ * Pieces are generated in parallel across a worker pool (one WASM instance per worker).
  */
 
 import { useEffect, useRef, useCallback } from 'react';
@@ -20,6 +20,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling, pieceToBaseplateParams } from '../utils/splitPlanner';
+import { BaseplateWorkerPool } from './BaseplateWorkerPool';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
 import type { PieceMeshEntry } from '../store/baseplatePageStore';
 
@@ -34,12 +35,16 @@ const EMPTY_MESH = {
 
 const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
 
+/** Default pool size when hardwareConcurrency is unavailable */
+const DEFAULT_POOL_SIZE = 2;
+
 /**
  * Manages the GenerationBridge lifecycle and auto-regeneration
- * when layout params change. Handles both single and multi-piece generation.
+ * when layout params change. Uses a worker pool for parallel split piece generation.
  */
 export function useBaseplateGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
+  const poolRef = useRef<BaseplateWorkerPool | null>(null);
   const initializedRef = useRef(false);
   const generationEpochRef = useRef(0);
 
@@ -92,7 +97,7 @@ export function useBaseplateGeneration(): void {
       const bridge = bridgeRef.current;
       if (!bridge || bridge.isDestroyed) return;
 
-      // Increment epoch — any in-flight multi-piece loop with a stale epoch
+      // Increment epoch — any in-flight generation with a stale epoch
       // will discard its results instead of overwriting the new generation.
       const epoch = ++generationEpochRef.current;
 
@@ -104,7 +109,7 @@ export function useBaseplateGeneration(): void {
 
       try {
         if (!tiling.isSplit) {
-          // Single piece
+          // Single piece — use the primary bridge
           const result = await bridge.generateBaseplate(fullParams, NO_OP_PROGRESS);
 
           // Discard if superseded
@@ -121,48 +126,92 @@ export function useBaseplateGeneration(): void {
           setPieceMeshes([]);
           setGenerationStatus('complete');
         } else {
-          // Multi-piece — generate each piece sequentially
-          const meshEntries: PieceMeshEntry[] = [];
+          // Multi-piece — use worker pool for parallel generation
+          const pool = poolRef.current;
           const total = tiling.pieces.length;
+          setSplitProgress({ current: 0, total });
 
-          for (let i = 0; i < tiling.pieces.length; i++) {
-            const piece = tiling.pieces[i];
-            setSplitProgress({ current: i + 1, total });
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- re-check between async iterations
-            if (bridge.isDestroyed || generationEpochRef.current !== epoch) return;
+          const pieceParamsArray = tiling.pieces.map((piece) =>
+            pieceToBaseplateParams(piece, fullParams)
+          );
 
-            const pieceParams = pieceToBaseplateParams(piece, fullParams);
-            const result = await bridge.generateBaseplate(pieceParams, NO_OP_PROGRESS);
+          if (pool && !pool.isDestroyed && pool.size > 1) {
+            // Parallel generation via worker pool
+            const results = await pool.generatePieces(pieceParamsArray);
 
-            // Discard if a newer generation started while awaiting
+            // Discard if superseded
             if (generationEpochRef.current !== epoch) return;
 
-            meshEntries.push({
-              label: piece.label,
-              col: piece.col,
-              row: piece.row,
-              mesh: {
-                vertices: result.mesh.vertices,
-                normals: result.mesh.normals,
-                indices: result.mesh.indices,
-                edgeVertices: result.mesh.edgeVertices,
-                error: null,
-                timingMs: result.timingMs,
-              },
-              offsetX: piece.gridOffsetX,
-              offsetY: piece.gridOffsetY,
-              widthUnits: piece.widthUnits,
-              depthUnits: piece.depthUnits,
+            const meshEntries: PieceMeshEntry[] = results.map((result, i) => {
+              const piece = tiling.pieces[i];
+              return {
+                label: piece.label,
+                col: piece.col,
+                row: piece.row,
+                mesh: {
+                  vertices: result.mesh.vertices,
+                  normals: result.mesh.normals,
+                  indices: result.mesh.indices,
+                  edgeVertices: result.mesh.edgeVertices,
+                  error: null,
+                  timingMs: result.timingMs,
+                },
+                offsetX: piece.gridOffsetX,
+                offsetY: piece.gridOffsetY,
+                widthUnits: piece.widthUnits,
+                depthUnits: piece.depthUnits,
+              };
             });
-          }
 
-          setSplitProgress(null);
-          setPieceMeshes(meshEntries);
-          setGenerationResult(EMPTY_MESH);
-          setGenerationStatus('complete');
+            setSplitProgress(null);
+            setPieceMeshes(meshEntries);
+            setGenerationResult(EMPTY_MESH);
+            setGenerationStatus('complete');
+          } else {
+            // Fallback: sequential generation via primary bridge
+            const meshEntries: PieceMeshEntry[] = [];
+
+            for (let i = 0; i < tiling.pieces.length; i++) {
+              const piece = tiling.pieces[i];
+              setSplitProgress({ current: i + 1, total });
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- re-check between async iterations
+              if (bridge.isDestroyed || generationEpochRef.current !== epoch) return;
+
+              const result = await bridge.generateBaseplate(pieceParamsArray[i], NO_OP_PROGRESS);
+
+              // Discard if a newer generation started while awaiting
+              if (generationEpochRef.current !== epoch) return;
+
+              meshEntries.push({
+                label: piece.label,
+                col: piece.col,
+                row: piece.row,
+                mesh: {
+                  vertices: result.mesh.vertices,
+                  normals: result.mesh.normals,
+                  indices: result.mesh.indices,
+                  edgeVertices: result.mesh.edgeVertices,
+                  error: null,
+                  timingMs: result.timingMs,
+                },
+                offsetX: piece.gridOffsetX,
+                offsetY: piece.gridOffsetY,
+                widthUnits: piece.widthUnits,
+                depthUnits: piece.depthUnits,
+              });
+            }
+
+            setSplitProgress(null);
+            setPieceMeshes(meshEntries);
+            setGenerationResult(EMPTY_MESH);
+            setGenerationStatus('complete');
+          }
         }
       } catch (e: unknown) {
         if (e instanceof Error && e.message === 'Generation cancelled') {
+          return;
+        }
+        if (e instanceof DOMException && e.name === 'AbortError') {
           return;
         }
 
@@ -181,7 +230,7 @@ export function useBaseplateGeneration(): void {
     [setGenerationStatus, setGenerationResult, setTiling, setPieceMeshes, setSplitProgress]
   );
 
-  // Initialize bridge on mount
+  // Initialize bridge + worker pool on mount
   useEffect(() => {
     const bridge = new GenerationBridge();
     bridgeRef.current = bridge;
@@ -198,6 +247,20 @@ export function useBaseplateGeneration(): void {
         const threadingInfo = bridge.getThreadingInfo();
         if (threadingInfo) {
           trackWasmThreadingStatus(threadingInfo.isThreaded, threadingInfo.hardwareConcurrency);
+        }
+
+        // Initialize worker pool in the background (don't block initial generation)
+        const poolSize = threadingInfo?.hardwareConcurrency
+          ? Math.min(threadingInfo.hardwareConcurrency, 4)
+          : DEFAULT_POOL_SIZE;
+        if (poolSize > 1) {
+          const pool = new BaseplateWorkerPool();
+          poolRef.current = pool;
+          void pool.init(poolSize).catch(() => {
+            // Pool init failure is non-fatal — falls back to sequential generation
+            pool.destroy();
+            poolRef.current = null;
+          });
         }
 
         // Trigger initial generation
@@ -224,6 +287,10 @@ export function useBaseplateGeneration(): void {
       bridgeRef.current = null;
       initializedRef.current = false;
       setActiveBridge(null);
+
+      // Destroy worker pool
+      poolRef.current?.destroy();
+      poolRef.current = null;
     };
   }, [setWasmStatus, runGeneration]);
 
