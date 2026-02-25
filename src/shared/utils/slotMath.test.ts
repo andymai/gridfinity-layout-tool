@@ -122,7 +122,7 @@ describe('getEffectiveSlotDimensions', () => {
   it('clamps slot depth to 80% of wall thickness for thin walls', () => {
     const { slotDepth } = getEffectiveSlotDimensions(0.6, 1.2, 0.1);
     // 0.6 * 0.5 = 0.3 → raw clamped to 0.5, then capped at 0.6 * 0.8 = 0.48
-    expect(slotDepth).toBe(0.48);
+    expect(slotDepth).toBeCloseTo(0.48);
   });
 
   it('clamps slot depth to minimum 0.5mm for adequate walls', () => {

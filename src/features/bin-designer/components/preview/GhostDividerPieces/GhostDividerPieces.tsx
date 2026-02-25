@@ -24,6 +24,7 @@ import {
   calculateDividerHeight,
   calculateDividerLength,
   getEffectiveSlotDimensions,
+  MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 
 const GHOST_COLOR = '#22d3ee';
@@ -61,7 +62,10 @@ export function GhostDividerPieces() {
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;
 
-  const shouldShow = style === 'slotted' && (slotConfig.x.enabled || slotConfig.y.enabled);
+  const shouldShow =
+    style === 'slotted' &&
+    wallThickness >= MIN_WALL_FOR_SLOTS &&
+    (slotConfig.x.enabled || slotConfig.y.enabled);
 
   // ── Sync preview color from PreviewCanvas via localStorage + custom event ─
   const [previewColor, setPreviewColor] = useState(() => {

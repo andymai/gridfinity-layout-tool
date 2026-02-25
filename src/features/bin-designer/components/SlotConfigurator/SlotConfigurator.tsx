@@ -16,6 +16,7 @@ import {
   calculateDividerLength,
   calculateDividerHeight,
   getEffectiveSlotDimensions,
+  MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 import { useTranslation } from '@/i18n';
 import type { DividerPieceConfig } from '../../types';
@@ -136,9 +137,15 @@ export function SlotConfigurator() {
   ]);
 
   const directions: SlotDirection[] = ['vertical', 'horizontal'];
+  const wallTooThin = wallThickness < MIN_WALL_FOR_SLOTS;
 
   return (
     <div className="space-y-3">
+      {wallTooThin && (
+        <p className="rounded bg-warning/10 px-2 py-1.5 text-[11px] text-warning">
+          {t('binDesigner.slotWallTooThin', { min: MIN_WALL_FOR_SLOTS })}
+        </p>
+      )}
       {/* Direction toggle (compact inline) */}
       <div className="flex items-center justify-between">
         <span className="text-xs text-content-tertiary">{t('binDesigner.slotDirection')}</span>

@@ -16,7 +16,11 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { calculateSlotPositions, getEffectiveSlotDimensions } from '@/shared/utils/slotMath';
+import {
+  calculateSlotPositions,
+  getEffectiveSlotDimensions,
+  MIN_WALL_FOR_SLOTS,
+} from '@/shared/utils/slotMath';
 
 const GHOST_COLOR = '#fbbf24';
 const GHOST_OPACITY = 0.75;
@@ -52,6 +56,7 @@ export function GhostSlotLines() {
 
   const shouldShow =
     style === 'slotted' &&
+    wallThickness >= MIN_WALL_FOR_SLOTS &&
     generationStatus === 'generating' &&
     (slotConfig.x.enabled || slotConfig.y.enabled);
 
