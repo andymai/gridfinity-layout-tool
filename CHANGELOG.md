@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.33.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.0...gridfinity-layout-tool-v3.33.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* **baseplate:** pin fractional half-units to edge positions in split tiling ([#902](https://github.com/andymai/gridfinity-layout-tool/issues/902)) ([7af94ea](https://github.com/andymai/gridfinity-layout-tool/commit/7af94ea7be9094087b48d29cf2dcb3b6422ef3a8))
+
 ## [3.33.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.32.0...gridfinity-layout-tool-v3.33.0) (2026-02-25)
 
 
