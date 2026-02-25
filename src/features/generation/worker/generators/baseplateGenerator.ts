@@ -25,6 +25,7 @@ import {
   drawRoundedRectangle,
   drawRectangle,
   drawCircle,
+  draw,
   unwrap,
   cutAll,
   clone,
@@ -51,11 +52,11 @@ import {
   MAGNET_OFFSETS,
   INSET_BOT,
   pocketCornerRadius,
-  NUB_DIAMETER,
-  NUB_DEPTH,
-  HOLE_DIAMETER,
-  HOLE_DEPTH,
-  computeConnectorPositions,
+  DOVETAIL_PROTRUSION,
+  DOVETAIL_BASE_HALF,
+  DOVETAIL_TIP_HALF,
+  DOVETAIL_CLEARANCE,
+  DOVETAIL_END_MARGIN,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
@@ -237,20 +238,27 @@ function buildMagnetHoles(
   return holes;
 }
 
-// ─── Registration Connectors ─────────────────────────────────────────────────
+// ─── Dovetail Connectors ─────────────────────────────────────────────────────
 
 /**
- * Build connector cylinders for split baseplate join edges.
+ * Build dovetail tongue-and-groove connectors for split baseplate join edges.
  *
- * Nubs (male) protrude outward from the wall; holes (female) are cut inward.
- * Returns { nubs, holes } arrays of Shape3D to fuse/cut onto the baseplate.
+ * Each join edge gets one continuous dovetail running its full length (minus end
+ * margins at corners where two join edges meet). The tongue has a trapezoidal
+ * cross-section — narrower at the wall face (BASE), wider at the tip (TIP) —
+ * creating an undercut that prevents pieces from pulling apart.
+ *
+ * Convention: left/front edges = tongue (male, fused on), right/back = groove
+ * (female, cut out). Assembly: slide pieces together along the join edge.
+ *
+ * Cross-section (perpendicular to edge, u = protrusion direction, v = Z):
+ *
+ *     A─────────D       A,D at wall face (narrower: ±BASE_HALF)
+ *    / dovetail  \
+ *   B─────────────C     B,C at tip (wider: ±TIP_HALF)
+ *   ←── PROTRUSION ──→
  *
  * Coordinates are in the pre-Z-shift system (slab top at Z=0, bottom at Z=-totalHeight).
- * The caller applies the final Z-shift after all booleans.
- *
- * Cylinders are sketched on the plane perpendicular to the wall normal:
- * - Left/right walls (nx=±1): sketch on YZ plane, extrude along ±X
- * - Front/back walls (ny=±1): sketch on XZ plane, extrude along ±Y
  */
 function buildConnectors(
   params: BaseplateParams,
@@ -260,59 +268,122 @@ function buildConnectors(
   slabOffsetX: number,
   slabOffsetY: number
 ): { nubs: Shape3D[]; holes: Shape3D[] } {
-  const { width, depth, gridUnitMm, edges, connectorNubs } = params;
-  const nubs: Shape3D[] = [];
-  const holes: Shape3D[] = [];
+  const { edges, connectorNubs } = params;
+  const tongues: Shape3D[] = [];
+  const grooves: Shape3D[] = [];
 
-  if (!connectorNubs || !edges) return { nubs, holes };
+  if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
 
-  const positions = computeConnectorPositions(
-    width,
-    depth,
-    gridUnitMm,
-    totalHeight,
-    totalW,
-    totalD,
-    slabOffsetX,
-    slabOffsetY,
-    edges
-  );
+  const halfW = totalW / 2;
+  const halfD = totalD / 2;
+  const zCenter = -totalHeight / 2;
 
-  const nubRadius = NUB_DIAMETER / 2;
-  const holeRadius = HOLE_DIAMETER / 2;
+  // Edge definitions: wall coordinate, perpendicular edge length, sketch plane,
+  // extrude sign (outward direction for tongue), and adjacent edges for trimming
+  const edgeDefs: ReadonlyArray<{
+    side: 'left' | 'right' | 'front' | 'back';
+    isMale: boolean;
+    /** Wall coordinate (X for left/right, Y for front/back) */
+    wallCoord: number;
+    /** Length of this edge (mm) */
+    edgeLen: number;
+    /** Sketch plane for cross-section ('XZ' for Y-edges, 'YZ' for X-edges) */
+    sketchPlane: 'XZ' | 'YZ';
+    /** Extrude sign: -1 for left/front (negative axis), +1 for right/back */
+    extrudeSign: number;
+    /** Start position for the extrusion (the "other" axis coordinate) */
+    edgeStart: number;
+    /** Adjacent edges to check for corner trimming */
+    adjStart: 'left' | 'right' | 'front' | 'back';
+    adjEnd: 'left' | 'right' | 'front' | 'back';
+  }> = [
+    {
+      side: 'left',
+      isMale: true,
+      wallCoord: -halfW + slabOffsetX,
+      edgeLen: totalD,
+      sketchPlane: 'XZ',
+      extrudeSign: -1,
+      edgeStart: -halfD + slabOffsetY,
+      adjStart: 'front',
+      adjEnd: 'back',
+    },
+    {
+      side: 'right',
+      isMale: false,
+      wallCoord: halfW + slabOffsetX,
+      edgeLen: totalD,
+      sketchPlane: 'XZ',
+      extrudeSign: 1,
+      edgeStart: -halfD + slabOffsetY,
+      adjStart: 'front',
+      adjEnd: 'back',
+    },
+    {
+      side: 'front',
+      isMale: true,
+      wallCoord: -halfD + slabOffsetY,
+      edgeLen: totalW,
+      sketchPlane: 'YZ',
+      extrudeSign: -1,
+      edgeStart: -halfW + slabOffsetX,
+      adjStart: 'left',
+      adjEnd: 'right',
+    },
+    {
+      side: 'back',
+      isMale: false,
+      wallCoord: halfD + slabOffsetY,
+      edgeLen: totalW,
+      sketchPlane: 'YZ',
+      extrudeSign: 1,
+      edgeStart: -halfW + slabOffsetX,
+      adjStart: 'left',
+      adjEnd: 'right',
+    },
+  ];
 
-  for (const pos of positions) {
-    // Pre-shift Z: cz is in final coords (0 to totalHeight), but booleans happen
-    // before the final translate(0,0,totalHeight), so subtract totalHeight.
-    const z = pos.cz - totalHeight;
-    const radius = pos.isMale ? nubRadius : holeRadius;
-    const cylDepth = pos.isMale ? NUB_DEPTH : HOLE_DEPTH;
+  for (const def of edgeDefs) {
+    if (edges[def.side] !== 'join') continue;
 
-    let cyl: Shape3D;
+    // Trim ends where adjacent edges are also join edges (avoids corner overlap)
+    const trimStart = edges[def.adjStart] === 'join' ? DOVETAIL_END_MARGIN : 0;
+    const trimEnd = edges[def.adjEnd] === 'join' ? DOVETAIL_END_MARGIN : 0;
+    const len = def.edgeLen - trimStart - trimEnd;
+    if (len <= 0) continue;
 
-    if (Math.abs(pos.nx) > 0.5) {
-      // Left/right wall: sketch circle on YZ plane at the wall X position
-      // Extrude along +X (positive extrude direction)
-      const wallX = pos.isMale ? pos.cx : pos.cx - pos.nx * cylDepth;
-      const extrudeLen = pos.isMale ? pos.nx * cylDepth : pos.nx * cylDepth;
-      cyl = sketch(drawCircle(radius), 'YZ', wallX).extrude(extrudeLen);
-      cyl = translate(cyl, [0, pos.cy, z]);
+    const startCoord = def.edgeStart + trimStart;
+
+    if (def.isMale) {
+      // Tongue: trapezoidal cross-section protruding outward from wall
+      const w = def.wallCoord;
+      const p = def.extrudeSign * DOVETAIL_PROTRUSION;
+      const profile = draw([w, zCenter + DOVETAIL_BASE_HALF])
+        .lineTo([w + p, zCenter + DOVETAIL_TIP_HALF])
+        .lineTo([w + p, zCenter - DOVETAIL_TIP_HALF])
+        .lineTo([w, zCenter - DOVETAIL_BASE_HALF])
+        .close();
+      const tongue = sketch(profile, def.sketchPlane, startCoord).extrude(len);
+      tongues.push(tongue);
     } else {
-      // Front/back wall: sketch circle on XZ plane at the wall Y position
-      const wallY = pos.isMale ? pos.cy : pos.cy - pos.ny * cylDepth;
-      const extrudeLen = pos.isMale ? pos.ny * cylDepth : pos.ny * cylDepth;
-      cyl = sketch(drawCircle(radius), 'XZ', wallY).extrude(extrudeLen);
-      cyl = translate(cyl, [pos.cx, 0, z]);
-    }
-
-    if (pos.isMale) {
-      nubs.push(cyl);
-    } else {
-      holes.push(cyl);
+      // Groove: same dovetail shape + clearance, extended through wall face
+      const w = def.wallCoord;
+      const grooveDepth = DOVETAIL_PROTRUSION + DOVETAIL_CLEARANCE;
+      const ext = def.extrudeSign * COPLANAR_MARGIN; // extend beyond wall face
+      const p = -def.extrudeSign * grooveDepth; // cut inward
+      const bH = DOVETAIL_BASE_HALF + DOVETAIL_CLEARANCE;
+      const tH = DOVETAIL_TIP_HALF + DOVETAIL_CLEARANCE;
+      const profile = draw([w + ext, zCenter + bH])
+        .lineTo([w + p, zCenter + tH])
+        .lineTo([w + p, zCenter - tH])
+        .lineTo([w + ext, zCenter - bH])
+        .close();
+      const groove = sketch(profile, def.sketchPlane, startCoord).extrude(len);
+      grooves.push(groove);
     }
   }
 
-  return { nubs, holes };
+  return { nubs: tongues, holes: grooves };
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────
@@ -428,15 +499,12 @@ export function generateBaseplate(
   onProgress('base', 0.9);
   checkCancelled(signal);
 
-  // Tessellate — tighter tolerance when connectors are present so the small
-  // cylinders (1.5mm diameter) produce enough facets to be visible.
-  const hasConnectors = params.connectorNubs && params.edges;
-  const tolerance = forExport ? 0.01 : hasConnectors ? 0.1 : 0.5;
-  const angularTolerance = forExport ? 5 : hasConnectors ? 15 : 45;
+  // Tessellate — baseplates are mostly flat slabs, so preview can use coarse settings.
+  // Dovetail connectors are large prismatic features that tessellate fine at 0.5mm.
+  const tolerance = forExport ? 0.01 : 0.5;
+  const angularTolerance = forExport ? 5 : 45;
   const meshResult = mesh(baseplate, { tolerance, angularTolerance });
-  const edgeMesh = forExport
-    ? null
-    : meshEdges(baseplate, { tolerance: hasConnectors ? 0.1 : 0.5 });
+  const edgeMesh = forExport ? null : meshEdges(baseplate, { tolerance: 0.5 });
   const edgeVerts = edgeMesh ? new Float32Array(edgeMesh.lines) : new Float32Array(0);
 
   onProgress('base', 1);

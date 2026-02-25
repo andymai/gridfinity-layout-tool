@@ -187,48 +187,51 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   return Math.min(CORNER_RADIUS, maxRadius);
 }
 
-// ─── Registration Connector Constants ────────────────────────────────────────
+// ─── Dovetail Connector Constants ────────────────────────────────────────────
+//
+// Split baseplate pieces use dovetail tongue-and-groove joints along join edges.
+// The tongue runs the full edge length and has a trapezoidal cross-section:
+// narrower at the wall face (BASE), wider at the protruding tip (TIP).
+// This creates an undercut that prevents pieces from pulling apart.
+//
+// Convention: left/front edges get tongues (male), right/back get grooves (female).
+// Assembly: pieces slide together along the join edge direction.
 
-/** Diameter of male registration nub (mm) */
+/** How far the tongue protrudes from the wall face (mm) */
+export const DOVETAIL_PROTRUSION = 1.5;
+
+/** Z half-width at the wall face — narrower end of the trapezoid (mm) */
+export const DOVETAIL_BASE_HALF = 1.0;
+
+/** Z half-width at the tip — wider end that creates the dovetail lock (mm) */
+export const DOVETAIL_TIP_HALF = 1.3;
+
+/** Per-side clearance added to the groove for FDM tolerance (mm) */
+export const DOVETAIL_CLEARANCE = 0.2;
+
+/** Trim dovetail at each end where adjacent edge is also a join edge (mm) */
+export const DOVETAIL_END_MARGIN = 2.0;
+
+// ─── Legacy Nub/Hole Constants (used by direct mesh generator) ──────────────
+
 export const NUB_DIAMETER = 1.5;
-
-/** How far the nub protrudes from the wall face (mm) */
 export const NUB_DEPTH = 0.8;
-
-/** Per-side clearance added to the hole (mm) */
 const HOLE_CLEARANCE = 0.1;
-
-/** Hole diameter = NUB_DIAMETER + 2 * HOLE_CLEARANCE (mm) */
 export const HOLE_DIAMETER = NUB_DIAMETER + 2 * HOLE_CLEARANCE;
-
-/** Hole depth = NUB_DEPTH + HOLE_CLEARANCE (mm) */
 export const HOLE_DEPTH = NUB_DEPTH + HOLE_CLEARANCE;
-
-/** Segments for connector cylinder approximation (smaller than magnet holes) */
 export const NUB_CIRCLE_SEGMENTS = 12;
 
-// ─── Connector Position Computation ─────────────────────────────────────────
+// ─── Legacy Connector Position Computation (used by direct mesh generator) ───
 
-/** Connector position with center, outward normal, and male/female classification. */
 export interface ConnectorPos {
   cx: number;
   cy: number;
   cz: number;
-  /** Outward normal of the wall face */
   nx: number;
   ny: number;
-  /** true = nub (male protrusion), false = hole (female indentation) */
   isMale: boolean;
 }
 
-/**
- * Compute connector positions along all join edges of a split piece.
- *
- * For each join edge, places one connector at every interior cell boundary.
- * For N cells along an edge, there are ceil(N)-1 interior boundaries.
- *
- * Convention: left/front edges get nubs (male), right/back edges get holes (female).
- */
 export function computeConnectorPositions(
   width: number,
   depth: number,

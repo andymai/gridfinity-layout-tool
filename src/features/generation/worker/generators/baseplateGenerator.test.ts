@@ -46,6 +46,18 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
 
 const noop = (): void => {};
 
+/** Extract X bounding box from mesh vertices */
+function xBounds(vertices: Float32Array): { minX: number; maxX: number } {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    const x = vertices[i];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+  }
+  return { minX, maxX };
+}
+
 /** Extract Z bounding box from mesh vertices */
 function zBounds(vertices: Float32Array): { minZ: number; maxZ: number } {
   let minZ = Infinity;
@@ -174,6 +186,76 @@ describe('baseplateGenerator', () => {
   it('2×2 with 8mm magnets', () => {
     const mesh = generateBaseplate(
       defaults({ magnetHoles: true, magnetDiameter: 8, magnetDepth: 3 }),
+      noop,
+      false
+    );
+    expect(mesh.vertices.length).toBeGreaterThan(0);
+  });
+
+  // ─── Dovetail connectors ──────────────────────────────────────────────────
+
+  it('dovetail tongue expands bounding box beyond slab on join edge', () => {
+    // Left piece of a 2-column split: right edge = join (groove), all others exterior
+    const baseMesh = generateBaseplate(defaults({ width: 3, depth: 3 }), noop, false);
+    const withTongue = generateBaseplate(
+      defaults({
+        width: 3,
+        depth: 3,
+        connectorNubs: true,
+        edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
+      }),
+      noop,
+      false
+    );
+    const baseBB = xBounds(baseMesh.vertices);
+    const tongueBB = xBounds(withTongue.vertices);
+    // Tongue protrudes in -X from left wall → minX should decrease
+    expect(tongueBB.minX).toBeLessThan(baseBB.minX - 0.5);
+  });
+
+  it('dovetail groove does not expand bounding box (cuts inward)', () => {
+    const baseMesh = generateBaseplate(defaults({ width: 3, depth: 3 }), noop, false);
+    const withGroove = generateBaseplate(
+      defaults({
+        width: 3,
+        depth: 3,
+        connectorNubs: true,
+        edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
+      }),
+      noop,
+      false
+    );
+    const baseBB = xBounds(baseMesh.vertices);
+    const grooveBB = xBounds(withGroove.vertices);
+    // Groove is cut inward — bounding box should stay the same or shrink
+    expect(grooveBB.maxX).toBeLessThanOrEqual(baseBB.maxX + 0.01);
+  });
+
+  it('dovetail connectors with magnets produce valid mesh', () => {
+    const mesh = generateBaseplate(
+      defaults({
+        width: 3,
+        depth: 3,
+        magnetHoles: true,
+        connectorNubs: true,
+        edges: { left: 'join', right: 'join', front: 'exterior', back: 'exterior' },
+      }),
+      noop,
+      false
+    );
+    expect(mesh.vertices.length).toBeGreaterThan(0);
+    expect(mesh.indices.length).toBeGreaterThan(0);
+  });
+
+  it('corner pieces trim dovetails at join-edge intersections', () => {
+    // Interior piece: all 4 edges are join → all dovetails trimmed at both ends
+    const mesh = generateBaseplate(
+      defaults({
+        width: 2,
+        depth: 2,
+        connectorNubs: true,
+        edges: { left: 'join', right: 'join', front: 'join', back: 'join' },
+      }),
       noop,
       false
     );
