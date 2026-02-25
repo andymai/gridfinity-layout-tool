@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.34.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.34.0...gridfinity-layout-tool-v3.34.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* **baseplate:** defer worker pool exposure until WASM init completes ([#922](https://github.com/andymai/gridfinity-layout-tool/issues/922)) ([2884057](https://github.com/andymai/gridfinity-layout-tool/commit/28840570d8fbffbf7c21c6e3e3e7f2084121677c))
+* **generation:** resolve non-manifold slot geometry on STL export ([#921](https://github.com/andymai/gridfinity-layout-tool/issues/921)) ([#923](https://github.com/andymai/gridfinity-layout-tool/issues/923)) ([4b328d6](https://github.com/andymai/gridfinity-layout-tool/commit/4b328d6017d3d7fb29760ee739dd8a851745344c))
+
 ## [3.34.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.33.7...gridfinity-layout-tool-v3.34.0) (2026-02-25)
 
 
