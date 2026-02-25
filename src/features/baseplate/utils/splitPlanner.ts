@@ -80,17 +80,27 @@ function partitionAxis(
 
   // Pass 1: distribute evenly — floor(intPart / numChunks) per chunk, with
   // the remainder distributed one unit at a time from the first chunk onward.
-  // When a chunk's ideal size exceeds its position cap, the excess is deferred
-  // to a second pass rather than spilling into subsequent slots immediately.
+  // Clamp each chunk to its position cap; any overflow is deferred to pass 2.
   const baseSize = Math.floor(intPart / numChunks);
   const sizes: number[] = new Array<number>(numChunks).fill(baseSize);
   let remainder = intPart - baseSize * numChunks;
 
+  // Clamp base sizes that exceed position capacity
+  for (let i = 0; i < numChunks; i++) {
+    if (sizes[i] > maxPerPos[i]) {
+      remainder += sizes[i] - maxPerPos[i];
+      sizes[i] = maxPerPos[i];
+    }
+  }
+
+  // Distribute remainder one unit at a time
   for (let i = 0; i < numChunks && remainder > 0; i++) {
     const canAdd = maxPerPos[i] - sizes[i];
-    const add = Math.min(1, canAdd);
-    sizes[i] += add;
-    if (add === 1) remainder--;
+    if (canAdd > 0) {
+      const add = Math.min(1, canAdd);
+      sizes[i] += add;
+      remainder--;
+    }
   }
 
   // Pass 2: redistribute any remaining units into slots that still have capacity.
@@ -192,15 +202,16 @@ function findOptimalTiling(
   let best: TilingCandidate | null = null;
 
   for (let nc = 1; nc <= maxCols; nc++) {
-    // Early exit: if nc alone already exceeds best, no point continuing
-    if (best && nc >= best.pieceCount) break;
+    // Early exit: nc alone exceeds best piece count (nc * 1 > best).
+    // Use > not >= so we still evaluate nc×1 candidates for symmetry tiebreaks.
+    if (best && nc > best.pieceCount) break;
 
     const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, printBedMm, pL, pR);
     if (!colSizes) continue;
 
     for (let nr = 1; nr <= maxRows; nr++) {
       const pieceCount = nc * nr;
-      if (best && pieceCount >= best.pieceCount) break;
+      if (best && pieceCount > best.pieceCount) break;
 
       const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, printBedMm, pF, pB);
       if (!rowSizes) continue;
@@ -494,10 +505,11 @@ function reorderForDisplay(
   const maxAtFirst = Math.floor((printBedMm - paddingFirst) / gridUnitMm);
   const maxAtLast = Math.floor((printBedMm - paddingLast) / gridUnitMm);
 
-  // When fractionAtStart, pin the fractional piece to position 0.
+  // When fractionAtStart, pin the fractional piece to position 0 —
+  // but only if it actually fits with paddingFirst at that position.
   if (fractionAtStart) {
     const fracIdx = sizes.findIndex(isFractional);
-    if (fracIdx >= 0) {
+    if (fracIdx >= 0 && sizes[fracIdx] <= maxAtFirst) {
       const maxMiddle = Math.floor(printBedMm / gridUnitMm);
       const rest = sizes.filter((_, i) => i !== fracIdx);
       const sortedRest = sortDescWithEdges(rest, maxMiddle, maxAtLast);

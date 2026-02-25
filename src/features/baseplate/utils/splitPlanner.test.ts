@@ -255,6 +255,28 @@ describe('computeBaseplateTiling', () => {
     expect(leftPiece?.widthUnits).toSatisfy((w: number) => w % 1 !== 0);
   });
 
+  it('fractional edge at start with asymmetric padding keeps pieces within bed', () => {
+    const params = makeParams({
+      width: 10.5,
+      depth: 4,
+      fractionalEdgeX: 'start',
+      paddingLeft: 30,
+      paddingRight: 2,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    // All pieces must physically fit on the bed
+    for (const piece of tiling.pieces) {
+      const widthMm = piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight;
+      const depthMm = piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack;
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+    // Total width must still sum correctly
+    const totalWidth = colWidths(params).reduce((a, b) => a + b, 0);
+    expect(totalWidth).toBe(10.5);
+  });
+
   it('fractional edge at start with 3+ splits pins fraction and sorts rest', () => {
     // 13.5 → needs 3 cols. Fraction pinned at col 0
     const params = makeParams({ width: 13.5, depth: 4, fractionalEdgeX: 'start' });
