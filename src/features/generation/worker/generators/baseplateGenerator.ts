@@ -53,10 +53,9 @@ import {
   INSET_BOT,
   pocketCornerRadius,
   TONGUE_PROTRUSION,
-  TONGUE_TAPER,
-  TONGUE_HALF_HEIGHT,
+  TONGUE_BASE_HALF,
+  TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
-  TONGUE_END_MARGIN,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
@@ -238,28 +237,29 @@ function buildMagnetHoles(
   return holes;
 }
 
-// ─── Tongue-and-Groove Connectors ────────────────────────────────────────────
+// ─── Dovetail Connectors ─────────────────────────────────────────────────────
 
 /**
- * Build dovetail tongue-and-groove connectors for split baseplate join edges.
+ * Build discrete dovetail connectors at grid cell boundary intersections along
+ * join edges. Each connector is a small trapezoidal prism — the classic dovetail
+ * fan shape visible from the top: narrower at the wall (BASE_HALF), wider at
+ * the protruding tip (TIP_HALF).
  *
- * Each join edge gets one continuous dovetail running its full length (minus
- * end margins at corners where two join edges meet). The tongue has a
- * trapezoidal cross-section that tapers along Z: wider protrusion at the
- * bottom, narrower at the top. This allows drop-in assembly from above —
- * the narrow top enters the groove first, the wider bottom locks horizontally
- * once seated.
+ *   Top view (X-Y) of one connector on a left edge:
  *
- * Convention: left/front edges = tongue (male, fused on), right/back = groove
- * (female, cut out).
+ *     wall
+ *      |  A ──── B         Y = bPos + BASE_HALF (wall) / + TIP_HALF (tip)
+ *      |  |  dt  |
+ *      |  D ──── C         Y = bPos - BASE_HALF (wall) / - TIP_HALF (tip)
+ *      |  ← P →
  *
- * Sketch planes:
- * - Left/right edges: cross-section drawn on XZ plane (u=X, v=Z), extruded along Y
- *   XZ normal = [0,-1,0], so: origin = -Y_start, extrude(-len) → +Y direction
- * - Front/back edges: cross-section drawn on YZ plane (u=Y, v=Z), extruded along X
- *   YZ normal = [1,0,0], so: origin = X_start, extrude(len) → +X direction
+ * The dovetail taper is in the X-Y plane, so pieces drop in from above (Z)
+ * without interference. Once seated, the wider tip prevents horizontal pull-out.
  *
- * Coordinates are in the pre-Z-shift system (slab top at Z=0, bottom at Z=-totalHeight).
+ * Convention: left/front = tongue (male, fused), right/back = groove (female, cut).
+ *
+ * All profiles are drawn on the XY plane (normal=+Z) and extruded downward,
+ * matching the pre-Z-shift coordinate system (slab top at Z=0, bottom at Z=-totalHeight).
  */
 function buildConnectors(
   params: BaseplateParams,
@@ -277,10 +277,12 @@ function buildConnectors(
 
   const halfW = totalW / 2;
   const halfD = totalD / 2;
-  const zCenter = -totalHeight / 2;
-  const h = TONGUE_HALF_HEIGHT;
-  const pBot = TONGUE_PROTRUSION; // max protrusion at bottom
-  const pTop = TONGUE_PROTRUSION - TONGUE_TAPER; // reduced protrusion at top
+  const gridUnit = params.gridUnitMm;
+  const P = TONGUE_PROTRUSION;
+  const bW = TONGUE_BASE_HALF; // half-width at wall (narrow)
+  const tW = TONGUE_TIP_HALF; // half-width at tip (wide)
+  const cl = TONGUE_CLEARANCE;
+  const ext = COPLANAR_MARGIN;
 
   type Side = 'left' | 'right' | 'front' | 'back';
 
@@ -288,97 +290,95 @@ function buildConnectors(
     side: Side;
     isMale: boolean;
     wallPos: number;
-    edgeStart: number;
-    edgeEnd: number;
-    sketchPlane: 'XZ' | 'YZ';
+    numBoundaries: number;
+    boundaryPos: (k: number) => number;
+    protrudeAxis: 'x' | 'y';
     protrudeDir: -1 | 1;
-    adjStart: Side;
-    adjEnd: Side;
   }> = [
     {
       side: 'left',
       isMale: true,
       wallPos: -halfW + slabOffsetX,
-      edgeStart: -halfD + slabOffsetY,
-      edgeEnd: halfD + slabOffsetY,
-      sketchPlane: 'XZ',
+      numBoundaries: Math.ceil(params.depth) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2 + slabOffsetY,
+      protrudeAxis: 'x',
       protrudeDir: -1,
-      adjStart: 'front',
-      adjEnd: 'back',
     },
     {
       side: 'right',
       isMale: false,
       wallPos: halfW + slabOffsetX,
-      edgeStart: -halfD + slabOffsetY,
-      edgeEnd: halfD + slabOffsetY,
-      sketchPlane: 'XZ',
+      numBoundaries: Math.ceil(params.depth) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2 + slabOffsetY,
+      protrudeAxis: 'x',
       protrudeDir: 1,
-      adjStart: 'front',
-      adjEnd: 'back',
     },
     {
       side: 'front',
       isMale: true,
       wallPos: -halfD + slabOffsetY,
-      edgeStart: -halfW + slabOffsetX,
-      edgeEnd: halfW + slabOffsetX,
-      sketchPlane: 'YZ',
+      numBoundaries: Math.ceil(params.width) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2 + slabOffsetX,
+      protrudeAxis: 'y',
       protrudeDir: -1,
-      adjStart: 'left',
-      adjEnd: 'right',
     },
     {
       side: 'back',
       isMale: false,
       wallPos: halfD + slabOffsetY,
-      edgeStart: -halfW + slabOffsetX,
-      edgeEnd: halfW + slabOffsetX,
-      sketchPlane: 'YZ',
+      numBoundaries: Math.ceil(params.width) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2 + slabOffsetX,
+      protrudeAxis: 'y',
       protrudeDir: 1,
-      adjStart: 'left',
-      adjEnd: 'right',
     },
   ];
 
   for (const def of edgeDefs) {
-    if (edges[def.side] !== 'join') continue;
+    if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
 
-    const trimStart = edges[def.adjStart] === 'join' ? TONGUE_END_MARGIN : 0;
-    const trimEnd = edges[def.adjEnd] === 'join' ? TONGUE_END_MARGIN : 0;
-    const start = def.edgeStart + trimStart;
-    const end = def.edgeEnd - trimEnd;
-    const len = end - start;
-    if (len <= 0) continue;
+    for (let k = 1; k <= def.numBoundaries; k++) {
+      const bp = def.boundaryPos(k); // boundary position on parallel axis
+      const w = def.wallPos;
+      const d = def.protrudeDir;
 
-    // XZ plane: normal=[0,-1,0] → origin = -Y_start, extrude(-len) = +Y
-    // YZ plane: normal=[1,0,0]  → origin =  X_start, extrude(+len) = +X
-    const [origin, extrudeDist] = def.sketchPlane === 'XZ' ? [-start, -len] : [start, len];
-
-    const w = def.wallPos;
-    const d = def.protrudeDir;
-
-    if (def.isMale) {
-      // Tongue: trapezoidal cross-section. u-axis = protrusion direction, v-axis = Z.
-      // Wider protrusion at bottom (pBot), narrower at top (pTop) for top-insertion.
-      const profile = draw([w, zCenter + h])
-        .lineTo([w + d * pTop, zCenter + h])
-        .lineTo([w + d * pBot, zCenter - h])
-        .lineTo([w, zCenter - h])
-        .close();
-      tongues.push(sketch(profile, def.sketchPlane, origin).extrude(extrudeDist));
-    } else {
-      // Groove: matching dovetail + clearance, extended beyond wall to avoid coplanar faces.
-      const gH = h + TONGUE_CLEARANCE;
-      const gTop = pTop + TONGUE_CLEARANCE;
-      const gBot = pBot + TONGUE_CLEARANCE;
-      const ext = COPLANAR_MARGIN;
-      const profile = draw([w + d * ext, zCenter + gH])
-        .lineTo([w - d * gTop, zCenter + gH])
-        .lineTo([w - d * gBot, zCenter - gH])
-        .lineTo([w + d * ext, zCenter - gH])
-        .close();
-      grooves.push(sketch(profile, def.sketchPlane, origin).extrude(extrudeDist));
+      if (def.isMale) {
+        // Dovetail tongue: trapezoidal plan view, wider at tip.
+        // draw([X, Y]) on XY plane, extrude downward in -Z.
+        const profile =
+          def.protrudeAxis === 'x'
+            ? draw([w, bp + bW])
+                .lineTo([w + d * P, bp + tW])
+                .lineTo([w + d * P, bp - tW])
+                .lineTo([w, bp - bW])
+                .close()
+            : draw([bp + bW, w])
+                .lineTo([bp + tW, w + d * P])
+                .lineTo([bp - tW, w + d * P])
+                .lineTo([bp - bW, w])
+                .close();
+        tongues.push(sketch(profile, 'XY', 0).extrude(-totalHeight));
+      } else {
+        // Dovetail groove: matching shape + clearance, extended beyond wall.
+        const gB = bW + cl; // half-width at wall opening (narrow + clearance)
+        const gT = tW + cl; // half-width at inner face (wide + clearance)
+        const gP = P + cl; // groove depth
+        const profile =
+          def.protrudeAxis === 'x'
+            ? draw([w + d * ext, bp + gB])
+                .lineTo([w - d * gP, bp + gT])
+                .lineTo([w - d * gP, bp - gT])
+                .lineTo([w + d * ext, bp - gB])
+                .close()
+            : draw([bp + gB, w + d * ext])
+                .lineTo([bp + gT, w - d * gP])
+                .lineTo([bp - gT, w - d * gP])
+                .lineTo([bp - gB, w + d * ext])
+                .close();
+        // Extend groove in Z beyond slab faces to avoid coplanar booleans
+        grooves.push(
+          sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN))
+        );
+      }
     }
   }
 

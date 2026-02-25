@@ -190,23 +190,24 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
 // ─── Tongue-and-Groove Connector Constants ───────────────────────────────────
 //
 // Split baseplate pieces use dovetail tongue-and-groove joints along join
-// edges. The tongue runs the full edge length with a trapezoidal cross-section
-// that tapers along Z: wider protrusion at the bottom, narrower at the top.
+// edges. The tongue runs the full edge length with a trapezoidal cross-section:
+// constant horizontal protrusion, but Z-height wider at the protruding tip
+// and narrower at the wall face — the classic dovetail fan shape.
 //
-// This vertical taper allows drop-in assembly from above (narrow top enters
-// the groove first) while the wider bottom prevents horizontal separation
-// once seated. Works for any grid configuration including 2x2+ grids.
+// Assembly: pieces drop in from above. The dovetail taper is in the X-Z
+// cross-section, so vertical insertion is unimpeded. Once seated, the wider
+// tip prevents horizontal pull-out through the narrower groove opening.
 //
 // Convention: left/front edges get tongues (male), right/back get grooves (female).
 
-/** Maximum protrusion from wall face, at the bottom of the tongue (mm) */
+/** How far the tongue protrudes horizontally from the wall face (mm) */
 export const TONGUE_PROTRUSION = 1.5;
 
-/** How much less protrusion at the top vs bottom — creates the dovetail lock (mm) */
-export const TONGUE_TAPER = 0.4;
+/** Z half-height at the wall face — narrow end of the dovetail (mm) */
+export const TONGUE_BASE_HALF = 1.0;
 
-/** Z half-height of the tongue cross-section (mm) */
-export const TONGUE_HALF_HEIGHT = 1.2;
+/** Z half-height at the protruding tip — wide end of the dovetail (mm) */
+export const TONGUE_TIP_HALF = 1.3;
 
 /** Per-side clearance added to the groove for FDM tolerance (mm) */
 export const TONGUE_CLEARANCE = 0.15;
