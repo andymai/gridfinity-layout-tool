@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.35.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.34.1...gridfinity-layout-tool-v3.35.0) (2026-02-25)
+
+
+### Features
+
+* **baseplate:** add edge lines, improve tessellation, and polish 3D preview ([#925](https://github.com/andymai/gridfinity-layout-tool/issues/925)) ([985d314](https://github.com/andymai/gridfinity-layout-tool/commit/985d3146e9bcdd86e9dad032df1c374629df0264))
+
 ## [3.34.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.34.0...gridfinity-layout-tool-v3.34.1) (2026-02-25)
 
 
