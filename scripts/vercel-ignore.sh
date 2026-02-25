@@ -11,6 +11,13 @@
 
 set -e
 
+# Skip release-please branches — they only bump version/changelog and
+# frequently force-push, causing Vercel to build stale commits that no longer exist.
+if [[ "$VERCEL_GIT_COMMIT_REF" == release-please--* ]]; then
+  echo "Release-please branch. Skipping build."
+  exit 0
+fi
+
 # Always build on main branch, but check if SPA source changed
 if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   echo "Main branch: checking for SPA changes..."
