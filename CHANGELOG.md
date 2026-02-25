@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.35.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.35.0...gridfinity-layout-tool-v3.35.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* **generation:** address PR review feedback for slot export fix ([#927](https://github.com/andymai/gridfinity-layout-tool/issues/927)) ([2443223](https://github.com/andymai/gridfinity-layout-tool/commit/244322370ce6c58b8065c5d30e8a6eb87ceae4f4))
+
 ## [3.35.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.34.1...gridfinity-layout-tool-v3.35.0) (2026-02-25)
 
 
