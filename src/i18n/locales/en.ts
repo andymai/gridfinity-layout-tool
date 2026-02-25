@@ -1450,8 +1450,9 @@ const en: Record<string, string> = {
   'baseplate.sideView': 'Side',
   'baseplate.topView': 'Top',
   'baseplate.isoView': 'Iso',
-  'baseplate.connectorNubs': 'Alignment pins',
-  'baseplate.connectorNubsHelp': 'Tiny pins on split edges so pieces line up when assembled.',
+  'baseplate.connectorNubs': 'Dovetail connectors',
+  'baseplate.connectorNubsHelp':
+    'Dovetail joints on split edges so pieces lock together when assembled.',
 
   // ===========================================================================
   // Collaboration
