@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.32.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.31.0...gridfinity-layout-tool-v3.32.0) (2026-02-25)
+
+
+### Features
+
+* **baseplate:** replace greedy 1D split with optimal 2D tiling ([#898](https://github.com/andymai/gridfinity-layout-tool/issues/898)) ([a18622c](https://github.com/andymai/gridfinity-layout-tool/commit/a18622c868e183aeb9211532a231d5bbde4eef27))
+
 ## [3.31.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.30.0...gridfinity-layout-tool-v3.31.0) (2026-02-25)
 
 
