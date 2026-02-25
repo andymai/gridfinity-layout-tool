@@ -1419,5 +1419,9 @@
   "baseplate.topView": "Topo",
   "baseplate.isoView": "Iso",
   "baseplate.connectorNubs": "Dovetail connectors",
-  "baseplate.connectorNubsHelp": "Dovetail joints on split edges so pieces lock together when assembled."
+  "baseplate.connectorNubsHelp": "Dovetail joints on split edges so pieces lock together when assembled.",
+  "baseplate.sectionGridSize": "Tamanho da grade",
+  "baseplate.syncWithLayout": "Sincronizado com layout",
+  "baseplate.gridWidth": "Largura",
+  "baseplate.gridDepth": "Profundidade"
 }
