@@ -77,8 +77,8 @@ function PieceMesh({
 
   const activePiece = hoveredPieceLabel ?? selectedPieceLabel;
   const isActive = entry.label === activePiece;
-  // Only dim non-active pieces during hover -- when no pointer is over any
-  // piece, the full baseplate should render at normal brightness.
+  // Dim non-active pieces only while hovering — when no pointer is over any
+  // piece, every piece renders at full brightness.
   const isDimmed = hoveredPieceLabel !== null && !isActive;
 
   useEffect(() => {
@@ -144,18 +144,24 @@ function PieceMesh({
           metalness={0}
           side={THREE.DoubleSide}
           emissive={PIECE_COLOR}
-          emissiveIntensity={isActive ? 0.25 : 0.08}
+          emissiveIntensity={0.08}
           flatShading={!hasPrecomputedNormals}
           transparent={isDimmed}
           opacity={isDimmed ? 0.55 : 1}
           polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
+          polygonOffsetFactor={4}
+          polygonOffsetUnits={8}
         />
       </mesh>
       {edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
-          <lineBasicMaterial color="#000000" />
+          <lineBasicMaterial
+            color="#000000"
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={-4}
+            polygonOffsetUnits={-8}
+          />
         </lineSegments>
       )}
       {splitViewMode === 'exploded' && (
