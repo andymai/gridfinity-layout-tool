@@ -56,11 +56,12 @@ export function StickyGroupHeader({
         role="region"
         aria-label={title}
         aria-hidden={!expanded}
-        className={`overflow-hidden ${hasToggled ? 'transition-all duration-200' : ''} ${
-          expanded ? 'opacity-100 max-h-[5000px]' : 'opacity-0 max-h-0'
+        inert={!expanded ? true : undefined}
+        className={`grid ${hasToggled ? 'transition-[grid-template-rows,opacity] duration-200' : ''} ${
+          expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         }`}
       >
-        {children}
+        <div className="overflow-hidden">{children}</div>
       </div>
     </div>
   );

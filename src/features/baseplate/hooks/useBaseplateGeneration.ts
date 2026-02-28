@@ -143,7 +143,9 @@ export function useBaseplateGeneration(): void {
 
           if (pool && !pool.isDestroyed && pool.size > 1) {
             // Parallel generation via worker pool
-            const results = await pool.generatePieces(pieceParamsArray);
+            const results = await pool.generatePieces(pieceParamsArray, (completed, pieceTotal) =>
+              setSplitProgress({ current: completed, total: pieceTotal })
+            );
 
             // Discard if superseded
             if (generationEpochRef.current !== epoch) return;

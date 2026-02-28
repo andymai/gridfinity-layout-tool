@@ -19,7 +19,6 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
-import { Spinner } from '@/shared/components/preview/Spinner';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
 import { GhostPaddingOutline } from './GhostPaddingOutline';
@@ -978,6 +977,22 @@ function BaseplatePreviewControls({
   );
 }
 
+/** Resolve the overlay status message, avoiding a nested ternary in JSX. */
+function overlayStatusText(
+  isWasmLoading: boolean,
+  splitProgress: { current: number; total: number } | null,
+  t: ReturnType<typeof useTranslation>
+): string {
+  if (isWasmLoading) return t('baseplate.initializingEngine');
+  if (splitProgress) {
+    return t('baseplate.generatingSplit', {
+      current: splitProgress.current,
+      total: splitProgress.total,
+    });
+  }
+  return t('baseplate.generating');
+}
+
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 interface BaseplatePreviewProps {
@@ -988,6 +1003,30 @@ interface BaseplatePreviewProps {
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
+}
+
+/** Track elapsed seconds during generation, returning null until 2s have passed. */
+function useGenerationElapsed(isGenerating: boolean): number | null {
+  const [elapsed, setElapsed] = useState<number | null>(null);
+  const startRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!isGenerating) return undefined;
+
+    startRef.current = performance.now();
+
+    const interval = setInterval(() => {
+      const sec = Math.floor((performance.now() - startRef.current) / 1000);
+      if (sec >= 2) setElapsed(sec);
+    }, 500);
+
+    return () => {
+      clearInterval(interval);
+      setElapsed(null);
+    };
+  }, [isGenerating]);
+
+  return isGenerating ? elapsed : null;
 }
 
 export function BaseplatePreview({
@@ -1078,8 +1117,12 @@ export function BaseplatePreview({
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
-  const isInitialLoading = !hasError && (!hasAnyMesh || wasmStatus !== 'ready');
-  const showOverlay = isInitialLoading || (generationStatus === 'generating' && hasAnyMesh);
+  const isWasmLoading = !hasError && wasmStatus !== 'ready';
+  const isGenerating = generationStatus === 'generating';
+  const showOverlay = isWasmLoading || isGenerating;
+
+  // Elapsed time tracking for generation
+  const elapsedSec = useGenerationElapsed(generationStatus === 'generating');
 
   return (
     <div
@@ -1087,49 +1130,61 @@ export function BaseplatePreview({
       role="img"
       aria-label={t('baseplate.title')}
     >
-      <Canvas
-        frameloop="demand"
-        camera={{
-          position: new THREE.Vector3(100, -100, 80),
-          fov: 45,
-          near: 0.1,
-          far: 2000,
-        }}
-        onCreated={({ camera }) => {
-          camera.up.set(0, 0, 1);
-          camera.lookAt(0, 0, totalH / 2);
-        }}
-        gl={{ antialias: true }}
-        onPointerMissed={handlePointerMissed}
+      {/* Initial load skeleton — matches bin designer PreviewSkeleton */}
+      {isWasmLoading && !hasAnyMesh && (
+        <div
+          className="absolute inset-0 z-10 flex items-center justify-center bg-surface"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="text-center">
+            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-xl bg-surface-elevated animate-pulse motion-reduce:animate-none">
+              <svg
+                className="h-8 w-8 text-content-tertiary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+                />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-content-tertiary">
+              {t('baseplate.initializingEngine')}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`h-full w-full transition-opacity duration-500 ${hasAnyMesh ? 'opacity-100' : 'opacity-0'}`}
       >
-        <GradientBackground />
-        <SceneLighting />
+        <Canvas
+          frameloop="demand"
+          camera={{
+            position: new THREE.Vector3(100, -100, 80),
+            fov: 45,
+            near: 0.1,
+            far: 2000,
+          }}
+          onCreated={({ camera }) => {
+            camera.up.set(0, 0, 1);
+            camera.lookAt(0, 0, totalH / 2);
+          }}
+          gl={{ antialias: true }}
+          onPointerMissed={handlePointerMissed}
+        >
+          <GradientBackground />
+          <SceneLighting />
 
-        <CameraController
-          controlsRef={controlsRef}
-          invalidateRef={invalidateRef}
-          width={width}
-          depth={depth}
-          gridUnitMm={gridUnitMm}
-          paddingLeft={paddingLeft}
-          paddingRight={paddingRight}
-          paddingFront={paddingFront}
-          paddingBack={paddingBack}
-        />
-
-        {isSplit ? (
-          <SplitBaseplateMeshes
-            totalWidthUnits={width}
-            totalDepthUnits={depth}
-            gridUnitMm={gridUnitMm}
-          />
-        ) : (
-          <BaseplateMesh color={filamentColor} />
-        )}
-
-        {/* Ghost outline only in assembled mode — exploded scatters pieces beyond slab bounds */}
-        {splitViewMode !== 'exploded' && (
-          <GhostPaddingOutline
+          <CameraController
+            controlsRef={controlsRef}
+            invalidateRef={invalidateRef}
             width={width}
             depth={depth}
             gridUnitMm={gridUnitMm}
@@ -1137,16 +1192,21 @@ export function BaseplatePreview({
             paddingRight={paddingRight}
             paddingFront={paddingFront}
             paddingBack={paddingBack}
-            isGenerating={generationStatus === 'generating'}
           />
-        )}
 
-        <FootprintGrid width={width} depth={depth} gridUnitMm={gridUnitMm} />
-        {/* Hide measurement labels in exploded mode — pieces scatter beyond these positions */}
-        {splitViewMode !== 'exploded' && (
-          <>
-            <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
-            <DimensionLabels
+          {isSplit ? (
+            <SplitBaseplateMeshes
+              totalWidthUnits={width}
+              totalDepthUnits={depth}
+              gridUnitMm={gridUnitMm}
+            />
+          ) : (
+            <BaseplateMesh color={filamentColor} />
+          )}
+
+          {/* Ghost outline only in assembled mode — exploded scatters pieces beyond slab bounds */}
+          {splitViewMode !== 'exploded' && (
+            <GhostPaddingOutline
               width={width}
               depth={depth}
               gridUnitMm={gridUnitMm}
@@ -1154,26 +1214,44 @@ export function BaseplatePreview({
               paddingRight={paddingRight}
               paddingFront={paddingFront}
               paddingBack={paddingBack}
+              isGenerating={generationStatus === 'generating'}
             />
-          </>
-        )}
+          )}
 
-        <OrbitControls
-          ref={controlsRef}
-          makeDefault
-          target={[0, 0, totalH / 2]}
-          enableDamping
-          dampingFactor={0.12}
-          rotateSpeed={0.8}
-          minDistance={20}
-          maxDistance={800}
-          maxPolarAngle={Math.PI * 0.85}
-          minPolarAngle={Math.PI * 0.05}
-          enablePan={isDesktop}
-          onStart={handleOrbitStart}
-          onEnd={handleOrbitEnd}
-        />
-      </Canvas>
+          <FootprintGrid width={width} depth={depth} gridUnitMm={gridUnitMm} />
+          {/* Hide measurement labels in exploded mode — pieces scatter beyond these positions */}
+          {splitViewMode !== 'exploded' && (
+            <>
+              <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
+              <DimensionLabels
+                width={width}
+                depth={depth}
+                gridUnitMm={gridUnitMm}
+                paddingLeft={paddingLeft}
+                paddingRight={paddingRight}
+                paddingFront={paddingFront}
+                paddingBack={paddingBack}
+              />
+            </>
+          )}
+
+          <OrbitControls
+            ref={controlsRef}
+            makeDefault
+            target={[0, 0, totalH / 2]}
+            enableDamping
+            dampingFactor={0.12}
+            rotateSpeed={0.8}
+            minDistance={20}
+            maxDistance={800}
+            maxPolarAngle={Math.PI * 0.85}
+            minPolarAngle={Math.PI * 0.05}
+            enablePan={isDesktop}
+            onStart={handleOrbitStart}
+            onEnd={handleOrbitEnd}
+          />
+        </Canvas>
+      </div>
 
       {/* Camera controls + view toggle overlay */}
       <BaseplatePreviewControls
@@ -1209,14 +1287,32 @@ export function BaseplatePreview({
           aria-live="polite"
         >
           <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
-            <Spinner className="h-4 w-4 shrink-0 text-accent motion-reduce:animate-none" />
+            <svg
+              className="h-4 w-4 shrink-0 text-accent animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle
+                className="opacity-20"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="3"
+              />
+              <path
+                className="opacity-80"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
             <span className="text-content-secondary">
-              {splitProgress && !isInitialLoading
-                ? t('baseplate.generatingSplit', {
-                    current: splitProgress.current,
-                    total: splitProgress.total,
-                  })
-                : t('baseplate.generating')}
+              {overlayStatusText(isWasmLoading, splitProgress, t)}
+              {elapsedSec !== null && (
+                <span className="ml-1.5 text-content-tertiary">
+                  {t('baseplate.elapsed', { seconds: elapsedSec })}
+                </span>
+              )}
             </span>
           </div>
         </div>
