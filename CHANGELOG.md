@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.39.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.38.0...gridfinity-layout-tool-v3.39.0) (2026-02-28)
+
+
+### Features
+
+* **baseplate:** graduate generator and add SEO landing page ([#937](https://github.com/andymai/gridfinity-layout-tool/issues/937)) ([7a54033](https://github.com/andymai/gridfinity-layout-tool/commit/7a5403395f3d3ec281c884b81a621a51f1759771))
+
 ## [3.38.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.37.0...gridfinity-layout-tool-v3.38.0) (2026-02-28)
 
 
