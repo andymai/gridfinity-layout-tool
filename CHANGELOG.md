@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.40.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.39.0...gridfinity-layout-tool-v3.40.0) (2026-02-28)
+
+
+### Features
+
+* **baseplate:** 3D preview visual polish ([#939](https://github.com/andymai/gridfinity-layout-tool/issues/939)) ([7860d29](https://github.com/andymai/gridfinity-layout-tool/commit/7860d297c333b6164fd72b1778b2648b9ef8285b))
+
 ## [3.39.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.38.0...gridfinity-layout-tool-v3.39.0) (2026-02-28)
 
 
