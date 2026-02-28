@@ -12,12 +12,13 @@
  * SegmentedControl) for consistency with the bin designer.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
+import { ChevronDownIcon } from '@/design-system/Icon';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -175,29 +176,12 @@ export function BaseplatePanel() {
         <StickyGroupHeader title={t('baseplate.sectionFitToDrawer')} summary={paddingSummary}>
           <div className="space-y-3 px-4 py-3">
             <p className="text-xs text-content-tertiary">{t('baseplate.paddingHelp')}</p>
-            {/* Per-side padding steppers — 2x2 grid */}
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-              <PaddingStepper
-                label={t('baseplate.paddingLeft')}
-                value={baseplateParams.paddingLeft}
-                onChange={(v) => updateParam('paddingLeft', v)}
-              />
-              <PaddingStepper
-                label={t('baseplate.paddingRight')}
-                value={baseplateParams.paddingRight}
-                onChange={(v) => updateParam('paddingRight', v)}
-              />
-              <PaddingStepper
-                label={t('baseplate.paddingFront')}
-                value={baseplateParams.paddingFront}
-                onChange={(v) => updateParam('paddingFront', v)}
-              />
-              <PaddingStepper
-                label={t('baseplate.paddingBack')}
-                value={baseplateParams.paddingBack}
-                onChange={(v) => updateParam('paddingBack', v)}
-              />
-            </div>
+            <PaddingSchematic
+              baseplateParams={baseplateParams}
+              updateParam={updateParam}
+              totalWidthMm={totalWidthMm}
+              totalDepthMm={totalDepthMm}
+            />
           </div>
         </StickyGroupHeader>
 
@@ -395,6 +379,157 @@ function SplitViewStrip({
   );
 }
 
+interface PaddingSchematicProps {
+  readonly baseplateParams: BaseplateParams;
+  readonly updateParam: <K extends keyof BaseplateParams>(
+    key: K,
+    value: BaseplateParams[K]
+  ) => void;
+  readonly totalWidthMm: number;
+  readonly totalDepthMm: number;
+}
+
+/** Spatial schematic showing padding steppers positioned around a baseplate rectangle. */
+function PaddingSchematic({
+  baseplateParams,
+  updateParam,
+  totalWidthMm,
+  totalDepthMm,
+}: PaddingSchematicProps) {
+  const t = useTranslation();
+
+  return (
+    <div className="space-y-1.5">
+      {/* Back stepper — centered above */}
+      <div className="flex justify-center">
+        <PaddingStepper
+          label={t('baseplate.paddingBack')}
+          value={baseplateParams.paddingBack}
+          onChange={(v) => updateParam('paddingBack', v)}
+        />
+      </div>
+
+      {/* Middle row: Left stepper | rectangle | Right stepper */}
+      <div className="flex items-center gap-1.5">
+        <SideStepper
+          ariaLabel={t('baseplate.paddingLeft')}
+          value={baseplateParams.paddingLeft}
+          onChange={(v) => updateParam('paddingLeft', v)}
+        />
+        <div className="flex-1 min-h-14 rounded-md border border-dashed border-stroke-subtle bg-surface-secondary/50" />
+        <SideStepper
+          ariaLabel={t('baseplate.paddingRight')}
+          value={baseplateParams.paddingRight}
+          onChange={(v) => updateParam('paddingRight', v)}
+        />
+      </div>
+
+      {/* Front stepper — centered below */}
+      <div className="flex justify-center">
+        <PaddingStepper
+          label={t('baseplate.paddingFront')}
+          value={baseplateParams.paddingFront}
+          onChange={(v) => updateParam('paddingFront', v)}
+        />
+      </div>
+
+      <p className="text-center text-xs tabular-nums text-content-tertiary">
+        {t('baseplate.totalDimensions', {
+          width: Math.round(totalWidthMm),
+          depth: Math.round(totalDepthMm),
+        })}
+      </p>
+    </div>
+  );
+}
+
+interface SideStepperProps {
+  readonly ariaLabel: string;
+  readonly value: number;
+  readonly onChange: (value: number) => void;
+}
+
+const PADDING_BUTTON_STEP = 1;
+const PADDING_INPUT_STEP = 0.1;
+const PADDING_MIN = 0;
+const PADDING_MAX = 100;
+
+const sideStepperBtnClass =
+  'flex h-6 w-8 items-center justify-center border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:bg-surface-hover hover:text-content disabled:opacity-30';
+
+/** Compact vertical stepper for left/right edges — value + buttons stacked to save width. */
+function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
+  const [localText, setLocalText] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const skipBlurCommit = useRef(false);
+
+  const displayValue = Math.round(value * 10) / 10;
+
+  const commit = useCallback(
+    (text: string) => {
+      const v = parseFloat(text);
+      if (!Number.isNaN(v) && v >= PADDING_MIN && v <= PADDING_MAX) {
+        onChange(Math.round(v / PADDING_INPUT_STEP) * PADDING_INPUT_STEP);
+      }
+    },
+    [onChange]
+  );
+
+  return (
+    <div className="flex flex-col items-center">
+      <button
+        type="button"
+        className={`${sideStepperBtnClass} rounded-t-md border-b-0`}
+        onClick={() => onChange(Math.min(PADDING_MAX, value + PADDING_BUTTON_STEP))}
+        disabled={value >= PADDING_MAX}
+        aria-label={`${ariaLabel} increment`}
+      >
+        <ChevronDownIcon size="xs" className="rotate-180" />
+      </button>
+      <input
+        type="text"
+        inputMode="decimal"
+        className="w-8 border border-stroke-subtle bg-surface px-0 py-0.5 text-center text-xs tabular-nums text-content-secondary outline-none focus:ring-1 focus:ring-accent"
+        value={isFocused ? localText : displayValue}
+        onChange={(e) => setLocalText(e.target.value)}
+        onFocus={() => {
+          setLocalText(String(displayValue));
+          setIsFocused(true);
+        }}
+        onBlur={() => {
+          if (!skipBlurCommit.current) {
+            commit(localText);
+          }
+          skipBlurCommit.current = false;
+          setIsFocused(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            commit(localText);
+            skipBlurCommit.current = true;
+            e.currentTarget.blur();
+          }
+          if (e.key === 'Escape') {
+            setLocalText(String(displayValue));
+            skipBlurCommit.current = true;
+            e.currentTarget.blur();
+          }
+        }}
+        aria-label={ariaLabel}
+      />
+      <button
+        type="button"
+        className={`${sideStepperBtnClass} rounded-b-md border-t-0`}
+        onClick={() => onChange(Math.max(PADDING_MIN, value - PADDING_BUTTON_STEP))}
+        disabled={value <= PADDING_MIN}
+        aria-label={`${ariaLabel} decrement`}
+      >
+        <ChevronDownIcon size="xs" />
+      </button>
+    </div>
+  );
+}
+
 interface PaddingStepperProps {
   readonly label: string;
   readonly value: number;
@@ -404,16 +539,16 @@ interface PaddingStepperProps {
 /** Compact stepper for a single padding value (mm). */
 function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col items-center gap-0.5">
       <span className="text-xs text-content-tertiary">{label}</span>
       <Stepper
         size="sm"
         value={value}
         onChange={onChange}
-        onStep={(delta) => onChange(Math.max(0, value + delta))}
-        min={0}
-        max={100}
-        step={0.1}
+        onStep={(delta) => onChange(Math.max(PADDING_MIN, value + delta))}
+        min={PADDING_MIN}
+        max={PADDING_MAX}
+        step={PADDING_INPUT_STEP}
         aria-label={label}
       />
     </div>
