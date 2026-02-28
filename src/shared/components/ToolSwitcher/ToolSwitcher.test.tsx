@@ -115,15 +115,15 @@ describe('ToolSwitcher', () => {
 
   it('shows text labels by default', () => {
     render(<ToolSwitcher />);
-    expect(screen.getByText('Grid Planner')).toBeInTheDocument();
-    expect(screen.getByText('Bin Designer')).toBeInTheDocument();
+    expect(screen.getByText('Layout')).toBeInTheDocument();
+    expect(screen.getByText('Bins')).toBeInTheDocument();
     expect(screen.getByText('Baseplate')).toBeInTheDocument();
   });
 
   it('hides text labels in iconOnly mode', () => {
     render(<ToolSwitcher iconOnly />);
-    expect(screen.queryByText('Grid Planner')).not.toBeInTheDocument();
-    expect(screen.queryByText('Bin Designer')).not.toBeInTheDocument();
+    expect(screen.queryByText('Layout')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bins')).not.toBeInTheDocument();
     expect(screen.queryByText('Baseplate')).not.toBeInTheDocument();
   });
 
