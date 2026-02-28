@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.41.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.40.0...gridfinity-layout-tool-v3.41.0) (2026-02-28)
+
+
+### Features
+
+* **toolswitcher:** shorten labels to Layout / Bins / Baseplate ([#942](https://github.com/andymai/gridfinity-layout-tool/issues/942)) ([2895f54](https://github.com/andymai/gridfinity-layout-tool/commit/2895f54d2cf05877e732ff18b4a4a4f026894ace))
+
 ## [3.40.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.39.0...gridfinity-layout-tool-v3.40.0) (2026-02-28)
 
 
