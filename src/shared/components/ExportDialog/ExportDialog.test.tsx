@@ -35,18 +35,13 @@ describe('ExportDialog', () => {
     expect(radios[0]).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('calls onFormatChange when format button clicked', () => {
-    const onFormatChange = vi.fn();
+  it('updates fileNameConfig format when format button clicked', () => {
     const onFileNameConfigChange = vi.fn();
-    render(
-      <ExportDialog
-        {...defaultProps}
-        onFormatChange={onFormatChange}
-        onFileNameConfigChange={onFileNameConfigChange}
-      />
-    );
+    render(<ExportDialog {...defaultProps} onFileNameConfigChange={onFileNameConfigChange} />);
     fireEvent.click(screen.getByText('STEP'));
-    expect(onFormatChange).toHaveBeenCalledWith('step');
+    expect(onFileNameConfigChange).toHaveBeenCalledWith(
+      expect.objectContaining({ format: 'step' })
+    );
   });
 
   it('displays filename without extension', () => {

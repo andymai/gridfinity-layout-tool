@@ -30,12 +30,13 @@ export interface ExportDialogProps {
 
   /** Active export format */
   activeFormat: ExportFileFormat;
-  onFormatChange: (format: ExportFileFormat) => void;
+  /** @deprecated Format is now managed via fileNameConfig.format. Kept for backward compat. */
+  onFormatChange?: (format: ExportFileFormat) => void;
 
   /** Filename configuration */
   fileNameConfig: ExportFileNameConfig;
   onFileNameConfigChange: (config: ExportFileNameConfig) => void;
-  /** Resolved filename without extension (consumer computes) */
+  /** Resolved filename including extension (e.g. 'gridfinity-baseplate-8x6.stl'). Extension is stripped for display; use displayExtension for the suffix badge. */
   fileName: string;
   /** Display extension, e.g. '.stl' or '.zip' */
   displayExtension: string;
@@ -94,7 +95,6 @@ export function ExportDialog({
   open,
   onClose,
   activeFormat,
-  onFormatChange,
   fileNameConfig,
   onFileNameConfigChange,
   fileName,
@@ -137,9 +137,8 @@ export function ExportDialog({
   const handleFormatChange = useCallback(
     (format: ExportFileFormat) => {
       onFileNameConfigChange({ ...fileNameConfig, format });
-      onFormatChange(format);
     },
-    [fileNameConfig, onFileNameConfigChange, onFormatChange]
+    [fileNameConfig, onFileNameConfigChange]
   );
 
   const handleCustomNameChange = useCallback(
@@ -315,7 +314,7 @@ export function ExportDialog({
           {secondaryDownload?.visible && (
             <button
               onClick={secondaryDownload.onClick}
-              disabled={isExporting}
+              disabled={isExporting || secondaryDownload.isExporting}
               className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-info bg-transparent px-4 py-2.5 text-sm font-medium text-info transition-colors hover:bg-info-muted disabled:cursor-not-allowed disabled:border-stroke-subtle disabled:text-content-disabled"
             >
               {secondaryDownload.isExporting && <ExportSpinner />}

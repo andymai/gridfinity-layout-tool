@@ -11,7 +11,7 @@
  * (slicers cannot open ZIP archives).
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
@@ -60,6 +60,17 @@ export function useBaseplateSlicerOpen(): UseBaseplateSlicerOpenReturn {
 
   const exportFileNameConfig = useBaseplatePageStore((s) => s.exportFileNameConfig);
   const [openingSlicerId, setOpeningSlicerId] = useState<string | null>(null);
+  const detectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (detectionTimerRef.current) {
+        clearTimeout(detectionTimerRef.current);
+        detectionTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const openInSlicer = useCallback(
     async (slicer: SlicerSite) => {
@@ -139,7 +150,8 @@ export function useBaseplateSlicerOpen(): UseBaseplateSlicerOpenReturn {
         const { url } = (await uploadResponse.json()) as { url: string };
 
         // Step 3: Blur detection + timer fallback
-        const notDetectedTimer = setTimeout(() => {
+        detectionTimerRef.current = setTimeout(() => {
+          detectionTimerRef.current = null;
           window.removeEventListener('blur', onSlicerOpened);
           addToast({
             message: t('slicerOpen.notDetected', { slicer: slicer.name }),
@@ -150,7 +162,10 @@ export function useBaseplateSlicerOpen(): UseBaseplateSlicerOpenReturn {
         }, SLICER_DETECTION_TIMEOUT_MS);
 
         const onSlicerOpened = () => {
-          clearTimeout(notDetectedTimer);
+          if (detectionTimerRef.current) {
+            clearTimeout(detectionTimerRef.current);
+            detectionTimerRef.current = null;
+          }
           setOpeningSlicerId(null);
         };
 

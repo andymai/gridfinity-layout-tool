@@ -105,17 +105,10 @@ export function BaseplatePage() {
   const displayExtension = useSplitExport ? '.zip' : FORMAT_EXTENSIONS[activeFormat];
 
   const handleDownload = useCallback(() => {
-    void downloadBaseplate(activeFormat, splitEnabled);
-  }, [downloadBaseplate, activeFormat, splitEnabled]);
+    void downloadBaseplate(activeFormat, useSplitExport);
+  }, [downloadBaseplate, activeFormat, useSplitExport]);
 
   const closeExportDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
-
-  const handleFormatChange = useCallback(
-    (format: ExportFileFormat) => {
-      setExportFileNameConfig({ ...exportFileNameConfig, format });
-    },
-    [exportFileNameConfig, setExportFileNameConfig]
-  );
 
   const { paddingLeft, paddingRight, paddingFront, paddingBack } = baseplateParams;
   const synced = baseplateParams.syncWithLayout !== false;
@@ -250,7 +243,6 @@ export function BaseplatePage() {
         open={exportDialogOpen}
         onClose={closeExportDialog}
         activeFormat={activeFormat}
-        onFormatChange={handleFormatChange}
         fileNameConfig={exportFileNameConfig}
         onFileNameConfigChange={setExportFileNameConfig}
         fileName={fileName}

@@ -169,7 +169,6 @@ export function ExportDialog() {
       open={exportDialogOpen}
       onClose={closeDialog}
       activeFormat={activeFormat}
-      onFormatChange={(format) => setExportFileNameConfig({ ...exportFileNameConfig, format })}
       fileNameConfig={exportFileNameConfig}
       onFileNameConfigChange={setExportFileNameConfig}
       fileName={fileName}

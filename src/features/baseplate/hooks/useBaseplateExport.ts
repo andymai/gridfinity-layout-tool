@@ -6,7 +6,7 @@
  * progress tracking. Falls back to sequential export if the pool is unavailable.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
@@ -83,9 +83,9 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
   const mesh = useBaseplatePageStore((s) => s.generation.mesh);
   const pieceMeshes = useBaseplatePageStore((s) => s.pieceMeshes);
   const exportFileNameConfig = useBaseplatePageStore((s) => s.exportFileNameConfig);
-  const isExporting = useBaseplatePageStore((s) => s.exportProgress !== null);
   const exportProgress = useBaseplatePageStore((s) => s.exportProgress);
   const setExportProgress = useBaseplatePageStore((s) => s.setExportProgress);
+  const [isExporting, setIsExporting] = useState(false);
 
   const hasSingleMesh = mesh !== null && mesh.vertices !== null && mesh.error === null;
   const hasSplitMeshes = pieceMeshes.length > 0;
@@ -99,8 +99,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
         return;
       }
 
-      // Use export progress to signal exporting state — null means not exporting
-      setExportProgress({ current: 0, total: 1 });
+      setIsExporting(true);
 
       try {
         const fullParams = buildFullParams(
@@ -166,7 +165,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             pieces = [];
             for (let i = 0; i < tiling.pieces.length; i++) {
               const piece = tiling.pieces[i];
-              setExportProgress({ current: i, total });
+              setExportProgress({ current: i + 1, total });
               const pieceParams = pieceToBaseplateParams(piece, fullParams);
               const result = await bridge.exportBaseplate(pieceParams, bridgeFormat);
 
@@ -197,7 +196,6 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             triggerDownload(blob, baseName);
           }
 
-          setExportProgress({ current: 1, total: 1 });
           useToastStore
             .getState()
             .addToast(t('baseplate.export.success', { format: format.toUpperCase() }), 'success');
@@ -209,6 +207,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
         const message = error instanceof Error ? error.message : 'Export failed';
         useToastStore.getState().addToast(message, 'error');
       } finally {
+        setIsExporting(false);
         setExportProgress(null);
       }
     },
