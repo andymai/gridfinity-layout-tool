@@ -40,7 +40,6 @@
   "baseplate.sectionFitToDrawer": "Preenchimento de borda",
   "baseplate.sectionGridSize": "Tamanho da grade",
   "baseplate.sectionPrintSettings": "Configurações de impressão",
-  "baseplate.sectionView": "Visualização",
   "baseplate.sideView": "Lado",
   "baseplate.splitInfo": "{count} peças",
   "baseplate.splitReason": "Dividido para mesa de {printBed}mm",

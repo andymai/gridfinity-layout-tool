@@ -43,14 +43,6 @@ vi.mock('@react-three/fiber', () => ({
 vi.mock('@react-three/drei', () => ({
   OrbitControls: vi.fn(() => null),
   Text: vi.fn(() => null),
-  ContactShadows: vi.fn(() => null),
-}));
-
-// Mock postprocessing
-vi.mock('@react-three/postprocessing', () => ({
-  EffectComposer: vi.fn(() => null),
-  SSAO: vi.fn(() => null),
-  Bloom: vi.fn(() => null),
 }));
 
 // Mock shared components
@@ -113,9 +105,6 @@ vi.mock('./SplitBaseplateMeshes', () => ({
 vi.mock('./GhostPaddingOutline', () => ({
   GhostPaddingOutline: vi.fn(() => null),
 }));
-vi.mock('./BaseplateEffects', () => ({
-  BaseplateEffects: vi.fn(() => null),
-}));
 vi.mock('./useMeshGeometry', () => ({
   useMeshGeometry: () => ({ geometry: null, edgesGeometry: null, hasPrecomputedNormals: false }),
 }));
@@ -128,16 +117,6 @@ const { BaseplatePreview } = await import('./BaseplatePreview');
 describe('BaseplatePreview', () => {
   it('exports a component function', () => {
     expect(typeof BaseplatePreview).toBe('function');
-  });
-
-  it('imports ContactShadows from drei for shadow rendering', async () => {
-    const drei = await import('@react-three/drei');
-    expect(drei.ContactShadows).toBeDefined();
-  });
-
-  it('imports BaseplateEffects for post-processing', async () => {
-    const effects = await import('./BaseplateEffects');
-    expect(effects.BaseplateEffects).toBeDefined();
   });
 
   it('imports shared material props for consistent rendering', async () => {

@@ -40,7 +40,6 @@
   "baseplate.sectionFitToDrawer": "Randvulling",
   "baseplate.sectionGridSize": "Rastergrootte",
   "baseplate.sectionPrintSettings": "Printinstellingen",
-  "baseplate.sectionView": "Weergave",
   "baseplate.sideView": "Zij",
   "baseplate.splitInfo": "{count} stukken",
   "baseplate.splitReason": "Gesplitst voor {printBed}mm printbed",

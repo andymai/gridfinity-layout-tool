@@ -40,7 +40,6 @@
   "baseplate.sectionFitToDrawer": "Randpolsterung",
   "baseplate.sectionGridSize": "Rastergröße",
   "baseplate.sectionPrintSettings": "Druckeinstellungen",
-  "baseplate.sectionView": "Ansicht",
   "baseplate.sideView": "Seite",
   "baseplate.splitInfo": "{count} Teile",
   "baseplate.splitReason": "Aufgeteilt für {printBed}mm Druckbett",

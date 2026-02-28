@@ -40,7 +40,6 @@
   "baseplate.sectionFitToDrawer": "Kantpolstring",
   "baseplate.sectionGridSize": "Rutenettstørrelse",
   "baseplate.sectionPrintSettings": "Utskriftsinnstillinger",
-  "baseplate.sectionView": "Visning",
   "baseplate.sideView": "Side",
   "baseplate.splitInfo": "{count} deler",
   "baseplate.splitReason": "Delt for {printBed}mm printplate",
