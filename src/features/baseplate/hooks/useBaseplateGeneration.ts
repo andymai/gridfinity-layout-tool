@@ -17,7 +17,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
 import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
-import { useBaseplatePageStore } from '../store/baseplatePageStore';
+import { useBaseplatePageStore, setWorkerPool } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling, pieceToBaseplateParams } from '../utils/splitPlanner';
 import { BaseplateWorkerPool } from './BaseplateWorkerPool';
@@ -269,6 +269,7 @@ export function useBaseplateGeneration(): void {
             .then(() => {
               // Expose only after init — uninitialised workers hang forever
               poolRef.current = pool;
+              setWorkerPool(pool);
             })
             .catch(() => {
               // Non-fatal — falls back to sequential generation
@@ -305,6 +306,7 @@ export function useBaseplateGeneration(): void {
       pool?.destroy();
       pool = null;
       poolRef.current = null;
+      setWorkerPool(null);
     };
   }, [setWasmStatus, runGeneration]);
 

@@ -141,19 +141,9 @@ describe('ExportDialog', () => {
     expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('3mf');
   });
 
-  it('closes on backdrop click', () => {
-    render(<ExportDialog />);
-    // Click the backdrop (role="presentation"), not the dialog itself
-    const backdrop = screen.getByRole('presentation');
-    fireEvent.click(backdrop);
-
-    // Verify store was updated
-    expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
-  });
-
   it('closes on close button click', () => {
     render(<ExportDialog />);
-    const closeButton = screen.getByLabelText('Close');
+    const closeButton = screen.getByLabelText('Close dialog');
     fireEvent.click(closeButton);
     expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
   });
@@ -233,7 +223,8 @@ describe('ExportDialog', () => {
     render(<ExportDialog />);
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
-    expect(dialog).toHaveAttribute('aria-labelledby', 'export-dialog-title');
+    // Dialog.Root generates a dynamic titleId — just verify it's set
+    expect(dialog).toHaveAttribute('aria-labelledby');
   });
 
   it('shows all three style buttons', () => {

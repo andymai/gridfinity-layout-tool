@@ -73,6 +73,10 @@ export type { SpinnerProps } from './Spinner';
 export { Popover } from './Popover';
 export type { PopoverProps } from './Popover';
 
+// ProgressBar
+export { ProgressBar } from './ProgressBar';
+export type { ProgressBarProps } from './ProgressBar';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Composite Components
 // ─────────────────────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ export type {
   GenerationResult,
   ExportResult,
   SplitExportResult,
+  BaseplateExportResult,
 } from './GenerationBridge';
 export { setActiveBridge, getActiveBridge } from './bridgeRef';
 export type {

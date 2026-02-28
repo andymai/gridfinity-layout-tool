@@ -834,6 +834,20 @@ input[type='range']:hover::-moz-range-thumb {
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
 }
 
+/* Progress bar indeterminate animation */
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.animate-progress-indeterminate {
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
 /* Toast animation classes */
 .toast-enter-bottom {
   animation: toastEnterBottom 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
