@@ -120,8 +120,9 @@ describe('BaseplatePanel', () => {
       paddingRight: 3,
     };
     render(<BaseplatePanel />);
-    // With padding: total mm is primary, grid+padding is secondary
-    expect(screen.getByText('baseplate.totalDimensions')).toBeInTheDocument();
+    // With padding: total mm is primary (hero) + schematic caption
+    const totalDims = screen.getAllByText('baseplate.totalDimensions');
+    expect(totalDims.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('baseplate.gridPlusPadding')).toBeInTheDocument();
   });
 
