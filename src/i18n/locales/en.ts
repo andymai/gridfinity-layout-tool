@@ -782,7 +782,7 @@ const en: Record<string, string> = {
   'help.shortcut.rotate': 'Rotate selected bin',
   'help.shortcut.selectAll': 'Select all bins on layer',
   'help.shortcut.togglePaintMode': 'Toggle paint mode',
-  'help.shortcut.toolSwitch': 'Switch Layout / Bins / Baseplate',
+  'help.shortcut.toolSwitch': 'Toggle between Layout and Bins',
   'help.shortcut.toggleHalfBin': 'Toggle half-bin mode',
 
   // Mouse interactions

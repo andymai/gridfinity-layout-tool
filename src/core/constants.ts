@@ -400,5 +400,5 @@ export const SHORTCUTS = {
   // Layout management
   LAYOUT_MANAGER: 'o', // with Ctrl/Cmd - "Open" layouts
   // Tool switching
-  TOOL_SWITCH: 'D', // Shift+D — toggle between Layout, Bins, and Baseplate
+  TOOL_SWITCH: 'D', // Shift+D — toggle between Layout and Bins
 } as const;
