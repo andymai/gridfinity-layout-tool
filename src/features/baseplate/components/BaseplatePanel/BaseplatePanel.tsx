@@ -15,7 +15,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS, FILAMENT_COLORS } from '@/core/constants';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { ChevronDownIcon } from '@/design-system/Icon';
@@ -26,6 +26,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
+import { useSettingsStore } from '@/core/store';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { colToLetter } from '../../utils/splitPlanner';
 import type { BaseplateParams } from '@/core/types';
@@ -234,7 +235,14 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* 4. Print Settings — advanced, rarely changed */}
+        {/* 4. View — filament color picker */}
+        <StickyGroupHeader title={t('baseplate.sectionView')}>
+          <div className="px-4 py-3">
+            <FilamentColorPicker />
+          </div>
+        </StickyGroupHeader>
+
+        {/* 5. Print Settings — advanced, rarely changed */}
         <StickyGroupHeader title={t('baseplate.sectionPrintSettings')}>
           <div className="space-y-3 px-4 py-3">
             <div className="text-xs text-content-secondary space-y-2">
@@ -273,7 +281,7 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* 5. Split pieces mini-map — only when baseplate is split */}
+        {/* 6. Split pieces mini-map — only when baseplate is split */}
         {tiling?.isSplit && (
           <SplitViewStrip
             tiling={tiling}
@@ -290,6 +298,48 @@ export function BaseplatePanel() {
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
+
+/** Filament color swatches matching the bin designer's ColorPickerContent pattern. */
+function FilamentColorPicker() {
+  const t = useTranslation();
+  const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
+  const updateSetting = useSettingsStore((s) => s.updateSetting);
+
+  return (
+    <div className="space-y-1.5">
+      <span className="text-xs text-content-tertiary">{t('baseplate.filamentColor')}</span>
+      <div
+        className="grid grid-cols-7 gap-1.5"
+        role="radiogroup"
+        aria-label={t('baseplate.filamentColor')}
+      >
+        {FILAMENT_COLORS.map(({ color, name }) => {
+          const isSelected = filamentColor === color;
+          return (
+            <button
+              key={color}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
+              aria-label={name}
+              onClick={() => updateSetting('baseplateFilamentColor', color)}
+              className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+                isSelected ? 'ring-2 ring-accent bg-surface-hover' : ''
+              }`}
+            >
+              <span
+                className={`inline-block h-6 w-6 rounded border transition-transform hover:scale-105 ${
+                  isSelected ? 'border-accent' : 'border-stroke-subtle/50'
+                }`}
+                style={{ backgroundColor: color }}
+              />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 interface SplitViewStripProps {
   readonly tiling: BaseplateTiling;

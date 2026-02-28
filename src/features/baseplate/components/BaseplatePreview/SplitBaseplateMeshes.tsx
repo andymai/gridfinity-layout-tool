@@ -3,7 +3,7 @@
  *
  * Positions each piece at its grid offset in assembled mode, or adds
  * explode gaps between pieces in exploded mode for visual clarity.
- * Each piece is color-coded and supports hover/click interaction
+ * Each piece supports hover/click interaction
  * that syncs with the panel mini-map via the page store.
  */
 
@@ -15,12 +15,11 @@ import { useShallow } from 'zustand/react/shallow';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EXPLODE_GAP_MM } from '../../constants';
+import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useSettingsStore } from '@/core/store';
 import type { PieceMeshEntry, SplitViewMode } from '../../store/baseplatePageStore';
-
-/** Default mesh color shared by all pieces. */
-const PIECE_COLOR = '#d4d8dc';
 
 /** Fallback accent hex (amber-500) when CSS var is unavailable. */
 const FALLBACK_ACCENT = '#f59e0b';
@@ -58,6 +57,7 @@ function PieceMesh({
 }: PieceMeshProps) {
   const { invalidate } = useThree();
   const colors = useThreeColors();
+  const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
   const accentHex = useMemo(() => getAccentHex(), []);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(entry.mesh);
@@ -139,29 +139,17 @@ function PieceMesh({
       </mesh>
       <mesh geometry={geometry}>
         <meshStandardMaterial
-          color={PIECE_COLOR}
-          roughness={0.45}
-          metalness={0}
-          side={THREE.DoubleSide}
-          emissive={PIECE_COLOR}
-          emissiveIntensity={0.08}
+          {...MESH_MATERIAL_PROPS}
+          color={filamentColor}
+          emissive={filamentColor}
           flatShading={!hasPrecomputedNormals}
           transparent={isDimmed}
           opacity={isDimmed ? 0.55 : 1}
-          polygonOffset
-          polygonOffsetFactor={4}
-          polygonOffsetUnits={8}
         />
       </mesh>
       {edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
-          <lineBasicMaterial
-            color="#000000"
-            depthTest
-            polygonOffset
-            polygonOffsetFactor={-4}
-            polygonOffsetUnits={-8}
-          />
+          <lineBasicMaterial {...EDGE_MATERIAL_PROPS} />
         </lineSegments>
       )}
       {splitViewMode === 'exploded' && (

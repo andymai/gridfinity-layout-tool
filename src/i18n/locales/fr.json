@@ -5,6 +5,7 @@
   "baseplate.dimensionsUnits": "{width}×{depth} unités",
   "baseplate.errorRetryHint": "Essayez de rafraîchir la page. Si le problème persiste, essayez un autre navigateur.",
   "baseplate.exportNotReady": "Moteur de génération non prêt. Veuillez patienter et réessayer.",
+  "baseplate.filamentColor": "Couleur du filament",
   "baseplate.frontView": "Face",
   "baseplate.generateBaseplate": "Générer la plaque",
   "baseplate.generating": "Génération...",

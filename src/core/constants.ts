@@ -145,6 +145,20 @@ export const CATEGORY_COLOR_PALETTE = [
   { color: '#a8a29e', name: 'Stone' },
 ] as const;
 
+/** Common 3D printing filament colors for the baseplate preview color picker. */
+export const FILAMENT_COLORS = [
+  { color: '#f5f5f5', name: 'White' },
+  { color: '#d4d8dc', name: 'Light Grey' },
+  { color: '#6b7280', name: 'Dark Grey' },
+  { color: '#1f2937', name: 'Black' },
+  { color: '#fef3c7', name: 'Cream' },
+  { color: '#ef4444', name: 'Red' },
+  { color: '#3b82f6', name: 'Blue' },
+  { color: '#22c55e', name: 'Green' },
+  { color: '#f97316', name: 'Orange' },
+  { color: '#a855f7', name: 'Purple' },
+] as const;
+
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   magnetHoles: false,

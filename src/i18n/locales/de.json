@@ -5,6 +5,7 @@
   "baseplate.dimensionsUnits": "{width}×{depth} Einheiten",
   "baseplate.errorRetryHint": "Versuchen Sie, die Seite neu zu laden. Falls das Problem bestehen bleibt, verwenden Sie einen anderen Browser.",
   "baseplate.exportNotReady": "Generierungs-Engine nicht bereit. Bitte warten und erneut versuchen.",
+  "baseplate.filamentColor": "Filamentfarbe",
   "baseplate.frontView": "Vorne",
   "baseplate.generateBaseplate": "Grundplatte generieren",
   "baseplate.generating": "Generiere...",

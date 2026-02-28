@@ -10,9 +10,8 @@
 
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text } from '@react-three/drei';
+import { OrbitControls, Text, ContactShadows } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import { Vector3, Spherical } from 'three';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -23,9 +22,12 @@ import { Spinner } from '@/shared/components/preview/Spinner';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
 import { GhostPaddingOutline } from './GhostPaddingOutline';
+import { BaseplateEffects } from './BaseplateEffects';
+import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import type { SplitViewMode } from '../../store/baseplatePageStore';
 
@@ -46,6 +48,11 @@ const TRANSITION_DURATION = 500;
 
 /** Margin factor: how much of the viewport the baseplate should fill */
 const FRAME_FILL = 0.65;
+
+/** Cubic ease-out used for all preview animations (crossfade, camera transitions). */
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
 
 /**
  * Calculate ideal camera distance to frame the baseplate including padding.
@@ -184,10 +191,15 @@ function DimensionLabels({
 
 // ─── Mesh Rendering ─────────────────────────────────────────────────────────
 
-/**
- * Renders the baseplate mesh from the page store.
- * Mesh is positioned at origin -- pockets align with the FootprintGrid.
- */
+/** Duration of geometry crossfade in milliseconds. */
+const CROSSFADE_MS = 300;
+
+interface FadeSnapshot {
+  oldGeo: THREE.BufferGeometry;
+  oldEdges: THREE.BufferGeometry | null;
+  oldNormals: boolean;
+}
+
 function BaseplateMesh({ color }: { color: string }) {
   const { invalidate } = useThree();
   const meshArrays = useBaseplatePageStore(
@@ -201,36 +213,90 @@ function BaseplateMesh({ color }: { color: string }) {
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(meshArrays);
 
+  // Crossfade: fade snapshot is state (safe for render), timing is ref (for useFrame)
+  const prevGeoRef = useRef<THREE.BufferGeometry | null>(null);
+  const prevEdgesRef = useRef<THREE.BufferGeometry | null>(null);
+  const prevNormalsRef = useRef(false);
+  const fadeStartRef = useRef<number | null>(null);
+  const [fadeSnapshot, setFadeSnapshot] = useState<FadeSnapshot | null>(null);
+  const [fadeOpacity, setFadeOpacity] = useState(1);
+
   useEffect(() => {
+    if (geometry && prevGeoRef.current && prevGeoRef.current !== geometry) {
+      // Start crossfade from old to new
+      fadeStartRef.current = performance.now();
+      setFadeSnapshot({
+        oldGeo: prevGeoRef.current,
+        oldEdges: prevEdgesRef.current,
+        oldNormals: prevNormalsRef.current,
+      });
+      setFadeOpacity(0);
+    }
+    prevGeoRef.current = geometry;
+    prevEdgesRef.current = edgesGeometry;
+    prevNormalsRef.current = hasPrecomputedNormals;
     invalidate();
-  }, [geometry, color, invalidate]);
+  }, [geometry, edgesGeometry, hasPrecomputedNormals, color, invalidate]);
+
+  useFrame(() => {
+    if (fadeStartRef.current === null) return;
+
+    const elapsed = performance.now() - fadeStartRef.current;
+    const progress = Math.min(elapsed / CROSSFADE_MS, 1);
+    const eased = easeOutCubic(progress);
+
+    setFadeOpacity(eased);
+    invalidate();
+
+    if (progress >= 1) {
+      fadeStartRef.current = null;
+      setFadeSnapshot(null);
+    }
+  });
 
   if (!geometry) return null;
 
+  const isFading = fadeSnapshot !== null;
+
   return (
     <>
+      {/* Fading-out old geometry during crossfade */}
+      {fadeSnapshot && (
+        <>
+          <mesh geometry={fadeSnapshot.oldGeo} position={[0, 0, 0.1]}>
+            <meshStandardMaterial
+              {...MESH_MATERIAL_PROPS}
+              color={color}
+              emissive={color}
+              flatShading={!fadeSnapshot.oldNormals}
+              transparent
+              opacity={1 - fadeOpacity}
+            />
+          </mesh>
+          {fadeSnapshot.oldEdges && (
+            <lineSegments geometry={fadeSnapshot.oldEdges} position={[0, 0, 0.1]} renderOrder={1}>
+              <lineBasicMaterial {...EDGE_MATERIAL_PROPS} opacity={0.4 * (1 - fadeOpacity)} />
+            </lineSegments>
+          )}
+        </>
+      )}
+
+      {/* Current geometry — fading in during crossfade, opaque otherwise */}
       <mesh geometry={geometry} position={[0, 0, 0.1]}>
         <meshStandardMaterial
+          {...MESH_MATERIAL_PROPS}
           color={color}
-          roughness={0.45}
-          metalness={0}
-          side={THREE.DoubleSide}
           emissive={color}
-          emissiveIntensity={0.08}
           flatShading={!hasPrecomputedNormals}
-          polygonOffset
-          polygonOffsetFactor={4}
-          polygonOffsetUnits={8}
+          transparent={isFading}
+          opacity={fadeOpacity}
         />
       </mesh>
       {edgesGeometry && (
         <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
           <lineBasicMaterial
-            color="#000000"
-            depthTest
-            polygonOffset
-            polygonOffsetFactor={-4}
-            polygonOffsetUnits={-8}
+            {...EDGE_MATERIAL_PROPS}
+            opacity={0.4 * (isFading ? fadeOpacity : 1)}
           />
         </lineSegments>
       )}
@@ -238,14 +304,18 @@ function BaseplateMesh({ color }: { color: string }) {
   );
 }
 
-/** Theme-aware lighting (must be inside Canvas). */
+/** Three-point studio lighting (must be inside Canvas). */
 function SceneLighting() {
   const colors = useThreeColors();
   return (
     <>
-      <hemisphereLight args={['#ffffff', colors.groundBounce, 0.65]} />
-      <directionalLight position={[-50, 60, 80]} intensity={0.85} color="#fff8f0" />
-      <directionalLight position={[40, -40, 30]} intensity={0.15} color="#e0e8ff" />
+      <hemisphereLight args={['#ffffff', colors.groundBounce, 0.45]} />
+      {/* Key light — warm, from upper-left */}
+      <directionalLight position={[-60, 80, 100]} intensity={1.1} color="#fff4e8" />
+      {/* Fill light — cool, from lower-right */}
+      <directionalLight position={[50, -50, 40]} intensity={0.2} color="#dce8ff" />
+      {/* Rim light — white, from behind-right for edge definition */}
+      <directionalLight position={[60, 60, -30]} intensity={0.35} color="#ffffff" />
     </>
   );
 }
@@ -264,7 +334,6 @@ function CameraController({
   paddingRight,
   paddingFront,
   paddingBack,
-  onOrbitStart,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
   invalidateRef: React.RefObject<(() => void) | null>;
@@ -275,7 +344,6 @@ function CameraController({
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
-  onOrbitStart?: () => void;
 }) {
   const { camera, invalidate } = useThree();
   const initializedRef = useRef(false);
@@ -285,19 +353,9 @@ function CameraController({
     invalidateRef.current = invalidate;
   }, [invalidate, invalidateRef]);
 
-  // Wire up orbit start callback
-  useEffect(() => {
-    const controls = controlsRef.current;
-    if (!controls || !onOrbitStart) return;
-    controls.addEventListener('start', onOrbitStart);
-    return () => {
-      controls.removeEventListener('start', onOrbitStart);
-    };
-  }, [controlsRef, onOrbitStart]);
-
   const fov = 45;
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
-  const binCenter = useMemo(() => new Vector3(0, 0, totalH / 2), [totalH]);
+  const binCenter = useMemo(() => new THREE.Vector3(0, 0, totalH / 2), [totalH]);
   const idealDistance = useMemo(
     () =>
       calculateIdealDistance(
@@ -314,8 +372,8 @@ function CameraController({
   );
 
   const animRef = useRef<{
-    startPos: Vector3;
-    targetPos: Vector3;
+    startPos: THREE.Vector3;
+    targetPos: THREE.Vector3;
     startTime: number;
     duration: number;
   } | null>(null);
@@ -323,7 +381,7 @@ function CameraController({
 
   useEffect(() => {
     if (!initializedRef.current) {
-      const direction = new Vector3(0.6, -0.6, 0.5).normalize();
+      const direction = new THREE.Vector3(0.6, -0.6, 0.5).normalize();
       camera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
       camera.up.set(0, 0, 1);
       camera.lookAt(binCenter);
@@ -368,7 +426,7 @@ function CameraController({
 
     const elapsed = performance.now() - anim.startTime;
     const progress = Math.min(elapsed / anim.duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
+    const eased = easeOutCubic(progress);
 
     camera.position.lerpVectors(anim.startPos, anim.targetPos, eased);
     camera.lookAt(binCenter);
@@ -411,7 +469,7 @@ function useBaseplatePresetTransition(
       const camera = controls.object;
       const fov = 45;
       const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
-      const binCenter = new Vector3(0, 0, totalH / 2);
+      const binCenter = new THREE.Vector3(0, 0, totalH / 2);
       const idealDistance = calculateIdealDistance(
         width,
         depth,
@@ -423,15 +481,19 @@ function useBaseplatePresetTransition(
         fov
       );
 
-      const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
+      const direction = new THREE.Vector3(...CAMERA_PRESETS[preset]).normalize();
       const targetPosition = direction.multiplyScalar(idealDistance).add(binCenter);
 
       const startPosition = camera.position.clone();
       const target = binCenter.clone();
 
       // Convert to spherical for smooth arc interpolation
-      const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
-      const targetSpherical = new Spherical().setFromVector3(targetPosition.clone().sub(target));
+      const startSpherical = new THREE.Spherical().setFromVector3(
+        startPosition.clone().sub(target)
+      );
+      const targetSpherical = new THREE.Spherical().setFromVector3(
+        targetPosition.clone().sub(target)
+      );
 
       const startTime = performance.now();
 
@@ -442,15 +504,15 @@ function useBaseplatePresetTransition(
       const animate = () => {
         const elapsed = performance.now() - startTime;
         const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
+        const eased = easeOutCubic(progress);
 
-        const currentSpherical = new Spherical(
+        const currentSpherical = new THREE.Spherical(
           startSpherical.radius + (targetSpherical.radius - startSpherical.radius) * eased,
           startSpherical.phi + (targetSpherical.phi - startSpherical.phi) * eased,
           startSpherical.theta + (targetSpherical.theta - startSpherical.theta) * eased
         );
 
-        const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
+        const newPosition = new THREE.Vector3().setFromSpherical(currentSpherical).add(target);
         camera.position.copy(newPosition);
         camera.up.set(0, 0, 1);
         camera.lookAt(target);
@@ -786,8 +848,6 @@ interface BaseplatePreviewProps {
   paddingBack: number;
 }
 
-const DEFAULT_COLOR = '#d4d8dc';
-
 export function BaseplatePreview({
   width,
   depth,
@@ -798,9 +858,12 @@ export function BaseplatePreview({
   paddingBack,
 }: BaseplatePreviewProps) {
   const t = useTranslation();
+  const colors = useThreeColors();
   const controlsRef = useRef<OrbitControlsType>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isTouchDevice } = useResponsive();
+  const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
+  const [isInteracting, setIsInteracting] = useState(false);
 
   const {
     wasmStatus,
@@ -858,9 +921,18 @@ export function BaseplatePreview({
 
   const handleOrbitStart = useCallback(() => {
     setActivePreset(null);
+    setIsInteracting(true);
+  }, []);
+
+  const handleOrbitEnd = useCallback(() => {
+    setIsInteracting(false);
+    invalidateRef.current?.();
   }, []);
 
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+  const outerW = width * gridUnitMm + paddingLeft + paddingRight;
+  const outerD = depth * gridUnitMm + paddingFront + paddingBack;
+  const shadowScale = Math.max(outerW, outerD) * 1.5;
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
   const isInitialLoading = !hasError && (!hasAnyMesh || wasmStatus !== 'ready');
@@ -875,7 +947,7 @@ export function BaseplatePreview({
       <Canvas
         frameloop="demand"
         camera={{
-          position: new Vector3(100, -100, 80),
+          position: new THREE.Vector3(100, -100, 80),
           fov: 45,
           near: 0.1,
           far: 2000,
@@ -900,7 +972,18 @@ export function BaseplatePreview({
           paddingRight={paddingRight}
           paddingFront={paddingFront}
           paddingBack={paddingBack}
-          onOrbitStart={handleOrbitStart}
+        />
+
+        {/* Contact shadows — paused during orbit for performance */}
+        <ContactShadows
+          position={[0, 0, 0.02]}
+          opacity={0.25}
+          scale={shadowScale}
+          blur={4}
+          far={totalH * 2}
+          resolution={128}
+          color={colors.contactShadowColor}
+          frames={isInteracting ? 0 : Infinity}
         />
 
         {isSplit ? (
@@ -910,7 +993,7 @@ export function BaseplatePreview({
             gridUnitMm={gridUnitMm}
           />
         ) : (
-          <BaseplateMesh color={DEFAULT_COLOR} />
+          <BaseplateMesh color={filamentColor} />
         )}
 
         {/* Ghost outline only in assembled mode — exploded scatters pieces beyond slab bounds */}
@@ -956,7 +1039,11 @@ export function BaseplatePreview({
           maxPolarAngle={Math.PI * 0.85}
           minPolarAngle={Math.PI * 0.05}
           enablePan={isDesktop}
+          onStart={handleOrbitStart}
+          onEnd={handleOrbitEnd}
         />
+
+        <BaseplateEffects enabled={!isTouchDevice} />
       </Canvas>
 
       {/* Camera controls + view toggle overlay */}

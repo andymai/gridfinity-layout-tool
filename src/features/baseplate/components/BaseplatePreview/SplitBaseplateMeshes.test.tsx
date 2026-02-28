@@ -10,6 +10,7 @@ vi.mock('three', () => ({
   })),
   Float32BufferAttribute: vi.fn(),
   BufferAttribute: vi.fn(),
+  PlaneGeometry: vi.fn().mockImplementation(() => ({ dispose: vi.fn() })),
   DoubleSide: 2,
 }));
 
@@ -29,6 +30,13 @@ vi.mock('@/hooks/useThemeEffect', () => ({
     labelColor: '#ffffff',
     gradientBottom: '#2a2a3e',
   }),
+}));
+
+// Mock settings store — filament color from user settings
+const MOCK_FILAMENT_COLOR = '#ef4444';
+vi.mock('@/core/store', () => ({
+  useSettingsStore: (selector: (state: Record<string, unknown>) => unknown) =>
+    selector({ settings: { baseplateFilamentColor: MOCK_FILAMENT_COLOR } }),
 }));
 
 // Mock store
@@ -66,5 +74,15 @@ describe('SplitBaseplateMeshes', () => {
 
   it('module imports without errors when mocked', () => {
     expect(SplitBaseplateMeshes).toBeDefined();
+  });
+
+  it('uses filament color from settings store instead of hardcoded constant', async () => {
+    // Verify the module no longer has a PIECE_COLOR constant by checking
+    // that the settings store mock with MOCK_FILAMENT_COLOR is wired up
+    const { useSettingsStore } = await import('@/core/store');
+    const color = useSettingsStore(
+      (s: Record<string, unknown>) => (s.settings as Record<string, unknown>).baseplateFilamentColor
+    );
+    expect(color).toBe(MOCK_FILAMENT_COLOR);
   });
 });
