@@ -68,7 +68,7 @@
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "1400 kB"
+      "limit": "1350 kB"
     }
   ],
   "dependencies": {
@@ -78,7 +78,6 @@
     "@liveblocks/react": "^3.13.5",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
-    "@react-three/postprocessing": "^3.0.4",
     "@vercel/analytics": "^1.6.1",
     "@vercel/blob": "^2.2.0",
     "ai": "^6.0.86",
@@ -94,7 +93,6 @@
     "jszip": "^3.10.1",
     "lz-string": "^1.5.0",
     "posthog-js": "^1.351.4",
-    "postprocessing": "^6.38.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tailwind-merge": "^3.4.1",
