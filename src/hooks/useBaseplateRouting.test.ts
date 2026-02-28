@@ -105,6 +105,19 @@ describe('useBaseplateRouting', () => {
       expect(result.current.layoutIdFromUrl).toBe('layout with spaces');
     });
 
+    it('navigates to /baseplate without query params when no layoutId provided', () => {
+      const { result } = renderHook(() => useBaseplateRouting());
+
+      act(() => {
+        result.current.navigateToBaseplate();
+      });
+
+      expect(result.current.isBaseplateRoute).toBe(true);
+      expect(result.current.layoutIdFromUrl).toBeNull();
+      expect(window.location.pathname).toBe('/baseplate');
+      expect(window.location.search).toBe('');
+    });
+
     it('dispatches popstate event for multi-instance sync', () => {
       const listener = vi.fn();
       window.addEventListener('popstate', listener);

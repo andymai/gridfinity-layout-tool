@@ -77,6 +77,7 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         <button
           role="tab"
           aria-selected={activeTool === 'planner'}
+          aria-label={t('toolSwitcher.gridEditor')}
           onClick={() => handleSwitch('planner')}
           title={activeTool !== 'planner' ? t('toolSwitcher.switchToPlanner') : undefined}
           className={segmentClass('planner')}
@@ -91,6 +92,7 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         <button
           role="tab"
           aria-selected={activeTool === 'designer'}
+          aria-label={t('toolSwitcher.binDesigner')}
           onClick={() => handleSwitch('designer')}
           title={activeTool !== 'designer' ? t('toolSwitcher.switchToDesigner') : undefined}
           className={segmentClass('designer')}
@@ -105,6 +107,7 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         <button
           role="tab"
           aria-selected={activeTool === 'baseplate'}
+          aria-label={t('toolSwitcher.baseplateGenerator')}
           onClick={() => handleSwitch('baseplate')}
           title={activeTool !== 'baseplate' ? t('toolSwitcher.switchToBaseplate') : undefined}
           className={segmentClass('baseplate')}

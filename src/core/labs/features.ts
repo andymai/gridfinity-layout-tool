@@ -35,7 +35,7 @@ export const FEATURE_FLAGS = [
     id: 'baseplate_generator',
     name: 'Baseplate Generator',
     description:
-      'Generate parametric Gridfinity baseplates in the Bin Designer. Configure grid size, magnet holes, and half-cell pegs, then export STL or STEP files for 3D printing.',
+      'Generate parametric Gridfinity baseplates in the Bin Designer. Configure grid size, magnet holes, and half-cell pegs, then export STL, STEP, or 3MF files for 3D printing.',
     status: 'graduated',
     risk: 'low',
     addedAt: '2026-02',
