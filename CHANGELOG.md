@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.37.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.36.0...gridfinity-layout-tool-v3.37.0) (2026-02-28)
+
+
+### Features
+
+* **baseplate:** shared ExportDialog with parallel export and slicer integration ([#932](https://github.com/andymai/gridfinity-layout-tool/issues/932)) ([2a8dfe1](https://github.com/andymai/gridfinity-layout-tool/commit/2a8dfe1daec3f2d780e9ce30f5e1c4f90212ad0d))
+
 ## [3.36.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.35.1...gridfinity-layout-tool-v3.36.0) (2026-02-25)
 
 
