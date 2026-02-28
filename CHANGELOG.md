@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.38.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.37.0...gridfinity-layout-tool-v3.38.0) (2026-02-28)
+
+
+### Features
+
+* **baseplate:** spatial padding schematic for edge padding section ([#935](https://github.com/andymai/gridfinity-layout-tool/issues/935)) ([994fcac](https://github.com/andymai/gridfinity-layout-tool/commit/994fcac178791a6d2c5c6ab2e01b02b152fbd554))
+
 ## [3.37.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.36.0...gridfinity-layout-tool-v3.37.0) (2026-02-28)
 
 
