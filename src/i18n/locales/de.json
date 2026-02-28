@@ -1408,6 +1408,8 @@
   "toolSwitcher.switchToDesigner": "Zum Bin-Designer wechseln (Shift+D)",
   "toolSwitcher.switchToPlanner": "Zum Raster-Planner wechseln (Shift+D)",
   "toolSwitcher.toolSwitcher": "Werkzeugwechsler",
+  "toolSwitcher.baseplateGenerator": "Grundplatte",
+  "toolSwitcher.switchToBaseplate": "Zum Grundplatten-Generator wechseln",
   "toolbar.3dView": "3D-Ansicht",
   "toolbar.clickToExitPaint": "Klicken zum Verlassen des Füllmodus",
   "toolbar.exitMoveMode": "Verschieben-Modus verlassen",

@@ -105,6 +105,19 @@ describe('useBaseplateRouting', () => {
       expect(result.current.layoutIdFromUrl).toBe('layout with spaces');
     });
 
+    it('navigates to /baseplate without query params when no layoutId provided', () => {
+      const { result } = renderHook(() => useBaseplateRouting());
+
+      act(() => {
+        result.current.navigateToBaseplate();
+      });
+
+      expect(result.current.isBaseplateRoute).toBe(true);
+      expect(result.current.layoutIdFromUrl).toBeNull();
+      expect(window.location.pathname).toBe('/baseplate');
+      expect(window.location.search).toBe('');
+    });
+
     it('dispatches popstate event for multi-instance sync', () => {
       const listener = vi.fn();
       window.addEventListener('popstate', listener);
@@ -219,6 +232,51 @@ describe('useBaseplateRouting', () => {
 
       addSpy.mockRestore();
       removeSpy.mockRestore();
+    });
+  });
+
+  describe('isStandalone', () => {
+    it('returns false on /baseplate without standalone param', () => {
+      window.history.replaceState(null, '', '/baseplate');
+      const { result } = renderHook(() => useBaseplateRouting());
+      expect(result.current.isStandalone).toBe(false);
+    });
+
+    it('returns true on /baseplate?standalone=1', () => {
+      window.history.replaceState(null, '', '/baseplate?standalone=1');
+      const { result } = renderHook(() => useBaseplateRouting());
+      expect(result.current.isStandalone).toBe(true);
+    });
+
+    it('returns false on root even with ?standalone=1', () => {
+      window.history.replaceState(null, '', '/?standalone=1');
+      const { result } = renderHook(() => useBaseplateRouting());
+      expect(result.current.isStandalone).toBe(false);
+    });
+
+    it('returns false when standalone param is not "1"', () => {
+      window.history.replaceState(null, '', '/baseplate?standalone=true');
+      const { result } = renderHook(() => useBaseplateRouting());
+      expect(result.current.isStandalone).toBe(false);
+    });
+
+    it('coexists with layoutId param', () => {
+      window.history.replaceState(null, '', '/baseplate?layoutId=abc&standalone=1');
+      const { result } = renderHook(() => useBaseplateRouting());
+      expect(result.current.isStandalone).toBe(true);
+      expect(result.current.layoutIdFromUrl).toBe('abc');
+    });
+
+    it('updates on popstate', () => {
+      const { result } = renderHook(() => useBaseplateRouting());
+      expect(result.current.isStandalone).toBe(false);
+
+      act(() => {
+        window.history.replaceState(null, '', '/baseplate?standalone=1');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+
+      expect(result.current.isStandalone).toBe(true);
     });
   });
 

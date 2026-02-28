@@ -1408,6 +1408,8 @@
   "toolSwitcher.switchToDesigner": "Cambiar a Diseñador de Bins (Shift+D)",
   "toolSwitcher.switchToPlanner": "Cambiar a Planificador de Cuadrícula (Shift+D)",
   "toolSwitcher.toolSwitcher": "Selector de Herramientas",
+  "toolSwitcher.baseplateGenerator": "Base",
+  "toolSwitcher.switchToBaseplate": "Cambiar a Generador de Bases",
   "toolbar.3dView": "Vista 3D",
   "toolbar.clickToExitPaint": "Haz clic para salir del modo pintar",
   "toolbar.exitMoveMode": "Salir del modo mover",

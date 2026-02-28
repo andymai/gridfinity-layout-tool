@@ -1161,6 +1161,8 @@ const en: Record<string, string> = {
   'toolSwitcher.toolSwitcher': 'Tool Switcher',
   'toolSwitcher.switchToPlanner': 'Switch to Grid Planner (Shift+D)',
   'toolSwitcher.switchToDesigner': 'Switch to Bin Designer (Shift+D)',
+  'toolSwitcher.baseplateGenerator': 'Baseplate',
+  'toolSwitcher.switchToBaseplate': 'Switch to Baseplate Generator',
 
   // ===========================================================================
   // Bin Designer

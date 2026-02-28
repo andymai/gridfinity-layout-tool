@@ -9,7 +9,7 @@ vi.mock('@/i18n', () => ({
 }));
 
 // Mock responsive hook
-let mockResponsive = { isDesktop: true, isLandscape: false, isMobile: false };
+let mockResponsive = { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false };
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => mockResponsive,
 }));
@@ -52,38 +52,87 @@ vi.mock('../BaseplatePreview/BaseplatePreview', () => ({
   BaseplatePreview: () => <div data-testid="preview">Preview</div>,
 }));
 
-// Mock design-system components
-vi.mock('@/design-system/Menu', () => ({
-  Menu: {
-    Root: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
-      open ? <div data-testid="menu">{children}</div> : null,
-    Item: ({ children, onClick }: { children: React.ReactNode; onClick: () => void }) => (
-      <button onClick={onClick}>{children}</button>
-    ),
-    Divider: () => <hr />,
-  },
+// Mock routing hook
+let mockIsStandalone = false;
+vi.mock('@/hooks/useBaseplateRouting', () => ({
+  useBaseplateRouting: () => ({
+    navigateBack: vi.fn(),
+    isStandalone: mockIsStandalone,
+    isBaseplateRoute: true,
+    layoutIdFromUrl: null,
+    navigateToBaseplate: vi.fn(),
+  }),
+}));
+
+// Mock ToolSwitcher
+vi.mock('@/shared/components/ToolSwitcher', () => ({
+  ToolSwitcher: (props: Record<string, unknown>) => (
+    <div data-testid="tool-switcher" data-compact={props.compact} data-icon-only={props.iconOnly} />
+  ),
+}));
+
+// Mock slicer open hook
+vi.mock('../../hooks/useBaseplateSlicerOpen', () => ({
+  useBaseplateSlicerOpen: () => ({
+    isOpening: false,
+    openingSlicerId: null,
+    openInSlicer: vi.fn(),
+  }),
 }));
 
 describe('BaseplatePage', () => {
-  it('renders header with title and back button', () => {
+  beforeEach(() => {
+    mockIsStandalone = false;
+    mockResponsive = { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false };
+  });
+
+  it('renders header with title and back button in planner mode', () => {
     render(<BaseplatePage />);
     expect(screen.getByText('baseplate.pageTitle')).toBeInTheDocument();
     expect(screen.getByLabelText('baseplate.backToLayout')).toBeInTheDocument();
+    expect(screen.queryByTestId('tool-switcher')).not.toBeInTheDocument();
   });
 
-  it('renders export button', () => {
+  it('renders ToolSwitcher in standalone mode', () => {
+    mockIsStandalone = true;
+    render(<BaseplatePage />);
+    expect(screen.getByTestId('tool-switcher')).toBeInTheDocument();
+    expect(screen.queryByText('baseplate.pageTitle')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('baseplate.backToLayout')).not.toBeInTheDocument();
+  });
+
+  it('renders export button in planner mode', () => {
+    render(<BaseplatePage />);
+    expect(screen.getByLabelText('common.export')).toBeInTheDocument();
+  });
+
+  it('renders export button in standalone mode', () => {
+    mockIsStandalone = true;
     render(<BaseplatePage />);
     expect(screen.getByLabelText('common.export')).toBeInTheDocument();
   });
 
   it('renders panel and preview in desktop mode', () => {
-    mockResponsive = { isDesktop: true, isLandscape: false, isMobile: false };
     render(<BaseplatePage />);
     expect(screen.getByTestId('panel')).toBeInTheDocument();
     expect(screen.getByTestId('preview')).toBeInTheDocument();
   });
 
-  it('exports a component function', () => {
-    expect(typeof BaseplatePage).toBe('function');
+  it('passes responsive props to ToolSwitcher on mobile', () => {
+    mockIsStandalone = true;
+    mockResponsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
+    render(<BaseplatePage />);
+    const switcher = screen.getByTestId('tool-switcher');
+    expect(switcher).toHaveAttribute('data-compact', 'true');
+    expect(switcher).toHaveAttribute('data-icon-only', 'true');
+  });
+
+  it('passes responsive props to ToolSwitcher on tablet', () => {
+    mockIsStandalone = true;
+    mockResponsive = { isDesktop: false, isLandscape: false, isMobile: false, isTablet: true };
+    render(<BaseplatePage />);
+    const switcher = screen.getByTestId('tool-switcher');
+    expect(switcher).toHaveAttribute('data-compact', 'false');
+    expect(switcher).toHaveAttribute('data-icon-only', 'true');
   });
 });

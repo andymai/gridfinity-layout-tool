@@ -56,6 +56,9 @@ export const ICON_PATHS = {
     'M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5',
   ],
   plusCircle: ['M12 6v6m0 0v6m0-6h6m-6 0H6'],
+  baseplate: [
+    'M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM3 9h18M3 15h18M9 3v18M15 3v18',
+  ],
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

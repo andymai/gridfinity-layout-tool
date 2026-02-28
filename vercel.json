@@ -85,6 +85,15 @@
       ]
     },
     {
+      "source": "/gridfinity-baseplate-generator",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/gridfinity-sizes",
       "headers": [
         {
@@ -164,6 +173,10 @@
     {
       "source": "/gridfinity-bin-generator",
       "destination": "/gridfinity-bin-generator/index.html"
+    },
+    {
+      "source": "/gridfinity-baseplate-generator",
+      "destination": "/gridfinity-baseplate-generator/index.html"
     },
     { "source": "/gridfinity-sizes", "destination": "/gridfinity-sizes/index.html" },
     { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
