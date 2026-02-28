@@ -10,10 +10,11 @@
 
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, ContactShadows } from '@react-three/drei';
+import { OrbitControls, Text } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
+import { FILAMENT_COLORS } from '@/core/constants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
@@ -22,7 +23,6 @@ import { Spinner } from '@/shared/components/preview/Spinner';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
 import { GhostPaddingOutline } from './GhostPaddingOutline';
-import { BaseplateEffects } from './BaseplateEffects';
 import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -309,18 +309,14 @@ function BaseplateMesh({ color }: { color: string }) {
   );
 }
 
-/** Three-point studio lighting (must be inside Canvas). */
+/** Three-point lighting matching the bin designer (must be inside Canvas). */
 function SceneLighting() {
   const colors = useThreeColors();
   return (
     <>
-      <hemisphereLight args={['#ffffff', colors.groundBounce, 0.45]} />
-      {/* Key light — warm, from upper-left */}
-      <directionalLight position={[-60, 80, 100]} intensity={1.1} color="#fff4e8" />
-      {/* Fill light — cool, from lower-right */}
-      <directionalLight position={[50, -50, 40]} intensity={0.2} color="#dce8ff" />
-      {/* Rim light — white, from behind-right for edge definition */}
-      <directionalLight position={[60, 60, -30]} intensity={0.35} color="#ffffff" />
+      <hemisphereLight args={['#ffffff', colors.groundBounce, 0.65]} />
+      <directionalLight position={[-50, 60, 80]} intensity={0.85} color="#fff8f0" />
+      <directionalLight position={[40, -40, 30]} intensity={0.15} color="#e0e8ff" />
     </>
   );
 }
@@ -673,24 +669,98 @@ const PRESETS: Array<{ key: CameraPreset; labelKey: string }> = [
   { key: 'isometric', labelKey: 'baseplate.isoView' },
 ];
 
+/** Shared color picker content used in both desktop dropdown and mobile bottom sheet */
+function ColorPickerContent({
+  previewColor,
+  onColorSelect,
+}: {
+  previewColor: string;
+  onColorSelect: (color: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-7 gap-1.5">
+      {FILAMENT_COLORS.map(({ color, name }) => (
+        <button
+          key={color}
+          type="button"
+          onClick={() => onColorSelect(color)}
+          className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+            previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
+          }`}
+          aria-label={`${name} color`}
+          aria-selected={previewColor === color}
+          role="option"
+        >
+          <span
+            className={`inline-block h-6 w-6 rounded border transition-transform hover:scale-105 ${
+              previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
+            }`}
+            style={{ backgroundColor: color }}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Floating toolbar overlay for camera presets and assembled/exploded toggle. */
 function BaseplatePreviewControls({
   activePreset,
   isSplit,
   splitViewMode,
+  filamentColor,
   onCameraPreset,
   onResetView,
   onViewModeChange,
+  onColorChange,
 }: {
   activePreset: CameraPreset | null;
   isSplit: boolean;
   splitViewMode: SplitViewMode;
+  filamentColor: string;
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;
   onViewModeChange: (mode: SplitViewMode) => void;
+  onColorChange: (color: string) => void;
 }) {
   const t = useTranslation();
   const { isDesktop } = useResponsive();
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const desktopPickerRef = useRef<HTMLDivElement>(null);
+
+  // Close picker on outside click (desktop only — mobile uses backdrop)
+  useEffect(() => {
+    if (!colorPickerOpen || !isDesktop) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (!desktopPickerRef.current?.contains(target)) {
+        setColorPickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [colorPickerOpen, isDesktop]);
+
+  // Close picker on Escape
+  useEffect(() => {
+    if (!colorPickerOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setColorPickerOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [colorPickerOpen]);
+
+  const handleColorSelect = useCallback(
+    (color: string) => {
+      onColorChange(color);
+      setColorPickerOpen(false);
+    },
+    [onColorChange]
+  );
 
   const viewModes: Array<{ value: SplitViewMode; labelKey: string }> = [
     { value: 'assembled', labelKey: 'baseplate.viewAssembled' },
@@ -699,7 +769,10 @@ function BaseplatePreviewControls({
 
   if (isDesktop) {
     return (
-      <div className="absolute right-2 top-2 hidden md:flex items-center gap-2">
+      <div
+        className="absolute right-2 top-2 hidden md:flex items-center gap-2"
+        ref={desktopPickerRef}
+      >
         {/* Assembled / Exploded toggle — separate pill (only when split) */}
         {isSplit && (
           <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
@@ -765,7 +838,37 @@ function BaseplatePreviewControls({
             <IconReset />
             <span>{t('common.reset')}</span>
           </button>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-stroke-subtle/50" />
+
+          {/* Color picker button */}
+          <button
+            type="button"
+            onClick={() => setColorPickerOpen((v) => !v)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            title={t('baseplate.filamentColor')}
+            aria-label={t('baseplate.filamentColor')}
+            aria-expanded={colorPickerOpen}
+          >
+            <span
+              className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
+              style={{ backgroundColor: filamentColor }}
+            />
+            <span>{t('common.color')}</span>
+          </button>
         </div>
+
+        {/* Color picker dropdown — outside overflow-hidden container */}
+        {colorPickerOpen && (
+          <div
+            className="absolute right-0 top-full z-50 mt-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
+            role="listbox"
+            aria-label={t('baseplate.filamentColor')}
+          >
+            <ColorPickerContent previewColor={filamentColor} onColorSelect={handleColorSelect} />
+          </div>
+        )}
       </div>
     );
   }
@@ -836,7 +939,40 @@ function BaseplatePreviewControls({
         >
           <IconReset />
         </button>
+
+        {/* Spacer to push color picker to right */}
+        <div className="flex-1" />
+
+        {/* Color picker */}
+        <button
+          type="button"
+          onClick={() => setColorPickerOpen((v) => !v)}
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+          title={t('baseplate.filamentColor')}
+          aria-label={t('baseplate.filamentColor')}
+          aria-expanded={colorPickerOpen}
+        >
+          <span
+            className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
+            style={{ backgroundColor: filamentColor }}
+          />
+        </button>
       </div>
+
+      {/* Mobile color picker — bottom sheet style overlay */}
+      {colorPickerOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- decorative backdrop, keyboard users dismiss via Escape */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => setColorPickerOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-surface-elevated p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl">
+            <div className="mx-auto mb-3 h-1 w-8 rounded-full bg-stroke-subtle/50" />
+            <p className="mb-3 text-sm font-medium text-content">{t('baseplate.filamentColor')}</p>
+            <div role="listbox" aria-label={t('baseplate.filamentColor')}>
+              <ColorPickerContent previewColor={filamentColor} onColorSelect={handleColorSelect} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -863,12 +999,10 @@ export function BaseplatePreview({
   paddingBack,
 }: BaseplatePreviewProps) {
   const t = useTranslation();
-  const colors = useThreeColors();
   const controlsRef = useRef<OrbitControlsType>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
-  const { isDesktop, isTouchDevice } = useResponsive();
+  const { isDesktop } = useResponsive();
   const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
-  const [isInteracting, setIsInteracting] = useState(false);
 
   const {
     wasmStatus,
@@ -926,18 +1060,21 @@ export function BaseplatePreview({
 
   const handleOrbitStart = useCallback(() => {
     setActivePreset(null);
-    setIsInteracting(true);
   }, []);
 
   const handleOrbitEnd = useCallback(() => {
-    setIsInteracting(false);
     invalidateRef.current?.();
   }, []);
 
+  const updateSetting = useSettingsStore((s) => s.updateSetting);
+  const handleColorChange = useCallback(
+    (color: string) => {
+      updateSetting('baseplateFilamentColor', color);
+    },
+    [updateSetting]
+  );
+
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
-  const outerW = width * gridUnitMm + paddingLeft + paddingRight;
-  const outerD = depth * gridUnitMm + paddingFront + paddingBack;
-  const shadowScale = Math.max(outerW, outerD) * 1.5;
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
   const isInitialLoading = !hasError && (!hasAnyMesh || wasmStatus !== 'ready');
@@ -977,18 +1114,6 @@ export function BaseplatePreview({
           paddingRight={paddingRight}
           paddingFront={paddingFront}
           paddingBack={paddingBack}
-        />
-
-        {/* Contact shadows — paused during orbit for performance */}
-        <ContactShadows
-          position={[0, 0, 0.02]}
-          opacity={0.25}
-          scale={shadowScale}
-          blur={4}
-          far={totalH * 2}
-          resolution={128}
-          color={colors.contactShadowColor}
-          frames={isInteracting ? 0 : Infinity}
         />
 
         {isSplit ? (
@@ -1047,8 +1172,6 @@ export function BaseplatePreview({
           onStart={handleOrbitStart}
           onEnd={handleOrbitEnd}
         />
-
-        <BaseplateEffects enabled={!isTouchDevice} />
       </Canvas>
 
       {/* Camera controls + view toggle overlay */}
@@ -1056,9 +1179,11 @@ export function BaseplatePreview({
         activePreset={activePreset}
         isSplit={isSplit}
         splitViewMode={splitViewMode}
+        filamentColor={filamentColor}
         onCameraPreset={handleCameraPreset}
         onResetView={handleResetView}
         onViewModeChange={setSplitViewMode}
+        onColorChange={handleColorChange}
       />
 
       {hasError && (
