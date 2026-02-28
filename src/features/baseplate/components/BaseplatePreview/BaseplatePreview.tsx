@@ -223,11 +223,11 @@ function BaseplateMesh({ color }: { color: string }) {
 
   useEffect(() => {
     if (geometry && prevGeoRef.current && prevGeoRef.current !== geometry) {
-      // Start crossfade from old to new
+      // Clone old geometries — originals will be disposed by useMeshGeometry cleanup
       fadeStartRef.current = performance.now();
       setFadeSnapshot({
-        oldGeo: prevGeoRef.current,
-        oldEdges: prevEdgesRef.current,
+        oldGeo: prevGeoRef.current.clone(),
+        oldEdges: prevEdgesRef.current?.clone() ?? null,
         oldNormals: prevNormalsRef.current,
       });
       setFadeOpacity(0);
@@ -250,7 +250,12 @@ function BaseplateMesh({ color }: { color: string }) {
 
     if (progress >= 1) {
       fadeStartRef.current = null;
-      setFadeSnapshot(null);
+      setFadeSnapshot((prev) => {
+        // Dispose cloned geometries now that fade is complete
+        prev?.oldGeo.dispose();
+        prev?.oldEdges?.dispose();
+        return null;
+      });
     }
   });
 

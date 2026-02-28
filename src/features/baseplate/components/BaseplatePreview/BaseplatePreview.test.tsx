@@ -25,6 +25,7 @@ vi.mock('three', () => ({
     setIndex: vi.fn(),
     computeVertexNormals: vi.fn(),
     dispose: vi.fn(),
+    clone: vi.fn().mockReturnThis(),
   })),
   Float32BufferAttribute: vi.fn(),
   BufferAttribute: vi.fn(),
@@ -129,13 +130,21 @@ describe('BaseplatePreview', () => {
     expect(typeof BaseplatePreview).toBe('function');
   });
 
-  it('renders ContactShadows via drei mock', async () => {
-    const { ContactShadows } = await import('@react-three/drei');
-    expect(ContactShadows).toBeDefined();
+  it('imports ContactShadows from drei for shadow rendering', async () => {
+    const drei = await import('@react-three/drei');
+    expect(drei.ContactShadows).toBeDefined();
   });
 
-  it('renders BaseplateEffects conditionally', async () => {
-    const { BaseplateEffects } = await import('./BaseplateEffects');
-    expect(BaseplateEffects).toBeDefined();
+  it('imports BaseplateEffects for post-processing', async () => {
+    const effects = await import('./BaseplateEffects');
+    expect(effects.BaseplateEffects).toBeDefined();
+  });
+
+  it('imports shared material props for consistent rendering', async () => {
+    const materialProps = await import('./materialProps');
+    expect(materialProps.MESH_MATERIAL_PROPS).toBeDefined();
+    expect(materialProps.MESH_MATERIAL_PROPS.roughness).toBe(0.55);
+    expect(materialProps.EDGE_MATERIAL_PROPS).toBeDefined();
+    expect(materialProps.EDGE_MATERIAL_PROPS.opacity).toBe(0.4);
   });
 });
