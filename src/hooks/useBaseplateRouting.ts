@@ -44,13 +44,14 @@ export function useBaseplateRouting() {
   }, []);
 
   /**
-   * Navigate to the baseplate page for a specific layout.
+   * Navigate to the baseplate page, optionally for a specific layout.
+   * When no layoutId is provided, navigates to /baseplate without query params.
    */
-  const navigateToBaseplate = useCallback((layoutId: string) => {
-    const url = `/baseplate?layoutId=${encodeURIComponent(layoutId)}`;
-    window.history.pushState({ layoutId }, '', url);
+  const navigateToBaseplate = useCallback((layoutId?: string) => {
+    const url = layoutId ? `/baseplate?layoutId=${encodeURIComponent(layoutId)}` : '/baseplate';
+    window.history.pushState(layoutId ? { layoutId } : null, '', url);
     setIsBaseplateRoute(true);
-    setLayoutIdFromUrl(layoutId);
+    setLayoutIdFromUrl(layoutId ?? null);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }, []);
 

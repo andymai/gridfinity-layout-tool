@@ -1408,6 +1408,8 @@
   "toolSwitcher.switchToDesigner": "Basculer vers le Concepteur de Bacs (Shift+D)",
   "toolSwitcher.switchToPlanner": "Basculer vers le Planificateur de Grille (Shift+D)",
   "toolSwitcher.toolSwitcher": "Sélecteur d'outils",
+  "toolSwitcher.baseplateGenerator": "Socle",
+  "toolSwitcher.switchToBaseplate": "Basculer vers le Générateur de Socles",
   "toolbar.3dView": "Vue 3D",
   "toolbar.clickToExitPaint": "Cliquer pour quitter le mode peinture",
   "toolbar.exitMoveMode": "Quitter le mode déplacement",

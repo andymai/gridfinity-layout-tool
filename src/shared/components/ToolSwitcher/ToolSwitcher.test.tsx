@@ -15,16 +15,27 @@ vi.mock('@/hooks/useDesignerRouting', () => ({
   }),
 }));
 
+const mockNavigateToBaseplate = vi.fn();
+let mockIsBaseplateRoute = false;
+
+vi.mock('@/hooks/useBaseplateRouting', () => ({
+  useBaseplateRouting: () => ({
+    isBaseplateRoute: mockIsBaseplateRoute,
+    navigateToBaseplate: mockNavigateToBaseplate,
+  }),
+}));
+
 describe('ToolSwitcher', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsDesignerRoute = false;
+    mockIsBaseplateRoute = false;
   });
 
   it('shows tablist', () => {
     render(<ToolSwitcher />);
     expect(screen.getByRole('tablist')).toBeInTheDocument();
-    expect(screen.getAllByRole('tab')).toHaveLength(2);
+    expect(screen.getAllByRole('tab')).toHaveLength(3);
   });
 
   it('has planner tab selected by default', () => {
@@ -32,6 +43,7 @@ describe('ToolSwitcher', () => {
     const tabs = screen.getAllByRole('tab');
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
     expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
+    expect(tabs[2]).toHaveAttribute('aria-selected', 'false');
   });
 
   it('has designer tab selected when on designer route', () => {
@@ -40,6 +52,16 @@ describe('ToolSwitcher', () => {
     const tabs = screen.getAllByRole('tab');
     expect(tabs[0]).toHaveAttribute('aria-selected', 'false');
     expect(tabs[1]).toHaveAttribute('aria-selected', 'true');
+    expect(tabs[2]).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('has baseplate tab selected when on baseplate route', () => {
+    mockIsBaseplateRoute = true;
+    render(<ToolSwitcher />);
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'false');
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
+    expect(tabs[2]).toHaveAttribute('aria-selected', 'true');
   });
 
   it('navigates to designer when clicking designer tab', async () => {
@@ -50,6 +72,16 @@ describe('ToolSwitcher', () => {
     await user.click(tabs[1]);
 
     expect(mockNavigateToDesigner).toHaveBeenCalledTimes(1);
+  });
+
+  it('navigates to baseplate when clicking baseplate tab', async () => {
+    const user = userEvent.setup();
+    render(<ToolSwitcher />);
+
+    const tabs = screen.getAllByRole('tab');
+    await user.click(tabs[2]);
+
+    expect(mockNavigateToBaseplate).toHaveBeenCalledTimes(1);
   });
 
   it('navigates to planner when clicking planner tab', async () => {
@@ -72,24 +104,27 @@ describe('ToolSwitcher', () => {
 
     expect(mockNavigateToPlanner).not.toHaveBeenCalled();
     expect(mockNavigateToDesigner).not.toHaveBeenCalled();
+    expect(mockNavigateToBaseplate).not.toHaveBeenCalled();
   });
 
   it('renders icons in tabs', () => {
     render(<ToolSwitcher />);
     const svgs = document.querySelectorAll('svg');
-    expect(svgs.length).toBeGreaterThanOrEqual(2);
+    expect(svgs.length).toBeGreaterThanOrEqual(3);
   });
 
   it('shows text labels by default', () => {
     render(<ToolSwitcher />);
     expect(screen.getByText('Grid Planner')).toBeInTheDocument();
     expect(screen.getByText('Bin Designer')).toBeInTheDocument();
+    expect(screen.getByText('Baseplate')).toBeInTheDocument();
   });
 
   it('hides text labels in iconOnly mode', () => {
     render(<ToolSwitcher iconOnly />);
     expect(screen.queryByText('Grid Planner')).not.toBeInTheDocument();
     expect(screen.queryByText('Bin Designer')).not.toBeInTheDocument();
+    expect(screen.queryByText('Baseplate')).not.toBeInTheDocument();
   });
 
   it('has accessible labels', () => {
@@ -117,6 +152,7 @@ describe('ToolSwitcher', () => {
 
     expect(mockNavigateToPlanner).not.toHaveBeenCalled();
     expect(mockNavigateToDesigner).not.toHaveBeenCalled();
+    expect(mockNavigateToBaseplate).not.toHaveBeenCalled();
   });
 
   it('shows title only on inactive tabs', () => {
@@ -124,5 +160,6 @@ describe('ToolSwitcher', () => {
     const tabs = screen.getAllByRole('tab');
     expect(tabs[0]).not.toHaveAttribute('title'); // active tab
     expect(tabs[1].getAttribute('title')).toContain('Switch to Bin Designer');
+    expect(tabs[2].getAttribute('title')).toContain('Switch to Baseplate Generator');
   });
 });

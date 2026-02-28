@@ -1408,6 +1408,8 @@
   "toolSwitcher.switchToDesigner": "Bytt til Bin Designer (Shift+D)",
   "toolSwitcher.switchToPlanner": "Bytt til Rutenettplanlegger (Shift+D)",
   "toolSwitcher.toolSwitcher": "Verktøyvelger",
+  "toolSwitcher.baseplateGenerator": "Bunnplate",
+  "toolSwitcher.switchToBaseplate": "Bytt til Bunnplate-generator",
   "toolbar.3dView": "3D-visning",
   "toolbar.clickToExitPaint": "Klikk for å avslutte malemodus",
   "toolbar.exitMoveMode": "Avslutt flyttemodus",

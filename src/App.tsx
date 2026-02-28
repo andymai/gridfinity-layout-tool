@@ -26,7 +26,6 @@ import {
   usePrefetchChunks,
 } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
-import { useFeatureFlag } from './hooks/useFeatureFlag';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
 import { downloadLayoutAsFile, reconcileLibraryAsync } from '@/core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
@@ -136,14 +135,12 @@ export default function App() {
   // Bin Designer route detection
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
 
-  // Baseplate Generator route detection (gated behind feature flag)
+  // Baseplate Generator route detection
   const { isBaseplateRoute } = useBaseplateRouting();
-  const baseplateEnabled = useFeatureFlag('baseplate_generator');
-  const isBaseplateActive = isBaseplateRoute && baseplateEnabled;
 
   // Command palette state (⌘K / Ctrl+K) — disabled on designer/baseplate routes
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
-    disabled: isDesignerRoute || isBaseplateActive,
+    disabled: isDesignerRoute || isBaseplateRoute,
   });
   const { isMobile, isTablet } = useResponsive();
 
@@ -241,7 +238,7 @@ export default function App() {
 
   // URL-based layout routing (bookmarkable URLs)
   // Skip URL manipulation when on designer/baseplate routes (they own their own URLs)
-  useLayoutRouting({ skip: isDesignerRoute || isBaseplateActive });
+  useLayoutRouting({ skip: isDesignerRoute || isBaseplateRoute });
 
   // PWA update detection and auto-reload
   usePWAUpdate();
@@ -348,7 +345,7 @@ export default function App() {
     }
 
     // Baseplate Generator route - lazy loaded
-    if (isBaseplateActive) {
+    if (isBaseplateRoute) {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.baseplate')} />}>
           <BaseplatePage />

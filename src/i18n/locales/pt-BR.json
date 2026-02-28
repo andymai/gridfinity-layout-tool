@@ -1408,6 +1408,8 @@
   "toolSwitcher.switchToDesigner": "Alternar para Designer de Bins (Shift+D)",
   "toolSwitcher.switchToPlanner": "Alternar para Planejador de Grade (Shift+D)",
   "toolSwitcher.toolSwitcher": "Alternador de Ferramentas",
+  "toolSwitcher.baseplateGenerator": "Base",
+  "toolSwitcher.switchToBaseplate": "Alternar para Gerador de Bases",
   "toolbar.3dView": "Visualização 3D",
   "toolbar.clickToExitPaint": "Clique para sair do modo pintura",
   "toolbar.exitMoveMode": "Sair do modo mover",

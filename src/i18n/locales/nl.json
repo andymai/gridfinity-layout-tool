@@ -1408,6 +1408,8 @@
   "toolSwitcher.switchToDesigner": "Schakel naar Bin-ontwerper (Shift+D)",
   "toolSwitcher.switchToPlanner": "Schakel naar Raster-planner (Shift+D)",
   "toolSwitcher.toolSwitcher": "Gereedschap wisselen",
+  "toolSwitcher.baseplateGenerator": "Basisplaat",
+  "toolSwitcher.switchToBaseplate": "Schakel naar Basisplaat-generator",
   "toolbar.3dView": "3D weergave",
   "toolbar.clickToExitPaint": "Klik om verfmodus te verlaten",
   "toolbar.exitMoveMode": "Verplaatsingsmodus verlaten",
