@@ -122,8 +122,8 @@ describe('BaseplatePreview', () => {
   it('imports shared material props for consistent rendering', async () => {
     const materialProps = await import('./materialProps');
     expect(materialProps.MESH_MATERIAL_PROPS).toBeDefined();
-    expect(materialProps.MESH_MATERIAL_PROPS.roughness).toBe(0.55);
+    expect(materialProps.MESH_MATERIAL_PROPS.roughness).toBe(0.45);
     expect(materialProps.EDGE_MATERIAL_PROPS).toBeDefined();
-    expect(materialProps.EDGE_MATERIAL_PROPS.opacity).toBe(0.4);
+    expect(materialProps.EDGE_MATERIAL_PROPS.color).toBe('#000000');
   });
 });

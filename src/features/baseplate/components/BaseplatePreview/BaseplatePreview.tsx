@@ -280,7 +280,7 @@ function BaseplateMesh({ color }: { color: string }) {
           </mesh>
           {fadeSnapshot.oldEdges && (
             <lineSegments geometry={fadeSnapshot.oldEdges} position={[0, 0, 0.1]} renderOrder={1}>
-              <lineBasicMaterial {...EDGE_MATERIAL_PROPS} opacity={0.4 * (1 - fadeOpacity)} />
+              <lineBasicMaterial {...EDGE_MATERIAL_PROPS} transparent opacity={1 - fadeOpacity} />
             </lineSegments>
           )}
         </>
@@ -301,7 +301,8 @@ function BaseplateMesh({ color }: { color: string }) {
         <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
           <lineBasicMaterial
             {...EDGE_MATERIAL_PROPS}
-            opacity={0.4 * (isFading ? fadeOpacity : 1)}
+            transparent={isFading}
+            opacity={isFading ? fadeOpacity : 1}
           />
         </lineSegments>
       )}

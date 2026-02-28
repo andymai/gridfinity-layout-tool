@@ -9,22 +9,17 @@ import * as THREE from 'three';
 
 /** Standard material settings shared by BaseplateMesh and PieceMesh. */
 export const MESH_MATERIAL_PROPS = {
-  roughness: 0.55,
+  roughness: 0.45,
   metalness: 0,
   side: THREE.DoubleSide,
-  emissiveIntensity: 0.1,
+  emissiveIntensity: 0.08,
   polygonOffset: true,
-  polygonOffsetFactor: 4,
-  polygonOffsetUnits: 8,
+  polygonOffsetFactor: 1,
+  polygonOffsetUnits: 1,
 } as const;
 
 /** Edge wireframe material settings shared across all mesh renderers. */
 export const EDGE_MATERIAL_PROPS = {
-  color: '#1a1a1a',
-  transparent: true,
-  opacity: 0.4,
+  color: '#000000',
   depthTest: true,
-  polygonOffset: true,
-  polygonOffsetFactor: -4,
-  polygonOffsetUnits: -8,
 } as const;
