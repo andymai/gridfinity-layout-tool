@@ -27,16 +27,28 @@ function getLayoutIdFromUrl(): string | null {
 }
 
 /**
+ * Check if the current URL indicates standalone mode.
+ * Returns true when on /baseplate with ?standalone=1.
+ */
+function getStandaloneFromUrl(): boolean {
+  if (!isBaseplatePath()) return false;
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('standalone') === '1';
+}
+
+/**
  * Hook that manages baseplate route detection and navigation.
  */
 export function useBaseplateRouting() {
   const [isBaseplateRoute, setIsBaseplateRoute] = useState(isBaseplatePath);
   const [layoutIdFromUrl, setLayoutIdFromUrl] = useState<string | null>(getLayoutIdFromUrl);
+  const [isStandalone, setIsStandalone] = useState(getStandaloneFromUrl);
 
   useEffect(() => {
     const handlePopState = () => {
       setIsBaseplateRoute(isBaseplatePath());
       setLayoutIdFromUrl(getLayoutIdFromUrl());
+      setIsStandalone(getStandaloneFromUrl());
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -69,6 +81,8 @@ export function useBaseplateRouting() {
     isBaseplateRoute,
     /** The layout ID parsed from the current URL */
     layoutIdFromUrl,
+    /** Whether the page was opened in standalone mode (?standalone=1) */
+    isStandalone,
     navigateToBaseplate,
     navigateBack,
   };

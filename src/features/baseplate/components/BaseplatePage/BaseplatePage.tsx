@@ -10,7 +10,7 @@
  * Reads layoutId from the URL query param to load the correct layout.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
@@ -18,6 +18,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { ArrowLeftIcon } from '@/design-system/Icon';
+import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
@@ -39,7 +40,7 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
 
 export function BaseplatePage() {
   const t = useTranslation();
-  const { isDesktop, isLandscape, isMobile } = useResponsive();
+  const { isDesktop, isLandscape, isMobile, isTablet } = useResponsive();
 
   const {
     drawerWidth,
@@ -69,7 +70,23 @@ export function BaseplatePage() {
 
   const { isExporting, canExport, exportProgress, downloadBaseplate } = useBaseplateExport();
   const { isOpening, openingSlicerId, openInSlicer } = useBaseplateSlicerOpen();
-  const { navigateBack } = useBaseplateRouting();
+  const { navigateBack, isStandalone } = useBaseplateRouting();
+  const setBaseplateParams = useLayoutStore((s) => s.setBaseplateParams);
+  const hasBaseplateParams = useLayoutStore((s) => s.layout.baseplateParams !== undefined);
+
+  // Standalone mode: set sensible defaults (sync OFF, 4x4 grid) on first mount
+  const standaloneInitRef = useRef(false);
+  useEffect(() => {
+    if (!isStandalone || standaloneInitRef.current) return;
+    standaloneInitRef.current = true;
+    if (hasBaseplateParams) return;
+    setBaseplateParams({
+      ...DEFAULT_BASEPLATE_PARAMS,
+      syncWithLayout: false,
+      baseplateWidth: 4,
+      baseplateDepth: 4,
+    });
+  }, [isStandalone, hasBaseplateParams, setBaseplateParams]);
 
   const exportDialogOpen = useBaseplatePageStore((s) => s.exportDialogOpen);
   const setExportDialogOpen = useBaseplatePageStore((s) => s.setExportDialogOpen);
@@ -133,18 +150,24 @@ export function BaseplatePage() {
       {/* Header */}
       <header className="flex h-12 items-center border-b border-stroke-subtle bg-surface-secondary px-4">
         <div className="flex items-center gap-3 min-w-0">
-          <button
-            onClick={navigateBack}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
-            aria-label={t('baseplate.backToLayout')}
-          >
-            <ArrowLeftIcon size="sm" />
-            <span className="hidden sm:inline">{t('baseplate.backToLayout')}</span>
-          </button>
+          {isStandalone ? (
+            <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
+          ) : (
+            <>
+              <button
+                onClick={navigateBack}
+                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
+                aria-label={t('baseplate.backToLayout')}
+              >
+                <ArrowLeftIcon size="sm" />
+                <span className="hidden sm:inline">{t('baseplate.backToLayout')}</span>
+              </button>
 
-          <div className="h-5 w-px bg-stroke-subtle" />
+              <div className="h-5 w-px bg-stroke-subtle" />
 
-          <h1 className="text-sm font-semibold text-content">{t('baseplate.pageTitle')}</h1>
+              <h1 className="text-sm font-semibold text-content">{t('baseplate.pageTitle')}</h1>
+            </>
+          )}
 
           <button
             onClick={() => setExportDialogOpen(true)}
@@ -233,7 +256,7 @@ export function BaseplatePage() {
         onDownload={handleDownload}
         exportProgress={exportProgress}
         splitBanner={
-          tiling?.isSplit && activeFormat === 'stl'
+          showSplitBanner
             ? {
                 message: t('baseplate.export.splitBanner', {
                   size: defaultPrintBedSize,
