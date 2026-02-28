@@ -285,4 +285,64 @@ describe('BaseplatePanel', () => {
       );
     });
   });
+
+  describe('padding schematic', () => {
+    it('renders all four padding steppers in spatial layout', () => {
+      render(<BaseplatePanel />);
+      expect(screen.getByLabelText('baseplate.paddingBack')).toBeInTheDocument();
+      expect(screen.getByLabelText('baseplate.paddingFront')).toBeInTheDocument();
+      expect(screen.getByLabelText('baseplate.paddingLeft')).toBeInTheDocument();
+      expect(screen.getByLabelText('baseplate.paddingRight')).toBeInTheDocument();
+    });
+
+    it('side stepper increment updates padding value', () => {
+      render(<BaseplatePanel />);
+      const incBtn = screen.getByLabelText('baseplate.paddingLeft increment');
+      fireEvent.click(incBtn);
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ paddingLeft: 1 })
+      );
+    });
+
+    it('side stepper decrement is disabled at minimum', () => {
+      render(<BaseplatePanel />);
+      const decBtn = screen.getByLabelText('baseplate.paddingLeft decrement');
+      expect(decBtn).toBeDisabled();
+      fireEvent.click(decBtn);
+      expect(mockSetBaseplateParams).not.toHaveBeenCalled();
+    });
+
+    it('side stepper input commits value on blur', () => {
+      render(<BaseplatePanel />);
+      const input = screen.getByLabelText('baseplate.paddingLeft');
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: '5.5' } });
+      fireEvent.blur(input);
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ paddingLeft: 5.5 })
+      );
+    });
+
+    it('side stepper Escape cancels edit without committing', () => {
+      render(<BaseplatePanel />);
+      const input = screen.getByLabelText('baseplate.paddingLeft');
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: '99' } });
+      fireEvent.keyDown(input, { key: 'Escape' });
+      expect(mockSetBaseplateParams).not.toHaveBeenCalled();
+    });
+
+    it('side stepper Enter commits exactly once', () => {
+      render(<BaseplatePanel />);
+      const input = screen.getByLabelText('baseplate.paddingRight');
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: '7' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      // Enter commits once, blur should not commit again
+      const calls = mockSetBaseplateParams.mock.calls.filter(
+        (c: unknown[]) => (c[0] as Record<string, number>).paddingRight === 7
+      );
+      expect(calls).toHaveLength(1);
+    });
+  });
 });

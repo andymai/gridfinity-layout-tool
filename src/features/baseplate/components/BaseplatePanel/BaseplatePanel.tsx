@@ -12,7 +12,7 @@
  * SegmentedControl) for consistency with the bin designer.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
@@ -461,6 +461,7 @@ const sideStepperBtnClass =
 function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
   const [localText, setLocalText] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const skipBlurCommit = useRef(false);
 
   const displayValue = Math.round(value * 10) / 10;
 
@@ -496,18 +497,21 @@ function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
           setIsFocused(true);
         }}
         onBlur={() => {
-          commit(localText);
+          if (!skipBlurCommit.current) {
+            commit(localText);
+          }
+          skipBlurCommit.current = false;
           setIsFocused(false);
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             commit(localText);
-            setIsFocused(false);
+            skipBlurCommit.current = true;
             e.currentTarget.blur();
           }
           if (e.key === 'Escape') {
             setLocalText(String(displayValue));
-            setIsFocused(false);
+            skipBlurCommit.current = true;
             e.currentTarget.blur();
           }
         }}
