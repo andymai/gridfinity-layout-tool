@@ -1,7 +1,5 @@
 /**
- * Tool switcher segmented control.
- *
- * Renders a segmented control to switch between Layout Planner, Bin Designer, and Baseplate Generator.
+ * Segmented control for switching between Layout, Bins, and Baseplate Generator.
  */
 
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
@@ -18,6 +16,37 @@ interface ToolSwitcherProps {
 
 type Tool = 'planner' | 'designer' | 'baseplate';
 
+interface ToolConfig {
+  id: Tool;
+  labelKey: 'toolSwitcher.layout' | 'toolSwitcher.binDesigner' | 'toolSwitcher.baseplateGenerator';
+  switchKey:
+    | 'toolSwitcher.switchToPlanner'
+    | 'toolSwitcher.switchToDesigner'
+    | 'toolSwitcher.switchToBaseplate';
+  iconPaths: readonly string[];
+}
+
+const TOOLS: ToolConfig[] = [
+  {
+    id: 'planner',
+    labelKey: 'toolSwitcher.layout',
+    switchKey: 'toolSwitcher.switchToPlanner',
+    iconPaths: ICON_PATHS.dashboard,
+  },
+  {
+    id: 'designer',
+    labelKey: 'toolSwitcher.binDesigner',
+    switchKey: 'toolSwitcher.switchToDesigner',
+    iconPaths: ICON_PATHS.cube,
+  },
+  {
+    id: 'baseplate',
+    labelKey: 'toolSwitcher.baseplateGenerator',
+    switchKey: 'toolSwitcher.switchToBaseplate',
+    iconPaths: ICON_PATHS.baseplate,
+  },
+];
+
 function getSegmentPadding(iconOnly: boolean, compact: boolean): string {
   if (iconOnly && compact) return 'p-1.5';
   if (iconOnly) return 'px-2 py-1';
@@ -31,9 +60,6 @@ function getIconSize(iconOnly: boolean, compact: boolean): string {
   return 'w-4 h-4';
 }
 
-/**
- * Renders a segmented control for switching between Layout Planner, Bin Designer, and Baseplate Generator.
- */
 export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcherProps) {
   const t = useTranslation();
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
@@ -74,51 +100,24 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         role="tablist"
         aria-label={t('toolSwitcher.activeTool')}
       >
-        <button
-          role="tab"
-          aria-selected={activeTool === 'planner'}
-          aria-label={t('toolSwitcher.gridEditor')}
-          onClick={() => handleSwitch('planner')}
-          title={activeTool !== 'planner' ? t('toolSwitcher.switchToPlanner') : undefined}
-          className={segmentClass('planner')}
-        >
-          <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {ICON_PATHS.dashboard.map((d) => (
-              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
-          </svg>
-          {!iconOnly && t('toolSwitcher.gridEditor')}
-        </button>
-        <button
-          role="tab"
-          aria-selected={activeTool === 'designer'}
-          aria-label={t('toolSwitcher.binDesigner')}
-          onClick={() => handleSwitch('designer')}
-          title={activeTool !== 'designer' ? t('toolSwitcher.switchToDesigner') : undefined}
-          className={segmentClass('designer')}
-        >
-          <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {ICON_PATHS.cube.map((d) => (
-              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
-          </svg>
-          {!iconOnly && t('toolSwitcher.binDesigner')}
-        </button>
-        <button
-          role="tab"
-          aria-selected={activeTool === 'baseplate'}
-          aria-label={t('toolSwitcher.baseplateGenerator')}
-          onClick={() => handleSwitch('baseplate')}
-          title={activeTool !== 'baseplate' ? t('toolSwitcher.switchToBaseplate') : undefined}
-          className={segmentClass('baseplate')}
-        >
-          <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {ICON_PATHS.baseplate.map((d) => (
-              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
-          </svg>
-          {!iconOnly && t('toolSwitcher.baseplateGenerator')}
-        </button>
+        {TOOLS.map(({ id, labelKey, switchKey, iconPaths }) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={activeTool === id}
+            aria-label={t(labelKey)}
+            onClick={() => handleSwitch(id)}
+            title={activeTool !== id ? t(switchKey) : undefined}
+            className={segmentClass(id)}
+          >
+            <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {iconPaths.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
+            </svg>
+            {!iconOnly && t(labelKey)}
+          </button>
+        ))}
       </div>
     </div>
   );

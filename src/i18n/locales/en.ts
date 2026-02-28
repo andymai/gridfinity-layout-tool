@@ -782,7 +782,7 @@ const en: Record<string, string> = {
   'help.shortcut.rotate': 'Rotate selected bin',
   'help.shortcut.selectAll': 'Select all bins on layer',
   'help.shortcut.togglePaintMode': 'Toggle paint mode',
-  'help.shortcut.toolSwitch': 'Switch Grid Planner / Bin Designer',
+  'help.shortcut.toolSwitch': 'Toggle between Layout and Bins',
   'help.shortcut.toggleHalfBin': 'Toggle half-bin mode',
 
   // Mouse interactions
@@ -1154,12 +1154,12 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Tool Switcher
   // ===========================================================================
-  'toolSwitcher.gridEditor': 'Grid Planner',
-  'toolSwitcher.binDesigner': 'Bin Designer',
+  'toolSwitcher.layout': 'Layout',
+  'toolSwitcher.binDesigner': 'Bins',
   'toolSwitcher.activeTool': 'Active tool',
   'toolSwitcher.gridfinityLayoutTool': 'Gridfinity Layout Tool',
   'toolSwitcher.toolSwitcher': 'Tool Switcher',
-  'toolSwitcher.switchToPlanner': 'Switch to Grid Planner (Shift+D)',
+  'toolSwitcher.switchToPlanner': 'Switch to Layout Editor (Shift+D)',
   'toolSwitcher.switchToDesigner': 'Switch to Bin Designer (Shift+D)',
   'toolSwitcher.baseplateGenerator': 'Baseplate',
   'toolSwitcher.switchToBaseplate': 'Switch to Baseplate Generator',
@@ -1640,7 +1640,7 @@ const en: Record<string, string> = {
   // Layout management commands
   'commandPalette.newLayout': 'New Layout',
   'commandPalette.duplicateLayout': 'Duplicate Layout',
-  'commandPalette.switchToDesigner': 'Switch to Bin Designer',
+  'commandPalette.switchToDesigner': 'Switch to Bins',
 
   // Tools commands (extended)
   'commandPalette.togglePaintMode': 'Toggle Paint Mode',
