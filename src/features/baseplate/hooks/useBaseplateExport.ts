@@ -1,12 +1,12 @@
 /**
  * Hook for exporting the baseplate as STL, STEP, or 3MF.
  *
- * Builds full baseplate params from layout store, calls the generation bridge,
- * and triggers a browser download. When the baseplate is split into multiple
- * pieces, exports a ZIP archive of individually-named files.
+ * Uses the shared ExportDialog configuration for filenames. When the baseplate
+ * is split into multiple pieces, exports in parallel via the worker pool with
+ * progress tracking. Falls back to sequential export if the pool is unavailable.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
@@ -18,17 +18,25 @@ import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
-import { useBaseplatePageStore } from '../store/baseplatePageStore';
+import { useBaseplatePageStore, getWorkerPool } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { pieceToBaseplateParams } from '../utils/splitPlanner';
+import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
 interface UseBaseplateExportReturn {
   readonly isExporting: boolean;
   readonly canExport: boolean;
-  readonly downloadBaseplate: (format: ExportFileFormat) => Promise<void>;
+  readonly exportProgress: { current: number; total: number } | null;
+  readonly downloadBaseplate: (format: ExportFileFormat, splitEnabled?: boolean) => Promise<void>;
 }
+
+const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
+  stl: '.stl',
+  step: '.step',
+  '3mf': '.3mf',
+};
 
 function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
   const parseResult = parseSTLBinary(stlData);
@@ -52,7 +60,6 @@ function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
 
 export function useBaseplateExport(): UseBaseplateExportReturn {
   const t = useTranslation();
-  const [isExporting, setIsExporting] = useState(false);
 
   const {
     drawerWidth,
@@ -75,20 +82,25 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
   const tiling = useBaseplatePageStore((s) => s.tiling);
   const mesh = useBaseplatePageStore((s) => s.generation.mesh);
   const pieceMeshes = useBaseplatePageStore((s) => s.pieceMeshes);
+  const exportFileNameConfig = useBaseplatePageStore((s) => s.exportFileNameConfig);
+  const isExporting = useBaseplatePageStore((s) => s.exportProgress !== null);
+  const exportProgress = useBaseplatePageStore((s) => s.exportProgress);
+  const setExportProgress = useBaseplatePageStore((s) => s.setExportProgress);
 
   const hasSingleMesh = mesh !== null && mesh.vertices !== null && mesh.error === null;
   const hasSplitMeshes = pieceMeshes.length > 0;
   const canExport = (hasSingleMesh || hasSplitMeshes) && getActiveBridge() !== null;
 
   const downloadBaseplate = useCallback(
-    async (format: ExportFileFormat) => {
+    async (format: ExportFileFormat, splitEnabled = true) => {
       const bridge = getActiveBridge();
       if (!bridge) {
         useToastStore.getState().addToast(t('baseplate.exportNotReady'), 'error');
         return;
       }
 
-      setIsExporting(true);
+      // Use export progress to signal exporting state — null means not exporting
+      setExportProgress({ current: 0, total: 1 });
 
       try {
         const fullParams = buildFullParams(
@@ -100,50 +112,104 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           fractionalEdgeY
         );
 
-        const baseName = `gridfinity-baseplate-${drawerWidth}x${drawerDepth}`;
-        const extensionMap: Record<ExportFileFormat, string> = {
-          '3mf': '.3mf',
-          step: '.step',
-          stl: '.stl',
-        };
-        const extension = extensionMap[format];
+        const baseName = generateBaseplateFileName(
+          toNamingParams(fullParams),
+          format,
+          exportFileNameConfig
+        );
+        const baseNameNoExt = baseName.replace(/\.[^.]+$/, '');
+        const extension = FORMAT_EXTENSIONS[format];
 
-        if (tiling?.isSplit) {
+        if (tiling?.isSplit && splitEnabled) {
           // Multi-piece ZIP export
           const bridgeFormat = format === '3mf' ? 'stl' : format;
-          const pieces: { data: ArrayBuffer; label: string }[] = [];
+          const pool = getWorkerPool();
+          const total = tiling.pieces.length;
+          setExportProgress({ current: 0, total });
 
-          for (const piece of tiling.pieces) {
-            const pieceParams = pieceToBaseplateParams(piece, fullParams);
-            const result = await bridge.exportBaseplate(pieceParams, bridgeFormat);
+          let pieces: { data: ArrayBuffer; label: string }[];
+
+          if (pool && !pool.isDestroyed && pool.size > 1) {
+            // Parallel export via worker pool
+            const pieceParamsArray = tiling.pieces.map((piece) =>
+              pieceToBaseplateParams(piece, fullParams)
+            );
+            const results = await pool.exportPieces(
+              pieceParamsArray,
+              bridgeFormat,
+              (completed, pieceTotal) => {
+                setExportProgress({ current: completed, total: pieceTotal });
+              }
+            );
 
             if (format === '3mf') {
-              const blob = convertStlTo3mf(result.data, `${baseName}_${piece.label}`);
-              pieces.push({ data: await blob.arrayBuffer(), label: piece.label });
+              const convertedPieces: { data: ArrayBuffer; label: string }[] = [];
+              for (let i = 0; i < results.length; i++) {
+                const blob = convertStlTo3mf(
+                  results[i].data,
+                  `${baseNameNoExt}_${tiling.pieces[i].label}`
+                );
+                convertedPieces.push({
+                  data: await blob.arrayBuffer(),
+                  label: tiling.pieces[i].label,
+                });
+              }
+              pieces = convertedPieces;
             } else {
-              pieces.push({ data: result.data, label: piece.label });
+              pieces = results.map((r, i) => ({
+                data: r.data,
+                label: tiling.pieces[i].label,
+              }));
+            }
+          } else {
+            // Sequential fallback
+            pieces = [];
+            for (let i = 0; i < tiling.pieces.length; i++) {
+              const piece = tiling.pieces[i];
+              setExportProgress({ current: i, total });
+              const pieceParams = pieceToBaseplateParams(piece, fullParams);
+              const result = await bridge.exportBaseplate(pieceParams, bridgeFormat);
+
+              if (format === '3mf') {
+                const blob = convertStlTo3mf(result.data, `${baseNameNoExt}_${piece.label}`);
+                pieces.push({ data: await blob.arrayBuffer(), label: piece.label });
+              } else {
+                pieces.push({ data: result.data, label: piece.label });
+              }
             }
           }
 
-          const zip = await packagePiecesAsZip(pieces, baseName, extension);
-          triggerDownload(zip, `${baseName}.zip`);
+          const zip = await packagePiecesAsZip(pieces, baseNameNoExt, extension);
+          triggerDownload(zip, `${baseNameNoExt}.zip`);
+
+          useToastStore
+            .getState()
+            .addToast(t('baseplate.export.splitSuccess', { count: total }), 'success');
         } else {
-          // Single piece
+          // Single piece export
           if (format === '3mf') {
             const stlResult = await bridge.exportBaseplate(fullParams, 'stl');
-            const blob = convertStlTo3mf(stlResult.data, baseName);
-            triggerDownload(blob, `${baseName}${extension}`);
+            const blob = convertStlTo3mf(stlResult.data, baseNameNoExt);
+            triggerDownload(blob, baseName);
           } else {
             const result = await bridge.exportBaseplate(fullParams, format);
             const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-            triggerDownload(blob, `${baseName}${extension}`);
+            triggerDownload(blob, baseName);
           }
+
+          setExportProgress({ current: 1, total: 1 });
+          useToastStore
+            .getState()
+            .addToast(t('baseplate.export.success', { format: format.toUpperCase() }), 'success');
         }
+
+        // Auto-close the export dialog after successful download
+        useBaseplatePageStore.getState().setExportDialogOpen(false);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Export failed';
         useToastStore.getState().addToast(message, 'error');
       } finally {
-        setIsExporting(false);
+        setExportProgress(null);
       }
     },
     [
@@ -155,12 +221,15 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       fractionalEdgeY,
       baseplateParams,
       tiling,
+      exportFileNameConfig,
+      setExportProgress,
     ]
   );
 
   return {
     isExporting,
     canExport,
+    exportProgress,
     downloadBaseplate,
   };
 }

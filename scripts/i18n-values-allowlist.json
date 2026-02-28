@@ -148,7 +148,9 @@
     "baseplate.sectionBase",
     "baseplate.sideView",
     "baseplate.connectorNubs",
-    "baseplate.connectorNubsHelp"
+    "baseplate.connectorNubsHelp",
+    "export.format",
+    "export.nameStyle.compact"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

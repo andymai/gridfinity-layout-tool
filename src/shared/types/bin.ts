@@ -7,6 +7,8 @@
  */
 export type {
   ExportFileFormat,
+  FileNameStyle,
+  ExportFileNameConfig,
   BinParams,
   BaseConfig,
   BaseStyle,

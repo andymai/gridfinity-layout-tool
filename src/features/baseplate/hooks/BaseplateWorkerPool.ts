@@ -12,7 +12,11 @@
  */
 
 import { GenerationBridge } from '@/shared/generation/bridge';
-import type { GenerationResult } from '@/shared/generation/bridge';
+import type {
+  GenerationResult,
+  BaseplateExportResult,
+  ExportFormat,
+} from '@/shared/generation/bridge';
 import type { BaseplateParams } from '@/shared/types/bin';
 
 /** Maximum number of pool workers (caps memory usage from parallel WASM instances) */
@@ -35,6 +39,7 @@ export class BaseplateWorkerPool {
    */
   async init(requestedSize: number): Promise<void> {
     if (this.destroyed) throw new Error('Pool has been destroyed');
+    if (this.bridges.length > 0) throw new Error('Pool already initialized');
 
     const size = Math.max(1, Math.min(requestedSize, MAX_POOL_SIZE));
 
@@ -96,6 +101,70 @@ export class BaseplateWorkerPool {
     // Sort back to original order
     allResults.sort((a, b) => a.index - b.index);
     return allResults.map((r) => r.result);
+  }
+
+  /**
+   * Export multiple baseplate pieces in parallel across pool workers.
+   * Same round-robin dispatch as generatePieces, but calls exportBaseplate per piece.
+   *
+   * @param pieces - Array of baseplate params for each piece
+   * @param format - Export format ('stl' or 'step')
+   * @param onProgress - Called after each piece completes
+   * @param signal - Optional AbortSignal for cancellation
+   */
+  async exportPieces(
+    pieces: readonly BaseplateParams[],
+    format: ExportFormat,
+    onProgress?: (completed: number, total: number) => void,
+    signal?: AbortSignal
+  ): Promise<Array<{ data: ArrayBuffer; index: number }>> {
+    if (this.destroyed) throw new Error('Pool has been destroyed');
+    if (this.bridges.length === 0) throw new Error('Pool not initialized');
+
+    const total = pieces.length;
+    let completed = 0;
+
+    interface ExportTask {
+      index: number;
+      fn: () => Promise<{ data: ArrayBuffer; index: number }>;
+    }
+
+    const tasks: ExportTask[] = pieces.map((params, index) => ({
+      index,
+      fn: async () => {
+        if (signal?.aborted) throw new DOMException('Export cancelled', 'AbortError');
+        const result: BaseplateExportResult = await this.bridges[
+          index % this.bridges.length
+        ].exportBaseplate(params, format);
+        completed++;
+        onProgress?.(completed, total);
+        return { data: result.data, index };
+      },
+    }));
+
+    // Group by bridge for sequential execution within each bridge
+    const bridgeGroups: ExportTask[][] = Array.from({ length: this.bridges.length }, () => []);
+    for (const task of tasks) {
+      bridgeGroups[task.index % this.bridges.length].push(task);
+    }
+
+    const allResults: Array<{ data: ArrayBuffer; index: number }> = [];
+    const groupPromises = bridgeGroups.map(async (group) => {
+      const results: Array<{ data: ArrayBuffer; index: number }> = [];
+      for (const task of group) {
+        if (signal?.aborted) throw new DOMException('Export cancelled', 'AbortError');
+        results.push(await task.fn());
+      }
+      return results;
+    });
+
+    const groupResults = await Promise.all(groupPromises);
+    for (const group of groupResults) {
+      allResults.push(...group);
+    }
+
+    allResults.sort((a, b) => a.index - b.index);
+    return allResults;
   }
 
   /** Number of active workers in the pool */

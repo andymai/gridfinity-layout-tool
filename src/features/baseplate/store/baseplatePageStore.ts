@@ -9,6 +9,8 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { BaseplateTiling } from '../types/tiling';
+import type { ExportFileNameConfig } from '@/shared/types/bin';
+import type { BaseplateWorkerPool } from '../hooks/BaseplateWorkerPool';
 
 type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
 type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
@@ -63,6 +65,13 @@ interface BaseplatePageState {
   /** Currently selected (sticky) piece label */
   selectedPieceLabel: string | null;
 
+  /** Whether the export dialog is open */
+  exportDialogOpen: boolean;
+  /** Export filename configuration */
+  exportFileNameConfig: ExportFileNameConfig;
+  /** Progress for multi-piece export: null when not exporting */
+  exportProgress: { current: number; total: number } | null;
+
   setGenerationStatus: (status: GenerationStatus) => void;
   setGenerationResult: (result: MeshResult) => void;
   setWasmStatus: (status: WasmStatus) => void;
@@ -73,6 +82,9 @@ interface BaseplatePageState {
   setSplitProgress: (progress: { current: number; total: number } | null) => void;
   setHoveredPieceLabel: (label: string | null) => void;
   setSelectedPieceLabel: (label: string | null) => void;
+  setExportDialogOpen: (open: boolean) => void;
+  setExportFileNameConfig: (config: ExportFileNameConfig) => void;
+  setExportProgress: (progress: { current: number; total: number } | null) => void;
 }
 
 export const useBaseplatePageStore = create<BaseplatePageState>()(
@@ -89,6 +101,9 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     splitProgress: null,
     hoveredPieceLabel: null,
     selectedPieceLabel: null,
+    exportDialogOpen: false,
+    exportFileNameConfig: { style: 'descriptive', customName: '', format: 'stl' },
+    exportProgress: null,
 
     setGenerationStatus: (status) => {
       set((state) => {
@@ -155,5 +170,35 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
         state.selectedPieceLabel = label;
       });
     },
+
+    setExportDialogOpen: (open) => {
+      set((state) => {
+        state.exportDialogOpen = open;
+      });
+    },
+
+    setExportFileNameConfig: (config) => {
+      set((state) => {
+        state.exportFileNameConfig = config;
+      });
+    },
+
+    setExportProgress: (progress) => {
+      set((state) => {
+        state.exportProgress = progress;
+      });
+    },
   }))
 );
+
+// ─── Worker Pool Ref (module-level, not in Zustand/Immer) ─────────────────
+
+let workerPoolRef: BaseplateWorkerPool | null = null;
+
+export function getWorkerPool(): BaseplateWorkerPool | null {
+  return workerPoolRef;
+}
+
+export function setWorkerPool(pool: BaseplateWorkerPool | null): void {
+  workerPoolRef = pool;
+}

@@ -1070,6 +1070,31 @@ const en: Record<string, string> = {
   'slicerOpen.opening': 'Opening...',
 
   // ===========================================================================
+  // Shared Export Dialog
+  // ===========================================================================
+  'export.format': 'Format',
+  'export.fileName': 'File Name',
+  'export.filenamePlaceholder': 'Enter filename',
+  'export.customFileName': 'Custom file name',
+  'export.nameStyle.descriptive': 'Descriptive',
+  'export.nameStyle.compact': 'Compact',
+  'export.nameStyle.custom': 'Custom',
+  'export.downloadFormat': 'Download {format}',
+  'export.exporting': 'Exporting...',
+  'export.noMeshWarning': 'Generate a mesh first to enable export',
+  'export.openInSlicer': 'Open in Slicer',
+  'export.progressLabel': 'Exporting piece {current} of {total}',
+
+  // Baseplate-specific export keys
+  'baseplate.export.success': '{format} baseplate exported successfully',
+  'baseplate.export.splitSuccess': 'Baseplate exported ({count} pieces)',
+  'baseplate.export.splitBanner':
+    'Baseplate exceeds {size}mm print bed — will export as {count} pieces',
+  'baseplate.export.enableSplit': 'Split into pieces',
+  'baseplate.export.threeDModel': '3D Model',
+  'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
+
+  // ===========================================================================
   // Drawer Settings
   // ===========================================================================
 
@@ -1295,7 +1320,6 @@ const en: Record<string, string> = {
   'binDesigner.interior.solid.description': 'Top-cut tool-shaped recesses',
   'binDesigner.resetView': 'Reset view (R)',
   'binDesigner.toggleWireframe': 'Toggle wireframe (W)',
-  'binDesigner.filenamePlaceholder': 'Enter filename',
   'binDesigner.shareDesign': 'Share Design',
   'binDesigner.createShareLink': 'Create Share Link',
   'binDesigner.loadSharedDesign': 'Load Shared Design',
@@ -1307,7 +1331,6 @@ const en: Record<string, string> = {
   'binDesigner.columns': 'Columns',
   'binDesigner.compartments': 'compartments',
   'binDesigner.copied': 'Copied!',
-  'binDesigner.customFileName': 'Custom file name',
   'binDesigner.designName': 'Design name',
   'binDesigner.designs': 'Designs',
   'binDesigner.dismissTouchHints': 'Dismiss touch hints',
@@ -1317,9 +1340,6 @@ const en: Record<string, string> = {
   'binDesigner.exportBinAsStl': 'Export bin as STL',
   'binDesigner.exporting': 'Exporting...',
   'binDesigner.exportFailed': 'Export failed — please try again',
-  'binDesigner.openInSlicer': 'Open in Slicer',
-  'binDesigner.fileName': 'File Name',
-  'binDesigner.format': 'Format',
   'binDesigner.generateAMeshFirstToEnableExport': 'Generate a mesh first to enable export',
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',
@@ -1351,9 +1371,6 @@ const en: Record<string, string> = {
   'binDesigner.previewColorOptions': 'Preview color options',
   'binDesigner.printBedTooltip':
     'Your printer bed size. Bins larger than this will offer split export.',
-  'binDesigner.nameStyle.descriptive': 'Descriptive',
-  'binDesigner.nameStyle.compact': 'Compact',
-  'binDesigner.nameStyle.custom': 'Custom',
   'binDesigner.estimate.filament': 'Filament',
   'binDesigner.estimate.weight': 'Weight',
   'binDesigner.estimate.time': 'Time',
