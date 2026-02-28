@@ -1475,6 +1475,7 @@ const en: Record<string, string> = {
   'baseplate.syncWithLayout': 'Synced with layout',
   'baseplate.gridWidth': 'Width',
   'baseplate.gridDepth': 'Depth',
+  'baseplate.filamentColor': 'Filament color',
 
   // ===========================================================================
   // Collaboration

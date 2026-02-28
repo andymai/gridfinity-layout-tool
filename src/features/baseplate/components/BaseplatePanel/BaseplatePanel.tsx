@@ -5,8 +5,7 @@
  * 1. Hero dimensions strip (total mm primary, grid context secondary — always visible)
  * 2. Fit to Drawer: per-side padding steppers
  * 3. Base: magnet holes toggle with customize expand
- * 4. View: inline strip with assembled/exploded toggle + mini-map (conditional on split)
- * 5. Print Settings: grid unit, print bed size (rarely changed)
+ * 4. Print Settings: grid unit, print bed size (rarely changed)
  *
  * Uses shared components (StickyGroupHeader, FeatureToggle, SliderInput,
  * SegmentedControl) for consistency with the bin designer.
@@ -273,7 +272,7 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* 5. Split pieces mini-map — only when baseplate is split */}
+        {/* 6. Split pieces mini-map — only when baseplate is split */}
         {tiling?.isSplit && (
           <SplitViewStrip
             tiling={tiling}

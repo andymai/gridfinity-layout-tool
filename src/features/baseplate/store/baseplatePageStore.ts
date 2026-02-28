@@ -97,7 +97,7 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     wasmStatus: 'unloaded',
     tiling: null,
     pieceMeshes: [],
-    splitViewMode: 'assembled',
+    splitViewMode: 'exploded',
     splitProgress: null,
     hoveredPieceLabel: null,
     selectedPieceLabel: null,

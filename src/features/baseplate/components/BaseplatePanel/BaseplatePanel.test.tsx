@@ -41,6 +41,16 @@ const { useLayoutStore } = await import('@/core/store/layout');
 (useLayoutStore as unknown as { getState: () => typeof mockLayoutState }).getState = () =>
   mockLayoutState;
 
+// Mock settings store (for filament color picker)
+const mockUpdateSetting = vi.fn();
+vi.mock('@/core/store', () => ({
+  useSettingsStore: (selector: (state: Record<string, unknown>) => unknown) =>
+    selector({
+      settings: { baseplateFilamentColor: '#d4d8dc' },
+      updateSetting: mockUpdateSetting,
+    }),
+}));
+
 // Mock half-bin mode store
 let mockHalfBinMode = false;
 vi.mock('@/core/store/halfBinMode', () => ({

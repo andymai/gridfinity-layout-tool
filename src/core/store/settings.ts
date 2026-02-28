@@ -266,6 +266,9 @@ export interface UserSettings {
   /** Override to reduce animations and transitions. */
   reduceMotion: boolean;
 
+  /** Filament color for the baseplate 3D preview. */
+  baseplateFilamentColor: string;
+
   /**
    * One-time UI hints that have been dismissed.
    * Replaces individual localStorage keys for hint tracking.
@@ -326,6 +329,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
   accentColor: 'amber',
   uiDensity: 'default',
   reduceMotion: false,
+
+  // Baseplate 3D preview
+  baseplateFilamentColor: '#d4d8dc',
 
   // Dismissed hints
   dismissedHints: [],

@@ -18,10 +18,14 @@ const vertexShader = /* glsl */ `
 
 const fragmentShader = /* glsl */ `
   uniform vec3 colorTop;
+  uniform vec3 colorMid;
   uniform vec3 colorBottom;
   varying vec2 vUv;
   void main() {
-    gl_FragColor = vec4(mix(colorBottom, colorTop, vUv.y), 1.0);
+    float lower = smoothstep(0.0, 0.45, vUv.y);
+    float upper = smoothstep(0.45, 1.0, vUv.y);
+    vec3 color = mix(mix(colorBottom, colorMid, lower), colorTop, upper);
+    gl_FragColor = vec4(color, 1.0);
   }
 `;
 
@@ -38,12 +42,13 @@ export function GradientBackground() {
       fragmentShader,
       uniforms: {
         colorTop: { value: new THREE.Color(colors.gradientTop) },
+        colorMid: { value: new THREE.Color(colors.gradientMid) },
         colorBottom: { value: new THREE.Color(colors.gradientBottom) },
       },
       depthWrite: false,
       depthTest: false,
     });
-  }, [colors.gradientTop, colors.gradientBottom]);
+  }, [colors.gradientTop, colors.gradientMid, colors.gradientBottom]);
 
   // Dispose shader material on unmount or when recreated
   useEffect(() => {

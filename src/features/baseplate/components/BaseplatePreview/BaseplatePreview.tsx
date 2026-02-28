@@ -12,9 +12,9 @@ import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import { Vector3, Spherical } from 'three';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
+import { FILAMENT_COLORS } from '@/core/constants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
@@ -23,9 +23,11 @@ import { Spinner } from '@/shared/components/preview/Spinner';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
 import { GhostPaddingOutline } from './GhostPaddingOutline';
+import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import type { SplitViewMode } from '../../store/baseplatePageStore';
 
@@ -46,6 +48,11 @@ const TRANSITION_DURATION = 500;
 
 /** Margin factor: how much of the viewport the baseplate should fill */
 const FRAME_FILL = 0.65;
+
+/** Cubic ease-out used for all preview animations (crossfade, camera transitions). */
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
 
 /**
  * Calculate ideal camera distance to frame the baseplate including padding.
@@ -184,10 +191,15 @@ function DimensionLabels({
 
 // ─── Mesh Rendering ─────────────────────────────────────────────────────────
 
-/**
- * Renders the baseplate mesh from the page store.
- * Mesh is positioned at origin -- pockets align with the FootprintGrid.
- */
+/** Duration of geometry crossfade in milliseconds. */
+const CROSSFADE_MS = 300;
+
+interface FadeSnapshot {
+  oldGeo: THREE.BufferGeometry;
+  oldEdges: THREE.BufferGeometry | null;
+  oldNormals: boolean;
+}
+
 function BaseplateMesh({ color }: { color: string }) {
   const { invalidate } = useThree();
   const meshArrays = useBaseplatePageStore(
@@ -201,36 +213,96 @@ function BaseplateMesh({ color }: { color: string }) {
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(meshArrays);
 
+  // Crossfade: fade snapshot is state (safe for render), timing is ref (for useFrame)
+  const prevGeoRef = useRef<THREE.BufferGeometry | null>(null);
+  const prevEdgesRef = useRef<THREE.BufferGeometry | null>(null);
+  const prevNormalsRef = useRef(false);
+  const fadeStartRef = useRef<number | null>(null);
+  const [fadeSnapshot, setFadeSnapshot] = useState<FadeSnapshot | null>(null);
+  const [fadeOpacity, setFadeOpacity] = useState(1);
+
   useEffect(() => {
+    if (geometry && prevGeoRef.current && prevGeoRef.current !== geometry) {
+      // Clone old geometries — originals will be disposed by useMeshGeometry cleanup
+      fadeStartRef.current = performance.now();
+      setFadeSnapshot({
+        oldGeo: prevGeoRef.current.clone(),
+        oldEdges: prevEdgesRef.current?.clone() ?? null,
+        oldNormals: prevNormalsRef.current,
+      });
+      setFadeOpacity(0);
+    }
+    prevGeoRef.current = geometry;
+    prevEdgesRef.current = edgesGeometry;
+    prevNormalsRef.current = hasPrecomputedNormals;
     invalidate();
-  }, [geometry, color, invalidate]);
+  }, [geometry, edgesGeometry, hasPrecomputedNormals, color, invalidate]);
+
+  useFrame(() => {
+    if (fadeStartRef.current === null) return;
+
+    const elapsed = performance.now() - fadeStartRef.current;
+    const progress = Math.min(elapsed / CROSSFADE_MS, 1);
+    const eased = easeOutCubic(progress);
+
+    setFadeOpacity(eased);
+    invalidate();
+
+    if (progress >= 1) {
+      fadeStartRef.current = null;
+      setFadeSnapshot((prev) => {
+        // Dispose cloned geometries now that fade is complete
+        prev?.oldGeo.dispose();
+        prev?.oldEdges?.dispose();
+        return null;
+      });
+    }
+  });
 
   if (!geometry) return null;
 
+  const isFading = fadeSnapshot !== null;
+
   return (
     <>
+      {/* Fading-out old geometry during crossfade */}
+      {fadeSnapshot && (
+        <>
+          <mesh geometry={fadeSnapshot.oldGeo} position={[0, 0, 0.1]}>
+            <meshStandardMaterial
+              {...MESH_MATERIAL_PROPS}
+              color={color}
+              emissive={color}
+              flatShading={!fadeSnapshot.oldNormals}
+              transparent
+              opacity={1 - fadeOpacity}
+            />
+          </mesh>
+          {fadeSnapshot.oldEdges && (
+            <lineSegments geometry={fadeSnapshot.oldEdges} position={[0, 0, 0.1]} renderOrder={1}>
+              <lineBasicMaterial {...EDGE_MATERIAL_PROPS} transparent opacity={1 - fadeOpacity} />
+            </lineSegments>
+          )}
+        </>
+      )}
+
+      {/* Current geometry — fading in during crossfade, opaque otherwise */}
       <mesh geometry={geometry} position={[0, 0, 0.1]}>
         <meshStandardMaterial
+          {...MESH_MATERIAL_PROPS}
           color={color}
-          roughness={0.45}
-          metalness={0}
-          side={THREE.DoubleSide}
           emissive={color}
-          emissiveIntensity={0.08}
           flatShading={!hasPrecomputedNormals}
-          polygonOffset
-          polygonOffsetFactor={4}
-          polygonOffsetUnits={8}
+          transparent={isFading}
+          opacity={fadeOpacity}
         />
       </mesh>
       {edgesGeometry && (
         <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
           <lineBasicMaterial
-            color="#000000"
-            depthTest
-            polygonOffset
-            polygonOffsetFactor={-4}
-            polygonOffsetUnits={-8}
+            {...EDGE_MATERIAL_PROPS}
+            transparent={isFading}
+            opacity={isFading ? fadeOpacity : 1}
           />
         </lineSegments>
       )}
@@ -238,7 +310,7 @@ function BaseplateMesh({ color }: { color: string }) {
   );
 }
 
-/** Theme-aware lighting (must be inside Canvas). */
+/** Three-point lighting matching the bin designer (must be inside Canvas). */
 function SceneLighting() {
   const colors = useThreeColors();
   return (
@@ -264,7 +336,6 @@ function CameraController({
   paddingRight,
   paddingFront,
   paddingBack,
-  onOrbitStart,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
   invalidateRef: React.RefObject<(() => void) | null>;
@@ -275,7 +346,6 @@ function CameraController({
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
-  onOrbitStart?: () => void;
 }) {
   const { camera, invalidate } = useThree();
   const initializedRef = useRef(false);
@@ -285,19 +355,9 @@ function CameraController({
     invalidateRef.current = invalidate;
   }, [invalidate, invalidateRef]);
 
-  // Wire up orbit start callback
-  useEffect(() => {
-    const controls = controlsRef.current;
-    if (!controls || !onOrbitStart) return;
-    controls.addEventListener('start', onOrbitStart);
-    return () => {
-      controls.removeEventListener('start', onOrbitStart);
-    };
-  }, [controlsRef, onOrbitStart]);
-
   const fov = 45;
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
-  const binCenter = useMemo(() => new Vector3(0, 0, totalH / 2), [totalH]);
+  const binCenter = useMemo(() => new THREE.Vector3(0, 0, totalH / 2), [totalH]);
   const idealDistance = useMemo(
     () =>
       calculateIdealDistance(
@@ -314,8 +374,8 @@ function CameraController({
   );
 
   const animRef = useRef<{
-    startPos: Vector3;
-    targetPos: Vector3;
+    startPos: THREE.Vector3;
+    targetPos: THREE.Vector3;
     startTime: number;
     duration: number;
   } | null>(null);
@@ -323,7 +383,7 @@ function CameraController({
 
   useEffect(() => {
     if (!initializedRef.current) {
-      const direction = new Vector3(0.6, -0.6, 0.5).normalize();
+      const direction = new THREE.Vector3(0.6, -0.6, 0.5).normalize();
       camera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
       camera.up.set(0, 0, 1);
       camera.lookAt(binCenter);
@@ -368,7 +428,7 @@ function CameraController({
 
     const elapsed = performance.now() - anim.startTime;
     const progress = Math.min(elapsed / anim.duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
+    const eased = easeOutCubic(progress);
 
     camera.position.lerpVectors(anim.startPos, anim.targetPos, eased);
     camera.lookAt(binCenter);
@@ -411,7 +471,7 @@ function useBaseplatePresetTransition(
       const camera = controls.object;
       const fov = 45;
       const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
-      const binCenter = new Vector3(0, 0, totalH / 2);
+      const binCenter = new THREE.Vector3(0, 0, totalH / 2);
       const idealDistance = calculateIdealDistance(
         width,
         depth,
@@ -423,15 +483,19 @@ function useBaseplatePresetTransition(
         fov
       );
 
-      const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
+      const direction = new THREE.Vector3(...CAMERA_PRESETS[preset]).normalize();
       const targetPosition = direction.multiplyScalar(idealDistance).add(binCenter);
 
       const startPosition = camera.position.clone();
       const target = binCenter.clone();
 
       // Convert to spherical for smooth arc interpolation
-      const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
-      const targetSpherical = new Spherical().setFromVector3(targetPosition.clone().sub(target));
+      const startSpherical = new THREE.Spherical().setFromVector3(
+        startPosition.clone().sub(target)
+      );
+      const targetSpherical = new THREE.Spherical().setFromVector3(
+        targetPosition.clone().sub(target)
+      );
 
       const startTime = performance.now();
 
@@ -442,15 +506,15 @@ function useBaseplatePresetTransition(
       const animate = () => {
         const elapsed = performance.now() - startTime;
         const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
+        const eased = easeOutCubic(progress);
 
-        const currentSpherical = new Spherical(
+        const currentSpherical = new THREE.Spherical(
           startSpherical.radius + (targetSpherical.radius - startSpherical.radius) * eased,
           startSpherical.phi + (targetSpherical.phi - startSpherical.phi) * eased,
           startSpherical.theta + (targetSpherical.theta - startSpherical.theta) * eased
         );
 
-        const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
+        const newPosition = new THREE.Vector3().setFromSpherical(currentSpherical).add(target);
         camera.position.copy(newPosition);
         camera.up.set(0, 0, 1);
         camera.lookAt(target);
@@ -606,24 +670,98 @@ const PRESETS: Array<{ key: CameraPreset; labelKey: string }> = [
   { key: 'isometric', labelKey: 'baseplate.isoView' },
 ];
 
+/** Shared color picker content used in both desktop dropdown and mobile bottom sheet */
+function ColorPickerContent({
+  previewColor,
+  onColorSelect,
+}: {
+  previewColor: string;
+  onColorSelect: (color: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-7 gap-1.5">
+      {FILAMENT_COLORS.map(({ color, name }) => (
+        <button
+          key={color}
+          type="button"
+          onClick={() => onColorSelect(color)}
+          className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+            previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
+          }`}
+          aria-label={`${name} color`}
+          aria-selected={previewColor === color}
+          role="option"
+        >
+          <span
+            className={`inline-block h-6 w-6 rounded border transition-transform hover:scale-105 ${
+              previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
+            }`}
+            style={{ backgroundColor: color }}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Floating toolbar overlay for camera presets and assembled/exploded toggle. */
 function BaseplatePreviewControls({
   activePreset,
   isSplit,
   splitViewMode,
+  filamentColor,
   onCameraPreset,
   onResetView,
   onViewModeChange,
+  onColorChange,
 }: {
   activePreset: CameraPreset | null;
   isSplit: boolean;
   splitViewMode: SplitViewMode;
+  filamentColor: string;
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;
   onViewModeChange: (mode: SplitViewMode) => void;
+  onColorChange: (color: string) => void;
 }) {
   const t = useTranslation();
   const { isDesktop } = useResponsive();
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const desktopPickerRef = useRef<HTMLDivElement>(null);
+
+  // Close picker on outside click (desktop only — mobile uses backdrop)
+  useEffect(() => {
+    if (!colorPickerOpen || !isDesktop) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (!desktopPickerRef.current?.contains(target)) {
+        setColorPickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [colorPickerOpen, isDesktop]);
+
+  // Close picker on Escape
+  useEffect(() => {
+    if (!colorPickerOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setColorPickerOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [colorPickerOpen]);
+
+  const handleColorSelect = useCallback(
+    (color: string) => {
+      onColorChange(color);
+      setColorPickerOpen(false);
+    },
+    [onColorChange]
+  );
 
   const viewModes: Array<{ value: SplitViewMode; labelKey: string }> = [
     { value: 'assembled', labelKey: 'baseplate.viewAssembled' },
@@ -632,7 +770,10 @@ function BaseplatePreviewControls({
 
   if (isDesktop) {
     return (
-      <div className="absolute right-2 top-2 hidden md:flex items-center gap-2">
+      <div
+        className="absolute right-2 top-2 hidden md:flex items-center gap-2"
+        ref={desktopPickerRef}
+      >
         {/* Assembled / Exploded toggle — separate pill (only when split) */}
         {isSplit && (
           <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
@@ -698,7 +839,37 @@ function BaseplatePreviewControls({
             <IconReset />
             <span>{t('common.reset')}</span>
           </button>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-stroke-subtle/50" />
+
+          {/* Color picker button */}
+          <button
+            type="button"
+            onClick={() => setColorPickerOpen((v) => !v)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            title={t('baseplate.filamentColor')}
+            aria-label={t('baseplate.filamentColor')}
+            aria-expanded={colorPickerOpen}
+          >
+            <span
+              className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
+              style={{ backgroundColor: filamentColor }}
+            />
+            <span>{t('common.color')}</span>
+          </button>
         </div>
+
+        {/* Color picker dropdown — outside overflow-hidden container */}
+        {colorPickerOpen && (
+          <div
+            className="absolute right-0 top-full z-50 mt-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
+            role="listbox"
+            aria-label={t('baseplate.filamentColor')}
+          >
+            <ColorPickerContent previewColor={filamentColor} onColorSelect={handleColorSelect} />
+          </div>
+        )}
       </div>
     );
   }
@@ -769,7 +940,40 @@ function BaseplatePreviewControls({
         >
           <IconReset />
         </button>
+
+        {/* Spacer to push color picker to right */}
+        <div className="flex-1" />
+
+        {/* Color picker */}
+        <button
+          type="button"
+          onClick={() => setColorPickerOpen((v) => !v)}
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+          title={t('baseplate.filamentColor')}
+          aria-label={t('baseplate.filamentColor')}
+          aria-expanded={colorPickerOpen}
+        >
+          <span
+            className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
+            style={{ backgroundColor: filamentColor }}
+          />
+        </button>
       </div>
+
+      {/* Mobile color picker — bottom sheet style overlay */}
+      {colorPickerOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- decorative backdrop, keyboard users dismiss via Escape */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => setColorPickerOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-surface-elevated p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl">
+            <div className="mx-auto mb-3 h-1 w-8 rounded-full bg-stroke-subtle/50" />
+            <p className="mb-3 text-sm font-medium text-content">{t('baseplate.filamentColor')}</p>
+            <div role="listbox" aria-label={t('baseplate.filamentColor')}>
+              <ColorPickerContent previewColor={filamentColor} onColorSelect={handleColorSelect} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -786,8 +990,6 @@ interface BaseplatePreviewProps {
   paddingBack: number;
 }
 
-const DEFAULT_COLOR = '#d4d8dc';
-
 export function BaseplatePreview({
   width,
   depth,
@@ -801,6 +1003,7 @@ export function BaseplatePreview({
   const controlsRef = useRef<OrbitControlsType>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
   const { isDesktop } = useResponsive();
+  const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
 
   const {
     wasmStatus,
@@ -860,6 +1063,18 @@ export function BaseplatePreview({
     setActivePreset(null);
   }, []);
 
+  const handleOrbitEnd = useCallback(() => {
+    invalidateRef.current?.();
+  }, []);
+
+  const updateSetting = useSettingsStore((s) => s.updateSetting);
+  const handleColorChange = useCallback(
+    (color: string) => {
+      updateSetting('baseplateFilamentColor', color);
+    },
+    [updateSetting]
+  );
+
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
@@ -875,7 +1090,7 @@ export function BaseplatePreview({
       <Canvas
         frameloop="demand"
         camera={{
-          position: new Vector3(100, -100, 80),
+          position: new THREE.Vector3(100, -100, 80),
           fov: 45,
           near: 0.1,
           far: 2000,
@@ -900,7 +1115,6 @@ export function BaseplatePreview({
           paddingRight={paddingRight}
           paddingFront={paddingFront}
           paddingBack={paddingBack}
-          onOrbitStart={handleOrbitStart}
         />
 
         {isSplit ? (
@@ -910,7 +1124,7 @@ export function BaseplatePreview({
             gridUnitMm={gridUnitMm}
           />
         ) : (
-          <BaseplateMesh color={DEFAULT_COLOR} />
+          <BaseplateMesh color={filamentColor} />
         )}
 
         {/* Ghost outline only in assembled mode — exploded scatters pieces beyond slab bounds */}
@@ -956,6 +1170,8 @@ export function BaseplatePreview({
           maxPolarAngle={Math.PI * 0.85}
           minPolarAngle={Math.PI * 0.05}
           enablePan={isDesktop}
+          onStart={handleOrbitStart}
+          onEnd={handleOrbitEnd}
         />
       </Canvas>
 
@@ -964,9 +1180,11 @@ export function BaseplatePreview({
         activePreset={activePreset}
         isSplit={isSplit}
         splitViewMode={splitViewMode}
+        filamentColor={filamentColor}
         onCameraPreset={handleCameraPreset}
         onResetView={handleResetView}
         onViewModeChange={setSplitViewMode}
+        onColorChange={handleColorChange}
       />
 
       {hasError && (
