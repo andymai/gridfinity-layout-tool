@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.42.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.42.0...gridfinity-layout-tool-v3.42.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* **e2e:** update Playwright tests for current UI state ([#946](https://github.com/andymai/gridfinity-layout-tool/issues/946)) ([063131a](https://github.com/andymai/gridfinity-layout-tool/commit/063131a9099f8a53ccc3c334173f7c8176ad86e8))
+
 ## [3.42.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.41.0...gridfinity-layout-tool-v3.42.0) (2026-03-01)
 
 
