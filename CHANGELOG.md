@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.44.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.43.0...gridfinity-layout-tool-v3.44.0) (2026-03-01)
+
+
+### Features
+
+* **generation:** indexedDB WASM module caching + shared pool compilation ([#950](https://github.com/andymai/gridfinity-layout-tool/issues/950)) ([980f8ae](https://github.com/andymai/gridfinity-layout-tool/commit/980f8ae36ed3e9c764c3ec73de0a1009c9784fee))
+
 ## [3.43.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.42.1...gridfinity-layout-tool-v3.43.0) (2026-03-01)
 
 
