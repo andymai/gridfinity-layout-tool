@@ -7,6 +7,7 @@
  * Registry is updated whenever the Bin Designer saves or deletes a design.
  */
 
+import type { DesignId } from '@/core/types';
 import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result/errors';
 import { isOk } from '@/core/result';
@@ -30,7 +31,7 @@ function notifySubscribers(): void {
 
 /** Lightweight reference to a saved bin design (for planner palette) */
 export interface CustomBinRef {
-  readonly id: string;
+  readonly id: DesignId;
   readonly name: string;
   /** Grid units width */
   readonly width: number;

@@ -5,12 +5,9 @@
  * Enables one-to-many linking where multiple bins can reference a single design.
  */
 
-/** Unique identifier for a saved design (from bin-designer IndexedDB) */
-export type DesignId = string;
-
-/** Re-export branded BinId from core types for type safety */
-import type { BinId } from '@/core/types';
-export type { BinId };
+/** Re-export branded ID types from core for type safety */
+import type { BinId, DesignId } from '@/core/types';
+export type { BinId, DesignId };
 
 // =============================================================================
 // Dimension Types

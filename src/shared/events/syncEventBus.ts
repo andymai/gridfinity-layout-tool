@@ -9,7 +9,7 @@
  * that clean up on unmount.
  */
 
-import type { BinId } from '@/core/types';
+import type { BinId, DesignId } from '@/core/types';
 
 // =============================================================================
 // Event Types
@@ -24,14 +24,14 @@ interface SyncEventDimensions {
 
 export interface DesignSavedEvent {
   readonly type: 'design-saved';
-  readonly designId: string;
+  readonly designId: DesignId;
   readonly dimensions: SyncEventDimensions;
 }
 
 export interface BinResizedEvent {
   readonly type: 'bin-resized';
   readonly binId: BinId;
-  readonly linkedDesignId: string;
+  readonly linkedDesignId: DesignId;
   readonly newDimensions: SyncEventDimensions;
 }
 
