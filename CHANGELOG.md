@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.49.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.48.0...gridfinity-layout-tool-v3.49.0) (2026-03-01)
+
+
+### Features
+
+* **result:** add useResultToast hook with recovery hints ([#973](https://github.com/andymai/gridfinity-layout-tool/issues/973)) ([ef42261](https://github.com/andymai/gridfinity-layout-tool/commit/ef42261b383b24aff2d4793eae9900dad9d034d7))
+
 ## [3.48.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.47.0...gridfinity-layout-tool-v3.48.0) (2026-03-01)
 
 
