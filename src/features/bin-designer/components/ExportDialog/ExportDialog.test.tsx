@@ -21,7 +21,7 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
     },
     downloadBin: mockDownloadBin,
     downloadDividersSTL: vi.fn().mockResolvedValue(undefined),
-    downloadSplitSTL: vi.fn().mockResolvedValue(undefined),
+    downloadSplit: vi.fn().mockResolvedValue(undefined),
     canExportDividers: false,
     needsSplit: false,
     splitPieceCount: 1,
@@ -97,21 +97,21 @@ describe('ExportDialog', () => {
     expect(screen.getByText('Cost')).toBeInTheDocument();
   });
 
-  it('shows Download STL button by default', () => {
+  it('shows Download 3MF button by default', () => {
     render(<ExportDialog />);
-    const button = screen.getByRole('button', { name: /download stl/i });
+    const button = screen.getByRole('button', { name: /download 3mf/i });
     expect(button).toBeInTheDocument();
     expect(button).not.toBeDisabled();
   });
 
-  it('triggers downloadBin with stl format on button click', async () => {
+  it('triggers downloadBin with 3mf format on button click', async () => {
     render(<ExportDialog />);
-    const button = screen.getByRole('button', { name: /download stl/i });
+    const button = screen.getByRole('button', { name: /download 3mf/i });
     await act(async () => {
       fireEvent.click(button);
     });
     expect(mockDownloadBin).toHaveBeenCalledWith(
-      'stl',
+      '3mf',
       expect.objectContaining({ style: 'descriptive' }),
       'Untitled Bin'
     );
@@ -210,7 +210,7 @@ describe('ExportDialog', () => {
 
   it('shows the format extension separately', () => {
     render(<ExportDialog />);
-    expect(screen.getByText('.stl')).toBeInTheDocument();
+    expect(screen.getByText('.3mf')).toBeInTheDocument();
   });
 
   it('shows triangle count', () => {
@@ -272,27 +272,27 @@ describe('ExportDialog', () => {
     const radios = screen.getAllByRole('radio');
     expect(radios).toHaveLength(3);
 
-    // Active radio has tabIndex 0, others have -1
-    expect(radios[0]).toHaveAttribute('tabindex', '0'); // STL (active)
-    expect(radios[1]).toHaveAttribute('tabindex', '-1'); // STEP
-    expect(radios[2]).toHaveAttribute('tabindex', '-1'); // 3MF
+    // Active radio (3MF, first) has tabIndex 0, others have -1
+    expect(radios[0]).toHaveAttribute('tabindex', '0'); // 3MF (active)
+    expect(radios[1]).toHaveAttribute('tabindex', '-1'); // STL
+    expect(radios[2]).toHaveAttribute('tabindex', '-1'); // STEP
   });
 
   it('format selector supports arrow key navigation', () => {
     render(<ExportDialog />);
     const radios = screen.getAllByRole('radio');
 
-    // Focus STL and press ArrowRight → should select STEP
+    // Focus 3MF (first) and press ArrowRight → should select STL
     radios[0].focus();
     fireEvent.keyDown(radios[0], { key: 'ArrowRight' });
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('stl');
+
+    // Press ArrowRight again → should select STEP
+    fireEvent.keyDown(radios[1], { key: 'ArrowRight' });
     expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('step');
 
-    // Press ArrowRight again → should select 3MF
-    fireEvent.keyDown(radios[1], { key: 'ArrowRight' });
-    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('3mf');
-
-    // Press ArrowRight again → should wrap to STL
+    // Press ArrowRight again → should wrap to 3MF
     fireEvent.keyDown(radios[2], { key: 'ArrowRight' });
-    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('stl');
+    expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('3mf');
   });
 });

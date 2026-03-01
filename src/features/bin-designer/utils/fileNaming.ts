@@ -17,7 +17,7 @@ import {
 export const DEFAULT_EXPORT_FILE_NAME_CONFIG: ExportFileNameConfig = {
   style: 'descriptive',
   customName: '',
-  format: 'stl',
+  format: '3mf',
 };
 
 /** Characters not allowed in filenames (replaced with underscore) */
