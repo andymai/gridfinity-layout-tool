@@ -108,7 +108,8 @@ export class GenerationBridge {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Values are PendingExport<T> with different T per slot; type safety is enforced at each call site
   private pendingExports = new Map<ExportSlot, PendingExport<any>>();
 
-  /** Pending getWasmModule() promise callbacks */
+  /** Pending getWasmModule() promise (deduplicated for concurrent callers) */
+  private pendingModulePromise: Promise<WebAssembly.Module> | null = null;
   private pendingModuleResolve: ((module: WebAssembly.Module) => void) | null = null;
   private pendingModuleReject: ((error: Error) => void) | null = null;
 
@@ -187,11 +188,17 @@ export class GenerationBridge {
       return Promise.reject(new Error('Worker not initialized'));
     }
 
-    return new Promise<WebAssembly.Module>((resolve, reject) => {
+    // Return existing in-flight promise if already requested
+    if (this.pendingModulePromise) {
+      return this.pendingModulePromise;
+    }
+
+    this.pendingModulePromise = new Promise<WebAssembly.Module>((resolve, reject) => {
       this.pendingModuleResolve = resolve;
       this.pendingModuleReject = reject;
       this.postMessage({ type: 'GET_MODULE' });
     });
+    return this.pendingModulePromise;
   }
 
   /**
@@ -275,6 +282,7 @@ export class GenerationBridge {
     // Reject pending module request
     if (this.pendingModuleReject) {
       this.pendingModuleReject(new Error('Bridge destroyed'));
+      this.pendingModulePromise = null;
       this.pendingModuleResolve = null;
       this.pendingModuleReject = null;
     }
@@ -612,6 +620,7 @@ export class GenerationBridge {
         case 'MODULE_READY':
           if (this.pendingModuleResolve) {
             const resolve = this.pendingModuleResolve;
+            this.pendingModulePromise = null;
             this.pendingModuleResolve = null;
             this.pendingModuleReject = null;
             resolve(response.wasmModule);

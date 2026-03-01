@@ -24,11 +24,15 @@ class MockWorker {
   postMessage(data: unknown): void {
     this.messages.push(data);
 
-    // Auto-respond to INIT
-    if ((data as { type: string }).type === 'INIT') {
-      // Simulate async init
+    const msgType = (data as { type: string }).type;
+    // Auto-respond to INIT and INIT_WITH_MODULE
+    if (msgType === 'INIT' || msgType === 'INIT_WITH_MODULE') {
       setTimeout(() => {
-        this.simulateResponse({ type: 'INIT_READY' });
+        this.simulateResponse({
+          type: 'INIT_READY',
+          isThreaded: false,
+          hardwareConcurrency: 4,
+        });
       }, 0);
     }
   }
@@ -385,6 +389,106 @@ describe('GenerationBridge', () => {
       await expect(bridge.exportSplitBin(DEFAULT_BIN_PARAMS, [], [])).rejects.toThrow(
         'Bridge has been destroyed'
       );
+    });
+  });
+
+  describe('initWithModule', () => {
+    it('sends INIT_WITH_MODULE and resolves on INIT_READY', async () => {
+      const fakeModule = {} as WebAssembly.Module;
+      const initPromise = bridge.initWithModule(fakeModule);
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      expect(mockWorkerInstance).not.toBeNull();
+      const initMsg = mockWorkerInstance!.messages[0] as { type: string; wasmModule: unknown };
+      expect(initMsg.type).toBe('INIT_WITH_MODULE');
+      expect(initMsg.wasmModule).toBe(fakeModule);
+    });
+
+    it('returns cached promise on multiple calls', async () => {
+      const fakeModule = {} as WebAssembly.Module;
+      const p1 = bridge.initWithModule(fakeModule);
+      const p2 = bridge.initWithModule(fakeModule);
+      expect(p1).toBe(p2);
+      await vi.advanceTimersByTimeAsync(10);
+      await p1;
+    });
+
+    it('rejects if bridge is destroyed', async () => {
+      bridge.destroy();
+      await expect(bridge.initWithModule({} as WebAssembly.Module)).rejects.toThrow('destroyed');
+    });
+  });
+
+  describe('getWasmModule', () => {
+    it('resolves on MODULE_READY', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const fakeModule = {} as WebAssembly.Module;
+      const modulePromise = bridge.getWasmModule();
+
+      mockWorkerInstance!.simulateResponse({
+        type: 'MODULE_READY',
+        wasmModule: fakeModule,
+      });
+
+      const result = await modulePromise;
+      expect(result).toBe(fakeModule);
+    });
+
+    it('rejects on ERROR response', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const modulePromise = bridge.getWasmModule();
+
+      mockWorkerInstance!.simulateResponse({
+        type: 'ERROR',
+        requestId: '__get_module__',
+        error: 'No compiled module available',
+      });
+
+      await expect(modulePromise).rejects.toThrow('No compiled module available');
+    });
+
+    it('returns same promise for concurrent calls', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const p1 = bridge.getWasmModule();
+      const p2 = bridge.getWasmModule();
+      expect(p1).toBe(p2);
+
+      // Resolve to prevent hanging
+      mockWorkerInstance!.simulateResponse({
+        type: 'MODULE_READY',
+        wasmModule: {} as WebAssembly.Module,
+      });
+      await p1;
+    });
+
+    it('rejects if bridge is destroyed', async () => {
+      bridge.destroy();
+      await expect(bridge.getWasmModule()).rejects.toThrow('destroyed');
+    });
+
+    it('rejects if worker not initialized', async () => {
+      await expect(bridge.getWasmModule()).rejects.toThrow('not initialized');
+    });
+
+    it('rejects pending promise on destroy', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const modulePromise = bridge.getWasmModule();
+      bridge.destroy();
+
+      await expect(modulePromise).rejects.toThrow('destroyed');
     });
   });
 
