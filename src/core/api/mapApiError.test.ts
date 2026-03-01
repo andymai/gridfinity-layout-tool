@@ -25,6 +25,12 @@ describe('isApiErrorResponse', () => {
   it('returns false when code is missing', () => {
     expect(isApiErrorResponse({ error: 'msg' })).toBe(false);
   });
+
+  it('returns false when retryAfter is not a number', () => {
+    expect(isApiErrorResponse({ error: 'msg', code: 'RATE_LIMITED', retryAfter: 'soon' })).toBe(
+      false
+    );
+  });
 });
 
 describe('mapApiErrorResponse', () => {

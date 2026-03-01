@@ -2,8 +2,10 @@
  * Shared mapping from API error responses to domain ApiError types.
  *
  * This is the single source of truth for translating server error codes
- * (from api/lib/shared.ts ErrorCode) into the client-side Result error system.
- * All API clients should use this instead of rolling their own switch statements.
+ * into the client-side Result error system. Covers codes from the shared
+ * ErrorCode enum (api/lib/shared.ts) and validation-specific codes
+ * (api/lib/validation.ts). All API clients should use this instead of
+ * rolling their own switch statements.
  */
 
 import type { ApiError } from '@/core/result';
@@ -34,20 +36,20 @@ export interface ApiErrorResponseBody {
  * Type guard to check if an unknown response body is an API error response.
  */
 export function isApiErrorResponse(data: unknown): data is ApiErrorResponseBody {
+  if (typeof data !== 'object' || data === null) return false;
+  const record = data as Record<string, unknown>;
   return (
-    typeof data === 'object' &&
-    data !== null &&
-    'error' in data &&
-    'code' in data &&
-    typeof (data as Record<string, unknown>).error === 'string' &&
-    typeof (data as Record<string, unknown>).code === 'string'
+    typeof record.error === 'string' &&
+    typeof record.code === 'string' &&
+    (!('retryAfter' in record) || typeof record.retryAfter === 'number')
   );
 }
 
 /**
  * Map an API error response to a domain ApiError.
  *
- * Covers all codes from the server's ErrorCode enum (api/lib/shared.ts).
+ * Covers all codes from the server's ErrorCode enum (api/lib/shared.ts)
+ * and validation-specific codes (e.g. INVALID_EXPIRATION from api/lib/validation.ts).
  * Unknown codes fall through to apiServerError() as a safe default.
  */
 export function mapApiErrorResponse(response: ApiErrorResponseBody): ApiError {
