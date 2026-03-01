@@ -11,8 +11,7 @@
 import type { LayoutEntry, LayoutLibrary } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
 import { ok, err, storageNotFound } from '@/core/result';
-
-const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
+import { LAYOUT_KEY_PREFIX } from './storageKeys';
 
 /**
  * Find a library entry by layout ID.

@@ -1,5 +1,4 @@
-/** BroadcastChannel name for library index sync across tabs */
-const LIBRARY_CHANNEL_NAME = 'gridfinity-library-sync';
+import { LIBRARY_CHANNEL_NAME } from './storageKeys';
 
 /**
  * Notify other tabs that the library index has changed.

@@ -31,12 +31,12 @@ import {
   storageUnavailable,
 } from '@/core/result';
 import { notifyLibraryChanged } from './librarySync';
-
-// Storage keys
-const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';
-const LIBRARY_STORAGE_KEY = 'gridfinity-library-v1';
-const ACTIVE_ID_STORAGE_KEY = 'gridfinity-library-active-id';
-const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
+import {
+  LAYOUT_KEY_PREFIX,
+  LEGACY_STORAGE_KEY,
+  LIBRARY_STORAGE_KEY,
+  ACTIVE_ID_STORAGE_KEY,
+} from './storageKeys';
 
 /**
  * Get the storage key for a specific layout by ID.
