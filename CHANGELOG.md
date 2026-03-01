@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.46.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.45.0...gridfinity-layout-tool-v3.46.0) (2026-03-01)
+
+
+### Features
+
+* **bin-designer:** cutout editor UX polish ([#964](https://github.com/andymai/gridfinity-layout-tool/issues/964)) ([8abacea](https://github.com/andymai/gridfinity-layout-tool/commit/8abacea39c0b32c7ca2123fd8e7391165cd00279))
+
 ## [3.45.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.44.0...gridfinity-layout-tool-v3.45.0) (2026-03-01)
 
 
