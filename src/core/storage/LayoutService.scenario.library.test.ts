@@ -195,18 +195,18 @@ describe('storage-library', () => {
   });
 
   describe('saveLibrary', () => {
-    it('fires off async IndexedDB write (returns void)', () => {
+    it('returns Ok result on successful save', async () => {
       const library = createTestLibrary(2);
 
-      // saveLibrary now returns void and writes to IndexedDB asynchronously
-      const result = saveLibrary(library);
-      expect(result).toBeUndefined();
+      const result = await saveLibrary(library);
+      expect(result).toEqual({ ok: true, value: undefined });
     });
 
-    it('does not throw when called normally', () => {
+    it('does not throw when called normally', async () => {
       const library = createTestLibrary();
 
-      expect(() => saveLibrary(library)).not.toThrow();
+      const result = await saveLibrary(library);
+      expect(result.ok).toBe(true);
     });
   });
 

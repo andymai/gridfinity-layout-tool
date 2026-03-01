@@ -278,18 +278,14 @@ export function deleteLayoutSync(layoutId: string): void {
 // === Library Management ===
 
 /**
- * Save the layout library index to IndexedDB (fire-and-forget).
+ * Save the layout library index to IndexedDB.
  * Also writes activeLayoutId to localStorage for recovery.
+ * Returns a Result indicating success or storage failure.
+ *
+ * Callers that don't need to check the result can fire-and-forget
+ * (the Promise resolves silently on success).
  */
-export function saveLibrary(library: LayoutLibrary): void {
-  indexedDB
-    .saveLibraryIndex(library)
-    .then(() => {
-      notifyLibraryChanged();
-    })
-    .catch((error: unknown) => {
-      console.warn('[LayoutService] Library save to IndexedDB failed:', error);
-    });
+export async function saveLibrary(library: LayoutLibrary): Promise<Result<void, StorageError>> {
   // Best-effort write of activeLayoutId for recovery on next load.
   // Uses raw setItem to store as plain string (not JSON) since this is
   // a simple recovery breadcrumb, not structured data.
@@ -298,6 +294,16 @@ export function saveLibrary(library: LayoutLibrary): void {
   } catch {
     // localStorage may be full; IndexedDB holds the authoritative data
   }
+
+  const result = await tryCatchAsync(
+    async () => {
+      await indexedDB.saveLibraryIndex(library);
+      notifyLibraryChanged();
+    },
+    (error): StorageError => storageUnavailable('indexedDB', error)
+  );
+
+  return result;
 }
 
 /**
@@ -422,7 +428,7 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
   const library = createLibraryWithLayout(layoutId, legacyLayout);
 
   saveLayoutSync(layoutId, legacyLayout);
-  saveLibrary(library);
+  void saveLibrary(library);
   backend.deleteSync(LEGACY_STORAGE_KEY);
 
   return library;
@@ -474,7 +480,7 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
   if (isErr(layoutSaveResult)) {
     return err(layoutSaveResult.error);
   }
-  saveLibrary(library);
+  void saveLibrary(library);
   backend.deleteSync(LEGACY_STORAGE_KEY);
 
   return ok(library);
@@ -509,7 +515,7 @@ async function persistNewLayoutAsync(
   if (isErr(result)) {
     throw new Error(`Failed to persist layout ${layoutId} during initialization`);
   }
-  saveLibrary(library);
+  await saveLibrary(library);
 }
 
 /**
@@ -577,7 +583,7 @@ export async function initializeLayoutLibrary(): Promise<{
       activeLayout = await loadLayoutAsync(entry.id);
       if (activeLayout) {
         library.activeLayoutId = entry.id;
-        saveLibrary(library);
+        await saveLibrary(library);
         break;
       }
     }
