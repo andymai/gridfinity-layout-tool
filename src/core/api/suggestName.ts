@@ -5,7 +5,8 @@
  */
 
 import type { Result, ApiError } from '@/core/result';
-import { ok, err, apiRateLimited, apiServerError, apiNetworkError, apiTimeout } from '@/core/result';
+import { ok, err, apiServerError, apiNetworkError, apiTimeout } from '@/core/result';
+import { isApiErrorResponse, mapApiErrorResponse } from './mapApiError';
 
 // Re-export shared types for consumers
 export type {
@@ -17,23 +18,8 @@ export type {
 
 import type {
   SuggestNameResponse,
-  SuggestNameErrorResponse,
   SuggestNameRequest,
 } from '@/features/name-suggestions/api-types';
-
-/**
- * Type guard for error responses.
- */
-function isSuggestNameErrorResponse(data: unknown): data is SuggestNameErrorResponse {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'error' in data &&
-    'code' in data &&
-    typeof (data as Record<string, unknown>).error === 'string' &&
-    typeof (data as Record<string, unknown>).code === 'string'
-  );
-}
 
 /**
  * Type guard for success responses.
@@ -41,11 +27,7 @@ function isSuggestNameErrorResponse(data: unknown): data is SuggestNameErrorResp
 function isSuggestNameResponse(data: unknown): data is SuggestNameResponse {
   if (typeof data !== 'object' || data === null) return false;
   const obj = data as Record<string, unknown>;
-  return (
-    'suggestions' in obj &&
-    Array.isArray(obj.suggestions) &&
-    typeof obj.cached === 'boolean'
-  );
+  return 'suggestions' in obj && Array.isArray(obj.suggestions) && typeof obj.cached === 'boolean';
 }
 
 /**
@@ -96,11 +78,8 @@ export async function fetchNameSuggestions(
     const data: unknown = await response.json();
 
     if (!response.ok) {
-      if (isSuggestNameErrorResponse(data)) {
-        if (data.code === 'RATE_LIMITED') {
-          return err(apiRateLimited(data.retryAfter));
-        }
-        return err(apiServerError());
+      if (isApiErrorResponse(data)) {
+        return err(mapApiErrorResponse(data));
       }
       return err(apiServerError());
     }

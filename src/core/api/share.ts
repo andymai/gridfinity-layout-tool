@@ -7,21 +7,8 @@
 
 import type { Layout, SharePermission } from '@/core/types';
 import type { Result, ApiError, ValidationError } from '@/core/result';
-import {
-  ok,
-  err,
-  apiRateLimited,
-  apiUnauthorized,
-  apiNotFound,
-  apiServerError,
-  apiNetworkError,
-  apiValidationError,
-  apiContentBlocked,
-  apiSizeLimit,
-  apiBinLimit,
-  apiExpired,
-  validationImportFailed,
-} from '@/core/result';
+import { ok, err, apiServerError, apiNetworkError, validationImportFailed } from '@/core/result';
+import { isApiErrorResponse, mapApiErrorResponse } from './mapApiError';
 import { validateImport } from '@/shared/utils/validation';
 
 // API Response types
@@ -50,36 +37,7 @@ export interface UpdateShareResponse {
   permission: SharePermission;
 }
 
-export interface ShareErrorResponse {
-  error: string;
-  code:
-    | 'VALIDATION_ERROR'
-    | 'SIZE_LIMIT'
-    | 'BIN_LIMIT'
-    | 'RATE_LIMITED'
-    | 'CONTENT_BLOCKED'
-    | 'NOT_FOUND'
-    | 'UNAUTHORIZED'
-    | 'EXPIRED'
-    | 'INVALID_PERMISSION'
-    | 'SERVER_ERROR'
-    | 'CONFIGURATION_ERROR'
-    | 'METHOD_NOT_ALLOWED';
-  retryAfter?: number;
-}
-
 // Type guards for runtime validation of API responses
-
-function isShareErrorResponse(data: unknown): data is ShareErrorResponse {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'error' in data &&
-    'code' in data &&
-    typeof (data as Record<string, unknown>).error === 'string' &&
-    typeof (data as Record<string, unknown>).code === 'string'
-  );
-}
 
 function isShareResponse(data: unknown): data is ShareResponse {
   if (typeof data !== 'object' || data === null) return false;
@@ -145,41 +103,6 @@ function validateFetchShareResponse(
 }
 
 /**
- * Map a ShareErrorResponse to an ApiError.
- * This bridges the server error format to the Result type system.
- */
-function mapShareErrorToApiError(error: ShareErrorResponse): ApiError {
-  switch (error.code) {
-    case 'RATE_LIMITED':
-      return apiRateLimited(error.retryAfter);
-    case 'SIZE_LIMIT':
-      return apiSizeLimit();
-    case 'BIN_LIMIT':
-      return apiBinLimit();
-    case 'CONTENT_BLOCKED':
-      return apiContentBlocked();
-    case 'NOT_FOUND':
-      return apiNotFound();
-    case 'UNAUTHORIZED':
-      return apiUnauthorized();
-    case 'VALIDATION_ERROR':
-      return apiValidationError();
-    case 'EXPIRED':
-      return apiExpired();
-    case 'INVALID_PERMISSION':
-      // Invalid permission errors are treated as validation errors
-      return apiValidationError();
-    case 'SERVER_ERROR':
-    case 'CONFIGURATION_ERROR':
-    case 'METHOD_NOT_ALLOWED':
-      // Server-side errors
-      return apiServerError();
-    default:
-      return apiServerError();
-  }
-}
-
-/**
  * Create a new cloud share.
  *
  * @param layoutId - The layout's unique ID (used as the share ID for URL consistency)
@@ -213,8 +136,8 @@ export async function createShare(
     const data: unknown = await response.json();
 
     if (!response.ok) {
-      if (isShareErrorResponse(data)) {
-        return err(mapShareErrorToApiError(data));
+      if (isApiErrorResponse(data)) {
+        return err(mapApiErrorResponse(data));
       }
       return err(apiServerError());
     }
@@ -247,8 +170,8 @@ export async function updateShare(
     const data: unknown = await response.json();
 
     if (!response.ok) {
-      if (isShareErrorResponse(data)) {
-        return err(mapShareErrorToApiError(data));
+      if (isApiErrorResponse(data)) {
+        return err(mapApiErrorResponse(data));
       }
       return err(apiServerError());
     }
@@ -280,8 +203,8 @@ export async function updatePermission(
     const data: unknown = await response.json();
 
     if (!response.ok) {
-      if (isShareErrorResponse(data)) {
-        return err(mapShareErrorToApiError(data));
+      if (isApiErrorResponse(data)) {
+        return err(mapApiErrorResponse(data));
       }
       return err(apiServerError());
     }
@@ -307,8 +230,8 @@ export async function fetchShare(
     const data: unknown = await response.json();
 
     if (!response.ok) {
-      if (isShareErrorResponse(data)) {
-        return err(mapShareErrorToApiError(data));
+      if (isApiErrorResponse(data)) {
+        return err(mapApiErrorResponse(data));
       }
       return err(apiServerError());
     }
@@ -344,8 +267,8 @@ export async function deleteShare(
     const data: unknown = await response.json();
 
     if (!response.ok) {
-      if (isShareErrorResponse(data)) {
-        return err(mapShareErrorToApiError(data));
+      if (isApiErrorResponse(data)) {
+        return err(mapApiErrorResponse(data));
       }
       return err(apiServerError());
     }
@@ -377,8 +300,8 @@ export async function reportShare(
     const data: unknown = await response.json();
 
     if (!response.ok) {
-      if (isShareErrorResponse(data)) {
-        return err(mapShareErrorToApiError(data));
+      if (isApiErrorResponse(data)) {
+        return err(mapApiErrorResponse(data));
       }
       return err(apiServerError());
     }
