@@ -19,9 +19,7 @@ import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 import { isOk } from '@/core/result';
 import { loadFromLocalStorage, saveToLocalStorage } from '@/core/storage/backends/localStorage';
 import type { Result, StorageError } from '@/core/result';
-
-// Storage key for settings
-const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
+import { SETTINGS_STORAGE_KEY } from '@/core/storage/storageKeys';
 
 /**
  * Ensure binListSortOrder has all required fields.
