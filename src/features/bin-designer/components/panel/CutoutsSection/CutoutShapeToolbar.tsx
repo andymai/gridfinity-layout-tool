@@ -5,9 +5,32 @@
  * when in placement mode.
  */
 
+import type { ReactNode } from 'react';
 import type { CutoutShape } from '@/features/bin-designer/types';
 import type { InteractionMode } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
+
+/** Styled tooltip wrapper for vertical toolbar buttons */
+function ToolbarTooltip({
+  label,
+  shortcut,
+  children,
+}: {
+  readonly label: string;
+  readonly shortcut: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <div className="relative group">
+      {children}
+      {/* eslint-disable i18next/no-literal-string -- formatting parens around shortcut key */}
+      <div className="tooltip hidden group-hover:block absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50">
+        {label} ({shortcut})
+      </div>
+      {/* eslint-enable i18next/no-literal-string */}
+    </div>
+  );
+}
 
 interface CutoutShapeToolbarProps {
   readonly mode: InteractionMode;
@@ -71,91 +94,122 @@ export function CutoutShapeToolbar({
     'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover';
   const iconSize = vertical ? 'h-5 w-5' : 'h-3.5 w-3.5';
 
+  /** Conditionally wraps a button in a ToolbarTooltip (vertical mode only) */
+  const wrap = (label: string, shortcut: string, btn: ReactNode) =>
+    vertical ? (
+      <ToolbarTooltip label={label} shortcut={shortcut}>
+        {btn}
+      </ToolbarTooltip>
+    ) : (
+      btn
+    );
+
   return (
     <div className={vertical ? 'flex flex-col items-center gap-1' : 'flex items-center gap-2'}>
-      <button
-        type="button"
-        className={`${btnBase} ${isPointerActive ? btnActive : btnInactive}`}
-        onClick={() => onSelectShape({ type: 'idle' })}
-        title={t('binDesigner.cutouts.pointerTool')}
-      >
-        <svg
-          className={iconSize}
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
+      {wrap(
+        t('binDesigner.cutouts.pointerTool'),
+        'V',
+        <button
+          type="button"
+          className={`${btnBase} ${isPointerActive ? btnActive : btnInactive}`}
+          onClick={() => onSelectShape({ type: 'idle' })}
+          aria-label={t('binDesigner.cutouts.pointerTool')}
+          title={!vertical ? t('binDesigner.cutouts.pointerTool') : undefined}
         >
-          <path d="M3 1l8 5.5-3.5.5L5 11z" />
-        </svg>
-        {!vertical && t('binDesigner.cutouts.pointerTool')}
-      </button>
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M3 1l8 5.5-3.5.5L5 11z" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.pointerTool')}
+        </button>
+      )}
 
-      <button
-        type="button"
-        className={`${btnBase} ${activeShape === 'rectangle' ? btnActive : btnInactive}`}
-        onClick={() => handleClick('rectangle')}
-        title={t('binDesigner.cutouts.addRectangle')}
-      >
-        <svg
-          className={iconSize}
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
+      {wrap(
+        t('binDesigner.cutouts.addRectangle'),
+        'R',
+        <button
+          type="button"
+          className={`${btnBase} ${activeShape === 'rectangle' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('rectangle')}
+          aria-label={t('binDesigner.cutouts.addRectangle')}
+          title={!vertical ? t('binDesigner.cutouts.addRectangle') : undefined}
         >
-          <rect x="1" y="2" width="12" height="10" rx="1" />
-        </svg>
-        {!vertical && t('binDesigner.cutouts.addRectangle')}
-      </button>
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <rect x="1" y="2" width="12" height="10" rx="1" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.addRectangle')}
+        </button>
+      )}
 
-      <button
-        type="button"
-        className={`${btnBase} ${activeShape === 'circle' ? btnActive : btnInactive}`}
-        onClick={() => handleClick('circle')}
-        title={t('binDesigner.cutouts.addCircle')}
-      >
-        <svg
-          className={iconSize}
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
+      {/* eslint-disable i18next/no-literal-string -- shortcut key identifiers, not translatable */}
+      {wrap(
+        t('binDesigner.cutouts.addCircle'),
+        'C',
+        <button
+          type="button"
+          className={`${btnBase} ${activeShape === 'circle' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('circle')}
+          aria-label={t('binDesigner.cutouts.addCircle')}
+          title={!vertical ? t('binDesigner.cutouts.addCircle') : undefined}
         >
-          <circle cx="7" cy="7" r="5.5" />
-        </svg>
-        {!vertical && t('binDesigner.cutouts.addCircle')}
-      </button>
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <circle cx="7" cy="7" r="5.5" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.addCircle')}
+        </button>
+      )}
 
-      <button
-        type="button"
-        className={`${btnBase} ${activeShape === 'path' ? btnActive : btnInactive}`}
-        onClick={() => handleClick('path')}
-        title={t('binDesigner.cutouts.penTool')}
-      >
-        <svg
-          className={iconSize}
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      {wrap(
+        t('binDesigner.cutouts.penTool'),
+        'P',
+        <button
+          type="button"
+          className={`${btnBase} ${activeShape === 'path' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('path')}
+          aria-label={t('binDesigner.cutouts.penTool')}
+          title={!vertical ? t('binDesigner.cutouts.penTool') : undefined}
         >
-          {/* S-curve: top-right to bottom-left with opposing control points */}
-          <path d="M12 2 C5 2, 13 12, 2 12" strokeWidth="1.5" />
-          {/* Control handles */}
-          <line x1="12" y1="2" x2="5" y2="2" strokeWidth="0.7" strokeDasharray="1 1" />
-          <line x1="2" y1="12" x2="9" y2="12" strokeWidth="0.7" strokeDasharray="1 1" />
-          {/* Anchor points */}
-          <rect x="11" y="1" width="2" height="2" fill="currentColor" stroke="none" />
-          <rect x="1" y="11" width="2" height="2" fill="currentColor" stroke="none" />
-          {/* Control point handles */}
-          <circle cx="5" cy="2" r="1" fill="none" strokeWidth="1" />
-          <circle cx="9" cy="12" r="1" fill="none" strokeWidth="1" />
-        </svg>
-        {!vertical && t('binDesigner.cutouts.penTool')}
-      </button>
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {/* S-curve: top-right to bottom-left with opposing control points */}
+            <path d="M12 2 C5 2, 13 12, 2 12" strokeWidth="1.5" />
+            {/* Control handles */}
+            <line x1="12" y1="2" x2="5" y2="2" strokeWidth="0.7" strokeDasharray="1 1" />
+            <line x1="2" y1="12" x2="9" y2="12" strokeWidth="0.7" strokeDasharray="1 1" />
+            {/* Anchor points */}
+            <rect x="11" y="1" width="2" height="2" fill="currentColor" stroke="none" />
+            <rect x="1" y="11" width="2" height="2" fill="currentColor" stroke="none" />
+            {/* Control point handles */}
+            <circle cx="5" cy="2" r="1" fill="none" strokeWidth="1" />
+            <circle cx="9" cy="12" r="1" fill="none" strokeWidth="1" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.penTool')}
+        </button>
+      )}
 
       <div
         className={
@@ -163,27 +217,33 @@ export function CutoutShapeToolbar({
         }
       />
 
-      <button
-        type="button"
-        className={`${btnBase} ${isRulerActive ? btnActive : btnInactive}`}
-        onClick={() => onSelectShape(isRulerActive ? { type: 'idle' } : { type: 'ruler-ready' })}
-        title={t('binDesigner.cutouts.rulerTool')}
-      >
-        <svg
-          className={iconSize}
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      {wrap(
+        t('binDesigner.cutouts.rulerTool'),
+        'M',
+        <button
+          type="button"
+          className={`${btnBase} ${isRulerActive ? btnActive : btnInactive}`}
+          onClick={() => onSelectShape(isRulerActive ? { type: 'idle' } : { type: 'ruler-ready' })}
+          aria-label={t('binDesigner.cutouts.rulerTool')}
+          title={!vertical ? t('binDesigner.cutouts.rulerTool') : undefined}
         >
-          <line x1="1.5" y1="7" x2="12.5" y2="7" />
-          <line x1="1.5" y1="5" x2="1.5" y2="9" />
-          <line x1="12.5" y1="5" x2="12.5" y2="9" />
-        </svg>
-        {!vertical && t('binDesigner.cutouts.rulerTool')}
-      </button>
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="1.5" y1="7" x2="12.5" y2="7" />
+            <line x1="1.5" y1="5" x2="1.5" y2="9" />
+            <line x1="12.5" y1="5" x2="12.5" y2="9" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.rulerTool')}
+        </button>
+      )}
+      {/* eslint-enable i18next/no-literal-string */}
 
       <div
         className={

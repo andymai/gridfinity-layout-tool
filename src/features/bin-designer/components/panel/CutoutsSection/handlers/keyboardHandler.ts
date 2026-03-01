@@ -185,12 +185,18 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       if (mod) {
         e.preventDefault();
         ctx.copySelected();
+      } else if (!e.shiftKey) {
+        e.preventDefault();
+        ctx.setMode({ type: 'placing', shape: 'circle' });
       }
       break;
     case 'v':
       if (mod) {
         e.preventDefault();
         ctx.pasteFromClipboard();
+      } else if (!e.shiftKey) {
+        e.preventDefault();
+        ctx.setMode({ type: 'idle' });
       }
       break;
     case 'd':
@@ -218,11 +224,31 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
-    // R to rotate 90 degrees
+    // R: rotate 90° when something is selected, or switch to rectangle tool
     case 'r':
-      if (!mod && ctx.selection.size > 0) {
+      if (!mod) {
         e.preventDefault();
-        handleRotate90(ctx);
+        if (ctx.selection.size > 0) {
+          handleRotate90(ctx);
+        } else {
+          ctx.setMode({ type: 'placing', shape: 'rectangle' });
+        }
+      }
+      break;
+
+    // P: switch to pen tool
+    case 'p':
+      if (!mod && !e.shiftKey) {
+        e.preventDefault();
+        ctx.setMode({ type: 'placing', shape: 'path' });
+      }
+      break;
+
+    // M: switch to ruler/measure tool
+    case 'm':
+      if (!mod && !e.shiftKey) {
+        e.preventDefault();
+        ctx.setMode({ type: 'ruler-ready' });
       }
       break;
 

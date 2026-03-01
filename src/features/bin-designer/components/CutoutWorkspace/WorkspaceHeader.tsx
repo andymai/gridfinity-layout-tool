@@ -228,6 +228,7 @@ interface WorkspaceHeaderProps {
   readonly onUngroup: (ids: readonly string[]) => void;
   readonly onClearAll: () => void;
   readonly disabled?: boolean;
+  readonly onShowHelp?: () => void;
 }
 
 export function WorkspaceHeader({
@@ -251,6 +252,7 @@ export function WorkspaceHeader({
   onUngroup,
   onClearAll,
   disabled = false,
+  onShowHelp,
 }: WorkspaceHeaderProps) {
   const setCutoutEditorOpen = useDesignerStore((s) => s.setCutoutEditorOpen);
   const t = useTranslation();
@@ -574,6 +576,29 @@ export function WorkspaceHeader({
             </svg>
           </button>
         </div>
+
+        {/* Help button */}
+        {onShowHelp && (
+          <button
+            type="button"
+            onClick={onShowHelp}
+            className="rounded p-1.5 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors"
+            title={t('binDesigner.cutoutEditor.showHelp')}
+            aria-label={t('binDesigner.cutoutEditor.showHelp')}
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path strokeLinecap="round" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </button>
+        )}
 
         {/* Done button */}
         <button

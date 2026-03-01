@@ -8,8 +8,7 @@ import { isOk, isErr } from '@/core/result';
 import { createDefaultLayout } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/store/history';
-import { useToastStore } from '@/core/store/toast';
-import { INITIAL_TOAST_STATE } from '@/core/store/toast';
+import { useToastStore, INITIAL_TOAST_STATE } from '@/core/store/toast';
 import { useSettingsStore, DEFAULT_SETTINGS } from '@/core/store/settings';
 import { useLibraryStore } from '@/core/store/library';
 import { useLabsStore } from '@/core/store';
@@ -60,7 +59,6 @@ export function resetLibraryStore(): void {
   useLibraryStore.setState({
     library: createTestLibrary(),
     isLoaded: false,
-    showLayoutManager: false,
     sharedWithMe: [],
     sharedWithMeLoaded: false,
   });
@@ -115,7 +113,6 @@ export function resetAllStores(): void {
   useLibraryStore.setState({
     library: createTestLibrary(),
     isLoaded: false,
-    showLayoutManager: false,
     sharedWithMe: [],
     sharedWithMeLoaded: false,
   });

@@ -952,6 +952,21 @@ input[type='range']:hover::-moz-range-thumb {
   animation: draw-hint-rect 4s ease-in-out infinite;
 }
 
+/* Cutout editor: draw tutorial animation
+   Reuses the same 4s timeline as the grid editor draw tutorial.
+   Separate class names so both can coexist independently. */
+.animate-cutout-draw-hint-click {
+  animation: draw-hint-click 4s ease-out infinite;
+}
+
+.animate-cutout-draw-hint-cursor {
+  animation: draw-hint-cursor 4s ease-in-out infinite;
+}
+
+.animate-cutout-draw-hint-rect {
+  animation: draw-hint-rect 4s ease-in-out infinite;
+}
+
 /* Onboarding: sidebar gallery pulse glow */
 @keyframes gallery-pulse {
   0%,
@@ -991,6 +1006,18 @@ input[type='range']:hover::-moz-range-thumb {
 
   .animate-draw-hint-rect {
     animation: draw-hint-rect 4s ease-in-out infinite !important;
+  }
+
+  .animate-cutout-draw-hint-click {
+    animation: draw-hint-click 4s ease-out 1 !important;
+  }
+
+  .animate-cutout-draw-hint-cursor {
+    animation: draw-hint-cursor 4s ease-in-out 1 !important;
+  }
+
+  .animate-cutout-draw-hint-rect {
+    animation: draw-hint-rect 4s ease-in-out 1 !important;
   }
 }
 
