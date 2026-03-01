@@ -1,2 +1,2 @@
-export { useOnboarding, resetOnboarding, syncOnboardingFlags } from './hooks/useOnboarding';
+export { useOnboarding, resetOnboarding } from './hooks/useOnboarding';
 export type { UseOnboardingReturn } from './hooks/useOnboarding';

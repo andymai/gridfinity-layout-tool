@@ -58,7 +58,7 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
   ConfirmDialog: () => null,
 }));
 
-vi.mock('@/features/onboarding/hooks/useOnboarding', () => ({
+vi.mock('@/features/onboarding', () => ({
   resetOnboarding: vi.fn(),
 }));
 
