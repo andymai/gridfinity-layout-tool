@@ -80,15 +80,26 @@ check_file() {
     # Skip same-feature imports
     [[ "$target_feature" == "$source_feature" ]] && continue
 
-    # Check against allowlist
+    # Check against allowlist — barrel imports only
     local allowed=false
     for pair in "${ALLOWED_CROSS_FEATURE[@]}"; do
       if [[ "$pair" == "$source_feature:$target_feature" ]]; then
-        allowed=true
+        # Only allow barrel imports (e.g. @/features/bin-designer), not deep paths
+        if [[ "$import_path" == "@/features/$target_feature" ]]; then
+          allowed=true
+        else
+          echo -e "${RED}VIOLATION${NC} $file"
+          echo -e "  ${BLUE}features/$source_feature${NC} → ${YELLOW}features/$target_feature${NC}"
+          echo -e "  Import: $import_path"
+          echo -e "  ${YELLOW}Allowlisted pairs must use barrel import: @/features/$target_feature${NC}"
+          echo ""
+          ((VIOLATIONS_FOUND++))
+          allowed=skip
+        fi
         break
       fi
     done
-    [[ "$allowed" == "true" ]] && continue
+    [[ "$allowed" == "true" || "$allowed" == "skip" ]] && continue
 
     # Cross-feature import violation
     local line_num
