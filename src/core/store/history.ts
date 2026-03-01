@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { useCallback, useRef, useEffect } from 'react';
-import type { Layout } from '@/core/types';
+import type { Layout, BinId, LayerId, CategoryId } from '@/core/types';
 import { useLayoutStore } from './layout';
 import { useSelectionStore } from './selection';
 import { CONSTRAINTS } from '@/core/constants';
@@ -38,7 +38,13 @@ function pruneStaleSelections(restoredLayout: Layout): void {
   const categoryIds = new Set(restoredLayout.categories.map((c) => c.id));
   const selectionState = useSelectionStore.getState();
 
-  const updates: Record<string, unknown> = {};
+  const updates: {
+    selectedBinIds?: BinId[];
+    focusedBinId?: BinId | null;
+    quickLabelBinId?: BinId | null;
+    activeLayerId?: LayerId;
+    activeCategoryId?: CategoryId;
+  } = {};
 
   const prunedIds = selectionState.selectedBinIds.filter((id) => binIds.has(id));
   if (prunedIds.length !== selectionState.selectedBinIds.length) {
