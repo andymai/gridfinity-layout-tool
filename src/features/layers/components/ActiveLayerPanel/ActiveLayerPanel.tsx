@@ -63,9 +63,7 @@ export function ActiveLayerPanel() {
       fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode);
     });
     setTimeout(() => {
-      const afterCount = useLayoutStore
-        .getState()
-        .layout.bins.filter((b) => b.layerId === activeLayerId).length;
+      const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
         addToast(t('toast.fillComplete', { count: added }), 'success');
@@ -94,9 +92,7 @@ export function ActiveLayerPanel() {
     // Exit paint mode after filling
     setPaintSize(null);
     setTimeout(() => {
-      const afterCount = useLayoutStore
-        .getState()
-        .layout.bins.filter((b) => b.layerId === activeLayerId).length;
+      const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
         addToast(t('toast.fillWithSize', { count: added, width, depth }), 'success');

@@ -12,6 +12,7 @@ import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { STAGING_ID } from '@/core/constants';
 import type { Bin, Layer, LayerId } from '@/core/types';
+import { getLayerBins } from '@/shared/utils/bins';
 import { useLayoutStore } from './layout';
 import { useSelectionStore } from './selection';
 
@@ -41,10 +42,7 @@ export function useActiveLayerBins(): Bin[] {
   const bins = useLayoutStore(selectBins);
   const activeLayerId = useSelectionStore((s) => s.activeLayerId);
 
-  return useMemo(() => {
-    if (activeLayerId === STAGING_ID) return [];
-    return bins.filter((b) => b.layerId === activeLayerId);
-  }, [bins, activeLayerId]);
+  return useMemo(() => getLayerBins(bins, activeLayerId), [bins, activeLayerId]);
 }
 
 /**

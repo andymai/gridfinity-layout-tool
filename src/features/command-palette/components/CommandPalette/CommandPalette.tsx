@@ -20,7 +20,7 @@ import { useMutations } from '@/shared/contexts';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutSwitcher } from '@/hooks';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
-import { getStagingBins } from '@/shared/utils';
+import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/utils/entity';
 import { STAGING_ID } from '@/core/constants';
 import { isOk, isErr } from '@/core/result';
@@ -119,7 +119,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
   return useMemo(() => {
     const hasBinsSelected = selectedBinIds.length > 0;
     const hasSingleBin = selectedBinIds.length === 1;
-    const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
+    const layerBins = getLayerBins(layout.bins, activeLayerId);
     const stagingBins = getStagingBins(layout.bins);
     const categories = layout.categories;
 
