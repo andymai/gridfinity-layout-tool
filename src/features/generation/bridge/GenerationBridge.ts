@@ -17,6 +17,19 @@ import type {
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 
+/** Extract threading info from INIT_READY with defensive validation for backward compatibility. */
+function extractThreadingInfo(data: {
+  isThreaded: boolean;
+  hardwareConcurrency: number;
+}): ThreadingInfo {
+  const isThreaded = typeof data.isThreaded === 'boolean' ? data.isThreaded : false;
+  const hardwareConcurrency =
+    Number.isFinite(data.hardwareConcurrency) && data.hardwareConcurrency > 0
+      ? data.hardwareConcurrency
+      : 4;
+  return { isThreaded, hardwareConcurrency };
+}
+
 /** Callback for progress updates during generation */
 export type ProgressCallback = (stage: GenerationStage, progress: number) => void;
 
@@ -95,11 +108,34 @@ export class GenerationBridge {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Values are PendingExport<T> with different T per slot; type safety is enforced at each call site
   private pendingExports = new Map<ExportSlot, PendingExport<any>>();
 
+  /** Pending getWasmModule() promise (deduplicated for concurrent callers) */
+  private pendingModulePromise: Promise<WebAssembly.Module> | null = null;
+  private pendingModuleResolve: ((module: WebAssembly.Module) => void) | null = null;
+  private pendingModuleReject: ((error: Error) => void) | null = null;
+
   /**
    * Initialize the worker. Resolves when the worker signals INIT_READY.
    * Safe to call multiple times (returns cached promise).
    */
   init(): Promise<void> {
+    return this.initWorker({ type: 'INIT' });
+  }
+
+  /**
+   * Initialize the worker with a pre-compiled WebAssembly.Module.
+   * Skips WASM compilation entirely — the worker uses `instantiateWasm` override.
+   * Safe to call multiple times (returns cached promise).
+   */
+  initWithModule(wasmModule: WebAssembly.Module): Promise<void> {
+    return this.initWorker({ type: 'INIT_WITH_MODULE', wasmModule });
+  }
+
+  /**
+   * Shared init logic: create worker, wait for INIT_READY, extract threading info.
+   * The `initMessage` determines whether the worker compiles WASM itself or
+   * uses a pre-compiled module.
+   */
+  private initWorker(initMessage: WorkerMessage): Promise<void> {
     if (this.destroyed) {
       return Promise.reject(new Error('Bridge has been destroyed'));
     }
@@ -117,14 +153,7 @@ export class GenerationBridge {
         const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
           if (event.data.type === 'INIT_READY') {
             this.worker?.removeEventListener('message', onInitMessage);
-            // Defensive validation for backward compatibility
-            const isThreaded =
-              typeof event.data.isThreaded === 'boolean' ? event.data.isThreaded : false;
-            const hardwareConcurrency =
-              Number.isFinite(event.data.hardwareConcurrency) && event.data.hardwareConcurrency > 0
-                ? event.data.hardwareConcurrency
-                : 4;
-            this.threadingInfo = { isThreaded, hardwareConcurrency };
+            this.threadingInfo = extractThreadingInfo(event.data);
             this.setupMessageHandler();
             resolve();
           } else if (event.data.type === 'ERROR') {
@@ -138,13 +167,38 @@ export class GenerationBridge {
           reject(new Error(`Worker failed to initialize: ${e.message}`));
         });
 
-        this.postMessage({ type: 'INIT' });
+        this.postMessage(initMessage);
       } catch (e) {
         reject(new Error(`Failed to create worker: ${e instanceof Error ? e.message : String(e)}`));
       }
     });
 
     return this.initPromise;
+  }
+
+  /**
+   * Request the compiled WebAssembly.Module from the worker.
+   * Only available after init. Used to share the module with pool workers.
+   */
+  getWasmModule(): Promise<WebAssembly.Module> {
+    if (this.destroyed) {
+      return Promise.reject(new Error('Bridge has been destroyed'));
+    }
+    if (!this.worker) {
+      return Promise.reject(new Error('Worker not initialized'));
+    }
+
+    // Return existing in-flight promise if already requested
+    if (this.pendingModulePromise) {
+      return this.pendingModulePromise;
+    }
+
+    this.pendingModulePromise = new Promise<WebAssembly.Module>((resolve, reject) => {
+      this.pendingModuleResolve = resolve;
+      this.pendingModuleReject = reject;
+      this.postMessage({ type: 'GET_MODULE' });
+    });
+    return this.pendingModulePromise;
   }
 
   /**
@@ -224,6 +278,14 @@ export class GenerationBridge {
       pending.reject(new Error('Bridge destroyed'));
     }
     this.pendingExports.clear();
+
+    // Reject pending module request
+    if (this.pendingModuleReject) {
+      this.pendingModuleReject(new Error('Bridge destroyed'));
+      this.pendingModulePromise = null;
+      this.pendingModuleResolve = null;
+      this.pendingModuleReject = null;
+    }
 
     if (this.worker) {
       this.worker.terminate();
@@ -514,8 +576,14 @@ export class GenerationBridge {
             const reject = this.pendingReject;
             this.clearPending();
             reject(new Error(response.error));
-          } else {
-            this.rejectExportByRequestId(response.requestId, new Error(response.error));
+          } else if (!this.rejectExportByRequestId(response.requestId, new Error(response.error))) {
+            // Handle GET_MODULE errors
+            if (this.pendingModuleReject) {
+              const reject = this.pendingModuleReject;
+              this.pendingModuleResolve = null;
+              this.pendingModuleReject = null;
+              reject(new Error(response.error));
+            }
           }
           break;
 
@@ -547,6 +615,16 @@ export class GenerationBridge {
           this.resolveExport('split', response.requestId, {
             pieces: response.pieces,
           });
+          break;
+
+        case 'MODULE_READY':
+          if (this.pendingModuleResolve) {
+            const resolve = this.pendingModuleResolve;
+            this.pendingModulePromise = null;
+            this.pendingModuleResolve = null;
+            this.pendingModuleReject = null;
+            resolve(response.wasmModule);
+          }
           break;
 
         case 'INIT_READY':

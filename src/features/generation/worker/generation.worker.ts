@@ -11,22 +11,11 @@
  * - CANCEL -> (silently aborts current generation)
  */
 
-import { initFromOC } from 'brepjs';
 import type { WorkerMessage, WorkerResponse, MeshData } from '../bridge/types';
 import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
 import { generateBaseplate, exportBaseplate } from './generators/baseplateGenerator';
-import { detectWasmCapabilities } from '../utils/wasmCapabilities';
-
-// Single-threaded WASM (always available)
-import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
-import opencascadeSingleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
-
-// Multi-threaded WASM (conditionally loaded)
-import opencascadeThreadedInit from 'brepjs-opencascade/src/brepjs_threaded.js';
-import opencascadeThreadedWasm from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
-import opencascadeThreadedWorker from 'brepjs-opencascade/src/brepjs_threaded.worker.js?url';
-import opencascadeThreadedJs from 'brepjs-opencascade/src/brepjs_threaded.js?url';
+import { loadOpenCascade } from './wasmInstantiator';
 
 /** Currently active generation request ID (for cancellation) */
 let activeRequestId: string | null = null;
@@ -42,6 +31,9 @@ let isThreaded = false;
 
 /** Number of CPU cores */
 let hardwareConcurrency = 4;
+
+/** Compiled WASM module, available after init for sharing with pool workers */
+let compiledModule: WebAssembly.Module | null = null;
 
 /** Post a typed response to the main thread */
 function respond(response: WorkerResponse): void {
@@ -63,64 +55,14 @@ function reportProgress(
 }
 
 /**
- * Detect if multi-threaded WASM is supported in this worker context.
- * Disabled in development mode due to Vite dev server limitations with pthread workers.
+ * Initialize OpenCascade WASM kernel via the cache-first instantiator.
+ * Optionally accepts a pre-compiled module (from main thread transfer).
  */
-function detectThreadingSupport(): boolean {
-  // Disable threading in development - Vite dev server can't handle pthread workers
-  // correctly (the worker.js uses dynamic import() which fails in non-module context)
-  if (import.meta.env.DEV) {
-    return false;
-  }
-  return detectWasmCapabilities().supportsThreads;
-}
-
-/**
- * Initialize OpenCascade WASM kernel.
- * Automatically selects multi-threaded build when browser supports it.
- */
-async function initOpenCascade(): Promise<void> {
-  // Detect hardware concurrency with robust validation
-  hardwareConcurrency =
-    typeof navigator !== 'undefined' &&
-    Number.isFinite(navigator.hardwareConcurrency) &&
-    navigator.hardwareConcurrency > 0
-      ? navigator.hardwareConcurrency
-      : 4;
-
-  // Check if we can use multi-threaded WASM
-  isThreaded = detectThreadingSupport();
-
-  // The Emscripten factory accepts a config object with locateFile
-  // to resolve the WASM binary URL relative to the worker
-
-  let OC: Awaited<ReturnType<typeof opencascadeSingleInit>>;
-  if (isThreaded) {
-    OC = await opencascadeThreadedInit({
-      mainScriptUrlOrBlob: opencascadeThreadedJs,
-      locateFile: (fileName: string) => {
-        if (fileName.endsWith('.wasm')) {
-          return opencascadeThreadedWasm;
-        }
-        if (fileName.endsWith('.worker.js')) {
-          return opencascadeThreadedWorker;
-        }
-        return fileName;
-      },
-    });
-  } else {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Emscripten WASM factory returns untyped module (see vite-env.d.ts TECH-DEBT)
-    OC = await opencascadeSingleInit({
-      locateFile: (fileName: string) => {
-        if (fileName.endsWith('.wasm')) {
-          return opencascadeSingleWasm;
-        }
-        return fileName;
-      },
-    });
-  }
-
-  initFromOC(OC);
+async function initOpenCascade(cachedModule?: WebAssembly.Module): Promise<void> {
+  const result = await loadOpenCascade({ cachedModule });
+  isThreaded = result.isThreaded;
+  hardwareConcurrency = result.hardwareConcurrency;
+  compiledModule = result.wasmModule;
   ocInitialized = true;
 }
 
@@ -255,6 +197,42 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
             type: 'ERROR',
             requestId: '__init__',
             error: `OpenCascade init failed: ${formatError(e)}`,
+          });
+        }
+        break;
+
+      case 'INIT_WITH_MODULE':
+        try {
+          await initOpenCascade(message.wasmModule);
+          respond({ type: 'INIT_READY', isThreaded, hardwareConcurrency });
+        } catch (e) {
+          respond({
+            type: 'ERROR',
+            requestId: '__init__',
+            error: `OpenCascade init failed: ${formatError(e)}`,
+          });
+        }
+        break;
+
+      case 'GET_MODULE':
+        if (compiledModule) {
+          try {
+            self.postMessage({
+              type: 'MODULE_READY',
+              wasmModule: compiledModule,
+            } satisfies WorkerResponse);
+          } catch (e) {
+            respond({
+              type: 'ERROR',
+              requestId: '__get_module__',
+              error: `Failed to transfer module: ${formatError(e)}`,
+            });
+          }
+        } else {
+          respond({
+            type: 'ERROR',
+            requestId: '__get_module__',
+            error: 'No compiled module available',
           });
         }
         break;

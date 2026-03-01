@@ -264,13 +264,20 @@ export function useBaseplateGeneration(): void {
         }
 
         // Initialize worker pool in the background (don't block initial generation)
+        // Try to get the compiled WASM module from the primary bridge to share
+        // with pool workers (avoids redundant WASM compilation).
         const poolSize = threadingInfo?.hardwareConcurrency
           ? Math.min(threadingInfo.hardwareConcurrency, 4)
           : DEFAULT_POOL_SIZE;
         if (poolSize > 1) {
           pool = new BaseplateWorkerPool();
-          void pool
-            .init(poolSize)
+          void bridge
+            .getWasmModule()
+            .then(
+              (sharedModule) => pool?.init(poolSize, sharedModule),
+              // onRejected: only catches getWasmModule failure, not pool.init failure
+              () => pool?.init(poolSize)
+            )
             .then(() => {
               // Expose only after init — uninitialised workers hang forever
               poolRef.current = pool;

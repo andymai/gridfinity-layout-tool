@@ -54,4 +54,14 @@ describe('BaseplateWorkerPool', () => {
     await pool.init(2).catch(() => {});
     pool.destroy();
   });
+
+  it('init accepts optional sharedModule parameter', () => {
+    // Verify the method signature accepts a second parameter without error.
+    // Actual init with a module requires WASM env — we test the signature here.
+    const pool = new BaseplateWorkerPool();
+    const fakeModule = {} as WebAssembly.Module;
+    // init will fail in test env (no Worker), but should not throw on the signature
+    void pool.init(2, fakeModule).catch(() => {});
+    pool.destroy();
+  });
 });
