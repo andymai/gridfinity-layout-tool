@@ -42,7 +42,7 @@ describe('error constructors', () => {
         storageCorrupted('key'),
         storageUnavailable('localStorage'),
         storageNetworkError(),
-        validationOutOfBounds('bin_extends_beyond_grid'),
+        validationOutOfBounds('out_of_bounds'),
         validationCollision(),
         validationInvalidLayer('layer-1'),
         validationHeightExceeded(10, 5),

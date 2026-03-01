@@ -105,7 +105,7 @@ describe('normalizeSTLSearchSites', () => {
   it('preserves custom sites', () => {
     const stored = [
       ...DEFAULT_STL_SEARCH_SITES,
-      { id: 'custom-1', name: 'Custom', urlPattern: 'https://custom.com/{query}', enabled: true },
+      { id: 'custom-1', name: 'Custom', urlTemplate: 'https://custom.com/{query}', enabled: true },
     ];
     const result = normalizeSTLSearchSites(stored);
     expect(result.some((s) => s.id === 'custom-1')).toBe(true);
@@ -113,7 +113,7 @@ describe('normalizeSTLSearchSites', () => {
 
   it('removes stale default sites that are no longer in defaults', () => {
     const stored = [
-      { id: 'removed-default', name: 'Old', urlPattern: '', enabled: true, isDefault: true },
+      { id: 'removed-default', name: 'Old', urlTemplate: '', enabled: true, isDefault: true },
       ...DEFAULT_STL_SEARCH_SITES,
     ];
     const result = normalizeSTLSearchSites(stored);
