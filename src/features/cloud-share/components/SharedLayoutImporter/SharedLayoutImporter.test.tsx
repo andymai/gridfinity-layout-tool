@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { SharedLayoutImporter } from './SharedLayoutImporter';
 import { resetAllStores } from '@/test/testUtils';
 import { useLibraryStore } from '@/core/store/library';
+import { useSharedWithMeStore } from '@/core/store/sharedWithMe';
 import { getCloudShareIdFromURL, getSharedLayoutFromURL } from '@/core/storage';
 
 // Mock storage functions
@@ -60,7 +61,9 @@ describe('SharedLayoutImporter', () => {
     // Set default library state
     useLibraryStore.setState({
       isLoaded: true,
-      sharedWithMeLoaded: true,
+    });
+    useSharedWithMeStore.setState({
+      isLoaded: true,
     });
 
     // Reset storage mocks to default
