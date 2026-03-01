@@ -5,7 +5,7 @@ import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { resetOnboarding } from '@/features/onboarding/hooks/useOnboarding';
+import { resetOnboarding } from '@/features/onboarding';
 import { TabNavigation } from './TabNavigation/TabNavigation';
 import { useSettingsTab } from './hooks/useSettingsTab';
 import { GeneralTab } from './tabs/GeneralTab/GeneralTab';
