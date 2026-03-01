@@ -49,11 +49,7 @@ import {
 import { classifyStorageError } from './errorUtils';
 import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
 import { notifyLibraryChanged } from './librarySync';
-
-// === Storage Keys ===
-
-const ACTIVE_ID_STORAGE_KEY = 'gridfinity-library-active-id';
-const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
+import { LAYOUT_KEY_PREFIX, ACTIVE_ID_STORAGE_KEY } from './storageKeys';
 
 function getLayoutKey(id: string): string {
   return `${LAYOUT_KEY_PREFIX}${id}`;

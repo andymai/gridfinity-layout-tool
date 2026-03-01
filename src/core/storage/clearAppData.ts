@@ -16,9 +16,10 @@
 import { clearAllData as clearIndexedDB } from './backends/indexedDB';
 import { pruneAnalyticsData } from '@/shared/analytics/posthog';
 import { clearLabelSizesCache } from '@/shared/analytics/purposeInference';
+import { SETTINGS_STORAGE_KEY } from './storageKeys';
 
 /** Keys that should be preserved during a full data clear. */
-const PRESERVED_KEYS = new Set(['gridfinity-settings-v1']);
+const PRESERVED_KEYS = new Set([SETTINGS_STORAGE_KEY]);
 
 /**
  * Clear all app data except settings.

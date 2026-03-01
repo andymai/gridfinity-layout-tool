@@ -16,10 +16,7 @@
  * runs the LS→IDB migration cleanly on the next boot.
  */
 
-// These must match the constants in migration.ts and localStorageCleanup.ts.
-const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
-const MIGRATION_FLAG_KEY = 'gridfinity-indexeddb-migrated';
-const CLEANUP_FLAG_KEY = 'gridfinity-localstorage-cleaned';
+import { LAYOUT_KEY_PREFIX, MIGRATION_FLAG_KEY, CLEANUP_FLAG_KEY } from './storageKeys';
 
 /**
  * Detect and silently recover from a bad www→canonical migration.

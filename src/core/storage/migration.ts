@@ -26,10 +26,7 @@ import {
   storageUnavailable,
   storageNetworkError,
 } from '@/core/result';
-
-// Storage keys
-const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
-const MIGRATION_FLAG_KEY = 'gridfinity-indexeddb-migrated';
+import { LAYOUT_KEY_PREFIX, MIGRATION_FLAG_KEY } from './storageKeys';
 
 // Result types
 interface MigrationResult {

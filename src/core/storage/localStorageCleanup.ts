@@ -18,9 +18,7 @@
 import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
 import { isIndexedDBAvailable } from './backends/indexedDB';
-
-const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
-const CLEANUP_FLAG_KEY = 'gridfinity-localstorage-cleaned';
+import { LAYOUT_KEY_PREFIX, CLEANUP_FLAG_KEY } from './storageKeys';
 
 function getCleanupFlag(): boolean {
   try {
