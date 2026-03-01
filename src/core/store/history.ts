@@ -28,6 +28,9 @@ function cloneLayout(layout: Layout): Layout {
  * Remove stale bin references from the selection store after layout restoration.
  * Called after undo/redo to prevent selectedBinIds, focusedBinId, etc. from
  * referencing bins that no longer exist in the restored layout.
+ *
+ * Uses the selection store's restoreSelection() action instead of raw setState()
+ * to maintain store encapsulation.
  */
 function pruneStaleSelections(restoredLayout: Layout): void {
   const binIds = new Set(restoredLayout.bins.map((b) => b.id));
@@ -35,27 +38,33 @@ function pruneStaleSelections(restoredLayout: Layout): void {
   const categoryIds = new Set(restoredLayout.categories.map((c) => c.id));
   const selectionState = useSelectionStore.getState();
 
+  const updates: Record<string, unknown> = {};
+
   const prunedIds = selectionState.selectedBinIds.filter((id) => binIds.has(id));
   if (prunedIds.length !== selectionState.selectedBinIds.length) {
-    useSelectionStore.setState({ selectedBinIds: prunedIds });
+    updates.selectedBinIds = prunedIds;
   }
 
   if (selectionState.focusedBinId && !binIds.has(selectionState.focusedBinId)) {
-    useSelectionStore.setState({ focusedBinId: null });
+    updates.focusedBinId = null;
   }
 
   if (selectionState.quickLabelBinId && !binIds.has(selectionState.quickLabelBinId)) {
-    useSelectionStore.setState({ quickLabelBinId: null });
+    updates.quickLabelBinId = null;
   }
 
   // Reset active layer if it no longer exists in the restored layout
   if (!layerIds.has(selectionState.activeLayerId) && restoredLayout.layers.length > 0) {
-    useSelectionStore.setState({ activeLayerId: restoredLayout.layers[0].id });
+    updates.activeLayerId = restoredLayout.layers[0].id;
   }
 
   // Reset active category if it no longer exists in the restored layout
   if (!categoryIds.has(selectionState.activeCategoryId) && restoredLayout.categories.length > 0) {
-    useSelectionStore.setState({ activeCategoryId: restoredLayout.categories[0].id });
+    updates.activeCategoryId = restoredLayout.categories[0].id;
+  }
+
+  if (Object.keys(updates).length > 0) {
+    useSelectionStore.getState().restoreSelection(updates);
   }
 }
 
@@ -107,7 +116,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       canRedo: true,
     }));
 
-    useLayoutStore.setState({ layout: previous });
+    useLayoutStore.getState().restoreLayout(previous);
     pruneStaleSelections(previous);
 
     // Track undo for ML telemetry
@@ -129,7 +138,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       canRedo: state.future.length > 1,
     }));
 
-    useLayoutStore.setState({ layout: next });
+    useLayoutStore.getState().restoreLayout(next);
     pruneStaleSelections(next);
   },
 

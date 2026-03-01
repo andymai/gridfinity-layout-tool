@@ -199,6 +199,71 @@ describe('history store', () => {
     });
   });
 
+  describe('store encapsulation', () => {
+    it('undo calls restoreLayout instead of raw setState', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      push(JSON.parse(JSON.stringify(layout)));
+      useLayoutStore.getState().setName('Modified');
+
+      const restoreSpy = vi.spyOn(useLayoutStore.getState(), 'restoreLayout');
+      undo();
+
+      expect(restoreSpy).toHaveBeenCalledOnce();
+      expect(restoreSpy).toHaveBeenCalledWith(expect.objectContaining({ name: 'Untitled layout' }));
+    });
+
+    it('redo calls restoreLayout instead of raw setState', () => {
+      const { push } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      push(JSON.parse(JSON.stringify(layout)));
+      useLayoutStore.getState().setName('Modified');
+
+      // Set up spy before any undo/redo
+      const restoreSpy = vi.spyOn(useLayoutStore.getState(), 'restoreLayout');
+
+      useHistoryStore.getState().undo();
+      restoreSpy.mockClear(); // Clear the undo call
+
+      useHistoryStore.getState().redo();
+
+      expect(restoreSpy).toHaveBeenCalledOnce();
+      expect(restoreSpy).toHaveBeenCalledWith(expect.objectContaining({ name: 'Modified' }));
+    });
+
+    it('undo calls restoreSelection for stale selection pruning', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      push(JSON.parse(JSON.stringify(layout)));
+
+      const addResult = useLayoutStore.getState().addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 1,
+        depth: 1,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+      if (!isOk(addResult)) throw new Error('addBin failed');
+
+      useSelectionStore.setState({ selectedBinIds: [addResult.value] });
+
+      const restoreSpy = vi.spyOn(useSelectionStore.getState(), 'restoreSelection');
+      undo();
+
+      expect(restoreSpy).toHaveBeenCalledOnce();
+      expect(restoreSpy).toHaveBeenCalledWith(expect.objectContaining({ selectedBinIds: [] }));
+    });
+  });
+
   describe('performance', () => {
     it('handles large layouts with 2500 bins efficiently', { timeout: 60000 }, () => {
       const { push, undo, redo } = useHistoryStore.getState();
