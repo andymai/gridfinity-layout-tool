@@ -9,18 +9,18 @@ import { createDefaultLayout } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
+import { INITIAL_TOAST_STATE } from '@/core/store/toast';
 import { useSettingsStore, DEFAULT_SETTINGS } from '@/core/store/settings';
 import { useLibraryStore } from '@/core/store/library';
 import { useLabsStore } from '@/core/store';
 import { createDefaultLabsPreferences } from '@/core/labs';
-// New stores extracted from ui.ts
-import { useSelectionStore } from '@/core/store/selection';
-import { useViewStore } from '@/core/store/view';
-import { useInteractionStore } from '@/core/store/interaction';
-import { useMobileStore } from '@/core/store/mobile';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
-import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import { useSnapshotStore } from '@/core/store/snapshots';
+import { useSelectionStore, INITIAL_SELECTION_STATE } from '@/core/store/selection';
+import { useViewStore, INITIAL_VIEW_STATE } from '@/core/store/view';
+import { useInteractionStore, INITIAL_INTERACTION_STATE } from '@/core/store/interaction';
+import { useMobileStore, INITIAL_MOBILE_STATE } from '@/core/store/mobile';
+import { useHalfBinModeStore, INITIAL_HALF_BIN_MODE_STATE } from '@/core/store/halfBinMode';
+import { useSharedPreviewStore, INITIAL_SHARED_PREVIEW_STATE } from '@/core/store/sharedPreview';
+import { useSnapshotStore, INITIAL_SNAPSHOT_STATE } from '@/core/store/snapshots';
 
 /**
  * Reset individual stores for tests that only need partial isolation.
@@ -36,28 +36,11 @@ export function resetLayoutStore(): void {
 }
 
 export function resetSelectionStore(): void {
-  useSelectionStore.setState({
-    selectedBinIds: [],
-    activeLayerId: layerId(''),
-    activeCategoryId: categoryId('coral'),
-    focusedBinId: null,
-    quickLabelBinId: null,
-  });
+  useSelectionStore.setState(INITIAL_SELECTION_STATE);
 }
 
 export function resetInteractionStore(): void {
-  useInteractionStore.setState({
-    interaction: null,
-    dropTarget: null,
-    paintSize: null,
-    keyboardDragMode: false,
-    keyboardResizeMode: false,
-    liveMessage: null,
-    showIsometricPreview: false,
-    isometricRotation: 0,
-    layerViewMode: 'stack',
-    isPreviewExpanded: false,
-  });
+  useInteractionStore.setState(INITIAL_INTERACTION_STATE);
 }
 
 export function resetHistoryStore(): void {
@@ -70,17 +53,7 @@ export function resetHistoryStore(): void {
 }
 
 export function resetViewStore(): void {
-  useViewStore.setState({
-    zoom: 1,
-    showOtherLayers: true,
-    leftPanelCollapsed: false,
-    rightPanelCollapsed: false,
-    contextMenu: null,
-    highlightedCategoryId: null,
-    highlightedRowLabel: null,
-    highlightedColLabel: null,
-    printModalOpen: false,
-  });
+  useViewStore.setState(INITIAL_VIEW_STATE);
 }
 
 export function resetLibraryStore(): void {
@@ -107,56 +80,22 @@ export function resetAllStores(): void {
   });
 
   // Selection store
-  useSelectionStore.setState({
-    selectedBinIds: [],
-    activeLayerId: layerId(''),
-    activeCategoryId: categoryId('coral'),
-    focusedBinId: null,
-    quickLabelBinId: null,
-  });
+  useSelectionStore.setState(INITIAL_SELECTION_STATE);
 
   // View store
-  useViewStore.setState({
-    zoom: 1,
-    showOtherLayers: true,
-    leftPanelCollapsed: false,
-    rightPanelCollapsed: false,
-    contextMenu: null,
-    highlightedCategoryId: null,
-    highlightedRowLabel: null,
-    highlightedColLabel: null,
-    printModalOpen: false,
-  });
+  useViewStore.setState(INITIAL_VIEW_STATE);
 
   // Interaction store
-  useInteractionStore.setState({
-    interaction: null,
-    dropTarget: null,
-    paintSize: null,
-    keyboardDragMode: false,
-    keyboardResizeMode: false,
-    liveMessage: null,
-    showIsometricPreview: false, // Match InteractionStore default
-    isometricRotation: 0,
-    layerViewMode: 'stack', // Match InteractionStore default
-    isPreviewExpanded: false,
-  });
+  useInteractionStore.setState(INITIAL_INTERACTION_STATE);
 
   // Mobile store
-  useMobileStore.setState({
-    activeMobilePanel: null,
-    mobileLayersTab: 'layers',
-  });
+  useMobileStore.setState(INITIAL_MOBILE_STATE);
 
   // Half-bin mode store
-  useHalfBinModeStore.setState({
-    halfBinMode: false,
-  });
+  useHalfBinModeStore.setState(INITIAL_HALF_BIN_MODE_STATE);
 
   // Shared preview store
-  useSharedPreviewStore.setState({
-    sharedPreview: null,
-  });
+  useSharedPreviewStore.setState(INITIAL_SHARED_PREVIEW_STATE);
 
   // History store
   useHistoryStore.setState({
@@ -167,7 +106,7 @@ export function resetAllStores(): void {
   });
 
   // Toast store
-  useToastStore.setState({ toasts: [] });
+  useToastStore.setState(INITIAL_TOAST_STATE);
 
   // Settings store
   useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
@@ -188,10 +127,7 @@ export function resetAllStores(): void {
   });
 
   // Snapshot store
-  useSnapshotStore.setState({
-    snapshots: [],
-    isLoading: false,
-  });
+  useSnapshotStore.setState(INITIAL_SNAPSHOT_STATE);
 }
 
 /**

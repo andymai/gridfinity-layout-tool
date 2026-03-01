@@ -35,9 +35,13 @@ export interface SnapshotState {
   updateLabel: (snapshotId: string, label: string) => Promise<void>;
 }
 
-export const useSnapshotStore = create<SnapshotState>((set) => ({
-  snapshots: [],
+export const INITIAL_SNAPSHOT_STATE = {
+  snapshots: [] as Snapshot[],
   isLoading: false,
+} as const;
+
+export const useSnapshotStore = create<SnapshotState>((set) => ({
+  ...INITIAL_SNAPSHOT_STATE,
 
   loadForLayout: async (layoutId: string) => {
     set({ isLoading: true });

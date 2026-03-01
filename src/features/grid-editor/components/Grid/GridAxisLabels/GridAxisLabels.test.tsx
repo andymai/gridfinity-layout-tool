@@ -31,6 +31,7 @@ vi.mock('@/core/store/view', () => {
         subscribe: vi.fn(),
       }
     ),
+    INITIAL_VIEW_STATE: mockStoreState,
   };
 });
 

@@ -36,10 +36,14 @@ interface MobileActions {
 
 export type MobileStore = MobileState & MobileActions;
 
+export const INITIAL_MOBILE_STATE = {
+  activeMobilePanel: null as MobilePanel,
+  mobileLayersTab: 'layers' as MobileLayersTab,
+} as const;
+
 export const useMobileStore = create<MobileStore>((set) => ({
   // Initial state
-  activeMobilePanel: null,
-  mobileLayersTab: 'layers',
+  ...INITIAL_MOBILE_STATE,
 
   // Actions
   setActiveMobilePanel: (panel) => set({ activeMobilePanel: panel }),

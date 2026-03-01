@@ -52,8 +52,12 @@ interface SharedPreviewActions {
 
 export type SharedPreviewStore = SharedPreviewState & SharedPreviewActions;
 
+export const INITIAL_SHARED_PREVIEW_STATE = {
+  sharedPreview: null as SharedPreviewData | null,
+} as const;
+
 export const useSharedPreviewStore = create<SharedPreviewStore>((set) => ({
-  sharedPreview: null,
+  ...INITIAL_SHARED_PREVIEW_STATE,
 
   setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) => {
     if (layout) {

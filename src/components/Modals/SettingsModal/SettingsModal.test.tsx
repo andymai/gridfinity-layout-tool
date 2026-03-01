@@ -52,6 +52,7 @@ vi.mock('@/core/store', () => ({
 vi.mock('@/core/store/toast', () => ({
   useToastStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({ addToast: vi.fn() }),
+  INITIAL_TOAST_STATE: {},
 }));
 
 vi.mock('@/shared/components/ConfirmDialog', () => ({

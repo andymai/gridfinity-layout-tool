@@ -64,6 +64,10 @@ interface HalfBinModeActions {
 
 export type HalfBinModeStore = HalfBinModeState & HalfBinModeActions;
 
+export const INITIAL_HALF_BIN_MODE_STATE = {
+  halfBinMode: false,
+} as const;
+
 export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
   halfBinMode: loadFromStorage(),
 

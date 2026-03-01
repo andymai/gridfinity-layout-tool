@@ -97,22 +97,26 @@ interface ViewActions {
 
 export type ViewStore = ViewState & ViewActions;
 
-export const useViewStore = create<ViewStore>((set) => ({
-  // Initial state
+export const INITIAL_VIEW_STATE = {
   zoom: 1,
   showOtherLayers: true,
   leftPanelCollapsed: false,
   rightPanelCollapsed: false,
-  contextMenu: null,
-  highlightedCategoryId: null,
-  highlightedRowLabel: null,
-  highlightedColLabel: null,
+  contextMenu: null as ContextMenuState | null,
+  highlightedCategoryId: null as CategoryId | null,
+  highlightedRowLabel: null as number | null,
+  highlightedColLabel: null as number | null,
   printModalOpen: false,
   showLayoutManager: false,
   showIsometricPreview: false,
   isometricRotation: 0,
-  layerViewMode: 'stack',
+  layerViewMode: 'stack' as LayerViewMode,
   isPreviewExpanded: false,
+} as const;
+
+export const useViewStore = create<ViewStore>((set) => ({
+  // Initial state
+  ...INITIAL_VIEW_STATE,
 
   // Zoom actions
   setZoom: (zoom) =>

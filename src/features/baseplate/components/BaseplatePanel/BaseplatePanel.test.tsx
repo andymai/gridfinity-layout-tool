@@ -56,6 +56,7 @@ let mockHalfBinMode = false;
 vi.mock('@/core/store/halfBinMode', () => ({
   useHalfBinModeStore: (selector: (state: { halfBinMode: boolean }) => unknown) =>
     selector({ halfBinMode: mockHalfBinMode }),
+  INITIAL_HALF_BIN_MODE_STATE: {},
 }));
 
 // Mock page store
