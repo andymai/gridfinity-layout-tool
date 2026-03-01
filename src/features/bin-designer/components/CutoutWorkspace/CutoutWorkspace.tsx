@@ -556,7 +556,7 @@ export function CutoutWorkspace() {
   ]);
 
   return (
-    <div className="flex h-full flex-col bg-surface-secondary select-none">
+    <div className="relative flex h-full flex-col bg-surface-secondary select-none">
       <WorkspaceHeader
         zoomPercent={zoomPercent}
         onZoomIn={zoomIn}

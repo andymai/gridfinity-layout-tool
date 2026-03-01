@@ -185,8 +185,9 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       if (mod) {
         e.preventDefault();
         ctx.copySelected();
-      } else if (!e.shiftKey) {
+      } else {
         e.preventDefault();
+        e.stopImmediatePropagation();
         ctx.setMode({ type: 'placing', shape: 'circle' });
       }
       break;
@@ -194,8 +195,9 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       if (mod) {
         e.preventDefault();
         ctx.pasteFromClipboard();
-      } else if (!e.shiftKey) {
+      } else {
         e.preventDefault();
+        e.stopImmediatePropagation();
         ctx.setMode({ type: 'idle' });
       }
       break;
@@ -228,6 +230,7 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
     case 'r':
       if (!mod) {
         e.preventDefault();
+        e.stopImmediatePropagation();
         if (ctx.selection.size > 0) {
           handleRotate90(ctx);
         } else {
@@ -238,16 +241,18 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
 
     // P: switch to pen tool
     case 'p':
-      if (!mod && !e.shiftKey) {
+      if (!mod) {
         e.preventDefault();
+        e.stopImmediatePropagation();
         ctx.setMode({ type: 'placing', shape: 'path' });
       }
       break;
 
     // M: switch to ruler/measure tool
     case 'm':
-      if (!mod && !e.shiftKey) {
+      if (!mod) {
         e.preventDefault();
+        e.stopImmediatePropagation();
         ctx.setMode({ type: 'ruler-ready' });
       }
       break;
