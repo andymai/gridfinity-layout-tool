@@ -111,10 +111,6 @@ function BinComponent({
   const t = useTranslation();
   const { isTouchDevice } = useResponsive();
 
-  // Performance: Use focused stores directly instead of useUIStore facade.
-  // This prevents cascading re-renders when unrelated state changes.
-
-  // Selection state - from useSelectionStore
   const { selectedBinIds, focusedBinId } = useSelectionStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,
@@ -122,7 +118,6 @@ function BinComponent({
     }))
   );
 
-  // Interaction state - from useInteractionStore
   const interaction = useInteractionStore((state) => state.interaction);
 
   // Performance: Use derived selector for category highlighting.

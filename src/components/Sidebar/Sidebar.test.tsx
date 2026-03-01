@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from '@/components/Sidebar';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
@@ -123,7 +123,7 @@ describe('Sidebar', () => {
 
       fireEvent.click(screen.getByLabelText('Collapse left panel'));
 
-      expect(useUIStore.getState().leftPanelCollapsed).toBe(true);
+      expect(useViewStore.getState().leftPanelCollapsed).toBe(true);
     });
 
     it('shows expand button when collapsed', () => {
@@ -141,7 +141,7 @@ describe('Sidebar', () => {
 
       fireEvent.click(screen.getByLabelText('Expand left panel'));
 
-      expect(useUIStore.getState().leftPanelCollapsed).toBe(false);
+      expect(useViewStore.getState().leftPanelCollapsed).toBe(false);
     });
 
     it('hides content when collapsed', () => {
@@ -300,7 +300,7 @@ describe('Sidebar', () => {
 
       fireEvent.click(screen.getByLabelText('Toggle half-bin mode'));
 
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
     });
 
     it('uses 0.5 step for width in half-bin mode', () => {

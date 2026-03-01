@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react';
 import { Bin } from '@/features/grid-editor/components/Grid/Bin';
-import { useUIStore } from '@/core/store/ui';
+import { useViewStore, useSelectionStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
 import { resetAllStores } from '@/test/testUtils';
 import type { Bin as BinType, Category, Layer } from '@/core/types';
@@ -97,7 +97,7 @@ describe('Mobile Touch Interactions', () => {
       });
 
       // Context menu should not be shown yet
-      expect(useUIStore.getState().contextMenu).toBeNull();
+      expect(useViewStore.getState().contextMenu).toBeNull();
 
       // Advance past threshold
       act(() => {
@@ -105,7 +105,7 @@ describe('Mobile Touch Interactions', () => {
       });
 
       // Context menu should now be shown
-      const contextMenu = useUIStore.getState().contextMenu;
+      const contextMenu = useViewStore.getState().contextMenu;
       expect(contextMenu).not.toBeNull();
       expect(contextMenu?.binIds).toEqual([testBin.id]);
     });
@@ -189,7 +189,7 @@ describe('Mobile Touch Interactions', () => {
       });
 
       // Context menu should not appear (long press was cancelled)
-      expect(useUIStore.getState().contextMenu).toBeNull();
+      expect(useViewStore.getState().contextMenu).toBeNull();
 
       // Drag should have started instead
       expect(mockStartDrag).toHaveBeenCalledWith(testBin.id, 115, 100, expect.any(Number));
@@ -234,7 +234,7 @@ describe('Mobile Touch Interactions', () => {
       });
 
       // Context menu should not appear
-      expect(useUIStore.getState().contextMenu).toBeNull();
+      expect(useViewStore.getState().contextMenu).toBeNull();
     });
   });
 
@@ -267,7 +267,7 @@ describe('Mobile Touch Interactions', () => {
       });
 
       // Bin should be selected immediately on touch
-      expect(useUIStore.getState().selectedBinIds).toContain(testBin.id);
+      expect(useSelectionStore.getState().selectedBinIds).toContain(testBin.id);
     });
 
     it('does not start drag immediately on touch (waits for move)', () => {
@@ -388,7 +388,7 @@ describe('Mobile Touch Interactions', () => {
       });
 
       // Context menu should be showing
-      expect(useUIStore.getState().contextMenu).not.toBeNull();
+      expect(useViewStore.getState().contextMenu).not.toBeNull();
 
       // Now move - should NOT start drag because long press already triggered
       act(() => {
@@ -496,7 +496,7 @@ describe('Mobile Touch Interactions', () => {
       });
 
       // Should not select or start drag on ghost bin
-      expect(useUIStore.getState().selectedBinIds).not.toContain(testBin.id);
+      expect(useSelectionStore.getState().selectedBinIds).not.toContain(testBin.id);
       expect(mockStartDrag).not.toHaveBeenCalled();
     });
   });

@@ -6,7 +6,6 @@ export { useSettingsStore, DEFAULT_SETTINGS } from './settings';
 export type { UserSettings } from './settings';
 export { useLabsStore, LABS_STORAGE_KEY } from './labs';
 
-// New stores extracted from ui.ts
 export { useSelectionStore } from './selection';
 export type { SelectionStore } from './selection';
 
@@ -27,9 +26,3 @@ export type { SharedPreviewStore } from './sharedPreview';
 
 export { useSnapshotStore } from './snapshots';
 export type { SnapshotState } from './snapshots';
-
-// Legacy re-export for backwards compatibility
-// Production code has been migrated to specific stores.
-// Test files still use this facade for convenience.
-// eslint-disable-next-line @typescript-eslint/no-deprecated -- kept for backward compat
-export { useUIStore } from './ui';

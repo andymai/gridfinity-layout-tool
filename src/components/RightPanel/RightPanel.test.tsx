@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RightPanel } from '@/components/RightPanel';
-import { useUIStore, useLayoutStore, useViewStore } from '@/core/store';
+import { useLayoutStore, useViewStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector';
 import type { UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
@@ -216,7 +216,7 @@ describe('RightPanel', () => {
     vi.clearAllMocks();
 
     useLayoutStore.setState({ layout: mockLayout });
-    useUIStore.setState({ rightPanelCollapsed: false });
+    useViewStore.setState({ rightPanelCollapsed: false });
 
     mockUseBinInspector.mockReturnValue(createMockInspector());
     mockPrintListReturn = createMockPrintList();
@@ -241,7 +241,7 @@ describe('RightPanel', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Expand right panel' }));
 
-      expect(useUIStore.getState().rightPanelCollapsed).toBe(false);
+      expect(useViewStore.getState().rightPanelCollapsed).toBe(false);
     });
 
     it('has narrow width when collapsed', () => {
@@ -266,7 +266,7 @@ describe('RightPanel', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Collapse right panel' }));
 
-      expect(useUIStore.getState().rightPanelCollapsed).toBe(true);
+      expect(useViewStore.getState().rightPanelCollapsed).toBe(true);
     });
 
     it('has full width when expanded', () => {

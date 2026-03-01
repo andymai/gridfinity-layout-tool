@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useSharedWithMe } from '@/shared/hooks/useSharedWithMe';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout } from '@/core/constants';
@@ -73,11 +73,7 @@ describe('useSharedWithMe', () => {
       layout: createDefaultLayout(),
     });
 
-    useUIStore.setState({
-      sharedLayoutPreview: null,
-      sharedLayoutCloudShareId: null,
-      sharedLayoutPermission: undefined,
-    });
+    useSharedPreviewStore.setState({ sharedPreview: null });
 
     useHistoryStore.getState().clear();
     useToastStore.setState({ toasts: [] });

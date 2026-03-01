@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ShareButton } from './ShareButton';
 import { resetAllStores } from '@/test/testUtils';
-import { useLabsStore, useLayoutStore, useUIStore } from '@/core/store';
+import { useLabsStore, useLayoutStore, useSharedPreviewStore } from '@/core/store';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 
 // Mock hooks
@@ -100,10 +100,17 @@ describe('ShareButton', () => {
   });
 
   it('shows shared indicator when viewing shared layout', () => {
-    useUIStore.setState({ sharedLayoutCloudShareId: 'share-456' });
+    useSharedPreviewStore.setState({
+      sharedPreview: {
+        layout: { name: 'Shared', bins: [], layers: [], categories: [] },
+        originalName: 'Shared',
+        authorName: null,
+        cloudShareId: 'share-456',
+        permission: 'view',
+      },
+    });
 
     render(<ShareButton />);
-    // Button should show shared state
-    expect(screen.getByRole('button')).toBeInTheDocument();
+    expect(screen.getByText('share.button.shared')).toBeInTheDocument();
   });
 });
