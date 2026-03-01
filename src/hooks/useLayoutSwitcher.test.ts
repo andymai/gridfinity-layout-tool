@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useLayoutSwitcher } from '@/hooks/useLayoutSwitcher';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
@@ -250,7 +250,7 @@ describe('useLayoutSwitcher', () => {
       showLayoutManager: false,
     });
 
-    useUIStore.setState({
+    useSelectionStore.setState({
       selectedBinIds: [],
       activeLayerId: defaultLayout.layers[0]?.id || '',
       activeCategoryId: defaultLayout.categories[0]?.id || '',
@@ -326,7 +326,7 @@ describe('useLayoutSwitcher', () => {
     });
 
     it('clears selection on switch', async () => {
-      useUIStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
+      useSelectionStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -334,7 +334,7 @@ describe('useLayoutSwitcher', () => {
         await result.current.switchLayout(SECOND_LAYOUT_ID);
       });
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
     });
 
     it('clears undo history on switch', async () => {
@@ -396,8 +396,8 @@ describe('useLayoutSwitcher', () => {
         await result.current.switchLayout(SECOND_LAYOUT_ID);
       });
 
-      expect(useUIStore.getState().activeLayerId).toBe('new-layer');
-      expect(useUIStore.getState().activeCategoryId).toBe('new-cat');
+      expect(useSelectionStore.getState().activeLayerId).toBe('new-layer');
+      expect(useSelectionStore.getState().activeCategoryId).toBe('new-cat');
     });
 
     it('clears sharedLayoutPreview state when switching', async () => {

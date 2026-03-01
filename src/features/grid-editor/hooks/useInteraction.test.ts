@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useInteraction } from '@/features/grid-editor/hooks/useInteraction';
-import { useUIStore } from '@/core/store/ui';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
@@ -47,7 +46,7 @@ describe('useInteraction', () => {
         result.current.startDraw({ x: 2, y: 3 });
       });
 
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       expect(interaction).not.toBeNull();
       expect(interaction?.type).toBe('draw');
       if (interaction?.type === 'draw') {
@@ -58,7 +57,7 @@ describe('useInteraction', () => {
 
     it('initializes paint interaction when paint mode is active', () => {
       // Enable paint mode
-      useUIStore.getState().setPaintSize({ width: 2, depth: 2 });
+      useInteractionStore.getState().setPaintSize({ width: 2, depth: 2 });
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
@@ -67,7 +66,7 @@ describe('useInteraction', () => {
         result.current.startDraw({ x: 0, y: 0 });
       });
 
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       expect(interaction).not.toBeNull();
       expect(interaction?.type).toBe('paint');
       if (interaction?.type === 'paint') {
@@ -105,7 +104,7 @@ describe('useInteraction', () => {
         result.current.startDrag(binId, 68, 68);
       });
 
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       expect(interaction).not.toBeNull();
       expect(interaction?.type).toBe('drag');
       if (interaction?.type === 'drag') {
@@ -149,7 +148,7 @@ describe('useInteraction', () => {
       );
 
       // Select both bins
-      useUIStore.getState().setSelectedBins([binId1, binId2]);
+      useSelectionStore.getState().setSelectedBins([binId1, binId2]);
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
@@ -159,7 +158,7 @@ describe('useInteraction', () => {
         result.current.startDrag(binId1, 34, 34);
       });
 
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       expect(interaction?.type).toBe('drag');
       if (interaction?.type === 'drag') {
         expect(interaction.binIds).toHaveLength(2);
@@ -202,7 +201,7 @@ describe('useInteraction', () => {
       );
 
       // Select only first bin
-      useUIStore.getState().setSelectedBins([binId1]);
+      useSelectionStore.getState().setSelectedBins([binId1]);
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
@@ -212,7 +211,7 @@ describe('useInteraction', () => {
         result.current.startDrag(binId2, 100, 34);
       });
 
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       expect(interaction?.type).toBe('drag');
       if (interaction?.type === 'drag') {
         expect(interaction.binIds).toHaveLength(1);
@@ -228,7 +227,7 @@ describe('useInteraction', () => {
         result.current.startDrag('non-existent-id', 50, 50);
       });
 
-      expect(useUIStore.getState().interaction).toBeNull();
+      expect(useInteractionStore.getState().interaction).toBeNull();
     });
   });
 
@@ -259,7 +258,7 @@ describe('useInteraction', () => {
         result.current.startResize(binId, 'e');
       });
 
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       expect(interaction).not.toBeNull();
       expect(interaction?.type).toBe('resize');
       if (interaction?.type === 'resize') {
@@ -308,7 +307,7 @@ describe('useInteraction', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId1, binId2]);
+      useSelectionStore.getState().setSelectedBins([binId1, binId2]);
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
@@ -317,7 +316,7 @@ describe('useInteraction', () => {
         result.current.startResize(binId1, 'ne');
       });
 
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       expect(interaction?.type).toBe('resize');
       if (interaction?.type === 'resize') {
         expect(interaction.binIds).toHaveLength(2);
@@ -357,14 +356,14 @@ describe('useInteraction', () => {
           result.current.startResize(binId, handle);
         });
 
-        const interaction = useUIStore.getState().interaction;
+        const interaction = useInteractionStore.getState().interaction;
         expect(interaction?.type).toBe('resize');
         if (interaction?.type === 'resize') {
           expect(interaction.handle).toBe(handle);
         }
 
         // Reset for next iteration
-        useUIStore.getState().setInteraction(null);
+        useInteractionStore.getState().setInteraction(null);
       }
     });
   });
@@ -379,14 +378,14 @@ describe('useInteraction', () => {
         result.current.startDraw({ x: 0, y: 0 });
       });
 
-      expect(useUIStore.getState().interaction).not.toBeNull();
+      expect(useInteractionStore.getState().interaction).not.toBeNull();
 
       // Cancel it
       act(() => {
         result.current.cancel();
       });
 
-      expect(useUIStore.getState().interaction).toBeNull();
+      expect(useInteractionStore.getState().interaction).toBeNull();
     });
   });
 
@@ -445,7 +444,7 @@ describe('resize rect calculation (integration)', () => {
       result.current.startResize(binId, 'e');
     });
 
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     expect(interaction?.type).toBe('resize');
     if (interaction?.type === 'resize') {
       const startRect = interaction.startRects.get(binId);
@@ -480,7 +479,7 @@ describe('resize rect calculation (integration)', () => {
       result.current.startResize(binId, 'w');
     });
 
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     expect(interaction?.type).toBe('resize');
     if (interaction?.type === 'resize') {
       // Width should still be at least 1 after initialization
@@ -509,7 +508,7 @@ describe('pointer events', () => {
       result.current.startDraw({ x: 0, y: 0 });
     });
 
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     expect(interaction?.type).toBe('draw');
 
     // Simulate pointer move
@@ -523,7 +522,7 @@ describe('pointer events', () => {
     });
 
     // Interaction should still exist after move
-    expect(useUIStore.getState().interaction?.type).toBe('draw');
+    expect(useInteractionStore.getState().interaction?.type).toBe('draw');
   });
 
   it('draw interaction completes on pointer up and creates bin', () => {
@@ -553,7 +552,7 @@ describe('pointer events', () => {
     });
 
     // Interaction should be cleared
-    expect(useUIStore.getState().interaction).toBeNull();
+    expect(useInteractionStore.getState().interaction).toBeNull();
 
     // A bin should have been created
     expect(useLayoutStore.getState().layout.bins.length).toBeGreaterThanOrEqual(1);
@@ -585,7 +584,7 @@ describe('pointer events', () => {
       result.current.startDrag(binId, 68, 68);
     });
 
-    expect(useUIStore.getState().interaction?.type).toBe('drag');
+    expect(useInteractionStore.getState().interaction?.type).toBe('drag');
 
     // Simulate pointer move
     act(() => {
@@ -598,7 +597,7 @@ describe('pointer events', () => {
     });
 
     // Interaction should still be drag type
-    expect(useUIStore.getState().interaction?.type).toBe('drag');
+    expect(useInteractionStore.getState().interaction?.type).toBe('drag');
   });
 
   it('drag interaction completes on pointer up', () => {
@@ -634,7 +633,7 @@ describe('pointer events', () => {
     });
 
     // Interaction should be cleared
-    expect(useUIStore.getState().interaction).toBeNull();
+    expect(useInteractionStore.getState().interaction).toBeNull();
   });
 
   it('resize interaction updates on pointer move', () => {
@@ -663,7 +662,7 @@ describe('pointer events', () => {
       result.current.startResize(binId, 'e');
     });
 
-    expect(useUIStore.getState().interaction?.type).toBe('resize');
+    expect(useInteractionStore.getState().interaction?.type).toBe('resize');
 
     // Simulate pointer move
     act(() => {
@@ -676,7 +675,7 @@ describe('pointer events', () => {
     });
 
     // Interaction should still be resize type
-    expect(useUIStore.getState().interaction?.type).toBe('resize');
+    expect(useInteractionStore.getState().interaction?.type).toBe('resize');
   });
 
   it('resize interaction completes on pointer up', () => {
@@ -712,7 +711,7 @@ describe('pointer events', () => {
     });
 
     // Interaction should be cleared
-    expect(useUIStore.getState().interaction).toBeNull();
+    expect(useInteractionStore.getState().interaction).toBeNull();
   });
 
   it('drag to staging moves bin to staging', () => {
@@ -743,7 +742,7 @@ describe('pointer events', () => {
 
     // Set drop target to staging
     act(() => {
-      useUIStore.getState().setDropTarget('staging');
+      useInteractionStore.getState().setDropTarget('staging');
     });
 
     // Simulate pointer up
@@ -765,7 +764,7 @@ describe('pointer events', () => {
       result.current.startDraw({ x: 0, y: 0 });
     });
 
-    expect(useUIStore.getState().interaction).not.toBeNull();
+    expect(useInteractionStore.getState().interaction).not.toBeNull();
 
     // Simulate pointer cancel
     act(() => {
@@ -774,7 +773,7 @@ describe('pointer events', () => {
     });
 
     // Interaction should be cleared
-    expect(useUIStore.getState().interaction).toBeNull();
+    expect(useInteractionStore.getState().interaction).toBeNull();
   });
 
   it('pointer cancel does not create a bin for draw interaction', () => {
@@ -836,7 +835,7 @@ describe('pointer events', () => {
       result.current.startDrag(binId, 68, 68);
     });
 
-    expect(useUIStore.getState().interaction?.type).toBe('drag');
+    expect(useInteractionStore.getState().interaction?.type).toBe('drag');
 
     // Simulate pointer cancel
     act(() => {
@@ -876,10 +875,10 @@ describe('pointer events', () => {
       result.current.startDrag(binId, 36, 36);
     });
     act(() => {
-      useUIStore.getState().setDropTarget('staging');
+      useInteractionStore.getState().setDropTarget('staging');
     });
 
-    expect(useUIStore.getState().dropTarget).toBe('staging');
+    expect(useInteractionStore.getState().dropTarget).toBe('staging');
 
     // Simulate pointer cancel
     act(() => {
@@ -888,14 +887,14 @@ describe('pointer events', () => {
     });
 
     // Drop target should be cleared
-    expect(useUIStore.getState().dropTarget).toBeNull();
+    expect(useInteractionStore.getState().dropTarget).toBeNull();
     // Bin should NOT be deleted
     expect(useLayoutStore.getState().layout.bins.find((b) => b.id === binId)).toBeDefined();
   });
 
   it('paint mode creates multiple bins in area', () => {
     // Enable paint mode with 2x2 bins
-    useUIStore.getState().setPaintSize({ width: 2, depth: 2 });
+    useInteractionStore.getState().setPaintSize({ width: 2, depth: 2 });
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -904,7 +903,7 @@ describe('pointer events', () => {
       result.current.startDraw({ x: 0, y: 0 });
     });
 
-    expect(useUIStore.getState().interaction?.type).toBe('paint');
+    expect(useInteractionStore.getState().interaction?.type).toBe('paint');
 
     // Set a 4x4 area (should fit 2x2 = 4 bins of 2x2 size)
     act(() => {
@@ -986,7 +985,7 @@ describe('stagingDrag interaction', () => {
     });
 
     // Interaction should still be stagingDrag
-    expect(useUIStore.getState().interaction?.type).toBe('stagingDrag');
+    expect(useInteractionStore.getState().interaction?.type).toBe('stagingDrag');
   });
 
   it('stagingDrag places bin on grid on pointer up when valid', () => {
@@ -1193,7 +1192,7 @@ describe('duplicate drag (Alt+drag)', () => {
       result.current.startDrag(binId, 68, 68, undefined, true);
     });
 
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     expect(interaction).not.toBeNull();
     expect(interaction?.type).toBe('drag');
     if (interaction?.type === 'drag') {
@@ -1309,7 +1308,7 @@ describe('duplicate drag (Alt+drag)', () => {
     expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
 
     // Select both bins
-    useUIStore.getState().setSelectedBins([binId1, binId2]);
+    useSelectionStore.getState().setSelectedBins([binId1, binId2]);
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -1900,7 +1899,7 @@ describe('resize via pointer movement', () => {
       result.current.startResize(binId, 'e');
     });
 
-    expect(useUIStore.getState().interaction?.type).toBe('resize');
+    expect(useInteractionStore.getState().interaction?.type).toBe('resize');
 
     // Move pointer to expand width
     act(() => {
@@ -1913,7 +1912,7 @@ describe('resize via pointer movement', () => {
     });
 
     // Interaction should still be resize with potentially updated rects
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     expect(interaction?.type).toBe('resize');
   });
 
@@ -1944,7 +1943,7 @@ describe('resize via pointer movement', () => {
       result.current.startResize(binId, 'w');
     });
 
-    expect(useUIStore.getState().interaction?.type).toBe('resize');
+    expect(useInteractionStore.getState().interaction?.type).toBe('resize');
 
     // Move pointer to left
     act(() => {
@@ -1956,7 +1955,7 @@ describe('resize via pointer movement', () => {
       document.dispatchEvent(moveEvent);
     });
 
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     expect(interaction?.type).toBe('resize');
     if (interaction?.type === 'resize') {
       expect(interaction.handle).toBe('w');
@@ -2000,7 +1999,7 @@ describe('resize via pointer movement', () => {
       document.dispatchEvent(moveEvent);
     });
 
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     expect(interaction?.type).toBe('resize');
     if (interaction?.type === 'resize') {
       expect(interaction.handle).toBe('s');
@@ -2044,7 +2043,7 @@ describe('resize via pointer movement', () => {
       document.dispatchEvent(moveEvent);
     });
 
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     expect(interaction?.type).toBe('resize');
     if (interaction?.type === 'resize') {
       expect(interaction.handle).toBe('sw');
@@ -2072,7 +2071,7 @@ describe('cleanup on unmount', () => {
       result.current.startDraw({ x: 0, y: 0 });
     });
 
-    expect(useUIStore.getState().interaction).not.toBeNull();
+    expect(useInteractionStore.getState().interaction).not.toBeNull();
 
     // Unmount should clean up without errors
     expect(() => unmount()).not.toThrow();

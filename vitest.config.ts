@@ -34,10 +34,10 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to catch regressions.
-        // Updated 2026-02-24: Adjusted for baseplate generator feature (WASM bridge + Three.js components).
+        // Updated 2026-02-28: Adjusted after removing useUIStore facade (dead delegation functions).
         lines: 76,
         branches: 68,
-        functions: 74.5,
+        functions: 74,
         statements: 75,
       },
     },

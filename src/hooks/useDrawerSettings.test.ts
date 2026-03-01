@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore, useToastStore, useHalfBinModeStore } from '@/core/store';
+import { useSelectionStore, useToastStore, useHalfBinModeStore } from '@/core/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
@@ -13,7 +13,7 @@ describe('useDrawerSettings', () => {
     // Set up a valid active layer for tests
     const layout = useLayoutStore.getState().layout;
     if (layout.layers.length > 0) {
-      useUIStore.getState().setActiveLayer(layout.layers[0].id);
+      useSelectionStore.getState().setActiveLayer(layout.layers[0].id);
     }
   });
 
@@ -115,7 +115,7 @@ describe('useDrawerSettings', () => {
     });
 
     it('uses 0.5 step when halfBinMode is enabled', () => {
-      useUIStore.getState().setHalfBinMode(true);
+      useHalfBinModeStore.getState().setHalfBinMode(true);
       const { result } = renderHook(() => useDrawerSettings());
 
       expect(result.current.widthStep).toBe(0.5);
@@ -157,7 +157,7 @@ describe('useDrawerSettings', () => {
 
     it('handleHalfBinToggle shows modal when violations exist', () => {
       // Enable half-bin mode first
-      useUIStore.getState().setHalfBinMode(true);
+      useHalfBinModeStore.getState().setHalfBinMode(true);
 
       // Add a bin with fractional dimensions
       const layout = useLayoutStore.getState().layout;
@@ -184,7 +184,7 @@ describe('useDrawerSettings', () => {
 
     it('handleRemediate continues moving remaining bins when one was deleted', () => {
       // Enable half-bin mode and add two fractional bins
-      useUIStore.getState().setHalfBinMode(true);
+      useHalfBinModeStore.getState().setHalfBinMode(true);
 
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.getState().addBin({
@@ -239,7 +239,7 @@ describe('useDrawerSettings', () => {
 
     it('handleRemediate moves fractional bins to staging', () => {
       // Enable half-bin mode
-      useUIStore.getState().setHalfBinMode(true);
+      useHalfBinModeStore.getState().setHalfBinMode(true);
 
       // Add a bin with fractional dimensions
       const layout = useLayoutStore.getState().layout;

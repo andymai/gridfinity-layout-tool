@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SingleBinInspector } from '@/features/bin-inspector';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector';
 import { resetAllStores } from '@/test/testUtils';
-import { useUIStore } from '@/core/store';
+import { useHalfBinModeStore } from '@/core/store';
 
 // Mock the DeferredNumberInput component to simplify testing
 vi.mock('@/shared/components/DeferredNumberInput', () => ({
@@ -352,7 +352,7 @@ describe('SingleBinInspector', () => {
 
   describe('half-bin mode', () => {
     it('shows fractional dimensions when half-bin mode enabled', () => {
-      useUIStore.setState({ halfBinMode: true });
+      useHalfBinModeStore.setState({ halfBinMode: true });
       const inspector = createMockInspector({
         bin: { ...mockBin, width: 2.5, depth: 1.5 },
       });

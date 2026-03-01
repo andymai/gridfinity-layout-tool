@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
-import { useLayoutStore, useUIStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
@@ -137,7 +137,7 @@ describe('ActiveLayerPanel', () => {
       // Click a size
       fireEvent.click(screen.getByText('2×2'));
 
-      expect(useUIStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
+      expect(useInteractionStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
     });
 
     it('shows selected size in toolbar button', () => {
@@ -181,7 +181,7 @@ describe('ActiveLayerPanel', () => {
       render(<ActiveLayerPanel />);
       fireEvent.click(screen.getByText('Fill with 2×2'));
 
-      expect(useUIStore.getState().paintSize).toBeNull();
+      expect(useInteractionStore.getState().paintSize).toBeNull();
     });
   });
 

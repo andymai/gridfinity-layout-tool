@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Header } from '@/components/Header';
-import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '@/core/store';
+import { useLayoutStore, useHistoryStore, useLibraryStore } from '@/core/store';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { resetAllStores } from '@/test/testUtils';
 
 // Mock the LayoutManagerModal to avoid deep component tree
@@ -269,7 +270,7 @@ describe('Header', () => {
     });
 
     it('shows half-bin badge when mode is on', () => {
-      useUIStore.getState().toggleHalfBinMode();
+      useHalfBinModeStore.getState().toggleHalfBinMode();
       render(<Header {...defaultProps} />);
 
       expect(screen.getByText('Half-bin mode')).toBeInTheDocument();

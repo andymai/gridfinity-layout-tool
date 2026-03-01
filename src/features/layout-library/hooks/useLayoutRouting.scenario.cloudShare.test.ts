@@ -79,10 +79,7 @@ describe('useLayoutRouting with cloud share URLs', () => {
       },
     });
 
-    useSharedPreviewStore.setState({
-      sharedPreview: null,
-      sharedLayoutPreview: null,
-    });
+    useSharedPreviewStore.setState({ sharedPreview: null });
 
     // Default mock implementations
     vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);

@@ -6,7 +6,7 @@ import {
   hasFractionalDimensions,
   HALF_BIN_SCALE,
 } from '@/core/constants';
-import { useUIStore } from '@/core/store';
+import { useHalfBinModeStore } from '@/core/store';
 
 /**
  * Helper to calculate pixel dimensions for grid elements.
@@ -128,34 +128,34 @@ describe('Half-bin mode', () => {
     });
   });
 
-  describe('UI store halfBinMode', () => {
+  describe('halfBinMode store', () => {
     beforeEach(() => {
       // Reset store state
-      useUIStore.setState({ halfBinMode: false });
+      useHalfBinModeStore.setState({ halfBinMode: false });
     });
 
     it('defaults to false', () => {
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
     });
 
     it('toggleHalfBinMode toggles the value', () => {
-      const { toggleHalfBinMode } = useUIStore.getState();
+      const { toggleHalfBinMode } = useHalfBinModeStore.getState();
 
       toggleHalfBinMode();
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
 
       toggleHalfBinMode();
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
     });
 
     it('setHalfBinMode sets specific value', () => {
-      const { setHalfBinMode } = useUIStore.getState();
+      const { setHalfBinMode } = useHalfBinModeStore.getState();
 
       setHalfBinMode(true);
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
 
       setHalfBinMode(false);
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
     });
   });
 

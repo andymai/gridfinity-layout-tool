@@ -3,7 +3,8 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MobileLayoutsPanel } from '@/components/Mobile/MobileLayoutsPanel';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useMobileStore } from '@/core/store/mobile';
+import { useInteractionStore } from '@/core/store/interaction';
 import { createDefaultLayout } from '@/core/constants';
 import * as storage from '@/core/storage';
 import * as cloudShareHook from '@/features/cloud-share/hooks/useCloudShare';
@@ -226,8 +227,10 @@ describe('MobileLayoutsPanel', () => {
       showLayoutManager: false,
     });
 
-    useUIStore.setState({
+    useMobileStore.setState({
       activeMobilePanel: 'layouts',
+    });
+    useInteractionStore.setState({
       liveMessage: null,
     });
   });
@@ -293,21 +296,21 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(useUIStore.getState().activeMobilePanel).toBeNull();
+        expect(useMobileStore.getState().activeMobilePanel).toBeNull();
       });
     });
 
     it('does not switch when clicking active layout', () => {
       render(<MobileLayoutsPanel />);
 
-      const closePanelBefore = useUIStore.getState().activeMobilePanel;
+      const closePanelBefore = useMobileStore.getState().activeMobilePanel;
 
       act(() => {
         fireEvent.click(screen.getByText('Test Layout'));
       });
 
       // Panel should still be open (not closed by switch)
-      expect(useUIStore.getState().activeMobilePanel).toBe(closePanelBefore);
+      expect(useMobileStore.getState().activeMobilePanel).toBe(closePanelBefore);
     });
   });
 
@@ -334,7 +337,7 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(useUIStore.getState().activeMobilePanel).toBeNull();
+        expect(useMobileStore.getState().activeMobilePanel).toBeNull();
       });
     });
   });
@@ -479,7 +482,7 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        const liveMessage = useUIStore.getState().liveMessage;
+        const liveMessage = useInteractionStore.getState().liveMessage;
         expect(liveMessage).toContain('created');
       });
     });

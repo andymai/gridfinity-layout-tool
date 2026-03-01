@@ -4,7 +4,6 @@ import { useCrossTabSync } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useHistoryStore } from '@/core/store/history';
-import { useUIStore } from '@/core/store/ui';
 import { useSelectionStore } from '@/core/store/selection';
 import { useLabsStore, LABS_STORAGE_KEY } from '@/core/store/labs';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
@@ -40,7 +39,7 @@ describe('useCrossTabSync', () => {
 
     // Set up test-specific state
     useLayoutStore.setState({ activeLayoutId: 'test-layout-id' });
-    useUIStore.setState({ activeLayerId: 'layer-1' });
+    useSelectionStore.setState({ activeLayerId: 'layer-1' });
   });
 
   afterEach(() => {

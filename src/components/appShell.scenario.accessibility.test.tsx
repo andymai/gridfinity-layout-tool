@@ -16,7 +16,10 @@ import { Sidebar } from '@/components/Sidebar';
 import { RightPanel } from '@/components/RightPanel';
 import { Staging } from '@/features/staging/components/Staging';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useMobileStore } from '@/core/store/mobile';
 import { createDefaultLayout } from '@/core/constants';
 
 // Extend expect with axe matchers
@@ -41,23 +44,29 @@ Object.defineProperty(window, 'matchMedia', {
 beforeEach(() => {
   const defaultLayout = createDefaultLayout();
   useLayoutStore.setState({ layout: defaultLayout });
-  useUIStore.setState({
+  useSelectionStore.setState({
     activeLayerId: defaultLayout.layers[0].id,
     selectedBinIds: [],
     activeCategoryId: defaultLayout.categories[0].id,
+  });
+  useViewStore.setState({
     zoom: 1,
     showOtherLayers: true,
     leftPanelCollapsed: false,
     rightPanelCollapsed: false,
+    contextMenu: null,
+  });
+  useInteractionStore.setState({
     interaction: null,
     dropTarget: null,
     paintSize: null,
-    activeMobilePanel: null,
-    contextMenu: null,
     showIsometricPreview: true,
     isometricRotation: 0,
     layerViewMode: 'focus',
     isPreviewExpanded: false,
+  });
+  useMobileStore.setState({
+    activeMobilePanel: null,
   });
 });
 

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor, act, within } from '@testing-librar
 import { LayoutManagerModal } from '@/features/layout-library/components/LayoutManagerModal';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useInteractionStore } from '@/core/store/interaction';
 import { createDefaultLayout } from '@/core/constants';
 import * as storage from '@/core/storage';
 import type { LayoutLibrary, LayoutEntry } from '@/core/types';
@@ -248,7 +248,7 @@ describe('LayoutManagerModal Accessibility', () => {
       showLayoutManager: false,
     });
 
-    useUIStore.setState({
+    useInteractionStore.setState({
       liveMessage: null,
     });
   });
@@ -449,7 +449,7 @@ describe('LayoutManagerModal Accessibility', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
       await waitFor(() => {
-        const liveMessage = useUIStore.getState().liveMessage;
+        const liveMessage = useInteractionStore.getState().liveMessage;
         expect(liveMessage).toContain('Layouts dialog opened');
       });
     });
