@@ -15,7 +15,7 @@ import {
 import { fetchShare } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
 import type { Layout, SharePermission, LayoutPreview } from '@/core/types';
-import { layoutId } from '@/core/types';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
 // Check for shared layout once at module load time (URL-encoded shares)
@@ -123,7 +123,7 @@ export function SharedLayoutImporter() {
     (layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
       // Load the shared layout directly into the view
       // Use a temporary ID since it's not saved yet
-      importLayout(layout, layoutId('__shared_preview__'), 'init');
+      importLayout(layout, SHARED_PREVIEW_ID, 'init');
 
       // Set the preview state so the banner knows to show
       setSharedLayoutPreview(layout, layout.name, authorName, cloudShareId, permission);

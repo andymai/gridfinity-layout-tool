@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
 import { saveLayoutWithMetadata } from '@/core/storage';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
 import { isErr, getUserMessage, isRetryable } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -69,7 +70,7 @@ export function useAutoSave(): SaveStatus {
     if (!activeLayoutId) return;
 
     // Don't save temporary shared preview layouts
-    if (activeLayoutId === '__shared_preview__') return;
+    if (activeLayoutId === SHARED_PREVIEW_ID) return;
 
     // Capture the layout ID we're saving for race condition detection
     const savingLayoutId = activeLayoutId;

@@ -19,8 +19,7 @@ import {
   categoryId as toCategoryId,
 } from '@/core/types';
 import type { LayoutId } from '@/core/types';
-
-const SHARED_PREVIEW_ID = '__shared_preview__';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 
 /**
  * Hook that synchronizes the URL with the active layout.

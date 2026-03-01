@@ -16,6 +16,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { createLayoutFingerprint } from '@/features/cloud-share/utils';
 import type { CloudShareInfo } from '@/core/types';
 
@@ -91,7 +92,7 @@ export function useOwnedShareSync(): void {
     // 3. Not viewing a shared preview
     if (!cloudShare) return;
     if (lastEditSource !== 'local') return;
-    if (activeLayoutId === '__shared_preview__') return;
+    if (activeLayoutId === SHARED_PREVIEW_ID) return;
 
     // Clear existing timer
     if (debounceTimerRef.current) {

@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useSnapshotStore } from '@/core/store/snapshots';
 import { createTestLayout, createTestLibrary } from '@/test/testUtils';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { layoutId } from '@/core/types';
 import type { Snapshot } from '@/core/types';
 
@@ -120,7 +121,7 @@ describe('useSnapshotAutoSave', () => {
     it('skips bootstrap for shared preview layouts', async () => {
       useLayoutStore.setState({
         layout: layoutWithBins,
-        activeLayoutId: layoutId('__shared_preview__'),
+        activeLayoutId: SHARED_PREVIEW_ID,
       });
 
       renderHook(() => useSnapshotAutoSave());
@@ -198,7 +199,7 @@ describe('useSnapshotAutoSave', () => {
 
     it('skips snapshot when activeLayoutId is __shared_preview__', async () => {
       useLayoutStore.setState({
-        activeLayoutId: layoutId('__shared_preview__'),
+        activeLayoutId: SHARED_PREVIEW_ID,
       });
 
       renderHook(() => useSnapshotAutoSave());

@@ -12,6 +12,7 @@ import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSnapshotStore } from '@/core/store/snapshots';
+import { isRealLayoutId } from '@/core/constants';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
 
 const SNAPSHOT_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
@@ -67,7 +68,7 @@ export function useSnapshotAutoSave(): void {
   // Bootstrap: create initial snapshot if none exist for this layout
   useEffect(() => {
     if (initialSnapshotCreatedRef.current) return;
-    if (!activeLayoutId || activeLayoutId === '__shared_preview__') return;
+    if (!isRealLayoutId(activeLayoutId)) return;
     if (layout.bins.length === 0) return;
 
     initialSnapshotCreatedRef.current = true;
@@ -98,7 +99,7 @@ export function useSnapshotAutoSave(): void {
       const currentLayoutId = activeLayoutIdRef.current;
 
       // Skip shared preview
-      if (!currentLayoutId || currentLayoutId === '__shared_preview__') {
+      if (!isRealLayoutId(currentLayoutId)) {
         return;
       }
 

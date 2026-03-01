@@ -93,7 +93,7 @@ export function SharedLayoutBanner() {
     const { layoutId: rawLayoutId, library: updatedLibrary } = result.value;
     const brandedLayoutId = toLayoutId(rawLayoutId);
 
-    // Update the layout store with the proper ID (not __shared_preview__)
+    // Update the layout store with the proper ID (not SHARED_PREVIEW_ID)
     importLayout(savedLayout, brandedLayoutId, 'init');
     setActiveLayoutId(brandedLayoutId);
 

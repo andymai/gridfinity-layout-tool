@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useOwnedShareSync } from './useOwnedShareSync';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { createDefaultLayout } from '@/core/constants';
+import { createDefaultLayout, SHARED_PREVIEW_ID } from '@/core/constants';
 import * as shareApi from '@/core/api/share';
 import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
@@ -141,7 +141,7 @@ describe('useOwnedShareSync', () => {
       });
 
       useLayoutStore.setState({
-        activeLayoutId: layoutId('__shared_preview__'),
+        activeLayoutId: SHARED_PREVIEW_ID,
         lastEditSource: 'local',
       });
 
