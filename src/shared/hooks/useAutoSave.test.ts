@@ -32,7 +32,6 @@ vi.mock('../../core/storage', () => {
     saveLibrary: vi.fn(),
     computeLayoutPreview: vi.fn(() => mockPreview),
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
-    saveLayoutResult: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
     saveLibraryResult: vi.fn(() => ({ ok: true, value: undefined })),
     saveLayout: vi.fn(),
     loadLayout: vi.fn(),

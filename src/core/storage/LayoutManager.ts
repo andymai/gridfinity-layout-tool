@@ -8,7 +8,7 @@
  * - Return Result<T, E> for explicit error handling
  *
  * This module consolidates the previously scattered pattern of:
- *   saveLayoutResult() → updateEntry() → saveLibraryResult()
+ *   saveLayoutAsync() → updateEntry() → saveLibrary()
  * into single atomic operations that are easier to use correctly.
  *
  * @example Save current layout:
