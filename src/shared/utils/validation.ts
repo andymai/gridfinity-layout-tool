@@ -11,6 +11,17 @@ import type {
 import type { TFunction } from '@/i18n';
 import { binId as toBinId, layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '@/core/constants';
+
+/** Human-readable suffixes for placement failure reasons. */
+const PLACEMENT_REASON_MESSAGE: Record<ValidationReason, string> = {
+  out_of_bounds: 'is out of bounds',
+  exceeds_width: 'exceeds drawer width',
+  exceeds_depth: 'exceeds drawer depth',
+  exceeds_height: 'exceeds available height',
+  invalid_layer: 'references invalid layer',
+  blocked_zone: 'overlaps with blocked zone from upper layer',
+  collision: 'collides with another bin',
+};
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed } from '@/core/result';
 import {
@@ -331,16 +342,7 @@ export function validateImport(data: unknown): ImportValidationResult {
       );
 
       if (!placementResult.valid) {
-        const reasonMap: Record<string, string> = {
-          out_of_bounds: 'is out of bounds',
-          exceeds_width: 'exceeds drawer width',
-          exceeds_depth: 'exceeds drawer depth',
-          exceeds_height: 'exceeds available height',
-          invalid_layer: 'references invalid layer',
-          blocked_zone: 'overlaps with blocked zone from upper layer',
-          collision: 'collides with another bin',
-        };
-        const message = reasonMap[placementResult.reason] || 'has invalid placement';
+        const message = PLACEMENT_REASON_MESSAGE[placementResult.reason] || 'has invalid placement';
         errors.push(`Bin ${i} ${message}`);
         return; // Don't add invalid bins to collision pool for subsequent checks
       }
@@ -526,16 +528,7 @@ export function salvageImport(data: unknown): SalvageResult {
     );
 
     if (!placementResult.valid) {
-      const reasonMap: Record<string, string> = {
-        out_of_bounds: 'is out of bounds',
-        exceeds_width: 'exceeds drawer width',
-        exceeds_depth: 'exceeds drawer depth',
-        exceeds_height: 'exceeds available height',
-        invalid_layer: 'references invalid layer',
-        blocked_zone: 'overlaps with blocked zone from upper layer',
-        collision: 'collides with another bin',
-      };
-      const message = reasonMap[placementResult.reason] || 'has invalid placement';
+      const message = PLACEMENT_REASON_MESSAGE[placementResult.reason] || 'has invalid placement';
       salvaged.push(`Bin ${i} ${message} and was moved to staging`);
       resultBins.push({ ...typedBin, layerId: STAGING_ID });
       return;
