@@ -14,7 +14,7 @@ import { generateBinId, generateLayerId, generateCategoryId, STAGING_ID } from '
 import type { Layout, LayerId, CategoryId } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/shared/types/bin';
 
 // === JSON Import/Export ===
 

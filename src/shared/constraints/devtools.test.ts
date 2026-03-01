@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { BinParams } from '@/shared/types/bin';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { buildConstraintGraph, toGraphviz } from './devtools';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {

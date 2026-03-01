@@ -16,7 +16,7 @@ import {
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
 import { getUserMessage, ok, err, storageNotFound } from '@/core/result';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { expectOk, expectErr } from '@/test/testUtils';
 
 // Mock clipboard API

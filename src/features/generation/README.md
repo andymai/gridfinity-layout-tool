@@ -38,7 +38,7 @@ graph TB
 - `worker/generators/patterns/` — pattern system (honeycomb, registry)
 - `export/stlExporter.ts` — STL file export
 - `export/threemfExporter.ts` — 3MF file export
-- `utils/wasmCapabilities.ts` — multi-threading detection
+- `../../shared/generation/wasmCapabilities.ts` — multi-threading detection (moved to shared)
 
 ## Pipeline Stages
 
