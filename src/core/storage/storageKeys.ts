@@ -1,8 +1,9 @@
 /**
  * Centralized storage key constants.
  *
- * Every localStorage / IndexedDB key used by the app is defined here.
- * This prevents typo-induced bugs from duplicated string literals.
+ * This module centralizes commonly used localStorage / IndexedDB keys for reuse.
+ * Some feature-specific keys may be defined closer to their usage, but using these
+ * shared constants helps prevent typo-induced bugs from duplicated string literals.
  */
 
 // Layout data
