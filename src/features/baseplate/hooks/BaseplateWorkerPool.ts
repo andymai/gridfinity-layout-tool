@@ -58,10 +58,14 @@ export class BaseplateWorkerPool {
    */
   async generatePieces(
     pieces: readonly BaseplateParams[],
+    onProgress?: (completed: number, total: number) => void,
     signal?: AbortSignal
   ): Promise<GenerationResult[]> {
     if (this.destroyed) throw new Error('Pool has been destroyed');
     if (this.bridges.length === 0) throw new Error('Pool not initialized');
+
+    const total = pieces.length;
+    let completed = 0;
 
     // Distribute pieces round-robin across available bridges
     const tasks = pieces.map((params, index) => {
@@ -69,6 +73,8 @@ export class BaseplateWorkerPool {
       return async (): Promise<PieceGenerationResult> => {
         if (signal?.aborted) throw new DOMException('Generation cancelled', 'AbortError');
         const result = await bridge.generateBaseplateImmediate(params);
+        completed++;
+        onProgress?.(completed, total);
         return { index, result };
       };
     });
