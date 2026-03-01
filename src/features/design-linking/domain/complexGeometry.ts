@@ -6,7 +6,7 @@
  * When detected, bin-to-design sync is blocked to prevent silent data loss.
  */
 
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/features/bin-designer';
 
 export type ComplexityReason = 'inserts' | 'cutouts' | 'non-default-compartments';
 

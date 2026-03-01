@@ -26,7 +26,7 @@ NC='\033[0m' # No Color
 # Allowed cross-feature imports — format: "source-feature:target-feature"
 # Add entries here (with explanation) when intentional coupling is required.
 ALLOWED_CROSS_FEATURE=(
-  "design-linking:bin-designer" # design-linking links layout bins to bin-designer designs
+  "design-linking:bin-designer" # Integration layer; imports must use @/features/bin-designer barrel only
 )
 
 VIOLATIONS_FOUND=0
@@ -80,15 +80,26 @@ check_file() {
     # Skip same-feature imports
     [[ "$target_feature" == "$source_feature" ]] && continue
 
-    # Check against allowlist
+    # Check against allowlist — barrel imports only
     local allowed=false
     for pair in "${ALLOWED_CROSS_FEATURE[@]}"; do
       if [[ "$pair" == "$source_feature:$target_feature" ]]; then
-        allowed=true
+        # Only allow barrel imports (e.g. @/features/bin-designer), not deep paths
+        if [[ "$import_path" == "@/features/$target_feature" ]]; then
+          allowed=true
+        else
+          echo -e "${RED}VIOLATION${NC} $file"
+          echo -e "  ${BLUE}features/$source_feature${NC} → ${YELLOW}features/$target_feature${NC}"
+          echo -e "  Import: $import_path"
+          echo -e "  ${YELLOW}Allowlisted pairs must use barrel import: @/features/$target_feature${NC}"
+          echo ""
+          ((VIOLATIONS_FOUND++))
+          allowed=skip
+        fi
         break
       fi
     done
-    [[ "$allowed" == "true" ]] && continue
+    [[ "$allowed" == "true" || "$allowed" == "skip" ]] && continue
 
     # Cross-feature import violation
     local line_num

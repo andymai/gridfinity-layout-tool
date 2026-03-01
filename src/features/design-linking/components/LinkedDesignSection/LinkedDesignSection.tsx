@@ -11,7 +11,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
-import { useDesignThumbnail } from '@/features/bin-designer/hooks/useDesignThumbnail';
+import { useDesignThumbnail } from '@/features/bin-designer';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 

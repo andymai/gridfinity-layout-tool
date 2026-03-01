@@ -18,7 +18,7 @@ import { useUndoableAction, useToastStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useLatestRef, useLayoutRef } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
-import { useCustomBins } from '@/features/bin-designer/hooks/useCustomBins';
+import { useCustomBins } from '@/features/bin-designer';
 import { onSyncEvent } from '../events';
 import type { DesignSavedEvent } from '../events';
 import { useLinkingStore } from '../store';

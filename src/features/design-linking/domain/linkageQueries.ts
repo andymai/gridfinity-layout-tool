@@ -6,7 +6,7 @@
 
 import type { Bin } from '@/core/types';
 import type { BinId, DesignId, DesignLinkedBinsSummary, SyncableDimensions } from '../types';
-import type { CustomBinRef } from '@/features/bin-designer/store/customBinRegistry';
+import type { CustomBinRef } from '@/features/bin-designer';
 import { dimensionsMatch } from './linkingRules';
 
 // =============================================================================

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useLinkedDesign } from './useLinkedDesign';
-import type { CustomBinRef } from '@/features/bin-designer/store/customBinRegistry';
+import type { CustomBinRef } from '@/features/bin-designer';
 
 // Mock useCustomBins
 const mockRegistry: CustomBinRef[] = [];
