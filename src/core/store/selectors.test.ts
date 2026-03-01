@@ -68,6 +68,19 @@ describe('store selectors', () => {
       expect(result.current[0].layerId).toBe(layerId);
     });
 
+    it('returns empty array when active layer is staging', () => {
+      const layout = createTestLayout();
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ activeLayerId: STAGING_ID });
+
+      expectOk(
+        useLayoutStore.getState().addBin(createTestBin({ layerId: STAGING_ID, x: 1, y: 1 }))
+      );
+
+      const { result } = renderHook(() => useActiveLayerBins());
+      expect(result.current).toHaveLength(0);
+    });
+
     it('returns empty array when no bins on active layer', () => {
       const layout = createTestLayout();
       useLayoutStore.setState({ layout });

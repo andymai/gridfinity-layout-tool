@@ -1,15 +1,15 @@
 /**
  * Extracted selectors for commonly used store state derivations.
  *
- * Guidelines:
+ * Guidelines (for selector functions, e.g. `select*`):
  * - Only extract selectors used 3+ times OR that compute derived data
  * - Simple property access (s => s.layout) doesn't need extraction
- * - These are plain functions, not hooks — use them inside useStore() calls
- * - For cross-store computations, export custom hooks instead
+ * - Selector functions are plain functions, not hooks — use them inside useStore() calls
+ * - For cross-store or more complex derived computations, export custom hooks instead
  */
 
 import { useMemo } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { STAGING_ID } from '@/core/constants';
 import type { Bin, Layer, LayerId } from '@/core/types';
 import { useLayoutStore } from './layout';
@@ -41,7 +41,10 @@ export function useActiveLayerBins(): Bin[] {
   const bins = useLayoutStore(selectBins);
   const activeLayerId = useSelectionStore((s) => s.activeLayerId);
 
-  return useMemo(() => bins.filter((b) => b.layerId === activeLayerId), [bins, activeLayerId]);
+  return useMemo(() => {
+    if (activeLayerId === STAGING_ID) return [];
+    return bins.filter((b) => b.layerId === activeLayerId);
+  }, [bins, activeLayerId]);
 }
 
 /**
