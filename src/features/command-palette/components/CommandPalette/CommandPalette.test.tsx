@@ -7,7 +7,6 @@ import {
   useSelectionStore,
   useViewStore,
   useHalfBinModeStore,
-  useLibraryStore,
   useInteractionStore,
 } from '@/core/store';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
@@ -65,10 +64,8 @@ describe('CommandPalette', () => {
       halfBinMode: false,
       toggleHalfBinMode: vi.fn(() => ({ success: true })),
     });
-    useLibraryStore.setState({
-      setShowLayoutManager: vi.fn(),
-    });
     useViewStore.setState({
+      setShowLayoutManager: vi.fn(),
       showIsometricPreview: false,
       toggleIsometricPreview: vi.fn(),
       togglePreviewExpanded: vi.fn(),
