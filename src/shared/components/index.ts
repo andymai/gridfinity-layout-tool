@@ -9,6 +9,7 @@ export { DeferredNumberInput } from './DeferredNumberInput';
 export { StepperControl } from './StepperControl';
 export type { StepperVariant } from './StepperControl';
 export { ToastContainer } from './Toast';
+export { ShortcutBadge } from './ShortcutBadge';
 
 export { LoadingFallback } from './LoadingFallback';
 

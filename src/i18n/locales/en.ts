@@ -1002,6 +1002,9 @@ const en: Record<string, string> = {
   'toast.selectionInverted': 'Inverted selection ({count} bin(s))',
   'toast.selectedByCategory': 'Selected {count} {name} bin(s)',
   'toast.categoriesSavedAsDefaults': 'Categories saved as defaults',
+  'toast.undone': 'Undone',
+  'toast.redone': 'Redone',
+  'toast.cutoutsCopied': 'Copied {count} cutout(s)',
 
   // ===========================================================================
   // Grid Editor
@@ -1289,6 +1292,9 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.shortcutRect': 'Draw rectangle',
   'binDesigner.cutouts.shortcutCircle': 'Draw circle',
   'binDesigner.cutouts.shortcutPen': 'Draw custom path',
+  'binDesigner.cutouts.clearAllConfirmTitle': 'Clear All Cutouts',
+  'binDesigner.cutouts.clearAllConfirmMessage':
+    'This will remove all {count} cutouts. You can undo this action.',
   'binDesigner.editCutouts': 'Cut Editor',
   'binDesigner.editCutoutsSubtitle': 'Draw rectangles, circles & pen paths',
   'binDesigner.cutoutEditor.done': 'Done',

@@ -10,6 +10,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import {
   computeBounds,
   getEffectiveBounds,
@@ -256,6 +257,11 @@ export function WorkspaceHeader({
 }: WorkspaceHeaderProps) {
   const setCutoutEditorOpen = useDesignerStore((s) => s.setCutoutEditorOpen);
   const t = useTranslation();
+  const [clearConfirm, setClearConfirm] = useState(false);
+
+  const handleClearAllClick = useCallback(() => {
+    setClearConfirm(true);
+  }, []);
 
   const selectedIds = [...selection];
   const selected = useMemo(() => cutouts.filter((c) => selection.has(c.id)), [cutouts, selection]);
@@ -379,7 +385,8 @@ export function WorkspaceHeader({
     if (selection.size === 0) {
       return (
         <div className="flex items-center gap-0.5">
-          {cutouts.length > 0 && textBtn(onClearAll, t('binDesigner.cutouts.clearAll'), true)}
+          {cutouts.length > 0 &&
+            textBtn(handleClearAllClick, t('binDesigner.cutouts.clearAll'), true)}
         </div>
       );
     }
@@ -391,7 +398,8 @@ export function WorkspaceHeader({
           {textBtn(() => onDuplicate(selectedIds), t('common.duplicate'))}
           {textBtn(() => onRemove(singleCutout.id), t('common.delete'), true)}
           {cutouts.length > 1 && <Separator />}
-          {cutouts.length > 1 && textBtn(onClearAll, t('binDesigner.cutouts.clearAll'), true)}
+          {cutouts.length > 1 &&
+            textBtn(handleClearAllClick, t('binDesigner.cutouts.clearAll'), true)}
         </div>
       );
     }
@@ -458,7 +466,7 @@ export function WorkspaceHeader({
           : textBtn(() => onGroup(selectedIds), t('binDesigner.cutouts.combine'))}
 
         <Separator />
-        {textBtn(onClearAll, t('binDesigner.cutouts.clearAll'), true)}
+        {textBtn(handleClearAllClick, t('binDesigner.cutouts.clearAll'), true)}
       </div>
     );
   };
@@ -609,6 +617,16 @@ export function WorkspaceHeader({
           {t('binDesigner.cutoutEditor.done')}
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={clearConfirm}
+        title={t('binDesigner.cutouts.clearAllConfirmTitle')}
+        message={t('binDesigner.cutouts.clearAllConfirmMessage', { count: cutouts.length })}
+        confirmText={t('binDesigner.cutouts.clearAll')}
+        destructive
+        onConfirm={onClearAll}
+        onCancel={() => setClearConfirm(false)}
+      />
     </div>
   );
 }

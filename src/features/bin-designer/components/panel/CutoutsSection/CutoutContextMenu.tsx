@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useCallback } from 'react';
+import { ShortcutBadge } from '@/shared/components/ShortcutBadge/ShortcutBadge';
 
 export interface ContextMenuAction {
   readonly label: string;
@@ -13,6 +14,11 @@ export interface ContextMenuAction {
   readonly disabled?: boolean;
   readonly danger?: boolean;
   readonly dividerAfter?: boolean;
+  readonly shortcut?: {
+    readonly keys: string;
+    readonly modifier?: boolean;
+    readonly shift?: boolean;
+  };
 }
 
 export interface CutoutContextMenuProps {
@@ -63,7 +69,7 @@ export function CutoutContextMenu({ x, y, actions, onClose }: CutoutContextMenuP
           <div key={index}>
             <button
               type="button"
-              className={`w-full text-left px-3 py-1.5 text-xs transition-colors ${
+              className={`w-full flex items-center justify-between gap-4 px-3 py-1.5 text-xs transition-colors ${
                 action.disabled
                   ? 'text-content-tertiary cursor-not-allowed opacity-50'
                   : action.danger
@@ -73,7 +79,15 @@ export function CutoutContextMenu({ x, y, actions, onClose }: CutoutContextMenuP
               onClick={() => handleActionClick(action)}
               disabled={action.disabled}
             >
-              {action.label}
+              <span>{action.label}</span>
+              {action.shortcut && (
+                <ShortcutBadge
+                  keys={action.shortcut.keys}
+                  modifier={action.shortcut.modifier}
+                  shift={action.shortcut.shift}
+                  className="opacity-60"
+                />
+              )}
             </button>
             {action.dividerAfter && <div className="border-t border-stroke-subtle my-1" />}
           </div>

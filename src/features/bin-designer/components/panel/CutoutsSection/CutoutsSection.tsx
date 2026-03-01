@@ -5,9 +5,11 @@
  * with shape toolbar, SVG canvas, property panel, and alignment tools.
  */
 
+import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import { CutoutEditor } from './CutoutEditor';
 
 export function CutoutsSection() {
@@ -18,6 +20,7 @@ export function CutoutsSection() {
       clearCutouts: s.clearCutouts,
     }))
   );
+  const [clearConfirm, setClearConfirm] = useState(false);
 
   return (
     <div className="space-y-3">
@@ -36,11 +39,21 @@ export function CutoutsSection() {
         <button
           type="button"
           className="w-full rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors"
-          onClick={clearCutouts}
+          onClick={() => setClearConfirm(true)}
         >
           {t('binDesigner.cutouts.clearAll')}
         </button>
       )}
+
+      <ConfirmDialog
+        isOpen={clearConfirm}
+        title={t('binDesigner.cutouts.clearAllConfirmTitle')}
+        message={t('binDesigner.cutouts.clearAllConfirmMessage', { count: cutoutCount })}
+        confirmText={t('binDesigner.cutouts.clearAll')}
+        destructive
+        onConfirm={clearCutouts}
+        onCancel={() => setClearConfirm(false)}
+      />
     </div>
   );
 }

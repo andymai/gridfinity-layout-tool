@@ -12,6 +12,8 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
 import { useCutoutSelection } from '@/features/bin-designer/store';
+import { useToastStore } from '@/core/store/toast';
+import { useTranslation } from '@/i18n';
 import {
   snapToGrid,
   MIN_CUTOUT_SIZE,
@@ -261,6 +263,9 @@ export function useCutoutInteraction({
   binDepth,
   gridSize = 0.5,
 }: UseCutoutInteractionOptions) {
+  const addToast = useToastStore((s) => s.addToast);
+  const t = useTranslation();
+
   const [mode, setMode] = useState<InteractionMode>({ type: 'idle' });
   const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
   const [preview, setPreview] = useState<PreviewMap>(new Map());
@@ -418,8 +423,13 @@ export function useCutoutInteraction({
     if (selected.length > 0) {
       setClipboard(selected);
       pasteCountRef.current = 0;
+      addToast({
+        message: t('toast.cutoutsCopied', { count: selected.length }),
+        type: 'info',
+        duration: 2000,
+      });
     }
-  }, [cutouts, selection]);
+  }, [cutouts, selection, addToast, t]);
 
   const pasteFromClipboard = useCallback(() => {
     if (clipboard.length === 0) return;
@@ -568,6 +578,20 @@ export function useCutoutInteraction({
   const closeContextMenu = useCallback(() => {
     setContextMenu(null);
   }, []);
+
+  // ── Undo/Redo with toast feedback ─────────────────────────────────
+
+  const undoWithToast = useCallback(() => {
+    if (!canUndo) return;
+    onUndo?.();
+    addToast({ message: t('toast.undone'), type: 'info', duration: 2000 });
+  }, [canUndo, onUndo, addToast, t]);
+
+  const redoWithToast = useCallback(() => {
+    if (!canRedo) return;
+    onRedo?.();
+    addToast({ message: t('toast.redone'), type: 'info', duration: 2000 });
+  }, [canRedo, onRedo, addToast, t]);
 
   // ── Drag lifecycle ─────────────────────────────────────────────────
 
@@ -950,8 +974,8 @@ export function useCutoutInteraction({
         copySelected,
         pasteFromClipboard,
         duplicateSelected,
-        onUndo,
-        onRedo,
+        onUndo: undoWithToast,
+        onRedo: redoWithToast,
         onGroup,
         onUngroup,
         onUpdate,
@@ -981,8 +1005,8 @@ export function useCutoutInteraction({
     copySelected,
     pasteFromClipboard,
     duplicateSelected,
-    onUndo,
-    onRedo,
+    undoWithToast,
+    redoWithToast,
     onGroup,
     onUngroup,
     onUpdate,
@@ -1118,6 +1142,8 @@ export function useCutoutInteraction({
     closeContextMenu,
     canUndo: canUndo ?? false,
     canRedo: canRedo ?? false,
+    undoWithToast,
+    redoWithToast,
     rulerMeasurement,
     rulerZoomRef,
   };

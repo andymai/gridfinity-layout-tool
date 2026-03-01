@@ -212,6 +212,8 @@ export function CutoutWorkspace() {
     closeContextMenu,
     rulerMeasurement,
     rulerZoomRef,
+    undoWithToast,
+    redoWithToast,
   } = useCutoutInteraction({
     cutouts,
     onUpdate: updateCutout,
@@ -473,13 +475,22 @@ export function CutoutWorkspace() {
     const actions: ContextMenuAction[] = [];
 
     if (hasSelection) {
-      actions.push({ label: t('common.copy'), onClick: copySelected });
-      actions.push({ label: t('common.duplicate'), onClick: duplicateSelected });
+      actions.push({
+        label: t('common.copy'),
+        onClick: copySelected,
+        shortcut: { keys: 'C', modifier: true },
+      });
+      actions.push({
+        label: t('common.duplicate'),
+        onClick: duplicateSelected,
+        shortcut: { keys: 'D', modifier: true },
+      });
       actions.push({
         label: t('common.delete'),
         onClick: deleteSelected,
         danger: true,
         dividerAfter: true,
+        shortcut: { keys: 'Del' },
       });
     }
 
@@ -487,12 +498,14 @@ export function CutoutWorkspace() {
       label: t('binDesigner.cutouts.paste'),
       onClick: pasteFromClipboard,
       disabled: !hasClipboard,
+      shortcut: { keys: 'V', modifier: true },
     });
 
     actions.push({
       label: t('binDesigner.cutouts.selectAll'),
       onClick: selectAll,
       dividerAfter: hasSelection && selection.size < cutouts.length,
+      shortcut: { keys: 'A', modifier: true },
     });
 
     if (hasSelection && selection.size === 1) {
@@ -504,6 +517,7 @@ export function CutoutWorkspace() {
             const newRotation = (cutout.rotation + 90) % 360;
             updateCutout(cutout.id, { rotation: newRotation });
           },
+          shortcut: { keys: 'R' },
         });
       }
     }
@@ -534,6 +548,7 @@ export function CutoutWorkspace() {
           if (allLocked) unlockCutouts(ids);
           else lockCutouts(ids);
         },
+        shortcut: { keys: 'L', modifier: true },
       });
     }
 
@@ -562,8 +577,8 @@ export function CutoutWorkspace() {
         onZoomIn={zoomIn}
         onZoomOut={zoomOut}
         onFitToView={fitToView}
-        onUndo={undo}
-        onRedo={redo}
+        onUndo={undoWithToast}
+        onRedo={redoWithToast}
         canUndo={canUndo}
         canRedo={canRedo}
         cursorWorldPos={cursorWorldPos}
