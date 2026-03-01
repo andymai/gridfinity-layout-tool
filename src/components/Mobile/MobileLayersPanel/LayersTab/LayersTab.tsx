@@ -8,7 +8,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { isOk, isErr } from '@/core/result';
+import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
 import { useResultToast } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
