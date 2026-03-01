@@ -67,7 +67,7 @@ describe('CutoutsSection', () => {
     expect(screen.queryByText('binDesigner.cutouts.clearAll')).not.toBeInTheDocument();
   });
 
-  it('calls clearCutouts on clear button click', () => {
+  it('opens confirm dialog on clear button click', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -92,6 +92,42 @@ describe('CutoutsSection', () => {
 
     render(<CutoutsSection />);
     fireEvent.click(screen.getByText('binDesigner.cutouts.clearAll'));
+
+    // Confirm dialog should appear
+    expect(screen.getByText('binDesigner.cutouts.clearAllConfirmTitle')).toBeInTheDocument();
+  });
+
+  it('clears cutouts when confirm dialog is confirmed', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          {
+            id: 'c1',
+            shape: 'rectangle',
+            x: 0,
+            y: 0,
+            width: 10,
+            depth: 10,
+            cutDepth: 5,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          },
+        ],
+      },
+    });
+
+    render(<CutoutsSection />);
+    fireEvent.click(screen.getByText('binDesigner.cutouts.clearAll'));
+
+    // Click the confirm button in the dialog (the one with btn-danger class)
+    const dialog = screen.getByRole('dialog');
+    const confirmBtn = dialog.querySelector('button.btn-danger');
+    expect(confirmBtn).not.toBeNull();
+    fireEvent.click(confirmBtn!);
 
     const { params } = useDesignerStore.getState();
     expect(params.cutouts).toEqual([]);

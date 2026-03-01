@@ -97,4 +97,20 @@ describe('CutoutContextMenu', () => {
     const dividers = container.querySelectorAll('.border-t.border-stroke-subtle');
     expect(dividers).toHaveLength(1);
   });
+
+  it('renders shortcut badges when actions have shortcuts', () => {
+    const actions: ContextMenuAction[] = [
+      { label: 'Copy', onClick: vi.fn(), shortcut: { keys: 'C', modifier: true } },
+      { label: 'Delete', onClick: vi.fn(), shortcut: { keys: 'Del' } },
+      { label: 'No Shortcut', onClick: vi.fn() },
+    ];
+
+    const { container } = render(
+      <CutoutContextMenu x={100} y={100} actions={actions} onClose={mockOnClose} />
+    );
+
+    // Actions with shortcuts should render <kbd> elements
+    const kbdElements = container.querySelectorAll('kbd');
+    expect(kbdElements.length).toBeGreaterThanOrEqual(2);
+  });
 });

@@ -292,13 +292,22 @@ export function CutoutEditor() {
     const actions: ContextMenuAction[] = [];
 
     if (hasSelection) {
-      actions.push({ label: t('common.copy'), onClick: copySelected });
-      actions.push({ label: t('common.duplicate'), onClick: duplicateSelected });
+      actions.push({
+        label: t('common.copy'),
+        onClick: copySelected,
+        shortcut: { keys: 'C', modifier: true },
+      });
+      actions.push({
+        label: t('common.duplicate'),
+        onClick: duplicateSelected,
+        shortcut: { keys: 'D', modifier: true },
+      });
       actions.push({
         label: t('common.delete'),
         onClick: deleteSelected,
         danger: true,
         dividerAfter: true,
+        shortcut: { keys: 'Del' },
       });
     }
 
@@ -306,12 +315,14 @@ export function CutoutEditor() {
       label: t('binDesigner.cutouts.paste'),
       onClick: pasteFromClipboard,
       disabled: !hasClipboard,
+      shortcut: { keys: 'V', modifier: true },
     });
 
     actions.push({
       label: t('binDesigner.cutouts.selectAll'),
       onClick: selectAll,
       dividerAfter: hasSelection && selection.size < cutouts.length,
+      shortcut: { keys: 'A', modifier: true },
     });
 
     if (hasSelection && selection.size === 1) {
@@ -323,6 +334,7 @@ export function CutoutEditor() {
             const newRotation = (cutout.rotation + 90) % 360;
             updateCutout(cutout.id, { rotation: newRotation });
           },
+          shortcut: { keys: 'R' },
         });
       }
     }
@@ -352,6 +364,7 @@ export function CutoutEditor() {
           if (allLocked) unlockCutouts(ids);
           else lockCutouts(ids);
         },
+        shortcut: { keys: 'L', modifier: true },
       });
     }
 
