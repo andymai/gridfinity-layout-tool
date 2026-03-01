@@ -166,25 +166,6 @@ export async function deleteLayoutAsync(layoutId: string): Promise<void> {
 // Use these when you need detailed error information for user feedback.
 
 /**
- * Save a layout asynchronously with Result-based error handling.
- * Returns Ok on success, or Err with specific StorageError on failure.
- *
- * @example
- * ```ts
- * const result = await saveLayoutResult(id, layout);
- * if (isErr(result)) {
- *   addToast(getUserMessage(result.error), 'error');
- * }
- * ```
- */
-export async function saveLayoutResult(
-  layoutId: string,
-  layout: Layout
-): Promise<Result<void, StorageError>> {
-  return saveLayoutAsync(layoutId, layout);
-}
-
-/**
  * Load a layout asynchronously with Result-based error handling.
  * Returns Ok with the layout, or Err with specific StorageError.
  *

@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-  saveLayoutResult,
+  saveLayoutAsync,
   loadLayoutResult,
   deleteLayoutResult,
   migrateFromLegacyStorageResult,
@@ -75,11 +75,11 @@ describe('Result-based storage functions', () => {
     vi.restoreAllMocks();
   });
 
-  describe('saveLayoutResult', () => {
+  describe('saveLayoutAsync', () => {
     it('returns Ok on successful save', async () => {
       vi.mocked(backend.saveAsync).mockResolvedValue(ok(undefined));
 
-      const result = await saveLayoutResult('test-id', defaultLayout);
+      const result = await saveLayoutAsync('test-id', defaultLayout);
 
       expectOk(result);
       expect(backend.saveAsync).toHaveBeenCalledWith(getLayoutStorageKey('test-id'), defaultLayout);
@@ -88,7 +88,7 @@ describe('Result-based storage functions', () => {
     it('returns Err with quota exceeded error', async () => {
       vi.mocked(backend.saveAsync).mockResolvedValue(err(storageQuotaExceeded()));
 
-      const result = await saveLayoutResult('test-id', defaultLayout);
+      const result = await saveLayoutAsync('test-id', defaultLayout);
 
       const error = expectErr(result);
       expect(error.code).toBe('STORAGE_QUOTA_EXCEEDED');
@@ -101,7 +101,7 @@ describe('Result-based storage functions', () => {
       const storageErr = storageQuotaExceeded(undefined, undefined, new Error('Disk full'));
       vi.mocked(backend.saveAsync).mockResolvedValue(err(storageErr));
 
-      const result = await saveLayoutResult('test-id', defaultLayout);
+      const result = await saveLayoutAsync('test-id', defaultLayout);
 
       const error = expectErr(result);
       expect(error.code).toBe('STORAGE_QUOTA_EXCEEDED');

@@ -434,7 +434,6 @@ export function createStorageMock() {
     deleteLayoutAsync: vi.fn().mockResolvedValue(undefined),
     saveLibrary: vi.fn(),
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
-    saveLayoutResult: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
     exportLayout: vi.fn(),
     importLayout: vi.fn(),
     downloadLayoutAsFile: vi.fn(),

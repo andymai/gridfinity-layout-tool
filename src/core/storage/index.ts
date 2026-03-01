@@ -43,7 +43,7 @@ export { saveLayoutAsync, loadLayoutAsync, deleteLayoutAsync } from './LayoutSer
 
 // === Layout CRUD (Async - Result-Based) ===
 // Use these when you need explicit error handling with Result types
-export { saveLayoutResult, loadLayoutResult, deleteLayoutResult } from './LayoutService';
+export { loadLayoutResult, deleteLayoutResult } from './LayoutService';
 
 // === Layout CRUD (Sync - Initialization Only) ===
 // Use only during app startup when async is not available
