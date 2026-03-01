@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.43.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.42.1...gridfinity-layout-tool-v3.43.0) (2026-03-01)
+
+
+### Features
+
+* **generation:** shared BridgeManager with WASM preloading ([#948](https://github.com/andymai/gridfinity-layout-tool/issues/948)) ([9b0d0bb](https://github.com/andymai/gridfinity-layout-tool/commit/9b0d0bbe571050f2297348a7f11c9879054d21e4))
+
 ## [3.42.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.42.0...gridfinity-layout-tool-v3.42.1) (2026-03-01)
 
 
