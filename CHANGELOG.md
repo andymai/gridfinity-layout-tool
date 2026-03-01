@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.47.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.46.0...gridfinity-layout-tool-v3.47.0) (2026-03-01)
+
+
+### Features
+
+* **export:** make 3MF the default export format ([#966](https://github.com/andymai/gridfinity-layout-tool/issues/966)) ([a4bc7af](https://github.com/andymai/gridfinity-layout-tool/commit/a4bc7af9fe15e46b8e226ab4cac49b0a747e18a1))
+
 ## [3.46.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.45.0...gridfinity-layout-tool-v3.46.0) (2026-03-01)
 
 
