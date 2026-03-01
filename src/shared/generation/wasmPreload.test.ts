@@ -105,4 +105,20 @@ describe('preloadWasmBinary', () => {
 
     expect(mockDetectWasmCapabilities).toHaveBeenCalledTimes(1);
   });
+
+  it('retries on next call if detectWasmCapabilities throws', async () => {
+    mockDetectWasmCapabilities.mockImplementationOnce(() => {
+      throw new Error('detection failed');
+    });
+
+    const { preloadWasmBinary } = await import('./wasmPreload');
+
+    // First call fails — no link injected
+    preloadWasmBinary();
+    expect(document.head.querySelectorAll('link[rel="preload"]')).toHaveLength(0);
+
+    // Second call succeeds — link injected
+    preloadWasmBinary();
+    expect(document.head.querySelectorAll('link[rel="preload"]')).toHaveLength(1);
+  });
 });

@@ -14,14 +14,20 @@ let preloaded = false;
 
 export function preloadWasmBinary(): void {
   if (preloaded) return;
-  preloaded = true;
+  if (typeof document === 'undefined' || !document.head) return;
 
-  const url = detectWasmCapabilities().supportsThreads ? threadedWasm : singleWasm;
+  try {
+    const url = detectWasmCapabilities().supportsThreads ? threadedWasm : singleWasm;
 
-  const link = document.createElement('link');
-  link.rel = 'preload';
-  link.as = 'fetch';
-  link.crossOrigin = 'anonymous';
-  link.href = url;
-  document.head.appendChild(link);
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'fetch';
+    link.crossOrigin = 'anonymous';
+    link.href = url;
+    document.head.appendChild(link);
+
+    preloaded = true;
+  } catch {
+    // Leave preloaded false so a later call can retry
+  }
 }

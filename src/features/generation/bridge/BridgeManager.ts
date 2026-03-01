@@ -56,6 +56,7 @@ export class BridgeManager {
     this.refCount = Math.max(0, this.refCount - 1);
 
     if (this.refCount === 0) {
+      this.clearIdleTimer();
       this.idleTimer = setTimeout(() => {
         this.idleTimer = null;
         this.bridge?.destroy();
