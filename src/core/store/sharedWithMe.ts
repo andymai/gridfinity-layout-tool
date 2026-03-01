@@ -12,6 +12,14 @@ import type { SharedWithMeEntry, SharePermission, LayoutPreview } from '@/core/t
 import { CONSTRAINTS } from '@/core/constants';
 import { saveSharedWithMe } from '@/core/storage/SharedWithMeService';
 
+/** Mutable fields on SharedWithMeEntry (excludes id, sourceShareId, addedAt). */
+type SharedWithMeUpdates = Partial<
+  Pick<
+    SharedWithMeEntry,
+    'name' | 'authorName' | 'permission' | 'lastAccessedAt' | 'preview' | 'status'
+  >
+>;
+
 interface SharedWithMeState {
   entries: SharedWithMeEntry[];
   isLoaded: boolean;
@@ -24,7 +32,7 @@ interface SharedWithMeState {
     permission: SharePermission;
     preview?: LayoutPreview;
   }) => SharedWithMeEntry;
-  update: (id: string, updates: Partial<SharedWithMeEntry>) => void;
+  update: (id: string, updates: SharedWithMeUpdates) => void;
   remove: (id: string) => void;
   getByShareId: (shareId: string) => SharedWithMeEntry | undefined;
   markAccessed: (shareId: string) => void;
@@ -62,31 +70,36 @@ export const useSharedWithMeStore = create<SharedWithMeState>()(
     },
 
     update: (id, updates) => {
+      let didUpdate = false;
+
       set((state) => {
         const entry = state.entries.find((e) => e.id === id);
-        if (entry) {
-          if (updates.name !== undefined) {
-            entry.name = updates.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
-          }
-          if (updates.authorName !== undefined) {
-            entry.authorName = updates.authorName;
-          }
-          if (updates.permission !== undefined) {
-            entry.permission = updates.permission;
-          }
-          if (updates.lastAccessedAt !== undefined) {
-            entry.lastAccessedAt = updates.lastAccessedAt;
-          }
-          if (updates.preview !== undefined) {
-            entry.preview = updates.preview;
-          }
-          if (updates.status !== undefined) {
-            entry.status = updates.status;
-          }
+        if (!entry) return;
+
+        didUpdate = true;
+        if (updates.name !== undefined) {
+          entry.name = updates.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
+        }
+        if (updates.authorName !== undefined) {
+          entry.authorName = updates.authorName;
+        }
+        if (updates.permission !== undefined) {
+          entry.permission = updates.permission;
+        }
+        if (updates.lastAccessedAt !== undefined) {
+          entry.lastAccessedAt = updates.lastAccessedAt;
+        }
+        if (updates.preview !== undefined) {
+          entry.preview = updates.preview;
+        }
+        if (updates.status !== undefined) {
+          entry.status = updates.status;
         }
       });
 
-      saveSharedWithMe(get().entries);
+      if (didUpdate) {
+        saveSharedWithMe(get().entries);
+      }
     },
 
     remove: (id) => {
@@ -102,14 +115,19 @@ export const useSharedWithMeStore = create<SharedWithMeState>()(
     },
 
     markAccessed: (shareId) => {
+      let didUpdate = false;
+
       set((state) => {
         const entry = state.entries.find((e) => e.sourceShareId === shareId);
         if (entry) {
           entry.lastAccessedAt = Date.now();
+          didUpdate = true;
         }
       });
 
-      saveSharedWithMe(get().entries);
+      if (didUpdate) {
+        saveSharedWithMe(get().entries);
+      }
     },
   }))
 );
