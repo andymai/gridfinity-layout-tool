@@ -8,7 +8,8 @@ import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/c
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useToastStore } from '@/core/store/toast';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
-import { isOk, isErr, getUserMessage } from '@/core/result';
+import { isOk, isErr } from '@/core/result';
+import { useResultToast } from '@/shared/hooks';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { categoryId as toCategoryId } from '@/core/types';
@@ -73,6 +74,7 @@ export function CategoriesPanel() {
   const saveCategoriesAsDefaults = useSettingsStore((state) => state.saveCategoriesAsDefaults);
   const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
+  const { showErrorToast } = useResultToast();
 
   // Calculate bin counts per category
   const binCounts = useMemo(() => {
@@ -172,7 +174,7 @@ export function CategoriesPanel() {
     };
     const result = execute(() => updateCategory(toCategoryId(id), updates));
     if (isErr(result)) {
-      addToast(getUserMessage(result.error), 'error');
+      showErrorToast(result.error);
     }
   };
 
@@ -214,7 +216,7 @@ export function CategoriesPanel() {
       return deleteResult;
     });
     if (isErr(result)) {
-      addToast(getUserMessage(result.error), 'error');
+      showErrorToast(result.error);
     }
     setEditingId(null);
     setDeleteConfirm(null);

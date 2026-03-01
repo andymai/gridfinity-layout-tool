@@ -10,6 +10,7 @@ import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
+import { useResultToast } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
 
@@ -59,6 +60,7 @@ export function LayersTab() {
 
   const { execute } = useUndoableAction();
   const addToast = useToastStore((state) => state.addToast);
+  const { showErrorToast } = useResultToast();
 
   const handleRenameRequest = (id: LayerId) => {
     const layer = layers.find((l) => l.id === id);
@@ -131,14 +133,14 @@ export function LayersTab() {
       execute(() => {
         const expandResult = updateLayer(topLayer.id, { height: newHeight });
         if (isErr(expandResult)) {
-          addToast(getUserMessage(expandResult.error), 'error');
+          showErrorToast(expandResult.error);
           return;
         }
         const addResult = addLayer();
         if (isOk(addResult)) {
           setActiveLayer(addResult.value);
         } else if (isErr(addResult)) {
-          addToast(getUserMessage(addResult.error), 'error');
+          showErrorToast(addResult.error);
         }
       });
     } else {

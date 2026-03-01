@@ -8,7 +8,8 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { createLayoutEntry, initializeLayoutLibrary } from '@/core/storage';
-import { isErr, getUserMessage } from '@/core/result';
+import { isErr } from '@/core/result';
+import { useResultToast } from '@/shared/hooks';
 import { layoutId as toLayoutId } from '@/core/types';
 import { ConfirmDialog } from '@/shared/components';
 import { useCollabMode } from '@/hooks/useCollabMode';
@@ -59,6 +60,7 @@ export function SharedLayoutBanner() {
 
   const clearHistory = useHistoryStore((state) => state.clear);
   const addToast = useToastStore((state) => state.addToast);
+  const { showErrorToast } = useResultToast();
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   // Check if in collaborative editing mode
@@ -84,7 +86,7 @@ export function SharedLayoutBanner() {
     });
 
     if (isErr(result)) {
-      addToast(getUserMessage(result.error), 'error');
+      showErrorToast(result.error);
       return;
     }
 
