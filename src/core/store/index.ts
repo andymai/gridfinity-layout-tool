@@ -26,3 +26,14 @@ export type { SharedPreviewStore } from './sharedPreview';
 
 export { useSnapshotStore, INITIAL_SNAPSHOT_STATE } from './snapshots';
 export type { SnapshotState } from './snapshots';
+
+// Extracted selectors (cross-store derived hooks)
+export {
+  selectBins,
+  selectLayers,
+  useActiveLayerBins,
+  useActiveLayer,
+  useLayerBinCounts,
+  useStagingBins,
+  useSelectedBins,
+} from './selectors';
