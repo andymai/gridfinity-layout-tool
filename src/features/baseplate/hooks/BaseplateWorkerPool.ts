@@ -33,11 +33,15 @@ export class BaseplateWorkerPool {
 
   /**
    * Initialize the pool with the given number of workers.
-   * Each worker loads its own OpenCascade WASM instance.
+   *
+   * If a `sharedModule` is provided, workers use `initWithModule()` to skip
+   * WASM compilation (fast). Otherwise, each worker compiles independently
+   * (still benefits from IndexedDB cache).
    *
    * @param requestedSize - Desired pool size (capped to MAX_POOL_SIZE)
+   * @param sharedModule - Pre-compiled WebAssembly.Module to share across workers
    */
-  async init(requestedSize: number): Promise<void> {
+  async init(requestedSize: number, sharedModule?: WebAssembly.Module): Promise<void> {
     if (this.destroyed) throw new Error('Pool has been destroyed');
     if (this.bridges.length > 0) throw new Error('Pool already initialized');
 
@@ -45,7 +49,11 @@ export class BaseplateWorkerPool {
 
     // Create and initialize all bridges in parallel
     this.bridges = Array.from({ length: size }, () => new GenerationBridge());
-    await Promise.all(this.bridges.map((b) => b.init()));
+    if (sharedModule) {
+      await Promise.all(this.bridges.map((b) => b.initWithModule(sharedModule)));
+    } else {
+      await Promise.all(this.bridges.map((b) => b.init()));
+    }
   }
 
   /**
