@@ -14,6 +14,7 @@
 
 import { useEffect, useRef } from 'react';
 import { isOk, getUserMessage } from '@/core/result';
+import { designId } from '@/core/types';
 import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
@@ -55,7 +56,7 @@ export function useDesignerUrlSync(): void {
 
     loadingFromUrlRef.current = true;
 
-    void loadDesign(designIdFromUrl).then((result) => {
+    void loadDesign(designId(designIdFromUrl)).then((result) => {
       if (isOk(result)) {
         storeLoadDesign(result.value);
       } else {

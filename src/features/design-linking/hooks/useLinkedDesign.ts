@@ -6,6 +6,7 @@
  */
 
 import { useMemo } from 'react';
+import type { DesignId } from '@/core/types';
 import { useCustomBins, type CustomBinRef } from '@/features/bin-designer';
 import { resolveLinkedDesign, linkedDesignExists } from '../domain';
 
@@ -24,7 +25,7 @@ interface UseLinkedDesignResult {
  * @param linkedDesignId - The bin's linkedDesignId (can be undefined)
  * @returns Object with linkedDesign, isStale flag, and hasLink flag
  */
-export function useLinkedDesign(linkedDesignId: string | undefined): UseLinkedDesignResult {
+export function useLinkedDesign(linkedDesignId: DesignId | undefined): UseLinkedDesignResult {
   const registry = useCustomBins();
 
   return useMemo(() => {

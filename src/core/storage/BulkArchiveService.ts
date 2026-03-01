@@ -8,7 +8,7 @@
  * }
  */
 
-import type { Layout, LayoutLibrary } from '@/core/types';
+import type { Layout, LayoutLibrary, DesignId } from '@/core/types';
 import type { Result, StorageError, LayoutLibraryLimitError } from '@/core/result';
 import { isOk, isErr } from '@/core/result';
 import { CONSTRAINTS } from '@/core/constants';
@@ -102,7 +102,7 @@ export async function exportAllLayouts(
       }
 
       // Collect linked designs if any bins reference them
-      const designIds = new Set<string>();
+      const designIds = new Set<DesignId>();
       for (const bin of layout.bins) {
         if (bin.linkedDesignId) {
           designIds.add(bin.linkedDesignId);

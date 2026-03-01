@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import type { DesignId } from '@/core/types';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { generateFileName, loadDesign } from '@/features/bin-designer';
 import { useToastStore } from '@/core/store';
@@ -16,7 +17,7 @@ interface UseQuickExportReturn {
   /** Whether an export is currently in progress */
   readonly isExporting: boolean;
   /** Export a design to STL and trigger download */
-  readonly exportToSTL: (designId: string, designName: string) => Promise<void>;
+  readonly exportToSTL: (id: DesignId, designName: string) => Promise<void>;
 }
 
 /**
@@ -29,13 +30,13 @@ export function useQuickExport(): UseQuickExportReturn {
   const [isExporting, setIsExporting] = useState(false);
 
   const exportToSTL = useCallback(
-    async (designId: string, designName: string) => {
+    async (id: DesignId, designName: string) => {
       if (isExporting) return;
 
       setIsExporting(true);
 
       try {
-        const designResult = await loadDesign(designId);
+        const designResult = await loadDesign(id);
         if (!isOk(designResult)) {
           addToast({
             message: t('designLinking.toast.exportFailed'),
