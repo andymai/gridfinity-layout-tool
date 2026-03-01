@@ -1419,8 +1419,8 @@ const en: Record<string, string> = {
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
   'binDesigner.splitExport.enableSplit': 'Split into pieces',
-  'binDesigner.splitExport.downloadSplitSTL': 'Download Split STL (ZIP)',
-  'binDesigner.splitExport.success': 'Split STL exported successfully ({count} pieces)',
+  'binDesigner.splitExport.downloadSplit': 'Download Split {format} (ZIP)',
+  'binDesigner.splitExport.success': 'Split export completed ({count} pieces)',
   'binDesigner.toggleWireframeModeKeyboardShortcut': 'Toggle wireframe mode, keyboard shortcut W',
   'binDesigner.touchGestureHints': 'Touch gesture hints',
   'binDesigner.wire': 'Wire',

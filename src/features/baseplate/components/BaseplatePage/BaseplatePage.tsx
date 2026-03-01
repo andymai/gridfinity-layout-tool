@@ -96,7 +96,7 @@ export function BaseplatePage() {
 
   const [splitEnabled, setSplitEnabled] = useState(true);
 
-  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
+  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? '3mf';
 
   const fullParams = useMemo(
     () =>
@@ -116,7 +116,7 @@ export function BaseplatePage() {
     [fullParams, activeFormat, exportFileNameConfig]
   );
 
-  const showSplitBanner = tiling?.isSplit === true && activeFormat === 'stl';
+  const showSplitBanner = tiling?.isSplit === true && activeFormat !== 'step';
   const useSplitExport = showSplitBanner && splitEnabled;
   const displayExtension = useSplitExport ? '.zip' : FORMAT_EXTENSIONS[activeFormat];
 

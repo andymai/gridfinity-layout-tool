@@ -380,12 +380,12 @@ describe('useExport', () => {
     expect(result.current.maxGridUnits).toBe(6);
   });
 
-  it('provides downloadSplitSTL function', () => {
+  it('provides downloadSplit function', () => {
     const { result } = renderHook(() => useExport());
-    expect(result.current.downloadSplitSTL).toBeTypeOf('function');
+    expect(result.current.downloadSplit).toBeTypeOf('function');
   });
 
-  it('downloadSplitSTL calls bridge.exportSplitBin and creates ZIP', async () => {
+  it('downloadSplit calls bridge.exportSplitBin and creates ZIP', async () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },
       generation: {
@@ -432,7 +432,7 @@ describe('useExport', () => {
     const { result } = renderHook(() => useExport());
 
     await act(async () => {
-      await result.current.downloadSplitSTL({
+      await result.current.downloadSplit('stl', {
         style: 'descriptive',
         customName: '',
         format: 'stl',

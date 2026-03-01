@@ -63,7 +63,7 @@ export function ExportDialog() {
     downloadDividersSTL,
     needsSplit,
     splitPieceCount,
-    downloadSplitSTL,
+    downloadSplit,
   } = useExport();
   const { isOpening, openingSlicerId, openInSlicer } = useSlicerOpen();
   const [splitEnabled, setSplitEnabled] = useState(true);
@@ -71,8 +71,8 @@ export function ExportDialog() {
 
   const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
 
-  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
-  const showSplitBanner = needsSplit && activeFormat === 'stl';
+  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? '3mf';
+  const showSplitBanner = needsSplit && activeFormat !== 'step';
   const useSplitExport = showSplitBanner && splitEnabled;
 
   const fileName = useMemo(
@@ -102,7 +102,7 @@ export function ExportDialog() {
   const handleDownload = useCallback(async () => {
     try {
       if (useSplitExport) {
-        await downloadSplitSTL(exportFileNameConfig, designName);
+        await downloadSplit(activeFormat, exportFileNameConfig, designName);
         addToast({
           message: t('binDesigner.splitExport.success', { count: splitPieceCount }),
           type: 'success',
@@ -127,7 +127,7 @@ export function ExportDialog() {
     }
   }, [
     useSplitExport,
-    downloadSplitSTL,
+    downloadSplit,
     downloadBin,
     activeFormat,
     exportFileNameConfig,
@@ -159,7 +159,9 @@ export function ExportDialog() {
   if (isExportingBin) {
     downloadLabel = t('binDesigner.exporting');
   } else if (useSplitExport) {
-    downloadLabel = t('binDesigner.splitExport.downloadSplitSTL');
+    downloadLabel = t('binDesigner.splitExport.downloadSplit', {
+      format: activeFormat.toUpperCase(),
+    });
   } else {
     downloadLabel = t('binDesigner.downloadFormat', { format: activeFormat.toUpperCase() });
   }
@@ -198,7 +200,7 @@ export function ExportDialog() {
         layerHeight: printSettings.layerHeightMm,
       })}
       secondaryDownload={
-        canExportDividers && activeFormat === 'stl'
+        canExportDividers
           ? {
               label: isExportingDividers
                 ? t('binDesigner.exporting')

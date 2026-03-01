@@ -15,7 +15,7 @@ import type { ExportFileFormat, ExportFileNameConfig, FileNameStyle } from '@/sh
 import type { SlicerSite } from '@/core/store/settings';
 
 /** Ordered format options for the selector */
-const FORMAT_OPTIONS: readonly ExportFileFormat[] = ['stl', 'step', '3mf'] as const;
+const FORMAT_OPTIONS: readonly ExportFileFormat[] = ['3mf', 'stl', 'step'] as const;
 
 /** Display labels for each format (universal acronyms — not translated) */
 const FORMAT_LABELS: Record<ExportFileFormat, string> = {

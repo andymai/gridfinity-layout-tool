@@ -26,6 +26,7 @@ import {
   getSplitPlanePositionsMm,
 } from '@/features/bin-designer/utils/splitPositions';
 import { packageSplitPiecesAsZip } from '@/features/bin-designer/utils/splitExport';
+import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
@@ -63,8 +64,12 @@ interface UseExportReturn {
   readonly splitPieceCount: number;
   /** Maximum grid units that fit on the print bed */
   readonly maxGridUnits: number;
-  /** Trigger split STL download as ZIP via worker bridge */
-  readonly downloadSplitSTL: (config: ExportFileNameConfig, designName?: string) => Promise<void>;
+  /** Trigger split export download as ZIP via worker bridge */
+  readonly downloadSplit: (
+    format: ExportFileFormat,
+    config: ExportFileNameConfig,
+    designName?: string
+  ) => Promise<void>;
 }
 
 export function useExport(): UseExportReturn {
@@ -189,12 +194,15 @@ export function useExport(): UseExportReturn {
   );
 
   /**
-   * Download split STL as ZIP via worker bridge.
+   * Download split export as ZIP via worker bridge.
    * Computes cut planes, sends to worker for boolean splitting,
    * then packages results into a ZIP archive.
+   * Supports STL and 3MF formats (STEP is not supported for split export).
    */
-  const downloadSplitSTL = useCallback(
-    async (config: ExportFileNameConfig, designName?: string) => {
+  const downloadSplit = useCallback(
+    async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {
+      if (format === 'step') return; // STEP does not support split export
+
       const bridge = getActiveBridge();
       if (!bridge) return;
 
@@ -208,10 +216,43 @@ export function useExport(): UseExportReturn {
         const result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY);
 
         // Generate base filename (without extension)
-        const baseName = generateFileName(params, 'stl', config, designName).replace(/\.stl$/, '');
+        const baseName = generateFileName(params, format, config, designName).replace(
+          /\.[^.]+$/,
+          ''
+        );
 
-        const blob = await packageSplitPiecesAsZip(result.pieces, baseName);
-        triggerDownload(blob, `${baseName}_split.zip`);
+        if (format === '3mf') {
+          // Convert each STL piece to 3MF before packaging
+          const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
+          const currentEstimates = estimatePrint(params, currentPrintSettings);
+
+          const convertedPieces: { data: ArrayBuffer; label: string }[] = [];
+          for (const piece of result.pieces) {
+            const parseResult = parseSTLBinary(piece.data);
+            if (isErr(parseResult)) {
+              throw new Error(getUserMessage(parseResult.error));
+            }
+            const { vertices, normals } = parseResult.value;
+            const blob = export3MF(vertices, normals, {
+              name: `${baseName}_${piece.label}`,
+              printSettings: {
+                layerHeight: currentPrintSettings.layerHeightMm,
+                infillPercent: currentPrintSettings.infillPercent,
+                material: 'PLA',
+                supportRequired: false,
+                estimatedMinutes: currentEstimates.printTimeMinutes,
+                estimatedGrams: currentEstimates.gramsFilament,
+              },
+            });
+            convertedPieces.push({ data: await blob.arrayBuffer(), label: piece.label });
+          }
+
+          const zip = await packagePiecesAsZip(convertedPieces, baseName, '.3mf');
+          triggerDownload(zip, `${baseName}_split.zip`);
+        } else {
+          const blob = await packageSplitPiecesAsZip(result.pieces, baseName);
+          triggerDownload(blob, `${baseName}_split.zip`);
+        }
       } finally {
         setIsExportingBin(false);
       }
@@ -231,6 +272,6 @@ export function useExport(): UseExportReturn {
     needsSplit,
     splitPieceCount,
     maxGridUnits,
-    downloadSplitSTL,
+    downloadSplit,
   };
 }

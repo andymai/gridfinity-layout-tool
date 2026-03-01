@@ -28,11 +28,12 @@ describe('ExportDialog', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('shows format radio buttons', () => {
+  it('shows format radio buttons with active format checked', () => {
     render(<ExportDialog {...defaultProps} />);
     const radios = screen.getAllByRole('radio');
     expect(radios).toHaveLength(3);
-    expect(radios[0]).toHaveAttribute('aria-checked', 'true');
+    const stlRadio = screen.getByRole('radio', { name: 'STL' });
+    expect(stlRadio).toHaveAttribute('aria-checked', 'true');
   });
 
   it('updates fileNameConfig format when format button clicked', () => {
