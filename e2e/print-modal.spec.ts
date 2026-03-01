@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppReady, clearAllStorage } from './fixtures';
 
 test.describe('Print Modal', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    // Wait for app to load
-    await expect(page.locator('text=Gridfinity Layout Tool')).toBeVisible();
+    await clearAllStorage(page);
+    await page.reload();
+    await waitForAppReady(page);
   });
 
   test('print button exists in header', async ({ page }) => {
