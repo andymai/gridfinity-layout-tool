@@ -8,8 +8,9 @@ import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
-import { isOk, isErr, getUserMessage } from '@/core/result';
+import { isOk, isErr } from '@/core/result';
 import { useToastStore } from '@/core/store';
+import { useResultToast } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
 import type { LayerId } from '@/core/types';
@@ -33,6 +34,7 @@ export function LayerPanel() {
 
   const { execute } = useUndoableAction();
   const addToast = useToastStore((state) => state.addToast);
+  const { showErrorToast } = useResultToast();
 
   const layers = layout.layers;
   const activeLayer = layers.find((l) => l.id === activeLayerId);
@@ -98,14 +100,14 @@ export function LayerPanel() {
       execute(() => {
         const expandResult = updateLayer(topLayer.id, { height: newHeight });
         if (isErr(expandResult)) {
-          addToast(getUserMessage(expandResult.error), 'error');
+          showErrorToast(expandResult.error);
           return;
         }
         const addResult = addLayer();
         if (isOk(addResult)) {
           setActiveLayer(addResult.value);
         } else {
-          addToast(getUserMessage(addResult.error), 'error');
+          showErrorToast(addResult.error);
         }
       });
     } else {
@@ -138,7 +140,7 @@ export function LayerPanel() {
         name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH),
       });
       if (isErr(result)) {
-        addToast(getUserMessage(result.error), 'error');
+        showErrorToast(result.error);
       }
     });
   };
@@ -150,7 +152,7 @@ export function LayerPanel() {
     execute(() => {
       const result = updateLayer(layerId, { height: newHeight });
       if (isErr(result)) {
-        addToast(getUserMessage(result.error), 'error');
+        showErrorToast(result.error);
       }
     });
   };
@@ -161,7 +163,7 @@ export function LayerPanel() {
     execute(() => {
       const result = reorderLayers(fromArrayIndex, toArrayIndex);
       if (isErr(result)) {
-        addToast(getUserMessage(result.error), 'error');
+        showErrorToast(result.error);
       }
     });
   };
