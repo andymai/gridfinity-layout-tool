@@ -1,4 +1,12 @@
-import type { Layout, Category, BaseplateParams, BinId, LayerId, CategoryId } from './types';
+import type {
+  Layout,
+  Category,
+  BaseplateParams,
+  BinId,
+  LayoutId,
+  LayerId,
+  CategoryId,
+} from './types';
 import { binId, layerId, categoryId } from './types';
 
 // === Constraints (from PRD) ===
@@ -65,6 +73,16 @@ export function calcMaxGridUnits(printBedSizeMm: number, gridUnitMm: number): nu
 // === Staging ===
 
 export const STAGING_ID = '__staging__' as LayerId;
+
+// === Shared Preview ===
+
+/** Sentinel layout ID used when viewing a shared layout in preview mode. */
+export const SHARED_PREVIEW_ID = '__shared_preview__' as LayoutId;
+
+/** Returns true if the ID represents a real persisted layout (not a preview sentinel). */
+export function isRealLayoutId(id: LayoutId | null): id is LayoutId {
+  return id !== null && id !== SHARED_PREVIEW_ID;
+}
 
 // === Half-bin Mode ===
 

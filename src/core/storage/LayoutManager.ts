@@ -25,7 +25,7 @@ import { deleteSnapshotsForLayout } from './SnapshotService';
 import * as indexedDB from './backends/indexedDB';
 import { salvageImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
-import { CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS, SHARED_PREVIEW_ID } from '@/core/constants';
 import { computePreview } from './preview';
 import { layoutId } from '@/core/types';
 import type {
@@ -540,7 +540,7 @@ export async function switchActiveLayout(
   // 2. Save current layout (skip if it's a shared preview or was deleted)
   let updatedLibrary = library;
   const fromEntry = library.entries.find((e) => e.id === fromId);
-  if (fromId !== '__shared_preview__' && fromEntry) {
+  if (fromId !== SHARED_PREVIEW_ID && fromEntry) {
     const saveResult = await saveLayoutWithMetadata(fromId, fromLayout, library);
     if (isErr(saveResult)) {
       // Current layout save failed - don't proceed with switch

@@ -7,6 +7,7 @@ import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import { err, storageQuotaExceeded, storageUnavailable } from '@/core/result';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 
 // Mock the storage module with atomic API functions
 // Note: vi.mock is hoisted, so we must define the factory inline
@@ -304,7 +305,7 @@ describe('useAutoSave', () => {
 
     it('does not save when activeLayoutId is __shared_preview__', async () => {
       // Set activeLayoutId to shared preview (temporary layout)
-      useLayoutStore.setState({ activeLayoutId: '__shared_preview__' });
+      useLayoutStore.setState({ activeLayoutId: SHARED_PREVIEW_ID });
 
       renderHook(() => useAutoSave());
 

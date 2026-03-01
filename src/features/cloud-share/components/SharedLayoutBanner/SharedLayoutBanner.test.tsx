@@ -6,6 +6,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
 import type { Layout } from '@/core/types';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 
 // Hoisted mock for computePreview - used by both storage and library store re-export
 const { mockComputePreview } = vi.hoisted(() => ({
@@ -155,7 +156,7 @@ describe('SharedLayoutBanner', () => {
     // Reset layout store
     useLayoutStore.setState({
       layout: mockLayout,
-      activeLayoutId: '__shared_preview__',
+      activeLayoutId: SHARED_PREVIEW_ID,
     });
 
     // Reset library store

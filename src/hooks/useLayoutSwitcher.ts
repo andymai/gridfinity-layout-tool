@@ -21,7 +21,7 @@ import {
   renameLayoutEntry,
 } from '@/core/storage';
 import { setLayoutURL } from '@/utils/url';
-import { createLayoutWithSettings } from '@/core/constants';
+import { createLayoutWithSettings, SHARED_PREVIEW_ID, isRealLayoutId } from '@/core/constants';
 import { trackLayoutAction } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type {
@@ -90,7 +90,7 @@ export function useLayoutSwitcher() {
     const currentLayout = useLayoutStore.getState().layout;
     const currentLibrary = useLibraryStore.getState().library;
 
-    if (!currentActiveId || currentActiveId === '__shared_preview__') return;
+    if (!isRealLayoutId(currentActiveId)) return;
 
     const result = await saveLayoutWithMetadata(currentActiveId, currentLayout, currentLibrary);
     if (isErr(result)) {
@@ -131,7 +131,7 @@ export function useLayoutSwitcher() {
         const currentActiveId = useLayoutStore.getState().activeLayoutId;
         const currentLayout = useLayoutStore.getState().layout;
         const result = await switchActiveLayout(
-          currentActiveId || '__shared_preview__',
+          currentActiveId || SHARED_PREVIEW_ID,
           currentLayout,
           targetId,
           currentLibrary

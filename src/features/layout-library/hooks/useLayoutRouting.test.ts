@@ -8,6 +8,7 @@ import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import * as url from '@/utils/url';
 import * as validation from '@/shared/utils/validation';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 
 // Mock storage module
 vi.mock('@/core/storage', () => ({
@@ -352,7 +353,7 @@ describe('useLayoutRouting', () => {
     });
 
     it('skips URL update for __shared_preview__ layout', () => {
-      useLayoutStore.setState({ activeLayoutId: '__shared_preview__' });
+      useLayoutStore.setState({ activeLayoutId: SHARED_PREVIEW_ID });
 
       renderHook(() => useLayoutRouting());
 

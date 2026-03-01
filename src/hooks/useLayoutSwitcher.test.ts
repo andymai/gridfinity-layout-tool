@@ -7,7 +7,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import { createDefaultLayout } from '@/core/constants';
+import { createDefaultLayout, SHARED_PREVIEW_ID } from '@/core/constants';
 import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import type { LayoutLibrary, LayoutEntry, Layout } from '@/core/types';
@@ -424,7 +424,7 @@ describe('useLayoutSwitcher', () => {
 
     it('skips saving when current layout is __shared_preview__', async () => {
       // Set current layout ID to shared preview
-      useLayoutStore.setState({ activeLayoutId: '__shared_preview__' });
+      useLayoutStore.setState({ activeLayoutId: SHARED_PREVIEW_ID });
 
       const { result } = renderHook(() => useLayoutSwitcher());
 

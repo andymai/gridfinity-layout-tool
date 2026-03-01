@@ -17,7 +17,7 @@ import {
 } from '@/core/storage/LayoutManager';
 import { expectOk, expectErr } from '@/test/testUtils';
 import { ok, err, storageQuotaExceeded, storageUnavailable } from '@/core/result';
-import { createDefaultLayout, STAGING_ID, CONSTRAINTS } from '@/core/constants';
+import { createDefaultLayout, STAGING_ID, CONSTRAINTS, SHARED_PREVIEW_ID } from '@/core/constants';
 import type { Layout, LayoutLibrary, LayoutEntry, Bin } from '@/core/types';
 
 // Mock the backend module
@@ -669,14 +669,14 @@ describe('switchActiveLayout', () => {
     const fromLayout = createTestLayout();
     const library = createTestLibrary([createTestEntry('to-id', 'To')]);
 
-    await switchActiveLayout('__shared_preview__', fromLayout, 'to-id', library);
+    await switchActiveLayout(SHARED_PREVIEW_ID, fromLayout, 'to-id', library);
 
     // saveAsync should only be called once (for loading target, not saving from)
     // Actually, saveAsync is for saving, loadAsync is for loading
     // So saveAsync should NOT have been called at all for the "from" layout
     const saveAsyncCalls = vi.mocked(backend.saveAsync).mock.calls;
     const savingFromId = saveAsyncCalls.some(
-      (call) => call[0] === 'gridfinity-layout-__shared_preview__'
+      (call) => call[0] === `gridfinity-layout-${SHARED_PREVIEW_ID}`
     );
     expect(savingFromId).toBe(false);
   });

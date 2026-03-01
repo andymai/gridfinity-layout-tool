@@ -6,6 +6,7 @@ import { useHistoryStore } from '@/core/store/history';
 import { useSnapshotStore } from '@/core/store/snapshots';
 import { useToastStore } from '@/core/store/toast';
 import { restoreSnapshot, createLayoutEntry, deleteSnapshotById } from '@/core/storage';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -50,7 +51,7 @@ export function SnapshotHistory() {
 
   // Deferred delete: remove from UI immediately, delay IndexedDB deletion for undo window
   const pendingDeleteTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-  const isEditable = activeLayoutId !== null && activeLayoutId !== '__shared_preview__';
+  const isEditable = activeLayoutId !== null && activeLayoutId !== SHARED_PREVIEW_ID;
 
   useEffect(() => {
     if (isEditable && activeLayoutId) {
