@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.48.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.47.0...gridfinity-layout-tool-v3.48.0) (2026-03-01)
+
+
+### Features
+
+* **store:** add extracted selector hooks for cross-store derivations ([#970](https://github.com/andymai/gridfinity-layout-tool/issues/970)) ([735b39c](https://github.com/andymai/gridfinity-layout-tool/commit/735b39c8232fb4b430b4a12c572f6e7ba3d0150f))
+
 ## [3.47.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.46.0...gridfinity-layout-tool-v3.47.0) (2026-03-01)
 
 
