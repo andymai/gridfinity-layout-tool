@@ -128,7 +128,7 @@ describe('Half-bin mode', () => {
     });
   });
 
-  describe('UI store halfBinMode', () => {
+  describe('halfBinMode store', () => {
     beforeEach(() => {
       // Reset store state
       useHalfBinModeStore.setState({ halfBinMode: false });
