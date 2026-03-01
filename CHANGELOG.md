@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.45.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.44.0...gridfinity-layout-tool-v3.45.0) (2026-03-01)
+
+
+### Features
+
+* **bin-designer:** improve cutout editor onboarding and discoverability ([#962](https://github.com/andymai/gridfinity-layout-tool/issues/962)) ([fb059c7](https://github.com/andymai/gridfinity-layout-tool/commit/fb059c77e50e4812f33a3a13680edc8123455531))
+
 ## [3.44.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.43.0...gridfinity-layout-tool-v3.44.0) (2026-03-01)
 
 
