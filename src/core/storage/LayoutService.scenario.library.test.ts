@@ -195,18 +195,33 @@ describe('storage-library', () => {
   });
 
   describe('saveLibrary', () => {
-    it('fires off async IndexedDB write (returns void)', () => {
+    it('returns Ok result on successful save', async () => {
       const library = createTestLibrary(2);
 
-      // saveLibrary now returns void and writes to IndexedDB asynchronously
-      const result = saveLibrary(library);
-      expect(result).toBeUndefined();
+      const result = await saveLibrary(library);
+      expect(result).toEqual({ ok: true, value: undefined });
     });
 
-    it('does not throw when called normally', () => {
+    it('does not throw when called normally', async () => {
       const library = createTestLibrary();
 
-      expect(() => saveLibrary(library)).not.toThrow();
+      const result = await saveLibrary(library);
+      expect(result.ok).toBe(true);
+    });
+
+    it('returns Err result when IndexedDB save fails', async () => {
+      const indexedDBBackend = await import('@/core/storage/backends/indexedDB');
+      vi.spyOn(indexedDBBackend, 'saveLibraryIndex').mockRejectedValueOnce(
+        new Error('IndexedDB failure')
+      );
+
+      const library = createTestLibrary();
+      const result = await saveLibrary(library);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
+      }
     });
   });
 

@@ -191,8 +191,8 @@ describe('storage error handling', () => {
       entries: [],
     };
 
-    it('writes activeLayoutId to localStorage', () => {
-      saveLibrary(testLibrary);
+    it('writes activeLayoutId to localStorage', async () => {
+      await saveLibrary(testLibrary);
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'gridfinity-library-active-id',
@@ -200,9 +200,9 @@ describe('storage error handling', () => {
       );
     });
 
-    it('returns void (fire-and-forget to IndexedDB)', () => {
-      const result = saveLibrary(testLibrary);
-      expect(result).toBeUndefined();
+    it('returns Ok result on successful save', async () => {
+      const result = await saveLibrary(testLibrary);
+      expect(result).toEqual({ ok: true, value: undefined });
     });
   });
 
