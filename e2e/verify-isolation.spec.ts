@@ -23,6 +23,7 @@ test.describe('Test Isolation Verification', () => {
 
   test('storage is clean at test start', async ({ page }) => {
     await page.goto('/');
+    await waitForAppReady(page);
     const storageState = await page.evaluate(() => ({
       localStorageLength: localStorage.length,
       sessionStorageLength: sessionStorage.length,

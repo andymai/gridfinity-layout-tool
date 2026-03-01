@@ -277,7 +277,7 @@ export async function selectBinSize(page: Page, width: number, depth: number) {
   // Wait for the paint mode indicator to confirm the selection took effect
   await page
     .getByText(new RegExp(`paint.*${width}×${depth}`, 'i'))
-    .waitFor({ state: 'visible', timeout: 2000 });
+    .waitFor({ state: 'visible', timeout: DEFAULT_TIMEOUT });
 }
 
 /**
