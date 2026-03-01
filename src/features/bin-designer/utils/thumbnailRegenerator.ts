@@ -5,11 +5,12 @@
  * by creating an offscreen Three.js renderer, generating the mesh via a worker,
  * and capturing a snapshot from the standard isometric angle.
  *
- * Designed to run one design at a time in the background.
+ * Acquires the shared bridge via BridgeManager (reusing the existing instance
+ * if one is active) and releases it when done.
  */
 
 import * as THREE from 'three';
-import { GenerationBridge } from '@/shared/generation/bridge';
+import { bridgeManager } from '@/shared/generation/bridge';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams } from '@/features/bin-designer/types';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
@@ -35,12 +36,11 @@ export async function regenerateThumbnail(
   params: BinParams,
   signal?: AbortSignal
 ): Promise<string | null> {
-  const bridge = new GenerationBridge();
   let renderer: THREE.WebGLRenderer | null = null;
 
   try {
-    // Initialize worker and generate mesh
-    await bridge.init();
+    const bridge = await bridgeManager.acquire();
+
     if (signal?.aborted) return null;
 
     const result = await bridge.generateImmediate(params);
@@ -75,7 +75,6 @@ export async function regenerateThumbnail(
     // Create scene matching PreviewCanvas setup
     const scene = new THREE.Scene();
 
-    // Gradient background (solid dark since it's a single color in current implementation)
     const palette =
       document.documentElement.dataset.theme === 'light' ? THREE_COLORS.light : THREE_COLORS.dark;
     scene.background = new THREE.Color(palette.gradientTop);
@@ -164,8 +163,7 @@ export async function regenerateThumbnail(
   } catch {
     return null;
   } finally {
-    // Always clean up
-    bridge.destroy();
+    bridgeManager.release();
     if (renderer) {
       renderer.dispose();
       renderer.forceContextLoss();

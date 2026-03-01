@@ -1,21 +1,9 @@
-/**
- * Hook that manages the generation bridge lifecycle.
- *
- * Subscribes to designer store epoch changes, auto-generates on change (debounced),
- * and updates the store with mesh results. Skips regeneration on cache hits
- * (epoch unchanged after undo/redo with cached mesh).
- *
- * Lifecycle:
- * 1. Mount: Initialize bridge worker
- * 2. Epoch change: Debounced generate (adaptive delay via bridge)
- * 3. Unmount: Destroy bridge and worker
- */
-
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
-import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
+import { bridgeManager } from '@/shared/generation/bridge';
+import type { GenerationBridge } from '@/shared/generation/bridge';
 import { validateCompartmentSizes } from '../utils/validation';
 import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
 import type { BinParams } from '../types';
@@ -23,10 +11,9 @@ import type { BinParams } from '../types';
 /**
  * Manages the GenerationBridge lifecycle and epoch-based auto-regeneration.
  *
- * - Initializes the worker on mount
- * - Triggers generation when epoch changes (param mutations)
- * - Skips generation when epoch is unchanged (cache hit on undo/redo)
- * - Cleans up the worker on unmount
+ * Initializes the bridge on mount, triggers generation when epoch changes,
+ * skips generation on cache hits (epoch unchanged after undo/redo), and
+ * releases the bridge on unmount.
  */
 export function useGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
@@ -75,10 +62,7 @@ export function useGeneration(): void {
       setGenerationStatus('generating');
 
       try {
-        const result = await bridge.generate(currentParams, (stage, progress) => {
-          void stage;
-          void progress;
-        });
+        const result = await bridge.generate(currentParams, () => {});
 
         setGenerationResult({
           vertices: result.mesh.vertices,
@@ -109,17 +93,19 @@ export function useGeneration(): void {
     [setGenerationStatus, setGenerationResult]
   );
 
-  // Initialize bridge on mount
+  // Initialize bridge on mount via BridgeManager (ref-counted singleton)
   useEffect(() => {
-    const bridge = new GenerationBridge();
-    bridgeRef.current = bridge;
-    setActiveBridge(bridge);
-
+    let cancelled = false;
     setWasmStatus('loading');
 
-    bridge
-      .init()
-      .then(() => {
+    bridgeManager
+      .acquire()
+      .then((bridge) => {
+        if (cancelled) {
+          bridgeManager.release();
+          return;
+        }
+        bridgeRef.current = bridge;
         setWasmStatus('ready');
         initializedRef.current = true;
 
@@ -135,14 +121,14 @@ export function useGeneration(): void {
         void runGeneration(currentState.params);
       })
       .catch((_e: unknown) => {
-        setWasmStatus('error');
+        if (!cancelled) setWasmStatus('error');
       });
 
     return () => {
-      bridge.destroy();
+      cancelled = true;
       bridgeRef.current = null;
       initializedRef.current = false;
-      setActiveBridge(null);
+      bridgeManager.release();
     };
   }, [setWasmStatus, runGeneration]);
 
