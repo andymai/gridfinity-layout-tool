@@ -298,7 +298,8 @@ export async function updateDesignThumbnail(
  */
 export function getActiveDesignId(): DesignId | null {
   try {
-    return localStorage.getItem(ACTIVE_DESIGN_KEY) as DesignId | null;
+    const raw = localStorage.getItem(ACTIVE_DESIGN_KEY);
+    return raw !== null ? designId(raw) : null;
   } catch {
     return null;
   }
