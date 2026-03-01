@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
-import { useInteractionStore } from '@/core/store/interaction';
+import { useViewStore } from '@/core/store/view';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, calcMaxGridUnits } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 import { use3DPreviewKeyboard } from '@/hooks/use3DPreviewKeyboard';
@@ -46,7 +46,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     togglePreviewExpanded,
     setPreviewExpanded,
     toggleIsometricPreview,
-  } = useInteractionStore(
+  } = useViewStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
       layerViewMode: state.layerViewMode,
@@ -684,7 +684,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             if (isPreviewExpanded) {
               setPreviewExpanded(false);
             } else {
-              useInteractionStore.getState().toggleIsometricPreview();
+              useViewStore.getState().toggleIsometricPreview();
             }
           }}
           className={`btn btn-ghost ${

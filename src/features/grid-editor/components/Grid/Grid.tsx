@@ -58,15 +58,17 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [toolbarWidth, setToolbarWidth] = useState(0);
 
-  // Interaction store - paint mode, 3D preview state
-  const { interaction, paintSize, setPaintSize, showIsometricPreview } = useInteractionStore(
+  // Interaction store - paint mode
+  const { interaction, paintSize, setPaintSize } = useInteractionStore(
     useShallow((state) => ({
       interaction: state.interaction,
       paintSize: state.paintSize,
       setPaintSize: state.setPaintSize,
-      showIsometricPreview: state.showIsometricPreview,
     }))
   );
+
+  // View store - 3D preview state
+  const showIsometricPreview = useViewStore((state) => state.showIsometricPreview);
 
   // Selection store - active layer, selected bins
   const { activeLayerId, setSelectedBins } = useSelectionStore(

@@ -60,8 +60,6 @@ export const GridToolbar = memo(function GridToolbar({
     keyboardResizeMode,
     setKeyboardDragMode,
     setKeyboardResizeMode,
-    showIsometricPreview,
-    toggleIsometricPreview,
   } = useInteractionStore(
     useShallow((state) => ({
       paintSize: state.paintSize,
@@ -70,6 +68,10 @@ export const GridToolbar = memo(function GridToolbar({
       keyboardResizeMode: state.keyboardResizeMode,
       setKeyboardDragMode: state.setKeyboardDragMode,
       setKeyboardResizeMode: state.setKeyboardResizeMode,
+    }))
+  );
+  const { showIsometricPreview, toggleIsometricPreview } = useViewStore(
+    useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
       toggleIsometricPreview: state.toggleIsometricPreview,
     }))

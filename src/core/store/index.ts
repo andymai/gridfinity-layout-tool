@@ -10,10 +10,10 @@ export { useSelectionStore } from './selection';
 export type { SelectionStore } from './selection';
 
 export { useViewStore } from './view';
-export type { ViewStore, ContextMenuState } from './view';
+export type { ViewStore, ContextMenuState, LayerViewMode } from './view';
 
 export { useInteractionStore } from './interaction';
-export type { InteractionStore, DropTarget, PaintSize, LayerViewMode } from './interaction';
+export type { InteractionStore, DropTarget, PaintSize } from './interaction';
 
 export { useMobileStore } from './mobile';
 export type { MobileStore, MobilePanel, MobileLayersTab } from './mobile';

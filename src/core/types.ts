@@ -212,16 +212,6 @@ export type Interaction =
     }
   | { type: 'paint'; paintSize: { width: number; depth: number }; start: Coord; current: Coord };
 
-// === UI State ===
-
-export interface UIState {
-  activeLayerId: LayerId;
-  selectedBinIds: BinId[];
-  activeCategoryId: CategoryId;
-  zoom: number; // 0.5 - 2.0
-  showOtherLayers: boolean;
-}
-
 // === Validation Results ===
 
 /** Reasons why bin placement may fail */

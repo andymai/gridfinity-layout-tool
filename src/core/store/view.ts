@@ -24,6 +24,8 @@ export interface ContextMenuState {
   source: 'grid' | 'staging';
 }
 
+export type LayerViewMode = 'focus' | 'stack' | 'all';
+
 interface ViewState {
   // Zoom
   zoom: number;
@@ -45,6 +47,13 @@ interface ViewState {
 
   // Modals
   printModalOpen: boolean;
+  showLayoutManager: boolean;
+
+  // 3D Preview
+  showIsometricPreview: boolean;
+  isometricRotation: number;
+  layerViewMode: LayerViewMode;
+  isPreviewExpanded: boolean;
 }
 
 interface ViewActions {
@@ -75,6 +84,15 @@ interface ViewActions {
 
   // Modals
   setPrintModalOpen: (open: boolean) => void;
+  setShowLayoutManager: (show: boolean) => void;
+
+  // 3D Preview
+  toggleIsometricPreview: () => void;
+  setIsometricRotation: (rotation: number) => void;
+  setLayerViewMode: (mode: LayerViewMode) => void;
+  snapToIsometric: () => void;
+  togglePreviewExpanded: () => void;
+  setPreviewExpanded: (expanded: boolean) => void;
 }
 
 export type ViewStore = ViewState & ViewActions;
@@ -90,6 +108,11 @@ export const useViewStore = create<ViewStore>((set) => ({
   highlightedRowLabel: null,
   highlightedColLabel: null,
   printModalOpen: false,
+  showLayoutManager: false,
+  showIsometricPreview: false,
+  isometricRotation: 0,
+  layerViewMode: 'stack',
+  isPreviewExpanded: false,
 
   // Zoom actions
   setZoom: (zoom) =>
@@ -144,4 +167,27 @@ export const useViewStore = create<ViewStore>((set) => ({
 
   // Modal actions
   setPrintModalOpen: (open) => set({ printModalOpen: open }),
+  setShowLayoutManager: (show) => set({ showLayoutManager: show }),
+
+  // 3D Preview actions
+  toggleIsometricPreview: () =>
+    set((state) => ({
+      showIsometricPreview: !state.showIsometricPreview,
+    })),
+  setIsometricRotation: (rotation) =>
+    set({
+      isometricRotation: ((rotation % 360) + 360) % 360, // Normalize to 0-360
+    }),
+  setLayerViewMode: (mode) => set({ layerViewMode: mode }),
+  snapToIsometric: () =>
+    set((state) => {
+      // Snap to nearest 90° angle
+      const snapped = Math.round(state.isometricRotation / 90) * 90;
+      return { isometricRotation: snapped % 360 };
+    }),
+  togglePreviewExpanded: () =>
+    set((state) => ({
+      isPreviewExpanded: !state.isPreviewExpanded,
+    })),
+  setPreviewExpanded: (expanded) => set({ isPreviewExpanded: expanded }),
 }));

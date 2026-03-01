@@ -1,12 +1,6 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import {
-  useLayoutStore,
-  useHistoryStore,
-  useHalfBinModeStore,
-  useViewStore,
-  useLibraryStore,
-} from '@/core/store';
+import { useLayoutStore, useHistoryStore, useHalfBinModeStore, useViewStore } from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useCollabMode } from '@/hooks/useCollabMode';
@@ -66,19 +60,15 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   );
 
   const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
-  const { printModalOpen, setPrintModalOpen } = useViewStore(
-    useShallow((state) => ({
-      printModalOpen: state.printModalOpen,
-      setPrintModalOpen: state.setPrintModalOpen,
-    }))
-  );
-
-  const { showLayoutManager, setShowLayoutManager } = useLibraryStore(
-    useShallow((state) => ({
-      showLayoutManager: state.showLayoutManager,
-      setShowLayoutManager: state.setShowLayoutManager,
-    }))
-  );
+  const { printModalOpen, setPrintModalOpen, showLayoutManager, setShowLayoutManager } =
+    useViewStore(
+      useShallow((state) => ({
+        printModalOpen: state.printModalOpen,
+        setPrintModalOpen: state.setPrintModalOpen,
+        showLayoutManager: state.showLayoutManager,
+        setShowLayoutManager: state.setShowLayoutManager,
+      }))
+    );
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(layout.name);

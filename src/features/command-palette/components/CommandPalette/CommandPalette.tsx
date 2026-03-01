@@ -12,7 +12,6 @@ import {
   useSelectionStore,
   useViewStore,
   useHalfBinModeStore,
-  useLibraryStore,
   useInteractionStore,
   useToastStore,
   useUndoableAction,
@@ -76,12 +75,25 @@ function useActionHandlers(): Record<string, ActionHandler> {
       setActiveCategory: s.setActiveCategory,
     }))
   );
-  const { zoomIn, zoomOut, toggleShowOtherLayers, setPrintModalOpen } = useViewStore(
+  const {
+    zoomIn,
+    zoomOut,
+    toggleShowOtherLayers,
+    setPrintModalOpen,
+    setShowLayoutManager,
+    showIsometricPreview,
+    toggleIsometricPreview,
+    togglePreviewExpanded,
+  } = useViewStore(
     useShallow((s) => ({
       zoomIn: s.zoomIn,
       zoomOut: s.zoomOut,
       toggleShowOtherLayers: s.toggleShowOtherLayers,
       setPrintModalOpen: s.setPrintModalOpen,
+      setShowLayoutManager: s.setShowLayoutManager,
+      showIsometricPreview: s.showIsometricPreview,
+      toggleIsometricPreview: s.toggleIsometricPreview,
+      togglePreviewExpanded: s.togglePreviewExpanded,
     }))
   );
   const { toggleHalfBinMode, halfBinMode } = useHalfBinModeStore(
@@ -90,15 +102,6 @@ function useActionHandlers(): Record<string, ActionHandler> {
       halfBinMode: s.halfBinMode,
     }))
   );
-  const setShowLayoutManager = useLibraryStore((s) => s.setShowLayoutManager);
-  const { showIsometricPreview, toggleIsometricPreview, togglePreviewExpanded } =
-    useInteractionStore(
-      useShallow((s) => ({
-        showIsometricPreview: s.showIsometricPreview,
-        toggleIsometricPreview: s.toggleIsometricPreview,
-        togglePreviewExpanded: s.togglePreviewExpanded,
-      }))
-    );
   const setInteraction = useInteractionStore((s) => s.setInteraction);
   const paintSize = useInteractionStore((s) => s.paintSize);
   const setPaintSize = useInteractionStore((s) => s.setPaintSize);
@@ -694,7 +697,7 @@ function useContextBoosts(): Record<string, number> {
   const selectedBinIds = useSelectionStore((s) => s.selectedBinIds);
   const layout = useLayoutStore((s) => s.layout);
   const activeLayerId = useSelectionStore((s) => s.activeLayerId);
-  const showIsometricPreview = useInteractionStore((s) => s.showIsometricPreview);
+  const showIsometricPreview = useViewStore((s) => s.showIsometricPreview);
   const { canUndo, canRedo } = useHistoryStore(
     useShallow((s) => ({ canUndo: s.canUndo, canRedo: s.canRedo }))
   );

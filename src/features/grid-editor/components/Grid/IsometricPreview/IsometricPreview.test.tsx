@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import type { ReactNode } from 'react';
 import { IsometricPreview } from './IsometricPreview';
-import { useInteractionStore } from '@/core/store/interaction';
+import { useViewStore } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout } from '@/core/constants';
 
@@ -200,7 +200,7 @@ describe('IsometricPreview', () => {
     resetAllStores();
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useInteractionStore.setState({ showIsometricPreview: true });
+    useViewStore.setState({ showIsometricPreview: true });
   });
 
   it('renders when showIsometricPreview is true', () => {
@@ -209,7 +209,7 @@ describe('IsometricPreview', () => {
   });
 
   it('returns null when showIsometricPreview is false', () => {
-    useInteractionStore.setState({ showIsometricPreview: false });
+    useViewStore.setState({ showIsometricPreview: false });
     const { container } = render(<IsometricPreview />);
     expect(container.textContent).toBe('');
   });
@@ -225,7 +225,7 @@ describe('IsometricPreview', () => {
   });
 
   it('renders with isPreviewExpanded true', () => {
-    useInteractionStore.setState({ isPreviewExpanded: true });
+    useViewStore.setState({ isPreviewExpanded: true });
     const { getByTestId } = render(<IsometricPreview />);
     expect(getByTestId('r3f-canvas')).toBeTruthy();
   });

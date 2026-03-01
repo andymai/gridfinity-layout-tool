@@ -196,14 +196,14 @@ describe('Grid', () => {
       zoomIn: vi.fn(),
       zoomOut: vi.fn(),
       setPrintModalOpen: vi.fn(),
+      showIsometricPreview: false,
+      toggleIsometricPreview: vi.fn(),
+      togglePreviewExpanded: vi.fn(),
     });
     useInteractionStore.setState({
       interaction: null,
       paintSize: null,
       setPaintSize: vi.fn(),
-      showIsometricPreview: false,
-      toggleIsometricPreview: vi.fn(),
-      togglePreviewExpanded: vi.fn(),
     });
     useHalfBinModeStore.setState({
       halfBinMode: false,
@@ -327,7 +327,7 @@ describe('Grid', () => {
     });
 
     it('renders preview container when showIsometricPreview is true', () => {
-      useInteractionStore.setState({ showIsometricPreview: true });
+      useViewStore.setState({ showIsometricPreview: true });
 
       const { container } = render(<Grid />);
 

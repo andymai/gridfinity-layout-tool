@@ -164,7 +164,7 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Set expanded preview state
-      useInteractionStore.setState({ isPreviewExpanded: true });
+      useViewStore.setState({ isPreviewExpanded: true });
 
       renderHook(() => usePWAUpdate());
 
@@ -241,10 +241,10 @@ describe('usePWAUpdate', () => {
       // Ensure we're in a safe state (default after resetAllStores)
       useInteractionStore.setState({
         interaction: null,
-        isPreviewExpanded: false,
         keyboardDragMode: false,
         keyboardResizeMode: false,
       });
+      useViewStore.setState({ isPreviewExpanded: false });
       useViewStore.setState({ contextMenu: null });
       useSelectionStore.setState({ quickLabelBinId: null });
 
@@ -621,8 +621,7 @@ describe('usePWAUpdate', () => {
 
       // Set up some UI state to be saved
       useSelectionStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
-      useViewStore.setState({ zoom: 2.0 });
-      useInteractionStore.setState({ showIsometricPreview: true });
+      useViewStore.setState({ zoom: 2.0, showIsometricPreview: true });
 
       renderHook(() => usePWAUpdate());
 
@@ -701,9 +700,9 @@ describe('usePWAUpdate', () => {
 
       // Check that state was restored
       expect(useViewStore.getState().zoom).toBe(1.5);
-      expect(useInteractionStore.getState().showIsometricPreview).toBe(true);
-      expect(useInteractionStore.getState().isometricRotation).toBe(90);
-      expect(useInteractionStore.getState().layerViewMode).toBe('all');
+      expect(useViewStore.getState().showIsometricPreview).toBe(true);
+      expect(useViewStore.getState().isometricRotation).toBe(90);
+      expect(useViewStore.getState().layerViewMode).toBe('all');
       expect(useViewStore.getState().rightPanelCollapsed).toBe(true);
       expect(useInteractionStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
       expect(useSelectionStore.getState().selectedBinIds).toEqual(['bin-1']);

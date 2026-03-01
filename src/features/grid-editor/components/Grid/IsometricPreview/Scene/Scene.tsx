@@ -2,7 +2,7 @@ import { useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useState }
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { OrthographicCamera, Spherical, Vector3 } from 'three';
-import { useInteractionStore } from '@/core/store/interaction';
+import { useViewStore } from '@/core/store/view';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from '../FloorGrid';
 import { FrontLabel } from '../FrontLabel';
@@ -95,7 +95,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
     const animationFrameRef = useRef<number | null>(null);
     const { camera, size } = useThree();
 
-    const setIsometricRotation = useInteractionStore((state) => state.setIsometricRotation);
+    const setIsometricRotation = useViewStore((state) => state.setIsometricRotation);
 
     // Calculate height-to-grid scale from user settings
     const heightToGridScale = heightUnitMm / gridUnitMm;

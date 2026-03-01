@@ -19,7 +19,8 @@ import {
   BREAKPOINTS,
 } from '@/core/constants';
 import { useLabsStore } from '@/core/store/labs';
-import { useInteractionStore, type LayerViewMode } from '@/core/store/interaction';
+import { useInteractionStore } from '@/core/store/interaction';
+import type { LayerViewMode } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useSettingsStore } from '@/core/store/settings';
@@ -781,9 +782,9 @@ export function buildHeartbeatPayload(sessionMinutes: number): HeartbeatPayload 
     drawer_width: drawer.width,
     drawer_depth: drawer.depth,
     half_bin_mode: halfBinMode,
-    layer_view_mode: interaction.layerViewMode,
-    is_3d_preview_open: interaction.showIsometricPreview,
-    is_preview_expanded: interaction.isPreviewExpanded,
+    layer_view_mode: view.layerViewMode,
+    is_3d_preview_open: view.showIsometricPreview,
+    is_preview_expanded: view.isPreviewExpanded,
     paint_mode_active: interaction.paintSize !== null,
     left_panel_collapsed: view.leftPanelCollapsed,
     right_panel_collapsed: view.rightPanelCollapsed,

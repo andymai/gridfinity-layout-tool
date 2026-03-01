@@ -7,7 +7,6 @@ import {
   useSelectionStore,
   useViewStore,
   useHalfBinModeStore,
-  useLibraryStore,
   useInteractionStore,
 } from '@/core/store';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
@@ -65,13 +64,13 @@ describe('CommandPalette', () => {
       halfBinMode: false,
       toggleHalfBinMode: vi.fn(() => ({ success: true })),
     });
-    useLibraryStore.setState({
+    useViewStore.setState({
       setShowLayoutManager: vi.fn(),
-    });
-    useInteractionStore.setState({
       showIsometricPreview: false,
       toggleIsometricPreview: vi.fn(),
       togglePreviewExpanded: vi.fn(),
+    });
+    useInteractionStore.setState({
       paintSize: null,
       setPaintSize: vi.fn(),
       setInteraction: vi.fn(),
@@ -123,7 +122,7 @@ describe('CommandPalette', () => {
     });
 
     it('works with preview visible', () => {
-      useInteractionStore.setState({ showIsometricPreview: true });
+      useViewStore.setState({ showIsometricPreview: true });
 
       const { container } = render(<CommandPalette open={false} onOpenChange={mockOnOpenChange} />);
 
