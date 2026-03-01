@@ -6,7 +6,8 @@ export type {
   SplitExportResult,
   BaseplateExportResult,
 } from './GenerationBridge';
-export { setActiveBridge, getActiveBridge } from './bridgeRef';
+export { getActiveBridge } from './bridgeRef';
+export { bridgeManager } from './BridgeManager';
 export type {
   WorkerMessage,
   WorkerResponse,

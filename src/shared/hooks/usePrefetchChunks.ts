@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useResponsive } from './useResponsive';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils/idle';
+import { preloadWasmBinary } from '@/shared/generation/wasmPreload';
 
 /** How long to wait after mount before starting prefetch (ms) */
 const PREFETCH_DELAY_MS = 3000;
@@ -21,9 +22,11 @@ interface NetworkInformation {
 function shouldSkipForNetwork(): boolean {
   const connection = (navigator as { connection?: NetworkInformation }).connection;
   if (!connection) return false;
-  if (connection.saveData) return true;
-  if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') return true;
-  return false;
+  return (
+    connection.saveData === true ||
+    connection.effectiveType === 'slow-2g' ||
+    connection.effectiveType === '2g'
+  );
 }
 
 /** Fire-and-forget dynamic import — errors are silently swallowed. */
@@ -56,32 +59,35 @@ export function usePrefetchChunks(): void {
 
     const idleHandles: number[] = [];
 
+    function scheduleNext(fn: () => void): void {
+      idleHandles.push(scheduleIdleCallback(fn));
+    }
+
     const timer = setTimeout(() => {
-      // High priority — features most users reach quickly
-      idleHandles.push(
-        scheduleIdleCallback(() => {
+      // Tier 0: Preload WASM binary — large asset needed by designer & baseplate
+      scheduleNext(() => {
+        preloadWasmBinary();
+
+        // Tier 1: High priority — features most users navigate to quickly
+        scheduleNext(() => {
           prefetch(() => import('@/features/print-export/components/PrintModal'));
           prefetch(() => import('@/features/layout-library/components/LayoutManagerModal'));
           prefetch(() => import('@/features/bin-designer/components/DesignerPage'));
           prefetch(() => import('@/components/Modals/SettingsModal'));
 
-          // Medium priority — commonly used but not immediately
-          idleHandles.push(
-            scheduleIdleCallback(() => {
-              prefetch(() => import('@/features/inspiration-gallery'));
-              prefetch(() => import('@/components/Modals/HelpModal'));
+          // Tier 2: Medium priority — commonly used but not immediately
+          scheduleNext(() => {
+            prefetch(() => import('@/features/inspiration-gallery'));
+            prefetch(() => import('@/components/Modals/HelpModal'));
 
-              // Low priority — rarely needed on desktop
-              idleHandles.push(
-                scheduleIdleCallback(() => {
-                  prefetch(() => import('@/features/labs/components/LabsDrawer'));
-                  prefetch(() => import('@/components/Collab/CollabProvider'));
-                })
-              );
-            })
-          );
-        })
-      );
+            // Tier 3: Low priority — rarely needed on desktop
+            scheduleNext(() => {
+              prefetch(() => import('@/features/labs/components/LabsDrawer'));
+              prefetch(() => import('@/components/Collab/CollabProvider'));
+            });
+          });
+        });
+      });
     }, PREFETCH_DELAY_MS);
 
     return () => {

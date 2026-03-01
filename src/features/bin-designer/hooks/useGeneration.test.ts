@@ -2,84 +2,61 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGeneration } from './useGeneration';
 import { useDesignerStore } from '../store';
-import type { WorkerResponse } from '@/shared/generation/bridge';
+import type { GenerationBridge } from '@/shared/generation/bridge';
 
-/**
- * Mock Worker for testing the useGeneration hook.
- * Uses setTimeout(0) instead of queueMicrotask so fake timers can control it.
- */
-class MockWorker {
-  private listeners: Map<string, Array<(event: unknown) => void>> = new Map();
-  public terminated = false;
+// Mock bridgeManager to isolate tests from the singleton
+const mockBridge = {
+  isDestroyed: false,
+  init: vi.fn(),
+  generate: vi.fn(),
+  generateImmediate: vi.fn(),
+  destroy: vi.fn(),
+  cancel: vi.fn(),
+  getThreadingInfo: vi.fn(() => ({ isThreaded: false, hardwareConcurrency: 4 })),
+} as unknown as GenerationBridge;
 
-  simulateResponse(data: WorkerResponse): void {
-    const event = { data } as MessageEvent;
-    const handlers = this.listeners.get('message') ?? [];
-    for (const handler of handlers) {
-      handler(event);
-    }
-  }
+const mockAcquire = vi.fn<() => Promise<GenerationBridge>>();
+const mockRelease = vi.fn();
+const mockGet = vi.fn<() => GenerationBridge | null>();
 
-  postMessage(data: unknown): void {
-    const msg = data as { type: string; payload?: { requestId: string } };
-
-    if (msg.type === 'INIT') {
-      setTimeout(() => {
-        this.simulateResponse({ type: 'INIT_READY' });
-      }, 0);
-    }
-
-    if (msg.type === 'GENERATE' && msg.payload) {
-      setTimeout(() => {
-        this.simulateResponse({
-          type: 'MESH_RESULT',
-          requestId: msg.payload!.requestId,
-          vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
-          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
-          indices: new Uint32Array([0, 1, 2]),
-          edgeVertices: new Float32Array(0),
-          triangleCount: 1,
-          timingMs: 5,
-        });
-      }, 0);
-    }
-  }
-
-  addEventListener(type: string, handler: (event: unknown) => void): void {
-    if (!this.listeners.has(type)) {
-      this.listeners.set(type, []);
-    }
-    this.listeners.get(type)!.push(handler);
-  }
-
-  removeEventListener(type: string, handler: (event: unknown) => void): void {
-    const handlers = this.listeners.get(type);
-    if (handlers) {
-      const idx = handlers.indexOf(handler);
-      if (idx >= 0) handlers.splice(idx, 1);
-    }
-  }
-
-  terminate(): void {
-    this.terminated = true;
-  }
-}
-
-let mockWorkerInstance: MockWorker | null = null;
-
-function createMockWorkerClass() {
-  return function MockWorkerConstructor() {
-    mockWorkerInstance = new MockWorker();
-    return mockWorkerInstance as unknown as Worker;
-  };
-}
+vi.mock('@/shared/generation/bridge', () => ({
+  bridgeManager: {
+    acquire: () => mockAcquire(),
+    release: () => mockRelease(),
+    get: () => mockGet(),
+  },
+  GenerationBridge: vi.fn(),
+  getActiveBridge: vi.fn(),
+}));
 
 describe('useGeneration', () => {
   beforeEach(() => {
-    mockWorkerInstance = null;
     vi.useFakeTimers();
-    vi.stubGlobal('Worker', createMockWorkerClass());
-    // Full store reset (resetToDefaults only resets params)
+
+    // Reset mock bridge state
+    (mockBridge as { isDestroyed: boolean }).isDestroyed = false;
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mesh: {
+        vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs: 5,
+    });
+    (mockBridge.getThreadingInfo as ReturnType<typeof vi.fn>).mockReturnValue({
+      isThreaded: false,
+      hardwareConcurrency: 4,
+    });
+
+    mockAcquire.mockReset();
+    mockAcquire.mockResolvedValue(mockBridge);
+    mockRelease.mockReset();
+    mockGet.mockReset();
+    mockGet.mockReturnValue(mockBridge);
+
+    // Full store reset
     useDesignerStore.setState({
       wasmStatus: 'unloaded',
       generation: { status: 'idle', mesh: null, progress: 0 },
@@ -94,12 +71,11 @@ describe('useGeneration', () => {
   it('initializes the worker on mount', async () => {
     renderHook(() => useGeneration());
 
-    // Advance: setTimeout(0) for INIT_READY + promise resolution
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1);
     });
 
-    expect(mockWorkerInstance).not.toBeNull();
+    expect(mockAcquire).toHaveBeenCalledTimes(1);
     expect(useDesignerStore.getState().wasmStatus).toBe('ready');
   });
 
@@ -121,25 +97,20 @@ describe('useGeneration', () => {
   it('triggers initial generation after init', async () => {
     renderHook(() => useGeneration());
 
-    // Step 1: Init completes (setTimeout 0 → INIT_READY → promise resolves)
+    // acquire() resolves + initial generation triggers
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1);
     });
 
-    // Step 2: Generate debounce fires (200ms timer in bridge)
+    // Wait for the generate call (which goes through the bridge, not Worker directly)
     await act(async () => {
       await vi.advanceTimersByTimeAsync(201);
-    });
-
-    // Step 3: Worker responds with MESH_RESULT (setTimeout 0)
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(1);
     });
 
     const state = useDesignerStore.getState();
     expect(state.generation.status).toBe('complete');
     expect(state.generation.mesh).not.toBeNull();
-    expect(state.generation.mesh!.vertices).not.toBeNull();
+    expect(state.generation.mesh?.vertices).not.toBeNull();
   });
 
   it('regenerates when params change', async () => {
@@ -147,9 +118,8 @@ describe('useGeneration', () => {
 
     // Complete initial generation
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(1); // init
-      await vi.advanceTimersByTimeAsync(201); // debounce
-      await vi.advanceTimersByTimeAsync(1); // worker response
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(201);
     });
 
     expect(useDesignerStore.getState().generation.status).toBe('complete');
@@ -159,60 +129,43 @@ describe('useGeneration', () => {
       useDesignerStore.getState().setParam('width', 4);
     });
 
-    // Wait for re-generation: debounce (200ms) + worker response
+    // Wait for re-generation
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(201); // debounce
-      await vi.advanceTimersByTimeAsync(1); // worker response
+      await vi.advanceTimersByTimeAsync(201);
     });
 
     expect(useDesignerStore.getState().generation.status).toBe('complete');
   });
 
-  it('destroys the worker on unmount', async () => {
+  it('releases bridge on unmount', async () => {
     const { unmount } = renderHook(() => useGeneration());
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1);
     });
-    expect(mockWorkerInstance).not.toBeNull();
+    expect(mockAcquire).toHaveBeenCalledTimes(1);
 
     unmount();
-    expect(mockWorkerInstance!.terminated).toBe(true);
+
+    // Should call release() to decrement ref count
+    expect(mockRelease).toHaveBeenCalledTimes(1);
   });
 
   it('handles generation error', async () => {
-    // Override worker to respond with error
-    function createErrorWorkerClass() {
-      return function ErrorWorkerConstructor() {
-        const worker = new MockWorker();
-        worker.postMessage = (data: unknown) => {
-          const msg = data as { type: string; payload?: { requestId: string } };
-          if (msg.type === 'INIT') {
-            setTimeout(() => worker.simulateResponse({ type: 'INIT_READY' }), 0);
-          }
-          if (msg.type === 'GENERATE' && msg.payload) {
-            setTimeout(() => {
-              worker.simulateResponse({
-                type: 'ERROR',
-                requestId: msg.payload!.requestId,
-                error: 'Generation failed',
-              });
-            }, 0);
-          }
-        };
-        mockWorkerInstance = worker;
-        return worker as unknown as Worker;
-      };
-    }
-    vi.stubGlobal('Worker', createErrorWorkerClass());
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Generation failed')
+    );
 
     renderHook(() => useGeneration());
 
-    // Init + debounce + error response
+    // acquire() resolves
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(1); // init
-      await vi.advanceTimersByTimeAsync(201); // debounce
-      await vi.advanceTimersByTimeAsync(1); // worker error response
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Wait for generation attempt
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(201);
     });
 
     const state = useDesignerStore.getState();

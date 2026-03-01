@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { usePrefetchChunks } from './usePrefetchChunks';
 
+// Mock WASM preload — we only care that it's called, not its internals
+vi.mock('@/shared/generation/wasmPreload', () => ({
+  preloadWasmBinary: vi.fn(),
+}));
+
 // Mock useResponsive to control device type
 vi.mock('./useResponsive', () => ({
   useResponsive: vi.fn(() => ({
@@ -76,12 +81,12 @@ describe('usePrefetchChunks', () => {
     expect(mockScheduleIdle).toHaveBeenCalled();
   });
 
-  it('chains all three priority tiers via nested idle callbacks', () => {
+  it('chains all four priority tiers via nested idle callbacks', () => {
     renderHook(() => usePrefetchChunks());
     vi.advanceTimersByTime(3000);
 
-    // With synchronous execution mock, all 3 tiers chain: high → medium → low
-    expect(mockScheduleIdle).toHaveBeenCalledTimes(3);
+    // With synchronous execution mock, all 4 tiers chain: WASM preload → high → medium → low
+    expect(mockScheduleIdle).toHaveBeenCalledTimes(4);
   });
 
   it('skips prefetch on mobile', () => {
@@ -174,14 +179,14 @@ describe('usePrefetchChunks', () => {
     expect(mockCancelIdle).not.toHaveBeenCalled();
 
     // Let the timer fire — mock executes callbacks synchronously,
-    // collecting 3 handles (one per priority tier)
+    // collecting 4 handles (one per priority tier: WASM preload + high + medium + low)
     vi.advanceTimersByTime(3000);
     const handles = mockScheduleIdle.mock.results.map((r) => r.value);
-    expect(handles).toHaveLength(3);
+    expect(handles).toHaveLength(4);
 
     // Unmount — should cancel all collected idle handles
     unmount();
-    expect(mockCancelIdle).toHaveBeenCalledTimes(3);
+    expect(mockCancelIdle).toHaveBeenCalledTimes(4);
     handles.forEach((handle) => {
       expect(mockCancelIdle).toHaveBeenCalledWith(handle);
     });

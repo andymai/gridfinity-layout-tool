@@ -1,12 +1,12 @@
 /**
  * Quick export hook for exporting linked designs to STL.
  *
- * Creates a temporary worker bridge, generates mesh, and downloads STL.
- * Shows loading state during the process (typically 5-10 seconds).
+ * Acquires the shared bridge via BridgeManager for export and releases it when done.
+ * Shows loading state during the process.
  */
 
 import { useCallback, useState } from 'react';
-import { GenerationBridge } from '@/shared/generation/bridge';
+import { bridgeManager } from '@/shared/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useToastStore } from '@/core/store';
@@ -22,7 +22,7 @@ interface UseQuickExportReturn {
 
 /**
  * Hook for quick STL export from the inspector.
- * Loads design from storage and creates a temporary worker bridge for generation.
+ * Loads design from storage and uses the shared bridge for generation.
  */
 export function useQuickExport(): UseQuickExportReturn {
   const t = useTranslation();
@@ -34,10 +34,8 @@ export function useQuickExport(): UseQuickExportReturn {
       if (isExporting) return;
 
       setIsExporting(true);
-      let bridge: GenerationBridge | null = null;
 
       try {
-        // Load full design from IndexedDB
         const designResult = await loadDesign(designId);
         if (!isOk(designResult)) {
           addToast({
@@ -49,37 +47,34 @@ export function useQuickExport(): UseQuickExportReturn {
         }
         const design = designResult.value;
 
-        // Create temporary bridge for export
-        bridge = new GenerationBridge();
-        await bridge.init();
+        const bridge = await bridgeManager.acquire();
+        try {
+          const result = await bridge.exportBin(design.params, 'stl');
+          const fileName = generateFileName(
+            design.params,
+            'stl',
+            design.exportFileNameConfig ?? 'descriptive',
+            design.name
+          );
 
-        // Export to STL with high quality settings
-        const result = await bridge.exportBin(design.params, 'stl');
+          const blob = new Blob([result.data], { type: 'application/sla' });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = fileName;
+          document.body.appendChild(anchor);
+          anchor.click();
+          document.body.removeChild(anchor);
+          URL.revokeObjectURL(url);
 
-        // Generate filename
-        const fileName = generateFileName(
-          design.params,
-          'stl',
-          design.exportFileNameConfig ?? 'descriptive',
-          design.name
-        );
-
-        // Trigger download
-        const blob = new Blob([result.data], { type: 'application/sla' });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = fileName;
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        URL.revokeObjectURL(url);
-
-        addToast({
-          message: t('designLinking.toast.exported', { name: designName }),
-          type: 'success',
-          duration: 3000,
-        });
+          addToast({
+            message: t('designLinking.toast.exported', { name: designName }),
+            type: 'success',
+            duration: 3000,
+          });
+        } finally {
+          bridgeManager.release();
+        }
       } catch {
         addToast({
           message: t('designLinking.toast.exportFailed'),
@@ -87,10 +82,6 @@ export function useQuickExport(): UseQuickExportReturn {
           duration: 4000,
         });
       } finally {
-        // Clean up bridge
-        if (bridge) {
-          bridge.destroy();
-        }
         setIsExporting(false);
       }
     },

@@ -14,7 +14,8 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
+import { bridgeManager } from '@/shared/generation/bridge';
+import type { GenerationBridge } from '@/shared/generation/bridge';
 import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
 import { useBaseplatePageStore, setWorkerPool } from '../store/baseplatePageStore';
@@ -238,20 +239,22 @@ export function useBaseplateGeneration(): void {
     [setGenerationStatus, setGenerationResult, setTiling, setPieceMeshes, setSplitProgress]
   );
 
-  // Initialize bridge + worker pool on mount
+  // Initialize bridge via BridgeManager + worker pool on mount
   useEffect(() => {
-    const bridge = new GenerationBridge();
-    bridgeRef.current = bridge;
-    setActiveBridge(bridge);
-
+    let cancelled = false;
     // Closure-local so cleanup can destroy a pool that is still initialising
     let pool: BaseplateWorkerPool | null = null;
 
     setWasmStatus('loading');
 
-    bridge
-      .init()
-      .then(() => {
+    bridgeManager
+      .acquire()
+      .then((bridge) => {
+        if (cancelled) {
+          bridgeManager.release();
+          return;
+        }
+        bridgeRef.current = bridge;
         setWasmStatus('ready');
         initializedRef.current = true;
 
@@ -294,16 +297,17 @@ export function useBaseplateGeneration(): void {
         void runGeneration(params, layoutState.layout.printBedSize);
       })
       .catch((e: unknown) => {
+        if (cancelled) return;
         const message = e instanceof Error ? e.message : String(e);
         useToastStore.getState().addToast(`Failed to initialize 3D engine: ${message}`, 'error');
         setWasmStatus('error');
       });
 
     return () => {
-      bridge.destroy();
+      cancelled = true;
       bridgeRef.current = null;
       initializedRef.current = false;
-      setActiveBridge(null);
+      bridgeManager.release();
 
       pool?.destroy();
       pool = null;
