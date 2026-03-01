@@ -5,8 +5,6 @@ import type {
   LayoutEntry,
   LayoutPreview,
   CloudShareInfo,
-  SharedWithMeEntry,
-  SharePermission,
   NameSuggestionState,
   LayoutId,
 } from '@/core/types';
@@ -14,7 +12,6 @@ import { CONSTRAINTS, getDefaultDrawerSize } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutLastEntity, OK } from '@/core/result';
-import { saveSharedWithMe } from '@/core/storage/SharedWithMeService';
 import { saveLibrary } from '@/core/storage';
 
 // Re-export computePreview for backward compatibility with existing imports
@@ -54,10 +51,6 @@ interface LibraryState {
   library: LayoutLibrary;
   isLoaded: boolean;
 
-  // Shared with me state
-  sharedWithMe: SharedWithMeEntry[];
-  sharedWithMeLoaded: boolean;
-
   initLibrary: (library: LayoutLibrary) => void;
   setLibrary: (library: LayoutLibrary) => void;
 
@@ -85,30 +78,12 @@ interface LibraryState {
   setNameSuggestionDismissed: (layoutId: LayoutId, dismissed: boolean) => void;
   clearNameSuggestionState: (layoutId: LayoutId) => void;
   getNameSuggestionState: (layoutId: LayoutId) => NameSuggestionState | undefined;
-
-  // Shared with me actions
-  initSharedWithMe: (entries: SharedWithMeEntry[]) => void;
-  addSharedWithMe: (entry: {
-    sourceShareId: string;
-    name: string;
-    authorName?: string;
-    permission: SharePermission;
-    preview?: LayoutPreview;
-  }) => SharedWithMeEntry;
-  updateSharedWithMe: (id: string, updates: Partial<SharedWithMeEntry>) => void;
-  removeSharedWithMe: (id: string) => void;
-  getSharedWithMeByShareId: (shareId: string) => SharedWithMeEntry | undefined;
-  markShareAccessed: (shareId: string) => void;
 }
 
 export const useLibraryStore = create<LibraryState>()(
   immer((set, get) => ({
     library: createDefaultLibrary(generateLayoutId(), 'Untitled layout'),
     isLoaded: false,
-
-    // Shared with me state
-    sharedWithMe: [],
-    sharedWithMeLoaded: false,
 
     initLibrary: (library) => {
       set({ library, isLoaded: true });
@@ -279,89 +254,6 @@ export const useLibraryStore = create<LibraryState>()(
     getNameSuggestionState: (layoutId) => {
       const entry = get().library.entries.find((e) => e.id === layoutId);
       return entry?.nameSuggestionState;
-    },
-
-    // === Shared with me actions ===
-
-    initSharedWithMe: (entries) => {
-      set({ sharedWithMe: entries, sharedWithMeLoaded: true });
-    },
-
-    addSharedWithMe: (entry) => {
-      const newEntry: SharedWithMeEntry = {
-        id: crypto.randomUUID(),
-        sourceShareId: entry.sourceShareId,
-        name: entry.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
-        authorName: entry.authorName,
-        permission: entry.permission,
-        addedAt: Date.now(),
-        lastAccessedAt: Date.now(),
-        preview: entry.preview,
-        status: 'available',
-      };
-
-      set((state) => {
-        state.sharedWithMe.push(newEntry);
-      });
-
-      // Persist to localStorage
-      saveSharedWithMe(get().sharedWithMe);
-
-      return newEntry;
-    },
-
-    updateSharedWithMe: (id, updates) => {
-      set((state) => {
-        const entry = state.sharedWithMe.find((e) => e.id === id);
-        if (entry) {
-          if (updates.name !== undefined) {
-            entry.name = updates.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
-          }
-          if (updates.authorName !== undefined) {
-            entry.authorName = updates.authorName;
-          }
-          if (updates.permission !== undefined) {
-            entry.permission = updates.permission;
-          }
-          if (updates.lastAccessedAt !== undefined) {
-            entry.lastAccessedAt = updates.lastAccessedAt;
-          }
-          if (updates.preview !== undefined) {
-            entry.preview = updates.preview;
-          }
-          if (updates.status !== undefined) {
-            entry.status = updates.status;
-          }
-        }
-      });
-
-      // Persist to localStorage
-      saveSharedWithMe(get().sharedWithMe);
-    },
-
-    removeSharedWithMe: (id) => {
-      set((state) => {
-        state.sharedWithMe = state.sharedWithMe.filter((e) => e.id !== id);
-      });
-
-      // Persist to localStorage
-      saveSharedWithMe(get().sharedWithMe);
-    },
-
-    getSharedWithMeByShareId: (shareId) => {
-      return get().sharedWithMe.find((e) => e.sourceShareId === shareId);
-    },
-
-    markShareAccessed: (shareId) => {
-      set((state) => {
-        const entry = state.sharedWithMe.find((e) => e.sourceShareId === shareId);
-        if (entry) {
-          entry.lastAccessedAt = Date.now();
-        }
-      });
-
-      // Persist to localStorage
-      saveSharedWithMe(get().sharedWithMe);
     },
   }))
 );

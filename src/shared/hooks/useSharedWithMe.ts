@@ -5,7 +5,8 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLibraryStore, computePreview } from '@/core/store/library';
+import { computePreview } from '@/core/store/library';
+import { useSharedWithMeStore } from '@/core/store/sharedWithMe';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
@@ -47,13 +48,18 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
     };
   }, []);
 
-  // Library store - shared with me state
-  const { sharedWithMe, isLoaded, updateSharedWithMe, removeSharedWithMe } = useLibraryStore(
+  // Shared with me store
+  const {
+    sharedWithMe,
+    isLoaded,
+    update: updateSharedWithMe,
+    remove: removeSharedWithMe,
+  } = useSharedWithMeStore(
     useShallow((state) => ({
-      sharedWithMe: state.sharedWithMe,
-      isLoaded: state.sharedWithMeLoaded,
-      updateSharedWithMe: state.updateSharedWithMe,
-      removeSharedWithMe: state.removeSharedWithMe,
+      sharedWithMe: state.entries,
+      isLoaded: state.isLoaded,
+      update: state.update,
+      remove: state.remove,
     }))
   );
 

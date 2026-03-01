@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSharedWithMe } from '@/shared/hooks/useSharedWithMe';
-import { useLibraryStore } from '@/core/store/library';
+import { useSharedWithMeStore } from '@/core/store/sharedWithMe';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useHistoryStore } from '@/core/store/history';
@@ -64,9 +64,9 @@ describe('useSharedWithMe', () => {
     vi.clearAllMocks();
 
     // Reset stores
-    useLibraryStore.setState({
-      sharedWithMe: [],
-      sharedWithMeLoaded: true,
+    useSharedWithMeStore.setState({
+      entries: [],
+      isLoaded: true,
     });
 
     useLayoutStore.setState({
@@ -92,7 +92,7 @@ describe('useSharedWithMe', () => {
   describe('initial state', () => {
     it('returns shared with me entries from store', () => {
       const entries = [createTestEntry()];
-      useLibraryStore.setState({ sharedWithMe: entries });
+      useSharedWithMeStore.setState({ entries });
 
       const { result } = renderHook(() => useSharedWithMe());
 
@@ -114,8 +114,8 @@ describe('useSharedWithMe', () => {
       const entry = createTestEntry();
       const layout = createTestLayout();
 
-      useLibraryStore.setState({
-        sharedWithMe: [entry],
+      useSharedWithMeStore.setState({
+        entries: [entry],
       });
 
       mockFetchShare.mockResolvedValueOnce({
@@ -164,7 +164,7 @@ describe('useSharedWithMe', () => {
 
     it('handles API error', async () => {
       const entry = createTestEntry();
-      useLibraryStore.setState({ sharedWithMe: [entry] });
+      useSharedWithMeStore.setState({ entries: [entry] });
 
       mockFetchShare.mockResolvedValueOnce({
         ok: false,
@@ -190,7 +190,7 @@ describe('useSharedWithMe', () => {
 
     it('marks entry as deleted when not found', async () => {
       const entry = createTestEntry();
-      useLibraryStore.setState({ sharedWithMe: [entry] });
+      useSharedWithMeStore.setState({ entries: [entry] });
 
       mockFetchShare.mockResolvedValueOnce({
         ok: false,
@@ -211,7 +211,7 @@ describe('useSharedWithMe', () => {
       expect(result.current.error).toContain('deleted');
 
       // Entry should be marked as deleted in store
-      const updated = useLibraryStore.getState().sharedWithMe.find((e) => e.id === entry.id);
+      const updated = useSharedWithMeStore.getState().entries.find((e) => e.id === entry.id);
       expect(updated?.status).toBe('deleted');
     });
 
@@ -254,7 +254,7 @@ describe('useSharedWithMe', () => {
   describe('removeSharedLayout', () => {
     it('removes entry from shared with me list', () => {
       const entry = createTestEntry();
-      useLibraryStore.setState({ sharedWithMe: [entry] });
+      useSharedWithMeStore.setState({ entries: [entry] });
 
       const { result } = renderHook(() => useSharedWithMe());
 
@@ -264,12 +264,12 @@ describe('useSharedWithMe', () => {
         result.current.removeSharedLayout(entry.id);
       });
 
-      expect(useLibraryStore.getState().sharedWithMe).toHaveLength(0);
+      expect(useSharedWithMeStore.getState().entries).toHaveLength(0);
     });
 
     it('does nothing when entry does not exist', () => {
       const entry = createTestEntry();
-      useLibraryStore.setState({ sharedWithMe: [entry] });
+      useSharedWithMeStore.setState({ entries: [entry] });
 
       const { result } = renderHook(() => useSharedWithMe());
 
@@ -278,7 +278,7 @@ describe('useSharedWithMe', () => {
       });
 
       // Original entry should still exist
-      expect(useLibraryStore.getState().sharedWithMe).toHaveLength(1);
+      expect(useSharedWithMeStore.getState().entries).toHaveLength(1);
     });
   });
 
@@ -290,8 +290,8 @@ describe('useSharedWithMe', () => {
 
       // Add an entry to the store (wrap in act to suppress warning)
       act(() => {
-        useLibraryStore.setState({
-          sharedWithMe: [createTestEntry()],
+        useSharedWithMeStore.setState({
+          entries: [createTestEntry()],
         });
       });
 

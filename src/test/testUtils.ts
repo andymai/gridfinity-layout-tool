@@ -19,6 +19,7 @@ import { useInteractionStore, INITIAL_INTERACTION_STATE } from '@/core/store/int
 import { useMobileStore, INITIAL_MOBILE_STATE } from '@/core/store/mobile';
 import { useHalfBinModeStore, INITIAL_HALF_BIN_MODE_STATE } from '@/core/store/halfBinMode';
 import { useSharedPreviewStore, INITIAL_SHARED_PREVIEW_STATE } from '@/core/store/sharedPreview';
+import { useSharedWithMeStore, INITIAL_SHARED_WITH_ME_STATE } from '@/core/store/sharedWithMe';
 import { useSnapshotStore, INITIAL_SNAPSHOT_STATE } from '@/core/store/snapshots';
 
 /**
@@ -59,9 +60,8 @@ export function resetLibraryStore(): void {
   useLibraryStore.setState({
     library: createTestLibrary(),
     isLoaded: false,
-    sharedWithMe: [],
-    sharedWithMeLoaded: false,
   });
+  useSharedWithMeStore.setState(INITIAL_SHARED_WITH_ME_STATE);
 }
 
 /**
@@ -113,9 +113,10 @@ export function resetAllStores(): void {
   useLibraryStore.setState({
     library: createTestLibrary(),
     isLoaded: false,
-    sharedWithMe: [],
-    sharedWithMeLoaded: false,
   });
+
+  // Shared with me store
+  useSharedWithMeStore.setState(INITIAL_SHARED_WITH_ME_STATE);
 
   // Labs store
   useLabsStore.setState({

@@ -10,6 +10,7 @@ import { useSettingsStore } from './core/store/settings.ts';
 import { initAnalytics } from './shared/analytics/posthog.ts';
 import { useLayoutStore } from './core/store/layout.ts';
 import { useLibraryStore } from './core/store/library.ts';
+import { useSharedWithMeStore } from './core/store/sharedWithMe.ts';
 import { initializeLayoutLibrary, loadSharedWithMe } from '@/core/storage';
 import { isOk } from '@/core/result';
 import type { Locale } from './i18n/types.ts';
@@ -96,9 +97,9 @@ if (recoverFromBadWwwMigration()) {
       useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
 
       const sharedWithMeResult = loadSharedWithMe();
-      useLibraryStore
+      useSharedWithMeStore
         .getState()
-        .initSharedWithMe(isOk(sharedWithMeResult) ? sharedWithMeResult.value : []);
+        .init(isOk(sharedWithMeResult) ? sharedWithMeResult.value : []);
     })
     .catch((e: unknown) => {
       initError = e instanceof Error ? e : new Error(String(e));

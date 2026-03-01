@@ -6,6 +6,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { useLibraryStore, computePreview } from '@/core/store/library';
+import { useSharedWithMeStore } from '@/core/store/sharedWithMe';
 import {
   getSharedLayoutFromURL,
   clearSharedLayoutFromURL,
@@ -46,19 +47,21 @@ export function SharedLayoutImporter() {
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
   const addToast = useToastStore((state) => state.addToast);
 
-  // Library store for auto-tracking shared layouts
+  // Library store
   const libraryIsLoaded = useLibraryStore((state) => state.isLoaded);
   const libraryEntries = useLibraryStore((state) => state.library.entries);
-  const sharedWithMeLoaded = useLibraryStore((state) => state.sharedWithMeLoaded);
-  const getSharedWithMeByShareId = useLibraryStore((state) => state.getSharedWithMeByShareId);
+
+  // Shared with me store
+  const sharedWithMeLoaded = useSharedWithMeStore((state) => state.isLoaded);
+  const getSharedWithMeByShareId = useSharedWithMeStore((state) => state.getByShareId);
+  const addSharedWithMe = useSharedWithMeStore((state) => state.add);
+  const markShareAccessed = useSharedWithMeStore((state) => state.markAccessed);
+  const updateSharedWithMe = useSharedWithMeStore((state) => state.update);
 
   // Check if we already loaded this share (to skip re-fetching)
   const sharedLayoutCloudShareId = useSharedPreviewStore(
     (state) => state.sharedPreview?.cloudShareId ?? null
   );
-  const addSharedWithMe = useLibraryStore((state) => state.addSharedWithMe);
-  const markShareAccessed = useLibraryStore((state) => state.markShareAccessed);
-  const updateSharedWithMe = useLibraryStore((state) => state.updateSharedWithMe);
 
   /**
    * Check if a share ID belongs to the current user (i.e., they are the owner).
