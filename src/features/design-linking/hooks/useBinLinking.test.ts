@@ -14,7 +14,7 @@ import * as MutationsContext from '@/shared/contexts/MutationsContext';
 import * as UseCustomBins from '@/features/bin-designer/hooks/useCustomBins';
 import { ok, err } from '@/core/result';
 import type { Bin, Layout } from '@/core/types';
-import type { BinParameters } from '@/features/bin-designer/types';
+import type { BinParams } from '@/features/bin-designer';
 
 // Mock modules
 vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
@@ -360,7 +360,7 @@ describe('useBinLinking', () => {
       const { mockAddToast } = setupStores([
         makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4 }),
       ]);
-      const mockParams: BinParameters = {
+      const mockParams: BinParams = {
         width: 2,
         depth: 3,
         height: 4,
@@ -385,7 +385,7 @@ describe('useBinLinking', () => {
 
     it('shows sync dialog when dimensions differ', async () => {
       setupStores([makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4 })]);
-      const mockParams: BinParameters = {
+      const mockParams: BinParams = {
         width: 3,
         depth: 3,
         height: 4,
@@ -418,7 +418,7 @@ describe('useBinLinking', () => {
         makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4 }),
         makeBin({ id: 'bin-2', width: 3, depth: 3, height: 4 }),
       ]);
-      const mockParams: BinParameters = {
+      const mockParams: BinParams = {
         width: 2,
         depth: 3,
         height: 4,
@@ -466,7 +466,7 @@ describe('useBinLinking', () => {
       const { mockUpdateBin } = setupStores([
         makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, x: 0, y: 0 }),
       ]);
-      const mockParams: BinParameters = {
+      const mockParams: BinParams = {
         width: 3,
         depth: 3,
         height: 5,
@@ -500,7 +500,7 @@ describe('useBinLinking', () => {
         makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, x: 0, y: 0 }),
         makeBin({ id: 'bin-2', width: 2, depth: 3, height: 4, x: 2, y: 0 }), // Adjacent
       ]);
-      const mockParams: BinParameters = {
+      const mockParams: BinParams = {
         width: 5, // Too wide, would collide with bin-2
         depth: 3,
         height: 5,
@@ -543,7 +543,7 @@ describe('useBinLinking', () => {
       const { mockAddToast } = setupStores([
         makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, x: 0, y: 0 }),
       ]);
-      const mockParams: BinParameters = {
+      const mockParams: BinParams = {
         width: 2,
         depth: 3,
         height: 5,

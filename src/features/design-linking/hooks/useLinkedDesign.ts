@@ -6,8 +6,7 @@
  */
 
 import { useMemo } from 'react';
-import { useCustomBins } from '@/features/bin-designer/hooks/useCustomBins';
-import type { CustomBinRef } from '@/features/bin-designer/store/customBinRegistry';
+import { useCustomBins, type CustomBinRef } from '@/features/bin-designer';
 import { resolveLinkedDesign, linkedDesignExists } from '../domain';
 
 interface UseLinkedDesignResult {

@@ -7,3 +7,9 @@ export { useExport } from './useExport';
 export { useGeneration } from './useGeneration';
 export { useThumbnailCapture } from './useThumbnailCapture';
 export { useUnsavedWarning } from './useUnsavedWarning';
+export { useCustomBins, refreshCustomBinsCache } from './useCustomBins';
+export {
+  useDesignThumbnail,
+  clearThumbnailCache,
+  updateThumbnailCache,
+} from './useDesignThumbnail';

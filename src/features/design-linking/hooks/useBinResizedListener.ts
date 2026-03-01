@@ -15,10 +15,13 @@ import { useEffect, useRef } from 'react';
 import { useUndoableAction, useToastStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useLatestRef, useLayoutRef } from '@/shared/hooks';
-import { useCustomBins } from '@/features/bin-designer/hooks/useCustomBins';
-import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import { loadDesign, updateDesignParams } from '@/features/bin-designer/storage/DesignerStorage';
-import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import {
+  useCustomBins,
+  useDesignerStore,
+  loadDesign,
+  updateDesignParams,
+  upsertRegistryEntry,
+} from '@/features/bin-designer';
 import { isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { onSyncEvent } from '../events';

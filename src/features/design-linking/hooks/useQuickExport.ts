@@ -7,8 +7,7 @@
 
 import { useCallback, useState } from 'react';
 import { bridgeManager } from '@/shared/generation/bridge';
-import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
-import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
+import { generateFileName, loadDesign } from '@/features/bin-designer';
 import { useToastStore } from '@/core/store';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';

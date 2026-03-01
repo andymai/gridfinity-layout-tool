@@ -15,7 +15,7 @@ import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import * as MutationsContext from '@/shared/contexts/MutationsContext';
 import * as UseCustomBins from '@/features/bin-designer/hooks/useCustomBins';
 import type { Bin, Layout } from '@/core/types';
-import type { CustomBinRef } from '@/features/bin-designer/store/customBinRegistry';
+import type { CustomBinRef } from '@/features/bin-designer';
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({
   useMutations: vi.fn(),

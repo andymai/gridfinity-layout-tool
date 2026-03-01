@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { hasComplexGeometry, getComplexityReasons } from './complexGeometry';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/features/bin-designer';
 
 /** Minimal BinParams for testing — only the fields checked by complex geometry detection. */
 function createParams(

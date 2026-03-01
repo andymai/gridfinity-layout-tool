@@ -9,9 +9,12 @@ import { useCallback } from 'react';
 import { useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useShallow } from 'zustand/react/shallow';
-import { useCustomBins } from '@/features/bin-designer/hooks/useCustomBins';
-import { loadDesign, deleteDesign } from '@/features/bin-designer/storage/DesignerStorage';
-import { removeRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import {
+  useCustomBins,
+  loadDesign,
+  deleteDesign,
+  removeRegistryEntry,
+} from '@/features/bin-designer';
 import { useLinkingStore } from '../store';
 import {
   compareDimensions,

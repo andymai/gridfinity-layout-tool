@@ -26,7 +26,7 @@ NC='\033[0m' # No Color
 # Allowed cross-feature imports — format: "source-feature:target-feature"
 # Add entries here (with explanation) when intentional coupling is required.
 ALLOWED_CROSS_FEATURE=(
-  "design-linking:bin-designer" # design-linking links layout bins to bin-designer designs
+  "design-linking:bin-designer" # Integration layer; imports must use @/features/bin-designer barrel only
 )
 
 VIOLATIONS_FOUND=0

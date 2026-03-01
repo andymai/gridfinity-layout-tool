@@ -6,7 +6,7 @@
  */
 
 import type { Bin } from '@/core/types';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/features/bin-designer';
 import type { SyncableDimensions } from '../types';
 
 // =============================================================================

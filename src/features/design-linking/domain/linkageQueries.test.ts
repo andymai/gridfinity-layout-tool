@@ -16,7 +16,7 @@ import {
   linkedDesignExists,
 } from './linkageQueries';
 import type { Bin } from '@/core/types';
-import type { CustomBinRef } from '@/features/bin-designer/store/customBinRegistry';
+import type { CustomBinRef } from '@/features/bin-designer';
 import type { SyncableDimensions } from '../types';
 
 // Test helpers
