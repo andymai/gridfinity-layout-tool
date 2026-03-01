@@ -273,10 +273,10 @@ export function useBaseplateGeneration(): void {
           pool = new BaseplateWorkerPool();
           void bridge
             .getWasmModule()
-            .then((sharedModule) => pool?.init(poolSize, sharedModule))
-            .catch(() =>
-              // Fallback: workers compile independently (still benefits from IDB cache)
-              pool?.init(poolSize)
+            .then(
+              (sharedModule) => pool?.init(poolSize, sharedModule),
+              // onRejected: only catches getWasmModule failure, not pool.init failure
+              () => pool?.init(poolSize)
             )
             .then(() => {
               // Expose only after init — uninitialised workers hang forever

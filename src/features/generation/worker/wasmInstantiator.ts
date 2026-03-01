@@ -111,7 +111,14 @@ export async function loadOpenCascade(options?: LoadOptions): Promise<WasmLoadRe
   const wasmUrl = isThreaded ? opencascadeThreadedWasm : opencascadeSingleWasm;
   const wasmModule = await obtainModule(wasmUrl, options?.cachedModule);
 
-  // Build Emscripten config with instantiateWasm override
+  // Build Emscripten config with instantiateWasm override.
+  // If instantiation fails (e.g., corrupted cached module), we reject a
+  // shared promise so the outer factory call doesn't hang forever.
+  let rejectFactory: ((error: Error) => void) | null = null;
+  const instantiationGuard = new Promise<never>((_resolve, reject) => {
+    rejectFactory = reject;
+  });
+
   const instantiateWasm = (
     imports: WebAssembly.Imports,
     receiveInstance: (instance: WebAssembly.Instance) => void
@@ -121,13 +128,18 @@ export async function loadOpenCascade(options?: LoadOptions): Promise<WasmLoadRe
         receiveInstance(instance);
       })
       .catch((e: unknown) => {
-        console.error('[WasmInstantiator] instantiate failed:', e);
+        // Evict corrupted cache entry
+        void cacheModule(wasmUrl, wasmModule).catch(() => {});
+        rejectFactory?.(
+          new Error(`WASM instantiation failed: ${e instanceof Error ? e.message : String(e)}`)
+        );
       });
     return {}; // Emscripten expects synchronous return of exports (filled async)
   };
 
+  // Race the factory against the instantiation guard to avoid hanging on corrupt modules
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Emscripten WASM factory returns untyped module
-  let OC: any;
+  let factoryPromise: Promise<any>;
   if (isThreaded) {
     // The threaded Emscripten config type lacks instantiateWasm, but the runtime supports it
     const threadedConfig = {
@@ -144,10 +156,9 @@ export async function loadOpenCascade(options?: LoadOptions): Promise<WasmLoadRe
       },
     };
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any -- Emscripten config extended with instantiateWasm
-    OC = await opencascadeThreadedInit(threadedConfig as any);
+    factoryPromise = opencascadeThreadedInit(threadedConfig as any);
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Emscripten WASM factory returns untyped module (see vite-env.d.ts TECH-DEBT)
-    OC = await opencascadeSingleInit({
+    factoryPromise = opencascadeSingleInit({
       instantiateWasm,
       locateFile: (fileName: string) => {
         if (fileName.endsWith('.wasm')) {
@@ -157,6 +168,9 @@ export async function loadOpenCascade(options?: LoadOptions): Promise<WasmLoadRe
       },
     });
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Emscripten WASM factory returns untyped module
+  const OC = await Promise.race([factoryPromise, instantiationGuard]);
 
   initFromOC(OC);
 

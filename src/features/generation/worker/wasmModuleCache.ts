@@ -68,21 +68,31 @@ export async function getCachedModule(wasmUrl: string): Promise<WebAssembly.Modu
  * Silently handles QuotaExceededError by clearing the store and retrying once.
  */
 export async function cacheModule(wasmUrl: string, module: WebAssembly.Module): Promise<void> {
+  let db: IDBDatabase | null = null;
   try {
-    const db = await openDB();
+    db = await openDB();
     await deleteStaleEntries(db, wasmUrl);
     await putModule(db, wasmUrl, module);
-    db.close();
   } catch {
     // IDB unavailable or other error — caching is best-effort
+  } finally {
+    db?.close();
   }
 }
 
-/** Delete all entries except the one matching `keepUrl`. */
-async function deleteStaleEntries(db: IDBDatabase, keepUrl: string): Promise<void> {
+/** Run a readwrite transaction, passing the object store to the callback. */
+function withWriteStore(db: IDBDatabase, action: (store: IDBObjectStore) => void): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
+    action(tx.objectStore(STORE_NAME));
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(new Error(tx.error?.message ?? 'IDB transaction failed'));
+  });
+}
+
+/** Delete all entries except the one matching `keepUrl`. */
+function deleteStaleEntries(db: IDBDatabase, keepUrl: string): Promise<void> {
+  return withWriteStore(db, (store) => {
     const cursorRequest = store.openCursor();
     cursorRequest.onsuccess = () => {
       const cursor = cursorRequest.result;
@@ -93,8 +103,6 @@ async function deleteStaleEntries(db: IDBDatabase, keepUrl: string): Promise<voi
         cursor.continue();
       }
     };
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(new Error(tx.error?.message ?? 'IDB transaction failed'));
   });
 }
 
@@ -105,38 +113,13 @@ async function putModule(
   module: WebAssembly.Module
 ): Promise<void> {
   try {
-    await putModuleOnce(db, wasmUrl, module);
+    await withWriteStore(db, (store) => store.put(module, wasmUrl));
   } catch (e: unknown) {
     if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-      // Clear all entries and retry once
-      await clearStore(db);
-      await putModuleOnce(db, wasmUrl, module);
+      await withWriteStore(db, (store) => store.clear());
+      await withWriteStore(db, (store) => store.put(module, wasmUrl));
     } else {
       throw e;
     }
   }
-}
-
-function putModuleOnce(
-  db: IDBDatabase,
-  wasmUrl: string,
-  module: WebAssembly.Module
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.put(module, wasmUrl);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(new Error(tx.error?.message ?? 'IDB transaction failed'));
-  });
-}
-
-function clearStore(db: IDBDatabase): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.clear();
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(new Error(tx.error?.message ?? 'IDB transaction failed'));
-  });
 }

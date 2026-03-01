@@ -17,6 +17,19 @@ import type {
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 
+/** Extract threading info from INIT_READY with defensive validation for backward compatibility. */
+function extractThreadingInfo(data: {
+  isThreaded: boolean;
+  hardwareConcurrency: number;
+}): ThreadingInfo {
+  const isThreaded = typeof data.isThreaded === 'boolean' ? data.isThreaded : false;
+  const hardwareConcurrency =
+    Number.isFinite(data.hardwareConcurrency) && data.hardwareConcurrency > 0
+      ? data.hardwareConcurrency
+      : 4;
+  return { isThreaded, hardwareConcurrency };
+}
+
 /** Callback for progress updates during generation */
 export type ProgressCallback = (stage: GenerationStage, progress: number) => void;
 
@@ -104,51 +117,7 @@ export class GenerationBridge {
    * Safe to call multiple times (returns cached promise).
    */
   init(): Promise<void> {
-    if (this.destroyed) {
-      return Promise.reject(new Error('Bridge has been destroyed'));
-    }
-
-    if (this.initPromise) {
-      return this.initPromise;
-    }
-
-    this.initPromise = new Promise<void>((resolve, reject) => {
-      try {
-        this.worker = new Worker(new URL('../worker/generation.worker.ts', import.meta.url), {
-          type: 'module',
-        });
-
-        const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
-          if (event.data.type === 'INIT_READY') {
-            this.worker?.removeEventListener('message', onInitMessage);
-            // Defensive validation for backward compatibility
-            const isThreaded =
-              typeof event.data.isThreaded === 'boolean' ? event.data.isThreaded : false;
-            const hardwareConcurrency =
-              Number.isFinite(event.data.hardwareConcurrency) && event.data.hardwareConcurrency > 0
-                ? event.data.hardwareConcurrency
-                : 4;
-            this.threadingInfo = { isThreaded, hardwareConcurrency };
-            this.setupMessageHandler();
-            resolve();
-          } else if (event.data.type === 'ERROR') {
-            this.worker?.removeEventListener('message', onInitMessage);
-            reject(new Error(event.data.error));
-          }
-        };
-
-        this.worker.addEventListener('message', onInitMessage);
-        this.worker.addEventListener('error', (e) => {
-          reject(new Error(`Worker failed to initialize: ${e.message}`));
-        });
-
-        this.postMessage({ type: 'INIT' });
-      } catch (e) {
-        reject(new Error(`Failed to create worker: ${e instanceof Error ? e.message : String(e)}`));
-      }
-    });
-
-    return this.initPromise;
+    return this.initWorker({ type: 'INIT' });
   }
 
   /**
@@ -157,6 +126,15 @@ export class GenerationBridge {
    * Safe to call multiple times (returns cached promise).
    */
   initWithModule(wasmModule: WebAssembly.Module): Promise<void> {
+    return this.initWorker({ type: 'INIT_WITH_MODULE', wasmModule });
+  }
+
+  /**
+   * Shared init logic: create worker, wait for INIT_READY, extract threading info.
+   * The `initMessage` determines whether the worker compiles WASM itself or
+   * uses a pre-compiled module.
+   */
+  private initWorker(initMessage: WorkerMessage): Promise<void> {
     if (this.destroyed) {
       return Promise.reject(new Error('Bridge has been destroyed'));
     }
@@ -174,13 +152,7 @@ export class GenerationBridge {
         const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
           if (event.data.type === 'INIT_READY') {
             this.worker?.removeEventListener('message', onInitMessage);
-            const isThreaded =
-              typeof event.data.isThreaded === 'boolean' ? event.data.isThreaded : false;
-            const hardwareConcurrency =
-              Number.isFinite(event.data.hardwareConcurrency) && event.data.hardwareConcurrency > 0
-                ? event.data.hardwareConcurrency
-                : 4;
-            this.threadingInfo = { isThreaded, hardwareConcurrency };
+            this.threadingInfo = extractThreadingInfo(event.data);
             this.setupMessageHandler();
             resolve();
           } else if (event.data.type === 'ERROR') {
@@ -194,7 +166,7 @@ export class GenerationBridge {
           reject(new Error(`Worker failed to initialize: ${e.message}`));
         });
 
-        this.postMessage({ type: 'INIT_WITH_MODULE', wasmModule });
+        this.postMessage(initMessage);
       } catch (e) {
         reject(new Error(`Failed to create worker: ${e instanceof Error ? e.message : String(e)}`));
       }
@@ -596,8 +568,14 @@ export class GenerationBridge {
             const reject = this.pendingReject;
             this.clearPending();
             reject(new Error(response.error));
-          } else {
-            this.rejectExportByRequestId(response.requestId, new Error(response.error));
+          } else if (!this.rejectExportByRequestId(response.requestId, new Error(response.error))) {
+            // Handle GET_MODULE errors
+            if (this.pendingModuleReject) {
+              const reject = this.pendingModuleReject;
+              this.pendingModuleResolve = null;
+              this.pendingModuleReject = null;
+              reject(new Error(response.error));
+            }
           }
           break;
 
