@@ -17,6 +17,25 @@ import { useCallback } from 'react';
 import { useToastStore } from '@/core/store/toast';
 import type { DomainError } from '@/core/result';
 import { getUserMessage, getRecoveryHint, getSeverity } from '@/core/result';
+import type { ToastType } from '@/core/store/toast';
+
+/** Map catalog severity to toast type. */
+function severityToToastType(severity: 'error' | 'warning' | 'info'): ToastType {
+  if (severity === 'error') return 'error';
+  return 'info';
+}
+
+/** Build a toast message and type from a domain error using the error catalog. */
+function buildErrorToast(error: DomainError): { message: string; type: ToastType } {
+  const message = getUserMessage(error);
+  const hint = getRecoveryHint(error);
+  const severity = getSeverity(error.code);
+
+  return {
+    message: hint ? `${message}\n${hint}` : message,
+    type: severityToToastType(severity),
+  };
+}
 
 /**
  * Show a domain error as a toast notification.
@@ -25,14 +44,8 @@ import { getUserMessage, getRecoveryHint, getSeverity } from '@/core/result';
  * Uses the error catalog to build the message and determine severity.
  */
 export function showErrorToast(error: DomainError): void {
-  const message = getUserMessage(error);
-  const hint = getRecoveryHint(error);
-  const severity = getSeverity(error.code);
-  const toastType = severity === 'warning' ? 'info' : 'error';
-
-  const fullMessage = hint ? `${message}\n${hint}` : message;
-
-  useToastStore.getState().addToast(fullMessage, toastType);
+  const { message, type } = buildErrorToast(error);
+  useToastStore.getState().addToast(message, type);
 }
 
 /**
@@ -53,14 +66,8 @@ export function useResultToast() {
 
   const showError = useCallback(
     (error: DomainError): void => {
-      const message = getUserMessage(error);
-      const hint = getRecoveryHint(error);
-      const severity = getSeverity(error.code);
-      const toastType = severity === 'warning' ? 'info' : 'error';
-
-      const fullMessage = hint ? `${message}\n${hint}` : message;
-
-      addToast(fullMessage, toastType);
+      const { message, type } = buildErrorToast(error);
+      addToast(message, type);
     },
     [addToast]
   );
