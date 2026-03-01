@@ -49,11 +49,8 @@ import {
 import { classifyStorageError } from './errorUtils';
 import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
 import { notifyLibraryChanged } from './librarySync';
-import { LAYOUT_KEY_PREFIX, ACTIVE_ID_STORAGE_KEY } from './storageKeys';
-
-function getLayoutKey(id: string): string {
-  return `${LAYOUT_KEY_PREFIX}${id}`;
-}
+import { ACTIVE_ID_STORAGE_KEY } from './storageKeys';
+import { getLayoutStorageKey } from './LayoutService';
 
 // === Types ===
 
@@ -163,7 +160,7 @@ async function saveLayoutInternal(
   layoutId: string,
   layout: Layout
 ): Promise<Result<void, StorageError>> {
-  const key = getLayoutKey(layoutId);
+  const key = getLayoutStorageKey(layoutId);
   return backend.saveAsync(key, layout);
 }
 
@@ -171,7 +168,7 @@ async function saveLayoutInternal(
  * Load layout from storage (IndexedDB with localStorage fallback).
  */
 async function loadLayoutInternal(layoutId: string): Promise<Result<Layout, StorageError>> {
-  const key = getLayoutKey(layoutId);
+  const key = getLayoutStorageKey(layoutId);
 
   let data: Layout | null;
   try {
@@ -204,7 +201,7 @@ async function loadLayoutInternal(layoutId: string): Promise<Result<Layout, Stor
  * Delete layout from storage (both IndexedDB and localStorage).
  */
 async function deleteLayoutInternal(layoutId: string): Promise<Result<void, StorageError>> {
-  const key = getLayoutKey(layoutId);
+  const key = getLayoutStorageKey(layoutId);
 
   return tryCatchAsync(
     () => backend.deleteAsync(key),
@@ -249,7 +246,7 @@ export async function saveLayoutWithMetadata(
   // 1. Validate entry exists
   const found = findLibraryEntry(library, layoutId);
   if (!found) {
-    return err(storageNotFound(getLayoutKey(layoutId)));
+    return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
   // 2. Save layout data
@@ -399,7 +396,7 @@ export async function deleteLayoutWithEntry(
 
   const found = findLibraryEntry(library, layoutId);
   if (!found) {
-    return err(storageNotFound(getLayoutKey(layoutId)));
+    return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
   // 2. Delete layout data
@@ -472,7 +469,7 @@ export async function duplicateLayoutEntry(
   // 1. Find source entry
   const sourceEntry = library.entries.find((e) => e.id === sourceId);
   if (!sourceEntry) {
-    return err(storageNotFound(getLayoutKey(sourceId)));
+    return err(storageNotFound(getLayoutStorageKey(sourceId)));
   }
 
   // 2. Load source layout
@@ -534,7 +531,7 @@ export async function switchActiveLayout(
   // 1. Validate target exists
   const targetEntry = library.entries.find((e) => e.id === toId);
   if (!targetEntry) {
-    return err(storageNotFound(getLayoutKey(toId)));
+    return err(storageNotFound(getLayoutStorageKey(toId)));
   }
 
   // 2. Save current layout (skip if it's a shared preview or was deleted)
@@ -588,7 +585,7 @@ export function updateCloudShare(
 ): Result<LayoutLibrary, StorageError> {
   const found = findLibraryEntry(library, layoutId);
   if (!found) {
-    return err(storageNotFound(getLayoutKey(layoutId)));
+    return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
   const updatedLibrary = updateLibraryEntryAtIndex(library, found.index, {
@@ -614,7 +611,7 @@ export function renameLayoutEntry(
 ): Result<LayoutLibrary, StorageError> {
   const found = findLibraryEntry(library, layoutId);
   if (!found) {
-    return err(storageNotFound(getLayoutKey(layoutId)));
+    return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
   const updatedLibrary = updateLibraryEntryAtIndex(library, found.index, {
