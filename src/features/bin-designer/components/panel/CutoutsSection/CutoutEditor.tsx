@@ -18,6 +18,7 @@ import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import type { ContextMenuAction } from './CutoutContextMenu';
+import { CutoutEmptyState } from './CutoutEmptyState';
 import { SliderInput } from '../../controls/SliderInput';
 
 /** Canvas width in CSS pixels (fits 288px sidebar) */
@@ -398,9 +399,10 @@ export function CutoutEditor() {
 
       {/* WebGL Canvas */}
       <div
-        className="rounded border border-stroke-subtle bg-surface-secondary overflow-hidden"
+        className="relative rounded border border-stroke-subtle bg-surface-secondary overflow-hidden"
         onContextMenu={handleContextMenu}
       >
+        {cutouts.length === 0 && mode.type === 'idle' && <CutoutEmptyState variant="sidebar" />}
         <CutoutCanvas3D
           cutouts={cutouts}
           binWidth={binWidth}

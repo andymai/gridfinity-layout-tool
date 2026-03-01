@@ -21,9 +21,14 @@ export function CutoutsSection() {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-content-tertiary leading-relaxed">
-        {t('binDesigner.cutouts.instructions')}
-      </p>
+      <div className="space-y-1">
+        <p className="text-[11px] text-content-tertiary leading-relaxed">
+          {t('binDesigner.cutouts.instructions')}
+        </p>
+        <p className="text-[10px] text-content-disabled leading-relaxed">
+          {t('binDesigner.cutouts.instructionsWorkspaceHint')}
+        </p>
+      </div>
 
       <CutoutEditor />
 

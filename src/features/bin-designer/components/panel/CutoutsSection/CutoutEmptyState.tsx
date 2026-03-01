@@ -1,0 +1,83 @@
+/**
+ * Empty state overlay for the cutout editor canvas.
+ *
+ * Shows an animated draw tutorial (matching the grid editor's pattern)
+ * and keyboard shortcut hints. Renders when no cutouts exist.
+ */
+
+import { useTranslation } from '@/i18n';
+
+interface CutoutEmptyStateProps {
+  /** Sidebar uses compact sizing; workspace uses larger sizing */
+  readonly variant: 'sidebar' | 'workspace';
+}
+
+export function CutoutEmptyState({ variant }: CutoutEmptyStateProps) {
+  const t = useTranslation();
+  const isWorkspace = variant === 'workspace';
+
+  // Animation container dimensions
+  const containerW = isWorkspace ? 120 : 104;
+  const containerH = isWorkspace ? 88 : 80;
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-[5]">
+      <div className="flex flex-col items-center p-6 rounded-xl max-w-xs text-center bg-surface opacity-95 backdrop-blur-sm">
+        {/* Animated draw gesture */}
+        <div
+          className="mb-3 relative"
+          style={{ width: containerW, height: containerH }}
+          aria-hidden="true"
+        >
+          {/* Click ring — expands and fades */}
+          <div
+            className="absolute rounded-full border-2 border-accent animate-cutout-draw-hint-click"
+            style={{ width: 36, height: 36, top: -14, left: -14 }}
+          />
+          {/* Dashed rectangle — grows with cursor */}
+          <div className="absolute top-0 left-0 border-2 border-dashed border-accent/60 bg-accent/10 rounded-sm animate-cutout-draw-hint-rect" />
+          {/* Cursor — drags diagonally */}
+          <div
+            className="absolute top-0 left-0 animate-cutout-draw-hint-cursor"
+            style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))' }}
+          >
+            <svg width="20" height="24" viewBox="0 0 18 22" fill="none">
+              <path
+                d="M2 1 L2 17 L6.2 13 L9.5 20 L12.2 18.8 L9 12.5 L14 12.5 Z"
+                fill="white"
+                stroke="#222"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <p className="font-medium mb-1 text-sm text-content-secondary">
+          {t('binDesigner.cutouts.emptyHint')}
+        </p>
+
+        {/* Keyboard shortcut hints */}
+        <div className="text-left text-xs space-y-1.5 text-content-tertiary w-full mt-2">
+          <ShortcutHint shortcut="R" label={t('binDesigner.cutouts.shortcutRect')} />
+          <ShortcutHint shortcut="C" label={t('binDesigner.cutouts.shortcutCircle')} />
+          <ShortcutHint shortcut="P" label={t('binDesigner.cutouts.shortcutPen')} />
+          {isWorkspace && (
+            <ShortcutHint shortcut="V" label={t('binDesigner.cutouts.shortcutSelect')} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShortcutHint({ shortcut, label }: { readonly shortcut: string; readonly label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
+        {shortcut}
+      </kbd>
+      <span>{label}</span>
+    </div>
+  );
+}

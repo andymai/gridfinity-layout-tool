@@ -27,6 +27,9 @@ import { FloatingInspector } from './FloatingInspector';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import type { ContextMenuAction } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
+import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
+import { CutoutEmptyState } from '../panel/CutoutsSection/CutoutEmptyState';
+import { useCutoutQuickstart } from '../../hooks/useCutoutQuickstart';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -88,6 +91,20 @@ export function CutoutWorkspace() {
   const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
 
   const t = useTranslation();
+
+  // Quickstart overlay state
+  const { quickstartSeen, markQuickstartSeen } = useCutoutQuickstart();
+  const [overlayForcedVisible, setOverlayForcedVisible] = useState(false);
+  const showQuickstart = !quickstartSeen || overlayForcedVisible;
+
+  const handleDismissQuickstart = useCallback(() => {
+    markQuickstartSeen();
+    setOverlayForcedVisible(false);
+  }, [markQuickstartSeen]);
+
+  const handleShowHelp = useCallback(() => {
+    setOverlayForcedVisible(true);
+  }, []);
 
   // Measure canvas container dynamically
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -539,7 +556,7 @@ export function CutoutWorkspace() {
   ]);
 
   return (
-    <div className="flex h-full flex-col bg-surface-secondary select-none">
+    <div className="relative flex h-full flex-col bg-surface-secondary select-none">
       <WorkspaceHeader
         zoomPercent={zoomPercent}
         onZoomIn={zoomIn}
@@ -561,6 +578,7 @@ export function CutoutWorkspace() {
         onUngroup={ungroupCutouts}
         onClearAll={clearCutouts}
         disabled={isInteracting}
+        onShowHelp={handleShowHelp}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -607,6 +625,9 @@ export function CutoutWorkspace() {
               onWheel={handleWheel}
               onContextMenu={handleContextMenu}
             >
+              {cutouts.length === 0 && mode.type === 'idle' && (
+                <CutoutEmptyState variant="workspace" />
+              )}
               <CutoutCanvas3D
                 cutouts={cutouts}
                 binWidth={binWidth}
@@ -667,6 +688,9 @@ export function CutoutWorkspace() {
           </div>
         </div>
       </div>
+
+      {/* Quickstart overlay */}
+      {showQuickstart && <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} />}
 
       {/* Context menu */}
       {contextMenu && (

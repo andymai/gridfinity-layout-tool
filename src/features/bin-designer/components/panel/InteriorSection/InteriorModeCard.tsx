@@ -55,9 +55,41 @@ function SolidModeContent() {
     <button
       type="button"
       onClick={() => setCutoutEditorOpen(true)}
-      className="w-full rounded border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
+      className="w-full rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 p-3 text-left transition-all group"
     >
-      {t('binDesigner.editCutouts')}
+      <div className="flex items-center gap-3">
+        {/* Mini illustration: top-view of a bin with cutout shapes */}
+        <div className="flex-shrink-0 w-10 h-10 rounded bg-surface/60 border border-accent/20 flex items-center justify-center">
+          <svg
+            className="w-6 h-6 text-accent/70"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M8 10 h3 v4 h-3 z" fill="currentColor" opacity="0.4" stroke="none" />
+            <circle cx="16" cy="12" r="2.5" fill="currentColor" opacity="0.4" stroke="none" />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-xs font-semibold text-accent group-hover:text-accent/90">
+            {t('binDesigner.editCutouts')}
+          </span>
+          <p className="text-[10px] text-content-tertiary mt-0.5 leading-relaxed">
+            {t('binDesigner.editCutoutsSubtitle')}
+          </p>
+        </div>
+        <svg
+          className="w-4 h-4 text-accent/50 flex-shrink-0 group-hover:translate-x-0.5 transition-transform"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+        </svg>
+      </div>
     </button>
   );
 }
