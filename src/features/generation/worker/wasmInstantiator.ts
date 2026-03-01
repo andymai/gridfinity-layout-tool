@@ -93,6 +93,9 @@ async function compileFromNetwork(wasmUrl: string): Promise<WebAssembly.Module> 
   } catch {
     // Fallback: fetch + compile (e.g., wrong MIME type)
     const response = await fetch(wasmUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}`);
+    }
     const buffer = await response.arrayBuffer();
     return WebAssembly.compile(buffer);
   }

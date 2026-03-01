@@ -9,9 +9,15 @@ async function createTestModule(): Promise<WebAssembly.Module> {
   return WebAssembly.compile(MINIMAL_WASM);
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   // Clear all IDB databases between tests by deleting the cache DB
-  indexedDB.deleteDatabase('gridfinity-wasm-cache');
+  await new Promise<void>((resolve, reject) => {
+    const request = indexedDB.deleteDatabase('gridfinity-wasm-cache');
+    request.onsuccess = () => resolve();
+    request.onblocked = () => resolve();
+    request.onerror = () =>
+      reject(new Error(request.error?.message ?? 'Failed to delete IndexedDB'));
+  });
 });
 
 describe('wasmModuleCache', () => {

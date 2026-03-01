@@ -216,10 +216,18 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'GET_MODULE':
         if (compiledModule) {
-          self.postMessage({
-            type: 'MODULE_READY',
-            wasmModule: compiledModule,
-          } satisfies WorkerResponse);
+          try {
+            self.postMessage({
+              type: 'MODULE_READY',
+              wasmModule: compiledModule,
+            } satisfies WorkerResponse);
+          } catch (e) {
+            respond({
+              type: 'ERROR',
+              requestId: '__get_module__',
+              error: `Failed to transfer module: ${formatError(e)}`,
+            });
+          }
         } else {
           respond({
             type: 'ERROR',
