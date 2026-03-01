@@ -511,11 +511,14 @@ async function persistNewLayoutAsync(
   layout: Layout,
   library: LayoutLibrary
 ): Promise<void> {
-  const result = await saveLayoutAsync(layoutId, layout);
-  if (isErr(result)) {
+  const layoutResult = await saveLayoutAsync(layoutId, layout);
+  if (isErr(layoutResult)) {
     throw new Error(`Failed to persist layout ${layoutId} during initialization`);
   }
-  await saveLibrary(library);
+  const libraryResult = await saveLibrary(library);
+  if (isErr(libraryResult)) {
+    throw new Error(`Failed to persist library during initialization`);
+  }
 }
 
 /**

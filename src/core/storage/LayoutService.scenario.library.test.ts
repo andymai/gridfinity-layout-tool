@@ -208,6 +208,21 @@ describe('storage-library', () => {
       const result = await saveLibrary(library);
       expect(result.ok).toBe(true);
     });
+
+    it('returns Err result when IndexedDB save fails', async () => {
+      const indexedDBBackend = await import('@/core/storage/backends/indexedDB');
+      vi.spyOn(indexedDBBackend, 'saveLibraryIndex').mockRejectedValueOnce(
+        new Error('IndexedDB failure')
+      );
+
+      const library = createTestLibrary();
+      const result = await saveLibrary(library);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('STORAGE_UNAVAILABLE');
+      }
+    });
   });
 
   describe('loadLibrary', () => {
