@@ -8,7 +8,7 @@
 
 import singleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 import threadedWasm from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
-import { detectWasmCapabilities } from './wasmCapabilities';
+import { detectWasmCapabilities } from '@/shared/generation/wasmCapabilities';
 
 let preloaded = false;
 
