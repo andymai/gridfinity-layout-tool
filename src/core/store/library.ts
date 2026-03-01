@@ -21,7 +21,7 @@ import { saveLibrary } from '@/core/storage';
 function persistLibrary(library: LayoutLibrary): void {
   void saveLibrary(library).then((result) => {
     if (isErr(result)) {
-      console.warn('[library] Background save failed:', result.error.code);
+      console.warn('[library] Background save failed:', result.error.code, result.error.message);
     }
   });
 }
