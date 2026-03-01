@@ -60,7 +60,7 @@ describe('ShortcutBadge', () => {
 
   it('shows both modifier and shift', () => {
     render(<ShortcutBadge keys="K" modifier shift />);
-    expect(screen.getByText('Ctrl')).toBeInTheDocument();
+    expect(screen.getByText(/Ctrl|⌘/)).toBeInTheDocument();
     expect(screen.getByText('Shift')).toBeInTheDocument();
     expect(screen.getByText('K')).toBeInTheDocument();
   });

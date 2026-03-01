@@ -43,7 +43,7 @@ export function ShortcutBadge({ keys, modifier, shift, className = '' }: Shortcu
         </>
       )}
       {keyArray.map((key, index) => (
-        <span key={key} className="flex items-center gap-1">
+        <span key={`${key}-${index}`} className="flex items-center gap-1">
           {index > 0 && <span className="text-content-tertiary text-[10px] mx-0.5">/</span>}
           <kbd className={keyClasses}>{key}</kbd>
         </span>

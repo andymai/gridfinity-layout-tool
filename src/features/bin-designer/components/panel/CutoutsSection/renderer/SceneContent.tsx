@@ -292,7 +292,17 @@ export function SceneContent({
           const y = overrides?.y ?? cutout.y;
           const w = overrides?.width ?? cutout.width;
           const d = overrides?.depth ?? cutout.depth;
-          return <LockBadge3D key={`lock-${cutout.id}`} worldX={x + w} worldY={y + d} />;
+          // Compute top-right corner relative to center, then rotate
+          const cx = x + w / 2;
+          const cy = y + d / 2;
+          const localX = w / 2;
+          const localY = d / 2;
+          const rad = -((overrides?.rotation ?? cutout.rotation) * Math.PI) / 180;
+          const cos = Math.cos(rad);
+          const sin = Math.sin(rad);
+          const worldX = cx + localX * cos - localY * sin;
+          const worldY = cy + localX * sin + localY * cos;
+          return <LockBadge3D key={`lock-${cutout.id}`} worldX={worldX} worldY={worldY} />;
         })}
 
       {/* Smart guides during drag */}
