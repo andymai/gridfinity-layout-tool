@@ -37,8 +37,12 @@ interface ToastState {
 const DEFAULT_DURATION = 5000;
 const MAX_TOASTS = 3;
 
+export const INITIAL_TOAST_STATE = {
+  toasts: [] as Toast[],
+} as const;
+
 export const useToastStore = create<ToastState>((set) => ({
-  toasts: [],
+  ...INITIAL_TOAST_STATE,
 
   addToast: (
     messageOrOptions: string | AddToastOptions,

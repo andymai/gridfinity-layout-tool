@@ -42,6 +42,7 @@ vi.mock('@/core/store', () => ({
 vi.mock('@/core/store/toast', () => ({
   useToastStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({ addToast: mockAddToast }),
+  INITIAL_TOAST_STATE: {},
 }));
 
 vi.mock('@/hooks/useDrawerSettings', () => ({

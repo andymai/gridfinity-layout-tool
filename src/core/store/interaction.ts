@@ -60,14 +60,18 @@ interface InteractionActions {
 
 export type InteractionStore = InteractionState & InteractionActions;
 
-export const useInteractionStore = create<InteractionStore>((set) => ({
-  // Initial state
-  interaction: null,
-  dropTarget: null,
-  paintSize: null,
+export const INITIAL_INTERACTION_STATE = {
+  interaction: null as Interaction | null,
+  dropTarget: null as DropTarget,
+  paintSize: null as PaintSize | null,
   keyboardDragMode: false,
   keyboardResizeMode: false,
-  liveMessage: null,
+  liveMessage: null as string | null,
+} as const;
+
+export const useInteractionStore = create<InteractionStore>((set) => ({
+  // Initial state
+  ...INITIAL_INTERACTION_STATE,
 
   // Interaction actions
   setInteraction: (interaction) => set({ interaction }),

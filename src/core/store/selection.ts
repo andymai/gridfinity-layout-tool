@@ -53,13 +53,17 @@ interface SelectionActions {
 
 export type SelectionStore = SelectionState & SelectionActions;
 
-export const useSelectionStore = create<SelectionStore>((set) => ({
-  // Initial state
-  selectedBinIds: [],
+export const INITIAL_SELECTION_STATE = {
+  selectedBinIds: [] as BinId[],
   activeLayerId: layerId(''),
   activeCategoryId: categoryId('coral'),
-  focusedBinId: null,
-  quickLabelBinId: null,
+  focusedBinId: null as BinId | null,
+  quickLabelBinId: null as BinId | null,
+} as const;
+
+export const useSelectionStore = create<SelectionStore>((set) => ({
+  // Initial state
+  ...INITIAL_SELECTION_STATE,
 
   // Bin selection actions
   setSelectedBin: (id) => set({ selectedBinIds: id ? [id] : [] }),

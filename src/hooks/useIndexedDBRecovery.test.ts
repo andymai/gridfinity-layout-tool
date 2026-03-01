@@ -30,6 +30,7 @@ vi.mock('@/core/store/toast', () => ({
       addToast: vi.fn(),
     })),
   },
+  INITIAL_TOAST_STATE: {},
 }));
 
 vi.mock('@/i18n', () => ({

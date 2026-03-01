@@ -24,6 +24,7 @@ vi.mock('@/core/store/view', () => {
 
       return selector(state);
     }),
+    INITIAL_VIEW_STATE: {},
   };
 });
 
