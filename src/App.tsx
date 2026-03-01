@@ -50,7 +50,7 @@ import { useCommandPalette } from '@/features/command-palette';
 const CommandPalette = lazyWithRetry(() =>
   import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
 );
-import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
+import { useOnboarding } from '@/features/onboarding';
 import { useThemeEffect } from '@/hooks/useThemeEffect';
 
 // Lazy load design-linking dialogs - loaded when mutations provider wraps content
@@ -90,7 +90,7 @@ import { useDesignerRouting } from './hooks/useDesignerRouting';
 
 // Lazy load Baseplate Generator page - only loaded when navigating to /baseplate
 const BaseplatePage = lazyWithRetry(() =>
-  import('./features/baseplate/components/BaseplatePage').then(namedExport('BaseplatePage'))
+  import('./features/baseplate').then(namedExport('BaseplatePage'))
 );
 import { useBaseplateRouting } from './hooks/useBaseplateRouting';
 import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';

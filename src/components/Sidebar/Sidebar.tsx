@@ -17,7 +17,7 @@ import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
-import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
+import { useOnboarding } from '@/features/onboarding';
 import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useLibraryStore } from '@/core/store/library';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';

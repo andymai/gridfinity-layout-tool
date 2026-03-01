@@ -23,9 +23,7 @@ import {
 
 // Lazy load SnapshotHistory — only loaded when History tab is selected
 const SnapshotHistory = lazyWithRetry(() =>
-  import('@/features/snapshots/components/SnapshotHistory/SnapshotHistory').then(
-    namedExport('SnapshotHistory')
-  )
+  import('@/features/snapshots').then(namedExport('SnapshotHistory'))
 );
 
 type RightPanelTab = 'inspector' | 'history';

@@ -32,7 +32,7 @@ import { usePresence } from '@/hooks/usePresence';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
-import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
+import { useOnboarding } from '@/features/onboarding';
 
 // Lazy load mobile help modal (with retry for chunk load failures)
 const MobileHelpModal = lazyWithRetry(() =>
