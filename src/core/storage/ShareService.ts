@@ -11,7 +11,7 @@
 
 import { validateImport } from '@/shared/utils/validation';
 import { generateBinId, generateLayerId, generateCategoryId, STAGING_ID } from '@/core/constants';
-import type { Layout, LayerId, CategoryId } from '@/core/types';
+import type { Layout, LayerId, CategoryId, DesignId } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
 import type { BinParams } from '@/shared/types/bin';
@@ -45,7 +45,7 @@ export function exportLayoutJSON(layout: Layout): string {
  */
 export async function exportLayoutJSONWithDesigns(layout: Layout): Promise<string> {
   // Collect unique linkedDesignIds from bins
-  const designIds = new Set<string>();
+  const designIds = new Set<DesignId>();
   for (const bin of layout.bins) {
     if (bin.linkedDesignId) {
       designIds.add(bin.linkedDesignId);
@@ -181,7 +181,7 @@ export async function restoreEmbeddedDesigns(
   }
 
   const { saveDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
-  const designIdMap = new Map<string, string>();
+  const designIdMap = new Map<string, DesignId>();
   let importedDesignCount = 0;
 
   for (const entry of data.linkedDesigns as unknown[]) {

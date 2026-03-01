@@ -19,6 +19,7 @@
 
 import { useEffect, useRef } from 'react';
 import { isOk } from '@/core/result';
+import type { DesignId } from '@/core/types';
 import {
   initializeDesigner,
   createNewDesign,
@@ -123,7 +124,7 @@ export function useDesignerInit(): void {
 }
 
 function syncToRegistry(design: {
-  id: string;
+  id: DesignId;
   name: string;
   params: { width: number; depth: number; height: number };
   updatedAt: string;

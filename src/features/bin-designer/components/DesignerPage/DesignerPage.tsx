@@ -41,7 +41,7 @@ import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
 import type { SaveStatus } from '@/features/bin-designer/types';
-import { binId } from '@/core/types';
+import { binId, designId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
@@ -245,7 +245,7 @@ export function DesignerPage() {
 
     // Persist rename for existing designs
     if (currentDesignId) {
-      void updateDesignName(currentDesignId, name).then((result) => {
+      void updateDesignName(designId(currentDesignId), name).then((result) => {
         if (isOk(result)) {
           upsertRegistryEntry({
             id: result.value.id,

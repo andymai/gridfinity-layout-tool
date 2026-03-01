@@ -9,6 +9,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { loadDesign } from '../storage/DesignerStorage';
 import { isOk } from '@/core/result';
+import { designId as toDesignId } from '@/core/types';
 
 /** In-memory cache: designId → thumbnail string | null */
 const thumbnailCache = new Map<string, string | null>();
@@ -62,7 +63,7 @@ export function useDesignThumbnail(designId: string | undefined): UseDesignThumb
 
     let cancelled = false;
 
-    void loadDesign(designId).then((loadResult) => {
+    void loadDesign(toDesignId(designId)).then((loadResult) => {
       if (cancelled) return;
       const thumb = isOk(loadResult) ? (loadResult.value.thumbnail ?? null) : null;
       thumbnailCache.set(designId, thumb);

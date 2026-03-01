@@ -6,6 +6,7 @@
  */
 
 import type { FaceGroupData } from '@/shared/types/generation';
+import type { DesignId } from '@/core/types';
 
 // =============================================================================
 // Bin Configuration Types
@@ -405,7 +406,7 @@ export const THUMBNAIL_VERSION = 5;
 
 /** Saved design entry in IndexedDB */
 export interface SavedDesign {
-  readonly id: string;
+  readonly id: DesignId;
   readonly name: string;
   readonly params: BinParams;
   readonly thumbnail: string | null;

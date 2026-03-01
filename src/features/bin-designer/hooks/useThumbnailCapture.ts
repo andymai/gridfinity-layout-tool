@@ -15,6 +15,7 @@ import { updateDesignThumbnail } from '../storage/DesignerStorage';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
 import { updateThumbnailCache } from './useDesignThumbnail';
 import { isOk } from '@/core/result';
+import { designId } from '@/core/types';
 
 /**
  * Captures thumbnail after first successful mesh generation when needed.
@@ -63,11 +64,12 @@ export function useThumbnailCapture(): void {
       if (!thumbnail) return;
 
       // Update IndexedDB and registry
-      void updateDesignThumbnail(currentDesignId, thumbnail).then((result) => {
+      const id = designId(currentDesignId);
+      void updateDesignThumbnail(id, thumbnail).then((result) => {
         if (isOk(result)) {
           // Update registry (lightweight ref, no thumbnail)
           upsertRegistryEntry({
-            id: currentDesignId,
+            id,
             name: designName,
             width: params.width,
             depth: params.depth,

@@ -7,6 +7,8 @@
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
+import type { DesignId } from '@/core/types';
+import { designId } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
 import {
   ok,
@@ -53,15 +55,15 @@ async function getDb(): Promise<IDBPDatabase> {
 /**
  * Generate a unique design ID.
  */
-function generateDesignId(): string {
-  return `design_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+function generateDesignId(): DesignId {
+  return designId(`design_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
 }
 
 /**
  * Save a design to IndexedDB.
  */
 export async function saveDesign(
-  design: Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
+  design: Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & { id?: DesignId }
 ): Promise<Result<SavedDesign, StorageError>> {
   try {
     const db = await getDb();
@@ -98,7 +100,7 @@ export async function saveDesign(
 /**
  * Load a design by ID.
  */
-export async function loadDesign(id: string): Promise<Result<SavedDesign, StorageError>> {
+export async function loadDesign(id: DesignId): Promise<Result<SavedDesign, StorageError>> {
   try {
     const db = await getDb();
     const design = (await db.get(DESIGNS_STORE, id)) as SavedDesign | undefined;
@@ -163,7 +165,7 @@ export async function listDesigns(): Promise<Result<SavedDesign[], StorageError>
  * @param id - The ID of the design to duplicate
  * @returns The duplicated design with a new ID
  */
-export async function duplicateDesign(id: string): Promise<Result<SavedDesign, StorageError>> {
+export async function duplicateDesign(id: DesignId): Promise<Result<SavedDesign, StorageError>> {
   const loadResult = await loadDesign(id);
   if (isErr(loadResult)) {
     return loadResult;
@@ -185,7 +187,7 @@ export async function duplicateDesign(id: string): Promise<Result<SavedDesign, S
 /**
  * Delete a design by ID.
  */
-export async function deleteDesign(id: string): Promise<Result<void, StorageError>> {
+export async function deleteDesign(id: DesignId): Promise<Result<void, StorageError>> {
   try {
     const db = await getDb();
     const exists: unknown = await db.get(DESIGNS_STORE, id);
@@ -219,7 +221,7 @@ export function closeDesignerDb(): void {
  * @returns A `Result` with the updated `SavedDesign` on success, or a `StorageError` on failure
  */
 export async function updateDesignName(
-  id: string,
+  id: DesignId,
   name: string
 ): Promise<Result<SavedDesign, StorageError>> {
   const loadResult = await loadDesign(id);
@@ -244,7 +246,7 @@ export async function updateDesignName(
  * @returns A `Result` with the updated `SavedDesign` on success, or a `StorageError` on failure
  */
 export async function updateDesignParams(
-  id: string,
+  id: DesignId,
   params: BinParams,
   thumbnail?: string | null,
   exportFileNameConfig?: ExportFileNameConfig
@@ -274,7 +276,7 @@ export async function updateDesignParams(
  * @returns A `Result` with the updated `SavedDesign` on success
  */
 export async function updateDesignThumbnail(
-  id: string,
+  id: DesignId,
   thumbnail: string
 ): Promise<Result<SavedDesign, StorageError>> {
   const loadResult = await loadDesign(id);
@@ -294,9 +296,10 @@ export async function updateDesignThumbnail(
  * Get the active design ID from localStorage.
  * Returns null if no active design is set.
  */
-export function getActiveDesignId(): string | null {
+export function getActiveDesignId(): DesignId | null {
   try {
-    return localStorage.getItem(ACTIVE_DESIGN_KEY);
+    const raw = localStorage.getItem(ACTIVE_DESIGN_KEY);
+    return raw !== null ? designId(raw) : null;
   } catch {
     return null;
   }
@@ -306,7 +309,7 @@ export function getActiveDesignId(): string | null {
  * Save the active design ID to localStorage.
  * Pass null to clear the active design.
  */
-export function setActiveDesignId(id: string | null): void {
+export function setActiveDesignId(id: DesignId | null): void {
   try {
     if (id === null) {
       localStorage.removeItem(ACTIVE_DESIGN_KEY);

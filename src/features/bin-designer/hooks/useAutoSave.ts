@@ -17,6 +17,7 @@ import { useDesignerStore } from '../store';
 import { captureThumbnailAtPreset } from '../utils/thumbnail';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
+import { designId as toDesignId } from '@/core/types';
 import type { BinParams, ExportFileNameConfig, GenerationStatus } from '../types';
 
 const AUTO_SAVE_DELAY_MS = 1000;
@@ -111,7 +112,12 @@ export function useAutoSave(): void {
         height: paramsToSave.height,
       });
 
-      const result = await updateDesignParams(designId, paramsToSave, thumbnail, configToSave);
+      const result = await updateDesignParams(
+        toDesignId(designId),
+        paramsToSave,
+        thumbnail,
+        configToSave
+      );
       if (abortToken.current) return; // Superseded by newer save
       if (isOk(result)) {
         lastSavedParams.current = paramsToSave;
