@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.42.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.41.0...gridfinity-layout-tool-v3.42.0) (2026-03-01)
+
+
+### Features
+
+* **baseplate:** improve panel hierarchy, loading UX, and section transitions ([#944](https://github.com/andymai/gridfinity-layout-tool/issues/944)) ([4262810](https://github.com/andymai/gridfinity-layout-tool/commit/426281021610e285f7a092e9e5676a3a6f8ef2e1))
+
 ## [3.41.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.40.0...gridfinity-layout-tool-v3.41.0) (2026-02-28)
 
 
