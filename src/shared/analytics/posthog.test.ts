@@ -1021,13 +1021,13 @@ describe('buildHeartbeatPayload', () => {
       paintSize: null,
       keyboardDragMode: false,
       keyboardResizeMode: false,
-      showIsometricPreview: false,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
     });
     useViewStore.setState({
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
+      showIsometricPreview: false,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
     });
     useHalfBinModeStore.setState({ halfBinMode: false });
   });
@@ -1142,12 +1142,12 @@ describe('buildHeartbeatPayload', () => {
 
   it('reads feature flags from interaction and view stores', () => {
     useInteractionStore.setState({
-      showIsometricPreview: true,
-      isPreviewExpanded: true,
-      layerViewMode: 'all',
       paintSize: { width: 2, depth: 2 },
     });
     useViewStore.setState({
+      showIsometricPreview: true,
+      isPreviewExpanded: true,
+      layerViewMode: 'all',
       leftPanelCollapsed: true,
       rightPanelCollapsed: false,
     });

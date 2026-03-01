@@ -62,6 +62,8 @@ describe('GridToolbar', () => {
       toggleShowOtherLayers: vi.fn(),
       leftPanelCollapsed: false,
       toggleLeftPanel: vi.fn(),
+      showIsometricPreview: false,
+      toggleIsometricPreview: vi.fn(),
     });
 
     useInteractionStore.setState({
@@ -71,8 +73,6 @@ describe('GridToolbar', () => {
       keyboardResizeMode: false,
       setKeyboardDragMode: vi.fn(),
       setKeyboardResizeMode: vi.fn(),
-      showIsometricPreview: false,
-      toggleIsometricPreview: vi.fn(),
     });
   });
 
@@ -347,7 +347,7 @@ describe('GridToolbar', () => {
 
     it('toggles preview when clicked', () => {
       const mockToggleIsometricPreview = vi.fn();
-      useInteractionStore.setState({
+      useViewStore.setState({
         toggleIsometricPreview: mockToggleIsometricPreview,
       });
 
@@ -363,7 +363,7 @@ describe('GridToolbar', () => {
     });
 
     it('applies primary button styling when preview is visible', () => {
-      useInteractionStore.setState({ showIsometricPreview: true });
+      useViewStore.setState({ showIsometricPreview: true });
 
       const { container } = render(<GridToolbar {...defaultProps} />);
 
@@ -373,7 +373,7 @@ describe('GridToolbar', () => {
     });
 
     it('applies ghost button styling when preview is hidden', () => {
-      useInteractionStore.setState({ showIsometricPreview: false });
+      useViewStore.setState({ showIsometricPreview: false });
 
       const { container } = render(<GridToolbar {...defaultProps} />);
 

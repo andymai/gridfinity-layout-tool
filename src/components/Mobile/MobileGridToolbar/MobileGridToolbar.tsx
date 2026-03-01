@@ -22,15 +22,18 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
     }))
   );
   const activeLayerId = useSelectionStore((state) => state.activeLayerId);
-  const { paintSize, setPaintSize, showIsometricPreview, toggleIsometricPreview } =
-    useInteractionStore(
-      useShallow((state) => ({
-        paintSize: state.paintSize,
-        setPaintSize: state.setPaintSize,
-        showIsometricPreview: state.showIsometricPreview,
-        toggleIsometricPreview: state.toggleIsometricPreview,
-      }))
-    );
+  const { paintSize, setPaintSize } = useInteractionStore(
+    useShallow((state) => ({
+      paintSize: state.paintSize,
+      setPaintSize: state.setPaintSize,
+    }))
+  );
+  const { showIsometricPreview, toggleIsometricPreview } = useViewStore(
+    useShallow((state) => ({
+      showIsometricPreview: state.showIsometricPreview,
+      toggleIsometricPreview: state.toggleIsometricPreview,
+    }))
+  );
   const toggleMobilePanel = useMobileStore((state) => state.toggleMobilePanel);
 
   const layers = useLayoutStore((state) => state.layout.layers);

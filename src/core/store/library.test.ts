@@ -177,7 +177,6 @@ describe('library store', () => {
       useLibraryStore.setState({
         library: createTestLibraryWithEntries(3),
         isLoaded: true,
-        showLayoutManager: false,
       });
     });
 
@@ -193,7 +192,6 @@ describe('library store', () => {
       useLibraryStore.setState({
         library: createTestLibraryWithEntries(1),
         isLoaded: true,
-        showLayoutManager: false,
       });
 
       const result = useLibraryStore.getState().deleteEntry('layout-0');
@@ -233,7 +231,6 @@ describe('library store', () => {
       useLibraryStore.setState({
         library: createTestLibraryWithEntries(3),
         isLoaded: true,
-        showLayoutManager: false,
       });
     });
 
@@ -304,7 +301,6 @@ describe('library store', () => {
       useLibraryStore.setState({
         library: createTestLibraryWithEntries(3),
         isLoaded: true,
-        showLayoutManager: false,
       });
     });
 
@@ -387,7 +383,6 @@ describe('library store', () => {
       useLibraryStore.setState({
         library: createTestLibraryWithEntries(3),
         isLoaded: true,
-        showLayoutManager: false,
       });
     });
 
@@ -451,7 +446,6 @@ describe('library store', () => {
       useLibraryStore.setState({
         library: { ...createTestLibraryWithEntries(0), entries: [] },
         isLoaded: true,
-        showLayoutManager: false,
       });
 
       const recent = useLibraryStore.getState().getRecentEntries(5);
@@ -465,7 +459,6 @@ describe('library store', () => {
       useLibraryStore.setState({
         library: createTestLibraryWithEntries(3),
         isLoaded: true,
-        showLayoutManager: false,
       });
 
       useLibraryStore.getState().setActiveLayoutId('layout-2');
@@ -497,7 +490,6 @@ describe('library store', () => {
       useLibraryStore.setState({
         library: createTestLibraryWithEntries(2),
         isLoaded: true,
-        showLayoutManager: false,
       });
     });
 
@@ -542,22 +534,6 @@ describe('library store', () => {
     it('getNameSuggestionState returns undefined for non-existent entry', () => {
       const state = useLibraryStore.getState().getNameSuggestionState('non-existent');
       expect(state).toBeUndefined();
-    });
-  });
-
-  describe('setShowLayoutManager', () => {
-    it('sets showLayoutManager to true', () => {
-      useLibraryStore.getState().setShowLayoutManager(true);
-
-      expect(useLibraryStore.getState().showLayoutManager).toBe(true);
-    });
-
-    it('sets showLayoutManager to false', () => {
-      useLibraryStore.setState({ showLayoutManager: true });
-
-      useLibraryStore.getState().setShowLayoutManager(false);
-
-      expect(useLibraryStore.getState().showLayoutManager).toBe(false);
     });
   });
 });

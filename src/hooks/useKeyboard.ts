@@ -3,7 +3,6 @@ import { useShallow } from 'zustand/react/shallow';
 import {
   useLayoutStore,
   useHistoryStore,
-  useLibraryStore,
   useUndoableAction,
   useToastStore,
   useSelectionStore,
@@ -102,17 +101,16 @@ export function useKeyboard() {
   );
 
   // View store - use useShallow for multiple selectors
-  const { zoomIn, zoomOut } = useViewStore(
+  const { zoomIn, zoomOut, setShowLayoutManager } = useViewStore(
     useShallow((state) => ({
       zoomIn: state.zoomIn,
       zoomOut: state.zoomOut,
+      setShowLayoutManager: state.setShowLayoutManager,
     }))
   );
 
   // Half-bin mode store
   const toggleHalfBinMode = useHalfBinModeStore((state) => state.toggleHalfBinMode);
-
-  const setShowLayoutManager = useLibraryStore((state) => state.setShowLayoutManager);
   const addToast = useToastStore((state) => state.addToast);
 
   // Tool switching (Shift+D)

@@ -68,10 +68,12 @@ describe('CommandPalette', () => {
     useLibraryStore.setState({
       setShowLayoutManager: vi.fn(),
     });
-    useInteractionStore.setState({
+    useViewStore.setState({
       showIsometricPreview: false,
       toggleIsometricPreview: vi.fn(),
       togglePreviewExpanded: vi.fn(),
+    });
+    useInteractionStore.setState({
       paintSize: null,
       setPaintSize: vi.fn(),
       setInteraction: vi.fn(),
@@ -123,7 +125,7 @@ describe('CommandPalette', () => {
     });
 
     it('works with preview visible', () => {
-      useInteractionStore.setState({ showIsometricPreview: true });
+      useViewStore.setState({ showIsometricPreview: true });
 
       const { container } = render(<CommandPalette open={false} onOpenChange={mockOnOpenChange} />);
 

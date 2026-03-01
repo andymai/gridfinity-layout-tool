@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Header } from '@/components/Header';
-import { useLayoutStore, useHistoryStore, useLibraryStore } from '@/core/store';
+import { useLayoutStore, useHistoryStore } from '@/core/store';
+import { useViewStore } from '@/core/store/view';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { resetAllStores } from '@/test/testUtils';
 
@@ -330,7 +331,7 @@ describe('Header', () => {
     });
 
     it('closes layout manager when modal is closed', async () => {
-      useLibraryStore.getState().setShowLayoutManager(true);
+      useViewStore.getState().setShowLayoutManager(true);
       render(<Header {...defaultProps} />);
 
       // Wait for lazy-loaded modal to render

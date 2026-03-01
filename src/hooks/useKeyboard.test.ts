@@ -3,7 +3,6 @@ import { renderHook, act } from '@testing-library/react';
 import { useKeyboard } from '@/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/store/history';
-import { useLibraryStore } from '@/core/store/library';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';
@@ -1211,7 +1210,7 @@ describe('useKeyboard', () => {
 
   describe('layout manager shortcut', () => {
     it('opens layout manager on Ctrl+O', () => {
-      useLibraryStore.setState({ showLayoutManager: false });
+      useViewStore.setState({ showLayoutManager: false });
 
       renderHook(() => useKeyboard());
 
@@ -1219,7 +1218,7 @@ describe('useKeyboard', () => {
         pressKey('o', { ctrlKey: true });
       });
 
-      expect(useLibraryStore.getState().showLayoutManager).toBe(true);
+      expect(useViewStore.getState().showLayoutManager).toBe(true);
     });
   });
 

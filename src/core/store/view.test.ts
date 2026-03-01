@@ -37,6 +37,17 @@ describe('view store', () => {
     it('starts with print modal closed', () => {
       expect(getState().printModalOpen).toBe(false);
     });
+
+    it('starts with layout manager hidden', () => {
+      expect(getState().showLayoutManager).toBe(false);
+    });
+
+    it('starts with isometric preview hidden and default settings', () => {
+      expect(getState().showIsometricPreview).toBe(false);
+      expect(getState().isometricRotation).toBe(0);
+      expect(getState().layerViewMode).toBe('stack');
+      expect(getState().isPreviewExpanded).toBe(false);
+    });
   });
 
   describe('zoom', () => {
@@ -179,6 +190,83 @@ describe('view store', () => {
 
       getState().setPrintModalOpen(false);
       expect(getState().printModalOpen).toBe(false);
+    });
+  });
+
+  describe('setShowLayoutManager', () => {
+    it('sets showLayoutManager to true', () => {
+      getState().setShowLayoutManager(true);
+
+      expect(getState().showLayoutManager).toBe(true);
+    });
+
+    it('sets showLayoutManager to false', () => {
+      useViewStore.setState({ showLayoutManager: true });
+
+      getState().setShowLayoutManager(false);
+
+      expect(getState().showLayoutManager).toBe(false);
+    });
+  });
+
+  describe('3D preview', () => {
+    it('toggleIsometricPreview toggles visibility', () => {
+      getState().toggleIsometricPreview();
+      expect(getState().showIsometricPreview).toBe(true);
+
+      getState().toggleIsometricPreview();
+      expect(getState().showIsometricPreview).toBe(false);
+    });
+
+    it('setIsometricRotation sets rotation', () => {
+      getState().setIsometricRotation(45);
+      expect(getState().isometricRotation).toBe(45);
+    });
+
+    it('setIsometricRotation normalizes to 0-360', () => {
+      getState().setIsometricRotation(400);
+      expect(getState().isometricRotation).toBe(40);
+
+      getState().setIsometricRotation(-90);
+      expect(getState().isometricRotation).toBe(270);
+    });
+
+    it('setLayerViewMode changes the mode', () => {
+      getState().setLayerViewMode('focus');
+      expect(getState().layerViewMode).toBe('focus');
+
+      getState().setLayerViewMode('all');
+      expect(getState().layerViewMode).toBe('all');
+    });
+
+    it('snapToIsometric snaps to nearest 90°', () => {
+      getState().setIsometricRotation(44);
+      getState().snapToIsometric();
+      expect(getState().isometricRotation).toBe(0);
+
+      getState().setIsometricRotation(46);
+      getState().snapToIsometric();
+      expect(getState().isometricRotation).toBe(90);
+
+      getState().setIsometricRotation(315);
+      getState().snapToIsometric();
+      expect(getState().isometricRotation).toBe(0);
+    });
+
+    it('togglePreviewExpanded toggles expanded state', () => {
+      getState().togglePreviewExpanded();
+      expect(getState().isPreviewExpanded).toBe(true);
+
+      getState().togglePreviewExpanded();
+      expect(getState().isPreviewExpanded).toBe(false);
+    });
+
+    it('setPreviewExpanded sets expanded state directly', () => {
+      getState().setPreviewExpanded(true);
+      expect(getState().isPreviewExpanded).toBe(true);
+
+      getState().setPreviewExpanded(false);
+      expect(getState().isPreviewExpanded).toBe(false);
     });
   });
 });

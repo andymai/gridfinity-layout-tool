@@ -55,7 +55,7 @@ function isSafeToReload(): boolean {
   }
 
   // Don't reload during 3D preview (camera state would be lost)
-  if (interaction.isPreviewExpanded) {
+  if (view.isPreviewExpanded) {
     return false;
   }
 
@@ -151,9 +151,9 @@ function gatherEphemeralState(): Omit<EphemeralState, 'savedAt'> {
     rightPanelCollapsed: view.rightPanelCollapsed,
 
     // 3D preview state
-    showIsometricPreview: interaction.showIsometricPreview,
-    isometricRotation: interaction.isometricRotation,
-    layerViewMode: interaction.layerViewMode,
+    showIsometricPreview: view.showIsometricPreview,
+    isometricRotation: view.isometricRotation,
+    layerViewMode: view.layerViewMode,
 
     // Paint mode
     paintSize: interaction.paintSize,
@@ -220,11 +220,11 @@ function restoreEphemeralState(): boolean {
   }
 
   // Restore 3D preview state
-  if (state.showIsometricPreview !== interaction.showIsometricPreview) {
-    interaction.toggleIsometricPreview();
+  if (state.showIsometricPreview !== view.showIsometricPreview) {
+    view.toggleIsometricPreview();
   }
-  interaction.setIsometricRotation(state.isometricRotation);
-  interaction.setLayerViewMode(state.layerViewMode);
+  view.setIsometricRotation(state.isometricRotation);
+  view.setLayerViewMode(state.layerViewMode);
 
   // Restore paint size
   if (state.paintSize) {

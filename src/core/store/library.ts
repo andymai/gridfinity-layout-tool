@@ -53,7 +53,6 @@ export function createDefaultLibrary(
 interface LibraryState {
   library: LayoutLibrary;
   isLoaded: boolean;
-  showLayoutManager: boolean;
 
   // Shared with me state
   sharedWithMe: SharedWithMeEntry[];
@@ -87,8 +86,6 @@ interface LibraryState {
   clearNameSuggestionState: (layoutId: LayoutId) => void;
   getNameSuggestionState: (layoutId: LayoutId) => NameSuggestionState | undefined;
 
-  setShowLayoutManager: (show: boolean) => void;
-
   // Shared with me actions
   initSharedWithMe: (entries: SharedWithMeEntry[]) => void;
   addSharedWithMe: (entry: {
@@ -108,7 +105,6 @@ export const useLibraryStore = create<LibraryState>()(
   immer((set, get) => ({
     library: createDefaultLibrary(generateLayoutId(), 'Untitled layout'),
     isLoaded: false,
-    showLayoutManager: false,
 
     // Shared with me state
     sharedWithMe: [],
@@ -283,10 +279,6 @@ export const useLibraryStore = create<LibraryState>()(
     getNameSuggestionState: (layoutId) => {
       const entry = get().library.entries.find((e) => e.id === layoutId);
       return entry?.nameSuggestionState;
-    },
-
-    setShowLayoutManager: (show) => {
-      set({ showLayoutManager: show });
     },
 
     // === Shared with me actions ===
