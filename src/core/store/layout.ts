@@ -116,6 +116,9 @@ interface LayoutState {
   setPrintBedSize: (size: number) => void;
   setGridUnitMm: (mm: number) => void;
   setHeightUnitMm: (mm: number) => void;
+
+  // History restoration (used by history store for undo/redo)
+  restoreLayout: (layout: Layout) => void;
 }
 
 function findBin(bins: Bin[], id: BinId): Bin | undefined {
@@ -643,6 +646,13 @@ export const useLayoutStore = create<LayoutState>()(
       setHeightUnitMm: (mm) => {
         setLocal((state) => {
           state.layout.heightUnitMm = clamp(mm, 1, 50);
+        });
+      },
+
+      restoreLayout: (layout) => {
+        set((state) => {
+          state.layout = layout;
+          state.lastEditSource = 'local';
         });
       },
     };

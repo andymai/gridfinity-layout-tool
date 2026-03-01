@@ -49,6 +49,9 @@ interface SelectionActions {
   // Quick label
   showQuickLabel: (binId: BinId) => void;
   hideQuickLabel: () => void;
+
+  // History restoration (used by history store for undo/redo pruning)
+  restoreSelection: (updates: Partial<SelectionState>) => void;
 }
 
 export type SelectionStore = SelectionState & SelectionActions;
@@ -107,4 +110,7 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
   // Quick label actions
   showQuickLabel: (binId) => set({ quickLabelBinId: binId }),
   hideQuickLabel: () => set({ quickLabelBinId: null }),
+
+  // History restoration
+  restoreSelection: (updates) => set(updates),
 }));
