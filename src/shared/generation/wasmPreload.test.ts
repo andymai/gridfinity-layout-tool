@@ -9,7 +9,7 @@ vi.mock('brepjs-opencascade/src/brepjs_threaded.wasm?url', () => ({
   default: '/mock-threaded.wasm',
 }));
 
-vi.mock('@/features/generation/utils/wasmCapabilities', () => ({
+vi.mock('@/shared/generation/wasmCapabilities', () => ({
   detectWasmCapabilities: vi.fn(() => ({
     supportsThreads: true,
     hardwareConcurrency: 4,
@@ -17,7 +17,7 @@ vi.mock('@/features/generation/utils/wasmCapabilities', () => ({
   })),
 }));
 
-import { detectWasmCapabilities } from '@/features/generation/utils/wasmCapabilities';
+import { detectWasmCapabilities } from '@/shared/generation/wasmCapabilities';
 const mockDetectWasmCapabilities = vi.mocked(detectWasmCapabilities);
 
 describe('preloadWasmBinary', () => {

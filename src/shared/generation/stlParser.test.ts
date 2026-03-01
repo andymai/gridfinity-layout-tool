@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseSTLBinary } from './stlParser';
 import { isOk, isErr } from '@/core/result';
-import { buildSTLBuffer } from '@/features/generation/export/stlExporter';
+import { buildSTLBuffer } from '@/shared/generation/export';
 
 describe('parseSTLBinary', () => {
   /** Build a binary STL with known data for round-trip testing */

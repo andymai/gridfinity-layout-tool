@@ -11,7 +11,7 @@
 
 import { initFromOC } from 'brepjs';
 import { getCachedModule, cacheModule } from './wasmModuleCache';
-import { detectWasmCapabilities } from '../utils/wasmCapabilities';
+import { detectWasmCapabilities } from '@/shared/generation/wasmCapabilities';
 
 // Single-threaded WASM (always available)
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';

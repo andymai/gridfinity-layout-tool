@@ -35,7 +35,7 @@ vi.mock('brepjs-opencascade/src/brepjs_threaded.js?url', () => ({
 }));
 
 // Mock wasmCapabilities (always single-threaded in tests/dev)
-vi.mock('../utils/wasmCapabilities', () => ({
+vi.mock('@/shared/generation/wasmCapabilities', () => ({
   detectWasmCapabilities: () => ({ supportsThreads: false }),
 }));
 
