@@ -11,8 +11,20 @@ import type {
 import { CONSTRAINTS, getDefaultDrawerSize } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import type { Result, Unit, LayoutError } from '@/core/result';
-import { err, layoutLastEntity, OK } from '@/core/result';
+import { err, layoutLastEntity, OK, isErr } from '@/core/result';
 import { saveLibrary } from '@/core/storage';
+
+/**
+ * Persist library in the background, logging on failure.
+ * Replaces bare `void saveLibrary()` calls that silently dropped errors.
+ */
+function persistLibrary(library: LayoutLibrary): void {
+  void saveLibrary(library).then((result) => {
+    if (isErr(result)) {
+      console.warn('[library] Background save failed:', result.error.code, result.error.message);
+    }
+  });
+}
 
 // Re-export computePreview for backward compatibility with existing imports
 export { computePreview } from '@/core/storage';
@@ -199,8 +211,7 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately so cloudShare survives refresh
-      // If storage is full, state is updated in memory but won't persist on refresh
-      void saveLibrary(get().library);
+      persistLibrary(get().library);
     },
 
     clearCloudShare: (layoutId) => {
@@ -211,8 +222,7 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately
-      // If storage is full, state is updated in memory but won't persist on refresh
-      void saveLibrary(get().library);
+      persistLibrary(get().library);
     },
 
     // === Name suggestion state actions ===
@@ -235,8 +245,7 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately so dismiss state survives refresh
-      // If storage is full, state is updated in memory but won't persist on refresh
-      void saveLibrary(get().library);
+      persistLibrary(get().library);
     },
 
     clearNameSuggestionState: (layoutId) => {
@@ -247,8 +256,7 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately
-      // If storage is full, state is updated in memory but won't persist on refresh
-      void saveLibrary(get().library);
+      persistLibrary(get().library);
     },
 
     getNameSuggestionState: (layoutId) => {
