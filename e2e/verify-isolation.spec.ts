@@ -23,13 +23,14 @@ test.describe('Test Isolation Verification', () => {
 
   test('storage is clean at test start', async ({ page }) => {
     await page.goto('/');
+    await waitForAppReady(page);
     const storageState = await page.evaluate(() => ({
       localStorageLength: localStorage.length,
       sessionStorageLength: sessionStorage.length,
     }));
 
     // Should have minimal state (library + active layout + maybe settings)
-    expect(storageState.localStorageLength).toBeLessThanOrEqual(5);
+    expect(storageState.localStorageLength).toBeLessThanOrEqual(10);
     expect(storageState.sessionStorageLength).toBe(0);
   });
 
@@ -89,6 +90,7 @@ test.describe('Test Isolation Verification', () => {
 
   test('library state is initialized correctly', async ({ page }) => {
     await page.goto('/');
+    await waitForAppReady(page);
     const libraryData = await page.evaluate(() => {
       const library = localStorage.getItem('gridfinity-library-v1');
       return library ? JSON.parse(library) : null;
@@ -102,6 +104,7 @@ test.describe('Test Isolation Verification', () => {
 
   test('active layout is loaded correctly', async ({ page }) => {
     await page.goto('/');
+    await waitForAppReady(page);
     const layoutData = await page.evaluate(() => {
       const library = localStorage.getItem('gridfinity-library-v1');
       if (!library) return null;

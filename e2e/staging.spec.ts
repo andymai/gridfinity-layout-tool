@@ -50,10 +50,8 @@ test.describe('Staging Area (Stash)', () => {
   });
 
   test('stash is hidden when empty', async ({ page }) => {
-    // Stash should not be visible when no bins are stashed
-    // Look for the stash container specifically
-    const stashContainer = getStash(page);
-    await expect(stashContainer).not.toBeVisible();
+    // Stash container is always rendered, but should have no staging bins when empty
+    await waitForStashHidden(page);
   });
 
   test('can move bin to stash via inspector', async ({ page }) => {
@@ -425,8 +423,8 @@ test.describe('Staging Area (Stash)', () => {
       // Create a bin on the grid
       await drawBinOnGrid(page, 50, 50, 100, 100);
 
-      // Stash should be hidden initially
-      await expect(getStash(page)).not.toBeVisible();
+      // Stash should have no staging bins initially
+      await waitForStashHidden(page);
 
       // Move bin to stash
       const bin = page.locator('[data-bin-id]').first();

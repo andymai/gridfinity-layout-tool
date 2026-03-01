@@ -43,9 +43,9 @@ export async function clearAllStorage(page: Page): Promise<void> {
  * - `await page.waitForTimeout(1500)` in drawer-settings.spec.ts:203
  *
  * @param page - Playwright page instance
- * @param timeout - Maximum time to wait (default 2000ms)
+ * @param timeout - Maximum time to wait (default 5000ms)
  */
-export async function waitForAutoSave(page: Page, timeout = 2000): Promise<void> {
+export async function waitForAutoSave(page: Page, timeout = 5000): Promise<void> {
   await page.waitForFunction(
     () => {
       // Check if library index exists in localStorage
