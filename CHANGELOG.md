@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.50.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.1...gridfinity-layout-tool-v3.50.2) (2026-03-02)
+
+
+### Bug Fixes
+
+* **deps:** scope minimatch overrides to preserve v3 API for eslint plugins ([#990](https://github.com/andymai/gridfinity-layout-tool/issues/990)) ([b9bb32c](https://github.com/andymai/gridfinity-layout-tool/commit/b9bb32c4bd9af3bf8c926a1f60bdbcadfd85ea59))
+
 ## [3.50.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.0...gridfinity-layout-tool-v3.50.1) (2026-03-02)
 
 
