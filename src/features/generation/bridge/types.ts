@@ -11,8 +11,6 @@ import type { BinParams, BaseplateParams } from '@/shared/types/bin';
 
 export type WorkerMessage =
   | InitMessage
-  | InitWithModuleMessage
-  | GetModuleMessage
   | GenerateMessage
   | GenerateBaseplateMessage
   | CancelMessage
@@ -23,15 +21,6 @@ export type WorkerMessage =
 
 export interface InitMessage {
   readonly type: 'INIT';
-}
-
-export interface InitWithModuleMessage {
-  readonly type: 'INIT_WITH_MODULE';
-  readonly wasmModule: WebAssembly.Module;
-}
-
-export interface GetModuleMessage {
-  readonly type: 'GET_MODULE';
 }
 
 export interface GenerateMessage {
@@ -132,7 +121,6 @@ export interface FaceGroupData {
 
 export type WorkerResponse =
   | InitReadyResponse
-  | ModuleReadyResponse
   | ProgressResponse
   | MeshResultResponse
   | BaseplateExportResultResponse
@@ -147,11 +135,6 @@ export interface InitReadyResponse {
   readonly isThreaded: boolean;
   /** Number of CPU cores available */
   readonly hardwareConcurrency: number;
-}
-
-export interface ModuleReadyResponse {
-  readonly type: 'MODULE_READY';
-  readonly wasmModule: WebAssembly.Module;
 }
 
 export interface ProgressResponse {
