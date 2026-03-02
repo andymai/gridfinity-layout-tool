@@ -32,9 +32,6 @@ let isThreaded = false;
 /** Number of CPU cores */
 let hardwareConcurrency = 4;
 
-/** Compiled WASM module, available after init for sharing with pool workers */
-let compiledModule: WebAssembly.Module | null = null;
-
 /** Post a typed response to the main thread */
 function respond(response: WorkerResponse): void {
   self.postMessage(response);
@@ -54,15 +51,11 @@ function reportProgress(
   });
 }
 
-/**
- * Initialize OpenCascade WASM kernel via the cache-first instantiator.
- * Optionally accepts a pre-compiled module (from main thread transfer).
- */
-async function initOpenCascade(cachedModule?: WebAssembly.Module): Promise<void> {
-  const result = await loadOpenCascade({ cachedModule });
+/** Initialize OpenCascade WASM kernel. */
+async function initOpenCascade(): Promise<void> {
+  const result = await loadOpenCascade();
   isThreaded = result.isThreaded;
   hardwareConcurrency = result.hardwareConcurrency;
-  compiledModule = result.wasmModule;
   ocInitialized = true;
 }
 
@@ -197,42 +190,6 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
             type: 'ERROR',
             requestId: '__init__',
             error: `OpenCascade init failed: ${formatError(e)}`,
-          });
-        }
-        break;
-
-      case 'INIT_WITH_MODULE':
-        try {
-          await initOpenCascade(message.wasmModule);
-          respond({ type: 'INIT_READY', isThreaded, hardwareConcurrency });
-        } catch (e) {
-          respond({
-            type: 'ERROR',
-            requestId: '__init__',
-            error: `OpenCascade init failed: ${formatError(e)}`,
-          });
-        }
-        break;
-
-      case 'GET_MODULE':
-        if (compiledModule) {
-          try {
-            self.postMessage({
-              type: 'MODULE_READY',
-              wasmModule: compiledModule,
-            } satisfies WorkerResponse);
-          } catch (e) {
-            respond({
-              type: 'ERROR',
-              requestId: '__get_module__',
-              error: `Failed to transfer module: ${formatError(e)}`,
-            });
-          }
-        } else {
-          respond({
-            type: 'ERROR',
-            requestId: '__get_module__',
-            error: 'No compiled module available',
           });
         }
         break;

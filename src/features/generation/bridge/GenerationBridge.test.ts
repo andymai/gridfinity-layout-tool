@@ -25,8 +25,8 @@ class MockWorker {
     this.messages.push(data);
 
     const msgType = (data as { type: string }).type;
-    // Auto-respond to INIT and INIT_WITH_MODULE
-    if (msgType === 'INIT' || msgType === 'INIT_WITH_MODULE') {
+    // Auto-respond to INIT
+    if (msgType === 'INIT') {
       setTimeout(() => {
         this.simulateResponse({
           type: 'INIT_READY',
@@ -38,10 +38,12 @@ class MockWorker {
   }
 
   addEventListener(type: string, handler: (event: unknown) => void): void {
-    if (!this.listeners.has(type)) {
-      this.listeners.set(type, []);
+    const existing = this.listeners.get(type);
+    if (existing) {
+      existing.push(handler);
+    } else {
+      this.listeners.set(type, [handler]);
     }
-    this.listeners.get(type)!.push(handler);
   }
 
   removeEventListener(type: string, handler: (event: unknown) => void): void {
@@ -68,6 +70,14 @@ function createMockWorkerClass() {
 }
 vi.stubGlobal('Worker', createMockWorkerClass());
 
+/** Get the current mock worker instance, failing the test if it hasn't been created yet. */
+function getWorker(): MockWorker {
+  if (mockWorkerInstance === null) {
+    throw new Error('MockWorker not yet created — call bridge.init() first');
+  }
+  return mockWorkerInstance;
+}
+
 describe('GenerationBridge', () => {
   let bridge: GenerationBridge;
 
@@ -89,7 +99,7 @@ describe('GenerationBridge', () => {
       await initPromise;
 
       expect(mockWorkerInstance).not.toBeNull();
-      expect(mockWorkerInstance!.messages[0]).toEqual({ type: 'INIT' });
+      expect(getWorker().messages[0]).toEqual({ type: 'INIT' });
     });
 
     it('returns cached promise on multiple init calls', async () => {
@@ -117,7 +127,7 @@ describe('GenerationBridge', () => {
       const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
 
       // Before debounce: no GENERATE message yet
-      const generateMessages = mockWorkerInstance!.messages.filter(
+      const generateMessages = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'GENERATE'
       );
       expect(generateMessages.length).toBe(0);
@@ -125,14 +135,14 @@ describe('GenerationBridge', () => {
       // Advance past debounce (200ms)
       await vi.advanceTimersByTimeAsync(200);
 
-      const afterDebounce = mockWorkerInstance!.messages.filter(
+      const afterDebounce = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'GENERATE'
       );
       expect(afterDebounce.length).toBe(1);
 
       // Simulate result
       const msg = afterDebounce[0] as { payload: { requestId: string } };
-      mockWorkerInstance!.simulateResponse({
+      getWorker().simulateResponse({
         type: 'MESH_RESULT',
         requestId: msg.payload.requestId,
         vertices: new Float32Array([1, 2, 3]),
@@ -165,14 +175,14 @@ describe('GenerationBridge', () => {
       // Advance past debounce for second request
       await vi.advanceTimersByTimeAsync(200);
 
-      const generateMessages = mockWorkerInstance!.messages.filter(
+      const generateMessages = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'GENERATE'
       );
       expect(generateMessages.length).toBe(1); // Only second request sent
 
       // Complete second request
       const msg = generateMessages[0] as { payload: { requestId: string } };
-      mockWorkerInstance!.simulateResponse({
+      getWorker().simulateResponse({
         type: 'MESH_RESULT',
         requestId: msg.payload.requestId,
         vertices: new Float32Array([1, 2, 3]),
@@ -194,12 +204,12 @@ describe('GenerationBridge', () => {
       const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
       await vi.advanceTimersByTimeAsync(200);
 
-      const generateMessages = mockWorkerInstance!.messages.filter(
+      const generateMessages = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'GENERATE'
       );
       const msg = generateMessages[0] as { payload: { requestId: string } };
 
-      mockWorkerInstance!.simulateResponse({
+      getWorker().simulateResponse({
         type: 'ERROR',
         requestId: msg.payload.requestId,
         error: 'Out of memory',
@@ -219,13 +229,13 @@ describe('GenerationBridge', () => {
       });
       await vi.advanceTimersByTimeAsync(200);
 
-      const generateMessages = mockWorkerInstance!.messages.filter(
+      const generateMessages = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'GENERATE'
       );
       const msg = generateMessages[0] as { payload: { requestId: string } };
 
       // Simulate progress updates
-      mockWorkerInstance!.simulateResponse({
+      getWorker().simulateResponse({
         type: 'PROGRESS',
         requestId: msg.payload.requestId,
         stage: 'shell',
@@ -235,7 +245,7 @@ describe('GenerationBridge', () => {
       expect(progressCalls).toEqual([{ stage: 'shell', progress: 0.5 }]);
 
       // Complete
-      mockWorkerInstance!.simulateResponse({
+      getWorker().simulateResponse({
         type: 'MESH_RESULT',
         requestId: msg.payload.requestId,
         vertices: new Float32Array(9),
@@ -263,14 +273,14 @@ describe('GenerationBridge', () => {
       const genPromise = bridge.generateImmediate(DEFAULT_BIN_PARAMS);
 
       // Should be sent immediately (no debounce wait)
-      const generateMessages = mockWorkerInstance!.messages.filter(
+      const generateMessages = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'GENERATE'
       );
       expect(generateMessages.length).toBe(1);
 
       // Complete the generation to avoid unhandled rejection in afterEach
       const msg = generateMessages[0] as { payload: { requestId: string } };
-      mockWorkerInstance!.simulateResponse({
+      getWorker().simulateResponse({
         type: 'MESH_RESULT',
         requestId: msg.payload.requestId,
         vertices: new Float32Array(9),
@@ -297,7 +307,7 @@ describe('GenerationBridge', () => {
       bridge.cancel();
       await rejection;
 
-      const cancelMessages = mockWorkerInstance!.messages.filter(
+      const cancelMessages = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'CANCEL'
       );
       expect(cancelMessages.length).toBe(1);
@@ -317,7 +327,7 @@ describe('GenerationBridge', () => {
 
       // Advance time - no GENERATE should have been sent
       await vi.advanceTimersByTimeAsync(500);
-      const generateMessages = mockWorkerInstance!.messages.filter(
+      const generateMessages = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'GENERATE'
       );
       expect(generateMessages.length).toBe(0);
@@ -337,7 +347,7 @@ describe('GenerationBridge', () => {
       await vi.advanceTimersByTimeAsync(0);
 
       // Find the EXPORT_SPLIT message
-      const splitMsg = mockWorkerInstance!.messages.find(
+      const splitMsg = getWorker().messages.find(
         (m) => (m as { type: string }).type === 'EXPORT_SPLIT'
       ) as {
         type: string;
@@ -348,7 +358,7 @@ describe('GenerationBridge', () => {
       expect(splitMsg.payload.cutPlanesY).toEqual([]);
 
       // Simulate worker response
-      mockWorkerInstance!.simulateResponse({
+      getWorker().simulateResponse({
         type: 'SPLIT_EXPORT_RESULT',
         requestId: splitMsg.payload.requestId,
         pieces: [
@@ -371,11 +381,11 @@ describe('GenerationBridge', () => {
 
       await vi.advanceTimersByTimeAsync(0);
 
-      const splitMsg = mockWorkerInstance!.messages.find(
+      const splitMsg = getWorker().messages.find(
         (m) => (m as { type: string }).type === 'EXPORT_SPLIT'
       ) as { type: string; payload: { requestId: string } };
 
-      mockWorkerInstance!.simulateResponse({
+      getWorker().simulateResponse({
         type: 'ERROR',
         requestId: splitMsg.payload.requestId,
         error: 'Split failed',
@@ -389,106 +399,6 @@ describe('GenerationBridge', () => {
       await expect(bridge.exportSplitBin(DEFAULT_BIN_PARAMS, [], [])).rejects.toThrow(
         'Bridge has been destroyed'
       );
-    });
-  });
-
-  describe('initWithModule', () => {
-    it('sends INIT_WITH_MODULE and resolves on INIT_READY', async () => {
-      const fakeModule = {} as WebAssembly.Module;
-      const initPromise = bridge.initWithModule(fakeModule);
-      await vi.advanceTimersByTimeAsync(10);
-      await initPromise;
-
-      expect(mockWorkerInstance).not.toBeNull();
-      const initMsg = mockWorkerInstance!.messages[0] as { type: string; wasmModule: unknown };
-      expect(initMsg.type).toBe('INIT_WITH_MODULE');
-      expect(initMsg.wasmModule).toBe(fakeModule);
-    });
-
-    it('returns cached promise on multiple calls', async () => {
-      const fakeModule = {} as WebAssembly.Module;
-      const p1 = bridge.initWithModule(fakeModule);
-      const p2 = bridge.initWithModule(fakeModule);
-      expect(p1).toBe(p2);
-      await vi.advanceTimersByTimeAsync(10);
-      await p1;
-    });
-
-    it('rejects if bridge is destroyed', async () => {
-      bridge.destroy();
-      await expect(bridge.initWithModule({} as WebAssembly.Module)).rejects.toThrow('destroyed');
-    });
-  });
-
-  describe('getWasmModule', () => {
-    it('resolves on MODULE_READY', async () => {
-      const initPromise = bridge.init();
-      await vi.advanceTimersByTimeAsync(10);
-      await initPromise;
-
-      const fakeModule = {} as WebAssembly.Module;
-      const modulePromise = bridge.getWasmModule();
-
-      mockWorkerInstance!.simulateResponse({
-        type: 'MODULE_READY',
-        wasmModule: fakeModule,
-      });
-
-      const result = await modulePromise;
-      expect(result).toBe(fakeModule);
-    });
-
-    it('rejects on ERROR response', async () => {
-      const initPromise = bridge.init();
-      await vi.advanceTimersByTimeAsync(10);
-      await initPromise;
-
-      const modulePromise = bridge.getWasmModule();
-
-      mockWorkerInstance!.simulateResponse({
-        type: 'ERROR',
-        requestId: '__get_module__',
-        error: 'No compiled module available',
-      });
-
-      await expect(modulePromise).rejects.toThrow('No compiled module available');
-    });
-
-    it('returns same promise for concurrent calls', async () => {
-      const initPromise = bridge.init();
-      await vi.advanceTimersByTimeAsync(10);
-      await initPromise;
-
-      const p1 = bridge.getWasmModule();
-      const p2 = bridge.getWasmModule();
-      expect(p1).toBe(p2);
-
-      // Resolve to prevent hanging
-      mockWorkerInstance!.simulateResponse({
-        type: 'MODULE_READY',
-        wasmModule: {} as WebAssembly.Module,
-      });
-      await p1;
-    });
-
-    it('rejects if bridge is destroyed', async () => {
-      bridge.destroy();
-      await expect(bridge.getWasmModule()).rejects.toThrow('destroyed');
-    });
-
-    it('rejects if worker not initialized', async () => {
-      await expect(bridge.getWasmModule()).rejects.toThrow('not initialized');
-    });
-
-    it('rejects pending promise on destroy', async () => {
-      const initPromise = bridge.init();
-      await vi.advanceTimersByTimeAsync(10);
-      await initPromise;
-
-      const modulePromise = bridge.getWasmModule();
-      bridge.destroy();
-
-      await expect(modulePromise).rejects.toThrow('destroyed');
     });
   });
 
@@ -506,7 +416,7 @@ describe('GenerationBridge', () => {
         faceGroups: [{ start: 0, count: 3, tag: 0 }],
       };
       expect(response.faceGroups).toHaveLength(1);
-      expect(response.faceGroups![0].tag).toBe(0);
+      expect(response.faceGroups?.[0].tag).toBe(0);
     });
   });
 
@@ -517,7 +427,7 @@ describe('GenerationBridge', () => {
       await initPromise;
 
       bridge.destroy();
-      expect(mockWorkerInstance!.terminated).toBe(true);
+      expect(getWorker().terminated).toBe(true);
     });
 
     it('sets isDestroyed flag', () => {
