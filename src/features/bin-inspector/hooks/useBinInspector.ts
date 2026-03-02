@@ -566,12 +566,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     if (selectedBins.length === 0) return;
 
     // Track deletion BEFORE executing (need bin data)
-    mlTracking.trackDeletion(selectedBins[0], 'inspector', selectedBins.length);
-
-    // Track quick corrections for each deleted bin
-    for (const bin of selectedBins) {
-      mlTracking.trackQuickCorrect('delete', bin.id, bin);
-    }
+    mlTracking.trackBinsDeletion(selectedBins, 'inspector');
 
     execute(() => {
       for (const b of selectedBins) {

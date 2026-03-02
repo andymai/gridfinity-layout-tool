@@ -30,13 +30,7 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
 export function handleDelete(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (!isShortcut(e.key, SHORTCUTS.DELETE) || ctx.selectedBinIds.length === 0) return false;
   e.preventDefault();
-  const binsToDelete = findBinsByIds(ctx.layout, ctx.selectedBinIds);
-  if (binsToDelete.length > 0) {
-    mlTracking.trackDeletion(binsToDelete[0], 'key', binsToDelete.length);
-    for (const bin of binsToDelete) {
-      mlTracking.trackQuickCorrect('delete', bin.id, bin);
-    }
-  }
+  mlTracking.trackBinsDeletion(findBinsByIds(ctx.layout, ctx.selectedBinIds), 'key');
   ctx.execute(() => {
     for (const binId of ctx.selectedBinIds) {
       ctx.deleteBin(binId);
