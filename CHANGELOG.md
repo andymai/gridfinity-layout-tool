@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.50.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.4...gridfinity-layout-tool-v3.50.5) (2026-03-02)
+
+
+### Bug Fixes
+
+* polyfill Symbol.dispose for brepjs compatibility with older browsers ([#996](https://github.com/andymai/gridfinity-layout-tool/issues/996)) ([bac311d](https://github.com/andymai/gridfinity-layout-tool/commit/bac311ddd8c29071497b33b44d5311b8a8993589))
+
 ## [3.50.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.3...gridfinity-layout-tool-v3.50.4) (2026-03-02)
 
 
