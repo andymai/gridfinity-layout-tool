@@ -19,6 +19,7 @@ import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
 import { isIndexedDBAvailable } from './backends/indexedDB';
 import { LAYOUT_KEY_PREFIX, CLEANUP_FLAG_KEY } from './storageKeys';
+import { getLayoutStorageKey } from './LayoutService';
 
 function getCleanupFlag(): boolean {
   try {
@@ -91,7 +92,7 @@ export async function cleanupLocalStorageBackups(): Promise<CleanupStats | null>
   };
 
   for (const layoutId of localStorageIds) {
-    const prefixedKey = `${LAYOUT_KEY_PREFIX}${layoutId}`;
+    const prefixedKey = getLayoutStorageKey(layoutId);
     // Verify the layout actually loads from IndexedDB (not just key exists)
     // to avoid deleting localStorage backup when IndexedDB data is corrupt.
     const loaded = await indexedDB.loadLayout(prefixedKey);

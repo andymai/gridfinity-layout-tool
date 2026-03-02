@@ -27,6 +27,7 @@ import {
   storageNetworkError,
 } from '@/core/result';
 import { LAYOUT_KEY_PREFIX, MIGRATION_FLAG_KEY } from './storageKeys';
+import { getLayoutStorageKey } from './LayoutService';
 
 // Result types
 interface MigrationResult {
@@ -66,7 +67,7 @@ function getLocalStorageLayoutIds(): string[] {
  * Load a layout from localStorage by ID.
  */
 function loadLayoutFromLocalStorage(layoutId: string): Layout | null {
-  const key = `${LAYOUT_KEY_PREFIX}${layoutId}`;
+  const key = getLayoutStorageKey(layoutId);
   const result = localStorage.loadLayout(key);
   return result.ok ? result.value : null;
 }
@@ -266,7 +267,7 @@ export async function migrateLayoutToIndexedDBResult(
     const layout = loadLayoutFromLocalStorage(layoutId);
 
     if (!layout) {
-      return err(storageNotFound(`${LAYOUT_KEY_PREFIX}${layoutId}`));
+      return err(storageNotFound(getLayoutStorageKey(layoutId)));
     }
 
     // Save to IndexedDB
