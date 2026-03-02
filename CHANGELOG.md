@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.50.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.0...gridfinity-layout-tool-v3.50.1) (2026-03-02)
+
+
+### Bug Fixes
+
+* **deps:** resolve 5 high-severity Dependabot alerts via npm overrides ([#988](https://github.com/andymai/gridfinity-layout-tool/issues/988)) ([0b6e3a1](https://github.com/andymai/gridfinity-layout-tool/commit/0b6e3a121c43ef7bd99869eed7f1670f96624ea1))
+
 ## [3.50.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.49.0...gridfinity-layout-tool-v3.50.0) (2026-03-02)
 
 
