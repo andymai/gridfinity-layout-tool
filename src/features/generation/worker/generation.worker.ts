@@ -11,6 +11,9 @@
  * - CANCEL -> (silently aborts current generation)
  */
 
+// Must be first import — polyfills Symbol.dispose before brepjs loads
+import './symbolDisposePolyfill';
+
 import type { WorkerMessage, WorkerResponse, MeshData } from '../bridge/types';
 import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
