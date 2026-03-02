@@ -276,10 +276,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
                 edgeVertices: Float32Array;
               }>
             ).flatMap((piece) => [
-              piece.vertices.buffer,
-              piece.normals.buffer,
-              piece.indices.buffer,
-              piece.edgeVertices.buffer,
+              piece.vertices.buffer as ArrayBuffer,
+              piece.normals.buffer as ArrayBuffer,
+              piece.indices.buffer as ArrayBuffer,
+              piece.edgeVertices.buffer as ArrayBuffer,
             ])
         );
         break;

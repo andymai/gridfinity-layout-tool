@@ -75,7 +75,7 @@ export function createUISlice(set: Set) {
 
     setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => {
       set((state) => {
-        state.ui.splitPieceMeshes = meshes;
+        state.ui.splitPieceMeshes = [...meshes];
       });
     },
 
