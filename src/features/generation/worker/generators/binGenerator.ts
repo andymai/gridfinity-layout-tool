@@ -676,7 +676,7 @@ export async function exportSplitBin(
       let piece = unwrap(intersect(clone(solid), translatedBox));
 
       // Apply alignment connectors to this piece's cut faces
-      if (connectorConfig?.enabled) {
+      if (connectorConfig !== undefined && connectorConfig.enabled) {
         const cutFaces = computeCutFaces(col, row, cutPlanesX, cutPlanesY, outerW, outerD);
         const geometryContext: BinGeometryContext = {
           floorZ,

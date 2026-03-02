@@ -60,20 +60,19 @@ function PinIndicators({
   const pins = useMemo(() => {
     const result: Array<{ x: number; y: number; z: number }> = [];
 
-    // X-axis cuts: pins distributed along Y (depth) axis
+    const xPinOffsets = computePinPositions(outerD, pinSpacing);
+    const yPinOffsets = computePinPositions(outerW, pinSpacing);
+
     for (let i = 0; i < xSplits.length; i++) {
       const ex = xExplodeOffset?.(i) ?? 0;
-      const positions = computePinPositions(outerD, pinSpacing);
-      for (const offset of positions) {
+      for (const offset of xPinOffsets) {
         result.push({ x: xSplits[i] + ex, y: offset, z: pinZ });
       }
     }
 
-    // Y-axis cuts: pins distributed along X (width) axis
     for (let i = 0; i < ySplits.length; i++) {
       const ey = yExplodeOffset?.(i) ?? 0;
-      const positions = computePinPositions(outerW, pinSpacing);
-      for (const offset of positions) {
+      for (const offset of yPinOffsets) {
         result.push({ x: offset, y: ySplits[i] + ey, z: pinZ });
       }
     }

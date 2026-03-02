@@ -204,7 +204,7 @@ export interface BinParams {
   readonly cutouts: Cutout[];
   readonly cutoutConfig: CutoutConfig;
   readonly wallPattern: WallPatternConfig;
-  /** Split connector config. Absent/undefined = connectors disabled (backward compat). */
+  /** Split connector config. Absent/undefined = defaults applied at export time for oversized bins. */
   readonly splitConnectors?: SplitConnectorConfig;
 }
 

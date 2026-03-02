@@ -5,7 +5,8 @@
  * plus a thin tongue-and-groove ridge along the wall cross-section and
  * a step ledge at the stacking lip junction.
  *
- * Convention: left/front piece = male (pins), right/back piece = female (holes).
+ * Convention: right/back face of a piece = male (pins protrude outward),
+ *             left/front face of a piece = female (matching holes recessed inward).
  */
 
 import { drawCircle, drawRectangle, unwrap, fuseAll, cutAll, translate } from 'brepjs';
@@ -144,29 +145,28 @@ function buildFloorPins(
   const pinCenterZ = context.floorZ > 0 ? context.floorZ / 2 : config.pinDiameter / 2 + 0.5;
   const positions = computePinPositions(face.edgeLength, config.pinSpacing);
 
+  // Direction: geometry must extend INTO the piece (away from the cut face into piece territory).
+  // Male (right/back face) = piece is on the negative side → extrude in -1 direction.
+  // Female (left/front face) = piece is on the positive side → extrude in +1 direction.
+  const dir: 1 | -1 = face.isMale ? -1 : 1;
+
   for (const offset of positions) {
     if (face.isMale) {
-      const pin = buildHorizontalCylinder(
-        face.axis,
-        face.position,
-        offset,
-        pinCenterZ,
-        pinR,
-        pinH,
-        1
+      fuse.push(
+        buildHorizontalCylinder(face.axis, face.position, offset, pinCenterZ, pinR, pinH, dir)
       );
-      fuse.push(pin);
     } else {
-      const hole = buildHorizontalCylinder(
-        face.axis,
-        face.position,
-        offset,
-        pinCenterZ,
-        holeR,
-        holeH + COPLANAR_MARGIN,
-        -1
+      cut.push(
+        buildHorizontalCylinder(
+          face.axis,
+          face.position,
+          offset,
+          pinCenterZ,
+          holeR,
+          holeH + COPLANAR_MARGIN,
+          dir
+        )
       );
-      cut.push(hole);
     }
   }
 
@@ -205,6 +205,8 @@ function buildWallRidge(
 
   const ridgeWidth = Math.min(WALL_RIDGE_HALF_WIDTH, context.wallThickness * 0.3) * 2;
   const cl = config.clearance;
+  // Male = piece on negative side → extrude into piece = -1; Female = positive side → +1
+  const dir: 1 | -1 = face.isMale ? -1 : 1;
 
   if (face.isMale) {
     const tongue = buildRidgePrism(
@@ -214,7 +216,7 @@ function buildWallRidge(
       WALL_RIDGE_PROTRUSION,
       ridgeHeight,
       context.floorZ,
-      1
+      dir
     );
     return { fuse: [tongue], cut: [] };
   }
@@ -226,7 +228,7 @@ function buildWallRidge(
     WALL_RIDGE_PROTRUSION + cl,
     ridgeHeight + cl * 2,
     context.floorZ - cl,
-    -1
+    dir
   );
   return { fuse: [], cut: [groove] };
 }
@@ -256,6 +258,7 @@ function buildLipStep(
 ): { fuse: Shape3D[]; cut: Shape3D[] } {
   const cl = config.clearance;
   const stepWidth = face.edgeLength * 0.8;
+  const dir: 1 | -1 = face.isMale ? -1 : 1;
 
   if (face.isMale) {
     const step = buildRidgePrism(
@@ -265,7 +268,7 @@ function buildLipStep(
       LIP_STEP_HEIGHT,
       LIP_SMALL_TAPER,
       context.wallTopZ,
-      1
+      dir
     );
     return { fuse: [step], cut: [] };
   }
@@ -277,7 +280,7 @@ function buildLipStep(
     LIP_STEP_HEIGHT + cl,
     LIP_SMALL_TAPER + cl * 2,
     context.wallTopZ - cl,
-    -1
+    dir
   );
   return { fuse: [], cut: [groove] };
 }
