@@ -401,15 +401,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
             const currentLayout = useLayoutStore.getState().layout;
             const newBins = findBinsByIds(currentLayout, newBinIds);
             if (newBins.length > 0) {
-              mlTracking.trackBulk(newBins, 'duplicate');
-              // Record creation for quick-correction detection
-              for (const bin of newBins) {
-                mlTracking.recordCreation(
-                  bin.id,
-                  'duplicate',
-                  `${bin.width}x${bin.depth}x${bin.height}`
-                );
-              }
+              mlTracking.trackBulkCreation(newBins, 'duplicate');
             }
           }
           // Select the newly created duplicates
