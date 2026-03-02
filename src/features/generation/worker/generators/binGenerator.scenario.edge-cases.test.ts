@@ -367,7 +367,7 @@ describe('edge case generation', () => {
       height: 3,
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
     });
-    testParams('2x2 with half sockets and magnet style (holes should be skipped)', {
+    testParams('2x2 with half sockets and magnet style (holes on original cells)', {
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true, style: 'magnet' },
     });
     testParams('2x2 with half sockets and stacking lip', {

@@ -547,7 +547,7 @@ function circlePoints(radius: number, segments: number): ReadonlyArray<readonly 
  * magnetDepth, leaving a thin floor (MAGNET_FLOOR) at the bottom to retain
  * the magnet. Magnets are dropped in from the pocket side.
  *
- * For each magnet position in a full cell:
+ * For each magnet position in a full cell (4 corners at ±13mm from center):
  * - Cancel circle at Z=floorDepth facing DOWN — punches hole in pocket floor
  * - Cylinder wall from Z=floorDepth to Z=MAGNET_FLOOR (inward-facing)
  * - Floor circle at Z=MAGNET_FLOOR facing UP — the magnet sits on this
@@ -887,7 +887,7 @@ export function generateBaseplateDirect(
   onProgress('base', 0.7);
   checkCancelled(signal);
 
-  // 6. Magnet holes (when enabled, only for full-size cells)
+  // 6. Magnet holes (4 corners per full-size cell, skip fractional cells)
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
     for (const cell of cells) {

@@ -210,7 +210,8 @@ function getPocketTemplate(
  * Magnets are dropped in from the pocket side and held by gravity.
  *
  * Builds one template cylinder and clones it for each hole position.
- * Only full-size (1.0+ unit) cells get magnet holes.
+ * Only full-size (1.0+ unit) cells get magnet holes — the Gridfinity spec
+ * doesn't define magnet positions for fractional cells.
  */
 function buildMagnetHoles(
   gridW: number,

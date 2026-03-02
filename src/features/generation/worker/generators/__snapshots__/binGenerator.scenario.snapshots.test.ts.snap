@@ -40,7 +40,7 @@ exports[`combined features > 2×2 label tabs with merged compartments 1`] = `520
 
 exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `6974`;
 
-exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `10788`;
+exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `13860`;
 
 exports[`compartments > 2×2 bin with '1×1 (none)' compartments 1`] = `2750`;
 

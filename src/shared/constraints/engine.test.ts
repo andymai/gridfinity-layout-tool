@@ -119,7 +119,7 @@ describe('FEATURE_MANIFESTS', () => {
 // =============================================================================
 
 describe('resolveConstraints — base constraints', () => {
-  it('enabling half sockets disables magnet holes', () => {
+  it('half sockets + magnet coexist (magnets use original cell layout)', () => {
     const params = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } });
     const result = resolveConstraints(params, {
       feature: 'base.halfSockets',
@@ -127,12 +127,11 @@ describe('resolveConstraints — base constraints', () => {
     });
 
     expect(result.params.base.halfSockets).toBe(true);
-    expect(result.params.base.style).not.toBe('magnet');
-    expect(result.params.base.style).not.toBe('magnet_and_screw');
-    expect(result.autoDisabled).toContain('base.magnet');
+    expect(result.params.base.style).toBe('magnet');
+    expect(result.autoDisabled).toHaveLength(0);
   });
 
-  it('enabling half sockets disables magnet_and_screw', () => {
+  it('half sockets + magnet_and_screw coexist', () => {
     const params = makeParams({
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw' },
     });
@@ -142,12 +141,11 @@ describe('resolveConstraints — base constraints', () => {
     });
 
     expect(result.params.base.halfSockets).toBe(true);
-    expect(result.params.base.style).toBe('standard');
-    expect(result.autoDisabled).toContain('base.magnet');
-    expect(result.autoDisabled).toContain('base.screw');
+    expect(result.params.base.style).toBe('magnet_and_screw');
+    expect(result.autoDisabled).toHaveLength(0);
   });
 
-  it('enabling magnet disables half sockets', () => {
+  it('enabling magnet preserves half sockets', () => {
     const params = makeParams({
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
     });
@@ -157,8 +155,8 @@ describe('resolveConstraints — base constraints', () => {
     });
 
     expect(result.params.base.style).toBe('magnet');
-    expect(result.params.base.halfSockets).toBe(false);
-    expect(result.autoDisabled).toContain('base.halfSockets');
+    expect(result.params.base.halfSockets).toBe(true);
+    expect(result.autoDisabled).toHaveLength(0);
   });
 
   it('enabling flat replaces magnet_and_screw style', () => {
@@ -438,13 +436,12 @@ describe('validateConstraints', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('fails for half sockets + magnet (invalid combo)', () => {
-    // Force an invalid state that the UI would normally prevent
+  it('passes for half sockets + magnet (magnets on original cell layout)', () => {
     const params = makeParams({
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', halfSockets: true },
     });
     const result = validateConstraints(params);
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBe(true);
   });
 });
 
