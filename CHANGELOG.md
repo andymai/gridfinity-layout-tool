@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.50.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.49.0...gridfinity-layout-tool-v3.50.0) (2026-03-02)
+
+
+### Features
+
+* **generation:** add magnet support for half-unit bins and baseplates ([#920](https://github.com/andymai/gridfinity-layout-tool/issues/920)) ([f4081a0](https://github.com/andymai/gridfinity-layout-tool/commit/f4081a0fbb7557133ba4d6b926bb6ec09df953c8))
+
 ## [3.49.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.48.0...gridfinity-layout-tool-v3.49.0) (2026-03-01)
 
 
