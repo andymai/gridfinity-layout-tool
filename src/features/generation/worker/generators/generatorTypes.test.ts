@@ -3,9 +3,6 @@ import {
   decomposeCells,
   decomposeHalfCells,
   toIndexedMeshData,
-  getMagnetOffsets,
-  MAGNET_OFFSETS,
-  HALF_CELL_MAGNET_OFFSETS,
   SIZE,
   CLEARANCE,
   SOCKET_HEIGHT,
@@ -270,27 +267,5 @@ describe('constants', () => {
 
   it('LIP_TAPER_WIDTH is 2.6mm', () => {
     expect(LIP_TAPER_WIDTH).toBeCloseTo(2.6, 1);
-  });
-});
-
-describe('getMagnetOffsets', () => {
-  it('returns 4-corner offsets for full cells (1×1)', () => {
-    expect(getMagnetOffsets(1, 1)).toBe(MAGNET_OFFSETS);
-  });
-
-  it('returns 4-corner offsets for large cells (2×3)', () => {
-    expect(getMagnetOffsets(2, 3)).toBe(MAGNET_OFFSETS);
-  });
-
-  it('returns centered offset for half-width cell (0.5×1)', () => {
-    expect(getMagnetOffsets(0.5, 1)).toBe(HALF_CELL_MAGNET_OFFSETS);
-  });
-
-  it('returns centered offset for half-depth cell (1×0.5)', () => {
-    expect(getMagnetOffsets(1, 0.5)).toBe(HALF_CELL_MAGNET_OFFSETS);
-  });
-
-  it('returns centered offset for half×half cell (0.5×0.5)', () => {
-    expect(getMagnetOffsets(0.5, 0.5)).toBe(HALF_CELL_MAGNET_OFFSETS);
   });
 });

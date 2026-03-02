@@ -48,7 +48,7 @@ import {
   sketch,
   PLATE_CORNER_RADIUS,
   MAGNET_FLOOR,
-  getMagnetOffsets,
+  MAGNET_OFFSETS,
   INSET_BOT,
   pocketCornerRadius,
   TONGUE_PROTRUSION,
@@ -210,7 +210,8 @@ function getPocketTemplate(
  * Magnets are dropped in from the pocket side and held by gravity.
  *
  * Builds one template cylinder and clones it for each hole position.
- * Full cells get 4 corner holes; half-unit cells get 1 centered hole.
+ * Only full-size (1.0+ unit) cells get magnet holes — the Gridfinity spec
+ * doesn't define magnet positions for fractional cells.
  */
 function buildMagnetHoles(
   gridW: number,
@@ -231,9 +232,9 @@ function buildMagnetHoles(
     gridW,
     gridD,
     (cell) => {
-      const offsets = getMagnetOffsets(cell.widthUnits, cell.depthUnits);
+      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
-      for (const [dx, dy] of offsets) {
+      for (const [dx, dy] of MAGNET_OFFSETS) {
         holes.push(translate(clone(magnetTemplate), [cell.centerX + dx, cell.centerY + dy, 0]));
       }
     },

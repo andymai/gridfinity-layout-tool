@@ -149,8 +149,8 @@ describe('baseplateGenerator', () => {
     expect(mesh.vertices.length).toBeGreaterThan(0);
   });
 
-  // ─── Fractional grids with magnets (centered magnet per half cell) ────────
-  it('0.5×0.5 with magnets (single centered hole)', () => {
+  // ─── Fractional grids with magnets (holes only in full cells) ──────────────
+  it('0.5×0.5 with magnets enabled (no holes — cell too small)', () => {
     const mesh = generateBaseplate(
       defaults({ width: 0.5, depth: 0.5, magnetHoles: true }),
       noop,
@@ -159,7 +159,7 @@ describe('baseplateGenerator', () => {
     expect(mesh.vertices.length).toBeGreaterThan(0);
   });
 
-  it('1.5×1.5 with magnets (mix of full + half cells)', () => {
+  it('1.5×1.5 with magnets (holes only in the 1×1 full cell)', () => {
     const mesh = generateBaseplate(
       defaults({ width: 1.5, depth: 1.5, magnetHoles: true }),
       noop,

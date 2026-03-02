@@ -28,7 +28,6 @@ import {
   SOCKET_BIG_TAPER,
   SOCKET_VERTICAL_PART,
   SOCKET_TAPER_WIDTH,
-  getMagnetOffsets,
   forEachCell,
   sketch,
 } from './generatorTypes';
@@ -130,8 +129,11 @@ export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): S
  * each with the standard Gridfinity tapered profile. This ensures proper baseplate
  * interface for any half-bin dimension.
  *
- * Magnet/screw holes use 4 corner positions for full cells and 1 centered
- * position for half-unit cells (too small for the 4-corner layout).
+ * Magnet/screw holes are placed at the standard 4-corner positions (±13mm from
+ * cell center) using the original cell decomposition, NOT the half-socket sub-cells.
+ * This ensures magnets align with the baseplate regardless of socket subdivision.
+ * Sub-unit cells (from fractional grid dimensions like 1.5×1) are skipped since
+ * the Gridfinity spec doesn't define magnet positions for fractional cells.
  *
  * @param forExport If true, uses full 5-section socket profile. Preview uses 3-section.
  */
@@ -189,8 +191,13 @@ export function buildBaseSocket(
   }
   let result: Shape3D = unwrap(fuseAll(cellSockets, { optimisation: 'commonFace' }));
 
-  // Cut magnet/screw holes — 4 corners for full cells, 1 centered for half cells
+  // Cut magnet/screw holes at standard 4-corner positions per full cell.
+  // Uses the ORIGINAL cell decomposition (not half-socket sub-cells) so that
+  // magnet positions align with the baseplate regardless of socket subdivision.
+  // Sub-unit cells (from fractional grid dimensions) are skipped — the Gridfinity
+  // spec only defines magnet positions for full-unit cells.
   if (withScrew || withMagnet) {
+    const HOLE_OFFSET = 13; // mm from cell center to hole center (Gridfinity spec)
     const magnetCutout = withMagnet ? sketch(drawCircle(magnetRadius)).extrude(magnetDepth) : null;
     const screwCutout = withScrew ? sketch(drawCircle(screwRadius)).extrude(SOCKET_HEIGHT) : null;
 
@@ -199,21 +206,25 @@ export function buildBaseSocket(
         ? unwrap(fuse(magnetCutout, screwCutout))
         : ((magnetCutout || screwCutout) as Shape3D);
 
-    const holeTools: Shape3D[] = [];
-    forEachCell(
-      gridW,
-      gridD,
-      (cell) => {
-        const offsets = getMagnetOffsets(cell.widthUnits, cell.depthUnits);
+    // 4 holes per full cell at ±HOLE_OFFSET from center
+    const holeOffsets: ReadonlyArray<readonly [number, number]> = [
+      [-HOLE_OFFSET, -HOLE_OFFSET],
+      [-HOLE_OFFSET, HOLE_OFFSET],
+      [HOLE_OFFSET, HOLE_OFFSET],
+      [HOLE_OFFSET, -HOLE_OFFSET],
+    ];
 
-        for (const [dx, dy] of offsets) {
-          holeTools.push(
-            translate(clone(cutout), [cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
-          );
-        }
-      },
-      halfSockets
-    );
+    const holeTools: Shape3D[] = [];
+    forEachCell(gridW, gridD, (cell) => {
+      // Only cut holes in full-size cells (spec doesn't define positions for fractional)
+      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+
+      for (const [dx, dy] of holeOffsets) {
+        holeTools.push(
+          translate(clone(cutout), [cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
+        );
+      }
+    });
 
     if (holeTools.length > 0) {
       result = unwrap(cutAll(result, holeTools));

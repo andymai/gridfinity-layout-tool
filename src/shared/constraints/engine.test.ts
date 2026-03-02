@@ -119,7 +119,7 @@ describe('FEATURE_MANIFESTS', () => {
 // =============================================================================
 
 describe('resolveConstraints — base constraints', () => {
-  it('half sockets + magnet coexist (centered magnet per half cell)', () => {
+  it('half sockets + magnet coexist (magnets use original cell layout)', () => {
     const params = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } });
     const result = resolveConstraints(params, {
       feature: 'base.halfSockets',
@@ -436,7 +436,7 @@ describe('validateConstraints', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('passes for half sockets + magnet (centered magnet per half cell)', () => {
+  it('passes for half sockets + magnet (magnets on original cell layout)', () => {
     const params = makeParams({
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', halfSockets: true },
     });

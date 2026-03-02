@@ -29,7 +29,7 @@ import {
   checkCancelled,
   PLATE_CORNER_RADIUS,
   MAGNET_FLOOR,
-  getMagnetOffsets,
+  MAGNET_OFFSETS,
   INSET_BOT,
   pocketCornerRadius,
   NUB_DIAMETER,
@@ -547,7 +547,7 @@ function circlePoints(radius: number, segments: number): ReadonlyArray<readonly 
  * magnetDepth, leaving a thin floor (MAGNET_FLOOR) at the bottom to retain
  * the magnet. Magnets are dropped in from the pocket side.
  *
- * For each magnet position (4 corners for full cells, 1 center for half cells):
+ * For each magnet position in a full cell (4 corners at ±13mm from center):
  * - Cancel circle at Z=floorDepth facing DOWN — punches hole in pocket floor
  * - Cylinder wall from Z=floorDepth to Z=MAGNET_FLOOR (inward-facing)
  * - Floor circle at Z=MAGNET_FLOOR facing UP — the magnet sits on this
@@ -557,15 +557,14 @@ function addMagnetHoles(
   cx: number,
   cy: number,
   magnetRadius: number,
-  floorDepth: number,
-  offsets: ReadonlyArray<readonly [number, number]>
+  floorDepth: number
 ): void {
   const zTop = floorDepth; // pocket floor level (magnet hole opens here)
   const zBot = MAGNET_FLOOR; // thin floor that retains the magnet
 
   const circlePts = circlePoints(magnetRadius, CIRCLE_SEGMENTS);
 
-  for (const [dx, dy] of offsets) {
+  for (const [dx, dy] of MAGNET_OFFSETS) {
     const mx = cx + dx;
     const my = cy + dy;
 
@@ -888,12 +887,12 @@ export function generateBaseplateDirect(
   onProgress('base', 0.7);
   checkCancelled(signal);
 
-  // 6. Magnet holes — 4 corners for full cells, 1 centered for half cells
+  // 6. Magnet holes (4 corners per full-size cell, skip fractional cells)
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
     for (const cell of cells) {
-      const offsets = getMagnetOffsets(cell.widthUnits, cell.depthUnits);
-      addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, floorDepth, offsets);
+      if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
+      addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, floorDepth);
     }
   }
 
