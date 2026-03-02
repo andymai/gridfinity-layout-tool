@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.50.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.2...gridfinity-layout-tool-v3.50.3) (2026-03-02)
+
+
+### Bug Fixes
+
+* **deps:** upgrade brepjs 8.3.0→8.8.8 and brepjs-opencascade 0.7.2→0.8.2 ([#992](https://github.com/andymai/gridfinity-layout-tool/issues/992)) ([7f29e88](https://github.com/andymai/gridfinity-layout-tool/commit/7f29e880bd962c7b6701e864543c240eaaa742d5))
+
 ## [3.50.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.1...gridfinity-layout-tool-v3.50.2) (2026-03-02)
 
 
