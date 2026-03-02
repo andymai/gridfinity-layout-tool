@@ -11,7 +11,7 @@
 import type { LayoutEntry, LayoutLibrary } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
 import { ok, err, storageNotFound } from '@/core/result';
-import { LAYOUT_KEY_PREFIX } from './storageKeys';
+import { getLayoutStorageKey } from './LayoutService';
 
 /**
  * Find a library entry by layout ID.
@@ -44,7 +44,7 @@ export function findLibraryEntryResult(
 ): Result<{ entry: LayoutEntry; index: number }, StorageError> {
   const found = findLibraryEntry(library, layoutId);
   if (!found) {
-    return err(storageNotFound(`${LAYOUT_KEY_PREFIX}${layoutId}`));
+    return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
   return ok(found);
 }
@@ -120,7 +120,7 @@ export function updateLibraryEntryById(
 ): Result<LayoutLibrary, StorageError> {
   const found = findLibraryEntry(library, layoutId);
   if (!found) {
-    return err(storageNotFound(`${LAYOUT_KEY_PREFIX}${layoutId}`));
+    return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
   return ok(updateLibraryEntryAtIndex(library, found.index, updates));
@@ -139,7 +139,7 @@ export function removeLibraryEntry(
 ): Result<LayoutLibrary, StorageError> {
   const found = findLibraryEntry(library, layoutId);
   if (!found) {
-    return err(storageNotFound(`${LAYOUT_KEY_PREFIX}${layoutId}`));
+    return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
   return ok({
