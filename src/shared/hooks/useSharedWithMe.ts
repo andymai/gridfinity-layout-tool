@@ -7,16 +7,14 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { computePreview } from '@/core/store/library';
 import { useSharedWithMeStore } from '@/core/store/sharedWithMe';
-import { useLayoutStore } from '@/core/store/layout';
-import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import type { SharedWithMeEntry } from '@/core/types';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { fetchShare } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
+import { useLayoutActivation } from '@/hooks/useLayoutActivation';
 
 export type SharedWithMeStatus = 'idle' | 'loading' | 'error';
 
@@ -63,26 +61,14 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
     }))
   );
 
-  // Layout store
-  const importLayout = useLayoutStore((state) => state.importLayout);
+  // Layout activation hook (importLayout + UI reset + history clear)
+  const { activateLayout } = useLayoutActivation();
 
-  // Selection store
-  const { setActiveLayer, setActiveCategory, clearSelection } = useSelectionStore(
-    useShallow((state) => ({
-      setActiveLayer: state.setActiveLayer,
-      setActiveCategory: state.setActiveCategory,
-      clearSelection: state.clearSelection,
-    }))
-  );
-
-  // Interaction store
+  // Interaction store (still needed for removeLayout announcement)
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   // Shared preview store
   const setSharedLayoutPreview = useSharedPreviewStore((state) => state.setSharedLayoutPreview);
-
-  // History store
-  const clearHistory = useHistoryStore((state) => state.clear);
 
   // Toast store
   const addToast = useToastStore((state) => state.addToast);
@@ -136,8 +122,8 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
         status: 'available',
       });
 
-      // Load the layout into preview mode
-      importLayout(layout, SHARED_PREVIEW_ID, 'init');
+      // Load layout and reset UI state
+      activateLayout(layout, SHARED_PREVIEW_ID, `Opened shared layout: ${layout.name}`);
 
       // Set preview state so the banner shows
       setSharedLayoutPreview(
@@ -148,35 +134,10 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
         permission
       );
 
-      // Reset UI state
-      clearSelection();
-      if (layout.layers[0]) {
-        setActiveLayer(layout.layers[0].id);
-      }
-      if (layout.categories[0]) {
-        setActiveCategory(layout.categories[0].id);
-      }
-
-      // Clear undo history
-      clearHistory();
-
-      // Announce for accessibility
-      announceToScreenReader(`Opened shared layout: ${layout.name}`);
-
       setStatus('idle');
       return true;
     },
-    [
-      updateSharedWithMe,
-      importLayout,
-      setSharedLayoutPreview,
-      clearSelection,
-      setActiveLayer,
-      setActiveCategory,
-      clearHistory,
-      announceToScreenReader,
-      addToast,
-    ]
+    [updateSharedWithMe, activateLayout, setSharedLayoutPreview, addToast]
   );
 
   /**

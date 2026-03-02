@@ -1,16 +1,11 @@
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import {
-  useLibraryStore,
-  useHistoryStore,
-  useToastStore,
-  useSettingsStore,
-  useSelectionStore,
-} from '@/core/store';
+import { useLibraryStore, useToastStore, useSettingsStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import type { Layout, LayoutId } from '@/core/types';
-import { layoutId, layerId, categoryId } from '@/core/types';
+import { layoutId } from '@/core/types';
+import { useLayoutActivation } from '@/hooks/useLayoutActivation';
 import { isErr, isOk } from '@/core/result';
 import {
   saveLayoutWithMetadata,
@@ -43,14 +38,11 @@ export function useLayoutSwitcher() {
   const t = useTranslation();
   const pendingSaveRef = useRef<number | null>(null);
 
-  // Layout store
-  // Note: layout is accessed via getState() in callbacks to avoid stale closures
-  const { activeLayoutId, importLayout } = useLayoutStore(
-    useShallow((state) => ({
-      activeLayoutId: state.activeLayoutId,
-      importLayout: state.importLayout,
-    }))
-  );
+  // Layout activation hook (importLayout + UI reset + history clear)
+  const { activateLayout } = useLayoutActivation();
+
+  // Layout store (activeLayoutId for return value; getState() used in callbacks)
+  const activeLayoutId = useLayoutStore((state) => state.activeLayoutId);
 
   // Library store
   const { library, getEntry, setLibrary } = useLibraryStore(
@@ -58,18 +50,6 @@ export function useLayoutSwitcher() {
       library: state.library,
       getEntry: state.getEntry,
       setLibrary: state.setLibrary,
-    }))
-  );
-
-  // History store
-  const clearHistory = useHistoryStore((state) => state.clear);
-
-  // Selection store
-  const { clearSelection, setActiveLayer, setActiveCategory } = useSelectionStore(
-    useShallow((state) => ({
-      clearSelection: state.clearSelection,
-      setActiveLayer: state.setActiveLayer,
-      setActiveCategory: state.setActiveCategory,
     }))
   );
 
@@ -142,19 +122,11 @@ export function useLayoutSwitcher() {
           return result;
         }
 
-        // 5. Update stores with result
+        // 5. Update stores and activate layout
         setLibrary(result.value.library);
-        importLayout(result.value.targetLayout, targetId, 'init');
+        activateLayout(result.value.targetLayout, targetId);
 
-        // 6. Reset UI state
-        clearSelection();
-        setActiveLayer(result.value.targetLayout.layers[0]?.id ?? layerId(''));
-        setActiveCategory(result.value.targetLayout.categories[0]?.id ?? categoryId(''));
-
-        // 7. Clear undo history
-        clearHistory();
-
-        // 8. Update URL with slug
+        // 6. Update URL with slug
         setLayoutURL(targetId, result.value.targetLayout.name, true);
 
         // 9. Track analytics
@@ -178,11 +150,7 @@ export function useLayoutSwitcher() {
       // Note: activeLayoutId, layout, library removed - we use fresh state via getState()
       getEntry,
       setLibrary,
-      importLayout,
-      clearSelection,
-      setActiveLayer,
-      setActiveCategory,
-      clearHistory,
+      activateLayout,
       clearSharedLayoutPreview,
       addToast,
       t,
@@ -221,17 +189,10 @@ export function useLayoutSwitcher() {
           return result;
         }
 
-        // Update stores
+        // Update stores and activate layout
         setLibrary(result.value.library);
         const newLayoutId = layoutId(result.value.layoutId);
-        importLayout(result.value.layout, newLayoutId, 'init');
-
-        // Reset UI state
-        clearSelection();
-        setActiveLayer(result.value.layout.layers[0]?.id ?? layerId(''));
-        setActiveCategory(result.value.layout.categories[0]?.id ?? categoryId(''));
-
-        clearHistory();
+        activateLayout(result.value.layout, newLayoutId);
 
         setLayoutURL(newLayoutId, result.value.layout.name, true);
 
@@ -248,11 +209,7 @@ export function useLayoutSwitcher() {
       saveCurrentLayout,
       // Note: library removed - we use fresh state via getState()
       setLibrary,
-      importLayout,
-      clearSelection,
-      setActiveLayer,
-      setActiveCategory,
-      clearHistory,
+      activateLayout,
       addToast,
       settings,
       t,

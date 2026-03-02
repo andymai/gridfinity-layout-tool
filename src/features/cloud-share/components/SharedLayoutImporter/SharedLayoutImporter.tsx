@@ -1,9 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useLayoutStore } from '@/core/store/layout';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import { useSelectionStore } from '@/core/store/selection';
-import { useInteractionStore } from '@/core/store/interaction';
-import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { useLibraryStore, computePreview } from '@/core/store/library';
 import { useSharedWithMeStore } from '@/core/store/sharedWithMe';
@@ -17,6 +13,7 @@ import { isOk, getUserMessage } from '@/core/result';
 import type { Layout, SharePermission, LayoutPreview } from '@/core/types';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { useTranslation } from '@/i18n';
+import { useLayoutActivation } from '@/hooks/useLayoutActivation';
 
 // Check for shared layout once at module load time (URL-encoded shares)
 const initialShareResult = getSharedLayoutFromURL();
@@ -38,13 +35,8 @@ export function SharedLayoutImporter() {
   // (not when there's just a URL ID - it might be a local layout)
   const [isLoading, setIsLoading] = useState(false);
 
-  const importLayout = useLayoutStore((state) => state.importLayout);
+  const { activateLayout } = useLayoutActivation();
   const setSharedLayoutPreview = useSharedPreviewStore((state) => state.setSharedLayoutPreview);
-  const setActiveLayer = useSelectionStore((state) => state.setActiveLayer);
-  const setActiveCategory = useSelectionStore((state) => state.setActiveCategory);
-  const clearSelection = useSelectionStore((state) => state.clearSelection);
-  const clearHistory = useHistoryStore((state) => state.clear);
-  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
   const addToast = useToastStore((state) => state.addToast);
 
   // Library store
@@ -121,37 +113,10 @@ export function SharedLayoutImporter() {
   // Helper function to load a layout into preview
   const loadLayoutPreview = useCallback(
     (layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
-      // Load the shared layout directly into the view
-      // Use a temporary ID since it's not saved yet
-      importLayout(layout, SHARED_PREVIEW_ID, 'init');
-
-      // Set the preview state so the banner knows to show
+      activateLayout(layout, SHARED_PREVIEW_ID, `Viewing shared layout: ${layout.name}`);
       setSharedLayoutPreview(layout, layout.name, authorName, cloudShareId, permission);
-
-      // Reset UI state for the new layout
-      clearSelection();
-      if (layout.layers[0]) {
-        setActiveLayer(layout.layers[0].id);
-      }
-      if (layout.categories[0]) {
-        setActiveCategory(layout.categories[0].id);
-      }
-
-      // Clear undo history (can't undo into previous layout)
-      clearHistory();
-
-      // Announce for accessibility
-      announceToScreenReader(`Viewing shared layout: ${layout.name}`);
     },
-    [
-      importLayout,
-      setSharedLayoutPreview,
-      clearSelection,
-      setActiveLayer,
-      setActiveCategory,
-      clearHistory,
-      announceToScreenReader,
-    ]
+    [activateLayout, setSharedLayoutPreview]
   );
 
   // Track whether we've processed the URL share (persists through Strict Mode remounts)
