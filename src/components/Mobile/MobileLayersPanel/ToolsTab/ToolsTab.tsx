@@ -91,9 +91,7 @@ export function ToolsTab() {
     });
     closeMobilePanel();
     setTimeout(() => {
-      const afterCount = useLayoutStore
-        .getState()
-        .layout.bins.filter((b) => b.layerId === activeLayerId).length;
+      const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
         addToast(t('toast.fillComplete', { count: added }), 'success');
@@ -123,9 +121,7 @@ export function ToolsTab() {
     setPaintSize(null);
     closeMobilePanel();
     setTimeout(() => {
-      const afterCount = useLayoutStore
-        .getState()
-        .layout.bins.filter((b) => b.layerId === activeLayerId).length;
+      const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
         addToast(t('toast.fillWithSize', { count: added, width, depth }), 'success');

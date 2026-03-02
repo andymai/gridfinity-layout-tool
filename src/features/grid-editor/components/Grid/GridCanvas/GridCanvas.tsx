@@ -6,6 +6,7 @@ import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';
 import { Bin } from '../Bin';
 import { getBlockedZones } from '@/shared/utils/collision';
+import { getLayerBins } from '@/shared/utils/bins';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import type { Coord, ResizeHandle, BinId, LayerId } from '@/core/types';
 import { useTranslation } from '@/i18n';
@@ -64,10 +65,7 @@ export function GridCanvas({
   const { getGridCoords } = useGridCoords(gridRef);
 
   // Memoized: Filter bins for current layer
-  const activeBins = useMemo(
-    () => bins.filter((b) => b.layerId === activeLayerId),
-    [bins, activeLayerId]
-  );
+  const activeBins = useMemo(() => getLayerBins(bins, activeLayerId), [bins, activeLayerId]);
 
   // Memoized: Filter ghost bins (bins from layers below)
   const ghostBins = useMemo(() => {

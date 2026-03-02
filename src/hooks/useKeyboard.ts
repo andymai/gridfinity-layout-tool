@@ -12,6 +12,7 @@ import {
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { getLayerBins } from '@/shared/utils/bins';
 import { validateBinRotation } from '@/utils/binLocation';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import type { BinId } from '@/core/types';
@@ -288,9 +289,9 @@ export function useKeyboard() {
       // Bin selection cycling (A/D) - cycles through bins on current layer
       if (key.toLowerCase() === SHORTCUTS.SELECT_PREV_BIN && !ctrlOrMeta) {
         e.preventDefault();
-        const layerBins = layout.bins
-          .filter((b) => b.layerId === activeLayerId && b.layerId !== STAGING_ID)
-          .sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y)); // Sort by row then column
+        const layerBins = getLayerBins(layout.bins, activeLayerId).sort((a, b) =>
+          a.y === b.y ? a.x - b.x : a.y - b.y
+        ); // Sort by row then column
         if (layerBins.length === 0) return;
 
         const currentId = selectedBinIds[0];
@@ -301,9 +302,9 @@ export function useKeyboard() {
       }
       if (key.toLowerCase() === SHORTCUTS.SELECT_NEXT_BIN && !ctrlOrMeta) {
         e.preventDefault();
-        const layerBins = layout.bins
-          .filter((b) => b.layerId === activeLayerId && b.layerId !== STAGING_ID)
-          .sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y)); // Sort by row then column
+        const layerBins = getLayerBins(layout.bins, activeLayerId).sort((a, b) =>
+          a.y === b.y ? a.x - b.x : a.y - b.y
+        ); // Sort by row then column
         if (layerBins.length === 0) return;
 
         const currentId = selectedBinIds[0];
