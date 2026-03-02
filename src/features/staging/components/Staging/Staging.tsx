@@ -229,13 +229,7 @@ export function Staging() {
   const handleClearStaging = () => {
     const count = stagingBins.length;
 
-    if (stagingBins.length > 0) {
-      mlTracking.trackDeletion(stagingBins[0], 'bulk', count);
-
-      for (const bin of stagingBins) {
-        mlTracking.trackQuickCorrect('delete', bin.id, bin);
-      }
-    }
+    mlTracking.trackBinsDeletion(stagingBins, 'bulk');
 
     execute(() => {
       for (const bin of stagingBins) {

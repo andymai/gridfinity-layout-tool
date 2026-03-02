@@ -154,11 +154,8 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
           const result = addBin(binData);
           if (isOk(result)) {
             setSelectedBin(result.value);
-            // Track for ML telemetry
-            const placedBin: Bin = { ...binData, id: result.value };
-            mlTracking.trackPlacement(placedBin, 'draw');
-            // Record creation for quick-correction detection
-            mlTracking.recordCreation(result.value, 'draw', `${width}x${depth}x${layer.height}`);
+            // Track for ML telemetry (placement + quick-correction detection)
+            mlTracking.trackBinCreation({ ...binData, id: result.value } as Bin, 'draw');
             // Track for PostHog analytics
             trackBinCreated({ method: 'draw', count: 1, width, depth, height: layer.height });
           }
@@ -199,13 +196,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
           const result = addBin(binData);
           if (isOk(result)) {
             setSelectedBin(result.value);
-            const placedBin: Bin = { ...binData, id: result.value };
-            mlTracking.trackPlacement(placedBin, 'paint');
-            mlTracking.recordCreation(
-              result.value,
-              'paint',
-              `${ps.width}x${ps.depth}x${layer.height}`
-            );
+            mlTracking.trackBinCreation({ ...binData, id: result.value } as Bin, 'paint');
             trackBinCreated({
               method: 'paint',
               count: 1,
@@ -284,12 +275,8 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
           // Select all placed bins
           if (placedBinIds.length > 0) {
             setSelectedBins(placedBinIds);
-            // Track for ML telemetry (bulk placement)
-            mlTracking.trackBulk(placedBins, 'paint');
-            // Record creation for all placed bins (for quick-correction detection)
-            for (const bin of placedBins) {
-              mlTracking.recordCreation(bin.id, 'paint', `${bin.width}x${bin.depth}x${bin.height}`);
-            }
+            // Track for ML telemetry (bulk placement + quick-correction detection)
+            mlTracking.trackBulkCreation(placedBins, 'paint');
             // Track for PostHog analytics (with count of bins created)
             trackBinCreated({
               method: 'paint',

@@ -16,6 +16,8 @@ vi.mock('@/shared/analytics/useMLTracking', () => ({
     trackBulk: vi.fn(),
     trackRejection: vi.fn(),
     recordCreation: vi.fn(),
+    trackBinCreation: vi.fn(),
+    trackBulkCreation: vi.fn(),
   },
 }));
 vi.mock('@/shared/analytics/posthog', () => ({

@@ -45,6 +45,7 @@ vi.mock('@/shared/analytics/useMLTracking', () => ({
     trackDeletion: vi.fn(),
     trackQuickCorrect: vi.fn(),
     trackPlacement: vi.fn(),
+    trackBinsDeletion: vi.fn(),
   },
 }));
 

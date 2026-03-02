@@ -148,14 +148,7 @@ export function useKeyboard() {
       if (isShortcut(key, SHORTCUTS.DELETE) && selectedBinIds.length > 0) {
         e.preventDefault();
         // Track deletion BEFORE executing (need bin data)
-        const binsToDelete = findBinsByIds(layout, selectedBinIds);
-        if (binsToDelete.length > 0) {
-          mlTracking.trackDeletion(binsToDelete[0], 'key', binsToDelete.length);
-          // Check for quick-correction (deleted shortly after creation)
-          for (const bin of binsToDelete) {
-            mlTracking.trackQuickCorrect('delete', bin.id, bin);
-          }
-        }
+        mlTracking.trackBinsDeletion(findBinsByIds(layout, selectedBinIds), 'key');
         execute(() => {
           for (const binId of selectedBinIds) {
             deleteBin(binId);

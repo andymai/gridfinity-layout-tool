@@ -343,4 +343,61 @@ export const mlTracking = {
   recordAction(): void {
     track((m) => m.recordActionTimestamp());
   },
+
+  // ── High-level convenience methods ──────────────────────────────
+  // These combine multiple low-level calls that are always used together.
+  // Using these instead of the individual calls ensures consistent tracking
+  // and avoids forgetting steps like quick-correction detection.
+
+  /**
+   * Track deletion of one or more bins, including quick-correction detection.
+   *
+   * Replaces the 5-line pattern:
+   * ```ts
+   * mlTracking.trackDeletion(bins[0], source, bins.length);
+   * for (const bin of bins) {
+   *   mlTracking.trackQuickCorrect('delete', bin.id, bin);
+   * }
+   * ```
+   */
+  trackBinsDeletion(bins: Bin[], method: DeleteMethod): void {
+    if (bins.length === 0) return;
+    this.trackDeletion(bins[0], method, bins.length);
+    for (const bin of bins) {
+      this.trackQuickCorrect('delete', bin.id, bin);
+    }
+  },
+
+  /**
+   * Track placement of a single bin and record its creation for quick-correction detection.
+   *
+   * Replaces the 2-line pattern:
+   * ```ts
+   * mlTracking.trackPlacement(bin, source);
+   * mlTracking.recordCreation(bin.id, source, `${bin.width}x${bin.depth}x${bin.height}`);
+   * ```
+   */
+  trackBinCreation(bin: Bin, method: PlacementMethod): void {
+    this.trackPlacement(bin, method);
+    this.recordCreation(bin.id, method, `${bin.width}x${bin.depth}x${bin.height}`);
+  },
+
+  /**
+   * Track bulk placement and record creation for each bin (quick-correction detection).
+   *
+   * Replaces the pattern:
+   * ```ts
+   * mlTracking.trackBulk(bins, source);
+   * for (const bin of bins) {
+   *   mlTracking.recordCreation(bin.id, source, `${bin.width}x${bin.depth}x${bin.height}`);
+   * }
+   * ```
+   */
+  trackBulkCreation(bins: Bin[], method: PlacementMethod): void {
+    if (bins.length === 0) return;
+    this.trackBulk(bins, method);
+    for (const bin of bins) {
+      this.recordCreation(bin.id, method, `${bin.width}x${bin.depth}x${bin.height}`);
+    }
+  },
 };
