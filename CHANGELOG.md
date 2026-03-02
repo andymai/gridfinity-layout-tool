@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.50.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.3...gridfinity-layout-tool-v3.50.4) (2026-03-02)
+
+
+### Bug Fixes
+
+* restore locateFile override for WASM loading in ES module workers ([#994](https://github.com/andymai/gridfinity-layout-tool/issues/994)) ([f07ef47](https://github.com/andymai/gridfinity-layout-tool/commit/f07ef471204c36125c9b9e743f5fd632cfa61d63))
+
 ## [3.50.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.2...gridfinity-layout-tool-v3.50.3) (2026-03-02)
 
 
