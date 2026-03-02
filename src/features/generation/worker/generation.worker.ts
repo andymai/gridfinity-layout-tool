@@ -317,7 +317,8 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
               splitPayload.cutPlanesX,
               splitPayload.cutPlanesY,
               splitPayload.tolerance,
-              splitPayload.angularTolerance
+              splitPayload.angularTolerance,
+              splitPayload.splitConnectorConfig
             );
             reportProgress(splitPayload.requestId, 'splitting', 1);
             return { pieces: result.pieces };

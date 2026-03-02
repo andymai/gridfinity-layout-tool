@@ -1243,6 +1243,13 @@ const en: Record<string, string> = {
   'binDesigner.group.shape': 'Shape',
   'binDesigner.group.interior': 'Interior',
   'binDesigner.group.base': 'Base',
+  'binDesigner.group.split': 'Split Options',
+  'binDesigner.splitInfo': 'Bin exceeds print bed — will be split into {count} pieces.',
+  'binDesigner.splitConnectors': 'Alignment connectors',
+  'binDesigner.splitClearance': 'Fit clearance',
+  'binDesigner.splitPreviewMode': 'Preview',
+  'binDesigner.splitAssembled': 'Assembled',
+  'binDesigner.splitExploded': 'Exploded',
   'binDesigner.cutouts.instructions':
     'Draw rectangles, circles, and custom pen paths as tool-shaped recesses in the solid bin top.',
   'binDesigner.cutouts.instructionsWorkspaceHint':

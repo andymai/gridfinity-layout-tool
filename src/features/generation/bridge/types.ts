@@ -5,7 +5,7 @@
  * (GenerationBridge) and the Web Worker (generation.worker.ts).
  */
 
-import type { BinParams, BaseplateParams } from '@/shared/types/bin';
+import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
 
 // ─── Main → Worker Messages ──────────────────────────────────────────────────
 
@@ -102,6 +102,8 @@ export interface ExportSplitPayload {
   readonly tolerance?: number;
   /** STL angular tolerance in degrees (default 5) */
   readonly angularTolerance?: number;
+  /** Alignment connector config for split pieces. Omit to skip connectors. */
+  readonly splitConnectorConfig?: SplitConnectorConfig;
 }
 
 /** Export file formats supported by the BREP worker */

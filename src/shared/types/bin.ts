@@ -31,6 +31,7 @@ export type {
   PathPoint,
   WallPatternConfig,
   WallPatternType,
+  SplitConnectorConfig,
 } from '@/features/bin-designer/types';
 
 export { MIN_PATH_POINTS } from '@/features/bin-designer/types';

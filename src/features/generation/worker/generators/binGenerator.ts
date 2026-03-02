@@ -34,7 +34,7 @@ import {
   exportSTEP,
 } from 'brepjs';
 import type { Shape3D, TransformOp } from 'brepjs';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type { MeshData, ExportFormat, FaceGroupData } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 
@@ -72,6 +72,8 @@ import {
   setFeatureCache,
 } from './shapeCache';
 import { buildSlotCuts } from './slotBuilder';
+import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
+import type { BinGeometryContext } from './splitConnectorBuilder';
 import { FeatureTag } from './featureTags';
 import { getPatternDescriptors } from './wallPatterns';
 
@@ -618,7 +620,8 @@ export async function exportSplitBin(
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
   tolerance = 0.01,
-  angularTolerance = 5
+  angularTolerance = 5,
+  splitConnectorConfig?: SplitConnectorConfig
 ): Promise<SplitExportResult> {
   // Ensure we have a solid to work with
   if (!getLastSolid()) {
@@ -632,6 +635,16 @@ export async function exportSplitBin(
 
   const outerW = params.width * SIZE - CLEARANCE;
   const outerD = params.depth * SIZE - CLEARANCE;
+
+  // Resolve connector config: explicit param > params field > disabled
+  const connectorConfig = splitConnectorConfig ?? params.splitConnectors;
+
+  // Compute bin geometry context for connectors
+  const isFlat = params.base.style === 'flat';
+  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
+  const wallTopZ = floorZ + wallHeight;
 
   // Build sorted boundary arrays: [left edge, ...cut planes, right edge]
   const xBounds = [-outerW / 2, ...cutPlanesX, outerW / 2];
@@ -660,7 +673,20 @@ export async function exportSplitBin(
       const translatedBox = translate(cuttingBox, [centerX, centerY, 0]);
 
       // Intersect the full solid with this box to get just this piece
-      const piece = unwrap(intersect(clone(solid), translatedBox));
+      let piece = unwrap(intersect(clone(solid), translatedBox));
+
+      // Apply alignment connectors to this piece's cut faces
+      if (connectorConfig?.enabled) {
+        const cutFaces = computeCutFaces(col, row, cutPlanesX, cutPlanesY, outerW, outerD);
+        const geometryContext: BinGeometryContext = {
+          floorZ,
+          wallTopZ,
+          hasStackingLip: params.base.stackingLip,
+          totalHeightMm: totalHeight,
+          wallThickness: params.wallThickness,
+        };
+        piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
+      }
 
       // Tessellate to binary STL
       const blob = unwrap(

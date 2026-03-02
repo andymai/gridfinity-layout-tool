@@ -5,7 +5,7 @@
  * request cancellation via AbortController pattern.
  */
 
-import type { BinParams, BaseplateParams } from '@/shared/types/bin';
+import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type {
   WorkerMessage,
   WorkerResponse,
@@ -294,7 +294,11 @@ export class GenerationBridge {
     params: BinParams,
     cutPlanesX: readonly number[],
     cutPlanesY: readonly number[],
-    options?: { tolerance?: number; angularTolerance?: number }
+    options?: {
+      tolerance?: number;
+      angularTolerance?: number;
+      splitConnectorConfig?: SplitConnectorConfig;
+    }
   ): Promise<SplitExportResult> {
     const requestId = await this.prepareExport('split');
 
@@ -309,6 +313,7 @@ export class GenerationBridge {
           cutPlanesY,
           tolerance: options?.tolerance,
           angularTolerance: options?.angularTolerance,
+          splitConnectorConfig: options?.splitConnectorConfig,
         },
       });
     });
