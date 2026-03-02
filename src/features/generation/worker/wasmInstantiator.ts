@@ -3,6 +3,11 @@
  *
  * Selects threaded vs single-threaded WASM based on browser capabilities
  * and initialises the brepjs kernel.
+ *
+ * The Emscripten-generated JS uses environment detection (window, importScripts)
+ * to locate the .wasm file. In Vite's ES module workers, neither exists, so the
+ * WASM path resolves incorrectly. We provide an explicit locateFile override using
+ * Vite's ?url imports to ensure the correct path in all environments.
  */
 
 import { initFromOC } from 'brepjs';
@@ -13,6 +18,10 @@ import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
 
 // Multi-threaded WASM (conditionally loaded)
 import opencascadeThreadedInit from 'brepjs-opencascade/src/brepjs_threaded.js';
+
+// Resolved WASM binary URLs (Vite handles asset path resolution)
+import singleWasmUrl from 'brepjs-opencascade/src/brepjs_single.wasm?url';
+import threadedWasmUrl from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
 
 export interface WasmLoadResult {
   /** Whether multi-threaded WASM is being used */
@@ -51,7 +60,16 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
   const isThreaded = detectThreadingSupport();
   const hardwareConcurrency = getHardwareConcurrency();
 
-  const OC = isThreaded ? await opencascadeThreadedInit() : await opencascadeSingleInit();
+  // Pass locateFile to override Emscripten's broken path resolution in ES module workers.
+  // The init functions are typed as () => Promise but the underlying Emscripten factory
+  // still accepts a Module config object.
+  const wasmUrl = isThreaded ? threadedWasmUrl : singleWasmUrl;
+  const moduleConfig = {
+    locateFile: (path: string) => (path.endsWith('.wasm') ? wasmUrl : path),
+  };
+
+  const initFn = isThreaded ? opencascadeThreadedInit : opencascadeSingleInit;
+  const OC = await (initFn as (config: typeof moduleConfig) => Promise<unknown>)(moduleConfig);
 
   initFromOC(OC);
 
