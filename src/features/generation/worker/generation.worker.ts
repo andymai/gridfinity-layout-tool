@@ -15,7 +15,12 @@
 import './symbolDisposePolyfill';
 
 import type { WorkerMessage, WorkerResponse, MeshData } from '../bridge/types';
-import { generateBin, exportBin, exportSplitBin } from './generators/binGenerator';
+import {
+  generateBin,
+  exportBin,
+  exportSplitBin,
+  generateSplitPreview,
+} from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
 import { generateBaseplate, exportBaseplate } from './generators/baseplateGenerator';
 import { loadOpenCascade } from './wasmInstantiator';
@@ -241,6 +246,41 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
           requestId,
           'BaseplateGen',
           true // BREP tessellation returns shared buffers — must copy
+        );
+        break;
+      }
+
+      case 'GENERATE_SPLIT_PREVIEW': {
+        const splitPreviewPayload = message.payload;
+        await runExport(
+          splitPreviewPayload.requestId,
+          'SPLIT_PREVIEW_RESULT',
+          () => {
+            reportProgress(splitPreviewPayload.requestId, 'splitting', 0);
+            const result = generateSplitPreview(
+              splitPreviewPayload.params,
+              splitPreviewPayload.cutPlanesX,
+              splitPreviewPayload.cutPlanesY,
+              splitPreviewPayload.splitConnectorConfig
+            );
+            reportProgress(splitPreviewPayload.requestId, 'splitting', 1);
+            return Promise.resolve({ pieces: result.pieces });
+          },
+          'Split preview failed',
+          (p) =>
+            (
+              p.pieces as Array<{
+                vertices: Float32Array;
+                normals: Float32Array;
+                indices: Uint32Array;
+                edgeVertices: Float32Array;
+              }>
+            ).flatMap((piece) => [
+              piece.vertices.buffer,
+              piece.normals.buffer,
+              piece.indices.buffer,
+              piece.edgeVertices.buffer,
+            ])
         );
         break;
       }

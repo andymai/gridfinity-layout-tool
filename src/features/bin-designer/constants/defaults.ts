@@ -125,6 +125,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   previewCompartments: null,
   previewSelection: null,
   splitViewMode: 'exploded',
+  splitPieceMeshes: [],
 };
 
 /** Default empty history */

@@ -54,6 +54,7 @@ vi.mock('three', () => {
     Vector3,
     Color,
     SphereGeometry,
+    DoubleSide: 2,
   };
 });
 

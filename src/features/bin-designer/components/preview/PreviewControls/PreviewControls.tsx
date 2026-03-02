@@ -11,6 +11,12 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 
 export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
 
+/** View mode for split bin preview */
+export type SplitViewMode = 'assembled' | 'exploded';
+
+/** Split view modes for toggle iteration (extracted to avoid i18n literal lint) */
+const SPLIT_VIEW_MODES: readonly SplitViewMode[] = ['assembled', 'exploded'];
+
 interface PreviewControlsProps {
   wireframe: boolean;
   previewColor: string;
@@ -19,6 +25,12 @@ interface PreviewControlsProps {
   onColorChange: (color: string) => void;
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;
+  /** Whether the bin needs splitting (controls toggle visibility) */
+  needsSplit?: boolean;
+  /** Current split view mode */
+  splitViewMode?: SplitViewMode;
+  /** Callback when split view mode changes */
+  onSplitViewModeChange?: (mode: SplitViewMode) => void;
 }
 
 const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
@@ -113,6 +125,35 @@ function IconWireframe() {
   );
 }
 
+/** SVG icon for Assembled — 2x2 grid of squares packed tight */
+function IconAssembled() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="8.5" y="3" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="3" y="8.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="8.5" y="8.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+    </svg>
+  );
+}
+
+/** SVG icon for Exploded — 2x2 grid of squares spread to corners */
+function IconExploded() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1" y="1" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="10.5" y="1" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="1" y="10.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+      <rect x="10.5" y="10.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
+    </svg>
+  );
+}
+
+const VIEW_MODE_ICONS: Record<SplitViewMode, () => ReactNode> = {
+  assembled: IconAssembled,
+  exploded: IconExploded,
+};
+
 const PRESET_ICONS: Record<CameraPreset, () => ReactNode> = {
   front: IconFront,
   side: IconSide,
@@ -162,6 +203,9 @@ export function PreviewControls({
   onColorChange,
   onCameraPreset,
   onResetView,
+  needsSplit,
+  splitViewMode,
+  onSplitViewModeChange,
 }: PreviewControlsProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const desktopPickerRef = useRef<HTMLDivElement>(null);
@@ -205,7 +249,40 @@ export function PreviewControls({
   return (
     <>
       {/* Desktop: horizontal toolbar in top-right */}
-      <div className="absolute right-2 top-2 hidden md:flex items-center" ref={desktopPickerRef}>
+      <div
+        className="absolute right-2 top-2 hidden md:flex items-center gap-2"
+        ref={desktopPickerRef}
+      >
+        {/* Assembled / Exploded toggle — separate pill (only when split) */}
+        {needsSplit && splitViewMode && onSplitViewModeChange && (
+          <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
+            {SPLIT_VIEW_MODES.map((mode) => {
+              const Icon = VIEW_MODE_ICONS[mode];
+              const isActive = splitViewMode === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => onSplitViewModeChange(mode)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                    isActive
+                      ? 'bg-accent text-on-accent'
+                      : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+                  }`}
+                  aria-pressed={isActive}
+                >
+                  <Icon />
+                  <span>
+                    {mode === 'assembled'
+                      ? t('binDesigner.splitAssembled')
+                      : t('binDesigner.splitExploded')}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
           {/* Camera presets group */}
           {PRESETS.map(({ key, label, shortcut }) => {
@@ -301,7 +378,36 @@ export function PreviewControls({
       </div>
 
       {/* Mobile: single compact horizontal strip at top edge */}
-      <div className="absolute inset-x-2 top-2 z-30 md:hidden">
+      <div className="absolute inset-x-2 top-2 z-30 md:hidden space-y-1.5">
+        {/* Assembled / Exploded toggle (mobile, only when split) */}
+        {needsSplit && splitViewMode && onSplitViewModeChange && (
+          <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden w-fit">
+            {SPLIT_VIEW_MODES.map((mode) => {
+              const Icon = VIEW_MODE_ICONS[mode];
+              const isActive = splitViewMode === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => onSplitViewModeChange(mode)}
+                  className={`flex items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                    isActive
+                      ? 'bg-accent text-on-accent'
+                      : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+                  }`}
+                  aria-pressed={isActive}
+                >
+                  <Icon />
+                  <span>
+                    {mode === 'assembled'
+                      ? t('binDesigner.splitAssembled')
+                      : t('binDesigner.splitExploded')}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
           {/* Camera presets */}
           {PRESETS.map(({ key, label, shortcut }) => {

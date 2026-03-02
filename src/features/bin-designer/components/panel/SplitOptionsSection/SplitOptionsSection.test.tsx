@@ -74,36 +74,5 @@ describe('SplitOptionsSection', () => {
     expect(state.params.splitConnectors?.enabled).toBe(false);
   });
 
-  it('renders assembled/exploded toggle', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        width: 8,
-        depth: 3,
-      },
-    });
-
-    render(<SplitOptionsSection />);
-    expect(screen.getByText('Assembled')).toBeInTheDocument();
-    expect(screen.getByText('Exploded')).toBeInTheDocument();
-  });
-
-  it('switches split view mode', async () => {
-    const user = userEvent.setup();
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        width: 8,
-        depth: 3,
-      },
-    });
-
-    render(<SplitOptionsSection />);
-
-    await user.click(screen.getByText('Assembled'));
-    expect(useDesignerStore.getState().ui.splitViewMode).toBe('assembled');
-
-    await user.click(screen.getByText('Exploded'));
-    expect(useDesignerStore.getState().ui.splitViewMode).toBe('exploded');
-  });
+  // Note: assembled/exploded toggle was moved to PreviewControls
 });

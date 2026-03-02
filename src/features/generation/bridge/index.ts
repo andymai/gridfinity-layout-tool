@@ -4,6 +4,7 @@ export type {
   GenerationResult,
   ExportResult,
   SplitExportResult,
+  SplitPreviewResult,
   BaseplateExportResult,
 } from './GenerationBridge';
 export { getActiveBridge } from './bridgeRef';
@@ -21,6 +22,7 @@ export type {
   ExportResultResponse,
   SplitExportResultResponse,
   SplitExportPiece,
+  SplitPreviewPiece,
   ErrorResponse,
   ProgressResponse,
 } from './types';

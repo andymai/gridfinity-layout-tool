@@ -13,6 +13,7 @@ import type { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
+import { calcMaxGridUnits } from '@/core/constants';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
   BinMesh,
@@ -31,11 +32,13 @@ import {
   GhostCutouts,
   GhostWallCutouts,
   BinSplitLines,
+  SplitBinMeshes,
   type CameraPreset,
 } from '../preview';
 import { GradientBackground } from '../preview/GradientBackground';
 import { FootprintGrid } from '../preview/FootprintGrid';
 import { useDesignerKeyboard } from '../../hooks/useDesignerKeyboard';
+import { useSplitPreview } from '../../hooks/useSplitPreview';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -336,18 +339,46 @@ export function PreviewCanvas() {
     return () => clearPreviewCanvas();
   }, []);
 
-  const { wasmStatus, generationStatus, hasMesh, meshError, params, designName, canRevert } =
-    useDesignerStore(
-      useShallow((s) => ({
-        wasmStatus: s.wasmStatus,
-        generationStatus: s.generation.status,
-        hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
-        meshError: s.generation.mesh?.error ?? null,
-        params: s.params,
-        designName: s.designName,
-        canRevert: s.history.past.length > 0,
-      }))
-    );
+  const {
+    wasmStatus,
+    generationStatus,
+    hasMesh,
+    meshError,
+    params,
+    designName,
+    canRevert,
+    splitViewMode,
+    setSplitViewMode,
+    splitPieceMeshes,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      wasmStatus: s.wasmStatus,
+      generationStatus: s.generation.status,
+      hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
+      meshError: s.generation.mesh?.error ?? null,
+      params: s.params,
+      designName: s.designName,
+      canRevert: s.history.past.length > 0,
+      splitViewMode: s.ui.splitViewMode,
+      setSplitViewMode: s.setSplitViewMode,
+      splitPieceMeshes: s.ui.splitPieceMeshes,
+    }))
+  );
+
+  const { defaultPrintBedSize: bedSize, defaultGridUnitMm: gridUnit } = useSettingsStore(
+    useShallow((s) => ({
+      defaultPrintBedSize: s.settings.defaultPrintBedSize,
+      defaultGridUnitMm: s.settings.defaultGridUnitMm,
+    }))
+  );
+  const maxGridUnits = useMemo(() => calcMaxGridUnits(bedSize, gridUnit), [bedSize, gridUnit]);
+  const needsSplit = params.width > maxGridUnits || params.depth > maxGridUnits;
+
+  // Drive split piece mesh generation when exploded mode is active
+  useSplitPreview();
+
+  // Show split pieces when exploded mode has generated meshes
+  const showSplitPieces = splitViewMode === 'exploded' && splitPieceMeshes.length > 0 && needsSplit;
 
   // Screen reader description
   const binDescription = describeBin(params);
@@ -496,8 +527,12 @@ export function PreviewCanvas() {
               height={height}
             />
 
-            {/* Bin mesh with vertex coloring */}
-            <BinMesh wireframe={wireframe} color={previewColor} />
+            {/* Bin mesh — swap for per-piece meshes in exploded split mode */}
+            {showSplitPieces ? (
+              <SplitBinMeshes color={previewColor} wireframe={wireframe} />
+            ) : (
+              <BinMesh wireframe={wireframe} color={previewColor} />
+            )}
 
             {/* Ghost outlines during generation */}
             <GhostWireframe />
@@ -561,6 +596,9 @@ export function PreviewCanvas() {
             onColorChange={handleColorChange}
             onCameraPreset={setCameraPreset}
             onResetView={resetView}
+            needsSplit={needsSplit}
+            splitViewMode={splitViewMode}
+            onSplitViewModeChange={setSplitViewMode}
           />
 
           {/* Touch gesture hint (mobile/tablet first visit) */}

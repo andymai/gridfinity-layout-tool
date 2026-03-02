@@ -25,7 +25,6 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 const AMBER_COLOR = new THREE.Color(0xfbbf24);
 const PIN_COLOR = new THREE.Color(0x60a5fa);
 const PIN_SPHERE_GEOM = new THREE.SphereGeometry(1.25, 8, 6);
-const EXPLODE_GAP_MM = 10;
 
 const DASHED_LINE_SHARED = {
   color: AMBER_COLOR,
@@ -43,42 +42,27 @@ interface PinIndicatorsProps {
   readonly outerD: number;
   readonly pinSpacing: number;
   readonly pinZ: number;
-  readonly xExplodeOffset?: (i: number) => number;
-  readonly yExplodeOffset?: (i: number) => number;
 }
 
-function PinIndicators({
-  xSplits,
-  ySplits,
-  outerW,
-  outerD,
-  pinSpacing,
-  pinZ,
-  xExplodeOffset,
-  yExplodeOffset,
-}: PinIndicatorsProps) {
+function PinIndicators({ xSplits, ySplits, outerW, outerD, pinSpacing, pinZ }: PinIndicatorsProps) {
   const pins = useMemo(() => {
     const result: Array<{ x: number; y: number; z: number }> = [];
-
     const xPinOffsets = computePinPositions(outerD, pinSpacing);
     const yPinOffsets = computePinPositions(outerW, pinSpacing);
 
-    for (let i = 0; i < xSplits.length; i++) {
-      const ex = xExplodeOffset?.(i) ?? 0;
+    for (const splitX of xSplits) {
       for (const offset of xPinOffsets) {
-        result.push({ x: xSplits[i] + ex, y: offset, z: pinZ });
+        result.push({ x: splitX, y: offset, z: pinZ });
       }
     }
-
-    for (let i = 0; i < ySplits.length; i++) {
-      const ey = yExplodeOffset?.(i) ?? 0;
+    for (const splitY of ySplits) {
       for (const offset of yPinOffsets) {
-        result.push({ x: offset, y: ySplits[i] + ey, z: pinZ });
+        result.push({ x: offset, y: splitY, z: pinZ });
       }
     }
 
     return result;
-  }, [xSplits, ySplits, outerW, outerD, pinSpacing, pinZ, xExplodeOffset, yExplodeOffset]);
+  }, [xSplits, ySplits, outerW, outerD, pinSpacing, pinZ]);
 
   return (
     <>
@@ -145,80 +129,118 @@ export const BinSplitLines = memo(function BinSplitLines() {
   const halfW = outerW / 2;
   const halfD = outerD / 2;
   const isExploded = splitViewMode === 'exploded';
-  const explodeOffset = (i: number) => (isExploded ? (i + 1) * EXPLODE_GAP_MM : 0);
+  const pinZ =
+    baseStyle === 'flat' ? connectorConfig.pinDiameter / 2 + 0.5 : GRIDFINITY.SOCKET_HEIGHT / 2;
 
   return (
     <group>
-      {xSplits.map((splitX, i) => {
-        const x = splitX + explodeOffset(i);
-        return (
-          <group key={`x-${i}`}>
-            <Line
-              points={[
-                [x, -halfD, totalH],
-                [x, halfD, totalH],
-              ]}
-              {...DASHED_LINE_SHARED}
-              lineWidth={2}
-              opacity={0.9}
-            />
-            <Line
-              points={[
-                [x, -halfD, 0],
-                [x, -halfD, totalH],
-              ]}
-              {...DASHED_LINE_SHARED}
-              lineWidth={1.5}
-              opacity={0.5}
-            />
-            <Line
-              points={[
-                [x, halfD, 0],
-                [x, halfD, totalH],
-              ]}
-              {...DASHED_LINE_SHARED}
-              lineWidth={1.5}
-              opacity={0.5}
-            />
-          </group>
-        );
-      })}
+      {/* Split lines — always shown */}
+      {xSplits.map((splitX, i) => (
+        <group key={`x-${i}`}>
+          <Line
+            points={[
+              [splitX, -halfD, totalH],
+              [splitX, halfD, totalH],
+            ]}
+            {...DASHED_LINE_SHARED}
+            lineWidth={2}
+            opacity={0.9}
+          />
+          <Line
+            points={[
+              [splitX, -halfD, 0],
+              [splitX, -halfD, totalH],
+            ]}
+            {...DASHED_LINE_SHARED}
+            lineWidth={1.5}
+            opacity={0.5}
+          />
+          <Line
+            points={[
+              [splitX, halfD, 0],
+              [splitX, halfD, totalH],
+            ]}
+            {...DASHED_LINE_SHARED}
+            lineWidth={1.5}
+            opacity={0.5}
+          />
+        </group>
+      ))}
 
-      {ySplits.map((splitY, i) => {
-        const y = splitY + explodeOffset(i);
-        return (
-          <group key={`y-${i}`}>
-            <Line
-              points={[
-                [-halfW, y, totalH],
-                [halfW, y, totalH],
-              ]}
-              {...DASHED_LINE_SHARED}
-              lineWidth={2}
-              opacity={0.9}
-            />
-            <Line
-              points={[
-                [-halfW, y, 0],
-                [-halfW, y, totalH],
-              ]}
-              {...DASHED_LINE_SHARED}
-              lineWidth={1.5}
-              opacity={0.5}
-            />
-            <Line
-              points={[
-                [halfW, y, 0],
-                [halfW, y, totalH],
-              ]}
-              {...DASHED_LINE_SHARED}
-              lineWidth={1.5}
-              opacity={0.5}
-            />
-          </group>
-        );
-      })}
+      {ySplits.map((splitY, i) => (
+        <group key={`y-${i}`}>
+          <Line
+            points={[
+              [-halfW, splitY, totalH],
+              [halfW, splitY, totalH],
+            ]}
+            {...DASHED_LINE_SHARED}
+            lineWidth={2}
+            opacity={0.9}
+          />
+          <Line
+            points={[
+              [-halfW, splitY, 0],
+              [-halfW, splitY, totalH],
+            ]}
+            {...DASHED_LINE_SHARED}
+            lineWidth={1.5}
+            opacity={0.5}
+          />
+          <Line
+            points={[
+              [halfW, splitY, 0],
+              [halfW, splitY, totalH],
+            ]}
+            {...DASHED_LINE_SHARED}
+            lineWidth={1.5}
+            opacity={0.5}
+          />
+        </group>
+      ))}
 
+      {/* Exploded mode: translucent cut planes + pin indicators */}
+      {isExploded && (
+        <>
+          {xSplits.map((splitX, i) => (
+            <mesh key={`xplane-${i}`} position={[splitX, 0, totalH / 2]} renderOrder={1}>
+              <planeGeometry args={[0.01, outerD, 1, 1]} />
+              <meshBasicMaterial
+                color={AMBER_COLOR}
+                transparent
+                opacity={0.15}
+                side={THREE.DoubleSide}
+                depthWrite={false}
+              />
+            </mesh>
+          ))}
+          {/* Use a box geometry for the cut plane so it has visible height */}
+          {xSplits.map((splitX, i) => (
+            <mesh key={`xbox-${i}`} position={[splitX, 0, totalH / 2]}>
+              <boxGeometry args={[0.5, outerD + 2, totalH + 2]} />
+              <meshBasicMaterial
+                color={AMBER_COLOR}
+                transparent
+                opacity={0.12}
+                depthWrite={false}
+              />
+            </mesh>
+          ))}
+          {ySplits.map((splitY, i) => (
+            <mesh key={`ybox-${i}`} position={[0, splitY, totalH / 2]}>
+              <boxGeometry args={[outerW + 2, 0.5, totalH + 2]} />
+              <meshBasicMaterial
+                color={AMBER_COLOR}
+                transparent
+                opacity={0.12}
+                depthWrite={false}
+              />
+            </mesh>
+          ))}
+        </>
+      )}
+
+      {/* Pin indicators — shown when connectors enabled */}
       {connectorConfig.enabled && (
         <PinIndicators
           xSplits={xSplits}
@@ -226,13 +248,7 @@ export const BinSplitLines = memo(function BinSplitLines() {
           outerW={outerW}
           outerD={outerD}
           pinSpacing={connectorConfig.pinSpacing}
-          pinZ={
-            baseStyle === 'flat'
-              ? connectorConfig.pinDiameter / 2 + 0.5
-              : GRIDFINITY.SOCKET_HEIGHT / 2
-          }
-          xExplodeOffset={isExploded ? explodeOffset : undefined}
-          yExplodeOffset={isExploded ? explodeOffset : undefined}
+          pinZ={pinZ}
         />
       )}
     </group>

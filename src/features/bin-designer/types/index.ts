@@ -365,6 +365,25 @@ export type DesignerTab = 'dimensions' | 'base' | 'compartments' | 'walls' | 'st
 /** View mode for split bin preview: assembled (no gaps) or exploded (gaps between pieces). */
 export type SplitViewMode = 'assembled' | 'exploded';
 
+/** Mesh data for a single split bin piece, used for Three.js rendering */
+export interface SplitPieceMeshEntry {
+  readonly label: string;
+  readonly col: number;
+  readonly row: number;
+  readonly widthUnits: number;
+  readonly depthUnits: number;
+  /** X offset in grid units from bin origin (left edge) */
+  readonly offsetX: number;
+  /** Y offset in grid units from bin origin (bottom edge) */
+  readonly offsetY: number;
+  readonly mesh: {
+    readonly vertices: Float32Array | null;
+    readonly normals: Float32Array | null;
+    readonly indices: Uint32Array | null;
+    readonly edgeVertices: Float32Array | null;
+  };
+}
+
 /** Auto-save status indicator */
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -390,6 +409,8 @@ export interface DesignerUIState {
   } | null;
   /** View mode for split preview overlay (assembled=no gaps, exploded=gaps between pieces) */
   readonly splitViewMode: SplitViewMode;
+  /** Per-piece mesh data for split bin preview (populated when exploded mode is active) */
+  readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
 }
 
 /** Undo/redo history for bin parameters with optional mesh cache */
@@ -551,6 +572,7 @@ export interface DesignerState {
   setWireframeMode: (enabled: boolean) => void;
   setCutoutEditorOpen: (open: boolean) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
+  setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setPreviewCompartments: (preview: CompartmentConfig | null) => void;
   setPreviewSelection: (
     selection: {
