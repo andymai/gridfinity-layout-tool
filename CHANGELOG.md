@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.51.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.2...gridfinity-layout-tool-v3.51.3) (2026-03-03)
+
+
+### Bug Fixes
+
+* disable threaded WASM — Emscripten pthreads incompatible with Vite ([#1011](https://github.com/andymai/gridfinity-layout-tool/issues/1011)) ([9bc5d46](https://github.com/andymai/gridfinity-layout-tool/commit/9bc5d4691d531cf0da3c1faa5a5f7bf3bcc7ff6a))
+
 ## [3.51.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.1...gridfinity-layout-tool-v3.51.2) (2026-03-03)
 
 ### Bug Fixes
