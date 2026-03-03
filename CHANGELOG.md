@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.51.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.1...gridfinity-layout-tool-v3.51.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* resolve pthread worker script path for threaded WASM ([#1009](https://github.com/andymai/gridfinity-layout-tool/issues/1009)) ([3cb854f](https://github.com/andymai/gridfinity-layout-tool/commit/3cb854fc763d04c82e61441c883a4ae4e770b62f))
+
 ## [3.51.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.0...gridfinity-layout-tool-v3.51.1) (2026-03-03)
 
 
