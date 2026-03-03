@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.53.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.0...gridfinity-layout-tool-v3.53.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* render split bin pieces in both assembled and exploded modes ([#1021](https://github.com/andymai/gridfinity-layout-tool/issues/1021)) ([bd1dd8a](https://github.com/andymai/gridfinity-layout-tool/commit/bd1dd8ac50b536d537a5be61a8d8f8fb4c37f23f))
+
 ## [3.53.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.52.1...gridfinity-layout-tool-v3.53.0) (2026-03-03)
 
 
