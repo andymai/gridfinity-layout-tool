@@ -35,10 +35,8 @@ import { LIP_SMALL_TAPER, sketch } from './generatorTypes';
 
 /** Overlap into the piece body so booleans have shared volume (mm).
  *  Without this, the prism only touches the cut face (coplanar),
- *  causing OCCT's boolean operations to fail silently.
- *  0.5mm provides enough shared volume for reliable booleans in both
- *  single-threaded (dev) and multi-threaded (prod) OCCT builds. */
-const OVERLAP = 0.5;
+ *  causing OCCT's boolean operations to fail silently. */
+const OVERLAP = 0.15;
 
 /** Minimum bin wall thickness to place wall tongues (mm).
  *  Must accommodate: tongue + 2×clearance + 2×MIN_SHELL.

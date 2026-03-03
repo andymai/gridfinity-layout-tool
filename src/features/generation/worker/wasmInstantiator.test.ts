@@ -5,12 +5,6 @@ vi.mock('brepjs', () => ({
   initFromOC: vi.fn(),
 }));
 
-// Mock capability detection
-const mockDetect = vi.fn();
-vi.mock('@/shared/generation/wasmCapabilities', () => ({
-  detectWasmCapabilities: () => mockDetect(),
-}));
-
 // Mock Emscripten single-threaded factory
 const mockSingleInit = vi.fn();
 vi.mock('brepjs-opencascade/src/brepjs_single.js', () => ({
@@ -42,12 +36,6 @@ beforeEach(() => {
   vi.resetModules();
   mockSingleInit.mockResolvedValue({ ready: true });
   mockThreadedInit.mockResolvedValue({ ready: true, threaded: true });
-  // Default: no threading support
-  mockDetect.mockReturnValue({
-    supportsThreads: false,
-    hardwareConcurrency: 8,
-    crossOriginIsolated: false,
-  });
 });
 
 describe('wasmInstantiator', () => {
@@ -75,14 +63,7 @@ describe('wasmInstantiator', () => {
       expect(result.hardwareConcurrency).toBeGreaterThan(0);
     });
 
-    it('uses single-threaded in dev mode even when threads are supported', async () => {
-      // import.meta.env.DEV is true in vitest by default
-      mockDetect.mockReturnValue({
-        supportsThreads: true,
-        hardwareConcurrency: 8,
-        crossOriginIsolated: true,
-      });
-
+    it('always uses single-threaded (threading disabled for perf)', async () => {
       const { loadOpenCascade } = await import('./wasmInstantiator');
       const result = await loadOpenCascade();
 
@@ -92,36 +73,16 @@ describe('wasmInstantiator', () => {
     });
   });
 
-  describe('threaded path', () => {
-    it('uses threaded init when capabilities support it in production', async () => {
-      // Stub import.meta.env.DEV to false for this test
+  describe('threaded path (disabled)', () => {
+    it('uses single-threaded even in production', async () => {
       vi.stubEnv('DEV', '');
-
-      mockDetect.mockReturnValue({
-        supportsThreads: true,
-        hardwareConcurrency: 8,
-        crossOriginIsolated: true,
-      });
 
       const { loadOpenCascade } = await import('./wasmInstantiator');
       const result = await loadOpenCascade();
 
-      expect(mockThreadedInit).toHaveBeenCalledTimes(1);
-      expect(mockSingleInit).not.toHaveBeenCalled();
-
-      const config = mockThreadedInit.mock.calls[0][0] as {
-        mainScriptUrlOrBlob: string;
-        locateFile: (p: string) => string;
-      };
-      expect(config.mainScriptUrlOrBlob).toBe('/mocked/brepjs_threaded.js');
-      expect(config.locateFile('brepjs_threaded.wasm')).toBe('/mocked/brepjs_threaded.wasm');
-      expect(config.locateFile('brepjs_threaded.worker.js')).toBe(
-        '/mocked/brepjs_threaded.worker.js'
-      );
-      expect(config.locateFile('other.txt')).toBe('other.txt');
-
-      expect(result.isThreaded).toBe(true);
-      expect(result.hardwareConcurrency).toBeGreaterThan(0);
+      expect(mockSingleInit).toHaveBeenCalledTimes(1);
+      expect(mockThreadedInit).not.toHaveBeenCalled();
+      expect(result.isThreaded).toBe(false);
 
       vi.unstubAllEnvs();
     });
