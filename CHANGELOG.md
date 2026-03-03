@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.53.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.1...gridfinity-layout-tool-v3.53.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* make split connector booleans robust for threaded OCCT builds ([#1023](https://github.com/andymai/gridfinity-layout-tool/issues/1023)) ([58e9810](https://github.com/andymai/gridfinity-layout-tool/commit/58e98106b1f21fe5022b52aefcb56cfd3b16267f))
+
 ## [3.53.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.0...gridfinity-layout-tool-v3.53.1) (2026-03-03)
 
 
