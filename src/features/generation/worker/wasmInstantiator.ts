@@ -19,9 +19,10 @@ import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
 // Multi-threaded WASM (conditionally loaded)
 import opencascadeThreadedInit from 'brepjs-opencascade/src/brepjs_threaded.js';
 
-// Resolved WASM binary URLs (Vite handles asset path resolution)
+// Resolved asset URLs (Vite handles path resolution via ?url imports)
 import singleWasmUrl from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 import threadedWasmUrl from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
+import threadedWorkerUrl from 'brepjs-opencascade/src/brepjs_threaded.worker.js?url';
 
 export interface WasmLoadResult {
   /** Whether multi-threaded WASM is being used */
@@ -65,7 +66,11 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
   // still accepts a Module config object.
   const wasmUrl = isThreaded ? threadedWasmUrl : singleWasmUrl;
   const moduleConfig = {
-    locateFile: (path: string) => (path.endsWith('.wasm') ? wasmUrl : path),
+    locateFile: (path: string) => {
+      if (path.endsWith('.wasm')) return wasmUrl;
+      if (path.endsWith('.worker.js')) return threadedWorkerUrl;
+      return path;
+    },
   };
 
   const initFn = isThreaded ? opencascadeThreadedInit : opencascadeSingleInit;
