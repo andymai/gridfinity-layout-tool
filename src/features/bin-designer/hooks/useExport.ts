@@ -217,15 +217,34 @@ export function useExport(): UseExportReturn {
         const connectorConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
         const totalPieceCount = getSplitPieceCount(params.width, params.depth, maxGridUnits);
 
-        const pool = workerPoolManager.get();
-        const result =
-          pool && !pool.isDestroyed && pool.size > 1
-            ? await pool.exportSplitBin(params, cutPlanesX, cutPlanesY, totalPieceCount, {
-                splitConnectorConfig: connectorConfig,
-              })
-            : await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
-                splitConnectorConfig: connectorConfig,
-              });
+        let result;
+        let poolAcquired = false;
+        try {
+          const pool = await workerPoolManager.acquire();
+          poolAcquired = true;
+          if (pool.size > 1) {
+            result = await pool.exportSplitBin(params, cutPlanesX, cutPlanesY, totalPieceCount, {
+              splitConnectorConfig: connectorConfig,
+            });
+          } else {
+            workerPoolManager.release();
+            poolAcquired = false;
+            result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
+              splitConnectorConfig: connectorConfig,
+            });
+          }
+        } catch {
+          if (poolAcquired) {
+            workerPoolManager.release();
+            poolAcquired = false;
+          }
+          // Pool unavailable — fall back to single bridge
+          result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
+            splitConnectorConfig: connectorConfig,
+          });
+        } finally {
+          if (poolAcquired) workerPoolManager.release();
+        }
 
         // Generate base filename (without extension)
         const baseName = generateFileName(params, format, config, designName).replace(

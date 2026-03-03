@@ -89,7 +89,15 @@ export class WorkerPool {
 
     const size = Math.max(1, Math.min(this.poolSize, MAX_POOL_SIZE));
     this.bridges = Array.from({ length: size }, () => new GenerationBridge());
-    this.initPromise = Promise.all(this.bridges.map((b) => b.init())).then(() => undefined);
+    this.initPromise = Promise.all(this.bridges.map((b) => b.init()))
+      .then(() => undefined)
+      .catch((error: unknown) => {
+        // Clean up partially-initialized bridges so the pool can be retried
+        for (const b of this.bridges) b.destroy();
+        this.bridges = [];
+        this.initPromise = null;
+        throw error;
+      });
 
     return this.initPromise;
   }

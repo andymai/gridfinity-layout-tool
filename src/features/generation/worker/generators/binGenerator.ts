@@ -860,7 +860,9 @@ export function generateSplitPreviewRange(
 
   const pieces: SplitPreviewResult['pieces'] = [];
   for (const idx of pieceIndices) {
-    if (idx < 0 || idx >= splitPieces.length) continue;
+    if (idx < 0 || idx >= splitPieces.length) {
+      throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
+    }
     pieces.push(tessellatePiece(splitPieces[idx], outerW, outerD));
   }
 
@@ -887,7 +889,9 @@ export async function exportSplitBinRange(
   const pieces: SplitExportResult['pieces'] = [];
 
   for (const idx of pieceIndices) {
-    if (idx < 0 || idx >= splitPieces.length) continue;
+    if (idx < 0 || idx >= splitPieces.length) {
+      throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
+    }
 
     const { solid: pieceSolid, label, col, row } = splitPieces[idx];
     const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));

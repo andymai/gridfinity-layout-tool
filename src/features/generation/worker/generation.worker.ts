@@ -193,12 +193,14 @@ function extractMeshTransferBuffers(payload: {
     edgeVertices: Float32Array;
   }>;
 }): ArrayBuffer[] {
-  return payload.pieces.flatMap((piece) => [
-    piece.vertices.buffer as ArrayBuffer,
-    piece.normals.buffer as ArrayBuffer,
-    piece.indices.buffer as ArrayBuffer,
-    piece.edgeVertices.buffer as ArrayBuffer,
-  ]);
+  return payload.pieces
+    .flatMap((piece) => [
+      piece.vertices.buffer as ArrayBuffer,
+      piece.normals.buffer as ArrayBuffer,
+      piece.indices.buffer as ArrayBuffer,
+      piece.edgeVertices.buffer as ArrayBuffer,
+    ])
+    .filter((b) => b.byteLength > 0);
 }
 
 /** Extract transferable ArrayBuffers from split export pieces */

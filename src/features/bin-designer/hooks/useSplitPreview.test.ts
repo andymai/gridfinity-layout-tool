@@ -19,6 +19,8 @@ vi.mock('@/shared/generation/bridge', () => ({
   }),
   workerPoolManager: {
     get: () => null,
+    acquire: () => Promise.reject(new Error('No pool in test')),
+    release: () => {},
   },
 }));
 

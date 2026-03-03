@@ -76,16 +76,29 @@ export function useSplitPreview(): void {
     const connectorConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
     const totalPieceCount = getSplitPieceCount(params.width, params.depth, maxGridUnits);
 
-    const pool = workerPoolManager.get();
-
-    const resultPromise =
-      pool && !pool.isDestroyed && pool.size > 1
-        ? pool.generateSplitPreview(params, cutPlanesX, cutPlanesY, totalPieceCount, {
-            splitConnectorConfig: connectorConfig,
-          })
-        : bridge.generateSplitPreview(params, cutPlanesX, cutPlanesY, {
+    // Try to acquire the pool for parallel generation, fall back to single bridge.
+    // acquire() is ref-counted so the pool stays alive for the duration of the operation.
+    let usingPool = false;
+    const resultPromise = workerPoolManager
+      .acquire()
+      .then((pool) => {
+        if (pool.size <= 1) {
+          workerPoolManager.release();
+          return bridge.generateSplitPreview(params, cutPlanesX, cutPlanesY, {
             splitConnectorConfig: connectorConfig,
           });
+        }
+        usingPool = true;
+        return pool.generateSplitPreview(params, cutPlanesX, cutPlanesY, totalPieceCount, {
+          splitConnectorConfig: connectorConfig,
+        });
+      })
+      .catch(() =>
+        // Pool unavailable — fall back to single bridge
+        bridge.generateSplitPreview(params, cutPlanesX, cutPlanesY, {
+          splitConnectorConfig: connectorConfig,
+        })
+      );
 
     resultPromise
       .then((result) => {
@@ -102,6 +115,9 @@ export function useSplitPreview(): void {
       })
       .catch(() => {
         // Silently ignore errors (e.g., superseded requests)
+      })
+      .finally(() => {
+        if (usingPool) workerPoolManager.release();
       });
   }, [needsSplit, generationStatus, params, maxGridUnits]);
 }
