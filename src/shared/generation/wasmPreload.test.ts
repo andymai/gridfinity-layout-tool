@@ -20,12 +20,14 @@ vi.mock('@/shared/generation/wasmCapabilities', () => ({
 import { detectWasmCapabilities } from '@/shared/generation/wasmCapabilities';
 const mockDetectWasmCapabilities = vi.mocked(detectWasmCapabilities);
 
+// Capture fetch calls made by preloadWasmBinary
+const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
+
 describe('preloadWasmBinary', () => {
   beforeEach(() => {
     // Reset module registry so `preloaded` flag starts as false each test
     vi.resetModules();
-    // Clear any link elements injected by previous tests
-    document.head.innerHTML = '';
+    fetchSpy.mockClear();
     // Clear call history and reset to threaded default; individual tests override as needed
     mockDetectWasmCapabilities.mockClear();
     mockDetectWasmCapabilities.mockReturnValue({
@@ -35,26 +37,20 @@ describe('preloadWasmBinary', () => {
     });
   });
 
-  it('injects a <link rel="preload" as="fetch"> element into document.head', async () => {
+  it('calls fetch() with the WASM URL and same-origin credentials', async () => {
+    const { preloadWasmBinary } = await import('./wasmPreload');
+    preloadWasmBinary();
+
+    expect(fetchSpy).toHaveBeenCalledOnce();
+    expect(fetchSpy).toHaveBeenCalledWith('/mock-threaded.wasm', { credentials: 'same-origin' });
+  });
+
+  it('does not inject any <link rel="preload"> elements', async () => {
     const { preloadWasmBinary } = await import('./wasmPreload');
     preloadWasmBinary();
 
     const links = document.head.querySelectorAll('link[rel="preload"]');
-    expect(links).toHaveLength(1);
-
-    const link = links[0] as HTMLLinkElement;
-    expect(link.rel).toBe('preload');
-    // jsdom reflects `as` as a property — getAttribute returns null for non-standard attributes
-    expect(link.as).toBe('fetch');
-  });
-
-  it('sets crossOrigin to "anonymous" on the injected link', async () => {
-    const { preloadWasmBinary } = await import('./wasmPreload');
-    preloadWasmBinary();
-
-    const link = document.head.querySelector('link[rel="preload"]');
-    expect(link).not.toBeNull();
-    expect((link as HTMLLinkElement).crossOrigin).toBe('anonymous');
+    expect(links).toHaveLength(0);
   });
 
   it('uses threaded WASM URL when supportsThreads is true', async () => {
@@ -67,9 +63,7 @@ describe('preloadWasmBinary', () => {
     const { preloadWasmBinary } = await import('./wasmPreload');
     preloadWasmBinary();
 
-    const link = document.head.querySelector('link[rel="preload"]');
-    expect(link).not.toBeNull();
-    expect((link as HTMLLinkElement).href).toContain('mock-threaded.wasm');
+    expect(fetchSpy).toHaveBeenCalledWith('/mock-threaded.wasm', { credentials: 'same-origin' });
   });
 
   it('uses single WASM URL when supportsThreads is false', async () => {
@@ -82,19 +76,16 @@ describe('preloadWasmBinary', () => {
     const { preloadWasmBinary } = await import('./wasmPreload');
     preloadWasmBinary();
 
-    const link = document.head.querySelector('link[rel="preload"]');
-    expect(link).not.toBeNull();
-    expect((link as HTMLLinkElement).href).toContain('mock-single.wasm');
+    expect(fetchSpy).toHaveBeenCalledWith('/mock-single.wasm', { credentials: 'same-origin' });
   });
 
-  it('is idempotent — second call does not inject a second link element', async () => {
+  it('is idempotent — second call does not fetch again', async () => {
     const { preloadWasmBinary } = await import('./wasmPreload');
 
     preloadWasmBinary();
     preloadWasmBinary();
 
-    const links = document.head.querySelectorAll('link[rel="preload"]');
-    expect(links).toHaveLength(1);
+    expect(fetchSpy).toHaveBeenCalledOnce();
   });
 
   it('is idempotent — second call does not call detectWasmCapabilities again', async () => {
@@ -113,12 +104,31 @@ describe('preloadWasmBinary', () => {
 
     const { preloadWasmBinary } = await import('./wasmPreload');
 
-    // First call fails — no link injected
+    // First call fails — no fetch
     preloadWasmBinary();
-    expect(document.head.querySelectorAll('link[rel="preload"]')).toHaveLength(0);
+    expect(fetchSpy).not.toHaveBeenCalled();
 
-    // Second call succeeds — link injected
+    // Second call succeeds — fetch issued
     preloadWasmBinary();
-    expect(document.head.querySelectorAll('link[rel="preload"]')).toHaveLength(1);
+    expect(fetchSpy).toHaveBeenCalledOnce();
+  });
+
+  it('resets preloaded flag on fetch failure so a later call can retry', async () => {
+    fetchSpy.mockRejectedValueOnce(new Error('network error'));
+
+    const { preloadWasmBinary } = await import('./wasmPreload');
+
+    preloadWasmBinary();
+    // Wait for the rejected promise to settle
+    await vi.waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledOnce();
+    });
+
+    // Allow microtask for the .catch() handler to reset preloaded
+    await new Promise((r) => setTimeout(r, 0));
+
+    // Second call should retry
+    preloadWasmBinary();
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 });
