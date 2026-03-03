@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.53.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.2...gridfinity-layout-tool-v3.53.3) (2026-03-03)
+
+
+### Bug Fixes
+
+* floor tongue skipped at default wall thickness due to floating point ([3cfbe68](https://github.com/andymai/gridfinity-layout-tool/commit/3cfbe68eef946d3007a1bc356d740fdca4e03031))
+
 ## [3.53.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.1...gridfinity-layout-tool-v3.53.2) (2026-03-03)
 
 
