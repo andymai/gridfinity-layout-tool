@@ -17,6 +17,11 @@ vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => ({
     generateSplitPreview: mockGenerateSplitPreview,
   }),
+  workerPoolManager: {
+    get: () => null,
+    acquire: () => Promise.reject(new Error('No pool in test')),
+    release: () => {},
+  },
 }));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

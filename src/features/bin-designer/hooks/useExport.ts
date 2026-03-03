@@ -15,7 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
-import { getActiveBridge } from '@/shared/generation/bridge';
+import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import {
   generateFileName,
   generateDividerFileName,
@@ -198,6 +198,7 @@ export function useExport(): UseExportReturn {
    * Download split export as ZIP via worker bridge.
    * Computes cut planes, sends to worker for boolean splitting,
    * then packages results into a ZIP archive.
+   * Uses worker pool for parallel export when available.
    * Supports STL and 3MF formats (STEP is not supported for split export).
    */
   const downloadSplit = useCallback(
@@ -213,10 +214,37 @@ export function useExport(): UseExportReturn {
         const gridSizeMm = params.gridUnitMm;
         const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGridUnits, gridSizeMm);
         const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGridUnits, gridSizeMm);
+        const connectorConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
+        const totalPieceCount = getSplitPieceCount(params.width, params.depth, maxGridUnits);
 
-        const result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
-          splitConnectorConfig: params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG,
-        });
+        let result;
+        let poolAcquired = false;
+        try {
+          const pool = await workerPoolManager.acquire();
+          poolAcquired = true;
+          if (pool.size > 1) {
+            result = await pool.exportSplitBin(params, cutPlanesX, cutPlanesY, totalPieceCount, {
+              splitConnectorConfig: connectorConfig,
+            });
+          } else {
+            workerPoolManager.release();
+            poolAcquired = false;
+            result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
+              splitConnectorConfig: connectorConfig,
+            });
+          }
+        } catch {
+          if (poolAcquired) {
+            workerPoolManager.release();
+            poolAcquired = false;
+          }
+          // Pool unavailable — fall back to single bridge
+          result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
+            splitConnectorConfig: connectorConfig,
+          });
+        } finally {
+          if (poolAcquired) workerPoolManager.release();
+        }
 
         // Generate base filename (without extension)
         const baseName = generateFileName(params, format, config, designName).replace(

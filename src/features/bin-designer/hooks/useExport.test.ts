@@ -14,6 +14,11 @@ vi.mock('@/shared/generation/bridge', () => ({
     exportBin: mockExportBin,
     exportSplitBin: mockExportSplitBin,
   }),
+  workerPoolManager: {
+    get: () => null,
+    acquire: () => Promise.reject(new Error('No pool in test')),
+    release: () => {},
+  },
 }));
 
 // Mock JSZip used by splitExport

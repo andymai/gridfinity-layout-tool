@@ -14,11 +14,13 @@ export type WorkerMessage =
   | GenerateMessage
   | GenerateBaseplateMessage
   | GenerateSplitPreviewMessage
+  | GenerateSplitPreviewRangeMessage
   | CancelMessage
   | ExportMessage
   | ExportBaseplateMessage
   | ExportDividersMessage
-  | ExportSplitMessage;
+  | ExportSplitMessage
+  | ExportSplitRangeMessage;
 
 export interface InitMessage {
   readonly type: 'INIT';
@@ -121,6 +123,38 @@ export interface ExportSplitPayload {
   readonly angularTolerance?: number;
   /** Alignment connector config for split pieces. Omit to skip connectors. */
   readonly splitConnectorConfig?: SplitConnectorConfig;
+}
+
+export interface GenerateSplitPreviewRangeMessage {
+  readonly type: 'GENERATE_SPLIT_PREVIEW_RANGE';
+  readonly payload: GenerateSplitPreviewRangePayload;
+}
+
+export interface GenerateSplitPreviewRangePayload {
+  readonly params: BinParams;
+  readonly requestId: string;
+  readonly cutPlanesX: readonly number[];
+  readonly cutPlanesY: readonly number[];
+  readonly splitConnectorConfig?: SplitConnectorConfig;
+  /** Indices into the flat piece array (col-major) to process on this worker */
+  readonly pieceIndices: readonly number[];
+}
+
+export interface ExportSplitRangeMessage {
+  readonly type: 'EXPORT_SPLIT_RANGE';
+  readonly payload: ExportSplitRangePayload;
+}
+
+export interface ExportSplitRangePayload {
+  readonly params: BinParams;
+  readonly requestId: string;
+  readonly cutPlanesX: readonly number[];
+  readonly cutPlanesY: readonly number[];
+  readonly tolerance?: number;
+  readonly angularTolerance?: number;
+  readonly splitConnectorConfig?: SplitConnectorConfig;
+  /** Indices into the flat piece array (col-major) to process on this worker */
+  readonly pieceIndices: readonly number[];
 }
 
 /** Export file formats supported by the BREP worker */

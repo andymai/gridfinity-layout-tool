@@ -772,6 +772,52 @@ export interface SplitPreviewResult {
 const PREVIEW_TOLERANCE = 0.15;
 const PREVIEW_ANGULAR_TOLERANCE = 15;
 
+/** Tessellate a split piece into preview mesh data */
+function tessellatePiece(
+  piece: SplitPieceInfo,
+  outerW: number,
+  outerD: number
+): SplitPreviewResult['pieces'][number] {
+  const {
+    solid: pieceSolid,
+    label,
+    col,
+    row,
+    widthMm,
+    depthMm,
+    xMinFromOrigin,
+    yMinFromOrigin,
+  } = piece;
+
+  const pieceCenterX = xMinFromOrigin - outerW / 2 + widthMm / 2;
+  const pieceCenterY = yMinFromOrigin - outerD / 2 + depthMm / 2;
+  const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
+
+  const shapeMesh = mesh(centeredPiece, {
+    tolerance: PREVIEW_TOLERANCE,
+    angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+  });
+  const edgeMesh = meshEdges(centeredPiece, {
+    tolerance: PREVIEW_TOLERANCE,
+    angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+  });
+  const meshData = toIndexedMeshData(shapeMesh, false, new Float32Array(edgeMesh.lines));
+
+  return {
+    vertices: meshData.vertices,
+    normals: meshData.normals,
+    indices: meshData.indices,
+    edgeVertices: meshData.edgeVertices,
+    label,
+    col,
+    row,
+    widthUnits: widthMm / SIZE,
+    depthUnits: depthMm / SIZE,
+    offsetX: xMinFromOrigin / SIZE,
+    offsetY: yMinFromOrigin / SIZE,
+  };
+}
+
 /**
  * Generate split bin piece meshes for 3D preview rendering.
  *
@@ -786,52 +832,71 @@ export function generateSplitPreview(
   splitConnectorConfig?: SplitConnectorConfig
 ): SplitPreviewResult {
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
+  const outerW = params.width * SIZE - CLEARANCE;
+  const outerD = params.depth * SIZE - CLEARANCE;
 
-  // Outer dimensions for converting xMinFromOrigin back to solid-center coords
+  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD)) };
+}
+
+// ─── Ranged Split Operations (for worker pool parallelism) ──────────────────
+
+/**
+ * Generate split preview meshes for a subset of pieces.
+ *
+ * Each pool worker calls this with its assigned pieceIndices. The full solid
+ * is regenerated per worker (each has independent WASM), but only the
+ * assigned pieces are tessellated — the expensive per-piece work.
+ */
+export function generateSplitPreviewRange(
+  params: BinParams,
+  cutPlanesX: readonly number[],
+  cutPlanesY: readonly number[],
+  pieceIndices: readonly number[],
+  splitConnectorConfig?: SplitConnectorConfig
+): SplitPreviewResult {
+  const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
   const outerW = params.width * SIZE - CLEARANCE;
   const outerD = params.depth * SIZE - CLEARANCE;
 
   const pieces: SplitPreviewResult['pieces'] = [];
+  for (const idx of pieceIndices) {
+    if (idx < 0 || idx >= splitPieces.length) {
+      throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
+    }
+    pieces.push(tessellatePiece(splitPieces[idx], outerW, outerD));
+  }
 
-  for (const {
-    solid: pieceSolid,
-    label,
-    col,
-    row,
-    widthMm,
-    depthMm,
-    xMinFromOrigin,
-    yMinFromOrigin,
-  } of splitPieces) {
-    // Translate piece to origin so the component's offset formula positions it correctly.
-    // xMinFromOrigin is from the left edge (0), convert back to solid-center coords.
-    const pieceCenterX = xMinFromOrigin - outerW / 2 + widthMm / 2;
-    const pieceCenterY = yMinFromOrigin - outerD / 2 + depthMm / 2;
-    const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
+  return { pieces };
+}
 
-    const shapeMesh = mesh(centeredPiece, {
-      tolerance: PREVIEW_TOLERANCE,
-      angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
-    });
-    const edgeMesh = meshEdges(centeredPiece, {
-      tolerance: PREVIEW_TOLERANCE,
-      angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
-    });
-    const meshData = toIndexedMeshData(shapeMesh, false, new Float32Array(edgeMesh.lines));
+/**
+ * Export split bin pieces for a subset of piece indices.
+ *
+ * Same as exportSplitBin but only processes the assigned pieces,
+ * allowing parallel export across multiple workers.
+ */
+export async function exportSplitBinRange(
+  params: BinParams,
+  cutPlanesX: readonly number[],
+  cutPlanesY: readonly number[],
+  pieceIndices: readonly number[],
+  tolerance = 0.01,
+  angularTolerance = 5,
+  splitConnectorConfig?: SplitConnectorConfig
+): Promise<SplitExportResult> {
+  const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
 
-    pieces.push({
-      vertices: meshData.vertices,
-      normals: meshData.normals,
-      indices: meshData.indices,
-      edgeVertices: meshData.edgeVertices,
-      label,
-      col,
-      row,
-      widthUnits: widthMm / SIZE,
-      depthUnits: depthMm / SIZE,
-      offsetX: xMinFromOrigin / SIZE,
-      offsetY: yMinFromOrigin / SIZE,
-    });
+  const pieces: SplitExportResult['pieces'] = [];
+
+  for (const idx of pieceIndices) {
+    if (idx < 0 || idx >= splitPieces.length) {
+      throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
+    }
+
+    const { solid: pieceSolid, label, col, row } = splitPieces[idx];
+    const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));
+    const data = await blob.arrayBuffer();
+    pieces.push({ data, label, col, row });
   }
 
   return { pieces };

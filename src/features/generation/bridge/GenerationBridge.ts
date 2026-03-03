@@ -384,6 +384,72 @@ export class GenerationBridge {
   }
 
   /**
+   * Generate split preview meshes for a subset of pieces.
+   * Used by the worker pool to distribute piece processing across workers.
+   */
+  async generateSplitPreviewRange(
+    params: BinParams,
+    cutPlanesX: readonly number[],
+    cutPlanesY: readonly number[],
+    pieceIndices: readonly number[],
+    options?: {
+      splitConnectorConfig?: SplitConnectorConfig;
+    }
+  ): Promise<SplitPreviewResult> {
+    const requestId = await this.prepareExport('splitPreview');
+
+    return new Promise<SplitPreviewResult>((resolve, reject) => {
+      this.pendingExports.set('splitPreview', { resolve, reject, requestId });
+      this.postMessage({
+        type: 'GENERATE_SPLIT_PREVIEW_RANGE',
+        payload: {
+          params,
+          requestId,
+          cutPlanesX,
+          cutPlanesY,
+          pieceIndices,
+          splitConnectorConfig: options?.splitConnectorConfig,
+        },
+      });
+    });
+  }
+
+  /**
+   * Export split bin pieces for a subset of piece indices.
+   * Used by the worker pool to distribute piece export across workers.
+   */
+  async exportSplitBinRange(
+    params: BinParams,
+    cutPlanesX: readonly number[],
+    cutPlanesY: readonly number[],
+    pieceIndices: readonly number[],
+    options?: {
+      tolerance?: number;
+      angularTolerance?: number;
+      splitConnectorConfig?: SplitConnectorConfig;
+    }
+  ): Promise<SplitExportResult> {
+    const requestId = await this.prepareExport('split');
+
+    return new Promise<SplitExportResult>((resolve, reject) => {
+      this.pendingExports.set('split', { resolve, reject, requestId });
+      this.postMessage({
+        type: 'EXPORT_SPLIT_RANGE',
+        payload: {
+          params,
+          requestId,
+          cutPlanesX,
+          cutPlanesY,
+          pieceIndices,
+          tolerance: options?.tolerance,
+          angularTolerance: options?.angularTolerance,
+          splitConnectorConfig: options?.splitConnectorConfig,
+        },
+      });
+    });
+  }
+
+  /**
    * Generate baseplate mesh from baseplate parameters.
    * Uses the same debounce and cancellation as bin generation.
    */
@@ -391,32 +457,7 @@ export class GenerationBridge {
     params: BaseplateParams,
     onProgress?: ProgressCallback
   ): Promise<GenerationResult> {
-    if (this.destroyed) {
-      return Promise.reject(new Error('Bridge has been destroyed'));
-    }
-
-    if (this.debounceTimer !== null) {
-      clearTimeout(this.debounceTimer);
-      this.debounceTimer = null;
-    }
-
-    this.cancelCurrentRequest();
-    this.onProgress = onProgress ?? null;
-
-    return new Promise<GenerationResult>((resolve, reject) => {
-      this.pendingResolve = resolve;
-      this.pendingReject = reject;
-
-      this.debounceTimer = setTimeout(() => {
-        this.debounceTimer = null;
-        const requestId = this.nextRequestId();
-        this.currentRequestId = requestId;
-        this.postMessage({
-          type: 'GENERATE_BASEPLATE',
-          payload: { params, requestId },
-        });
-      }, this.adaptiveDebounce.getDelay());
-    });
+    return this.generateBaseplateInternal(params, onProgress, true);
   }
 
   /**
@@ -427,6 +468,14 @@ export class GenerationBridge {
     params: BaseplateParams,
     onProgress?: ProgressCallback
   ): Promise<GenerationResult> {
+    return this.generateBaseplateInternal(params, onProgress, false);
+  }
+
+  private generateBaseplateInternal(
+    params: BaseplateParams,
+    onProgress: ProgressCallback | undefined,
+    debounce: boolean
+  ): Promise<GenerationResult> {
     if (this.destroyed) {
       return Promise.reject(new Error('Bridge has been destroyed'));
     }
@@ -443,12 +492,23 @@ export class GenerationBridge {
       this.pendingResolve = resolve;
       this.pendingReject = reject;
 
-      const requestId = this.nextRequestId();
-      this.currentRequestId = requestId;
-      this.postMessage({
-        type: 'GENERATE_BASEPLATE',
-        payload: { params, requestId },
-      });
+      const sendMessage = (): void => {
+        const requestId = this.nextRequestId();
+        this.currentRequestId = requestId;
+        this.postMessage({
+          type: 'GENERATE_BASEPLATE',
+          payload: { params, requestId },
+        });
+      };
+
+      if (debounce) {
+        this.debounceTimer = setTimeout(() => {
+          this.debounceTimer = null;
+          sendMessage();
+        }, this.adaptiveDebounce.getDelay());
+      } else {
+        sendMessage();
+      }
     });
   }
 

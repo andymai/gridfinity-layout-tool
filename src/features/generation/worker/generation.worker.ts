@@ -19,7 +19,9 @@ import {
   generateBin,
   exportBin,
   exportSplitBin,
+  exportSplitBinRange,
   generateSplitPreview,
+  generateSplitPreviewRange,
 } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
 import { generateBaseplate, exportBaseplate } from './generators/baseplateGenerator';
@@ -182,6 +184,32 @@ async function runExport<TPayload extends Record<string, unknown>>(
   }
 }
 
+/** Extract transferable ArrayBuffers from split preview mesh pieces */
+function extractMeshTransferBuffers(payload: {
+  pieces: ReadonlyArray<{
+    vertices: Float32Array;
+    normals: Float32Array;
+    indices: Uint32Array;
+    edgeVertices: Float32Array;
+  }>;
+}): ArrayBuffer[] {
+  return payload.pieces
+    .flatMap((piece) => [
+      piece.vertices.buffer as ArrayBuffer,
+      piece.normals.buffer as ArrayBuffer,
+      piece.indices.buffer as ArrayBuffer,
+      piece.edgeVertices.buffer as ArrayBuffer,
+    ])
+    .filter((b) => b.byteLength > 0);
+}
+
+/** Extract transferable ArrayBuffers from split export pieces */
+function extractExportTransferBuffers(payload: {
+  pieces: ReadonlyArray<{ data: ArrayBuffer }>;
+}): ArrayBuffer[] {
+  return payload.pieces.map((piece) => piece.data);
+}
+
 // ─── Message Handler ─────────────────────────────────────────────────────────
 
 self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
@@ -267,20 +295,7 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
             return Promise.resolve({ pieces: result.pieces });
           },
           'Split preview failed',
-          (p) =>
-            (
-              p.pieces as Array<{
-                vertices: Float32Array;
-                normals: Float32Array;
-                indices: Uint32Array;
-                edgeVertices: Float32Array;
-              }>
-            ).flatMap((piece) => [
-              piece.vertices.buffer as ArrayBuffer,
-              piece.normals.buffer as ArrayBuffer,
-              piece.indices.buffer as ArrayBuffer,
-              piece.edgeVertices.buffer as ArrayBuffer,
-            ])
+          extractMeshTransferBuffers
         );
         break;
       }
@@ -364,7 +379,65 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
             return { pieces: result.pieces };
           },
           'Split export failed',
-          (p) => (p.pieces as Array<{ data: ArrayBuffer }>).map((piece) => piece.data)
+          extractExportTransferBuffers
+        );
+        break;
+      }
+
+      case 'GENERATE_SPLIT_PREVIEW_RANGE': {
+        const { requestId, params, cutPlanesX, cutPlanesY, pieceIndices, splitConnectorConfig } =
+          message.payload;
+        await runExport(
+          requestId,
+          'SPLIT_PREVIEW_RESULT',
+          () => {
+            reportProgress(requestId, 'splitting', 0);
+            const result = generateSplitPreviewRange(
+              params,
+              cutPlanesX,
+              cutPlanesY,
+              pieceIndices,
+              splitConnectorConfig
+            );
+            reportProgress(requestId, 'splitting', 1);
+            return Promise.resolve({ pieces: result.pieces });
+          },
+          'Split preview range failed',
+          extractMeshTransferBuffers
+        );
+        break;
+      }
+
+      case 'EXPORT_SPLIT_RANGE': {
+        const {
+          requestId,
+          params,
+          cutPlanesX,
+          cutPlanesY,
+          pieceIndices,
+          tolerance,
+          angularTolerance,
+          splitConnectorConfig,
+        } = message.payload;
+        await runExport(
+          requestId,
+          'SPLIT_EXPORT_RESULT',
+          async () => {
+            reportProgress(requestId, 'splitting', 0);
+            const result = await exportSplitBinRange(
+              params,
+              cutPlanesX,
+              cutPlanesY,
+              pieceIndices,
+              tolerance,
+              angularTolerance,
+              splitConnectorConfig
+            );
+            reportProgress(requestId, 'splitting', 1);
+            return { pieces: result.pieces };
+          },
+          'Split export range failed',
+          extractExportTransferBuffers
         );
         break;
       }
