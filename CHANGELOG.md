@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.51.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.3...gridfinity-layout-tool-v3.51.4) (2026-03-03)
+
+
+### Bug Fixes
+
+* re-enable threaded WASM for OpenCascade ([#1013](https://github.com/andymai/gridfinity-layout-tool/issues/1013)) ([b855ab0](https://github.com/andymai/gridfinity-layout-tool/commit/b855ab0d328235359daf7405a56eb4fcdb467048))
+
 ## [3.51.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.2...gridfinity-layout-tool-v3.51.3) (2026-03-03)
 
 ### Bug Fixes
