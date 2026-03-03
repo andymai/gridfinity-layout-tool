@@ -655,6 +655,61 @@ function splitSolidIntoPieces(
   const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
   const wallTopZ = floorZ + wallHeight;
 
+  // Remove stacking lip geometry at cut planes to prevent lip cross-sections
+  // from appearing on interior cut faces of split pieces. This trims the lip
+  // above wallTopZ in a band around each cut plane, creating clean termination
+  // where pieces join while preserving lip on outer perimeter edges.
+  let splitSolid: Shape3D = solid;
+  if (params.base.stackingLip && (cutPlanesX.length > 0 || cutPlanesY.length > 0)) {
+    splitSolid = clone(solid);
+    // Slab width covers the full lip taper zone on both sides of the cut,
+    // plus 0.5mm margin for floating-point/tessellation robustness.
+    const trimSlabWidth = 2 * LIP_TAPER_WIDTH + 0.5;
+    // Start 0.1mm below wallTopZ to avoid coincident faces with the
+    // lip/wall junction, which would cause OCCT boolean failures.
+    const trimZStart = wallTopZ - 0.1;
+    // 10mm margin above lip top ensures full removal regardless of geometry.
+    const trimHeight = LIP_HEIGHT + 10;
+    // 10mm overhang past each bin edge (20mm total) ensures slabs fully span the bin.
+    const totalSlabOverhang = 20;
+    const trimTargets: Shape3D[] = [];
+
+    for (const cutX of cutPlanesX) {
+      const slab = sketch(
+        drawRectangle(trimSlabWidth, outerD + totalSlabOverhang),
+        'XY',
+        trimZStart
+      ).extrude(trimHeight);
+      trimTargets.push(translate(slab, [cutX, 0, 0]));
+    }
+
+    for (const cutY of cutPlanesY) {
+      const slab = sketch(
+        drawRectangle(outerW + totalSlabOverhang, trimSlabWidth),
+        'XY',
+        trimZStart
+      ).extrude(trimHeight);
+      trimTargets.push(translate(slab, [0, cutY, 0]));
+    }
+
+    if (trimTargets.length > 0) {
+      try {
+        splitSolid = unwrap(cutAll(splitSolid, trimTargets));
+      } catch (batchError) {
+        if (batchError instanceof DOMException && batchError.name === 'AbortError')
+          throw batchError;
+        for (const target of trimTargets) {
+          try {
+            splitSolid = unwrap(cut(splitSolid, target));
+          } catch (e) {
+            if (e instanceof DOMException && e.name === 'AbortError') throw e;
+            // Skip if individual trim cut fails — piece will retain lip cross-section
+          }
+        }
+      }
+    }
+  }
+
   // Boundary arrays: [left edge, ...cut planes, right edge]
   const xBounds = [-outerW / 2, ...cutPlanesX, outerW / 2];
   const yBounds = [-outerD / 2, ...cutPlanesY, outerD / 2];
@@ -680,7 +735,7 @@ function splitSolidIntoPieces(
       ).extrude(CUTTING_BOX_HEIGHT);
       const translatedBox = translate(cuttingBox, [centerX, centerY, 0]);
 
-      let piece = unwrap(intersect(clone(solid), translatedBox));
+      let piece = unwrap(intersect(clone(splitSolid), translatedBox));
 
       if (connectorConfig !== undefined && connectorConfig.enabled) {
         const cutFaces = computeCutFaces(
