@@ -377,8 +377,8 @@ export function PreviewCanvas() {
   // Drive split piece mesh generation when exploded mode is active
   useSplitPreview();
 
-  // Show split piece meshes only in exploded mode
-  const showSplitPieces = splitViewMode === 'exploded' && splitPieceMeshes.length > 0 && needsSplit;
+  // Show split piece meshes when pieces are generated and bin needs splitting
+  const showSplitPieces = splitPieceMeshes.length > 0 && needsSplit;
 
   // Screen reader description
   const binDescription = describeBin(params);
@@ -527,7 +527,7 @@ export function PreviewCanvas() {
               height={height}
             />
 
-            {/* Bin mesh — swap for per-piece meshes in exploded split mode */}
+            {/* Bin mesh — swap for per-piece meshes when split */}
             {showSplitPieces ? (
               <SplitBinMeshes color={previewColor} wireframe={wireframe} />
             ) : (
