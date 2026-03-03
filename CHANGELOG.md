@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.51.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.0...gridfinity-layout-tool-v3.51.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* retry WASM worker init on failure and fix preload cache mismatch ([#1007](https://github.com/andymai/gridfinity-layout-tool/issues/1007)) ([1619038](https://github.com/andymai/gridfinity-layout-tool/commit/1619038123a9196fd85e65da3efc75945140462a))
+
 ## [3.51.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.5...gridfinity-layout-tool-v3.51.0) (2026-03-03)
 
 
