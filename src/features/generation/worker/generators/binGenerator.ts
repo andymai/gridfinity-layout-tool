@@ -670,13 +670,13 @@ function splitSolidIntoPieces(
     const trimZStart = wallTopZ - 0.1;
     // 10mm margin above lip top ensures full removal regardless of geometry.
     const trimHeight = LIP_HEIGHT + 10;
-    // 10mm overhang past each bin edge ensures slabs fully span the bin.
-    const slabOverhang = 20;
+    // 10mm overhang past each bin edge (20mm total) ensures slabs fully span the bin.
+    const totalSlabOverhang = 20;
     const trimTargets: Shape3D[] = [];
 
     for (const cutX of cutPlanesX) {
       const slab = sketch(
-        drawRectangle(trimSlabWidth, outerD + slabOverhang),
+        drawRectangle(trimSlabWidth, outerD + totalSlabOverhang),
         'XY',
         trimZStart
       ).extrude(trimHeight);
@@ -685,7 +685,7 @@ function splitSolidIntoPieces(
 
     for (const cutY of cutPlanesY) {
       const slab = sketch(
-        drawRectangle(outerW + slabOverhang, trimSlabWidth),
+        drawRectangle(outerW + totalSlabOverhang, trimSlabWidth),
         'XY',
         trimZStart
       ).extrude(trimHeight);
