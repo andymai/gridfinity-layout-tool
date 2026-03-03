@@ -1,6 +1,5 @@
 {
   "app.skipToGridEditor": "Pular para o planejador de grade",
-  "baseplate.backToLayout": "Voltar ao layout",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.dimensionsUnits": "{width}×{depth} unidades",
   "baseplate.elapsed": "{seconds}s",
@@ -39,7 +38,6 @@
   "baseplate.paddingHintAxisY": "frontal/traseiro",
   "baseplate.paddingLeft": "Esquerda",
   "baseplate.paddingRight": "Direita",
-  "baseplate.pageTitle": "Gerador de placa base",
   "baseplate.pieceLabel": "Peça {label}",
   "baseplate.printBedSize": "Tamanho da mesa",
   "baseplate.printBedTooltip": "Placas maiores que isso são divididas automaticamente.",

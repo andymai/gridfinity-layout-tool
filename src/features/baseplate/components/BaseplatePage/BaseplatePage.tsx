@@ -17,7 +17,7 @@ import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
-import { ArrowLeftIcon } from '@/design-system/Icon';
+
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
@@ -70,7 +70,7 @@ export function BaseplatePage() {
 
   const { isExporting, canExport, exportProgress, downloadBaseplate } = useBaseplateExport();
   const { isOpening, openingSlicerId, openInSlicer } = useBaseplateSlicerOpen();
-  const { navigateBack, isStandalone } = useBaseplateRouting();
+  const { isStandalone } = useBaseplateRouting();
   const setBaseplateParams = useLayoutStore((s) => s.setBaseplateParams);
   const hasBaseplateParams = useLayoutStore((s) => s.layout.baseplateParams !== undefined);
 
@@ -148,27 +148,10 @@ export function BaseplatePage() {
   return (
     <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
-      <header className="flex h-12 items-center border-b border-stroke-subtle bg-surface-secondary px-4">
-        <div className="flex items-center gap-3 min-w-0">
-          {isStandalone ? (
-            <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
-          ) : (
-            <>
-              <button
-                onClick={navigateBack}
-                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
-                aria-label={t('baseplate.backToLayout')}
-              >
-                <ArrowLeftIcon size="sm" />
-                <span className="hidden sm:inline">{t('baseplate.backToLayout')}</span>
-              </button>
+      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+        <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
 
-              <div className="h-5 w-px bg-stroke-subtle" />
-
-              <h1 className="text-sm font-semibold text-content">{t('baseplate.pageTitle')}</h1>
-            </>
-          )}
-
+        <div className="flex items-center flex-shrink-0">
           <button
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport || isExporting}

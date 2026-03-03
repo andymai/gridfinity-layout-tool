@@ -1,6 +1,5 @@
 {
   "app.skipToGridEditor": "Passer au planificateur de grille",
-  "baseplate.backToLayout": "Retour au plan",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.dimensionsUnits": "{width}×{depth} unités",
   "baseplate.elapsed": "{seconds}s",
@@ -39,7 +38,6 @@
   "baseplate.paddingHintAxisY": "avant/arrière",
   "baseplate.paddingLeft": "Gauche",
   "baseplate.paddingRight": "Droite",
-  "baseplate.pageTitle": "Générateur de plaque de base",
   "baseplate.pieceLabel": "Pièce {label}",
   "baseplate.printBedSize": "Taille du plateau",
   "baseplate.printBedTooltip": "Les plaques plus grandes sont découpées automatiquement.",

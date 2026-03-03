@@ -53,11 +53,9 @@ vi.mock('../BaseplatePreview/BaseplatePreview', () => ({
 }));
 
 // Mock routing hook
-let mockIsStandalone = false;
 vi.mock('@/hooks/useBaseplateRouting', () => ({
   useBaseplateRouting: () => ({
-    navigateBack: vi.fn(),
-    isStandalone: mockIsStandalone,
+    isStandalone: false,
     isBaseplateRoute: true,
     layoutIdFromUrl: null,
     navigateToBaseplate: vi.fn(),
@@ -82,32 +80,15 @@ vi.mock('../../hooks/useBaseplateSlicerOpen', () => ({
 
 describe('BaseplatePage', () => {
   beforeEach(() => {
-    mockIsStandalone = false;
     mockResponsive = { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false };
   });
 
-  it('renders header with title and back button in planner mode', () => {
-    render(<BaseplatePage />);
-    expect(screen.getByText('baseplate.pageTitle')).toBeInTheDocument();
-    expect(screen.getByLabelText('baseplate.backToLayout')).toBeInTheDocument();
-    expect(screen.queryByTestId('tool-switcher')).not.toBeInTheDocument();
-  });
-
-  it('renders ToolSwitcher in standalone mode', () => {
-    mockIsStandalone = true;
+  it('always renders ToolSwitcher in header', () => {
     render(<BaseplatePage />);
     expect(screen.getByTestId('tool-switcher')).toBeInTheDocument();
-    expect(screen.queryByText('baseplate.pageTitle')).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('baseplate.backToLayout')).not.toBeInTheDocument();
   });
 
-  it('renders export button in planner mode', () => {
-    render(<BaseplatePage />);
-    expect(screen.getByLabelText('common.export')).toBeInTheDocument();
-  });
-
-  it('renders export button in standalone mode', () => {
-    mockIsStandalone = true;
+  it('renders export button', () => {
     render(<BaseplatePage />);
     expect(screen.getByLabelText('common.export')).toBeInTheDocument();
   });
@@ -119,7 +100,6 @@ describe('BaseplatePage', () => {
   });
 
   it('passes responsive props to ToolSwitcher on mobile', () => {
-    mockIsStandalone = true;
     mockResponsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
     render(<BaseplatePage />);
     const switcher = screen.getByTestId('tool-switcher');
@@ -128,7 +108,6 @@ describe('BaseplatePage', () => {
   });
 
   it('passes responsive props to ToolSwitcher on tablet', () => {
-    mockIsStandalone = true;
     mockResponsive = { isDesktop: false, isLandscape: false, isMobile: false, isTablet: true };
     render(<BaseplatePage />);
     const switcher = screen.getByTestId('tool-switcher');
