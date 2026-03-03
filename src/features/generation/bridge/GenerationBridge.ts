@@ -117,6 +117,9 @@ export class GenerationBridge {
   /**
    * Initialize the worker. Resolves when the worker signals INIT_READY.
    * Safe to call multiple times (returns cached promise).
+   *
+   * Retries once on failure to recover from transient network errors,
+   * CDN edge cache misses, and service worker update races.
    */
   init(): Promise<void> {
     if (this.destroyed) {
@@ -127,7 +130,28 @@ export class GenerationBridge {
       return this.initPromise;
     }
 
-    this.initPromise = new Promise<void>((resolve, reject) => {
+    this.initPromise = this.tryInit().catch((firstError: unknown) => {
+      // Tear down the failed worker before retrying
+      this.worker?.terminate();
+      this.worker = null;
+
+      if (this.destroyed) throw firstError;
+
+      return this.tryInit().catch((retryError: unknown) => {
+        // Both attempts failed — throw the retry error (more recent/relevant)
+        // but preserve the first error for diagnostics
+        const message = retryError instanceof Error ? retryError.message : String(retryError);
+        const firstMessage = firstError instanceof Error ? firstError.message : String(firstError);
+        throw new Error(`${message} (first attempt: ${firstMessage})`);
+      });
+    });
+
+    return this.initPromise;
+  }
+
+  /** Single init attempt: create worker, send INIT, wait for INIT_READY. */
+  private tryInit(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       try {
         this.worker = new Worker(new URL('../worker/generation.worker.ts', import.meta.url), {
           type: 'module',
@@ -147,7 +171,14 @@ export class GenerationBridge {
 
         this.worker.addEventListener('message', onInitMessage);
         this.worker.addEventListener('error', (e) => {
-          reject(new Error(`Worker failed to initialize: ${e.message}`));
+          // When a worker script fails to load (network error, CSP block, missing module),
+          // the ErrorEvent.message is often empty. Build a diagnostic message from whatever
+          // fields are available so the error is actionable in telemetry.
+          const detail =
+            e.message ||
+            (e.filename ? `loading ${e.filename}${e.lineno ? `:${e.lineno}` : ''}` : '') ||
+            'script failed to load (possible network error, CSP restriction, or unsupported browser)';
+          reject(new Error(`Worker failed to initialize: ${detail}`));
         });
 
         this.postMessage({ type: 'INIT' });
@@ -155,8 +186,6 @@ export class GenerationBridge {
         reject(new Error(`Failed to create worker: ${e instanceof Error ? e.message : String(e)}`));
       }
     });
-
-    return this.initPromise;
   }
 
   /**
