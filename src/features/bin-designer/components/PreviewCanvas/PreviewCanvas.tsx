@@ -374,7 +374,7 @@ export function PreviewCanvas() {
   const maxGridUnits = useMemo(() => calcMaxGridUnits(bedSize, gridUnit), [bedSize, gridUnit]);
   const needsSplit = params.width > maxGridUnits || params.depth > maxGridUnits;
 
-  // Drive split piece mesh generation when exploded mode is active
+  // Drive split piece mesh generation when bin exceeds print bed
   useSplitPreview();
 
   // Show split piece meshes when pieces are generated and bin needs splitting
