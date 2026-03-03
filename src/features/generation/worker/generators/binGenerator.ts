@@ -665,9 +665,11 @@ function splitSolidIntoPieces(
     // Slab width covers the full lip taper zone on both sides of the cut,
     // plus 0.5mm margin for floating-point/tessellation robustness.
     const trimSlabWidth = 2 * LIP_TAPER_WIDTH + 0.5;
-    // Start 0.1mm below wallTopZ to avoid coincident faces with the
+    // Start slightly below wallTopZ to avoid coincident faces with the
     // lip/wall junction, which would cause OCCT boolean failures.
-    const trimZStart = wallTopZ - 0.1;
+    // Keep small (0.01mm) to avoid visible tessellation artifacts and
+    // to preserve wall material for connector lip steps at wallTopZ.
+    const trimZStart = wallTopZ - 0.01;
     // 10mm margin above lip top ensures full removal regardless of geometry.
     const trimHeight = LIP_HEIGHT + 10;
     // 10mm overhang past each bin edge (20mm total) ensures slabs fully span the bin.
