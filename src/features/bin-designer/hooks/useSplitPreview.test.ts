@@ -21,7 +21,14 @@ vi.mock('@/shared/generation/bridge', () => ({
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** A minimal SplitPreview result with one piece. */
+/** Flush pending microtasks so async effects resolve. */
+async function flush(): Promise<void> {
+  await act(async () => {
+    await Promise.resolve();
+  });
+}
+
+/** A minimal SplitPreview result with N pieces. */
 function makeSplitResult(count = 1) {
   const pieces = Array.from({ length: count }, (_, i) => ({
     col: i + 1,
@@ -34,6 +41,43 @@ function makeSplitResult(count = 1) {
   return { pieces };
 }
 
+/** A stub mesh entry for pre-seeding the store. */
+const STUB_MESH_ENTRY = {
+  col: 1,
+  row: 1,
+  mesh: {
+    vertices: new Float32Array(0),
+    normals: new Float32Array(0),
+    indices: new Uint32Array(0),
+    edgeVertices: new Float32Array(0),
+  },
+};
+
+/** Set store to the common "oversized + exploded + idle" state. */
+function setOversizedExplodedState(overrides?: {
+  width?: number;
+  depth?: number;
+  splitViewMode?: 'exploded' | 'assembled';
+  generationStatus?: string;
+}) {
+  useDesignerStore.setState({
+    params: {
+      ...DEFAULT_BIN_PARAMS,
+      width: overrides?.width ?? 8,
+      ...(overrides?.depth !== undefined ? { depth: overrides.depth } : {}),
+    },
+    generation: {
+      ...DEFAULT_GENERATION_STATE,
+      status: overrides?.generationStatus ?? 'idle',
+    },
+    ui: {
+      ...DEFAULT_UI_STATE,
+      splitViewMode: overrides?.splitViewMode ?? 'exploded',
+      splitPieceMeshes: [],
+    },
+  });
+}
+
 /** Reset both stores to a known baseline before each test. */
 function resetStores() {
   useDesignerStore.setState({
@@ -42,7 +86,6 @@ function resetStores() {
     ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
   });
 
-  // Restore settings defaults (256mm bed / 42mm grid → maxGridUnits = 6)
   useSettingsStore.setState((state) => ({
     settings: {
       ...state.settings,
@@ -68,124 +111,73 @@ describe('useSplitPreview', () => {
   // ── Condition: bin does NOT need split ──────────────────────────────────
 
   it('does NOT call bridge when bin fits on print bed (small bin)', async () => {
-    // DEFAULT_BIN_PARAMS has width=2, depth=2 — both well under maxGridUnits=6
     renderHook(() => useSplitPreview());
-
-    await act(async () => {
-      await Promise.resolve();
-    });
+    await flush();
 
     expect(mockGenerateSplitPreview).not.toHaveBeenCalled();
   });
 
   it('clears splitPieceMeshes when bin no longer needs split', async () => {
-    // Pre-seed some meshes so we can confirm they get wiped
     useDesignerStore.setState({
       ui: {
         ...DEFAULT_UI_STATE,
         splitViewMode: 'exploded',
-        splitPieceMeshes: [
-          {
-            col: 1,
-            row: 1,
-            mesh: {
-              vertices: new Float32Array(0),
-              normals: new Float32Array(0),
-              indices: new Uint32Array(0),
-              edgeVertices: new Float32Array(0),
-            },
-          },
-        ],
+        splitPieceMeshes: [STUB_MESH_ENTRY],
       },
-      params: { ...DEFAULT_BIN_PARAMS, width: 2 }, // small — doesn't need split
+      params: { ...DEFAULT_BIN_PARAMS, width: 2 },
     });
 
     renderHook(() => useSplitPreview());
-
-    await act(async () => {
-      await Promise.resolve();
-    });
+    await flush();
 
     expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(0);
   });
 
   // ── Condition: splitViewMode is 'assembled' ─────────────────────────────
 
-  it('does NOT call bridge when splitViewMode is assembled', async () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 }, // large — would need split
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'assembled', splitPieceMeshes: [] },
-    });
+  it('calls bridge in assembled mode too (meshes needed for both modes)', async () => {
+    setOversizedExplodedState({ splitViewMode: 'assembled' });
 
     renderHook(() => useSplitPreview());
+    await flush();
 
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(mockGenerateSplitPreview).not.toHaveBeenCalled();
+    expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
   });
 
-  it('clears existing meshes when switching to assembled mode', async () => {
+  it('keeps existing meshes when in assembled mode', async () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 8 },
+      generation: { ...DEFAULT_GENERATION_STATE },
       ui: {
         ...DEFAULT_UI_STATE,
         splitViewMode: 'assembled',
-        splitPieceMeshes: [
-          {
-            col: 1,
-            row: 1,
-            mesh: {
-              vertices: new Float32Array(0),
-              normals: new Float32Array(0),
-              indices: new Uint32Array(0),
-              edgeVertices: new Float32Array(0),
-            },
-          },
-        ],
+        splitPieceMeshes: [STUB_MESH_ENTRY],
       },
     });
 
     renderHook(() => useSplitPreview());
+    await flush();
 
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(0);
+    // Meshes are regenerated (bridge called), not cleared
+    expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
   });
 
   // ── Condition: generation is NOT idle ──────────────────────────────────
 
   it('does NOT call bridge when generation is in progress', async () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-      generation: { status: 'generating', mesh: null, progress: 0.5, epoch: 0 },
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
-    });
+    setOversizedExplodedState({ generationStatus: 'generating' });
 
     renderHook(() => useSplitPreview());
-
-    await act(async () => {
-      await Promise.resolve();
-    });
+    await flush();
 
     expect(mockGenerateSplitPreview).not.toHaveBeenCalled();
   });
 
   it('does NOT call bridge when generation has errored', async () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-      generation: { status: 'error', mesh: null, progress: 0, epoch: 0 },
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
-    });
+    setOversizedExplodedState({ generationStatus: 'error' });
 
     renderHook(() => useSplitPreview());
-
-    await act(async () => {
-      await Promise.resolve();
-    });
+    await flush();
 
     expect(mockGenerateSplitPreview).not.toHaveBeenCalled();
   });
@@ -193,51 +185,28 @@ describe('useSplitPreview', () => {
   // ── Happy path: all conditions met ─────────────────────────────────────
 
   it('calls bridge when exploded + needsSplit (width) + idle', async () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-      generation: { ...DEFAULT_GENERATION_STATE, status: 'idle' },
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
-    });
+    setOversizedExplodedState();
 
     renderHook(() => useSplitPreview());
-
-    await act(async () => {
-      await Promise.resolve();
-    });
+    await flush();
 
     expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
   });
 
   it('calls bridge when exploded + needsSplit (depth) + idle', async () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, depth: 8 },
-      generation: { ...DEFAULT_GENERATION_STATE, status: 'idle' },
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
-    });
+    setOversizedExplodedState({ width: 2, depth: 8 });
 
     renderHook(() => useSplitPreview());
-
-    await act(async () => {
-      await Promise.resolve();
-    });
+    await flush();
 
     expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
   });
 
   it('stores mesh entries returned by bridge into the designer store', async () => {
-    mockGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
-
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-      generation: { ...DEFAULT_GENERATION_STATE, status: 'idle' },
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
-    });
+    setOversizedExplodedState();
 
     renderHook(() => useSplitPreview());
-
-    await act(async () => {
-      await Promise.resolve();
-    });
+    await flush();
 
     const meshes = useDesignerStore.getState().ui.splitPieceMeshes;
     expect(meshes).toHaveLength(2);
@@ -247,24 +216,15 @@ describe('useSplitPreview', () => {
   });
 
   it('passes params and cut planes to bridge.generateSplitPreview', async () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-      generation: { ...DEFAULT_GENERATION_STATE, status: 'idle' },
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
-    });
+    setOversizedExplodedState();
 
     renderHook(() => useSplitPreview());
+    await flush();
 
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // The hook passes params directly — width must be 8, cutPlanes are arrays.
-    // splitConnectorConfig comes from params.splitConnectors (undefined when not set).
     const call = mockGenerateSplitPreview.mock.calls[0];
     expect(call[0]).toMatchObject({ width: 8 });
-    expect(Array.isArray(call[1])).toBe(true); // cutPlanesX
-    expect(Array.isArray(call[2])).toBe(true); // cutPlanesY
+    expect(Array.isArray(call[1])).toBe(true);
+    expect(Array.isArray(call[2])).toBe(true);
     expect(call[3]).toHaveProperty('splitConnectorConfig');
   });
 
@@ -282,70 +242,49 @@ describe('useSplitPreview', () => {
     });
 
     mockGenerateSplitPreview.mockReturnValueOnce(firstResult).mockReturnValueOnce(secondResult);
-
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-      generation: { ...DEFAULT_GENERATION_STATE, status: 'idle' },
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
-    });
+    setOversizedExplodedState();
 
     const { rerender } = renderHook(() => useSplitPreview());
 
-    // Trigger a second call by changing params — this bumps requestIdRef
     act(() => {
       useDesignerStore.getState().setParam('width', 9);
     });
     rerender();
 
+    // Resolve the newer request first
     await act(async () => {
-      // Resolve the SECOND (newer) request first — sets meshes from second call
       resolveSecond(makeSplitResult(3));
       await Promise.resolve();
     });
-
     const afterSecond = useDesignerStore.getState().ui.splitPieceMeshes;
 
+    // Resolve the stale request -- should be ignored
     await act(async () => {
-      // Now resolve the FIRST (stale) request — should be ignored
       resolveFirst(makeSplitResult(1));
       await Promise.resolve();
     });
-
-    // Stale result should NOT overwrite the newer result
     const afterFirst = useDesignerStore.getState().ui.splitPieceMeshes;
+
     expect(afterFirst).toHaveLength(afterSecond.length);
   });
 
-  // ── Switching from exploded → assembled clears meshes ──────────────────
+  // ── Switching between modes preserves meshes ────────────────────────────
 
-  it('clears meshes when switching from exploded to assembled after bridge returned results', async () => {
-    mockGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
-
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-      generation: { ...DEFAULT_GENERATION_STATE, status: 'idle' },
-      ui: { ...DEFAULT_UI_STATE, splitViewMode: 'exploded', splitPieceMeshes: [] },
-    });
+  it('preserves meshes when switching from exploded to assembled', async () => {
+    setOversizedExplodedState();
 
     const { rerender } = renderHook(() => useSplitPreview());
-
-    // Let the bridge resolve and meshes populate
-    await act(async () => {
-      await Promise.resolve();
-    });
+    await flush();
 
     expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(2);
 
-    // Switch to assembled
     act(() => {
       useDesignerStore.getState().setSplitViewMode('assembled');
     });
     rerender();
+    await flush();
 
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(0);
+    // Meshes persist — SplitBinMeshes uses them in both modes
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(2);
   });
 });

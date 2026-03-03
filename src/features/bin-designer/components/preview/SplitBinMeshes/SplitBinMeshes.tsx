@@ -149,13 +149,24 @@ export function SplitBinMeshes({ color, wireframe }: SplitBinMeshesProps) {
   const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isExploded = splitViewMode === 'exploded';
 
+  // Compute max col/row for centering the explosion offsets
+  const maxCol = useMemo(
+    () => splitPieceMeshes.reduce((m, e) => Math.max(m, e.col), 0),
+    [splitPieceMeshes]
+  );
+  const maxRow = useMemo(
+    () => splitPieceMeshes.reduce((m, e) => Math.max(m, e.row), 0),
+    [splitPieceMeshes]
+  );
+
   const labelZ = totalH + LABEL_OFFSET_MM;
 
   return (
     <>
       {splitPieceMeshes.map((entry) => {
-        const explodeX = isExploded ? entry.col * EXPLODE_GAP_MM : 0;
-        const explodeY = isExploded ? entry.row * EXPLODE_GAP_MM : 0;
+        // Center the explosion: offset relative to midpoint so pieces spread symmetrically
+        const explodeX = isExploded ? (entry.col - (maxCol + 1) / 2) * EXPLODE_GAP_MM : 0;
+        const explodeY = isExploded ? (entry.row - (maxRow + 1) / 2) * EXPLODE_GAP_MM : 0;
 
         return (
           <PieceMesh

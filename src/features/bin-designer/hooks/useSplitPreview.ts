@@ -1,10 +1,10 @@
 /**
  * Drives split bin piece mesh generation for the 3D preview.
  *
- * Watches `splitViewMode`, `needsSplit`, and generation status to trigger
- * the worker bridge's `generateSplitPreview()` when exploded mode is active
- * on an oversized bin. Stores results in the designer store for
- * `SplitBinMeshes` to render.
+ * Triggers the worker bridge whenever the bin needs splitting.
+ * Meshes are generated for both assembled and exploded modes — the view
+ * mode only controls piece positioning in SplitBinMeshes.
+ * Clears meshes when the bin no longer needs splitting.
  */
 
 import { useEffect, useRef } from 'react';
@@ -14,17 +14,12 @@ import { useSettingsStore } from '@/core/store/settings';
 import { calcMaxGridUnits } from '@/core/constants';
 import { getActiveBridge } from '@/shared/generation/bridge';
 import { getSplitPlanePositionsMm } from '@/features/bin-designer/utils/splitPositions';
+import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { SplitPieceMeshEntry } from '../types';
 
-/**
- * Trigger split preview mesh generation when exploded mode is active
- * on a bin that needs splitting. Clears meshes when switching to assembled
- * mode or when the bin no longer needs splitting.
- */
 export function useSplitPreview(): void {
-  const { splitViewMode, generationStatus, params } = useDesignerStore(
+  const { generationStatus, params } = useDesignerStore(
     useShallow((s) => ({
-      splitViewMode: s.ui.splitViewMode,
       generationStatus: s.generation.status,
       params: s.params,
     }))
@@ -39,21 +34,23 @@ export function useSplitPreview(): void {
 
   const maxGridUnits = calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm);
   const needsSplit = params.width > maxGridUnits || params.depth > maxGridUnits;
-  const isExploded = splitViewMode === 'exploded';
-  const isIdle = generationStatus === 'idle';
+  const isReady = generationStatus === 'idle' || generationStatus === 'complete';
 
-  // Track the last request to avoid stale updates
   const requestIdRef = useRef(0);
 
   useEffect(() => {
-    if (!isExploded || !needsSplit || !isIdle) {
-      // Clear piece meshes when conditions aren't met
+    // Only clear meshes when the bin no longer needs splitting.
+    // During regeneration (!isReady), keep existing meshes visible so the
+    // view doesn't flash between single-piece and split-piece renderers.
+    if (!needsSplit) {
       const current = useDesignerStore.getState().ui.splitPieceMeshes;
       if (current.length > 0) {
         useDesignerStore.getState().setSplitPieceMeshes([]);
       }
       return;
     }
+
+    if (!isReady) return;
 
     const bridge = getActiveBridge();
     if (!bridge) return;
@@ -64,7 +61,7 @@ export function useSplitPreview(): void {
 
     bridge
       .generateSplitPreview(params, cutPlanesX, cutPlanesY, {
-        splitConnectorConfig: params.splitConnectors,
+        splitConnectorConfig: params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG,
       })
       .then((result) => {
         if (requestIdRef.current !== requestId) return;
@@ -81,5 +78,5 @@ export function useSplitPreview(): void {
       .catch(() => {
         // Silently ignore errors (e.g., superseded requests)
       });
-  }, [isExploded, needsSplit, isIdle, params, maxGridUnits]);
+  }, [needsSplit, isReady, params, maxGridUnits]);
 }

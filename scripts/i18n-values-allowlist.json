@@ -138,6 +138,7 @@
     "toolSwitcher.binDesigner",
     "toolSwitcher.gridfinityLayoutTool",
     "toolSwitcher.layout",
+    "binDesigner.splitPinDiameter",
     "binDesigner.estimate.filament",
     "binDesigner.estimate.triangles",
     "binDesigner.nameStyle.compact",

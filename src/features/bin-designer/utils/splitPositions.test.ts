@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  getSplitPositions,
-  getSplitPieceCount,
-  getSplitPlanePositionsMm,
-  computePinPositions,
-} from './splitPositions';
+import { getSplitPositions, getSplitPieceCount, getSplitPlanePositionsMm } from './splitPositions';
+import { computePinPositions } from '@/shared/generation/splitUtils';
 
 describe('getSplitPositions', () => {
   it('returns empty for bin that fits', () => {

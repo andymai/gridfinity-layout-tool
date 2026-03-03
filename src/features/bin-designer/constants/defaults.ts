@@ -43,10 +43,13 @@ export const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
   topOffset: 0,
 } as const;
 
-/** Default split connector configuration: enabled with standard FDM tolerances */
+/** Default split connector configuration: enabled with glue-fit tolerances.
+ *  Clearance is 0.15mm per side (0.3mm total gap) — loose enough for CA glue
+ *  to wick in and easy assembly with wet adhesive, while keeping tongue
+ *  features thick enough for reliable OCCT boolean operations. */
 export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   enabled: true,
-  clearance: 0.1,
+  clearance: 0.15,
   pinDiameter: 2.5,
   pinProtrusion: 3.0,
   pinSpacing: 35,

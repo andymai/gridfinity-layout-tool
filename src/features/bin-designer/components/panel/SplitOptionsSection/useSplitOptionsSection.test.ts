@@ -4,6 +4,7 @@ import { useSplitOptionsSection } from './useSplitOptionsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 
 describe('useSplitOptionsSection', () => {
   beforeEach(() => {
@@ -16,6 +17,7 @@ describe('useSplitOptionsSection', () => {
         ...useSettingsStore.getState().settings,
         defaultPrintBedSize: 256,
         defaultGridUnitMm: 42,
+        defaultHeightUnitMm: 7,
       },
     });
   });
@@ -40,9 +42,7 @@ describe('useSplitOptionsSection', () => {
       params: { ...DEFAULT_BIN_PARAMS, width: 8 },
     });
     const { result } = renderHook(() => useSplitOptionsSection());
-    expect(result.current.config.enabled).toBe(true);
-    expect(result.current.config.clearance).toBe(0.1);
-    expect(result.current.config.pinDiameter).toBe(2.5);
+    expect(result.current.config).toEqual(DEFAULT_SPLIT_CONNECTOR_CONFIG);
   });
 
   it('toggleEnabled writes splitConnectors to store', () => {
@@ -55,22 +55,7 @@ describe('useSplitOptionsSection', () => {
       result.current.handlers.toggleEnabled();
     });
 
-    const state = useDesignerStore.getState();
-    expect(state.params.splitConnectors?.enabled).toBe(false);
-  });
-
-  it('setClearance updates clearance value', () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-    });
-    const { result } = renderHook(() => useSplitOptionsSection());
-
-    act(() => {
-      result.current.handlers.setClearance(0.2);
-    });
-
-    const state = useDesignerStore.getState();
-    expect(state.params.splitConnectors?.clearance).toBe(0.2);
+    expect(useDesignerStore.getState().params.splitConnectors?.enabled).toBe(false);
   });
 
   it('exposes splitViewMode from UI state', () => {
@@ -78,7 +63,7 @@ describe('useSplitOptionsSection', () => {
       params: { ...DEFAULT_BIN_PARAMS, width: 8 },
     });
     const { result } = renderHook(() => useSplitOptionsSection());
-    expect(result.current.splitViewMode).toBe('exploded'); // default
+    expect(result.current.splitViewMode).toBe('exploded');
   });
 
   it('setSplitViewMode updates UI state', () => {
@@ -92,5 +77,29 @@ describe('useSplitOptionsSection', () => {
     });
 
     expect(useDesignerStore.getState().ui.splitViewMode).toBe('assembled');
+  });
+
+  it('returns splitAxis="width" when only width exceeds', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.splitAxis).toBe('width');
+  });
+
+  it('returns splitAxis="depth" when only depth exceeds', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 3, depth: 8 },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.splitAxis).toBe('depth');
+  });
+
+  it('returns splitAxis="both" when both exceed', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 8 },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.splitAxis).toBe('both');
   });
 });

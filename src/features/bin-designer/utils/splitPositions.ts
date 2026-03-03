@@ -36,6 +36,3 @@ export function getSplitPlanePositionsMm(
 
   return positions.map((pos) => pos * gridSizeMm - halfSize).sort((a, b) => a - b);
 }
-
-// Re-export from shared so bin-designer consumers don't need to change imports
-export { computePinPositions } from '@/shared/generation/splitUtils';

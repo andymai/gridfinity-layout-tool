@@ -1243,11 +1243,13 @@ const en: Record<string, string> = {
   'binDesigner.group.shape': 'Shape',
   'binDesigner.group.interior': 'Interior',
   'binDesigner.group.base': 'Base',
-  'binDesigner.group.split': 'Split Options',
-  'binDesigner.splitInfo': 'Bin exceeds print bed — will be split into {count} pieces.',
+
+  'binDesigner.splitAxisInfo': 'Split along {axis} into {count} pieces',
+
+  'binDesigner.splitAxisWidth': 'width',
+  'binDesigner.splitAxisDepth': 'depth',
+  'binDesigner.splitAxisBoth': 'width × depth',
   'binDesigner.splitConnectors': 'Alignment connectors',
-  'binDesigner.splitClearance': 'Fit clearance',
-  'binDesigner.splitPreviewMode': 'Preview',
   'binDesigner.splitAssembled': 'Assembled',
   'binDesigner.splitExploded': 'Exploded',
   'binDesigner.cutouts.instructions':

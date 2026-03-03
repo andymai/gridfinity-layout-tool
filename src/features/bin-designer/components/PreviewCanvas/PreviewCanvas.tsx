@@ -377,7 +377,7 @@ export function PreviewCanvas() {
   // Drive split piece mesh generation when exploded mode is active
   useSplitPreview();
 
-  // Show split pieces when exploded mode has generated meshes
+  // Show split piece meshes only in exploded mode
   const showSplitPieces = splitViewMode === 'exploded' && splitPieceMeshes.length > 0 && needsSplit;
 
   // Screen reader description
@@ -545,27 +545,27 @@ export function PreviewCanvas() {
             <GhostCutouts />
             <GhostWallCutouts />
 
-            {/* Split lines for oversized bins */}
-            <BinSplitLines />
+            {/* Split lines for oversized bins — hidden when pieces are shown */}
+            {!showSplitPieces && <BinSplitLines />}
 
             {/* Footprint grid */}
             <FootprintGrid width={width} depth={depth} />
 
-            {/* Grid axis labels */}
-            <BinAxisLabels width={width} depth={depth} />
-
-            {/* Dimension markers */}
-            <BinDimensions
-              width={width}
-              depth={depth}
-              height={height}
-              gridUnitMm={params.gridUnitMm}
-              heightUnitMm={params.heightUnitMm}
-              stackingLip={params.base.stackingLip}
-            />
-
-            {/* Design name on floor */}
-            <BinNameLabel width={width} depth={depth} name={designName} />
+            {/* Dimension markers and labels — hidden for split pieces */}
+            {!showSplitPieces && (
+              <>
+                <BinAxisLabels width={width} depth={depth} />
+                <BinDimensions
+                  width={width}
+                  depth={depth}
+                  height={height}
+                  gridUnitMm={params.gridUnitMm}
+                  heightUnitMm={params.heightUnitMm}
+                  stackingLip={params.base.stackingLip}
+                />
+                <BinNameLabel width={width} depth={depth} name={designName} />
+              </>
+            )}
 
             {/* Orbit controls - Z-up with polar limits, pan disabled on mobile */}
             <OrbitControls

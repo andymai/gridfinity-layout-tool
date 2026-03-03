@@ -5,7 +5,8 @@ import { useSettingsStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { getSplitPieceCount } from '@/features/bin-designer/utils/splitPositions';
-import type { SplitConnectorConfig } from '@/features/bin-designer/types';
+
+export type SplitAxis = 'width' | 'depth' | 'both';
 
 export function useSplitOptionsSection() {
   const { width, depth, splitConnectors, splitViewMode, setParam, setSplitViewMode } =
@@ -39,27 +40,33 @@ export function useSplitOptionsSection() {
     [width, depth, maxGridUnits, needsSplit]
   );
 
-  const config: SplitConnectorConfig = splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
+  const splitAxis: SplitAxis = useMemo(() => {
+    if (!needsSplit) return 'width';
+    const splitW = width > maxGridUnits;
+    const splitD = depth > maxGridUnits;
+    if (splitW && splitD) return 'both';
+    if (splitD) return 'depth';
+    return 'width';
+  }, [needsSplit, width, depth, maxGridUnits]);
 
-  const update = useCallback(
-    (patch: Partial<SplitConnectorConfig>) => {
-      setParam('splitConnectors', { ...config, ...patch });
-    },
-    [config, setParam]
-  );
+  const config = splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
+
+  const toggleEnabled = useCallback(() => {
+    setParam('splitConnectors', { ...config, enabled: !config.enabled });
+  }, [config, setParam]);
 
   const handlers = useMemo(
     () => ({
-      toggleEnabled: () => update({ enabled: !config.enabled }),
-      setClearance: (v: number) => update({ clearance: v }),
+      toggleEnabled,
       setSplitViewMode,
     }),
-    [config.enabled, update, setSplitViewMode]
+    [toggleEnabled, setSplitViewMode]
   );
 
   return {
     needsSplit,
     pieceCount,
+    splitAxis,
     config,
     splitViewMode,
     handlers,

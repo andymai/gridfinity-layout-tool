@@ -12,67 +12,61 @@ describe('SplitOptionsSection', () => {
       params: { ...DEFAULT_BIN_PARAMS },
       ui: { ...DEFAULT_UI_STATE },
     });
-    // Default print bed = 256mm -> maxGridUnits = 6
     useSettingsStore.setState({
       settings: {
         ...useSettingsStore.getState().settings,
         defaultPrintBedSize: 256,
         defaultGridUnitMm: 42,
+        defaultHeightUnitMm: 7,
       },
     });
   });
 
   it('returns null when bin fits on print bed', () => {
-    // Default bin is 2x2 — fits on any reasonable bed
     const { container } = render(<SplitOptionsSection />);
     expect(container.innerHTML).toBe('');
   });
 
   it('renders when bin exceeds print bed', () => {
     useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        width: 8, // Exceeds maxGridUnits of 6
-        depth: 3,
-      },
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },
     });
 
     render(<SplitOptionsSection />);
     expect(screen.getByText('Alignment connectors')).toBeInTheDocument();
   });
 
-  it('shows piece count info', () => {
+  it('shows split axis info', () => {
     useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        width: 8,
-        depth: 8,
-      },
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3, height: 3 },
     });
 
     render(<SplitOptionsSection />);
-    // 8x8 with maxGridUnits=6 -> 4 pieces
-    expect(screen.getByText(/4 pieces/)).toBeInTheDocument();
+    expect(screen.getByText(/width.*2 pieces/)).toBeInTheDocument();
   });
 
   it('toggles alignment connectors', async () => {
     const user = userEvent.setup();
     useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        width: 8,
-        depth: 3,
-      },
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },
     });
 
     render(<SplitOptionsSection />);
+    await user.click(screen.getByRole('switch', { name: 'Alignment connectors' }));
 
-    const toggle = screen.getByRole('switch', { name: 'Alignment connectors' });
-    await user.click(toggle);
-
-    const state = useDesignerStore.getState();
-    expect(state.params.splitConnectors?.enabled).toBe(false);
+    expect(useDesignerStore.getState().params.splitConnectors?.enabled).toBe(false);
   });
 
-  // Note: assembled/exploded toggle was moved to PreviewControls
+  it('shows only the toggle, no parameter controls', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },
+    });
+
+    render(<SplitOptionsSection />);
+    expect(screen.getByText('Alignment connectors')).toBeInTheDocument();
+    // No individual parameter inputs exposed
+    expect(screen.queryByText('Fit clearance')).not.toBeInTheDocument();
+    expect(screen.queryByText('Tongue width')).not.toBeInTheDocument();
+    expect(screen.queryByText('Tongue depth')).not.toBeInTheDocument();
+  });
 });

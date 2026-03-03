@@ -683,20 +683,31 @@ function splitSolidIntoPieces(
       let piece = unwrap(intersect(clone(solid), translatedBox));
 
       if (connectorConfig !== undefined && connectorConfig.enabled) {
-        const cutFaces = computeCutFaces(col, row, cutPlanesX, cutPlanesY, outerW, outerD);
+        const cutFaces = computeCutFaces(
+          col,
+          row,
+          cutPlanesX,
+          cutPlanesY,
+          outerW,
+          outerD,
+          pieceW,
+          pieceD,
+          centerX,
+          centerY
+        );
         const geometryContext: BinGeometryContext = {
           floorZ,
           wallTopZ,
           hasStackingLip: params.base.stackingLip,
-          totalHeightMm: totalHeight,
           wallThickness: params.wallThickness,
         };
         piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
       }
 
+      const colLetter = String.fromCharCode(65 + col); // A, B, C...
       pieces.push({
         solid: piece,
-        label: `piece-${col + 1}x${row + 1}`,
+        label: `${colLetter}${row + 1}`,
         col: col + 1,
         row: row + 1,
         widthMm: pieceW,

@@ -5,7 +5,7 @@
  * organized into three groups: Shape, Interior, and Base.
  *
  * Groups:
- * - Shape: Dimensions, Walls
+ * - Shape: Dimensions, Split Options (conditional), Walls
  * - Interior: Interior Dividers, Label Tabs, Finger Scoop
  * - Base: Base attachments, Physical Units
  */
@@ -46,6 +46,11 @@ export function ParameterPanel() {
           <div className="px-4 py-4 border-b border-stroke-subtle/50">
             <DimensionsSection />
           </div>
+          {needsSplit && (
+            <div className="px-4 py-4 border-b border-stroke-subtle/50">
+              <SplitOptionsSection />
+            </div>
+          )}
           <div className="px-4 py-4">
             <WallsSection />
           </div>
@@ -83,15 +88,6 @@ export function ParameterPanel() {
             <PhysicalUnitsSection />
           </div>
         </StickyGroupHeader>
-
-        {/* Split group (only when bin exceeds print bed) */}
-        {needsSplit && (
-          <StickyGroupHeader title={t('binDesigner.group.split')} defaultExpanded>
-            <div className="px-4 py-4">
-              <SplitOptionsSection />
-            </div>
-          </StickyGroupHeader>
-        )}
 
         {/* Attribution */}
         <div className="px-4 py-4 text-content-disabled text-[10px] leading-relaxed">
