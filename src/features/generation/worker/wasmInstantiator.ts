@@ -1,26 +1,34 @@
 /**
  * Orchestrates WASM loading for OpenCascade.
  *
- * Always uses single-threaded WASM. Multi-threaded (pthread) WASM is
- * incompatible with Vite's bundling: Emscripten pthreads expect the main JS
- * module to exist as a standalone importable file, but Vite/Rollup inlines it
- * into the worker chunk. The pthread sub-workers then fail with
- * "Failed to fetch dynamically imported module" because the original filename
- * (brepjs_threaded.js) no longer exists in the build output.
+ * Uses multi-threaded (pthread) WASM in production when SharedArrayBuffer is
+ * available, falling back to single-threaded WASM otherwise.
+ *
+ * Threading is disabled in dev mode because Vite's dev server does not serve
+ * pthread worker scripts correctly.
  *
  * The Emscripten-generated JS uses environment detection (window, importScripts)
  * to locate the .wasm file. In Vite's ES module workers, neither exists, so the
- * WASM path resolves incorrectly. We provide an explicit locateFile override using
+ * WASM path resolves incorrectly. We provide explicit locateFile overrides using
  * Vite's ?url imports to ensure the correct path in all environments.
+ *
+ * The threaded .js module is imported twice: once as a module (for the factory
+ * function) and once as ?url (for the hashed asset URL to pass to pthread
+ * sub-workers via mainScriptUrlOrBlob). Vite handles both correctly.
  */
 
 import { initFromOC } from 'brepjs';
+import { detectWasmCapabilities } from '@/shared/generation/wasmCapabilities';
 
-// Single-threaded WASM (always used — see module doc for why threaded is disabled)
+// Single-threaded WASM (always available as fallback)
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
-
-// Resolved WASM binary URL (Vite handles asset path resolution)
 import singleWasmUrl from 'brepjs-opencascade/src/brepjs_single.wasm?url';
+
+// Multi-threaded WASM (used when SharedArrayBuffer is available)
+import opencascadeThreadedInit from 'brepjs-opencascade/src/brepjs_threaded.js';
+import threadedJsUrl from 'brepjs-opencascade/src/brepjs_threaded.js?url';
+import threadedWasmUrl from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
+import threadedWorkerUrl from 'brepjs-opencascade/src/brepjs_threaded.worker.js?url';
 
 export interface WasmLoadResult {
   /** Whether multi-threaded WASM is being used */
@@ -38,26 +46,46 @@ function getHardwareConcurrency(): number {
     : 4;
 }
 
+/** Whether to use threaded WASM: production only + capability check. */
+function shouldUseThreaded(): boolean {
+  if (import.meta.env.DEV) return false;
+  return detectWasmCapabilities().supportsThreads;
+}
+
 /**
- * Load and initialize OpenCascade (single-threaded).
+ * Load and initialize OpenCascade.
  *
+ * Selects threaded or single-threaded WASM based on environment capabilities.
  * Initialises the brepjs kernel with the loaded OpenCascade instance.
  */
 export async function loadOpenCascade(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();
+  const useThreaded = shouldUseThreaded();
 
-  // Pass locateFile to override Emscripten's broken path resolution in ES module workers.
-  // The init function is typed as () => Promise but the underlying Emscripten factory
-  // still accepts a Module config object.
-  const moduleConfig = {
-    locateFile: (path: string) => (path.endsWith('.wasm') ? singleWasmUrl : path),
-  };
+  let OC: unknown;
 
-  const OC = await (opencascadeSingleInit as (config: typeof moduleConfig) => Promise<unknown>)(
-    moduleConfig
-  );
+  if (useThreaded) {
+    const moduleConfig = {
+      mainScriptUrlOrBlob: threadedJsUrl,
+      locateFile: (path: string) => {
+        if (path.endsWith('.wasm')) return threadedWasmUrl;
+        if (path.endsWith('.worker.js')) return threadedWorkerUrl;
+        return path;
+      },
+    };
+    OC = await (opencascadeThreadedInit as (config: typeof moduleConfig) => Promise<unknown>)(
+      moduleConfig
+    );
+  } else {
+    const moduleConfig = {
+      locateFile: (path: string) => (path.endsWith('.wasm') ? singleWasmUrl : path),
+    };
+    OC = await (opencascadeSingleInit as (config: typeof moduleConfig) => Promise<unknown>)(
+      moduleConfig
+    );
+  }
 
   initFromOC(OC);
 
-  return { isThreaded: false, hardwareConcurrency };
+  return { isThreaded: useThreaded, hardwareConcurrency };
 }
