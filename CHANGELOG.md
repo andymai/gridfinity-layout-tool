@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.51.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.5...gridfinity-layout-tool-v3.51.0) (2026-03-03)
+
+
+### Features
+
+* add alignment connectors to split bin exports ([#1004](https://github.com/andymai/gridfinity-layout-tool/issues/1004)) ([c1361b2](https://github.com/andymai/gridfinity-layout-tool/commit/c1361b2af466613bbfa1ffb98813ec39468e36c7))
+
 ## [3.50.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.50.4...gridfinity-layout-tool-v3.50.5) (2026-03-02)
 
 
