@@ -167,6 +167,20 @@ export interface WallPatternConfig {
   readonly pattern: WallPatternType;
 }
 
+/** Configuration for alignment connectors on split bin cut faces */
+export interface SplitConnectorConfig {
+  /** Whether to add alignment connectors (default: true when split needed) */
+  readonly enabled: boolean;
+  /** FDM fit clearance applied to all hole/groove dimensions per side (mm, 0.05–0.3) */
+  readonly clearance: number;
+  /** Cylindrical pin diameter in the floor/base zone (mm) */
+  readonly pinDiameter: number;
+  /** Pin protrusion height from cut face (mm) */
+  readonly pinProtrusion: number;
+  /** Target spacing between pins along edge (mm). Actual count is auto-rounded to fit. */
+  readonly pinSpacing: number;
+}
+
 /** Complete bin parameter set for generation */
 export interface BinParams {
   readonly width: number;
@@ -190,6 +204,8 @@ export interface BinParams {
   readonly cutouts: Cutout[];
   readonly cutoutConfig: CutoutConfig;
   readonly wallPattern: WallPatternConfig;
+  /** Split connector config. If omitted/undefined, default split connector settings are applied (connectors enabled with defaults). */
+  readonly splitConnectors?: SplitConnectorConfig;
 }
 
 // =============================================================================
@@ -346,6 +362,28 @@ export interface HistoryEntry {
 /** Active tab in the parameter panel */
 export type DesignerTab = 'dimensions' | 'base' | 'compartments' | 'walls' | 'style';
 
+/** View mode for split bin preview: assembled (no gaps) or exploded (gaps between pieces). */
+export type SplitViewMode = 'assembled' | 'exploded';
+
+/** Mesh data for a single split bin piece, used for Three.js rendering */
+export interface SplitPieceMeshEntry {
+  readonly label: string;
+  readonly col: number;
+  readonly row: number;
+  readonly widthUnits: number;
+  readonly depthUnits: number;
+  /** X offset in grid units from bin origin (left edge) */
+  readonly offsetX: number;
+  /** Y offset in grid units from bin origin (bottom edge) */
+  readonly offsetY: number;
+  readonly mesh: {
+    readonly vertices: Float32Array | null;
+    readonly normals: Float32Array | null;
+    readonly indices: Uint32Array | null;
+    readonly edgeVertices: Float32Array | null;
+  };
+}
+
 /** Auto-save status indicator */
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -369,6 +407,10 @@ export interface DesignerUIState {
     readonly minRow: number;
     readonly maxRow: number;
   } | null;
+  /** View mode for split preview overlay (assembled=no gaps, exploded=gaps between pieces) */
+  readonly splitViewMode: SplitViewMode;
+  /** Per-piece mesh data for split bin preview (populated when exploded mode is active) */
+  readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
 }
 
 /** Undo/redo history for bin parameters with optional mesh cache */
@@ -529,6 +571,8 @@ export interface DesignerState {
   setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
   setCutoutEditorOpen: (open: boolean) => void;
+  setSplitViewMode: (mode: SplitViewMode) => void;
+  setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setPreviewCompartments: (preview: CompartmentConfig | null) => void;
   setPreviewSelection: (
     selection: {

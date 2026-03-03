@@ -3,7 +3,13 @@
  */
 
 import type { Draft } from 'immer';
-import type { DesignerState, BinParams, DesignerTab } from '../../types';
+import type {
+  DesignerState,
+  BinParams,
+  DesignerTab,
+  SplitViewMode,
+  SplitPieceMeshEntry,
+} from '../../types';
 import { isFractional } from '@/core/constants';
 import { pushHistoryEntry } from '../helpers';
 
@@ -58,6 +64,18 @@ export function createUISlice(set: Set) {
     ) => {
       set((state) => {
         state.ui.previewSelection = selection;
+      });
+    },
+
+    setSplitViewMode: (mode: SplitViewMode) => {
+      set((state) => {
+        state.ui.splitViewMode = mode;
+      });
+    },
+
+    setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => {
+      set((state) => {
+        state.ui.splitPieceMeshes = [...meshes];
       });
     },
 

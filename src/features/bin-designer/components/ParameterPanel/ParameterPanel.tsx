@@ -5,7 +5,7 @@
  * organized into three groups: Shape, Interior, and Base.
  *
  * Groups:
- * - Shape: Dimensions, Walls
+ * - Shape: Dimensions, Split Options (conditional), Walls
  * - Interior: Interior Dividers, Label Tabs, Finger Scoop
  * - Base: Base attachments, Physical Units
  */
@@ -18,12 +18,14 @@ import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { ScoopSection } from '../panel/ScoopSection';
 import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
+import { SplitOptionsSection } from '../panel/SplitOptionsSection';
 import { StickyGroupHeader } from '../panel/StickyGroupHeader';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 
 export function ParameterPanel() {
   const t = useTranslation();
@@ -31,6 +33,7 @@ export function ParameterPanel() {
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
   const showLabelTabs = useDesignerStore(useShallow((s) => s.params.style === 'standard'));
+  const { needsSplit } = useSplitOptionsSection();
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-scroll scrollbar-thin">
@@ -43,6 +46,11 @@ export function ParameterPanel() {
           <div className="px-4 py-4 border-b border-stroke-subtle/50">
             <DimensionsSection />
           </div>
+          {needsSplit && (
+            <div className="px-4 py-4 border-b border-stroke-subtle/50">
+              <SplitOptionsSection />
+            </div>
+          )}
           <div className="px-4 py-4">
             <WallsSection />
           </div>

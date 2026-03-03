@@ -5,7 +5,7 @@
  * (GenerationBridge) and the Web Worker (generation.worker.ts).
  */
 
-import type { BinParams, BaseplateParams } from '@/shared/types/bin';
+import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
 
 // ─── Main → Worker Messages ──────────────────────────────────────────────────
 
@@ -13,6 +13,7 @@ export type WorkerMessage =
   | InitMessage
   | GenerateMessage
   | GenerateBaseplateMessage
+  | GenerateSplitPreviewMessage
   | CancelMessage
   | ExportMessage
   | ExportBaseplateMessage
@@ -86,6 +87,22 @@ export interface ExportDividersPayload {
   readonly requestId: string;
 }
 
+export interface GenerateSplitPreviewMessage {
+  readonly type: 'GENERATE_SPLIT_PREVIEW';
+  readonly payload: GenerateSplitPreviewPayload;
+}
+
+export interface GenerateSplitPreviewPayload {
+  readonly params: BinParams;
+  readonly requestId: string;
+  /** Cut plane positions along X axis in mm, relative to bin center */
+  readonly cutPlanesX: readonly number[];
+  /** Cut plane positions along Y axis in mm, relative to bin center */
+  readonly cutPlanesY: readonly number[];
+  /** Alignment connector config for split pieces. Omit to skip connectors. */
+  readonly splitConnectorConfig?: SplitConnectorConfig;
+}
+
 export interface ExportSplitMessage {
   readonly type: 'EXPORT_SPLIT';
   readonly payload: ExportSplitPayload;
@@ -102,6 +119,8 @@ export interface ExportSplitPayload {
   readonly tolerance?: number;
   /** STL angular tolerance in degrees (default 5) */
   readonly angularTolerance?: number;
+  /** Alignment connector config for split pieces. Omit to skip connectors. */
+  readonly splitConnectorConfig?: SplitConnectorConfig;
 }
 
 /** Export file formats supported by the BREP worker */
@@ -123,6 +142,7 @@ export type WorkerResponse =
   | InitReadyResponse
   | ProgressResponse
   | MeshResultResponse
+  | SplitPreviewResultResponse
   | BaseplateExportResultResponse
   | ExportResultResponse
   | DividersExportResultResponse
@@ -194,6 +214,31 @@ export interface SplitExportResultResponse {
   readonly type: 'SPLIT_EXPORT_RESULT';
   readonly requestId: string;
   readonly pieces: readonly SplitExportPiece[];
+}
+
+/** A single piece from a split preview (mesh data for Three.js rendering) */
+export interface SplitPreviewPiece {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
+  readonly label: string;
+  readonly col: number;
+  readonly row: number;
+  /** Piece width in grid units */
+  readonly widthUnits: number;
+  /** Piece depth in grid units */
+  readonly depthUnits: number;
+  /** Piece X offset in grid units from bin origin (left edge) */
+  readonly offsetX: number;
+  /** Piece Y offset in grid units from bin origin (bottom edge) */
+  readonly offsetY: number;
+}
+
+export interface SplitPreviewResultResponse {
+  readonly type: 'SPLIT_PREVIEW_RESULT';
+  readonly requestId: string;
+  readonly pieces: readonly SplitPreviewPiece[];
 }
 
 export interface ErrorResponse {

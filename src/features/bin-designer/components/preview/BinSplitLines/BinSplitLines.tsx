@@ -10,7 +10,7 @@
 
 import { memo, useMemo } from 'react';
 import { Line } from '@react-three/drei';
-import * as THREE from 'three';
+import { Color } from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -18,12 +18,17 @@ import { calcMaxGridUnits } from '@/core/constants';
 import { getSplitPlanePositionsMm } from '@/features/bin-designer/utils/splitPositions';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
-const AMBER_COLOR = new THREE.Color(0xfbbf24);
+const AMBER_COLOR = new Color(0xfbbf24);
 
-/**
- * Renders split lines on the bin designer 3D preview when the bin exceeds
- * the user's print bed size. Shows amber dashed lines at the cut positions.
- */
+const DASHED_LINE_SHARED = {
+  color: AMBER_COLOR,
+  dashed: true,
+  dashScale: 8,
+  dashSize: 0.5,
+  gapSize: 0.3,
+  transparent: true,
+} as const;
+
 export const BinSplitLines = memo(function BinSplitLines() {
   const { width, depth, height, gridUnitMm } = useDesignerStore(
     useShallow((s) => ({
@@ -60,111 +65,72 @@ export const BinSplitLines = memo(function BinSplitLines() {
 
   if (!needsSplit) return null;
 
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE;
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
-  const halfW = outerW / 2;
-  const halfD = outerD / 2;
+  const halfW = (width * GRIDFINITY.GRID_SIZE) / 2;
+  const halfD = (depth * GRIDFINITY.GRID_SIZE) / 2;
 
   return (
     <group>
-      {/* X-axis split lines (parallel to Y/depth axis) */}
+      {/* Split lines — always shown */}
       {xSplits.map((splitX, i) => (
         <group key={`x-${i}`}>
-          {/* Top face line */}
           <Line
             points={[
               [splitX, -halfD, totalH],
               [splitX, halfD, totalH],
             ]}
-            color={AMBER_COLOR}
+            {...DASHED_LINE_SHARED}
             lineWidth={2}
-            dashed
-            dashScale={8}
-            dashSize={0.5}
-            gapSize={0.3}
-            transparent
             opacity={0.9}
           />
-          {/* Vertical edge (front) */}
           <Line
             points={[
               [splitX, -halfD, 0],
               [splitX, -halfD, totalH],
             ]}
-            color={AMBER_COLOR}
+            {...DASHED_LINE_SHARED}
             lineWidth={1.5}
-            dashed
-            dashScale={8}
-            dashSize={0.5}
-            gapSize={0.3}
-            transparent
             opacity={0.5}
           />
-          {/* Vertical edge (back) */}
           <Line
             points={[
               [splitX, halfD, 0],
               [splitX, halfD, totalH],
             ]}
-            color={AMBER_COLOR}
+            {...DASHED_LINE_SHARED}
             lineWidth={1.5}
-            dashed
-            dashScale={8}
-            dashSize={0.5}
-            gapSize={0.3}
-            transparent
             opacity={0.5}
           />
         </group>
       ))}
 
-      {/* Y-axis split lines (parallel to X/width axis) */}
       {ySplits.map((splitY, i) => (
         <group key={`y-${i}`}>
-          {/* Top face line */}
           <Line
             points={[
               [-halfW, splitY, totalH],
               [halfW, splitY, totalH],
             ]}
-            color={AMBER_COLOR}
+            {...DASHED_LINE_SHARED}
             lineWidth={2}
-            dashed
-            dashScale={8}
-            dashSize={0.5}
-            gapSize={0.3}
-            transparent
             opacity={0.9}
           />
-          {/* Vertical edge (left) */}
           <Line
             points={[
               [-halfW, splitY, 0],
               [-halfW, splitY, totalH],
             ]}
-            color={AMBER_COLOR}
+            {...DASHED_LINE_SHARED}
             lineWidth={1.5}
-            dashed
-            dashScale={8}
-            dashSize={0.5}
-            gapSize={0.3}
-            transparent
             opacity={0.5}
           />
-          {/* Vertical edge (right) */}
           <Line
             points={[
               [halfW, splitY, 0],
               [halfW, splitY, totalH],
             ]}
-            color={AMBER_COLOR}
+            {...DASHED_LINE_SHARED}
             lineWidth={1.5}
-            dashed
-            dashScale={8}
-            dashSize={0.5}
-            gapSize={0.3}
-            transparent
             opacity={0.5}
           />
         </group>

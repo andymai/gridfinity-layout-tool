@@ -46,9 +46,15 @@ vi.mock('three', () => {
     getHex = vi.fn(() => 0xfbbf24);
   }
 
+  class SphereGeometry {
+    dispose = vi.fn();
+  }
+
   return {
     Vector3,
     Color,
+    SphereGeometry,
+    DoubleSide: 2,
   };
 });
 

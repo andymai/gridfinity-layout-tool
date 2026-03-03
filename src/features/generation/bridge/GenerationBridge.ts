@@ -5,7 +5,7 @@
  * request cancellation via AbortController pattern.
  */
 
-import type { BinParams, BaseplateParams } from '@/shared/types/bin';
+import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type {
   WorkerMessage,
   WorkerResponse,
@@ -13,6 +13,7 @@ import type {
   GenerationStage,
   ExportFormat,
   SplitExportPiece,
+  SplitPreviewPiece,
   FaceGroupData,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
@@ -58,6 +59,11 @@ export interface SplitExportResult {
   readonly pieces: readonly SplitExportPiece[];
 }
 
+/** Result from a successful split preview generation (mesh data per piece) */
+export interface SplitPreviewResult {
+  readonly pieces: readonly SplitPreviewPiece[];
+}
+
 /** Result from a successful baseplate export */
 export interface BaseplateExportResult {
   readonly data: ArrayBuffer;
@@ -74,7 +80,7 @@ export interface ThreadingInfo {
 }
 
 /** Keys for the pending export request slots */
-type ExportSlot = 'export' | 'dividers' | 'split';
+type ExportSlot = 'export' | 'dividers' | 'split' | 'splitPreview';
 
 /** A pending export request: resolve/reject callbacks + request ID */
 interface PendingExport<T> {
@@ -294,7 +300,11 @@ export class GenerationBridge {
     params: BinParams,
     cutPlanesX: readonly number[],
     cutPlanesY: readonly number[],
-    options?: { tolerance?: number; angularTolerance?: number }
+    options?: {
+      tolerance?: number;
+      angularTolerance?: number;
+      splitConnectorConfig?: SplitConnectorConfig;
+    }
   ): Promise<SplitExportResult> {
     const requestId = await this.prepareExport('split');
 
@@ -309,6 +319,36 @@ export class GenerationBridge {
           cutPlanesY,
           tolerance: options?.tolerance,
           angularTolerance: options?.angularTolerance,
+          splitConnectorConfig: options?.splitConnectorConfig,
+        },
+      });
+    });
+  }
+
+  /**
+   * Generate split bin piece meshes for 3D preview rendering.
+   * Returns MeshData per piece instead of STL, for use in Three.js scene.
+   */
+  async generateSplitPreview(
+    params: BinParams,
+    cutPlanesX: readonly number[],
+    cutPlanesY: readonly number[],
+    options?: {
+      splitConnectorConfig?: SplitConnectorConfig;
+    }
+  ): Promise<SplitPreviewResult> {
+    const requestId = await this.prepareExport('splitPreview');
+
+    return new Promise<SplitPreviewResult>((resolve, reject) => {
+      this.pendingExports.set('splitPreview', { resolve, reject, requestId });
+      this.postMessage({
+        type: 'GENERATE_SPLIT_PREVIEW',
+        payload: {
+          params,
+          requestId,
+          cutPlanesX,
+          cutPlanesY,
+          splitConnectorConfig: options?.splitConnectorConfig,
         },
       });
     });
@@ -551,6 +591,12 @@ export class GenerationBridge {
 
         case 'SPLIT_EXPORT_RESULT':
           this.resolveExport('split', response.requestId, {
+            pieces: response.pieces,
+          });
+          break;
+
+        case 'SPLIT_PREVIEW_RESULT':
+          this.resolveExport('splitPreview', response.requestId, {
             pieces: response.pieces,
           });
           break;

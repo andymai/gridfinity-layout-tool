@@ -168,6 +168,9 @@ vi.mock('three', () => {
     Color,
     ShaderMaterial,
     EdgesGeometry,
+    SphereGeometry: function SphereGeometry() {
+      return { dispose: vi.fn() };
+    },
     FrontSide: 0,
     DoubleSide: 2,
   };

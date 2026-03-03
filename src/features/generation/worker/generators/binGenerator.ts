@@ -34,7 +34,7 @@ import {
   exportSTEP,
 } from 'brepjs';
 import type { Shape3D, TransformOp } from 'brepjs';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type { MeshData, ExportFormat, FaceGroupData } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 
@@ -72,6 +72,8 @@ import {
   setFeatureCache,
 } from './shapeCache';
 import { buildSlotCuts } from './slotBuilder';
+import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
+import type { BinGeometryContext } from './splitConnectorBuilder';
 import { FeatureTag } from './featureTags';
 import { getPatternDescriptors } from './wallPatterns';
 
@@ -598,51 +600,67 @@ export function generateBin(
   return toIndexedMeshData(shapeMesh, !useHighQuality, edgeVertices, originToTag);
 }
 
-// ─── Split Export ────────────────────────────────────────────────────────────
+// ─── Split Shared ────────────────────────────────────────────────────────────
+
+/** Height of the cutting box used for boolean intersection (much taller than any bin) */
+const CUTTING_BOX_HEIGHT = 500;
+
+/** Metadata for a single split piece within the grid */
+interface SplitPieceInfo {
+  readonly solid: Shape3D;
+  readonly label: string;
+  readonly col: number;
+  readonly row: number;
+  /** Piece width in mm */
+  readonly widthMm: number;
+  /** Piece depth in mm */
+  readonly depthMm: number;
+  /** X offset of piece's left edge from bin origin, in mm */
+  readonly xMinFromOrigin: number;
+  /** Y offset of piece's bottom edge from bin origin, in mm */
+  readonly yMinFromOrigin: number;
+}
 
 /**
- * Export the cached (or regenerated) bin solid, split into pieces via boolean cuts.
+ * Split the cached bin solid into pieces via boolean intersection.
  *
- * For each rectangular region defined by the cut planes, the full solid is cloned
- * and intersected with a bounding box to extract just that piece. Each piece is
- * independently tessellated to STL.
- *
- * @param params Bin parameters (used to regenerate if no cached solid)
- * @param cutPlanesX Sorted X-axis cut plane positions in mm, relative to bin center
- * @param cutPlanesY Sorted Y-axis cut plane positions in mm, relative to bin center
- * @param tolerance STL tessellation tolerance (default 0.01)
- * @param angularTolerance STL angular tolerance in degrees (default 5)
+ * Shared by exportSplitBin (STL output) and generateSplitPreview (mesh output).
+ * Ensures the solid exists, computes cutting regions, applies connectors, and
+ * returns each piece solid with positioning metadata.
  */
-export async function exportSplitBin(
+function splitSolidIntoPieces(
   params: BinParams,
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
-  tolerance = 0.01,
-  angularTolerance = 5
-): Promise<SplitExportResult> {
-  // Ensure we have a solid to work with
+  splitConnectorConfig?: SplitConnectorConfig
+): SplitPieceInfo[] {
   if (!getLastSolid()) {
     generateBin(params, undefined, true);
   }
 
   const solid = getLastSolid();
   if (!solid) {
-    throw new Error('Failed to generate solid for split export');
+    throw new Error('Failed to generate solid for splitting');
   }
 
   const outerW = params.width * SIZE - CLEARANCE;
   const outerD = params.depth * SIZE - CLEARANCE;
 
-  // Build sorted boundary arrays: [left edge, ...cut planes, right edge]
+  const connectorConfig = splitConnectorConfig ?? params.splitConnectors;
+
+  // Bin geometry context for connector placement
+  const isFlat = params.base.style === 'flat';
+  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
+  const wallTopZ = floorZ + wallHeight;
+
+  // Boundary arrays: [left edge, ...cut planes, right edge]
   const xBounds = [-outerW / 2, ...cutPlanesX, outerW / 2];
   const yBounds = [-outerD / 2, ...cutPlanesY, outerD / 2];
 
-  // Large box height for cutting (much taller than any bin)
-  const boxH = 500;
+  const pieces: SplitPieceInfo[] = [];
 
-  const pieces: SplitExportResult['pieces'] = [];
-
-  // Process each piece region sequentially to limit memory
   for (let col = 0; col < xBounds.length - 1; col++) {
     for (let row = 0; row < yBounds.length - 1; row++) {
       const xMin = xBounds[col];
@@ -650,31 +668,170 @@ export async function exportSplitBin(
       const yMin = yBounds[row];
       const yMax = yBounds[row + 1];
 
-      // Create a bounding box for this piece's region
       const pieceW = xMax - xMin;
       const pieceD = yMax - yMin;
       const centerX = (xMin + xMax) / 2;
       const centerY = (yMin + yMax) / 2;
 
-      const cuttingBox = sketch(drawRectangle(pieceW, pieceD), 'XY', -boxH / 2).extrude(boxH);
+      const cuttingBox = sketch(
+        drawRectangle(pieceW, pieceD),
+        'XY',
+        -CUTTING_BOX_HEIGHT / 2
+      ).extrude(CUTTING_BOX_HEIGHT);
       const translatedBox = translate(cuttingBox, [centerX, centerY, 0]);
 
-      // Intersect the full solid with this box to get just this piece
-      const piece = unwrap(intersect(clone(solid), translatedBox));
+      let piece = unwrap(intersect(clone(solid), translatedBox));
 
-      // Tessellate to binary STL
-      const blob = unwrap(
-        exportSTL(piece, {
-          tolerance,
-          angularTolerance,
-          binary: true,
-        })
-      );
-      const data = await blob.arrayBuffer();
+      if (connectorConfig !== undefined && connectorConfig.enabled) {
+        const cutFaces = computeCutFaces(
+          col,
+          row,
+          cutPlanesX,
+          cutPlanesY,
+          outerW,
+          outerD,
+          pieceW,
+          pieceD,
+          centerX,
+          centerY
+        );
+        const geometryContext: BinGeometryContext = {
+          floorZ,
+          wallTopZ,
+          hasStackingLip: params.base.stackingLip,
+          wallThickness: params.wallThickness,
+        };
+        piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
+      }
 
-      const label = `piece-${col + 1}x${row + 1}`;
-      pieces.push({ data, label, col: col + 1, row: row + 1 });
+      const colLetter = String.fromCharCode(65 + col); // A, B, C...
+      pieces.push({
+        solid: piece,
+        label: `${colLetter}${row + 1}`,
+        col: col + 1,
+        row: row + 1,
+        widthMm: pieceW,
+        depthMm: pieceD,
+        xMinFromOrigin: xMin + outerW / 2,
+        yMinFromOrigin: yMin + outerD / 2,
+      });
     }
+  }
+
+  return pieces;
+}
+
+// ─── Split Export ────────────────────────────────────────────────────────────
+
+/**
+ * Export the cached (or regenerated) bin solid, split into pieces via boolean cuts.
+ *
+ * Each piece is independently tessellated to STL.
+ */
+export async function exportSplitBin(
+  params: BinParams,
+  cutPlanesX: readonly number[],
+  cutPlanesY: readonly number[],
+  tolerance = 0.01,
+  angularTolerance = 5,
+  splitConnectorConfig?: SplitConnectorConfig
+): Promise<SplitExportResult> {
+  const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
+
+  const pieces: SplitExportResult['pieces'] = [];
+
+  for (const { solid: pieceSolid, label, col, row } of splitPieces) {
+    const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));
+    const data = await blob.arrayBuffer();
+    pieces.push({ data, label, col, row });
+  }
+
+  return { pieces };
+}
+
+// ─── Split Preview (mesh per piece for 3D rendering) ─────────────────────────
+
+/** Result of split preview generation: mesh data per piece for Three.js */
+export interface SplitPreviewResult {
+  readonly pieces: Array<{
+    readonly vertices: Float32Array;
+    readonly normals: Float32Array;
+    readonly indices: Uint32Array;
+    readonly edgeVertices: Float32Array;
+    readonly label: string;
+    readonly col: number;
+    readonly row: number;
+    readonly widthUnits: number;
+    readonly depthUnits: number;
+    readonly offsetX: number;
+    readonly offsetY: number;
+  }>;
+}
+
+/** Preview tessellation tolerance: moderate quality for responsive interaction */
+const PREVIEW_TOLERANCE = 0.15;
+const PREVIEW_ANGULAR_TOLERANCE = 15;
+
+/**
+ * Generate split bin piece meshes for 3D preview rendering.
+ *
+ * Uses the same splitting logic as exportSplitBin but produces mesh data
+ * (vertices/normals/indices) instead of STL buffers, so pieces can be
+ * rendered as individual Three.js meshes.
+ */
+export function generateSplitPreview(
+  params: BinParams,
+  cutPlanesX: readonly number[],
+  cutPlanesY: readonly number[],
+  splitConnectorConfig?: SplitConnectorConfig
+): SplitPreviewResult {
+  const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
+
+  // Outer dimensions for converting xMinFromOrigin back to solid-center coords
+  const outerW = params.width * SIZE - CLEARANCE;
+  const outerD = params.depth * SIZE - CLEARANCE;
+
+  const pieces: SplitPreviewResult['pieces'] = [];
+
+  for (const {
+    solid: pieceSolid,
+    label,
+    col,
+    row,
+    widthMm,
+    depthMm,
+    xMinFromOrigin,
+    yMinFromOrigin,
+  } of splitPieces) {
+    // Translate piece to origin so the component's offset formula positions it correctly.
+    // xMinFromOrigin is from the left edge (0), convert back to solid-center coords.
+    const pieceCenterX = xMinFromOrigin - outerW / 2 + widthMm / 2;
+    const pieceCenterY = yMinFromOrigin - outerD / 2 + depthMm / 2;
+    const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
+
+    const shapeMesh = mesh(centeredPiece, {
+      tolerance: PREVIEW_TOLERANCE,
+      angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+    });
+    const edgeMesh = meshEdges(centeredPiece, {
+      tolerance: PREVIEW_TOLERANCE,
+      angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+    });
+    const meshData = toIndexedMeshData(shapeMesh, false, new Float32Array(edgeMesh.lines));
+
+    pieces.push({
+      vertices: meshData.vertices,
+      normals: meshData.normals,
+      indices: meshData.indices,
+      edgeVertices: meshData.edgeVertices,
+      label,
+      col,
+      row,
+      widthUnits: widthMm / SIZE,
+      depthUnits: depthMm / SIZE,
+      offsetX: xMinFromOrigin / SIZE,
+      offsetY: yMinFromOrigin / SIZE,
+    });
   }
 
   return { pieces };

@@ -7,8 +7,14 @@
  */
 
 // Main generation API
-export { generateBin, exportBin, exportSplitBin, getLastSolid } from './binGenerator';
+export {
+  generateBin,
+  exportBin,
+  exportSplitBin,
+  generateSplitPreview,
+  getLastSolid,
+} from './binGenerator';
 
 // Types
 export type { ProgressFn } from './generatorTypes';
-export type { ExportResult, SplitExportResult } from './binGenerator';
+export type { ExportResult, SplitExportResult, SplitPreviewResult } from './binGenerator';

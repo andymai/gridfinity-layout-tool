@@ -14,6 +14,7 @@ import type {
   DividerPieceConfig,
   WallPatternConfig,
   CutoutConfig,
+  SplitConnectorConfig,
 } from '../types';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -40,6 +41,18 @@ export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
 /** Default cutout configuration: flush with rim (no offset) */
 export const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
   topOffset: 0,
+} as const;
+
+/** Default split connector configuration: enabled with glue-fit tolerances.
+ *  Clearance is 0.15mm per side (0.3mm total gap) — loose enough for CA glue
+ *  to wick in and easy assembly with wet adhesive, while keeping tongue
+ *  features thick enough for reliable OCCT boolean operations. */
+export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
+  enabled: true,
+  clearance: 0.15,
+  pinDiameter: 2.5,
+  pinProtrusion: 3.0,
+  pinSpacing: 35,
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -114,6 +127,8 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   cutoutEditorOpen: false,
   previewCompartments: null,
   previewSelection: null,
+  splitViewMode: 'exploded',
+  splitPieceMeshes: [],
 };
 
 /** Default empty history */
@@ -360,5 +375,8 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     cutouts: params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts,
     cutoutConfig,
     wallPattern: wallPatternConfig,
+    ...(params.splitConnectors !== undefined
+      ? { splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, ...params.splitConnectors } }
+      : {}),
   } as BinParams;
 }

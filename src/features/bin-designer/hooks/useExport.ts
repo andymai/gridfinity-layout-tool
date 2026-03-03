@@ -31,6 +31,7 @@ import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
+import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 
@@ -213,7 +214,9 @@ export function useExport(): UseExportReturn {
         const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGridUnits, gridSizeMm);
         const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGridUnits, gridSizeMm);
 
-        const result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY);
+        const result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
+          splitConnectorConfig: params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG,
+        });
 
         // Generate base filename (without extension)
         const baseName = generateFileName(params, format, config, designName).replace(

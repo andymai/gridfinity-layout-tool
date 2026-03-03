@@ -442,7 +442,10 @@ describe('useExport', () => {
     expect(mockExportSplitBin).toHaveBeenCalledWith(
       expect.any(Object),
       expect.any(Array),
-      expect.any(Array)
+      expect.any(Array),
+      expect.objectContaining({
+        splitConnectorConfig: expect.objectContaining({ enabled: true }),
+      })
     );
     expect(mockCreateObjectURL).toHaveBeenCalled();
     expect(mockAnchor.download).toContain('_split.zip');
