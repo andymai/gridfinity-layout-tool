@@ -7,6 +7,7 @@
  */
 export { GenerationBridge } from '@/features/generation/bridge';
 export { getActiveBridge, bridgeManager } from '@/features/generation/bridge';
+export { WorkerPool, workerPoolManager } from '@/features/generation/bridge';
 export type { WorkerResponse } from '@/features/generation/bridge/types';
 export type {
   SplitExportResult,

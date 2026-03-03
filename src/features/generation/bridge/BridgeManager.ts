@@ -6,8 +6,8 @@
  * the bridge is kept alive for 30 seconds to cover quick navigation round-trips
  * (e.g., designer → baseplate → designer).
  *
- * The BaseplateWorkerPool is NOT managed here — it needs independent WASM
- * instances for parallelism and has its own lifecycle in useBaseplateGeneration.
+ * The WorkerPool is managed separately by WorkerPoolManager — it needs
+ * independent WASM instances for parallelism and has its own ref-counted lifecycle.
  */
 
 import { GenerationBridge } from './GenerationBridge';

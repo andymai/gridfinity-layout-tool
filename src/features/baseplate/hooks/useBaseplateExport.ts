@@ -11,14 +11,14 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { getActiveBridge } from '@/shared/generation/bridge';
+import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
-import { useBaseplatePageStore, getWorkerPool } from '../store/baseplatePageStore';
+import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { pieceToBaseplateParams } from '../utils/splitPlanner';
 import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
@@ -122,18 +122,18 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
         if (tiling?.isSplit && splitEnabled) {
           // Multi-piece ZIP export
           const bridgeFormat = format === '3mf' ? 'stl' : format;
-          const pool = getWorkerPool();
+          const pool = workerPoolManager.get();
           const total = tiling.pieces.length;
           setExportProgress({ current: 0, total });
 
           let pieces: { data: ArrayBuffer; label: string }[];
 
           if (pool && !pool.isDestroyed && pool.size > 1) {
-            // Parallel export via worker pool
+            // Parallel export via shared worker pool
             const pieceParamsArray = tiling.pieces.map((piece) =>
               pieceToBaseplateParams(piece, fullParams)
             );
-            const results = await pool.exportPieces(
+            const results = await pool.exportBaseplates(
               pieceParamsArray,
               bridgeFormat,
               (completed, pieceTotal) => {

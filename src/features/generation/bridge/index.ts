@@ -9,6 +9,8 @@ export type {
 } from './GenerationBridge';
 export { getActiveBridge } from './bridgeRef';
 export { bridgeManager } from './BridgeManager';
+export { WorkerPool } from './WorkerPool';
+export { WorkerPoolManager, workerPoolManager } from './WorkerPoolManager';
 export type {
   WorkerMessage,
   WorkerResponse,

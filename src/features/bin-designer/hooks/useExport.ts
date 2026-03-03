@@ -15,7 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
-import { getActiveBridge } from '@/shared/generation/bridge';
+import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import {
   generateFileName,
   generateDividerFileName,
@@ -198,6 +198,7 @@ export function useExport(): UseExportReturn {
    * Download split export as ZIP via worker bridge.
    * Computes cut planes, sends to worker for boolean splitting,
    * then packages results into a ZIP archive.
+   * Uses worker pool for parallel export when available.
    * Supports STL and 3MF formats (STEP is not supported for split export).
    */
   const downloadSplit = useCallback(
@@ -213,10 +214,18 @@ export function useExport(): UseExportReturn {
         const gridSizeMm = params.gridUnitMm;
         const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGridUnits, gridSizeMm);
         const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGridUnits, gridSizeMm);
+        const connectorConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
+        const totalPieceCount = getSplitPieceCount(params.width, params.depth, maxGridUnits);
 
-        const result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
-          splitConnectorConfig: params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG,
-        });
+        const pool = workerPoolManager.get();
+        const result =
+          pool && !pool.isDestroyed && pool.size > 1
+            ? await pool.exportSplitBin(params, cutPlanesX, cutPlanesY, totalPieceCount, {
+                splitConnectorConfig: connectorConfig,
+              })
+            : await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
+                splitConnectorConfig: connectorConfig,
+              });
 
         // Generate base filename (without extension)
         const baseName = generateFileName(params, format, config, designName).replace(

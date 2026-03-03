@@ -17,6 +17,9 @@ vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => ({
     generateSplitPreview: mockGenerateSplitPreview,
   }),
+  workerPoolManager: {
+    get: () => null,
+  },
 }));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

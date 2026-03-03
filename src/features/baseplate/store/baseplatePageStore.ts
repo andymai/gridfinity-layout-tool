@@ -10,7 +10,6 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { BaseplateTiling } from '../types/tiling';
 import type { ExportFileNameConfig } from '@/shared/types/bin';
-import type { BaseplateWorkerPool } from '../hooks/BaseplateWorkerPool';
 
 type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
 type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
@@ -190,15 +189,3 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     },
   }))
 );
-
-// ─── Worker Pool Ref (module-level, not in Zustand/Immer) ─────────────────
-
-let workerPoolRef: BaseplateWorkerPool | null = null;
-
-export function getWorkerPool(): BaseplateWorkerPool | null {
-  return workerPoolRef;
-}
-
-export function setWorkerPool(pool: BaseplateWorkerPool | null): void {
-  workerPoolRef = pool;
-}
