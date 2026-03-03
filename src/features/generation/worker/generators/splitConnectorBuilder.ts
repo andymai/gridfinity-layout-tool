@@ -55,6 +55,12 @@ const MIN_FEATURE_HEIGHT = 0.5;
  *  0.2mm = one print layer at the most common layer height. */
 const MIN_SHELL = 0.2;
 
+/** Tolerance for floating-point comparison of mm dimensions.
+ *  Without this, expressions like 1.2 - 2×0.2 - 2×0.15 yield
+ *  0.49999…94 instead of 0.5, silently skipping floor tongues
+ *  at the default 1.2mm wall thickness. */
+const EPSILON = 1e-9;
+
 /** Height of the lip step ledge (mm). */
 const LIP_STEP_HEIGHT = 0.5;
 
@@ -113,7 +119,7 @@ export function applySplitConnectors(
     try {
       result = unwrap(fuseAll([result, ...fuseTargets]));
     } catch {
-      // Batch fuse failed (common with threaded OCCT) — apply sequentially
+      // Batch fuse failed — apply sequentially
       for (const target of fuseTargets) {
         try {
           result = unwrap(fuse(result, target));
@@ -322,7 +328,7 @@ function addTongueAndGroove(
   const maxTongueWidth = maxGrooveWidth - 2 * config.clearance;
   const tongueWidth = Math.min(config.pinDiameter, maxTongueWidth);
 
-  if (wt >= MIN_WALL_FOR_TONGUE && tongueWidth >= MIN_FEATURE_WIDTH) {
+  if (wt >= MIN_WALL_FOR_TONGUE - EPSILON && tongueWidth >= MIN_FEATURE_WIDTH - EPSILON) {
     for (const edgePos of [-wallOffset, wallOffset]) {
       if (edgePos < pieceMin || edgePos > pieceMax) continue;
       const nearCut = face.perpendicularCuts.some((cp) => Math.abs(edgePos - cp) < wt * 2);
@@ -345,7 +351,7 @@ function addTongueAndGroove(
   // ── Floor tongue (centered on piece, shortened near corners) ───────────
   const maxGrooveHeight = wt - 2 * MIN_SHELL;
   const maxTongueHeight = maxGrooveHeight - 2 * config.clearance;
-  if (maxTongueHeight >= MIN_FEATURE_HEIGHT) {
+  if (maxTongueHeight >= MIN_FEATURE_HEIGHT - EPSILON) {
     const floorHeight = Math.min(config.pinDiameter, maxTongueHeight);
     const floorCenterZ = context.floorZ + wt / 2;
     const floorBottomZ = floorCenterZ - floorHeight / 2;
@@ -360,7 +366,7 @@ function addTongueAndGroove(
       margin
     );
 
-    if (effectiveWidth >= MIN_FEATURE_WIDTH) {
+    if (effectiveWidth >= MIN_FEATURE_WIDTH - EPSILON) {
       addFeature(
         face,
         config.clearance,
@@ -428,7 +434,7 @@ function addLipStep(
     margin
   );
 
-  if (stepWidth < MIN_FEATURE_WIDTH) return;
+  if (stepWidth < MIN_FEATURE_WIDTH - EPSILON) return;
 
   addFeature(
     face,
