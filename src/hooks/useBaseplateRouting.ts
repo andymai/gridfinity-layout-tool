@@ -1,10 +1,8 @@
 /**
  * Baseplate routing hook.
  *
- * Manages navigation between Layout Planner (/) and Baseplate Generator (/baseplate).
- * Supports layoutId in URL query params (/baseplate?layoutId=abc) for:
- * - Deep linking to baseplates for a specific layout
- * - Browser back/forward navigation
+ * Detects the /baseplate route and parses query params (layoutId, standalone).
+ * Provides navigateToBaseplate() for programmatic navigation.
  */
 
 import { useState, useEffect, useCallback } from 'react';

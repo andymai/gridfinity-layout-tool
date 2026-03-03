@@ -149,9 +149,9 @@ export function BaseplatePage() {
     <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
       <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
-        <div className="flex items-center gap-4 min-w-0">
-          <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
+        <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
 
+        <div className="flex items-center flex-shrink-0">
           <button
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport || isExporting}
