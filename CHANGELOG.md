@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.52.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.52.0...gridfinity-layout-tool-v3.52.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* remove stacking lip from split bin interior cut faces ([#1017](https://github.com/andymai/gridfinity-layout-tool/issues/1017)) ([f9661c4](https://github.com/andymai/gridfinity-layout-tool/commit/f9661c422ac0936a71afc75374433f8d7d8aeea5))
+
 ## [3.52.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.4...gridfinity-layout-tool-v3.52.0) (2026-03-03)
 
 
