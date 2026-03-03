@@ -17,12 +17,15 @@ vi.mock('brepjs-opencascade/src/brepjs_threaded.js', () => ({
   default: (...args: unknown[]) => mockThreadedInit(...args),
 }));
 
-// Mock WASM URL imports
+// Mock asset URL imports
 vi.mock('brepjs-opencascade/src/brepjs_single.wasm?url', () => ({
   default: '/mocked/brepjs_single.wasm',
 }));
 vi.mock('brepjs-opencascade/src/brepjs_threaded.wasm?url', () => ({
   default: '/mocked/brepjs_threaded.wasm',
+}));
+vi.mock('brepjs-opencascade/src/brepjs_threaded.worker.js?url', () => ({
+  default: '/mocked/brepjs_threaded.worker.js',
 }));
 
 // Mock wasmCapabilities (always single-threaded in tests/dev)
@@ -49,9 +52,10 @@ describe('wasmInstantiator', () => {
       })
     );
 
-    // Verify locateFile returns the resolved WASM URL for .wasm paths
+    // Verify locateFile returns resolved URLs for .wasm and .worker.js paths
     const { locateFile } = mockSingleInit.mock.calls[0][0] as { locateFile: (p: string) => string };
     expect(locateFile('brepjs_single.wasm')).toBe('/mocked/brepjs_single.wasm');
+    expect(locateFile('brepjs_threaded.worker.js')).toBe('/mocked/brepjs_threaded.worker.js');
     expect(locateFile('other.js')).toBe('other.js');
 
     expect(result.isThreaded).toBe(false);
