@@ -18,7 +18,6 @@
  */
 
 import { initFromOC } from 'brepjs';
-import { detectWasmCapabilities } from '@/shared/generation/wasmCapabilities';
 
 // Single-threaded WASM (always available as fallback)
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
@@ -46,10 +45,11 @@ function getHardwareConcurrency(): number {
     : 4;
 }
 
-/** Whether to use threaded WASM: production only + capability check. */
+/** Whether to use threaded WASM.
+ *  Disabled: threaded OCCT is ~30% slower due to SharedArrayBuffer/pthread
+ *  overhead and causes silent boolean failures on small connector geometry. */
 function shouldUseThreaded(): boolean {
-  if (import.meta.env.DEV) return false;
-  return detectWasmCapabilities().supportsThreads;
+  return false;
 }
 
 /**

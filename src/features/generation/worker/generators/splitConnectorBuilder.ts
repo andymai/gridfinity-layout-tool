@@ -26,7 +26,7 @@
  *   a groove that opens cleanly at the mating face.
  */
 
-import { drawRectangle, unwrap, fuseAll, cutAll, translate } from 'brepjs';
+import { drawRectangle, unwrap, fuse, cut, fuseAll, cutAll, translate } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
 import { LIP_SMALL_TAPER, sketch } from './generatorTypes';
@@ -113,7 +113,14 @@ export function applySplitConnectors(
     try {
       result = unwrap(fuseAll([result, ...fuseTargets]));
     } catch {
-      // Boolean fuse failed — continue with unmodified piece
+      // Batch fuse failed (common with threaded OCCT) — apply sequentially
+      for (const target of fuseTargets) {
+        try {
+          result = unwrap(fuse(result, target));
+        } catch {
+          // Individual fuse failed — skip this feature
+        }
+      }
     }
   }
 
@@ -121,7 +128,14 @@ export function applySplitConnectors(
     try {
       result = unwrap(cutAll(result, cutTargets));
     } catch {
-      // Boolean cut failed — continue with piece as-is
+      // Batch cut failed — apply sequentially
+      for (const target of cutTargets) {
+        try {
+          result = unwrap(cut(result, target));
+        } catch {
+          // Individual cut failed — skip this feature
+        }
+      }
     }
   }
 
