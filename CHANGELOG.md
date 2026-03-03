@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.53.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.52.1...gridfinity-layout-tool-v3.53.0) (2026-03-03)
+
+
+### Features
+
+* always show ToolSwitcher in baseplate generator header ([#1019](https://github.com/andymai/gridfinity-layout-tool/issues/1019)) ([8e6f0e8](https://github.com/andymai/gridfinity-layout-tool/commit/8e6f0e894632cc9ab5e9c8fcf1bb30d134d08082))
+
 ## [3.52.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.52.0...gridfinity-layout-tool-v3.52.1) (2026-03-03)
 
 
