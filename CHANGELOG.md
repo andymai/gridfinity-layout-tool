@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.52.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.4...gridfinity-layout-tool-v3.52.0) (2026-03-03)
+
+
+### Features
+
+* shared ref-counted worker pool for parallel split operations ([#1015](https://github.com/andymai/gridfinity-layout-tool/issues/1015)) ([74683c2](https://github.com/andymai/gridfinity-layout-tool/commit/74683c2147226b1453d44c5f4e4786e85210a318))
+
 ## [3.51.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.51.3...gridfinity-layout-tool-v3.51.4) (2026-03-03)
 
 
