@@ -67,16 +67,6 @@ export function useBaseplateRouting() {
     window.dispatchEvent(new PopStateEvent('popstate'));
   }, []);
 
-  /**
-   * Navigate back to the Layout Planner.
-   */
-  const navigateBack = useCallback(() => {
-    window.history.pushState(null, '', '/');
-    setIsBaseplateRoute(false);
-    setLayoutIdFromUrl(null);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  }, []);
-
   return {
     isBaseplateRoute,
     /** The layout ID parsed from the current URL */
@@ -84,6 +74,5 @@ export function useBaseplateRouting() {
     /** Whether the page was opened in standalone mode (?standalone=1) */
     isStandalone,
     navigateToBaseplate,
-    navigateBack,
   };
 }

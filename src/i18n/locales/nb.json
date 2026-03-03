@@ -1,6 +1,5 @@
 {
   "app.skipToGridEditor": "Gå til rutenettplanlegger",
-  "baseplate.backToLayout": "Tilbake til layout",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.dimensionsUnits": "{width}×{depth} enheter",
   "baseplate.elapsed": "{seconds}s",
@@ -39,7 +38,6 @@
   "baseplate.paddingHintAxisY": "foran/bak",
   "baseplate.paddingLeft": "Venstre",
   "baseplate.paddingRight": "Høyre",
-  "baseplate.pageTitle": "Bunnplate-generator",
   "baseplate.pieceLabel": "Del {label}",
   "baseplate.printBedSize": "Printbordstørrelse",
   "baseplate.printBedTooltip": "Bunnplater større enn dette deles automatisk.",

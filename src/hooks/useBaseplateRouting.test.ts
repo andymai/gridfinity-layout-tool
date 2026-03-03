@@ -133,56 +133,6 @@ describe('useBaseplateRouting', () => {
     });
   });
 
-  describe('navigateBack', () => {
-    it('sets isBaseplateRoute to false', () => {
-      window.history.replaceState(null, '', '/baseplate?layoutId=abc');
-      const { result } = renderHook(() => useBaseplateRouting());
-      expect(result.current.isBaseplateRoute).toBe(true);
-
-      act(() => {
-        result.current.navigateBack();
-      });
-
-      expect(result.current.isBaseplateRoute).toBe(false);
-    });
-
-    it('clears layoutIdFromUrl', () => {
-      window.history.replaceState(null, '', '/baseplate?layoutId=abc');
-      const { result } = renderHook(() => useBaseplateRouting());
-
-      act(() => {
-        result.current.navigateBack();
-      });
-
-      expect(result.current.layoutIdFromUrl).toBeNull();
-    });
-
-    it('updates window location to /', () => {
-      window.history.replaceState(null, '', '/baseplate?layoutId=abc');
-      const { result } = renderHook(() => useBaseplateRouting());
-
-      act(() => {
-        result.current.navigateBack();
-      });
-
-      expect(window.location.pathname).toBe('/');
-    });
-
-    it('dispatches popstate event', () => {
-      const listener = vi.fn();
-      window.addEventListener('popstate', listener);
-
-      const { result } = renderHook(() => useBaseplateRouting());
-
-      act(() => {
-        result.current.navigateBack();
-      });
-
-      expect(listener).toHaveBeenCalledTimes(1);
-      window.removeEventListener('popstate', listener);
-    });
-  });
-
   describe('popstate handling', () => {
     it('updates isBaseplateRoute on browser back to /baseplate', () => {
       const { result } = renderHook(() => useBaseplateRouting());

@@ -1,6 +1,5 @@
 {
   "app.skipToGridEditor": "Ga naar grid planner",
-  "baseplate.backToLayout": "Terug naar layout",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.dimensionsUnits": "{width}×{depth} eenheden",
   "baseplate.elapsed": "{seconds}s",
@@ -39,7 +38,6 @@
   "baseplate.paddingHintAxisY": "Voor/achter",
   "baseplate.paddingLeft": "Links",
   "baseplate.paddingRight": "Rechts",
-  "baseplate.pageTitle": "Basisplaat-generator",
   "baseplate.pieceLabel": "Stuk {label}",
   "baseplate.printBedSize": "Printbedgrootte",
   "baseplate.printBedTooltip": "Basisplaten groter dan dit worden automatisch gesplitst.",

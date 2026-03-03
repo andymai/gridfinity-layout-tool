@@ -1,6 +1,5 @@
 {
   "app.skipToGridEditor": "Zum Grid-Planner springen",
-  "baseplate.backToLayout": "Zurück zum Layout",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.dimensionsUnits": "{width}×{depth} Einheiten",
   "baseplate.elapsed": "{seconds}s",
@@ -39,7 +38,6 @@
   "baseplate.paddingHintAxisY": "Vorne/Hinten",
   "baseplate.paddingLeft": "Links",
   "baseplate.paddingRight": "Rechts",
-  "baseplate.pageTitle": "Grundplatten-Generator",
   "baseplate.pieceLabel": "Teil {label}",
   "baseplate.printBedSize": "Druckbettgröße",
   "baseplate.printBedTooltip": "Grundplatten größer als dies werden automatisch aufgeteilt.",

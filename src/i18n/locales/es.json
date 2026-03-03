@@ -1,6 +1,5 @@
 {
   "app.skipToGridEditor": "Ir al planificador de cuadrícula",
-  "baseplate.backToLayout": "Volver al diseño",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.dimensionsUnits": "{width}×{depth} unidades",
   "baseplate.elapsed": "{seconds}s",
@@ -39,7 +38,6 @@
   "baseplate.paddingHintAxisY": "delantero/trasero",
   "baseplate.paddingLeft": "Izquierda",
   "baseplate.paddingRight": "Derecha",
-  "baseplate.pageTitle": "Generador de placa base",
   "baseplate.pieceLabel": "Pieza {label}",
   "baseplate.printBedSize": "Tamaño de la cama",
   "baseplate.printBedTooltip": "Las placas más grandes se dividen automáticamente.",

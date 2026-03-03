@@ -1453,8 +1453,6 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Baseplate Generator (standalone feature)
   // ===========================================================================
-  'baseplate.pageTitle': 'Baseplate Generator',
-  'baseplate.backToLayout': 'Back to layout',
   'baseplate.title': 'Baseplate',
   'baseplate.magnetHoles': 'Magnet holes',
   'baseplate.magnetDiameter': 'Magnet diameter',
