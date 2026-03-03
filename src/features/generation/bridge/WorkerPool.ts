@@ -147,8 +147,10 @@ export class WorkerPool {
 
     const results = await runGrouped(taskGroups, options?.signal);
 
-    // Merge all piece arrays from all workers
+    // Merge and sort pieces back to col-major grid order for consistency
+    // with the non-pool single-bridge path
     const allPieces = results.flatMap((r) => r.pieces);
+    allPieces.sort((a, b) => a.col - b.col || a.row - b.row);
     return { pieces: allPieces };
   }
 
@@ -201,8 +203,9 @@ export class WorkerPool {
 
     const results = await runGrouped(taskGroups, options?.signal);
 
-    // Merge all pieces from all workers
+    // Merge and sort pieces back to col-major grid order
     const allPieces = results.flatMap((r) => r.pieces);
+    allPieces.sort((a, b) => a.col - b.col || a.row - b.row);
     return { pieces: allPieces };
   }
 
