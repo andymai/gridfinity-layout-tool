@@ -8,11 +8,13 @@
  * with the same credentials mode Emscripten uses ensures the HTTP cache entry
  * is reusable by the worker without warnings or CORS-mode mismatches.
  *
- * Always preloads single-threaded WASM — threaded WASM is disabled due to
- * Emscripten pthread incompatibility with Vite's bundling.
+ * Preloads the threaded WASM variant when the environment supports it,
+ * otherwise falls back to single-threaded.
  */
 
+import { detectWasmCapabilities } from '@/shared/generation/wasmCapabilities';
 import singleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
+import threadedWasm from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
 
 let preloaded = false;
 
@@ -20,9 +22,11 @@ export function preloadWasmBinary(): void {
   if (preloaded) return;
 
   try {
+    const url = detectWasmCapabilities().supportsThreads ? threadedWasm : singleWasm;
+
     // Fire-and-forget fetch that mirrors Emscripten's credentials mode.
     // The response is discarded — we only care about priming the HTTP cache.
-    void fetch(singleWasm, { credentials: 'same-origin' }).catch(() => {
+    void fetch(url, { credentials: 'same-origin' }).catch(() => {
       // Network failure is non-fatal; the worker will attempt its own fetch.
       preloaded = false;
     });
