@@ -1,9 +1,12 @@
 /**
  * Drives split bin piece mesh generation for the 3D preview.
  *
- * Triggers the worker bridge whenever the bin needs splitting.
- * Meshes are generated for both assembled and exploded modes — the view
- * mode only controls piece positioning in SplitBinMeshes.
+ * Waits for the main bin generation to complete (generating → complete
+ * transition) before generating split pieces, so the worker's cached
+ * solid matches the current params. Without this gating, a param change
+ * would trigger an immediate split preview against the stale solid,
+ * producing mismatched geometry that flashes before the correct version.
+ *
  * Clears meshes when the bin no longer needs splitting.
  */
 
@@ -34,14 +37,14 @@ export function useSplitPreview(): void {
 
   const maxGridUnits = calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm);
   const needsSplit = params.width > maxGridUnits || params.depth > maxGridUnits;
-  const isReady = generationStatus === 'idle' || generationStatus === 'complete';
 
   const requestIdRef = useRef(0);
+  const prevStatusRef = useRef(generationStatus);
 
   useEffect(() => {
-    // Only clear meshes when the bin no longer needs splitting.
-    // During regeneration (!isReady), keep existing meshes visible so the
-    // view doesn't flash between single-piece and split-piece renderers.
+    const prevStatus = prevStatusRef.current;
+    prevStatusRef.current = generationStatus;
+
     if (!needsSplit) {
       const current = useDesignerStore.getState().ui.splitPieceMeshes;
       if (current.length > 0) {
@@ -50,7 +53,13 @@ export function useSplitPreview(): void {
       return;
     }
 
-    if (!isReady) return;
+    // Only generate split preview after the main bin generation finishes.
+    // This ensures the worker's cached solid matches the current params.
+    // On first load, 'idle' → 'complete' counts as a valid transition.
+    const justCompleted =
+      generationStatus === 'complete' && (prevStatus === 'generating' || prevStatus === 'idle');
+
+    if (!justCompleted) return;
 
     const bridge = getActiveBridge();
     if (!bridge) return;
@@ -78,5 +87,5 @@ export function useSplitPreview(): void {
       .catch(() => {
         // Silently ignore errors (e.g., superseded requests)
       });
-  }, [needsSplit, isReady, params, maxGridUnits]);
+  }, [needsSplit, generationStatus, params, maxGridUnits]);
 }

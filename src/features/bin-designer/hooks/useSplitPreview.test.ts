@@ -53,7 +53,9 @@ const STUB_MESH_ENTRY = {
   },
 };
 
-/** Set store to the common "oversized + exploded + idle" state. */
+/** Set store to the common "oversized + exploded" state.
+ *  Uses 'generating' status so tests can trigger the split preview
+ *  by transitioning to 'complete' (simulating main generation finishing). */
 function setOversizedExplodedState(overrides?: {
   width?: number;
   depth?: number;
@@ -68,7 +70,7 @@ function setOversizedExplodedState(overrides?: {
     },
     generation: {
       ...DEFAULT_GENERATION_STATE,
-      status: overrides?.generationStatus ?? 'idle',
+      status: overrides?.generationStatus ?? 'generating',
     },
     ui: {
       ...DEFAULT_UI_STATE,
@@ -76,6 +78,13 @@ function setOversizedExplodedState(overrides?: {
       splitPieceMeshes: [],
     },
   });
+}
+
+/** Simulate the main generation completing (generating → complete transition). */
+function completeMainGeneration() {
+  useDesignerStore.setState((s) => ({
+    generation: { ...s.generation, status: 'complete' as const },
+  }));
 }
 
 /** Reset both stores to a known baseline before each test. */
@@ -139,6 +148,7 @@ describe('useSplitPreview', () => {
     setOversizedExplodedState({ splitViewMode: 'assembled' });
 
     renderHook(() => useSplitPreview());
+    completeMainGeneration();
     await flush();
 
     expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
@@ -147,7 +157,7 @@ describe('useSplitPreview', () => {
   it('keeps existing meshes when in assembled mode', async () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 8 },
-      generation: { ...DEFAULT_GENERATION_STATE },
+      generation: { ...DEFAULT_GENERATION_STATE, status: 'generating' },
       ui: {
         ...DEFAULT_UI_STATE,
         splitViewMode: 'assembled',
@@ -156,6 +166,7 @@ describe('useSplitPreview', () => {
     });
 
     renderHook(() => useSplitPreview());
+    completeMainGeneration();
     await flush();
 
     // Meshes are regenerated (bridge called), not cleared
@@ -184,19 +195,21 @@ describe('useSplitPreview', () => {
 
   // ── Happy path: all conditions met ─────────────────────────────────────
 
-  it('calls bridge when exploded + needsSplit (width) + idle', async () => {
+  it('calls bridge after main generation completes (width split)', async () => {
     setOversizedExplodedState();
 
     renderHook(() => useSplitPreview());
+    completeMainGeneration();
     await flush();
 
     expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
   });
 
-  it('calls bridge when exploded + needsSplit (depth) + idle', async () => {
+  it('calls bridge after main generation completes (depth split)', async () => {
     setOversizedExplodedState({ width: 2, depth: 8 });
 
     renderHook(() => useSplitPreview());
+    completeMainGeneration();
     await flush();
 
     expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
@@ -206,6 +219,7 @@ describe('useSplitPreview', () => {
     setOversizedExplodedState();
 
     renderHook(() => useSplitPreview());
+    completeMainGeneration();
     await flush();
 
     const meshes = useDesignerStore.getState().ui.splitPieceMeshes;
@@ -219,6 +233,7 @@ describe('useSplitPreview', () => {
     setOversizedExplodedState();
 
     renderHook(() => useSplitPreview());
+    completeMainGeneration();
     await flush();
 
     const call = mockGenerateSplitPreview.mock.calls[0];
@@ -245,10 +260,18 @@ describe('useSplitPreview', () => {
     setOversizedExplodedState();
 
     const { rerender } = renderHook(() => useSplitPreview());
+    completeMainGeneration();
+    rerender();
 
+    // Simulate second param change + generation cycle
     act(() => {
       useDesignerStore.getState().setParam('width', 9);
+      useDesignerStore.setState((s) => ({
+        generation: { ...s.generation, status: 'generating' as const },
+      }));
     });
+    rerender();
+    completeMainGeneration();
     rerender();
 
     // Resolve the newer request first
@@ -274,6 +297,7 @@ describe('useSplitPreview', () => {
     setOversizedExplodedState();
 
     const { rerender } = renderHook(() => useSplitPreview());
+    completeMainGeneration();
     await flush();
 
     expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(2);
