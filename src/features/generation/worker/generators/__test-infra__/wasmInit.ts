@@ -53,7 +53,7 @@ let generateSplitPreview: GenerateSplitPreviewFn | undefined;
  * Safe to call multiple times — only the first call does real work.
  */
 export async function initBrepjs(): Promise<void> {
-  if (generateBin) return;
+  if (generateBin && generateSplitPreview) return;
 
   const { initFromOC } = await import('brepjs');
   const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
