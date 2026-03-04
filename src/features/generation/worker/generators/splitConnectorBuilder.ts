@@ -4,7 +4,9 @@
  * Generates tongue-and-groove features on cut faces so split bin pieces
  * can be quickly aligned and glued together:
  *
- * - Wall tongues: vertical tongues at each outer wall edge with 55° chamfers
+ * - Wall connectors: auto-selected by wall thickness:
+ *   - Thin walls (< 1.4mm): half-lap joints (each piece keeps half the wall)
+ *   - Thick walls (≥ 1.4mm): tongue-and-groove with 55° chamfers
  * - Floor tongue: horizontal tongue centered in the floor slab with 55° chamfers.
  *   Top taper is invisible (swallowed by existing floor material on fuse).
  *
@@ -60,6 +62,16 @@ const EPSILON = 1e-9;
  *  cot(max_overhang_angle_from_vertical).
  *  0.7 → 55° overhang (safe on most modern printers with PLA). */
 const CHAMFER_SLOPE = 0.7;
+
+/** Wall thickness threshold (mm) for auto-selecting joint style.
+ *  Below this: half-lap joints (cut-based, works at any wall thickness).
+ *  At or above: tongue-and-groove joints (additive, needs room for tongue). */
+const HALF_LAP_WALL_THRESHOLD = 1.4;
+
+/** Clearance per side (mm) for half-lap joints.
+ *  Tighter than T&G (0.15mm) because the lap surfaces are planar and
+ *  don't need wiggle room for tapered insertion. */
+const HALF_LAP_CLEARANCE = 0.1;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -329,6 +341,61 @@ function addFeature(
   }
 }
 
+// ─── Half-Lap Wall Joint ────────────────────────────────────────────────────
+
+/**
+ * Build a half-lap cut for a wall at the cut face.
+ *
+ * Instead of adding a protruding tongue (which needs room inside the wall),
+ * half-lap joints cut away half the wall thickness near the cut face:
+ * - Male piece: inner half removed → outer tab remains, overlaps female
+ * - Female piece: outer half removed → inner surface remains, receives male tab
+ *
+ * Both sides are subtractive (push to cutTargets only). The overlap zone
+ * is `lapDepth` deep from the cut face on each piece.
+ */
+function addHalfLapWallFeature(
+  face: CutFace,
+  cutTargets: Shape3D[],
+  lapDepth: number,
+  wallHeight: number,
+  bottomZ: number,
+  edgePos: number,
+  wallThickness: number
+): void {
+  const sign = Math.sign(edgePos);
+  const halfWt = wallThickness / 2;
+  const cutWidth = halfWt + HALF_LAP_CLEARANCE;
+
+  if (face.isMale) {
+    // Cut INNER half of wall: keeps outer tab exposed for overlap
+    cutTargets.push(
+      buildPrism(
+        face.axis,
+        face.position - lapDepth - OVERLAP,
+        lapDepth + 2 * OVERLAP,
+        cutWidth,
+        wallHeight,
+        bottomZ,
+        edgePos - (sign * halfWt) / 2
+      )
+    );
+  } else {
+    // Cut OUTER half of wall: keeps inner surface as mating face
+    cutTargets.push(
+      buildPrism(
+        face.axis,
+        face.position - OVERLAP,
+        lapDepth + 2 * OVERLAP,
+        cutWidth,
+        wallHeight,
+        bottomZ,
+        edgePos + (sign * halfWt) / 2
+      )
+    );
+  }
+}
+
 // ─── Tongue & Groove Features ────────────────────────────────────────────────
 
 function addTongueAndGroove(
@@ -347,29 +414,51 @@ function addTongueAndGroove(
   const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
   const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
 
-  // ── Wall tongues (at outer bin walls only) ─────────────────────────────
-  // Tongue width is capped at tongueThickness but reduced to fit within
-  // the wall groove. Skip if the reduced size is below MIN_FEATURE_WIDTH.
-  const maxGrooveWidth = wt - 2 * MIN_SHELL;
-  const tongueWidth = Math.min(config.tongueThickness, maxGrooveWidth - 2 * config.clearance);
+  // ── Wall connectors (at outer bin walls only) ──────────────────────────
+  // Auto-select joint style based on wall thickness:
+  // - Thin walls (< 1.4mm): half-lap joints (subtractive, always viable)
+  // - Thick walls (≥ 1.4mm): tongue-and-groove (additive, needs room)
+  const useHalfLap = wt < HALF_LAP_WALL_THRESHOLD;
 
-  if (tongueWidth >= MIN_FEATURE_WIDTH - EPSILON) {
+  if (useHalfLap) {
+    // Half-lap: cut away half the wall thickness near the cut face
     for (const edgePos of [-wallOffset, wallOffset]) {
       if (edgePos < pieceMin || edgePos > pieceMax) continue;
       const nearCut = face.perpendicularCuts.some((cp) => Math.abs(edgePos - cp) < wt * 2);
       if (nearCut) continue;
-      addFeature(
+      addHalfLapWallFeature(
         face,
-        config.clearance,
-        fuseTargets,
         cutTargets,
         config.tongueProtrusion,
-        tongueWidth,
         wallHeight,
         context.floorZ,
         edgePos,
-        true
+        wt
       );
+    }
+  } else {
+    // Tongue-and-groove: additive tongue with matching groove
+    const maxGrooveWidth = wt - 2 * MIN_SHELL;
+    const tongueWidth = Math.min(config.tongueThickness, maxGrooveWidth - 2 * config.clearance);
+
+    if (tongueWidth >= MIN_FEATURE_WIDTH - EPSILON) {
+      for (const edgePos of [-wallOffset, wallOffset]) {
+        if (edgePos < pieceMin || edgePos > pieceMax) continue;
+        const nearCut = face.perpendicularCuts.some((cp) => Math.abs(edgePos - cp) < wt * 2);
+        if (nearCut) continue;
+        addFeature(
+          face,
+          config.clearance,
+          fuseTargets,
+          cutTargets,
+          config.tongueProtrusion,
+          tongueWidth,
+          wallHeight,
+          context.floorZ,
+          edgePos,
+          true
+        );
+      }
     }
   }
 
