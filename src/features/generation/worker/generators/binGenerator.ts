@@ -16,7 +16,7 @@
  */
 
 import {
-  drawRectangle,
+  box,
   drawPolysides,
   unwrap,
   fuse,
@@ -720,18 +720,17 @@ function splitSolidIntoPieces(
       const boxCenterX = centerX + (marginR - marginL) / 2;
       const boxCenterY = centerY + (marginT - marginB) / 2;
 
-      const cuttingBox = sketch(drawRectangle(boxW, boxD), 'XY', -CUTTING_BOX_HEIGHT / 2).extrude(
-        CUTTING_BOX_HEIGHT
-      );
-      const translatedBox = translate(cuttingBox, [boxCenterX, boxCenterY, 0]);
+      const cuttingBox = box(boxW, boxD, CUTTING_BOX_HEIGHT, {
+        at: [boxCenterX, boxCenterY, 0],
+      });
 
       // Split body with cutting box
-      let piece = unwrap(intersect(clone(bodySolid), translatedBox));
+      let piece = unwrap(intersect(clone(bodySolid), cuttingBox));
 
       // Split and fuse lip piece using a clone of the same cutting box
       if (lipSolid) {
         try {
-          const lipPiece = unwrap(intersect(clone(lipSolid), clone(translatedBox)));
+          const lipPiece = unwrap(intersect(clone(lipSolid), clone(cuttingBox)));
           piece = unwrap(fuse(piece, lipPiece));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;

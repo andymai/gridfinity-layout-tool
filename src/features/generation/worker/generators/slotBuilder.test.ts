@@ -5,21 +5,18 @@ import { getEffectiveSlotDimensions, buildSlotCuts } from './slotBuilder';
 
 // Mock brepjs — slotBuilder imports it at module level.
 // Vitest hoists vi.mock calls above imports automatically.
-vi.mock('brepjs', () => ({
-  drawRectangle: vi.fn(() => ({
-    sketchOnPlane: vi.fn(() => ({
-      extrude: vi.fn(() => ({
-        translate: vi.fn(),
-        fuse: vi.fn(() => ({ value: { translate: vi.fn(), fuse: vi.fn() } })),
-      })),
-    })),
-  })),
-  unwrap: vi.fn((result: unknown) =>
-    result && typeof result === 'object' && 'value' in result
-      ? (result as { value: unknown }).value
-      : result
-  ),
-}));
+vi.mock('brepjs', () => {
+  const mockShape = {};
+  return {
+    box: vi.fn(() => mockShape),
+    unwrap: vi.fn((result: unknown) =>
+      result && typeof result === 'object' && 'value' in result
+        ? (result as { value: unknown }).value
+        : result
+    ),
+    fuseAll: vi.fn(() => ({ value: mockShape })),
+  };
+});
 
 function makeSlottedParams(overrides: Partial<BinParams> = {}): BinParams {
   return {
