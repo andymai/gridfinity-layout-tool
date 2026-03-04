@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.54.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.54.0...gridfinity-layout-tool-v3.54.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* correct half-lap clearance to 0.1mm per side and add depth relief ([#1031](https://github.com/andymai/gridfinity-layout-tool/issues/1031)) ([7b454c2](https://github.com/andymai/gridfinity-layout-tool/commit/7b454c2718e6ab7a9d8e823bf1100b8397a88a85))
+
 ## [3.54.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.4...gridfinity-layout-tool-v3.54.0) (2026-03-04)
 
 
