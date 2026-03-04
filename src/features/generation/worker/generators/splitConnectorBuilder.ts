@@ -68,11 +68,6 @@ const CHAMFER_SLOPE = 0.7;
  *  At or above: tongue-and-groove joints (additive, needs room for tongue). */
 const HALF_LAP_WALL_THRESHOLD = 1.4;
 
-/** Clearance per side (mm) for half-lap joints — applied bilaterally so
- *  `cutWidth = halfWt + 2 * HALF_LAP_CLEARANCE` gives this gap on each side.
- *  Tighter than T&G (0.15mm) because lap surfaces are planar. */
-const HALF_LAP_CLEARANCE = 0.1;
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface CutFace {
@@ -379,7 +374,8 @@ function addHalfLapWallFeature(
   bottomZ: number,
   edgePos: number,
   wallThickness: number,
-  lipTaperWidth: number
+  lipTaperWidth: number,
+  clearance: number
 ): void {
   if (edgePos === 0) return; // Wall coincides with bin center — no meaningful lap joint
   const sign = Math.sign(edgePos);
@@ -391,14 +387,14 @@ function addHalfLapWallFeature(
   // Female cut covers the outer half — halfWt from centerline suffices.
   const totalHeight = wallHeight + lipHeight;
   const cutExtent = isMale && lipTaperWidth > 0 ? lipTaperWidth - halfWt : halfWt;
-  const cutWidth = cutExtent + 2 * HALF_LAP_CLEARANCE;
+  const cutWidth = cutExtent + 2 * clearance;
   const cutShift = (sign * cutExtent) / 2;
 
   // Both sides need depthExtra so the opposing tab doesn't bottom out.
   const cutSketchPos = isMale
-    ? face.position - lapDepth - HALF_LAP_CLEARANCE - OVERLAP
+    ? face.position - lapDepth - clearance - OVERLAP
     : face.position - OVERLAP;
-  const cutDepth = lapDepth + HALF_LAP_CLEARANCE + 2 * OVERLAP;
+  const cutDepth = lapDepth + clearance + 2 * OVERLAP;
 
   cutTargets.push(
     buildPrism(
@@ -493,7 +489,8 @@ function addTongueAndGroove(
           context.floorZ,
           edgePos,
           wt,
-          context.lipTaperWidth
+          context.lipTaperWidth,
+          config.clearance
         );
       } else {
         addFeature(

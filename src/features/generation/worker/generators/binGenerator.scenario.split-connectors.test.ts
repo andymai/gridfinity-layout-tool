@@ -22,8 +22,7 @@ const CLEARANCE = GRIDFINITY.TOLERANCE;
 const TESS_TOL = 0.3;
 
 /** 8×2×3 bin with default 1.2mm walls and stacking lip.
- *  Half-lap wall connectors are skipped when stacking lip is present
- *  (lip flange prevents interlocking assembly). */
+ *  Half-lap wall connectors interlock through the lip zone. */
 const OVERSIZED_PARAMS: BinParams = {
   ...DEFAULT_BIN_PARAMS,
   width: 8,
@@ -41,6 +40,20 @@ const OVERSIZED_NO_LIP: BinParams = {
 const CUT_PLANES_X = [0];
 const CUT_PLANES_Y: number[] = [];
 const DISABLED_CONFIG: SplitConnectorConfig = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Find the maximum X coordinate among vertices near a given Y position. */
+function maxXNearY(vertices: Float32Array, targetY: number, yTolerance: number): number {
+  let maxX = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    const y = vertices[i + 1];
+    if (Math.abs(y - targetY) < yTolerance) {
+      maxX = Math.max(maxX, vertices[i]);
+    }
+  }
+  return maxX;
+}
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
@@ -326,8 +339,8 @@ describe('split connector geometry in preview meshes', () => {
 
   it('half-lap at 1.2mm walls produces less X-extension than T&G at 1.6mm', () => {
     const generateSplitPreview = getGenerateSplitPreview();
-    // At 1.2mm walls, half-lap is subtractive for walls (only floor tongue protrudes).
-    // At 1.6mm walls, T&G adds both wall AND floor tongues.
+    // At 1.2mm walls, half-lap adds wall tabs (half-wall protrusion) + floor tongue.
+    // At 1.6mm walls, T&G adds full wall tongues + floor tongues.
     // The 1.2mm half-lap male piece should extend less than the 1.6mm T&G male piece.
     const thinResult = generateSplitPreview(
       OVERSIZED_PARAMS,
@@ -411,6 +424,116 @@ describe('split connector geometry in preview meshes', () => {
       noLipNoConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
     expect(lipDelta).toBeGreaterThan(noLipDelta);
   }, 90000);
+
+  it('male wall tabs protrude past cut face at wall Y positions (no lip)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const outerD = OVERSIZED_NO_LIP.depth * SIZE - CLEARANCE;
+    const wt = OVERSIZED_NO_LIP.wallThickness ?? 1.2;
+    const wallOffset = outerD / 2 - wt / 2;
+
+    const withConn = generateSplitPreview(
+      OVERSIZED_NO_LIP,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+    const withoutConn = generateSplitPreview(
+      OVERSIZED_NO_LIP,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONFIG
+    );
+
+    const maleWith = withConn.pieces.find((p) => p.col === 1);
+    const maleWithout = withoutConn.pieces.find((p) => p.col === 1);
+    expect(maleWith).toBeDefined();
+    expect(maleWithout).toBeDefined();
+    if (!maleWith || !maleWithout) return;
+
+    const wallMaxXWith = maxXNearY(maleWith.vertices, wallOffset, wt);
+    const wallMaxXWithout = maxXNearY(maleWithout.vertices, wallOffset, wt);
+    const wallProtrusion = wallMaxXWith - wallMaxXWithout;
+    const expectedProtrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
+
+    expect(wallProtrusion).toBeGreaterThan(expectedProtrusion - TESS_TOL - 0.5);
+  }, 60000);
+
+  it('male wall tabs protrude past cut face at wall Y positions (with lip)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const outerD = OVERSIZED_PARAMS.depth * SIZE - CLEARANCE;
+    const wt = OVERSIZED_PARAMS.wallThickness ?? 1.2;
+    const wallOffset = outerD / 2 - wt / 2;
+
+    const withConn = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+    const withoutConn = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONFIG
+    );
+
+    const maleWith = withConn.pieces.find((p) => p.col === 1);
+    const maleWithout = withoutConn.pieces.find((p) => p.col === 1);
+    expect(maleWith).toBeDefined();
+    expect(maleWithout).toBeDefined();
+    if (!maleWith || !maleWithout) return;
+
+    const wallMaxXWith = maxXNearY(maleWith.vertices, wallOffset, wt);
+    const wallMaxXWithout = maxXNearY(maleWithout.vertices, wallOffset, wt);
+    const wallProtrusion = wallMaxXWith - wallMaxXWithout;
+    const expectedProtrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
+
+    expect(wallProtrusion).toBeGreaterThan(expectedProtrusion - TESS_TOL - 0.5);
+  }, 60000);
+
+  it('female wall tab protrudes into male territory at wall Y positions (with lip)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const outerD = OVERSIZED_PARAMS.depth * SIZE - CLEARANCE;
+    const wt = OVERSIZED_PARAMS.wallThickness ?? 1.2;
+    const wallOffset = outerD / 2 - wt / 2;
+
+    const withConn = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+    const withoutConn = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONFIG
+    );
+
+    const femaleWith = withConn.pieces.find((p) => p.col === 2);
+    const femaleWithout = withoutConn.pieces.find((p) => p.col === 2);
+    expect(femaleWith).toBeDefined();
+    expect(femaleWithout).toBeDefined();
+    if (!femaleWith || !femaleWithout) return;
+
+    let femaleMinXWith = Infinity;
+    let femaleMinXWithout = Infinity;
+    for (let i = 0; i < femaleWith.vertices.length; i += 3) {
+      if (Math.abs(femaleWith.vertices[i + 1] - wallOffset) < wt) {
+        femaleMinXWith = Math.min(femaleMinXWith, femaleWith.vertices[i]);
+      }
+    }
+    for (let i = 0; i < femaleWithout.vertices.length; i += 3) {
+      if (Math.abs(femaleWithout.vertices[i + 1] - wallOffset) < wt) {
+        femaleMinXWithout = Math.min(femaleMinXWithout, femaleWithout.vertices[i]);
+      }
+    }
+
+    const femaleProtrusion = femaleMinXWithout - femaleMinXWith;
+    const expectedProtrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
+
+    expect(femaleProtrusion).toBeGreaterThan(expectedProtrusion - TESS_TOL - 0.5);
+  }, 60000);
 
   it('tongue-and-groove activates at 1.6mm walls (male extends past cut face)', () => {
     const generateSplitPreview = getGenerateSplitPreview();
