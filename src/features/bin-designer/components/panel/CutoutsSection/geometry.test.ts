@@ -692,7 +692,7 @@ describe('geometry', () => {
       expect(result.rotation).toBe(330);
     });
 
-    it('mirrors path points horizontally and swaps handles', () => {
+    it('mirrors path points horizontally without swapping handles', () => {
       const cutout = createCutout({
         shape: 'path',
         path: [
@@ -702,18 +702,37 @@ describe('geometry', () => {
       });
       const result = flipCutoutHorizontal(cutout);
       // Center X = (10+20)/2 = 15
-      // Point 0: x = 2*15 - 10 = 20, handleIn = swapped from handleOut: dx=-2, dy=3
-      // Point 1: x = 2*15 - 20 = 10, handleOut = swapped from handleIn: dx=1, dy=1
+      // Point 0: x = 2*15 - 10 = 20, handleOut X negated: dx=-2, dy=3
+      // Point 1: x = 2*15 - 20 = 10, handleIn X negated: dx=1, dy=1
       expect(result.path).toBeDefined();
       const path = result.path as PathPoint[];
       expect(path[0].x).toBe(20);
       expect(path[0].y).toBe(5);
-      expect(path[0].handleIn).toEqual({ dx: -2, dy: 3 });
-      expect(path[0].handleOut).toBeNull();
+      expect(path[0].handleIn).toBeNull();
+      expect(path[0].handleOut).toEqual({ dx: -2, dy: 3 });
       expect(path[1].x).toBe(10);
       expect(path[1].y).toBe(5);
-      expect(path[1].handleIn).toBeNull();
-      expect(path[1].handleOut).toEqual({ dx: 1, dy: 1 });
+      expect(path[1].handleIn).toEqual({ dx: 1, dy: 1 });
+      expect(path[1].handleOut).toBeNull();
+    });
+
+    it('returns updated bounding box fields for path shapes', () => {
+      const cutout = createCutout({
+        shape: 'path',
+        x: 10,
+        y: 5,
+        width: 10,
+        depth: 0,
+        path: [
+          { x: 10, y: 5, handleIn: null, handleOut: null, symmetric: false },
+          { x: 20, y: 5, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const result = flipCutoutHorizontal(cutout);
+      expect(result.x).toBeDefined();
+      expect(result.y).toBeDefined();
+      expect(result.width).toBeDefined();
+      expect(result.depth).toBeDefined();
     });
 
     it('does not set rotation for path shapes', () => {
@@ -755,7 +774,7 @@ describe('geometry', () => {
       expect(result.rotation).toBe(270);
     });
 
-    it('mirrors path points vertically and swaps handles', () => {
+    it('mirrors path points vertically without swapping handles', () => {
       const cutout = createCutout({
         shape: 'path',
         path: [
@@ -765,18 +784,37 @@ describe('geometry', () => {
       });
       const result = flipCutoutVertical(cutout);
       // Center Y = (10+20)/2 = 15
-      // Point 0: y = 2*15 - 10 = 20, handleIn = swapped from handleOut: dx=2, dy=-3
-      // Point 1: y = 2*15 - 20 = 10, handleOut = swapped from handleIn: dx=-1, dy=2
+      // Point 0: y = 2*15 - 10 = 20, handleOut Y negated: dx=2, dy=-3
+      // Point 1: y = 2*15 - 20 = 10, handleIn Y negated: dx=-1, dy=2
       expect(result.path).toBeDefined();
       const path = result.path as PathPoint[];
       expect(path[0].x).toBe(5);
       expect(path[0].y).toBe(20);
-      expect(path[0].handleIn).toEqual({ dx: 2, dy: -3 });
-      expect(path[0].handleOut).toBeNull();
+      expect(path[0].handleIn).toBeNull();
+      expect(path[0].handleOut).toEqual({ dx: 2, dy: -3 });
       expect(path[1].x).toBe(5);
       expect(path[1].y).toBe(10);
-      expect(path[1].handleIn).toBeNull();
-      expect(path[1].handleOut).toEqual({ dx: -1, dy: 2 });
+      expect(path[1].handleIn).toEqual({ dx: -1, dy: 2 });
+      expect(path[1].handleOut).toBeNull();
+    });
+
+    it('returns updated bounding box fields for path shapes', () => {
+      const cutout = createCutout({
+        shape: 'path',
+        x: 5,
+        y: 10,
+        width: 0,
+        depth: 10,
+        path: [
+          { x: 5, y: 10, handleIn: null, handleOut: null, symmetric: false },
+          { x: 5, y: 20, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const result = flipCutoutVertical(cutout);
+      expect(result.x).toBeDefined();
+      expect(result.y).toBeDefined();
+      expect(result.width).toBeDefined();
+      expect(result.depth).toBeDefined();
     });
   });
 

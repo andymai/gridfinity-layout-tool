@@ -3,6 +3,7 @@
  */
 
 import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
+import { getPathBounds } from './pathGeometry';
 import type { ResizeHandle } from './useCutoutInteraction';
 
 // ─── Rotation Helpers ───────────────────────────────────────────────────────
@@ -518,60 +519,53 @@ export function centerInBin(
 // ─── Flip Helpers ─────────────────────────────────────────────────────────────
 
 /**
- * Mirror a path point's X coordinate around a center, negating X handles
- * and swapping handleIn/handleOut (winding reversal).
+ * Mirror a path point's X coordinate around a center, negating X handle components.
+ * Handles are NOT swapped because the point array order is preserved.
  */
 function mirrorPathPointX(pt: PathPoint, centerX: number): PathPoint {
   return {
     x: 2 * centerX - pt.x,
     y: pt.y,
-    handleIn: pt.handleOut ? { dx: -pt.handleOut.dx, dy: pt.handleOut.dy } : null,
-    handleOut: pt.handleIn ? { dx: -pt.handleIn.dx, dy: pt.handleIn.dy } : null,
+    handleIn: pt.handleIn ? { dx: -pt.handleIn.dx, dy: pt.handleIn.dy } : null,
+    handleOut: pt.handleOut ? { dx: -pt.handleOut.dx, dy: pt.handleOut.dy } : null,
     symmetric: pt.symmetric,
   };
 }
 
 /**
- * Mirror a path point's Y coordinate around a center, negating Y handles
- * and swapping handleIn/handleOut (winding reversal).
+ * Mirror a path point's Y coordinate around a center, negating Y handle components.
+ * Handles are NOT swapped because the point array order is preserved.
  */
 function mirrorPathPointY(pt: PathPoint, centerY: number): PathPoint {
   return {
     x: pt.x,
     y: 2 * centerY - pt.y,
-    handleIn: pt.handleOut ? { dx: pt.handleOut.dx, dy: -pt.handleOut.dy } : null,
-    handleOut: pt.handleIn ? { dx: pt.handleIn.dx, dy: -pt.handleIn.dy } : null,
+    handleIn: pt.handleIn ? { dx: pt.handleIn.dx, dy: -pt.handleIn.dy } : null,
+    handleOut: pt.handleOut ? { dx: pt.handleOut.dx, dy: -pt.handleOut.dy } : null,
     symmetric: pt.symmetric,
   };
-}
-
-/**
- * Compute the center of a path's bounding box.
- */
-function pathCenter(path: readonly PathPoint[]): { cx: number; cy: number } {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  for (const pt of path) {
-    minX = Math.min(minX, pt.x);
-    minY = Math.min(minY, pt.y);
-    maxX = Math.max(maxX, pt.x);
-    maxY = Math.max(maxY, pt.y);
-  }
-  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
 }
 
 /**
  * Flip a cutout horizontally (mirror left↔right).
  *
  * - Rectangle/Circle: `rotation = (360 - rotation) % 360`
- * - Path: Mirror each point's X around bounding box center, swap handles.
+ * - Path: Mirror each point's X around bezier-accurate bounding box center,
+ *   then recompute `x, y, width, depth` from the new path bounds.
  */
 export function flipCutoutHorizontal(cutout: Cutout): Partial<Cutout> {
   if (cutout.shape === 'path' && cutout.path) {
-    const { cx } = pathCenter(cutout.path);
-    return { path: cutout.path.map((pt) => mirrorPathPointX(pt, cx)) };
+    const bounds = getPathBounds(cutout.path);
+    const cx = (bounds.minX + bounds.maxX) / 2;
+    const flippedPath = cutout.path.map((pt) => mirrorPathPointX(pt, cx));
+    const newBounds = getPathBounds(flippedPath);
+    return {
+      path: flippedPath,
+      x: newBounds.minX,
+      y: newBounds.minY,
+      width: newBounds.maxX - newBounds.minX,
+      depth: newBounds.maxY - newBounds.minY,
+    };
   }
   return { rotation: (360 - cutout.rotation) % 360 };
 }
@@ -580,12 +574,22 @@ export function flipCutoutHorizontal(cutout: Cutout): Partial<Cutout> {
  * Flip a cutout vertically (mirror top↔bottom).
  *
  * - Rectangle/Circle: `rotation = (180 - rotation + 360) % 360`
- * - Path: Mirror each point's Y around bounding box center, swap handles.
+ * - Path: Mirror each point's Y around bezier-accurate bounding box center,
+ *   then recompute `x, y, width, depth` from the new path bounds.
  */
 export function flipCutoutVertical(cutout: Cutout): Partial<Cutout> {
   if (cutout.shape === 'path' && cutout.path) {
-    const { cy } = pathCenter(cutout.path);
-    return { path: cutout.path.map((pt) => mirrorPathPointY(pt, cy)) };
+    const bounds = getPathBounds(cutout.path);
+    const cy = (bounds.minY + bounds.maxY) / 2;
+    const flippedPath = cutout.path.map((pt) => mirrorPathPointY(pt, cy));
+    const newBounds = getPathBounds(flippedPath);
+    return {
+      path: flippedPath,
+      x: newBounds.minX,
+      y: newBounds.minY,
+      width: newBounds.maxX - newBounds.minX,
+      depth: newBounds.maxY - newBounds.minY,
+    };
   }
   return { rotation: (180 - cutout.rotation + 360) % 360 };
 }
