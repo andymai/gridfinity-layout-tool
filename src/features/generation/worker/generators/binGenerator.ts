@@ -622,11 +622,16 @@ interface SplitPieceInfo {
 }
 
 /**
- * Split the cached bin solid into pieces via boolean intersection.
+ * Split the bin solid into pieces via boolean intersection.
  *
  * Shared by exportSplitBin (STL output) and generateSplitPreview (mesh output).
  * Ensures the solid exists, computes cutting regions, applies connectors, and
  * returns each piece solid with positioning metadata.
+ *
+ * When the bin has a stacking lip, the body and lip are split separately and
+ * then fused per-piece. This avoids an OCCT bug where intersecting the fused
+ * bin+lip solid crashes at certain wall thicknesses (e.g. 1.6mm) due to
+ * complex BREP topology at the lip-wall junction.
  */
 function splitSolidIntoPieces(
   params: BinParams,
@@ -634,12 +639,16 @@ function splitSolidIntoPieces(
   cutPlanesY: readonly number[],
   splitConnectorConfig?: SplitConnectorConfig
 ): SplitPieceInfo[] {
-  if (!getLastSolid()) {
-    generateBin(params, undefined, true);
-  }
+  const hasLip = params.base.stackingLip;
 
-  const solid = getLastSolid();
-  if (!solid) {
+  // Generate body solid. When the bin has a stacking lip, generate WITHOUT
+  // the lip to avoid OCCT boolean intersection crashes. The lip is split
+  // separately and fused onto each piece below.
+  const bodyParams = hasLip ? { ...params, base: { ...params.base, stackingLip: false } } : params;
+  generateBin(bodyParams, undefined, true);
+
+  const bodySolid = getLastSolid();
+  if (!bodySolid) {
     throw new Error('Failed to generate solid for splitting');
   }
 
@@ -655,7 +664,13 @@ function splitSolidIntoPieces(
   const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
   const wallTopZ = floorZ + wallHeight;
 
-  const splitSolid: Shape3D = solid;
+  // Build lip solid separately if needed. The lip is positioned at
+  // wallTopZ (= totalHeight for both flat and socket bases after the
+  // socket Z-offset applied in generateBin).
+  let lipSolid: Shape3D | undefined;
+  if (hasLip) {
+    lipSolid = translate(buildTopShape(params.width, params.depth, true), [0, 0, wallTopZ]);
+  }
 
   // Boundary arrays: [left edge, ...cut planes, right edge]
   const xBounds = [-outerW / 2, ...cutPlanesX, outerW / 2];
@@ -699,7 +714,24 @@ function splitSolidIntoPieces(
       );
       const translatedBox = translate(cuttingBox, [boxCenterX, boxCenterY, 0]);
 
-      let piece = unwrap(intersect(clone(splitSolid), translatedBox));
+      // Split body with cutting box
+      let piece = unwrap(intersect(clone(bodySolid), translatedBox));
+
+      // Fuse lip piece if lip exists
+      if (lipSolid) {
+        try {
+          const lipCuttingBox = sketch(
+            drawRectangle(boxW, boxD),
+            'XY',
+            -CUTTING_BOX_HEIGHT / 2
+          ).extrude(CUTTING_BOX_HEIGHT);
+          const lipTranslatedBox = translate(lipCuttingBox, [boxCenterX, boxCenterY, 0]);
+          const lipPiece = unwrap(intersect(clone(lipSolid), lipTranslatedBox));
+          piece = unwrap(fuse(piece, lipPiece));
+        } catch {
+          // Lip split/fuse failed — piece without lip is still usable
+        }
+      }
 
       if (connectorConfig !== undefined && connectorConfig.enabled) {
         const cutFaces = computeCutFaces(

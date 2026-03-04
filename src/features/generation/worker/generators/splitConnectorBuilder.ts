@@ -25,7 +25,7 @@
  *   a groove that opens cleanly at the mating face.
  */
 
-import { drawRectangle, unwrap, fuse, cut, fuseAll, cutAll, translate } from 'brepjs';
+import { drawRectangle, unwrap, fuse, cut, translate, getBounds } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
@@ -103,39 +103,67 @@ export function applySplitConnectors(
     addTongueAndGroove(face, context, config, fuseTargets, cutTargets);
   }
 
+  // Capture the piece's bounding box diagonal to validate boolean results.
+  // OCCT can silently return garbage (e.g., just a tongue shape instead of
+  // piece + tongue) without throwing. We detect this by checking that the
+  // result's extent is at least 80% of the original piece on each axis.
+  const pieceBounds = getBounds(piece);
+  const pieceExtent = [
+    pieceBounds.xMax - pieceBounds.xMin,
+    pieceBounds.yMax - pieceBounds.yMin,
+    pieceBounds.zMax - pieceBounds.zMin,
+  ];
+
   let result = piece;
 
-  if (fuseTargets.length > 0) {
+  // Apply fuses one at a time — fuseAll with many shapes is more prone to
+  // silent OCCT failures. Validate each result.
+  for (const target of fuseTargets) {
     try {
-      result = unwrap(fuseAll([result, ...fuseTargets]));
-    } catch {
-      // Batch fuse failed — apply sequentially
-      for (const target of fuseTargets) {
-        try {
-          result = unwrap(fuse(result, target));
-        } catch {
-          // Individual fuse failed — skip this feature
-        }
+      const candidate = unwrap(fuse(result, target));
+      if (isResultValid(candidate, pieceExtent)) {
+        result = candidate;
       }
+    } catch {
+      // Fuse failed — skip this feature
     }
   }
 
-  if (cutTargets.length > 0) {
+  // Apply cuts one at a time with validation.
+  for (const target of cutTargets) {
     try {
-      result = unwrap(cutAll(result, cutTargets));
-    } catch {
-      // Batch cut failed — apply sequentially
-      for (const target of cutTargets) {
-        try {
-          result = unwrap(cut(result, target));
-        } catch {
-          // Individual cut failed — skip this feature
-        }
+      const candidate = unwrap(cut(result, target));
+      if (isResultValid(candidate, pieceExtent)) {
+        result = candidate;
       }
+    } catch {
+      // Cut failed — skip this feature
     }
   }
 
   return result;
+}
+
+/** Check that a boolean result preserved the piece body.
+ *  Returns false if the result's extent shrank below 80% on any axis,
+ *  indicating OCCT silently returned garbage. */
+function isResultValid(shape: Shape3D, expectedExtent: number[]): boolean {
+  try {
+    const bounds = getBounds(shape);
+    const extent = [
+      bounds.xMax - bounds.xMin,
+      bounds.yMax - bounds.yMin,
+      bounds.zMax - bounds.zMin,
+    ];
+    for (let i = 0; i < 3; i++) {
+      if (expectedExtent[i] > 1 && extent[i] < expectedExtent[i] * 0.8) {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function computeCutFaces(
@@ -219,8 +247,10 @@ function buildTaperedPrism(
   const heightChamfer = Math.min(extrudeLen * CHAMFER_SLOPE, maxHeightChamfer);
   const widthChamfer = Math.min(extrudeLen * CHAMFER_SLOPE, maxWidthChamfer);
 
-  // Fall back to rectangular for negligible chamfers or thin features
-  if ((heightChamfer < 0.1 && widthChamfer < 0.1) || height < 1.0) {
+  // Fall back to rectangular when chamfers are negligible, or when the feature
+  // is too thin for a meaningful taper. Thin wall tongues (width < 2mm) produce
+  // near-degenerate sliver faces in the loft that crash OCCT booleans.
+  if ((heightChamfer < 0.1 && widthChamfer < 0.1) || height < 1.0 || width < 2.0) {
     return buildPrism(cutAxis, sketchPos, extrudeLen, width, height, bottomZ, edgeOffset);
   }
 

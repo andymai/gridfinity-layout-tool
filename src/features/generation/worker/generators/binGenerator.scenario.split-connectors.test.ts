@@ -279,6 +279,52 @@ describe('split connector geometry in preview meshes', () => {
     expect(trisResult - trisWithout).toBeGreaterThan(5);
   }, 60000);
 
+  it('wall tongues at 1.6mm wall thickness do not destroy bin geometry', () => {
+    const thickWallParams: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 7,
+      depth: 3,
+      height: 3,
+      wallThickness: 1.6,
+    };
+
+    // First verify splitting without connectors works fine
+    const withoutConnectors = generateSplitPreview(thickWallParams, CUT_PLANES_X, CUT_PLANES_Y, {
+      ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
+      enabled: false,
+    });
+    expect(withoutConnectors.pieces).toHaveLength(2);
+    const baseVertCount = withoutConnectors.pieces[0].vertices.length;
+    expect(baseVertCount).toBeGreaterThan(100);
+
+    // Now with connectors — should NOT destroy geometry
+    const result = generateSplitPreview(
+      thickWallParams,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+
+    expect(result.pieces).toHaveLength(2);
+
+    const outerW = thickWallParams.width * SIZE - CLEARANCE;
+    const halfW = outerW / 2;
+    const outerD = thickWallParams.depth * SIZE - CLEARANCE;
+
+    for (const piece of result.pieces) {
+      expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
+      expect(piece.vertices.length).toBeGreaterThan(100);
+
+      const bb = boundingBox(piece.vertices);
+      const pieceW = bb.maxX - bb.minX;
+      const pieceD = bb.maxY - bb.minY;
+
+      // Each piece should be approximately half the bin width
+      expect(pieceW).toBeGreaterThan(halfW - 5);
+      expect(pieceD).toBeGreaterThan(outerD - 2);
+    }
+  }, 60000);
+
   it('asymmetric multi-split produces correct piece count and labels', () => {
     const wideParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 13, depth: 2, height: 3 };
     const cuts = [-2 * SIZE, 2 * SIZE];
