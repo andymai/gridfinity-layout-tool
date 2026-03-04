@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.1.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.4...gridfinity-layout-tool-v4.1.0) (2026-03-04)
+
+
+### Features
+
+* add flip horizontal/vertical to cutout editor ([#1047](https://github.com/andymai/gridfinity-layout-tool/issues/1047)) ([70a35f3](https://github.com/andymai/gridfinity-layout-tool/commit/70a35f359c9eef5a1303a8ea64aa6d8358ddb9f7))
+
+
+### Bug Fixes
+
+* default cutout editor to rectangle tool on open ([#1045](https://github.com/andymai/gridfinity-layout-tool/issues/1045)) ([1a0d176](https://github.com/andymai/gridfinity-layout-tool/commit/1a0d17658900280379787d29641e7dcac4ead195))
+
 ## [4.0.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.3...gridfinity-layout-tool-v4.0.4) (2026-03-04)
 
 
