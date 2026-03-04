@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.54.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.54.1...gridfinity-layout-tool-v3.54.2) (2026-03-04)
+
+
+### Bug Fixes
+
+* make half-lap connectors work with stacking lip ([#1034](https://github.com/andymai/gridfinity-layout-tool/issues/1034)) ([2ead738](https://github.com/andymai/gridfinity-layout-tool/commit/2ead7386c86484dbf68d909a803aa5c3ff09f0e8))
+
 ## [3.54.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.54.0...gridfinity-layout-tool-v3.54.1) (2026-03-04)
 
 
