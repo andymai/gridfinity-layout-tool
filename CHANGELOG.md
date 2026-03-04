@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.3...gridfinity-layout-tool-v4.0.4) (2026-03-04)
+
+
+### Bug Fixes
+
+* move baseplate export button next to tool switcher for discoverability ([#1043](https://github.com/andymai/gridfinity-layout-tool/issues/1043)) ([4d7d216](https://github.com/andymai/gridfinity-layout-tool/commit/4d7d216f0baa6324dfc28ee8c7ce15c0943f39eb))
+
 ## [4.0.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.2...gridfinity-layout-tool-v4.0.3) (2026-03-04)
 
 
