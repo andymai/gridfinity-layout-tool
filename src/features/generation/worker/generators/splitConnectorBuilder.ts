@@ -103,54 +103,59 @@ export function applySplitConnectors(
     addTongueAndGroove(face, context, config, fuseTargets, cutTargets);
   }
 
-  // Capture the piece's bounding box diagonal to validate boolean results.
+  // Capture the piece's bounding box extent to validate boolean results.
   // OCCT can silently return garbage (e.g., just a tongue shape instead of
   // piece + tongue) without throwing. We detect this by checking that the
   // result's extent is at least 80% of the original piece on each axis.
   const pieceBounds = getBounds(piece);
-  const pieceExtent = [
+  const pieceExtent: [number, number, number] = [
     pieceBounds.xMax - pieceBounds.xMin,
     pieceBounds.yMax - pieceBounds.yMin,
     pieceBounds.zMax - pieceBounds.zMin,
   ];
 
+  // Apply booleans one at a time — batch operations (fuseAll/cutAll) are more
+  // prone to silent OCCT failures. Each result is validated against the
+  // original extent to catch garbage outputs.
+  let result = applyBooleans(piece, fuseTargets, fuse, pieceExtent);
+  result = applyBooleans(result, cutTargets, cut, pieceExtent);
+
+  return result;
+}
+
+type Extent = [number, number, number];
+
+/** Apply a sequence of boolean operations (fuse or cut) one at a time,
+ *  validating each result against the original piece extent. Skips any
+ *  operation that fails or produces a suspiciously small result. */
+function applyBooleans(
+  piece: Shape3D,
+  targets: Shape3D[],
+  op: typeof fuse | typeof cut,
+  expectedExtent: Extent
+): Shape3D {
   let result = piece;
-
-  // Apply fuses one at a time — fuseAll with many shapes is more prone to
-  // silent OCCT failures. Validate each result.
-  for (const target of fuseTargets) {
+  for (const target of targets) {
     try {
-      const candidate = unwrap(fuse(result, target));
-      if (isResultValid(candidate, pieceExtent)) {
+      const candidate = unwrap(op(result, target));
+      if (isResultValid(candidate, expectedExtent)) {
         result = candidate;
       }
-    } catch {
-      // Fuse failed — skip this feature
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') throw e;
+      // Boolean failed — skip this feature
     }
   }
-
-  // Apply cuts one at a time with validation.
-  for (const target of cutTargets) {
-    try {
-      const candidate = unwrap(cut(result, target));
-      if (isResultValid(candidate, pieceExtent)) {
-        result = candidate;
-      }
-    } catch {
-      // Cut failed — skip this feature
-    }
-  }
-
   return result;
 }
 
 /** Check that a boolean result preserved the piece body.
  *  Returns false if the result's extent shrank below 80% on any axis,
  *  indicating OCCT silently returned garbage. */
-function isResultValid(shape: Shape3D, expectedExtent: number[]): boolean {
+function isResultValid(shape: Shape3D, expectedExtent: Extent): boolean {
   try {
     const bounds = getBounds(shape);
-    const extent = [
+    const extent: Extent = [
       bounds.xMax - bounds.xMin,
       bounds.yMax - bounds.yMin,
       bounds.zMax - bounds.zMin,
@@ -161,7 +166,8 @@ function isResultValid(shape: Shape3D, expectedExtent: number[]): boolean {
       }
     }
     return true;
-  } catch {
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') throw e;
     return false;
   }
 }

@@ -696,18 +696,14 @@ function splitSolidIntoPieces(
       const centerY = (yMin + yMax) / 2;
 
       // Expand cutting box at outer bin edges to avoid coplanar booleans
-      const isLeftEdge = col === 0;
-      const isRightEdge = col === xBounds.length - 2;
-      const isBottomEdge = row === 0;
-      const isTopEdge = row === yBounds.length - 2;
-      const marginLeft = isLeftEdge ? EDGE_MARGIN : 0;
-      const marginRight = isRightEdge ? EDGE_MARGIN : 0;
-      const marginBottom = isBottomEdge ? EDGE_MARGIN : 0;
-      const marginTop = isTopEdge ? EDGE_MARGIN : 0;
-      const boxW = pieceW + marginLeft + marginRight;
-      const boxD = pieceD + marginBottom + marginTop;
-      const boxCenterX = centerX + (marginRight - marginLeft) / 2;
-      const boxCenterY = centerY + (marginTop - marginBottom) / 2;
+      const marginL = col === 0 ? EDGE_MARGIN : 0;
+      const marginR = col === xBounds.length - 2 ? EDGE_MARGIN : 0;
+      const marginB = row === 0 ? EDGE_MARGIN : 0;
+      const marginT = row === yBounds.length - 2 ? EDGE_MARGIN : 0;
+      const boxW = pieceW + marginL + marginR;
+      const boxD = pieceD + marginB + marginT;
+      const boxCenterX = centerX + (marginR - marginL) / 2;
+      const boxCenterY = centerY + (marginT - marginB) / 2;
 
       const cuttingBox = sketch(drawRectangle(boxW, boxD), 'XY', -CUTTING_BOX_HEIGHT / 2).extrude(
         CUTTING_BOX_HEIGHT
@@ -717,18 +713,13 @@ function splitSolidIntoPieces(
       // Split body with cutting box
       let piece = unwrap(intersect(clone(bodySolid), translatedBox));
 
-      // Fuse lip piece if lip exists
+      // Split and fuse lip piece using a clone of the same cutting box
       if (lipSolid) {
         try {
-          const lipCuttingBox = sketch(
-            drawRectangle(boxW, boxD),
-            'XY',
-            -CUTTING_BOX_HEIGHT / 2
-          ).extrude(CUTTING_BOX_HEIGHT);
-          const lipTranslatedBox = translate(lipCuttingBox, [boxCenterX, boxCenterY, 0]);
-          const lipPiece = unwrap(intersect(clone(lipSolid), lipTranslatedBox));
+          const lipPiece = unwrap(intersect(clone(lipSolid), clone(translatedBox)));
           piece = unwrap(fuse(piece, lipPiece));
-        } catch {
+        } catch (e) {
+          if (e instanceof DOMException && e.name === 'AbortError') throw e;
           // Lip split/fuse failed — piece without lip is still usable
         }
       }

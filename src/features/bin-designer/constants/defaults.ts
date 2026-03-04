@@ -52,7 +52,6 @@ export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   clearance: 0.15,
   tongueThickness: 2.4,
   tongueProtrusion: 3.0,
-  tongueSpacing: 35,
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */

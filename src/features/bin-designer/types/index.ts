@@ -177,8 +177,6 @@ export interface SplitConnectorConfig {
   readonly tongueThickness: number;
   /** Tongue protrusion depth from cut face (mm) */
   readonly tongueProtrusion: number;
-  /** Target spacing between tongue features along edge (mm) */
-  readonly tongueSpacing: number;
 }
 
 /** Complete bin parameter set for generation */
