@@ -351,7 +351,7 @@ export async function migrateAllLayoutsToIndexedDBResult(): Promise<
 export async function getMigrationStatusResult(): Promise<Result<MigrationStatus, StorageError>> {
   const localStorageIds = getLocalStorageLayoutIds();
 
-  let indexedDBIds: string[] = [];
+  let indexedDBIds: string[];
   try {
     indexedDBIds = await backend.getIndexedDBLayoutIds();
   } catch {

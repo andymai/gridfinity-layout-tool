@@ -234,7 +234,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       const gridComputedStyle = window.getComputedStyle(gridRef.current);
       const cols = gridComputedStyle.gridTemplateColumns.split(' ').length;
 
-      let newIndex = focusedCardIndex;
+      let newIndex: number;
 
       switch (e.key) {
         case 'ArrowRight':

@@ -128,10 +128,11 @@
       "ajv": "^8.17.1"
     },
     "serialize-javascript": "^7.0.3",
-    "eslint": {
-      "minimatch": "^3.1.3"
+    "eslint-plugin-react-hooks": {
+      "eslint": "$eslint"
     },
     "eslint-plugin-jsx-a11y": {
+      "eslint": "$eslint",
       "minimatch": "^3.1.3"
     },
     "@ts-morph/common": {
@@ -152,7 +153,8 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
-    "@eslint/js": "^9.39.1",
+    "@eslint/compat": "^2.0.2",
+    "@eslint/js": "^10.0.0",
     "@playwright/experimental-ct-react": "^1.58.2",
     "@playwright/test": "^1.58.2",
     "@size-limit/file": "^12.0.0",
@@ -170,11 +172,11 @@
     "@vitest/coverage-v8": "^4.0.17",
     "@vitest/ui": "^4.0.16",
     "axe-core": "^4.11.1",
-    "eslint": "^9.39.1",
+    "eslint": "^10.0.2",
     "eslint-plugin-i18next": "^6.1.3",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.5.0",
+    "eslint-plugin-react-refresh": "^0.5.1",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.4.0",
     "gray-matter": "^4.0.3",
@@ -190,7 +192,7 @@
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.54.0",
+    "typescript-eslint": "^8.56.0",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.16",
