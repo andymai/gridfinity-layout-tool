@@ -25,139 +25,19 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
-
-interface SplitPreviewResult {
-  readonly pieces: Array<{
-    readonly vertices: Float32Array;
-    readonly normals: Float32Array;
-    readonly indices: Uint32Array;
-    readonly edgeVertices: Float32Array;
-    readonly label: string;
-    readonly col: number;
-    readonly row: number;
-    readonly widthUnits: number;
-    readonly depthUnits: number;
-    readonly offsetX: number;
-    readonly offsetY: number;
-  }>;
-}
-
-type GenerateSplitPreviewFn = (
-  params: BinParams,
-  cutPlanesX: readonly number[],
-  cutPlanesY: readonly number[],
-  splitConnectorConfig?: SplitConnectorConfig
-) => SplitPreviewResult;
-
-let generateSplitPreview: GenerateSplitPreviewFn;
+import { initBrepjs, getGenerateSplitPreview } from './__test-infra__/wasmInit';
+import { boundingBox, assertValidSplit } from './__test-infra__/meshAssertions';
 
 beforeAll(async () => {
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
-
-  const mod = await import('@/features/generation/worker/generators/binGenerator');
-  generateSplitPreview = mod.generateSplitPreview as GenerateSplitPreviewFn;
+  await initBrepjs();
 }, 30000);
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const SIZE = GRIDFINITY.GRID_SIZE;
-const CLEARANCE = GRIDFINITY.TOLERANCE;
 
 const CONNECTORS: SplitConnectorConfig = DEFAULT_SPLIT_CONNECTOR_CONFIG;
 const NO_CONNECTORS: SplitConnectorConfig = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-interface BoundingBox {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  minZ: number;
-  maxZ: number;
-}
-
-function boundingBox(vertices: Float32Array): BoundingBox {
-  const bb: BoundingBox = {
-    minX: Infinity,
-    maxX: -Infinity,
-    minY: Infinity,
-    maxY: -Infinity,
-    minZ: Infinity,
-    maxZ: -Infinity,
-  };
-  for (let i = 0; i < vertices.length; i += 3) {
-    bb.minX = Math.min(bb.minX, vertices[i]);
-    bb.maxX = Math.max(bb.maxX, vertices[i]);
-    bb.minY = Math.min(bb.minY, vertices[i + 1]);
-    bb.maxY = Math.max(bb.maxY, vertices[i + 1]);
-    bb.minZ = Math.min(bb.minZ, vertices[i + 2]);
-    bb.maxZ = Math.max(bb.maxZ, vertices[i + 2]);
-  }
-  return bb;
-}
-
-function hasNoNaNOrInfinity(vertices: Float32Array): boolean {
-  for (let i = 0; i < vertices.length; i++) {
-    if (!Number.isFinite(vertices[i])) return false;
-  }
-  return true;
-}
-
-/**
- * Assert that a split result is geometrically valid.
- * Checks piece count, vertex sanity, and bounding box dimensions.
- */
-function assertValidSplit(
-  result: SplitPreviewResult,
-  expectedPieces: number,
-  params: BinParams,
-  label: string
-): void {
-  expect(result.pieces, `${label}: piece count`).toHaveLength(expectedPieces);
-
-  const outerW = params.width * SIZE - CLEARANCE;
-  const outerD = params.depth * SIZE - CLEARANCE;
-
-  for (const piece of result.pieces) {
-    expect(
-      hasNoNaNOrInfinity(piece.vertices),
-      `${label}: piece ${piece.label} has NaN/Infinity`
-    ).toBe(true);
-    expect(
-      piece.vertices.length,
-      `${label}: piece ${piece.label} has degenerate geometry (${piece.vertices.length} verts)`
-    ).toBeGreaterThan(100);
-    expect(piece.indices.length, `${label}: piece ${piece.label} has no faces`).toBeGreaterThan(0);
-
-    const bb = boundingBox(piece.vertices);
-    const pieceW = bb.maxX - bb.minX;
-    const pieceD = bb.maxY - bb.minY;
-
-    // Each piece should be smaller than the full bin.
-    // Tolerance accounts for EDGE_MARGIN (1mm per outer edge = up to +2mm),
-    // lip overhang (~0.04mm), and tessellation tolerance.
-    const dimTolerance = 3;
-    expect(pieceW, `${label}: piece ${piece.label} wider than bin`).toBeLessThan(
-      outerW + dimTolerance
-    );
-    expect(pieceD, `${label}: piece ${piece.label} deeper than bin`).toBeLessThan(
-      outerD + dimTolerance
-    );
-
-    // Each piece should have positive extent
-    expect(pieceW, `${label}: piece ${piece.label} zero width`).toBeGreaterThan(1);
-    expect(pieceD, `${label}: piece ${piece.label} zero depth`).toBeGreaterThan(1);
-  }
-}
 
 // ─── Wall Thickness Permutations ────────────────────────────────────────────
 
@@ -169,6 +49,7 @@ describe('split robustness: wall thickness permutations', () => {
 
   for (const wt of wallThicknesses) {
     it(`splits 6×2×3 bin at ${wt}mm wall thickness with connectors`, () => {
+      const generateSplitPreview = getGenerateSplitPreview();
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         width: 6,
@@ -195,6 +76,7 @@ describe('split robustness: base style permutations', () => {
 
   for (const { style, label } of baseStyles) {
     it(`splits 6×2×3 ${label} bin with lip and connectors`, () => {
+      const generateSplitPreview = getGenerateSplitPreview();
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         width: 6,
@@ -208,6 +90,7 @@ describe('split robustness: base style permutations', () => {
     }, 60000);
 
     it(`splits 6×2×3 ${label} bin without lip`, () => {
+      const generateSplitPreview = getGenerateSplitPreview();
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         width: 6,
@@ -231,6 +114,7 @@ describe('split robustness: lip + wall thickness combinations', () => {
 
   for (const wt of thickWalls) {
     it(`flat base + lip + ${wt}mm walls (the crash scenario)`, () => {
+      const generateSplitPreview = getGenerateSplitPreview();
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         width: 6,
@@ -245,6 +129,7 @@ describe('split robustness: lip + wall thickness combinations', () => {
     }, 60000);
 
     it(`magnet base + lip + ${wt}mm walls`, () => {
+      const generateSplitPreview = getGenerateSplitPreview();
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         width: 6,
@@ -264,6 +149,7 @@ describe('split robustness: lip + wall thickness combinations', () => {
 
 describe('split robustness: interior features', () => {
   it('splits bin with 2×1 compartments (divider crosses cut plane)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -277,6 +163,7 @@ describe('split robustness: interior features', () => {
   }, 60000);
 
   it('splits bin with 3×2 compartments', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 8,
@@ -290,6 +177,7 @@ describe('split robustness: interior features', () => {
   }, 60000);
 
   it('splits bin with scoop enabled', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -303,6 +191,7 @@ describe('split robustness: interior features', () => {
   }, 60000);
 
   it('splits bin with wall cutouts on all sides', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -326,6 +215,7 @@ describe('split robustness: interior features', () => {
   }, 60000);
 
   it('splits slotted-style bin', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -339,6 +229,7 @@ describe('split robustness: interior features', () => {
   }, 60000);
 
   it('splits bin with label tabs', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -352,6 +243,7 @@ describe('split robustness: interior features', () => {
   }, 60000);
 
   it('splits bin with compartments + scoop + thick walls + connectors', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 8,
@@ -371,6 +263,7 @@ describe('split robustness: interior features', () => {
 
 describe('split robustness: size extremes', () => {
   it('smallest viable split: 2×2 bin cut in half', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 2,
@@ -383,6 +276,7 @@ describe('split robustness: size extremes', () => {
   }, 60000);
 
   it('tall bin: 6×2×10 split with connectors', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -402,6 +296,7 @@ describe('split robustness: size extremes', () => {
   }, 60000);
 
   it('minimum height: 6×2×2 split', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -418,6 +313,7 @@ describe('split robustness: size extremes', () => {
 
 describe('split robustness: split axis variations', () => {
   it('Y-only split: 4×6×3 cut along Y at y=0', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 4,
@@ -435,6 +331,7 @@ describe('split robustness: split axis variations', () => {
   }, 60000);
 
   it('dual-axis split: 6×6×3 into 4 pieces with connectors', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -447,6 +344,7 @@ describe('split robustness: split axis variations', () => {
   }, 120000);
 
   it('dual-axis split with thick walls: 6×6×3 at 1.6mm', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -460,6 +358,7 @@ describe('split robustness: split axis variations', () => {
   }, 120000);
 
   it('3-way X split: 12×2×3 into 3 pieces', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 12,
@@ -477,6 +376,7 @@ describe('split robustness: split axis variations', () => {
 
 describe('split robustness: connector configuration', () => {
   it('zero clearance connectors at 1.6mm walls', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -495,6 +395,7 @@ describe('split robustness: connector configuration', () => {
   }, 60000);
 
   it('thick tongue (3.0mm) connectors at 2.0mm walls', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -514,6 +415,7 @@ describe('split robustness: connector configuration', () => {
   }, 60000);
 
   it('disabled connectors still produce valid split at 2.4mm walls', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
@@ -531,6 +433,7 @@ describe('split robustness: connector configuration', () => {
 
 describe('split robustness: regression tests', () => {
   it('7×3×3 at 1.6mm walls (original crash reproduction)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 7,
@@ -553,6 +456,7 @@ describe('split robustness: regression tests', () => {
   }, 90000);
 
   it('lip fused pieces have correct Z extent', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 6,

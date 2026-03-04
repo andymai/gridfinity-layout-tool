@@ -9,49 +9,11 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
-
-interface SplitPreviewResult {
-  readonly pieces: Array<{
-    readonly vertices: Float32Array;
-    readonly normals: Float32Array;
-    readonly indices: Uint32Array;
-    readonly edgeVertices: Float32Array;
-    readonly label: string;
-    readonly col: number;
-    readonly row: number;
-    readonly widthUnits: number;
-    readonly depthUnits: number;
-    readonly offsetX: number;
-    readonly offsetY: number;
-  }>;
-}
-
-type GenerateSplitPreviewFn = (
-  params: BinParams,
-  cutPlanesX: readonly number[],
-  cutPlanesY: readonly number[],
-  splitConnectorConfig?: SplitConnectorConfig
-) => SplitPreviewResult;
-
-type GenerateBinFn = (params: BinParams, onProgress?: unknown, forExport?: boolean) => unknown;
-
-let generateSplitPreview: GenerateSplitPreviewFn;
-let generateBin: GenerateBinFn;
+import { initBrepjs, getGenerateSplitPreview } from './__test-infra__/wasmInit';
+import { boundingBox } from './__test-infra__/meshAssertions';
 
 beforeAll(async () => {
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
-
-  const mod = await import('@/features/generation/worker/generators/binGenerator');
-  generateSplitPreview = mod.generateSplitPreview as GenerateSplitPreviewFn;
-  generateBin = mod.generateBin as GenerateBinFn;
+  await initBrepjs();
 }, 30000);
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -112,39 +74,11 @@ function maxZInAxisRange(vertices: Float32Array, axis: 0 | 1, min: number, max: 
   return result;
 }
 
-interface BoundingBox {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  minZ: number;
-  maxZ: number;
-}
-
-function boundingBox(vertices: Float32Array): BoundingBox {
-  const bb: BoundingBox = {
-    minX: Infinity,
-    maxX: -Infinity,
-    minY: Infinity,
-    maxY: -Infinity,
-    minZ: Infinity,
-    maxZ: -Infinity,
-  };
-  for (let i = 0; i < vertices.length; i += 3) {
-    bb.minX = Math.min(bb.minX, vertices[i]);
-    bb.maxX = Math.max(bb.maxX, vertices[i]);
-    bb.minY = Math.min(bb.minY, vertices[i + 1]);
-    bb.maxY = Math.max(bb.maxY, vertices[i + 1]);
-    bb.minZ = Math.min(bb.minZ, vertices[i + 2]);
-    bb.maxZ = Math.max(bb.maxZ, vertices[i + 2]);
-  }
-  return bb;
-}
-
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe('stacking lip on split pieces', () => {
   it('all pieces have full stacking lip including at cut faces', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const result = generateSplitPreview(
       OVERSIZED_LIP_PARAMS,
       CUT_PLANES_X,
@@ -164,6 +98,7 @@ describe('stacking lip on split pieces', () => {
   }, 60000);
 
   it('lip extends to full height at cut face edges', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const result = generateSplitPreview(
       OVERSIZED_LIP_PARAMS,
       CUT_PLANES_X,
@@ -183,6 +118,7 @@ describe('stacking lip on split pieces', () => {
   }, 60000);
 
   it('lip height at outer edge matches GRIDFINITY.LIP_HEIGHT (±tessellation)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const result = generateSplitPreview(
       OVERSIZED_LIP_PARAMS,
       CUT_PLANES_X,
@@ -203,7 +139,8 @@ describe('stacking lip on split pieces', () => {
   }, 60000);
 
   it('no-lip split pieces have lower max Z than lip split pieces', () => {
-    generateBin(OVERSIZED_LIP_PARAMS, undefined, true);
+    const generateSplitPreview = getGenerateSplitPreview();
+
     const withLip = generateSplitPreview(
       OVERSIZED_LIP_PARAMS,
       CUT_PLANES_X,
@@ -211,7 +148,6 @@ describe('stacking lip on split pieces', () => {
       DISABLED_CONNECTORS
     );
 
-    generateBin(OVERSIZED_NO_LIP_PARAMS, undefined, true);
     const withoutLip = generateSplitPreview(
       OVERSIZED_NO_LIP_PARAMS,
       CUT_PLANES_X,
@@ -229,6 +165,8 @@ describe('stacking lip on split pieces', () => {
   }, 60000);
 
   it('split along both axes preserves lip on all 4 pieces', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+
     const bigBinParams: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 8,
@@ -236,7 +174,6 @@ describe('stacking lip on split pieces', () => {
       height: 3,
     };
 
-    generateBin(bigBinParams, undefined, true);
     const result = generateSplitPreview(bigBinParams, [0], [0], DISABLED_CONNECTORS);
     expect(result.pieces).toHaveLength(4);
 

@@ -3,49 +3,14 @@
  * Scenario tests for split connector geometry in preview meshes.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
-import { GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
-
-interface SplitPreviewResult {
-  readonly pieces: Array<{
-    readonly vertices: Float32Array;
-    readonly normals: Float32Array;
-    readonly indices: Uint32Array;
-    readonly edgeVertices: Float32Array;
-    readonly label: string;
-    readonly col: number;
-    readonly row: number;
-    readonly widthUnits: number;
-    readonly depthUnits: number;
-    readonly offsetX: number;
-    readonly offsetY: number;
-  }>;
-}
-
-type GenerateSplitPreviewFn = (
-  params: BinParams,
-  cutPlanesX: readonly number[],
-  cutPlanesY: readonly number[],
-  splitConnectorConfig?: SplitConnectorConfig
-) => SplitPreviewResult;
-
-let generateSplitPreview: GenerateSplitPreviewFn;
+import { initBrepjs, getGenerateSplitPreview } from './__test-infra__/wasmInit';
+import { boundingBox, hasNoNaNOrInfinity } from './__test-infra__/meshAssertions';
 
 beforeAll(async () => {
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
-
-  const mod = await import('@/features/generation/worker/generators/binGenerator');
-  generateSplitPreview = mod.generateSplitPreview as GenerateSplitPreviewFn;
+  await initBrepjs();
 }, 30000);
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -69,46 +34,11 @@ const CUT_PLANES_X = [0];
 const CUT_PLANES_Y: number[] = [];
 const DISABLED_CONFIG: SplitConnectorConfig = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-interface BoundingBox {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  minZ: number;
-  maxZ: number;
-}
-
-function boundingBox(vertices: Float32Array): BoundingBox {
-  const bb: BoundingBox = {
-    minX: Infinity,
-    maxX: -Infinity,
-    minY: Infinity,
-    maxY: -Infinity,
-    minZ: Infinity,
-    maxZ: -Infinity,
-  };
-  for (let i = 0; i < vertices.length; i += 3) {
-    bb.minX = Math.min(bb.minX, vertices[i]);
-    bb.maxX = Math.max(bb.maxX, vertices[i]);
-    bb.minY = Math.min(bb.minY, vertices[i + 1]);
-    bb.maxY = Math.max(bb.maxY, vertices[i + 1]);
-    bb.minZ = Math.min(bb.minZ, vertices[i + 2]);
-    bb.maxZ = Math.max(bb.maxZ, vertices[i + 2]);
-  }
-  return bb;
-}
-
-function hasNoNaNOrInfinity(vertices: Float32Array): boolean {
-  for (let i = 0; i < vertices.length; i++) {
-    if (!Number.isFinite(vertices[i])) return false;
-  }
-  return true;
-}
+// ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe('split connector geometry in preview meshes', () => {
   it('generates 2 pieces with correct metadata for an 8-wide bin split at x=0', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const result = generateSplitPreview(OVERSIZED_PARAMS, CUT_PLANES_X, CUT_PLANES_Y);
     expect(result.pieces).toHaveLength(2);
 
@@ -125,6 +55,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 60000);
 
   it('no NaN or Infinity in any vertex or normal data', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const result = generateSplitPreview(
       OVERSIZED_PARAMS,
       CUT_PLANES_X,
@@ -141,6 +72,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 60000);
 
   it('piece bounding boxes match expected dimensions (±tessellation tolerance)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const result = generateSplitPreview(
       OVERSIZED_PARAMS,
       CUT_PLANES_X,
@@ -168,6 +100,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 60000);
 
   it('male piece extends beyond nominal boundary with connectors (tongue protrusion)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const withConnectors = generateSplitPreview(
       OVERSIZED_PARAMS,
       CUT_PLANES_X,
@@ -183,11 +116,13 @@ describe('split connector geometry in preview meshes', () => {
 
     const maleWith = withConnectors.pieces.find((p) => p.col === 1);
     const maleWithout = withoutConnectors.pieces.find((p) => p.col === 1);
-    expect(maleWith).toBeDefined();
-    expect(maleWithout).toBeDefined();
 
-    const bbWith = boundingBox(maleWith!.vertices);
-    const bbWithout = boundingBox(maleWithout!.vertices);
+    if (!maleWith || !maleWithout) {
+      expect.fail('Expected to find male pieces (col === 1) in both results');
+    }
+
+    const bbWith = boundingBox(maleWith.vertices);
+    const bbWithout = boundingBox(maleWithout.vertices);
 
     const protrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
     const extensionX = bbWith.maxX - bbWithout.maxX;
@@ -196,6 +131,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 60000);
 
   it('female piece has groove (vertices recessed inside piece boundary)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const withConnectors = generateSplitPreview(
       OVERSIZED_PARAMS,
       CUT_PLANES_X,
@@ -211,15 +147,18 @@ describe('split connector geometry in preview meshes', () => {
 
     const femaleWith = withConnectors.pieces.find((p) => p.col === 2);
     const femaleWithout = withoutConnectors.pieces.find((p) => p.col === 2);
-    expect(femaleWith).toBeDefined();
-    expect(femaleWithout).toBeDefined();
 
-    const trisWith = femaleWith!.indices.length / 3;
-    const trisWithout = femaleWithout!.indices.length / 3;
+    if (!femaleWith || !femaleWithout) {
+      expect.fail('Expected to find female pieces (col === 2) in both results');
+    }
+
+    const trisWith = femaleWith.indices.length / 3;
+    const trisWithout = femaleWithout.indices.length / 3;
     expect(trisWith).toBeGreaterThan(trisWithout);
   }, 60000);
 
   it('connector clearance widens groove relative to tongue', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const tightConfig: SplitConnectorConfig = {
       ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
       clearance: 0.0,
@@ -234,15 +173,18 @@ describe('split connector geometry in preview meshes', () => {
 
     const femaleTight = tight.pieces.find((p) => p.col === 2);
     const femaleLoose = loose.pieces.find((p) => p.col === 2);
-    expect(femaleTight).toBeDefined();
-    expect(femaleLoose).toBeDefined();
 
-    const trisTight = femaleTight!.indices.length / 3;
-    const trisLoose = femaleLoose!.indices.length / 3;
+    if (!femaleTight || !femaleLoose) {
+      expect.fail('Expected to find female pieces (col === 2) in both results');
+    }
+
+    const trisTight = femaleTight.indices.length / 3;
+    const trisLoose = femaleLoose.indices.length / 3;
     expect(trisTight).not.toBe(trisLoose);
   }, 60000);
 
   it('undefined splitConnectorConfig skips connectors (same as disabled)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const withUndefined = generateSplitPreview(
       OVERSIZED_PARAMS,
       CUT_PLANES_X,
@@ -262,6 +204,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 60000);
 
   it('falls back to params.splitConnectors when config arg is undefined', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const paramsWithConnectors: BinParams = {
       ...OVERSIZED_PARAMS,
       splitConnectors: DEFAULT_SPLIT_CONNECTOR_CONFIG,
@@ -280,6 +223,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 60000);
 
   it('wall tongues at 1.6mm wall thickness do not destroy bin geometry', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const thickWallParams: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 7,
@@ -289,10 +233,12 @@ describe('split connector geometry in preview meshes', () => {
     };
 
     // First verify splitting without connectors works fine
-    const withoutConnectors = generateSplitPreview(thickWallParams, CUT_PLANES_X, CUT_PLANES_Y, {
-      ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
-      enabled: false,
-    });
+    const withoutConnectors = generateSplitPreview(
+      thickWallParams,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONFIG
+    );
     expect(withoutConnectors.pieces).toHaveLength(2);
     const baseVertCount = withoutConnectors.pieces[0].vertices.length;
     expect(baseVertCount).toBeGreaterThan(100);
@@ -326,6 +272,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 60000);
 
   it('asymmetric multi-split produces correct piece count and labels', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const wideParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 13, depth: 2, height: 3 };
     const cuts = [-2 * SIZE, 2 * SIZE];
     const result = generateSplitPreview(wideParams, cuts, [], DEFAULT_SPLIT_CONNECTOR_CONFIG);
@@ -343,6 +290,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 90000);
 
   it('half-lap joints at 1.2mm walls produce geometry changes (cuts visible)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const withConnectors = generateSplitPreview(
       OVERSIZED_PARAMS,
       CUT_PLANES_X,
@@ -369,6 +317,7 @@ describe('split connector geometry in preview meshes', () => {
   }, 60000);
 
   it('half-lap at 1.2mm walls produces less X-extension than T&G at 1.6mm', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     // At 1.2mm walls, half-lap is subtractive for walls (only floor tongue protrudes).
     // At 1.6mm walls, T&G adds both wall AND floor tongues.
     // The 1.2mm half-lap male piece should extend less than the 1.6mm T&G male piece.
@@ -394,17 +343,20 @@ describe('split connector geometry in preview meshes', () => {
 
     const thinMale = thinResult.pieces.find((p) => p.col === 1);
     const thickMale = thickResult.pieces.find((p) => p.col === 1);
-    expect(thinMale).toBeDefined();
-    expect(thickMale).toBeDefined();
 
-    const thinMaxX = boundingBox(thinMale!.vertices).maxX;
-    const thickMaxX = boundingBox(thickMale!.vertices).maxX;
+    if (!thinMale || !thickMale) {
+      expect.fail('Expected to find male pieces (col === 1) in both results');
+    }
+
+    const thinMaxX = boundingBox(thinMale.vertices).maxX;
+    const thickMaxX = boundingBox(thickMale.vertices).maxX;
 
     // T&G adds wall tongues that extend further; half-lap only has floor tongue
     expect(thinMaxX).toBeLessThan(thickMaxX + TESS_TOL);
   }, 60000);
 
   it('tongue-and-groove activates at 1.6mm walls (male extends past cut face)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
     const thickWallParams: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 7,
@@ -418,18 +370,22 @@ describe('split connector geometry in preview meshes', () => {
       CUT_PLANES_Y,
       DEFAULT_SPLIT_CONNECTOR_CONFIG
     );
-    const withoutConnectors = generateSplitPreview(thickWallParams, CUT_PLANES_X, CUT_PLANES_Y, {
-      ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
-      enabled: false,
-    });
+    const withoutConnectors = generateSplitPreview(
+      thickWallParams,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONFIG
+    );
 
     const maleWith = withConnectors.pieces.find((p) => p.col === 1);
     const maleWithout = withoutConnectors.pieces.find((p) => p.col === 1);
-    expect(maleWith).toBeDefined();
-    expect(maleWithout).toBeDefined();
 
-    const bbWith = boundingBox(maleWith!.vertices);
-    const bbWithout = boundingBox(maleWithout!.vertices);
+    if (!maleWith || !maleWithout) {
+      expect.fail('Expected to find male pieces (col === 1) in both results');
+    }
+
+    const bbWith = boundingBox(maleWith.vertices);
+    const bbWithout = boundingBox(maleWithout.vertices);
 
     // T&G is additive: male piece should extend beyond cut face
     const protrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
