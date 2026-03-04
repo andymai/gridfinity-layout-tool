@@ -18,9 +18,9 @@
  * - Features shortened near corner intersections of perpendicular cuts
  *
  * Direction convention (both male and female extrude in +axis):
- * - Male (tongue): sketch 0.15mm inside piece body, extrudes outward
+ * - Male (tongue): sketch OVERLAP inside piece body, extrudes outward
  *   through the cut face. Fused onto the left/front piece.
- * - Female (groove): sketch 0.15mm OUTSIDE piece body (past cut face),
+ * - Female (groove): sketch OVERLAP OUTSIDE piece body (past cut face),
  *   extrudes inward. Boolean subtraction clips the overhang, producing
  *   a groove that opens cleanly at the mating face.
  */

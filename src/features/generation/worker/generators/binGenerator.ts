@@ -875,9 +875,9 @@ export function generateSplitPreview(
   splitConnectorConfig?: SplitConnectorConfig
 ): SplitPreviewResult {
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
-  const outerW = params.width * SIZE - CLEARANCE;
-  const outerD = params.depth * SIZE - CLEARANCE;
   const gridUnitMm = params.gridUnitMm ?? SIZE;
+  const outerW = params.width * gridUnitMm - CLEARANCE;
+  const outerD = params.depth * gridUnitMm - CLEARANCE;
 
   return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, gridUnitMm)) };
 }
@@ -899,9 +899,9 @@ export function generateSplitPreviewRange(
   splitConnectorConfig?: SplitConnectorConfig
 ): SplitPreviewResult {
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
-  const outerW = params.width * SIZE - CLEARANCE;
-  const outerD = params.depth * SIZE - CLEARANCE;
   const gridUnitMm = params.gridUnitMm ?? SIZE;
+  const outerW = params.width * gridUnitMm - CLEARANCE;
+  const outerD = params.depth * gridUnitMm - CLEARANCE;
 
   const pieces: SplitPreviewResult['pieces'] = [];
   for (const idx of pieceIndices) {
