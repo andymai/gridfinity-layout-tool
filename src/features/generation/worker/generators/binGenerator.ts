@@ -605,6 +605,16 @@ export function generateBin(
 /** Height of the cutting box used for boolean intersection (much taller than any bin) */
 const CUTTING_BOX_HEIGHT = 500;
 
+/**
+ * Overlap (mm) between lip and body wall when splitting bins with stacking lips.
+ *
+ * The lip solid is shifted down by this amount so it penetrates into the body
+ * wall, giving the boolean fuse a volumetric overlap region. Without this, lip
+ * and body share only edges at the wall top and the fuse produces degenerate
+ * faces at the lip-wall junction (visible as gaps/artifacts in the preview).
+ */
+const LIP_FUSE_OVERLAP = 0.05;
+
 /** Metadata for a single split piece within the grid */
 interface SplitPieceInfo {
   readonly solid: Shape3D;
@@ -666,10 +676,15 @@ function splitSolidIntoPieces(
 
   // Build lip solid separately if needed. The lip is positioned at
   // wallTopZ (= totalHeight for both flat and socket bases after the
-  // socket Z-offset applied in generateBin).
+  // socket Z-offset applied in generateBin), shifted down by
+  // LIP_FUSE_OVERLAP to ensure a volumetric overlap for clean fusing.
   let lipSolid: Shape3D | undefined;
   if (hasLip) {
-    lipSolid = translate(buildTopShape(params.width, params.depth, true), [0, 0, wallTopZ]);
+    lipSolid = translate(buildTopShape(params.width, params.depth, true), [
+      0,
+      0,
+      wallTopZ - LIP_FUSE_OVERLAP,
+    ]);
   }
 
   // Boundary arrays: [left edge, ...cut planes, right edge]
@@ -742,8 +757,6 @@ function splitSolidIntoPieces(
           wallTopZ,
           wallThickness: params.wallThickness,
           floorThickness: params.wallThickness,
-          lipHeight: hasLip ? GRIDFINITY.LIP_HEIGHT : 0,
-          lipTaperWidth: hasLip ? LIP_TAPER_WIDTH : 0,
         };
         piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
       }

@@ -70,6 +70,8 @@ const HALF_LAP_WALL_THRESHOLD = 1.4;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+type Extent = [number, number, number];
+
 export interface CutFace {
   readonly axis: 'x' | 'y';
   readonly position: number;
@@ -91,14 +93,6 @@ export interface BinGeometryContext {
   /** Floor slab thickness (mm). Equal to wallThickness from the shell operation,
    *  but decoupled so floor tongue sizing is independent of wall changes. */
   readonly floorThickness: number;
-  /** Stacking lip height (mm). 0 when no lip is present, 4.4mm with a lip.
-   *  Half-lap wall cuts extend through the lip so both halves interlock
-   *  when the split pieces are assembled. */
-  readonly lipHeight: number;
-  /** Stacking lip inward taper width (mm). 0 when no lip is present, 2.6mm with a lip.
-   *  The lip extends this far inward from the outer bin edge. On the male side,
-   *  the half-lap cut must be widened to remove the full inner lip overhang. */
-  readonly lipTaperWidth: number;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -137,8 +131,6 @@ export function applySplitConnectors(
 
   return result;
 }
-
-type Extent = [number, number, number];
 
 /** Apply a sequence of boolean operations (fuse or cut) one at a time,
  *  validating each result against the original piece extent. Skips any
@@ -350,7 +342,7 @@ function addFeature(
  * Build an overlapping half-lap joint for a wall at the cut face.
  *
  * Each piece gets two features:
- * 1. A **cut** (subtractive) removing the opposing half of wall+lip for lapDepth
+ * 1. A **cut** (subtractive) removing the opposing half of wall for lapDepth
  *    from the cut face, creating a recess for the other piece's tab.
  * 2. A **tab** (additive) extending its own half of the wall past the cut face
  *    by lapDepth, filling the opposing piece's recess.
@@ -358,11 +350,10 @@ function addFeature(
  * Male piece: outer tab extends past cut face, inner half is cut away.
  * Female piece: inner tab extends past cut face, outer half is cut away.
  *
- * When a stacking lip is present, the cut extends through the lip height
- * (and is widened on the male side to cover the lip's inner overhang).
- * The tab covers only the wall zone — the lip's tapered profile can't be
- * approximated by a rectangular prism, so the lip zone has just the step
- * for glue surface area.
+ * Both cut and tab cover only the wall zone (floorZ to wallTopZ).
+ * The stacking lip was already intersected with the cutting box, so each
+ * piece's lip terminates at the cut face. Leaving the lip untouched by
+ * the half-lap ensures both pieces' lips meet edge-to-edge when assembled.
  */
 function addHalfLapWallFeature(
   face: CutFace,
@@ -370,11 +361,9 @@ function addHalfLapWallFeature(
   cutTargets: Shape3D[],
   lapDepth: number,
   wallHeight: number,
-  lipHeight: number,
   bottomZ: number,
   edgePos: number,
   wallThickness: number,
-  lipTaperWidth: number,
   clearance: number
 ): void {
   if (edgePos === 0) return; // Wall coincides with bin center — no meaningful lap joint
@@ -382,15 +371,14 @@ function addHalfLapWallFeature(
   const halfWt = wallThickness / 2;
   const isMale = face.isMale;
 
-  // ── Subtractive: remove opposing half of wall + lip ─────────────────────
-  // Male cut must be wide enough for the lip's inner overhang.
-  // Female cut covers the outer half — halfWt from centerline suffices.
-  const totalHeight = wallHeight + lipHeight;
-  const cutExtent = isMale && lipTaperWidth > 0 ? lipTaperWidth - halfWt : halfWt;
-  const cutWidth = cutExtent + 2 * clearance;
-  const cutShift = (sign * cutExtent) / 2;
+  // ── Subtractive: remove opposing half of wall only ──────────────────────
+  // The lip was already intersected with the cutting box, so each piece's
+  // lip terminates cleanly at the cut face. Cutting only the wall zone
+  // preserves the full lip profile — when assembled, both pieces' lips
+  // meet edge-to-edge with no gap.
+  const halfShift = (sign * halfWt) / 2;
+  const cutWidth = halfWt + 2 * clearance;
 
-  // Both sides need depthExtra so the opposing tab doesn't bottom out.
   const cutSketchPos = isMale
     ? face.position - lapDepth - clearance - OVERLAP
     : face.position - OVERLAP;
@@ -402,42 +390,36 @@ function addHalfLapWallFeature(
       cutSketchPos,
       cutDepth,
       cutWidth,
-      totalHeight,
+      wallHeight,
       bottomZ,
-      edgePos + (isMale ? -cutShift : cutShift)
+      edgePos + (isMale ? -halfShift : halfShift)
     )
   );
 
   // ── Additive: extend own half of the wall past the cut face ─────────────
-  // Tab covers only the wall zone (rectangular prism matches the wall).
-  // The lip zone gets the subtractive step above for glue surface.
-  const tabWidth = halfWt;
-  const tabShift = (sign * halfWt) / 2;
 
   if (isMale) {
-    // Male tab: outer half of wall extending into female territory
     fuseTargets.push(
       buildPrism(
         face.axis,
         face.position - OVERLAP,
         lapDepth + OVERLAP,
-        tabWidth,
+        halfWt,
         wallHeight,
         bottomZ,
-        edgePos + tabShift
+        edgePos + halfShift
       )
     );
   } else {
-    // Female tab: inner half of wall extending into male territory
     fuseTargets.push(
       buildPrism(
         face.axis,
         face.position - lapDepth,
         lapDepth + OVERLAP,
-        tabWidth,
+        halfWt,
         wallHeight,
         bottomZ,
-        edgePos - tabShift
+        edgePos - halfShift
       )
     );
   }
@@ -485,11 +467,9 @@ function addTongueAndGroove(
           cutTargets,
           config.tongueProtrusion,
           wallHeight,
-          context.lipHeight,
           context.floorZ,
           edgePos,
           wt,
-          context.lipTaperWidth,
           config.clearance
         );
       } else {

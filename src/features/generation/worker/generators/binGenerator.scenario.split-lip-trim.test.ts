@@ -74,6 +74,57 @@ function maxZInAxisRange(vertices: Float32Array, axis: 0 | 1, min: number, max: 
   return result;
 }
 
+/** Compute the Y extent of vertices above a given Z threshold. */
+function lipYExtent(vertices: Float32Array, zThreshold: number): { min: number; max: number } {
+  let min = Infinity;
+  let max = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    if (vertices[i + 2] > zThreshold) {
+      min = Math.min(min, vertices[i + 1]);
+      max = Math.max(max, vertices[i + 1]);
+    }
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    throw new Error(
+      `lipYExtent: no vertices found above zThreshold=${zThreshold}; check test setup/threshold.`
+    );
+  }
+  return { min, max };
+}
+
+/** Count triangles with near-zero area above a given Z threshold. */
+function countDegenerateTriangles(
+  vertices: Float32Array,
+  indices: Uint32Array,
+  zThreshold: number,
+  areaThreshold = 1e-6
+): number {
+  let count = 0;
+  for (let t = 0; t < indices.length; t += 3) {
+    const i0 = indices[t] * 3;
+    const i1 = indices[t + 1] * 3;
+    const i2 = indices[t + 2] * 3;
+
+    const avgZ = (vertices[i0 + 2] + vertices[i1 + 2] + vertices[i2 + 2]) / 3;
+    if (avgZ <= zThreshold) continue;
+
+    const ax = vertices[i1] - vertices[i0];
+    const ay = vertices[i1 + 1] - vertices[i0 + 1];
+    const az = vertices[i1 + 2] - vertices[i0 + 2];
+    const bx = vertices[i2] - vertices[i0];
+    const by = vertices[i2 + 1] - vertices[i0 + 1];
+    const bz = vertices[i2 + 2] - vertices[i0 + 2];
+
+    const cx = ay * bz - az * by;
+    const cy = az * bx - ax * bz;
+    const cz = ax * by - ay * bx;
+    const area = 0.5 * Math.sqrt(cx * cx + cy * cy + cz * cz);
+
+    if (area < areaThreshold) count++;
+  }
+  return count;
+}
+
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe('stacking lip on split pieces', () => {
@@ -192,4 +243,60 @@ describe('stacking lip on split pieces', () => {
       expect(pieceD).toBeGreaterThan(outerD / 2 - 2);
     }
   }, 120000);
+
+  // ─── Regression: lip continuity at cut face (no gap) ─────────────────────
+
+  it.each([
+    { width: 2, depth: 7, height: 3 },
+    { width: 1, depth: 8, height: 5 },
+  ])(
+    'lip mesh extends to cut face with no gap (Y-split, $width x $depth h$height)',
+    ({ width, depth, height }) => {
+      const generateSplitPreview = getGenerateSplitPreview();
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width,
+        depth,
+        height,
+      };
+      const outerD = params.depth * SIZE - CLEARANCE;
+
+      // Split along Y at the center
+      const result = generateSplitPreview(params, [], [0], DISABLED_CONNECTORS);
+      expect(result.pieces).toHaveLength(2);
+
+      const wallTopZ = computeWallTopZ(params);
+      const expectedExtentY = outerD / 2; // each piece spans half the bin depth
+
+      for (const piece of result.pieces) {
+        const lip = lipYExtent(piece.vertices, wallTopZ);
+        const extent = lip.max - lip.min;
+
+        // Lip Y extent should cover at least 95% of the piece depth (no significant gap)
+        expect(extent).toBeGreaterThan(expectedExtentY * 0.95 - TESS_TOL);
+      }
+    },
+    60000
+  );
+
+  it('no degenerate triangles near cut face in lip zone', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      depth: 7,
+      height: 3,
+    };
+
+    const result = generateSplitPreview(params, [], [0], DISABLED_CONNECTORS);
+    const wallTopZ = computeWallTopZ(params);
+
+    for (const piece of result.pieces) {
+      // The original bug produced dozens of degenerate triangles; this generous
+      // threshold catches regressions while tolerating OCCT tessellation noise.
+      const MAX_DEGENERATE_TRIANGLES = 5;
+      const degenerateCount = countDegenerateTriangles(piece.vertices, piece.indices, wallTopZ);
+      expect(degenerateCount).toBeLessThan(MAX_DEGENERATE_TRIANGLES);
+    }
+  }, 60000);
 });

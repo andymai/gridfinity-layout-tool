@@ -22,7 +22,7 @@ const CLEARANCE = GRIDFINITY.TOLERANCE;
 const TESS_TOL = 0.3;
 
 /** 8×2×3 bin with default 1.2mm walls and stacking lip.
- *  Half-lap wall connectors interlock through the lip zone. */
+ *  Half-lap wall connectors interlock in the wall zone; lip is preserved intact. */
 const OVERSIZED_PARAMS: BinParams = {
   ...DEFAULT_BIN_PARAMS,
   width: 8,
@@ -37,22 +37,41 @@ const OVERSIZED_NO_LIP: BinParams = {
   base: { ...OVERSIZED_PARAMS.base, stackingLip: false },
 };
 
+/** 7x3x3 bin with 1.6mm walls — above the half-lap threshold, so T&G is used. */
+const THICK_WALL_PARAMS: BinParams = {
+  ...DEFAULT_BIN_PARAMS,
+  width: 7,
+  depth: 3,
+  height: 3,
+  wallThickness: 1.6,
+};
+
 const CUT_PLANES_X = [0];
 const CUT_PLANES_Y: number[] = [];
 const DISABLED_CONFIG: SplitConnectorConfig = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Find the maximum X coordinate among vertices near a given Y position. */
-function maxXNearY(vertices: Float32Array, targetY: number, yTolerance: number): number {
-  let maxX = -Infinity;
+/** Find the extreme X coordinate among vertices near a given Y position. */
+function extremeXNearY(
+  vertices: Float32Array,
+  targetY: number,
+  yTolerance: number,
+  mode: 'max' | 'min'
+): number {
+  let result = mode === 'max' ? -Infinity : Infinity;
+  const compare = mode === 'max' ? Math.max : Math.min;
   for (let i = 0; i < vertices.length; i += 3) {
-    const y = vertices[i + 1];
-    if (Math.abs(y - targetY) < yTolerance) {
-      maxX = Math.max(maxX, vertices[i]);
+    if (Math.abs(vertices[i + 1] - targetY) < yTolerance) {
+      result = compare(result, vertices[i]);
     }
   }
-  return maxX;
+  return result;
+}
+
+/** Sum triangle counts across all pieces. */
+function totalTriCount(pieces: { indices: { length: number } }[]): number {
+  return pieces.reduce((sum, p) => sum + p.indices.length / 3, 0);
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -219,8 +238,8 @@ describe('split connector geometry in preview meshes', () => {
       DISABLED_CONFIG
     );
 
-    const trisUndef = withUndefined.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
-    const trisDisabled = withDisabled.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    const trisUndef = totalTriCount(withUndefined.pieces);
+    const trisDisabled = totalTriCount(withDisabled.pieces);
     expect(trisUndef).toBe(trisDisabled);
   }, 60000);
 
@@ -238,24 +257,16 @@ describe('split connector geometry in preview meshes', () => {
       DISABLED_CONFIG
     );
 
-    const trisResult = result.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
-    const trisWithout = withoutConnectors.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    const trisResult = totalTriCount(result.pieces);
+    const trisWithout = totalTriCount(withoutConnectors.pieces);
     expect(trisResult - trisWithout).toBeGreaterThan(5);
   }, 60000);
 
   it('wall tongues at 1.6mm wall thickness do not destroy bin geometry', () => {
     const generateSplitPreview = getGenerateSplitPreview();
-    const thickWallParams: BinParams = {
-      ...DEFAULT_BIN_PARAMS,
-      width: 7,
-      depth: 3,
-      height: 3,
-      wallThickness: 1.6,
-    };
 
-    // First verify splitting without connectors works fine
     const withoutConnectors = generateSplitPreview(
-      thickWallParams,
+      THICK_WALL_PARAMS,
       CUT_PLANES_X,
       CUT_PLANES_Y,
       DISABLED_CONFIG
@@ -264,9 +275,8 @@ describe('split connector geometry in preview meshes', () => {
     const baseVertCount = withoutConnectors.pieces[0].vertices.length;
     expect(baseVertCount).toBeGreaterThan(100);
 
-    // Now with connectors — should NOT destroy geometry
     const result = generateSplitPreview(
-      thickWallParams,
+      THICK_WALL_PARAMS,
       CUT_PLANES_X,
       CUT_PLANES_Y,
       DEFAULT_SPLIT_CONNECTOR_CONFIG
@@ -274,9 +284,9 @@ describe('split connector geometry in preview meshes', () => {
 
     expect(result.pieces).toHaveLength(2);
 
-    const outerW = thickWallParams.width * SIZE - CLEARANCE;
+    const outerW = THICK_WALL_PARAMS.width * SIZE - CLEARANCE;
     const halfW = outerW / 2;
-    const outerD = thickWallParams.depth * SIZE - CLEARANCE;
+    const outerD = THICK_WALL_PARAMS.depth * SIZE - CLEARANCE;
 
     for (const piece of result.pieces) {
       expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
@@ -325,12 +335,11 @@ describe('split connector geometry in preview meshes', () => {
       DISABLED_CONFIG
     );
 
-    // Half-lap cuts into walls + lip create additional internal faces → more triangles
-    const trisWithConn = withConnectors.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
-    const trisWithout = withoutConnectors.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    // Half-lap cuts into walls create additional internal faces → more triangles
+    const trisWithConn = totalTriCount(withConnectors.pieces);
+    const trisWithout = totalTriCount(withoutConnectors.pieces);
     expect(trisWithConn).toBeGreaterThan(trisWithout);
 
-    // Both pieces should have valid geometry
     for (const piece of withConnectors.pieces) {
       expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
       expect(piece.vertices.length).toBeGreaterThan(100);
@@ -376,10 +385,11 @@ describe('split connector geometry in preview meshes', () => {
     expect(thinMaxX).toBeLessThan(thickMaxX + TESS_TOL);
   }, 60000);
 
-  it('half-lap wall cuts extend through stacking lip (lip + thin walls)', () => {
+  it('half-lap wall cuts preserve stacking lip intact (lip + thin walls)', () => {
     const generateSplitPreview = getGenerateSplitPreview();
-    // With lip + thin walls + connectors: half-lap cuts extend through the lip
-    // so both halves interlock when assembled.
+    // Half-lap cuts only affect the wall zone. The lip was already intersected
+    // with the cutting box, so each piece's lip terminates at the cut face.
+    // When assembled, both pieces' lips meet edge-to-edge with no gap.
     const withConn = generateSplitPreview(
       OVERSIZED_PARAMS,
       CUT_PLANES_X,
@@ -398,37 +408,32 @@ describe('split connector geometry in preview meshes', () => {
       expect(piece.vertices.length).toBeGreaterThan(100);
     }
 
-    // Half-lap cuts through wall + lip produce more triangles than no connectors
-    const trisConn = withConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
-    const trisNoConn = withoutConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    // Half-lap cuts in the wall zone still produce more triangles than no connectors
+    const trisConn = totalTriCount(withConn.pieces);
+    const trisNoConn = totalTriCount(withoutConn.pieces);
     expect(trisConn).toBeGreaterThan(trisNoConn);
 
-    // The lip-extended cuts should produce MORE geometry delta than no-lip cuts,
-    // because the cut prism is taller (wall + 4.4mm lip vs wall only).
-    const noLipConn = generateSplitPreview(
-      OVERSIZED_NO_LIP,
-      CUT_PLANES_X,
-      CUT_PLANES_Y,
-      DEFAULT_SPLIT_CONNECTOR_CONFIG
-    );
-    const noLipNoConn = generateSplitPreview(
-      OVERSIZED_NO_LIP,
-      CUT_PLANES_X,
-      CUT_PLANES_Y,
-      DISABLED_CONFIG
-    );
+    // Lip max Z should be identical with and without connectors — the lip
+    // is untouched by the half-lap (no material removed from lip zone).
+    const wallTopZ = OVERSIZED_PARAMS.height * GRIDFINITY.HEIGHT_UNIT;
+    for (const connPiece of withConn.pieces) {
+      const noConnPiece = withoutConn.pieces.find((p) => p.col === connPiece.col);
+      expect(noConnPiece).toBeDefined();
+      if (!noConnPiece) continue;
 
-    const lipDelta = trisConn - trisNoConn;
-    const noLipDelta =
-      noLipConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0) -
-      noLipNoConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
-    expect(lipDelta).toBeGreaterThan(noLipDelta);
+      const connBb = boundingBox(connPiece.vertices);
+      const noConnBb = boundingBox(noConnPiece.vertices);
+
+      // Both should reach the same lip height (within tessellation tolerance)
+      expect(connBb.maxZ).toBeGreaterThan(wallTopZ);
+      expect(Math.abs(connBb.maxZ - noConnBb.maxZ)).toBeLessThan(0.5);
+    }
   }, 90000);
 
   it('male wall tabs protrude past cut face at wall Y positions (no lip)', () => {
     const generateSplitPreview = getGenerateSplitPreview();
     const outerD = OVERSIZED_NO_LIP.depth * SIZE - CLEARANCE;
-    const wt = OVERSIZED_NO_LIP.wallThickness ?? 1.2;
+    const wt = OVERSIZED_NO_LIP.wallThickness;
     const wallOffset = outerD / 2 - wt / 2;
 
     const withConn = generateSplitPreview(
@@ -450,8 +455,8 @@ describe('split connector geometry in preview meshes', () => {
     expect(maleWithout).toBeDefined();
     if (!maleWith || !maleWithout) return;
 
-    const wallMaxXWith = maxXNearY(maleWith.vertices, wallOffset, wt);
-    const wallMaxXWithout = maxXNearY(maleWithout.vertices, wallOffset, wt);
+    const wallMaxXWith = extremeXNearY(maleWith.vertices, wallOffset, wt, 'max');
+    const wallMaxXWithout = extremeXNearY(maleWithout.vertices, wallOffset, wt, 'max');
     const wallProtrusion = wallMaxXWith - wallMaxXWithout;
     const expectedProtrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
 
@@ -461,7 +466,7 @@ describe('split connector geometry in preview meshes', () => {
   it('male wall tabs protrude past cut face at wall Y positions (with lip)', () => {
     const generateSplitPreview = getGenerateSplitPreview();
     const outerD = OVERSIZED_PARAMS.depth * SIZE - CLEARANCE;
-    const wt = OVERSIZED_PARAMS.wallThickness ?? 1.2;
+    const wt = OVERSIZED_PARAMS.wallThickness;
     const wallOffset = outerD / 2 - wt / 2;
 
     const withConn = generateSplitPreview(
@@ -483,8 +488,8 @@ describe('split connector geometry in preview meshes', () => {
     expect(maleWithout).toBeDefined();
     if (!maleWith || !maleWithout) return;
 
-    const wallMaxXWith = maxXNearY(maleWith.vertices, wallOffset, wt);
-    const wallMaxXWithout = maxXNearY(maleWithout.vertices, wallOffset, wt);
+    const wallMaxXWith = extremeXNearY(maleWith.vertices, wallOffset, wt, 'max');
+    const wallMaxXWithout = extremeXNearY(maleWithout.vertices, wallOffset, wt, 'max');
     const wallProtrusion = wallMaxXWith - wallMaxXWithout;
     const expectedProtrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
 
@@ -494,7 +499,7 @@ describe('split connector geometry in preview meshes', () => {
   it('female wall tab protrudes into male territory at wall Y positions (with lip)', () => {
     const generateSplitPreview = getGenerateSplitPreview();
     const outerD = OVERSIZED_PARAMS.depth * SIZE - CLEARANCE;
-    const wt = OVERSIZED_PARAMS.wallThickness ?? 1.2;
+    const wt = OVERSIZED_PARAMS.wallThickness;
     const wallOffset = outerD / 2 - wt / 2;
 
     const withConn = generateSplitPreview(
@@ -516,19 +521,8 @@ describe('split connector geometry in preview meshes', () => {
     expect(femaleWithout).toBeDefined();
     if (!femaleWith || !femaleWithout) return;
 
-    let femaleMinXWith = Infinity;
-    let femaleMinXWithout = Infinity;
-    for (let i = 0; i < femaleWith.vertices.length; i += 3) {
-      if (Math.abs(femaleWith.vertices[i + 1] - wallOffset) < wt) {
-        femaleMinXWith = Math.min(femaleMinXWith, femaleWith.vertices[i]);
-      }
-    }
-    for (let i = 0; i < femaleWithout.vertices.length; i += 3) {
-      if (Math.abs(femaleWithout.vertices[i + 1] - wallOffset) < wt) {
-        femaleMinXWithout = Math.min(femaleMinXWithout, femaleWithout.vertices[i]);
-      }
-    }
-
+    const femaleMinXWith = extremeXNearY(femaleWith.vertices, wallOffset, wt, 'min');
+    const femaleMinXWithout = extremeXNearY(femaleWithout.vertices, wallOffset, wt, 'min');
     const femaleProtrusion = femaleMinXWithout - femaleMinXWith;
     const expectedProtrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
 
@@ -537,21 +531,14 @@ describe('split connector geometry in preview meshes', () => {
 
   it('tongue-and-groove activates at 1.6mm walls (male extends past cut face)', () => {
     const generateSplitPreview = getGenerateSplitPreview();
-    const thickWallParams: BinParams = {
-      ...DEFAULT_BIN_PARAMS,
-      width: 7,
-      depth: 3,
-      height: 3,
-      wallThickness: 1.6,
-    };
     const withConnectors = generateSplitPreview(
-      thickWallParams,
+      THICK_WALL_PARAMS,
       CUT_PLANES_X,
       CUT_PLANES_Y,
       DEFAULT_SPLIT_CONNECTOR_CONFIG
     );
     const withoutConnectors = generateSplitPreview(
-      thickWallParams,
+      THICK_WALL_PARAMS,
       CUT_PLANES_X,
       CUT_PLANES_Y,
       DISABLED_CONFIG
@@ -567,9 +554,38 @@ describe('split connector geometry in preview meshes', () => {
     const bbWith = boundingBox(maleWith.vertices);
     const bbWithout = boundingBox(maleWithout.vertices);
 
-    // T&G is additive: male piece should extend beyond cut face
     const protrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
     const extensionX = bbWith.maxX - bbWithout.maxX;
     expect(extensionX).toBeGreaterThan(protrusion - TESS_TOL - 0.5);
+  }, 60000);
+
+  it('lip max Z at wall positions is preserved with half-lap connectors', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const outerD = OVERSIZED_PARAMS.depth * SIZE - CLEARANCE;
+    const wt = OVERSIZED_PARAMS.wallThickness;
+    const wallOffset = outerD / 2 - wt / 2;
+    const wallTopZ = OVERSIZED_PARAMS.height * GRIDFINITY.HEIGHT_UNIT;
+    const expectedLipTop = wallTopZ + GRIDFINITY.LIP_HEIGHT;
+
+    const withConn = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+
+    // At each wall Y position, the lip should reach full height even with connectors.
+    // This catches the regression where half-lap cuts removed lip material.
+    for (const piece of withConn.pieces) {
+      let maxZAtWall = -Infinity;
+      for (let i = 0; i < piece.vertices.length; i += 3) {
+        if (Math.abs(Math.abs(piece.vertices[i + 1]) - wallOffset) < wt) {
+          maxZAtWall = Math.max(maxZAtWall, piece.vertices[i + 2]);
+        }
+      }
+      expect(maxZAtWall, `piece ${piece.label} lip truncated at wall`).toBeGreaterThan(
+        expectedLipTop - 1.0
+      );
+    }
   }, 60000);
 });
