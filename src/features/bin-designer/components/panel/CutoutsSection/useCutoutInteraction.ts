@@ -266,7 +266,7 @@ export function useCutoutInteraction({
   const addToast = useToastStore((s) => s.addToast);
   const t = useTranslation();
 
-  const [mode, setMode] = useState<InteractionMode>({ type: 'idle' });
+  const [mode, setMode] = useState<InteractionMode>({ type: 'placing', shape: 'rectangle' });
   const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
   const [preview, setPreview] = useState<PreviewMap>(new Map());
   const [snapEnabled, setSnapEnabled] = useState(true);
