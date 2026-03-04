@@ -56,8 +56,8 @@ const CLEARANCE = GRIDFINITY.TOLERANCE;
 /** Tessellation tolerance — geometry vertices may deviate from exact CAD by this amount. */
 const TESS_TOL = 0.3;
 
-/** 8×2×3 bin with default 1.2mm walls. At this wall thickness, only
- *  floor tongue and lip step are generated (wall tongues need ≥1.4mm). */
+/** 8×2×3 bin with default 1.2mm walls. At this thickness (< 1.4mm),
+ *  half-lap wall connectors are used; at ≥ 1.4mm, tongue-and-groove. */
 const OVERSIZED_PARAMS: BinParams = {
   ...DEFAULT_BIN_PARAMS,
   width: 8,
