@@ -31,5 +31,12 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["src/test", "**/__tests__", "**/*.test.ts", "**/*.test.tsx", "**/*.visual.tsx"]
+  "exclude": [
+    "src/test",
+    "**/__tests__",
+    "**/__test-infra__",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.visual.tsx"
+  ]
 }
