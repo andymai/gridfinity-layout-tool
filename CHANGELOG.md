@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.2...gridfinity-layout-tool-v4.0.3) (2026-03-04)
+
+
+### Bug Fixes
+
+* correct Y-axis split connector prism positioning ([#1041](https://github.com/andymai/gridfinity-layout-tool/issues/1041)) ([db12346](https://github.com/andymai/gridfinity-layout-tool/commit/db123465905a7aa12bc538f4c8ecb8aa83bd8946))
+
 ## [4.0.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.1...gridfinity-layout-tool-v4.0.2) (2026-03-04)
 
 
