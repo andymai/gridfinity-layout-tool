@@ -21,13 +21,21 @@ const CLEARANCE = GRIDFINITY.TOLERANCE;
 /** Tessellation tolerance — geometry vertices may deviate from exact CAD by this amount. */
 const TESS_TOL = 0.3;
 
-/** 8×2×3 bin with default 1.2mm walls. At this thickness (< 1.4mm),
- *  half-lap wall connectors are used; at ≥ 1.4mm, tongue-and-groove. */
+/** 8×2×3 bin with default 1.2mm walls and stacking lip.
+ *  Half-lap wall connectors are skipped when stacking lip is present
+ *  (lip flange prevents interlocking assembly). */
 const OVERSIZED_PARAMS: BinParams = {
   ...DEFAULT_BIN_PARAMS,
   width: 8,
   depth: 2,
   height: 3,
+};
+
+/** Same dimensions but WITHOUT stacking lip — half-lap wall connectors
+ *  are used at < 1.4mm wall thickness. */
+const OVERSIZED_NO_LIP: BinParams = {
+  ...OVERSIZED_PARAMS,
+  base: { ...OVERSIZED_PARAMS.base, stackingLip: false },
 };
 
 const CUT_PLANES_X = [0];
@@ -289,7 +297,7 @@ describe('split connector geometry in preview meshes', () => {
     expect(cols).toEqual([1, 2, 3]);
   }, 90000);
 
-  it('half-lap joints at 1.2mm walls produce geometry changes (cuts visible)', () => {
+  it('half-lap joints at 1.2mm walls produce geometry changes', () => {
     const generateSplitPreview = getGenerateSplitPreview();
     const withConnectors = generateSplitPreview(
       OVERSIZED_PARAMS,
@@ -304,7 +312,7 @@ describe('split connector geometry in preview meshes', () => {
       DISABLED_CONFIG
     );
 
-    // Half-lap cuts into walls create additional internal faces → more triangles
+    // Half-lap cuts into walls + lip create additional internal faces → more triangles
     const trisWithConn = withConnectors.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
     const trisWithout = withoutConnectors.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
     expect(trisWithConn).toBeGreaterThan(trisWithout);
@@ -354,6 +362,55 @@ describe('split connector geometry in preview meshes', () => {
     // T&G adds wall tongues that extend further; half-lap only has floor tongue
     expect(thinMaxX).toBeLessThan(thickMaxX + TESS_TOL);
   }, 60000);
+
+  it('half-lap wall cuts extend through stacking lip (lip + thin walls)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    // With lip + thin walls + connectors: half-lap cuts extend through the lip
+    // so both halves interlock when assembled.
+    const withConn = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+    const withoutConn = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONFIG
+    );
+
+    for (const piece of withConn.pieces) {
+      expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
+      expect(piece.vertices.length).toBeGreaterThan(100);
+    }
+
+    // Half-lap cuts through wall + lip produce more triangles than no connectors
+    const trisConn = withConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    const trisNoConn = withoutConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    expect(trisConn).toBeGreaterThan(trisNoConn);
+
+    // The lip-extended cuts should produce MORE geometry delta than no-lip cuts,
+    // because the cut prism is taller (wall + 4.4mm lip vs wall only).
+    const noLipConn = generateSplitPreview(
+      OVERSIZED_NO_LIP,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+    const noLipNoConn = generateSplitPreview(
+      OVERSIZED_NO_LIP,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONFIG
+    );
+
+    const lipDelta = trisConn - trisNoConn;
+    const noLipDelta =
+      noLipConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0) -
+      noLipNoConn.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    expect(lipDelta).toBeGreaterThan(noLipDelta);
+  }, 90000);
 
   it('tongue-and-groove activates at 1.6mm walls (male extends past cut face)', () => {
     const generateSplitPreview = getGenerateSplitPreview();

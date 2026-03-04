@@ -742,6 +742,8 @@ function splitSolidIntoPieces(
           wallTopZ,
           wallThickness: params.wallThickness,
           floorThickness: params.wallThickness,
+          lipHeight: hasLip ? GRIDFINITY.LIP_HEIGHT : 0,
+          lipTaperWidth: hasLip ? LIP_TAPER_WIDTH : 0,
         };
         piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
       }
