@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.54.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.4...gridfinity-layout-tool-v3.54.0) (2026-03-04)
+
+
+### Features
+
+* add half-lap wall connectors for thin walls (&lt; 1.4mm) ([#1029](https://github.com/andymai/gridfinity-layout-tool/issues/1029)) ([c98410f](https://github.com/andymai/gridfinity-layout-tool/commit/c98410f4107fe1bb7b546518191554584161ac17))
+
 ## [3.53.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.3...gridfinity-layout-tool-v3.53.4) (2026-03-04)
 
 
