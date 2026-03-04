@@ -84,6 +84,11 @@ function lipYExtent(vertices: Float32Array, zThreshold: number): { min: number; 
       max = Math.max(max, vertices[i + 1]);
     }
   }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    throw new Error(
+      `lipYExtent: no vertices found above zThreshold=${zThreshold}; check test setup/threshold.`
+    );
+  }
   return { min, max };
 }
 
@@ -287,9 +292,11 @@ describe('stacking lip on split pieces', () => {
     const wallTopZ = computeWallTopZ(params);
 
     for (const piece of result.pieces) {
+      // The original bug produced dozens of degenerate triangles; this generous
+      // threshold catches regressions while tolerating OCCT tessellation noise.
+      const MAX_DEGENERATE_TRIANGLES = 5;
       const degenerateCount = countDegenerateTriangles(piece.vertices, piece.indices, wallTopZ);
-      // Allow very few degenerate triangles (tessellation noise), but not many
-      expect(degenerateCount).toBeLessThan(5);
+      expect(degenerateCount).toBeLessThan(MAX_DEGENERATE_TRIANGLES);
     }
   }, 60000);
 });
