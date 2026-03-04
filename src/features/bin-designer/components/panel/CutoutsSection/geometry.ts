@@ -608,8 +608,19 @@ export function flipSelectionHorizontal(
     const bounds = computeBounds(cutouts);
     const cx = (bounds.minX + bounds.maxX) / 2;
     for (const cutout of cutouts) {
+      const patch = flipCutoutHorizontal(cutout);
       const mirroredX = 2 * cx - (cutout.x + cutout.width);
-      updates.set(cutout.id, { ...flipCutoutHorizontal(cutout), x: mirroredX });
+      if (cutout.shape === 'path' && patch.path) {
+        // Path points are absolute — translate them to match the group-mirrored position
+        const dx = mirroredX - (patch.x ?? cutout.x);
+        updates.set(cutout.id, {
+          ...patch,
+          x: mirroredX,
+          path: patch.path.map((pt) => ({ ...pt, x: pt.x + dx })),
+        });
+      } else {
+        updates.set(cutout.id, { ...patch, x: mirroredX });
+      }
     }
   } else {
     for (const cutout of cutouts) {
@@ -633,8 +644,19 @@ export function flipSelectionVertical(
     const bounds = computeBounds(cutouts);
     const cy = (bounds.minY + bounds.maxY) / 2;
     for (const cutout of cutouts) {
+      const patch = flipCutoutVertical(cutout);
       const mirroredY = 2 * cy - (cutout.y + cutout.depth);
-      updates.set(cutout.id, { ...flipCutoutVertical(cutout), y: mirroredY });
+      if (cutout.shape === 'path' && patch.path) {
+        // Path points are absolute — translate them to match the group-mirrored position
+        const dy = mirroredY - (patch.y ?? cutout.y);
+        updates.set(cutout.id, {
+          ...patch,
+          y: mirroredY,
+          path: patch.path.map((pt) => ({ ...pt, y: pt.y + dy })),
+        });
+      } else {
+        updates.set(cutout.id, { ...patch, y: mirroredY });
+      }
     }
   } else {
     for (const cutout of cutouts) {

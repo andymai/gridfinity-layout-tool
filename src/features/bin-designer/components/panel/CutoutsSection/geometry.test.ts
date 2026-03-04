@@ -835,6 +835,42 @@ describe('geometry', () => {
       expect(updates.get('a')).toEqual({ rotation: 0, x: 30 });
       expect(updates.get('b')).toEqual({ rotation: 0, x: 0 });
     });
+
+    it('translates path points to match group-mirrored position', () => {
+      const pathA = createCutout({
+        id: 'a',
+        shape: 'path',
+        x: 0,
+        y: 0,
+        width: 10,
+        depth: 10,
+        path: [
+          { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const pathB = createCutout({
+        id: 'b',
+        shape: 'path',
+        x: 30,
+        y: 0,
+        width: 10,
+        depth: 10,
+        path: [
+          { x: 30, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 40, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const updates = flipSelectionHorizontal([pathA, pathB]);
+      // Group bounds: minX=0, maxX=40, center=20
+      // pathA: mirroredX = 2*20 - (0+10) = 30 → path points must be at ~30-40
+      const patchA = updates.get('a') as Partial<Cutout>;
+      expect(patchA.x).toBe(30);
+      expect(patchA.path).toBeDefined();
+      const pathAPoints = patchA.path as PathPoint[];
+      expect(pathAPoints[0].x).toBeCloseTo(40);
+      expect(pathAPoints[1].x).toBeCloseTo(30);
+    });
   });
 
   describe('flipSelectionVertical', () => {
@@ -853,6 +889,42 @@ describe('geometry', () => {
       // b: mirroredY = 2*20 - (30+10) = 0, rotation → 180
       expect(updates.get('a')).toEqual({ rotation: 180, y: 30 });
       expect(updates.get('b')).toEqual({ rotation: 180, y: 0 });
+    });
+
+    it('translates path points to match group-mirrored position', () => {
+      const pathA = createCutout({
+        id: 'a',
+        shape: 'path',
+        x: 0,
+        y: 0,
+        width: 10,
+        depth: 10,
+        path: [
+          { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const pathB = createCutout({
+        id: 'b',
+        shape: 'path',
+        x: 0,
+        y: 30,
+        width: 10,
+        depth: 10,
+        path: [
+          { x: 0, y: 30, handleIn: null, handleOut: null, symmetric: false },
+          { x: 10, y: 40, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const updates = flipSelectionVertical([pathA, pathB]);
+      // Group bounds: minY=0, maxY=40, center=20
+      // pathA: mirroredY = 2*20 - (0+10) = 30 → path points must be at ~30-40
+      const patchA = updates.get('a') as Partial<Cutout>;
+      expect(patchA.y).toBe(30);
+      expect(patchA.path).toBeDefined();
+      const pathAPoints = patchA.path as PathPoint[];
+      expect(pathAPoints[0].y).toBeCloseTo(40);
+      expect(pathAPoints[1].y).toBeCloseTo(30);
     });
   });
 });
