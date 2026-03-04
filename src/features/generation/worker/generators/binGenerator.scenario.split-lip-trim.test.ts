@@ -1,11 +1,9 @@
 // @vitest-environment node
 /**
- * Scenario tests for stacking lip trimming on split bin pieces.
+ * Scenario tests for stacking lip geometry on split bin pieces.
  *
- * Validates that interior cut faces of split pieces do NOT have stacking lip
- * cross-sections, while outer perimeter edges still have the full lip profile.
- *
- * Regression test for: stacking lip appearing on interior cut faces of split bins.
+ * Validates that all split pieces retain the full stacking lip profile,
+ * including at interior cut faces — the lip is NOT trimmed.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
@@ -56,12 +54,15 @@ beforeAll(async () => {
   generateBin = mod.generateBin as GenerateBinFn;
 }, 30000);
 
-// Geometry constants derived from shared Gridfinity spec
+// ─── Constants ──────────────────────────────────────────────────────────────
+
 const SIZE = GRIDFINITY.GRID_SIZE;
 const CLEARANCE = GRIDFINITY.TOLERANCE;
 const LIP_HEIGHT = GRIDFINITY.LIP_HEIGHT;
 
-/** Compute the Z coordinate of the top of the bin wall (excludes lip). */
+/** Tessellation tolerance for geometry checks. */
+const TESS_TOL = 0.2;
+
 function computeWallTopZ(params: BinParams): number {
   return params.height * GRIDFINITY.HEIGHT_UNIT;
 }
@@ -90,7 +91,16 @@ const DISABLED_CONNECTORS: SplitConnectorConfig = {
   enabled: false,
 };
 
-/** Find max Z of vertices where the coordinate at `axis` (0=x, 1=y) is within [min, max]. */
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function maxZ(vertices: Float32Array): number {
+  let max = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    max = Math.max(max, vertices[i + 2]);
+  }
+  return max;
+}
+
 function maxZInAxisRange(vertices: Float32Array, axis: 0 | 1, min: number, max: number): number {
   let result = -Infinity;
   for (let i = 0; i < vertices.length; i += 3) {
@@ -102,17 +112,39 @@ function maxZInAxisRange(vertices: Float32Array, axis: 0 | 1, min: number, max: 
   return result;
 }
 
-/** Find max Z across all vertices. */
-function maxZ(vertices: Float32Array): number {
-  let max = -Infinity;
-  for (let i = 0; i < vertices.length; i += 3) {
-    max = Math.max(max, vertices[i + 2]);
-  }
-  return max;
+interface BoundingBox {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  minZ: number;
+  maxZ: number;
 }
 
-describe('stacking lip trimming on split pieces', () => {
-  it('interior cut face has no lip geometry above wallTopZ', () => {
+function boundingBox(vertices: Float32Array): BoundingBox {
+  const bb: BoundingBox = {
+    minX: Infinity,
+    maxX: -Infinity,
+    minY: Infinity,
+    maxY: -Infinity,
+    minZ: Infinity,
+    maxZ: -Infinity,
+  };
+  for (let i = 0; i < vertices.length; i += 3) {
+    bb.minX = Math.min(bb.minX, vertices[i]);
+    bb.maxX = Math.max(bb.maxX, vertices[i]);
+    bb.minY = Math.min(bb.minY, vertices[i + 1]);
+    bb.maxY = Math.max(bb.maxY, vertices[i + 1]);
+    bb.minZ = Math.min(bb.minZ, vertices[i + 2]);
+    bb.maxZ = Math.max(bb.maxZ, vertices[i + 2]);
+  }
+  return bb;
+}
+
+// ─── Tests ──────────────────────────────────────────────────────────────────
+
+describe('stacking lip on split pieces', () => {
+  it('all pieces have full stacking lip including at cut faces', () => {
     const result = generateSplitPreview(
       OVERSIZED_LIP_PARAMS,
       CUT_PLANES_X,
@@ -122,26 +154,16 @@ describe('stacking lip trimming on split pieces', () => {
     expect(result.pieces).toHaveLength(2);
 
     const wallTopZ = computeWallTopZ(OVERSIZED_LIP_PARAMS);
-    const outerW = OVERSIZED_LIP_PARAMS.width * SIZE - CLEARANCE;
-    const halfPieceW = outerW / 4;
+    const expectedLipTopZ = wallTopZ + LIP_HEIGHT;
 
     for (const piece of result.pieces) {
-      // The cut face is at |x| ~ halfPieceW (positive for col=1, negative for col=2)
-      // Search within 2mm of the cut face (trim zone is LIP_TAPER_WIDTH = 2.6mm)
-      const cutFaceX = piece.col === 1 ? halfPieceW : -halfPieceW;
-      const searchMargin = 2;
-
-      const maxZNearCutFace =
-        cutFaceX > 0
-          ? maxZInAxisRange(piece.vertices, 0, cutFaceX - searchMargin, cutFaceX + 1)
-          : maxZInAxisRange(piece.vertices, 0, cutFaceX - 1, cutFaceX + searchMargin);
-
-      // Near cut face, max Z should be at or below wallTopZ + tessellation tolerance
-      expect(maxZNearCutFace).toBeLessThanOrEqual(wallTopZ + 0.5);
+      const pieceMaxZ = maxZ(piece.vertices);
+      expect(pieceMaxZ).toBeGreaterThan(expectedLipTopZ - 1.0);
+      expect(pieceMaxZ).toBeLessThan(expectedLipTopZ + TESS_TOL);
     }
   }, 60000);
 
-  it('outer perimeter edges still have full stacking lip', () => {
+  it('lip extends to full height at cut face edges', () => {
     const result = generateSplitPreview(
       OVERSIZED_LIP_PARAMS,
       CUT_PLANES_X,
@@ -150,20 +172,37 @@ describe('stacking lip trimming on split pieces', () => {
     );
 
     const wallTopZ = computeWallTopZ(OVERSIZED_LIP_PARAMS);
-    const expectedLipTopZ = wallTopZ + LIP_HEIGHT;
+    const outerW = OVERSIZED_LIP_PARAMS.width * SIZE - CLEARANCE;
+    const halfPieceW = outerW / 4;
 
     for (const piece of result.pieces) {
-      // The lip top has a 0.6mm fillet (TOP_FILLET) and preview tessellation
-      // uses coarser tolerance, so actual max Z can be ~1mm below theoretical.
-      const pieceMaxZ = maxZ(piece.vertices);
-      expect(pieceMaxZ).toBeGreaterThan(expectedLipTopZ - 1.0);
+      const cutFaceX = piece.col === 1 ? halfPieceW : -halfPieceW;
+      const cutMaxZ = maxZInAxisRange(piece.vertices, 0, cutFaceX - 1, cutFaceX + 1);
+      expect(cutMaxZ).toBeGreaterThan(wallTopZ + 1);
+    }
+  }, 60000);
+
+  it('lip height at outer edge matches GRIDFINITY.LIP_HEIGHT (±tessellation)', () => {
+    const result = generateSplitPreview(
+      OVERSIZED_LIP_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONNECTORS
+    );
+
+    const wallTopZ = computeWallTopZ(OVERSIZED_LIP_PARAMS);
+
+    for (const piece of result.pieces) {
+      const bb = boundingBox(piece.vertices);
+      const outerEdgeX = piece.col === 1 ? bb.minX : bb.maxX;
+      const outerMaxZ = maxZInAxisRange(piece.vertices, 0, outerEdgeX - 1, outerEdgeX + 1);
+      const lipExtent = outerMaxZ - wallTopZ;
+      expect(lipExtent).toBeGreaterThan(LIP_HEIGHT - 1.0);
+      expect(lipExtent).toBeLessThan(LIP_HEIGHT + TESS_TOL);
     }
   }, 60000);
 
   it('no-lip split pieces have lower max Z than lip split pieces', () => {
-    // Force fresh solid generation for each param set — the module-level
-    // solid cache (getLastSolid) persists across calls and would reuse
-    // the lip bin for the no-lip test otherwise.
     generateBin(OVERSIZED_LIP_PARAMS, undefined, true);
     const withLip = generateSplitPreview(
       OVERSIZED_LIP_PARAMS,
@@ -182,16 +221,14 @@ describe('stacking lip trimming on split pieces', () => {
 
     const wallTopZ = computeWallTopZ(OVERSIZED_LIP_PARAMS);
 
-    // With lip: max Z should be above wallTopZ (lip present on outer edges)
     const lipMaxZ = maxZ(withLip.pieces[0].vertices);
     expect(lipMaxZ).toBeGreaterThan(wallTopZ + 1);
 
-    // Without lip: max Z should be at wallTopZ
     const noLipMaxZ = maxZ(withoutLip.pieces[0].vertices);
-    expect(noLipMaxZ).toBeLessThanOrEqual(wallTopZ + 0.5);
+    expect(noLipMaxZ).toBeLessThanOrEqual(wallTopZ + TESS_TOL);
   }, 60000);
 
-  it('split along both axes also trims lip at all cut faces', () => {
+  it('split along both axes preserves lip on all 4 pieces', () => {
     const bigBinParams: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 8,
@@ -204,32 +241,18 @@ describe('stacking lip trimming on split pieces', () => {
     expect(result.pieces).toHaveLength(4);
 
     const wallTopZ = computeWallTopZ(bigBinParams);
-    const outerW = bigBinParams.width * SIZE - CLEARANCE;
-    const outerD = bigBinParams.depth * SIZE - CLEARANCE;
-    const halfPieceW = outerW / 4;
-    const halfPieceD = outerD / 4;
 
-    // With 2x2 split, every piece is a corner piece — each has 2 outer edges
-    // and 2 cut faces. Check cut faces don't have lip.
     for (const piece of result.pieces) {
-      const isCutRight = piece.col === 1;
-      const isCutTop = piece.row === 1;
-
-      // Check cut face in X direction (search within 2mm — trim zone is LIP_TAPER_WIDTH)
-      if (isCutRight) {
-        const cutMaxZ = maxZInAxisRange(piece.vertices, 0, halfPieceW - 2, halfPieceW + 1);
-        expect(cutMaxZ).toBeLessThanOrEqual(wallTopZ + 0.5);
-      }
-
-      // Check cut face in Y direction (search within 2mm of cut face)
-      if (isCutTop) {
-        const cutMaxZ = maxZInAxisRange(piece.vertices, 1, halfPieceD - 2, halfPieceD + 1);
-        expect(cutMaxZ).toBeLessThanOrEqual(wallTopZ + 0.5);
-      }
-
-      // Overall max Z should still show lip on outer edges
+      const bb = boundingBox(piece.vertices);
       const pieceMaxZ = maxZ(piece.vertices);
       expect(pieceMaxZ).toBeGreaterThan(wallTopZ + 1);
+
+      const pieceW = bb.maxX - bb.minX;
+      const pieceD = bb.maxY - bb.minY;
+      const outerW = bigBinParams.width * SIZE - CLEARANCE;
+      const outerD = bigBinParams.depth * SIZE - CLEARANCE;
+      expect(pieceW).toBeGreaterThan(outerW / 2 - 2);
+      expect(pieceD).toBeGreaterThan(outerD / 2 - 2);
     }
   }, 120000);
 });

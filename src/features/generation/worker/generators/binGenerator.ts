@@ -655,66 +655,16 @@ function splitSolidIntoPieces(
   const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
   const wallTopZ = floorZ + wallHeight;
 
-  // Remove stacking lip geometry at cut planes to prevent lip cross-sections
-  // from appearing on interior cut faces of split pieces. This trims the lip
-  // above wallTopZ in a band around each cut plane, creating clean termination
-  // where pieces join while preserving lip on outer perimeter edges.
-  let splitSolid: Shape3D = solid;
-  if (params.base.stackingLip && (cutPlanesX.length > 0 || cutPlanesY.length > 0)) {
-    splitSolid = clone(solid);
-    // Slab width covers the full lip taper zone on both sides of the cut,
-    // plus 0.5mm margin for floating-point/tessellation robustness.
-    const trimSlabWidth = 2 * LIP_TAPER_WIDTH + 0.5;
-    // Start slightly below wallTopZ to avoid coincident faces with the
-    // lip/wall junction, which would cause OCCT boolean failures.
-    // Keep small (0.01mm) to avoid visible tessellation artifacts and
-    // to preserve wall material for connector lip steps at wallTopZ.
-    const trimZStart = wallTopZ - 0.01;
-    // 10mm margin above lip top ensures full removal regardless of geometry.
-    const trimHeight = LIP_HEIGHT + 10;
-    // 10mm overhang past each bin edge (20mm total) ensures slabs fully span the bin.
-    const totalSlabOverhang = 20;
-    const trimTargets: Shape3D[] = [];
-
-    for (const cutX of cutPlanesX) {
-      const slab = sketch(
-        drawRectangle(trimSlabWidth, outerD + totalSlabOverhang),
-        'XY',
-        trimZStart
-      ).extrude(trimHeight);
-      trimTargets.push(translate(slab, [cutX, 0, 0]));
-    }
-
-    for (const cutY of cutPlanesY) {
-      const slab = sketch(
-        drawRectangle(outerW + totalSlabOverhang, trimSlabWidth),
-        'XY',
-        trimZStart
-      ).extrude(trimHeight);
-      trimTargets.push(translate(slab, [0, cutY, 0]));
-    }
-
-    if (trimTargets.length > 0) {
-      try {
-        splitSolid = unwrap(cutAll(splitSolid, trimTargets));
-      } catch (batchError) {
-        if (batchError instanceof DOMException && batchError.name === 'AbortError')
-          throw batchError;
-        for (const target of trimTargets) {
-          try {
-            splitSolid = unwrap(cut(splitSolid, target));
-          } catch (e) {
-            if (e instanceof DOMException && e.name === 'AbortError') throw e;
-            // Skip if individual trim cut fails — piece will retain lip cross-section
-          }
-        }
-      }
-    }
-  }
+  const splitSolid: Shape3D = solid;
 
   // Boundary arrays: [left edge, ...cut planes, right edge]
   const xBounds = [-outerW / 2, ...cutPlanesX, outerW / 2];
   const yBounds = [-outerD / 2, ...cutPlanesY, outerD / 2];
+
+  // Outer edges of the cutting box are expanded by this margin to avoid
+  // coplanar faces with bin geometry, which cause OCCT booleans to
+  // silently drop outer walls.
+  const EDGE_MARGIN = 1;
 
   const pieces: SplitPieceInfo[] = [];
 
@@ -730,12 +680,24 @@ function splitSolidIntoPieces(
       const centerX = (xMin + xMax) / 2;
       const centerY = (yMin + yMax) / 2;
 
-      const cuttingBox = sketch(
-        drawRectangle(pieceW, pieceD),
-        'XY',
-        -CUTTING_BOX_HEIGHT / 2
-      ).extrude(CUTTING_BOX_HEIGHT);
-      const translatedBox = translate(cuttingBox, [centerX, centerY, 0]);
+      // Expand cutting box at outer bin edges to avoid coplanar booleans
+      const isLeftEdge = col === 0;
+      const isRightEdge = col === xBounds.length - 2;
+      const isBottomEdge = row === 0;
+      const isTopEdge = row === yBounds.length - 2;
+      const marginLeft = isLeftEdge ? EDGE_MARGIN : 0;
+      const marginRight = isRightEdge ? EDGE_MARGIN : 0;
+      const marginBottom = isBottomEdge ? EDGE_MARGIN : 0;
+      const marginTop = isTopEdge ? EDGE_MARGIN : 0;
+      const boxW = pieceW + marginLeft + marginRight;
+      const boxD = pieceD + marginBottom + marginTop;
+      const boxCenterX = centerX + (marginRight - marginLeft) / 2;
+      const boxCenterY = centerY + (marginTop - marginBottom) / 2;
+
+      const cuttingBox = sketch(drawRectangle(boxW, boxD), 'XY', -CUTTING_BOX_HEIGHT / 2).extrude(
+        CUTTING_BOX_HEIGHT
+      );
+      const translatedBox = translate(cuttingBox, [boxCenterX, boxCenterY, 0]);
 
       let piece = unwrap(intersect(clone(splitSolid), translatedBox));
 
@@ -755,7 +717,6 @@ function splitSolidIntoPieces(
         const geometryContext: BinGeometryContext = {
           floorZ,
           wallTopZ,
-          hasStackingLip: params.base.stackingLip,
           wallThickness: params.wallThickness,
         };
         piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
@@ -833,7 +794,8 @@ const PREVIEW_ANGULAR_TOLERANCE = 15;
 function tessellatePiece(
   piece: SplitPieceInfo,
   outerW: number,
-  outerD: number
+  outerD: number,
+  gridUnitMm: number
 ): SplitPreviewResult['pieces'][number] {
   const {
     solid: pieceSolid,
@@ -868,10 +830,10 @@ function tessellatePiece(
     label,
     col,
     row,
-    widthUnits: widthMm / SIZE,
-    depthUnits: depthMm / SIZE,
-    offsetX: xMinFromOrigin / SIZE,
-    offsetY: yMinFromOrigin / SIZE,
+    widthUnits: widthMm / gridUnitMm,
+    depthUnits: depthMm / gridUnitMm,
+    offsetX: xMinFromOrigin / gridUnitMm,
+    offsetY: yMinFromOrigin / gridUnitMm,
   };
 }
 
@@ -891,8 +853,9 @@ export function generateSplitPreview(
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
   const outerW = params.width * SIZE - CLEARANCE;
   const outerD = params.depth * SIZE - CLEARANCE;
+  const gridUnitMm = params.gridUnitMm ?? SIZE;
 
-  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD)) };
+  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, gridUnitMm)) };
 }
 
 // ─── Ranged Split Operations (for worker pool parallelism) ──────────────────
@@ -914,13 +877,14 @@ export function generateSplitPreviewRange(
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
   const outerW = params.width * SIZE - CLEARANCE;
   const outerD = params.depth * SIZE - CLEARANCE;
+  const gridUnitMm = params.gridUnitMm ?? SIZE;
 
   const pieces: SplitPreviewResult['pieces'] = [];
   for (const idx of pieceIndices) {
     if (idx < 0 || idx >= splitPieces.length) {
       throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
     }
-    pieces.push(tessellatePiece(splitPieces[idx], outerW, outerD));
+    pieces.push(tessellatePiece(splitPieces[idx], outerW, outerD, gridUnitMm));
   }
 
   return { pieces };

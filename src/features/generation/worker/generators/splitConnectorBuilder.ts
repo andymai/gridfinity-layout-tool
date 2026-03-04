@@ -29,22 +29,18 @@
 import { drawRectangle, unwrap, fuse, cut, fuseAll, cutAll, translate } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
-import { LIP_SMALL_TAPER, sketch } from './generatorTypes';
+import { sketch } from './generatorTypes';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 /** Overlap into the piece body so booleans have shared volume (mm).
- *  Without this, the prism only touches the cut face (coplanar),
- *  causing OCCT's boolean operations to fail silently. */
-const OVERLAP = 0.15;
+ *  Must be large enough for OCCT to reliably fuse/cut the shapes.
+ *  0.15mm was too thin and caused silent boolean failures. */
+const OVERLAP = 1.0;
 
-/** Minimum bin wall thickness to place wall tongues (mm).
- *  Must accommodate: tongue + 2×clearance + 2×MIN_SHELL.
- *  At default clearance (0.15mm): 0.7 + 0.3 + 0.4 = 1.4mm. */
-const MIN_WALL_FOR_TONGUE = 1.4;
-
-/** Minimum printable feature WIDTH (mm) — slightly under 2× nozzle width to
- *  allow wall tongues at common wall thicknesses. */
+/** Minimum printable feature WIDTH (mm). Set below 2× nozzle width (0.8mm)
+ *  to allow wall tongues at the common 1.2mm wall thickness, where the
+ *  max tongue width is ~0.5mm after clearance and shell constraints. */
 const MIN_FEATURE_WIDTH = 0.7;
 
 /** Minimum feature HEIGHT (mm) for reliable OCCT boolean operations.
@@ -60,9 +56,6 @@ const MIN_SHELL = 0.2;
  *  0.49999…94 instead of 0.5, silently skipping floor tongues
  *  at the default 1.2mm wall thickness. */
 const EPSILON = 1e-9;
-
-/** Height of the lip step ledge (mm). */
-const LIP_STEP_HEIGHT = 0.5;
 
 /** Chamfer slope ratio: chamfer_height / protrusion_depth.
  *  cot(max_overhang_angle_from_vertical).
@@ -88,7 +81,6 @@ export interface CutFace {
 export interface BinGeometryContext {
   readonly floorZ: number;
   readonly wallTopZ: number;
-  readonly hasStackingLip: boolean;
   readonly wallThickness: number;
 }
 
@@ -107,10 +99,6 @@ export function applySplitConnectors(
 
   for (const face of cutFaces) {
     addTongueAndGroove(face, context, config, fuseTargets, cutTargets);
-
-    if (context.hasStackingLip) {
-      addLipStep(face, context, config, fuseTargets, cutTargets);
-    }
   }
 
   let result = piece;
@@ -322,13 +310,12 @@ function addTongueAndGroove(
   const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
 
   // ── Wall tongues (at outer bin walls only) ─────────────────────────────
-  // Skip if the wall edge is outside the piece or near a perpendicular cut
-  // (middle pieces have no outer walls on the split axis).
+  // Tongue width is capped at tongueThickness but reduced to fit within
+  // the wall groove. Skip if the reduced size is below MIN_FEATURE_WIDTH.
   const maxGrooveWidth = wt - 2 * MIN_SHELL;
-  const maxTongueWidth = maxGrooveWidth - 2 * config.clearance;
-  const tongueWidth = Math.min(config.pinDiameter, maxTongueWidth);
+  const tongueWidth = Math.min(config.tongueThickness, maxGrooveWidth - 2 * config.clearance);
 
-  if (wt >= MIN_WALL_FOR_TONGUE - EPSILON && tongueWidth >= MIN_FEATURE_WIDTH - EPSILON) {
+  if (tongueWidth >= MIN_FEATURE_WIDTH - EPSILON) {
     for (const edgePos of [-wallOffset, wallOffset]) {
       if (edgePos < pieceMin || edgePos > pieceMax) continue;
       const nearCut = face.perpendicularCuts.some((cp) => Math.abs(edgePos - cp) < wt * 2);
@@ -338,7 +325,7 @@ function addTongueAndGroove(
         config.clearance,
         fuseTargets,
         cutTargets,
-        config.pinProtrusion,
+        config.tongueProtrusion,
         tongueWidth,
         wallHeight,
         context.floorZ,
@@ -350,12 +337,11 @@ function addTongueAndGroove(
 
   // ── Floor tongue (centered on piece, shortened near corners) ───────────
   const maxGrooveHeight = wt - 2 * MIN_SHELL;
-  const maxTongueHeight = maxGrooveHeight - 2 * config.clearance;
-  if (maxTongueHeight >= MIN_FEATURE_HEIGHT - EPSILON) {
-    const floorHeight = Math.min(config.pinDiameter, maxTongueHeight);
+  const floorHeight = Math.min(config.tongueThickness, maxGrooveHeight - 2 * config.clearance);
+  if (floorHeight >= MIN_FEATURE_HEIGHT - EPSILON) {
     const floorCenterZ = context.floorZ + wt / 2;
     const floorBottomZ = floorCenterZ - floorHeight / 2;
-    const margin = wt + config.pinProtrusion;
+    const margin = wt + config.tongueProtrusion;
 
     const effectiveWidth = shortenForCorners(
       face.pieceEdgeLength * 0.7,
@@ -372,7 +358,7 @@ function addTongueAndGroove(
         config.clearance,
         fuseTargets,
         cutTargets,
-        config.pinProtrusion,
+        config.tongueProtrusion,
         effectiveWidth,
         floorHeight,
         floorBottomZ,
@@ -410,42 +396,4 @@ function shortenForCorners(
   }
 
   return Math.max(0, halfW * 2);
-}
-
-// ─── Lip Step ────────────────────────────────────────────────────────────────
-
-function addLipStep(
-  face: CutFace,
-  context: BinGeometryContext,
-  config: SplitConnectorConfig,
-  fuseTargets: Shape3D[],
-  cutTargets: Shape3D[]
-): void {
-  const margin = context.wallThickness + LIP_STEP_HEIGHT;
-  const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
-  const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
-
-  const stepWidth = shortenForCorners(
-    face.pieceEdgeLength * 0.8,
-    face.pieceCenterOffset,
-    pieceMin,
-    pieceMax,
-    face.perpendicularCuts,
-    margin
-  );
-
-  if (stepWidth < MIN_FEATURE_WIDTH - EPSILON) return;
-
-  addFeature(
-    face,
-    config.clearance,
-    fuseTargets,
-    cutTargets,
-    LIP_STEP_HEIGHT,
-    stepWidth,
-    LIP_SMALL_TAPER,
-    context.wallTopZ,
-    face.pieceCenterOffset,
-    false
-  );
 }
