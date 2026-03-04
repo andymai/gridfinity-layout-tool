@@ -718,6 +718,7 @@ function splitSolidIntoPieces(
           floorZ,
           wallTopZ,
           wallThickness: params.wallThickness,
+          floorThickness: params.wallThickness,
         };
         piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
       }

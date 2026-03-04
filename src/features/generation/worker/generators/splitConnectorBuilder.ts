@@ -5,14 +5,13 @@
  * can be quickly aligned and glued together:
  *
  * - Wall tongues: vertical tongues at each outer wall edge with 55° chamfers
- * - Floor tongue: horizontal tongue along the floor slab with sloped sides
- * - Lip step: shallow ledge at the stacking lip junction
+ * - Floor tongue: horizontal tongue centered in the floor slab, tapered on
+ *   bottom and sides only (top flush with floor surface)
  *
  * All features respect FDM printing constraints:
  * - Minimum feature width: 0.7mm (~2× 0.4mm nozzle)
  * - Minimum feature height: 0.5mm (reliable OCCT boolean threshold)
  * - Minimum shell around grooves: 0.2mm (~1 print layer)
- * - Minimum wall for wall tongues: 1.4mm
  * - Groove depth = tongue depth + clearance (prevents bottoming out)
  * - Default clearance 0.15mm per side for glue-fit assembly
  * - 55° max overhang angle on all horizontal surfaces (safe for most printers)
@@ -26,7 +25,7 @@
  *   a groove that opens cleanly at the mating face.
  */
 
-import { drawRectangle, unwrap, fuse, cut, fuseAll, cutAll, translate } from 'brepjs';
+import { draw, drawRectangle, unwrap, fuse, cut, fuseAll, cutAll, translate } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
@@ -82,6 +81,9 @@ export interface BinGeometryContext {
   readonly floorZ: number;
   readonly wallTopZ: number;
   readonly wallThickness: number;
+  /** Floor slab thickness (mm). Equal to wallThickness from the shell operation,
+   *  but decoupled so floor tongue sizing is independent of wall changes. */
+  readonly floorThickness: number;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -241,6 +243,66 @@ function buildTaperedPrism(
   ]);
 }
 
+/** Floor tongue prism: tapered on bottom and sides, flat on top.
+ *  The top face is flush with the floor surface — no overhang there.
+ *  Bottom and sides get 55° chamfers for FDM printability.
+ *
+ *  Uses explicit polygon sketches so the loft connects matching edges:
+ *  top stays aligned between base and tip, only bottom rises. */
+function buildFloorTonguePrism(
+  cutAxis: 'x' | 'y',
+  sketchPos: number,
+  extrudeLen: number,
+  width: number,
+  height: number,
+  bottomZ: number,
+  edgeOffset: number
+): Shape3D {
+  const bottomChamfer = Math.min(
+    extrudeLen * CHAMFER_SLOPE,
+    Math.max(0, height - MIN_FEATURE_HEIGHT)
+  );
+  const widthChamfer = Math.min(
+    extrudeLen * CHAMFER_SLOPE,
+    Math.max(0, (width - MIN_FEATURE_WIDTH) / 2)
+  );
+
+  // Fall back to rectangular if chamfers are negligible
+  if (bottomChamfer < 0.1 && widthChamfer < 0.1) {
+    return buildPrism(cutAxis, sketchPos, extrudeLen, width, height, bottomZ, edgeOffset);
+  }
+
+  const halfW = width / 2;
+  const halfH = height / 2;
+  const tipHalfW = halfW - widthChamfer;
+  const tipBottom = -halfH + bottomChamfer;
+  const sketchPlane = cutAxis === 'x' ? 'YZ' : 'XZ';
+
+  // Base: full rectangle
+  const baseProfile = draw([-halfW, -halfH])
+    .lineTo([halfW, -halfH])
+    .lineTo([halfW, halfH])
+    .lineTo([-halfW, halfH])
+    .close();
+  const baseSection = baseProfile.sketchOnPlane(sketchPlane, 0) as Sketch;
+
+  // Tip: same top edge, narrower sides, raised bottom
+  const tipProfile = draw([-tipHalfW, tipBottom])
+    .lineTo([tipHalfW, tipBottom])
+    .lineTo([tipHalfW, halfH])
+    .lineTo([-tipHalfW, halfH])
+    .close();
+  const tipSection = tipProfile.sketchOnPlane(sketchPlane, extrudeLen) as Sketch;
+
+  const lofted = baseSection.loftWith([tipSection], { ruled: true });
+
+  return translate(lofted, [
+    cutAxis === 'x' ? sketchPos : edgeOffset,
+    cutAxis === 'y' ? sketchPos : edgeOffset,
+    bottomZ + halfH,
+  ]);
+}
+
 // ─── Male/Female Feature Placement ──────────────────────────────────────────
 
 /**
@@ -261,10 +323,15 @@ function addFeature(
   height: number,
   bottomZ: number,
   edgeOffset: number,
-  tapered: boolean
+  taper: 'none' | 'symmetric' | 'floor'
 ): void {
   if (face.isMale) {
-    const builder = tapered ? buildTaperedPrism : buildPrism;
+    const builder =
+      taper === 'floor'
+        ? buildFloorTonguePrism
+        : taper === 'symmetric'
+          ? buildTaperedPrism
+          : buildPrism;
     fuseTargets.push(
       builder(
         face.axis,
@@ -330,16 +397,19 @@ function addTongueAndGroove(
         wallHeight,
         context.floorZ,
         edgePos,
-        true
+        'symmetric'
       );
     }
   }
 
   // ── Floor tongue (centered on piece, shortened near corners) ───────────
-  const maxGrooveHeight = wt - 2 * MIN_SHELL;
+  // Floor slab thickness is constant — tongue height is sized from it,
+  // independent of wall thickness changes.
+  const ft = context.floorThickness;
+  const maxGrooveHeight = ft - 2 * MIN_SHELL;
   const floorHeight = Math.min(config.tongueThickness, maxGrooveHeight - 2 * config.clearance);
   if (floorHeight >= MIN_FEATURE_HEIGHT - EPSILON) {
-    const floorCenterZ = context.floorZ + wt / 2;
+    const floorCenterZ = context.floorZ + ft / 2;
     const floorBottomZ = floorCenterZ - floorHeight / 2;
     const margin = wt + config.tongueProtrusion;
 
@@ -363,7 +433,7 @@ function addTongueAndGroove(
         floorHeight,
         floorBottomZ,
         face.pieceCenterOffset,
-        true
+        'floor'
       );
     }
   }
