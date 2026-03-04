@@ -62,7 +62,9 @@ export async function initBrepjs(): Promise<void> {
 
   const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
   const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary } as Record<string, unknown>);
+  const OC = await (opencascade as (opts?: Record<string, unknown>) => Promise<unknown>)({
+    wasmBinary,
+  });
   initFromOC(OC);
 
   const mod = await import('@/features/generation/worker/generators/binGenerator');
