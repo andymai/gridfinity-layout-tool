@@ -125,6 +125,8 @@
   "binDesigner.cutouts.positionX": "X-Position",
   "binDesigner.cutouts.positionY": "Y-Position",
   "binDesigner.cutouts.rotate90": "90° drehen",
+  "binDesigner.cutouts.flipHorizontal": "Horizontal spiegeln",
+  "binDesigner.cutouts.flipVertical": "Vertikal spiegeln",
   "binDesigner.cutouts.rotation": "Drehung",
   "binDesigner.cutouts.rulerTool": "Lineal",
   "binDesigner.cutouts.scoopRadius": "Schaufelradius",

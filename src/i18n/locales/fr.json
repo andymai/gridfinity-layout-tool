@@ -125,6 +125,8 @@
   "binDesigner.cutouts.positionX": "Position X",
   "binDesigner.cutouts.positionY": "Position Y",
   "binDesigner.cutouts.rotate90": "Pivoter de 90°",
+  "binDesigner.cutouts.flipHorizontal": "Retourner horizontalement",
+  "binDesigner.cutouts.flipVertical": "Retourner verticalement",
   "binDesigner.cutouts.rotation": "Rotation",
   "binDesigner.cutouts.rulerTool": "Règle",
   "binDesigner.cutouts.scoopRadius": "Rayon de cuillère",

@@ -9,7 +9,7 @@ import { useCallback, useState, useRef, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { centerInBin } from './geometry';
+import { centerInBin, flipSelectionHorizontal, flipSelectionVertical } from './geometry';
 import { useCutoutInteraction } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
 import { CutoutCanvas3D } from './renderer';
@@ -340,6 +340,43 @@ export function CutoutEditor() {
     }
 
     if (hasSelection) {
+      const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
+      const anyLocked = selectedCutouts.some((c) => c.locked);
+
+      actions.push({
+        label: t('binDesigner.cutouts.flipHorizontal'),
+        onClick: () => {
+          const updates = flipSelectionHorizontal(selectedCutouts);
+          if (updates.size > 1) {
+            updateCutoutsBatch(updates);
+          } else {
+            for (const [id, patch] of updates) {
+              updateCutout(id, patch);
+            }
+          }
+        },
+        disabled: anyLocked,
+        shortcut: { keys: 'H', shift: true },
+      });
+
+      actions.push({
+        label: t('binDesigner.cutouts.flipVertical'),
+        onClick: () => {
+          const updates = flipSelectionVertical(selectedCutouts);
+          if (updates.size > 1) {
+            updateCutoutsBatch(updates);
+          } else {
+            for (const [id, patch] of updates) {
+              updateCutout(id, patch);
+            }
+          }
+        },
+        disabled: anyLocked,
+        shortcut: { keys: 'V', shift: true },
+      });
+    }
+
+    if (hasSelection) {
       actions.push({
         label: t('binDesigner.cutouts.centerInBin'),
         onClick: () => {
@@ -379,6 +416,7 @@ export function CutoutEditor() {
     pasteFromClipboard,
     selectAll,
     updateCutout,
+    updateCutoutsBatch,
     binWidth,
     binDepth,
     lockCutouts,

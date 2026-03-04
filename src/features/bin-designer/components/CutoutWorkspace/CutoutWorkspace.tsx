@@ -12,7 +12,11 @@ import { useCallback, useState, useRef, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { centerInBin } from '../panel/CutoutsSection/geometry';
+import {
+  centerInBin,
+  flipSelectionHorizontal,
+  flipSelectionVertical,
+} from '../panel/CutoutsSection/geometry';
 import { useCutoutInteraction } from '../panel/CutoutsSection/useCutoutInteraction';
 import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import {
@@ -523,6 +527,43 @@ export function CutoutWorkspace() {
     }
 
     if (hasSelection) {
+      const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
+      const anyLocked = selectedCutouts.some((c) => c.locked);
+
+      actions.push({
+        label: t('binDesigner.cutouts.flipHorizontal'),
+        onClick: () => {
+          const updates = flipSelectionHorizontal(selectedCutouts);
+          if (updates.size > 1) {
+            updateCutoutsBatch(updates);
+          } else {
+            for (const [id, patch] of updates) {
+              updateCutout(id, patch);
+            }
+          }
+        },
+        disabled: anyLocked,
+        shortcut: { keys: 'H', shift: true },
+      });
+
+      actions.push({
+        label: t('binDesigner.cutouts.flipVertical'),
+        onClick: () => {
+          const updates = flipSelectionVertical(selectedCutouts);
+          if (updates.size > 1) {
+            updateCutoutsBatch(updates);
+          } else {
+            for (const [id, patch] of updates) {
+              updateCutout(id, patch);
+            }
+          }
+        },
+        disabled: anyLocked,
+        shortcut: { keys: 'V', shift: true },
+      });
+    }
+
+    if (hasSelection) {
       actions.push({
         label: t('binDesigner.cutouts.centerInBin'),
         onClick: () => {
@@ -563,6 +604,7 @@ export function CutoutWorkspace() {
     pasteFromClipboard,
     selectAll,
     updateCutout,
+    updateCutoutsBatch,
     binWidth,
     binDepth,
     lockCutouts,

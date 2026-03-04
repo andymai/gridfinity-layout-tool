@@ -2,7 +2,7 @@
  * Geometry utilities for cutout positioning and bounds computation.
  */
 
-import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
+import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
 import type { ResizeHandle } from './useCutoutInteraction';
 
 // ─── Rotation Helpers ───────────────────────────────────────────────────────
@@ -513,4 +513,129 @@ export function centerInBin(
     result[cutout.id] = { x: cutout.x + dx, y: cutout.y + dy };
   }
   return result;
+}
+
+// ─── Flip Helpers ─────────────────────────────────────────────────────────────
+
+/**
+ * Mirror a path point's X coordinate around a center, negating X handles
+ * and swapping handleIn/handleOut (winding reversal).
+ */
+function mirrorPathPointX(pt: PathPoint, centerX: number): PathPoint {
+  return {
+    x: 2 * centerX - pt.x,
+    y: pt.y,
+    handleIn: pt.handleOut ? { dx: -pt.handleOut.dx, dy: pt.handleOut.dy } : null,
+    handleOut: pt.handleIn ? { dx: -pt.handleIn.dx, dy: pt.handleIn.dy } : null,
+    symmetric: pt.symmetric,
+  };
+}
+
+/**
+ * Mirror a path point's Y coordinate around a center, negating Y handles
+ * and swapping handleIn/handleOut (winding reversal).
+ */
+function mirrorPathPointY(pt: PathPoint, centerY: number): PathPoint {
+  return {
+    x: pt.x,
+    y: 2 * centerY - pt.y,
+    handleIn: pt.handleOut ? { dx: pt.handleOut.dx, dy: -pt.handleOut.dy } : null,
+    handleOut: pt.handleIn ? { dx: pt.handleIn.dx, dy: -pt.handleIn.dy } : null,
+    symmetric: pt.symmetric,
+  };
+}
+
+/**
+ * Compute the center of a path's bounding box.
+ */
+function pathCenter(path: readonly PathPoint[]): { cx: number; cy: number } {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const pt of path) {
+    minX = Math.min(minX, pt.x);
+    minY = Math.min(minY, pt.y);
+    maxX = Math.max(maxX, pt.x);
+    maxY = Math.max(maxY, pt.y);
+  }
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+}
+
+/**
+ * Flip a cutout horizontally (mirror left↔right).
+ *
+ * - Rectangle/Circle: `rotation = (360 - rotation) % 360`
+ * - Path: Mirror each point's X around bounding box center, swap handles.
+ */
+export function flipCutoutHorizontal(cutout: Cutout): Partial<Cutout> {
+  if (cutout.shape === 'path' && cutout.path) {
+    const { cx } = pathCenter(cutout.path);
+    return { path: cutout.path.map((pt) => mirrorPathPointX(pt, cx)) };
+  }
+  return { rotation: (360 - cutout.rotation) % 360 };
+}
+
+/**
+ * Flip a cutout vertically (mirror top↔bottom).
+ *
+ * - Rectangle/Circle: `rotation = (180 - rotation + 360) % 360`
+ * - Path: Mirror each point's Y around bounding box center, swap handles.
+ */
+export function flipCutoutVertical(cutout: Cutout): Partial<Cutout> {
+  if (cutout.shape === 'path' && cutout.path) {
+    const { cy } = pathCenter(cutout.path);
+    return { path: cutout.path.map((pt) => mirrorPathPointY(pt, cy)) };
+  }
+  return { rotation: (180 - cutout.rotation + 360) % 360 };
+}
+
+/**
+ * Compute flip-horizontal updates for a selection of cutouts.
+ *
+ * For multi-selection, mirrors each cutout's X position around the group center.
+ * For single selection, only flips the shape geometry (rotation or path).
+ */
+export function flipSelectionHorizontal(
+  cutouts: readonly Cutout[]
+): ReadonlyMap<string, Partial<Cutout>> {
+  const updates = new Map<string, Partial<Cutout>>();
+  if (cutouts.length > 1) {
+    const bounds = computeBounds(cutouts);
+    const cx = (bounds.minX + bounds.maxX) / 2;
+    for (const cutout of cutouts) {
+      const mirroredX = 2 * cx - (cutout.x + cutout.width);
+      updates.set(cutout.id, { ...flipCutoutHorizontal(cutout), x: mirroredX });
+    }
+  } else {
+    for (const cutout of cutouts) {
+      updates.set(cutout.id, flipCutoutHorizontal(cutout));
+    }
+  }
+  return updates;
+}
+
+/**
+ * Compute flip-vertical updates for a selection of cutouts.
+ *
+ * For multi-selection, mirrors each cutout's Y position around the group center.
+ * For single selection, only flips the shape geometry (rotation or path).
+ */
+export function flipSelectionVertical(
+  cutouts: readonly Cutout[]
+): ReadonlyMap<string, Partial<Cutout>> {
+  const updates = new Map<string, Partial<Cutout>>();
+  if (cutouts.length > 1) {
+    const bounds = computeBounds(cutouts);
+    const cy = (bounds.minY + bounds.maxY) / 2;
+    for (const cutout of cutouts) {
+      const mirroredY = 2 * cy - (cutout.y + cutout.depth);
+      updates.set(cutout.id, { ...flipCutoutVertical(cutout), y: mirroredY });
+    }
+  } else {
+    for (const cutout of cutouts) {
+      updates.set(cutout.id, flipCutoutVertical(cutout));
+    }
+  }
+  return updates;
 }
