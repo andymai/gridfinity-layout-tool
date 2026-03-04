@@ -68,9 +68,9 @@ const CHAMFER_SLOPE = 0.7;
  *  At or above: tongue-and-groove joints (additive, needs room for tongue). */
 const HALF_LAP_WALL_THRESHOLD = 1.4;
 
-/** Clearance per side (mm) for half-lap joints.
- *  Tighter than T&G (0.15mm) because the lap surfaces are planar and
- *  don't need wiggle room for tapered insertion. */
+/** Clearance per side (mm) for half-lap joints — applied bilaterally so
+ *  `cutWidth = halfWt + 2 * HALF_LAP_CLEARANCE` gives this gap on each side.
+ *  Tighter than T&G (0.15mm) because lap surfaces are planar. */
 const HALF_LAP_CLEARANCE = 0.1;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -363,37 +363,28 @@ function addHalfLapWallFeature(
   edgePos: number,
   wallThickness: number
 ): void {
+  if (edgePos === 0) return; // Wall coincides with bin center — no meaningful lap joint
   const sign = Math.sign(edgePos);
   const halfWt = wallThickness / 2;
-  const cutWidth = halfWt + HALF_LAP_CLEARANCE;
+  const cutWidth = halfWt + 2 * HALF_LAP_CLEARANCE;
+  // Male: cut INNER half (toward bin center) — outer tab remains for overlap
+  // Female: cut OUTER half (toward bin edge) — inner surface receives male tab
+  const quarterShift = (sign * halfWt) / 2;
+  const isMale = face.isMale;
+  const sketchPos = isMale ? face.position - lapDepth - OVERLAP : face.position - OVERLAP;
+  const depthExtra = isMale ? 0 : HALF_LAP_CLEARANCE;
 
-  if (face.isMale) {
-    // Cut INNER half of wall: keeps outer tab exposed for overlap
-    cutTargets.push(
-      buildPrism(
-        face.axis,
-        face.position - lapDepth - OVERLAP,
-        lapDepth + 2 * OVERLAP,
-        cutWidth,
-        wallHeight,
-        bottomZ,
-        edgePos - (sign * halfWt) / 2
-      )
-    );
-  } else {
-    // Cut OUTER half of wall: keeps inner surface as mating face
-    cutTargets.push(
-      buildPrism(
-        face.axis,
-        face.position - OVERLAP,
-        lapDepth + 2 * OVERLAP,
-        cutWidth,
-        wallHeight,
-        bottomZ,
-        edgePos + (sign * halfWt) / 2
-      )
-    );
-  }
+  cutTargets.push(
+    buildPrism(
+      face.axis,
+      sketchPos,
+      lapDepth + depthExtra + 2 * OVERLAP,
+      cutWidth,
+      wallHeight,
+      bottomZ,
+      edgePos + (isMale ? -quarterShift : quarterShift)
+    )
+  );
 }
 
 // ─── Tongue & Groove Features ────────────────────────────────────────────────
@@ -420,32 +411,28 @@ function addTongueAndGroove(
   // - Thick walls (≥ 1.4mm): tongue-and-groove (additive, needs room)
   const useHalfLap = wt < HALF_LAP_WALL_THRESHOLD;
 
-  if (useHalfLap) {
-    // Half-lap: cut away half the wall thickness near the cut face
+  // For T&G, pre-check that the tongue fits; skip wall connectors entirely if not.
+  const maxGrooveWidth = wt - 2 * MIN_SHELL;
+  const tongueWidth = Math.min(config.tongueThickness, maxGrooveWidth - 2 * config.clearance);
+  const canAddTongue = !useHalfLap && tongueWidth >= MIN_FEATURE_WIDTH - EPSILON;
+
+  if (useHalfLap || canAddTongue) {
     for (const edgePos of [-wallOffset, wallOffset]) {
       if (edgePos < pieceMin || edgePos > pieceMax) continue;
       const nearCut = face.perpendicularCuts.some((cp) => Math.abs(edgePos - cp) < wt * 2);
       if (nearCut) continue;
-      addHalfLapWallFeature(
-        face,
-        cutTargets,
-        config.tongueProtrusion,
-        wallHeight,
-        context.floorZ,
-        edgePos,
-        wt
-      );
-    }
-  } else {
-    // Tongue-and-groove: additive tongue with matching groove
-    const maxGrooveWidth = wt - 2 * MIN_SHELL;
-    const tongueWidth = Math.min(config.tongueThickness, maxGrooveWidth - 2 * config.clearance);
 
-    if (tongueWidth >= MIN_FEATURE_WIDTH - EPSILON) {
-      for (const edgePos of [-wallOffset, wallOffset]) {
-        if (edgePos < pieceMin || edgePos > pieceMax) continue;
-        const nearCut = face.perpendicularCuts.some((cp) => Math.abs(edgePos - cp) < wt * 2);
-        if (nearCut) continue;
+      if (useHalfLap) {
+        addHalfLapWallFeature(
+          face,
+          cutTargets,
+          config.tongueProtrusion,
+          wallHeight,
+          context.floorZ,
+          edgePos,
+          wt
+        );
+      } else {
         addFeature(
           face,
           config.clearance,
