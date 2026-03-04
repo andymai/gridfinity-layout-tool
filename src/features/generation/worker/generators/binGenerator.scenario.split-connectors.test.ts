@@ -341,4 +341,99 @@ describe('split connector geometry in preview meshes', () => {
     const cols = result.pieces.map((p) => p.col).sort();
     expect(cols).toEqual([1, 2, 3]);
   }, 90000);
+
+  it('half-lap joints at 1.2mm walls produce geometry changes (cuts visible)', () => {
+    const withConnectors = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+    const withoutConnectors = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DISABLED_CONFIG
+    );
+
+    // Half-lap cuts into walls create additional internal faces → more triangles
+    const trisWithConn = withConnectors.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    const trisWithout = withoutConnectors.pieces.reduce((s, p) => s + p.indices.length / 3, 0);
+    expect(trisWithConn).toBeGreaterThan(trisWithout);
+
+    // Both pieces should have valid geometry
+    for (const piece of withConnectors.pieces) {
+      expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
+      expect(piece.vertices.length).toBeGreaterThan(100);
+    }
+  }, 60000);
+
+  it('half-lap at 1.2mm walls produces less X-extension than T&G at 1.6mm', () => {
+    // At 1.2mm walls, half-lap is subtractive for walls (only floor tongue protrudes).
+    // At 1.6mm walls, T&G adds both wall AND floor tongues.
+    // The 1.2mm half-lap male piece should extend less than the 1.6mm T&G male piece.
+    const thinResult = generateSplitPreview(
+      OVERSIZED_PARAMS,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+    const thickParams: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 8,
+      depth: 2,
+      height: 3,
+      wallThickness: 1.6,
+    };
+    const thickResult = generateSplitPreview(
+      thickParams,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+
+    const thinMale = thinResult.pieces.find((p) => p.col === 1);
+    const thickMale = thickResult.pieces.find((p) => p.col === 1);
+    expect(thinMale).toBeDefined();
+    expect(thickMale).toBeDefined();
+
+    const thinMaxX = boundingBox(thinMale!.vertices).maxX;
+    const thickMaxX = boundingBox(thickMale!.vertices).maxX;
+
+    // T&G adds wall tongues that extend further; half-lap only has floor tongue
+    expect(thinMaxX).toBeLessThan(thickMaxX + TESS_TOL);
+  }, 60000);
+
+  it('tongue-and-groove activates at 1.6mm walls (male extends past cut face)', () => {
+    const thickWallParams: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 7,
+      depth: 3,
+      height: 3,
+      wallThickness: 1.6,
+    };
+    const withConnectors = generateSplitPreview(
+      thickWallParams,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG
+    );
+    const withoutConnectors = generateSplitPreview(thickWallParams, CUT_PLANES_X, CUT_PLANES_Y, {
+      ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
+      enabled: false,
+    });
+
+    const maleWith = withConnectors.pieces.find((p) => p.col === 1);
+    const maleWithout = withoutConnectors.pieces.find((p) => p.col === 1);
+    expect(maleWith).toBeDefined();
+    expect(maleWithout).toBeDefined();
+
+    const bbWith = boundingBox(maleWith!.vertices);
+    const bbWithout = boundingBox(maleWithout!.vertices);
+
+    // T&G is additive: male piece should extend beyond cut face
+    const protrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
+    const extensionX = bbWith.maxX - bbWithout.maxX;
+    expect(extensionX).toBeGreaterThan(protrusion - TESS_TOL - 0.5);
+  }, 60000);
 });
