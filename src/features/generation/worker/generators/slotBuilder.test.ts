@@ -72,7 +72,7 @@ describe('buildSlotCuts', () => {
     // The mock may throw deeper in the geometry pipeline — either outcome
     // (non-null result or throw) confirms the MIN_WALL guard passed.
     const params = makeSlottedParams({ wallThickness: 0.8 });
-    let passedGuard = false;
+    let passedGuard: boolean;
     try {
       const result = buildSlotCuts(params, 80, 80, 30);
       expect(result).not.toBeNull();

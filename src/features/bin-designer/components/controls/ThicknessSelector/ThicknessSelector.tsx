@@ -31,7 +31,7 @@ export function ThicknessSelector({
     (e: React.KeyboardEvent) => {
       if (disabled) return;
       const currentIndex = WALL_THICKNESS_OPTIONS.findIndex((o) => Math.abs(o - value) < 0.001);
-      let nextIndex = currentIndex;
+      let nextIndex: number;
 
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();

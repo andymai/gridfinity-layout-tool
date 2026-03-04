@@ -64,7 +64,7 @@ export function initMLTelemetry(): () => void {
   cleanupFunctions = [];
 
   // Subscribe to layout store changes to track edit activity
-  let storeUnsubscribe: (() => void) | null = null;
+  let storeUnsubscribe: (() => void) | null;
   if (layoutStoreSubscribe) {
     storeUnsubscribe = layoutStoreSubscribe((state: { lastEditSource: string | null }) => {
       if (state.lastEditSource === 'local') {

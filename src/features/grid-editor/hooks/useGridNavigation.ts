@@ -32,7 +32,7 @@ export function useGridNavigation() {
       if (!currentBin) return;
 
       // Map key to direction
-      let direction: Direction | null = null;
+      let direction: Direction;
       switch (key) {
         case 'ArrowUp':
           direction = 'up';

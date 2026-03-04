@@ -286,7 +286,7 @@ function computeLabelTabVolume(params: BinParams, outerW: number, wallThickness:
   const shelfVolume = tabDepth * tabWidth * shelfThickness;
 
   // Support structure beneath the shelf
-  let supportVolume = 0;
+  let supportVolume: number;
   if (support === 'bracket') {
     // Two triangular gussets per tab
     const gussetSize = tabDepth;

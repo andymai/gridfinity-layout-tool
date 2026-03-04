@@ -366,7 +366,7 @@ function FormatSelector({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       const currentIndex = FORMAT_OPTIONS.indexOf(activeFormat);
-      let nextIndex = currentIndex;
+      let nextIndex: number;
 
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
