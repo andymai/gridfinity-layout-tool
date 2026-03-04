@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.0...gridfinity-layout-tool-v4.0.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* use configurable clearance for half-lap wall joints and add wall tab protrusion tests ([da8fd9c](https://github.com/andymai/gridfinity-layout-tool/commit/da8fd9c779735c1094550c3149eeb8b43dc4d9b3))
+
 ## [4.0.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.54.2...gridfinity-layout-tool-v4.0.0) (2026-03-04)
 
 
