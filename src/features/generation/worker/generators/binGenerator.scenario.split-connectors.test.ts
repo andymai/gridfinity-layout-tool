@@ -588,4 +588,42 @@ describe('split connector geometry in preview meshes', () => {
       );
     }
   }, 60000);
+
+  // Regression: sketchOnPlane('XZ', pos) negated Y origin, causing Y-axis
+  // prisms to land 40+ mm off instead of the expected ~3 mm protrusion.
+  it('Y-axis split connector protrusion matches X-axis (no sign inversion)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const maxAllowedGrowth = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion + TESS_TOL + 1;
+
+    const yParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 1, depth: 3, height: 3 };
+    const xParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 3, depth: 1, height: 3 };
+
+    const cases = [
+      { params: yParams, cutsX: [] as number[], cutsY: [0], axis: 'Y' as const },
+      { params: xParams, cutsX: [0], cutsY: [] as number[], axis: 'X' as const },
+    ];
+
+    for (const { params, cutsX, cutsY, axis } of cases) {
+      const conn = generateSplitPreview(params, cutsX, cutsY, DEFAULT_SPLIT_CONNECTOR_CONFIG);
+      const base = generateSplitPreview(params, cutsX, cutsY, DISABLED_CONFIG);
+
+      for (let i = 0; i < conn.pieces.length; i++) {
+        const connBB = boundingBox(conn.pieces[i].vertices);
+        const baseBB = boundingBox(base.pieces[i].vertices);
+        const growth =
+          axis === 'Y'
+            ? connBB.maxY - connBB.minY - (baseBB.maxY - baseBB.minY)
+            : connBB.maxX - connBB.minX - (baseBB.maxX - baseBB.minX);
+
+        expect(
+          growth,
+          `${axis}-split piece ${i} growth ${growth.toFixed(1)}mm exceeds max`
+        ).toBeLessThan(maxAllowedGrowth);
+        expect(
+          growth,
+          `${axis}-split piece ${i} growth ${growth.toFixed(1)}mm — connector missing`
+        ).toBeGreaterThan(0);
+      }
+    }
+  }, 120000);
 });

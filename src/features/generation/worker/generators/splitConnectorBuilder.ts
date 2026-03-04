@@ -236,13 +236,15 @@ function buildPrism(
 ): Shape3D {
   const rect = drawRectangle(width, height);
   const sketchPlane = cutAxis === 'x' ? 'YZ' : 'XZ';
-  const prism = sketch(rect, sketchPlane, sketchPos).extrude(extrudeLen);
+  // Sketch at origin=0 and translate to final position.
+  // sketchOnPlane('XZ', pos) negates the Y origin and extrudes in -Y,
+  // so for Y-axis cuts the prism needs an extra +extrudeLen Y offset.
+  const prism = sketch(rect, sketchPlane, 0).extrude(extrudeLen);
 
-  return translate(prism, [
-    cutAxis === 'x' ? 0 : edgeOffset,
-    cutAxis === 'y' ? 0 : edgeOffset,
-    bottomZ + height / 2,
-  ]);
+  const xOffset = cutAxis === 'x' ? sketchPos : edgeOffset;
+  const yOffset = cutAxis === 'x' ? edgeOffset : sketchPos + extrudeLen;
+
+  return translate(prism, [xOffset, yOffset, bottomZ + height / 2]);
 }
 
 /** Tapered prism via ruled loft. Width and height taper independently at 55°. */
@@ -269,21 +271,21 @@ function buildTaperedPrism(
 
   const tipWidth = width - 2 * widthChamfer;
   const tipHeight = height - 2 * heightChamfer;
-  const sketchPlane = cutAxis === 'x' ? 'YZ' : 'XZ';
 
-  const baseSection = drawRectangle(width, height).sketchOnPlane(sketchPlane, 0) as Sketch;
-  const tipSection = drawRectangle(tipWidth, tipHeight).sketchOnPlane(
-    sketchPlane,
-    extrudeLen
-  ) as Sketch;
+  // For X-axis: loft along +X using YZ plane sections at 0 and extrudeLen.
+  // For Y-axis: sketchOnPlane('XZ', val) negates the Y origin, so we loft
+  // on XZ with swapped base/tip origins and compensate via translate.
+  const plane = cutAxis === 'x' ? 'YZ' : 'XZ';
+  const [basePos, tipPos] = cutAxis === 'x' ? [0, extrudeLen] : [extrudeLen, 0];
 
+  const baseSection = drawRectangle(width, height).sketchOnPlane(plane, basePos) as Sketch;
+  const tipSection = drawRectangle(tipWidth, tipHeight).sketchOnPlane(plane, tipPos) as Sketch;
   const lofted = baseSection.loftWith([tipSection], { ruled: true });
 
-  return translate(lofted, [
-    cutAxis === 'x' ? sketchPos : edgeOffset,
-    cutAxis === 'y' ? sketchPos : edgeOffset,
-    bottomZ + height / 2,
-  ]);
+  const xOffset = cutAxis === 'x' ? sketchPos : edgeOffset;
+  const yOffset = cutAxis === 'x' ? edgeOffset : sketchPos + extrudeLen;
+
+  return translate(lofted, [xOffset, yOffset, bottomZ + height / 2]);
 }
 
 // ─── Male/Female Feature Placement ──────────────────────────────────────────
