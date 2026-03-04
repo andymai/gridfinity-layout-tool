@@ -5,8 +5,8 @@
  * can be quickly aligned and glued together:
  *
  * - Wall tongues: vertical tongues at each outer wall edge with 55° chamfers
- * - Floor tongue: horizontal tongue centered in the floor slab, tapered on
- *   bottom and sides only (top flush with floor surface)
+ * - Floor tongue: horizontal tongue centered in the floor slab with 55° chamfers.
+ *   Top taper is invisible (swallowed by existing floor material on fuse).
  *
  * All features respect FDM printing constraints:
  * - Minimum feature width: 0.7mm (~2× 0.4mm nozzle)
@@ -25,7 +25,7 @@
  *   a groove that opens cleanly at the mating face.
  */
 
-import { draw, drawRectangle, unwrap, fuse, cut, fuseAll, cutAll, translate } from 'brepjs';
+import { drawRectangle, unwrap, fuse, cut, fuseAll, cutAll, translate } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
@@ -243,66 +243,6 @@ function buildTaperedPrism(
   ]);
 }
 
-/** Floor tongue prism: tapered on bottom and sides, flat on top.
- *  The top face is flush with the floor surface — no overhang there.
- *  Bottom and sides get 55° chamfers for FDM printability.
- *
- *  Uses explicit polygon sketches so the loft connects matching edges:
- *  top stays aligned between base and tip, only bottom rises. */
-function buildFloorTonguePrism(
-  cutAxis: 'x' | 'y',
-  sketchPos: number,
-  extrudeLen: number,
-  width: number,
-  height: number,
-  bottomZ: number,
-  edgeOffset: number
-): Shape3D {
-  const bottomChamfer = Math.min(
-    extrudeLen * CHAMFER_SLOPE,
-    Math.max(0, height - MIN_FEATURE_HEIGHT)
-  );
-  const widthChamfer = Math.min(
-    extrudeLen * CHAMFER_SLOPE,
-    Math.max(0, (width - MIN_FEATURE_WIDTH) / 2)
-  );
-
-  // Fall back to rectangular if chamfers are negligible
-  if (bottomChamfer < 0.1 && widthChamfer < 0.1) {
-    return buildPrism(cutAxis, sketchPos, extrudeLen, width, height, bottomZ, edgeOffset);
-  }
-
-  const halfW = width / 2;
-  const halfH = height / 2;
-  const tipHalfW = halfW - widthChamfer;
-  const tipBottom = -halfH + bottomChamfer;
-  const sketchPlane = cutAxis === 'x' ? 'YZ' : 'XZ';
-
-  // Base: full rectangle
-  const baseProfile = draw([-halfW, -halfH])
-    .lineTo([halfW, -halfH])
-    .lineTo([halfW, halfH])
-    .lineTo([-halfW, halfH])
-    .close();
-  const baseSection = baseProfile.sketchOnPlane(sketchPlane, 0) as Sketch;
-
-  // Tip: same top edge, narrower sides, raised bottom
-  const tipProfile = draw([-tipHalfW, tipBottom])
-    .lineTo([tipHalfW, tipBottom])
-    .lineTo([tipHalfW, halfH])
-    .lineTo([-tipHalfW, halfH])
-    .close();
-  const tipSection = tipProfile.sketchOnPlane(sketchPlane, extrudeLen) as Sketch;
-
-  const lofted = baseSection.loftWith([tipSection], { ruled: true });
-
-  return translate(lofted, [
-    cutAxis === 'x' ? sketchPos : edgeOffset,
-    cutAxis === 'y' ? sketchPos : edgeOffset,
-    bottomZ + halfH,
-  ]);
-}
-
 // ─── Male/Female Feature Placement ──────────────────────────────────────────
 
 /**
@@ -323,15 +263,10 @@ function addFeature(
   height: number,
   bottomZ: number,
   edgeOffset: number,
-  taper: 'none' | 'symmetric' | 'floor'
+  tapered: boolean
 ): void {
   if (face.isMale) {
-    const builder =
-      taper === 'floor'
-        ? buildFloorTonguePrism
-        : taper === 'symmetric'
-          ? buildTaperedPrism
-          : buildPrism;
+    const builder = tapered ? buildTaperedPrism : buildPrism;
     fuseTargets.push(
       builder(
         face.axis,
@@ -397,7 +332,7 @@ function addTongueAndGroove(
         wallHeight,
         context.floorZ,
         edgePos,
-        'symmetric'
+        true
       );
     }
   }
@@ -433,7 +368,7 @@ function addTongueAndGroove(
         floorHeight,
         floorBottomZ,
         face.pieceCenterOffset,
-        'floor'
+        true
       );
     }
   }
