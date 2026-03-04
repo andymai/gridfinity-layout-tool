@@ -125,6 +125,8 @@
   "binDesigner.cutouts.positionX": "Posição X",
   "binDesigner.cutouts.positionY": "Posição Y",
   "binDesigner.cutouts.rotate90": "Girar 90°",
+  "binDesigner.cutouts.flipHorizontal": "Inverter horizontalmente",
+  "binDesigner.cutouts.flipVertical": "Inverter verticalmente",
   "binDesigner.cutouts.rotation": "Rotação",
   "binDesigner.cutouts.rulerTool": "Régua",
   "binDesigner.cutouts.scoopRadius": "Raio da concha",

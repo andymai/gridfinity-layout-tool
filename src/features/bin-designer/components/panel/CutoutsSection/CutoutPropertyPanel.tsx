@@ -8,7 +8,7 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '../../controls/SliderInput';
-import { clampRotationToBounds } from './geometry';
+import { clampRotationToBounds, flipCutoutHorizontal, flipCutoutVertical } from './geometry';
 
 interface CutoutPropertyPanelProps {
   readonly cutout: Cutout;
@@ -125,6 +125,50 @@ export function CutoutPropertyPanel({
           unit="°"
           disabled={disabled}
         />
+        <div className="flex gap-1.5 pt-1">
+          <button
+            type="button"
+            className="flex items-center gap-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => onUpdate(cutout.id, flipCutoutHorizontal(cutout))}
+            disabled={disabled || cutout.locked}
+            title={t('binDesigner.cutouts.flipHorizontal')}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M7 1v12M3 4l-2 3 2 3M11 4l2 3-2 3" />
+            </svg>
+            {t('binDesigner.cutouts.flipHorizontal')}
+          </button>
+          <button
+            type="button"
+            className="flex items-center gap-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => onUpdate(cutout.id, flipCutoutVertical(cutout))}
+            disabled={disabled || cutout.locked}
+            title={t('binDesigner.cutouts.flipVertical')}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M1 7h12M4 3L7 1l3 2M4 11l3 2 3-2" />
+            </svg>
+            {t('binDesigner.cutouts.flipVertical')}
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-2">

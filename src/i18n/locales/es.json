@@ -125,6 +125,8 @@
   "binDesigner.cutouts.positionX": "Posición X",
   "binDesigner.cutouts.positionY": "Posición Y",
   "binDesigner.cutouts.rotate90": "Rotar 90°",
+  "binDesigner.cutouts.flipHorizontal": "Voltear horizontal",
+  "binDesigner.cutouts.flipVertical": "Voltear vertical",
   "binDesigner.cutouts.rotation": "Rotación",
   "binDesigner.cutouts.rulerTool": "Regla",
   "binDesigner.cutouts.scoopRadius": "Radio de cuchara",

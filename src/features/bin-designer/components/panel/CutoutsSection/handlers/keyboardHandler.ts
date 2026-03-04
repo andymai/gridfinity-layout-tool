@@ -6,7 +6,12 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { computeBounds, rotatePoint } from '../geometry';
+import {
+  computeBounds,
+  rotatePoint,
+  flipSelectionHorizontal,
+  flipSelectionVertical,
+} from '../geometry';
 import type { InteractionMode } from '../useCutoutInteraction';
 import { handleVertexEditKeyDown } from './pathEditHandler';
 import type { VertexEditMode, SegmentHoverInfo } from './pathEditHandler';
@@ -294,6 +299,22 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
+    // Shift+H: flip horizontal (shiftKey guard prevents CapsLock trigger)
+    case 'H':
+      if (!mod && e.shiftKey && ctx.selection.size > 0) {
+        e.preventDefault();
+        handleFlipHorizontal(ctx);
+      }
+      break;
+
+    // Shift+V: flip vertical (shiftKey guard prevents CapsLock trigger)
+    case 'V':
+      if (!mod && e.shiftKey && ctx.selection.size > 0) {
+        e.preventDefault();
+        handleFlipVertical(ctx);
+      }
+      break;
+
     // Ctrl+L to toggle lock
     case 'l':
       if (mod && ctx.selection.size > 0) {
@@ -352,4 +373,29 @@ function handleTabCycle(e: KeyboardEvent, ctx: KeyboardHandlerContext): void {
       : currentIdx - 1
     : (currentIdx + 1) % ids.length;
   ctx.setSelection(new Set([ids[nextIdx]]));
+}
+
+function applyFlipUpdates(
+  ctx: KeyboardHandlerContext,
+  updates: ReadonlyMap<string, Partial<Cutout>>
+): void {
+  if (ctx.onUpdateBatch && updates.size > 1) {
+    ctx.onUpdateBatch(updates);
+  } else {
+    for (const [id, patch] of updates) {
+      ctx.onUpdate(id, patch);
+    }
+  }
+}
+
+function handleFlipHorizontal(ctx: KeyboardHandlerContext): void {
+  if (ctx.cutouts.some((c) => ctx.selection.has(c.id) && c.locked)) return;
+  const selected = ctx.cutouts.filter((c) => ctx.selection.has(c.id));
+  applyFlipUpdates(ctx, flipSelectionHorizontal(selected));
+}
+
+function handleFlipVertical(ctx: KeyboardHandlerContext): void {
+  if (ctx.cutouts.some((c) => ctx.selection.has(c.id) && c.locked)) return;
+  const selected = ctx.cutouts.filter((c) => ctx.selection.has(c.id));
+  applyFlipUpdates(ctx, flipSelectionVertical(selected));
 }

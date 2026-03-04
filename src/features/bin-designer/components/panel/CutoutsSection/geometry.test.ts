@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import {
   getEffectiveBounds,
   computeBounds,
@@ -20,6 +20,10 @@ import {
   rotatePoint,
   getRotatedBounds,
   clampRotationToBounds,
+  flipCutoutHorizontal,
+  flipCutoutVertical,
+  flipSelectionHorizontal,
+  flipSelectionVertical,
 } from './geometry';
 
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
@@ -660,6 +664,267 @@ describe('geometry', () => {
       const cutout = createCutout({ x: 0, y: 0, width: 100, depth: 50, rotation: 0 });
       const result = clampRotationToBounds(cutout, 90, 100, 50);
       expect(result).toBeCloseTo(0, 0);
+    });
+  });
+
+  describe('flipCutoutHorizontal', () => {
+    it('returns 0° for rectangle at 0°', () => {
+      const cutout = createCutout({ rotation: 0 });
+      const result = flipCutoutHorizontal(cutout);
+      expect(result.rotation).toBe(0);
+    });
+
+    it('flips 45° rectangle to 315°', () => {
+      const cutout = createCutout({ rotation: 45 });
+      const result = flipCutoutHorizontal(cutout);
+      expect(result.rotation).toBe(315);
+    });
+
+    it('flips 90° rectangle to 270°', () => {
+      const cutout = createCutout({ rotation: 90 });
+      const result = flipCutoutHorizontal(cutout);
+      expect(result.rotation).toBe(270);
+    });
+
+    it('flips circle the same as rectangle', () => {
+      const cutout = createCutout({ shape: 'circle', rotation: 30 });
+      const result = flipCutoutHorizontal(cutout);
+      expect(result.rotation).toBe(330);
+    });
+
+    it('mirrors path points horizontally without swapping handles', () => {
+      const cutout = createCutout({
+        shape: 'path',
+        path: [
+          { x: 10, y: 5, handleIn: null, handleOut: { dx: 2, dy: 3 }, symmetric: false },
+          { x: 20, y: 5, handleIn: { dx: -1, dy: 1 }, handleOut: null, symmetric: false },
+        ],
+      });
+      const result = flipCutoutHorizontal(cutout);
+      // Center X = (10+20)/2 = 15
+      // Point 0: x = 2*15 - 10 = 20, handleOut X negated: dx=-2, dy=3
+      // Point 1: x = 2*15 - 20 = 10, handleIn X negated: dx=1, dy=1
+      expect(result.path).toBeDefined();
+      const path = result.path as PathPoint[];
+      expect(path[0].x).toBe(20);
+      expect(path[0].y).toBe(5);
+      expect(path[0].handleIn).toBeNull();
+      expect(path[0].handleOut).toEqual({ dx: -2, dy: 3 });
+      expect(path[1].x).toBe(10);
+      expect(path[1].y).toBe(5);
+      expect(path[1].handleIn).toEqual({ dx: 1, dy: 1 });
+      expect(path[1].handleOut).toBeNull();
+    });
+
+    it('returns updated bounding box fields for path shapes', () => {
+      const cutout = createCutout({
+        shape: 'path',
+        x: 10,
+        y: 5,
+        width: 10,
+        depth: 0,
+        path: [
+          { x: 10, y: 5, handleIn: null, handleOut: null, symmetric: false },
+          { x: 20, y: 5, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const result = flipCutoutHorizontal(cutout);
+      expect(result.x).toBeDefined();
+      expect(result.y).toBeDefined();
+      expect(result.width).toBeDefined();
+      expect(result.depth).toBeDefined();
+    });
+
+    it('does not set rotation for path shapes', () => {
+      const cutout = createCutout({
+        shape: 'path',
+        path: [
+          { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const result = flipCutoutHorizontal(cutout);
+      expect(result.rotation).toBeUndefined();
+      expect(result.path).toBeDefined();
+    });
+  });
+
+  describe('flipCutoutVertical', () => {
+    it('returns 180° for rectangle at 0°', () => {
+      const cutout = createCutout({ rotation: 0 });
+      const result = flipCutoutVertical(cutout);
+      expect(result.rotation).toBe(180);
+    });
+
+    it('flips 45° rectangle to 135°', () => {
+      const cutout = createCutout({ rotation: 45 });
+      const result = flipCutoutVertical(cutout);
+      expect(result.rotation).toBe(135);
+    });
+
+    it('flips 90° rectangle to 90°', () => {
+      const cutout = createCutout({ rotation: 90 });
+      const result = flipCutoutVertical(cutout);
+      expect(result.rotation).toBe(90);
+    });
+
+    it('flips 270° to 270° (symmetric case)', () => {
+      const cutout = createCutout({ rotation: 270 });
+      const result = flipCutoutVertical(cutout);
+      expect(result.rotation).toBe(270);
+    });
+
+    it('mirrors path points vertically without swapping handles', () => {
+      const cutout = createCutout({
+        shape: 'path',
+        path: [
+          { x: 5, y: 10, handleIn: null, handleOut: { dx: 2, dy: 3 }, symmetric: false },
+          { x: 5, y: 20, handleIn: { dx: -1, dy: -2 }, handleOut: null, symmetric: false },
+        ],
+      });
+      const result = flipCutoutVertical(cutout);
+      // Center Y = (10+20)/2 = 15
+      // Point 0: y = 2*15 - 10 = 20, handleOut Y negated: dx=2, dy=-3
+      // Point 1: y = 2*15 - 20 = 10, handleIn Y negated: dx=-1, dy=2
+      expect(result.path).toBeDefined();
+      const path = result.path as PathPoint[];
+      expect(path[0].x).toBe(5);
+      expect(path[0].y).toBe(20);
+      expect(path[0].handleIn).toBeNull();
+      expect(path[0].handleOut).toEqual({ dx: 2, dy: -3 });
+      expect(path[1].x).toBe(5);
+      expect(path[1].y).toBe(10);
+      expect(path[1].handleIn).toEqual({ dx: -1, dy: 2 });
+      expect(path[1].handleOut).toBeNull();
+    });
+
+    it('returns updated bounding box fields for path shapes', () => {
+      const cutout = createCutout({
+        shape: 'path',
+        x: 5,
+        y: 10,
+        width: 0,
+        depth: 10,
+        path: [
+          { x: 5, y: 10, handleIn: null, handleOut: null, symmetric: false },
+          { x: 5, y: 20, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const result = flipCutoutVertical(cutout);
+      expect(result.x).toBeDefined();
+      expect(result.y).toBeDefined();
+      expect(result.width).toBeDefined();
+      expect(result.depth).toBeDefined();
+    });
+  });
+
+  describe('flipSelectionHorizontal', () => {
+    it('flips single cutout rotation without repositioning', () => {
+      const cutout = createCutout({ id: 'a', x: 10, y: 5, width: 20, depth: 15, rotation: 45 });
+      const updates = flipSelectionHorizontal([cutout]);
+      expect(updates.get('a')).toEqual({ rotation: 315 });
+    });
+
+    it('mirrors multi-selection X positions around group center', () => {
+      const a = createCutout({ id: 'a', x: 0, y: 0, width: 10, depth: 10, rotation: 0 });
+      const b = createCutout({ id: 'b', x: 30, y: 0, width: 10, depth: 10, rotation: 0 });
+      const updates = flipSelectionHorizontal([a, b]);
+      // Group bounds: minX=0, maxX=40, center=20
+      // a: mirroredX = 2*20 - (0+10) = 30, rotation stays 0
+      // b: mirroredX = 2*20 - (30+10) = 0, rotation stays 0
+      expect(updates.get('a')).toEqual({ rotation: 0, x: 30 });
+      expect(updates.get('b')).toEqual({ rotation: 0, x: 0 });
+    });
+
+    it('translates path points to match group-mirrored position', () => {
+      const pathA = createCutout({
+        id: 'a',
+        shape: 'path',
+        x: 0,
+        y: 0,
+        width: 10,
+        depth: 10,
+        path: [
+          { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const pathB = createCutout({
+        id: 'b',
+        shape: 'path',
+        x: 30,
+        y: 0,
+        width: 10,
+        depth: 10,
+        path: [
+          { x: 30, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 40, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const updates = flipSelectionHorizontal([pathA, pathB]);
+      // Group bounds: minX=0, maxX=40, center=20
+      // pathA: mirroredX = 2*20 - (0+10) = 30 → path points must be at ~30-40
+      const patchA = updates.get('a') as Partial<Cutout>;
+      expect(patchA.x).toBe(30);
+      expect(patchA.path).toBeDefined();
+      const pathAPoints = patchA.path as PathPoint[];
+      expect(pathAPoints[0].x).toBeCloseTo(40);
+      expect(pathAPoints[1].x).toBeCloseTo(30);
+    });
+  });
+
+  describe('flipSelectionVertical', () => {
+    it('flips single cutout rotation without repositioning', () => {
+      const cutout = createCutout({ id: 'a', x: 10, y: 5, width: 20, depth: 15, rotation: 0 });
+      const updates = flipSelectionVertical([cutout]);
+      expect(updates.get('a')).toEqual({ rotation: 180 });
+    });
+
+    it('mirrors multi-selection Y positions around group center', () => {
+      const a = createCutout({ id: 'a', x: 0, y: 0, width: 10, depth: 10, rotation: 0 });
+      const b = createCutout({ id: 'b', x: 0, y: 30, width: 10, depth: 10, rotation: 0 });
+      const updates = flipSelectionVertical([a, b]);
+      // Group bounds: minY=0, maxY=40, center=20
+      // a: mirroredY = 2*20 - (0+10) = 30, rotation → 180
+      // b: mirroredY = 2*20 - (30+10) = 0, rotation → 180
+      expect(updates.get('a')).toEqual({ rotation: 180, y: 30 });
+      expect(updates.get('b')).toEqual({ rotation: 180, y: 0 });
+    });
+
+    it('translates path points to match group-mirrored position', () => {
+      const pathA = createCutout({
+        id: 'a',
+        shape: 'path',
+        x: 0,
+        y: 0,
+        width: 10,
+        depth: 10,
+        path: [
+          { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const pathB = createCutout({
+        id: 'b',
+        shape: 'path',
+        x: 0,
+        y: 30,
+        width: 10,
+        depth: 10,
+        path: [
+          { x: 0, y: 30, handleIn: null, handleOut: null, symmetric: false },
+          { x: 10, y: 40, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const updates = flipSelectionVertical([pathA, pathB]);
+      // Group bounds: minY=0, maxY=40, center=20
+      // pathA: mirroredY = 2*20 - (0+10) = 30 → path points must be at ~30-40
+      const patchA = updates.get('a') as Partial<Cutout>;
+      expect(patchA.y).toBe(30);
+      expect(patchA.path).toBeDefined();
+      const pathAPoints = patchA.path as PathPoint[];
+      expect(pathAPoints[0].y).toBeCloseTo(40);
+      expect(pathAPoints[1].y).toBeCloseTo(30);
     });
   });
 });
