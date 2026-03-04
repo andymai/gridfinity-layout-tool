@@ -144,8 +144,8 @@ export function SplitBinMeshes({ color, wireframe }: SplitBinMeshesProps) {
   );
 
   const gridUnitMm = params.gridUnitMm;
-  const totalWidthMm = params.width * gridUnitMm;
-  const totalDepthMm = params.depth * gridUnitMm;
+  const totalWidthMm = params.width * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const totalDepthMm = params.depth * gridUnitMm - GRIDFINITY.TOLERANCE;
   const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isExploded = splitViewMode === 'exploded';
 

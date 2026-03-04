@@ -241,4 +241,38 @@ describe('SplitBinMeshes', () => {
 
     expect(() => render(<SplitBinMeshes color="#ff0000" wireframe={false} />)).not.toThrow();
   });
+
+  it('renders without error when TOLERANCE is subtracted from total dimensions', () => {
+    const pieces: SplitPieceMeshEntry[] = [
+      makePieceEntry({
+        label: 'left',
+        col: 1,
+        row: 1,
+        widthUnits: 4,
+        depthUnits: 2,
+        offsetX: 0,
+        offsetY: 0,
+      }),
+      makePieceEntry({
+        label: 'right',
+        col: 2,
+        row: 1,
+        widthUnits: 4,
+        depthUnits: 2,
+        offsetX: 4,
+        offsetY: 0,
+      }),
+    ];
+
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 2 },
+      ui: {
+        ...DEFAULT_UI_STATE,
+        splitPieceMeshes: pieces,
+        splitViewMode: 'assembled',
+      },
+    });
+
+    expect(() => render(<SplitBinMeshes color="#00ff00" wireframe={false} />)).not.toThrow();
+  });
 });

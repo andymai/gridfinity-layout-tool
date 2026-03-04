@@ -50,9 +50,8 @@ export const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
 export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   enabled: true,
   clearance: 0.15,
-  pinDiameter: 2.5,
-  pinProtrusion: 3.0,
-  pinSpacing: 35,
+  tongueThickness: 2.4,
+  tongueProtrusion: 3.0,
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */

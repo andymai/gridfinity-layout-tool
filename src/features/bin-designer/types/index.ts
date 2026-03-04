@@ -171,14 +171,12 @@ export interface WallPatternConfig {
 export interface SplitConnectorConfig {
   /** Whether to add alignment connectors (default: true when split needed) */
   readonly enabled: boolean;
-  /** FDM fit clearance applied to all hole/groove dimensions per side (mm, 0.05–0.3) */
+  /** FDM fit clearance applied to all groove dimensions per side (mm, 0.05–0.3) */
   readonly clearance: number;
-  /** Cylindrical pin diameter in the floor/base zone (mm) */
-  readonly pinDiameter: number;
-  /** Pin protrusion height from cut face (mm) */
-  readonly pinProtrusion: number;
-  /** Target spacing between pins along edge (mm). Actual count is auto-rounded to fit. */
-  readonly pinSpacing: number;
+  /** Tongue cross-section thickness (mm) */
+  readonly tongueThickness: number;
+  /** Tongue protrusion depth from cut face (mm) */
+  readonly tongueProtrusion: number;
 }
 
 /** Complete bin parameter set for generation */

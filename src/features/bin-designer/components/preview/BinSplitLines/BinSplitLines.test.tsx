@@ -102,6 +102,31 @@ describe('BinSplitLines', () => {
     expect(lines.length).toBe(6);
   });
 
+  it('split line extent matches actual bin edge (TOLERANCE subtracted)', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        depth: 3,
+        height: 3,
+      },
+    });
+
+    const { getAllByTestId } = render(<BinSplitLines />);
+    const lines = getAllByTestId('drei-line');
+    const firstLine = lines[0];
+    const points = JSON.parse(firstLine.getAttribute('data-points') ?? '[]') as number[][];
+
+    // halfD = (3 * 42 - 0.5) / 2 = 62.75, not 63
+    if (points.length === 2) {
+      const yValues = points.map((p) => Math.abs(p[1]));
+      const expectedHalfD = (3 * 42 - 0.5) / 2;
+      for (const y of yValues) {
+        expect(y).toBeCloseTo(expectedHalfD, 2);
+      }
+    }
+  });
+
   it('respects custom print bed size from settings', () => {
     // Set a very small print bed so a normal bin needs splitting
     useSettingsStore.setState({

@@ -66,8 +66,8 @@ export const BinSplitLines = memo(function BinSplitLines() {
   if (!needsSplit) return null;
 
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
-  const halfW = (width * GRIDFINITY.GRID_SIZE) / 2;
-  const halfD = (depth * GRIDFINITY.GRID_SIZE) / 2;
+  const halfW = (width * gridUnitMm - GRIDFINITY.TOLERANCE) / 2;
+  const halfD = (depth * gridUnitMm - GRIDFINITY.TOLERANCE) / 2;
 
   return (
     <group>
