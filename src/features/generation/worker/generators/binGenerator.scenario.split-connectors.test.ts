@@ -619,6 +619,10 @@ describe('split connector geometry in preview meshes', () => {
           growth,
           `${axis}-split piece ${i} growth ${growth.toFixed(1)}mm exceeds max`
         ).toBeLessThan(maxAllowedGrowth);
+        expect(
+          growth,
+          `${axis}-split piece ${i} growth ${growth.toFixed(1)}mm — connector missing`
+        ).toBeGreaterThan(0);
       }
     }
   }, 120000);

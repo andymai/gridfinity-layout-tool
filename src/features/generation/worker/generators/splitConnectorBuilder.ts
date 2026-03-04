@@ -241,10 +241,10 @@ function buildPrism(
   // so for Y-axis cuts the prism needs an extra +extrudeLen Y offset.
   const prism = sketch(rect, sketchPlane, 0).extrude(extrudeLen);
 
-  const [axisOffset, crossOffset] =
-    cutAxis === 'x' ? [sketchPos, edgeOffset] : [edgeOffset, sketchPos + extrudeLen];
+  const xOffset = cutAxis === 'x' ? sketchPos : edgeOffset;
+  const yOffset = cutAxis === 'x' ? edgeOffset : sketchPos + extrudeLen;
 
-  return translate(prism, [axisOffset, crossOffset, bottomZ + height / 2]);
+  return translate(prism, [xOffset, yOffset, bottomZ + height / 2]);
 }
 
 /** Tapered prism via ruled loft. Width and height taper independently at 55°. */
@@ -282,10 +282,10 @@ function buildTaperedPrism(
   const tipSection = drawRectangle(tipWidth, tipHeight).sketchOnPlane(plane, tipPos) as Sketch;
   const lofted = baseSection.loftWith([tipSection], { ruled: true });
 
-  const [axisOffset, crossOffset] =
-    cutAxis === 'x' ? [sketchPos, edgeOffset] : [edgeOffset, sketchPos + extrudeLen];
+  const xOffset = cutAxis === 'x' ? sketchPos : edgeOffset;
+  const yOffset = cutAxis === 'x' ? edgeOffset : sketchPos + extrudeLen;
 
-  return translate(lofted, [axisOffset, crossOffset, bottomZ + height / 2]);
+  return translate(lofted, [xOffset, yOffset, bottomZ + height / 2]);
 }
 
 // ─── Male/Female Feature Placement ──────────────────────────────────────────
