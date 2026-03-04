@@ -37,9 +37,9 @@ describe('useCutoutInteraction', () => {
     vi.clearAllMocks();
   });
 
-  it('starts in idle mode with empty selection', () => {
+  it('starts in rectangle placing mode with empty selection', () => {
     const { result } = renderHook(() => useCutoutInteraction(defaultOpts));
-    expect(result.current.mode).toEqual({ type: 'idle' });
+    expect(result.current.mode).toEqual({ type: 'placing', shape: 'rectangle' });
     expect(result.current.selection.size).toBe(0);
   });
 
