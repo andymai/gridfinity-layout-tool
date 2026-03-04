@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.53.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.3...gridfinity-layout-tool-v3.53.4) (2026-03-04)
+
+
+### Bug Fixes
+
+* overhaul split bin generation chain ([#1027](https://github.com/andymai/gridfinity-layout-tool/issues/1027)) ([270f768](https://github.com/andymai/gridfinity-layout-tool/commit/270f76843b2cd94bd8ea9b1c436156e62e25e9b9))
+
 ## [3.53.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v3.53.2...gridfinity-layout-tool-v3.53.3) (2026-03-03)
 
 
