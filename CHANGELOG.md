@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.1...gridfinity-layout-tool-v4.0.2) (2026-03-04)
+
+
+### Bug Fixes
+
+* add volumetric overlap for split bin lip fuse to eliminate geometry artifacts ([#1039](https://github.com/andymai/gridfinity-layout-tool/issues/1039)) ([ffd6791](https://github.com/andymai/gridfinity-layout-tool/commit/ffd6791a3f284ab281135a3e71ac359502163bf3))
+
 ## [4.0.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.0.0...gridfinity-layout-tool-v4.0.1) (2026-03-04)
 
 
