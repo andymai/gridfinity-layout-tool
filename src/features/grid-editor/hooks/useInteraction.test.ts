@@ -363,7 +363,9 @@ describe('useInteraction', () => {
         }
 
         // Reset for next iteration
-        useInteractionStore.getState().setInteraction(null);
+        act(() => {
+          useInteractionStore.getState().setInteraction(null);
+        });
       }
     });
   });
