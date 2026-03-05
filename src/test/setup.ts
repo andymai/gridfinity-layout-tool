@@ -61,16 +61,41 @@ vi.mock('@/i18n', async () => {
   };
 });
 
-// Suppress Three.js's "Multiple instances" warning in jsdom tests.
-// The CJS build of three checks window.__THREE__ and warns when the module
-// is loaded more than once in the same global (vitest's thread pool can
-// cause this when a component imports three as ESM and a dependency loads
-// it via CommonJS). Tests are unaffected — this is pure noise.
+// Suppress jsdom-environment noise from Three.js / React Three Fiber.
+//
+// 1. Three.js "Multiple instances" — the CJS build checks window.__THREE__ and
+//    warns when the module is loaded more than once in the same global (vitest's
+//    thread pool can cause this when a component imports three as ESM and a
+//    dependency loads it via CommonJS). Tests are unaffected — pure noise.
+//
+// 2. R3F "incorrect casing" — React Three Fiber uses lowercase JSX intrinsic
+//    names (hemisphereLight, directionalLight, planeGeometry, meshStandardMaterial,
+//    lineBasicMaterial, lineSegments, …) that are correct inside R3F's custom
+//    WebGL reconciler but unknown to React's DOM reconciler in jsdom. The elements
+//    work correctly at runtime; the warning is environmental mismatch noise.
 if (typeof window !== 'undefined') {
   const originalWarn = console.warn.bind(console);
   console.warn = (...args: unknown[]) => {
     if (typeof args[0] === 'string' && args[0].includes('Multiple instances of Three.js')) return;
     originalWarn(...args);
+  };
+
+  const originalError = console.error.bind(console);
+  console.error = (...args: unknown[]) => {
+    if (typeof args[0] === 'string') {
+      // R3F element names (hemisphereLight, directionalLight, etc.) are lowercase
+      // by design in R3F's reconciler but unknown to React's DOM reconciler in jsdom.
+      if (args[0].includes('is using incorrect casing')) return;
+      // R3F-specific props (emissiveIntensity, flatShading, polygonOffset, …) are
+      // valid Three.js material/object properties passed via R3F JSX but unrecognised
+      // by React's DOM reconciler when running in jsdom without WebGL context.
+      if (
+        args[0].startsWith('React does not recognize the') &&
+        args[0].includes('prop on a DOM element')
+      )
+        return;
+    }
+    originalError(...args);
   };
 }
 
