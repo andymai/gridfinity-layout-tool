@@ -1,0 +1,10 @@
+[
+  {
+    "path": "src/shared/README.md",
+    "description": "Cross-cutting patterns overview — shared components, hooks, contexts, utilities, and the no-domain-coupling rule"
+  },
+  {
+    "path": "src/core/types.ts",
+    "description": "Core types that shared code consumes — data model, branded IDs, interaction types"
+  }
+]

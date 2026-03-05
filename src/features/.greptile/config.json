@@ -1,0 +1,29 @@
+{
+  "rules": [
+    {
+      "id": "feature-readme",
+      "description": "Every feature directory must have a README.md documenting: purpose, architecture diagram (Mermaid), key files, critical concepts, gotchas, and integration points. Feature changes that alter behavior should update the README.",
+      "severity": "high"
+    },
+    {
+      "id": "feature-barrel-exports",
+      "description": "Each feature must have an index.ts barrel that explicitly exports only the public API. Internal components, hooks, and utilities must not be exported. External consumers import from the feature barrel only.",
+      "severity": "high"
+    },
+    {
+      "id": "feature-no-cross-import",
+      "description": "Features must not import from other features. If two features need to share code, extract it to src/shared/. This is enforced by pre-commit module boundary checks.",
+      "severity": "critical"
+    },
+    {
+      "id": "feature-i18n",
+      "description": "All user-facing strings in features must use useTranslation() with key naming: feature.context.element (e.g., gridEditor.interaction.draw). New keys go in en.ts first, then all locale JSONs.",
+      "severity": "medium"
+    },
+    {
+      "id": "feature-colocated-tests",
+      "description": "Components and hooks must have colocated sibling test files (foo.tsx -> foo.test.ts). Pre-commit blocks commits if tests are missing. Use createTestLayout() and resetAllStores() from @/test/testUtils.",
+      "severity": "high"
+    }
+  ]
+}

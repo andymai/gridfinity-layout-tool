@@ -1,0 +1,26 @@
+[
+  {
+    "path": "src/core/types.ts",
+    "description": "Core data model and branded ID types — the type foundation for the entire app"
+  },
+  {
+    "path": "src/core/constants.ts",
+    "description": "All constraints, half-bin helpers, defaults, and ID generators"
+  },
+  {
+    "path": "src/core/result/index.ts",
+    "description": "Result type public API — constructors, type guards, error types, utilities"
+  },
+  {
+    "path": "src/core/result/errors.ts",
+    "description": "Domain error types (LayoutError, ValidationError, StorageError, ApiError) and error codes"
+  },
+  {
+    "path": "src/core/storage/index.ts",
+    "description": "Storage public facade — atomic operations, layout CRUD, library management"
+  },
+  {
+    "path": "src/core/store/layout.ts",
+    "description": "Primary store: layout mutations returning Result types, bin/layer/category operations"
+  }
+]

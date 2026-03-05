@@ -1,0 +1,22 @@
+[
+  {
+    "path": "api/lib/shared.ts",
+    "description": "Error codes, token hashing, ID validation, constant-time comparison — the security foundation for all endpoints"
+  },
+  {
+    "path": "api/lib/validation.ts",
+    "description": "Layout share validation with size/bin/property constraints and sanitization rules"
+  },
+  {
+    "path": "api/lib/designerValidation.ts",
+    "description": "Bin designer parameter validation with dimension, divider, compartment, and insert constraints"
+  },
+  {
+    "path": "api/lib/contentFilter.ts",
+    "description": "Content moderation: blocklist, XSS detection, URL filtering, spam detection, report thresholds"
+  },
+  {
+    "path": "api/lib/rateLimit.ts",
+    "description": "Redis-backed sliding window rate limiter with per-action tiers and fail-closed production behavior"
+  }
+]
