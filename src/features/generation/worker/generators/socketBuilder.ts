@@ -11,7 +11,7 @@
 
 import {
   drawRoundedRectangle,
-  drawCircle,
+  cylinder,
   unwrap,
   fuseAll,
   cutAll,
@@ -29,7 +29,6 @@ import {
   SOCKET_VERTICAL_PART,
   SOCKET_TAPER_WIDTH,
   forEachCell,
-  sketch,
 } from './generatorTypes';
 import { socketCacheKey, getSocketCache, setSocketCache } from './shapeCache';
 
@@ -198,8 +197,8 @@ export function buildBaseSocket(
   // spec only defines magnet positions for full-unit cells.
   if (withScrew || withMagnet) {
     const HOLE_OFFSET = 13; // mm from cell center to hole center (Gridfinity spec)
-    const magnetCutout = withMagnet ? sketch(drawCircle(magnetRadius)).extrude(magnetDepth) : null;
-    const screwCutout = withScrew ? sketch(drawCircle(screwRadius)).extrude(SOCKET_HEIGHT) : null;
+    const magnetCutout = withMagnet ? cylinder(magnetRadius, magnetDepth) : null;
+    const screwCutout = withScrew ? cylinder(screwRadius, SOCKET_HEIGHT) : null;
 
     const cutout: Shape3D =
       magnetCutout && screwCutout

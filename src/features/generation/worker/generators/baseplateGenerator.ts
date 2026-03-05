@@ -24,7 +24,7 @@
 import {
   drawRoundedRectangle,
   drawRectangle,
-  drawCircle,
+  cylinder,
   draw,
   unwrap,
   cutAll,
@@ -225,7 +225,10 @@ function buildMagnetHoles(
   // This leaves MAGNET_FLOOR of solid material at the bottom of each magnet hole.
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = magnetDepth + COPLANAR_MARGIN;
-  const magnetTemplate = sketch(drawCircle(magnetRadius), 'XY', cutterZ).extrude(-cutterDepth);
+  const magnetTemplate = cylinder(magnetRadius, cutterDepth, {
+    at: [0, 0, cutterZ],
+    axis: [0, 0, -1],
+  });
 
   const holes: Shape3D[] = [];
   forEachCell(

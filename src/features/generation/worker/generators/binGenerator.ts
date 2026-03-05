@@ -16,7 +16,7 @@
  */
 
 import {
-  drawRectangle,
+  box,
   drawPolysides,
   unwrap,
   fuse,
@@ -241,7 +241,7 @@ export function generateBin(
     checkCancelled(signal);
     onProgress?.('shell', 0.3);
     const cutoutTopOffset = solid ? params.cutoutConfig.topOffset : 0;
-    const box = buildBinBox(
+    const binBody = buildBinBox(
       params.width,
       params.depth,
       wallHeight,
@@ -249,7 +249,7 @@ export function generateBin(
       solid,
       cutoutTopOffset
     );
-    collectOrigins(box, FeatureTag.BASE, originToTag);
+    collectOrigins(binBody, FeatureTag.BASE, originToTag);
 
     if (isFlat) {
       // Flat floor: no socket, box body is the entire base
@@ -263,13 +263,13 @@ export function generateBin(
             wallHeight,
           ]);
           collectOrigins(top, FeatureTag.LIP, originToTag);
-          bin = unwrap(fuse(box, top, { optimisation: 'commonFace' }));
+          bin = unwrap(fuse(binBody, top, { optimisation: 'commonFace' }));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          bin = box;
+          bin = binBody;
         }
       } else {
-        bin = box;
+        bin = binBody;
       }
     } else {
       // Socket style: build base socket and fuse with box.
@@ -298,16 +298,16 @@ export function generateBin(
           ]);
           collectOrigins(top, FeatureTag.LIP, originToTag);
           bin = unwrap(
-            fuse(unwrap(fuse(base, box, { optimisation: 'commonFace' })), top, {
+            fuse(unwrap(fuse(base, binBody, { optimisation: 'commonFace' })), top, {
               optimisation: 'commonFace',
             })
           );
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          bin = unwrap(fuse(base, box, { optimisation: 'commonFace' }));
+          bin = unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
         }
       } else {
-        bin = unwrap(fuse(base, box, { optimisation: 'commonFace' }));
+        bin = unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
       }
     }
 
@@ -720,18 +720,17 @@ function splitSolidIntoPieces(
       const boxCenterX = centerX + (marginR - marginL) / 2;
       const boxCenterY = centerY + (marginT - marginB) / 2;
 
-      const cuttingBox = sketch(drawRectangle(boxW, boxD), 'XY', -CUTTING_BOX_HEIGHT / 2).extrude(
-        CUTTING_BOX_HEIGHT
-      );
-      const translatedBox = translate(cuttingBox, [boxCenterX, boxCenterY, 0]);
+      const cuttingBox = box(boxW, boxD, CUTTING_BOX_HEIGHT, {
+        at: [boxCenterX, boxCenterY, 0],
+      });
 
       // Split body with cutting box
-      let piece = unwrap(intersect(clone(bodySolid), translatedBox));
+      let piece = unwrap(intersect(clone(bodySolid), cuttingBox));
 
       // Split and fuse lip piece using a clone of the same cutting box
       if (lipSolid) {
         try {
-          const lipPiece = unwrap(intersect(clone(lipSolid), clone(translatedBox)));
+          const lipPiece = unwrap(intersect(clone(lipSolid), clone(cuttingBox)));
           piece = unwrap(fuse(piece, lipPiece));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;

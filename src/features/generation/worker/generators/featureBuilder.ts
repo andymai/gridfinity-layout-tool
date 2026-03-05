@@ -12,9 +12,11 @@
 import {
   draw,
   drawRoundedRectangle,
+  box,
   drawRectangle,
   drawCircle,
   drawEllipse,
+  cylinder,
   unwrap,
   fuseAll,
   translate,
@@ -62,8 +64,7 @@ function fuseAllOrNull(shapes: Shape3D[]): Shape3D | null {
 
 /** Build a positioned wall segment solid. */
 function buildWallSegment(w: number, d: number, height: number, x: number, y: number): Shape3D {
-  const wall = sketch(drawRectangle(w, d), 'XY').extrude(height);
-  return translate(wall, [x, y, 0]);
+  return box(w, d, height, { at: [x, y, height / 2] });
 }
 
 /**
@@ -287,7 +288,7 @@ function buildCutoutShape(cutout: {
       const rx = cutout.width / 2;
       const ry = cutout.depth / 2;
       if (Math.abs(rx - ry) < 0.01) {
-        shape = sketch(drawCircle(rx), 'XY').extrude(cutout.cutDepth);
+        shape = cylinder(rx, cutout.cutDepth);
       } else {
         shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
       }
@@ -298,7 +299,9 @@ function buildCutoutShape(cutout: {
         shape = buildPathCutoutShape(cutout);
       } catch {
         // Self-intersecting or degenerate path — fall back to bounding box rectangle
-        shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+        shape = box(cutout.width, cutout.depth, cutout.cutDepth, {
+          at: [0, 0, cutout.cutDepth / 2],
+        });
       }
       break;
     }
@@ -311,7 +314,9 @@ function buildCutoutShape(cutout: {
           'XY'
         ).extrude(cutout.cutDepth);
       } else {
-        shape = sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+        shape = box(cutout.width, cutout.depth, cutout.cutDepth, {
+          at: [0, 0, cutout.cutDepth / 2],
+        });
       }
       break;
     }
@@ -466,7 +471,7 @@ function buildPathCutoutShape(cutout: {
   readonly path?: readonly PathPoint[];
 }): Shape3D {
   const fallbackRect = (): Shape3D =>
-    sketch(drawRectangle(cutout.width, cutout.depth), 'XY').extrude(cutout.cutDepth);
+    box(cutout.width, cutout.depth, cutout.cutDepth, { at: [0, 0, cutout.cutDepth / 2] });
 
   const path = cutout.path;
   if (!path || path.length < MIN_PATH_POINTS) return fallbackRect();
@@ -732,7 +737,7 @@ export function buildCutoutCuts(
 
   // Clip cutout union to bin interior so cutouts extending past walls don't
   // cut through them. The clip boundary covers from floor to the solid surface.
-  const clipBoundary = sketch(drawRectangle(innerW, innerD), 'XY', 0).extrude(solidSurfaceZ);
+  const clipBoundary = box(innerW, innerD, solidSurfaceZ, { at: [0, 0, solidSurfaceZ / 2] });
   return unwrap(intersect(fusedResult, clipBoundary));
 }
 

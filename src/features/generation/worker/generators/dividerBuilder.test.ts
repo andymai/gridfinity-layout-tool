@@ -7,14 +7,9 @@ import { buildDividerPiece, buildUniqueDividerPieces } from './dividerBuilder';
 // Vitest hoists vi.mock calls above imports automatically.
 vi.mock('brepjs', () => {
   const mockShape = {};
-  const mockExtrude = vi.fn(() => mockShape);
   const mockTranslate = vi.fn(() => mockShape);
   return {
-    drawRectangle: vi.fn(() => ({
-      sketchOnPlane: vi.fn(() => ({
-        extrude: mockExtrude,
-      })),
-    })),
+    box: vi.fn(() => mockShape),
     translate: mockTranslate,
   };
 });

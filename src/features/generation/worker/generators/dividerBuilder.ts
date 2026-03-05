@@ -6,19 +6,14 @@
  * the wall cuts. Single extrusion per piece (no boolean fuse needed).
  */
 
-import { drawRectangle, translate } from 'brepjs';
-import type { Shape3D, PlaneName, SketchInterface, Drawing } from 'brepjs';
+import { box, translate } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { calculateDividerHeight, calculateDividerLength } from '@/shared/utils/slotMath';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 
 // Re-export shared math so existing imports from generation internals still work
 export { calculateDividerHeight, calculateDividerLength };
-
-/** Narrow Drawing.sketchOnPlane to SketchInterface (single closed wire). */
-function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
-  return drawing.sketchOnPlane(plane, origin) as SketchInterface;
-}
 
 /**
  * Build a single divider piece laid flat for FDM printing.
@@ -33,7 +28,7 @@ function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInt
  * @param height Divider height in mm (becomes Y in flat orientation)
  */
 export function buildDividerPiece(length: number, thickness: number, height: number): Shape3D {
-  return sketch(drawRectangle(length, height), 'XY').extrude(thickness);
+  return box(length, height, thickness, { at: [0, 0, thickness / 2] });
 }
 
 /**

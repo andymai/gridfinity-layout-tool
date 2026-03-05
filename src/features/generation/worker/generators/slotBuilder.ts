@@ -13,8 +13,8 @@
  * boolean cut operation on the bin — critical for performance.
  */
 
-import { drawRectangle, unwrap, fuseAll, translate } from 'brepjs';
-import type { Shape3D, PlaneName, SketchInterface, Drawing } from 'brepjs';
+import { box, unwrap, fuseAll } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import {
   calculateSlotPositions,
@@ -24,11 +24,6 @@ import {
 
 // Re-export shared math for generation-internal consumers
 export { calculateSlotPositions };
-
-/** Narrow Drawing.sketchOnPlane to SketchInterface (single closed wire). */
-function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
-  return drawing.sketchOnPlane(plane, origin) as SketchInterface;
-}
 
 /**
  * Compute effective slot dimensions from BinParams.
@@ -95,23 +90,17 @@ function createMirroredCutters(
   const rectW = axis === 'x' ? extDim : crossDim;
   const rectD = axis === 'x' ? crossDim : extDim;
 
-  const negSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(height);
-  const posSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(height);
-
   // Negative side: outer edge at -halfSpan - primaryDim, extended inward by SLOT_EXTENSION
   const negCenter = -(centerOffset - SLOT_EXTENSION / 2);
   // Positive side: outer edge at +halfSpan + primaryDim, extended inward by SLOT_EXTENSION
   const posCenter = centerOffset - SLOT_EXTENSION / 2;
 
-  if (axis === 'x') {
-    return [
-      translate(negSolid, [negCenter, crossPos, z]),
-      translate(posSolid, [posCenter, crossPos, z]),
-    ];
-  }
+  const zCenter = z + height / 2;
+  const pos = (primary: number): [number, number, number] =>
+    axis === 'x' ? [primary, crossPos, zCenter] : [crossPos, primary, zCenter];
   return [
-    translate(negSolid, [crossPos, negCenter, z]),
-    translate(posSolid, [crossPos, posCenter, z]),
+    box(rectW, rectD, height, { at: pos(negCenter) }),
+    box(rectW, rectD, height, { at: pos(posCenter) }),
   ];
 }
 
@@ -136,24 +125,18 @@ function createMirroredLipCutters(
   const rectW = axis === 'x' ? extOverhang : slotWidth;
   const rectD = axis === 'x' ? slotWidth : extOverhang;
 
-  const negSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(lipCutHeight);
-  const posSolid = sketch(drawRectangle(rectW, rectD), 'XY').extrude(lipCutHeight);
-
   // Lip cutter sits inside the interior: centered at halfSpan - lipOverhang/2,
   // shifted outward by SLOT_EXTENSION/2 so the outer face extends past the
   // inner wall surface (halfSpan) for overlap with the wall slot cutter.
   const negCenter = -(halfSpan - lipOverhang / 2 + SLOT_EXTENSION / 2);
   const posCenter = halfSpan - lipOverhang / 2 + SLOT_EXTENSION / 2;
 
-  if (axis === 'x') {
-    return [
-      translate(negSolid, [negCenter, crossPos, lipCutStartZ]),
-      translate(posSolid, [posCenter, crossPos, lipCutStartZ]),
-    ];
-  }
+  const zCenter = lipCutStartZ + lipCutHeight / 2;
+  const pos = (primary: number): [number, number, number] =>
+    axis === 'x' ? [primary, crossPos, zCenter] : [crossPos, primary, zCenter];
   return [
-    translate(negSolid, [crossPos, negCenter, lipCutStartZ]),
-    translate(posSolid, [crossPos, posCenter, lipCutStartZ]),
+    box(rectW, rectD, lipCutHeight, { at: pos(negCenter) }),
+    box(rectW, rectD, lipCutHeight, { at: pos(posCenter) }),
   ];
 }
 
