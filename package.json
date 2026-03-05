@@ -149,7 +149,8 @@
     },
     "glob": {
       "minimatch": "^10.2.3"
-    }
+    },
+    "dompurify": "^3.3.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
