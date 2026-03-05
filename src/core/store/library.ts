@@ -95,7 +95,8 @@ interface LibraryState {
 /**
  * Library store — manages the multi-layout library index.
  * Tracks `activeLayoutId`, layout entries (metadata + thumbnails), and sorting.
- * Persisted to localStorage (`gridfinity-library-v1`).
+ * Persisted to IndexedDB via {@link saveLibrary}. A small breadcrumb
+ * (active layout ID) is kept in localStorage (`gridfinity-library-v1`).
  */
 export const useLibraryStore = create<LibraryState>()(
   immer((set, get) => ({

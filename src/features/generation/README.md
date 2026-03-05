@@ -17,7 +17,9 @@ graph TB
         BG --> WASM[brepjs WASM]
     end
     subgraph Export
-        MD[MeshData] --> STL & STEP & 3MF
+        MD[MeshData] --> STL[STL]
+        MD[MeshData] --> STEP[STEP]
+        MD[MeshData] --> THREEMF[3MF]
     end
     BG -->|tessellate| MD -->|transfer| GB
 ```
