@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.1.0...gridfinity-layout-tool-v4.1.1) (2026-03-05)
+
+
+### Bug Fixes
+
+* revert version from 5.0.0 to 4.1.0 ([47e7f90](https://github.com/andymai/gridfinity-layout-tool/commit/47e7f90a681f7625d744298041a9bab9d3b07e16))
+
 ## [5.0.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.1.0...gridfinity-layout-tool-v5.0.0) (2026-03-04)
 
 
