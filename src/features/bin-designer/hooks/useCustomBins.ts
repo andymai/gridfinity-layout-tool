@@ -65,14 +65,6 @@ export function useCustomBins(): CustomBinRef[] {
 }
 
 /**
- * Refresh the cached registry. Call this when you know the registry
- * may have changed externally (e.g., from another tab).
- */
-export function refreshCustomBinsCache(): void {
-  cachedRegistry = loadRegistry();
-}
-
-/**
  * Reset the cache to current localStorage state. Used by tests after
  * localStorage.clear() to ensure clean state.
  * @internal

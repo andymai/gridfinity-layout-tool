@@ -74,7 +74,7 @@ export const MIN_BOTTOM_KEEP_OUT = 1.0;
  * @param calculator - Pattern calculator instance (from registry)
  * @returns Array of wall descriptors, or null if disabled/no valid walls
  */
-export function getWallPatternDescriptors(
+function getWallPatternDescriptors(
   params: BinParams,
   innerW: number,
   innerD: number,

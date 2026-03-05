@@ -98,11 +98,13 @@ export interface Bin {
 
 // === Coordinate Types ===
 
+/** Grid coordinate (0-based, origin at bottom-left). */
 export interface Coord {
   x: number;
   y: number;
 }
 
+/** Axis-aligned rectangle on the grid in grid units. */
 export interface Rect {
   x: number;
   y: number;
@@ -110,6 +112,7 @@ export interface Rect {
   depth: number;
 }
 
+/** 3D bounding box extending a grid rect with a vertical range (in height units). */
 export interface Rect3D extends Rect {
   zStart: number;
   zEnd: number;

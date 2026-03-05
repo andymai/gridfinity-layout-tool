@@ -32,8 +32,7 @@ graph TB
 ### Dual-Path Generation
 
 1. **Local** (instant): `generateSuggestions()` analyzes bin data using:
-   - `labelVocabulary.ts` for domain detection
-   - `purposeInference.ts` for drawer purpose
+   - `namingData.ts` for domain detection, vocabulary, and purpose inference
    - Category names, drawer dimensions
 2. **LLM** (parallel): `/api/suggest-name` generates culturally-localized names (5s timeout)
 

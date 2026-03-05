@@ -88,7 +88,7 @@ export {
   tryCatch,
 } from './utils';
 
-export { getRecoveryHint, getSeverity, ERROR_CATALOG } from './catalog';
+export { getRecoveryHint, getSeverity } from './catalog';
 
 // =============================================================================
 // Domain Error Types

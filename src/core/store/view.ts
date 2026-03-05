@@ -114,6 +114,7 @@ export const INITIAL_VIEW_STATE = {
   isPreviewExpanded: false,
 } as const;
 
+/** View store — 3D preview camera state, zoom level, and isometric snap toggle. */
 export const useViewStore = create<ViewStore>((set) => ({
   // Initial state
   ...INITIAL_VIEW_STATE,

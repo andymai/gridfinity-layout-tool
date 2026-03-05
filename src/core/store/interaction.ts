@@ -69,6 +69,10 @@ export const INITIAL_INTERACTION_STATE = {
   liveMessage: null as string | null,
 } as const;
 
+/**
+ * Interaction store — current pointer interaction state (draw, drag, resize, paint).
+ * Also manages drop targets, layer view mode (focus/stack/all), and paint size.
+ */
 export const useInteractionStore = create<InteractionStore>((set) => ({
   // Initial state
   ...INITIAL_INTERACTION_STATE,

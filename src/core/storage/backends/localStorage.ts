@@ -6,7 +6,7 @@
  * to eliminate code duplication and ensure consistent error handling.
  */
 
-import type { Layout, LayoutLibrary } from '@/core/types';
+import type { Layout } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
 import { ok, err, storageQuotaExceeded, storageCorrupted } from '@/core/result';
 
@@ -111,18 +111,4 @@ export function saveLayout(key: string, layout: Layout): Result<void, StorageErr
  */
 export function loadLayout(key: string): Result<Layout | null, StorageError> {
   return loadFromLocalStorage<Layout>(key);
-}
-
-/**
- * Save the library index to localStorage.
- */
-export function saveLibraryIndex(key: string, library: LayoutLibrary): Result<void, StorageError> {
-  return saveToLocalStorage(key, library);
-}
-
-/**
- * Load the library index from localStorage.
- */
-export function loadLibraryIndex(key: string): Result<LayoutLibrary | null, StorageError> {
-  return loadFromLocalStorage<LayoutLibrary>(key);
 }

@@ -4,10 +4,18 @@ Automatic periodic snapshots of layout state, stored in IndexedDB. Provides a us
 
 ## Architecture
 
-- **SnapshotService** (`core/storage/SnapshotService.ts`) — CRUD + rolling window logic
-- **Snapshot store** (`core/store/snapshots.ts`) — Zustand state for the active layout's snapshots
-- **useSnapshotAutoSave** (`hooks/useSnapshotAutoSave.ts`) — 2-minute interval auto-save hook
-- **UI components** (`features/snapshots/components/`) — History panel, entry rows, restore dialog
+### Feature (this directory)
+
+- `components/SnapshotHistory/` — History panel with snapshot list
+- `components/SnapshotEntry/` — individual snapshot row with restore/label actions
+- `components/RestoreDialog/` — confirmation dialog for snapshot restoration
+- `hooks/useRelativeTime.ts` — relative timestamp formatting ("2 min ago")
+
+### Core (infrastructure)
+
+- `core/storage/SnapshotService.ts` — CRUD + rolling window logic
+- `core/store/snapshots.ts` — Zustand state for the active layout's snapshots
+- `hooks/useSnapshotAutoSave.ts` — 2-minute interval auto-save hook
 
 ## Key behaviors
 

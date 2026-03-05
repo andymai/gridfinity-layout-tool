@@ -169,6 +169,5 @@ export function loadSyncGeneric<T>(key: string): T | null {
 // === Utility Exports ===
 
 export { getStorageUsagePercent } from './backends/localStorage';
-export { getAllLayoutIds as getLocalStorageLayoutIds } from './backends/localStorage';
 export { getAllLayoutIds as getIndexedDBLayoutIds } from './backends/indexedDB';
 export { isIndexedDBAvailable } from './backends/indexedDB';

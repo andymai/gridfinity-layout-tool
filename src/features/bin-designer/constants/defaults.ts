@@ -18,7 +18,7 @@ import type {
 } from '../types';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
-export const DEFAULT_SLOT_CONFIG: SlotConfig = {
+const DEFAULT_SLOT_CONFIG: SlotConfig = {
   x: { enabled: true, pitch: 20 },
   y: { enabled: false, pitch: 20 },
   width: 2.0,
@@ -26,20 +26,20 @@ export const DEFAULT_SLOT_CONFIG: SlotConfig = {
 } as const;
 
 /** Default divider piece configuration */
-export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
+const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
   height: 'auto',
   thickness: 1.6,
   clearance: 0.25,
 } as const;
 
 /** Default wall pattern configuration: disabled */
-export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
+const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
   enabled: false,
   pattern: 'honeycomb',
 } as const;
 
 /** Default cutout configuration: flush with rim (no offset) */
-export const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
+const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
   topOffset: 0,
 } as const;
 

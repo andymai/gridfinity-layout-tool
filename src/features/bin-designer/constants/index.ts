@@ -6,11 +6,8 @@ export {
 } from './gridfinity';
 export {
   DEFAULT_BIN_PARAMS,
-  DEFAULT_SLOT_CONFIG,
-  DEFAULT_DIVIDER_PIECE_CONFIG,
   DEFAULT_GENERATION_STATE,
   DEFAULT_UI_STATE,
   DEFAULT_HISTORY,
-  DEFAULT_WALL_PATTERN_CONFIG,
   migrateParams,
 } from './defaults';

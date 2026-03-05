@@ -68,7 +68,6 @@ export function useStagingDragInteraction(
       // Capture pointer at document level for reliable event delivery
       capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
-      // Reset movement direction tracking for fresh drag
       prevCoordRef.current = null;
 
       setInteraction({

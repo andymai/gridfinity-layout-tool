@@ -26,6 +26,8 @@ graph TB
 - `hooks/useLinkedDesign.ts` — resolve linked design for a bin
 - `hooks/useLinkedBins.ts` — find all bins linked to a design
 - `hooks/useQuickExport.ts` — STL export for linked designs (internal)
+- `hooks/useBinResizedListener.ts` — listens for bin resize events, triggers sync logic
+- `hooks/useDesignSavedListener.ts` — listens for design save events, auto-syncs linked bins
 - `components/LinkedDesignSection.tsx` — inspector UI for link status
 - `components/DesignLinkingDialogs/` — dialog orchestrator
 - `components/Dialogs/` — CreateDesignDialog, SyncDimensionsDialog, DeleteDesignWarningDialog, LinkDesignDialog

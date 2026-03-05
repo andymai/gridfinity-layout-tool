@@ -111,7 +111,6 @@ export function usePresence(): PresenceState {
 
     const result: Participant[] = [];
 
-    // Add other users
     for (const other of others) {
       const id = String(other.connectionId);
       result.push({
@@ -123,7 +122,6 @@ export function usePresence(): PresenceState {
       });
     }
 
-    // Add self
     if (self) {
       const id = String(self.connectionId);
       result.push({
@@ -171,7 +169,6 @@ export function usePresence(): PresenceState {
       return;
     }
 
-    // Find who joined
     for (const id of currentIds) {
       if (!prevParticipantIdsRef.current.has(id)) {
         const name = currentNames.get(id) ?? 'Someone';
@@ -187,7 +184,6 @@ export function usePresence(): PresenceState {
       }
     }
 
-    // Find who left
     for (const id of prevParticipantIdsRef.current) {
       if (!currentIds.has(id)) {
         const name = prevParticipantNamesRef.current.get(id) ?? 'Someone';
@@ -199,12 +195,10 @@ export function usePresence(): PresenceState {
       }
     }
 
-    // Update tracking refs
     prevParticipantIdsRef.current = currentIds;
     prevParticipantNamesRef.current = currentNames;
   }, [isCollaborative, participants, addToast]);
 
-  // Return empty state when not collaborative
   if (!isCollaborative) {
     return EMPTY_STATE;
   }

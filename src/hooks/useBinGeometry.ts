@@ -83,7 +83,6 @@ function addQuad(
   positions.push(v2.x, v2.y, v2.z);
   positions.push(v3.x, v3.y, v3.z);
 
-  // Add colors for all 6 vertices
   const faceColors = createFaceColors(faceColor);
   colors.push(...faceColors);
 }

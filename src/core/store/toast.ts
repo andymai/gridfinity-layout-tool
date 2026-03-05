@@ -41,6 +41,7 @@ export const INITIAL_TOAST_STATE = {
   toasts: [] as Toast[],
 } as const;
 
+/** Toast store — manages the notification queue displayed at the bottom of the screen. */
 export const useToastStore = create<ToastState>((set) => ({
   ...INITIAL_TOAST_STATE,
 

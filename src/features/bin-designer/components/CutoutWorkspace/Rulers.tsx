@@ -177,5 +177,3 @@ export function RulerCorner({ onDoubleClick }: { readonly onDoubleClick?: () => 
     />
   );
 }
-
-export { RULER_SIZE };

@@ -235,7 +235,6 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
                 const binX = x1 + col * ps.width;
                 const binY = y1 + row * ps.depth;
 
-                // Validate each placement
                 const result = canPlaceBin(
                   {
                     x: binX,

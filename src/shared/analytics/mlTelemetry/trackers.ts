@@ -1002,7 +1002,7 @@ export function trackSessionSummary(
 /**
  * Track cross-layout patterns at commit points.
  */
-export function trackCrossLayoutPattern(layout: Layout): void {
+function trackCrossLayoutPattern(layout: Layout): void {
   if (!isEnabled()) return;
 
   const gridBins = getGridBins(layout.bins);

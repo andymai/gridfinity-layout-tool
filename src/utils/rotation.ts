@@ -21,7 +21,6 @@ export type RotationResult =
  * @returns Validation result with error message if invalid
  */
 export function validateRotationInPlace(bin: Bin, layout: Layout): RotationResult {
-  // Create rotated rect (swap width and depth)
   const rotatedRect = {
     x: bin.x,
     y: bin.y,
