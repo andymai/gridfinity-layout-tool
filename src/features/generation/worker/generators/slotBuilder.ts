@@ -96,15 +96,11 @@ function createMirroredCutters(
   const posCenter = centerOffset - SLOT_EXTENSION / 2;
 
   const zCenter = z + height / 2;
-  if (axis === 'x') {
-    return [
-      box(rectW, rectD, height, { at: [negCenter, crossPos, zCenter] }),
-      box(rectW, rectD, height, { at: [posCenter, crossPos, zCenter] }),
-    ];
-  }
+  const pos = (primary: number): [number, number, number] =>
+    axis === 'x' ? [primary, crossPos, zCenter] : [crossPos, primary, zCenter];
   return [
-    box(rectW, rectD, height, { at: [crossPos, negCenter, zCenter] }),
-    box(rectW, rectD, height, { at: [crossPos, posCenter, zCenter] }),
+    box(rectW, rectD, height, { at: pos(negCenter) }),
+    box(rectW, rectD, height, { at: pos(posCenter) }),
   ];
 }
 
@@ -136,15 +132,11 @@ function createMirroredLipCutters(
   const posCenter = halfSpan - lipOverhang / 2 + SLOT_EXTENSION / 2;
 
   const zCenter = lipCutStartZ + lipCutHeight / 2;
-  if (axis === 'x') {
-    return [
-      box(rectW, rectD, lipCutHeight, { at: [negCenter, crossPos, zCenter] }),
-      box(rectW, rectD, lipCutHeight, { at: [posCenter, crossPos, zCenter] }),
-    ];
-  }
+  const pos = (primary: number): [number, number, number] =>
+    axis === 'x' ? [primary, crossPos, zCenter] : [crossPos, primary, zCenter];
   return [
-    box(rectW, rectD, lipCutHeight, { at: [crossPos, negCenter, zCenter] }),
-    box(rectW, rectD, lipCutHeight, { at: [crossPos, posCenter, zCenter] }),
+    box(rectW, rectD, lipCutHeight, { at: pos(negCenter) }),
+    box(rectW, rectD, lipCutHeight, { at: pos(posCenter) }),
   ];
 }
 
