@@ -1,38 +1,52 @@
 # Gridfinity Layout Tool
 
-Web app for designing storage layouts for 3D-printed Gridfinity drawer organizers.
+Plan and design [Gridfinity](https://www.printables.com/model/274917-gridfinity-specification) drawer organizer layouts for 3D printing — right in your browser.
 
 **Live:** [gridfinitylayouttool.com](https://gridfinitylayouttool.com)
 
 ## Features
 
-- **Layout Planner** - Drag-and-drop bin placement with multi-layer support
-- **3D Preview** - Isometric visualization of your drawer layout
-- **Bin Designer** - Parametric 3D bin generator with STL export
-- **Print List** - Optimized print list with filament estimation
-- **Cloud Sharing** - Share layouts via link with optional collaboration
-- **Multi-Layout Library** - Manage multiple drawer layouts
-- **Responsive Design** - Desktop, tablet, and mobile support
-- **PWA** - Installable, works offline
+- **Layout Planner** — Drag-and-drop bin placement with multi-layer support
+- **3D Preview** — Isometric visualization of your drawer layout
+- **Bin Designer** — Parametric 3D bin generator with STL export
+- **Print List** — Optimized print list with filament, time, and cost estimates
+- **Inspiration Gallery** — Browse curated example layouts across workshop, kitchen, office, hobby, and personal themes
+- **Cloud Sharing** — Share layouts via link with optional real-time collaboration
+- **PWA** — Installable, works offline
 
 ## Built With
 
-3D geometry generation is powered by [brepjs](https://github.com/andymai/brepjs) — a Web CAD library built on OpenCascade WASM for solid modeling, boolean operations, and mesh export.
+| Technology                                   | Purpose                                                |
+| -------------------------------------------- | ------------------------------------------------------ |
+| [React 19](https://react.dev)                | UI framework                                           |
+| [TypeScript](https://www.typescriptlang.org) | Type safety                                            |
+| [Zustand](https://github.com/pmndrs/zustand) | State management                                       |
+| [Three.js](https://threejs.org)              | 3D visualization                                       |
+| [brepjs](https://github.com/andymai/brepjs)  | Parametric 3D geometry & STL export (OpenCascade WASM) |
+| [Tailwind CSS 4](https://tailwindcss.com)    | Styling                                                |
+| [Vitest](https://vitest.dev)                 | Unit testing                                           |
+| [Playwright](https://playwright.dev)         | End-to-end testing                                     |
+| [Vercel](https://vercel.com)                 | Hosting & serverless API                               |
 
-## Quick Start
+## Local Development
+
+Requires **Node.js 20+** and **npm 10+**. Use `nvm use` to switch to the correct version (requires [nvm](https://github.com/nvm-sh/nvm)).
 
 ```bash
+git clone https://github.com/andymai/gridfinity-layout-tool.git
+cd gridfinity-layout-tool
+nvm use
 npm install
-npm run dev      # Development server at localhost:5173
-npm run build    # Production build
-npm run test     # Unit tests (watch mode)
-npm run test:e2e # Playwright e2e tests
+npm run dev           # Development server at localhost:5173
+npm run build         # Production build
+npm run test:coverage # Unit tests with coverage
+npm run test:e2e      # Playwright end-to-end tests
 ```
 
-## Deployment
+## Contributing
 
-Deployed via **Vercel** with automatic deployments on push to `main`. Preview deployments for pull requests.
+This project is open source but not open contribution — see [CONTRIBUTING.md](./CONTRIBUTING.md) for details on bug reports, feature requests, and the pull request policy.
 
-## Documentation
+## License
 
-See **[CLAUDE.md](./CLAUDE.md)** for architecture, data model, code style, and testing details.
+[GNU Affero General Public License v3.0](./LICENSE) — see the LICENSE file for details.
