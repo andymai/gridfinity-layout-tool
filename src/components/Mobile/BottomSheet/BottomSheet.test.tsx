@@ -27,8 +27,12 @@ describe('BottomSheet', () => {
   });
 
   afterEach(() => {
-    useMobileStore.setState({
-      activeMobilePanel: null,
+    // Wrap in act() so the store update (which may re-render still-mounted
+    // components) is processed inside React's scheduler before cleanup.
+    act(() => {
+      useMobileStore.setState({
+        activeMobilePanel: null,
+      });
     });
     document.body.style.overflow = '';
   });

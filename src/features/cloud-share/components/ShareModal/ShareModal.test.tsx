@@ -179,7 +179,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByText('Copy'));
 
       // Wait for state update
-      await vi.waitFor(() => {
+      await waitFor(() => {
         expect(screen.getByText('Copied!')).toBeInTheDocument();
       });
     });
@@ -187,7 +187,7 @@ describe('ShareModal', () => {
     it('tracks URL export', async () => {
       fireEvent.click(screen.getByText('Copy'));
 
-      await vi.waitFor(() => {
+      await waitFor(() => {
         expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(mockLayout, 'export_url');
       });
     });
@@ -258,7 +258,7 @@ describe('ShareModal', () => {
     it('shows copied feedback for JSON', async () => {
       fireEvent.click(screen.getByText('Copy JSON'));
 
-      await vi.waitFor(() => {
+      await waitFor(() => {
         expect(screen.getByText('JSON copied!')).toBeInTheDocument();
       });
     });
@@ -266,7 +266,7 @@ describe('ShareModal', () => {
     it('tracks JSON export', async () => {
       fireEvent.click(screen.getByText('Copy JSON'));
 
-      await vi.waitFor(() => {
+      await waitFor(() => {
         expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(mockLayout, 'export_json');
       });
     });
@@ -290,7 +290,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
       fireEvent.click(screen.getByText('Copy'));
 
-      await vi.waitFor(() => {
+      await waitFor(() => {
         expect(announceSpy).toHaveBeenCalledWith('Link copied to clipboard');
       });
     });
@@ -316,7 +316,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'JSON' }));
       fireEvent.click(screen.getByText('Copy JSON'));
 
-      await vi.waitFor(() => {
+      await waitFor(() => {
         expect(announceSpy).toHaveBeenCalledWith('JSON copied to clipboard');
       });
     });

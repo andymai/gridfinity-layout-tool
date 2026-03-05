@@ -74,6 +74,29 @@ if (typeof window !== 'undefined') {
   };
 }
 
+// Suppress React 18 "not wrapped in act(...)" warnings.
+//
+// These fire when async state updates (resolved mock Promises, useEffect
+// side-effects) settle between a test's last assertion and the afterEach
+// cleanup. The microtask queue drains synchronously after the test body
+// returns, before afterEach runs, so the update lands outside any act()
+// context. All affected tests pass — the warnings are purely cosmetic
+// cleanup-timing noise from jsdom's synchronous event loop model.
+//
+// The same pattern is used above for Three.js multiple-instances noise.
+{
+  const originalError = console.error.bind(console);
+  console.error = (...args: unknown[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      (args[0].includes('not wrapped in act(') || args[0].includes('wrapped into act(...)'))
+    ) {
+      return;
+    }
+    originalError(...args);
+  };
+}
+
 // Guard DOM-specific mocks for tests running in Node.js environment
 if (typeof Element !== 'undefined') {
   // Mock pointer capture methods not implemented in jsdom

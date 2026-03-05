@@ -815,11 +815,13 @@ describe('useLayoutSwitcher', () => {
       // This simulates another operation adding a layout
       const newEntry = createTestEntry('third-layout-id', 'Third Layout');
       const currentLibrary = useLibraryStore.getState().library;
-      useLibraryStore.setState({
-        library: {
-          ...currentLibrary,
-          entries: [...currentLibrary.entries, newEntry],
-        },
+      act(() => {
+        useLibraryStore.setState({
+          library: {
+            ...currentLibrary,
+            entries: [...currentLibrary.entries, newEntry],
+          },
+        });
       });
 
       await act(async () => {
@@ -842,11 +844,13 @@ describe('useLayoutSwitcher', () => {
 
       // Modify library after hook was rendered
       const currentLibrary = useLibraryStore.getState().library;
-      useLibraryStore.setState({
-        library: {
-          ...currentLibrary,
-          settings: { authorName: 'Updated Author' },
-        },
+      act(() => {
+        useLibraryStore.setState({
+          library: {
+            ...currentLibrary,
+            settings: { authorName: 'Updated Author' },
+          },
+        });
       });
 
       await act(async () => {
@@ -871,11 +875,13 @@ describe('useLayoutSwitcher', () => {
       // Add a third entry after hook was rendered
       const currentLibrary = useLibraryStore.getState().library;
       const thirdEntry = createTestEntry('third-layout-id', 'Third Layout');
-      useLibraryStore.setState({
-        library: {
-          ...currentLibrary,
-          entries: [...currentLibrary.entries, thirdEntry],
-        },
+      act(() => {
+        useLibraryStore.setState({
+          library: {
+            ...currentLibrary,
+            entries: [...currentLibrary.entries, thirdEntry],
+          },
+        });
       });
 
       await act(async () => {
@@ -896,11 +902,13 @@ describe('useLayoutSwitcher', () => {
 
       // Modify library settings after hook was rendered
       const currentLibrary = useLibraryStore.getState().library;
-      useLibraryStore.setState({
-        library: {
-          ...currentLibrary,
-          settings: { authorName: 'Fresh Author' },
-        },
+      act(() => {
+        useLibraryStore.setState({
+          library: {
+            ...currentLibrary,
+            settings: { authorName: 'Fresh Author' },
+          },
+        });
       });
 
       await act(async () => {
@@ -922,11 +930,13 @@ describe('useLayoutSwitcher', () => {
 
       // Modify library settings after hook was rendered
       const currentLibrary = useLibraryStore.getState().library;
-      useLibraryStore.setState({
-        library: {
-          ...currentLibrary,
-          settings: { authorName: 'Import Author' },
-        },
+      act(() => {
+        useLibraryStore.setState({
+          library: {
+            ...currentLibrary,
+            settings: { authorName: 'Import Author' },
+          },
+        });
       });
 
       await act(async () => {
@@ -949,11 +959,13 @@ describe('useLayoutSwitcher', () => {
       // Add a new entry to library after hook was rendered
       const currentLibrary = useLibraryStore.getState().library;
       const newEntry = createTestEntry('new-entry-id', 'New Entry');
-      useLibraryStore.setState({
-        library: {
-          ...currentLibrary,
-          entries: [...currentLibrary.entries, newEntry],
-        },
+      act(() => {
+        useLibraryStore.setState({
+          library: {
+            ...currentLibrary,
+            entries: [...currentLibrary.entries, newEntry],
+          },
+        });
       });
 
       act(() => {
