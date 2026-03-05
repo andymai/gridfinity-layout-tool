@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.1.1...gridfinity-layout-tool-v4.1.2) (2026-03-05)
+
+
+### Bug Fixes
+
+* **baseplate:** default camera to top view, fix padding stepper width ([#1057](https://github.com/andymai/gridfinity-layout-tool/issues/1057)) ([6c44961](https://github.com/andymai/gridfinity-layout-tool/commit/6c449616ed25db8315e672ed9d7f02a12506ce5f))
+
 ## [4.1.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.1.0...gridfinity-layout-tool-v4.1.1) (2026-03-05)
 
 
