@@ -153,14 +153,6 @@ export async function loadLayoutAsync(layoutId: string): Promise<Layout | null> 
   return validateLoadedData(layoutId, data);
 }
 
-/**
- * Delete a layout asynchronously from both storage backends.
- */
-export async function deleteLayoutAsync(layoutId: string): Promise<void> {
-  const key = getLayoutStorageKey(layoutId);
-  await backend.deleteAsync(key);
-}
-
 // === Result-Based Async Operations ===
 // These functions return Result<T, StorageError> for explicit error handling.
 // Use these when you need detailed error information for user feedback.

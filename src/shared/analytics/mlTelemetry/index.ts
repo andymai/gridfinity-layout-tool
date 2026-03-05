@@ -50,10 +50,8 @@ export type {
   DrawerPurpose,
 } from './types';
 
-export { DRAWER_PURPOSES } from './types';
-
 // Event buffer
-export { CLIENT_VERSION, getBufferSize } from './eventBuffer';
+export { getBufferSize } from './eventBuffer';
 export { flush as forceFlush } from './eventBuffer';
 
 // Session state
@@ -92,7 +90,6 @@ export {
   trackUndo,
   trackQuickCorrection,
   trackSessionSummary,
-  trackCrossLayoutPattern,
 } from './trackers';
 
 // Initialization

@@ -26,12 +26,8 @@ export const FIT_PADDING = 0.08;
 
 /** Colors — match app theme (amber accent on dark surface) */
 export const ACCENT_COLOR_HEX = '#f59e0b'; // --color-accent
-export const ACCENT_HOVER_HEX = '#fbbf24'; // --color-accent-hover
 export const HANDLE_COLOR = '#fbbf24';
 export const HANDLE_STROKE_COLOR = '#ffffff';
-export const SHAPE_STROKE_DEFAULT = '#555555';
-export const SHAPE_STROKE_HOVER = '#777777';
-export const GRID_DOT_COLOR = '#555555';
 
 /** Handle sizes in screen pixels */
 export const CORNER_HANDLE_SIZE = 10;

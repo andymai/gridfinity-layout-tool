@@ -711,18 +711,12 @@ export type LayoutQualityTier = 'high' | 'medium' | 'low' | 'skip';
 // DRAWER PURPOSE CONSTANTS
 // ============================================
 
-/**
- * Predefined drawer purposes for categorization.
- */
-export const DRAWER_PURPOSES = [
-  'workshop', // Tools, hardware, DIY
-  'electronics', // Components, cables, dev boards
-  'office', // Supplies, stationery
-  'craft', // Art supplies, sewing, hobby
-  'kitchen', // Utensils, spices, gadgets
-  'bathroom', // Toiletries, medicine
-  'garage', // Automotive, outdoor
-  'other', // Custom entry
-] as const;
-
-export type DrawerPurpose = (typeof DRAWER_PURPOSES)[number];
+export type DrawerPurpose =
+  | 'workshop'
+  | 'electronics'
+  | 'office'
+  | 'craft'
+  | 'kitchen'
+  | 'bathroom'
+  | 'garage'
+  | 'other';

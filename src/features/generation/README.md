@@ -5,8 +5,11 @@ brepjs-based 3D geometry engine running in Web Worker.
 ```mermaid
 graph TB
     subgraph MainThread
-        BD[bin-designer] -->|params| GB[GenerationBridge]
+        BD[bin-designer] -->|params| BM[BridgeManager]
+        BM --> GB[GenerationBridge]
         GB --> AD[adaptiveDebounce]
+        BP[baseplate] -->|parallel| WPM[WorkerPoolManager]
+        WPM --> WP[WorkerPool]
     end
     subgraph Worker
         AD -->|debounced| GW[generation.worker]
@@ -14,7 +17,9 @@ graph TB
         BG --> WASM[brepjs WASM]
     end
     subgraph Export
-        MD[MeshData] --> STL
+        MD[MeshData] --> STL[STL]
+        MD[MeshData] --> STEP[STEP]
+        MD[MeshData] --> THREEMF[3MF]
     end
     BG -->|tessellate| MD -->|transfer| GB
 ```
@@ -22,6 +27,9 @@ graph TB
 ## Key Files
 
 - `bridge/GenerationBridge.ts` — main thread API, manages worker lifecycle
+- `bridge/BridgeManager.ts` — multi-bridge lifecycle management with reference counting
+- `bridge/WorkerPool.ts` — parallel worker pool for concurrent generation (split baseplates)
+- `bridge/WorkerPoolManager.ts` — shared pool acquisition with reference counting
 - `bridge/adaptiveDebounce.ts` — dynamic debounce based on generation speed
 - `bridge/bridgeRef.ts` — singleton bridge reference management
 - `bridge/types.ts` — worker message protocol types
@@ -34,6 +42,12 @@ graph TB
 - `worker/generators/dividerExport.ts` — standalone divider STL export
 - `worker/generators/wallPatterns.ts` — hexgrid/slot patterns
 - `worker/generators/slotBuilder.ts` — wall slot cutout geometry
+- `worker/generators/splitConnectorBuilder.ts` — connector nubs for split bin assembly
+- `worker/generators/baseplateGenerator.ts` — baseplate BREP generation
+- `worker/generators/baseplateDirectMesh.ts` — direct mesh generation for baseplate preview
+- `worker/generators/featureTags.ts` — feature tagging system for BREP objects
+- `worker/generators/generatorTypes.ts` — shared type definitions for generators
+- `worker/generators/hexGrid.ts` — hex grid layout calculations
 - `worker/generators/shapeCache.ts` — LRU cache for BREP solids
 - `worker/generators/patterns/` — pattern system (honeycomb, registry)
 - `export/stlExporter.ts` — STL file export

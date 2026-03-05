@@ -34,13 +34,9 @@ export function slugify(name: string): string {
   let slug = name
     .toLowerCase()
     .trim()
-    // Replace spaces and underscores with hyphens
     .replace(/[\s_]+/g, '-')
-    // Remove non-alphanumeric characters (except hyphens)
     .replace(/[^a-z0-9-]/g, '')
-    // Collapse multiple hyphens
     .replace(/-+/g, '-')
-    // Trim hyphens from start/end
     .replace(/^-+|-+$/g, '');
 
   // Truncate to max length, preferring word boundaries
@@ -53,7 +49,6 @@ export function slugify(name: string): string {
     }
   }
 
-  // Default if empty
   return slug || 'layout';
 }
 

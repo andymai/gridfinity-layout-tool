@@ -39,7 +39,7 @@ export type {
 
 // === Layout CRUD (Async - Legacy API) ===
 // Consider using atomic operations above instead for automatic library sync.
-export { saveLayoutAsync, loadLayoutAsync, deleteLayoutAsync } from './LayoutService';
+export { saveLayoutAsync, loadLayoutAsync } from './LayoutService';
 
 // === Layout CRUD (Async - Result-Based) ===
 // Use these when you need explicit error handling with Result types
@@ -106,21 +106,13 @@ export {
 export { copyToClipboard, downloadLayoutAsFile } from './utils';
 
 // === Shared With Me ===
-export {
-  saveSharedWithMe,
-  loadSharedWithMe,
-  clearSharedWithMe,
-  saveSharedWithMeAsync,
-  loadSharedWithMeAsync,
-  clearSharedWithMeAsync,
-} from './SharedWithMeService';
+export { saveSharedWithMe, loadSharedWithMe, clearSharedWithMe } from './SharedWithMeService';
 
 // === Migration ===
 export {
   isMigrationNeeded,
   migrateAllLayoutsToIndexedDB,
   migrateLayoutToIndexedDB,
-  migrateLibraryToIndexedDB,
   getMigrationStatus,
   clearMigrationFlag,
 } from './migration';

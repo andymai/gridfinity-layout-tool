@@ -34,6 +34,9 @@ graph TB
 - `store/cutoutSelection.ts` — cutout editor selection state
 - `hooks/useGeneration.ts` — triggers geometry regeneration via bridge
 - `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs
+- `constants/` — Gridfinity geometry constants, default params, designer constraints
+- `types/` — TypeScript types for designer state, cutouts, compartments
+- `utils/` — validation, print estimates, file naming, design JSON serialization
 
 ## Critical Concepts
 

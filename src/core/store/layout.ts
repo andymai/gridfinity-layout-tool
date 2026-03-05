@@ -155,6 +155,11 @@ function toPlacementError(
   return validationOutOfBounds(reason, rect);
 }
 
+/**
+ * Layout store — the single source of truth for the active layout's data model.
+ * Contains drawer dimensions, bins, layers, categories, and all mutations.
+ * Mutations return `Result<T, LayoutError>` for explicit error handling.
+ */
 export const useLayoutStore = create<LayoutState>()(
   immer((set, get) => {
     const setLocal = (fn: (state: LayoutState) => void): void => {

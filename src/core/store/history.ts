@@ -87,6 +87,10 @@ interface HistoryState {
   clear: () => void;
 }
 
+/**
+ * History store — undo/redo stack (max 100 states).
+ * Use `useUndoableAction()` hook to wrap mutations for automatic history tracking.
+ */
 export const useHistoryStore = create<HistoryState>((set, get) => ({
   past: [],
   future: [],

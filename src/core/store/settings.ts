@@ -57,6 +57,10 @@ interface SettingsState {
   saveCategoriesAsDefaults: (categories: Category[]) => Result<void, StorageError>;
 }
 
+/**
+ * Settings store — user preferences persisted to localStorage (`gridfinity-settings-v1`).
+ * Includes theme, locale, print settings, grid display options, and feature toggles.
+ */
 export const useSettingsStore = create<SettingsState>()((set, get) => ({
   settings: loadSettings(),
 

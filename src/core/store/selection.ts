@@ -64,6 +64,10 @@ export const INITIAL_SELECTION_STATE = {
   quickLabelBinId: null as BinId | null,
 } as const;
 
+/**
+ * Selection store — tracks selected bin IDs, active layer, and active category.
+ * Use `useShallow` when selecting multiple fields to avoid unnecessary rerenders.
+ */
 export const useSelectionStore = create<SelectionStore>((set) => ({
   // Initial state
   ...INITIAL_SELECTION_STATE,

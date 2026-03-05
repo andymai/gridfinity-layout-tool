@@ -92,6 +92,12 @@ interface LibraryState {
   getNameSuggestionState: (layoutId: LayoutId) => NameSuggestionState | undefined;
 }
 
+/**
+ * Library store — manages the multi-layout library index.
+ * Tracks `activeLayoutId`, layout entries (metadata + thumbnails), and sorting.
+ * Persisted to IndexedDB via {@link saveLibrary}. A small breadcrumb
+ * (active layout ID) is kept in localStorage (`gridfinity-library-v1`).
+ */
 export const useLibraryStore = create<LibraryState>()(
   immer((set, get) => ({
     library: createDefaultLibrary(generateLayoutId(), 'Untitled layout'),

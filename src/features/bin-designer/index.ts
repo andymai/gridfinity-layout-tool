@@ -22,7 +22,6 @@ export { loadDesign, deleteDesign, listDesigns, updateDesignParams } from './sto
 // --- Hooks ---
 export {
   useCustomBins,
-  refreshCustomBinsCache,
   useDesignThumbnail,
   clearThumbnailCache,
   updateThumbnailCache,

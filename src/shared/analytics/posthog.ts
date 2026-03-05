@@ -33,7 +33,7 @@ import { generateUUID, splitBinsByLocation, getGridBins } from '@/shared/utils';
 // CONSOLIDATED ANALYTICS STORAGE
 // ============================================
 
-export const ANALYTICS_STORAGE_KEY = 'gridfinity-analytics-v1';
+const ANALYTICS_STORAGE_KEY = 'gridfinity-analytics-v1';
 
 interface AnalyticsData {
   userId: string;
@@ -673,7 +673,8 @@ function checkEngagementMilestones(): void {
       if (binsOnGrid >= min && !data.milestones[key]) {
         data.milestones[key] = new Date().toISOString();
         changed = true;
-        trackEngagementMilestone(key);
+        trackEvent('engagement_milestone', { milestone: key });
+        updatePersonProperties();
       }
     }
 
@@ -683,16 +684,6 @@ function checkEngagementMilestones(): void {
   } catch {
     // Silently ignore - analytics should never break the app
   }
-}
-
-/**
- * Track when a user reaches an engagement milestone.
- * Called automatically when bin count thresholds are crossed.
- */
-export function trackEngagementMilestone(milestone: 'first_bin' | 'engaged' | 'substantial'): void {
-  trackEvent('engagement_milestone', { milestone });
-  // Also update person properties when milestones are reached
-  updatePersonProperties();
 }
 
 // ============================================
@@ -824,7 +815,7 @@ function computeEngagementTier(layoutCount: number, totalBins: number): 'new' | 
  * Update person properties in PostHog.
  * Call this after significant actions to keep user profile up-to-date.
  */
-export function updatePersonProperties(): void {
+function updatePersonProperties(): void {
   if (!posthogInstance) return;
 
   try {
@@ -931,7 +922,7 @@ export function markFeatureUsed(
  * Get current layout context for error enrichment.
  * This helps debug errors by showing what the user was doing.
  */
-export function getLayoutContext(): Record<string, unknown> {
+function getLayoutContext(): Record<string, unknown> {
   try {
     const layout = useLayoutStore.getState().layout;
     const { interaction } = useInteractionStore.getState();
@@ -967,18 +958,6 @@ export function captureException(error: Error, additionalContext?: Record<string
   } catch {
     // Never break the app for analytics
   }
-}
-
-// ============================================
-// POSTHOG INSTANCE ACCESS (for advanced usage)
-// ============================================
-
-/**
- * Get the PostHog instance for advanced operations.
- * Returns null if PostHog isn't initialized.
- */
-export function getPostHogInstance(): PostHog | null {
-  return posthogInstance;
 }
 
 // ============================================

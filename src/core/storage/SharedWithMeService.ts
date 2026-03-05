@@ -13,9 +13,8 @@
 import type { SharedWithMeEntry } from '@/core/types';
 import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result/errors';
-import { ok, err, isOk, storageCorrupted } from '@/core/result';
+import { ok, err, storageCorrupted } from '@/core/result';
 import { classifyStorageError } from './errorUtils';
-import * as indexedDB from './backends/indexedDB';
 
 const SHARED_WITH_ME_KEY = 'gridfinity-shared-with-me-v1';
 
@@ -99,45 +98,4 @@ export function clearSharedWithMe(): Result<void, StorageError> {
     const message = error instanceof Error ? error.message : String(error);
     return err(storageCorrupted(SHARED_WITH_ME_KEY, [message], error));
   }
-}
-
-// === Async IDB-backed Operations ===
-// These try IndexedDB first, falling back to localStorage.
-
-/**
- * Save shared-with-me entries to IndexedDB (primary) with localStorage fallback.
- */
-export async function saveSharedWithMeAsync(entries: SharedWithMeEntry[]): Promise<void> {
-  try {
-    await indexedDB.saveSharedWithMeEntries(entries);
-  } catch {
-    // Fall back to localStorage
-    saveSharedWithMe(entries);
-  }
-}
-
-/**
- * Load shared-with-me entries from IndexedDB (primary), falling back to localStorage.
- */
-export async function loadSharedWithMeAsync(): Promise<SharedWithMeEntry[]> {
-  try {
-    const entries = await indexedDB.loadSharedWithMeEntries();
-    if (entries !== null) return entries;
-  } catch {
-    // Fall back to localStorage
-  }
-  const result = loadSharedWithMe();
-  return isOk(result) ? result.value : [];
-}
-
-/**
- * Clear shared-with-me entries from both IndexedDB and localStorage.
- */
-export async function clearSharedWithMeAsync(): Promise<void> {
-  try {
-    await indexedDB.clearSharedWithMeEntries();
-  } catch {
-    /* ignore */
-  }
-  clearSharedWithMe();
 }

@@ -78,7 +78,6 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
       const bin = findBinById(layout, binId);
       if (!bin) return;
 
-      // Convert mouse click position to grid coordinates
       const clickCoord = getGridCoords(clientX, clientY);
       if (!clickCoord) return;
 
@@ -186,11 +185,9 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
       let finalDeltaY = deltaY;
 
       if (overGrid) {
-        // Check for swap target when in swap mode (single bin only)
         if (interaction.swapMode && draggedBins.length === 1) {
           const draggedBin = draggedBins[0];
 
-          // Find bin at current cursor position (excluding dragged bin)
           const targetBin = findBinAtPosition(clamped, activeLayerId, layout, otherBinIds);
 
           if (targetBin) {

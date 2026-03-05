@@ -3,7 +3,7 @@ import { useSettingsStore } from '@/core/store/settings';
 
 // Telemetry client version for tracking schema/protocol changes
 // Separate from app version - increment when telemetry format changes
-export const CLIENT_VERSION = '0.1.0';
+const CLIENT_VERSION = '0.1.0';
 
 const FLUSH_INTERVAL_MS = 30_000; // 30 seconds
 const FLUSH_THRESHOLD = 20; // or 20 events
