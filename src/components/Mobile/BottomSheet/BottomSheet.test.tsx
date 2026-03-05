@@ -27,8 +27,12 @@ describe('BottomSheet', () => {
   });
 
   afterEach(() => {
-    useMobileStore.setState({
-      activeMobilePanel: null,
+    // Wrap in act() so the store update (which may re-render still-mounted
+    // components) is processed inside React's scheduler before cleanup.
+    act(() => {
+      useMobileStore.setState({
+        activeMobilePanel: null,
+      });
     });
     document.body.style.overflow = '';
   });
@@ -316,7 +320,9 @@ describe('BottomSheet', () => {
     expect(document.body.style.overflow).toBe('hidden');
 
     // Close the panel
-    useMobileStore.setState({ activeMobilePanel: null });
+    act(() => {
+      useMobileStore.setState({ activeMobilePanel: null });
+    });
 
     rerender(
       <BottomSheet title="Test Panel">

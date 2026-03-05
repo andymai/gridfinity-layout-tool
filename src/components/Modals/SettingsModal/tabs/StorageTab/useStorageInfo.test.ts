@@ -30,11 +30,15 @@ describe('useStorageInfo', () => {
     vi.stubGlobal('navigator', nav);
   });
 
-  it('returns loading state initially', () => {
+  it('starts in loading state then resolves', async () => {
     const { result } = renderHook(() => useStorageInfo());
 
+    // These are true synchronously before the async useEffect resolves.
     expect(result.current.loading).toBe(true);
     expect(result.current.backend).toBeNull();
+
+    // Drain the pending async useEffect so it doesn't leak into the next test.
+    await waitFor(() => expect(result.current.loading).toBe(false));
   });
 
   it('resolves with backend, usage, and storage estimate', async () => {
