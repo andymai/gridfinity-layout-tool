@@ -382,7 +382,7 @@ function CameraController({
 
   useEffect(() => {
     if (!initializedRef.current) {
-      const direction = new THREE.Vector3(0.6, -0.6, 0.5).normalize();
+      const direction = new THREE.Vector3(...CAMERA_PRESETS.top).normalize();
       camera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
       camera.up.set(0, 0, 1);
       camera.lookAt(binCenter);
@@ -1094,9 +1094,9 @@ export function BaseplatePreview({
   );
 
   const handleResetView = useCallback(() => {
-    setActivePreset('isometric');
-    setCameraPreset('isometric');
-  }, [setCameraPreset]);
+    setActivePreset('top');
+    setCameraPreset('top');
+  }, [setActivePreset, setCameraPreset]);
 
   const handleOrbitStart = useCallback(() => {
     setActivePreset(null);

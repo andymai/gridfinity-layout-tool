@@ -547,7 +547,7 @@ interface PaddingStepperProps {
 /** Compact stepper for a single padding value (mm). */
 function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
   return (
-    <div className="flex flex-col items-center gap-0.5">
+    <div className="w-fit flex flex-col items-center gap-0.5">
       <span className="text-xs text-content-tertiary">{label}</span>
       <Stepper
         size="sm"

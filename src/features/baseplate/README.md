@@ -44,3 +44,4 @@ graph TB
 2. **Fractional edges** — 0.5-unit edges are absorbed into the outermost piece
 3. **Worker pool is optional** — parallel generation falls back to sequential if pool unavailable
 4. **Grid units vs mm** — stored params use grid units; multiply by `gridUnitMm` (42mm) for generation
+5. **Default camera is top-down** — `BaseplatePreview` opens in top view (`CAMERA_PRESETS.top`); the reset button also returns to top view (not isometric)
