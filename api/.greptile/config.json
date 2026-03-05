@@ -1,0 +1,50 @@
+{
+  "strictness": 5,
+  "rules": [
+    {
+      "id": "api-security-pipeline",
+      "description": "Every API endpoint must follow the security pipeline: validate HTTP method → rate limit → validate input/ID → validate structure → content filter → auth check → perform operation → handle errors. Missing any step is a security gap.",
+      "severity": "critical"
+    },
+    {
+      "id": "api-rate-limiting",
+      "description": "All endpoints must call checkRateLimit() with the correct action tier. CRUD: 100/min, report: 10/hr, suggest: 20/hr, slicer: 30/hr. Rate limit failures must return 429 with retryAfter.",
+      "severity": "critical"
+    },
+    {
+      "id": "api-input-validation",
+      "description": "Validate all input at the boundary: size limits (500KB layout, 100KB designer), bin count (2500 max), string lengths, custom property constraints. Use validators from api/lib/validation.ts and api/lib/designerValidation.ts.",
+      "severity": "critical"
+    },
+    {
+      "id": "api-content-filtering",
+      "description": "User-generated content (names, labels, notes, categories) must pass through filterLayoutContent() from api/lib/contentFilter.ts before storage. Check for XSS, blocklisted terms, URL injection, spam patterns.",
+      "severity": "critical"
+    },
+    {
+      "id": "api-token-security",
+      "description": "Delete tokens must be hashed with SHA-256 + TOKEN_SALT before storage. Token comparison must use timingSafeEqual (constant-time). Tokens go in Redis, never in public blob storage.",
+      "severity": "critical"
+    },
+    {
+      "id": "api-error-responses",
+      "description": "Use standardized error codes from api/lib/shared.ts (VALIDATION_ERROR, RATE_LIMITED, NOT_FOUND, etc.). Never leak internal details in error messages. Log with console.error for server errors only.",
+      "severity": "high"
+    },
+    {
+      "id": "api-redis-resilience",
+      "description": "Redis operations must handle unavailability gracefully. Production: fail-closed (deny if Redis is down). Dev/preview: fail-open. Never block responses on cache write failures (fire-and-forget).",
+      "severity": "high"
+    },
+    {
+      "id": "api-prototype-pollution",
+      "description": "Custom property keys must be checked against reserved keys (__proto__, constructor, prototype, toString, valueOf, hasOwnProperty). Block prototype pollution vectors at the validation layer.",
+      "severity": "critical"
+    },
+    {
+      "id": "api-llm-origin-validation",
+      "description": "LLM endpoints must validate the Origin header against the allowlist (gridfinity.xyz, preview deploys, localhost). Requests from unlisted origins must be rejected before any LLM call is made.",
+      "severity": "critical"
+    }
+  ]
+}

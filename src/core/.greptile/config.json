@@ -1,0 +1,34 @@
+{
+  "rules": [
+    {
+      "id": "core-result-type",
+      "description": "All fallible operations in core/ must return Result<T, E>. Store mutations return Result<T, LayoutError | ValidationError>. Storage operations return Promise<Result<T, StorageError>>. Use domain-specific error constructors from @/core/result/constructors.",
+      "severity": "critical"
+    },
+    {
+      "id": "core-branded-ids",
+      "description": "Branded ID types (BinId, LayerId, CategoryId, LayoutId, DesignId) must be used in all function signatures. Brand constructors (binId(), layerId()) applied at deserialization boundaries. Never pass bare strings between functions.",
+      "severity": "high"
+    },
+    {
+      "id": "core-store-pattern",
+      "description": "Stores must use create<State>()(immer((set, get) => { ... })) pattern. Mutations that can fail return Result<T, E>. Always-succeed mutations call set() with no return. Queries return bare values. Use get() for reading state in closures.",
+      "severity": "high"
+    },
+    {
+      "id": "core-storage-facade",
+      "description": "External code must import from @/core/storage (barrel). Internal modules (LayoutService, LayoutManager, backends/) are implementation details. Atomic operations (saveLayoutWithMetadata, etc.) are preferred over legacy CRUD.",
+      "severity": "high"
+    },
+    {
+      "id": "core-constraints",
+      "description": "All limit validations must reference the CONSTRAINTS object. No magic numbers. Grid: 0.5-50, layers: 1-10, categories: 1-20, label: 24 chars, name: 64 chars, notes: 256 chars, layouts: 500.",
+      "severity": "medium"
+    },
+    {
+      "id": "core-error-constructors",
+      "description": "Create errors via constructors (validationOutOfBounds(), layoutLayerLimit(), etc.) from @/core/result/constructors. Never create error objects manually. Use unknownError() to wrap unexpected exceptions.",
+      "severity": "medium"
+    }
+  ]
+}

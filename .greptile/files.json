@@ -1,0 +1,38 @@
+[
+  {
+    "path": "CLAUDE.md",
+    "description": "Project conventions, architecture overview, code style rules, and debugging guidelines"
+  },
+  {
+    "path": "src/core/types.ts",
+    "description": "Core data model: Layout, Bin, Layer, Category, Drawer. Branded ID types (BinId, LayerId, etc.). Interaction types."
+  },
+  {
+    "path": "src/core/constants.ts",
+    "description": "All constraints (grid, layers, categories, undo limits), half-bin helpers, default values, ID generators, breakpoints"
+  },
+  {
+    "path": "src/core/result/index.ts",
+    "description": "Result<T, E> type system — ok/err constructors, type guards, error types, utility functions"
+  },
+  {
+    "path": "src/core/storage/index.ts",
+    "description": "Public storage facade — atomic operations, layout CRUD, library management, import/export"
+  },
+  {
+    "path": "api/lib/shared.ts",
+    "description": "API error codes, token hashing, ID validation, constant-time comparison utilities"
+  },
+  {
+    "path": "api/lib/validation.ts",
+    "description": "Layout share validation — size limits, bin constraints, custom property validation, prototype pollution prevention"
+  },
+  {
+    "path": "api/lib/rateLimit.ts",
+    "description": "Rate limiting implementation — Redis sliding window, action tiers, fail-closed production behavior"
+  },
+  {
+    "path": "api/lib/contentFilter.ts",
+    "description": "Content moderation — blocklist, XSS detection, URL filtering, spam detection"
+  }
+]

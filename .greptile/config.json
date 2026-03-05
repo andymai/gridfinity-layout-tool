@@ -1,0 +1,78 @@
+{
+  "strictness": 4,
+  "commentTypes": ["bugs", "security", "performance", "style", "nitpicks", "praise"],
+  "labels": [
+    { "name": "api", "glob": "api/**" },
+    { "name": "core", "glob": "src/core/**" },
+    { "name": "feature", "glob": "src/features/**" },
+    { "name": "shared", "glob": "src/shared/**" },
+    { "name": "i18n", "glob": "src/i18n/**" },
+    { "name": "tests", "glob": "**/*.test.{ts,tsx}" },
+    { "name": "design-system", "glob": "src/design-system/**" },
+    { "name": "e2e", "glob": "e2e/**" }
+  ],
+  "ignore": [
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "src/i18n/locales/*.json",
+    "tailwind.config.*",
+    "vite.config.*",
+    "tsconfig*.json",
+    "*.d.ts",
+    "dist/**",
+    ".vercel/**"
+  ],
+  "patternRepositories": ["andymai/brepjs"],
+  "rules": [
+    {
+      "id": "coordinate-system",
+      "description": "Grid origin is (0,0) at BOTTOM-LEFT. layers[0] is the bottom layer. UI reverses display via getDisplayLayers(). Verify any code touching grid positions or layer indices handles this correctly.",
+      "severity": "critical"
+    },
+    {
+      "id": "staging-layer",
+      "description": "Staging bins use layerId === STAGING_ID (the '__staging__' constant). Always use the STAGING_ID constant from @/core/constants, never the raw string. Bins are auto-staged when displaced by grid resizes or layer deletions.",
+      "severity": "critical"
+    },
+    {
+      "id": "half-bin-mode",
+      "description": "Half-bin mode allows 0.5-unit increments. Use snapToHalf(), snapToGrid(halfBinMode), and isFractional() helpers from @/core/constants. Never round grid coordinates manually.",
+      "severity": "high"
+    },
+    {
+      "id": "result-type",
+      "description": "All fallible operations must return Result<T, E> from @/core/result. Use ok()/err() constructors and domain-specific error types (LayoutError, ValidationError, StorageError, ApiError). Never throw for expected failures.",
+      "severity": "high"
+    },
+    {
+      "id": "branded-ids",
+      "description": "Use branded ID types (BinId, LayerId, CategoryId, LayoutId, DesignId) from @/core/types. Apply brand constructors (binId(), layerId(), etc.) at system boundaries (deserialization, user input).",
+      "severity": "high"
+    },
+    {
+      "id": "atomic-storage",
+      "description": "Use atomic storage operations from @/core/storage facade: saveLayoutWithMetadata(), createLayoutEntry(), deleteLayoutWithEntry(), switchActiveLayout(). Do not import from internal modules (LayoutService, LayoutManager, backends/).",
+      "severity": "high"
+    },
+    {
+      "id": "constraints-constants",
+      "description": "All limit checks must use the CONSTRAINTS object from @/core/constants. No magic numbers for grid bounds (0.5-50), layer limits (1-10), category limits (1-20), label length (24), name length (64), etc.",
+      "severity": "medium"
+    },
+    {
+      "id": "feature-isolation",
+      "description": "Features in src/features/ must not import from other features. Cross-feature reuse goes through src/shared/. Each feature exposes only its public API via index.ts barrel exports.",
+      "severity": "high"
+    },
+    {
+      "id": "colocated-tests",
+      "description": "Every component and hook must have a colocated sibling test file (foo.tsx -> foo.test.ts). Tests use resetAllStores() in beforeEach for isolation and createTestLayout() from @/test/testUtils.",
+      "severity": "medium"
+    },
+    {
+      "id": "i18n-completeness",
+      "description": "All user-facing strings must use useTranslation() with keys following feature.context.element naming. Add keys to en.ts first, then all locale JSONs. Gridfinity domain terms (bin, drawer, layer, staging, grid unit, height unit) stay in English across all locales.",
+      "severity": "medium"
+    }
+  ]
+}

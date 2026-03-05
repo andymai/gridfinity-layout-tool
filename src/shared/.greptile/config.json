@@ -1,0 +1,24 @@
+{
+  "rules": [
+    {
+      "id": "shared-no-feature-imports",
+      "description": "Shared code must NEVER import from src/features/. Shared components, hooks, and utilities are cross-cutting concerns consumed by features, not the other way around. If shared code needs feature-specific behavior, use dependency inversion (callbacks, generics, context). Known exception: shared barrels (e.g., src/shared/constants/bin.ts, src/shared/types/bin.ts) may re-export canonical definitions from src/features/bin-designer to prevent circular cross-feature imports.",
+      "severity": "high"
+    },
+    {
+      "id": "shared-no-domain-coupling",
+      "description": "Shared utilities should be domain-agnostic where possible. Collision detection, color math, compression, and focus management don't know about bins or layers. Domain-aware shared code (e.g., shared/generation/) must still avoid feature-level imports.",
+      "severity": "high"
+    },
+    {
+      "id": "shared-hook-patterns",
+      "description": "Shared hooks must declare all dependencies in useEffect/useCallback/useMemo arrays. Use useShallow when selecting multiple fields from Zustand stores. Document hook contracts (params, return values, side effects) for cross-feature consumers.",
+      "severity": "medium"
+    },
+    {
+      "id": "shared-component-accessibility",
+      "description": "Shared UI components (design-system primitives, dialogs, inputs) must support: keyboard navigation, focus management, ARIA attributes, and screen reader compatibility. These are consumed app-wide so accessibility gaps multiply.",
+      "severity": "high"
+    }
+  ]
+}

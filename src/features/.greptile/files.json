@@ -1,0 +1,14 @@
+[
+  {
+    "path": "src/features/bin-designer/README.md",
+    "description": "Blueprint for feature documentation — architecture diagrams, key files, critical concepts, gotchas"
+  },
+  {
+    "path": "src/features/grid-editor/README.md",
+    "description": "Comprehensive coordinate system documentation and interaction mode patterns"
+  },
+  {
+    "path": "src/core/types.ts",
+    "description": "Interaction types, data model types that features consume"
+  }
+]
