@@ -2,8 +2,8 @@
   "rules": [
     {
       "id": "shared-no-feature-imports",
-      "description": "Shared code must NEVER import from src/features/. Shared components, hooks, and utilities are cross-cutting concerns consumed by features, not the other way around. If shared code needs feature-specific behavior, use dependency inversion (callbacks, generics, context).",
-      "severity": "critical"
+      "description": "Shared code must NEVER import from src/features/. Shared components, hooks, and utilities are cross-cutting concerns consumed by features, not the other way around. If shared code needs feature-specific behavior, use dependency inversion (callbacks, generics, context). Known exception: shared barrels (e.g., src/shared/constants/bin.ts, src/shared/types/bin.ts) may re-export canonical definitions from src/features/bin-designer to prevent circular cross-feature imports.",
+      "severity": "high"
     },
     {
       "id": "shared-no-domain-coupling",

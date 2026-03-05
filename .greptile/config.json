@@ -7,7 +7,7 @@
     { "name": "feature", "glob": "src/features/**" },
     { "name": "shared", "glob": "src/shared/**" },
     { "name": "i18n", "glob": "src/i18n/**" },
-    { "name": "tests", "glob": "**/*.test.ts" },
+    { "name": "tests", "glob": "**/*.test.{ts,tsx}" },
     { "name": "design-system", "glob": "src/design-system/**" },
     { "name": "e2e", "glob": "e2e/**" }
   ],

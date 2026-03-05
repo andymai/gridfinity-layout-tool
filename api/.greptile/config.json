@@ -40,6 +40,11 @@
       "id": "api-prototype-pollution",
       "description": "Custom property keys must be checked against reserved keys (__proto__, constructor, prototype, toString, valueOf, hasOwnProperty). Block prototype pollution vectors at the validation layer.",
       "severity": "critical"
+    },
+    {
+      "id": "api-llm-origin-validation",
+      "description": "LLM endpoints must validate the Origin header against the allowlist (gridfinity.xyz, preview deploys, localhost). Requests from unlisted origins must be rejected before any LLM call is made.",
+      "severity": "critical"
     }
   ]
 }

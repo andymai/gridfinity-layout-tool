@@ -10,6 +10,8 @@ features/ → shared/ → core/
 
 Shared code may import from `core/` (types, constants, stores) but **never** from `features/`. If you need feature-specific behavior in shared code, use dependency inversion:
 
+**Known exception:** Shared barrels (`src/shared/constants/bin.ts`, `src/shared/types/bin.ts`) re-export canonical definitions from `src/features/bin-designer` to prevent circular cross-feature imports. This is an intentional architectural pattern, not a violation.
+
 - Callbacks or render props for behavior injection
 - Generics for type flexibility
 - React context for runtime configuration
