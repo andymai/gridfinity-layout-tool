@@ -1096,7 +1096,7 @@ export function BaseplatePreview({
   const handleResetView = useCallback(() => {
     setActivePreset('top');
     setCameraPreset('top');
-  }, [setCameraPreset]);
+  }, [setActivePreset, setCameraPreset]);
 
   const handleOrbitStart = useCallback(() => {
     setActivePreset(null);
