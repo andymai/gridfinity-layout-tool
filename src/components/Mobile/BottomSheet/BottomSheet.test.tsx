@@ -320,7 +320,9 @@ describe('BottomSheet', () => {
     expect(document.body.style.overflow).toBe('hidden');
 
     // Close the panel
-    useMobileStore.setState({ activeMobilePanel: null });
+    act(() => {
+      useMobileStore.setState({ activeMobilePanel: null });
+    });
 
     rerender(
       <BottomSheet title="Test Panel">

@@ -30,7 +30,7 @@ describe('useStorageInfo', () => {
     vi.stubGlobal('navigator', nav);
   });
 
-  it('returns loading state initially', async () => {
+  it('starts in loading state then resolves', async () => {
     const { result } = renderHook(() => useStorageInfo());
 
     // These are true synchronously before the async useEffect resolves.
