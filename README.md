@@ -1,6 +1,6 @@
 # Gridfinity Layout Tool
 
-Plan and design [Gridfinity](https://www.printables.com/model/274917-gridfinity-specification) drawer organizer layouts for 3D printing — right in your browser.
+Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer organizer layouts for 3D printing — right in your browser.
 
 **Live:** [gridfinitylayouttool.com](https://gridfinitylayouttool.com)
 
