@@ -1473,5 +1473,12 @@
   "changelog.noEntries": "Noch keine Updates.",
   "changelog.v20260308.title": "Community-Engagement",
   "changelog.v20260308.item1": "Engagement-Hinweise hinzugef\u00fcgt \u2014 Feedback- und Unterst\u00fctzungsaufforderungen f\u00fcr aktive Nutzer.",
-  "changelog.v20260308.item2": "Neuigkeiten-\u00c4nderungsprotokoll hinzugef\u00fcgt \u2014 sieh die neuesten \u00c4nderungen direkt hier."
+  "changelog.v20260308.item2": "Neuigkeiten-\u00c4nderungsprotokoll hinzugef\u00fcgt \u2014 sieh die neuesten \u00c4nderungen direkt hier.",
+  "changelog.v20260215.title": "Bin Designer-Verbesserungen",
+  "changelog.v20260215.item1": "Cutouts im Bin Designer horizontal und vertikal spiegeln.",
+  "changelog.v20260215.item2": "Half-lap-Wandverbinder f\u00fcr d\u00fcnne W\u00e4nde \u2014 st\u00e4rkere Drucke mit weniger Material.",
+  "changelog.v20260215.item3": "Ausrichtungsverbinder beim Export geteilter Bins f\u00fcr einfacheren Zusammenbau.",
+  "changelog.v20260120.title": "Speicher & Zuverl\u00e4ssigkeit",
+  "changelog.v20260120.item1": "Snapshot-Verlauf mit automatischem Speichern \u2014 fr\u00fchere Versionen deiner Layouts wiederherstellen.",
+  "changelog.v20260120.item2": "Alle Layouts auf einmal exportieren und importieren f\u00fcr einfaches Backup."
 }

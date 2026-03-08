@@ -1473,5 +1473,12 @@
   "changelog.noEntries": "Nenhuma atualiza\u00e7\u00e3o ainda.",
   "changelog.v20260308.title": "Engajamento da comunidade",
   "changelog.v20260308.item1": "Adicionados lembretes de engajamento \u2014 solicita\u00e7\u00f5es de feedback e apoio para usu\u00e1rios ativos.",
-  "changelog.v20260308.item2": "Adicionado registro de novidades \u2014 veja as \u00faltimas mudan\u00e7as aqui mesmo."
+  "changelog.v20260308.item2": "Adicionado registro de novidades \u2014 veja as \u00faltimas mudan\u00e7as aqui mesmo.",
+  "changelog.v20260215.title": "Melhorias no Bin Designer",
+  "changelog.v20260215.item1": "Espelhar cutouts horizontal e verticalmente no Bin Designer.",
+  "changelog.v20260215.item2": "Conectores de parede half-lap para paredes finas \u2014 impress\u00f5es mais fortes com menos material.",
+  "changelog.v20260215.item3": "Conectores de alinhamento em exporta\u00e7\u00f5es de bins divididos para montagem mais f\u00e1cil.",
+  "changelog.v20260120.title": "Armazenamento e confiabilidade",
+  "changelog.v20260120.item1": "Hist\u00f3rico de snapshots com salvamento autom\u00e1tico \u2014 restaure vers\u00f5es anteriores dos seus layouts.",
+  "changelog.v20260120.item2": "Exportar e importar todos os layouts de uma vez para backup f\u00e1cil."
 }
