@@ -1462,5 +1462,16 @@
   "toolbar.zoomIn": "Vergrößern",
   "toolbar.zoomInKey": "Vergrößern (+)",
   "toolbar.zoomOut": "Verkleinern",
-  "toolbar.zoomOutKey": "Verkleinern (−)"
+  "toolbar.zoomOutKey": "Verkleinern (−)",
+  "engagement.feedbackNudge": "Ideen f\u00fcr das Tool? Dein Feedback bestimmt, was als N\u00e4chstes gebaut wird.",
+  "engagement.giveFeedback": "Feedback geben",
+  "engagement.kofiNudge": "Gef\u00e4llt dir das Gridfinity Layout Tool? Trinkgelder helfen, es kostenlos und gepflegt zu halten.",
+  "engagement.support": "Auf Ko-fi unterst\u00fctzen",
+  "engagement.feedbackThankYou": "Danke f\u00fcr dein Feedback! Wenn dir das Tool gef\u00e4llt, unterst\u00fctze uns gerne auf Ko-fi.",
+  "changelog.whatsNew": "Neuigkeiten",
+  "changelog.newUpdates": "Neue Updates verf\u00fcgbar",
+  "changelog.noEntries": "Noch keine Updates.",
+  "changelog.v20260308.title": "Community-Engagement",
+  "changelog.v20260308.item1": "Engagement-Hinweise hinzugef\u00fcgt \u2014 Feedback- und Unterst\u00fctzungsaufforderungen f\u00fcr aktive Nutzer.",
+  "changelog.v20260308.item2": "Neuigkeiten-\u00c4nderungsprotokoll hinzugef\u00fcgt \u2014 sieh die neuesten \u00c4nderungen direkt hier."
 }

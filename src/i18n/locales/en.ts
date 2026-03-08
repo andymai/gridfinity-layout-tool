@@ -1798,6 +1798,28 @@ const en: Record<string, string> = {
   'designLinking.designerUpdated.title': 'Designer Updated',
   'designLinking.designerUpdated.description':
     'The dimensions of "{name}" in the designer have been updated to match the bin resize. You can review the changes in the designer.',
+
+  // ===========================================================================
+  // Engagement Nudges
+  // ===========================================================================
+  'engagement.feedbackNudge': 'Have ideas for the tool? Your feedback shapes what gets built next.',
+  'engagement.giveFeedback': 'Share Feedback',
+  'engagement.kofiNudge':
+    'Enjoying the Gridfinity Layout Tool? Tips help keep it free and maintained.',
+  'engagement.support': 'Support on Ko-fi',
+  'engagement.feedbackThankYou':
+    'Thanks for your feedback! If you enjoy the tool, consider supporting on Ko-fi.',
+
+  // ===========================================================================
+  // Changelog / What's New
+  // ===========================================================================
+  'changelog.whatsNew': "What's New",
+  'changelog.newUpdates': 'New updates available',
+  'changelog.noEntries': 'No updates yet.',
+  'changelog.v20260308.title': 'Community Engagement',
+  'changelog.v20260308.item1':
+    'Added engagement nudges — feedback and support prompts for active users.',
+  'changelog.v20260308.item2': "Added What's New changelog — see the latest changes right here.",
 };
 
 export default en;

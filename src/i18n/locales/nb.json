@@ -1462,5 +1462,16 @@
   "toolbar.zoomIn": "Zoom inn",
   "toolbar.zoomInKey": "Zoom inn (+)",
   "toolbar.zoomOut": "Zoom ut",
-  "toolbar.zoomOutKey": "Zoom ut (−)"
+  "toolbar.zoomOutKey": "Zoom ut (−)",
+  "engagement.feedbackNudge": "Har du ideer til verkt\u00f8yet? Tilbakemeldingene dine former hva som bygges videre.",
+  "engagement.giveFeedback": "Gi tilbakemelding",
+  "engagement.kofiNudge": "Liker du Gridfinity Layout Tool? Tips hjelper med \u00e5 holde det gratis og vedlikeholdt.",
+  "engagement.support": "St\u00f8tt p\u00e5 Ko-fi",
+  "engagement.feedbackThankYou": "Takk for tilbakemeldingen! Hvis du liker verkt\u00f8yet, vurder \u00e5 st\u00f8tte oss p\u00e5 Ko-fi.",
+  "changelog.whatsNew": "Nyheter",
+  "changelog.newUpdates": "Nye oppdateringer tilgjengelig",
+  "changelog.noEntries": "Ingen oppdateringer enn\u00e5.",
+  "changelog.v20260308.title": "Samfunnsengasjement",
+  "changelog.v20260308.item1": "Lagt til engasjementsp\u00e5minnelser \u2014 tilbakemeldings- og st\u00f8tteoppfordringer for aktive brukere.",
+  "changelog.v20260308.item2": "Lagt til endringslogg for nyheter \u2014 se de siste endringene her."
 }

@@ -13,6 +13,9 @@ import { LanguageSelector } from '@/shared/components/LanguageSelector';
 import { PresenceAvatars } from '../Collab';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { useToastStore } from '@/core/store/toast';
+import { trackEvent } from '@/shared/analytics/posthog';
+import { hasUnseenChangelog } from '@/features/engagement';
 import type { SaveStatus } from '@/shared/hooks';
 import type { ShareModalRenderProps } from '@/features/layout-library/components/LayoutManagerModal';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -40,6 +43,8 @@ interface HeaderProps {
 export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const t = useTranslation();
   const { isTablet } = useResponsive();
+  const showChangelogDot = hasUnseenChangelog();
+  const feedbackToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCollabEnabled = useFeatureFlag('collaborative_editing');
   const { isCollaborative } = useCollabMode();
 
@@ -313,11 +318,34 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         {/* Language selector */}
         <LanguageSelector />
 
-        {/* Feedback link */}
-        <a
-          href="https://github.com/andymai/gridfinity-layout-tool/issues"
-          target="_blank"
-          rel="noopener noreferrer"
+        {/* Feedback link — opens GitHub Issues and shows thank-you toast with Ko-fi mention */}
+        <button
+          onClick={() => {
+            window.open(
+              'https://github.com/andymai/gridfinity-layout-tool/issues',
+              '_blank',
+              'noopener,noreferrer'
+            );
+            trackEvent('feedback_link_clicked', { source: 'header' });
+            // Show thank-you toast with Ko-fi mention after a brief delay
+            // Clear any pending timer to prevent duplicate toasts on rapid clicks
+            if (feedbackToastTimer.current) clearTimeout(feedbackToastTimer.current);
+            feedbackToastTimer.current = setTimeout(() => {
+              useToastStore.getState().addToast({
+                message: t('engagement.feedbackThankYou'),
+                type: 'success',
+                duration: 8000,
+                action: {
+                  label: t('engagement.support'),
+                  onClick: () => {
+                    trackEvent('kofi_clicked', { source: 'feedback_thankyou' });
+                    window.open('https://ko-fi.com/andyaragon', '_blank', 'noopener,noreferrer');
+                  },
+                },
+              });
+              feedbackToastTimer.current = null;
+            }, 1000);
+          }}
           className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary flex items-center gap-1.5"
           title={t('header.sendFeedback')}
           aria-label={t('header.sendFeedback')}
@@ -331,11 +359,11 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             />
           </svg>
           <span className="hidden lg:inline">{t('header.sendFeedback')}</span>
-        </a>
+        </button>
 
         <button
           onClick={onHelpClick}
-          className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary"
+          className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary relative"
           title={t('header.showHelp')}
           aria-label={t('header.helpAndShortcuts')}
         >
@@ -364,6 +392,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             </svg>
             <span className="hidden lg:inline">{t('header.help')}</span>
           </span>
+          {showChangelogDot && (
+            <span
+              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-accent animate-pulse"
+              aria-label={t('changelog.newUpdates')}
+            />
+          )}
         </button>
 
         <a
