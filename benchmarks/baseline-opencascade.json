@@ -1,14 +1,14 @@
 {
   "files": [
     {
-      "filepath": "/home/andy/Git/gridfinity-layout-tool/src/features/generation/worker/generators/baseplateGenerator.bench.ts",
+      "filepath": "src/features/generation/worker/generators/baseplateGenerator.bench.ts",
       "groups": [
         {
           "fullName": "src/features/generation/worker/generators/baseplateGenerator.bench.ts > baseplate generation",
           "benchmarks": [
             {
               "id": "804781327_0_0",
-              "name": "2×2 no magnets",
+              "name": "2\u00d72 no magnets",
               "rank": 1,
               "rme": 2.1179308244117525,
               "samples": [],
@@ -33,7 +33,7 @@
             },
             {
               "id": "804781327_0_1",
-              "name": "4×4 no magnets",
+              "name": "4\u00d74 no magnets",
               "rank": 4,
               "rme": 1.4924259164267564,
               "samples": [],
@@ -58,7 +58,7 @@
             },
             {
               "id": "804781327_0_2",
-              "name": "4×4 with magnets",
+              "name": "4\u00d74 with magnets",
               "rank": 3,
               "rme": 3.914786061706821,
               "samples": [],
@@ -83,7 +83,7 @@
             },
             {
               "id": "804781327_0_3",
-              "name": "6×4 magnets (stress)",
+              "name": "6\u00d74 magnets (stress)",
               "rank": 5,
               "rme": 0.5311127145050423,
               "samples": [],
@@ -108,7 +108,7 @@
             },
             {
               "id": "804781327_0_4",
-              "name": "3×3 magnets + connectors",
+              "name": "3\u00d73 magnets + connectors",
               "rank": 2,
               "rme": 2.0910463742476226,
               "samples": [],
@@ -136,14 +136,14 @@
       ]
     },
     {
-      "filepath": "/home/andy/Git/gridfinity-layout-tool/src/features/generation/worker/generators/binGenerator.bench.ts",
+      "filepath": "src/features/generation/worker/generators/binGenerator.bench.ts",
       "groups": [
         {
           "fullName": "src/features/generation/worker/generators/binGenerator.bench.ts > core dimensions",
           "benchmarks": [
             {
               "id": "-406545359_0_0",
-              "name": "0.5×0.5 with lip",
+              "name": "0.5\u00d70.5 with lip",
               "rank": 3,
               "rme": 2.0729611549547577,
               "samples": [],
@@ -168,7 +168,7 @@
             },
             {
               "id": "-406545359_0_1",
-              "name": "1×1 with lip",
+              "name": "1\u00d71 with lip",
               "rank": 2,
               "rme": 0.6456808584510952,
               "samples": [],
@@ -193,7 +193,7 @@
             },
             {
               "id": "-406545359_0_2",
-              "name": "1×1 no lip",
+              "name": "1\u00d71 no lip",
               "rank": 1,
               "rme": 0.47255371719253186,
               "samples": [],
@@ -218,7 +218,7 @@
             },
             {
               "id": "-406545359_0_3",
-              "name": "2×2 with lip",
+              "name": "2\u00d72 with lip",
               "rank": 4,
               "rme": 0.8568463674274649,
               "samples": [],
@@ -243,7 +243,7 @@
             },
             {
               "id": "-406545359_0_4",
-              "name": "4×4 with lip",
+              "name": "4\u00d74 with lip",
               "rank": 5,
               "rme": 0.9439002743226647,
               "samples": [],
@@ -273,7 +273,7 @@
           "benchmarks": [
             {
               "id": "-406545359_1_0",
-              "name": "2×2 hollow + scoop",
+              "name": "2\u00d72 hollow + scoop",
               "rank": 2,
               "rme": 0.8309401420743949,
               "samples": [],
@@ -298,7 +298,7 @@
             },
             {
               "id": "-406545359_1_1",
-              "name": "2×2 with insert",
+              "name": "2\u00d72 with insert",
               "rank": 3,
               "rme": 0.44075496749203696,
               "samples": [],
@@ -323,7 +323,7 @@
             },
             {
               "id": "-406545359_1_2",
-              "name": "2×2 with cutout",
+              "name": "2\u00d72 with cutout",
               "rank": 1,
               "rme": 1.2951632569442826,
               "samples": [],
@@ -348,7 +348,7 @@
             },
             {
               "id": "-406545359_1_3",
-              "name": "3×3 2×2 compartments + scoop",
+              "name": "3\u00d73 2\u00d72 compartments + scoop",
               "rank": 4,
               "rme": 1.0960194087244086,
               "samples": [],
@@ -378,7 +378,7 @@
           "benchmarks": [
             {
               "id": "-406545359_2_0",
-              "name": "1.5×2.5 with lip",
+              "name": "1.5\u00d72.5 with lip",
               "rank": 2,
               "rme": 1.3661118164417434,
               "samples": [],
@@ -403,7 +403,7 @@
             },
             {
               "id": "-406545359_2_1",
-              "name": "0.5×1.5 with lip",
+              "name": "0.5\u00d71.5 with lip",
               "rank": 1,
               "rme": 0.7327047760232879,
               "samples": [],
@@ -433,7 +433,7 @@
           "benchmarks": [
             {
               "id": "-406545359_3_0",
-              "name": "1×1 export fidelity",
+              "name": "1\u00d71 export fidelity",
               "rank": 1,
               "rme": 2.1675971360742787,
               "samples": [],
@@ -458,7 +458,7 @@
             },
             {
               "id": "-406545359_3_1",
-              "name": "2×2 export fidelity",
+              "name": "2\u00d72 export fidelity",
               "rank": 2,
               "rme": 1.0945719590807055,
               "samples": [],
@@ -483,7 +483,7 @@
             },
             {
               "id": "-406545359_3_2",
-              "name": "2×2 export + scoop + insert",
+              "name": "2\u00d72 export + scoop + insert",
               "rank": 3,
               "rme": 0.5616538206262307,
               "samples": [],

@@ -17,8 +17,16 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 type KernelName = 'opencascade' | 'wasm';
 
-const kernelName: KernelName =
-  (process.env['BREPJS_KERNEL'] as KernelName | undefined) ?? 'opencascade';
+const VALID_KERNELS: readonly KernelName[] = ['opencascade', 'wasm'];
+
+function resolveKernel(): KernelName {
+  const env = process.env['BREPJS_KERNEL'];
+  if (!env) return 'opencascade';
+  if (VALID_KERNELS.includes(env as KernelName)) return env as KernelName;
+  throw new Error(`Invalid BREPJS_KERNEL="${env}". Must be one of: ${VALID_KERNELS.join(', ')}`);
+}
+
+const kernelName: KernelName = resolveKernel();
 
 /** Returns the active kernel name (useful for baseline labeling). */
 export function getKernelName(): KernelName {
@@ -92,7 +100,15 @@ async function initOpenCascadeKernel(): Promise<void> {
 }
 
 async function initWasmKernel(): Promise<void> {
-  const { initFromWasm } = await import('brepjs');
+  // initFromWasm is provided by a future brepjs version (with brepjs-wasm kernel).
+  // Use a dynamic cast since the type doesn't exist in the current brepjs package.
+  const brepjs = (await import('brepjs')) as Record<string, unknown>;
+  const initFromWasm = brepjs['initFromWasm'] as ((wasm: Buffer) => Promise<void>) | undefined;
+  if (!initFromWasm) {
+    throw new Error(
+      'initFromWasm not found in brepjs — upgrade brepjs to a version that supports the wasm kernel'
+    );
+  }
   const { readFileSync } = await import('fs');
   const { join } = await import('path');
 
