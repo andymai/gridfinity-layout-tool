@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.2.0...gridfinity-layout-tool-v4.2.1) (2026-03-08)
+
+
+### Bug Fixes
+
+* dynamic modal title per tab, add seed changelog entries ([#1067](https://github.com/andymai/gridfinity-layout-tool/issues/1067)) ([387ab9d](https://github.com/andymai/gridfinity-layout-tool/commit/387ab9da8cce934d51cd28d46d772c34db0c7302))
+
 ## [4.2.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.1.2...gridfinity-layout-tool-v4.2.0) (2026-03-08)
 
 
