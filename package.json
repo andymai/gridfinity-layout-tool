@@ -52,6 +52,8 @@
     "check:readme-reminders": "./scripts/check-readme-reminders.sh",
     "check:missing-tests": "./scripts/check-missing-tests.sh",
     "check:component-structure": "./scripts/check-component-structure.sh",
+    "bench": "vitest bench",
+    "bench:json": "vitest bench --outputJson benchmarks/latest.json",
     "knip": "knip",
     "knip:fix": "knip --fix",
     "typecheck": "tsc -b --noEmit",

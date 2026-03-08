@@ -8,7 +8,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    exclude: ['e2e/**', 'node_modules/**', '**/*.visual.tsx', '.worktrees/**'],
+    exclude: ['e2e/**', 'node_modules/**', '**/*.visual.tsx', '**/*.bench.ts', '.worktrees/**'],
     // Increase timeout for CI environment (can be 5-10x slower than local dev)
     testTimeout: 30000,
     // Use threads pool for faster jsdom tests
@@ -42,9 +42,12 @@ export default defineConfig({
       },
     },
   },
+  benchmark: {
+    include: ['**/*.bench.ts'],
+    exclude: ['node_modules/**', '.worktrees/**'],
+  },
   resolve: {
     alias: {
-      // Path alias for clean imports
       '@': path.resolve(__dirname, 'src'),
       // Mock virtual PWA module for tests
       'virtual:pwa-register/react': path.resolve(__dirname, 'src/test/mocks/pwa-register.ts'),

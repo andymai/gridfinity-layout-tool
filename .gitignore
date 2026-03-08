@@ -51,3 +51,6 @@ public/content.*.css
 
 # Generated English locale JSON (source of truth is en.ts)
 src/i18n/locales/en.json
+
+# Transient benchmark output (baselines are tracked)
+benchmarks/latest.json
