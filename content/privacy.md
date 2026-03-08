@@ -84,7 +84,7 @@ This app is not directed at children under 13. We don't knowingly collect data f
 
 ## Changes to This Policy
 
-We may update this policy occasionally. Significant changes will be noted in the app's changelog.
+We may update this policy occasionally. Significant changes will be noted in our [GitHub releases](https://github.com/andymai/gridfinity-layout-tool/releases).
 
 ## Contact
 

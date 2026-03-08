@@ -15,7 +15,6 @@ import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { hasUnseenChangelog } from '@/features/engagement';
 import type { SaveStatus } from '@/shared/hooks';
 import type { ShareModalRenderProps } from '@/features/layout-library/components/LayoutManagerModal';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -43,7 +42,6 @@ interface HeaderProps {
 export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const t = useTranslation();
   const { isTablet } = useResponsive();
-  const showChangelogDot = hasUnseenChangelog();
   const feedbackToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCollabEnabled = useFeatureFlag('collaborative_editing');
   const { isCollaborative } = useCollabMode();
@@ -392,12 +390,6 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             </svg>
             <span className="hidden lg:inline">{t('header.help')}</span>
           </span>
-          {showChangelogDot && (
-            <span
-              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-accent animate-pulse"
-              aria-label={t('changelog.newUpdates')}
-            />
-          )}
         </button>
 
         <a

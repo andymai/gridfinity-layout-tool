@@ -1809,26 +1809,6 @@ const en: Record<string, string> = {
   'engagement.support': 'Support on Ko-fi',
   'engagement.feedbackThankYou':
     'Thanks for your feedback! If you enjoy the tool, consider supporting on Ko-fi.',
-
-  // ===========================================================================
-  // Changelog / What's New
-  // ===========================================================================
-  'changelog.whatsNew': "What's New",
-  'changelog.newUpdates': 'New updates available',
-  'changelog.noEntries': 'No updates yet.',
-  'changelog.v20260308.title': 'Community Engagement',
-  'changelog.v20260308.item1':
-    'Added engagement nudges — feedback and support prompts for active users.',
-  'changelog.v20260308.item2': "Added What's New changelog — see the latest changes right here.",
-  'changelog.v20260215.title': 'Bin Designer Improvements',
-  'changelog.v20260215.item1': 'Flip cutouts horizontally and vertically in the bin designer.',
-  'changelog.v20260215.item2':
-    'Half-lap wall connectors for thin walls — stronger prints with less material.',
-  'changelog.v20260215.item3': 'Alignment connectors on split bin exports for easier assembly.',
-  'changelog.v20260120.title': 'Storage & Reliability',
-  'changelog.v20260120.item1':
-    'Snapshot history with auto-save — restore previous versions of your layouts.',
-  'changelog.v20260120.item2': 'Bulk export and import all layouts at once for easy backup.',
 };
 
 export default en;
