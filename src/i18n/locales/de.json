@@ -13,7 +13,6 @@
   "baseplate.exportNotReady": "Generierungs-Engine nicht bereit. Bitte warten und erneut versuchen.",
   "baseplate.filamentColor": "Filamentfarbe",
   "baseplate.frontView": "Vorne",
-  "baseplate.generateBaseplate": "Grundplatte generieren",
   "baseplate.generating": "Generiere...",
   "baseplate.generatingSplit": "Generiere {current}/{total}...",
   "baseplate.generationFailed": "Baseplate-Generierung fehlgeschlagen",
