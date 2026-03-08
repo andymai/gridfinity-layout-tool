@@ -38,7 +38,7 @@ function readBaseline(filePath: string): Map<string, { median: number; mean: num
     for (const group of file.groups) {
       for (const bench of group.benchmarks) {
         const key = group.fullName ? `${group.fullName} > ${bench.name}` : bench.name;
-        map.set(key, { median: bench.median ?? bench.mean, mean: bench.mean });
+        map.set(key, { median: bench.median, mean: bench.mean });
       }
     }
   }
@@ -93,8 +93,11 @@ for (const key of [...allKeys].sort()) {
   const newStr = n ? formatMs(n.median) : '—';
   const changeStr = b && n ? formatChange(b.median, n.median) : 'N/A';
 
-  if (b) totalBase += b.median;
-  if (n) totalNew += n.median;
+  // Only accumulate matched pairs for an apples-to-apples total
+  if (b && n) {
+    totalBase += b.median;
+    totalNew += n.median;
+  }
 
   rows.push(
     [key.padEnd(maxKey), baseStr.padStart(10), newStr.padStart(10), changeStr.padStart(14)].join(
