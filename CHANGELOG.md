@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.2.1...gridfinity-layout-tool-v4.3.0) (2026-03-08)
+
+
+### Features
+
+* benchmark infra and kernel swap for brepjs migration ([#1069](https://github.com/andymai/gridfinity-layout-tool/issues/1069)) ([f719a8c](https://github.com/andymai/gridfinity-layout-tool/commit/f719a8ce8b367ea0f351553c47fd5ef7d6c11a20))
+
 ## [4.2.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.2.0...gridfinity-layout-tool-v4.2.1) (2026-03-08)
 
 
