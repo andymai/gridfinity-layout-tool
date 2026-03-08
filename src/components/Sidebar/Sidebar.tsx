@@ -18,8 +18,6 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding';
-import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
-import { useLibraryStore } from '@/core/store/library';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
@@ -92,10 +90,6 @@ export function Sidebar() {
 
   // Onboarding — sidebar gallery pulse for low-engagement users
   const { shouldPulseGallery, dismissGalleryPulse } = useOnboarding();
-
-  // Baseplate generator entry point
-  const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
-  const { navigateToBaseplate } = useBaseplateRouting();
 
   // Listen for command palette open-settings-modal event (supports optional tab)
   useEffect(() => {
@@ -329,31 +323,6 @@ export function Sidebar() {
                       {realWorldDimensions.height.toFixed(0)} mm
                     </span>
                   </div>
-
-                  {/* Generate Baseplate button */}
-                  <button
-                    onClick={() => navigateToBaseplate(activeLayoutId)}
-                    className="btn btn-secondary w-full py-1.5 text-xs flex items-center justify-center gap-1.5"
-                    aria-label={t('baseplate.generateBaseplate')}
-                  >
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      {ICON_PATHS.baseplate.map((d) => (
-                        <path
-                          key={d}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d={d}
-                        />
-                      ))}
-                    </svg>
-                    {t('baseplate.generateBaseplate')}
-                  </button>
 
                   {/* Half-bin mode toggle */}
                   <div

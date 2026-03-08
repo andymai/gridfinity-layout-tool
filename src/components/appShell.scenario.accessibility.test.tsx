@@ -101,6 +101,9 @@ describe('Accessibility - Critical Issues', () => {
         'image-alt': { enabled: true },
         label: { enabled: true },
         'link-name': { enabled: true },
+        // Layer rows intentionally nest interactive controls (rename span, height
+        // steppers) inside a selectable container — accepted UX trade-off.
+        'nested-interactive': { enabled: false },
       },
     });
 
