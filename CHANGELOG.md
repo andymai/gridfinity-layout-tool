@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.3.0...gridfinity-layout-tool-v4.3.1) (2026-03-08)
+
+
+### Bug Fixes
+
+* remove What's New changelog feature ([#1071](https://github.com/andymai/gridfinity-layout-tool/issues/1071)) ([abe433d](https://github.com/andymai/gridfinity-layout-tool/commit/abe433df5e3a0757aeb0ed46aa1f516d4d56d7a3))
+
 ## [4.3.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.2.1...gridfinity-layout-tool-v4.3.0) (2026-03-08)
 
 
