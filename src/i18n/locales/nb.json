@@ -1473,5 +1473,12 @@
   "changelog.noEntries": "Ingen oppdateringer enn\u00e5.",
   "changelog.v20260308.title": "Samfunnsengasjement",
   "changelog.v20260308.item1": "Lagt til engasjementsp\u00e5minnelser \u2014 tilbakemeldings- og st\u00f8tteoppfordringer for aktive brukere.",
-  "changelog.v20260308.item2": "Lagt til endringslogg for nyheter \u2014 se de siste endringene her."
+  "changelog.v20260308.item2": "Lagt til endringslogg for nyheter \u2014 se de siste endringene her.",
+  "changelog.v20260215.title": "Forbedringer i Bin Designer",
+  "changelog.v20260215.item1": "Speilvend cutouts horisontalt og vertikalt i Bin Designer.",
+  "changelog.v20260215.item2": "Half-lap-veggkoblinger for tynne vegger \u2014 sterkere utskrifter med mindre materiale.",
+  "changelog.v20260215.item3": "Justeringskoblinger p\u00e5 delte bin-eksporter for enklere montering.",
+  "changelog.v20260120.title": "Lagring og p\u00e5litelighet",
+  "changelog.v20260120.item1": "Snapshot-historikk med automatisk lagring \u2014 gjenopprett tidligere versjoner av layoutene dine.",
+  "changelog.v20260120.item2": "Eksporter og importer alle layouts p\u00e5 en gang for enkel sikkerhetskopiering."
 }

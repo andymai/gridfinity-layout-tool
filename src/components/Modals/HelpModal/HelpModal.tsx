@@ -258,7 +258,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
           {/* Header */}
           <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
             <h2 id="help-title" style={STYLES.title}>
-              {t('help.title')}
+              {activeTab === 'changelog' ? t('changelog.whatsNew') : t('help.title')}
             </h2>
             <button
               onClick={onClose}

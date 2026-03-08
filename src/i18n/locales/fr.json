@@ -1473,5 +1473,12 @@
   "changelog.noEntries": "Aucune mise \u00e0 jour pour le moment.",
   "changelog.v20260308.title": "Engagement communautaire",
   "changelog.v20260308.item1": "Ajout de rappels d'engagement \u2014 invitations \u00e0 donner son avis et \u00e0 soutenir le projet pour les utilisateurs actifs.",
-  "changelog.v20260308.item2": "Ajout du journal des nouveaut\u00e9s \u2014 consultez les derniers changements ici m\u00eame."
+  "changelog.v20260308.item2": "Ajout du journal des nouveaut\u00e9s \u2014 consultez les derniers changements ici m\u00eame.",
+  "changelog.v20260215.title": "Am\u00e9liorations du Bin Designer",
+  "changelog.v20260215.item1": "Retourner les cutouts horizontalement et verticalement dans le Bin Designer.",
+  "changelog.v20260215.item2": "Connecteurs de paroi half-lap pour les parois fines \u2014 des impressions plus solides avec moins de mat\u00e9riau.",
+  "changelog.v20260215.item3": "Connecteurs d'alignement sur les exports de bins divis\u00e9s pour un assemblage plus facile.",
+  "changelog.v20260120.title": "Stockage et fiabilit\u00e9",
+  "changelog.v20260120.item1": "Historique de snapshots avec sauvegarde automatique \u2014 restaurez les versions pr\u00e9c\u00e9dentes de vos layouts.",
+  "changelog.v20260120.item2": "Exporter et importer tous les layouts en une fois pour une sauvegarde facile."
 }

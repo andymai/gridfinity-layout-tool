@@ -25,6 +25,20 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     titleKey: 'changelog.v20260308.title',
     itemKeys: ['changelog.v20260308.item1', 'changelog.v20260308.item2'],
   },
+  {
+    version: '2026-02-15',
+    titleKey: 'changelog.v20260215.title',
+    itemKeys: [
+      'changelog.v20260215.item1',
+      'changelog.v20260215.item2',
+      'changelog.v20260215.item3',
+    ],
+  },
+  {
+    version: '2026-01-20',
+    titleKey: 'changelog.v20260120.title',
+    itemKeys: ['changelog.v20260120.item1', 'changelog.v20260120.item2'],
+  },
 ];
 
 const CHANGELOG_STORAGE_KEY = 'gridfinity-changelog-seen';
