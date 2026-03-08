@@ -45,6 +45,7 @@ import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
+import { useEngagementNudges } from '@/features/engagement';
 
 // Lazy load command palette - only opened via Ctrl+K, no need to eagerly load
 const CommandPalette = lazyWithRetry(() =>
@@ -245,6 +246,9 @@ export default function App() {
 
   // Analytics session tracking
   useAnalytics();
+
+  // Engagement-gated feedback & support nudges
+  useEngagementNudges();
 
   // Storage migration (localStorage → IndexedDB)
   useStorageMigration();

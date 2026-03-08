@@ -1462,5 +1462,16 @@
   "toolbar.zoomIn": "Zoomer",
   "toolbar.zoomInKey": "Zoomer (+)",
   "toolbar.zoomOut": "Dézoomer",
-  "toolbar.zoomOutKey": "Dézoomer (−)"
+  "toolbar.zoomOutKey": "Dézoomer (−)",
+  "engagement.feedbackNudge": "Des id\u00e9es pour l'outil ? Vos retours d\u00e9terminent ce qui sera d\u00e9velopp\u00e9 ensuite.",
+  "engagement.giveFeedback": "Donner son avis",
+  "engagement.kofiNudge": "Vous appr\u00e9ciez le Gridfinity Layout Tool ? Les pourboires aident \u00e0 le maintenir gratuit et \u00e0 jour.",
+  "engagement.support": "Soutenir sur Ko-fi",
+  "engagement.feedbackThankYou": "Merci pour votre retour ! Si vous appr\u00e9ciez l'outil, pensez \u00e0 nous soutenir sur Ko-fi.",
+  "changelog.whatsNew": "Nouveaut\u00e9s",
+  "changelog.newUpdates": "Nouvelles mises \u00e0 jour disponibles",
+  "changelog.noEntries": "Aucune mise \u00e0 jour pour le moment.",
+  "changelog.v20260308.title": "Engagement communautaire",
+  "changelog.v20260308.item1": "Ajout de rappels d'engagement \u2014 invitations \u00e0 donner son avis et \u00e0 soutenir le projet pour les utilisateurs actifs.",
+  "changelog.v20260308.item2": "Ajout du journal des nouveaut\u00e9s \u2014 consultez les derniers changements ici m\u00eame."
 }
