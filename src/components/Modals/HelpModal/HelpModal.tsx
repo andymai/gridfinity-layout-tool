@@ -2,8 +2,6 @@ import { useEffect, useState, useMemo, type CSSProperties } from 'react';
 import { SHORTCUTS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
-import { CHANGELOG_ENTRIES, hasUnseenChangelog, markChangelogSeen } from '@/features/engagement';
-import { trackEvent } from '@/shared/analytics/posthog';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -188,18 +186,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
 export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps) {
   const t = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [hasUnseen] = useState(() => hasUnseenChangelog());
-  const [activeTab, setActiveTab] = useState<'shortcuts' | 'tips' | 'changelog'>(
-    hasUnseen ? 'changelog' : 'shortcuts'
-  );
-
-  // Mark changelog as seen when the tab is active (covers both auto-open and click paths)
-  useEffect(() => {
-    if (isOpen && activeTab === 'changelog') {
-      markChangelogSeen();
-      trackEvent('changelog_viewed');
-    }
-  }, [isOpen, activeTab]);
+  const [activeTab, setActiveTab] = useState<'shortcuts' | 'tips'>('shortcuts');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -258,7 +245,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
           {/* Header */}
           <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
             <h2 id="help-title" style={STYLES.title}>
-              {activeTab === 'changelog' ? t('changelog.whatsNew') : t('help.title')}
+              {t('help.title')}
             </h2>
             <button
               onClick={onClose}
@@ -302,21 +289,6 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                 }`}
               >
                 {t('help.tipsInfo')}
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab('changelog');
-                }}
-                className={`relative px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
-                  activeTab === 'changelog'
-                    ? 'bg-accent/20 text-accent'
-                    : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-                }`}
-              >
-                {t('changelog.whatsNew')}
-                {hasUnseen && activeTab !== 'changelog' && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-accent" />
-                )}
               </button>
             </div>
 
@@ -438,15 +410,11 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   </>
                 )}
               </div>
-            ) : activeTab === 'tips' ? (
+            ) : (
               <div className="space-y-6">
                 <TipsSection />
                 <BlockedZonesSection />
                 <BinClearanceSection />
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <ChangelogSection />
               </div>
             )}
           </div>
@@ -703,43 +671,6 @@ function BinClearanceSection() {
           {t('help.clearanceExample')}
         </p>
         <p>{t('help.clearanceHowTo')}</p>
-      </div>
-    </section>
-  );
-}
-
-// Changelog section
-function ChangelogSection() {
-  const t = useTranslation();
-
-  if (CHANGELOG_ENTRIES.length === 0) {
-    return <div className="text-center py-8 text-content-tertiary">{t('changelog.noEntries')}</div>;
-  }
-
-  return (
-    <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        {t('changelog.whatsNew')}
-      </h3>
-      <div className="space-y-4">
-        {CHANGELOG_ENTRIES.map((entry) => (
-          <div key={entry.version} className="p-4 rounded-lg" style={STYLES.tipsList}>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-semibold" style={STYLES.textPrimary}>
-                {t(entry.titleKey)}
-              </h4>
-              <span className="text-xs text-content-tertiary">{entry.version}</span>
-            </div>
-            <ul className="space-y-1.5">
-              {entry.itemKeys.map((key) => (
-                <li key={key} className="flex items-start gap-2">
-                  <span style={STYLES.colorPrimary}>•</span>
-                  <span>{t(key)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
       </div>
     </section>
   );

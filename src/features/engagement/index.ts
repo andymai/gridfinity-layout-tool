@@ -6,9 +6,3 @@ export {
   type NudgeType,
   type EngagementStatus,
 } from './engagementTracker';
-export {
-  hasUnseenChangelog,
-  markChangelogSeen,
-  CHANGELOG_ENTRIES,
-  type ChangelogEntry,
-} from './changelog';

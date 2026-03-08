@@ -1,6 +1,6 @@
 # Engagement
 
-Engagement-gated nudge system for feedback, Ko-fi support, and changelog.
+Engagement-gated nudge system for feedback and Ko-fi support.
 
 ## How it works
 
@@ -17,13 +17,10 @@ Engagement-gated nudge system for feedback, Ko-fi support, and changelog.
 
 5. **Feedback thank-you** — Clicking the feedback link in the header shows a thank-you toast with a Ko-fi mention.
 
-6. **Changelog** — "What's New" tab in the HelpModal. Notification dot on the help button when there are unseen entries. Entries tracked in `changelog.ts`, seen state stored in `gridfinity-changelog-seen`.
-
 ## Files
 
 | File                     | Purpose                                                   |
 | ------------------------ | --------------------------------------------------------- |
 | `engagementTracker.ts`   | Engagement scoring, cooldown management, localStorage I/O |
 | `useEngagementNudges.ts` | React hook mounted in App.tsx — checks gate every 60s     |
-| `changelog.ts`           | Changelog entries and seen/unseen tracking                |
 | `index.ts`               | Public API                                                |
