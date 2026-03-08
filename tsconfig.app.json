@@ -37,6 +37,7 @@
     "**/__test-infra__",
     "**/*.test.ts",
     "**/*.test.tsx",
+    "**/*.bench.ts",
     "**/*.visual.tsx"
   ]
 }

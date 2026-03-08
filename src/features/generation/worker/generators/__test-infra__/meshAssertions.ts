@@ -65,6 +65,100 @@ export function boundingBox(vertices: Float32Array): BoundingBox {
   return bb;
 }
 
+// ─── Range assertion ─────────────────────────────────────────────────────────
+
+/** Assert that `actual` is within `expected ± tolerance`. */
+function assertInRange(actual: number, expected: number, tolerance: number, label: string): void {
+  const lo = expected - tolerance;
+  const hi = expected + tolerance;
+  const msg = `${label} ${actual} outside [${lo}, ${hi}]`;
+  expect(actual, msg).toBeGreaterThanOrEqual(lo);
+  expect(actual, msg).toBeLessThanOrEqual(hi);
+}
+
+// ─── Bounding box vs params ──────────────────────────────────────────────────
+
+/** Assert mesh AABB matches expected grid dimensions within tolerance. */
+export function assertBoundingBoxMatchesParams(
+  result: MeshData,
+  params: BinParams,
+  label?: string
+): void {
+  const prefix = label ? `${label}: ` : '';
+  const bb = boundingBox(result.vertices);
+
+  const expectedW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const expectedD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const expectedH = params.height * params.heightUnitMm;
+
+  assertInRange(bb.maxX - bb.minX, expectedW, 3, `${prefix}width`);
+  assertInRange(bb.maxY - bb.minY, expectedD, 3, `${prefix}depth`);
+  assertInRange(bb.maxZ - bb.minZ, expectedH, 5, `${prefix}height`);
+}
+
+// ─── Triangle count band ────────────────────────────────────────────────────
+
+/** Assert triangle count is within ±tolerancePct% of expected. */
+export function assertTriangleCountInBand(
+  result: MeshData,
+  expected: number,
+  tolerancePct = 15,
+  label?: string
+): void {
+  const prefix = label ? `${label}: ` : '';
+  const min = Math.floor(expected * (1 - tolerancePct / 100));
+  const max = Math.ceil(expected * (1 + tolerancePct / 100));
+
+  expect(
+    result.triangleCount,
+    `${prefix}triangleCount ${result.triangleCount} outside expected range [${min}, ${max}] (expected ~${expected} ±${tolerancePct}%)`
+  ).toBeGreaterThanOrEqual(min);
+  expect(
+    result.triangleCount,
+    `${prefix}triangleCount ${result.triangleCount} outside expected range [${min}, ${max}] (expected ~${expected} ±${tolerancePct}%)`
+  ).toBeLessThanOrEqual(max);
+}
+
+// ─── Degenerate triangle detection ──────────────────────────────────────────
+
+/** Assert no zero-area triangles exist (collapsed vertices). */
+export function assertNoDegenerateTriangles(result: MeshData, label?: string): void {
+  const prefix = label ? `${label}: ` : '';
+  const { vertices, indices } = result;
+  let degenerateCount = 0;
+
+  for (let i = 0; i < indices.length; i += 3) {
+    const i0 = indices[i] * 3;
+    const i1 = indices[i + 1] * 3;
+    const i2 = indices[i + 2] * 3;
+
+    // Edge vectors: e1 = v1 - v0, e2 = v2 - v0
+    const e1x = vertices[i1] - vertices[i0];
+    const e1y = vertices[i1 + 1] - vertices[i0 + 1];
+    const e1z = vertices[i1 + 2] - vertices[i0 + 2];
+
+    const e2x = vertices[i2] - vertices[i0];
+    const e2y = vertices[i2 + 1] - vertices[i0 + 1];
+    const e2z = vertices[i2 + 2] - vertices[i0 + 2];
+
+    // Cross product
+    const cx = e1y * e2z - e1z * e2y;
+    const cy = e1z * e2x - e1x * e2z;
+    const cz = e1x * e2y - e1y * e2x;
+
+    const area = 0.5 * Math.sqrt(cx * cx + cy * cy + cz * cz);
+
+    if (area < 1e-10) {
+      degenerateCount++;
+    }
+  }
+
+  expect(
+    degenerateCount,
+    `${prefix}found ${degenerateCount} degenerate (zero-area) triangles`
+  ).toBe(0);
+}
+
 // ─── Lip-wall vertex zone counting ──────────────────────────────────────────
 
 interface WallVertexCounts {
