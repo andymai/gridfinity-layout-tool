@@ -13,7 +13,6 @@
   "baseplate.exportNotReady": "Motor de geração não está pronto. Aguarde e tente novamente.",
   "baseplate.filamentColor": "Cor do filamento",
   "baseplate.frontView": "Frente",
-  "baseplate.generateBaseplate": "Gerar placa base",
   "baseplate.generating": "Gerando...",
   "baseplate.generatingSplit": "Gerando {current}/{total}...",
   "baseplate.generationFailed": "Falha na geração da placa base",

@@ -1467,7 +1467,6 @@ const en: Record<string, string> = {
   'baseplate.totalDimensions': 'Total: {width}mm \u00d7 {depth}mm',
   'baseplate.dimensionsUnits': '{width}\u00d7{depth} units',
   'baseplate.gridPlusPadding': '{width}\u00d7{depth} grid + padding',
-  'baseplate.generateBaseplate': 'Generate Baseplate',
   'baseplate.generating': 'Generating...',
   'baseplate.generatingSplit': 'Generating {current}/{total}...',
   'baseplate.printBedSize': 'Print bed size',

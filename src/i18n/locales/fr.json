@@ -13,7 +13,6 @@
   "baseplate.exportNotReady": "Moteur de génération non prêt. Veuillez patienter et réessayer.",
   "baseplate.filamentColor": "Couleur du filament",
   "baseplate.frontView": "Face",
-  "baseplate.generateBaseplate": "Générer la plaque",
   "baseplate.generating": "Génération...",
   "baseplate.generatingSplit": "Génération {current}/{total}...",
   "baseplate.generationFailed": "Échec de la génération de la plaque de base",

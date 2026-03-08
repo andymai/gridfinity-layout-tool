@@ -13,7 +13,6 @@
   "baseplate.exportNotReady": "Genereringsmotor ikke klar. Vent og prøv igjen.",
   "baseplate.filamentColor": "Filamentfarge",
   "baseplate.frontView": "Foran",
-  "baseplate.generateBaseplate": "Generer bunnplate",
   "baseplate.generating": "Genererer...",
   "baseplate.generatingSplit": "Genererer {current}/{total}...",
   "baseplate.generationFailed": "Generering av bunnplate mislyktes",
