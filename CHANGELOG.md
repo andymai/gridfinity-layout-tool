@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.1.2...gridfinity-layout-tool-v4.2.0) (2026-03-08)
+
+
+### Features
+
+* engagement-gated feedback nudges, Ko-fi prompts, and changelog ([#1065](https://github.com/andymai/gridfinity-layout-tool/issues/1065)) ([80adaa7](https://github.com/andymai/gridfinity-layout-tool/commit/80adaa766850ebb0dd103b11829f9e370abea594))
+
 ## [4.1.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.1.1...gridfinity-layout-tool-v4.1.2) (2026-03-05)
 
 
