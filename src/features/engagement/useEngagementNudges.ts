@@ -66,6 +66,8 @@ export function useEngagementNudges(): void {
 function showNudgeToast(nudgeType: NudgeType, t: (key: string) => string): void {
   const addToast = useToastStore.getState().addToast;
 
+  let dismissed = false;
+
   if (nudgeType === 'feedback_rating') {
     addToast({
       message: t('engagement.feedbackNudge'),
@@ -74,6 +76,7 @@ function showNudgeToast(nudgeType: NudgeType, t: (key: string) => string): void 
       action: {
         label: t('engagement.giveFeedback'),
         onClick: () => {
+          dismissed = true;
           trackEvent('nudge_clicked', { nudge_type: 'feedback_rating' });
           recordNudgeDismissal('feedback_rating');
           window.open(
@@ -84,12 +87,10 @@ function showNudgeToast(nudgeType: NudgeType, t: (key: string) => string): void 
         },
       },
     });
-    // Also record dismissal when the toast auto-clears or is manually closed
-    // The toast store removes toasts, so we set cooldown on show
-    // (user clicking X = toast removed, but cooldown already set by action or timeout below)
+    // Fallback: if the user doesn't click the action, start cooldown after 30s
     setTimeout(() => {
-      recordNudgeDismissal('feedback_rating');
-    }, 30_000); // If they don't click after 30s, still start cooldown
+      if (!dismissed) recordNudgeDismissal('feedback_rating');
+    }, 30_000);
   }
 
   if (nudgeType === 'kofi_support') {
@@ -100,6 +101,7 @@ function showNudgeToast(nudgeType: NudgeType, t: (key: string) => string): void 
       action: {
         label: t('engagement.support'),
         onClick: () => {
+          dismissed = true;
           trackEvent('nudge_clicked', { nudge_type: 'kofi_support' });
           recordNudgeDismissal('kofi_support');
           window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
@@ -107,7 +109,7 @@ function showNudgeToast(nudgeType: NudgeType, t: (key: string) => string): void 
       },
     });
     setTimeout(() => {
-      recordNudgeDismissal('kofi_support');
+      if (!dismissed) recordNudgeDismissal('kofi_support');
     }, 30_000);
   }
 }

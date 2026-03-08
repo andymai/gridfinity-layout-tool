@@ -193,6 +193,14 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     hasUnseen ? 'changelog' : 'shortcuts'
   );
 
+  // Mark changelog as seen when the tab is active (covers both auto-open and click paths)
+  useEffect(() => {
+    if (isOpen && activeTab === 'changelog') {
+      markChangelogSeen();
+      trackEvent('changelog_viewed');
+    }
+  }, [isOpen, activeTab]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -298,8 +306,6 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
               <button
                 onClick={() => {
                   setActiveTab('changelog');
-                  markChangelogSeen();
-                  trackEvent('changelog_viewed');
                 }}
                 className={`relative px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
                   activeTab === 'changelog'

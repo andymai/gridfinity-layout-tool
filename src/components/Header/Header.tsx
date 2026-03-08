@@ -44,6 +44,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const t = useTranslation();
   const { isTablet } = useResponsive();
   const showChangelogDot = hasUnseenChangelog();
+  const feedbackToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCollabEnabled = useFeatureFlag('collaborative_editing');
   const { isCollaborative } = useCollabMode();
 
@@ -327,7 +328,9 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             );
             trackEvent('feedback_link_clicked', { source: 'header' });
             // Show thank-you toast with Ko-fi mention after a brief delay
-            setTimeout(() => {
+            // Clear any pending timer to prevent duplicate toasts on rapid clicks
+            if (feedbackToastTimer.current) clearTimeout(feedbackToastTimer.current);
+            feedbackToastTimer.current = setTimeout(() => {
               useToastStore.getState().addToast({
                 message: t('engagement.feedbackThankYou'),
                 type: 'success',
@@ -340,6 +343,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
                   },
                 },
               });
+              feedbackToastTimer.current = null;
             }, 1000);
           }}
           className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary flex items-center gap-1.5"
