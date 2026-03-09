@@ -5,8 +5,7 @@
  * to a base layout state to reconstruct what happened.
  */
 
-import type { Layout, Bin } from '@/core/types';
-import type { LayoutId } from '@/core/types';
+import type { Layout, Bin, LayoutId } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import type { DomainEvent } from '../events';
 import { eventStore } from '../store/eventStore';

@@ -19,7 +19,16 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { createCqrsMutations, commandBus } from '@/core/cqrs';
-import type { Bin, Layer, Category, Drawer, BinId, LayerId, CategoryId } from '@/core/types';
+import type {
+  Bin,
+  Layer,
+  Category,
+  Drawer,
+  BinId,
+  LayerId,
+  CategoryId,
+  BaseplateParams,
+} from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 
 /**
@@ -70,6 +79,7 @@ export interface Mutations {
   setPrintBedSize: (size: number) => void;
   setGridUnitMm: (mm: number) => void;
   setHeightUnitMm: (mm: number) => void;
+  setBaseplateParams: (params: BaseplateParams) => void;
 }
 
 const MutationsContext = createContext<Mutations | null>(null);

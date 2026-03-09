@@ -4,7 +4,6 @@
 
 import { useLayoutStore } from '@/core/store/layout';
 import { ok } from '@/core/result';
-import type { Drawer } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import type { CommandResult } from '../types';
 import type {
@@ -16,12 +15,14 @@ import type {
   SetBaseplateParamsCommand,
 } from '../commands';
 import type { DomainEvent } from '../events';
-import { createEventMeta } from './shared';
+import { createEventMeta, capturePrevious } from './shared';
 
 export function handleUpdateDrawer(command: UpdateDrawerCommand): CommandResult<void, DomainEvent> {
   const store = useLayoutStore.getState();
   const previousDrawer = { ...store.layout.drawer };
   const binsBefore = store.layout.bins.filter((b) => b.layerId === STAGING_ID).length;
+
+  const previous = capturePrevious(previousDrawer, command.payload);
 
   store.updateDrawer(command.payload);
 
@@ -29,11 +30,6 @@ export function handleUpdateDrawer(command: UpdateDrawerCommand): CommandResult<
     .getState()
     .layout.bins.filter((b) => b.layerId === STAGING_ID).length;
   const binsDisplaced = Math.max(0, binsAfter - binsBefore);
-
-  const previous: Partial<Drawer> = {};
-  for (const key of Object.keys(command.payload) as Array<keyof Drawer>) {
-    (previous as Record<string, unknown>)[key] = previousDrawer[key];
-  }
 
   return ok({
     value: undefined,

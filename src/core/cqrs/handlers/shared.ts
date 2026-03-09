@@ -26,15 +26,26 @@ function nextVersion(aggregateId: string): number {
  */
 export function createEventMeta(commandMeta: CommandMeta): EventMeta {
   const aggregateId: LayoutId = useLibraryStore.getState().library.activeLayoutId;
-  const id: string = aggregateId;
   return {
     id: eventId(`evt_${Date.now()}_${++eventCounter}`),
     timestamp: Date.now(),
     correlationId: commandMeta.correlationId,
     commandId: commandMeta.id,
     aggregateId,
-    version: nextVersion(id),
+    version: nextVersion(aggregateId),
   };
+}
+
+/**
+ * Capture previous values from an entity for the fields being updated.
+ * Used by update handlers to record what changed.
+ */
+export function capturePrevious<T extends object>(existing: T, updates: Partial<T>): Partial<T> {
+  const previous: Partial<T> = {};
+  for (const key of Object.keys(updates) as Array<keyof T>) {
+    (previous as Record<string, unknown>)[key as string] = existing[key];
+  }
+  return previous;
 }
 
 /** Reset version and event counters (for testing) */

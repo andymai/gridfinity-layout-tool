@@ -4,7 +4,6 @@
 
 import { useLayoutStore } from '@/core/store/layout';
 import { ok, err, isErr } from '@/core/result';
-import type { Layer } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import type { CommandResult } from '../types';
 import type {
@@ -14,7 +13,7 @@ import type {
   ReorderLayersCommand,
 } from '../commands';
 import type { DomainEvent } from '../events';
-import { createEventMeta } from './shared';
+import { createEventMeta, capturePrevious } from './shared';
 
 export function handleAddLayer(command: AddLayerCommand): CommandResult<string, DomainEvent> {
   const store = useLayoutStore.getState();
@@ -50,11 +49,7 @@ export function handleUpdateLayer(command: UpdateLayerCommand): CommandResult<vo
     return ok({ value: undefined, events: [] });
   }
 
-  const previous: Partial<Layer> = {};
-  for (const key of Object.keys(updates) as Array<keyof Layer>) {
-    (previous as Record<string, unknown>)[key] = existing[key];
-  }
-
+  const previous = capturePrevious(existing, updates);
   const result = store.updateLayer(id, updates);
   if (isErr(result)) return err(result.error);
 

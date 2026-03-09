@@ -160,23 +160,16 @@ export const eventStore = createEventStore();
  */
 export function connectEventStoreToBus(): () => void {
   return eventBus.subscribeAll((event) => {
-    // Fire-and-forget async persistence
-    eventStore
-      .append([event])
-      .then(() => {
-        // Auto-evict if needed (also fire-and-forget)
-        return eventStore.count(event.meta.aggregateId).then((count) => {
-          if (count > MAX_EVENTS_PER_AGGREGATE) {
-            return eventStore.evict(event.meta.aggregateId);
-          }
-          return 0;
-        });
-      })
-      .catch((error: unknown) => {
-        // Persistence failure should never block the app
-        // eslint-disable-next-line no-console -- Critical infrastructure error logging
-        console.debug('[EventStore] Failed to persist event:', error);
-      });
+    void (async () => {
+      await eventStore.append([event]);
+      const count = await eventStore.count(event.meta.aggregateId);
+      if (count > MAX_EVENTS_PER_AGGREGATE) {
+        await eventStore.evict(event.meta.aggregateId);
+      }
+    })().catch((error: unknown) => {
+      // eslint-disable-next-line no-console -- Critical infrastructure error logging
+      console.debug('[EventStore] Failed to persist event:', error);
+    });
   });
 }
 

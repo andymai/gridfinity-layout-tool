@@ -4,11 +4,10 @@
 
 import { useLayoutStore } from '@/core/store/layout';
 import { ok, err, isErr } from '@/core/result';
-import type { Category } from '@/core/types';
 import type { CommandResult } from '../types';
 import type { AddCategoryCommand, UpdateCategoryCommand, DeleteCategoryCommand } from '../commands';
 import type { DomainEvent } from '../events';
-import { createEventMeta } from './shared';
+import { createEventMeta, capturePrevious } from './shared';
 
 export function handleAddCategory(command: AddCategoryCommand): CommandResult<string, DomainEvent> {
   const store = useLayoutStore.getState();
@@ -46,11 +45,7 @@ export function handleUpdateCategory(
     return ok({ value: undefined, events: [] });
   }
 
-  const previous: Partial<Category> = {};
-  for (const key of Object.keys(updates) as Array<keyof Category>) {
-    (previous as Record<string, unknown>)[key] = existing[key];
-  }
-
+  const previous = capturePrevious(existing, updates);
   const result = store.updateCategory(id, updates);
   if (isErr(result)) return err(result.error);
 

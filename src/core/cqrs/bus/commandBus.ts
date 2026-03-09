@@ -47,12 +47,8 @@ export function createCommandBus(
 
     const result = chain(command);
 
-    // Publish events after successful execution
-    if (isOk(result)) {
-      const { events } = result.value;
-      if (events.length > 0) {
-        bus.publishAll(events as DomainEvent[]);
-      }
+    if (isOk(result) && result.value.events.length > 0) {
+      bus.publishAll(result.value.events as DomainEvent[]);
     }
 
     return result;

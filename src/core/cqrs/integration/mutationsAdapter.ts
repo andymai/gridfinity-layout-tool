@@ -7,7 +7,16 @@
  */
 
 import type { Mutations } from '@/shared/contexts/MutationsContext';
-import type { Bin, BinId, LayerId, CategoryId, Category, Layer, Drawer } from '@/core/types';
+import type {
+  Bin,
+  BinId,
+  LayerId,
+  CategoryId,
+  Category,
+  Layer,
+  Drawer,
+  BaseplateParams,
+} from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { ok, err, isOk } from '@/core/result';
 import { createCommand } from '../commands';
@@ -33,8 +42,6 @@ function extractResult<T, E = ValidationError | LayoutError>(
  */
 export function createCqrsMutations(bus: CommandBus): Mutations {
   return {
-    // === Bin Operations ===
-
     addBin(bin: Omit<Bin, 'id'>): Result<BinId, ValidationError> {
       const result = bus.dispatch(createCommand('bin.add', bin));
       return extractResult(result);
@@ -75,8 +82,6 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       return extractResult(result);
     },
 
-    // === Layer Operations ===
-
     addLayer(): Result<LayerId, LayoutError> {
       const result = bus.dispatch(createCommand('layer.add', {}));
       return extractResult(result);
@@ -97,13 +102,9 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       return extractResult(result);
     },
 
-    // === Drawer Operations ===
-
     updateDrawer(updates: Partial<Drawer>): void {
       bus.dispatch(createCommand('drawer.update', updates));
     },
-
-    // === Category Operations ===
 
     addCategory(category: Omit<Category, 'id'>): Result<CategoryId, LayoutError> {
       const result = bus.dispatch(createCommand('category.add', category));
@@ -119,8 +120,6 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       const result = bus.dispatch(createCommand('category.delete', { id }));
       return extractResult(result);
     },
-
-    // === Bulk Operations ===
 
     fillLayer(
       layerId: LayerId,
@@ -142,8 +141,6 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       return 0;
     },
 
-    // === Layout Metadata ===
-
     setName(name: string): void {
       bus.dispatch(createCommand('layout.setName', { name }));
     },
@@ -158,6 +155,10 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
 
     setHeightUnitMm(mm: number): void {
       bus.dispatch(createCommand('layout.setHeightUnitMm', { mm }));
+    },
+
+    setBaseplateParams(params: BaseplateParams): void {
+      bus.dispatch(createCommand('layout.setBaseplateParams', { params }));
     },
   };
 }

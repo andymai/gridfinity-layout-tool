@@ -8,7 +8,6 @@
 
 import { useLayoutStore } from '@/core/store/layout';
 import { ok, err, isErr } from '@/core/result';
-import type { Bin } from '@/core/types';
 import type { CommandResult } from '../types';
 import type {
   AddBinCommand,
@@ -22,7 +21,7 @@ import type {
   ClearLayerCommand,
 } from '../commands';
 import type { DomainEvent } from '../events';
-import { createEventMeta } from './shared';
+import { createEventMeta, capturePrevious } from './shared';
 
 export function handleAddBin(command: AddBinCommand): CommandResult<string, DomainEvent> {
   const store = useLayoutStore.getState();
@@ -51,20 +50,14 @@ export function handleUpdateBin(command: UpdateBinCommand): CommandResult<void, 
   const store = useLayoutStore.getState();
   const { id, updates } = command.payload;
 
-  // Capture previous values for the fields being updated
   const existingBin = store.layout.bins.find((b) => b.id === id);
   if (!existingBin) {
-    // Bin not in state — let the store handle the error
     const storeResult = store.updateBin(id, updates);
     if (isErr(storeResult)) return err(storeResult.error);
     return ok({ value: undefined, events: [] });
   }
 
-  const previous: Partial<Bin> = {};
-  for (const key of Object.keys(updates) as Array<keyof Bin>) {
-    (previous as Record<string, unknown>)[key] = existingBin[key];
-  }
-
+  const previous = capturePrevious(existingBin, updates);
   const result = store.updateBin(id, updates);
   if (isErr(result)) return err(result.error);
 
