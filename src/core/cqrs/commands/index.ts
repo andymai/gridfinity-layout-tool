@@ -6,11 +6,11 @@
  */
 
 import { commandId, correlationId } from '../types';
-import type { CommandMeta, CommandSource, BaseCommand } from '../types';
+import type { CommandId, CommandMeta, CommandSource, CorrelationId } from '../types';
 
-// Re-export domain commands
-export type { BinCommand } from './binCommands';
+// Re-export domain command types
 export type {
+  BinCommand,
   AddBinCommand,
   UpdateBinCommand,
   DeleteBinCommand,
@@ -22,23 +22,23 @@ export type {
   ClearLayerCommand,
 } from './binCommands';
 
-export type { LayerCommand } from './layerCommands';
 export type {
+  LayerCommand,
   AddLayerCommand,
   UpdateLayerCommand,
   DeleteLayerCommand,
   ReorderLayersCommand,
 } from './layerCommands';
 
-export type { CategoryCommand } from './categoryCommands';
 export type {
+  CategoryCommand,
   AddCategoryCommand,
   UpdateCategoryCommand,
   DeleteCategoryCommand,
 } from './categoryCommands';
 
-export type { DrawerCommand } from './drawerCommands';
 export type {
+  DrawerCommand,
   UpdateDrawerCommand,
   SetNameCommand,
   SetPrintBedSizeCommand,
@@ -64,11 +64,11 @@ export type CommandType = Command['type'];
 let commandCounter = 0;
 let correlationCounter = 0;
 
-function generateCommandId(): ReturnType<typeof commandId> {
+function generateCommandId(): CommandId {
   return commandId(`cmd_${Date.now()}_${++commandCounter}`);
 }
 
-function generateCorrelationId(): ReturnType<typeof correlationId> {
+function generateCorrelationId(): CorrelationId {
   return correlationId(`cor_${Date.now()}_${++correlationCounter}`);
 }
 
@@ -86,7 +86,7 @@ function generateCorrelationId(): ReturnType<typeof correlationId> {
 export function createCommand<TType extends CommandType>(
   type: TType,
   payload: Extract<Command, { type: TType }>['payload'],
-  options?: { source?: CommandSource; correlationId?: ReturnType<typeof correlationId> }
+  options?: { source?: CommandSource; correlationId?: CorrelationId }
 ): Extract<Command, { type: TType }> {
   const meta: CommandMeta = {
     id: generateCommandId(),
@@ -95,6 +95,5 @@ export function createCommand<TType extends CommandType>(
     source: options?.source ?? 'user',
   };
 
-  return { type, payload, meta } as BaseCommand<TType, typeof payload> &
-    Extract<Command, { type: TType }>;
+  return { type, payload, meta } as Extract<Command, { type: TType }>;
 }

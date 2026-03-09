@@ -5,7 +5,7 @@
  * Uses console.debug (allowed, unlike console.log).
  */
 
-import { isOk, isErr } from '@/core/result';
+import { isOk } from '@/core/result';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { CommandResult, NextFn } from '../types';
@@ -29,9 +29,7 @@ export function loggingMiddleware(
       `[CQRS] ${command.type} → ${eventTypes.length} event(s) [${duration.toFixed(1)}ms]`,
       { command: command.payload, events: eventTypes }
     );
-  }
-
-  if (isErr(result)) {
+  } else {
     // eslint-disable-next-line no-console -- Dev-only debug logging for CQRS pipeline
     console.debug(`[CQRS] ${command.type} FAILED [${duration.toFixed(1)}ms]`, {
       error: result.error,

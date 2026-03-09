@@ -11,6 +11,7 @@ import { isOk } from '@/core/result';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { CommandResult, NextFn } from '../types';
+
 export function undoCaptureMiddleware(
   command: Command,
   next: NextFn<Command, DomainEvent>

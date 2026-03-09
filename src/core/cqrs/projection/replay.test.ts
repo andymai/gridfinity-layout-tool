@@ -113,7 +113,7 @@ describe('applyEvent', () => {
       type: 'layer.deleted',
       payload: {
         layer: { id: layerId('layer_1'), name: 'Layer 1', height: 1 },
-        displacedBinCount: 0,
+        deletedBinCount: 0,
       },
       meta: baseMeta,
     };

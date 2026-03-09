@@ -19,7 +19,7 @@ const handlerRegistry: Record<string, HandlerFn> = {
   ...layerHandlers,
   ...categoryHandlers,
   ...drawerHandlers,
-} as Record<string, HandlerFn>;
+};
 
 export function getHandler(
   commandType: CommandType

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { isOk, isErr } from '@/core/result';
 import { createCommand } from '../commands';
-import { categoryId, binId, layerId } from '@/core/types';
-import type { Bin, Category } from '@/core/types';
+import { categoryId, layerId } from '@/core/types';
+import type { Category } from '@/core/types';
 import { resetVersionCounters } from './index';
 
 // --- Mocks ---
@@ -98,45 +98,32 @@ describe('Category Handlers', () => {
   });
 
   describe('handleDeleteCategory', () => {
-    it('captures category and reassigned bin count', () => {
-      bins.push({
-        id: binId('bin_1'),
-        layerId: layerId('layer_1'),
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        category: categoryId('cat_1'),
-        label: '',
-        notes: '',
-      });
-
+    it('produces category.deleted event with captured category', () => {
       const cmd = createCommand('category.delete', { id: categoryId('cat_1') });
       const result = handleDeleteCategory(cmd);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
+        expect(result.value.events).toHaveLength(1);
         const event = result.value.events[0];
         expect(event.type).toBe('category.deleted');
         if (event.type === 'category.deleted') {
           expect(event.payload.category.id).toBe(categoryId('cat_1'));
-          expect(event.payload.reassignedBinCount).toBe(1);
+          expect(event.payload.category.name).toBe('General');
         }
       }
     });
 
-    it('reports zero reassigned bins when none exist', () => {
-      const cmd = createCommand('category.delete', { id: categoryId('cat_1') });
-      const result = handleDeleteCategory(cmd);
+    it('returns error when store rejects deletion', () => {
+      mockStore.deleteCategory.mockReturnValueOnce({
+        ok: false,
+        error: { code: 'LAYOUT_INVALID_OPERATION' },
+      });
 
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        const event = result.value.events[0];
-        if (event.type === 'category.deleted') {
-          expect(event.payload.reassignedBinCount).toBe(0);
-        }
-      }
+      const result = handleDeleteCategory(
+        createCommand('category.delete', { id: categoryId('cat_1') })
+      );
+      expect(isErr(result)).toBe(true);
     });
   });
 });

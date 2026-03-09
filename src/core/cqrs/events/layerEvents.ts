@@ -18,7 +18,7 @@ export type LayerUpdatedEvent = BaseDomainEvent<
 
 export type LayerDeletedEvent = BaseDomainEvent<
   'layer.deleted',
-  { readonly layer: Layer; readonly displacedBinCount: number }
+  { readonly layer: Layer; readonly deletedBinCount: number }
 >;
 
 export type LayersReorderedEvent = BaseDomainEvent<

@@ -70,7 +70,7 @@ export function handleDeleteLayer(command: DeleteLayerCommand): CommandResult<vo
   const { id } = command.payload;
 
   const layer = store.layout.layers.find((l) => l.id === id);
-  const displacedBinCount = store.layout.bins.filter(
+  const deletedBinCount = store.layout.bins.filter(
     (b) => b.layerId === id && b.layerId !== STAGING_ID
   ).length;
 
@@ -83,7 +83,7 @@ export function handleDeleteLayer(command: DeleteLayerCommand): CommandResult<vo
       ? [
           {
             type: 'layer.deleted' as const,
-            payload: { layer: { ...layer }, displacedBinCount },
+            payload: { layer: { ...layer }, deletedBinCount },
             meta: createEventMeta(command.meta),
           },
         ]

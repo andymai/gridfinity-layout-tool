@@ -5,7 +5,8 @@
  * to a base layout state to reconstruct what happened.
  */
 
-import type { Layout, Bin, LayoutId } from '@/core/types';
+import type { Layout, LayoutId } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 import type { DomainEvent } from '../events';
 import { eventStore } from '../store/eventStore';
 
@@ -32,7 +33,7 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       break;
 
     case 'bin.batchDeleted': {
-      const ids = new Set(event.payload.bins.map((b: Bin) => b.id));
+      const ids = new Set(event.payload.bins.map((b) => b.id));
       next.bins = next.bins.filter((b) => !ids.has(b.id));
       break;
     }
@@ -43,7 +44,7 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
 
     case 'bin.movedToStaging': {
       const bin = next.bins.find((b) => b.id === event.payload.id);
-      if (bin) bin.layerId = '__staging__' as typeof bin.layerId;
+      if (bin) bin.layerId = STAGING_ID;
       break;
     }
 
@@ -62,7 +63,7 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       break;
 
     case 'bin.layerCleared': {
-      const clearedIds = new Set(event.payload.bins.map((b: Bin) => b.id));
+      const clearedIds = new Set(event.payload.bins.map((b) => b.id));
       next.bins = next.bins.filter((b) => !clearedIds.has(b.id));
       break;
     }

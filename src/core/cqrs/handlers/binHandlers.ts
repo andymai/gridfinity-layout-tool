@@ -200,12 +200,12 @@ export function handleFillLayer(command: FillLayerCommand): CommandResult<number
   const store = useLayoutStore.getState();
   const { layerId, width, depth, categoryId, halfBinMode } = command.payload;
 
-  const binsBefore = store.layout.bins.length;
+  const previousIds = new Set(store.layout.bins.map((b) => b.id));
   const count = store.fillLayer(layerId, width, depth, categoryId, halfBinMode);
 
   // Re-read from store — Zustand+Immer creates a new state object after mutation
   const currentBins = useLayoutStore.getState().layout.bins;
-  const newBins = currentBins.slice(binsBefore).map((b) => ({ ...b }));
+  const newBins = currentBins.filter((b) => !previousIds.has(b.id)).map((b) => ({ ...b }));
 
   return ok({
     value: count,

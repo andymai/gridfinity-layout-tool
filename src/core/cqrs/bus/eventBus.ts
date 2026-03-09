@@ -62,11 +62,11 @@ export function createEventBus(): EventBus {
         handlers = new Set();
         typedHandlers.set(type, handlers);
       }
-      const wrappedHandler = handler as WildcardHandler;
-      handlers.add(wrappedHandler);
+      const wildcardRef = handler as WildcardHandler;
+      handlers.add(wildcardRef);
 
       return () => {
-        handlers.delete(wrappedHandler);
+        handlers.delete(wildcardRef);
         if (handlers.size === 0) {
           typedHandlers.delete(type);
         }

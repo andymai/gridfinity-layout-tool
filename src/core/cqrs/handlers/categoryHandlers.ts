@@ -68,7 +68,6 @@ export function handleDeleteCategory(
   const { id } = command.payload;
 
   const category = store.layout.categories.find((c) => c.id === id);
-  const reassignedBinCount = store.layout.bins.filter((b) => b.category === id).length;
 
   const result = store.deleteCategory(id);
   if (isErr(result)) return err(result.error);
@@ -79,7 +78,7 @@ export function handleDeleteCategory(
       ? [
           {
             type: 'category.deleted' as const,
-            payload: { category: { ...category }, reassignedBinCount },
+            payload: { category: { ...category } },
             meta: createEventMeta(command.meta),
           },
         ]

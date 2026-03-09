@@ -48,7 +48,7 @@ export function createCommandBus(
     const result = chain(command);
 
     if (isOk(result) && result.value.events.length > 0) {
-      bus.publishAll(result.value.events as DomainEvent[]);
+      bus.publishAll(result.value.events);
     }
 
     return result;

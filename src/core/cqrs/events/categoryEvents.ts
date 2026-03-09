@@ -18,7 +18,7 @@ export type CategoryUpdatedEvent = BaseDomainEvent<
 
 export type CategoryDeletedEvent = BaseDomainEvent<
   'category.deleted',
-  { readonly category: Category; readonly reassignedBinCount: number }
+  { readonly category: Category }
 >;
 
 export type CategoryEvent = CategoryAddedEvent | CategoryUpdatedEvent | CategoryDeletedEvent;

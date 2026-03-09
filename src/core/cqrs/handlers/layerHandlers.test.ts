@@ -122,7 +122,7 @@ describe('Layer Handlers', () => {
         expect(event.type).toBe('layer.deleted');
         if (event.type === 'layer.deleted') {
           expect(event.payload.layer.id).toBe(layerId('layer_1'));
-          expect(event.payload.displacedBinCount).toBe(1);
+          expect(event.payload.deletedBinCount).toBe(1);
         }
       }
     });
