@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.3.1...gridfinity-layout-tool-v4.4.0) (2026-03-09)
+
+
+### Features
+
+* add cqrs command bus and event sourcing infrastructure ([#1073](https://github.com/andymai/gridfinity-layout-tool/issues/1073)) ([7c6d2b5](https://github.com/andymai/gridfinity-layout-tool/commit/7c6d2b5cbe4dc00022c8a8c5c5313bb7b17e32c2))
+
 ## [4.3.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.3.0...gridfinity-layout-tool-v4.3.1) (2026-03-08)
 
 
