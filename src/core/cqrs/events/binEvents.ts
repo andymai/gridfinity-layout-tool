@@ -55,15 +55,6 @@ export type LayerFilledEvent = BaseDomainEvent<
   }
 >;
 
-export type LayerGapsFilledEvent = BaseDomainEvent<
-  'bin.layerGapsFilled',
-  {
-    readonly layerId: LayerId;
-    readonly binsCreated: number;
-    readonly bins: ReadonlyArray<Bin>;
-  }
->;
-
 export type LayerClearedEvent = BaseDomainEvent<
   'bin.layerCleared',
   {
@@ -82,5 +73,4 @@ export type BinEvent =
   | BinMovedToStagingEvent
   | BinMovedFromStagingEvent
   | LayerFilledEvent
-  | LayerGapsFilledEvent
   | LayerClearedEvent;

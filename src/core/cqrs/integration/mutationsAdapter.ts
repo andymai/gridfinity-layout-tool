@@ -19,13 +19,13 @@ import type { CommandResult } from '../types';
  * Extract the value from a CommandResult, converting it to the expected
  * Result type that the Mutations interface requires.
  */
-function extractResult<T>(
+function extractResult<T, E = ValidationError | LayoutError>(
   cmdResult: CommandResult<unknown, DomainEvent>
-): Result<T, ValidationError | LayoutError> {
+): Result<T, E> {
   if (isOk(cmdResult)) {
     return ok(cmdResult.value.value as T);
   }
-  return err(cmdResult.error);
+  return err(cmdResult.error as E);
 }
 
 /**

@@ -12,7 +12,6 @@ export type {
   BinMovedToStagingEvent,
   BinMovedFromStagingEvent,
   LayerFilledEvent,
-  LayerGapsFilledEvent,
   LayerClearedEvent,
 } from './binEvents';
 

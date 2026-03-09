@@ -62,10 +62,6 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       next.bins.push(...event.payload.bins);
       break;
 
-    case 'bin.layerGapsFilled':
-      next.bins.push(...event.payload.bins);
-      break;
-
     case 'bin.layerCleared': {
       const clearedIds = new Set(event.payload.bins.map((b: Bin) => b.id));
       next.bins = next.bins.filter((b) => !clearedIds.has(b.id));

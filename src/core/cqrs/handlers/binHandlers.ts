@@ -53,13 +53,10 @@ export function handleUpdateBin(command: UpdateBinCommand): CommandResult<void, 
   // Capture previous values for the fields being updated
   const existingBin = store.layout.bins.find((b) => b.id === id);
   if (!existingBin) {
-    return err(
-      store.updateBin(id, updates) as ReturnType<typeof store.updateBin> extends infer R
-        ? R extends { ok: false; error: infer E }
-          ? E
-          : never
-        : never
-    );
+    // Bin not in state — let the store handle the error
+    const storeResult = store.updateBin(id, updates);
+    if (isErr(storeResult)) return err(storeResult.error);
+    return ok({ value: undefined, events: [] });
   }
 
   const previous: Partial<Bin> = {};

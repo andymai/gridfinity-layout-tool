@@ -49,15 +49,6 @@ export type FillLayerCommand = BaseCommand<
   }
 >;
 
-export type FillLayerGapsCommand = BaseCommand<
-  'bin.fillLayerGaps',
-  {
-    readonly layerId: LayerId;
-    readonly categoryId: CategoryId;
-    readonly halfBinMode?: boolean;
-  }
->;
-
 export type ClearLayerCommand = BaseCommand<'bin.clearLayer', { readonly layerId: LayerId }>;
 
 // === Union ===
@@ -71,5 +62,4 @@ export type BinCommand =
   | MoveBinToStagingCommand
   | MoveBinFromStagingCommand
   | FillLayerCommand
-  | FillLayerGapsCommand
   | ClearLayerCommand;
