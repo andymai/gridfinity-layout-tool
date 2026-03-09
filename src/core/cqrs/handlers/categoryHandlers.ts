@@ -16,7 +16,8 @@ export function handleAddCategory(command: AddCategoryCommand): CommandResult<st
   if (isErr(result)) return err(result.error);
 
   const categoryId = result.value;
-  const category = store.layout.categories.find((c) => c.id === categoryId);
+  // Re-read from store — Zustand+Immer creates a new state object after mutation
+  const category = useLayoutStore.getState().layout.categories.find((c) => c.id === categoryId);
 
   return ok({
     value: categoryId,

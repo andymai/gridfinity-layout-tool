@@ -10,6 +10,9 @@ import type { CommandMeta, EventMeta } from '../types';
 /** Monotonic version counter per aggregate (resets on page load — fine for client-side) */
 const versionCounters = new Map<string, number>();
 
+/** Monotonic event ID counter — prevents collisions in sub-millisecond batch operations */
+let eventCounter = 0;
+
 function nextVersion(aggregateId: string): number {
   const current = versionCounters.get(aggregateId) ?? 0;
   const next = current + 1;
@@ -25,7 +28,7 @@ export function createEventMeta(commandMeta: CommandMeta): EventMeta {
   const aggregateId: LayoutId = useLibraryStore.getState().library.activeLayoutId;
   const id: string = aggregateId;
   return {
-    id: eventId(`evt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`),
+    id: eventId(`evt_${Date.now()}_${++eventCounter}`),
     timestamp: Date.now(),
     correlationId: commandMeta.correlationId,
     commandId: commandMeta.id,
@@ -34,7 +37,8 @@ export function createEventMeta(commandMeta: CommandMeta): EventMeta {
   };
 }
 
-/** Reset version counters (for testing) */
+/** Reset version and event counters (for testing) */
 export function resetVersionCounters(): void {
   versionCounters.clear();
+  eventCounter = 0;
 }

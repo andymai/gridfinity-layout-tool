@@ -31,7 +31,8 @@ export function handleAddBin(command: AddBinCommand): CommandResult<string, Doma
   if (isErr(result)) return err(result.error);
 
   const binId = result.value;
-  const bin = store.layout.bins.find((b) => b.id === binId);
+  // Re-read from store — Zustand+Immer creates a new state object after mutation
+  const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
   if (!bin) return ok({ value: binId, events: [] });
 
   return ok({
@@ -138,7 +139,8 @@ export function handleDuplicateBin(
   if (isErr(result)) return err(result.error);
 
   const newBinId = result.value;
-  const newBin = store.layout.bins.find((b) => b.id === newBinId);
+  // Re-read from store — Zustand+Immer creates a new state object after mutation
+  const newBin = useLayoutStore.getState().layout.bins.find((b) => b.id === newBinId);
 
   return ok({
     value: newBinId,
@@ -208,8 +210,9 @@ export function handleFillLayer(command: FillLayerCommand): CommandResult<number
   const binsBefore = store.layout.bins.length;
   const count = store.fillLayer(layerId, width, depth, categoryId, halfBinMode);
 
-  // Capture newly created bins
-  const newBins = store.layout.bins.slice(binsBefore).map((b) => ({ ...b }));
+  // Re-read from store — Zustand+Immer creates a new state object after mutation
+  const currentBins = useLayoutStore.getState().layout.bins;
+  const newBins = currentBins.slice(binsBefore).map((b) => ({ ...b }));
 
   return ok({
     value: count,

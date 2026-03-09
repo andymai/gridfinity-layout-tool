@@ -22,7 +22,8 @@ export function handleAddLayer(command: AddLayerCommand): CommandResult<string, 
   if (isErr(result)) return err(result.error);
 
   const layerId = result.value;
-  const layer = store.layout.layers.find((l) => l.id === layerId);
+  // Re-read from store — Zustand+Immer creates a new state object after mutation
+  const layer = useLayoutStore.getState().layout.layers.find((l) => l.id === layerId);
 
   return ok({
     value: layerId,
