@@ -20,6 +20,7 @@ import { generateCategoryId, generateLayerId, getDefaultDrawerSize } from '@/cor
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from './preview';
 import type { Layout, LayoutId, LayoutLibrary, LayoutEntry } from '@/core/types';
+import { mm, gridUnits, heightUnits } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
 import {
   ok,
@@ -527,13 +528,14 @@ export async function initializeLayoutLibrary(): Promise<{
 
   if (!library) {
     const layoutId = generateLayoutId();
+    const { width, depth, height } = getDefaultDrawerSize();
     const defaultLayout: Layout = {
       version: '1.0',
       name: 'Untitled layout',
-      drawer: getDefaultDrawerSize(),
-      printBedSize: 256,
-      gridUnitMm: 42,
-      heightUnitMm: 7,
+      drawer: { width: gridUnits(width), depth: gridUnits(depth), height: heightUnits(height) },
+      printBedSize: mm(256),
+      gridUnitMm: mm(42),
+      heightUnitMm: mm(7),
       categories: [
         { id: generateCategoryId(), name: 'Coral', color: '#f87171' },
         { id: generateCategoryId(), name: 'Sky', color: '#38bdf8' },
@@ -541,7 +543,7 @@ export async function initializeLayoutLibrary(): Promise<{
         { id: generateCategoryId(), name: 'Cloud', color: '#e2e8f0' },
         { id: generateCategoryId(), name: 'Charcoal', color: '#334155' },
       ],
-      layers: [{ id: generateLayerId(), name: 'Layer 1', height: 3 }],
+      layers: [{ id: generateLayerId(), name: 'Layer 1', height: heightUnits(3) }],
       bins: [],
     };
 
@@ -566,15 +568,16 @@ export async function initializeLayoutLibrary(): Promise<{
 
     if (!activeLayout) {
       const layoutId = generateLayoutId();
+      const { width: rw, depth: rd, height: rh } = getDefaultDrawerSize();
       const recoveredLayout: Layout = {
         version: '1.0',
         name: 'Recovered layout',
-        drawer: getDefaultDrawerSize(),
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
+        drawer: { width: gridUnits(rw), depth: gridUnits(rd), height: heightUnits(rh) },
+        printBedSize: mm(256),
+        gridUnitMm: mm(42),
+        heightUnitMm: mm(7),
         categories: [{ id: generateCategoryId(), name: 'Default', color: '#6b7280' }],
-        layers: [{ id: generateLayerId(), name: 'Layer 1', height: 3 }],
+        layers: [{ id: generateLayerId(), name: 'Layer 1', height: heightUnits(3) }],
         bins: [],
       };
 

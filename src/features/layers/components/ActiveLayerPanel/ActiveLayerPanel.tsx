@@ -6,6 +6,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { useToastStore } from '@/core/store/toast';
 import { STAGING_ID } from '@/core/constants';
+import { gridUnits } from '@/core/types';
 import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useTranslation } from '@/i18n';
@@ -107,10 +108,10 @@ export function ActiveLayerPanel() {
     execute(() => {
       addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: w,
-        depth: d,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(w),
+        depth: gridUnits(d),
         height: activeLayer.height,
         category: activeCategoryId,
         label: '',

@@ -1,5 +1,7 @@
 import type {
   Bin,
+  GridUnits,
+  HeightUnits,
   PrintPiece,
   PrintRow,
   EnhancedPrintRow,
@@ -53,7 +55,7 @@ function splitHalf(dimension: number, useCeil: boolean): number {
  */
 export function splitBinSize(width: number, depth: number, maxSize: number): PrintPiece[] {
   if (width <= maxSize && depth <= maxSize) {
-    return [{ width, depth, count: 1 }];
+    return [{ width: width as GridUnits, depth: depth as GridUnits, count: 1 }];
   }
 
   const pieces: PrintPiece[] = [];
@@ -234,7 +236,7 @@ export function generatePrintList(
 
     rows.push({
       size: `${group.width}×${group.depth}`,
-      height: group.height,
+      height: group.height as HeightUnits,
       binCount: group.count,
       pieces: mergedPieces,
       totalPieces,

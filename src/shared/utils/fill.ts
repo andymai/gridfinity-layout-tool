@@ -1,4 +1,4 @@
-import type { Bin, Layout, LayerId, CategoryId } from '@/core/types';
+import type { Bin, GridUnits, Layout, LayerId, CategoryId } from '@/core/types';
 import { generateBinId, CONSTRAINTS } from '@/core/constants';
 import { getBlockedZones } from './collision';
 
@@ -18,8 +18,8 @@ function createOccupiedCellSet(
   // Add cells from existing bins on this layer
   for (const bin of bins) {
     if (bin.layerId !== layerId) continue;
-    for (let bx = bin.x; bx < bin.x + bin.width; bx += step) {
-      for (let by = bin.y; by < bin.y + bin.depth; by += step) {
+    for (let bx: number = bin.x; bx < bin.x + bin.width; bx += step) {
+      for (let by: number = bin.y; by < bin.y + bin.depth; by += step) {
         occupied.add(`${bx},${by}`);
       }
     }
@@ -28,8 +28,8 @@ function createOccupiedCellSet(
   // Add cells from blocked zones (bins protruding from lower layers)
   const blockedZones = getBlockedZones(layerId, bins, layout.layers);
   for (const zone of blockedZones) {
-    for (let zx = zone.x; zx < zone.x + zone.width; zx += step) {
-      for (let zy = zone.y; zy < zone.y + zone.depth; zy += step) {
+    for (let zx: number = zone.x; zx < zone.x + zone.width; zx += step) {
+      for (let zy: number = zone.y; zy < zone.y + zone.depth; zy += step) {
         occupied.add(`${zx},${zy}`);
       }
     }
@@ -124,10 +124,10 @@ export function fillAllWithSize(
         const newBin: Bin = {
           id: generateBinId(),
           layerId,
-          x,
-          y,
-          width: binWidth,
-          depth: binDepth,
+          x: x as GridUnits,
+          y: y as GridUnits,
+          width: binWidth as GridUnits,
+          depth: binDepth as GridUnits,
           height: layer.height,
           category: categoryId,
           label: '',
@@ -210,10 +210,10 @@ export function fillGaps(
             newBins.push({
               id: generateBinId(),
               layerId,
-              x,
-              y,
-              width: size.w,
-              depth: size.d,
+              x: x as GridUnits,
+              y: y as GridUnits,
+              width: size.w as GridUnits,
+              depth: size.d as GridUnits,
               height: layer.height,
               category: categoryId,
               label: '',

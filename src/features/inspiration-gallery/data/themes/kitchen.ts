@@ -1,4 +1,5 @@
 import type { Layout } from '@/core/types';
+import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { InspirationLayout } from '../../types';
 import {
   createBin,
@@ -36,10 +37,10 @@ function createCutleryDrawer(): InspirationLayout {
     version: '1.0',
     name: 'Cutlery Drawer',
     // Standard 18" (457mm) cabinet drawer: ~420mm usable width, ~400mm depth
-    drawer: { width: 11, depth: 10, height: 6 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(11), depth: gridUnits(10), height: heightUnits(6) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories,
     layers: [layer],
     bins,
@@ -94,10 +95,10 @@ function createCookingUtensils(): InspirationLayout {
     version: '1.0',
     name: 'Cooking Utensils',
     // 24" cabinet drawer
-    drawer: { width: 13, depth: 11, height: 6 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(13), depth: gridUnits(11), height: heightUnits(6) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories,
     layers: [layer],
     bins,
@@ -161,10 +162,10 @@ function createKnifeDrawer(): InspirationLayout {
     version: '1.0',
     name: 'Knife Drawer',
     // 15" cabinet drawer
-    drawer: { width: 8, depth: 10, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(8), depth: gridUnits(10), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories,
     layers: [layer],
     bins,
@@ -268,10 +269,10 @@ function createSpiceDrawer(): InspirationLayout {
     version: '1.0',
     name: 'Spice Drawer',
     // 18" cabinet drawer
-    drawer: { width: 10, depth: 7, height: 6 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(10), depth: gridUnits(7), height: heightUnits(6) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories,
     layers: [layer],
     bins,

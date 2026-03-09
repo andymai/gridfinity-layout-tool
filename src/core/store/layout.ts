@@ -11,6 +11,9 @@ import type {
   LayerId,
   CategoryId,
   LayoutId,
+  GridUnits,
+  HeightUnits,
+  Mm,
 } from '@/core/types';
 import {
   createDefaultLayout,
@@ -248,7 +251,7 @@ export const useLayoutStore = create<LayoutState>()(
         if (!isOk(found)) return found;
         const bin = found.value;
 
-        const copyAt = (layerId: LayerId, x: number, y: number) => ({
+        const copyAt = (layerId: LayerId, x: GridUnits, y: GridUnits) => ({
           width: bin.width,
           depth: bin.depth,
           height: bin.height,
@@ -262,7 +265,7 @@ export const useLayoutStore = create<LayoutState>()(
           y,
         });
 
-        const addAndTrack = (layerId: LayerId, x: number, y: number) => {
+        const addAndTrack = (layerId: LayerId, x: GridUnits, y: GridUnits) => {
           const result = addBin(copyAt(layerId, x, y));
           if (isOk(result)) {
             trackBinCreated({
@@ -277,21 +280,21 @@ export const useLayoutStore = create<LayoutState>()(
         };
 
         if (bin.layerId === STAGING_ID) {
-          return addAndTrack(STAGING_ID, 0, 0);
+          return addAndTrack(STAGING_ID, 0 as GridUnits, 0 as GridUnits);
         }
 
-        const offsets = [
+        const offsets: Array<{ dx: number; dy: number }> = [
           { dx: bin.width, dy: 0 }, // right
-          { dx: 0, dy: -bin.depth }, // below (y decreases going down visually)
-          { dx: -bin.width, dy: 0 }, // left
+          { dx: 0, dy: -(bin.depth as number) }, // below (y decreases going down visually)
+          { dx: -(bin.width as number), dy: 0 }, // left
           { dx: 0, dy: bin.depth }, // above
         ];
 
         for (const { dx, dy } of offsets) {
           const placement = canPlaceBin(
             {
-              x: bin.x + dx,
-              y: bin.y + dy,
+              x: (bin.x + dx) as GridUnits,
+              y: (bin.y + dy) as GridUnits,
               width: bin.width,
               depth: bin.depth,
               height: bin.height,
@@ -300,11 +303,11 @@ export const useLayoutStore = create<LayoutState>()(
             layout
           );
           if (placement.valid) {
-            return addAndTrack(bin.layerId, bin.x + dx, bin.y + dy);
+            return addAndTrack(bin.layerId, (bin.x + dx) as GridUnits, (bin.y + dy) as GridUnits);
           }
         }
 
-        return addAndTrack(STAGING_ID, 0, 0);
+        return addAndTrack(STAGING_ID, 0 as GridUnits, 0 as GridUnits);
       },
 
       moveBinToStaging: (id) => {
@@ -331,7 +334,7 @@ export const useLayoutStore = create<LayoutState>()(
           return err(validationInvalidLayer(layerId));
         }
 
-        const rect = { x, y, width: bin.width, depth: bin.depth };
+        const rect = { x: x as GridUnits, y: y as GridUnits, width: bin.width, depth: bin.depth };
         const validationResult = canPlaceBin(
           { ...rect, height: layer.height },
           layerId,
@@ -346,8 +349,8 @@ export const useLayoutStore = create<LayoutState>()(
           const b = state.layout.bins.find((b) => b.id === id);
           if (b) {
             b.layerId = layerId;
-            b.x = x;
-            b.y = y;
+            b.x = x as GridUnits;
+            b.y = y as GridUnits;
             b.height = layer.height;
           }
         });
@@ -373,7 +376,7 @@ export const useLayoutStore = create<LayoutState>()(
         const newLayer: Layer = {
           id,
           name: `Layer ${layout.layers.length + 1}`,
-          height: Math.min(remaining, defaultLayerHeight),
+          height: Math.min(remaining, defaultLayerHeight) as HeightUnits,
         };
 
         setLocal((state) => {
@@ -396,7 +399,11 @@ export const useLayoutStore = create<LayoutState>()(
                 .filter((layer) => layer.id !== id)
                 .reduce((sum, layer) => sum + layer.height, 0);
               const maxHeight = state.layout.drawer.height - othersHeight;
-              updates.height = clamp(updates.height, CONSTRAINTS.MIN_LAYER_HEIGHT, maxHeight);
+              updates.height = clamp(
+                updates.height,
+                CONSTRAINTS.MIN_LAYER_HEIGHT,
+                maxHeight
+              ) as HeightUnits;
             }
             Object.assign(l, updates);
           }
@@ -459,14 +466,22 @@ export const useLayoutStore = create<LayoutState>()(
           const drawer = state.layout.drawer;
 
           if (updates.width !== undefined) {
-            drawer.width = clamp(updates.width, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX);
+            drawer.width = clamp(
+              updates.width,
+              CONSTRAINTS.GRID_MIN,
+              CONSTRAINTS.GRID_MAX
+            ) as GridUnits;
           }
           if (updates.depth !== undefined) {
-            drawer.depth = clamp(updates.depth, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX);
+            drawer.depth = clamp(
+              updates.depth,
+              CONSTRAINTS.GRID_MIN,
+              CONSTRAINTS.GRID_MAX
+            ) as GridUnits;
           }
           if (updates.height !== undefined) {
             const totalLayerHeight = state.layout.layers.reduce((sum, l) => sum + l.height, 0);
-            drawer.height = Math.max(totalLayerHeight, updates.height);
+            drawer.height = Math.max(totalLayerHeight, updates.height) as HeightUnits;
           }
           if (updates.fractionalEdgeX !== undefined) {
             drawer.fractionalEdgeX = updates.fractionalEdgeX;
@@ -620,17 +635,17 @@ export const useLayoutStore = create<LayoutState>()(
         setLocal((state) => {
           state.layout.baseplateParams = {
             ...params,
-            paddingLeft: Math.max(0, params.paddingLeft),
-            paddingRight: Math.max(0, params.paddingRight),
-            paddingFront: Math.max(0, params.paddingFront),
-            paddingBack: Math.max(0, params.paddingBack),
-            magnetDiameter: clamp(params.magnetDiameter, 0.5, 20),
-            magnetDepth: clamp(params.magnetDepth, 0.5, 10),
+            paddingLeft: Math.max(0, params.paddingLeft) as Mm,
+            paddingRight: Math.max(0, params.paddingRight) as Mm,
+            paddingFront: Math.max(0, params.paddingFront) as Mm,
+            paddingBack: Math.max(0, params.paddingBack) as Mm,
+            magnetDiameter: clamp(params.magnetDiameter, 0.5, 20) as Mm,
+            magnetDepth: clamp(params.magnetDepth, 0.5, 10) as Mm,
             ...(params.baseplateWidth !== undefined
-              ? { baseplateWidth: clamp(params.baseplateWidth, 0.5, 50) }
+              ? { baseplateWidth: clamp(params.baseplateWidth, 0.5, 50) as GridUnits }
               : {}),
             ...(params.baseplateDepth !== undefined
-              ? { baseplateDepth: clamp(params.baseplateDepth, 0.5, 50) }
+              ? { baseplateDepth: clamp(params.baseplateDepth, 0.5, 50) as GridUnits }
               : {}),
           };
         });
@@ -638,19 +653,19 @@ export const useLayoutStore = create<LayoutState>()(
 
       setPrintBedSize: (size) => {
         setLocal((state) => {
-          state.layout.printBedSize = clamp(size, 42, 500);
+          state.layout.printBedSize = clamp(size, 42, 500) as Mm;
         });
       },
 
       setGridUnitMm: (mm) => {
         setLocal((state) => {
-          state.layout.gridUnitMm = clamp(mm, 1, 200);
+          state.layout.gridUnitMm = clamp(mm, 1, 200) as Mm;
         });
       },
 
       setHeightUnitMm: (mm) => {
         setLocal((state) => {
-          state.layout.heightUnitMm = clamp(mm, 1, 50);
+          state.layout.heightUnitMm = clamp(mm, 1, 50) as Mm;
         });
       },
 

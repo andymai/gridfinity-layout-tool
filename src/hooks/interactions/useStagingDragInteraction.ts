@@ -8,7 +8,7 @@ import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
-import type { Coord, ValidationReason, BlockingInfo, BinId } from '@/core/types';
+import type { Coord, GridUnits, ValidationReason, BlockingInfo, BinId } from '@/core/types';
 
 /**
  * Hook for staging drag mode interactions: dragging bins from the stash onto the grid.
@@ -95,8 +95,8 @@ export function useStagingDragInteraction(
       if (!bin) return;
 
       // Calculate where the bin would be placed (clamped to grid bounds)
-      const targetX = clamp(clamped.x, 0, layout.drawer.width - bin.width);
-      const targetY = clamp(clamped.y, 0, layout.drawer.depth - bin.depth);
+      const targetX = clamp(clamped.x, 0, layout.drawer.width - bin.width) as GridUnits;
+      const targetY = clamp(clamped.y, 0, layout.drawer.depth - bin.depth) as GridUnits;
 
       // Validate placement using bin's actual height (no auto-adjustment)
       const result = canPlaceBin(
@@ -113,8 +113,8 @@ export function useStagingDragInteraction(
         bin.id
       );
 
-      let finalX = targetX;
-      let finalY = targetY;
+      let finalX: GridUnits = targetX;
+      let finalY: GridUnits = targetY;
       let finalValid = result.valid;
       let isSnapped = false;
       let invalidReason: ValidationReason | undefined;
@@ -145,8 +145,8 @@ export function useStagingDragInteraction(
           );
 
           if (snapResult) {
-            finalX = snapResult.x;
-            finalY = snapResult.y;
+            finalX = snapResult.x as GridUnits;
+            finalY = snapResult.y as GridUnits;
             finalValid = true;
             isSnapped = snapResult.isSnapped;
           }

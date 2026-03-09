@@ -1,3 +1,16 @@
+// === Branded Unit Types (re-exported from units.ts) ===
+import type { Mm, GridUnits, HeightUnits } from './units';
+export type { Mm, GridUnits, HeightUnits } from './units';
+export {
+  mm,
+  gridUnits,
+  heightUnits,
+  gridUnitsToMm,
+  heightUnitsToMm,
+  mmToGridUnits,
+  mmToHeightUnits,
+} from './units';
+
 // === Branded ID Types ===
 // Nominal types that prevent accidentally mixing different ID domains.
 // Use constructor helpers (binId, layerId, etc.) at system boundaries.
@@ -25,9 +38,9 @@ export interface Layout {
   version: string; // "1.0"
   name: string; // max 64 chars
   drawer: Drawer;
-  printBedSize: number; // print bed size in mm (e.g., 256 for Prusa MK3)
-  gridUnitMm: number; // mm per grid unit (default 42)
-  heightUnitMm: number; // mm per height unit (default 7)
+  printBedSize: Mm; // print bed size in mm (e.g., 256 for Prusa MK3)
+  gridUnitMm: Mm; // mm per grid unit (default 42)
+  heightUnitMm: Mm; // mm per height unit (default 7)
   categories: Category[]; // 1-20 items
   layers: Layer[]; // 1-10 items, index 0 = bottom
   bins: Bin[];
@@ -41,29 +54,29 @@ export interface Layout {
  * Per-side padding in mm — user enters directly, total drawer = grid + padding. */
 export interface BaseplateParams {
   readonly magnetHoles: boolean;
-  readonly magnetDiameter: number;
-  readonly magnetDepth: number;
-  readonly paddingLeft: number;
-  readonly paddingRight: number;
-  readonly paddingFront: number;
-  readonly paddingBack: number;
+  readonly magnetDiameter: Mm;
+  readonly magnetDepth: Mm;
+  readonly paddingLeft: Mm;
+  readonly paddingRight: Mm;
+  readonly paddingFront: Mm;
+  readonly paddingBack: Mm;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
   /** When true (or undefined), grid dims are derived from the drawer. */
   readonly syncWithLayout?: boolean;
   /** Custom grid width in units, only used when syncWithLayout is false. */
-  readonly baseplateWidth?: number;
+  readonly baseplateWidth?: GridUnits;
   /** Custom grid depth in units, only used when syncWithLayout is false. */
-  readonly baseplateDepth?: number;
+  readonly baseplateDepth?: GridUnits;
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */
 export type FractionalEdge = 'start' | 'end';
 
 export interface Drawer {
-  width: number; // 1-50
-  depth: number; // 1-50
-  height: number; // >= sum of layer heights
+  width: GridUnits; // 1-50
+  depth: GridUnits; // 1-50
+  height: HeightUnits; // >= sum of layer heights
   fractionalEdgeX?: FractionalEdge; // 'start' = left, 'end' = right (default)
   fractionalEdgeY?: FractionalEdge; // 'start' = bottom, 'end' = top (default)
 }
@@ -77,18 +90,18 @@ export interface Category {
 export interface Layer {
   id: LayerId;
   name: string; // max 24 chars
-  height: number; // >= 1
+  height: HeightUnits; // >= 1
 }
 
 export interface Bin {
   id: BinId;
   layerId: LayerId; // base layer ID or STAGING_ID
-  x: number; // 0-based, from left
-  y: number; // 0-based, from bottom
-  width: number; // >= 1
-  depth: number; // >= 1
-  height: number; // >= base layer height, <= space to drawer top
-  clearanceHeight?: number; // additional blocked space above bin (for tall contents)
+  x: GridUnits; // 0-based, from left
+  y: GridUnits; // 0-based, from bottom
+  width: GridUnits; // >= 1
+  depth: GridUnits; // >= 1
+  height: HeightUnits; // >= base layer height, <= space to drawer top
+  clearanceHeight?: HeightUnits; // additional blocked space above bin (for tall contents)
   category: CategoryId; // references Category.id
   label: string; // max 24 chars
   notes: string; // max 256 chars
@@ -100,22 +113,22 @@ export interface Bin {
 
 /** Grid coordinate (0-based, origin at bottom-left). */
 export interface Coord {
-  x: number;
-  y: number;
+  x: GridUnits;
+  y: GridUnits;
 }
 
 /** Axis-aligned rectangle on the grid in grid units. */
 export interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  depth: number;
+  x: GridUnits;
+  y: GridUnits;
+  width: GridUnits;
+  depth: GridUnits;
 }
 
 /** 3D bounding box extending a grid rect with a vertical range (in height units). */
 export interface Rect3D extends Rect {
-  zStart: number;
-  zEnd: number;
+  zStart: HeightUnits;
+  zEnd: HeightUnits;
 }
 
 // === Interaction State ===
@@ -247,14 +260,14 @@ export type ValidationResult =
 // === Print List ===
 
 export interface PrintPiece {
-  width: number;
-  depth: number;
+  width: GridUnits;
+  depth: GridUnits;
   count: number;
 }
 
 export interface PrintRow {
   size: string; // "3×2"
-  height: number;
+  height: HeightUnits;
   binCount: number;
   pieces: PrintPiece[];
   totalPieces: number;
@@ -303,10 +316,10 @@ export interface PrintListFilters {
 // === Blocked Zone ===
 
 export interface BlockedZone {
-  x: number;
-  y: number;
-  width: number;
-  depth: number;
+  x: GridUnits;
+  y: GridUnits;
+  width: GridUnits;
+  depth: GridUnits;
   sourceBinId: BinId;
   sourceLayerId: LayerId;
 }
@@ -318,10 +331,10 @@ export interface BlockedZone {
  * Compact representation to minimize storage.
  */
 export interface ThumbnailBin {
-  x: number; // Grid position
-  y: number;
-  w: number; // Width in grid units
-  d: number; // Depth in grid units
+  x: GridUnits; // Grid position
+  y: GridUnits;
+  w: GridUnits; // Width in grid units
+  d: GridUnits; // Depth in grid units
   c: string; // Category color (hex)
   l?: string; // Optional label (truncated if needed)
 }
@@ -330,9 +343,9 @@ export interface ThumbnailBin {
  * Preview data cached in library entry for display without loading full layout.
  */
 export interface LayoutPreview {
-  drawerWidth: number;
-  drawerDepth: number;
-  drawerHeight: number;
+  drawerWidth: GridUnits;
+  drawerDepth: GridUnits;
+  drawerHeight: HeightUnits;
   binCount: number;
   layerCount: number;
   /** Simplified bin positions for thumbnail (top-down view, all layers merged) */

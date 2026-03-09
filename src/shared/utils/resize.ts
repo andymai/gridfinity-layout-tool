@@ -1,4 +1,4 @@
-import type { Coord, Rect, ResizeHandle } from '@/core/types';
+import type { Coord, GridUnits, Rect, ResizeHandle } from '@/core/types';
 
 /**
  * Calculate new rectangle based on resize handle and cursor position.
@@ -28,32 +28,32 @@ export function calculateResizeRect(
 
   // East: expand right edge
   if (handle.includes('e')) {
-    width = Math.max(minSize, cursor.x - x + minSize);
+    width = Math.max(minSize, cursor.x - x + minSize) as GridUnits;
   }
   // West: expand left edge (move x, adjust width)
   if (handle.includes('w')) {
-    const newX = Math.min(cursor.x, x + width - minSize);
-    width = x + width - newX;
+    const newX = Math.min(cursor.x, x + width - minSize) as GridUnits;
+    width = (x + width - newX) as GridUnits;
     x = newX;
   }
   // North: expand top edge (in grid Y coordinates)
   if (handle.includes('n')) {
-    depth = Math.max(minSize, cursor.y - y + minSize);
+    depth = Math.max(minSize, cursor.y - y + minSize) as GridUnits;
   }
   // South: expand bottom edge (move y, adjust depth)
   if (handle.includes('s')) {
-    const newY = Math.min(cursor.y, y + depth - minSize);
-    depth = y + depth - newY;
+    const newY = Math.min(cursor.y, y + depth - minSize) as GridUnits;
+    depth = (y + depth - newY) as GridUnits;
     y = newY;
   }
 
   // Clamp to drawer bounds
-  x = Math.max(0, x);
-  y = Math.max(0, y);
-  if (x + width > drawer.width) width = drawer.width - x;
-  if (y + depth > drawer.depth) depth = drawer.depth - y;
-  width = Math.max(minSize, width);
-  depth = Math.max(minSize, depth);
+  x = Math.max(0, x) as GridUnits;
+  y = Math.max(0, y) as GridUnits;
+  if (x + width > drawer.width) width = (drawer.width - x) as GridUnits;
+  if (y + depth > drawer.depth) depth = (drawer.depth - y) as GridUnits;
+  width = Math.max(minSize, width) as GridUnits;
+  depth = Math.max(minSize, depth) as GridUnits;
 
   return { x, y, width, depth };
 }

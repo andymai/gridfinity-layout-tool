@@ -1,4 +1,4 @@
-import type { Bin, BinId, LayerId, Layout, Rect, ResizeHandle } from '@/core/types';
+import type { Bin, BinId, GridUnits, LayerId, Layout, Rect, ResizeHandle } from '@/core/types';
 import { canPlaceBin } from './validation';
 import { spiralOffsets } from './position';
 import { calculateResizeRect } from './resize';
@@ -122,7 +122,14 @@ export function snapPosition(
 ): SnapResult | null {
   // First check if target position is already valid
   const directResult = canPlaceBin(
-    { x: targetX, y: targetY, width, depth, height, clearanceHeight },
+    {
+      x: targetX as GridUnits,
+      y: targetY as GridUnits,
+      width: width as GridUnits,
+      depth: depth as GridUnits,
+      height,
+      clearanceHeight,
+    },
     layerId,
     layout,
     excludeBinId
@@ -144,7 +151,14 @@ export function snapPosition(
     const cy = targetY + dy;
     if (cx < 0 || cy < 0 || cx > maxDrawerX || cy > maxDrawerY) return false;
     return canPlaceBin(
-      { x: cx, y: cy, width, depth, height, clearanceHeight },
+      {
+        x: cx as GridUnits,
+        y: cy as GridUnits,
+        width: width as GridUnits,
+        depth: depth as GridUnits,
+        height,
+        clearanceHeight,
+      },
       layerId,
       layout,
       excludeBinId
@@ -195,8 +209,8 @@ export function snapGroupDelta(
       if (newY + bin.depth > layout.drawer.depth) return false;
       const result = canPlaceBin(
         {
-          x: newX,
-          y: newY,
+          x: newX as GridUnits,
+          y: newY as GridUnits,
           width: bin.width,
           depth: bin.depth,
           height: bin.height,
@@ -329,7 +343,7 @@ export function snapResizeRect(
     const candidateRect = calculateResizeRect(
       startRect,
       handle,
-      { x: synthCursorX, y: synthCursorY },
+      { x: synthCursorX as GridUnits, y: synthCursorY as GridUnits },
       drawer,
       minSize
     );
@@ -382,7 +396,13 @@ export function snapDrawRect(
 ): { width: number; depth: number } {
   // Check if the full size is already valid
   const fullResult = canPlaceBin(
-    { x: originX, y: originY, width: requestedWidth, depth: requestedDepth, height: layerHeight },
+    {
+      x: originX as GridUnits,
+      y: originY as GridUnits,
+      width: requestedWidth as GridUnits,
+      depth: requestedDepth as GridUnits,
+      height: layerHeight,
+    },
     layerId,
     layout
   );
@@ -399,7 +419,13 @@ export function snapDrawRect(
   // Shrink width from requestedWidth down to step
   for (let w = requestedWidth - step; w >= step; w -= step) {
     const result = canPlaceBin(
-      { x: originX, y: originY, width: w, depth: requestedDepth, height: layerHeight },
+      {
+        x: originX as GridUnits,
+        y: originY as GridUnits,
+        width: w as GridUnits,
+        depth: requestedDepth as GridUnits,
+        height: layerHeight,
+      },
       layerId,
       layout
     );
@@ -411,7 +437,13 @@ export function snapDrawRect(
   // Shrink depth from requestedDepth down to step
   for (let d = requestedDepth - step; d >= step; d -= step) {
     const result = canPlaceBin(
-      { x: originX, y: originY, width: requestedWidth, depth: d, height: layerHeight },
+      {
+        x: originX as GridUnits,
+        y: originY as GridUnits,
+        width: requestedWidth as GridUnits,
+        depth: d as GridUnits,
+        height: layerHeight,
+      },
       layerId,
       layout
     );
@@ -424,7 +456,13 @@ export function snapDrawRect(
   for (let w = requestedWidth - step; w >= step; w -= step) {
     for (let d = requestedDepth - step; d >= step; d -= step) {
       const result = canPlaceBin(
-        { x: originX, y: originY, width: w, depth: d, height: layerHeight },
+        {
+          x: originX as GridUnits,
+          y: originY as GridUnits,
+          width: w as GridUnits,
+          depth: d as GridUnits,
+          height: layerHeight,
+        },
         layerId,
         layout
       );

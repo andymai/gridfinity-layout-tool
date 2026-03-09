@@ -6,6 +6,7 @@
  */
 
 import type { Bin } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 import type { BinParams } from '@/features/bin-designer';
 import type { SyncableDimensions } from '../types';
 
@@ -45,9 +46,9 @@ export function extractDesignDimensions(params: BinParams): SyncableDimensions {
  */
 export function createBinSyncUpdate(dimensions: SyncableDimensions): Partial<Bin> {
   return {
-    width: dimensions.width,
-    depth: dimensions.depth,
-    height: dimensions.height,
+    width: gridUnits(dimensions.width),
+    depth: gridUnits(dimensions.depth),
+    height: heightUnits(dimensions.height),
   };
 }
 

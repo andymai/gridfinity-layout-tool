@@ -6,6 +6,7 @@
  */
 
 import type { Layout, LayoutId } from '@/core/types';
+import { gridUnits, mm } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import type { DomainEvent } from '../events';
 import { eventStore } from '../store/eventStore';
@@ -52,8 +53,8 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       const bin = next.bins.find((b) => b.id === event.payload.id);
       if (bin) {
         bin.layerId = event.payload.layerId;
-        bin.x = event.payload.x;
-        bin.y = event.payload.y;
+        bin.x = gridUnits(event.payload.x);
+        bin.y = gridUnits(event.payload.y);
       }
       break;
     }
@@ -116,15 +117,15 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       break;
 
     case 'layout.printBedSizeSet':
-      next.printBedSize = event.payload.size;
+      next.printBedSize = mm(event.payload.size);
       break;
 
     case 'layout.gridUnitMmSet':
-      next.gridUnitMm = event.payload.mm;
+      next.gridUnitMm = mm(event.payload.mm);
       break;
 
     case 'layout.heightUnitMmSet':
-      next.heightUnitMm = event.payload.mm;
+      next.heightUnitMm = mm(event.payload.mm);
       break;
 
     case 'layout.baseplateParamsSet':

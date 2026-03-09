@@ -11,7 +11,7 @@ import { useContextMenu } from '@/hooks/useContextMenu';
 import { splitBinsByLocation } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinsByIds } from '@/utils/entity';
-import type { BinId, CategoryId, LayerId } from '@/core/types';
+import type { BinId, CategoryId, GridUnits, LayerId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 interface MultiBinContextMenuProps {
@@ -110,8 +110,8 @@ export function MultiBinContextMenu({
         // Move to layer - keep original height (don't auto-adjust to layer minimum)
         updateBin(b.id, {
           layerId: targetLayerId,
-          x: 0,
-          y: 0,
+          x: 0 as GridUnits,
+          y: 0 as GridUnits,
         });
       });
     });

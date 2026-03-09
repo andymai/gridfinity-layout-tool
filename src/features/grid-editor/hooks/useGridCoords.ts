@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { RefObject } from 'react';
-import type { Coord } from '@/core/types';
+import type { Coord, GridUnits } from '@/core/types';
 import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
@@ -170,7 +170,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
           y = isTopHalf ? baseY + 0.5 : baseY;
         }
 
-        return { x: snapToHalf(x), y: snapToHalf(y) };
+        return { x: snapToHalf(x) as GridUnits, y: snapToHalf(y) as GridUnits };
       } else {
         // Standard mode - whole cell coordinates
         let x: number;
@@ -195,7 +195,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
               : drawer.depth - 1 - cellY;
         }
 
-        return { x, y };
+        return { x: x as GridUnits, y: y as GridUnits };
       }
     },
     [
@@ -216,13 +216,13 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
         // In half-bin mode, clamp to 0.5 increments within bounds
         // Max coordinate is drawer dimension - 0.5 (to allow 0.5-width bins at edge)
         return {
-          x: clamp(snapToHalf(coord.x), 0, drawer.width - 0.5),
-          y: clamp(snapToHalf(coord.y), 0, drawer.depth - 0.5),
+          x: clamp(snapToHalf(coord.x), 0, drawer.width - 0.5) as GridUnits,
+          y: clamp(snapToHalf(coord.y), 0, drawer.depth - 0.5) as GridUnits,
         };
       } else {
         return {
-          x: clamp(coord.x, 0, drawer.width - 1),
-          y: clamp(coord.y, 0, drawer.depth - 1),
+          x: clamp(coord.x, 0, drawer.width - 1) as GridUnits,
+          y: clamp(coord.y, 0, drawer.depth - 1) as GridUnits,
         };
       }
     },

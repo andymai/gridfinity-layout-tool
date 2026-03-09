@@ -1,4 +1,4 @@
-import type { Bin, Rect } from '@/core/types';
+import type { Bin, GridUnits, Rect } from '@/core/types';
 import { clamp } from '@/shared/utils/validation';
 
 /**
@@ -7,19 +7,19 @@ import { clamp } from '@/shared/utils/validation';
  */
 export function getSelectionBounds(bins: Bin[]): Rect {
   if (bins.length === 0) {
-    return { x: 0, y: 0, width: 0, depth: 0 };
+    return { x: 0 as GridUnits, y: 0 as GridUnits, width: 0 as GridUnits, depth: 0 as GridUnits };
   }
 
-  const minX = Math.min(...bins.map((b) => b.x));
-  const minY = Math.min(...bins.map((b) => b.y));
-  const maxX = Math.max(...bins.map((b) => b.x + b.width));
-  const maxY = Math.max(...bins.map((b) => b.y + b.depth));
+  const minX = Math.min(...bins.map((b) => b.x)) as GridUnits;
+  const minY = Math.min(...bins.map((b) => b.y)) as GridUnits;
+  const maxX = Math.max(...bins.map((b) => b.x + b.width)) as GridUnits;
+  const maxY = Math.max(...bins.map((b) => b.y + b.depth)) as GridUnits;
 
   return {
     x: minX,
     y: minY,
-    width: maxX - minX,
-    depth: maxY - minY,
+    width: (maxX - minX) as GridUnits,
+    depth: (maxY - minY) as GridUnits,
   };
 }
 
@@ -48,9 +48,9 @@ export function constrainGroupDelta(
 
   // Calculate maximum movement in each direction that keeps group in bounds
   const maxDeltaRight = drawer.width - (bounds.x + bounds.width);
-  const maxDeltaLeft = -bounds.x;
+  const maxDeltaLeft = -(bounds.x as number);
   const maxDeltaUp = drawer.depth - (bounds.y + bounds.depth);
-  const maxDeltaDown = -bounds.y;
+  const maxDeltaDown = -(bounds.y as number);
 
   return {
     deltaX: clamp(rawDeltaX, maxDeltaLeft, maxDeltaRight),
