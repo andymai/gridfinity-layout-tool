@@ -2,7 +2,9 @@
  * Undo Capture Middleware
  *
  * Snapshots layout state before command execution for undo/redo.
- * Replaces `useUndoableAction()` for commands going through the bus.
+ * NOT included in the default pipeline — undo is still handled by
+ * `useUndoableAction()` which wraps `useMutations()` calls in components.
+ * Exported for future use when undo ownership moves fully into CQRS.
  */
 
 import { useLayoutStore } from '@/core/store/layout';
