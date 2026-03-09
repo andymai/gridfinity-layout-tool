@@ -6,7 +6,6 @@
  */
 
 import type { Layout, Bin, LayoutId } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
 import type { DomainEvent } from '../events';
 import { eventStore } from '../store/eventStore';
 
@@ -81,10 +80,8 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
     case 'layer.deleted': {
       const deletedLayerId = event.payload.layer.id;
       next.layers = next.layers.filter((l) => l.id !== deletedLayerId);
-      // Displace bins on deleted layer to staging (matches store behavior)
-      next.bins = next.bins.map((b) =>
-        b.layerId === deletedLayerId ? { ...b, layerId: STAGING_ID } : b
-      );
+      // Store deletes bins on the layer (not staging displacement)
+      next.bins = next.bins.filter((b) => b.layerId !== deletedLayerId);
       break;
     }
 
@@ -105,18 +102,9 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       break;
     }
 
-    case 'category.deleted': {
-      const deletedCatId = event.payload.category.id;
-      next.categories = next.categories.filter((c) => c.id !== deletedCatId);
-      // Reassign bins to first remaining category (matches store behavior)
-      const fallbackCat = next.categories[0]?.id;
-      if (fallbackCat) {
-        next.bins = next.bins.map((b) =>
-          b.category === deletedCatId ? { ...b, category: fallbackCat } : b
-        );
-      }
+    case 'category.deleted':
+      next.categories = next.categories.filter((c) => c.id !== event.payload.category.id);
       break;
-    }
 
     case 'drawer.updated':
       Object.assign(next.drawer, event.payload.changes);

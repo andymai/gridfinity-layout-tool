@@ -103,6 +103,44 @@ describe('applyEvent', () => {
     expect(result.layers).toHaveLength(2);
   });
 
+  it('applies layer.deleted — removes layer and its bins', () => {
+    const bin1 = makeBin({ id: binId('bin_1'), layerId: layerId('layer_1') });
+    const bin2 = makeBin({ id: binId('bin_2'), layerId: layerId('layer_2') });
+    const layout = makeLayout([bin1, bin2]);
+    layout.layers.push({ id: layerId('layer_2'), name: 'Layer 2', height: 1 });
+
+    const event: DomainEvent = {
+      type: 'layer.deleted',
+      payload: {
+        layer: { id: layerId('layer_1'), name: 'Layer 1', height: 1 },
+        displacedBinCount: 0,
+      },
+      meta: baseMeta,
+    };
+
+    const result = applyEvent(layout, event);
+    expect(result.layers).toHaveLength(1);
+    expect(result.layers[0].id).toBe('layer_2');
+    // Bins on deleted layer are removed, not displaced to staging
+    expect(result.bins).toHaveLength(1);
+    expect(result.bins[0].id).toBe('bin_2');
+  });
+
+  it('applies category.deleted — removes category only', () => {
+    const layout = makeLayout();
+    layout.categories.push({ id: categoryId('cat_2'), name: 'Tools', color: '#ff0000' });
+
+    const event: DomainEvent = {
+      type: 'category.deleted',
+      payload: { category: { id: categoryId('cat_2'), name: 'Tools', color: '#ff0000' } },
+      meta: baseMeta,
+    };
+
+    const result = applyEvent(layout, event);
+    expect(result.categories).toHaveLength(1);
+    expect(result.categories[0].id).toBe('cat_1');
+  });
+
   it('applies layout.nameSet', () => {
     const layout = makeLayout();
     const event: DomainEvent = {
