@@ -2,27 +2,38 @@
 /**
  * Mutations Context - Provides a unified interface for layout mutations.
  *
- * This module provides direct access to layout store mutations.
- * All validation and error handling is done in the store itself.
+ * All mutations route through the CQRS command bus, which validates commands,
+ * captures undo snapshots, produces domain events, and delegates to the
+ * layout store. The command bus is transparent — components use the same
+ * `useMutations()` hook as before.
  *
  * @example
  * ```tsx
  * function MyComponent() {
  *   const { addBin, deleteBin } = useMutations();
- *   // Mutations go directly to the store
+ *   // Mutations flow through the command bus automatically
  * }
  * ```
  */
 
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { useLayoutStore } from '@/core/store/layout';
-import type { Bin, Layer, Category, Drawer, BinId, LayerId, CategoryId } from '@/core/types';
+import { createCqrsMutations, commandBus } from '@/core/cqrs';
+import type {
+  Bin,
+  Layer,
+  Category,
+  Drawer,
+  BinId,
+  LayerId,
+  CategoryId,
+  BaseplateParams,
+} from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 
 /**
  * Mutation functions interface.
- * All mutations are passed through directly to the layout store.
+ * All mutations are routed through the CQRS command bus.
  */
 export interface Mutations {
   // Bin operations
@@ -68,70 +79,21 @@ export interface Mutations {
   setPrintBedSize: (size: number) => void;
   setGridUnitMm: (mm: number) => void;
   setHeightUnitMm: (mm: number) => void;
+  setBaseplateParams: (params: BaseplateParams) => void;
 }
 
 const MutationsContext = createContext<Mutations | null>(null);
 
+/** CQRS-backed mutations singleton (stable across renders) */
+const cqrsMutations: Mutations = createCqrsMutations(commandBus);
+
 /**
  * Hook to access mutations.
- * Returns store mutations directly, or context mutations if in a provider.
+ * Returns context mutations if in a provider, otherwise CQRS mutations directly.
  */
 export function useMutations(): Mutations {
   const context = useContext(MutationsContext);
-  const storeMutations = useStoreMutations();
-
-  // If in a provider, use context mutations
-  // Otherwise, use store mutations directly
-  return context ?? storeMutations;
-}
-
-/**
- * Hook that provides mutations directly from the store.
- * This is the primary implementation - all validation is in the store.
- */
-function useStoreMutations(): Mutations {
-  // Use getState() instead of the hook since we only need stable method references
-  // This avoids re-renders when layout state changes
-  const store = useLayoutStore.getState();
-
-  return useMemo<Mutations>(
-    () => ({
-      // Bin operations
-      addBin: store.addBin,
-      updateBin: store.updateBin,
-      deleteBin: store.deleteBin,
-      deleteBins: store.deleteBins,
-      duplicateBin: store.duplicateBin,
-      moveBinToStaging: store.moveBinToStaging,
-      moveBinFromStaging: store.moveBinFromStaging,
-
-      // Layer operations
-      addLayer: store.addLayer,
-      updateLayer: store.updateLayer,
-      deleteLayer: store.deleteLayer,
-      reorderLayers: store.reorderLayers,
-
-      // Drawer operations
-      updateDrawer: store.updateDrawer,
-
-      // Category operations
-      addCategory: store.addCategory,
-      updateCategory: store.updateCategory,
-      deleteCategory: store.deleteCategory,
-
-      // Bulk operations
-      fillLayer: store.fillLayer,
-      clearLayer: store.clearLayer,
-
-      // Layout metadata
-      setName: store.setName,
-      setPrintBedSize: store.setPrintBedSize,
-      setGridUnitMm: store.setGridUnitMm,
-      setHeightUnitMm: store.setHeightUnitMm,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Store methods from getState() are stable references
-    []
-  );
+  return context ?? cqrsMutations;
 }
 
 /**
@@ -139,7 +101,7 @@ function useStoreMutations(): Mutations {
  * Used to provide mutations through React context for collab mode compatibility.
  */
 export function LocalMutationsProvider({ children }: { children: ReactNode }) {
-  const mutations = useStoreMutations();
+  const mutations = useMemo<Mutations>(() => cqrsMutations, []);
 
   return <MutationsContext.Provider value={mutations}>{children}</MutationsContext.Provider>;
 }

@@ -29,6 +29,7 @@ import type {
 } from '@/core/result';
 import { ok, err, OK, layoutLastEntity, layoutInvalidOperation, fromUnknown } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { useMutations } from '@/shared/contexts/MutationsContext';
 
 /**
  * Orchestration hook for layout switching and management.
@@ -37,6 +38,7 @@ import { useTranslation } from '@/i18n';
 export function useLayoutSwitcher() {
   const t = useTranslation();
   const pendingSaveRef = useRef<number | null>(null);
+  const mutations = useMutations();
 
   // Layout activation hook (importLayout + UI reset + history clear)
   const { activateLayout } = useLayoutActivation();
@@ -319,7 +321,7 @@ export function useLayoutSwitcher() {
 
         // Also update the layout store's name if this is the active layout
         if (id === currentActiveId) {
-          useLayoutStore.getState().setName(newName);
+          mutations.setName(newName);
         }
 
         trackLayoutAction('renamed');
@@ -327,7 +329,7 @@ export function useLayoutSwitcher() {
         addToast(t('toast.layoutRenameFailed'), 'error');
       }
     },
-    [setLibrary, addToast, t]
+    [setLibrary, addToast, t, mutations]
   );
 
   /**
