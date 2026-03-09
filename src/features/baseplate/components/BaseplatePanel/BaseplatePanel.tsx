@@ -28,6 +28,7 @@ import { SliderInput } from '@/shared/components/SliderInput';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { colToLetter } from '../../utils/splitPlanner';
 import type { BaseplateParams } from '@/core/types';
+import { gridUnits, mm } from '@/core/types';
 import type { BaseplateTiling, PaddingReductionHint } from '../../types/tiling';
 
 const PADDING_HINT_AXIS_KEYS: Record<PaddingReductionHint['axis'], string> = {
@@ -156,14 +157,14 @@ export function BaseplatePanel() {
               <GridDimensionStepper
                 label={t('baseplate.gridWidth')}
                 value={effectiveWidth}
-                onChange={(v) => updateParam('baseplateWidth', v)}
+                onChange={(v) => updateParam('baseplateWidth', gridUnits(v))}
                 halfBinMode={halfBinMode}
                 disabled={synced}
               />
               <GridDimensionStepper
                 label={t('baseplate.gridDepth')}
                 value={effectiveDepth}
-                onChange={(v) => updateParam('baseplateDepth', v)}
+                onChange={(v) => updateParam('baseplateDepth', gridUnits(v))}
                 halfBinMode={halfBinMode}
                 disabled={synced}
               />
@@ -221,7 +222,7 @@ export function BaseplatePanel() {
               <SliderInput
                 label={t('baseplate.magnetDiameter')}
                 value={baseplateParams.magnetDiameter}
-                onChange={(v) => updateParam('magnetDiameter', v)}
+                onChange={(v) => updateParam('magnetDiameter', mm(v))}
                 min={1}
                 max={20}
                 step={0.1}
@@ -231,7 +232,7 @@ export function BaseplatePanel() {
               <SliderInput
                 label={t('baseplate.magnetDepth')}
                 value={baseplateParams.magnetDepth}
-                onChange={(v) => updateParam('magnetDepth', v)}
+                onChange={(v) => updateParam('magnetDepth', mm(v))}
                 min={0.5}
                 max={10}
                 step={0.1}
@@ -413,7 +414,7 @@ function PaddingSchematic({
         <PaddingStepper
           label={t('baseplate.paddingBack')}
           value={baseplateParams.paddingBack}
-          onChange={(v) => updateParam('paddingBack', v)}
+          onChange={(v) => updateParam('paddingBack', mm(v))}
         />
       </div>
 
@@ -422,13 +423,13 @@ function PaddingSchematic({
         <SideStepper
           ariaLabel={t('baseplate.paddingLeft')}
           value={baseplateParams.paddingLeft}
-          onChange={(v) => updateParam('paddingLeft', v)}
+          onChange={(v) => updateParam('paddingLeft', mm(v))}
         />
         <div className="flex-1 min-h-14 rounded-md border border-dashed border-stroke-subtle bg-surface-secondary/50" />
         <SideStepper
           ariaLabel={t('baseplate.paddingRight')}
           value={baseplateParams.paddingRight}
-          onChange={(v) => updateParam('paddingRight', v)}
+          onChange={(v) => updateParam('paddingRight', mm(v))}
         />
       </div>
 
@@ -437,7 +438,7 @@ function PaddingSchematic({
         <PaddingStepper
           label={t('baseplate.paddingFront')}
           value={baseplateParams.paddingFront}
-          onChange={(v) => updateParam('paddingFront', v)}
+          onChange={(v) => updateParam('paddingFront', mm(v))}
         />
       </div>
 

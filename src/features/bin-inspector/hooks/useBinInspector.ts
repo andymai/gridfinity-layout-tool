@@ -10,7 +10,16 @@ import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/val
 import { validateBinRotation } from '@/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
-import type { Bin, Category, Layer, Layout, LayerId, CategoryId } from '@/core/types';
+import type {
+  Bin,
+  Category,
+  Layer,
+  Layout,
+  LayerId,
+  CategoryId,
+  GridUnits,
+  HeightUnits,
+} from '@/core/types';
 import { layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
@@ -239,13 +248,13 @@ export function useBinInspector(): UseBinInspectorReturn {
             typeof value === 'number' ? value : parseInt(value, 10) || constraints.minHeight,
             constraints.minHeight,
             constraints.maxHeight
-          );
+          ) as HeightUnits;
 
           // Preserve clearance total if bin has clearance
           let heightUpdateFailed = false;
           if (bin.clearanceHeight && bin.clearanceHeight > 0) {
             const currentTotal = bin.height + bin.clearanceHeight;
-            const newClearance = Math.max(0, currentTotal - newHeight);
+            const newClearance = Math.max(0, currentTotal - newHeight) as HeightUnits;
             if (isErr(updateBin(bin.id, { height: newHeight, clearanceHeight: newClearance }))) {
               heightUpdateFailed = true;
             }
@@ -264,7 +273,7 @@ export function useBinInspector(): UseBinInspectorReturn {
             typeof value === 'number' ? value : parseInt(value, 10) || 0,
             0,
             constraints.maxClearance
-          );
+          ) as HeightUnits;
           updateBin(bin.id, { clearanceHeight: newClearance });
         } else if (field === 'label') {
           const oldLabel = bin.label;
@@ -376,12 +385,12 @@ export function useBinInspector(): UseBinInspectorReturn {
           CONSTRAINTS.MIN_BIN_HEIGHT,
           binLayer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
         );
-        let binMaxHeight = layout.drawer.height;
+        let binMaxHeight = layout.drawer.height as number;
         if (b.layerId !== STAGING_ID && binLayer) {
           const zR = getLayerZStartResult(b.layerId, layout.layers);
           binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
         }
-        const newHeight = clamp(b.height + delta, minHeight, binMaxHeight);
+        const newHeight = clamp(b.height + delta, minHeight, binMaxHeight) as HeightUnits;
         return { bin: b, newHeight };
       });
 
@@ -415,13 +424,17 @@ export function useBinInspector(): UseBinInspectorReturn {
         for (const b of selectedBins) {
           const binLayer = layout.layers.find((l) => l.id === b.layerId);
           // For staging bins, use full drawer height; for placed bins, account for layer position
-          let binMaxHeight = layout.drawer.height;
+          let binMaxHeight = layout.drawer.height as number;
           if (b.layerId !== STAGING_ID && binLayer) {
             const zR = getLayerZStartResult(b.layerId, layout.layers);
             binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
           }
           const maxClearance = binMaxHeight - b.height;
-          const newClearance = clamp((b.clearanceHeight || 0) + delta, 0, maxClearance);
+          const newClearance = clamp(
+            (b.clearanceHeight || 0) + delta,
+            0,
+            maxClearance
+          ) as HeightUnits;
           updateBin(b.id, { clearanceHeight: newClearance });
         }
       });
@@ -619,8 +632,8 @@ export function useBinInspector(): UseBinInspectorReturn {
     execute(() => {
       const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
       if (result.movedTo) {
-        updates.x = result.movedTo.x;
-        updates.y = result.movedTo.y;
+        updates.x = result.movedTo.x as GridUnits;
+        updates.y = result.movedTo.y as GridUnits;
       }
       updateBin(bin.id, updates);
     });

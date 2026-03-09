@@ -7,6 +7,7 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { binId as toBinId } from '@/core/types';
+import type { GridUnits } from '@/core/types';
 import { isErr } from '@/core/result';
 
 /**
@@ -139,14 +140,22 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
 
       if (resizeDirection === 'width' || resizeDirection === 'both') {
         const widthDelta = Math.round(dx / cellStep);
-        const newWidth = clamp(resizeStart.width + widthDelta, 1, CONSTRAINTS.GRID_MAX);
+        const newWidth = clamp(
+          resizeStart.width + widthDelta,
+          1,
+          CONSTRAINTS.GRID_MAX
+        ) as GridUnits;
         if (newWidth !== currentDrawer.width) updates.width = newWidth;
       }
 
       if (resizeDirection === 'depth' || resizeDirection === 'both') {
         // Depth increases downward visually (positive dy = increase depth)
         const depthDelta = Math.round(dy / cellStep);
-        const newDepth = clamp(resizeStart.depth + depthDelta, 1, CONSTRAINTS.GRID_MAX);
+        const newDepth = clamp(
+          resizeStart.depth + depthDelta,
+          1,
+          CONSTRAINTS.GRID_MAX
+        ) as GridUnits;
         if (newDepth !== currentDrawer.depth) updates.depth = newDepth;
       }
 
@@ -187,7 +196,10 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
           clippedBinIds: clippedBins.map((b) => b.id),
         });
         // Revert to original size temporarily (user will confirm or cancel)
-        updateDrawer({ width: resizeStart.width, depth: resizeStart.depth });
+        updateDrawer({
+          width: resizeStart.width as GridUnits,
+          depth: resizeStart.depth as GridUnits,
+        });
       } else {
         // No clipped bins - track the completed resize
         // Only track if dimensions actually changed
@@ -228,7 +240,10 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
         if (isErr(updateBin(toBinId(id), { layerId: STAGING_ID }))) break;
       }
       // Apply the resize
-      updateDrawer({ width: pendingResize.newWidth, depth: pendingResize.newDepth });
+      updateDrawer({
+        width: pendingResize.newWidth as GridUnits,
+        depth: pendingResize.newDepth as GridUnits,
+      });
     });
 
     // Track drawer resize after execution

@@ -8,7 +8,7 @@ import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { trackBinCreated, trackPaintMode } from '@/shared/analytics/posthog';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
-import type { BinId, Coord, Bin } from '@/core/types';
+import type { BinId, Coord, GridUnits, Bin } from '@/core/types';
 
 /**
  * Hook for draw mode interactions: creating new bins by dragging a rectangle.
@@ -142,10 +142,10 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
         execute(() => {
           const binData = {
             layerId: activeLayerId,
-            x: x1,
-            y: y1,
-            width,
-            depth,
+            x: x1 as GridUnits,
+            y: y1 as GridUnits,
+            width: width as GridUnits,
+            depth: depth as GridUnits,
             height: layer.height,
             category: activeCategoryId,
             label: '',
@@ -184,10 +184,10 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
         execute(() => {
           const binData = {
             layerId: activeLayerId,
-            x: clampedX,
-            y: clampedY,
-            width: ps.width,
-            depth: ps.depth,
+            x: clampedX as GridUnits,
+            y: clampedY as GridUnits,
+            width: ps.width as GridUnits,
+            depth: ps.depth as GridUnits,
             height: layer.height,
             category: activeCategoryId,
             label: '',
@@ -232,15 +232,15 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             // Place bins in a grid pattern
             for (let row = 0; row < binsDown; row++) {
               for (let col = 0; col < binsAcross; col++) {
-                const binX = x1 + col * ps.width;
-                const binY = y1 + row * ps.depth;
+                const binX = (x1 + col * ps.width) as GridUnits;
+                const binY = (y1 + row * ps.depth) as GridUnits;
 
                 const result = canPlaceBin(
                   {
                     x: binX,
                     y: binY,
-                    width: ps.width,
-                    depth: ps.depth,
+                    width: ps.width as GridUnits,
+                    depth: ps.depth as GridUnits,
                     height: layer.height,
                   },
                   activeLayerId,
@@ -254,8 +254,8 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
                     layerId: activeLayerId,
                     x: binX,
                     y: binY,
-                    width: ps.width,
-                    depth: ps.depth,
+                    width: ps.width as GridUnits,
+                    depth: ps.depth as GridUnits,
                     height: layer.height,
                     category: activeCategoryId,
                     label: '',
@@ -264,7 +264,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
                   const addResult = addBin(binData);
                   if (isOk(addResult)) {
                     placedBinIds.push(addResult.value);
-                    placedBins.push({ ...binData, id: addResult.value });
+                    placedBins.push({ ...binData, id: addResult.value } as Bin);
                   }
                 }
               }

@@ -7,7 +7,7 @@ import type {
   LayerId,
   CategoryId,
 } from './types';
-import { binId, layerId, categoryId } from './types';
+import { binId, layerId, categoryId, mm, gridUnits, heightUnits } from './types';
 
 // === Constraints (from PRD) ===
 
@@ -180,12 +180,12 @@ export const FILAMENT_COLORS = [
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   magnetHoles: false,
-  magnetDiameter: 6.5,
-  magnetDepth: 2,
-  paddingLeft: 0,
-  paddingRight: 0,
-  paddingFront: 0,
-  paddingBack: 0,
+  magnetDiameter: mm(6.5),
+  magnetDepth: mm(2),
+  paddingLeft: mm(0),
+  paddingRight: mm(0),
+  paddingFront: mm(0),
+  paddingBack: mm(0),
 } as const;
 
 /**
@@ -201,26 +201,26 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     return {
       ...DEFAULT_BASEPLATE_PARAMS,
       magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
-      magnetDiameter: clampNumber(obj.magnetDiameter, 0.5, 20, 6.5),
-      magnetDepth: clampNumber(obj.magnetDepth, 0.5, 10, 2),
+      magnetDiameter: mm(clampNumber(obj.magnetDiameter, 0.5, 20, 6.5)),
+      magnetDepth: mm(clampNumber(obj.magnetDepth, 0.5, 10, 2)),
     };
   }
   // Validate and clamp all fields from persisted/imported data
   return {
     magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
-    magnetDiameter: clampNumber(obj.magnetDiameter, 0.5, 20, 6.5),
-    magnetDepth: clampNumber(obj.magnetDepth, 0.5, 10, 2),
-    paddingLeft: clampNumber(obj.paddingLeft, 0, 100, 0),
-    paddingRight: clampNumber(obj.paddingRight, 0, 100, 0),
-    paddingFront: clampNumber(obj.paddingFront, 0, 100, 0),
-    paddingBack: clampNumber(obj.paddingBack, 0, 100, 0),
+    magnetDiameter: mm(clampNumber(obj.magnetDiameter, 0.5, 20, 6.5)),
+    magnetDepth: mm(clampNumber(obj.magnetDepth, 0.5, 10, 2)),
+    paddingLeft: mm(clampNumber(obj.paddingLeft, 0, 100, 0)),
+    paddingRight: mm(clampNumber(obj.paddingRight, 0, 100, 0)),
+    paddingFront: mm(clampNumber(obj.paddingFront, 0, 100, 0)),
+    paddingBack: mm(clampNumber(obj.paddingBack, 0, 100, 0)),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
     ...(typeof obj.syncWithLayout === 'boolean' ? { syncWithLayout: obj.syncWithLayout } : {}),
     ...(typeof obj.baseplateWidth === 'number'
-      ? { baseplateWidth: Math.min(50, Math.max(0.5, obj.baseplateWidth)) }
+      ? { baseplateWidth: gridUnits(Math.min(50, Math.max(0.5, obj.baseplateWidth))) }
       : {}),
     ...(typeof obj.baseplateDepth === 'number'
-      ? { baseplateDepth: Math.min(50, Math.max(0.5, obj.baseplateDepth)) }
+      ? { baseplateDepth: gridUnits(Math.min(50, Math.max(0.5, obj.baseplateDepth))) }
       : {}),
   };
 }
@@ -289,17 +289,24 @@ export function getDefaultDrawerSize(viewportWidth?: number): {
   return { width: 10, depth: 8, height: 12 };
 }
 
-export const createDefaultLayout = (): Layout => ({
-  version: '1.0',
-  name: DEFAULT_LAYOUT_NAME,
-  drawer: getDefaultDrawerSize(),
-  printBedSize: 256, // mm - typical print bed size
-  gridUnitMm: 42,
-  heightUnitMm: 7,
-  categories: [...DEFAULT_CATEGORIES],
-  layers: [{ id: generateLayerId(), name: 'Layer 1', height: 3 }],
-  bins: [],
-});
+export const createDefaultLayout = (): Layout => {
+  const size = getDefaultDrawerSize();
+  return {
+    version: '1.0',
+    name: DEFAULT_LAYOUT_NAME,
+    drawer: {
+      width: gridUnits(size.width),
+      depth: gridUnits(size.depth),
+      height: heightUnits(size.height),
+    },
+    printBedSize: mm(256), // mm - typical print bed size
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    categories: [...DEFAULT_CATEGORIES],
+    layers: [{ id: generateLayerId(), name: 'Layer 1', height: heightUnits(3) }],
+    bins: [],
+  };
+};
 
 /**
  * Create a new layout using user preferences.
@@ -327,19 +334,19 @@ export const createLayoutWithSettings = (settings: LayoutSettings): Layout => {
     version: '1.0',
     name: DEFAULT_LAYOUT_NAME,
     drawer: {
-      width: settings.defaultDrawerWidth,
-      depth: settings.defaultDrawerDepth,
-      height: settings.defaultDrawerHeight,
+      width: gridUnits(settings.defaultDrawerWidth),
+      depth: gridUnits(settings.defaultDrawerDepth),
+      height: heightUnits(settings.defaultDrawerHeight),
     },
-    printBedSize: settings.defaultPrintBedSize,
-    gridUnitMm: settings.defaultGridUnitMm,
-    heightUnitMm: settings.defaultHeightUnitMm,
+    printBedSize: mm(settings.defaultPrintBedSize),
+    gridUnitMm: mm(settings.defaultGridUnitMm),
+    heightUnitMm: mm(settings.defaultHeightUnitMm),
     categories,
     layers: [
       {
         id: generateLayerId(),
         name: 'Layer 1',
-        height: Math.min(settings.defaultDrawerHeight, settings.defaultLayerHeight),
+        height: heightUnits(Math.min(settings.defaultDrawerHeight, settings.defaultLayerHeight)),
       },
     ],
     bins: [],

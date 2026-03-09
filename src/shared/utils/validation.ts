@@ -1,5 +1,6 @@
 import type {
   Bin,
+  HeightUnits,
   Layout,
   ValidationResult,
   ValidationReason,
@@ -9,7 +10,14 @@ import type {
   LayerId,
 } from '@/core/types';
 import type { TFunction } from '@/i18n';
-import { binId as toBinId, layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
+import {
+  binId as toBinId,
+  layerId as toLayerId,
+  categoryId as toCategoryId,
+  mm,
+  gridUnits,
+  heightUnits,
+} from '@/core/types';
 import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '@/core/constants';
 
 /** Human-readable suffixes for placement failure reasons. */
@@ -152,7 +160,7 @@ export function isValidCategory(value: unknown): value is CategoryShape {
  * @param excludeBinIds - Set of bin IDs to exclude (for multi-select operations)
  */
 export function canPlaceBin(
-  rect: Rect & { height: number; clearanceHeight?: number },
+  rect: Rect & { height: HeightUnits; clearanceHeight?: HeightUnits },
   layerId: LayerId,
   layout: Layout,
   excludeBinId?: BinId,
@@ -326,17 +334,30 @@ export function validateImport(data: unknown): ImportValidationResult {
       const partialLayout: Layout = {
         version: '1.0',
         name: 'import-validation',
-        drawer: drawer as Layout['drawer'],
-        layers: validLayers as Layout['layers'],
+        drawer: {
+          width: gridUnits(drawer.width),
+          depth: gridUnits(drawer.depth),
+          height: heightUnits(drawer.height),
+        },
+        layers: validLayers.map((l) => ({
+          ...l,
+          height: heightUnits((l as { height: number }).height),
+        })) as Layout['layers'],
         bins: validatedBins,
         categories: [] as Layout['categories'],
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
+        printBedSize: mm(256),
+        gridUnitMm: mm(42),
+        heightUnitMm: mm(7),
       };
 
       const placementResult = canPlaceBin(
-        { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
+        {
+          x: gridUnits(bin.x),
+          y: gridUnits(bin.y),
+          width: gridUnits(bin.width),
+          depth: gridUnits(bin.depth),
+          height: heightUnits(bin.height),
+        },
         toLayerId(bin.layerId),
         partialLayout
       );
@@ -352,11 +373,11 @@ export function validateImport(data: unknown): ImportValidationResult {
     validatedBins.push({
       id: toBinId(bin.id),
       layerId: toLayerId(bin.layerId),
-      x: bin.x,
-      y: bin.y,
-      width: bin.width,
-      depth: bin.depth,
-      height: bin.height,
+      x: gridUnits(bin.x),
+      y: gridUnits(bin.y),
+      width: gridUnits(bin.width),
+      depth: gridUnits(bin.depth),
+      height: heightUnits(bin.height),
       category: toCategoryId(bin.category || ''),
       label: bin.label || '',
       notes: bin.notes || '',
@@ -484,11 +505,11 @@ export function salvageImport(data: unknown): SalvageResult {
     const typedBin: Bin = {
       id: toBinId(bin.id),
       layerId: toLayerId(bin.layerId),
-      x: bin.x,
-      y: bin.y,
-      width: bin.width,
-      depth: bin.depth,
-      height: bin.height,
+      x: gridUnits(bin.x),
+      y: gridUnits(bin.y),
+      width: gridUnits(bin.width),
+      depth: gridUnits(bin.depth),
+      height: heightUnits(bin.height),
       category: toCategoryId(bin.category || ''),
       label: bin.label || '',
       notes: bin.notes || '',
@@ -512,17 +533,30 @@ export function salvageImport(data: unknown): SalvageResult {
     const partialLayout: Layout = {
       version: '1.0',
       name: 'salvage-validation',
-      drawer: drawer as Layout['drawer'],
-      layers: validLayers as Layout['layers'],
+      drawer: {
+        width: gridUnits(drawer.width),
+        depth: gridUnits(drawer.depth),
+        height: heightUnits(drawer.height),
+      },
+      layers: validLayers.map((l) => ({
+        ...l,
+        height: heightUnits((l as { height: number }).height),
+      })) as Layout['layers'],
       bins: validatedGridBins,
       categories: [] as Layout['categories'],
-      printBedSize: 256,
-      gridUnitMm: 42,
-      heightUnitMm: 7,
+      printBedSize: mm(256),
+      gridUnitMm: mm(42),
+      heightUnitMm: mm(7),
     };
 
     const placementResult = canPlaceBin(
-      { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
+      {
+        x: gridUnits(bin.x),
+        y: gridUnits(bin.y),
+        width: gridUnits(bin.width),
+        depth: gridUnits(bin.depth),
+        height: heightUnits(bin.height),
+      },
       toLayerId(bin.layerId),
       partialLayout
     );

@@ -18,7 +18,7 @@ import { getLayerBins } from '@/shared/utils/bins';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById, findBinsByIds } from '@/utils/entity';
 import { isOk, isErr } from '@/core/result';
-import type { BinId } from '@/core/types';
+import type { BinId, GridUnits } from '@/core/types';
 import type { KeyboardContext } from './types';
 
 function isShortcut(key: string, shortcuts: readonly string[]): boolean {
@@ -190,8 +190,8 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   ctx.execute(() => {
     const updates: Partial<typeof bin> = { width: bin.depth, depth: bin.width };
     if (result.movedTo) {
-      updates.x = result.movedTo.x;
-      updates.y = result.movedTo.y;
+      updates.x = result.movedTo.x as GridUnits;
+      updates.y = result.movedTo.y as GridUnits;
     }
     ctx.updateBin(bin.id, updates);
   });
@@ -288,7 +288,13 @@ export function handleNudge(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     }
 
     const result = canPlaceBin(
-      { x: bin.x + dx, y: bin.y + dy, width: bin.width, depth: bin.depth, height: bin.height },
+      {
+        x: (bin.x + dx) as GridUnits,
+        y: (bin.y + dy) as GridUnits,
+        width: bin.width,
+        depth: bin.depth,
+        height: bin.height,
+      },
       bin.layerId,
       ctx.layout,
       binId,
@@ -304,14 +310,18 @@ export function handleNudge(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (allValid) {
     const firstBin = selectedBins[0];
     const oldPosition = { x: firstBin.x, y: firstBin.y };
-    const newFirstBin = { ...firstBin, x: firstBin.x + dx, y: firstBin.y + dy };
+    const newFirstBin = {
+      ...firstBin,
+      x: (firstBin.x + dx) as GridUnits,
+      y: (firstBin.y + dy) as GridUnits,
+    };
     mlTracking.trackMove(newFirstBin, oldPosition, 'nudge', selectedBins.length);
 
     ctx.execute(() => {
       for (const binId of ctx.selectedBinIds) {
         const bin = findBinById(ctx.layout, binId);
         if (!bin) continue;
-        ctx.updateBin(binId, { x: bin.x + dx, y: bin.y + dy });
+        ctx.updateBin(binId, { x: (bin.x + dx) as GridUnits, y: (bin.y + dy) as GridUnits });
       }
     });
   }

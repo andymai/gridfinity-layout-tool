@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore, useInteractionStore, useUndoableAction } from '@/core/store';
-import type { LayerId } from '@/core/types';
+import type { HeightUnits, LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
@@ -131,7 +131,7 @@ export function LayersTab() {
       // Auto-expand the top layer, then add the new layer (atomic via execute)
       const newHeight = expansion.newHeight; // Capture for closure
       execute(() => {
-        const expandResult = updateLayer(topLayer.id, { height: newHeight });
+        const expandResult = updateLayer(topLayer.id, { height: newHeight as HeightUnits });
         if (isErr(expandResult)) {
           showErrorToast(expandResult.error);
           return;
@@ -183,7 +183,7 @@ export function LayersTab() {
     if (!layer) return;
     const newHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + delta);
     execute(() => {
-      updateLayer(id, { height: newHeight });
+      updateLayer(id, { height: newHeight as HeightUnits });
     });
   };
 

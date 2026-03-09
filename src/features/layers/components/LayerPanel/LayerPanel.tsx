@@ -13,7 +13,7 @@ import { useToastStore } from '@/core/store';
 import { useResultToast } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
-import type { LayerId } from '@/core/types';
+import type { HeightUnits, LayerId } from '@/core/types';
 import { HeightCrossSectionDiagram } from './HeightCrossSectionDiagram';
 
 export function LayerPanel() {
@@ -98,7 +98,7 @@ export function LayerPanel() {
     if (expansion.needsExpansion && expansion.newHeight !== undefined) {
       const newHeight = expansion.newHeight;
       execute(() => {
-        const expandResult = updateLayer(topLayer.id, { height: newHeight });
+        const expandResult = updateLayer(topLayer.id, { height: newHeight as HeightUnits });
         if (isErr(expandResult)) {
           showErrorToast(expandResult.error);
           return;
@@ -150,7 +150,7 @@ export function LayerPanel() {
     if (!layer) return;
     const newHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + delta);
     execute(() => {
-      const result = updateLayer(layerId, { height: newHeight });
+      const result = updateLayer(layerId, { height: newHeight as HeightUnits });
       if (isErr(result)) {
         showErrorToast(result.error);
       }

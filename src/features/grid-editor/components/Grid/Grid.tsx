@@ -16,6 +16,7 @@ import {
 import { useResponsive } from '@/shared/hooks';
 import { getBaseCellSize, HALF_BIN_SCALE } from '@/core/constants';
 import { getLayerBins } from '@/shared/utils';
+import type { GridUnits } from '@/core/types';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
@@ -102,7 +103,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
       if (!isCollaborative) return;
       const coords = getPixelCoords(e.clientX, e.clientY);
       if (coords) {
-        updateCursor({ x: coords.nx, y: coords.ny });
+        updateCursor({ x: coords.nx as GridUnits, y: coords.ny as GridUnits });
       }
     },
     [isCollaborative, getPixelCoords, updateCursor]

@@ -8,6 +8,7 @@ import type {
   NameSuggestionState,
   LayoutId,
 } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 import { CONSTRAINTS, getDefaultDrawerSize } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import type { Result, Unit, LayoutError } from '@/core/result';
@@ -48,9 +49,9 @@ export function createDefaultLibrary(
         createdAt: Date.now(),
         modifiedAt: Date.now(),
         preview: {
-          drawerWidth: drawer.width,
-          drawerDepth: drawer.depth,
-          drawerHeight: drawer.height,
+          drawerWidth: gridUnits(drawer.width),
+          drawerDepth: gridUnits(drawer.depth),
+          drawerHeight: heightUnits(drawer.height),
           binCount: 0,
           layerCount: 1,
         },

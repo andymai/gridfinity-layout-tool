@@ -11,7 +11,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
-import { categoryId } from '@/core/types';
+import { categoryId, gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 
 /**
@@ -66,7 +66,10 @@ export function usePlaceBinFromURL(): void {
     if (parts.length !== 3 || parts.some(isNaN) || parts.some((v) => v <= 0)) {
       return;
     }
-    const [w, d, h] = parts;
+    const [wRaw, dRaw, hRaw] = parts;
+    const w = gridUnits(wRaw);
+    const d = gridUnits(dRaw);
+    const h = heightUnits(hRaw);
 
     // Try to place bin on grid, scanning positions
     const { addBin, layout } = useLayoutStore.getState();
@@ -79,8 +82,8 @@ export function usePlaceBinFromURL(): void {
     // Scan for a valid position (top-left to bottom-right)
     const { drawer } = layout;
     let placed = false;
-    for (let y = 0; y <= drawer.depth - d && !placed; y++) {
-      for (let x = 0; x <= drawer.width - w && !placed; x++) {
+    for (let y = gridUnits(0); y <= drawer.depth - d && !placed; y = gridUnits(y + 1)) {
+      for (let x = gridUnits(0); x <= drawer.width - w && !placed; x = gridUnits(x + 1)) {
         const result = addBin({
           x,
           y,
@@ -108,8 +111,8 @@ export function usePlaceBinFromURL(): void {
     if (!placed) {
       // No valid grid position found — add to staging
       const stagingResult = addBin({
-        x: 0,
-        y: 0,
+        x: gridUnits(0),
+        y: gridUnits(0),
         width: w,
         depth: d,
         height: h,

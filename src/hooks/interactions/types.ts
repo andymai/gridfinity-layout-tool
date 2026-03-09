@@ -2,6 +2,8 @@ import type { RefObject } from 'react';
 import type {
   Bin,
   BinId,
+  GridUnits,
+  HeightUnits,
   LayerId,
   CategoryId,
   Coord,
@@ -69,15 +71,15 @@ export interface InteractionContext {
  */
 export interface AddBinParams {
   layerId: LayerId;
-  x: number;
-  y: number;
-  width: number;
-  depth: number;
-  height: number;
+  x: GridUnits;
+  y: GridUnits;
+  width: GridUnits;
+  depth: GridUnits;
+  height: HeightUnits;
   category: CategoryId;
   label: string;
   notes: string;
-  clearanceHeight?: number;
+  clearanceHeight?: HeightUnits;
   customProperties?: Record<string, string>;
 }
 

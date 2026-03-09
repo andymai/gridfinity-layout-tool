@@ -1,4 +1,4 @@
-import type { Bin, Layer, Rect3D, BlockedZone, LayerId } from '@/core/types';
+import type { Bin, HeightUnits, Layer, Rect3D, BlockedZone, LayerId } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, isOk, validationInvalidLayer } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
@@ -43,8 +43,8 @@ export function getBin3DRectResult(bin: Bin, layers: Layer[]): Result<Rect3D, Va
     y: bin.y,
     width: bin.width,
     depth: bin.depth,
-    zStart,
-    zEnd: zStart + bin.height + (bin.clearanceHeight || 0),
+    zStart: zStart as HeightUnits,
+    zEnd: (zStart + bin.height + (bin.clearanceHeight || 0)) as HeightUnits,
   });
 }
 

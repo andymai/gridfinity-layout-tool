@@ -1,4 +1,5 @@
 import type { Layout } from '@/core/types';
+import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { InspirationLayout } from '../../types';
 import {
   createBin,
@@ -61,10 +62,10 @@ function createDeskDrawer(): InspirationLayout {
     version: '1.0',
     name: 'Desk Drawer',
     // IKEA Alex drawer: 297×525mm = 7×12 units
-    drawer: { width: 7, depth: 12, height: 9 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(7), depth: gridUnits(12), height: heightUnits(9) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories,
     layers: [layer],
     bins,
@@ -140,10 +141,10 @@ function createCableDrawer(): InspirationLayout {
   const layout: Layout = {
     version: '1.0',
     name: 'Cable Drawer',
-    drawer: { width: 9, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(9), depth: gridUnits(8), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories,
     layers: [layer],
     bins,

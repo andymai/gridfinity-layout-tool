@@ -22,7 +22,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById } from '@/utils/entity';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
-import type { Bin, LayerId } from '@/core/types';
+import type { Bin, GridUnits, LayerId } from '@/core/types';
 
 // Lazy load design-linking section
 const BinContextMenuDesignSection = lazy(() =>
@@ -124,8 +124,8 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
     execute(() => {
       const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
       if (result.movedTo) {
-        updates.x = result.movedTo.x;
-        updates.y = result.movedTo.y;
+        updates.x = result.movedTo.x as GridUnits;
+        updates.y = result.movedTo.y as GridUnits;
       }
       updateBin(bin.id, updates);
     });

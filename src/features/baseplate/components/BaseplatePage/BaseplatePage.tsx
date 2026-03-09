@@ -15,6 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { gridUnits } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 
@@ -83,8 +84,8 @@ export function BaseplatePage() {
     setBaseplateParams({
       ...DEFAULT_BASEPLATE_PARAMS,
       syncWithLayout: false,
-      baseplateWidth: 4,
-      baseplateDepth: 4,
+      baseplateWidth: gridUnits(4),
+      baseplateDepth: gridUnits(4),
     });
   }, [isStandalone, hasBaseplateParams, setBaseplateParams]);
 

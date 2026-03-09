@@ -19,8 +19,8 @@ import {
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
-import type { Category } from '@/core/types';
-import { binId as toBinId } from '@/core/types';
+import type { Category, GridUnits, HeightUnits } from '@/core/types';
+import { binId as toBinId, gridUnits } from '@/core/types';
 import { isOk, isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
 
@@ -241,7 +241,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
       const newWidth = Math.max(
         0.5,
         Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * widthStep)
-      );
+      ) as GridUnits;
       execute(() => updateDrawer({ width: newWidth }));
     },
     [widthStep, drawerWidth, execute, updateDrawer]
@@ -252,7 +252,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
       const newDepth = Math.max(
         0.5,
         Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * depthStep)
-      );
+      ) as GridUnits;
       execute(() => updateDrawer({ depth: newDepth }));
     },
     [depthStep, drawerDepth, execute, updateDrawer]
@@ -260,7 +260,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   const handleDrawerHeightChange = useCallback(
     (delta: number) => {
-      const newHeight = Math.max(1, drawerHeight + delta);
+      const newHeight = Math.max(1, drawerHeight + delta) as HeightUnits;
       execute(() => updateDrawer({ height: newHeight }));
     },
     [drawerHeight, execute, updateDrawer]
@@ -269,7 +269,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // Direct input handlers (for number inputs)
   const handleDrawerWidthInput = useCallback(
     (width: number) => {
-      const snapped = snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width)));
+      const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width))));
       execute(() => updateDrawer({ width: snapped }));
       if (isFractional(snapped) && !halfBinMode) {
         setHalfBinMode(true);
@@ -281,7 +281,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   const handleDrawerDepthInput = useCallback(
     (depth: number) => {
-      const snapped = snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth)));
+      const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth))));
       execute(() => updateDrawer({ depth: snapped }));
       if (isFractional(snapped) && !halfBinMode) {
         setHalfBinMode(true);

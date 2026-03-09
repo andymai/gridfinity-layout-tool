@@ -12,7 +12,14 @@ import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { InteractionContext, ModeHandlers, DragStartArgs } from './types';
-import type { BinId, Coord, SwapTarget, ValidationReason, BlockingInfo } from '@/core/types';
+import type {
+  BinId,
+  Coord,
+  GridUnits,
+  SwapTarget,
+  ValidationReason,
+  BlockingInfo,
+} from '@/core/types';
 
 /**
  * Hook for drag mode interactions: moving bins by clicking and dragging.
@@ -127,7 +134,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
         type: 'drag',
         binIds,
         startCoord,
-        currentCoord: { x: 0, y: 0 }, // Delta starts at zero (no movement yet)
+        currentCoord: { x: 0 as GridUnits, y: 0 as GridUnits }, // Delta starts at zero (no movement yet)
         valid: true,
         isOverGrid: true,
         clickOffset,
@@ -213,8 +220,8 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
         // If no swap target, check normal placement validity
         if (!swapTarget) {
           for (const bin of draggedBins) {
-            const newX = bin.x + deltaX;
-            const newY = bin.y + deltaY;
+            const newX = (bin.x + deltaX) as GridUnits;
+            const newY = (bin.y + deltaY) as GridUnits;
 
             const result = canPlaceBin(
               {
@@ -277,7 +284,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
       // Store the constrained delta (not absolute position) for use in drop and overlay
       setInteraction({
         ...interaction,
-        currentCoord: { x: finalDeltaX, y: finalDeltaY },
+        currentCoord: { x: finalDeltaX as GridUnits, y: finalDeltaY as GridUnits },
         valid: allValid,
         isOverGrid: overGrid,
         isSnapped,
@@ -377,8 +384,8 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
 
               const addResult = addBin({
                 layerId: activeLayerId,
-                x: bin.x + deltaX,
-                y: bin.y + deltaY,
+                x: (bin.x + deltaX) as GridUnits,
+                y: (bin.y + deltaY) as GridUnits,
                 width: bin.width,
                 depth: bin.depth,
                 height: bin.height, // Keep original height - don't auto-adjust to layer minimum
@@ -413,7 +420,11 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
             const firstBin = binsToMove[0];
             const oldPosition = { x: firstBin.x, y: firstBin.y };
             // Track with new position (after move)
-            const movedBin = { ...firstBin, x: firstBin.x + deltaX, y: firstBin.y + deltaY };
+            const movedBin = {
+              ...firstBin,
+              x: (firstBin.x + deltaX) as GridUnits,
+              y: (firstBin.y + deltaY) as GridUnits,
+            };
             mlTracking.trackMove(movedBin, oldPosition, 'drag', binsToMove.length);
           }
 
@@ -423,8 +434,8 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
               if (!bin) continue;
 
               updateBin(binId, {
-                x: bin.x + deltaX,
-                y: bin.y + deltaY,
+                x: (bin.x + deltaX) as GridUnits,
+                y: (bin.y + deltaY) as GridUnits,
                 layerId: activeLayerId,
                 // Keep original height - don't auto-adjust to layer minimum
               });
