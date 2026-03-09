@@ -29,7 +29,7 @@ import {
   isOk,
   curveLength,
 } from 'brepjs';
-import type { Shape3D, Edge, Drawing } from 'brepjs';
+import type { Shape3D, Edge, Drawing, Dimension } from 'brepjs';
 import type { BinParams, PathPoint, WallCutoutShape } from '@/shared/types/bin';
 import { MIN_PATH_POINTS } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
@@ -414,7 +414,7 @@ function applyAdaptiveScoop(
   memberBounds: readonly AABB[]
 ): Shape3D {
   // Per-edge radius callback
-  const radiusCallback = (edge: Edge): number | null => {
+  const radiusCallback = (edge: Edge<Dimension>): number | null => {
     const len = curveLength(edge);
 
     if (len < MIN_EDGE_LENGTH) return null;
