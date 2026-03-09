@@ -1,4 +1,13 @@
-import type { Bin, BinId, GridUnits, LayerId, Layout, Rect, ResizeHandle } from '@/core/types';
+import type {
+  Bin,
+  BinId,
+  GridUnits,
+  HeightUnits,
+  LayerId,
+  Layout,
+  Rect,
+  ResizeHandle,
+} from '@/core/types';
 import { canPlaceBin } from './validation';
 import { spiralOffsets } from './position';
 import { calculateResizeRect } from './resize';
@@ -111,14 +120,14 @@ export function snapPosition(
   targetY: number,
   width: number,
   depth: number,
-  height: number,
+  height: HeightUnits,
   layerId: LayerId,
   layout: Layout,
   excludeBinId: BinId,
   moveDirX: number,
   moveDirY: number,
   step: number,
-  clearanceHeight?: number
+  clearanceHeight?: HeightUnits
 ): SnapResult | null {
   // First check if target position is already valid
   const directResult = canPlaceBin(
@@ -264,14 +273,14 @@ export function snapResizeRect(
   startRect: Rect,
   handle: ResizeHandle,
   requestedRect: Rect,
-  binHeight: number,
+  binHeight: HeightUnits,
   layerId: LayerId,
   layout: Layout,
   excludeBinId: BinId,
   excludeBinIds: Set<BinId>,
   step: number,
   drawer: { width: number; depth: number },
-  clearanceHeight?: number
+  clearanceHeight?: HeightUnits
 ): { rect: Rect; isSnapped: boolean } {
   // If requested rect is already valid, use it directly
   const reqResult = canPlaceBin(
@@ -389,7 +398,7 @@ export function snapDrawRect(
   originY: number,
   requestedWidth: number,
   requestedDepth: number,
-  layerHeight: number,
+  layerHeight: HeightUnits,
   layerId: LayerId,
   layout: Layout,
   step: number

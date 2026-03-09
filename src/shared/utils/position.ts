@@ -1,4 +1,4 @@
-import type { Bin, GridUnits, Layout, Coord, LayerId, BinId } from '@/core/types';
+import type { Bin, GridUnits, HeightUnits, Layout, Coord, LayerId, BinId } from '@/core/types';
 import { canPlaceBin } from './validation';
 
 /**
@@ -81,12 +81,12 @@ export function findNearbyValidPosition(
   originalPos: Coord,
   width: number,
   depth: number,
-  height: number,
+  height: HeightUnits,
   layerId: LayerId,
   layout: Layout,
   excludeBinId: BinId,
   maxDistance = 3,
-  clearanceHeight?: number
+  clearanceHeight?: HeightUnits
 ): NearbyPosition | null {
   // Determine step size based on whether dimensions are fractional (half-bin mode)
   const hasFractional =

@@ -160,7 +160,7 @@ export function isValidCategory(value: unknown): value is CategoryShape {
  * @param excludeBinIds - Set of bin IDs to exclude (for multi-select operations)
  */
 export function canPlaceBin(
-  rect: Rect & { height: number; clearanceHeight?: number },
+  rect: Rect & { height: HeightUnits; clearanceHeight?: HeightUnits },
   layerId: LayerId,
   layout: Layout,
   excludeBinId?: BinId,
@@ -220,8 +220,8 @@ export function canPlaceBin(
     y: rect.y,
     width: rect.width,
     depth: rect.depth,
-    height: rect.height as HeightUnits,
-    clearanceHeight: rect.clearanceHeight as HeightUnits | undefined,
+    height: rect.height,
+    clearanceHeight: rect.clearanceHeight,
     category: toCategoryId(''),
     label: '',
     notes: '',
@@ -334,8 +334,15 @@ export function validateImport(data: unknown): ImportValidationResult {
       const partialLayout: Layout = {
         version: '1.0',
         name: 'import-validation',
-        drawer: drawer as Layout['drawer'],
-        layers: validLayers as Layout['layers'],
+        drawer: {
+          width: gridUnits(drawer.width),
+          depth: gridUnits(drawer.depth),
+          height: heightUnits(drawer.height),
+        },
+        layers: validLayers.map((l) => ({
+          ...l,
+          height: heightUnits((l as { height: number }).height),
+        })) as Layout['layers'],
         bins: validatedBins,
         categories: [] as Layout['categories'],
         printBedSize: mm(256),
@@ -349,7 +356,7 @@ export function validateImport(data: unknown): ImportValidationResult {
           y: gridUnits(bin.y),
           width: gridUnits(bin.width),
           depth: gridUnits(bin.depth),
-          height: bin.height,
+          height: heightUnits(bin.height),
         },
         toLayerId(bin.layerId),
         partialLayout
@@ -526,8 +533,15 @@ export function salvageImport(data: unknown): SalvageResult {
     const partialLayout: Layout = {
       version: '1.0',
       name: 'salvage-validation',
-      drawer: drawer as Layout['drawer'],
-      layers: validLayers as Layout['layers'],
+      drawer: {
+        width: gridUnits(drawer.width),
+        depth: gridUnits(drawer.depth),
+        height: heightUnits(drawer.height),
+      },
+      layers: validLayers.map((l) => ({
+        ...l,
+        height: heightUnits((l as { height: number }).height),
+      })) as Layout['layers'],
       bins: validatedGridBins,
       categories: [] as Layout['categories'],
       printBedSize: mm(256),
@@ -541,7 +555,7 @@ export function salvageImport(data: unknown): SalvageResult {
         y: gridUnits(bin.y),
         width: gridUnits(bin.width),
         depth: gridUnits(bin.depth),
-        height: bin.height,
+        height: heightUnits(bin.height),
       },
       toLayerId(bin.layerId),
       partialLayout
