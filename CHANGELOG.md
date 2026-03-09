@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.4.0...gridfinity-layout-tool-v4.5.0) (2026-03-09)
+
+
+### Features
+
+* add branded unit types for compile-time unit safety ([#1075](https://github.com/andymai/gridfinity-layout-tool/issues/1075)) ([11a30ce](https://github.com/andymai/gridfinity-layout-tool/commit/11a30ce1f3c651719337a52853b12447760b2f88))
+
 ## [4.4.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.3.1...gridfinity-layout-tool-v4.4.0) (2026-03-09)
 
 
