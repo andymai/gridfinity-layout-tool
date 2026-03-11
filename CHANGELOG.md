@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.5.0...gridfinity-layout-tool-v4.6.0) (2026-03-11)
+
+
+### Features
+
+* add brepkit-wasm as alternative geometry kernel via Labs flag ([#1080](https://github.com/andymai/gridfinity-layout-tool/issues/1080)) ([84f0c5e](https://github.com/andymai/gridfinity-layout-tool/commit/84f0c5ed4962db1d762d129b76e2f3ac81331361))
+
 ## [4.5.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.4.0...gridfinity-layout-tool-v4.5.0) (2026-03-09)
 
 
