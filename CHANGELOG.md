@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.6.0...gridfinity-layout-tool-v4.6.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* reject 0.5×0.5 bin footprint as invalid ([#1084](https://github.com/andymai/gridfinity-layout-tool/issues/1084)) ([944f448](https://github.com/andymai/gridfinity-layout-tool/commit/944f4480bab01c8e0c4b82ad8b8b9f9582f78a0a))
+
 ## [4.6.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.5.0...gridfinity-layout-tool-v4.6.0) (2026-03-11)
 
 
