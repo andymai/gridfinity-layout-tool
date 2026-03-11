@@ -20,7 +20,8 @@ export interface TopologyStats {
   readonly volume: number;
   readonly eulerCharacteristic: number;
   readonly stepByteSize: number;
-  readonly stepHeaderValid: boolean;
+  /** Size-only heuristic; actual header validation requires async `validateStepBlob()`. */
+  readonly stepNonEmpty: boolean;
 }
 
 export type GenerateBinFn = (
@@ -90,19 +91,13 @@ export function computeSignedVolume(mesh: MeshData): number {
 export function collectTopologyStats(solid: Shape3D): TopologyStats {
   const desc = describeSolid(solid);
 
-  // STEP export
+  // STEP export — synchronous size check only; header validation is async via validateStepBlob()
   let stepByteSize = 0;
-  let stepHeaderValid = false;
   try {
     const blob: Blob = unwrap(exportSTEP(solid));
-    // In Node, Blob.size gives byte length synchronously
     stepByteSize = blob.size;
-    // We can't synchronously read the blob text in all envs,
-    // so check size > 0 as the primary validation.
-    // Header validation is done via arrayBuffer in the async variant below.
-    stepHeaderValid = stepByteSize > 100;
   } catch {
-    // exportSTEP may fail on some kernel/shape combos — record as invalid
+    // exportSTEP may fail on some kernel/shape combos — record as zero
   }
 
   return {
@@ -113,23 +108,35 @@ export function collectTopologyStats(solid: Shape3D): TopologyStats {
     volume: measureVolume(solid),
     eulerCharacteristic: desc.vertexCount - desc.edgeCount + desc.faceCount,
     stepByteSize,
-    stepHeaderValid,
+    stepNonEmpty: stepByteSize > 0,
   };
 }
 
 /**
- * Validate STEP export buffer asynchronously (reads blob to check header).
- * Returns byte size and whether the header starts with "ISO-10303-21".
+ * Export a STEP blob synchronously (kernel-sensitive).
+ * Call inside `withKernel()`, then pass the blob to `validateStepBlob()` for async header check.
  */
-export async function validateStepBuffer(
-  solid: Shape3D
-): Promise<{ byteSize: number; headerValid: boolean }> {
+export function exportStepBlob(solid: Shape3D): Blob | null {
   try {
-    const blob: Blob = unwrap(exportSTEP(solid));
+    return unwrap(exportSTEP(solid));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Validate a STEP blob asynchronously (reads content to check header).
+ * Not kernel-sensitive — safe to call outside `withKernel()`.
+ */
+export async function validateStepBlob(
+  blob: Blob | null
+): Promise<{ byteSize: number; headerValid: boolean }> {
+  if (!blob) return { byteSize: 0, headerValid: false };
+  try {
     const buffer = await blob.arrayBuffer();
     const byteSize = buffer.byteLength;
     const header = new TextDecoder().decode(new Uint8Array(buffer, 0, Math.min(50, byteSize)));
-    return { byteSize, headerValid: header.includes('ISO-10303-21') };
+    return { byteSize, headerValid: header.trimStart().startsWith('ISO-10303-21') };
   } catch {
     return { byteSize: 0, headerValid: false };
   }

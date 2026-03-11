@@ -13,8 +13,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { withKernel } from 'brepjs';
-import { clearAllCaches } from '@/features/generation/worker/generators/shapeCache';
-import { getLastSolid } from '@/features/generation/worker/generators/shapeCache';
+import { clearAllCaches, getLastSolid } from '@/features/generation/worker/generators/shapeCache';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { Shape3D } from 'brepjs';
@@ -23,7 +22,8 @@ import {
   initBrepkitKernel,
   loadGenerateBin,
   collectTopologyStats,
-  validateStepBuffer,
+  exportStepBlob,
+  validateStepBlob,
 } from './dualKernelInit';
 import type { GenerateBinFn, TopologyStats } from './dualKernelInit';
 
@@ -192,34 +192,40 @@ describe('topology parity: brepkit vs OCCT', () => {
         expect(pctDiff).toBeLessThan(0.3);
       });
 
-      it('STEP export produces non-empty valid output', () => {
+      it('STEP export produces non-empty output', () => {
         const occt = occtStats.get(tc.name);
         const bk = brepkitStats.get(tc.name);
         expect(occt).toBeDefined();
         expect(bk).toBeDefined();
 
         expect(occt?.stepByteSize, 'OCCT STEP should be non-empty').toBeGreaterThan(0);
-        expect(occt?.stepHeaderValid, 'OCCT STEP header should be valid').toBe(true);
         expect(bk?.stepByteSize, 'brepkit STEP should be non-empty').toBeGreaterThan(0);
-        expect(bk?.stepHeaderValid, 'brepkit STEP header should be valid').toBe(true);
       });
     });
   }
 
   it('validates STEP headers asynchronously', async () => {
+    let validated = 0;
     for (const tc of TEST_CASES) {
       const occtSolid = occtSolids.get(tc.name);
       const bkSolid = brepkitSolids.get(tc.name);
       if (!occtSolid || !bkSolid) continue;
 
+      // exportSTEP is the kernel-sensitive call and completes synchronously;
+      // extracting blobs here avoids relying on withKernel wrapping async fns.
+      const occtBlob = withKernel('occt', () => exportStepBlob(occtSolid));
+      const bkBlob = withKernel('brepkit', () => exportStepBlob(bkSolid));
+
       const [occtStep, bkStep] = await Promise.all([
-        withKernel('occt', () => validateStepBuffer(occtSolid)),
-        withKernel('brepkit', () => validateStepBuffer(bkSolid)),
+        validateStepBlob(occtBlob),
+        validateStepBlob(bkBlob),
       ]);
 
       expect(occtStep.headerValid, `${tc.name}: OCCT STEP header`).toBe(true);
       expect(bkStep.headerValid, `${tc.name}: brepkit STEP header`).toBe(true);
+      validated++;
     }
+    expect(validated, 'at least one case must have been validated').toBeGreaterThan(0);
   });
 
   it('prints topology comparison summary', () => {
