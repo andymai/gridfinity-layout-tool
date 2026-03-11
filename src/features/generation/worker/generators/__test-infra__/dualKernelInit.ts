@@ -5,10 +5,24 @@
  * initialize BOTH OCCT and brepkit in the same process so tests can compare
  * outputs side-by-side.
  */
+import { describe as describeSolid, measureVolume, exportSTEP, unwrap } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
+
+export interface TopologyStats {
+  readonly isValid: boolean;
+  readonly faceCount: number;
+  readonly edgeCount: number;
+  readonly vertexCount: number;
+  readonly volume: number;
+  readonly eulerCharacteristic: number;
+  readonly stepByteSize: number;
+  /** Size-only heuristic; actual header validation requires async `validateStepBlob()`. */
+  readonly stepNonEmpty: boolean;
+}
 
 export type GenerateBinFn = (
   params: BinParams,
@@ -66,4 +80,64 @@ export function computeSignedVolume(mesh: MeshData): number {
       6;
   }
   return Math.abs(vol);
+}
+
+// ─── Topology helpers ────────────────────────────────────────────────────────
+
+/**
+ * Collect BREP topology stats from an in-memory solid.
+ * Uses brepjs `describe()` for counts/validity and `measureVolume()` for exact volume.
+ */
+export function collectTopologyStats(solid: Shape3D): TopologyStats {
+  const desc = describeSolid(solid);
+
+  // STEP export — synchronous size check only; header validation is async via validateStepBlob()
+  let stepByteSize = 0;
+  try {
+    const blob: Blob = unwrap(exportSTEP(solid));
+    stepByteSize = blob.size;
+  } catch {
+    // exportSTEP may fail on some kernel/shape combos — record as zero
+  }
+
+  return {
+    isValid: desc.valid,
+    faceCount: desc.faceCount,
+    edgeCount: desc.edgeCount,
+    vertexCount: desc.vertexCount,
+    volume: measureVolume(solid),
+    eulerCharacteristic: desc.vertexCount - desc.edgeCount + desc.faceCount,
+    stepByteSize,
+    stepNonEmpty: stepByteSize > 0,
+  };
+}
+
+/**
+ * Export a STEP blob synchronously (kernel-sensitive).
+ * Call inside `withKernel()`, then pass the blob to `validateStepBlob()` for async header check.
+ */
+export function exportStepBlob(solid: Shape3D): Blob | null {
+  try {
+    return unwrap(exportSTEP(solid));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Validate a STEP blob asynchronously (reads content to check header).
+ * Not kernel-sensitive — safe to call outside `withKernel()`.
+ */
+export async function validateStepBlob(
+  blob: Blob | null
+): Promise<{ byteSize: number; headerValid: boolean }> {
+  if (!blob) return { byteSize: 0, headerValid: false };
+  try {
+    const buffer = await blob.arrayBuffer();
+    const byteSize = buffer.byteLength;
+    const header = new TextDecoder().decode(new Uint8Array(buffer, 0, Math.min(50, byteSize)));
+    return { byteSize, headerValid: header.trimStart().startsWith('ISO-10303-21') };
+  } catch {
+    return { byteSize: 0, headerValid: false };
+  }
 }
