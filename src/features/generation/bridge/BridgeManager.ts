@@ -11,6 +11,8 @@
  */
 
 import { GenerationBridge } from './GenerationBridge';
+import type { KernelName } from './types';
+import { useLabsStore } from '@/core/store/labs';
 
 /** How long to keep the bridge alive after the last consumer releases (ms) */
 const IDLE_TIMEOUT_MS = 30_000;
@@ -31,7 +33,10 @@ export class BridgeManager {
     this.clearIdleTimer();
 
     if (!this.bridge || this.bridge.isDestroyed) {
-      this.bridge = new GenerationBridge();
+      const kernel: KernelName = useLabsStore.getState().isFeatureEnabled('brepkit_kernel')
+        ? 'brepkit'
+        : 'opencascade';
+      this.bridge = new GenerationBridge(kernel);
       this.initPromise = this.bridge.init();
     }
 
@@ -39,7 +44,7 @@ export class BridgeManager {
       await this.initPromise;
     } catch (error: unknown) {
       this.refCount--;
-      this.bridge?.destroy();
+      if (this.bridge) this.bridge.destroy();
       this.bridge = null;
       this.initPromise = null;
       throw error;

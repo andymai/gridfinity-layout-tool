@@ -13,6 +13,9 @@ vi.mock('brepjs-opencascade/src/brepjs_single.wasm?url', () => ({
 vi.mock('brepjs-opencascade/src/brepjs_threaded.wasm?url', () => ({
   default: '/mock-threaded.wasm',
 }));
+vi.mock('brepkit-wasm/brepkit_wasm_bg.wasm?url', () => ({
+  default: '/mock-brepkit.wasm',
+}));
 
 // Capture fetch calls made by preloadWasmBinary
 const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
@@ -86,5 +89,29 @@ describe('preloadWasmBinary', () => {
     // Second call should retry
     preloadWasmBinary();
     expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('preloadBrepkitWasm', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    fetchSpy.mockClear();
+  });
+
+  it('fetches the brepkit WASM binary', async () => {
+    const { preloadBrepkitWasm } = await import('./wasmPreload');
+    preloadBrepkitWasm();
+
+    expect(fetchSpy).toHaveBeenCalledOnce();
+    expect(fetchSpy).toHaveBeenCalledWith('/mock-brepkit.wasm', { credentials: 'same-origin' });
+  });
+
+  it('is idempotent — second call does not fetch again', async () => {
+    const { preloadBrepkitWasm } = await import('./wasmPreload');
+
+    preloadBrepkitWasm();
+    preloadBrepkitWasm();
+
+    expect(fetchSpy).toHaveBeenCalledOnce();
   });
 });

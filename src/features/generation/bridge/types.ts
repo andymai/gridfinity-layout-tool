@@ -7,6 +7,9 @@
 
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
 
+/** Geometry kernel backend for BREP operations */
+export type KernelName = 'opencascade' | 'brepkit';
+
 // ─── Main → Worker Messages ──────────────────────────────────────────────────
 
 export type WorkerMessage =
@@ -24,6 +27,7 @@ export type WorkerMessage =
 
 export interface InitMessage {
   readonly type: 'INIT';
+  readonly kernel?: KernelName;
 }
 
 export interface GenerateMessage {
@@ -189,6 +193,8 @@ export interface InitReadyResponse {
   readonly isThreaded: boolean;
   /** Number of CPU cores available */
   readonly hardwareConcurrency: number;
+  /** Which geometry kernel was loaded */
+  readonly kernel: KernelName;
 }
 
 export interface ProgressResponse {

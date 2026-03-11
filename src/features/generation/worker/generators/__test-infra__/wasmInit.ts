@@ -15,15 +15,23 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 // ─── Kernel selection ────────────────────────────────────────────────────────
 
-type KernelName = 'opencascade' | 'wasm';
+type KernelName = 'opencascade' | 'brepkit';
 
-const VALID_KERNELS: readonly KernelName[] = ['opencascade', 'wasm'];
+type EnvKernelName = 'opencascade' | 'wasm' | 'brepkit';
+
+const ENV_TO_KERNEL: Partial<Record<string, KernelName>> = {
+  opencascade: 'opencascade',
+  wasm: 'brepkit',
+  brepkit: 'brepkit',
+};
 
 function resolveKernel(): KernelName {
   const env = process.env['BREPJS_KERNEL'];
   if (!env) return 'opencascade';
-  if (VALID_KERNELS.includes(env as KernelName)) return env as KernelName;
-  throw new Error(`Invalid BREPJS_KERNEL="${env}". Must be one of: ${VALID_KERNELS.join(', ')}`);
+  const mapped = ENV_TO_KERNEL[env];
+  if (mapped) return mapped;
+  const valid: readonly EnvKernelName[] = ['opencascade', 'wasm', 'brepkit'];
+  throw new Error(`Invalid BREPJS_KERNEL="${env}". Must be one of: ${valid.join(', ')}`);
 }
 
 const kernelName: KernelName = resolveKernel();
@@ -100,21 +108,13 @@ async function initOpenCascadeKernel(): Promise<void> {
 }
 
 async function initWasmKernel(): Promise<void> {
-  // initFromWasm is provided by a future brepjs version (with brepjs-wasm kernel).
-  // Use a dynamic cast since the type doesn't exist in the current brepjs package.
-  const brepjs = (await import('brepjs')) as Record<string, unknown>;
-  const initFromWasm = brepjs['initFromWasm'] as ((wasm: Buffer) => Promise<void>) | undefined;
-  if (!initFromWasm) {
-    throw new Error(
-      'initFromWasm not found in brepjs — upgrade brepjs to a version that supports the wasm kernel'
-    );
-  }
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-wasm/brepjs_wasm_bg.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  await initFromWasm(wasmBinary);
+  const { registerKernel, BrepkitAdapter } = await import('brepjs');
+  // CJS entry auto-initializes WASM via fs.readFileSync in Node context
+  const brepkitWasm = await import('brepkit-wasm');
+  const kernel = new brepkitWasm.BrepKernel();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
+  const adapter = new BrepkitAdapter(kernel as any);
+  registerKernel('brepkit', adapter);
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -126,7 +126,7 @@ async function initWasmKernel(): Promise<void> {
 export async function initBrepjs(): Promise<void> {
   if (generateBin && generateSplitPreview && generateBaseplate) return;
 
-  if (kernelName === 'wasm') {
+  if (kernelName === 'brepkit') {
     await initWasmKernel();
   } else {
     await initOpenCascadeKernel();

@@ -19,7 +19,7 @@
 import { GenerationBridge } from './GenerationBridge';
 import type { GenerationResult, SplitPreviewResult, SplitExportResult } from './GenerationBridge';
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
-import type { ExportFormat } from './types';
+import type { ExportFormat, KernelName } from './types';
 
 /** Maximum number of pool workers (caps memory usage from parallel WASM instances) */
 const MAX_POOL_SIZE = 4;
@@ -71,9 +71,11 @@ export class WorkerPool {
   private initPromise: Promise<void> | null = null;
   private destroyed = false;
   private poolSize: number;
+  private readonly kernel: KernelName;
 
-  constructor(poolSize?: number) {
+  constructor(poolSize?: number, kernel: KernelName = 'opencascade') {
     this.poolSize = poolSize ?? defaultPoolSize();
+    this.kernel = kernel;
   }
 
   /**
@@ -88,7 +90,7 @@ export class WorkerPool {
     }
 
     const size = Math.max(1, Math.min(this.poolSize, MAX_POOL_SIZE));
-    this.bridges = Array.from({ length: size }, () => new GenerationBridge());
+    this.bridges = Array.from({ length: size }, () => new GenerationBridge(this.kernel));
     this.initPromise = Promise.all(this.bridges.map((b) => b.init()))
       .then(() => undefined)
       .catch((error: unknown) => {

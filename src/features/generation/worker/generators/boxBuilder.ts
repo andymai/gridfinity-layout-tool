@@ -2,7 +2,7 @@
  * Box body and stacking lip builder for Gridfinity bins.
  *
  * Builds the bin box (rounded-rectangle extrusion, shelled from top)
- * and the stacking lip (swept profile around perimeter with fillet).
+ * and the stacking lip (loft-based with sweep fallback).
  *
  * Box coordinate system:
  * - Z=0: socket interface (bottom of box)
@@ -15,11 +15,13 @@ import {
   drawRectangle,
   unwrap,
   fuse,
+  cut,
   fillet,
   faceFinder,
   edgeFinder,
   getBounds,
   shell,
+  getKernel,
 } from 'brepjs';
 import type { Shape3D, Plane, Vec3, Sketch } from 'brepjs';
 import {
@@ -104,16 +106,139 @@ export function buildBinBox(
 // ─── Top Shape (Stacking Lip) Builder ────────────────────────────────────────
 
 /**
+ * Build the stacking lip using a ruled loft + boolean cut (fast path).
+ *
+ * Constructs the lip taper as a ruled loft through rounded-rectangle sections
+ * at each profile breakpoint, then boolean-subtracts an inner frustum to create
+ * a hollow ring. This produces analytic surfaces (planar + conical) instead of
+ * the NURBS surfaces from sweepSketch, making it dramatically faster for boolean
+ * and tessellation — especially with the brepkit kernel.
+ */
+function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D {
+  const LIP_EXTENSION = includeLip ? 1.2 : 0;
+  const WALL = LIP_TAPER_WIDTH; // 2.6mm wall thickness
+
+  // Insets from outer edge at each profile breakpoint
+  const INSET_BOTTOM = LIP_TAPER_WIDTH; // 2.6mm
+  const INSET_MID = LIP_BIG_TAPER; // 1.9mm
+  const INSET_TOP = 0; // 0mm (peak at outer edge)
+
+  const Z_EXT = -LIP_EXTENSION;
+  const Z_BASE = 0;
+  const Z_TAPER1 = LIP_SMALL_TAPER; // 0.7
+  const Z_VERT = LIP_SMALL_TAPER + LIP_VERTICAL_PART; // 2.5
+  const Z_PEAK = LIP_HEIGHT; // 4.4
+
+  const sectionAt = (z: number, inset: number): Sketch => {
+    const w = outerW - 2 * inset;
+    const d = outerD - 2 * inset;
+    const r = Math.max(CORNER_RADIUS - inset, 0.1);
+    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
+  };
+
+  // Build outer frustum
+  const outerSections: Sketch[] = [];
+  if (includeLip) {
+    outerSections.push(sectionAt(Z_EXT, INSET_BOTTOM));
+  }
+  outerSections.push(sectionAt(Z_BASE, INSET_BOTTOM));
+  outerSections.push(sectionAt(Z_TAPER1, INSET_MID));
+  outerSections.push(sectionAt(Z_VERT, INSET_MID));
+  outerSections.push(sectionAt(Z_PEAK, INSET_TOP));
+
+  const [outerFirst, ...outerRest] = outerSections;
+  const outerFrustum = outerFirst.loftWith(outerRest, { ruled: true });
+
+  // Build inner frustum (offset inward by wall thickness)
+  const innerSections: Sketch[] = [];
+  if (includeLip) {
+    innerSections.push(sectionAt(Z_EXT, INSET_BOTTOM + WALL));
+  }
+  innerSections.push(sectionAt(Z_BASE, INSET_BOTTOM + WALL));
+  innerSections.push(sectionAt(Z_TAPER1, INSET_MID + WALL));
+  innerSections.push(sectionAt(Z_VERT, INSET_MID + WALL));
+  innerSections.push(sectionAt(Z_PEAK, INSET_TOP + WALL));
+
+  const [innerFirst, ...innerRest] = innerSections;
+  const innerFrustum = innerFirst.loftWith(innerRest, { ruled: true });
+
+  // Boolean subtract inner from outer to create hollow ring
+  let result = unwrap(cut(outerFrustum, innerFrustum));
+
+  // Fillet the peak edge
+  const lipEdges = edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      return bounds.zMax >= Z_PEAK - 1 && bounds.zMin <= Z_PEAK;
+    })
+    .findAll(result);
+
+  if (lipEdges.length > 0) {
+    result = unwrap(fillet(result, lipEdges, TOP_FILLET));
+  }
+
+  return result;
+}
+
+/**
+ * Build the stacking lip using sweep (robust fallback).
+ *
+ * Sweeps the lip profile around the bin perimeter, then fillets the peak.
+ * This creates NURBS surfaces that are slower for brepkit but robust for OCCT.
+ */
+function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean): Shape3D {
+  const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
+    let sketcher = draw([-LIP_TAPER_WIDTH, 0])
+      .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
+      .vLine(LIP_VERTICAL_PART)
+      .line(LIP_BIG_TAPER, LIP_BIG_TAPER);
+
+    if (includeLip) {
+      const LIP_EXTENSION = 1.2;
+      sketcher = sketcher
+        .vLineTo(-(LIP_TAPER_WIDTH + LIP_EXTENSION))
+        .lineTo([-LIP_TAPER_WIDTH, -LIP_EXTENSION]);
+    } else {
+      sketcher = sketcher.vLineTo(0);
+    }
+
+    const basicShape = sketcher.close();
+
+    let topProfileShape = basicShape.intersect(
+      drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5)
+    );
+
+    if (includeLip) {
+      const LIP_EXTENSION = 1.2;
+      topProfileShape = topProfileShape.cut(
+        drawRectangle(LIP_EXTENSION, 10).translate(-LIP_EXTENSION / 2, -5)
+      );
+    }
+
+    return topProfileShape.sketchOnPlane(plane) as Sketch;
+  };
+
+  const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
+  const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
+
+  const lipEdges = edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
+    })
+    .findAll(swept);
+
+  return unwrap(fillet(swept, lipEdges, TOP_FILLET));
+}
+
+/**
  * Build the stacking lip at the top of the bin.
  *
- * The lip provides the mating interface that allows bins to stack.
+ * Uses kernel-optimized construction:
+ * - brepkit: loft + boolean cut (analytic surfaces, avoids slow shell)
+ * - OCCT: sweep + fillet (robust, avoids loft-shell failures)
+ *
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
- * The profile sweeps around the bin perimeter, then gets filleted at the peak.
- *
- * Profile traces (in XZ plane, X=outward, Z=up):
- *   Lip taper shape upward (mates with socket cavity when stacked)
- *   + wall extension downward (if includeLip, replaces top wall section)
- *
  * Built at Z=0 locally, caller translates to wallHeight.
  */
 export function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape3D {
@@ -126,62 +251,22 @@ export function buildTopShape(gridW: number, gridD: number, includeLip: boolean)
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
-    // Draw the lip profile (going upward from the sweep path)
-    // Per spec: 0.7mm bottom chamfer, 1.8mm vertical, 1.9mm top chamfer
-    let sketcher = draw([-LIP_TAPER_WIDTH, 0])
-      .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
-      .vLine(LIP_VERTICAL_PART)
-      .line(LIP_BIG_TAPER, LIP_BIG_TAPER);
-
-    if (includeLip) {
-      // Extend wall downward with a FIXED depth to create consistent lip geometry.
-      // Use 1.2mm (standard wall thickness) for the extension - this ensures the
-      // lip profile is identical regardless of actual wall thickness. The overlap
-      // with thicker walls is handled by the fuse operation.
-      const LIP_EXTENSION = 1.2;
-      sketcher = sketcher
-        .vLineTo(-(LIP_TAPER_WIDTH + LIP_EXTENSION))
-        .lineTo([-LIP_TAPER_WIDTH, -LIP_EXTENSION]);
-    } else {
-      sketcher = sketcher.vLineTo(0);
+  let result: Shape3D;
+  if (getKernel().kernelId === 'brepkit') {
+    // brepkit: loft-cut is ~5-50x faster than sweep (analytic surfaces)
+    try {
+      result = buildTopShapeLoft(outerW, outerD, includeLip);
+    } catch (e: unknown) {
+      // Loft failed — fall back to sweep path. Log for diagnostics since this
+      // indicates a kernel regression (loft should always succeed).
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(`[boxBuilder] brepkit loft failed, falling back to sweep: ${msg}`);
+      result = buildTopShapeSweep(outerW, outerD, includeLip);
     }
-
-    const basicShape = sketcher.close();
-
-    // Per Gridfinity spec, the 0.5mm clearance is already applied to the outer
-    // dimensions (SIZE - CLEARANCE). The lip profile itself needs no additional
-    // clearance transforms -- only a clip to the valid region.
-    let topProfileShape = basicShape.intersect(
-      drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5)
-    );
-
-    if (includeLip) {
-      // Remove the wall portion that the lip replaces
-      const LIP_EXTENSION = 1.2;
-      topProfileShape = topProfileShape.cut(
-        drawRectangle(LIP_EXTENSION, 10).translate(-LIP_EXTENSION / 2, -5)
-      );
-    }
-
-    // Pass the plane object directly -- brepjs Drawing.sketchOnPlane accepts Plane
-    return topProfileShape.sketchOnPlane(plane) as Sketch;
-  };
-
-  // Sweep around the bin perimeter (built at Z=0, caller translates)
-  const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
-
-  const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
-  // Find the top edge of the lip at Z=LIP_HEIGHT (4.4mm)
-  // EdgeFinderFn has no box filter, so use .when() predicate (official custom filter API)
-  const lipEdges = edgeFinder()
-    .when((e) => {
-      const bounds = getBounds(e);
-      // Select edges that overlap the top 1mm slice of the lip (intersection, not containment)
-      return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
-    })
-    .findAll(swept);
-  const result = unwrap(fillet(swept, lipEdges, TOP_FILLET));
+  } else {
+    // OCCT: sweep is faster and more robust (loft-shell fails, loft-cut is slow)
+    result = buildTopShapeSweep(outerW, outerD, includeLip);
+  }
 
   return setLipCache(lipKey, result);
 }

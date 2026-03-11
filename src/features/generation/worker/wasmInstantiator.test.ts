@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock all heavy dependencies before importing the module under test
 vi.mock('brepjs', () => ({
   initFromOC: vi.fn(),
+  registerKernel: vi.fn(),
+  BrepkitAdapter: vi.fn(),
 }));
 
 // Mock Emscripten single-threaded factory
@@ -29,6 +31,10 @@ vi.mock('brepjs-opencascade/src/brepjs_threaded.wasm?url', () => ({
 }));
 vi.mock('brepjs-opencascade/src/brepjs_threaded.worker.js?url', () => ({
   default: '/mocked/brepjs_threaded.worker.js',
+}));
+vi.mock('brepkit-wasm', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- Mock class for BrepKernel constructor
+  BrepKernel: class MockBrepKernel {},
 }));
 
 beforeEach(() => {
@@ -103,5 +109,19 @@ describe('wasmInstantiator', () => {
     const result = await loadOpenCascade();
 
     expect(result.hardwareConcurrency).toBeGreaterThan(0);
+  });
+
+  describe('loadBrepkit', () => {
+    it('creates BrepKernel, wraps with BrepkitAdapter, and registers kernel', async () => {
+      const { registerKernel, BrepkitAdapter } = await import('brepjs');
+      const { loadBrepkit } = await import('./wasmInstantiator');
+
+      const result = await loadBrepkit();
+
+      expect(BrepkitAdapter).toHaveBeenCalledTimes(1);
+      expect(registerKernel).toHaveBeenCalledWith('brepkit', expect.anything());
+      expect(result.isThreaded).toBe(false);
+      expect(result.hardwareConcurrency).toBeGreaterThan(0);
+    });
   });
 });

@@ -12,6 +12,7 @@
     "src/**/*.bench.ts",
     "src/test/**/*.ts",
     "src/test/**/*.tsx",
+    "src/**/__test-infra__/**/*.ts",
     "api/**/*.test.ts",
     "vitest.config.ts"
   ],
