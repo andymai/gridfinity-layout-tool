@@ -62,7 +62,22 @@ describe('useDimensionsSection', () => {
     const { result } = renderHook(() => useDimensionsSection());
 
     expect(result.current.state.dimensionStep).toBe(0.5);
-    expect(result.current.state.minDimension).toBe(0.5);
+    // Both dimensions are 2 (≥1), so min can be 0.5 for either
+    expect(result.current.state.minWidth).toBe(0.5);
+    expect(result.current.state.minDepth).toBe(0.5);
+  });
+
+  it('prevents 0.5×0.5 footprint in half-bin mode', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 0.5, depth: 2 },
+      ui: { ...DEFAULT_UI_STATE, halfBinMode: true },
+    });
+
+    const { result } = renderHook(() => useDimensionsSection());
+
+    // Width is 0.5, so depth min must be 1
+    expect(result.current.state.minWidth).toBe(0.5);
+    expect(result.current.state.minDepth).toBe(1);
   });
 
   it('clamps width to max dimension', () => {

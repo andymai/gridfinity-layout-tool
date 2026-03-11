@@ -33,7 +33,9 @@ export function useDimensionsSection() {
   const t = useTranslation();
 
   const dimensionStep = halfBinMode ? 0.5 : 1;
-  const minDimension = halfBinMode ? 0.5 : 1;
+  // At least one dimension must be ≥ 1 — if the other is 0.5, this one can't go below 1
+  const minWidth = halfBinMode && depth >= 1 ? 0.5 : 1;
+  const minDepth = halfBinMode && width >= 1 ? 0.5 : 1;
 
   const widthMm = width * gridUnitMm;
   const depthMm = depth * gridUnitMm;
@@ -42,19 +44,19 @@ export function useDimensionsSection() {
   const handleWidthStep = useCallback(
     (delta: number) => {
       const next = width + delta * dimensionStep;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_DIMENSION, Math.max(minDimension, next));
+      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_DIMENSION, Math.max(minWidth, next));
       setParam('width', clamped);
     },
-    [width, dimensionStep, minDimension, setParam]
+    [width, dimensionStep, minWidth, setParam]
   );
 
   const handleDepthStep = useCallback(
     (delta: number) => {
       const next = depth + delta * dimensionStep;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_DIMENSION, Math.max(minDimension, next));
+      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_DIMENSION, Math.max(minDepth, next));
       setParam('depth', clamped);
     },
-    [depth, dimensionStep, minDimension, setParam]
+    [depth, dimensionStep, minDepth, setParam]
   );
 
   const handleHeightStep = useCallback(
@@ -93,7 +95,8 @@ export function useDimensionsSection() {
       heightMm,
       halfBinMode,
       dimensionStep,
-      minDimension,
+      minWidth,
+      minDepth,
     },
     handlers: {
       setParam: handleSetParam,
