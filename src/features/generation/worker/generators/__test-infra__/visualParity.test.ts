@@ -14,19 +14,20 @@
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initFromOC, registerKernel, withKernel, BrepkitAdapter } from 'brepjs';
+import { withKernel } from 'brepjs';
 import { clearAllCaches } from '@/features/generation/worker/generators/shapeCache';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
+import {
+  initOcctKernel,
+  initBrepkitKernel,
+  loadGenerateBin,
+  computeSignedVolume,
+} from './dualKernelInit';
+import type { GenerateBinFn } from './dualKernelInit';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-
-type GenerateBinFn = (
-  params: BinParams,
-  onProgress?: (stage: string, progress: number) => void,
-  forExport?: boolean
-) => MeshData;
 
 interface VisualMetrics {
   readonly triangleCount: number;
@@ -36,47 +37,7 @@ interface VisualMetrics {
   readonly edgeToTriangleRatio: number;
 }
 
-// ─── Kernel initialisation ──────────────────────────────────────────────────
-
-let generateBin: GenerateBinFn;
-
-async function initOcctKernel(): Promise<void> {
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await (opencascade as (opts?: Record<string, unknown>) => Promise<unknown>)({
-    wasmBinary,
-  });
-  initFromOC(OC);
-}
-
-async function initBrepkitKernel(): Promise<void> {
-  const brepkitWasm = await import('brepkit-wasm');
-  const kernel = new brepkitWasm.BrepKernel();
-
-  const adapter = new BrepkitAdapter(kernel as any);
-  registerKernel('brepkit', adapter);
-}
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-function computeSignedVolume(m: MeshData): number {
-  const { vertices, indices } = m;
-  let vol = 0;
-  for (let i = 0; i < indices.length; i += 3) {
-    const i0 = indices[i] * 3;
-    const i1 = indices[i + 1] * 3;
-    const i2 = indices[i + 2] * 3;
-    vol +=
-      (vertices[i0] * (vertices[i1 + 1] * vertices[i2 + 2] - vertices[i1 + 2] * vertices[i2 + 1]) +
-        vertices[i0 + 1] * (vertices[i1 + 2] * vertices[i2] - vertices[i1] * vertices[i2 + 2]) +
-        vertices[i0 + 2] * (vertices[i1] * vertices[i2 + 1] - vertices[i1 + 1] * vertices[i2])) /
-      6;
-  }
-  return Math.abs(vol);
-}
 
 function collectVisualMetrics(m: MeshData): VisualMetrics {
   const volume = computeSignedVolume(m);
@@ -109,11 +70,9 @@ describe('visual parity: brepkit vs OCCT (3×3 scoop+label+lip)', () => {
   let brepkitMetrics: VisualMetrics;
 
   beforeAll(async () => {
-    // Init both kernels up front
     await initOcctKernel();
     await initBrepkitKernel();
-    const binMod = await import('@/features/generation/worker/generators/binGenerator');
-    generateBin = binMod.generateBin as GenerateBinFn;
+    const generateBin: GenerateBinFn = await loadGenerateBin();
 
     // Generate with OCCT
     const occtMesh = withKernel('occt', () => generateBin(VISUAL_PARITY_PARAMS));

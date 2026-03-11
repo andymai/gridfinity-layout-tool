@@ -20,19 +20,13 @@
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initFromOC, registerKernel, BrepkitAdapter } from 'brepjs';
 import { clearAllCaches } from '@/features/generation/worker/generators/shapeCache';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, BaseStyle } from '@/shared/types/bin';
-import type { MeshData } from '@/features/generation/bridge/types';
+import { initOcctKernel, initBrepkitKernel, loadGenerateBin } from './dualKernelInit';
+import type { GenerateBinFn } from './dualKernelInit';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-
-type GenerateBinFn = (
-  params: BinParams,
-  onProgress?: (stage: string, progress: number) => void,
-  forExport?: boolean
-) => MeshData;
 
 interface TestResult {
   readonly triangleCount: number;
@@ -45,33 +39,13 @@ interface KernelResults {
   readonly brepkit: TestResult;
 }
 
-// ─── Kernel init ────────────────────────────────────────────────────────────
-
-let generateBin: GenerateBinFn;
-
-async function initOcct(): Promise<void> {
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await (opencascade as (opts?: Record<string, unknown>) => Promise<unknown>)({
-    wasmBinary,
-  });
-  initFromOC(OC);
-}
-
-async function initBrepkit(): Promise<void> {
-  const brepkitWasm = await import('brepkit-wasm');
-  const kernel = new brepkitWasm.BrepKernel();
-
-  const adapter = new BrepkitAdapter(kernel as any);
-  registerKernel('brepkit', adapter);
-}
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function tryGenerate(params: BinParams, forExport: boolean): TestResult {
+function tryGenerate(
+  generateBin: GenerateBinFn,
+  params: BinParams,
+  forExport: boolean
+): TestResult {
   const start = performance.now();
   try {
     const mesh = generateBin(params, undefined, forExport);
@@ -91,9 +65,16 @@ interface StressCase {
   readonly name: string;
   readonly overrides: Partial<BinParams>;
   readonly forExport?: boolean;
-  /** Skip volume comparison (geometry construction differs intentionally) */
-  readonly skipVolumeCheck?: boolean;
 }
+
+const BASE_STYLES: readonly BaseStyle[] = [
+  'standard',
+  'magnet',
+  'screw',
+  'magnet_and_screw',
+  'weighted',
+  'flat',
+];
 
 const STRESS_CASES: readonly StressCase[] = [
   // ── Extreme dimensions ──
@@ -128,26 +109,22 @@ const STRESS_CASES: readonly StressCase[] = [
   },
 
   // ── All base styles ──
-  ...(['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted', 'flat'] as BaseStyle[]).map(
-    (style) => ({
-      name: `base: ${style} lip`,
-      overrides: {
-        width: 1,
-        depth: 1,
-        base: { ...DEFAULT_BIN_PARAMS.base, style, stackingLip: true },
-      },
-    })
-  ),
-  ...(['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted', 'flat'] as BaseStyle[]).map(
-    (style) => ({
-      name: `base: ${style} no-lip`,
-      overrides: {
-        width: 1,
-        depth: 1,
-        base: { ...DEFAULT_BIN_PARAMS.base, style, stackingLip: false },
-      },
-    })
-  ),
+  ...BASE_STYLES.map((style) => ({
+    name: `base: ${style} lip`,
+    overrides: {
+      width: 1,
+      depth: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, style, stackingLip: true },
+    },
+  })),
+  ...BASE_STYLES.map((style) => ({
+    name: `base: ${style} no-lip`,
+    overrides: {
+      width: 1,
+      depth: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, style, stackingLip: false },
+    },
+  })),
 
   // ── Thin walls ──
   {
@@ -454,50 +431,53 @@ describe('brepkit stress test', () => {
   const results = new Map<string, KernelResults>();
 
   beforeAll(async () => {
-    // OCCT first
-    await initOcct();
-    const binMod = await import('@/features/generation/worker/generators/binGenerator');
-    generateBin = binMod.generateBin as GenerateBinFn;
+    await initOcctKernel();
+    const generateBin: GenerateBinFn = await loadGenerateBin();
 
     for (const tc of STRESS_CASES) {
-      clearAllCaches(); // Prevent cache hits from skewing benchmarks
+      clearAllCaches();
       const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides } as BinParams;
-      const occt = tryGenerate(params, tc.forExport ?? false);
+      const occt = tryGenerate(generateBin, params, tc.forExport ?? false);
       results.set(tc.name, { occt, brepkit: { triangleCount: 0, ms: 0 } });
     }
 
-    // Now brepkit
-    await initBrepkit();
+    await initBrepkitKernel();
 
     for (const tc of STRESS_CASES) {
-      clearAllCaches(); // Prevent cross-kernel cache poisoning + stale hits
+      clearAllCaches();
       const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides } as BinParams;
-      const bk = tryGenerate(params, tc.forExport ?? false);
-      const prev = results.get(tc.name)!;
-      results.set(tc.name, { ...prev, brepkit: bk });
+      const bk = tryGenerate(generateBin, params, tc.forExport ?? false);
+      const prev = results.get(tc.name);
+      if (prev) {
+        results.set(tc.name, { ...prev, brepkit: bk });
+      }
     }
   }, 600_000);
 
   for (const tc of STRESS_CASES) {
     describe(tc.name, () => {
       it('brepkit does not crash', () => {
-        const r = results.get(tc.name)!;
-        expect(r.brepkit.error).toBeUndefined();
+        const r = results.get(tc.name);
+        expect(r).toBeDefined();
+        expect(r?.brepkit.error).toBeUndefined();
       });
 
       it('brepkit produces triangles', () => {
-        const r = results.get(tc.name)!;
-        expect(r.brepkit.triangleCount).toBeGreaterThan(0);
+        const r = results.get(tc.name);
+        expect(r).toBeDefined();
+        expect(r?.brepkit.triangleCount).toBeGreaterThan(0);
       });
 
       it('OCCT does not crash', () => {
-        const r = results.get(tc.name)!;
-        expect(r.occt.error).toBeUndefined();
+        const r = results.get(tc.name);
+        expect(r).toBeDefined();
+        expect(r?.occt.error).toBeUndefined();
       });
 
       it('triangle counts match', () => {
-        const r = results.get(tc.name)!;
-        if (r.occt.error || r.brepkit.error) return; // skip if either failed
+        const r = results.get(tc.name);
+        expect(r).toBeDefined();
+        if (!r || r.occt.error || r.brepkit.error) return;
         expect(r.brepkit.triangleCount).toBe(r.occt.triangleCount);
       });
     });
@@ -526,7 +506,8 @@ describe('brepkit stress test', () => {
     let bkSlower = 0;
 
     for (const tc of STRESS_CASES) {
-      const r = results.get(tc.name)!;
+      const r = results.get(tc.name);
+      if (!r) continue;
       const occtStr = r.occt.error ? 'FAIL' : `${r.occt.ms.toFixed(0)}ms`;
       const bkStr = r.brepkit.error ? 'FAIL' : `${r.brepkit.ms.toFixed(0)}ms`;
       const occtTri = r.occt.error ? 'ERR' : String(r.occt.triangleCount);
@@ -536,11 +517,12 @@ describe('brepkit stress test', () => {
       if (r.brepkit.error) bkFails++;
       if (!r.occt.error && !r.brepkit.error && r.brepkit.ms > r.occt.ms * 1.1) bkSlower++;
 
-      const flag = r.brepkit.error
-        ? ' ❌'
-        : !r.occt.error && r.brepkit.triangleCount !== r.occt.triangleCount
-          ? ' ⚠️'
-          : '';
+      let flag = '';
+      if (r.brepkit.error) {
+        flag = ' ❌';
+      } else if (!r.occt.error && r.brepkit.triangleCount !== r.occt.triangleCount) {
+        flag = ' ⚠️';
+      }
 
       console.log(
         `│ ${(tc.name + flag).padEnd(44)} │ ${occtStr.padStart(7)} │ ${bkStr.padStart(7)} │ ${occtTri.padStart(7)} │ ${bkTri.padStart(8)} │`
@@ -560,14 +542,16 @@ describe('brepkit stress test', () => {
     );
     // Fail the test if brepkit has any crashes that OCCT doesn't
     const brepkitOnlyFailures = STRESS_CASES.filter((tc) => {
-      const r = results.get(tc.name)!;
-      return r.brepkit.error && !r.occt.error;
+      const r = results.get(tc.name);
+      return r?.brepkit.error && !r.occt.error;
     });
     if (brepkitOnlyFailures.length > 0) {
       console.log('\n❌ brepkit-only failures:');
       for (const tc of brepkitOnlyFailures) {
-        const r = results.get(tc.name)!;
-        console.log(`  ${tc.name}: ${r.brepkit.error}`);
+        const r = results.get(tc.name);
+        if (r) {
+          console.log(`  ${tc.name}: ${r.brepkit.error}`);
+        }
       }
     }
     /* eslint-enable no-console */

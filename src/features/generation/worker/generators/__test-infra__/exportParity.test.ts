@@ -8,98 +8,36 @@
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initFromOC, registerKernel, BrepkitAdapter } from 'brepjs';
 import { clearAllCaches } from '@/features/generation/worker/generators/shapeCache';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { build3MFBuffer } from '@/features/generation/export/threemfExporter';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
+import {
+  initOcctKernel,
+  initBrepkitKernel,
+  loadGenerateBin,
+  computeSignedVolume,
+} from './dualKernelInit';
+import type { GenerateBinFn } from './dualKernelInit';
+import { boundingBox } from './meshAssertions';
+import type { BoundingBox } from './meshAssertions';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-
-interface BBox {
-  readonly min: [number, number, number];
-  readonly max: [number, number, number];
-}
 
 interface MeshStats {
   readonly triangleCount: number;
   readonly vertexCount: number;
-  readonly bbox: BBox;
+  readonly bbox: BoundingBox;
   readonly volume: number;
   readonly stlBytes: number;
   readonly threemfBytes: number;
 }
 
-// ─── Kernel initialisation ──────────────────────────────────────────────────
-
-type GenerateBinFn = (
-  params: BinParams,
-  onProgress?: (stage: string, progress: number) => void,
-  forExport?: boolean
-) => MeshData;
-
-let generateBin: GenerateBinFn;
-
-async function initOcctKernel(): Promise<void> {
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await (opencascade as (opts?: Record<string, unknown>) => Promise<unknown>)({
-    wasmBinary,
-  });
-  initFromOC(OC);
-}
-
-async function initBrepkitKernel(): Promise<void> {
-  const brepkitWasm = await import('brepkit-wasm');
-  const kernel = new brepkitWasm.BrepKernel();
-
-  const adapter = new BrepkitAdapter(kernel as any);
-  registerKernel('brepkit', adapter);
-}
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-/** Compute bounding box from indexed mesh data. */
-function computeBBox(mesh: MeshData): BBox {
-  const min: [number, number, number] = [Infinity, Infinity, Infinity];
-  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
-  const { vertices } = mesh;
-  for (let i = 0; i < vertices.length; i += 3) {
-    for (let j = 0; j < 3; j++) {
-      if (vertices[i + j] < min[j]) min[j] = vertices[i + j];
-      if (vertices[i + j] > max[j]) max[j] = vertices[i + j];
-    }
-  }
-  return { min, max };
-}
-
-/**
- * Estimate volume from indexed mesh using the divergence theorem.
- * Sum of signed tetrahedra volumes (vertex to origin) gives total volume.
- */
-function computeSignedVolume(mesh: MeshData): number {
-  const { vertices, indices } = mesh;
-  let volume = 0;
-  for (let i = 0; i < indices.length; i += 3) {
-    const i0 = indices[i] * 3;
-    const i1 = indices[i + 1] * 3;
-    const i2 = indices[i + 2] * 3;
-    // Signed volume of tetrahedron formed with origin
-    volume +=
-      (vertices[i0] * (vertices[i1 + 1] * vertices[i2 + 2] - vertices[i1 + 2] * vertices[i2 + 1]) +
-        vertices[i0 + 1] * (vertices[i1 + 2] * vertices[i2] - vertices[i1] * vertices[i2 + 2]) +
-        vertices[i0 + 2] * (vertices[i1] * vertices[i2 + 1] - vertices[i1 + 1] * vertices[i2])) /
-      6;
-  }
-  return Math.abs(volume);
-}
-
-/** Dereference indexed mesh into flat arrays for STL/3MF export. */
+/** Dereference indexed mesh into flat arrays for 3MF export. */
 function flattenMesh(mesh: MeshData): { vertices: Float32Array; normals: Float32Array } {
   const { vertices, normals, indices } = mesh;
   const triCount = indices.length / 3;
@@ -123,7 +61,7 @@ function flattenMesh(mesh: MeshData): { vertices: Float32Array; normals: Float32
 }
 
 function collectStats(mesh: MeshData): MeshStats {
-  const bbox = computeBBox(mesh);
+  const bbox = boundingBox(mesh.vertices);
   const volume = computeSignedVolume(mesh);
   const stlBuffer = buildSTLBufferFromIndexed(mesh.vertices, mesh.normals, mesh.indices);
   const flat = flattenMesh(mesh);
@@ -194,23 +132,20 @@ describe('export parity: brepkit vs OCCT', () => {
   const brepkitResults = new Map<string, MeshStats>();
 
   beforeAll(async () => {
-    // Generate with OCCT first
     await initOcctKernel();
-    const binMod = await import('@/features/generation/worker/generators/binGenerator');
-    generateBin = binMod.generateBin as GenerateBinFn;
+    const generateBin: GenerateBinFn = await loadGenerateBin();
 
     for (const tc of TEST_CASES) {
-      clearAllCaches(); // Prevent cache hits from skewing results
+      clearAllCaches();
       const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides } as BinParams;
       const mesh = generateBin(params, undefined, true);
       occtResults.set(tc.name, collectStats(mesh));
     }
 
-    // Switch to brepkit
     await initBrepkitKernel();
 
     for (const tc of TEST_CASES) {
-      clearAllCaches(); // Prevent cross-kernel cache poisoning + stale hits
+      clearAllCaches();
       const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides } as BinParams;
       const mesh = generateBin(params, undefined, true);
       brepkitResults.set(tc.name, collectStats(mesh));
@@ -220,42 +155,58 @@ describe('export parity: brepkit vs OCCT', () => {
   for (const tc of TEST_CASES) {
     describe(tc.name, () => {
       it('both kernels produce triangles', () => {
-        const occt = occtResults.get(tc.name)!;
-        const bk = brepkitResults.get(tc.name)!;
-        expect(occt.triangleCount).toBeGreaterThan(0);
-        expect(bk.triangleCount).toBeGreaterThan(0);
+        const occt = occtResults.get(tc.name);
+        const bk = brepkitResults.get(tc.name);
+        expect(occt).toBeDefined();
+        expect(bk).toBeDefined();
+        expect(occt?.triangleCount).toBeGreaterThan(0);
+        expect(bk?.triangleCount).toBeGreaterThan(0);
       });
 
       it('bounding boxes match within 0.5mm', () => {
-        const occt = occtResults.get(tc.name)!;
-        const bk = brepkitResults.get(tc.name)!;
-        for (let axis = 0; axis < 3; axis++) {
-          expect(bk.bbox.min[axis]).toBeCloseTo(occt.bbox.min[axis], 0);
-          expect(bk.bbox.max[axis]).toBeCloseTo(occt.bbox.max[axis], 0);
-        }
+        const occt = occtResults.get(tc.name);
+        const bk = brepkitResults.get(tc.name);
+        expect(occt).toBeDefined();
+        expect(bk).toBeDefined();
+        if (!occt || !bk) return;
+
+        expect(bk.bbox.minX).toBeCloseTo(occt.bbox.minX, 0);
+        expect(bk.bbox.maxX).toBeCloseTo(occt.bbox.maxX, 0);
+        expect(bk.bbox.minY).toBeCloseTo(occt.bbox.minY, 0);
+        expect(bk.bbox.maxY).toBeCloseTo(occt.bbox.maxY, 0);
+        expect(bk.bbox.minZ).toBeCloseTo(occt.bbox.minZ, 0);
+        expect(bk.bbox.maxZ).toBeCloseTo(occt.bbox.maxZ, 0);
       });
 
       it('volumes match within 5%', () => {
-        const occt = occtResults.get(tc.name)!;
-        const bk = brepkitResults.get(tc.name)!;
+        const occt = occtResults.get(tc.name);
+        const bk = brepkitResults.get(tc.name);
+        expect(occt).toBeDefined();
+        expect(bk).toBeDefined();
+        if (!occt || !bk) return;
         const pctDiff = Math.abs(bk.volume - occt.volume) / occt.volume;
         expect(pctDiff).toBeLessThan(0.05);
       });
 
       it('STL files are valid (correct size for triangle count)', () => {
-        const occt = occtResults.get(tc.name)!;
-        const bk = brepkitResults.get(tc.name)!;
+        const occt = occtResults.get(tc.name);
+        const bk = brepkitResults.get(tc.name);
+        expect(occt).toBeDefined();
+        expect(bk).toBeDefined();
+        if (!occt || !bk) return;
         // Binary STL: 80 header + 4 count + 50 per tri
         expect(occt.stlBytes).toBe(84 + occt.triangleCount * 50);
         expect(bk.stlBytes).toBe(84 + bk.triangleCount * 50);
       });
 
       it('3MF files are non-empty ZIP archives', () => {
-        const occt = occtResults.get(tc.name)!;
-        const bk = brepkitResults.get(tc.name)!;
+        const occt = occtResults.get(tc.name);
+        const bk = brepkitResults.get(tc.name);
+        expect(occt).toBeDefined();
+        expect(bk).toBeDefined();
         // ZIP magic bytes would be checked by fflate; non-zero size suffices
-        expect(occt.threemfBytes).toBeGreaterThan(100);
-        expect(bk.threemfBytes).toBeGreaterThan(100);
+        expect(occt?.threemfBytes).toBeGreaterThan(100);
+        expect(bk?.threemfBytes).toBeGreaterThan(100);
       });
     });
   }
@@ -278,8 +229,9 @@ describe('export parity: brepkit vs OCCT', () => {
       '├──────────────────────────┼──────────┼──────────┼──────────┼──────────┼──────────────────┤'
     );
     for (const tc of TEST_CASES) {
-      const occt = occtResults.get(tc.name)!;
-      const bk = brepkitResults.get(tc.name)!;
+      const occt = occtResults.get(tc.name);
+      const bk = brepkitResults.get(tc.name);
+      if (!occt || !bk) continue;
       const volDiff = (((bk.volume - occt.volume) / occt.volume) * 100).toFixed(2);
       console.log(
         `│ ${tc.name.padEnd(24)} │ ${String(occt.triangleCount).padStart(8)} │ ${String(bk.triangleCount).padStart(8)} │ ${occt.volume.toFixed(0).padStart(8)} │ ${bk.volume.toFixed(0).padStart(8)} │ ${(volDiff + '%').padStart(16)} │`
