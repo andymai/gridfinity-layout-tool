@@ -2,11 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BridgeManager } from './BridgeManager';
 import type { GenerationBridge } from './GenerationBridge';
 
-// Mock the labs store so BridgeManager can read the kernel flag
+// Mock the labs store so BridgeManager can read the kernel flag.
+// Use a mutable ref so individual tests can override isFeatureEnabled.
+let mockIsFeatureEnabled: (flag: string) => boolean = () => false;
+
 vi.mock('@/core/store/labs', () => ({
   useLabsStore: {
     getState: () => ({
-      isFeatureEnabled: () => false,
+      isFeatureEnabled: (flag: string) => mockIsFeatureEnabled(flag),
     }),
   },
 }));
@@ -72,6 +75,24 @@ describe('BridgeManager', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
+  });
+
+  // -------------------------------------------------------------------------
+  // kernel flag
+  // -------------------------------------------------------------------------
+
+  describe('kernel selection', () => {
+    it('passes brepkit kernel when brepkit_kernel feature is enabled', async () => {
+      mockIsFeatureEnabled = (flag: string) => flag === 'brepkit_kernel';
+
+      const brepkitManager = new BridgeManager();
+      await brepkitManager.acquire();
+
+      const { GenerationBridge: MockCtor } = await import('./GenerationBridge');
+      expect(vi.mocked(MockCtor)).toHaveBeenCalledWith('brepkit');
+
+      mockIsFeatureEnabled = () => false;
+    });
   });
 
   // -------------------------------------------------------------------------

@@ -32,9 +32,6 @@ vi.mock('brepjs-opencascade/src/brepjs_threaded.wasm?url', () => ({
 vi.mock('brepjs-opencascade/src/brepjs_threaded.worker.js?url', () => ({
   default: '/mocked/brepjs_threaded.worker.js',
 }));
-vi.mock('brepkit-wasm/brepkit_wasm_bg.wasm?url', () => ({
-  default: '/mocked/brepkit_wasm_bg.wasm',
-}));
 vi.mock('brepkit-wasm', () => ({
   // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- Mock class for BrepKernel constructor
   BrepKernel: class MockBrepKernel {},

@@ -106,17 +106,15 @@ export function buildBinBox(
 // ─── Top Shape (Stacking Lip) Builder ────────────────────────────────────────
 
 /**
- * Build the stacking lip using a ruled loft + shell (fast path).
+ * Build the stacking lip using a ruled loft + boolean cut (fast path).
  *
  * Constructs the lip taper as a ruled loft through rounded-rectangle sections
- * at each profile breakpoint, then shells it to create a hollow ring.
- * This produces analytic surfaces (planar + conical) instead of the NURBS
- * surfaces from sweepSketch, making it dramatically faster for boolean and
- * tessellation — especially with the brepkit kernel.
- *
- * Returns null if construction fails (e.g. shell on certain geometries).
+ * at each profile breakpoint, then boolean-subtracts an inner frustum to create
+ * a hollow ring. This produces analytic surfaces (planar + conical) instead of
+ * the NURBS surfaces from sweepSketch, making it dramatically faster for boolean
+ * and tessellation — especially with the brepkit kernel.
  */
-function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D | null {
+function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
   const WALL = LIP_TAPER_WIDTH; // 2.6mm wall thickness
 
@@ -257,10 +255,12 @@ export function buildTopShape(gridW: number, gridD: number, includeLip: boolean)
   if (getKernel().kernelId === 'brepkit') {
     // brepkit: loft-cut is ~5-50x faster than sweep (analytic surfaces)
     try {
-      const loftResult = buildTopShapeLoft(outerW, outerD, includeLip);
-      if (!loftResult) throw new Error('loft returned null');
-      result = loftResult;
-    } catch {
+      result = buildTopShapeLoft(outerW, outerD, includeLip);
+    } catch (e: unknown) {
+      // Loft failed — fall back to sweep path. Log for diagnostics since this
+      // indicates a kernel regression (loft should always succeed).
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(`[boxBuilder] brepkit loft failed, falling back to sweep: ${msg}`);
       result = buildTopShapeSweep(outerW, outerD, includeLip);
     }
   } else {

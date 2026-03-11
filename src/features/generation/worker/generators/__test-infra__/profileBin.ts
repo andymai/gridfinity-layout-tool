@@ -2,7 +2,7 @@
  * Profiling wrapper for bin generation — measures time spent in each brepjs operation.
  *
  * Usage:
- *   BREPJS_KERNEL=wasm npx vitest run src/features/generation/worker/generators/__test-infra__/profileBin.test.ts
+ *   BREPJS_KERNEL=brepkit npx vitest run src/features/generation/worker/generators/__test-infra__/profileBin.test.ts
  */
 import * as brepjs from 'brepjs';
 
@@ -22,7 +22,13 @@ function wrapFn<T extends (...args: never[]) => unknown>(name: string, fn: T): T
   }) as T;
 }
 
-/** Install timing hooks on brepjs module. Call before generating. */
+/**
+ * Install timing hooks on brepjs module. Call before generating.
+ *
+ * NOTE: ESM namespace objects (`import * as mod`) are immutable per spec.
+ * This works under Vitest because it rewrites ESM imports into mutable
+ * CommonJS-style objects. It will NOT work in a native ESM runtime.
+ */
 export function installProfiling(): void {
   timings.length = 0;
 
