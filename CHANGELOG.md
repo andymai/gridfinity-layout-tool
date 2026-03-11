@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.7.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.6.1...gridfinity-layout-tool-v4.7.0) (2026-03-11)
+
+
+### Features
+
+* bump brepkit-wasm to v1.0.6 with visual parity tests ([#1086](https://github.com/andymai/gridfinity-layout-tool/issues/1086)) ([05e37e1](https://github.com/andymai/gridfinity-layout-tool/commit/05e37e15bf10013dee22662bd4fd0a7be0ad4829))
+
 ## [4.6.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.6.0...gridfinity-layout-tool-v4.6.1) (2026-03-11)
 
 
