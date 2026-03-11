@@ -164,3 +164,16 @@ export function setFeatureCache(feature: string, key: string, shape: Shape3D): v
     cache.set(key, shape);
   }
 }
+
+/** Clear all shape caches. Required when switching geometry kernels in tests. */
+export function clearAllCaches(): void {
+  socketCache.clear();
+  lipCache.clear();
+  boxCache.clear();
+  shellCache.clear();
+  patternTemplateCache = null;
+  lastSolid = null;
+  for (const cache of featureToolCaches.values()) {
+    cache.clear();
+  }
+}
