@@ -85,7 +85,7 @@
     "ai": "^6.0.116",
     "brepjs": "^12.2.12",
     "brepjs-opencascade": "^0.9.0",
-    "brepkit-wasm": "^1.0.6",
+    "brepkit-wasm": "^1.0.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
