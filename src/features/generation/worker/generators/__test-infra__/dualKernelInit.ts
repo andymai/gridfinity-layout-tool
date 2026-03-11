@@ -5,10 +5,23 @@
  * initialize BOTH OCCT and brepkit in the same process so tests can compare
  * outputs side-by-side.
  */
+import { describe as describeSolid, measureVolume, exportSTEP, unwrap } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
+
+export interface TopologyStats {
+  readonly isValid: boolean;
+  readonly faceCount: number;
+  readonly edgeCount: number;
+  readonly vertexCount: number;
+  readonly volume: number;
+  readonly eulerCharacteristic: number;
+  readonly stepByteSize: number;
+  readonly stepHeaderValid: boolean;
+}
 
 export type GenerateBinFn = (
   params: BinParams,
@@ -66,4 +79,58 @@ export function computeSignedVolume(mesh: MeshData): number {
       6;
   }
   return Math.abs(vol);
+}
+
+// ─── Topology helpers ────────────────────────────────────────────────────────
+
+/**
+ * Collect BREP topology stats from an in-memory solid.
+ * Uses brepjs `describe()` for counts/validity and `measureVolume()` for exact volume.
+ */
+export function collectTopologyStats(solid: Shape3D): TopologyStats {
+  const desc = describeSolid(solid);
+
+  // STEP export
+  let stepByteSize = 0;
+  let stepHeaderValid = false;
+  try {
+    const blob: Blob = unwrap(exportSTEP(solid));
+    // In Node, Blob.size gives byte length synchronously
+    stepByteSize = blob.size;
+    // We can't synchronously read the blob text in all envs,
+    // so check size > 0 as the primary validation.
+    // Header validation is done via arrayBuffer in the async variant below.
+    stepHeaderValid = stepByteSize > 100;
+  } catch {
+    // exportSTEP may fail on some kernel/shape combos — record as invalid
+  }
+
+  return {
+    isValid: desc.valid,
+    faceCount: desc.faceCount,
+    edgeCount: desc.edgeCount,
+    vertexCount: desc.vertexCount,
+    volume: measureVolume(solid),
+    eulerCharacteristic: desc.vertexCount - desc.edgeCount + desc.faceCount,
+    stepByteSize,
+    stepHeaderValid,
+  };
+}
+
+/**
+ * Validate STEP export buffer asynchronously (reads blob to check header).
+ * Returns byte size and whether the header starts with "ISO-10303-21".
+ */
+export async function validateStepBuffer(
+  solid: Shape3D
+): Promise<{ byteSize: number; headerValid: boolean }> {
+  try {
+    const blob: Blob = unwrap(exportSTEP(solid));
+    const buffer = await blob.arrayBuffer();
+    const byteSize = buffer.byteLength;
+    const header = new TextDecoder().decode(new Uint8Array(buffer, 0, Math.min(50, byteSize)));
+    return { byteSize, headerValid: header.includes('ISO-10303-21') };
+  } catch {
+    return { byteSize: 0, headerValid: false };
+  }
 }
