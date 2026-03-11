@@ -26,7 +26,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     // Exclude WASM module from Vite's dependency pre-bundling
-    exclude: ['brepjs-opencascade'],
+    exclude: ['brepjs-opencascade', 'brepkit-wasm'],
   },
   worker: {
     format: 'es',

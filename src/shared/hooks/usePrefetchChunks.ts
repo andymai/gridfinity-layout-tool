@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useResponsive } from './useResponsive';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils/idle';
-import { preloadWasmBinary } from '@/shared/generation/wasmPreload';
+import { preloadWasmBinary, preloadBrepkitWasm } from '@/shared/generation/wasmPreload';
+import { useLabsStore } from '@/core/store/labs';
 
 /** How long to wait after mount before starting prefetch (ms) */
 const PREFETCH_DELAY_MS = 3000;
@@ -66,7 +67,11 @@ export function usePrefetchChunks(): void {
     const timer = setTimeout(() => {
       // Tier 0: Preload WASM binary — large asset needed by designer & baseplate
       scheduleNext(() => {
-        preloadWasmBinary();
+        if (useLabsStore.getState().isFeatureEnabled('brepkit_kernel')) {
+          preloadBrepkitWasm();
+        } else {
+          preloadWasmBinary();
+        }
 
         // Tier 1: High priority — features most users navigate to quickly
         scheduleNext(() => {

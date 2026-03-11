@@ -15,6 +15,7 @@ import type {
   SplitExportPiece,
   SplitPreviewPiece,
   FaceGroupData,
+  KernelName,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 
@@ -22,13 +23,15 @@ import { AdaptiveDebounce } from './adaptiveDebounce';
 function extractThreadingInfo(data: {
   isThreaded: boolean;
   hardwareConcurrency: number;
+  kernel: KernelName;
 }): ThreadingInfo {
   const isThreaded = typeof data.isThreaded === 'boolean' ? data.isThreaded : false;
   const hardwareConcurrency =
     Number.isFinite(data.hardwareConcurrency) && data.hardwareConcurrency > 0
       ? data.hardwareConcurrency
       : 4;
-  return { isThreaded, hardwareConcurrency };
+  const kernel = data.kernel === 'brepkit' ? 'brepkit' : 'opencascade';
+  return { isThreaded, hardwareConcurrency, kernel };
 }
 
 /** Callback for progress updates during generation */
@@ -77,6 +80,8 @@ export interface ThreadingInfo {
   readonly isThreaded: boolean;
   /** Number of CPU cores available */
   readonly hardwareConcurrency: number;
+  /** Which geometry kernel was loaded */
+  readonly kernel: KernelName;
 }
 
 /** Keys for the pending export request slots */
@@ -98,6 +103,7 @@ interface PendingExport<T> {
  * - Provides Promise-based API over the message-passing protocol
  */
 export class GenerationBridge {
+  private readonly kernel: KernelName;
   private worker: Worker | null = null;
   private initPromise: Promise<void> | null = null;
   private currentRequestId: string | null = null;
@@ -109,6 +115,10 @@ export class GenerationBridge {
   private destroyed = false;
   private adaptiveDebounce = new AdaptiveDebounce();
   private threadingInfo: ThreadingInfo | null = null;
+
+  constructor(kernel: KernelName = 'opencascade') {
+    this.kernel = kernel;
+  }
 
   /** Pending export requests keyed by slot. Only one per slot at a time. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Values are PendingExport<T> with different T per slot; type safety is enforced at each call site
@@ -181,7 +191,7 @@ export class GenerationBridge {
           reject(new Error(`Worker failed to initialize: ${detail}`));
         });
 
-        this.postMessage({ type: 'INIT' });
+        this.postMessage({ type: 'INIT', kernel: this.kernel });
       } catch (e) {
         reject(new Error(`Failed to create worker: ${e instanceof Error ? e.message : String(e)}`));
       }

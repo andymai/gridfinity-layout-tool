@@ -343,10 +343,12 @@ describe('FeatureId type', () => {
     const binDesignerId: FeatureId = 'bin_designer';
     const collaborativeId: FeatureId = 'collaborative_editing';
     const layoutToPrintId: FeatureId = 'layout_to_print';
+    const brepkitKernelId: FeatureId = 'brepkit_kernel';
 
     expect(binDesignerId).toBe('bin_designer');
     expect(collaborativeId).toBe('collaborative_editing');
     expect(layoutToPrintId).toBe('layout_to_print');
+    expect(brepkitKernelId).toBe('brepkit_kernel');
   });
 });
 

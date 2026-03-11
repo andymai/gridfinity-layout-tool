@@ -12,6 +12,8 @@
  */
 
 import { WorkerPool } from './WorkerPool';
+import type { KernelName } from './types';
+import { useLabsStore } from '@/core/store/labs';
 
 /** How long to keep the pool alive after the last consumer releases (ms) */
 const IDLE_TIMEOUT_MS = 30_000;
@@ -32,7 +34,10 @@ export class WorkerPoolManager {
     this.clearIdleTimer();
 
     if (!this.pool || this.pool.isDestroyed) {
-      this.pool = new WorkerPool();
+      const kernel: KernelName = useLabsStore.getState().isFeatureEnabled('brepkit_kernel')
+        ? 'brepkit'
+        : 'opencascade';
+      this.pool = new WorkerPool(undefined, kernel);
       this.initPromise = this.pool.ensureWorkers();
     }
 
@@ -40,7 +45,7 @@ export class WorkerPoolManager {
       await this.initPromise;
     } catch (error: unknown) {
       this.refCount--;
-      this.pool?.destroy();
+      if (this.pool) this.pool.destroy();
       this.pool = null;
       this.initPromise = null;
       throw error;

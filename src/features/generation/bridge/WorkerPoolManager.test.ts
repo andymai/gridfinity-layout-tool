@@ -1,6 +1,15 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { WorkerPoolManager } from './WorkerPoolManager';
 
+// Mock the labs store so WorkerPoolManager can read the kernel flag
+vi.mock('@/core/store/labs', () => ({
+  useLabsStore: {
+    getState: () => ({
+      isFeatureEnabled: () => false,
+    }),
+  },
+}));
+
 describe('WorkerPoolManager', () => {
   afterEach(() => {
     vi.restoreAllMocks();

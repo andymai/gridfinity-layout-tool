@@ -43,6 +43,18 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
   },
   {
+    id: 'brepkit_kernel',
+    name: 'Brepkit WASM Kernel',
+    description:
+      'Use the lightweight Rust-native brepkit geometry kernel instead of OpenCascade. Produces equivalent geometry with a smaller WASM binary. Geometry output may differ slightly from the OpenCascade kernel.',
+    status: 'experimental',
+    risk: 'high',
+    warning:
+      'Switches the geometry engine. Generated meshes and exports may differ from the default OpenCascade kernel. Requires a page reload to take effect.',
+    addedAt: '2026-03',
+    requiresRefresh: true,
+  },
+  {
     id: 'layout_to_print',
     name: 'Layout-to-Print Export',
     description:

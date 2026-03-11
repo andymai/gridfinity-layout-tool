@@ -25,7 +25,8 @@ import {
 } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
 import { generateBaseplate, exportBaseplate } from './generators/baseplateGenerator';
-import { loadOpenCascade } from './wasmInstantiator';
+import type { KernelName } from '../bridge/types';
+import { loadOpenCascade, loadBrepkit } from './wasmInstantiator';
 
 /** Currently active generation request ID (for cancellation) */
 let activeRequestId: string | null = null;
@@ -33,8 +34,11 @@ let activeRequestId: string | null = null;
 /** AbortController for mid-operation cancellation of brepjs boolean operations */
 let activeController: AbortController | null = null;
 
-/** Whether OCCT has been initialized */
-let ocInitialized = false;
+/** Whether a geometry kernel has been initialized */
+let kernelInitialized = false;
+
+/** Which kernel was loaded */
+let activeKernel: KernelName = 'opencascade';
 
 /** Whether multi-threaded WASM is being used */
 let isThreaded = false;
@@ -61,12 +65,13 @@ function reportProgress(
   });
 }
 
-/** Initialize OpenCascade WASM kernel. */
-async function initOpenCascade(): Promise<void> {
-  const result = await loadOpenCascade();
+/** Initialize the geometry kernel selected by the INIT message. */
+async function initKernel(kernel: KernelName = 'opencascade'): Promise<void> {
+  const result = kernel === 'brepkit' ? await loadBrepkit() : await loadOpenCascade();
   isThreaded = result.isThreaded;
   hardwareConcurrency = result.hardwareConcurrency;
-  ocInitialized = true;
+  activeKernel = kernel;
+  kernelInitialized = true;
 }
 
 /** Format an error message from an unknown thrown value */
@@ -74,10 +79,10 @@ function formatError(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
-/** Check OCCT init state, responding with error if not ready. Returns true if initialized. */
-function requireOCCT(requestId: string): boolean {
-  if (!ocInitialized) {
-    respond({ type: 'ERROR', requestId, error: 'OpenCascade not initialized' });
+/** Check kernel init state, responding with error if not ready. Returns true if initialized. */
+function requireKernel(requestId: string): boolean {
+  if (!kernelInitialized) {
+    respond({ type: 'ERROR', requestId, error: 'Geometry kernel not initialized' });
     return false;
   }
   return true;
@@ -98,7 +103,7 @@ function runGeneration(
   logPrefix: string,
   copyBuffers: boolean
 ): void {
-  if (!requireOCCT(requestId)) return;
+  if (!requireKernel(requestId)) return;
 
   activeRequestId = requestId;
   activeController = new AbortController();
@@ -169,7 +174,7 @@ async function runExport<TPayload extends Record<string, unknown>>(
   errorPrefix: string,
   transferFn: (payload: TPayload) => ArrayBuffer[]
 ): Promise<void> {
-  if (!requireOCCT(requestId)) return;
+  if (!requireKernel(requestId)) return;
 
   try {
     const payload = await exportFn();
@@ -219,13 +224,13 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
     switch (message.type) {
       case 'INIT':
         try {
-          await initOpenCascade();
-          respond({ type: 'INIT_READY', isThreaded, hardwareConcurrency });
+          await initKernel(message.kernel);
+          respond({ type: 'INIT_READY', isThreaded, hardwareConcurrency, kernel: activeKernel });
         } catch (e) {
           respond({
             type: 'ERROR',
             requestId: '__init__',
-            error: `OpenCascade init failed: ${formatError(e)}`,
+            error: `Kernel init failed: ${formatError(e)}`,
           });
         }
         break;

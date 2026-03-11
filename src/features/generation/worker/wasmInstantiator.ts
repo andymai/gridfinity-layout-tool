@@ -17,7 +17,7 @@
  * sub-workers via mainScriptUrlOrBlob). Vite handles both correctly.
  */
 
-import { initFromOC } from 'brepjs';
+import { initFromOC, registerKernel, BrepkitAdapter } from 'brepjs';
 
 // Single-threaded WASM (always available as fallback)
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
@@ -88,4 +88,26 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
   initFromOC(OC);
 
   return { isThreaded: useThreaded, hardwareConcurrency };
+}
+
+/**
+ * Load and initialize the brepkit (Rust-native) geometry kernel.
+ *
+ * Dynamically imports brepkit-wasm (which loads its own WASM binary),
+ * wraps it with brepjs's `BrepkitAdapter`, and registers it as the active kernel.
+ * Brepkit does not support threading, so `isThreaded` is always false.
+ */
+export async function loadBrepkit(): Promise<WasmLoadResult> {
+  const hardwareConcurrency = getHardwareConcurrency();
+
+  // Dynamic import to keep the brepkit WASM out of the main chunk.
+  // brepkit-wasm's entry JS handles its own WASM instantiation internally.
+  const { BrepKernel } = await import('brepkit-wasm');
+  const kernel = new BrepKernel();
+  // BrepkitAdapter accepts KernelInstance (typed as `any` in brepjs)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
+  const adapter = new BrepkitAdapter(kernel as any);
+  registerKernel('brepkit', adapter);
+
+  return { isThreaded: false, hardwareConcurrency };
 }

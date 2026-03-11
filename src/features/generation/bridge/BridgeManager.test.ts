@@ -2,6 +2,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BridgeManager } from './BridgeManager';
 import type { GenerationBridge } from './GenerationBridge';
 
+// Mock the labs store so BridgeManager can read the kernel flag
+vi.mock('@/core/store/labs', () => ({
+  useLabsStore: {
+    getState: () => ({
+      isFeatureEnabled: () => false,
+    }),
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Mock GenerationBridge so no Worker or WASM is loaded
 // ---------------------------------------------------------------------------

@@ -15,8 +15,10 @@
 import { detectWasmCapabilities } from '@/shared/generation/wasmCapabilities';
 import singleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 import threadedWasm from 'brepjs-opencascade/src/brepjs_threaded.wasm?url';
+import brepkitWasm from 'brepkit-wasm/brepkit_wasm_bg.wasm?url';
 
 let preloaded = false;
+let brepkitPreloaded = false;
 
 export function preloadWasmBinary(): void {
   if (preloaded) return;
@@ -34,5 +36,23 @@ export function preloadWasmBinary(): void {
     preloaded = true;
   } catch {
     // Leave preloaded false so a later call can retry
+  }
+}
+
+/**
+ * Primes the HTTP cache with the brepkit WASM binary during idle time.
+ * Same pattern as `preloadWasmBinary()` but for the Rust-native kernel.
+ */
+export function preloadBrepkitWasm(): void {
+  if (brepkitPreloaded) return;
+
+  try {
+    void fetch(brepkitWasm, { credentials: 'same-origin' }).catch(() => {
+      brepkitPreloaded = false;
+    });
+
+    brepkitPreloaded = true;
+  } catch {
+    // Leave flag false so a later call can retry
   }
 }
