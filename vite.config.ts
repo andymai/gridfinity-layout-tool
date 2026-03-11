@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import wasm from 'vite-plugin-wasm';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath, URL } from 'node:url';
 
@@ -30,8 +31,10 @@ export default defineConfig({
   },
   worker: {
     format: 'es',
+    plugins: () => [wasm()],
   },
   plugins: [
+    wasm(),
     react(),
     tailwindcss(),
     VitePWA({
