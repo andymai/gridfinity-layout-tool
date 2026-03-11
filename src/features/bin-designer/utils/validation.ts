@@ -60,6 +60,15 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
     });
   }
 
+  // At least one dimension must be ≥ 1 unit (0.5×0.5 produces degenerate socket geometry)
+  if (params.width < 1 && params.depth < 1) {
+    return err({
+      code: 'FOOTPRINT_TOO_SMALL',
+      message: 'At least one dimension (width or depth) must be 1 unit or larger',
+      field: 'width',
+    });
+  }
+
   // Dimension step check (0.5 increments for width/depth, tolerance-based for float safety)
   if (!isValidStep(params.width, DESIGNER_CONSTRAINTS.DIMENSION_STEP)) {
     return err({

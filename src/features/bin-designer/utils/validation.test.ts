@@ -72,11 +72,23 @@ describe('validateBinParams', () => {
     });
 
     it('should accept boundary values', () => {
-      expectOk(validateBinParams(makeParams({ width: 0.5 })));
+      expectOk(validateBinParams(makeParams({ width: 0.5, depth: 2 })));
+      expectOk(validateBinParams(makeParams({ width: 1, depth: 0.5 })));
       expectOk(validateBinParams(makeParams({ width: 8 })));
       // MIN_HEIGHT is 2 (1U = base only, 2U minimum for usable cavity)
       expectOk(validateBinParams(makeParams({ height: 2 })));
       expectOk(validateBinParams(makeParams({ height: 20 })));
+    });
+
+    it('should reject 0.5×0.5 footprint', () => {
+      const result = validateBinParams(makeParams({ width: 0.5, depth: 0.5 }));
+      const error = expectErr(result);
+      expect(error.code).toBe('FOOTPRINT_TOO_SMALL');
+    });
+
+    it('should accept 0.5×1 and 1×0.5 footprints', () => {
+      expectOk(validateBinParams(makeParams({ width: 0.5, depth: 1 })));
+      expectOk(validateBinParams(makeParams({ width: 1, depth: 0.5 })));
     });
   });
 
