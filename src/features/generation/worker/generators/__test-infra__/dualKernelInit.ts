@@ -19,9 +19,6 @@ export interface TopologyStats {
   readonly vertexCount: number;
   readonly volume: number;
   readonly eulerCharacteristic: number;
-  readonly stepByteSize: number;
-  /** Size-only heuristic; actual header validation requires async `validateStepBlob()`. */
-  readonly stepNonEmpty: boolean;
 }
 
 export type GenerateBinFn = (
@@ -48,6 +45,14 @@ export async function initOcctKernel(): Promise<void> {
 export async function initBrepkitKernel(): Promise<void> {
   const { registerKernel, BrepkitAdapter } = await import('brepjs');
   const brepkitWasm = await import('brepkit-wasm');
+  // Web target requires explicit WASM init before use
+  if (typeof brepkitWasm.default === 'function') {
+    const { readFileSync } = await import('fs');
+    const { join } = await import('path');
+    const wasmPath = join(process.cwd(), 'node_modules/brepkit-wasm/brepkit_wasm_bg.wasm');
+    const wasmBytes = readFileSync(wasmPath);
+    await brepkitWasm.default(wasmBytes);
+  }
   const kernel = new brepkitWasm.BrepKernel();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
   const adapter = new BrepkitAdapter(kernel as any);
@@ -90,16 +95,6 @@ export function computeSignedVolume(mesh: MeshData): number {
  */
 export function collectTopologyStats(solid: Shape3D): TopologyStats {
   const desc = describeSolid(solid);
-
-  // STEP export — synchronous size check only; header validation is async via validateStepBlob()
-  let stepByteSize = 0;
-  try {
-    const blob: Blob = unwrap(exportSTEP(solid));
-    stepByteSize = blob.size;
-  } catch {
-    // exportSTEP may fail on some kernel/shape combos — record as zero
-  }
-
   return {
     isValid: desc.valid,
     faceCount: desc.faceCount,
@@ -107,8 +102,29 @@ export function collectTopologyStats(solid: Shape3D): TopologyStats {
     vertexCount: desc.vertexCount,
     volume: measureVolume(solid),
     eulerCharacteristic: desc.vertexCount - desc.edgeCount + desc.faceCount,
-    stepByteSize,
-    stepNonEmpty: stepByteSize > 0,
+  };
+}
+
+/**
+ * Collect BREP topology stats by querying the raw brepkit kernel directly.
+ * Bypasses brepjs's internal topology cache (WeakMap on KernelShape), which
+ * becomes stale after in-place mutations like `unifyFaces()`.
+ * Must be called inside `withKernel('brepkit', ...)`.
+ */
+export function collectTopologyStatsRaw(
+  solid: Shape3D,
+  rawKernel: { getEntityCounts(id: number): number[]; validateSolid(id: number): number }
+): TopologyStats {
+  const solidId = (solid.wrapped as { id: number }).id;
+  const [faceCount, edgeCount, vertexCount] = rawKernel.getEntityCounts(solidId);
+  const validationIssues = rawKernel.validateSolid(solidId);
+  return {
+    isValid: validationIssues === 0,
+    faceCount,
+    edgeCount,
+    vertexCount,
+    volume: measureVolume(solid),
+    eulerCharacteristic: vertexCount - edgeCount + faceCount,
   };
 }
 
