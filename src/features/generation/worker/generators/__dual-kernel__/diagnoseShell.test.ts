@@ -24,13 +24,11 @@ import {
   getEntityCounts,
   totalCount,
 } from './topologyHelpers';
+import { STANDARD_BIN_WIDTH, STANDARD_HEIGHT, SHELL_THICKNESS } from './testCases';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const STANDARD_BIN_WIDTH = 41.5; // mm
 const SHELL_RADIUS = 4; // mm
-const STANDARD_HEIGHT = 21; // mm
-const SHELL_THICKNESS = 1.2; // mm
 
 test('diagnose flat no-lip face counts', async () => {
   await initBrepkitKernel();
@@ -139,8 +137,9 @@ test('step-by-step volume: extrude then shell', async () => {
     const sketchResult = sketchDrawing.sketchOnPlane('XY');
 
     // Count wire edges before extrude
-    const wireWrapped = (sketchResult as { wire?: { wrapped?: { id: number } } }).wire?.wrapped;
-    const wireId = wireWrapped?.id;
+    const wireWrapped = (sketchResult as { wire?: { wrapped?: { id: number } | number } }).wire
+      ?.wrapped;
+    const wireId = typeof wireWrapped === 'number' ? wireWrapped : wireWrapped?.id;
     if (wireId !== undefined) {
       const wireInfo = collectWireEdgeTypes(rawKernel, wireId);
       console.log(

@@ -56,6 +56,20 @@ export const CORE_PARITY_CASES: readonly ParityTestCase[] = [
 ];
 
 /** Extended cases for topology parity (adds half-bin and complex feature combos). */
+// ─── Shared Physical Constants ─────────────────────────────────────────────
+// Single source of truth for the standard 1×1 bin dimensions used across
+// diagnoseShell, diagnoseOps, and future diagnostic tests.
+
+/** Interior width of a 1×1 Gridfinity bin (mm). */
+export const STANDARD_BIN_WIDTH = 41.5;
+
+/** Standard bin height: 3 height units (mm). */
+export const STANDARD_HEIGHT = 21;
+
+/** Nominal wall / shell thickness (mm). */
+export const SHELL_THICKNESS = 1.2;
+
+/** Extended cases for topology parity (adds half-bin and complex feature combos). */
 export const TOPOLOGY_EXTENDED_CASES: readonly ParityTestCase[] = [
   {
     name: '1.5×2 half-bin',

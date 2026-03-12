@@ -21,13 +21,11 @@ import {
 } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import { initOcctKernel, initBrepkitKernel } from './dualKernelInit';
+import { STANDARD_BIN_WIDTH, STANDARD_HEIGHT, SHELL_THICKNESS } from './testCases';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const STANDARD_BIN_WIDTH = 41.5; // mm
 const STANDARD_RADIUS = 3.75; // mm
-const STANDARD_HEIGHT = 21; // mm
-const SHELL_THICKNESS = 1.2; // mm
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
