@@ -107,16 +107,16 @@ test('diagnose flat no-lip face counts', async () => {
   console.log('===================================\n');
   /* eslint-enable no-console */
   
-  expect(true).toBe(true);
+  expect(vol, 'volume should be positive').toBeGreaterThan(0);
 }, 60000);
 
 test('step-by-step volume: extrude then shell', async () => {
   await initBrepkitKernel();
-  
-  await withKernel('brepkit', async () => {
-    const { drawRoundedRectangle, shell, faceFinder, unwrap } = await import('brepjs');
-    const kernel = getKernel('brepkit');
-    const rawKernel = kernel.oc as any;
+  const { drawRoundedRectangle, shell, faceFinder, unwrap } = await import('brepjs');
+  const kernel = getKernel('brepkit');
+  const rawKernel = kernel.oc as any;
+
+  withKernel('brepkit', () => {
     
     /* eslint-disable no-console */
     const outerW = 41.5, outerD = 41.5, r = 4, h = 21, t = 1.2;
@@ -179,7 +179,11 @@ test('step-by-step volume: extrude then shell', async () => {
     console.log(`  Entities: F=${counts[0]} E=${counts[1]} V=${counts[2]}`);
     console.log('=====================================\n');
     /* eslint-enable no-console */
+
+    const extrudeRelErr = Math.abs(extrudeVol - expectedExtrude) / expectedExtrude;
+    expect(extrudeRelErr, 'extrude volume within 1%').toBeLessThan(0.01);
+
+    const shellRelErr = Math.abs(shellVol - expectedShell) / expectedShell;
+    expect(shellRelErr, 'shell volume within 1%').toBeLessThan(0.01);
   });
-  
-  expect(true).toBe(true);
 }, 60000);

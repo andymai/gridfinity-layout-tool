@@ -73,7 +73,7 @@ const ALL_TEST_CASES: readonly TestCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: false },
     },
   },
-  {
+  {s
     name: '1.5×2 half-bin',
     overrides: {
       width: 1.5,
@@ -172,7 +172,9 @@ describe('topology parity: brepkit vs OCCT', () => {
 
       it('both solids are valid', () => {
         const r = results.get(tc.name)!;
-        if (!r.occt.stats || !r.bk.stats) return;
+        expect(r.occt.stats, `OCCT generation failed: ${r.occt.error}`).not.toBeNull();
+        expect(r.bk.stats, `brepkit generation failed: ${r.bk.error}`).not.toBeNull();
+        if (!r.occt.stats || !r.bk.stats) return; // type narrowing only
         expect(r.occt.stats.isValid, 'OCCT solid invalid').toBe(true);
         expect(r.bk.stats.isValid, 'brepkit solid invalid').toBe(true);
       });

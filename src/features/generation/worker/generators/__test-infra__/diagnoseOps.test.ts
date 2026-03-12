@@ -10,7 +10,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import {
   withKernel,
-  getKernel,
   getBounds,
   drawRoundedRectangle,
   drawRectangle,
