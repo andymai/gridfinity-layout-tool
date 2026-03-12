@@ -23,13 +23,15 @@ export async function initOcctKernel(): Promise<void> {
 export async function initBrepkitKernel(): Promise<void> {
   const { registerKernel, BrepkitAdapter } = await import('brepjs');
   const brepkitWasm = await import('brepkit-wasm');
-  // Web target requires explicit WASM init before use
-  if (typeof brepkitWasm.default === 'function') {
+  // Web target requires explicit WASM init before use; the default export
+  // is an init function but brepkit-wasm's types don't declare it.
+  const wasmInit = (brepkitWasm as Record<string, unknown>)['default'];
+  if (typeof wasmInit === 'function') {
     const { readFileSync } = await import('fs');
     const { join } = await import('path');
     const wasmPath = join(process.cwd(), 'node_modules/brepkit-wasm/brepkit_wasm_bg.wasm');
     const wasmBytes = readFileSync(wasmPath);
-    await brepkitWasm.default(wasmBytes);
+    await (wasmInit as (bytes: Uint8Array) => Promise<void>)(wasmBytes);
   }
   const kernel = new brepkitWasm.BrepKernel();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
