@@ -9,12 +9,12 @@
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { initBrepjs, getGenerateBin } from './__test-infra__/wasmInit';
-import { assertStructurallyValid } from './__test-infra__/meshAssertions';
-import { printTimingTable } from './__test-infra__/reportTable';
-import type { TimingEntry } from './__test-infra__/reportTable';
-import { buildParams } from './__test-infra__/scenarioTypes';
-import type { ScenarioCase } from './__test-infra__/scenarioTypes';
+import { initBrepjs, getGenerateBin } from './__dual-kernel__/wasmInit';
+import { assertStructurallyValid } from './__dual-kernel__/meshAssertions';
+import { printTimingTable } from './__dual-kernel__/reportTable';
+import type { TimingEntry } from './__dual-kernel__/reportTable';
+import { buildParams } from './__dual-kernel__/scenarioTypes';
+import type { ScenarioCase } from './__dual-kernel__/scenarioTypes';
 import { getCategories, getScenariosByCategory } from './binGenerator.scenarios';
 
 // ─── Setup ───────────────────────────────────────────────────────────────────

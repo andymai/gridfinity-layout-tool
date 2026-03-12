@@ -1,30 +1,31 @@
 /**
- * Vitest config for __test-infra__ profiling / parity tests.
+ * Vitest config for __dual-kernel__ profiling / parity / diagnostic tests.
  *
- * These tests are excluded from the main config because they require
- * WASM kernels (OCCT + brepkit) and are slow. Run manually:
+ * Extends the main vitest.config.ts to inherit aliases and resolve settings,
+ * then overrides for WASM-heavy infrastructure tests (node env, longer
+ * timeouts, fork pool, single worker).
  *
- *   npx vitest run --config vitest.profile.config.ts __test-infra__/visualParity
- *   npx vitest run --config vitest.profile.config.ts __test-infra__/exportParity
- *   npx vitest run --config vitest.profile.config.ts __test-infra__/brepkitStress
+ * Run:
+ *   npx vitest run --config vitest.profile.config.ts __dual-kernel__/topologyParity
+ *   npx vitest run --config vitest.profile.config.ts __dual-kernel__/diagnoseOps
+ *   npx vitest run --config vitest.profile.config.ts __dual-kernel__/brepkitStress
  */
-import { defineConfig } from 'vitest/config';
-import path from 'path';
+import { defineConfig, mergeConfig } from 'vitest/config';
 import wasm from 'vite-plugin-wasm';
+import mainConfig from './vitest.config';
 
-export default defineConfig({
-  plugins: [wasm()],
-  test: {
-    globals: true,
-    environment: 'node',
-    include: ['src/features/generation/worker/generators/__test-infra__/**/*.test.ts'],
-    testTimeout: 600_000,
-    pool: 'forks',
-    maxWorkers: 1,
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
+export default mergeConfig(
+  mainConfig,
+  defineConfig({
+    plugins: [wasm()],
+    test: {
+      environment: 'node',
+      setupFiles: [],
+      include: ['src/features/generation/worker/generators/__dual-kernel__/**/*.test.ts'],
+      exclude: [],
+      testTimeout: 600_000,
+      pool: 'forks',
+      maxWorkers: 1,
     },
-  },
-});
+  })
+);

@@ -6,8 +6,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
-import { initBrepjs, getGenerateSplitPreview } from './__test-infra__/wasmInit';
-import { boundingBox, hasNoNaNOrInfinity } from './__test-infra__/meshAssertions';
+import { initBrepjs, getGenerateSplitPreview } from './__dual-kernel__/wasmInit';
+import { boundingBox, hasNoNaNOrInfinity } from './__dual-kernel__/meshAssertions';
 
 beforeAll(async () => {
   await initBrepjs();

@@ -10,8 +10,8 @@
  */
 import { bench, describe, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { initBrepjs, getGenerateBin } from './__test-infra__/wasmInit';
-import { buildParams as params, makeInsert, makeCutout } from './__test-infra__/scenarioTypes';
+import { initBrepjs, getGenerateBin } from './__dual-kernel__/wasmInit';
+import { buildParams as params, makeInsert, makeCutout } from './__dual-kernel__/scenarioTypes';
 
 beforeAll(async () => {
   await initBrepjs();

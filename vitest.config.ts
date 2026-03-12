@@ -14,7 +14,7 @@ export default defineConfig({
       '**/*.visual.tsx',
       '**/*.bench.ts',
       '.worktrees/**',
-      '**/__test-infra__/**',
+      '**/__dual-kernel__/**',
     ],
     // Increase timeout for CI environment (can be 5-10x slower than local dev)
     testTimeout: 30000,

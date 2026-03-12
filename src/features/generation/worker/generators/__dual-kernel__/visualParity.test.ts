@@ -10,7 +10,7 @@
  *
  * Run:
  *   npx vitest run --config vitest.profile.config.ts \
- *     src/features/generation/worker/generators/__test-infra__/visualParity.test
+ *     src/features/generation/worker/generators/__dual-kernel__/visualParity.test
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
