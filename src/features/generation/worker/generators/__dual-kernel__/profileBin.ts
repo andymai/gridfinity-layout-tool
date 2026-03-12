@@ -54,8 +54,8 @@ export function installProfiling(): void {
 
   for (const name of ops) {
     if (typeof (brepjs as Record<string, unknown>)[name] === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (brepjs as any)[name] = wrapFn(name, (brepjs as any)[name]);
+      const mod = brepjs as Record<string, (...args: never[]) => unknown>;
+      mod[name] = wrapFn(name, mod[name]);
     }
   }
 

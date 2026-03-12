@@ -97,6 +97,7 @@ export const useSharedWithMeStore = create<SharedWithMeState>()(
         }
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- didUpdate is set inside immer callback which TS can't track
       if (didUpdate) {
         saveSharedWithMe(get().entries);
       }
@@ -125,6 +126,7 @@ export const useSharedWithMeStore = create<SharedWithMeState>()(
         }
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- didUpdate is set inside immer callback which TS can't track
       if (didUpdate) {
         saveSharedWithMe(get().entries);
       }

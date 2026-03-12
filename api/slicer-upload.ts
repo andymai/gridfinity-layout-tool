@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // even in production — it differs from the canonical production URL that users
   // actually visit. We therefore check against all three Vercel URL variables so
   // that both the canonical domain and the deployment-hash URL are accepted.
-  const originHeader = req.headers['origin'];
+  const originHeader = req.headers['origin'] as string | string[] | undefined;
   const origin = Array.isArray(originHeader) ? originHeader[0] : originHeader;
 
   const allowedHosts = new Set<string>();

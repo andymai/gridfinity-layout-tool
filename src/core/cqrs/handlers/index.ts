@@ -25,6 +25,7 @@ export function getHandler(
   commandType: CommandType
 ): (command: Command) => CommandResult<unknown, DomainEvent> {
   const handler = handlerRegistry[commandType];
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive guard against unregistered command types
   if (!handler) {
     throw new Error(`No handler registered for command type: ${commandType}`);
   }

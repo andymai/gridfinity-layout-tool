@@ -17,6 +17,7 @@ import { layoutSession } from './sessionState';
  * Filters out "just trying it out" data.
  */
 export function assessLayoutQuality(layout: Layout): LayoutQualityTier {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive guard against malformed layout data at runtime
   const bins = getGridBins(layout.bins ?? []);
 
   // Skip if too few bins (probably just testing)
@@ -71,6 +72,7 @@ export function isSubstantialLayout(layout: Layout): boolean {
  * Uses bin composition, not positions (order-independent).
  */
 export function computeLayoutHash(layout: Layout): string {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive guard against malformed layout data at runtime
   const bins = getGridBins(layout.bins ?? []);
 
   // Create a deterministic representation of bin composition

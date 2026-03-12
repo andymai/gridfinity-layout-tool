@@ -44,6 +44,7 @@ export class BridgeManager {
       await this.initPromise;
     } catch (error: unknown) {
       this.refCount--;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- bridge may be nulled by concurrent release() during await
       if (this.bridge) this.bridge.destroy();
       this.bridge = null;
       this.initPromise = null;

@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (isProduction && !cronSecret) {
     return res.status(503).json({ error: 'Service not configured' });
   }
-  const authHeader = req.headers['authorization'];
+  const authHeader = req.headers['authorization'] as string | string[] | undefined;
   const authValue = Array.isArray(authHeader) ? (authHeader[0] ?? '') : (authHeader ?? '');
   if (cronSecret && !timingSafeCompare(authValue, `Bearer ${cronSecret}`)) {
     return res.status(401).json({ error: 'Unauthorized' });

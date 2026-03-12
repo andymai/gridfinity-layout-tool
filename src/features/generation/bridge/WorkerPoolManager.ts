@@ -45,6 +45,7 @@ export class WorkerPoolManager {
       await this.initPromise;
     } catch (error: unknown) {
       this.refCount--;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- pool may be nulled by concurrent release() during await
       if (this.pool) this.pool.destroy();
       this.pool = null;
       this.initPromise = null;
