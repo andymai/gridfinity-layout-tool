@@ -6,7 +6,7 @@ It’s allowed me to spend more time with my family while still building (what I
 
 I hope you read this knowing there is still a human behind all this AI generated work (although I completely understand that the state of things often doesn’t make it feel like so).
 
- I genuinely hope that you find value in the work that was created here and not be dissuaded by the means in which it was created.
+I genuinely hope that you find value in the work that was created here and not be dissuaded by the means in which it was created.
 
 Thanks for being here.
 
