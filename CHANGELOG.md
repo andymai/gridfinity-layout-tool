@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.8.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.7.0...gridfinity-layout-tool-v4.8.0) (2026-03-12)
+
+
+### Features
+
+* add brepkit shell volume diagnostic tests and topology parity improvements ([#1092](https://github.com/andymai/gridfinity-layout-tool/issues/1092)) ([03aec45](https://github.com/andymai/gridfinity-layout-tool/commit/03aec45a9951b405252bedd3a3ae00c8c8501543))
+
 ## [4.7.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.6.1...gridfinity-layout-tool-v4.7.0) (2026-03-11)
 
 
