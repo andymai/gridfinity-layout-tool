@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.8.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.8.0...gridfinity-layout-tool-v4.8.1) (2026-03-13)
+
+
+### Bug Fixes
+
+* split export coplanar cut plane drops walls/lip ([#1091](https://github.com/andymai/gridfinity-layout-tool/issues/1091)) ([#1095](https://github.com/andymai/gridfinity-layout-tool/issues/1095)) ([e9f8e83](https://github.com/andymai/gridfinity-layout-tool/commit/e9f8e838512661ff6bcd048e2122fc2ac562ad72))
+
 ## [4.8.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.7.0...gridfinity-layout-tool-v4.8.0) (2026-03-12)
 
 
