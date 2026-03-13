@@ -43,7 +43,7 @@ function batchWithFallback(
 }
 
 export const booleanStage: PipelineStage = {
-  name: 'boolean',
+  name: 'features',
   progressValue: 0.6,
 
   shouldRun(ctx: PipelineContext): boolean {

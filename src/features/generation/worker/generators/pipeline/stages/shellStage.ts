@@ -2,7 +2,10 @@
  * Shell stage — assembles base socket + box body + stacking lip.
  *
  * Result is cached by shellKey for reuse across feature-only changes.
- * On cache hit, returns a clone so downstream stages can mutate freely.
+ * On cache hit, the cached shape is returned directly (BREP boolean ops
+ * create new shapes and do not mutate their inputs, so the cache is safe).
+ * On cache miss, the freshly-built shell is cached and then cloned so the
+ * context holds a mutable copy.
  */
 
 import { unwrap, fuse, clone, translate } from 'brepjs';

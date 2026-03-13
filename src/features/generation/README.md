@@ -34,10 +34,17 @@ graph TB
 - `bridge/bridgeRef.ts` — singleton bridge reference management
 - `bridge/types.ts` — worker message protocol types
 - `worker/generation.worker.ts` — Web Worker entry point
-- `worker/generators/binGenerator.ts` — main brepjs geometry pipeline
+- `worker/generators/binGenerator.ts` — pipeline orchestrator + split/export functions
+- `worker/generators/pipeline/` — composable generation stages (see Pipeline Stages below)
 - `worker/generators/socketBuilder.ts` — gridfinity socket generation
 - `worker/generators/boxBuilder.ts` — shell box generation
-- `worker/generators/featureBuilder.ts` — scoop/inserts/magnets/labels
+- `worker/generators/compartmentBuilder.ts` — compartment divider walls
+- `worker/generators/insertBuilder.ts` — insert cavity cuts
+- `worker/generators/cutoutBuilder.ts` — solid-mode cutout cuts
+- `worker/generators/labelTabBuilder.ts` — label tab shelves + gussets
+- `worker/generators/scoopRampBuilder.ts` — scoop ramp geometry
+- `worker/generators/wallCutoutBuilder.ts` — wall U-notch cutouts
+- `worker/generators/featureBuilder.ts` — barrel re-export of all builder modules
 - `worker/generators/dividerBuilder.ts` — divider piece generation
 - `worker/generators/dividerExport.ts` — standalone divider STL export
 - `worker/generators/wallPatterns.ts` — hexgrid/slot patterns
@@ -46,21 +53,29 @@ graph TB
 - `worker/generators/baseplateGenerator.ts` — baseplate BREP generation
 - `worker/generators/baseplateDirectMesh.ts` — direct mesh generation for baseplate preview
 - `worker/generators/featureTags.ts` — feature tagging system for BREP objects
-- `worker/generators/generatorTypes.ts` — shared type definitions for generators
+- `worker/generators/generatorConstants.ts` — Gridfinity spec constants
+- `worker/generators/cellDecomposition.ts` — grid cell decomposition utilities
+- `worker/generators/meshUtils.ts` — mesh conversion, progress, cancellation helpers
+- `worker/generators/connectorUtils.ts` — legacy connector position computation
+- `worker/generators/generatorTypes.ts` — barrel re-export of constants/utilities
 - `worker/generators/hexGrid.ts` — hex grid layout calculations
 - `worker/generators/shapeCache.ts` — LRU cache for BREP solids
 - `worker/generators/patterns/` — pattern system (honeycomb, registry)
+- `worker/generators/scenarios/` — test scenario data by category
 - `export/stlExporter.ts` — STL file export
 - `export/threemfExporter.ts` — 3MF file export
+- `export/validation.ts` — shared mesh data validation
 - `../../shared/generation/wasmCapabilities.ts` — multi-threading detection (moved to shared)
 
 ## Pipeline Stages
 
-1. **Base Socket** → built fresh
-2. **Shell Box** → built fresh
-3. **Assembly** → built fresh
-4. **Features** (dividers, inserts) → built fresh
-5. **Tessellate** → MeshData {vertices, normals}
+Composable stages in `pipeline/stages/`, orchestrated by `pipeline/runner.ts`:
+
+1. **Shell** (`shellStage`) — socket + box body + lip assembly, cached by shellKey
+2. **Features** (`featuresStage`) — compartments, inserts, slots, labels, scoops, wall cutouts, patterns
+3. **Boolean** (`booleanStage`) — batch fuse additive + cut subtractive with sequential fallback
+4. **Translate** (`translateStage`) — Z-offset for socket-based bins
+5. **Tessellate** (`tessellateStage`) — dynamic quality mesh + edge extraction
 
 ## Worker Protocol
 

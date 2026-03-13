@@ -28,7 +28,6 @@ export function exportSTL(
   normals: Float32Array,
   name: string = 'gridfinity-bin'
 ): Blob {
-  validateMeshData(vertices, normals);
   const buffer = buildSTLBuffer(vertices, normals, name);
   return new Blob([buffer], { type: 'application/sla' });
 }
