@@ -37,6 +37,7 @@
     "**/__dual-kernel__",
     "**/*.test.ts",
     "**/*.test.tsx",
+    "**/*.testUtils.ts",
     "**/*.bench.ts",
     "**/*.visual.tsx"
   ]
