@@ -96,6 +96,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
       logger.warn('Failed to update lastAccessedAt for share', {
         id: _id,
         error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
       });
     });
 
@@ -112,6 +113,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
   } catch (error) {
     logger.error('Share fetch error', {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return res.status(500).json({
       error: 'Failed to fetch share',
@@ -272,6 +274,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
   } catch (error) {
     logger.error('Share update error', {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return res.status(500).json({
       error: 'Failed to update share',
@@ -368,6 +371,7 @@ async function handleDelete(
   } catch (error) {
     logger.error('Share delete error', {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return res.status(500).json({
       error: 'Failed to delete share',

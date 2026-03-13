@@ -2260,6 +2260,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   } catch (error) {
     logger.error('ML telemetry Redis error', {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     // Don't fail the request - telemetry should never break UX
     res.status(200).json({ ok: true, processed: 0, error: 'storage_error' });

@@ -134,6 +134,7 @@ export async function checkRateLimit(
     // If Redis is unavailable, deny the request (fail-closed)
     logger.error('Rate limit check failed', {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return {
       allowed: false,

@@ -70,4 +70,17 @@ describe('logger', () => {
     expect(() => new Date(output.timestamp)).not.toThrow();
     expect(new Date(output.timestamp).toISOString()).toBe(output.timestamp);
   });
+
+  it('falls back gracefully when context is non-serializable', () => {
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+
+    logger.error('circular ref', circular);
+
+    expect(console.error).toHaveBeenCalledOnce();
+    const output = JSON.parse((console.error as ReturnType<typeof vi.fn>).mock.calls[0][0]);
+    expect(output.level).toBe('error');
+    expect(output.message).toBe('circular ref');
+    expect(output.context).toBeUndefined();
+  });
 });

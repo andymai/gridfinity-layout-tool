@@ -205,6 +205,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Log error for debugging (avoid logging user data)
     logger.error('Name suggestion error', {
       error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
     });
 
     return res.status(500).json({

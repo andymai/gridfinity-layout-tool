@@ -176,6 +176,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error) {
     logger.error('Share creation error', {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return res.status(500).json({
       error: 'Failed to create share',
