@@ -14,6 +14,7 @@
  */
 
 import { zipSync, strToU8 } from 'fflate';
+import { validateMeshData } from './validation';
 
 /** Options for 3MF export */
 export interface ThreeMFOptions {
@@ -75,12 +76,7 @@ export function build3MFBuffer(
   normals: Float32Array,
   options: ThreeMFOptions
 ): Uint8Array {
-  if (vertices.length % 9 !== 0) {
-    throw new Error(`Invalid vertex count: ${vertices.length} is not divisible by 9`);
-  }
-  if (normals.length !== vertices.length) {
-    throw new Error(`Normal/vertex length mismatch: ${normals.length} vs ${vertices.length}`);
-  }
+  validateMeshData(vertices, normals);
 
   // Convert flat arrays to indexed mesh
   const mesh = deduplicateVertices(vertices);
