@@ -9,7 +9,7 @@ import {
   layoutLastEntity,
   layoutInvalidOperation,
 } from '@/core/result';
-import { generateLayerId, CONSTRAINTS } from '@/core/constants';
+import { generateLayerId, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from '../settings';
@@ -83,7 +83,9 @@ export function createLayerActions(setLocal: SetLocal, get: GetState) {
 
       setLocal((state) => {
         state.layout.layers = state.layout.layers.filter((l) => l.id !== id);
-        state.layout.bins = state.layout.bins.filter((b) => b.layerId !== id);
+        state.layout.bins = state.layout.bins.map((b) =>
+          b.layerId === id ? { ...b, layerId: STAGING_ID } : b
+        );
       });
 
       return OK;

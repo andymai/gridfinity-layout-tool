@@ -287,7 +287,7 @@ describe('multi-bin operations', () => {
       expect(remainingBins[0].layerId).toBe(STAGING_ID);
     });
 
-    it('does not affect staging when deleting layer', () => {
+    it('stages bins from deleted layer without affecting existing staging bins', () => {
       const { addBin, addLayer, deleteLayer, layout } = useLayoutStore.getState();
       const layer1Id = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
@@ -341,15 +341,16 @@ describe('multi-bin operations', () => {
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(3);
 
-      // Delete layer 1
+      // Delete layer 1 — bin1 should be staged, not removed
       deleteLayer(layer1Id);
 
       const remainingBins = useLayoutStore.getState().layout.bins;
-      expect(remainingBins).toHaveLength(2);
+      expect(remainingBins).toHaveLength(3);
 
       const layerIds = remainingBins.map((b) => b.layerId);
       expect(layerIds).toContain(layer2Id);
-      expect(layerIds).toContain(STAGING_ID);
+      // Both the original staging bin and the newly staged bin from layer1
+      expect(remainingBins.filter((b) => b.layerId === STAGING_ID)).toHaveLength(2);
     });
   });
 

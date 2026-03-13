@@ -56,6 +56,8 @@ export function createBulkActions(setLocal: SetLocal, get: GetState) {
       const { layout } = get();
       const count = layout.bins.filter((b) => b.layerId === layerId).length;
 
+      if (count === 0) return 0;
+
       setLocal((state) => {
         state.layout.bins = state.layout.bins.filter((b) => b.layerId !== layerId);
       });

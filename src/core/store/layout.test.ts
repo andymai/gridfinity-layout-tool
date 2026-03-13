@@ -508,7 +508,7 @@ describe('layout store', () => {
       expect(layers[1].height).toBe(2);
     });
 
-    it('deleteLayer removes layer and its bins', () => {
+    it('deleteLayer removes layer and stages its bins', () => {
       const { addBin, addLayer, deleteLayer, layout } = useLayoutStore.getState();
       const layer1Id = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
@@ -550,8 +550,11 @@ describe('layout store', () => {
       const state = useLayoutStore.getState().layout;
       expect(state.layers).toHaveLength(1);
       expect(state.layers[0].id).toBe(layer2Id);
-      expect(state.bins).toHaveLength(1);
-      expect(state.bins[0].layerId).toBe(layer2Id);
+      // Bins from deleted layer are moved to staging, not removed
+      expect(state.bins).toHaveLength(2);
+      const stagedBin = state.bins.find((b) => b.layerId === STAGING_ID);
+      expect(stagedBin).toBeDefined();
+      expect(state.bins.filter((b) => b.layerId === layer2Id)).toHaveLength(1);
     });
 
     it('deleteLayer returns error when only one layer exists', () => {
