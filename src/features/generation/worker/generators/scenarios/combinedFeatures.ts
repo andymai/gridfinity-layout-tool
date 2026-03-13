@@ -1,0 +1,50 @@
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { defineScenario, makeInsert } from '../__dual-kernel__/scenarioTypes';
+import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+
+export const combinedFeatures: ScenarioCase[] = [
+  defineScenario('combined features', '2\u00d72 standard + lip + 2\u00d72 compartments + scoop', {
+    params: {
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
+      scoop: { enabled: true, radius: 'auto' },
+    },
+    timeout: 60_000,
+  }),
+  defineScenario('combined features', '4\u00d74 magnet + label bracket + half-sockets', {
+    params: {
+      width: 4,
+      depth: 4,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet',
+        stackingLip: false,
+        halfSockets: true,
+      },
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
+    },
+    timeout: 60_000,
+  }),
+  defineScenario('combined features', '1.5\u00d72 flat + slotted + 3\u00d72 merged compartments', {
+    params: {
+      width: 1.5,
+      depth: 2,
+      style: 'slotted',
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+      compartments: { cols: 3, rows: 2, cells: [0, 0, 1, 2, 3, 4], thickness: 0.8 },
+    },
+    timeout: 60_000,
+  }),
+  defineScenario('combined features', '2\u00d72 compartments + insert (overlap interaction)', {
+    params: {
+      compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 0.8 },
+      inserts: [makeInsert({ shape: 'circle', width: 15, depth: 15, x: 0, y: 0 })],
+    },
+  }),
+  defineScenario('combined features', '2\u00d72 label tabs with merged compartments', {
+    params: {
+      compartments: { cols: 3, rows: 2, cells: [0, 0, 1, 2, 3, 4], thickness: 0.8 },
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
+    },
+  }),
+];
