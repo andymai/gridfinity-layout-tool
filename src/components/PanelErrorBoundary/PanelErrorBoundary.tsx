@@ -52,7 +52,11 @@ export class PanelErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center p-6 text-center h-full min-h-[200px]">
+        <div
+          className="flex flex-col items-center justify-center p-6 text-center h-full min-h-[200px]"
+          role="alert"
+          aria-live="assertive"
+        >
           <div className="w-12 h-12 mb-3 rounded-full bg-error/20 flex items-center justify-center">
             <svg
               className="w-6 h-6 text-error"

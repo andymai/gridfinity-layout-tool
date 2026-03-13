@@ -47,7 +47,11 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="h-screen flex items-center justify-center bg-surface p-8" role="alert">
+        <div
+          className="h-screen flex items-center justify-center bg-surface p-8"
+          role="alert"
+          aria-live="assertive"
+        >
           <div className="max-w-lg text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-error-muted flex items-center justify-center">
               <svg

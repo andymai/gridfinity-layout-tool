@@ -74,12 +74,12 @@ export default defineConfig([
       '@typescript-eslint/no-base-to-string': 'warn',
       '@typescript-eslint/no-misused-spread': 'warn',
 
-      // Accessibility (warn to fix incrementally)
-      'jsx-a11y/click-events-have-key-events': 'warn',
-      'jsx-a11y/no-static-element-interactions': 'warn',
-      'jsx-a11y/no-noninteractive-element-interactions': 'warn',
-      'jsx-a11y/no-autofocus': 'warn',
-      'jsx-a11y/interactive-supports-focus': 'warn',
+      // Accessibility
+      'jsx-a11y/click-events-have-key-events': 'error',
+      'jsx-a11y/no-static-element-interactions': 'error',
+      'jsx-a11y/no-noninteractive-element-interactions': 'error',
+      'jsx-a11y/no-autofocus': 'error',
+      'jsx-a11y/interactive-supports-focus': 'error',
 
       // React anti-patterns
       'react-hooks/rules-of-hooks': 'error',
