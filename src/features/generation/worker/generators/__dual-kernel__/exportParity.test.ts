@@ -4,7 +4,7 @@
  *
  * Run:
  *   npx vitest run --config vitest.profile.config.ts \
- *     src/features/generation/worker/generators/__test-infra__/exportParity.test
+ *     src/features/generation/worker/generators/__dual-kernel__/exportParity.test
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -24,6 +24,9 @@ import {
 import type { GenerateBinFn } from './dualKernelInit';
 import { boundingBox } from './meshAssertions';
 import type { BoundingBox } from './meshAssertions';
+import { CORE_PARITY_CASES } from './testCases';
+
+const TEST_CASES = CORE_PARITY_CASES;
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -77,54 +80,6 @@ function collectStats(mesh: MeshData): MeshStats {
     threemfBytes: threemfBuffer.byteLength,
   };
 }
-
-// ─── Test configs ───────────────────────────────────────────────────────────
-
-interface TestCase {
-  readonly name: string;
-  readonly overrides: Partial<BinParams>;
-}
-
-const TEST_CASES: readonly TestCase[] = [
-  {
-    name: '1×1 standard lip',
-    overrides: { width: 1, depth: 1 },
-  },
-  {
-    name: '2×2 standard no-lip',
-    overrides: {
-      width: 2,
-      depth: 2,
-      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
-    },
-  },
-  {
-    name: '2×2 magnet+screw lip',
-    overrides: {
-      width: 2,
-      depth: 2,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', stackingLip: true },
-    },
-  },
-  {
-    name: '2×2 compartments + scoop',
-    overrides: {
-      width: 2,
-      depth: 2,
-      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
-      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
-      scoop: { enabled: true, radius: 'auto' },
-    },
-  },
-  {
-    name: '1×1 flat no-lip',
-    overrides: {
-      width: 1,
-      depth: 1,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: false },
-    },
-  },
-];
 
 // ─── Test suite ─────────────────────────────────────────────────────────────
 

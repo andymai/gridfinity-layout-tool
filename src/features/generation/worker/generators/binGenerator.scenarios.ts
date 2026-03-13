@@ -11,9 +11,9 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams, BaseStyle, BinStyle } from '@/shared/types/bin';
-import { countWallVerticesInZone } from './__test-infra__/meshAssertions';
-import { defineScenario, makeInsert, makeCutout } from './__test-infra__/scenarioTypes';
-import type { ScenarioCase } from './__test-infra__/scenarioTypes';
+import { countWallVerticesInZone } from './__dual-kernel__/meshAssertions';
+import { defineScenario, makeInsert, makeCutout } from './__dual-kernel__/scenarioTypes';
+import type { ScenarioCase } from './__dual-kernel__/scenarioTypes';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

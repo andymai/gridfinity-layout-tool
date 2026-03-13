@@ -889,6 +889,7 @@ export function generateSplitPreview(
   splitConnectorConfig?: SplitConnectorConfig
 ): SplitPreviewResult {
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
   const gridUnitMm = params.gridUnitMm ?? SIZE;
   const outerW = params.width * gridUnitMm - CLEARANCE;
   const outerD = params.depth * gridUnitMm - CLEARANCE;
@@ -913,6 +914,7 @@ export function generateSplitPreviewRange(
   splitConnectorConfig?: SplitConnectorConfig
 ): SplitPreviewResult {
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
   const gridUnitMm = params.gridUnitMm ?? SIZE;
   const outerW = params.width * gridUnitMm - CLEARANCE;
   const outerD = params.depth * gridUnitMm - CLEARANCE;

@@ -1,12 +1,12 @@
+// @vitest-environment node
 /**
  * Step-by-step diagnostic: exercises individual brepjs operations on
  * both OCCT and brepkit to pinpoint where they diverge.
  *
  * Run:
  *   npx vitest run --config vitest.profile.config.ts \
- *     src/features/generation/worker/generators/__test-infra__/diagnoseOps
+ *     src/features/generation/worker/generators/__dual-kernel__/diagnoseOps
  */
-// @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import {
   withKernel,
@@ -21,8 +21,14 @@ import {
 } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import { initOcctKernel, initBrepkitKernel } from './dualKernelInit';
+import { STANDARD_BIN_WIDTH, STANDARD_HEIGHT, SHELL_THICKNESS } from './testCases';
 
-// Helpers
+// ─── Constants ──────────────────────────────────────────────────────────────
+
+const STANDARD_RADIUS = 3.75; // mm
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
 function sketch(drawing: unknown, plane?: string, origin?: number): Sketch {
   const d = drawing as { sketchOnPlane: (p: string, o?: number) => Sketch };
   return d.sketchOnPlane(plane ?? 'XY', origin ?? 0);
@@ -40,11 +46,19 @@ function bounds(shape: Shape3D) {
 function stats(shape: Shape3D) {
   const d = describeSolid(shape);
   const vol = measureVolume(shape);
-  return { faces: d.faceCount, edges: d.edgeCount, verts: d.vertexCount, valid: d.valid, vol: +vol.toFixed(1) };
+  return {
+    faces: d.faceCount,
+    edges: d.edgeCount,
+    verts: d.vertexCount,
+    valid: d.valid,
+    vol: +vol.toFixed(1),
+  };
 }
 
 type KernelName = 'occt' | 'brepkit';
 const KERNELS: KernelName[] = ['occt', 'brepkit'];
+
+// ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe('diagnose operations', () => {
   beforeAll(async () => {
@@ -52,39 +66,50 @@ describe('diagnose operations', () => {
     await initBrepkitKernel();
   }, 60_000);
 
+  /* eslint-disable no-console */
+
   it('simple box extrude: 41.5 x 41.5 x 21', () => {
     for (const k of KERNELS) {
       const result = withKernel(k, () => {
-        const box = sketch(drawRoundedRectangle(41.5, 41.5, 3.75)).extrude(21);
+        const box = sketch(
+          drawRoundedRectangle(STANDARD_BIN_WIDTH, STANDARD_BIN_WIDTH, STANDARD_RADIUS)
+        ).extrude(STANDARD_HEIGHT);
         return { bounds: bounds(box), stats: stats(box) };
       });
       console.log(`[${k}] extrude:`, JSON.stringify(result));
-      expect(result.bounds.z, `${k} Z`).toBeCloseTo(21, 0);
+      expect(result.bounds.z, `${k} Z`).toBeCloseTo(STANDARD_HEIGHT, 0);
     }
   });
 
   it('simple rect extrude: 41.5 x 41.5 x 21', () => {
     for (const k of KERNELS) {
       const result = withKernel(k, () => {
-        const box = sketch(drawRectangle(41.5, 41.5)).extrude(21);
+        const box = sketch(drawRectangle(STANDARD_BIN_WIDTH, STANDARD_BIN_WIDTH)).extrude(
+          STANDARD_HEIGHT
+        );
         return { bounds: bounds(box), stats: stats(box) };
       });
       console.log(`[${k}] rect extrude:`, JSON.stringify(result));
-      expect(result.bounds.z, `${k} Z`).toBeCloseTo(21, 0);
+      expect(result.bounds.z, `${k} Z`).toBeCloseTo(STANDARD_HEIGHT, 0);
     }
   });
 
   it('shell: extrude then remove top face', () => {
     for (const k of KERNELS) {
       const result = withKernel(k, () => {
-        const box = sketch(drawRoundedRectangle(41.5, 41.5, 3.75)).extrude(21);
-        const topFaces = faceFinder().parallelTo('Z').atDistance(21, [0, 0, 0]).findAll(box);
+        const box = sketch(
+          drawRoundedRectangle(STANDARD_BIN_WIDTH, STANDARD_BIN_WIDTH, STANDARD_RADIUS)
+        ).extrude(STANDARD_HEIGHT);
+        const topFaces = faceFinder()
+          .parallelTo('Z')
+          .atDistance(STANDARD_HEIGHT, [0, 0, 0])
+          .findAll(box);
         console.log(`[${k}] top faces found: ${topFaces.length}`);
-        const shelled = unwrap(shell(box, topFaces, 1.2));
+        const shelled = unwrap(shell(box, topFaces, SHELL_THICKNESS));
         return { bounds: bounds(shelled), stats: stats(shelled) };
       });
       console.log(`[${k}] shell:`, JSON.stringify(result));
-      expect(result.bounds.z, `${k} Z`).toBeCloseTo(21, 0);
+      expect(result.bounds.z, `${k} Z`).toBeCloseTo(STANDARD_HEIGHT, 0);
     }
   });
 
@@ -92,10 +117,28 @@ describe('diagnose operations', () => {
     const cases = [
       { w: 10, d: 10, r: 2, h: 10, label: '10x10 r2 h10' },
       { w: 20, d: 20, r: 3, h: 10, label: '20x20 r3 h10' },
-      { w: 41.5, d: 41.5, r: 3.75, h: 10, label: '41.5x41.5 r3.75 h10' },
-      { w: 41.5, d: 41.5, r: 3.75, h: 21, label: '41.5x41.5 r3.75 h21' },
-      { w: 41.5, d: 41.5, r: 0.5, h: 21, label: '41.5x41.5 r0.5 h21' },
-      { w: 10, d: 10, r: 3.75, h: 21, label: '10x10 r3.75 h21' },
+      {
+        w: STANDARD_BIN_WIDTH,
+        d: STANDARD_BIN_WIDTH,
+        r: STANDARD_RADIUS,
+        h: 10,
+        label: '41.5x41.5 r3.75 h10',
+      },
+      {
+        w: STANDARD_BIN_WIDTH,
+        d: STANDARD_BIN_WIDTH,
+        r: STANDARD_RADIUS,
+        h: STANDARD_HEIGHT,
+        label: '41.5x41.5 r3.75 h21',
+      },
+      {
+        w: STANDARD_BIN_WIDTH,
+        d: STANDARD_BIN_WIDTH,
+        r: 0.5,
+        h: STANDARD_HEIGHT,
+        label: '41.5x41.5 r0.5 h21',
+      },
+      { w: 10, d: 10, r: STANDARD_RADIUS, h: STANDARD_HEIGHT, label: '10x10 r3.75 h21' },
     ];
     for (const c of cases) {
       for (const k of KERNELS) {
@@ -121,4 +164,6 @@ describe('diagnose operations', () => {
       expect(result.bounds.z, `${k} Z`).toBeCloseTo(10, 1);
     }
   });
+
+  /* eslint-enable no-console */
 });

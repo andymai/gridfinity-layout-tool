@@ -14,7 +14,7 @@
  */
 import { bench, describe, beforeAll } from 'vitest';
 import type { BaseplateParams } from '@/shared/types/bin';
-import { initBrepjs, getGenerateBaseplate } from './__test-infra__/wasmInit';
+import { initBrepjs, getGenerateBaseplate } from './__dual-kernel__/wasmInit';
 
 const noop = (): void => {};
 

@@ -92,30 +92,12 @@ let generateBaseplate: GenerateBaseplateFn | undefined;
 let generateSplitPreview: GenerateSplitPreviewFn | undefined;
 
 // ─── Kernel-specific init ────────────────────────────────────────────────────
+// Delegates to shared kernelInit.ts to avoid duplicating WASM loading logic.
 
-async function initOpenCascadeKernel(): Promise<void> {
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await (opencascade as (opts?: Record<string, unknown>) => Promise<unknown>)({
-    wasmBinary,
-  });
-  initFromOC(OC);
-}
-
-async function initWasmKernel(): Promise<void> {
-  const { registerKernel, BrepkitAdapter } = await import('brepjs');
-  // CJS entry auto-initializes WASM via fs.readFileSync in Node context
-  const brepkitWasm = await import('brepkit-wasm');
-  const kernel = new brepkitWasm.BrepKernel();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
-  const adapter = new BrepkitAdapter(kernel as any);
-  registerKernel('brepkit', adapter);
-}
+import {
+  initOcctKernel as initOpenCascadeKernel,
+  initBrepkitKernel as initWasmKernel,
+} from './kernelInit';
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@
  * initialize BOTH OCCT and brepkit in the same process so tests can compare
  * outputs side-by-side.
  */
-import { describe as describeSolid, measureVolume, exportSTEP, unwrap } from 'brepjs';
+import { describe as describeSolid, measureVolume, exportSTEP, unwrap, getKernel } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -27,37 +27,33 @@ export type GenerateBinFn = (
   forExport?: boolean
 ) => MeshData;
 
+/** Raw brepkit kernel interface for low-level BREP queries. */
+export interface RawBrepkitKernel {
+  getEntityCounts(solidId: number): number[];
+  validateSolid(solidId: number): number;
+  getSolidFaces(solidId: number): Iterable<number>;
+  getSolidEdges(solidId: number): Iterable<number>;
+  getSurfaceType(faceId: number): string;
+  getEdgeCurveType(edgeId: number): string;
+  unifyFaces(solidId: number): void;
+  getWireEdges(wireId: number): Iterable<number>;
+}
+
+/** Get the raw brepkit kernel, typed for direct BREP queries. */
+export function getRawBrepkitKernel(): RawBrepkitKernel {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- KernelInstance is typed as any in brepjs
+  return getKernel('brepkit').oc;
+}
+
+/** Extract the internal solid ID from a brepkit Shape3D. */
+export function getSolidId(solid: Shape3D): number {
+  return (solid.wrapped as { id: number }).id;
+}
+
 // ─── Kernel initialisation ──────────────────────────────────────────────────
+// Re-export from shared kernelInit.ts to keep existing imports working.
 
-export async function initOcctKernel(): Promise<void> {
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await (opencascade as (opts?: Record<string, unknown>) => Promise<unknown>)({
-    wasmBinary,
-  });
-  initFromOC(OC);
-}
-
-export async function initBrepkitKernel(): Promise<void> {
-  const { registerKernel, BrepkitAdapter } = await import('brepjs');
-  const brepkitWasm = await import('brepkit-wasm');
-  // Web target requires explicit WASM init before use
-  if (typeof brepkitWasm.default === 'function') {
-    const { readFileSync } = await import('fs');
-    const { join } = await import('path');
-    const wasmPath = join(process.cwd(), 'node_modules/brepkit-wasm/brepkit_wasm_bg.wasm');
-    const wasmBytes = readFileSync(wasmPath);
-    await brepkitWasm.default(wasmBytes);
-  }
-  const kernel = new brepkitWasm.BrepKernel();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
-  const adapter = new BrepkitAdapter(kernel as any);
-  registerKernel('brepkit', adapter);
-}
+export { initOcctKernel, initBrepkitKernel } from './kernelInit';
 
 /** Import and return the generateBin function. Call after kernel init. */
 export async function loadGenerateBin(): Promise<GenerateBinFn> {
@@ -113,9 +109,9 @@ export function collectTopologyStats(solid: Shape3D): TopologyStats {
  */
 export function collectTopologyStatsRaw(
   solid: Shape3D,
-  rawKernel: { getEntityCounts(id: number): number[]; validateSolid(id: number): number }
+  rawKernel: Pick<RawBrepkitKernel, 'getEntityCounts' | 'validateSolid'>
 ): TopologyStats {
-  const solidId = (solid.wrapped as { id: number }).id;
+  const solidId = getSolidId(solid);
   const [faceCount, edgeCount, vertexCount] = rawKernel.getEntityCounts(solidId);
   const validationIssues = rawKernel.validateSolid(solidId);
   return {

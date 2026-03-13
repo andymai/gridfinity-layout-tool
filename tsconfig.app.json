@@ -34,7 +34,7 @@
   "exclude": [
     "src/test",
     "**/__tests__",
-    "**/__test-infra__",
+    "**/__dual-kernel__",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.bench.ts",
