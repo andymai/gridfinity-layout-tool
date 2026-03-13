@@ -100,4 +100,57 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Try Again')).toBeInTheDocument();
     expect(screen.getByText('Reset App Data')).toBeInTheDocument();
   });
+
+  it('clears localStorage and reloads on Reset App Data click', () => {
+    const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true,
+    });
+
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+
+    fireEvent.click(screen.getByText('Reset App Data'));
+    expect(removeItemSpy).toHaveBeenCalledWith('gridfinity-layout');
+    expect(reloadMock).toHaveBeenCalled();
+
+    removeItemSpy.mockRestore();
+  });
+
+  it('reloads even if localStorage throws on Reset App Data', () => {
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new Error('Storage access denied');
+    });
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true,
+    });
+
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+
+    fireEvent.click(screen.getByText('Reset App Data'));
+    expect(reloadMock).toHaveBeenCalled();
+
+    vi.restoreAllMocks();
+  });
+
+  it('has aria-live assertive on error fallback for screen readers', () => {
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('aria-live', 'assertive');
+  });
 });

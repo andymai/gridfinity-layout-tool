@@ -80,4 +80,14 @@ describe('PanelErrorBoundary', () => {
     );
     expect(onError).toHaveBeenCalledWith(expect.any(Error));
   });
+
+  it('has role=alert and aria-live=assertive for screen readers', () => {
+    render(
+      <PanelErrorBoundary panelName="Inspector">
+        <ThrowingChild shouldThrow={true} />
+      </PanelErrorBoundary>
+    );
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('aria-live', 'assertive');
+  });
 });
