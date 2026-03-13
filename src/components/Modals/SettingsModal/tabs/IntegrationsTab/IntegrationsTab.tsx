@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import type { STLSearchSite, SlicerSite } from '@/core/store/settings';
@@ -16,29 +15,23 @@ export function IntegrationsTab() {
     }))
   );
 
-  const toggleSite = useCallback(
-    (siteId: string) => {
-      updateSetting(
-        'stlSearchSites',
-        stlSearchSites.map((site) =>
-          site.id === siteId ? { ...site, enabled: !site.enabled } : site
-        )
-      );
-    },
-    [stlSearchSites, updateSetting]
-  );
+  const toggleSite = (siteId: string) => {
+    updateSetting(
+      'stlSearchSites',
+      stlSearchSites.map((site) =>
+        site.id === siteId ? { ...site, enabled: !site.enabled } : site
+      )
+    );
+  };
 
-  const toggleSlicer = useCallback(
-    (slicerId: string) => {
-      updateSetting(
-        'slicerSites',
-        slicerSites.map((slicer) =>
-          slicer.id === slicerId ? { ...slicer, enabled: !slicer.enabled } : slicer
-        )
-      );
-    },
-    [slicerSites, updateSetting]
-  );
+  const toggleSlicer = (slicerId: string) => {
+    updateSetting(
+      'slicerSites',
+      slicerSites.map((slicer) =>
+        slicer.id === slicerId ? { ...slicer, enabled: !slicer.enabled } : slicer
+      )
+    );
+  };
 
   return (
     <div className="space-y-8">

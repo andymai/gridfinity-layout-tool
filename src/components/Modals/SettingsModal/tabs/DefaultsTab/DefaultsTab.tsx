@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
@@ -37,12 +37,9 @@ export function DefaultsTab() {
     hasCustomCategoryDefaults,
   } = useDrawerSettings();
 
-  const updatePrintSetting = useCallback(
-    <K extends keyof PrintSettings>(key: K, value: PrintSettings[K]) => {
-      updateSetting('printSettings', { ...settings.printSettings, [key]: value });
-    },
-    [settings.printSettings, updateSetting]
-  );
+  const updatePrintSetting = <K extends keyof PrintSettings>(key: K, value: PrintSettings[K]) => {
+    updateSetting('printSettings', { ...settings.printSettings, [key]: value });
+  };
 
   const handleCopyFromLayout = () => {
     updateSetting('defaultDrawerWidth', drawer.width);
