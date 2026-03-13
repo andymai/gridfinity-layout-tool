@@ -744,7 +744,7 @@ function splitSolidIntoPieces(
       if (actualZ < totalHeight * 0.8) {
         throw new Error(
           `Split piece ${colLabel}${row + 1} lost geometry: ` +
-            `expected Z≈${totalHeight.toFixed(1)}mm, got ${actualZ.toFixed(1)}mm. ` +
+            `expected body Z≈${totalHeight.toFixed(1)}mm (lip fused separately), got ${actualZ.toFixed(1)}mm. ` +
             `This is likely caused by a coplanar cut plane — please report this bug.`
         );
       }
