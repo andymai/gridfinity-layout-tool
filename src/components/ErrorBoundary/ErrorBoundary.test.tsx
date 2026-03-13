@@ -8,6 +8,11 @@ vi.mock('@/shared/analytics/posthog', () => ({
   track3DRenderError: vi.fn(),
 }));
 
+// Mock storage
+vi.mock('@/core/storage', () => ({
+  clearAllAppData: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock getStaticTranslation since it's not a hook
 vi.mock('@/i18n', async (importOriginal) => {
   const original = await importOriginal<Record<string, unknown>>();
@@ -101,47 +106,62 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Reset App Data')).toBeInTheDocument();
   });
 
-  it('clears localStorage and reloads on Reset App Data click', () => {
-    const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+  it('calls clearAllAppData and reloads on Reset App Data click', async () => {
+    const { clearAllAppData } = await import('@/core/storage');
     const reloadMock = vi.fn();
+    const originalLocation = window.location;
     Object.defineProperty(window, 'location', {
       value: { reload: reloadMock },
       writable: true,
+      configurable: true,
     });
 
-    render(
-      <ErrorBoundary>
-        <ThrowingChild shouldThrow={true} />
-      </ErrorBoundary>
-    );
+    try {
+      render(
+        <ErrorBoundary>
+          <ThrowingChild shouldThrow={true} />
+        </ErrorBoundary>
+      );
 
-    fireEvent.click(screen.getByText('Reset App Data'));
-    expect(removeItemSpy).toHaveBeenCalledWith('gridfinity-layout');
-    expect(reloadMock).toHaveBeenCalled();
-
-    removeItemSpy.mockRestore();
+      fireEvent.click(screen.getByText('Reset App Data'));
+      expect(clearAllAppData).toHaveBeenCalled();
+      await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
+    } finally {
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
+    }
   });
 
-  it('reloads even if localStorage throws on Reset App Data', () => {
-    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
-      throw new Error('Storage access denied');
-    });
+  it('reloads even if clearAllAppData rejects', async () => {
+    const { clearAllAppData } = await import('@/core/storage');
+    vi.mocked(clearAllAppData).mockRejectedValueOnce(new Error('IDB failure'));
     const reloadMock = vi.fn();
+    const originalLocation = window.location;
     Object.defineProperty(window, 'location', {
       value: { reload: reloadMock },
       writable: true,
+      configurable: true,
     });
 
-    render(
-      <ErrorBoundary>
-        <ThrowingChild shouldThrow={true} />
-      </ErrorBoundary>
-    );
+    try {
+      render(
+        <ErrorBoundary>
+          <ThrowingChild shouldThrow={true} />
+        </ErrorBoundary>
+      );
 
-    fireEvent.click(screen.getByText('Reset App Data'));
-    expect(reloadMock).toHaveBeenCalled();
-
-    vi.restoreAllMocks();
+      fireEvent.click(screen.getByText('Reset App Data'));
+      await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
+    } finally {
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
+    }
   });
 
   it('has aria-live assertive on error fallback for screen readers', () => {
