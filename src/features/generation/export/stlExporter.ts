@@ -10,6 +10,8 @@
  *   Per tri: 50 bytes (normal 3×f32 + 3 vertices × 3×f32 + attr uint16)
  */
 
+import { validateMeshData } from './validation';
+
 /**
  * Generates a binary STL Blob from mesh data.
  *
@@ -39,12 +41,7 @@ export function buildSTLBuffer(
   normals: Float32Array,
   name: string = 'gridfinity-bin'
 ): ArrayBuffer {
-  if (vertices.length % 9 !== 0) {
-    throw new Error(`Invalid vertex count: ${vertices.length} is not divisible by 9`);
-  }
-  if (normals.length !== vertices.length) {
-    throw new Error(`Normal/vertex length mismatch: ${normals.length} vs ${vertices.length}`);
-  }
+  validateMeshData(vertices, normals);
 
   const triangleCount = vertices.length / 9;
   const HEADER_SIZE = 80;

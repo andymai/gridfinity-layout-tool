@@ -1,373 +1,62 @@
 /**
- * Shared types, constants, and utility functions for bin generator modules.
+ * Barrel re-export for generator types, constants, and utilities.
  *
- * All generator sub-modules (socketBuilder, boxBuilder, featureBuilder, shapeCache)
- * import from this file to avoid circular dependencies.
+ * This file previously contained all shared types, constants, and utilities
+ * for the bin generator modules. It has been decomposed into focused modules:
+ *
+ * - generatorConstants.ts — Gridfinity spec constants (socket, lip, baseplate, dovetail)
+ * - cellDecomposition.ts — Grid cell decomposition and iteration utilities
+ * - meshUtils.ts — Progress callbacks, sketch helpers, cancellation, mesh conversion
+ * - connectorUtils.ts — Legacy connector position computation (direct mesh generator)
+ *
+ * All exports are re-exported here so existing imports continue to work unchanged.
  */
 
-import type { Drawing, PlaneName, SketchInterface, BooleanOptions } from 'brepjs';
-import type { MeshData } from '../../bridge/types';
-import { GRIDFINITY } from '@/shared/constants/bin';
+// ─── Constants ───────────────────────────────────────────────────────────────
 
-// ─── Progress Callback ───────────────────────────────────────────────────────
-
-/** Progress callback for reporting generation stages */
-export type ProgressFn = (stage: string, progress: number) => void;
-
-// ─── Gridfinity Socket Constants ─────────────────────────────────────────────
-
-export const SIZE = GRIDFINITY.GRID_SIZE;
-export const CLEARANCE = GRIDFINITY.TOLERANCE;
-export const CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
-export const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
-export const SOCKET_SMALL_TAPER = GRIDFINITY.SOCKET_SMALL_TAPER;
-export const SOCKET_BIG_TAPER = GRIDFINITY.SOCKET_BIG_TAPER;
-export const SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER;
-export const SOCKET_TAPER_WIDTH = SOCKET_SMALL_TAPER + SOCKET_BIG_TAPER;
-export const TOP_FILLET = GRIDFINITY.TOP_FILLET;
-
-// ─── Stacking Lip Constants (per spec v5) ────────────────────────────────────
-
-export const LIP_SMALL_TAPER = GRIDFINITY.LIP_SMALL_TAPER; // 0.7mm bottom chamfer
-export const LIP_VERTICAL_PART = GRIDFINITY.LIP_VERTICAL_PART; // 1.8mm vertical
-export const LIP_BIG_TAPER = GRIDFINITY.LIP_BIG_TAPER; // 1.9mm top chamfer
-export const LIP_HEIGHT = LIP_SMALL_TAPER + LIP_VERTICAL_PART + LIP_BIG_TAPER; // 4.4mm total
-export const LIP_TAPER_WIDTH = LIP_SMALL_TAPER + LIP_BIG_TAPER; // 2.6mm horizontal inset
-
-// ─── Boolean Options Type ────────────────────────────────────────────────────
-
-/** Boolean operation options including AbortSignal for cancellation. */
-export type BooleanOpts = BooleanOptions;
+export {
+  SIZE,
+  CLEARANCE,
+  CORNER_RADIUS,
+  SOCKET_HEIGHT,
+  SOCKET_SMALL_TAPER,
+  SOCKET_BIG_TAPER,
+  SOCKET_VERTICAL_PART,
+  SOCKET_TAPER_WIDTH,
+  TOP_FILLET,
+  LIP_SMALL_TAPER,
+  LIP_VERTICAL_PART,
+  LIP_BIG_TAPER,
+  LIP_HEIGHT,
+  LIP_TAPER_WIDTH,
+  PLATE_CORNER_RADIUS,
+  MAGNET_FLOOR,
+  HOLE_OFFSET,
+  INSET_BOT,
+  MAGNET_OFFSETS,
+  pocketCornerRadius,
+  TONGUE_PROTRUSION,
+  TONGUE_BASE_HALF,
+  TONGUE_TIP_HALF,
+  TONGUE_CLEARANCE,
+  NUB_DIAMETER,
+  NUB_DEPTH,
+  HOLE_DIAMETER,
+  HOLE_DEPTH,
+  NUB_CIRCLE_SEGMENTS,
+} from './generatorConstants';
 
 // ─── Cell Decomposition ──────────────────────────────────────────────────────
 
-/** Cell position info for iteration */
-export interface CellInfo {
-  /** Cell size in grid units (1 or 0.5) */
-  readonly widthUnits: number;
-  readonly depthUnits: number;
-  /** Cell center position in mm (relative to bin center) */
-  readonly centerX: number;
-  readonly centerY: number;
-}
+export { decomposeCells, decomposeHalfCells, forEachCell } from './cellDecomposition';
+export type { CellInfo, ForEachCellOptions } from './cellDecomposition';
 
-/**
- * Decompose a grid dimension (in units) into an array of cell sizes (in units).
- * Full cells are 1.0 unit; a trailing half-cell is 0.5 unit.
- *
- * Examples:
- *   2.0 -> [1, 1]
- *   1.5 -> [1, 0.5]
- *   0.5 -> [0.5]
- *   3.0 -> [1, 1, 1]
- */
-export function decomposeCells(gridUnits: number): number[] {
-  const fullCells = Math.floor(gridUnits);
-  const hasHalf = gridUnits - fullCells >= 0.5 - 1e-10;
-  const cells: number[] = Array<number>(fullCells).fill(1);
-  if (hasHalf) cells.push(0.5);
-  return cells;
-}
+// ─── Mesh Utilities ──────────────────────────────────────────────────────────
 
-/**
- * Decompose a grid dimension into all 0.5-unit cells (half sockets mode).
- * Each 1-unit cell becomes two 0.5-unit cells; trailing half-cells stay 0.5.
- *
- * Examples:
- *   2.0 -> [0.5, 0.5, 0.5, 0.5]
- *   1.5 -> [0.5, 0.5, 0.5]
- *   0.5 -> [0.5]
- *   1.0 -> [0.5, 0.5]
- */
-export function decomposeHalfCells(gridUnits: number): number[] {
-  const totalHalves = Math.round(gridUnits * 2);
-  return Array<number>(totalHalves).fill(0.5);
-}
+export { sketch, checkCancelled, toIndexedMeshData } from './meshUtils';
+export type { ProgressFn, BooleanOpts } from './meshUtils';
 
-/**
- * Options for {@link forEachCell}.
- */
-export interface ForEachCellOptions {
-  /** Decompose every cell into 0.5-unit sub-cells (bin half-sockets mode). */
-  readonly halfSockets?: boolean;
-  /**
-   * Which side the fractional (half-unit) column sits on.
-   * `'end'` (default) = right/positive-X. `'start'` = left/negative-X.
-   */
-  readonly fractionalEdgeX?: 'start' | 'end';
-  /**
-   * Which side the fractional (half-unit) row sits on.
-   * `'end'` (default) = back/positive-Y. `'start'` = front/negative-Y.
-   */
-  readonly fractionalEdgeY?: 'start' | 'end';
-  /** Grid unit size in mm. Defaults to standard Gridfinity 42mm. */
-  readonly gridUnitMm?: number;
-}
+// ─── Legacy Connector Utilities ──────────────────────────────────────────────
 
-/**
- * Iterate over all cells in a grid, calling the callback with cell info.
- * Encapsulates the common pattern of nested cell iteration with position tracking.
- *
- * When `halfSockets` is true, every cell is decomposed into 0.5-unit sub-cells,
- * so a 1x1 bin yields a 2x2 grid of 0.5x0.5 sockets.
- *
- * `fractionalEdgeX` / `fractionalEdgeY` control which side the half-unit cell
- * appears on. Default `'end'` places the half cell at the positive coordinate
- * side; `'start'` places it at the negative side.
- */
-export function forEachCell(
-  gridW: number,
-  gridD: number,
-  callback: (cell: CellInfo) => void,
-  optionsOrHalfSockets: ForEachCellOptions | boolean = false
-): void {
-  const opts: ForEachCellOptions =
-    typeof optionsOrHalfSockets === 'boolean'
-      ? { halfSockets: optionsOrHalfSockets }
-      : optionsOrHalfSockets;
-
-  const decompose = opts.halfSockets ? decomposeHalfCells : decomposeCells;
-  const cellsW = decompose(gridW);
-  const cellsD = decompose(gridD);
-
-  // When fractionalEdge is 'start', reverse so the half cell is first (negative side)
-  if (opts.fractionalEdgeX === 'start') cellsW.reverse();
-  if (opts.fractionalEdgeY === 'start') cellsD.reverse();
-
-  const unit = opts.gridUnitMm ?? SIZE;
-  const totalW_mm = gridW * unit;
-  const totalD_mm = gridD * unit;
-
-  let xOffset = 0;
-  for (const cellW_units of cellsW) {
-    const centerX = xOffset + (cellW_units * unit) / 2 - totalW_mm / 2;
-    let yOffset = 0;
-
-    for (const cellD_units of cellsD) {
-      const centerY = yOffset + (cellD_units * unit) / 2 - totalD_mm / 2;
-
-      callback({
-        widthUnits: cellW_units,
-        depthUnits: cellD_units,
-        centerX,
-        centerY,
-      });
-
-      yOffset += cellD_units * unit;
-    }
-    xOffset += cellW_units * unit;
-  }
-}
-
-// ─── Baseplate Constants ────────────────────────────────────────────────────
-
-/** Corner radius for baseplate outer perimeter (same as socket corner radius) */
-export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
-
-/** Thin floor under each magnet hole — retains the magnet (mm) */
-export const MAGNET_FLOOR = 0.5;
-
-/** Distance from cell center to magnet position (Gridfinity spec, mm) */
-export const HOLE_OFFSET = 13;
-
-/** Inset at pocket bottom (same taper profile as bin socket at full cell size) */
-export const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
-
-/** Magnet position offsets relative to cell center (4 corners per cell) */
-export const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
-  [-HOLE_OFFSET, -HOLE_OFFSET],
-  [HOLE_OFFSET, -HOLE_OFFSET],
-  [HOLE_OFFSET, HOLE_OFFSET],
-  [-HOLE_OFFSET, HOLE_OFFSET],
-];
-
-/** Compute pocket corner radius for a given cell size (clamped to fit) */
-export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  return Math.min(CORNER_RADIUS, maxRadius);
-}
-
-// ─── Dovetail Connector Constants ─────────────────────────────────────────────
-//
-// Split baseplate pieces use discrete dovetail connectors at grid cell boundary
-// intersections along join edges. Each connector is a trapezoidal prism with the
-// classic dovetail fan shape visible from the top (X-Y plane): narrower at the
-// wall (BASE_HALF), wider at the protruding tip (TIP_HALF).
-//
-// Assembly: pieces drop in from above (Z-axis). The dovetail taper is in the
-// X-Y plane, so vertical insertion is unimpeded. Once seated, the wider tip
-// prevents horizontal pull-out through the narrower groove opening.
-//
-// Convention: left/front edges get tongues (male), right/back get grooves (female).
-
-/** How far the tongue protrudes horizontally from the wall face (mm) */
-export const TONGUE_PROTRUSION = 1.5;
-
-/** Half-width at the wall face — narrow end of the dovetail (mm) */
-export const TONGUE_BASE_HALF = 1.0;
-
-/** Half-width at the protruding tip — wide end of the dovetail (mm) */
-export const TONGUE_TIP_HALF = 1.3;
-
-/** Per-side clearance added to the groove for FDM tolerance (mm) */
-export const TONGUE_CLEARANCE = 0.15;
-
-// ─── Legacy Nub/Hole Constants (used by direct mesh generator) ──────────────
-
-export const NUB_DIAMETER = 1.5;
-export const NUB_DEPTH = 0.8;
-const HOLE_CLEARANCE = 0.1;
-export const HOLE_DIAMETER = NUB_DIAMETER + 2 * HOLE_CLEARANCE;
-export const HOLE_DEPTH = NUB_DEPTH + HOLE_CLEARANCE;
-export const NUB_CIRCLE_SEGMENTS = 12;
-
-// ─── Legacy Connector Position Computation (used by direct mesh generator) ───
-
-export interface ConnectorPos {
-  cx: number;
-  cy: number;
-  cz: number;
-  nx: number;
-  ny: number;
-  isMale: boolean;
-}
-
-export function computeConnectorPositions(
-  width: number,
-  depth: number,
-  gridUnitMm: number,
-  totalHeight: number,
-  totalW: number,
-  totalD: number,
-  slabOffsetX: number,
-  slabOffsetY: number,
-  edges: { left: string; right: string; front: string; back: string }
-): ConnectorPos[] {
-  const positions: ConnectorPos[] = [];
-  const zCenter = totalHeight / 2;
-  const halfW = totalW / 2;
-  const halfD = totalD / 2;
-
-  const edgeDefs: ReadonlyArray<{
-    side: keyof typeof edges;
-    numBoundaries: number;
-    position: (k: number) => { cx: number; cy: number };
-    nx: number;
-    ny: number;
-    isMale: boolean;
-  }> = [
-    {
-      side: 'left',
-      numBoundaries: Math.ceil(depth) - 1,
-      position: (k) => ({
-        cx: -halfW + slabOffsetX,
-        cy: k * gridUnitMm - (depth * gridUnitMm) / 2,
-      }),
-      nx: -1,
-      ny: 0,
-      isMale: true,
-    },
-    {
-      side: 'right',
-      numBoundaries: Math.ceil(depth) - 1,
-      position: (k) => ({
-        cx: halfW + slabOffsetX,
-        cy: k * gridUnitMm - (depth * gridUnitMm) / 2,
-      }),
-      nx: 1,
-      ny: 0,
-      isMale: false,
-    },
-    {
-      side: 'front',
-      numBoundaries: Math.ceil(width) - 1,
-      position: (k) => ({
-        cx: k * gridUnitMm - (width * gridUnitMm) / 2,
-        cy: -halfD + slabOffsetY,
-      }),
-      nx: 0,
-      ny: -1,
-      isMale: true,
-    },
-    {
-      side: 'back',
-      numBoundaries: Math.ceil(width) - 1,
-      position: (k) => ({
-        cx: k * gridUnitMm - (width * gridUnitMm) / 2,
-        cy: halfD + slabOffsetY,
-      }),
-      nx: 0,
-      ny: 1,
-      isMale: false,
-    },
-  ];
-
-  for (const { side, numBoundaries, position, nx, ny, isMale } of edgeDefs) {
-    if (edges[side] !== 'join' || numBoundaries <= 0) continue;
-    for (let k = 1; k <= numBoundaries; k++) {
-      const { cx, cy } = position(k);
-      positions.push({ cx, cy, cz: zCenter, nx, ny, isMale });
-    }
-  }
-
-  return positions;
-}
-
-// ─── Sketch Helper ───────────────────────────────────────────────────────────
-
-/**
- * Sketch a drawing on a plane, narrowing to SketchInterface.
- * All our drawings are single closed wires, so SketchInterface is always the
- * correct runtime type. This eliminates repeated `as SketchInterface` casts.
- */
-export function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
-  return drawing.sketchOnPlane(plane, origin) as SketchInterface;
-}
-
-// ─── Cancellation ────────────────────────────────────────────────────────────
-
-/** Throw if the AbortSignal has been triggered (mid-operation cancellation). */
-export function checkCancelled(signal?: AbortSignal): void {
-  if (signal?.aborted) throw new DOMException('Generation cancelled', 'AbortError');
-}
-
-// ─── Mesh Conversion ─────────────────────────────────────────────────────────
-
-/**
- * Convert brepjs indexed mesh to our MeshData format, keeping indexed representation.
- *
- * @param meshResult brepjs mesh with indexed vertices/normals/triangles
- * @param skipNormals If true, returns empty normals array (GPU will compute flat shading)
- */
-export function toIndexedMeshData(
-  meshResult: {
-    vertices: ArrayLike<number>;
-    normals: ArrayLike<number>;
-    triangles: ArrayLike<number>;
-    faceGroups?: ReadonlyArray<{ start: number; count: number; faceId: number; origin?: number }>;
-  },
-  skipNormals = false,
-  edgeVertices?: ArrayLike<number>,
-  originToTag?: ReadonlyMap<number, number>
-): MeshData {
-  const faceGroups = meshResult.faceGroups?.map((g) => ({
-    start: g.start,
-    count: g.count,
-    tag: (g.origin !== undefined ? originToTag?.get(g.origin) : undefined) ?? 255, // FeatureTag.UNKNOWN
-  }));
-
-  const toFloat32Array = (data: ArrayLike<number>): Float32Array =>
-    data instanceof Float32Array ? data : new Float32Array(data);
-
-  const toUint32Array = (data: ArrayLike<number>): Uint32Array =>
-    data instanceof Uint32Array ? data : new Uint32Array(data);
-
-  return {
-    vertices: toFloat32Array(meshResult.vertices),
-    normals: skipNormals ? new Float32Array(0) : toFloat32Array(meshResult.normals),
-    indices: toUint32Array(meshResult.triangles),
-    edgeVertices: edgeVertices ? toFloat32Array(edgeVertices) : new Float32Array(0),
-    triangleCount: meshResult.triangles.length / 3,
-    faceGroups,
-  };
-}
+export { computeConnectorPositions } from './connectorUtils';
+export type { ConnectorPos } from './connectorUtils';
