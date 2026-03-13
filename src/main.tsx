@@ -8,7 +8,7 @@ import { detectBrowserLocale } from './i18n/detection.ts';
 import { isLocale } from './i18n/types.ts';
 import { useSettingsStore } from './core/store/settings.ts';
 import { initAnalytics } from './shared/analytics/posthog.ts';
-import { useLayoutStore } from './core/store/layout.ts';
+import { useLayoutStore } from './core/store/layout';
 import { useLibraryStore } from './core/store/library.ts';
 import { useSharedWithMeStore } from './core/store/sharedWithMe.ts';
 import { initializeLayoutLibrary, loadSharedWithMe } from '@/core/storage';
