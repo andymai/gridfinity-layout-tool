@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { captureException, track3DRenderError } from '@/shared/analytics/posthog';
+import { clearAllAppData } from '@/core/storage';
 import { getStaticTranslation } from '@/i18n';
 
 interface Props {
@@ -36,12 +37,9 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   handleClearStorage = () => {
-    try {
-      localStorage.removeItem('gridfinity-layout');
-      window.location.reload();
-    } catch {
-      window.location.reload();
-    }
+    void clearAllAppData()
+      .catch(() => {})
+      .then(() => window.location.reload());
   };
 
   render() {

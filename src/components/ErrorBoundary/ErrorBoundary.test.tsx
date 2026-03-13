@@ -8,6 +8,11 @@ vi.mock('@/shared/analytics/posthog', () => ({
   track3DRenderError: vi.fn(),
 }));
 
+// Mock storage
+vi.mock('@/core/storage', () => ({
+  clearAllAppData: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock getStaticTranslation since it's not a hook
 vi.mock('@/i18n', async (importOriginal) => {
   const original = await importOriginal<Record<string, unknown>>();
@@ -99,5 +104,73 @@ describe('ErrorBoundary', () => {
     );
     expect(screen.getByText('Try Again')).toBeInTheDocument();
     expect(screen.getByText('Reset App Data')).toBeInTheDocument();
+  });
+
+  it('calls clearAllAppData and reloads on Reset App Data click', async () => {
+    const { clearAllAppData } = await import('@/core/storage');
+    const reloadMock = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      render(
+        <ErrorBoundary>
+          <ThrowingChild shouldThrow={true} />
+        </ErrorBoundary>
+      );
+
+      fireEvent.click(screen.getByText('Reset App Data'));
+      expect(clearAllAppData).toHaveBeenCalled();
+      await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
+    } finally {
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
+    }
+  });
+
+  it('reloads even if clearAllAppData rejects', async () => {
+    const { clearAllAppData } = await import('@/core/storage');
+    vi.mocked(clearAllAppData).mockRejectedValueOnce(new Error('IDB failure'));
+    const reloadMock = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      render(
+        <ErrorBoundary>
+          <ThrowingChild shouldThrow={true} />
+        </ErrorBoundary>
+      );
+
+      fireEvent.click(screen.getByText('Reset App Data'));
+      await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
+    } finally {
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
+    }
+  });
+
+  it('has aria-live assertive on error fallback for screen readers', () => {
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('aria-live', 'assertive');
   });
 });
