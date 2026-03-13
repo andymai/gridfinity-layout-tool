@@ -28,6 +28,7 @@ import {
   composeTransforms,
   transformCopy,
   intersect,
+  getBounds,
   mesh,
   meshEdges,
   exportSTL,
@@ -696,6 +697,12 @@ function splitSolidIntoPieces(
   // silently drop outer walls.
   const EDGE_MARGIN = 1;
 
+  // Interior cut faces also need a small offset to avoid coplanarity with
+  // socket cell boundaries (e.g. a 10-wide bin split at cell 5 puts the
+  // cut plane exactly on the cell wall at x=0). 10μm is invisible in FDM
+  // print but breaks the coplanarity that causes OCCT to drop geometry.
+  const INTERIOR_MARGIN = 0.01;
+
   const pieces: SplitPieceInfo[] = [];
 
   for (let col = 0; col < xBounds.length - 1; col++) {
@@ -709,12 +716,14 @@ function splitSolidIntoPieces(
       const pieceD = yMax - yMin;
       const centerX = (xMin + xMax) / 2;
       const centerY = (yMin + yMax) / 2;
+      const colLabel = String.fromCharCode(65 + col); // A, B, C…
 
-      // Expand cutting box at outer bin edges to avoid coplanar booleans
-      const marginL = col === 0 ? EDGE_MARGIN : 0;
-      const marginR = col === xBounds.length - 2 ? EDGE_MARGIN : 0;
-      const marginB = row === 0 ? EDGE_MARGIN : 0;
-      const marginT = row === yBounds.length - 2 ? EDGE_MARGIN : 0;
+      // Expand cutting box at outer bin edges to avoid coplanar booleans;
+      // interior faces get a smaller margin to break socket wall coplanarity.
+      const marginL = col === 0 ? EDGE_MARGIN : INTERIOR_MARGIN;
+      const marginR = col === xBounds.length - 2 ? EDGE_MARGIN : INTERIOR_MARGIN;
+      const marginB = row === 0 ? EDGE_MARGIN : INTERIOR_MARGIN;
+      const marginT = row === yBounds.length - 2 ? EDGE_MARGIN : INTERIOR_MARGIN;
       const boxW = pieceW + marginL + marginR;
       const boxD = pieceD + marginB + marginT;
       const boxCenterX = centerX + (marginR - marginL) / 2;
@@ -727,6 +736,19 @@ function splitSolidIntoPieces(
       // Split body with cutting box
       let piece = unwrap(intersect(clone(bodySolid), cuttingBox));
 
+      // Validate that the boolean intersection preserved the full geometry.
+      // If OCCT silently dropped walls/lip due to coplanarity, the Z extent
+      // will be far shorter than expected (e.g. ~5mm socket-only vs ~25mm).
+      const pieceBounds = getBounds(piece);
+      const actualZ = pieceBounds.zMax - pieceBounds.zMin;
+      if (actualZ < totalHeight * 0.8) {
+        throw new Error(
+          `Split piece ${colLabel}${row + 1} lost geometry: ` +
+            `expected body Z≈${totalHeight.toFixed(1)}mm (lip fused separately), got ${actualZ.toFixed(1)}mm. ` +
+            `This is likely caused by a coplanar cut plane — please report this bug.`
+        );
+      }
+
       // Split and fuse lip piece using a clone of the same cutting box
       if (lipSolid) {
         try {
@@ -734,11 +756,11 @@ function splitSolidIntoPieces(
           piece = unwrap(fuse(piece, lipPiece));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          // Lip split/fuse failed — piece without lip is still usable
+          // Lip fuse failed — export piece without lip (non-critical degradation)
         }
       }
 
-      if (connectorConfig !== undefined && connectorConfig.enabled) {
+      if (connectorConfig?.enabled) {
         const cutFaces = computeCutFaces(
           col,
           row,
@@ -760,10 +782,9 @@ function splitSolidIntoPieces(
         piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
       }
 
-      const colLetter = String.fromCharCode(65 + col); // A, B, C...
       pieces.push({
         solid: piece,
-        label: `${colLetter}${row + 1}`,
+        label: `${colLabel}${row + 1}`,
         col: col + 1,
         row: row + 1,
         widthMm: pieceW,
