@@ -1,6 +1,7 @@
 import { put, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
+import { logger } from './lib/logger.js';
 import { validateShareLayout, isValidationError } from './lib/validation.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import { filterLayoutContent } from './lib/contentFilter.js';
@@ -136,7 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (redis) {
       await redis.set(shareHashKey(shareId), deleteTokenHash);
     } else if (process.env.VERCEL_ENV === 'production') {
-      console.error('Share creation failed: Redis unavailable, cannot persist delete token hash');
+      logger.error('Share creation failed: Redis unavailable, cannot persist delete token hash');
       return res.status(503).json({
         error: 'Service temporarily unavailable. Please try again.',
         code: ErrorCode.SERVER_ERROR,
@@ -173,7 +174,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       permission,
     });
   } catch (error) {
-    console.error('Share creation error:', error);
+    logger.error('Share creation error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({
       error: 'Failed to create share',
       code: ErrorCode.SERVER_ERROR,

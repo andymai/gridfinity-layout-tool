@@ -14,6 +14,7 @@ import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
 import { methodNotAllowed } from './lib/shared.js';
+import { logger } from './lib/logger.js';
 
 /** Maximum accepted file size: 2MB (well above any realistic 3MF bin file) */
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
@@ -108,16 +109,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // download the file immediately after the protocol handler fires.
     const accessible = await waitForUrl(blob.url);
     if (!accessible) {
-      console.error('Slicer upload: URL not accessible after polling', blob.url);
+      logger.error('Slicer upload: URL not accessible after polling', { url: blob.url });
       return res.status(503).json({ error: 'Upload not yet accessible' });
     }
 
     return res.status(200).json({ url: blob.url });
   } catch (error) {
-    console.error(
-      'Slicer upload failed:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    logger.error('Slicer upload failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({ error: 'Upload failed' });
   }
 }

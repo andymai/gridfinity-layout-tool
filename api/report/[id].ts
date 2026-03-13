@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
 import { isValidShareId, ErrorCode, methodNotAllowed, shareReportKey } from '../lib/shared.js';
+import { logger } from '../lib/logger.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -64,16 +65,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Log report for manual review
-    console.warn('Share reported:', {
+    logger.warn('Share reported', {
       id,
       reportCount: newReportCount,
       reason: reportReason,
-      timestamp: new Date().toISOString(),
     });
 
     // Check if threshold exceeded
     if (newReportCount >= REPORT_THRESHOLD) {
-      console.warn('Share report threshold exceeded:', {
+      logger.warn('Share report threshold exceeded', {
         id,
         reportCount: newReportCount,
       });
@@ -84,7 +84,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: 'Report submitted. Thank you for helping keep the community safe.',
     });
   } catch (error) {
-    console.error('Report error:', error);
+    logger.error('Report error', { error: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({
       error: 'Failed to submit report',
       code: ErrorCode.SERVER_ERROR,

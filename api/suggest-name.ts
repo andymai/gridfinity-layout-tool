@@ -12,6 +12,7 @@ import { APICallError } from 'ai';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { generateNameSuggestions, createCacheKey, type NameSuggestionRequest } from './lib/llm.js';
 import { ErrorCode, methodNotAllowed } from './lib/shared.js';
+import { logger } from './lib/logger.js';
 
 /** Cache TTL: 7 days in seconds */
 const CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -183,7 +184,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error) {
     // Handle LLM-specific errors
     if (error instanceof APICallError) {
-      console.error('LLM API error:', error.message, error.statusCode);
+      logger.error('LLM API error', { message: error.message, statusCode: error.statusCode });
 
       if (error.statusCode === 429) {
         return res.status(503).json({
@@ -193,7 +194,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (error.statusCode === 401 || error.statusCode === 403) {
-        console.error('LLM authentication error - check OPENAI_API_KEY');
+        logger.error('LLM authentication error - check OPENAI_API_KEY');
         return res.status(503).json({
           error: 'AI service configuration error.',
           code: ErrorCode.SERVICE_UNAVAILABLE,
@@ -202,10 +203,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Log error for debugging (avoid logging user data)
-    console.error(
-      'Name suggestion error:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    logger.error('Name suggestion error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     return res.status(500).json({
       error: 'Failed to generate name suggestions',

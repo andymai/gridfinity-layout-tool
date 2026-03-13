@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { validateShareLayout, isValidationError } from '../lib/validation.js';
 import { filterLayoutContent } from '../lib/contentFilter.js';
+import { logger } from '../lib/logger.js';
 import {
   isValidShareId,
   hashToken,
@@ -92,7 +93,11 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
       contentType: 'application/json',
       addRandomSuffix: false,
     }).catch((err: unknown) => {
-      console.warn('Failed to update lastAccessedAt for share:', { id: _id, error: err });
+      logger.warn('Failed to update lastAccessedAt for share', {
+        id: _id,
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
     });
 
     // Return layout with public metadata (exclude sensitive fields)
@@ -106,7 +111,10 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
       },
     });
   } catch (error) {
-    console.error('Share fetch error:', error);
+    logger.error('Share fetch error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({
       error: 'Failed to fetch share',
       code: ErrorCode.SERVER_ERROR,
@@ -264,7 +272,10 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       permission: newPermission,
     });
   } catch (error) {
-    console.error('Share update error:', error);
+    logger.error('Share update error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({
       error: 'Failed to update share',
       code: ErrorCode.SERVER_ERROR,
@@ -358,7 +369,10 @@ async function handleDelete(
       message: 'Share deleted successfully',
     });
   } catch (error) {
-    console.error('Share delete error:', error);
+    logger.error('Share delete error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({
       error: 'Failed to delete share',
       code: ErrorCode.SERVER_ERROR,

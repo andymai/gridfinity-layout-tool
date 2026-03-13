@@ -12,6 +12,7 @@
 import { list, del } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { methodNotAllowed, timingSafeCompare } from './lib/shared.js';
+import { logger } from './lib/logger.js';
 
 const MAX_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours
 
@@ -60,10 +61,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       await del(toDelete.slice(i, i + BATCH_SIZE));
     }
   } catch (error) {
-    console.error(
-      'Slicer cleanup failed:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    logger.error('Slicer cleanup failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({ error: 'Cleanup failed' });
   }
 

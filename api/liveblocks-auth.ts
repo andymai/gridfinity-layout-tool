@@ -3,6 +3,7 @@ import { head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
 import { ErrorCode, isValidShareId, methodNotAllowed } from './lib/shared.js';
+import { logger } from './lib/logger.js';
 import type { ShareData } from './lib/shared.js';
 
 /**
@@ -72,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Check if Liveblocks is configured
     if (!process.env.LIVEBLOCKS_SECRET_KEY) {
-      console.error('LIVEBLOCKS_SECRET_KEY not configured');
+      logger.error('LIVEBLOCKS_SECRET_KEY not configured');
       return res.status(500).json({
         error: 'Collaboration not configured',
         code: ErrorCode.CONFIGURATION_ERROR,
@@ -164,7 +165,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { body, status } = await session.authorize();
     return res.status(status).send(body);
   } catch (error) {
-    console.error('Liveblocks auth error:', error);
+    logger.error('Liveblocks auth error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({
       error: 'Authentication failed',
       code: ErrorCode.SERVER_ERROR,

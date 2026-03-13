@@ -115,6 +115,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Redis } from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 import { getClientIP } from './lib/rateLimit.js';
+import { logger } from './lib/logger.js';
 
 // ============================================
 // TYPES
@@ -2074,7 +2075,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const client = getRedis();
   if (!client) {
     if (process.env.VERCEL_ENV === 'production') {
-      console.warn('ml-telemetry: Redis unavailable in production, telemetry discarded');
+      logger.warn('ml-telemetry: Redis unavailable in production, telemetry discarded');
     }
     res.status(200).json({ ok: true, processed: 0 });
     return;
@@ -2257,7 +2258,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     res.status(200).json({ ok: true, processed: validCount, failed: failedCount });
   } catch (error) {
-    console.error('ML telemetry Redis error:', error);
+    logger.error('ML telemetry Redis error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     // Don't fail the request - telemetry should never break UX
     res.status(200).json({ ok: true, processed: 0, error: 'storage_error' });
   }

@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import { Redis } from 'ioredis';
 import type { RedisOptions } from 'ioredis';
+import { logger } from './logger.js';
 
 export type RateLimitAction =
   | 'create'
@@ -131,7 +132,10 @@ export async function checkRateLimit(
     };
   } catch (error) {
     // If Redis is unavailable, deny the request (fail-closed)
-    console.error('Rate limit check failed:', error);
+    logger.error('Rate limit check failed', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return {
       allowed: false,
       remaining: 0,
