@@ -6,9 +6,41 @@
  */
 
 import { unwrap, fuse, fuseAll, cut, cutAll } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
 import { checkCancelled } from '../../meshUtils';
+
+/** Returns true if the error is an AbortError that should be rethrown. */
+function isAbortError(e: unknown): boolean {
+  return e instanceof DOMException && e.name === 'AbortError';
+}
+
+/**
+ * Try a batch boolean, falling back to sequential pairwise operations.
+ * AbortErrors always propagate; other errors are swallowed per-pair.
+ */
+function batchWithFallback(
+  bin: Shape3D,
+  targets: readonly Shape3D[],
+  batch: (bin: Shape3D, targets: readonly Shape3D[]) => Shape3D,
+  pairwise: (bin: Shape3D, target: Shape3D) => Shape3D
+): Shape3D {
+  try {
+    return batch(bin, targets);
+  } catch (e: unknown) {
+    if (isAbortError(e)) throw e;
+    let result = bin;
+    for (const target of targets) {
+      try {
+        result = pairwise(result, target);
+      } catch (inner: unknown) {
+        if (isAbortError(inner)) throw inner;
+      }
+    }
+    return result;
+  }
+}
 
 export const booleanStage: PipelineStage = {
   name: 'boolean',
@@ -23,42 +55,25 @@ export const booleanStage: PipelineStage = {
     let bin = ctx.solid;
     if (!bin) return ctx;
 
-    checkCancelled(signal);
     if (ctx.fuseTargets.length > 0) {
-      try {
-        bin = unwrap(fuseAll([bin, ...ctx.fuseTargets]));
-      } catch (batchError: unknown) {
-        if (batchError instanceof DOMException && batchError.name === 'AbortError')
-          throw batchError;
-        // Fallback: apply fuses sequentially
-        for (const target of ctx.fuseTargets) {
-          try {
-            bin = unwrap(fuse(bin, target));
-          } catch (e: unknown) {
-            if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          }
-        }
-      }
+      checkCancelled(signal);
+      bin = batchWithFallback(
+        bin,
+        ctx.fuseTargets,
+        (b, targets) => unwrap(fuseAll([b, ...targets])),
+        (b, t) => unwrap(fuse(b, t))
+      );
     }
 
-    checkCancelled(signal);
     if (ctx.cutTargets.length > 0) {
-      try {
-        bin = unwrap(
-          cutAll(bin, [...ctx.cutTargets], { simplify: forExport, signal } as BooleanOpts)
-        );
-      } catch (batchError: unknown) {
-        if (batchError instanceof DOMException && batchError.name === 'AbortError')
-          throw batchError;
-        // Fallback: apply cuts sequentially
-        for (const target of ctx.cutTargets) {
-          try {
-            bin = unwrap(cut(bin, target));
-          } catch (e: unknown) {
-            if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          }
-        }
-      }
+      checkCancelled(signal);
+      bin = batchWithFallback(
+        bin,
+        ctx.cutTargets,
+        (b, targets) =>
+          unwrap(cutAll(b, [...targets], { simplify: forExport, signal } as BooleanOpts)),
+        (b, t) => unwrap(cut(b, t))
+      );
     }
 
     return { ...ctx, solid: bin, fuseTargets: [], cutTargets: [] };

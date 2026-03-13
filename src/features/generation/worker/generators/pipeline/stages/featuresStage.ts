@@ -34,6 +34,31 @@ import { getPatternDescriptors } from '../../wallPatterns';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
 
+/**
+ * Get-or-build a cached feature shape and, if present, collect its
+ * face origins and push it into the target array.
+ */
+function cachedFeature(
+  kind: string,
+  key: string,
+  build: () => Shape3D | null,
+  tag: FeatureTag,
+  originToTag: Map<number, number>,
+  targets: Shape3D[]
+): void {
+  let shape = getFeatureCache(kind, key);
+  if (!shape) {
+    shape = build();
+    if (shape) {
+      setFeatureCache(kind, key, shape);
+    }
+  }
+  if (shape) {
+    collectOrigins(shape, tag, originToTag);
+    targets.push(shape);
+  }
+}
+
 export const featuresStage: PipelineStage = {
   name: 'features',
   progressValue: 0.5,
@@ -46,7 +71,6 @@ export const featuresStage: PipelineStage = {
   execute(ctx: PipelineContext): PipelineContext {
     const { params, dimensions: dim, signal, originToTag } = ctx;
     const { shellKey, innerW, innerD, interiorHeight, isSlotted, hasLip } = dim;
-    const wallThickness = params.wallThickness;
 
     // Solid mode: apply cutout cut directly (not via booleanStage).
     // The original code used a bare cut() without simplify options,
@@ -73,33 +97,27 @@ export const featuresStage: PipelineStage = {
     if (!isSlotted) {
       checkCancelled(signal);
       const cwKey = `${shellKey}|${innerW}|${innerD}|${interiorHeight}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.thickness}|${params.compartments.cells.join(',')}`;
-      let compartmentWalls = getFeatureCache('compartmentWalls', cwKey);
-      if (!compartmentWalls) {
-        compartmentWalls = buildCompartmentWalls(params, innerW, innerD, interiorHeight);
-        if (compartmentWalls) {
-          setFeatureCache('compartmentWalls', cwKey, compartmentWalls);
-        }
-      }
-      if (compartmentWalls) {
-        collectOrigins(compartmentWalls, FeatureTag.DIVIDER, originToTag);
-        fuseTargets.push(compartmentWalls);
-      }
+      cachedFeature(
+        'compartmentWalls',
+        cwKey,
+        () => buildCompartmentWalls(params, innerW, innerD, interiorHeight),
+        FeatureTag.DIVIDER,
+        originToTag,
+        fuseTargets
+      );
     }
 
     // Insert cuts
     checkCancelled(signal);
     const icKey = `${shellKey}|${JSON.stringify(params.inserts)}`;
-    let insertCuts = getFeatureCache('insertCuts', icKey);
-    if (!insertCuts) {
-      insertCuts = buildInsertCuts(params);
-      if (insertCuts) {
-        setFeatureCache('insertCuts', icKey, insertCuts);
-      }
-    }
-    if (insertCuts) {
-      collectOrigins(insertCuts, FeatureTag.INSERT, originToTag);
-      cutTargets.push(insertCuts);
-    }
+    cachedFeature(
+      'insertCuts',
+      icKey,
+      () => buildInsertCuts(params),
+      FeatureTag.INSERT,
+      originToTag,
+      cutTargets
+    );
 
     // Slot cuts
     if (isSlotted) {
@@ -108,68 +126,56 @@ export const featuresStage: PipelineStage = {
         ? { wallHeight: dim.wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
         : undefined;
       const scKey = `${shellKey}|${JSON.stringify(params.slotConfig)}|${innerW}|${innerD}|${interiorHeight}|${lipInfo ? `${lipInfo.wallHeight}|${lipInfo.lipHeight}|${lipInfo.lipTaperWidth}` : 'none'}`;
-      let slotCuts = getFeatureCache('slotCuts', scKey);
-      if (!slotCuts) {
-        slotCuts = buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo);
-        if (slotCuts) {
-          setFeatureCache('slotCuts', scKey, slotCuts);
-        }
-      }
-      if (slotCuts) {
-        collectOrigins(slotCuts, FeatureTag.SLOT, originToTag);
-        cutTargets.push(slotCuts);
-      }
+      cachedFeature(
+        'slotCuts',
+        scKey,
+        () => buildSlotCuts(params, innerW, innerD, interiorHeight, lipInfo),
+        FeatureTag.SLOT,
+        originToTag,
+        cutTargets
+      );
     }
 
     // Label tabs
     if (!isSlotted) {
       checkCancelled(signal);
-      const ltKey = `${shellKey}|${JSON.stringify(params.label)}|${innerW}|${innerD}|${interiorHeight}|${wallThickness}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
-      let labelTabs = getFeatureCache('labelTabs', ltKey);
-      if (!labelTabs) {
-        labelTabs = buildLabelTabs(params, innerW, innerD, interiorHeight, wallThickness);
-        if (labelTabs) {
-          setFeatureCache('labelTabs', ltKey, labelTabs);
-        }
-      }
-      if (labelTabs) {
-        collectOrigins(labelTabs, FeatureTag.LABEL_TAB, originToTag);
-        fuseTargets.push(labelTabs);
-      }
+      const ltKey = `${shellKey}|${JSON.stringify(params.label)}|${innerW}|${innerD}|${interiorHeight}|${params.wallThickness}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
+      cachedFeature(
+        'labelTabs',
+        ltKey,
+        () => buildLabelTabs(params, innerW, innerD, interiorHeight, params.wallThickness),
+        FeatureTag.LABEL_TAB,
+        originToTag,
+        fuseTargets
+      );
     }
 
     // Scoop ramps
     if (!isSlotted) {
       checkCancelled(signal);
-      const srKey = `${shellKey}|${JSON.stringify(params.scoop)}|${params.style}|${innerW}|${innerD}|${dim.wallHeight}|${wallThickness}|${hasLip}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
-      let scoopRamps = getFeatureCache('scoopRamps', srKey);
-      if (!scoopRamps) {
-        scoopRamps = buildScoopRamps(params, innerW, innerD, dim.wallHeight, wallThickness);
-        if (scoopRamps) {
-          setFeatureCache('scoopRamps', srKey, scoopRamps);
-        }
-      }
-      if (scoopRamps) {
-        collectOrigins(scoopRamps, FeatureTag.SCOOP, originToTag);
-        fuseTargets.push(scoopRamps);
-      }
+      const srKey = `${shellKey}|${JSON.stringify(params.scoop)}|${params.style}|${innerW}|${innerD}|${dim.wallHeight}|${params.wallThickness}|${hasLip}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
+      cachedFeature(
+        'scoopRamps',
+        srKey,
+        () => buildScoopRamps(params, innerW, innerD, dim.wallHeight, params.wallThickness),
+        FeatureTag.SCOOP,
+        originToTag,
+        fuseTargets
+      );
     }
 
     // Wall cutouts
     if (params.walls.enabled) {
       checkCancelled(signal);
       const wcKey = `${shellKey}|${JSON.stringify(params.walls)}|${innerW}|${innerD}|${dim.wallHeight}|${hasLip}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
-      let wallCutoutCuts = getFeatureCache('wallCutoutCuts', wcKey);
-      if (!wallCutoutCuts) {
-        wallCutoutCuts = buildWallCutoutCuts(params, innerW, innerD, dim.wallHeight, hasLip);
-        if (wallCutoutCuts) {
-          setFeatureCache('wallCutoutCuts', wcKey, wallCutoutCuts);
-        }
-      }
-      if (wallCutoutCuts) {
-        collectOrigins(wallCutoutCuts, FeatureTag.WALL_CUTOUT, originToTag);
-        cutTargets.push(wallCutoutCuts);
-      }
+      cachedFeature(
+        'wallCutoutCuts',
+        wcKey,
+        () => buildWallCutoutCuts(params, innerW, innerD, dim.wallHeight, hasLip),
+        FeatureTag.WALL_CUTOUT,
+        originToTag,
+        cutTargets
+      );
     }
 
     // Wall patterns
@@ -184,16 +190,14 @@ export const featuresStage: PipelineStage = {
           const shapeRadius = calculator.getShapeRadius();
 
           const templateKey = `${patternType}|${shapeRadius}|${cutDepth}`;
-          let shapeTemplate: Shape3D;
-
-          const cachedTemplate = getPatternTemplateCache(templateKey);
-          if (cachedTemplate) {
-            shapeTemplate = cachedTemplate;
-          } else {
-            const sides = calculator.getSidesCount();
-            shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
-            setPatternTemplateCache(templateKey, shapeTemplate);
-          }
+          const shapeTemplate =
+            getPatternTemplateCache(templateKey) ??
+            (() => {
+              const sides = calculator.getSidesCount();
+              const template = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
+              setPatternTemplateCache(templateKey, template);
+              return template;
+            })();
 
           for (const wall of wallDescriptors) {
             for (const center of wall.centers) {

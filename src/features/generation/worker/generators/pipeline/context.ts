@@ -13,7 +13,6 @@ import type { BinDimensions, PipelineContext } from './types';
 
 /** Derive all dimensions from bin parameters. */
 function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions {
-  const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
   const halfSockets = params.base.halfSockets && !isFlat;
@@ -22,8 +21,8 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
 
   const outerW = params.width * SIZE - CLEARANCE;
   const outerD = params.depth * SIZE - CLEARANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const innerW = outerW - 2 * params.wallThickness;
+  const innerD = outerD - 2 * params.wallThickness;
   const isSlotted = params.style === 'slotted';
 
   const withMagnet =
@@ -51,7 +50,7 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
     params.base.screwDiameter,
     useHighQuality,
     wallHeight,
-    wallThickness,
+    params.wallThickness,
     params.base.stackingLip,
     solid,
   ].join('|');
