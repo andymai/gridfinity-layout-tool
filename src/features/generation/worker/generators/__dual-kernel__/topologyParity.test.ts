@@ -7,7 +7,7 @@
  * export — those test serialisation/rendering, not topology.
  *
  * Run:
- *   npx vitest run --config vitest.profile.config.ts \
+ *   pnpm exec vitest run --config vitest.profile.config.ts \
  *     src/features/generation/worker/generators/__dual-kernel__/topologyParity
  */
 // @vitest-environment node

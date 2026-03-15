@@ -3,7 +3,7 @@
  * Step-by-step volume diagnosis for brepkit rounded rectangle shell operation.
  *
  * Run:
- *   npx vitest run --config vitest.profile.config.ts \
+ *   pnpm exec vitest run --config vitest.profile.config.ts \
  *     src/features/generation/worker/generators/__dual-kernel__/diagnoseShell
  */
 import { test, expect } from 'vitest';

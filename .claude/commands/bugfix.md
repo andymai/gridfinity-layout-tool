@@ -31,14 +31,14 @@ Investigate every layer the bug could touch. Don't stop at the first layer that 
 - Each fix must have a corresponding test assertion.
 - For geometry/generation changes, run scenario tests:
   ```bash
-  npm run test:run -- src/features/generation/worker/generators/binGenerator.scenario
+  pnpm run test:run -- src/features/generation/worker/generators/binGenerator.scenario
   ```
 
 ## 5. Validate
 
 ```bash
-npm run test:coverage   # All tests pass with coverage
-npm run build           # TypeScript compiles cleanly
+pnpm run test:coverage   # All tests pass with coverage
+pnpm run build           # TypeScript compiles cleanly
 ```
 
 ## 6. Sanity Checklist

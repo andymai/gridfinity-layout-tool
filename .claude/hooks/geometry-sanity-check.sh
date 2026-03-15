@@ -36,7 +36,7 @@ done
 echo "" >&2
 echo "Geometry-critical file edited: $(basename "$FILE_PATH")" >&2
 echo "Remember to run scenario tests to validate geometry output:" >&2
-echo "  npm run test:run -- src/features/generation/worker/generators/binGenerator.scenario" >&2
+echo "  pnpm run test:run -- src/features/generation/worker/generators/binGenerator.scenario" >&2
 echo "" >&2
 
 exit 0

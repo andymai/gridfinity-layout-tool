@@ -126,7 +126,7 @@ const t = useTranslation();
 t('toast.binsDeleted', { count: 5 }); // Interpolation with {variable}
 ```
 
-Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`. Locales: de, en, es, fr, nb, nl, pt-BR.
+Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Locales: de, en, es, fr, nb, nl, pt-BR.
 
 ## API (`api/`)
 
@@ -149,10 +149,10 @@ Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`. Loca
 
 - **Convention:** Colocated sibling tests — `foo.ts` + `foo.test.ts` in the same directory
 - **Unit:** Vitest + jsdom. Use `createTestLayout()` from `@/test/testUtils`
-- **E2E:** Playwright in `e2e/`. `npm run test:e2e`
+- **E2E:** Playwright in `e2e/`. `pnpm run test:e2e`
 - **Infrastructure (`src/test/`):** `setup.ts`, `testUtils.ts`, `mocks/` — shared test utilities (stays centralized)
 - Pre-commit **blocks** if edited component file has no sibling test
-- Run `npm run test:coverage` before commit
+- Run `pnpm run test:coverage` before commit
 
 ## Debugging & Bug Fixing
 
@@ -161,7 +161,7 @@ Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`. Loca
 - **Fix all layers** — bugs spanning UI → store → computation must be verified at each layer. Don't stop at the first fix that silences the visible symptom.
 - **Geometry/math validation** — after any generation change, verify: output > 0, no NaN/Infinity, correct coordinate system (grid origin bottom-left, Y-up). Run scenario tests:
   ```bash
-  npm run test:run -- src/features/generation/worker/generators/binGenerator.scenario
+  pnpm run test:run -- src/features/generation/worker/generators/binGenerator.scenario
   ```
 - **Coordinate transforms** — grid units ↔ mm conversions use `gridUnitMm` (42mm). Height units use `heightUnitMm` (7mm). Never mix unit systems.
 - **Common traps**: stale closures in hooks (missing deps), `useShallow` omitted on multi-select, `layers[0]` = bottom (UI reverses display).
@@ -169,14 +169,14 @@ Add keys to `en.ts` first, then all locale JSONs. Run `npm run check:i18n`. Loca
 ## Scripts
 
 ```bash
-npm run dev           # Dev server
-npm run build         # TypeScript + production build
-npm run test:coverage # Tests with coverage
-npm run test:e2e      # Playwright E2E
-npm run quality       # typecheck + lint + knip (dead code)
-npm run typecheck     # TypeScript check (no emit)
-npm run lint          # ESLint
-npm run size          # Bundle size check
+pnpm run dev           # Dev server
+pnpm run build         # TypeScript + production build
+pnpm run test:coverage # Tests with coverage
+pnpm run test:e2e      # Playwright E2E
+pnpm run quality       # typecheck + lint + knip (dead code)
+pnpm run typecheck     # TypeScript check (no emit)
+pnpm run lint          # ESLint
+pnpm run size          # Bundle size check
 ```
 
 ## Environment Variables

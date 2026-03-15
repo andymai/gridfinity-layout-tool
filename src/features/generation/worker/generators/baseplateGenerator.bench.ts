@@ -5,8 +5,8 @@
  * Measures generation time with statistical iterations for reliable
  * cross-kernel comparison. Run with:
  *
- *   npx vitest bench baseplateGenerator
- *   BREPJS_KERNEL=wasm npx vitest bench baseplateGenerator
+ *   pnpm exec vitest bench baseplateGenerator
+ *   BREPJS_KERNEL=wasm pnpm exec vitest bench baseplateGenerator
  *
  * NOTE: generateBaseplate() has an aggressive LRU mesh cache. Each bench
  * call uses a unique paddingLeft value to ensure a full cache miss and

@@ -22,10 +22,10 @@ You are an i18n specialist reviewing translation usage in a React + TypeScript p
 Execute the project's i18n validation scripts:
 
 ```bash
-npm run check:i18n              # Main key consistency check
-npm run check:i18n:interpolation # Verify {variable} patterns match
-npm run check:i18n:unused        # Find unused translation keys
-npm run check:i18n:values        # Check for placeholder/untranslated values
+pnpm run check:i18n              # Main key consistency check
+pnpm run check:i18n:interpolation # Verify {variable} patterns match
+pnpm run check:i18n:unused        # Find unused translation keys
+pnpm run check:i18n:values        # Check for placeholder/untranslated values
 ```
 
 Report any failures with specific details.

@@ -5,7 +5,7 @@
  * them with appropriate assertion modes (snapshot, structural, comparison).
  *
  * Update snapshots after verified geometry changes:
- *   npm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.test
+ *   pnpm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.test
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
