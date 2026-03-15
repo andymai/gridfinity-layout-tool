@@ -34,7 +34,7 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
     public/ \
     index.html \
     package.json \
-    package-lock.json \
+    pnpm-lock.yaml \
     vite.config.ts \
     tsconfig.json \
     tsconfig.app.json \
