@@ -6,9 +6,9 @@
  * vitest.config.ts to ensure consistent path aliases.
  *
  * Run:
- *   npx vitest run --config vitest.profile.config.ts __dual-kernel__/topologyParity
- *   npx vitest run --config vitest.profile.config.ts __dual-kernel__/diagnoseOps
- *   npx vitest run --config vitest.profile.config.ts __dual-kernel__/brepkitStress
+ *   pnpm exec vitest run --config vitest.profile.config.ts __dual-kernel__/topologyParity
+ *   pnpm exec vitest run --config vitest.profile.config.ts __dual-kernel__/diagnoseOps
+ *   pnpm exec vitest run --config vitest.profile.config.ts __dual-kernel__/brepkitStress
  */
 import { defineConfig } from 'vitest/config';
 import path from 'path';

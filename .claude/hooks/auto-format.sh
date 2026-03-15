@@ -30,7 +30,7 @@ PROJECT_ROOT=$(pwd)
 
 # Run prettier silently
 cd "$PROJECT_ROOT"
-OUTPUT=$(npx prettier --write "$FILE" 2>&1)
+OUTPUT=$(pnpm exec prettier --write "$FILE" 2>&1)
 EXIT_CODE=$?
 
 # Only report errors

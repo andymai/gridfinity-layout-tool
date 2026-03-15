@@ -2,7 +2,7 @@
 /**
  * Pre-commit check: Detect locale values identical to English (untranslated placeholders).
  *
- * Usage: npx tsx scripts/check-i18n-values.ts
+ * Usage: pnpm exec tsx scripts/check-i18n-values.ts
  * Exit code 0 = all values translated, 1 = untranslated values found
  */
 

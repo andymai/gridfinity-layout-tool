@@ -8,7 +8,7 @@
  * 3. If safe: removes old key from en.ts + all JSON files
  * 4. Lists source files referencing the old key (for manual code update)
  *
- * Usage: npx tsx scripts/consolidate-i18n-key.ts --from old.key --to common.key [--dry-run]
+ * Usage: pnpm exec tsx scripts/consolidate-i18n-key.ts --from old.key --to common.key [--dry-run]
  */
 
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
@@ -39,7 +39,7 @@ function parseArgs(): { from: string; to: string; dryRun: boolean } {
 
   if (!from || !to) {
     console.error(
-      'Usage: npx tsx scripts/consolidate-i18n-key.ts --from old.key --to new.key [--dry-run]'
+      'Usage: pnpm exec tsx scripts/consolidate-i18n-key.ts --from old.key --to new.key [--dry-run]'
     );
     process.exit(1);
   }

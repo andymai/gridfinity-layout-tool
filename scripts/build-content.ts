@@ -3,7 +3,7 @@
  * Build script for static content pages.
  * Converts Markdown files in content/ to HTML in public/.
  *
- * Usage: npx tsx scripts/build-content.ts
+ * Usage: pnpm exec tsx scripts/build-content.ts
  */
 
 import fs from 'node:fs';

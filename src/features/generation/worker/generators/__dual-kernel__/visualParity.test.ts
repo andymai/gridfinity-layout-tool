@@ -9,7 +9,7 @@
  *   4. Scoop-wall transition mesh artifacts
  *
  * Run:
- *   npx vitest run --config vitest.profile.config.ts \
+ *   pnpm exec vitest run --config vitest.profile.config.ts \
  *     src/features/generation/worker/generators/__dual-kernel__/visualParity.test
  */
 // @vitest-environment node

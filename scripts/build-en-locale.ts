@@ -5,7 +5,7 @@
  * en.ts is the source of truth (has comments, sections, TypeScript types).
  * en.json is the generated runtime artifact (lazy-loaded like other locales).
  *
- * Usage: npx tsx scripts/build-en-locale.ts
+ * Usage: pnpm exec tsx scripts/build-en-locale.ts
  */
 
 import { writeFileSync } from 'node:fs';

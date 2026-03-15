@@ -2,7 +2,7 @@
  * Profiling wrapper for bin generation — measures time spent in each brepjs operation.
  *
  * Usage:
- *   BREPJS_KERNEL=brepkit npx vitest run src/features/generation/worker/generators/__dual-kernel__/profileBin.test.ts
+ *   BREPJS_KERNEL=brepkit pnpm exec vitest run src/features/generation/worker/generators/__dual-kernel__/profileBin.test.ts
  */
 import * as brepjs from 'brepjs';
 

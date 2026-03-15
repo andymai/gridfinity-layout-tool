@@ -6,7 +6,7 @@
  * 1. Translation calls that pass params but the string doesn't use them
  * 2. Translation strings with placeholders that are never called with params
  *
- * Usage: npx tsx scripts/check-i18n-interpolation.ts
+ * Usage: pnpm exec tsx scripts/check-i18n-interpolation.ts
  * Exit code 0 = all interpolations match, 1 = mismatches found
  */
 

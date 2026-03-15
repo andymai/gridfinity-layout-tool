@@ -5,8 +5,8 @@
  * Covers core dimensions, hollow + features, half-bin mode, and export paths.
  * Run with:
  *
- *   npx vitest bench binGenerator
- *   BREPJS_KERNEL=wasm npx vitest bench binGenerator
+ *   pnpm exec vitest bench binGenerator
+ *   BREPJS_KERNEL=wasm pnpm exec vitest bench binGenerator
  */
 import { bench, describe, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';

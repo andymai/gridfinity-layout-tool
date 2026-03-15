@@ -4,7 +4,7 @@
  * both OCCT and brepkit to pinpoint where they diverge.
  *
  * Run:
- *   npx vitest run --config vitest.profile.config.ts \
+ *   pnpm exec vitest run --config vitest.profile.config.ts \
  *     src/features/generation/worker/generators/__dual-kernel__/diagnoseOps
  */
 import { describe, it, expect, beforeAll } from 'vitest';

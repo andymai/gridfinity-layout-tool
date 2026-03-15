@@ -15,7 +15,7 @@
  * - Split bin previews
  *
  * Run:
- *   npx vitest run --config vitest.profile.config.ts \
+ *   pnpm exec vitest run --config vitest.profile.config.ts \
  *     src/features/generation/worker/generators/__dual-kernel__/brepkitStress.test
  */
 // @vitest-environment node

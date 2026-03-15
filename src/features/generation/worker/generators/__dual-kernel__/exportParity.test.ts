@@ -3,7 +3,7 @@
  * equivalent STL and 3MF exports for the same bin configurations.
  *
  * Run:
- *   npx vitest run --config vitest.profile.config.ts \
+ *   pnpm exec vitest run --config vitest.profile.config.ts \
  *     src/features/generation/worker/generators/__dual-kernel__/exportParity.test
  */
 // @vitest-environment node
