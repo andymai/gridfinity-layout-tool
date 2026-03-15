@@ -163,7 +163,7 @@ export default defineConfig([
       'max-lines': 'off',
     },
   },
-  // i18n locale files: no i18n or max-lines rule needed
+  // i18n locale files: no i18n or max-lines rule needed (locale data files are large by nature)
   {
     files: ['**/i18n/**/*.{ts,tsx}'],
     rules: {
@@ -171,15 +171,18 @@ export default defineConfig([
       'max-lines': 'off',
     },
   },
-  // Justified large files: cohesive modules where splitting would hurt readability
+  // Justified large files: cohesive modules where splitting would hurt readability.
+  // Some paths are forward-looking (created by companion file-split PRs).
   {
     files: [
-      'src/shared/analytics/labelVocabulary/vocabulary.ts',
+      'src/shared/analytics/labelVocabulary.ts', // pre-split (1670 LOC, pure data)
+      'src/shared/analytics/labelVocabulary/vocabulary.ts', // post-split equivalent
       'src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.ts',
       'src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx',
       'src/components/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx',
       'src/shared/analytics/mlTelemetry/trackers.ts',
-      'api/lib/mlTelemetry/aggregators.ts',
+      'api/ml-telemetry.ts', // pre-split (2268 LOC)
+      'api/lib/mlTelemetry/aggregators.ts', // post-split equivalent
     ],
     rules: { 'max-lines': 'off' },
   },
