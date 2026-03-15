@@ -91,6 +91,19 @@ Import from `@/core/storage` (public facade).
 
 **Layer view modes** (`interaction.ts`): `focus` | `stack` | `all`
 
+### CQRS (`src/core/cqrs/`)
+
+| Component   | Purpose                                                   |
+| ----------- | --------------------------------------------------------- |
+| Commands    | Typed user intents via `createCommand()` factory          |
+| Events      | Past-tense domain facts, persisted to IndexedDB           |
+| Handlers    | Command -> store mutation + event emission                |
+| Middleware  | Validation (Zod), undo capture (Labs), analytics, logging |
+| Event Store | IndexedDB append-only with retry queue                    |
+| Versioning  | Schema versions + migration registry for persisted events |
+
+See `src/core/cqrs/README.md` for architecture details, adding new commands/events, and migration guide.
+
 ## Key Constants (`src/core/constants.ts`)
 
 | Constraint        | Value        |

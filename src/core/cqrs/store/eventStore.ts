@@ -13,6 +13,8 @@ import type { DomainEvent } from '../events';
 import type { CorrelationId } from '../types';
 import { eventBus } from '../bus/eventBus';
 import { migrateEvent } from '../versioning';
+import { enqueueForRetry, setRetryEventStore } from './retryQueue';
+import { createLogger } from '@/core/logger';
 
 const DB_NAME = 'gridfinity-events-db';
 const DB_VERSION = 1;
@@ -155,11 +157,18 @@ function createEventStore(): EventStore {
 /** Singleton event store */
 export const eventStore = createEventStore();
 
+const log = createLogger('EventStore');
+
 /**
  * Subscribe the event store to the event bus for automatic persistence.
  * Call once at app startup when CQRS is enabled.
+ *
+ * Failed appends are sent to the retry queue for exponential-backoff
+ * retry (up to 3 attempts). The command pipeline is never blocked.
  */
 export function connectEventStoreToBus(): () => void {
+  setRetryEventStore(eventStore);
+
   return eventBus.subscribeAll((event) => {
     void (async () => {
       await eventStore.append([event]);
@@ -168,8 +177,12 @@ export function connectEventStoreToBus(): () => void {
         await eventStore.evict(event.meta.aggregateId);
       }
     })().catch((error: unknown) => {
-      // eslint-disable-next-line no-console -- Critical infrastructure error logging
-      console.debug('[EventStore] Failed to persist event:', error);
+      log.warn('Failed to persist event, enqueuing for retry', {
+        eventType: event.type,
+        eventId: event.meta.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      enqueueForRetry(event);
     });
   });
 }

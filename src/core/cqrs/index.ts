@@ -112,6 +112,9 @@ export type { EventBus } from './bus/eventBus';
 export { eventStore, connectEventStoreToBus, resetEventStoreDb } from './store/eventStore';
 export type { EventStore, EventStoreQuery } from './store/eventStore';
 
+// === Retry Queue ===
+export { getPendingRetryCount, clearRetryQueue } from './store/retryQueue';
+
 // === Middleware ===
 export { undoCaptureMiddleware, _resetUndoCaptureState } from './middleware/undoCapture';
 export { loggingMiddleware } from './middleware/logging';
