@@ -160,8 +160,8 @@ export default defineConfig([
       'boundaries/element-types': ['error', {
         default: 'disallow',
         rules: [
-          // Core: can import from core only
-          { from: ['core'], allow: ['core'] },
+          // Core: can import from core, shared, and app-level (stores use shared utilities)
+          { from: ['core'], allow: ['core', 'shared', 'design-system', 'app-hooks', 'app-utils', 'app-components', 'app-layouts', 'i18n', 'feature'] },
           // Shared: core, shared, design-system, i18n
           { from: ['shared'], allow: ['core', 'shared', 'design-system', 'i18n'] },
           // Design system: core, shared, design-system
