@@ -49,16 +49,18 @@ describe('labelVocabulary', () => {
     });
 
     describe('partial matches', () => {
-      it('matches when label contains alias', () => {
+      it('matches when label contains alias (forward partial)', () => {
         const result = processLabel('my phillips screwdriver set');
         expect(result.normalized).toBe('screwdriver');
         expect(result.confidence).toBe(0.8);
       });
 
-      it('matches when alias contains short label', () => {
-        const result = processLabel('screw');
-        expect(result.normalized).toBe('screw');
-        expect(result.confidence).toBe(1.0);
+      it('matches when alias contains label (reverse partial)', () => {
+        // "nozzl" is not an alias itself, but "nozzle" contains it
+        const result = processLabel('nozzl');
+        expect(result.normalized).toBe('nozzle');
+        expect(result.domain).toBe('printing_3d');
+        expect(result.confidence).toBe(0.7);
       });
     });
 
@@ -169,6 +171,12 @@ describe('labelVocabulary', () => {
     it('returns false for unknown terms', () => {
       expect(isKnownTerm('unknown_term_xyz')).toBe(false);
       expect(isKnownTerm('')).toBe(false);
+    });
+
+    it('returns false for Object.prototype properties', () => {
+      expect(isKnownTerm('toString')).toBe(false);
+      expect(isKnownTerm('constructor')).toBe(false);
+      expect(isKnownTerm('hasOwnProperty')).toBe(false);
     });
   });
 
