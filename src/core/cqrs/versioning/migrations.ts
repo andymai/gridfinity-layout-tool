@@ -46,11 +46,18 @@ export function registerMigration(
  * Migrate a persisted event to the current schema version.
  *
  * Events missing `schemaVersion` are assumed to be v1 (pre-versioning).
- * Returns the event unmodified if already at the current version.
+ * Returns the event unmodified if already at the current version or
+ * if the event type is unknown (removed/unrecognized types from IndexedDB).
  */
 export function migrateEvent(event: DomainEvent): DomainEvent {
   const eventType = event.type;
-  const currentVersion = CURRENT_EVENT_VERSIONS[eventType];
+  const currentVersion = (
+    CURRENT_EVENT_VERSIONS as Readonly<Record<string, number | undefined>>
+  )[eventType];
+
+  // Unknown event type (e.g., removed from the codebase) — return as-is
+  if (currentVersion === undefined) return event;
+
   const eventVersion =
     (event.meta as unknown as Readonly<Record<string, unknown>>).schemaVersion ?? 1;
 
@@ -58,19 +65,24 @@ export function migrateEvent(event: DomainEvent): DomainEvent {
   if (eventVersion >= currentVersion) return event;
 
   let migrated: unknown = event;
+  let reachedVersion = eventVersion;
   for (let v = eventVersion; v < currentVersion; v++) {
     const key = migrationKey(eventType, v, v + 1);
     const fn = migrationRegistry.get(key);
     if (fn) {
       migrated = fn(migrated);
+      reachedVersion = v + 1;
+    } else {
+      // Gap in migration chain — stop at the last successfully migrated version
+      break;
     }
   }
 
-  // Stamp the migrated event with the current schema version
+  // Only stamp schemaVersion if migrations actually ran or we're already current
   const result = migrated as DomainEvent;
   return {
     ...result,
-    meta: { ...result.meta, schemaVersion: currentVersion },
+    meta: { ...result.meta, schemaVersion: reachedVersion },
   };
 }
 

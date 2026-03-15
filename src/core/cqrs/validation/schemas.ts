@@ -40,8 +40,8 @@ const notesStr = z.string().max(CONSTRAINTS.NOTES_MAX_LENGTH);
 /** Name string (max 64 chars, non-empty) */
 const nameStr = z.string().min(1).max(CONSTRAINTS.NAME_MAX_LENGTH);
 
-/** Hex color string */
-const hexColor = z.string();
+/** Hex color string (#RRGGBB format) */
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 /** Positive number (for mm values) */
 const positiveMm = z.number().gt(0);

@@ -124,7 +124,7 @@ describe('migrateEvent', () => {
     CURRENT_EVENT_VERSIONS['category.added'] = original;
   });
 
-  it('skips missing intermediate migration steps gracefully', () => {
+  it('stops at a gap in the migration chain and stamps the version actually reached', () => {
     const original = CURRENT_EVENT_VERSIONS['drawer.updated'];
     CURRENT_EVENT_VERSIONS['drawer.updated'] = 3;
 
@@ -142,9 +142,9 @@ describe('migrateEvent', () => {
     });
     const result = migrateEvent(event);
 
-    // v1->v2 step is missing, so payload stays same for that step; v2->v3 runs
-    expect((result.payload as Record<string, unknown>)['addedInV3']).toBe(true);
-    expect(result.meta.schemaVersion).toBe(3);
+    // v1->v2 step is missing — migration stops at v1, v2->v3 never runs
+    expect((result.payload as Record<string, unknown>)['addedInV3']).toBeUndefined();
+    expect(result.meta.schemaVersion).toBe(1);
 
     CURRENT_EVENT_VERSIONS['drawer.updated'] = original;
   });

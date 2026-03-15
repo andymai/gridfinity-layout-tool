@@ -26,6 +26,8 @@ const BASE_DELAY_MS = 1000; // 1s, 2s, 4s exponential backoff
 
 const pendingRetries: RetryEntry[] = [];
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
+/** The target time the current timer is scheduled for */
+let retryTimerTarget: number | null = null;
 
 /**
  * The event store instance used for retries.
@@ -59,9 +61,10 @@ export function enqueueForRetry(event: DomainEvent): void {
 /**
  * Schedule the next retry processing pass.
  * Uses the earliest `nextRetryAt` in the queue to set the timer.
+ * If a new entry has an earlier nextRetryAt than the pending timer,
+ * the timer is cancelled and rescheduled for the earlier time.
  */
 function scheduleProcessing(): void {
-  if (retryTimer !== null) return; // Already scheduled
   if (pendingRetries.length === 0) return;
 
   // Find the earliest retry time
@@ -72,9 +75,21 @@ function scheduleProcessing(): void {
     }
   }
 
+  // If a timer is already scheduled for an earlier or equal time, keep it
+  if (retryTimer !== null && retryTimerTarget !== null && retryTimerTarget <= earliestRetry) {
+    return;
+  }
+
+  // Cancel the existing timer if the new target is earlier
+  if (retryTimer !== null) {
+    clearTimeout(retryTimer);
+  }
+
+  retryTimerTarget = earliestRetry;
   const delay = Math.max(0, earliestRetry - Date.now());
   retryTimer = setTimeout(() => {
     retryTimer = null;
+    retryTimerTarget = null;
     void processRetries();
   }, delay);
 }
@@ -159,6 +174,7 @@ export function clearRetryQueue(): void {
     clearTimeout(retryTimer);
     retryTimer = null;
   }
+  retryTimerTarget = null;
   retryTarget = null;
 }
 

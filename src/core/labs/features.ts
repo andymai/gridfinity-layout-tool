@@ -64,7 +64,7 @@ export const FEATURE_FLAGS = [
     warning:
       'This changes how undo/redo works internally. If you notice undo issues, disable this flag.',
     addedAt: '2026-03',
-    requiresRefresh: false,
+    requiresRefresh: true,
   },
   {
     id: 'layout_to_print',

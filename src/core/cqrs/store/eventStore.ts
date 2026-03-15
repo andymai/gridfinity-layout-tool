@@ -171,19 +171,31 @@ export function connectEventStoreToBus(): () => void {
 
   return eventBus.subscribeAll((event) => {
     void (async () => {
-      await eventStore.append([event]);
-      const count = await eventStore.count(event.meta.aggregateId);
-      if (count > MAX_EVENTS_PER_AGGREGATE) {
-        await eventStore.evict(event.meta.aggregateId);
+      try {
+        await eventStore.append([event]);
+      } catch (appendError: unknown) {
+        log.warn('Failed to persist event, enqueuing for retry', {
+          eventType: event.type,
+          eventId: event.meta.id,
+          error: appendError instanceof Error ? appendError.message : String(appendError),
+        });
+        enqueueForRetry(event);
+        return; // Skip eviction if append failed
       }
-    })().catch((error: unknown) => {
-      log.warn('Failed to persist event, enqueuing for retry', {
-        eventType: event.type,
-        eventId: event.meta.id,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      enqueueForRetry(event);
-    });
+
+      // Eviction errors are non-critical — log but don't retry the event
+      try {
+        const count = await eventStore.count(event.meta.aggregateId);
+        if (count > MAX_EVENTS_PER_AGGREGATE) {
+          await eventStore.evict(event.meta.aggregateId);
+        }
+      } catch (evictionError: unknown) {
+        log.warn('Event eviction check failed (non-critical)', {
+          aggregateId: event.meta.aggregateId,
+          error: evictionError instanceof Error ? evictionError.message : String(evictionError),
+        });
+      }
+    })();
   });
 }
 

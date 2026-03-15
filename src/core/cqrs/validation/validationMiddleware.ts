@@ -4,7 +4,7 @@
  * First middleware in the CQRS pipeline. Validates command payloads
  * against Zod schemas for fail-fast behavior before reaching handlers.
  *
- * - Returns a ValidationError on invalid payloads
+ * - Returns a LayoutError (LAYOUT_INVALID_OPERATION) on invalid payloads
  * - Passes through if no schema is registered (forward-compatible)
  * - Does NOT validate business rules (collisions, limits) — handlers do that
  */
@@ -20,7 +20,7 @@ import { getCommandSchema } from './schemas';
 /**
  * Format Zod validation issues into a human-readable error message.
  */
-function formatZodError(error: z.core.$ZodError): string {
+function formatZodError(error: z.ZodError): string {
   return error.issues
     .map((issue) => {
       const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';

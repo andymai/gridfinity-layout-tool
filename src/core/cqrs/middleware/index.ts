@@ -2,7 +2,9 @@
  * Middleware barrel
  */
 
-export { undoCaptureMiddleware, _resetUndoCaptureState } from './undoCapture';
+export { undoCaptureMiddleware } from './undoCapture';
+/** @internal Test-only — reset the undo capture re-entrancy guard */
+export { _resetUndoCaptureState } from './undoCapture';
 export { loggingMiddleware } from './logging';
 export { analyticsMiddleware } from './analytics';
 
