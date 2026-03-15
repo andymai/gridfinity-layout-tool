@@ -11,7 +11,7 @@ import type { DomainEvent } from '../events';
 import type { CommandResult, Middleware } from '../types';
 import { getHandler } from '../handlers';
 import { eventBus } from './eventBus';
-import { defaultPipeline } from '../middleware';
+import { getDefaultPipeline } from '../middleware';
 import type { EventBus } from './eventBus';
 
 export interface CommandBus {
@@ -27,7 +27,7 @@ export interface CommandBus {
 
 export function createCommandBus(
   bus: EventBus = eventBus,
-  initialMiddleware: ReadonlyArray<Middleware<Command, DomainEvent>> = defaultPipeline
+  initialMiddleware: ReadonlyArray<Middleware<Command, DomainEvent>> = getDefaultPipeline()
 ): CommandBus {
   const middlewares: Array<Middleware<Command, DomainEvent>> = [...initialMiddleware];
 

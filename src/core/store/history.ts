@@ -164,6 +164,9 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
  * The execute function returns whatever the action returns, allowing callers
  * to check Result types from store actions:
  *
+ * @deprecated Use CQRS middleware undo capture instead (enable `cqrs_undo` Labs flag).
+ * This wrapper will be removed once all mutation paths go through the CQRS pipeline.
+ *
  * @example
  * ```ts
  * const result = execute(() => addBin({ ... }));

@@ -113,10 +113,11 @@ export { eventStore, connectEventStoreToBus, resetEventStoreDb } from './store/e
 export type { EventStore, EventStoreQuery } from './store/eventStore';
 
 // === Middleware ===
-export { undoCaptureMiddleware } from './middleware/undoCapture';
+export { undoCaptureMiddleware, _resetUndoCaptureState } from './middleware/undoCapture';
 export { loggingMiddleware } from './middleware/logging';
 export { analyticsMiddleware } from './middleware/analytics';
-export { defaultPipeline } from './middleware';
+/** @deprecated Use `getDefaultPipeline()` instead */
+export { defaultPipeline, getDefaultPipeline } from './middleware';
 
 // === Validation ===
 export { validationMiddleware, COMMAND_SCHEMAS, getCommandSchema } from './validation';
