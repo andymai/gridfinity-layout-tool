@@ -55,6 +55,18 @@ export const FEATURE_FLAGS = [
     requiresRefresh: true,
   },
   {
+    id: 'cqrs_undo',
+    name: 'CQRS Undo Pipeline',
+    description:
+      'Routes undo/redo capture through the CQRS middleware pipeline instead of the component-level useUndoableAction() wrapper.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'This changes how undo/redo works internally. If you notice undo issues, disable this flag.',
+    addedAt: '2026-03',
+    requiresRefresh: true,
+  },
+  {
     id: 'layout_to_print',
     name: 'Layout-to-Print Export',
     description:

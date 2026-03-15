@@ -112,11 +112,18 @@ export type { EventBus } from './bus/eventBus';
 export { eventStore, connectEventStoreToBus, resetEventStoreDb } from './store/eventStore';
 export type { EventStore, EventStoreQuery } from './store/eventStore';
 
+// === Retry Queue ===
+export { getPendingRetryCount, clearRetryQueue } from './store/retryQueue';
+
 // === Middleware ===
-export { undoCaptureMiddleware } from './middleware/undoCapture';
+export { undoCaptureMiddleware, _resetUndoCaptureState } from './middleware/undoCapture';
 export { loggingMiddleware } from './middleware/logging';
 export { analyticsMiddleware } from './middleware/analytics';
-export { defaultPipeline } from './middleware';
+/** @deprecated Use `getDefaultPipeline()` instead */
+export { defaultPipeline, getDefaultPipeline } from './middleware';
+
+// === Validation ===
+export { validationMiddleware, COMMAND_SCHEMAS, getCommandSchema } from './validation';
 
 // === Integration ===
 export { createCqrsMutations } from './integration/mutationsAdapter';

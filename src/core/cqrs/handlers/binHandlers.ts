@@ -40,7 +40,7 @@ export function handleAddBin(command: AddBinCommand): CommandResult<string, Doma
       {
         type: 'bin.added' as const,
         payload: { bin: { ...bin } },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'bin.added'),
       },
     ],
   });
@@ -67,7 +67,7 @@ export function handleUpdateBin(command: UpdateBinCommand): CommandResult<void, 
       {
         type: 'bin.updated' as const,
         payload: { id, changes: updates, previous },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'bin.updated'),
       },
     ],
   });
@@ -89,7 +89,7 @@ export function handleDeleteBin(command: DeleteBinCommand): CommandResult<void, 
           {
             type: 'bin.deleted' as const,
             payload: { bin: { ...bin } },
-            meta: createEventMeta(command.meta),
+            meta: createEventMeta(command.meta, 'bin.deleted'),
           },
         ]
       : [],
@@ -115,7 +115,7 @@ export function handleDeleteBins(command: DeleteBinsCommand): CommandResult<void
             {
               type: 'bin.batchDeleted' as const,
               payload: { bins },
-              meta: createEventMeta(command.meta),
+              meta: createEventMeta(command.meta, 'bin.batchDeleted'),
             },
           ]
         : [],
@@ -142,7 +142,7 @@ export function handleDuplicateBin(
           {
             type: 'bin.duplicated' as const,
             payload: { sourceId: id, newBin: { ...newBin } },
-            meta: createEventMeta(command.meta),
+            meta: createEventMeta(command.meta, 'bin.duplicated'),
           },
         ]
       : [],
@@ -168,7 +168,7 @@ export function handleMoveBinToStaging(
           {
             type: 'bin.movedToStaging' as const,
             payload: { id, previousLayerId },
-            meta: createEventMeta(command.meta),
+            meta: createEventMeta(command.meta, 'bin.movedToStaging'),
           },
         ]
       : [],
@@ -190,7 +190,7 @@ export function handleMoveBinFromStaging(
       {
         type: 'bin.movedFromStaging' as const,
         payload: { id, layerId, x, y },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'bin.movedFromStaging'),
       },
     ],
   });
@@ -215,7 +215,7 @@ export function handleFillLayer(command: FillLayerCommand): CommandResult<number
             {
               type: 'bin.layerFilled' as const,
               payload: { layerId, binsCreated: count, bins: newBins },
-              meta: createEventMeta(command.meta),
+              meta: createEventMeta(command.meta, 'bin.layerFilled'),
             },
           ]
         : [],
@@ -239,7 +239,7 @@ export function handleClearLayer(command: ClearLayerCommand): CommandResult<numb
             {
               type: 'bin.layerCleared' as const,
               payload: { layerId, binsRemoved: count, bins: binsOnLayer },
-              meta: createEventMeta(command.meta),
+              meta: createEventMeta(command.meta, 'bin.layerCleared'),
             },
           ]
         : [],

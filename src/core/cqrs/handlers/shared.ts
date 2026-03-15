@@ -6,6 +6,8 @@ import type { LayoutId } from '@/core/types';
 import { useLibraryStore } from '@/core/store/library';
 import { eventId } from '../types';
 import type { CommandMeta, EventMeta } from '../types';
+import type { DomainEventType } from '../events';
+import { CURRENT_EVENT_VERSIONS } from '../versioning';
 
 /** Monotonic version counter per aggregate (resets on page load — fine for client-side) */
 const versionCounters = new Map<string, number>();
@@ -22,9 +24,9 @@ function nextVersion(aggregateId: string): number {
 
 /**
  * Create event metadata from command metadata.
- * Derives aggregateId from the active layout.
+ * Derives aggregateId from the active layout and looks up the current schema version.
  */
-export function createEventMeta(commandMeta: CommandMeta): EventMeta {
+export function createEventMeta(commandMeta: CommandMeta, eventType: DomainEventType): EventMeta {
   const aggregateId: LayoutId = useLibraryStore.getState().library.activeLayoutId;
   return {
     id: eventId(`evt_${Date.now()}_${++eventCounter}`),
@@ -33,6 +35,7 @@ export function createEventMeta(commandMeta: CommandMeta): EventMeta {
     commandId: commandMeta.id,
     aggregateId,
     version: nextVersion(aggregateId),
+    schemaVersion: CURRENT_EVENT_VERSIONS[eventType],
   };
 }
 

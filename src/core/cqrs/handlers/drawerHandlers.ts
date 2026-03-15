@@ -41,7 +41,7 @@ export function handleUpdateDrawer(command: UpdateDrawerCommand): CommandResult<
           previous,
           binsDisplacedToStaging: binsDisplaced,
         },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'drawer.updated'),
       },
     ],
   });
@@ -59,7 +59,7 @@ export function handleSetName(command: SetNameCommand): CommandResult<void, Doma
       {
         type: 'layout.nameSet' as const,
         payload: { name: command.payload.name, previousName },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'layout.nameSet'),
       },
     ],
   });
@@ -79,7 +79,7 @@ export function handleSetPrintBedSize(
       {
         type: 'layout.printBedSizeSet' as const,
         payload: { size: command.payload.size, previousSize },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'layout.printBedSizeSet'),
       },
     ],
   });
@@ -99,7 +99,7 @@ export function handleSetGridUnitMm(
       {
         type: 'layout.gridUnitMmSet' as const,
         payload: { mm: command.payload.mm, previousMm },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'layout.gridUnitMmSet'),
       },
     ],
   });
@@ -119,7 +119,7 @@ export function handleSetHeightUnitMm(
       {
         type: 'layout.heightUnitMmSet' as const,
         payload: { mm: command.payload.mm, previousMm },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'layout.heightUnitMmSet'),
       },
     ],
   });
@@ -141,7 +141,7 @@ export function handleSetBaseplateParams(
       {
         type: 'layout.baseplateParamsSet' as const,
         payload: { params: command.payload.params, previousParams },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'layout.baseplateParamsSet'),
       },
     ],
   });

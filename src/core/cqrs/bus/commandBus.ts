@@ -11,7 +11,7 @@ import type { DomainEvent } from '../events';
 import type { CommandResult, Middleware } from '../types';
 import { getHandler } from '../handlers';
 import { eventBus } from './eventBus';
-import { defaultPipeline } from '../middleware';
+import { getDefaultPipeline } from '../middleware';
 import type { EventBus } from './eventBus';
 
 export interface CommandBus {
@@ -27,7 +27,7 @@ export interface CommandBus {
 
 export function createCommandBus(
   bus: EventBus = eventBus,
-  initialMiddleware: ReadonlyArray<Middleware<Command, DomainEvent>> = defaultPipeline
+  initialMiddleware: ReadonlyArray<Middleware<Command, DomainEvent>> = getDefaultPipeline()
 ): CommandBus {
   const middlewares: Array<Middleware<Command, DomainEvent>> = [...initialMiddleware];
 
@@ -66,5 +66,11 @@ export function createCommandBus(
   };
 }
 
-/** Singleton command bus for the application */
+/**
+ * Singleton command bus for the application.
+ *
+ * The middleware pipeline is captured once at module load via `getDefaultPipeline()`.
+ * Toggling the `cqrs_undo` Labs flag at runtime will NOT change the pipeline — the
+ * flag's `requiresRefresh: true` ensures a page reload rebuilds the singleton.
+ */
 export const commandBus = createCommandBus();

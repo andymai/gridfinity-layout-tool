@@ -12,6 +12,9 @@ import type { LayoutId } from '@/core/types';
 import type { DomainEvent } from '../events';
 import type { CorrelationId } from '../types';
 import { eventBus } from '../bus/eventBus';
+import { migrateEvent } from '../versioning';
+import { enqueueForRetry, setRetryEventStore } from './retryQueue';
+import { createLogger } from '@/core/logger';
 
 const DB_NAME = 'gridfinity-events-db';
 const DB_VERSION = 1;
@@ -99,20 +102,20 @@ function createEventStore(): EventStore {
         filtered = filtered.slice(0, query.limit);
       }
 
-      return filtered;
+      return filtered.map(migrateEvent);
     },
 
     async getByTimeRange(start, end) {
       const db = await getDb();
       const index = db.transaction(EVENTS_STORE, 'readonly').store.index('byTimestamp');
       const range = IDBKeyRange.bound(start, end);
-      return (await index.getAll(range)) as DomainEvent[];
+      return ((await index.getAll(range)) as DomainEvent[]).map(migrateEvent);
     },
 
     async getByCorrelation(correlationId) {
       const db = await getDb();
       const index = db.transaction(EVENTS_STORE, 'readonly').store.index('byCorrelation');
-      return (await index.getAll(correlationId)) as DomainEvent[];
+      return ((await index.getAll(correlationId)) as DomainEvent[]).map(migrateEvent);
     },
 
     async count(aggregateId) {
@@ -154,22 +157,45 @@ function createEventStore(): EventStore {
 /** Singleton event store */
 export const eventStore = createEventStore();
 
+const log = createLogger('EventStore');
+
 /**
  * Subscribe the event store to the event bus for automatic persistence.
  * Call once at app startup when CQRS is enabled.
+ *
+ * Failed appends are sent to the retry queue for exponential-backoff
+ * retry (up to 3 attempts). The command pipeline is never blocked.
  */
 export function connectEventStoreToBus(): () => void {
+  setRetryEventStore(eventStore);
+
   return eventBus.subscribeAll((event) => {
     void (async () => {
-      await eventStore.append([event]);
-      const count = await eventStore.count(event.meta.aggregateId);
-      if (count > MAX_EVENTS_PER_AGGREGATE) {
-        await eventStore.evict(event.meta.aggregateId);
+      try {
+        await eventStore.append([event]);
+      } catch (appendError: unknown) {
+        log.warn('Failed to persist event, enqueuing for retry', {
+          eventType: event.type,
+          eventId: event.meta.id,
+          error: appendError instanceof Error ? appendError.message : String(appendError),
+        });
+        enqueueForRetry(event);
+        return; // Skip eviction if append failed
       }
-    })().catch((error: unknown) => {
-      // eslint-disable-next-line no-console -- Critical infrastructure error logging
-      console.debug('[EventStore] Failed to persist event:', error);
-    });
+
+      // Eviction errors are non-critical — log but don't retry the event
+      try {
+        const count = await eventStore.count(event.meta.aggregateId);
+        if (count > MAX_EVENTS_PER_AGGREGATE) {
+          await eventStore.evict(event.meta.aggregateId);
+        }
+      } catch (evictionError: unknown) {
+        log.warn('Event eviction check failed (non-critical)', {
+          aggregateId: event.meta.aggregateId,
+          error: evictionError instanceof Error ? evictionError.message : String(evictionError),
+        });
+      }
+    })();
   });
 }
 
