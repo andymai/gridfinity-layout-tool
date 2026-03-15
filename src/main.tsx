@@ -7,7 +7,7 @@ import { LocaleProvider } from './i18n/context.tsx';
 import { detectBrowserLocale } from './i18n/detection.ts';
 import { isLocale } from './i18n/types.ts';
 import { useSettingsStore } from './core/store/settings.ts';
-import { initAnalytics } from './shared/analytics/posthog.ts';
+import { initAnalytics } from './shared/analytics/posthog';
 import { useLayoutStore } from './core/store/layout';
 import { useLibraryStore } from './core/store/library.ts';
 import { useSharedWithMeStore } from './core/store/sharedWithMe.ts';
