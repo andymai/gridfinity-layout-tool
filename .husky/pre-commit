@@ -1,15 +1,15 @@
-npx lint-staged
-npm run check:boundaries:staged
-# npm run check:design-system:staged  # disabled — design system not ready yet
-npm run check:i18n
-npm run check:i18n:values
-npm run check:i18n:interpolation
+pnpm exec lint-staged
+pnpm run check:boundaries:staged
+# pnpm run check:design-system:staged  # disabled — design system not ready yet
+pnpm run check:i18n
+pnpm run check:i18n:values
+pnpm run check:i18n:interpolation
 # check:i18n:unused scans all source files — only run when i18n files are staged
 if git diff --cached --name-only | grep -qE '^src/i18n/'; then
-  npm run check:i18n:unused
+  pnpm run check:i18n:unused
 fi
-npm run check:exhaustiveness
-npm run test:affected
-npm run check:component-structure
-npm run check:missing-tests
-npm run check:readme-reminders
+pnpm run check:exhaustiveness
+pnpm run test:affected
+pnpm run check:component-structure
+pnpm run check:missing-tests
+pnpm run check:readme-reminders
