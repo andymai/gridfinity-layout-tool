@@ -60,7 +60,7 @@ fi
 
 # Run tests silently, capture output
 cd "$PROJECT_ROOT"
-OUTPUT=$(npm run test:run -- --reporter=dot "$TEST_FILE" 2>&1)
+OUTPUT=$(pnpm run test:run -- --reporter=dot "$TEST_FILE" 2>&1)
 EXIT_CODE=$?
 
 # Only show output if tests failed

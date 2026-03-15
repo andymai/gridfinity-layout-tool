@@ -11,7 +11,7 @@
  * Handles dynamic keys (e.g. t(`prefix.${var}`)) via prefix detection so
  * they are reported as "possibly unused" rather than "definitely unused".
  *
- * Usage: npx tsx scripts/check-i18n-unused.ts
+ * Usage: pnpm exec tsx scripts/check-i18n-unused.ts
  * Exit code 0 = no definitely-unused keys, 1 = unused keys found
  */
 

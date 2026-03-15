@@ -2,7 +2,7 @@
  * Compare two Vitest benchmark JSON outputs side-by-side.
  *
  * Usage:
- *   npx tsx benchmarks/compare.ts benchmarks/baseline-opencascade.json benchmarks/baseline-brepjs-wasm.json
+ *   pnpm exec tsx benchmarks/compare.ts benchmarks/baseline-opencascade.json benchmarks/baseline-brepjs-wasm.json
  *
  * Reads Vitest bench JSON reporter output and prints a table showing
  * median time and relative change per benchmark.
@@ -62,7 +62,7 @@ function formatChange(baseMs: number, newMs: number): string {
 const [, , baseFile, newFile] = process.argv;
 
 if (!baseFile || !newFile) {
-  process.stderr.write('Usage: npx tsx benchmarks/compare.ts <baseline.json> <new.json>\n');
+  process.stderr.write('Usage: pnpm exec tsx benchmarks/compare.ts <baseline.json> <new.json>\n');
   process.exit(1);
 }
 

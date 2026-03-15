@@ -1,4 +1,4 @@
-#!/usr/bin/env -S npx tsx
+#!/usr/bin/env -S pnpm exec tsx
 /* eslint-disable no-console */
 /**
  * PostHog Dashboard Setup Script
@@ -12,14 +12,14 @@
  * 2. Set POSTHOG_PROJECT_ID environment variable (find in PostHog project settings)
  *
  * Usage:
- *   POSTHOG_PERSONAL_API_KEY=phx_xxx POSTHOG_PROJECT_ID=12345 npx tsx scripts/setup-posthog-dashboards.ts
+ *   POSTHOG_PERSONAL_API_KEY=phx_xxx POSTHOG_PROJECT_ID=12345 pnpm exec tsx scripts/setup-posthog-dashboards.ts
  *
  * Or add to .env.local:
  *   POSTHOG_PERSONAL_API_KEY=phx_xxx
  *   POSTHOG_PROJECT_ID=12345
  *
  * Then run:
- *   source .env.local && npx tsx scripts/setup-posthog-dashboards.ts
+ *   source .env.local && pnpm exec tsx scripts/setup-posthog-dashboards.ts
  *
  * @see https://posthog.com/docs/api/dashboards
  * @see https://posthog.com/docs/api/insights

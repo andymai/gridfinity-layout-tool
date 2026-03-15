@@ -5,7 +5,7 @@
  * This barrel re-exports the aggregated array and helper functions.
  *
  * Update snapshots after verified geometry changes:
- *   npm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.test
+ *   pnpm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.test
  */
 export { ALL_SCENARIOS } from './scenarios/index';
 export type { ScenarioCase } from './scenarios/index';

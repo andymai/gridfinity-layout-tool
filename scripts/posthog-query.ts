@@ -1,4 +1,4 @@
-#!/usr/bin/env -S npx tsx
+#!/usr/bin/env -S pnpm exec tsx
 /**
  * PostHog Query Script
  *
@@ -11,25 +11,25 @@
  *
  * Usage:
  *   # Run a HogQL query
- *   npx tsx scripts/posthog-query.ts "SELECT event, count() FROM events GROUP BY event"
+ *   pnpm exec tsx scripts/posthog-query.ts "SELECT event, count() FROM events GROUP BY event"
  *
  *   # List dashboards
- *   npx tsx scripts/posthog-query.ts --dashboards
+ *   pnpm exec tsx scripts/posthog-query.ts --dashboards
  *
  *   # List insights
- *   npx tsx scripts/posthog-query.ts --insights
+ *   pnpm exec tsx scripts/posthog-query.ts --insights
  *
  *   # Get insight results
- *   npx tsx scripts/posthog-query.ts --insight 12345
+ *   pnpm exec tsx scripts/posthog-query.ts --insight 12345
  *
  *   # Query events
- *   npx tsx scripts/posthog-query.ts --events layout_snapshot --limit 10
+ *   pnpm exec tsx scripts/posthog-query.ts --events layout_snapshot --limit 10
  *
  *   # Get person properties
- *   npx tsx scripts/posthog-query.ts --persons --limit 10
+ *   pnpm exec tsx scripts/posthog-query.ts --persons --limit 10
  *
  *   # Export to file
- *   npx tsx scripts/posthog-query.ts --events layout_snapshot --output data.json
+ *   pnpm exec tsx scripts/posthog-query.ts --events layout_snapshot --output data.json
  *
  * @see https://posthog.com/docs/api
  * @see https://posthog.com/docs/hogql
@@ -54,7 +54,9 @@ if (!needsHelp && (!API_KEY || !PROJECT_ID)) {
   console.error('  POSTHOG_PROJECT_ID - Find in PostHog → Project Settings');
   console.error('');
   console.error('Usage:');
-  console.error('  POSTHOG_PERSONAL_API_KEY=phx_xxx POSTHOG_PROJECT_ID=123 npx tsx scripts/posthog-query.ts "YOUR QUERY"');
+  console.error(
+    '  POSTHOG_PERSONAL_API_KEY=phx_xxx POSTHOG_PROJECT_ID=123 pnpm exec tsx scripts/posthog-query.ts "YOUR QUERY"'
+  );
   console.error('');
   console.error('Run with --help for more options');
   process.exit(1);
@@ -195,7 +197,10 @@ export async function listDashboards(): Promise<unknown> {
 /**
  * List all insights
  */
-export async function listInsights(options?: { limit?: number; saved?: boolean }): Promise<unknown> {
+export async function listInsights(options?: {
+  limit?: number;
+  saved?: boolean;
+}): Promise<unknown> {
   const params = new URLSearchParams();
 
   if (options?.limit) params.append('limit', String(options.limit));
@@ -340,7 +345,7 @@ PostHog Query Tool
 ==================
 
 Usage:
-  npx tsx scripts/posthog-query.ts [OPTIONS] [QUERY]
+  pnpm exec tsx scripts/posthog-query.ts [OPTIONS] [QUERY]
 
 Options:
   --help, -h              Show this help message
@@ -365,22 +370,22 @@ Preset Queries:
 
 Examples:
   # Run a HogQL query
-  npx tsx scripts/posthog-query.ts "SELECT event, count() FROM events GROUP BY event LIMIT 10"
+  pnpm exec tsx scripts/posthog-query.ts "SELECT event, count() FROM events GROUP BY event LIMIT 10"
 
   # Use a preset query
-  npx tsx scripts/posthog-query.ts --preset errors
+  pnpm exec tsx scripts/posthog-query.ts --preset errors
 
   # List dashboards
-  npx tsx scripts/posthog-query.ts --dashboards
+  pnpm exec tsx scripts/posthog-query.ts --dashboards
 
   # Get insight results
-  npx tsx scripts/posthog-query.ts --insight 12345
+  pnpm exec tsx scripts/posthog-query.ts --insight 12345
 
   # Query specific events
-  npx tsx scripts/posthog-query.ts --events layout_snapshot --limit 5
+  pnpm exec tsx scripts/posthog-query.ts --events layout_snapshot --limit 5
 
   # Export to file
-  npx tsx scripts/posthog-query.ts --preset feature-adoption --output adoption.json
+  pnpm exec tsx scripts/posthog-query.ts --preset feature-adoption --output adoption.json
 `);
 }
 
@@ -413,7 +418,9 @@ function formatResults(data: unknown): string {
 
   // Handle list results (dashboards, insights, etc.)
   if (typeof data === 'object' && data !== null && 'results' in data) {
-    const { results } = data as { results: Array<{ id: number; name: string; [key: string]: unknown }> };
+    const { results } = data as {
+      results: Array<{ id: number; name: string; [key: string]: unknown }>;
+    };
 
     if (results.length === 0) {
       return 'No results';

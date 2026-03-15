@@ -2,7 +2,7 @@
 /**
  * Pre-commit check: Verify all locale JSON files have the same keys as en.ts.
  *
- * Usage: npx tsx scripts/check-i18n-keys.ts
+ * Usage: pnpm exec tsx scripts/check-i18n-keys.ts
  * Exit code 0 = all locales match, 1 = mismatches found
  */
 

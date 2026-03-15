@@ -35,8 +35,8 @@ To run the project locally for testing or verifying a bug report:
 git clone https://github.com/andymai/gridfinity-layout-tool.git
 cd gridfinity-layout-tool
 nvm use
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 The app will be available at `http://localhost:5173`.
@@ -44,7 +44,7 @@ The app will be available at `http://localhost:5173`.
 ### Prerequisites
 
 - **Node.js 20+** (see `.nvmrc` — use `nvm use` to switch)
-- **npm 10+** (comes with Node 20)
+- **pnpm 10+** (`corepack enable` to install)
 
 ## License
 

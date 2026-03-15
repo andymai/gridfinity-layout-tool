@@ -70,6 +70,6 @@ describe('my feature', () => {
 3. **localStorage isolation** — use `createIsolatedLocalStorageMock()` per-test; shared module-level mocks pollute subsequent tests
 4. **Result helpers preferred** — use `expectOk()` / `expectErr()` instead of manual `isOk()` + unwrap chains
 5. **Fake timer coordination** — `setupFakeTimers()` syncs `vi.useFakeTimers()` with `Date.now()`; call `cleanup()` in `afterEach`
-6. **Coverage thresholds enforced** — ~78% lines, ~66% branches; `npm run test:coverage` blocks commit if below
+6. **Coverage thresholds enforced** — ~78% lines, ~66% branches; `pnpm run test:coverage` blocks commit if below
 7. **Colocated convention** — test files must be siblings to source (`foo.ts` + `foo.test.ts`); pre-commit hook enforces this
 8. **Zustand state persists** — stores survive unmounts; without `resetAllStores()`, prior test state leaks through

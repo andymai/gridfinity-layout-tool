@@ -8,8 +8,8 @@
  * - If values differ → skip and report
  *
  * Usage:
- *   npx tsx scripts/batch-consolidate-i18n.ts --dry-run   # preview
- *   npx tsx scripts/batch-consolidate-i18n.ts             # execute all
+ *   pnpm exec tsx scripts/batch-consolidate-i18n.ts --dry-run   # preview
+ *   pnpm exec tsx scripts/batch-consolidate-i18n.ts             # execute all
  */
 
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
@@ -448,6 +448,6 @@ for (const [from, to] of allPairs) {
 
 console.log(`\n✅ Done! Processed ${allPairs.length} key pairs.`);
 console.log('\nNext steps:');
-console.log('  npm run check:i18n');
-console.log('  npm run check:i18n:unused');
-console.log('  npm run check:i18n:values');
+console.log('  pnpm run check:i18n');
+console.log('  pnpm run check:i18n:unused');
+console.log('  pnpm run check:i18n:values');

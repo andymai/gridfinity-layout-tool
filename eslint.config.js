@@ -32,6 +32,7 @@ export default defineConfig([
           'tsconfig.node.json',
           'tsconfig.api.json',
           'tsconfig.test.json',
+          'packages/branded-types/tsconfig.json',
         ],
         tsconfigRootDir: import.meta.dirname,
       },

@@ -29,7 +29,7 @@ echo "📁 Staged TypeScript files: $FILE_COUNT"
 
 if [ "$FILE_COUNT" -gt "$MAX_FILES_FOR_RELATED" ]; then
   echo "🔄 Many files changed ($FILE_COUNT > $MAX_FILES_FOR_RELATED), running full test suite..."
-  npx vitest run
+  pnpm exec vitest run
 else
   echo "🎯 Running tests related to changed files..."
   # Convert newlines to spaces for vitest related command
@@ -37,7 +37,7 @@ else
 
   # Run related tests (no coverage - thresholds checked in CI)
   # shellcheck disable=SC2086
-  npx vitest related $FILES_ARGS --run
+  pnpm exec vitest related $FILES_ARGS --run
 fi
 
 echo "✓ Tests passed"
