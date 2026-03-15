@@ -118,6 +118,9 @@ export { loggingMiddleware } from './middleware/logging';
 export { analyticsMiddleware } from './middleware/analytics';
 export { defaultPipeline } from './middleware';
 
+// === Validation ===
+export { validationMiddleware, COMMAND_SCHEMAS, getCommandSchema } from './validation';
+
 // === Integration ===
 export { createCqrsMutations } from './integration/mutationsAdapter';
 

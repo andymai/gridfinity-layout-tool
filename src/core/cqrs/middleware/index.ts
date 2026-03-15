@@ -9,11 +9,14 @@ export { analyticsMiddleware } from './analytics';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { Middleware } from '../types';
+import { validationMiddleware } from '../validation/validationMiddleware';
 import { loggingMiddleware } from './logging';
 import { analyticsMiddleware } from './analytics';
 
 /**
  * Default middleware pipeline.
+ *
+ * Order: validation (fail-fast) → analytics → logging.
  *
  * Undo is NOT included here — it's handled by useUndoableAction() which
  * wraps useMutations() calls in components. Including undoCaptureMiddleware
@@ -21,6 +24,7 @@ import { analyticsMiddleware } from './analytics';
  * for future use when undo ownership moves fully into CQRS.
  */
 export const defaultPipeline: ReadonlyArray<Middleware<Command, DomainEvent>> = [
+  validationMiddleware,
   analyticsMiddleware,
   loggingMiddleware,
 ];
