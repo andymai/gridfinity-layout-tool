@@ -90,6 +90,7 @@ export default defineConfig([
       'prefer-const': 'error',
       'no-var': 'error',
       'eqeqeq': ['error', 'always'],
+      'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
 
       // i18n: Enforce localization of user-facing strings
       'i18next/no-literal-string': ['error', {
@@ -159,14 +160,31 @@ export default defineConfig([
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
       'i18next/no-literal-string': 'off',
+      'max-lines': 'off',
     },
   },
-  // i18n locale files: no i18n rule needed
+  // i18n locale files: no i18n or max-lines rule needed (locale data files are large by nature)
   {
     files: ['**/i18n/**/*.{ts,tsx}'],
     rules: {
       'i18next/no-literal-string': 'off',
+      'max-lines': 'off',
     },
+  },
+  // Justified large files: cohesive modules where splitting would hurt readability.
+  // Some paths are forward-looking (created by companion file-split PRs).
+  {
+    files: [
+      'src/shared/analytics/labelVocabulary.ts', // pre-split (1670 LOC, pure data)
+      'src/shared/analytics/labelVocabulary/vocabulary.ts', // post-split equivalent
+      'src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.ts',
+      'src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx',
+      'src/components/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx',
+      'src/shared/analytics/mlTelemetry/trackers.ts',
+      'api/ml-telemetry.ts', // pre-split (2268 LOC)
+      'api/lib/mlTelemetry/aggregators.ts', // post-split equivalent
+    ],
+    rules: { 'max-lines': 'off' },
   },
   // Scripts: no i18n rule needed
   {
