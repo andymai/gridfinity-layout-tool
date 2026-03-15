@@ -30,7 +30,7 @@ Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer orga
 
 ## Local Development
 
-Requires **Node.js 20+** and **pnpm 9+**. Use `nvm use` to switch to the correct version (requires [nvm](https://github.com/nvm-sh/nvm)).
+Requires **Node.js 20+** and **pnpm 10+**. Use `nvm use` to switch to the correct version (requires [nvm](https://github.com/nvm-sh/nvm)).
 
 ```bash
 git clone https://github.com/andymai/gridfinity-layout-tool.git
