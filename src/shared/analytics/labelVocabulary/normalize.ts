@@ -233,7 +233,7 @@ export function getCanonicalTerms(): string[] {
  * Check if a canonical term exists in the vocabulary.
  */
 export function isKnownTerm(term: string): boolean {
-  return term in VOCABULARY;
+  return Object.hasOwn(VOCABULARY, term);
 }
 
 /**
