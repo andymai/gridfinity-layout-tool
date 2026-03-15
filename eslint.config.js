@@ -5,6 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
 import { fixupPluginRules } from '@eslint/compat'
 import i18next from 'eslint-plugin-i18next'
+import boundaries from 'eslint-plugin-boundaries'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
@@ -127,6 +128,79 @@ export default defineConfig([
         callees: {
           exclude: ['t', 'console.log', 'console.warn', 'console.error', 'Error', 'TypeError'],
         },
+      }],
+    },
+  },
+  // Architectural boundaries: enforce import rules between modules
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
+    plugins: { boundaries },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+        },
+      },
+      'boundaries/elements': [
+        { type: 'core', pattern: ['src/core/*'] },
+        { type: 'shared', pattern: ['src/shared/*'] },
+        { type: 'design-system', pattern: ['src/design-system/*'] },
+        { type: 'feature', pattern: ['src/features/*'], capture: ['featureName'] },
+        { type: 'app-hooks', pattern: ['src/hooks/*'] },
+        { type: 'app-utils', pattern: ['src/utils/*'] },
+        { type: 'app-components', pattern: ['src/components/*'] },
+        { type: 'app-layouts', pattern: ['src/layouts/*'] },
+        { type: 'i18n', pattern: ['src/i18n/*'] },
+        { type: 'test-infra', pattern: ['src/test/*'] },
+      ],
+      'boundaries/dependency-nodes': ['import', 'dynamic-import'],
+    },
+    rules: {
+      'boundaries/element-types': ['error', {
+        default: 'disallow',
+        rules: [
+          // Core: can import from core only
+          { from: ['core'], allow: ['core'] },
+          // Shared: core, shared, design-system, i18n
+          { from: ['shared'], allow: ['core', 'shared', 'design-system', 'i18n'] },
+          // Design system: core, shared, design-system
+          { from: ['design-system'], allow: ['core', 'shared', 'design-system'] },
+          // Features: everything except other features (same feature OK)
+          { from: ['feature'], allow: [
+            'core', 'shared', 'design-system', 'app-hooks', 'app-utils',
+            'app-components', 'app-layouts', 'i18n', 'test-infra',
+            ['feature', { featureName: '${from.featureName}' }],
+          ]},
+          // Exception: design-linking -> bin-designer (integration layer)
+          { from: [['feature', { featureName: 'design-linking' }]],
+            allow: [['feature', { featureName: 'bin-designer' }]] },
+          // Exception: bin-inspector -> design-linking (lazy-loaded linked design section)
+          { from: [['feature', { featureName: 'bin-inspector' }]],
+            allow: [['feature', { featureName: 'design-linking' }]] },
+          // App-level: can import from anything
+          { from: ['app-hooks', 'app-utils', 'app-components', 'app-layouts'],
+            allow: ['core', 'shared', 'design-system', 'feature', 'app-hooks',
+                    'app-utils', 'app-components', 'app-layouts', 'i18n', 'test-infra'] },
+          // i18n: core, i18n
+          { from: ['i18n'], allow: ['core', 'i18n'] },
+          // Test infra: everything
+          { from: ['test-infra'], allow: ['core', 'shared', 'design-system', 'feature',
+                    'app-hooks', 'app-utils', 'app-components', 'app-layouts', 'i18n', 'test-infra'] },
+        ],
+      }],
+    },
+  },
+  // Barrel-only restriction: design-linking may only import bin-designer barrel
+  {
+    files: ['src/features/design-linking/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['@/features/bin-designer/*', '@/features/bin-designer/**'],
+          message: 'Import from @/features/bin-designer barrel only',
+        }],
       }],
     },
   },
