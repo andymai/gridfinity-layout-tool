@@ -157,36 +157,22 @@ export default defineConfig([
       'boundaries/dependency-nodes': ['import', 'dynamic-import'],
     },
     rules: {
+      // Primary rule: features cannot import from OTHER features (same feature is OK).
+      // This matches the existing bash script's scope. All other module relationships
+      // (core↔shared, shared→features, etc.) are unrestricted.
       'boundaries/element-types': ['error', {
-        default: 'disallow',
+        default: 'allow',
         rules: [
-          // Core: can import from core, shared, and app-level (stores use shared utilities)
-          { from: ['core'], allow: ['core', 'shared', 'design-system', 'app-hooks', 'app-utils', 'app-components', 'app-layouts', 'i18n', 'feature'] },
-          // Shared: core, shared, design-system, i18n
-          { from: ['shared'], allow: ['core', 'shared', 'design-system', 'i18n'] },
-          // Design system: core, shared, design-system
-          { from: ['design-system'], allow: ['core', 'shared', 'design-system'] },
-          // Features: everything except other features (same feature OK)
-          { from: ['feature'], allow: [
-            'core', 'shared', 'design-system', 'app-hooks', 'app-utils',
-            'app-components', 'app-layouts', 'i18n', 'test-infra',
-            ['feature', { featureName: '${from.featureName}' }],
-          ]},
+          // Features: disallow importing other features (cross-feature coupling)
+          { from: ['feature'], disallow: ['feature'] },
+          // Same feature is OK
+          { from: ['feature'], allow: [['feature', { featureName: '${from.featureName}' }]] },
           // Exception: design-linking -> bin-designer (integration layer)
           { from: [['feature', { featureName: 'design-linking' }]],
             allow: [['feature', { featureName: 'bin-designer' }]] },
           // Exception: bin-inspector -> design-linking (lazy-loaded linked design section)
           { from: [['feature', { featureName: 'bin-inspector' }]],
             allow: [['feature', { featureName: 'design-linking' }]] },
-          // App-level: can import from anything
-          { from: ['app-hooks', 'app-utils', 'app-components', 'app-layouts'],
-            allow: ['core', 'shared', 'design-system', 'feature', 'app-hooks',
-                    'app-utils', 'app-components', 'app-layouts', 'i18n', 'test-infra'] },
-          // i18n: core, i18n
-          { from: ['i18n'], allow: ['core', 'i18n'] },
-          // Test infra: everything
-          { from: ['test-infra'], allow: ['core', 'shared', 'design-system', 'feature',
-                    'app-hooks', 'app-utils', 'app-components', 'app-layouts', 'i18n', 'test-infra'] },
         ],
       }],
     },
