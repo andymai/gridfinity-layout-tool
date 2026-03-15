@@ -12,6 +12,7 @@ import type { LayoutId } from '@/core/types';
 import type { DomainEvent } from '../events';
 import type { CorrelationId } from '../types';
 import { eventBus } from '../bus/eventBus';
+import { migrateEvent } from '../versioning';
 
 const DB_NAME = 'gridfinity-events-db';
 const DB_VERSION = 1;
@@ -99,20 +100,20 @@ function createEventStore(): EventStore {
         filtered = filtered.slice(0, query.limit);
       }
 
-      return filtered;
+      return filtered.map(migrateEvent);
     },
 
     async getByTimeRange(start, end) {
       const db = await getDb();
       const index = db.transaction(EVENTS_STORE, 'readonly').store.index('byTimestamp');
       const range = IDBKeyRange.bound(start, end);
-      return (await index.getAll(range)) as DomainEvent[];
+      return ((await index.getAll(range)) as DomainEvent[]).map(migrateEvent);
     },
 
     async getByCorrelation(correlationId) {
       const db = await getDb();
       const index = db.transaction(EVENTS_STORE, 'readonly').store.index('byCorrelation');
-      return (await index.getAll(correlationId)) as DomainEvent[];
+      return ((await index.getAll(correlationId)) as DomainEvent[]).map(migrateEvent);
     },
 
     async count(aggregateId) {

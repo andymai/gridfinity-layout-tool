@@ -40,6 +40,8 @@ export interface EventMeta {
   readonly aggregateId: LayoutId;
   /** Monotonically increasing version per aggregate for ordering */
   readonly version: number;
+  /** Schema version for forward-compatible event migration */
+  readonly schemaVersion: number;
 }
 
 // === Base Shapes ===

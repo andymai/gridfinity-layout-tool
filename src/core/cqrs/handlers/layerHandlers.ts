@@ -31,7 +31,7 @@ export function handleAddLayer(command: AddLayerCommand): CommandResult<string, 
           {
             type: 'layer.added' as const,
             payload: { layer: { ...layer } },
-            meta: createEventMeta(command.meta),
+            meta: createEventMeta(command.meta, 'layer.added'),
           },
         ]
       : [],
@@ -59,7 +59,7 @@ export function handleUpdateLayer(command: UpdateLayerCommand): CommandResult<vo
       {
         type: 'layer.updated' as const,
         payload: { id, changes: updates, previous },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'layer.updated'),
       },
     ],
   });
@@ -84,7 +84,7 @@ export function handleDeleteLayer(command: DeleteLayerCommand): CommandResult<vo
           {
             type: 'layer.deleted' as const,
             payload: { layer: { ...layer }, deletedBinCount },
-            meta: createEventMeta(command.meta),
+            meta: createEventMeta(command.meta, 'layer.deleted'),
           },
         ]
       : [],
@@ -106,7 +106,7 @@ export function handleReorderLayers(
       {
         type: 'layer.reordered' as const,
         payload: { fromIndex, toIndex },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'layer.reordered'),
       },
     ],
   });

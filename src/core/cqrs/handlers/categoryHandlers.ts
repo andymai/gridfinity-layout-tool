@@ -25,7 +25,7 @@ export function handleAddCategory(command: AddCategoryCommand): CommandResult<st
           {
             type: 'category.added' as const,
             payload: { category: { ...category } },
-            meta: createEventMeta(command.meta),
+            meta: createEventMeta(command.meta, 'category.added'),
           },
         ]
       : [],
@@ -55,7 +55,7 @@ export function handleUpdateCategory(
       {
         type: 'category.updated' as const,
         payload: { id, changes: updates, previous },
-        meta: createEventMeta(command.meta),
+        meta: createEventMeta(command.meta, 'category.updated'),
       },
     ],
   });
@@ -79,7 +79,7 @@ export function handleDeleteCategory(
           {
             type: 'category.deleted' as const,
             payload: { category: { ...category } },
-            meta: createEventMeta(command.meta),
+            meta: createEventMeta(command.meta, 'category.deleted'),
           },
         ]
       : [],
