@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.8.1...gridfinity-layout-tool-v4.9.0) (2026-03-15)
+
+
+### Features
+
+* cqrs maturation — versioning, validation, undo middleware, retry queue ([#1112](https://github.com/andymai/gridfinity-layout-tool/issues/1112)) ([5252565](https://github.com/andymai/gridfinity-layout-tool/commit/52525654fac123f3fe336dc090f454ba7bc7beb8))
+
 ## [4.8.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.8.0...gridfinity-layout-tool-v4.8.1) (2026-03-13)
 
 
