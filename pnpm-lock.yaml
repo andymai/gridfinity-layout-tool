@@ -253,6 +253,9 @@ importers:
       vitest-axe:
         specifier: ^0.1.0
         version: 0.1.0(vitest@4.1.0)
+      workbox-window:
+        specifier: ^7.4.0
+        version: 7.4.0
 
   packages/branded-types:
     devDependencies:

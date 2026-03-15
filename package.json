@@ -185,6 +185,7 @@
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-wasm": "^3.5.0",
     "vitest": "^4.0.16",
-    "vitest-axe": "^0.1.0"
+    "vitest-axe": "^0.1.0",
+    "workbox-window": "^7.4.0"
   }
 }
