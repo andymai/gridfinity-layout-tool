@@ -15,7 +15,7 @@
     }
   },
 
-  "postCreateCommand": "npm install && npx husky",
+  "postCreateCommand": "pnpm install && pnpm exec husky",
 
   "customizations": {
     "vscode": {

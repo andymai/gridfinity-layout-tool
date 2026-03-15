@@ -24,9 +24,9 @@ Delete section if none. Include migration steps.
 
 ## Test plan
 
-- [ ] `npm run test:coverage`
-- [ ] `npm run build`
+- [ ] `pnpm run test:coverage`
+- [ ] `pnpm run build`
 - [ ] New code has colocated sibling tests
-- [ ] i18n: `npm run check:i18n`
+- [ ] i18n: `pnpm run check:i18n`
 - [ ] No `console.log`, `any`, `var`, `==`, `!` introduced
 - [ ] CLAUDE.md updated if conventions changed

@@ -25,20 +25,23 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Check bundle size
-        run: npm run size:check
+        run: pnpm run size:check
 
       # Upload source maps to PostHog for error tracking (main branch only)
       # Requires POSTHOG_API_KEY and POSTHOG_PROJECT_ID secrets
@@ -58,22 +61,25 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Generate artifacts
         # en.json is generated from en.ts at build/dev time and gitignored.
         # Tests import it via lazy-loading, so it must exist before vitest runs.
-        run: npm run build:en-locale
+        run: pnpm run build:en-locale
 
       - name: Run tests with coverage
-        run: npm run test:coverage
+        run: pnpm run test:coverage
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v7
@@ -91,34 +97,37 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
         id: lint
         continue-on-error: true
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Check i18n keys
         id: i18n_keys
         continue-on-error: true
-        run: npm run check:i18n
+        run: pnpm run check:i18n
 
       - name: Check i18n values
         id: i18n_values
         continue-on-error: true
-        run: npm run check:i18n:values
+        run: pnpm run check:i18n:values
 
       - name: Check i18n interpolation
         id: i18n_interpolation
         continue-on-error: true
-        run: npm run check:i18n:interpolation
+        run: pnpm run check:i18n:interpolation
 
       - name: Check i18n unused keys
         id: i18n_unused
@@ -134,7 +143,7 @@ jobs:
             base="${{ github.event.before }}"
           fi
           if [ -z "$base" ] || git diff --name-only "$base" HEAD | grep -qE '^src/i18n/'; then
-            npm run check:i18n:unused
+            pnpm run check:i18n:unused
           else
             echo "ℹ️  No i18n files changed — skipping unused key scan"
           fi
@@ -142,15 +151,15 @@ jobs:
       - name: Check module boundaries
         id: boundaries
         continue-on-error: true
-        run: npm run check:boundaries
+        run: pnpm run check:boundaries
 
       - name: Check union exhaustiveness
         id: exhaustiveness
         continue-on-error: true
-        run: npm run check:exhaustiveness -- --all
+        run: pnpm run check:exhaustiveness -- --all
 
       - name: Fail if any check failed or was skipped
-        # 'skipped' means a prior non-continue-on-error step (e.g. npm ci) failed,
+        # 'skipped' means a prior non-continue-on-error step (e.g. pnpm install) failed,
         # causing all downstream steps to be skipped. Treat skipped == failure here
         # so the job doesn't pass vacuously when dependency installation breaks.
         if: always()
