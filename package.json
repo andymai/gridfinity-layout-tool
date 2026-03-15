@@ -166,6 +166,8 @@
     "@vitest/ui": "^4.0.16",
     "axe-core": "^4.11.1",
     "eslint": "^10.0.3",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-boundaries": "^5.4.0",
     "eslint-plugin-i18next": "^6.1.3",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.0.1",
