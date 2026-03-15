@@ -56,6 +56,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      '@gridfinity/branded-types': path.resolve(__dirname, 'packages/branded-types/src/index.ts'),
       // Mock virtual PWA module for tests
       'virtual:pwa-register/react': path.resolve(__dirname, 'src/test/mocks/pwa-register.ts'),
       // Force all three imports (including nested copies from stats-gl) to resolve

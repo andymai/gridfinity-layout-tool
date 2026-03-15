@@ -23,6 +23,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@gridfinity/branded-types': fileURLToPath(
+        new URL('./packages/branded-types/src/index.ts', import.meta.url)
+      ),
     },
   },
   optimizeDeps: {
