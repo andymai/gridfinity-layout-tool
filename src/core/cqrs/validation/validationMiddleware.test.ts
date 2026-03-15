@@ -8,7 +8,7 @@ import { validationMiddleware } from './validationMiddleware';
 import { createCommand } from '../commands';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
-import type { CommandResult, NextFn } from '../types';
+import type { NextFn } from '../types';
 
 /** Stub next function that always succeeds */
 function createSuccessNext(): NextFn<Command, DomainEvent> {
