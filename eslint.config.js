@@ -204,6 +204,19 @@ export default defineConfig([
       }],
     },
   },
+  // Barrel-only restriction: bin-inspector may only import design-linking barrel
+  {
+    files: ['src/features/bin-inspector/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['@/features/design-linking/*', '@/features/design-linking/**'],
+          message: 'Import from @/features/design-linking barrel only',
+        }],
+      }],
+    },
+  },
   // Design system: compound components are valid exports, and English
   // accessibility defaults (aria-labels) don't go through i18n — consumers
   // pass translated labels via props when needed.
