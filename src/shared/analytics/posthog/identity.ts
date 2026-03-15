@@ -18,7 +18,7 @@ export interface AnalyticsData {
   milestones: Record<string, string>;
 }
 
-export let analyticsCache: AnalyticsData | null = null;
+let analyticsCache: AnalyticsData | null = null;
 
 export function createEmptyAnalyticsData(): AnalyticsData {
   return { userId: '', firstSeen: '', featureFlags: {}, milestones: {} };

@@ -68,7 +68,10 @@ export function initAnalytics(): void {
       posthog.identify(userId);
 
       // Set person properties (these persist across sessions)
-      // Deferred import to avoid circular dependency: events.ts imports capture from init.ts
+      // Deferred import to avoid circular dependency: events.ts imports capture from init.ts.
+      // This makes the .then() callback async, which means error handlers below are installed
+      // after this await resolves. PostHog's capture_exceptions: true provides native coverage
+      // during that brief gap, so no errors are lost.
       const { updatePersonProperties, captureException } = await import('./events');
       updatePersonProperties();
 
