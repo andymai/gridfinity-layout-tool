@@ -1,511 +1,20 @@
 /**
- * Analytics utilities for tracking layout metrics via Posthog.
- * Derives all metrics from the existing Layout type - no parallel tracking needed.
- * Posthog is lazy-loaded to avoid impacting initial bundle size.
- *
- * Features:
- * - Event tracking with layout context
- * - Error tracking with automatic exception capture
- * - Person properties for user identification
- * - Session replay integration (configured via PostHog dashboard)
+ * Analytics event tracking functions, milestones, and person properties.
+ * Contains all 20+ tracking functions for PostHog events.
  */
 
-import type { PostHog } from 'posthog-js';
-import type { Layout, CategoryId } from '@/core/types';
-import {
-  DEFAULT_CATEGORIES,
-  calcMaxGridUnits,
-  hasFractionalDimensions,
-  BREAKPOINTS,
-} from '@/core/constants';
-import { useLabsStore } from '@/core/store/labs';
+import type { Layout } from '@/core/types';
+import { BREAKPOINTS } from '@/core/constants';
 import { useInteractionStore } from '@/core/store/interaction';
 import type { LayerViewMode } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { useSettingsStore } from '@/core/store/settings';
 import { useViewStore } from '@/core/store/view';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
-import { getFeature } from '@/core/labs';
-import { generateUUID, splitBinsByLocation, getGridBins } from '@/shared/utils';
-
-// ============================================
-// CONSOLIDATED ANALYTICS STORAGE
-// ============================================
-
-const ANALYTICS_STORAGE_KEY = 'gridfinity-analytics-v1';
-
-interface AnalyticsData {
-  userId: string;
-  firstSeen: string;
-  featureFlags: Record<string, boolean>;
-  milestones: Record<string, string>;
-}
-
-let analyticsCache: AnalyticsData | null = null;
-
-function createEmptyAnalyticsData(): AnalyticsData {
-  return { userId: '', firstSeen: '', featureFlags: {}, milestones: {} };
-}
-
-function loadAnalyticsData(): AnalyticsData {
-  if (analyticsCache) return analyticsCache;
-  try {
-    const raw = localStorage.getItem(ANALYTICS_STORAGE_KEY);
-    if (raw) {
-      analyticsCache = JSON.parse(raw) as AnalyticsData;
-      return analyticsCache;
-    }
-  } catch {
-    /* ignore */
-  }
-  analyticsCache = createEmptyAnalyticsData();
-  return analyticsCache;
-}
-
-function saveAnalyticsData(data: AnalyticsData): void {
-  analyticsCache = data;
-  try {
-    localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
-  } catch {
-    /* storage may be full */
-  }
-}
-
-/**
- * Remove all analytics data from localStorage and clear the in-memory cache.
- * Use when analytics is disabled or data should be pruned.
- */
-export function pruneAnalyticsData(): void {
-  analyticsCache = null;
-  try {
-    localStorage.removeItem(ANALYTICS_STORAGE_KEY);
-  } catch {
-    /* ignore */
-  }
-}
-
-// ============================================
-// STABLE USER IDENTITY
-// ============================================
-
-/**
- * Get or create a stable user ID for anonymous users.
- * This persists across sessions within the same browser.
- * Falls back to a session-only UUID if localStorage is unavailable.
- */
-function getStableUserId(): string {
-  try {
-    const data = loadAnalyticsData();
-    if (!data.userId) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- user IDs must remain UUIDs for PostHog identity stability
-      data.userId = generateUUID();
-      if (!data.firstSeen) {
-        data.firstSeen = new Date().toISOString();
-      }
-      saveAnalyticsData(data);
-    }
-    return data.userId;
-  } catch {
-    // localStorage unavailable (private browsing, storage full, etc.)
-    // Fall back to a session-only ID
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- user IDs must remain UUIDs for PostHog identity stability
-    return generateUUID();
-  }
-}
-
-/**
- * Get the date this user was first seen.
- * Persists a generated timestamp if missing, to keep it stable across sessions.
- */
-function getFirstSeenDate(): string {
-  try {
-    const data = loadAnalyticsData();
-    if (!data.firstSeen) {
-      data.firstSeen = new Date().toISOString();
-      saveAnalyticsData(data);
-    }
-    return data.firstSeen;
-  } catch {
-    return new Date().toISOString();
-  }
-}
-
-/**
- * Check if this is the user's first session (within 30 minutes of first_seen).
- */
-function isFirstSession(): boolean {
-  try {
-    const data = loadAnalyticsData();
-    if (!data.firstSeen) return true;
-
-    const firstSeenTime = new Date(data.firstSeen).getTime();
-    const thirtyMinutes = 30 * 60 * 1000;
-
-    return Date.now() - firstSeenTime < thirtyMinutes;
-  } catch {
-    return true;
-  }
-}
-
-// ============================================
-// INITIALIZATION (LAZY LOADED)
-// ============================================
-
-let posthogInstance: PostHog | null = null;
-let initPromise: Promise<void> | null = null;
-let eventQueue: Array<{ name: string; properties: Record<string, unknown> }> = [];
-/** Re-entrancy guard: prevents infinite loops if captureException itself throws */
-let isCapturingGlobalError = false;
-
-export function initAnalytics(): void {
-  if (initPromise) return;
-  if (typeof window === 'undefined') return;
-  if (import.meta.env.DEV) return; // Skip in development
-
-  // Check if analytics is enabled in settings
-  const { analyticsEnabled } = useSettingsStore.getState().settings;
-  if (!analyticsEnabled) return;
-
-  const key = import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string | undefined;
-
-  if (!key) {
-    console.warn('Posthog API key not set, analytics disabled');
-    return;
-  }
-
-  // Lazy load posthog-js
-  initPromise = import('posthog-js')
-    .then(({ default: posthog }) => {
-      posthog.init(key, {
-        api_host: '/ph',
-        ui_host: 'https://us.posthog.com',
-        capture_pageview: false, // Manual pageview - auto mode fires on every replaceState
-        capture_pageleave: true,
-        persistence: 'localStorage',
-        autocapture: false, // We'll track specific events manually
-
-        // Error tracking - auto-capture exceptions
-        capture_exceptions: true,
-
-        // Performance monitoring - web vitals
-        capture_performance: true,
-      });
-      posthogInstance = posthog;
-
-      // Fire a single pageview on app load
-      posthog.capture('$pageview');
-
-      // Identify user with stable ID for person properties & cohorts
-      const userId = getStableUserId();
-      posthog.identify(userId);
-
-      // Set person properties (these persist across sessions)
-      updatePersonProperties();
-
-      // Flush queued events
-      for (const event of eventQueue) {
-        posthog.capture(event.name, event.properties);
-      }
-      eventQueue = [];
-
-      // Install global error handlers for structured exception capture.
-      // PostHog's auto-capture sends raw browser events with null message/type.
-      // These handlers intercept errors first and send structured data.
-      // A re-entrancy guard prevents infinite loops if captureException itself throws.
-      window.addEventListener('error', (event: ErrorEvent) => {
-        if (isCapturingGlobalError) return;
-        isCapturingGlobalError = true;
-        try {
-          if (event.error instanceof Error) {
-            captureException(event.error, {
-              source: 'window.onerror',
-              file: event.filename,
-              line: event.lineno,
-              column: event.colno,
-            });
-          }
-        } finally {
-          isCapturingGlobalError = false;
-        }
-      });
-
-      window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-        if (isCapturingGlobalError) return;
-        isCapturingGlobalError = true;
-        try {
-          const error =
-            event.reason instanceof Error ? event.reason : new Error(String(event.reason));
-          captureException(error, {
-            source: 'unhandledrejection',
-          });
-        } finally {
-          isCapturingGlobalError = false;
-        }
-      });
-    })
-    .catch(() => {
-      // Fail silently
-    });
-}
-
-/**
- * Opt out of analytics tracking.
- * Called when user disables analytics in settings.
- */
-export function optOutAnalytics(): void {
-  if (posthogInstance) {
-    posthogInstance.opt_out_capturing();
-  }
-}
-
-/**
- * Opt back into analytics tracking.
- * Called when user re-enables analytics in settings.
- */
-export function optInAnalytics(): void {
-  if (posthogInstance) {
-    posthogInstance.opt_in_capturing();
-  } else {
-    // If posthog wasn't initialized, try to initialize now
-    initPromise = null;
-    initAnalytics();
-  }
-}
-
-/**
- * Internal capture function that queues events if posthog isn't ready yet.
- */
-function capture(name: string, properties: Record<string, unknown>): void {
-  if (posthogInstance) {
-    posthogInstance.capture(name, properties);
-  } else if (initPromise) {
-    // Queue event to be sent when posthog loads
-    eventQueue.push({ name, properties });
-  }
-  // If no initPromise, analytics is disabled (dev mode or missing env vars)
-}
-
-// ============================================
-// LABS METRICS
-// ============================================
-
-export interface LabsMetrics {
-  labs_enabled_features: string[];
-  labs_enabled_count: number;
-}
-
-/**
- * Compute Labs-related metrics for analytics snapshot.
- */
-export function computeLabsMetrics(): LabsMetrics {
-  const prefs = useLabsStore.getState().preferences;
-  const enabledFeatures = Object.entries(prefs.enabledFeatures)
-    .filter(([id, enabled]) => {
-      if (!enabled) return false;
-      const feature = getFeature(id);
-      // Only include non-graduated features (graduated are always on)
-      return feature?.status === 'experimental' || feature?.status === 'preview';
-    })
-    .map(([id]) => id);
-
-  return {
-    labs_enabled_features: enabledFeatures,
-    labs_enabled_count: enabledFeatures.length,
-  };
-}
-
-// ============================================
-// METRICS TYPES
-// ============================================
-
-export interface LayoutMetrics {
-  // Drawer configuration
-  drawer_width: number;
-  drawer_depth: number;
-  drawer_height: number;
-  grid_unit_mm: number;
-  height_unit_mm: number;
-  print_bed_size: number;
-  drawer_is_default: boolean;
-
-  // Bins summary
-  bin_count: number;
-  bins_on_grid: number;
-  bins_in_staging: number;
-  bins_with_labels: number;
-  bins_with_notes: number;
-  bins_with_clearance: number;
-  bins_with_half_units: number;
-  bin_avg_area: number;
-  bin_top_sizes: Array<{ size: string; count: number }>;
-  bin_heights: Record<number, number>;
-
-  // Layers summary
-  layer_count: number;
-  layer_heights: number[];
-  layer_total_height: number;
-
-  // Categories summary
-  category_count: number;
-  custom_category_count: number;
-  top_categories: Array<{ name: string; count: number }>;
-
-  // Feature flags
-  feature_multi_layer: boolean;
-  feature_half_bins: boolean;
-  feature_clearance: boolean;
-  feature_custom_categories: boolean;
-  feature_labels: boolean;
-  feature_notes: boolean;
-  feature_custom_drawer: boolean;
-  feature_custom_print_bed: boolean;
-
-  // Print readiness
-  has_oversized_bins: boolean;
-  max_bin_width: number;
-  max_bin_depth: number;
-
-  // Engagement
-  is_engaged: boolean;
-  is_substantial: boolean;
-}
-
-// ============================================
-// METRICS COMPUTATION
-// ============================================
-
-const DEFAULT_DRAWER = { width: 10, depth: 8, height: 12 };
-const DEFAULT_PRINT_BED = 256;
-const DEFAULT_CATEGORY_NAMES = new Set(DEFAULT_CATEGORIES.map((c) => c.name.toLowerCase()));
-
-export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
-  const { gridBins, stagingBins } = splitBinsByLocation(layout.bins);
-
-  // Bin size distribution
-  const sizeCount = new Map<string, number>();
-  const heightCount = new Map<number, number>();
-  let totalArea = 0;
-  let withLabels = 0;
-  let withNotes = 0;
-  let withClearance = 0;
-  let withHalfUnits = 0;
-  let maxWidth = 0;
-  let maxDepth = 0;
-
-  for (const bin of gridBins) {
-    // Size tracking
-    const sizeKey = `${bin.width}x${bin.depth}`;
-    sizeCount.set(sizeKey, (sizeCount.get(sizeKey) || 0) + 1);
-
-    // Height tracking
-    heightCount.set(bin.height, (heightCount.get(bin.height) || 0) + 1);
-
-    // Area
-    totalArea += bin.width * bin.depth;
-
-    // Feature detection
-    if (bin.label.trim()) withLabels++;
-    if (bin.notes.trim()) withNotes++;
-    if (bin.clearanceHeight && bin.clearanceHeight > 0) withClearance++;
-    if (hasFractionalDimensions(bin)) withHalfUnits++;
-
-    // Max dimensions for print check
-    maxWidth = Math.max(maxWidth, bin.width);
-    maxDepth = Math.max(maxDepth, bin.depth);
-  }
-
-  // Top 5 sizes
-  const topSizes = [...sizeCount.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([size, count]) => ({ size, count }));
-
-  // Height distribution
-  const heights: Record<number, number> = {};
-  for (const [h, c] of heightCount) {
-    heights[h] = c;
-  }
-
-  // Category distribution
-  const categoryCount = new Map<string, number>();
-  for (const bin of gridBins) {
-    categoryCount.set(bin.category, (categoryCount.get(bin.category) || 0) + 1);
-  }
-
-  const categoryIdToName = new Map(layout.categories.map((c) => [c.id, c.name]));
-  const topCategories = [...categoryCount.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([id, count]) => ({ name: categoryIdToName.get(id as CategoryId) || 'Unknown', count }));
-
-  // Custom categories (not matching default names)
-  const customCategoryCount = layout.categories.filter(
-    (c) => !DEFAULT_CATEGORY_NAMES.has(c.name.toLowerCase())
-  ).length;
-
-  // Print bed check
-  const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-  const hasOversizedBins = maxWidth > maxGridUnits || maxDepth > maxGridUnits;
-
-  // Drawer defaults check
-  const isDefaultDrawer =
-    layout.drawer.width === DEFAULT_DRAWER.width &&
-    layout.drawer.depth === DEFAULT_DRAWER.depth &&
-    layout.drawer.height === DEFAULT_DRAWER.height;
-
-  return {
-    // Drawer
-    drawer_width: layout.drawer.width,
-    drawer_depth: layout.drawer.depth,
-    drawer_height: layout.drawer.height,
-    grid_unit_mm: layout.gridUnitMm,
-    height_unit_mm: layout.heightUnitMm,
-    print_bed_size: layout.printBedSize,
-    drawer_is_default: isDefaultDrawer,
-
-    // Bins
-    bin_count: layout.bins.length,
-    bins_on_grid: gridBins.length,
-    bins_in_staging: stagingBins.length,
-    bins_with_labels: withLabels,
-    bins_with_notes: withNotes,
-    bins_with_clearance: withClearance,
-    bins_with_half_units: withHalfUnits,
-    bin_avg_area: gridBins.length > 0 ? Math.round((totalArea / gridBins.length) * 10) / 10 : 0,
-    bin_top_sizes: topSizes,
-    bin_heights: heights,
-
-    // Layers
-    layer_count: layout.layers.length,
-    layer_heights: layout.layers.map((l) => l.height),
-    layer_total_height: layout.layers.reduce((sum, l) => sum + l.height, 0),
-
-    // Categories
-    category_count: layout.categories.length,
-    custom_category_count: customCategoryCount,
-    top_categories: topCategories,
-
-    // Features
-    feature_multi_layer: layout.layers.length > 1,
-    feature_half_bins: withHalfUnits > 0,
-    feature_clearance: withClearance > 0,
-    feature_custom_categories: customCategoryCount > 0,
-    feature_labels: withLabels > 0,
-    feature_notes: withNotes > 0,
-    feature_custom_drawer: !isDefaultDrawer,
-    feature_custom_print_bed: layout.printBedSize !== DEFAULT_PRINT_BED,
-
-    // Print
-    has_oversized_bins: hasOversizedBins,
-    max_bin_width: maxWidth,
-    max_bin_depth: maxDepth,
-
-    // Engagement
-    is_engaged: gridBins.length >= 5,
-    is_substantial: gridBins.length >= 15,
-  };
-}
+import { splitBinsByLocation, getGridBins } from '@/shared/utils';
+import { isFirstSession, loadAnalyticsData, saveAnalyticsData, getFirstSeenDate } from './identity';
+import { capture, getPosthogInstance } from './init';
+import { computeLayoutMetrics, computeLabsMetrics } from './metrics';
 
 // ============================================
 // TRACKING FUNCTIONS
@@ -652,7 +161,10 @@ export function trackBinCreated(props: BinCreatedProperties): void {
   }
 }
 
-const MILESTONE_THRESHOLDS: Array<{ key: 'first_bin' | 'engaged' | 'substantial'; min: number }> = [
+export const MILESTONE_THRESHOLDS: Array<{
+  key: 'first_bin' | 'engaged' | 'substantial';
+  min: number;
+}> = [
   { key: 'first_bin', min: 1 },
   { key: 'engaged', min: 5 },
   { key: 'substantial', min: 15 },
@@ -805,7 +317,10 @@ export function trackHeartbeat(sessionMinutes: number): void {
 /**
  * Compute the engagement tier based on usage patterns.
  */
-function computeEngagementTier(layoutCount: number, totalBins: number): 'new' | 'active' | 'power' {
+export function computeEngagementTier(
+  layoutCount: number,
+  totalBins: number
+): 'new' | 'active' | 'power' {
   if (layoutCount >= 5 || totalBins >= 100) return 'power';
   if (layoutCount >= 2 || totalBins >= 20) return 'active';
   return 'new';
@@ -815,7 +330,8 @@ function computeEngagementTier(layoutCount: number, totalBins: number): 'new' | 
  * Update person properties in PostHog.
  * Call this after significant actions to keep user profile up-to-date.
  */
-function updatePersonProperties(): void {
+export function updatePersonProperties(): void {
+  const posthogInstance = getPosthogInstance();
   if (!posthogInstance) return;
 
   try {
@@ -945,6 +461,7 @@ function getLayoutContext(): Record<string, unknown> {
  * Use this for caught errors that you want to track.
  */
 export function captureException(error: Error, additionalContext?: Record<string, unknown>): void {
+  const posthogInstance = getPosthogInstance();
   if (!posthogInstance) return;
 
   try {
