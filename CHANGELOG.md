@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.0...gridfinity-layout-tool-v4.9.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* resolve 4 Dependabot security alerts via pnpm overrides ([#1115](https://github.com/andymai/gridfinity-layout-tool/issues/1115)) ([10788ae](https://github.com/andymai/gridfinity-layout-tool/commit/10788ae280f548fe04418cddf5661a9d3b5ef7cb))
+
 ## [4.9.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.8.1...gridfinity-layout-tool-v4.9.0) (2026-03-15)
 
 
