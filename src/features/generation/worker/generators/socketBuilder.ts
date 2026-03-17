@@ -206,11 +206,12 @@ export function buildBaseSocket(
       const magnetCutout = withMagnet ? scope.register(cylinder(magnetRadius, magnetDepth)) : null;
       const screwCutout = withScrew ? scope.register(cylinder(screwRadius, SOCKET_HEIGHT)) : null;
 
-      const cutout: Shape3D = scope.register(
+      // When both exist, fuse creates a new shape (register it); when only one exists,
+      // it's already registered above — don't double-register
+      const cutout: Shape3D =
         magnetCutout && screwCutout
-          ? unwrap(fuse(magnetCutout, screwCutout))
-          : ((magnetCutout || screwCutout) as Shape3D)
-      );
+          ? scope.register(unwrap(fuse(magnetCutout, screwCutout)))
+          : ((magnetCutout || screwCutout) as Shape3D);
 
       // 4 holes per full cell at ±HOLE_OFFSET from center
       const holeOffsets: ReadonlyArray<readonly [number, number]> = [

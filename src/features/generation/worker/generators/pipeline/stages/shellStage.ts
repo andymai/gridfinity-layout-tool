@@ -70,7 +70,9 @@ export const shellStage: PipelineStage = {
         return binBody; // no lip — binBody is the result (NOT registered)
       }
 
-      // Socket style: build base socket and fuse with box
+      // Socket style: build base socket and fuse with box.
+      // Register binBody eagerly — all socket paths consume it via fuse.
+      scope.register(binBody);
       const base = scope.register(
         buildBaseSocket(
           params.width,
@@ -94,19 +96,16 @@ export const shellStage: PipelineStage = {
             translate(buildTopShape(params.width, params.depth, true), [0, 0, dim.wallHeight])
           );
           collectOrigins(top, FeatureTag.LIP, originToTag);
-          scope.register(binBody); // consumed by fuse
           const baseAndBody = scope.register(
             unwrap(fuse(base, binBody, { optimisation: 'commonFace' }))
           );
           return unwrap(fuse(baseAndBody, top, { optimisation: 'commonFace' }));
         } catch (e: unknown) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          // binBody already registered on line 97 — no need to re-register
           return unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
         }
       }
 
-      scope.register(binBody); // consumed by fuse
       return unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
     });
 

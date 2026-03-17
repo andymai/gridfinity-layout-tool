@@ -134,8 +134,9 @@ export function setShellCache(key: string, shape: Shape3D): void {
 
 // ─── Pattern Template Cache ──────────────────────────────────────────────────
 
+/** Returns raw shape (no clone) — caller uses transformCopy which is non-destructive. */
 export function getPatternTemplateCache(key: string): Shape3D | null {
-  return patternTemplateCache?.key === key ? clone(patternTemplateCache.shape) : null;
+  return patternTemplateCache?.key === key ? patternTemplateCache.shape : null;
 }
 
 export function setPatternTemplateCache(key: string, shape: Shape3D): void {
