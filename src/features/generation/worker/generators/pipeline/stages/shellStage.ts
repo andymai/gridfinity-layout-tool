@@ -101,7 +101,7 @@ export const shellStage: PipelineStage = {
           return unwrap(fuse(baseAndBody, top, { optimisation: 'commonFace' }));
         } catch (e: unknown) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          scope.register(binBody); // consumed by fuse below
+          // binBody already registered on line 97 — no need to re-register
           return unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
         }
       }

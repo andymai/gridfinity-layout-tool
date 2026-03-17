@@ -27,17 +27,18 @@ export class LRUCache<T> {
   }
 
   set(key: string, value: T): void {
-    // If key already exists, delete to refresh position
-    if (this.map.has(key)) {
-      const old = this.map.get(key) as T;
+    const existing = this.map.get(key);
+    if (existing !== undefined) {
+      // Key exists — delete to refresh position
       this.map.delete(key);
-      if (old !== value) this.onEvict?.(key, old);
+      if (existing !== value) this.onEvict?.(key, existing);
     } else if (this.map.size >= this.maxSize) {
-      // Evict oldest (first key in Map iteration order)
-      const oldest = this.map.keys().next().value as string;
-      const evicted = this.map.get(oldest) as T;
-      this.map.delete(oldest);
-      this.onEvict?.(oldest, evicted);
+      // At capacity — evict oldest (first key in Map iteration order)
+      for (const [oldestKey, evicted] of this.map) {
+        this.map.delete(oldestKey);
+        this.onEvict?.(oldestKey, evicted);
+        break; // only evict the first (oldest) entry
+      }
     }
     this.map.set(key, value);
   }
