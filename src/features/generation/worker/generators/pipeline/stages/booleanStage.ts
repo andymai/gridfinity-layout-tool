@@ -33,7 +33,9 @@ function batchWithFallback(
     let result = bin;
     for (const target of targets) {
       try {
+        const prev = result;
         result = pairwise(result, target);
+        if (prev !== bin) prev.delete(); // Dispose fallback intermediates (not original bin)
       } catch (inner: unknown) {
         if (isAbortError(inner)) throw inner;
       }
@@ -54,6 +56,7 @@ export const booleanStage: PipelineStage = {
     const { signal, forExport } = ctx;
     let bin = ctx.solid;
     if (!bin) return ctx;
+    const originalSolid = bin;
 
     if (ctx.fuseTargets.length > 0) {
       checkCancelled(signal);
@@ -67,6 +70,7 @@ export const booleanStage: PipelineStage = {
 
     if (ctx.cutTargets.length > 0) {
       checkCancelled(signal);
+      const preCut = bin;
       bin = batchWithFallback(
         bin,
         ctx.cutTargets,
@@ -74,7 +78,15 @@ export const booleanStage: PipelineStage = {
           unwrap(cutAll(b, [...targets], { simplify: forExport, signal } as BooleanOpts)),
         (b, t) => unwrap(cut(b, t))
       );
+      // Dispose the fuse result if it was replaced by cut (and isn't the original)
+      if (preCut !== originalSolid && preCut !== bin) preCut.delete();
     }
+
+    // Dispose original solid if replaced by boolean ops
+    if (bin !== originalSolid) originalSolid.delete();
+    // Dispose all consumed targets
+    for (const t of ctx.fuseTargets) t.delete();
+    for (const t of ctx.cutTargets) t.delete();
 
     return { ...ctx, solid: bin, fuseTargets: [], cutTargets: [] };
   },

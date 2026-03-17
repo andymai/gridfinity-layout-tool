@@ -9,9 +9,11 @@
 export class LRUCache<T> {
   private readonly map = new Map<string, T>();
   private readonly maxSize: number;
+  private readonly onEvict?: (key: string, value: T) => void;
 
-  constructor(maxSize: number) {
+  constructor(maxSize: number, onEvict?: (key: string, value: T) => void) {
     this.maxSize = maxSize;
+    this.onEvict = onEvict;
   }
 
   get(key: string): T | undefined {
@@ -25,13 +27,18 @@ export class LRUCache<T> {
   }
 
   set(key: string, value: T): void {
-    // If key already exists, delete to refresh position
-    if (this.map.has(key)) {
+    const existing = this.map.get(key);
+    if (existing !== undefined) {
+      // Key exists — delete to refresh position
       this.map.delete(key);
+      if (existing !== value) this.onEvict?.(key, existing);
     } else if (this.map.size >= this.maxSize) {
-      // Evict oldest (first key in Map iteration order)
-      const oldest = this.map.keys().next().value as string;
-      this.map.delete(oldest);
+      // At capacity — evict oldest (first key in Map iteration order)
+      for (const [oldestKey, evicted] of this.map) {
+        this.map.delete(oldestKey);
+        this.onEvict?.(oldestKey, evicted);
+        break; // only evict the first (oldest) entry
+      }
     }
     this.map.set(key, value);
   }
@@ -41,6 +48,16 @@ export class LRUCache<T> {
   }
 
   clear(): void {
+    this.map.clear();
+  }
+
+  /** Calls onEvict for every entry, then clears the cache. */
+  dispose(): void {
+    if (this.onEvict) {
+      for (const [key, value] of this.map) {
+        this.onEvict(key, value);
+      }
+    }
     this.map.clear();
   }
 }

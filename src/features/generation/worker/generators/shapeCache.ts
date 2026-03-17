@@ -22,11 +22,41 @@ import { LRUCache } from './lruCache';
 
 // ─── Cache State ─────────────────────────────────────────────────────────────
 
+/** Dispose callback for LRU caches holding WASM-backed shapes. */
+const disposeShape = (_key: string, shape: Shape3D): void => {
+  shape.delete();
+};
+
+/**
+ * Create a cloning cache accessor pair for an LRU cache.
+ * On get: returns a clone of the cached shape (caller owns the clone).
+ * On set: stores the shape and returns a clone (caller owns the clone, cache owns the original).
+ */
+function createCloningAccessors(cache: LRUCache<Shape3D>): {
+  get: (key: string) => Shape3D | null;
+  set: (key: string, shape: Shape3D) => Shape3D;
+} {
+  return {
+    get(key: string): Shape3D | null {
+      const shape = cache.get(key);
+      return shape !== undefined ? clone(shape) : null;
+    },
+    set(key: string, shape: Shape3D): Shape3D {
+      cache.set(key, shape);
+      return clone(shape);
+    },
+  };
+}
+
 /** LRU shape caches — maxSize=5 lets users toggle between a few bin sizes without misses */
-const socketCache = new LRUCache<Shape3D>(5);
-const lipCache = new LRUCache<Shape3D>(5);
-const boxCache = new LRUCache<Shape3D>(5);
-const shellCache = new LRUCache<Shape3D>(5);
+const socketCache = new LRUCache<Shape3D>(5, disposeShape);
+const lipCache = new LRUCache<Shape3D>(5, disposeShape);
+const boxCache = new LRUCache<Shape3D>(5, disposeShape);
+const shellCache = new LRUCache<Shape3D>(5, disposeShape);
+
+const socket = createCloningAccessors(socketCache);
+const box = createCloningAccessors(boxCache);
+const lip = createCloningAccessors(lipCache);
 
 /** Single-entry caches — pattern template is cheap; lastSolid is always the latest */
 interface CacheEntry {
@@ -36,6 +66,31 @@ interface CacheEntry {
 
 let patternTemplateCache: CacheEntry | null = null;
 let lastSolid: Shape3D | null = null;
+
+// ─── All LRU caches for batch disposal ───────────────────────────────────────
+
+/** Feature tool caches — maxSize=3: typical user edits one feature at a time */
+const FEATURE_NAMES = [
+  'compartmentWalls',
+  'insertCuts',
+  'labelTabs',
+  'scoopRamps',
+  'slotCuts',
+  'wallCutoutCuts',
+] as const;
+
+const featureToolCaches = new Map<string, LRUCache<Shape3D>>(
+  FEATURE_NAMES.map((name) => [name, new LRUCache<Shape3D>(3, disposeShape)])
+);
+
+/** All LRU caches, for batch disposal in clearAllCaches. */
+const allLruCaches: readonly LRUCache<Shape3D>[] = [
+  socketCache,
+  lipCache,
+  boxCache,
+  shellCache,
+  ...featureToolCaches.values(),
+];
 
 // ─── Socket Cache ────────────────────────────────────────────────────────────
 
@@ -53,57 +108,24 @@ export function socketCacheKey(
   return `${gridW}|${gridD}|${withMagnet}|${withScrew}|${magnetRadius}|${magnetDepth}|${screwRadius}|${forExport}|${halfSockets}`;
 }
 
-export function getSocketCache(key: string): Shape3D | null {
-  const shape = socketCache.get(key);
-  if (shape !== undefined) {
-    return clone(shape);
-  }
-  return null;
-}
-
-export function setSocketCache(key: string, shape: Shape3D): Shape3D {
-  socketCache.set(key, shape);
-  return clone(shape);
-}
+export const getSocketCache = socket.get;
+export const setSocketCache = socket.set;
 
 // ─── Box Cache ───────────────────────────────────────────────────────────────
 
-export function getBoxCache(key: string): Shape3D | null {
-  const shape = boxCache.get(key);
-  if (shape !== undefined) {
-    return clone(shape);
-  }
-  return null;
-}
-
-export function setBoxCache(key: string, shape: Shape3D): Shape3D {
-  boxCache.set(key, shape);
-  return clone(shape);
-}
+export const getBoxCache = box.get;
+export const setBoxCache = box.set;
 
 // ─── Lip Cache ───────────────────────────────────────────────────────────────
 
-export function getLipCache(key: string): Shape3D | null {
-  const shape = lipCache.get(key);
-  if (shape !== undefined) {
-    return clone(shape);
-  }
-  return null;
-}
-
-export function setLipCache(key: string, shape: Shape3D): Shape3D {
-  lipCache.set(key, shape);
-  return clone(shape);
-}
+export const getLipCache = lip.get;
+export const setLipCache = lip.set;
 
 // ─── Shell Cache ─────────────────────────────────────────────────────────────
 
 export function getShellCache(key: string): Shape3D | null {
   const shape = shellCache.get(key);
-  if (shape !== undefined) {
-    return clone(shape);
-  }
-  return null;
+  return shape !== undefined ? clone(shape) : null;
 }
 
 export function setShellCache(key: string, shape: Shape3D): void {
@@ -112,68 +134,55 @@ export function setShellCache(key: string, shape: Shape3D): void {
 
 // ─── Pattern Template Cache ──────────────────────────────────────────────────
 
+/** Returns raw shape (no clone) — caller uses transformCopy which is non-destructive. */
 export function getPatternTemplateCache(key: string): Shape3D | null {
-  if (patternTemplateCache?.key === key) {
-    return patternTemplateCache.shape;
-  }
-  return null;
+  return patternTemplateCache?.key === key ? patternTemplateCache.shape : null;
 }
 
 export function setPatternTemplateCache(key: string, shape: Shape3D): void {
+  if (patternTemplateCache && patternTemplateCache.shape !== shape) {
+    patternTemplateCache.shape.delete();
+  }
   patternTemplateCache = { key, shape };
 }
 
 // ─── Last Solid Cache ────────────────────────────────────────────────────────
 
-/** Get the last generated solid for export operations. */
 export function getLastSolid(): Shape3D | null {
   return lastSolid;
 }
 
-/** Store the last generated solid for export operations. */
 export function setLastSolid(shape: Shape3D | null): void {
+  if (lastSolid && lastSolid !== shape) lastSolid.delete();
   lastSolid = shape;
 }
 
 // ─── Feature Tool Caches ─────────────────────────────────────────────────────
-// Cache the expensive tool shape (before boolean application) for each feature.
-// maxSize=3: typical user edits one feature at a time; 3 entries covers recent sizes.
-
-const featureToolCaches = new Map<string, LRUCache<Shape3D>>([
-  ['compartmentWalls', new LRUCache<Shape3D>(3)],
-  ['insertCuts', new LRUCache<Shape3D>(3)],
-  ['labelTabs', new LRUCache<Shape3D>(3)],
-  ['scoopRamps', new LRUCache<Shape3D>(3)],
-  ['slotCuts', new LRUCache<Shape3D>(3)],
-  ['wallCutoutCuts', new LRUCache<Shape3D>(3)],
-]);
 
 export function getFeatureCache(feature: string, key: string): Shape3D | null {
   const cache = featureToolCaches.get(feature);
   if (!cache) return null;
   const shape = cache.get(key);
-  if (shape !== undefined) {
-    return clone(shape);
-  }
-  return null;
+  return shape !== undefined ? clone(shape) : null;
 }
 
 export function setFeatureCache(feature: string, key: string, shape: Shape3D): void {
-  const cache = featureToolCaches.get(feature);
-  if (cache) {
-    cache.set(key, shape);
-  }
+  featureToolCaches.get(feature)?.set(key, shape);
 }
 
-/** Clear all shape caches. Required when switching geometry kernels in tests. */
+// ─── Disposal ────────────────────────────────────────────────────────────────
+
+/** Clear all shape caches, disposing WASM handles. Required when switching geometry kernels in tests. */
 export function clearAllCaches(): void {
-  socketCache.clear();
-  lipCache.clear();
-  boxCache.clear();
-  shellCache.clear();
-  patternTemplateCache = null;
-  lastSolid = null;
-  for (const cache of featureToolCaches.values()) {
-    cache.clear();
+  for (const cache of allLruCaches) {
+    cache.dispose();
+  }
+  if (patternTemplateCache) {
+    patternTemplateCache.shape.delete();
+    patternTemplateCache = null;
+  }
+  if (lastSolid) {
+    lastSolid.delete();
+    lastSolid = null;
   }
 }

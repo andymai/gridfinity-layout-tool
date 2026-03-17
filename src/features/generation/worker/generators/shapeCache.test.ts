@@ -1,5 +1,19 @@
-import { describe, it, expect } from 'vitest';
-import { socketCacheKey } from './shapeCache';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  socketCacheKey,
+  setLastSolid,
+  getLastSolid,
+  setPatternTemplateCache,
+  getPatternTemplateCache,
+  setFeatureCache,
+  clearAllCaches,
+} from './shapeCache';
+import type { Shape3D } from 'brepjs';
+
+/** Create a mock Shape3D with a trackable delete() method. */
+function mockShape(): Shape3D & { delete: ReturnType<typeof vi.fn> } {
+  return { delete: vi.fn() } as unknown as Shape3D & { delete: ReturnType<typeof vi.fn> };
+}
 
 describe('socketCacheKey', () => {
   it('produces deterministic key from parameters', () => {
@@ -45,5 +59,86 @@ describe('socketCacheKey', () => {
     expect(key).toContain('3.1');
     expect(key).toContain('2.4');
     expect(key).toContain('1.75');
+  });
+});
+
+describe('shape disposal', () => {
+  beforeEach(() => {
+    clearAllCaches();
+  });
+
+  describe('setLastSolid', () => {
+    it('disposes previous shape when replacing', () => {
+      const old = mockShape();
+      const next = mockShape();
+      setLastSolid(old);
+      setLastSolid(next);
+
+      expect(old.delete).toHaveBeenCalledOnce();
+      expect(next.delete).not.toHaveBeenCalled();
+      expect(getLastSolid()).toBe(next);
+    });
+
+    it('does not dispose when storing the same reference', () => {
+      const shape = mockShape();
+      setLastSolid(shape);
+      setLastSolid(shape);
+
+      expect(shape.delete).not.toHaveBeenCalled();
+    });
+
+    it('handles null → shape → null transitions', () => {
+      const shape = mockShape();
+      setLastSolid(null);
+      setLastSolid(shape);
+      setLastSolid(null);
+
+      expect(shape.delete).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('setPatternTemplateCache', () => {
+    it('disposes previous shape on key change', () => {
+      const old = mockShape();
+      const next = mockShape();
+      setPatternTemplateCache('key1', old);
+      setPatternTemplateCache('key2', next);
+
+      expect(old.delete).toHaveBeenCalledOnce();
+      expect(next.delete).not.toHaveBeenCalled();
+    });
+
+    it('does not dispose when storing same reference', () => {
+      const shape = mockShape();
+      setPatternTemplateCache('key1', shape);
+      setPatternTemplateCache('key2', shape);
+
+      expect(shape.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('clearAllCaches', () => {
+    it('disposes singleton shapes', () => {
+      const solid = mockShape();
+      const pattern = mockShape();
+      setLastSolid(solid);
+      setPatternTemplateCache('k', pattern);
+
+      clearAllCaches();
+
+      expect(solid.delete).toHaveBeenCalledOnce();
+      expect(pattern.delete).toHaveBeenCalledOnce();
+      expect(getLastSolid()).toBeNull();
+      expect(getPatternTemplateCache('k')).toBeNull();
+    });
+
+    it('disposes featureToolCache shapes', () => {
+      const wall = mockShape();
+      setFeatureCache('compartmentWalls', 'k', wall);
+
+      clearAllCaches();
+
+      expect(wall.delete).toHaveBeenCalledOnce();
+    });
   });
 });

@@ -56,6 +56,6 @@ export const tessellateStage: PipelineStage = {
       ctx.originToTag
     );
 
-    return { ...ctx, mesh: meshData };
+    return { ...ctx, mesh: meshData, solid: null };
   },
 };

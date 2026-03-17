@@ -63,7 +63,11 @@ import { LRUCache } from './lruCache';
 // LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
 // Build one loft per unique cell size, then clone+translate for each grid position.
 
-const pocketTemplateCache = new LRUCache<Shape3D>(16);
+const disposeShape = (_key: string, shape: Shape3D): void => {
+  shape.delete();
+};
+
+const pocketTemplateCache = new LRUCache<Shape3D>(16, disposeShape);
 
 // ─── Mesh Result Cache ──────────────────────────────────────────────────────
 // Caches the fully tessellated mesh data (vertices, normals, indices, edges)
@@ -77,7 +81,7 @@ const meshResultCache = new LRUCache<MeshData>(8);
 // are applied. This is the most expensive boolean step. When only magnet or
 // connector params change, we skip pocket cuts and resume from this cached solid.
 
-const slabWithPocketsCache = new LRUCache<Shape3D>(4);
+const slabWithPocketsCache = new LRUCache<Shape3D>(4, disposeShape);
 
 function pocketCacheKey(
   cellW: number,
@@ -1200,4 +1204,11 @@ function buildBaseplateSTL(
   }
 
   return buffer;
+}
+
+/** Clear all baseplate shape caches, disposing WASM handles. */
+export function clearBaseplateCaches(): void {
+  pocketTemplateCache.dispose();
+  meshResultCache.clear(); // MeshData is plain JS — no WASM disposal needed
+  slabWithPocketsCache.dispose();
 }

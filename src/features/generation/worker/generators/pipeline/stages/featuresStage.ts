@@ -10,7 +10,7 @@
  * for the subsequent boolean stage.
  */
 
-import { drawPolysides, unwrap, cut, composeTransforms, transformCopy } from 'brepjs';
+import { drawPolysides, unwrap, cut, composeTransforms, transformCopy, clone } from 'brepjs';
 import type { Shape3D, TransformOp } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from '../../generatorConstants';
@@ -51,6 +51,7 @@ function cachedFeature(
     shape = build();
     if (shape) {
       setFeatureCache(kind, key, shape);
+      shape = clone(shape); // Clone so targets array holds independent handle
     }
   }
   if (shape) {
@@ -81,8 +82,13 @@ export const featuresStage: PipelineStage = {
       if (cutoutCuts && ctx.solid) {
         collectOrigins(cutoutCuts, FeatureTag.CUTOUT, originToTag);
         try {
-          return { ...ctx, solid: unwrap(cut(ctx.solid, cutoutCuts)) };
+          const oldSolid = ctx.solid;
+          const newSolid = unwrap(cut(ctx.solid, cutoutCuts));
+          oldSolid.delete();
+          cutoutCuts.delete();
+          return { ...ctx, solid: newSolid };
         } catch {
+          cutoutCuts.delete();
           // Cut operation can fail on complex geometries; skip if it does
         }
       }

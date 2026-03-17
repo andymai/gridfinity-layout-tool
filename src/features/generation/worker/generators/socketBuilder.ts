@@ -18,8 +18,9 @@ import {
   clone,
   translate,
   fuse,
+  withScope,
 } from 'brepjs';
-import type { Shape3D, Sketch } from 'brepjs';
+import type { Shape3D, Sketch, DisposalScope } from 'brepjs';
 import {
   SIZE,
   CLEARANCE,
@@ -164,71 +165,87 @@ export function buildBaseSocket(
     return cached;
   }
 
-  // Build and position each cell socket
-  const cellSockets: Shape3D[] = [];
+  return withScope((scope: DisposalScope) => {
+    // Build and position each cell socket
+    const cellSockets: Shape3D[] = [];
 
-  forEachCell(
-    gridW,
-    gridD,
-    (cell) => {
-      const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
-      const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
-      // Use simplified 3-section socket for preview, full 5-section for export
-      const cellSocket = translate(
-        forExport
-          ? buildSingleCellSocket(cellW_mm, cellD_mm)
-          : buildSimplifiedCellSocket(cellW_mm, cellD_mm),
-        [cell.centerX, cell.centerY, 0]
-      );
-      cellSockets.push(cellSocket);
-    },
-    halfSockets
-  );
-
-  if (cellSockets.length === 0) {
-    throw new Error('Invalid grid dimensions: at least one cell required');
-  }
-  let result: Shape3D = unwrap(fuseAll(cellSockets, { optimisation: 'commonFace' }));
-
-  // Cut magnet/screw holes at standard 4-corner positions per full cell.
-  // Uses the ORIGINAL cell decomposition (not half-socket sub-cells) so that
-  // magnet positions align with the baseplate regardless of socket subdivision.
-  // Sub-unit cells (from fractional grid dimensions) are skipped — the Gridfinity
-  // spec only defines magnet positions for full-unit cells.
-  if (withScrew || withMagnet) {
-    const HOLE_OFFSET = 13; // mm from cell center to hole center (Gridfinity spec)
-    const magnetCutout = withMagnet ? cylinder(magnetRadius, magnetDepth) : null;
-    const screwCutout = withScrew ? cylinder(screwRadius, SOCKET_HEIGHT) : null;
-
-    const cutout: Shape3D =
-      magnetCutout && screwCutout
-        ? unwrap(fuse(magnetCutout, screwCutout))
-        : ((magnetCutout || screwCutout) as Shape3D);
-
-    // 4 holes per full cell at ±HOLE_OFFSET from center
-    const holeOffsets: ReadonlyArray<readonly [number, number]> = [
-      [-HOLE_OFFSET, -HOLE_OFFSET],
-      [-HOLE_OFFSET, HOLE_OFFSET],
-      [HOLE_OFFSET, HOLE_OFFSET],
-      [HOLE_OFFSET, -HOLE_OFFSET],
-    ];
-
-    const holeTools: Shape3D[] = [];
-    forEachCell(gridW, gridD, (cell) => {
-      // Only cut holes in full-size cells (spec doesn't define positions for fractional)
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
-
-      for (const [dx, dy] of holeOffsets) {
-        holeTools.push(
-          translate(clone(cutout), [cell.centerX + dx, cell.centerY + dy, -SOCKET_HEIGHT])
+    forEachCell(
+      gridW,
+      gridD,
+      (cell) => {
+        const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
+        const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
+        // Use simplified 3-section socket for preview, full 5-section for export
+        // NOTE: cellSockets are NOT scope-registered because fuseAll may return
+        // one of its inputs when given a single element. They're deleted manually.
+        const cellSocket = translate(
+          scope.register(
+            forExport
+              ? buildSingleCellSocket(cellW_mm, cellD_mm)
+              : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
+          ),
+          [cell.centerX, cell.centerY, 0]
         );
-      }
-    });
+        cellSockets.push(cellSocket);
+      },
+      halfSockets
+    );
 
-    if (holeTools.length > 0) {
-      result = unwrap(cutAll(result, holeTools));
+    if (cellSockets.length === 0) {
+      throw new Error('Invalid grid dimensions: at least one cell required');
     }
-  }
+    let result: Shape3D = unwrap(fuseAll(cellSockets, { optimisation: 'commonFace' }));
+    // Delete consumed cellSockets (skip if fuseAll returned the same reference)
+    for (const s of cellSockets) {
+      if (s !== result) s.delete();
+    }
 
-  return setSocketCache(key, result);
+    // Cut magnet/screw holes at standard 4-corner positions per full cell.
+    if (withScrew || withMagnet) {
+      const HOLE_OFFSET = 13; // mm from cell center to hole center (Gridfinity spec)
+      const magnetCutout = withMagnet ? scope.register(cylinder(magnetRadius, magnetDepth)) : null;
+      const screwCutout = withScrew ? scope.register(cylinder(screwRadius, SOCKET_HEIGHT)) : null;
+
+      // When both exist, fuse creates a new shape (register it); when only one exists,
+      // it's already registered above — don't double-register
+      const cutout: Shape3D =
+        magnetCutout && screwCutout
+          ? scope.register(unwrap(fuse(magnetCutout, screwCutout)))
+          : ((magnetCutout || screwCutout) as Shape3D);
+
+      // 4 holes per full cell at ±HOLE_OFFSET from center
+      const holeOffsets: ReadonlyArray<readonly [number, number]> = [
+        [-HOLE_OFFSET, -HOLE_OFFSET],
+        [-HOLE_OFFSET, HOLE_OFFSET],
+        [HOLE_OFFSET, HOLE_OFFSET],
+        [HOLE_OFFSET, -HOLE_OFFSET],
+      ];
+
+      // NOTE: holeTools are NOT scope-registered — cutAll may return an input.
+      const holeTools: Shape3D[] = [];
+      forEachCell(gridW, gridD, (cell) => {
+        if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+        for (const [dx, dy] of holeOffsets) {
+          holeTools.push(
+            translate(scope.register(clone(cutout)), [
+              cell.centerX + dx,
+              cell.centerY + dy,
+              -SOCKET_HEIGHT,
+            ])
+          );
+        }
+      });
+
+      if (holeTools.length > 0) {
+        const preCut = result;
+        result = unwrap(cutAll(result, holeTools));
+        if (preCut !== result) preCut.delete();
+        for (const t of holeTools) {
+          if (t !== result) t.delete();
+        }
+      }
+    }
+
+    return setSocketCache(key, result); // result NOT registered — survives scope
+  });
 }

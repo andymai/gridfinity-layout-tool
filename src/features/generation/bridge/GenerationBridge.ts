@@ -277,6 +277,7 @@ export class GenerationBridge {
     this.pendingExports.clear();
 
     if (this.worker) {
+      // terminate() frees the entire WASM heap — no explicit cleanup needed
       this.worker.terminate();
       this.worker = null;
     }

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { LRUCache } from './lruCache';
 
 describe('LRUCache', () => {
@@ -86,5 +86,64 @@ describe('LRUCache', () => {
     expect(cache.get('a')).toBeUndefined();
     expect(cache.get('b')).toBe(2);
     expect(cache.size).toBe(1);
+  });
+
+  describe('onEvict callback', () => {
+    it('calls onEvict on capacity eviction', () => {
+      const onEvict = vi.fn();
+      const cache = new LRUCache<number>(2, onEvict);
+      cache.set('a', 1);
+      cache.set('b', 2);
+      cache.set('c', 3); // evicts 'a'
+
+      expect(onEvict).toHaveBeenCalledOnce();
+      expect(onEvict).toHaveBeenCalledWith('a', 1);
+    });
+
+    it('calls onEvict on key overwrite with old value', () => {
+      const onEvict = vi.fn();
+      const cache = new LRUCache<number>(3, onEvict);
+      cache.set('a', 1);
+      cache.set('a', 2); // overwrites 'a'
+
+      expect(onEvict).toHaveBeenCalledOnce();
+      expect(onEvict).toHaveBeenCalledWith('a', 1);
+    });
+
+    it('does not call onEvict when overwriting with same reference', () => {
+      const onEvict = vi.fn();
+      const cache = new LRUCache<object>(3, onEvict);
+      const obj = { value: 1 };
+      cache.set('a', obj);
+      cache.set('a', obj); // same reference
+
+      expect(onEvict).not.toHaveBeenCalled();
+    });
+
+    it('dispose() calls onEvict for all entries then clears', () => {
+      const onEvict = vi.fn();
+      const cache = new LRUCache<number>(5, onEvict);
+      cache.set('a', 1);
+      cache.set('b', 2);
+      cache.set('c', 3);
+
+      cache.dispose();
+
+      expect(onEvict).toHaveBeenCalledTimes(3);
+      expect(onEvict).toHaveBeenCalledWith('a', 1);
+      expect(onEvict).toHaveBeenCalledWith('b', 2);
+      expect(onEvict).toHaveBeenCalledWith('c', 3);
+      expect(cache.size).toBe(0);
+    });
+
+    it('dispose() is safe on empty cache', () => {
+      const onEvict = vi.fn();
+      const cache = new LRUCache<number>(3, onEvict);
+
+      cache.dispose();
+
+      expect(onEvict).not.toHaveBeenCalled();
+      expect(cache.size).toBe(0);
+    });
   });
 });

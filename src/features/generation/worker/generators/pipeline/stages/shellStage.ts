@@ -8,8 +8,8 @@
  * context holds a mutable copy.
  */
 
-import { unwrap, fuse, clone, translate } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import { unwrap, fuse, clone, translate, withScope } from 'brepjs';
+import type { DisposalScope } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../meshUtils';
 import { buildBaseSocket } from '../../socketBuilder';
@@ -39,49 +39,52 @@ export const shellStage: PipelineStage = {
     onProgress?.('shell', 0.3);
 
     const cutoutTopOffset = dim.solid ? params.cutoutConfig.topOffset : 0;
-    const binBody = buildBinBox(
-      params.width,
-      params.depth,
-      dim.wallHeight,
-      params.wallThickness,
-      dim.solid,
-      cutoutTopOffset
-    );
-    collectOrigins(binBody, FeatureTag.BASE, originToTag);
 
-    let bin: Shape3D;
-
-    if (dim.isFlat) {
-      checkCancelled(signal);
-      onProgress?.('features', 0.4);
-      if (dim.hasLip) {
-        try {
-          const top = translate(buildTopShape(params.width, params.depth, true), [
-            0,
-            0,
-            dim.wallHeight,
-          ]);
-          collectOrigins(top, FeatureTag.LIP, originToTag);
-          bin = unwrap(fuse(binBody, top, { optimisation: 'commonFace' }));
-        } catch (e: unknown) {
-          if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          bin = binBody;
-        }
-      } else {
-        bin = binBody;
-      }
-    } else {
-      // Socket style: build base socket and fuse with box
-      const base = buildBaseSocket(
+    const bin = withScope((scope: DisposalScope) => {
+      const binBody = buildBinBox(
         params.width,
         params.depth,
-        dim.withMagnet,
-        dim.withScrew,
-        params.base.magnetDiameter / 2,
-        params.base.magnetDepth,
-        params.base.screwDiameter / 2,
-        dim.useHighQuality,
-        dim.halfSockets
+        dim.wallHeight,
+        params.wallThickness,
+        dim.solid,
+        cutoutTopOffset
+      );
+      collectOrigins(binBody, FeatureTag.BASE, originToTag);
+
+      if (dim.isFlat) {
+        checkCancelled(signal);
+        onProgress?.('features', 0.4);
+        if (dim.hasLip) {
+          try {
+            const top = scope.register(
+              translate(buildTopShape(params.width, params.depth, true), [0, 0, dim.wallHeight])
+            );
+            collectOrigins(top, FeatureTag.LIP, originToTag);
+            scope.register(binBody); // consumed by fuse
+            return unwrap(fuse(binBody, top, { optimisation: 'commonFace' }));
+          } catch (e: unknown) {
+            if (e instanceof DOMException && e.name === 'AbortError') throw e;
+            return binBody; // fuse failed, binBody is the result (NOT registered)
+          }
+        }
+        return binBody; // no lip — binBody is the result (NOT registered)
+      }
+
+      // Socket style: build base socket and fuse with box.
+      // Register binBody eagerly — all socket paths consume it via fuse.
+      scope.register(binBody);
+      const base = scope.register(
+        buildBaseSocket(
+          params.width,
+          params.depth,
+          dim.withMagnet,
+          dim.withScrew,
+          params.base.magnetDiameter / 2,
+          params.base.magnetDepth,
+          params.base.screwDiameter / 2,
+          dim.useHighQuality,
+          dim.halfSockets
+        )
       );
       collectOrigins(base, FeatureTag.SOCKET, originToTag);
 
@@ -89,29 +92,25 @@ export const shellStage: PipelineStage = {
       onProgress?.('features', 0.4);
       if (dim.hasLip) {
         try {
-          const top = translate(buildTopShape(params.width, params.depth, true), [
-            0,
-            0,
-            dim.wallHeight,
-          ]);
-          collectOrigins(top, FeatureTag.LIP, originToTag);
-          bin = unwrap(
-            fuse(unwrap(fuse(base, binBody, { optimisation: 'commonFace' })), top, {
-              optimisation: 'commonFace',
-            })
+          const top = scope.register(
+            translate(buildTopShape(params.width, params.depth, true), [0, 0, dim.wallHeight])
           );
+          collectOrigins(top, FeatureTag.LIP, originToTag);
+          const baseAndBody = scope.register(
+            unwrap(fuse(base, binBody, { optimisation: 'commonFace' }))
+          );
+          return unwrap(fuse(baseAndBody, top, { optimisation: 'commonFace' }));
         } catch (e: unknown) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          bin = unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
+          return unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
         }
-      } else {
-        bin = unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
       }
-    }
+
+      return unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
+    });
 
     setShellCache(dim.shellKey, bin);
-    bin = clone(bin);
 
-    return { ...ctx, solid: bin };
+    return { ...ctx, solid: clone(bin) };
   },
 };
