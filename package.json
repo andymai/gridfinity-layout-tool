@@ -82,7 +82,7 @@
     "@liveblocks/react": "^3.15.1",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
-    "@vercel/analytics": "^1.6.1",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.3.1",
     "ai": "^6.0.116",
     "brepjs": "^12.12.0",
