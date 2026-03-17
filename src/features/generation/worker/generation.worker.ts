@@ -25,6 +25,7 @@ import {
 } from './generators/binGenerator';
 import { exportDividers } from './generators/dividerExport';
 import { generateBaseplate, exportBaseplate } from './generators/baseplateGenerator';
+import { clearAllCaches } from './generators/shapeCache';
 import type { KernelName } from '../bridge/types';
 import { loadOpenCascade, loadBrepkit } from './wasmInstantiator';
 
@@ -453,6 +454,11 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
           activeController = null;
           activeRequestId = null;
         }
+        break;
+
+      case 'CLEANUP':
+        clearAllCaches();
+        respond({ type: 'CLEANUP_DONE' });
         break;
     }
   })();

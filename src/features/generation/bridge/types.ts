@@ -19,6 +19,7 @@ export type WorkerMessage =
   | GenerateSplitPreviewMessage
   | GenerateSplitPreviewRangeMessage
   | CancelMessage
+  | CleanupMessage
   | ExportMessage
   | ExportBaseplateMessage
   | ExportDividersMessage
@@ -38,6 +39,11 @@ export interface GenerateMessage {
 export interface CancelMessage {
   readonly type: 'CANCEL';
   readonly requestId: string;
+}
+
+/** Request pre-termination disposal of all WASM shape caches. */
+export interface CleanupMessage {
+  readonly type: 'CLEANUP';
 }
 
 export interface GeneratePayload {
@@ -185,7 +191,12 @@ export type WorkerResponse =
   | ExportResultResponse
   | DividersExportResultResponse
   | SplitExportResultResponse
+  | CleanupDoneResponse
   | ErrorResponse;
+
+export interface CleanupDoneResponse {
+  readonly type: 'CLEANUP_DONE';
+}
 
 export interface InitReadyResponse {
   readonly type: 'INIT_READY';

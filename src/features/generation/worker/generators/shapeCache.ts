@@ -22,11 +22,16 @@ import { LRUCache } from './lruCache';
 
 // ─── Cache State ─────────────────────────────────────────────────────────────
 
+/** Dispose callback for LRU caches holding WASM-backed shapes. */
+const disposeShape = (_key: string, shape: Shape3D): void => {
+  shape.delete();
+};
+
 /** LRU shape caches — maxSize=5 lets users toggle between a few bin sizes without misses */
-const socketCache = new LRUCache<Shape3D>(5);
-const lipCache = new LRUCache<Shape3D>(5);
-const boxCache = new LRUCache<Shape3D>(5);
-const shellCache = new LRUCache<Shape3D>(5);
+const socketCache = new LRUCache<Shape3D>(5, disposeShape);
+const lipCache = new LRUCache<Shape3D>(5, disposeShape);
+const boxCache = new LRUCache<Shape3D>(5, disposeShape);
+const shellCache = new LRUCache<Shape3D>(5, disposeShape);
 
 /** Single-entry caches — pattern template is cheap; lastSolid is always the latest */
 interface CacheEntry {
@@ -120,6 +125,9 @@ export function getPatternTemplateCache(key: string): Shape3D | null {
 }
 
 export function setPatternTemplateCache(key: string, shape: Shape3D): void {
+  if (patternTemplateCache && patternTemplateCache.shape !== shape) {
+    patternTemplateCache.shape.delete();
+  }
   patternTemplateCache = { key, shape };
 }
 
@@ -132,6 +140,7 @@ export function getLastSolid(): Shape3D | null {
 
 /** Store the last generated solid for export operations. */
 export function setLastSolid(shape: Shape3D | null): void {
+  if (lastSolid && lastSolid !== shape) lastSolid.delete();
   lastSolid = shape;
 }
 
@@ -140,12 +149,12 @@ export function setLastSolid(shape: Shape3D | null): void {
 // maxSize=3: typical user edits one feature at a time; 3 entries covers recent sizes.
 
 const featureToolCaches = new Map<string, LRUCache<Shape3D>>([
-  ['compartmentWalls', new LRUCache<Shape3D>(3)],
-  ['insertCuts', new LRUCache<Shape3D>(3)],
-  ['labelTabs', new LRUCache<Shape3D>(3)],
-  ['scoopRamps', new LRUCache<Shape3D>(3)],
-  ['slotCuts', new LRUCache<Shape3D>(3)],
-  ['wallCutoutCuts', new LRUCache<Shape3D>(3)],
+  ['compartmentWalls', new LRUCache<Shape3D>(3, disposeShape)],
+  ['insertCuts', new LRUCache<Shape3D>(3, disposeShape)],
+  ['labelTabs', new LRUCache<Shape3D>(3, disposeShape)],
+  ['scoopRamps', new LRUCache<Shape3D>(3, disposeShape)],
+  ['slotCuts', new LRUCache<Shape3D>(3, disposeShape)],
+  ['wallCutoutCuts', new LRUCache<Shape3D>(3, disposeShape)],
 ]);
 
 export function getFeatureCache(feature: string, key: string): Shape3D | null {
@@ -165,15 +174,21 @@ export function setFeatureCache(feature: string, key: string, shape: Shape3D): v
   }
 }
 
-/** Clear all shape caches. Required when switching geometry kernels in tests. */
+/** Clear all shape caches, disposing WASM handles. Required when switching geometry kernels in tests. */
 export function clearAllCaches(): void {
-  socketCache.clear();
-  lipCache.clear();
-  boxCache.clear();
-  shellCache.clear();
-  patternTemplateCache = null;
-  lastSolid = null;
+  socketCache.dispose();
+  lipCache.dispose();
+  boxCache.dispose();
+  shellCache.dispose();
+  if (patternTemplateCache) {
+    patternTemplateCache.shape.delete();
+    patternTemplateCache = null;
+  }
+  if (lastSolid) {
+    lastSolid.delete();
+    lastSolid = null;
+  }
   for (const cache of featureToolCaches.values()) {
-    cache.clear();
+    cache.dispose();
   }
 }
