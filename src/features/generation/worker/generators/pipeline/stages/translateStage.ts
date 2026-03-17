@@ -20,6 +20,9 @@ export const translateStage: PipelineStage = {
 
   execute(ctx: PipelineContext): PipelineContext {
     if (!ctx.solid) return ctx;
-    return { ...ctx, solid: translate(ctx.solid, [0, 0, SOCKET_HEIGHT]) };
+    const oldSolid = ctx.solid;
+    const newSolid = translate(ctx.solid, [0, 0, SOCKET_HEIGHT]);
+    oldSolid.delete();
+    return { ...ctx, solid: newSolid };
   },
 };

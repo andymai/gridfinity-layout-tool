@@ -22,8 +22,9 @@ import {
   getBounds,
   shell,
   getKernel,
+  withScope,
 } from 'brepjs';
-import type { Shape3D, Plane, Vec3, Sketch } from 'brepjs';
+import type { Shape3D, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
 import {
   SIZE,
   CLEARANCE,
@@ -64,43 +65,51 @@ export function buildBinBox(
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
+  return withScope((scope: DisposalScope) => {
+    const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
 
-  // Solid mode: return the raw extrusion, optionally with lowered interior fill
-  if (solid) {
-    if (cutoutTopOffset > 0) {
-      // Build hollow walls extending to full wallHeight
-      const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-      const hollowWalls = unwrap(shell(box, topFaces, wallThickness));
+    // Solid mode: return the raw extrusion, optionally with lowered interior fill
+    if (solid) {
+      if (cutoutTopOffset > 0) {
+        // Build hollow walls extending to full wallHeight
+        const topFaces = faceFinder()
+          .parallelTo('Z')
+          .atDistance(wallHeight, [0, 0, 0])
+          .findAll(box);
+        const hollowWalls = unwrap(shell(box, topFaces, wallThickness));
+        scope.register(box); // consumed by shell
 
-      // Build interior solid block stopping at wallHeight - cutoutTopOffset
-      const innerW = outerW - 2 * wallThickness;
-      const innerD = outerD - 2 * wallThickness;
-      const fillHeight = wallHeight - cutoutTopOffset;
+        // Build interior solid block stopping at wallHeight - cutoutTopOffset
+        const innerW = outerW - 2 * wallThickness;
+        const innerD = outerD - 2 * wallThickness;
+        const fillHeight = wallHeight - cutoutTopOffset;
 
-      // Guard: if fillHeight or inner dimensions are non-positive, the interior fill
-      // would produce degenerate geometry that crashes WASM. Return hollow walls only.
-      if (fillHeight <= 0 || innerW <= 0 || innerD <= 0) {
-        return setBoxCache(boxKey, hollowWalls);
+        // Guard: if fillHeight or inner dimensions are non-positive, the interior fill
+        // would produce degenerate geometry that crashes WASM. Return hollow walls only.
+        if (fillHeight <= 0 || innerW <= 0 || innerD <= 0) {
+          return setBoxCache(boxKey, hollowWalls);
+        }
+
+        const innerFill = scope.register(
+          sketch(
+            drawRoundedRectangle(innerW, innerD, Math.max(0, CORNER_RADIUS - wallThickness)),
+            'XY'
+          ).extrude(fillHeight)
+        );
+        scope.register(hollowWalls); // consumed by fuse
+
+        // Combine walls with lowered interior fill
+        return setBoxCache(boxKey, unwrap(fuse(hollowWalls, innerFill)));
       }
-
-      const innerFill = sketch(
-        drawRoundedRectangle(innerW, innerD, Math.max(0, CORNER_RADIUS - wallThickness)),
-        'XY'
-      ).extrude(fillHeight);
-
-      // Combine walls with lowered interior fill
-      const result = unwrap(fuse(hollowWalls, innerFill));
-      return setBoxCache(boxKey, result);
-    } else {
-      // Standard solid mode: full solid block
+      // Standard solid mode: full solid block — box goes to cache, NOT registered
       return setBoxCache(boxKey, box);
     }
-  }
 
-  const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-  const result = unwrap(shell(box, topFaces, wallThickness));
-  return setBoxCache(boxKey, result);
+    const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
+    const result = unwrap(shell(box, topFaces, wallThickness));
+    scope.register(box); // consumed by shell
+    return setBoxCache(boxKey, result);
+  });
 }
 
 // ─── Top Shape (Stacking Lip) Builder ────────────────────────────────────────
@@ -146,38 +155,41 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
   outerSections.push(sectionAt(Z_VERT, INSET_MID));
   outerSections.push(sectionAt(Z_PEAK, INSET_TOP));
 
-  const [outerFirst, ...outerRest] = outerSections;
-  const outerFrustum = outerFirst.loftWith(outerRest, { ruled: true });
+  return withScope((scope: DisposalScope) => {
+    const [outerFirst, ...outerRest] = outerSections;
+    const outerFrustum = scope.register(outerFirst.loftWith(outerRest, { ruled: true }));
 
-  // Build inner frustum (offset inward by wall thickness)
-  const innerSections: Sketch[] = [];
-  if (includeLip) {
-    innerSections.push(sectionAt(Z_EXT, INSET_BOTTOM + WALL));
-  }
-  innerSections.push(sectionAt(Z_BASE, INSET_BOTTOM + WALL));
-  innerSections.push(sectionAt(Z_TAPER1, INSET_MID + WALL));
-  innerSections.push(sectionAt(Z_VERT, INSET_MID + WALL));
-  innerSections.push(sectionAt(Z_PEAK, INSET_TOP + WALL));
+    // Build inner frustum (offset inward by wall thickness)
+    const innerSections: Sketch[] = [];
+    if (includeLip) {
+      innerSections.push(sectionAt(Z_EXT, INSET_BOTTOM + WALL));
+    }
+    innerSections.push(sectionAt(Z_BASE, INSET_BOTTOM + WALL));
+    innerSections.push(sectionAt(Z_TAPER1, INSET_MID + WALL));
+    innerSections.push(sectionAt(Z_VERT, INSET_MID + WALL));
+    innerSections.push(sectionAt(Z_PEAK, INSET_TOP + WALL));
 
-  const [innerFirst, ...innerRest] = innerSections;
-  const innerFrustum = innerFirst.loftWith(innerRest, { ruled: true });
+    const [innerFirst, ...innerRest] = innerSections;
+    const innerFrustum = scope.register(innerFirst.loftWith(innerRest, { ruled: true }));
 
-  // Boolean subtract inner from outer to create hollow ring
-  let result = unwrap(cut(outerFrustum, innerFrustum));
+    // Boolean subtract inner from outer to create hollow ring
+    let result = unwrap(cut(outerFrustum, innerFrustum));
 
-  // Fillet the peak edge
-  const lipEdges = edgeFinder()
-    .when((e) => {
-      const bounds = getBounds(e);
-      return bounds.zMax >= Z_PEAK - 1 && bounds.zMin <= Z_PEAK;
-    })
-    .findAll(result);
+    // Fillet the peak edge
+    const lipEdges = edgeFinder()
+      .when((e) => {
+        const bounds = getBounds(e);
+        return bounds.zMax >= Z_PEAK - 1 && bounds.zMin <= Z_PEAK;
+      })
+      .findAll(result);
 
-  if (lipEdges.length > 0) {
-    result = unwrap(fillet(result, lipEdges, TOP_FILLET));
-  }
+    if (lipEdges.length > 0) {
+      scope.register(result); // consumed by fillet
+      result = unwrap(fillet(result, lipEdges, TOP_FILLET));
+    }
 
-  return result;
+    return result;
+  });
 }
 
 /**
@@ -218,17 +230,19 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
     return topProfileShape.sketchOnPlane(plane) as Sketch;
   };
 
-  const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
-  const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
+  return withScope((scope: DisposalScope) => {
+    const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
+    const swept = scope.register(boxSketch.sweepSketch(topProfile, { withContact: true }));
 
-  const lipEdges = edgeFinder()
-    .when((e) => {
-      const bounds = getBounds(e);
-      return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
-    })
-    .findAll(swept);
+    const lipEdges = edgeFinder()
+      .when((e) => {
+        const bounds = getBounds(e);
+        return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
+      })
+      .findAll(swept);
 
-  return unwrap(fillet(swept, lipEdges, TOP_FILLET));
+    return unwrap(fillet(swept, lipEdges, TOP_FILLET));
+  });
 }
 
 /**

@@ -1,14 +1,9 @@
 /**
  * WASM disposal regression tests.
  *
- * Verifies that explicit `.delete()` cleanup in shape caches keeps cached
- * handle counts bounded and prevents cache-managed shapes from leaking to
- * the FinalizationRegistry (GC safety net).
- *
- * Note: The generation pipeline also creates intermediate ShapeHandle objects
- * (from extrude, fillet, fuse, cut, etc.) that are not cache-managed. Those
- * handles still rely on FinalizationRegistry until the pipeline is refactored
- * to use DisposalScope. These tests focus on the cache layer specifically.
+ * Verifies that explicit disposal (DisposalScope in builders, manual .delete()
+ * in pipeline stages, onEvict in LRU caches) keeps WASM handle counts bounded
+ * and prevents shapes from leaking to the FinalizationRegistry (GC safety net).
  *
  * Requires real brepjs WASM — excluded from default CI via __dual-kernel__ path.
  *
@@ -21,6 +16,7 @@ import { getDisposalStats, resetDisposalStats } from 'brepjs';
 import { initBrepjs, getGenerateBin } from './wasmInit';
 import { buildParams } from './scenarioTypes';
 import { clearAllCaches } from '../shapeCache';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -32,15 +28,14 @@ beforeEach(() => {
 });
 
 describe('WASM disposal regression', () => {
-  it('liveHandles stays bounded after 10 generation cycles', () => {
+  it('liveHandles stays bounded after 20 generation cycles', () => {
     const generateBin = getGenerateBin();
 
     // Generate with varying grid sizes to force cache evictions (LRU capacity = 5)
     for (let i = 0; i < 10; i++) {
       const gridW = 1 + (i % 4); // cycles through 1-4
       const gridD = 1 + ((i + 1) % 3); // cycles through 1-3
-      const params = buildParams({ gridW, gridD });
-      generateBin(params);
+      generateBin(buildParams({ gridW, gridD }));
     }
 
     const stats5 = getDisposalStats();
@@ -49,15 +44,13 @@ describe('WASM disposal regression', () => {
     for (let i = 10; i < 20; i++) {
       const gridW = 1 + (i % 4);
       const gridD = 1 + ((i + 1) % 3);
-      const params = buildParams({ gridW, gridD });
-      generateBin(params);
+      generateBin(buildParams({ gridW, gridD }));
     }
 
     const stats10 = getDisposalStats();
 
-    // If caches weren't disposing evicted shapes, liveHandles would grow ~linearly.
-    // With disposal, repeated param combinations hit cache and handle count plateaus.
-    // Allow 20% growth tolerance (intermediate pipeline shapes may vary slightly).
+    // With pipeline + cache disposal, handle count should plateau.
+    // Allow 20% growth tolerance for minor variations.
     expect(stats10.liveHandles).toBeLessThan(stats5.liveHandles * 1.2 + 20);
   }, 120_000);
 
@@ -92,4 +85,29 @@ describe('WASM disposal regression', () => {
     // Evicted shapes should have been explicitly disposed, not GC'd
     expect(stats.gcCollected).toBe(0);
   }, 120_000);
+
+  it('pipeline intermediates are explicitly disposed', () => {
+    const generateBin = getGenerateBin();
+
+    // Generate a bin with features (lip, magnet holes) to exercise full pipeline
+    generateBin(
+      buildParams({
+        gridW: 2,
+        gridD: 2,
+        base: {
+          ...DEFAULT_BIN_PARAMS.base,
+          style: 'standard',
+          magnetDiameter: 6.2,
+          magnetDepth: 2.0,
+          screwDiameter: 3.0,
+        },
+      })
+    );
+
+    const stats = getDisposalStats();
+    // All intermediate shapes should have been explicitly disposed via
+    // DisposalScope (builders) and manual .delete() (pipeline stages).
+    // Nothing should have fallen through to the FinalizationRegistry.
+    expect(stats.gcCollected).toBe(0);
+  }, 60_000);
 });
