@@ -85,7 +85,7 @@
     "@vercel/analytics": "^1.6.1",
     "@vercel/blob": "^2.3.1",
     "ai": "^6.0.116",
-    "brepjs": "^12.2.12",
+    "brepjs": "^12.12.0",
     "brepjs-opencascade": "^0.9.0",
     "brepkit-wasm": "^1.0.8",
     "class-variance-authority": "^0.7.1",
@@ -104,7 +104,7 @@
     "three": "^0.183.2",
     "three-stdlib": "^2.36.1",
     "zod": "^4.3.6",
-    "zustand": "^5.0.9"
+    "zustand": "^5.0.12"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -171,7 +171,7 @@
     "gray-matter": "^4.0.3",
     "husky": "^9.1.7",
     "jsdom": "^28.1.0",
-    "knip": "^5.86.0",
+    "knip": "^5.87.0",
     "lint-staged": "^16.3.1",
     "marked": "^17.0.4",
     "postcss": "^8.5.8",
@@ -185,7 +185,7 @@
     "typescript-eslint": "^8.57.0",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
-    "vite-plugin-wasm": "^3.5.0",
+    "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.0.16",
     "vitest-axe": "^0.1.0",
     "workbox-window": "^7.4.0"
