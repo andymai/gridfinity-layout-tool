@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.1...gridfinity-layout-tool-v4.9.2) (2026-03-17)
+
+
+### Bug Fixes
+
+* add explicit WASM shape disposal to generation caches ([#1124](https://github.com/andymai/gridfinity-layout-tool/issues/1124)) ([38faac6](https://github.com/andymai/gridfinity-layout-tool/commit/38faac6916a2d2824e5ea25442e7ee54f1c99456))
+
 ## [4.9.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.0...gridfinity-layout-tool-v4.9.1) (2026-03-16)
 
 
