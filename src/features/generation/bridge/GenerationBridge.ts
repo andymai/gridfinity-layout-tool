@@ -277,7 +277,7 @@ export class GenerationBridge {
     this.pendingExports.clear();
 
     if (this.worker) {
-      this.worker.postMessage({ type: 'CLEANUP' });
+      // terminate() frees the entire WASM heap — no explicit cleanup needed
       this.worker.terminate();
       this.worker = null;
     }
@@ -703,10 +703,6 @@ export class GenerationBridge {
 
         case 'INIT_READY':
           // Already handled during init
-          break;
-
-        case 'CLEANUP_DONE':
-          // Acknowledgement only — no action needed
           break;
       }
     });

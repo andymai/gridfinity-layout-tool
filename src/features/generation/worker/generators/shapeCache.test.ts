@@ -5,6 +5,7 @@ import {
   getLastSolid,
   setPatternTemplateCache,
   getPatternTemplateCache,
+  setFeatureCache,
   clearAllCaches,
 } from './shapeCache';
 import type { Shape3D } from 'brepjs';
@@ -129,6 +130,15 @@ describe('shape disposal', () => {
       expect(pattern.delete).toHaveBeenCalledOnce();
       expect(getLastSolid()).toBeNull();
       expect(getPatternTemplateCache('k')).toBeNull();
+    });
+
+    it('disposes featureToolCache shapes', () => {
+      const wall = mockShape();
+      setFeatureCache('compartmentWalls', 'k', wall);
+
+      clearAllCaches();
+
+      expect(wall.delete).toHaveBeenCalledOnce();
     });
   });
 });
