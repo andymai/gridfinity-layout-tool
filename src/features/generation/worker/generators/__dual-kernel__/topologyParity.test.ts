@@ -36,28 +36,37 @@ const TEST_CASES = [...CORE_PARITY_CASES, ...TOPOLOGY_EXTENDED_CASES];
 
 // ─── Generation helpers ─────────────────────────────────────────────────────
 
+interface BBox {
+  xMin: number;
+  xMax: number;
+  yMin: number;
+  yMax: number;
+  zMin: number;
+  zMax: number;
+}
+
 interface CaseResult {
   solid: Shape3D | null;
   stats: TopologyStats | null;
+  bounds: BBox | null;
   error: string | null;
 }
 
 function generateOcct(generateBin: GenerateBinFn, params: BinParams): CaseResult {
   try {
     clearAllCaches();
-    // generateBin includes meshing which may throw — we only need the solid.
-    // setLastSolid() is called before mesh(), so retrieve it regardless.
     try {
       withKernel('occt', () => generateBin(params));
     } catch {
       /* mesh/late error */
     }
     const solid = withKernel('occt', () => getLastSolid());
-    if (!solid) return { solid: null, stats: null, error: 'no solid produced' };
+    if (!solid) return { solid: null, stats: null, bounds: null, error: 'no solid produced' };
     const stats = withKernel('occt', () => collectTopologyStats(solid));
-    return { solid, stats, error: null };
+    const bounds = withKernel('occt', () => getBounds(solid)) as BBox;
+    return { solid, stats, bounds, error: null };
   } catch (e) {
-    return { solid: null, stats: null, error: String(e) };
+    return { solid: null, stats: null, bounds: null, error: String(e) };
   }
 }
 
@@ -79,9 +88,10 @@ function generateBrepkit(generateBin: GenerateBinFn, params: BinParams): CaseRes
     });
     // Use raw kernel stats to bypass brepjs's stale topology cache after unifyFaces.
     const stats = withKernel('brepkit', () => collectTopologyStatsRaw(solid, rawKernel));
-    return { solid, stats, error: null };
+    const bounds = withKernel('brepkit', () => getBounds(solid)) as BBox;
+    return { solid, stats, bounds, error: null };
   } catch (e) {
-    return { solid: null, stats: null, error: String(e) };
+    return { solid: null, stats: null, bounds: null, error: String(e) };
   }
 }
 
@@ -94,6 +104,7 @@ describe('topology parity: brepkit vs OCCT', () => {
     await initOcctKernel();
     await initBrepkitKernel();
     const generateBin: GenerateBinFn = await loadGenerateBin();
+    clearAllCaches(); // Clear once at start, not between cases.
 
     for (const tc of TEST_CASES) {
       const params = migrateParams({ ...DEFAULT_BIN_PARAMS, ...tc.overrides });
@@ -162,9 +173,9 @@ describe('topology parity: brepkit vs OCCT', () => {
 
       it('bounding boxes match within 0.5mm', () => {
         const r = results.get(tc.name)!;
-        if (!r.occt.solid || !r.bk.solid) return;
-        const ob = withKernel('occt', () => getBounds(r.occt.solid!));
-        const bb = withKernel('brepkit', () => getBounds(r.bk.solid!));
+        if (!r.occt.bounds || !r.bk.bounds) return;
+        const ob = r.occt.bounds;
+        const bb = r.bk.bounds;
         const tol = 0.5;
         const dim = (b: typeof ob) => ({
           x: b.xMax - b.xMin,
