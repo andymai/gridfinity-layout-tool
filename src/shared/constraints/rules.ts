@@ -12,16 +12,6 @@
 
 import type { ConstraintRule, ImplicationRule } from './types';
 
-// =============================================================================
-// Constraint Rules
-// =============================================================================
-
-/**
- * Feature-disabling constraints.
- *
- * Each rule says: "when `source` is active (per `when`), `disables` are unavailable."
- * Symmetric pairs (A disables B, B disables A) model mutual exclusion.
- */
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   // ── Base: flat ↔ everything else ─────────────────────────────────────────
   {
@@ -118,17 +108,6 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   },
 ] as const;
 
-// =============================================================================
-// Implication Rules
-// =============================================================================
-
-/**
- * Derived-state implications.
- *
- * When a predicate matches, the `apply` function returns a partial BinParams
- * that is merged into the resolved state. Used for keeping related params
- * in sync (e.g., style='solid' must have base.solid=true).
- */
 export const IMPLICATION_RULES: readonly ImplicationRule[] = [
   {
     description: 'Solid style forces base.solid=true',

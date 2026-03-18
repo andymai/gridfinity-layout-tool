@@ -8,9 +8,7 @@
  * Privacy: Only structural features are captured, not the actual content.
  */
 
-// ============================================
 // LENGTH BUCKETS
-// ============================================
 
 /**
  * Compute length bucket (2 bits of information).
@@ -22,9 +20,7 @@ function getLengthBucket(label: string): number {
   return 2; // long
 }
 
-// ============================================
 // CHARACTER CLASS DETECTION
-// ============================================
 
 /**
  * Detect the dominant character class (2 bits of information).
@@ -60,9 +56,7 @@ function getCharacterClass(label: string): number {
   return 2;
 }
 
-// ============================================
 // N-GRAM FINGERPRINT
-// ============================================
 
 /**
  * Compute a simple n-gram based fingerprint (8 bits of information).
@@ -97,9 +91,7 @@ function computeNgramFingerprint(label: string): number {
   return ((hash >> 8) ^ (hash & 0xff)) & 0xff;
 }
 
-// ============================================
 // PATTERN DETECTION
-// ============================================
 
 /**
  * Detect common label patterns (2 bits of information).
@@ -124,9 +116,7 @@ function getPatternType(label: string): number {
   return 0;
 }
 
-// ============================================
 // PUBLIC API
-// ============================================
 
 /**
  * Compute an embedding bucket for a label.

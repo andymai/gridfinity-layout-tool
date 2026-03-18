@@ -207,9 +207,7 @@ export function clearMigrationFlag(): void {
   window.localStorage.removeItem(MIGRATION_FLAG_KEY);
 }
 
-// =============================================================================
 // Result-Based Migration Functions
-// =============================================================================
 
 /**
  * Migrate a single layout from localStorage to IndexedDB with Result-based error handling.

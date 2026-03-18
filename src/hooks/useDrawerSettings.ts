@@ -91,7 +91,6 @@ export interface UseDrawerSettingsReturn {
   // STL site toggle
   toggleSTLSite: (siteId: string) => void;
 
-  // Modal state
   showSaveDefaultsConfirm: boolean;
   setShowSaveDefaultsConfirm: (show: boolean) => void;
   showHalfBinBlockedModal: boolean;
@@ -141,7 +140,6 @@ export interface UseDrawerSettingsReturn {
 export function useDrawerSettings(): UseDrawerSettingsReturn {
   const t = useTranslation();
 
-  // Modal state
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
   const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
   const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
@@ -184,7 +182,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // Selection store selectors
   const activeLayerId = useSelectionStore((state) => state.activeLayerId);
 
-  // Settings store
   const { settings, saveCurrentAsDefaults, saveCategoriesAsDefaults, updateSetting } =
     useSettingsStore(
       useShallow((state) => ({
@@ -195,7 +192,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
       }))
     );
 
-  // Toast store
   const addToast = useToastStore((state) => state.addToast);
 
   // Mutations (supports collaborative mode)
@@ -232,9 +228,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     }),
     [drawerWidth, drawerDepth, drawerHeight, gridUnitMm, heightUnitMm]
   );
-
-  // === Handlers ===
-
   // Stepper handlers (delta-based, respects step size)
   const handleDrawerWidthChange = useCallback(
     (delta: number) => {
@@ -406,7 +399,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     // Half-bin mode
     halfBinMode,
 
-    // Settings
     settings,
     activeLayerHeight,
 
@@ -425,7 +417,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     setPrintBedSize,
     toggleSTLSite,
 
-    // Modal state
     showSaveDefaultsConfirm,
     setShowSaveDefaultsConfirm,
     showHalfBinBlockedModal,

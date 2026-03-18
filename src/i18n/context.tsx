@@ -33,10 +33,6 @@ import {
 import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
 
-/**
- * Minimal inline translations for ErrorBoundary and initial render.
- * The full English locale is lazy-loaded like all other locales.
- */
 const fallback: Translations = {
   'errorBoundary.heading': 'Something went wrong',
   'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',

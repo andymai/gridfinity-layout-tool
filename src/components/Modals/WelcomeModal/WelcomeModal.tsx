@@ -13,9 +13,7 @@ import { LayoutThumbnailWithLabels } from '@/features/inspiration-gallery/compon
 import { THEME_CONFIG } from '@/features/inspiration-gallery/types';
 import type { InspirationLayout } from '@/features/inspiration-gallery/types';
 
-// ============================================================================
 // Curated templates — hand-picked for diversity and visual impact
-// ============================================================================
 
 /** Template IDs shown in the welcome modal (popularity + diversity balanced) */
 const CURATED_TEMPLATE_IDS = [
@@ -42,9 +40,7 @@ if (import.meta.env.DEV && CURATED_TEMPLATES.length !== CURATED_TEMPLATE_IDS.len
   );
 }
 
-// ============================================================================
 // Component
-// ============================================================================
 
 interface WelcomeModalProps {
   isOpen: boolean;
@@ -263,9 +259,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
   );
 }
 
-// ============================================================================
 // Template Card (simplified from LayoutCard)
-// ============================================================================
 
 interface WelcomeTemplateCardProps {
   layout: InspirationLayout;

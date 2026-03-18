@@ -7,9 +7,7 @@ import {
   PERSONAL_LAYOUTS,
 } from './themes';
 
-// ============================================================
 // LAYOUT ORDERING HELPERS
-// ============================================================
 
 /**
  * Select layouts from a source array in a specific order, with validation.
@@ -30,22 +28,13 @@ function pickLayouts(layouts: InspirationLayout[], orderedIds: string[]): Inspir
   return result;
 }
 
-// ============================================================
 // EXPORT ALL LAYOUTS
-// ============================================================
 
 // Ordered by popularity based on telemetry data:
 // - Vocabulary tracking shows fasteners, tools, electronics, 3D printing hardware most common
 // - Gridfinity core users are makers/3D printing enthusiasts
-//
 // Layouts are organized by theme files but assembled here in popularity order.
 // The original order was:
-// 1. Workshop (7) - most popular (tools, fasteners, electronics)
-// 2. Hobby - Maker (2) - 3D printing enthusiasts
-// 3. Office (2) - USB cables, pens, clips
-// 4. Kitchen (4) - common household use
-// 5. Hobby - Craft (3) - paint, brush, glue
-// 6. Personal (5) - key, coin, flashlight, glasses, etc.
 
 export const INSPIRATION_LAYOUTS: InspirationLayout[] = [
   // Workshop - most popular (tools, fasteners, electronics domains heavily tracked)

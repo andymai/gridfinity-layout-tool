@@ -9,9 +9,7 @@ import { useLabsStore } from '@/core/store/labs';
 import { getFeature } from '@/core/labs';
 import { splitBinsByLocation } from '@/shared/utils';
 
-// ============================================
 // LABS METRICS
-// ============================================
 
 export interface LabsMetrics {
   labs_enabled_features: string[];
@@ -38,9 +36,7 @@ export function computeLabsMetrics(): LabsMetrics {
   };
 }
 
-// ============================================
 // METRICS TYPES
-// ============================================
 
 export interface LayoutMetrics {
   // Drawer configuration
@@ -94,9 +90,7 @@ export interface LayoutMetrics {
   is_substantial: boolean;
 }
 
-// ============================================
 // METRICS COMPUTATION
-// ============================================
 
 export const DEFAULT_DRAWER = { width: 10, depth: 8, height: 12 };
 export const DEFAULT_PRINT_BED = 256;

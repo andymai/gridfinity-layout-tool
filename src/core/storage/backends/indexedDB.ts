@@ -129,9 +129,6 @@ export async function getAllLayoutIds(): Promise<string[]> {
   const keys = await db.getAllKeys(LAYOUTS_STORE);
   return keys as string[];
 }
-
-// === Library Index Operations ===
-
 /**
  * Save the library index to IndexedDB (no compression — small data).
  */
@@ -178,9 +175,6 @@ export async function clearAllData(): Promise<void> {
   }
   await tx.done;
 }
-
-// === Snapshot Operations ===
-
 /**
  * Save a snapshot to IndexedDB.
  */
@@ -236,9 +230,6 @@ export async function updateSnapshot(snapshot: CompressedSnapshot): Promise<void
   const db = await openLayoutDatabase();
   await db.put(SNAPSHOTS_STORE, snapshot);
 }
-
-// === ML Data Operations ===
-
 /**
  * Save ML data to IndexedDB (e.g. label sizes for name suggestions).
  */
@@ -263,9 +254,6 @@ export async function deleteMlData(key: string): Promise<void> {
   const db = await openLayoutDatabase();
   await db.delete(ML_DATA_STORE, key);
 }
-
-// === Shared-With-Me Operations ===
-
 /**
  * Save shared-with-me entries to IndexedDB.
  */

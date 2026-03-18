@@ -38,9 +38,6 @@ import {
   sketch,
 } from './generatorTypes';
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
-
-// ─── Box Body Builder ────────────────────────────────────────────────────────
-
 /**
  * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
  * The box starts at Z=0 (socket interface) and goes up to wallHeight.
@@ -111,9 +108,6 @@ export function buildBinBox(
     return setBoxCache(boxKey, result);
   });
 }
-
-// ─── Top Shape (Stacking Lip) Builder ────────────────────────────────────────
-
 /**
  * Build the stacking lip using a ruled loft + boolean cut (fast path).
  *

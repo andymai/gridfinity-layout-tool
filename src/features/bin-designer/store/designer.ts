@@ -26,7 +26,6 @@ import {
 
 export const useDesignerStore = create<DesignerState>()(
   immer((set, get) => ({
-    // Initial state
     params: { ...DEFAULT_BIN_PARAMS },
     generation: { ...DEFAULT_GENERATION_STATE },
     history: { ...DEFAULT_HISTORY },

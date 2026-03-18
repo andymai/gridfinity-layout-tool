@@ -40,9 +40,6 @@ import {
   computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
-
-// ─── Constants ──────────────────────────────────────────────────────────────
-
 /** Number of line segments per rounded corner arc */
 const CORNER_SEGMENTS = 4;
 
@@ -55,9 +52,6 @@ const CIRCLE_SEGMENTS = 16;
  * can distinguish them from the faces they visually punch through.
  */
 const CANCEL_EPSILON = 0.05;
-
-// ─── Mesh Builder ───────────────────────────────────────────────────────────
-
 class MeshBuilder {
   private readonly positions: number[] = [];
   private readonly norms: number[] = [];
@@ -144,9 +138,6 @@ class MeshBuilder {
     };
   }
 }
-
-// ─── Geometry Utilities ─────────────────────────────────────────────────────
-
 /** Compute face normal for a CCW triangle. */
 function faceNormal(
   x0: number,
@@ -288,9 +279,6 @@ function roundedRectPointsSelective(
 
   return pts;
 }
-
-// ─── Pocket Mesh Generation ─────────────────────────────────────────────────
-
 /**
  * Add pocket inner walls for one cell.
  *
@@ -362,9 +350,6 @@ function addPocketWalls(
     }
   }
 }
-
-// ─── Outer Perimeter Walls ──────────────────────────────────────────────────
-
 /**
  * Add outer perimeter walls.
  *
@@ -397,9 +382,6 @@ function addOuterWalls(
     mb.pushFlatQuad(x0, y0, zTop, x1, y1, zTop, x1, y1, zBot, x0, y0, zBot);
   }
 }
-
-// ─── Top Face ───────────────────────────────────────────────────────────────
-
 /**
  * Add the top face of the slab (Z=totalHeight).
  *
@@ -491,9 +473,6 @@ function addRingFace(
     mb.pushQuad(outerVerts[i], outerVerts[j], innerVerts[j], innerVerts[i]);
   }
 }
-
-// ─── Bottom Face (Z=0) ─────────────────────────────────────────────────────
-
 /**
  * Add the bottom face of the slab (Z=0), facing DOWN.
  *
@@ -524,9 +503,6 @@ function addSolidBottomFace(
     mb.pushTriangle(center, outerVerts[j], outerVerts[i]);
   }
 }
-
-// ─── Magnet Hole Geometry ───────────────────────────────────────────────────
-
 /**
  * Generate circle points (CCW from +Z) centered at origin.
  */
@@ -568,7 +544,6 @@ function addMagnetHoles(
     const mx = cx + dx;
     const my = cy + dy;
 
-    // 1. Cancel circle at Z=floorDepth facing DOWN — punches hole in pocket floor
     // Offset by CANCEL_EPSILON below the pocket floor to avoid z-fighting.
     {
       const cancelZ = zTop - CANCEL_EPSILON;
@@ -588,7 +563,6 @@ function addMagnetHoles(
       }
     }
 
-    // 2. Cylinder wall from Z=floorDepth to Z=MAGNET_FLOOR (inward-facing)
     for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
       const j = (i + 1) % CIRCLE_SEGMENTS;
       const px0 = circlePts[i][0] + mx,
@@ -601,7 +575,6 @@ function addMagnetHoles(
       mb.pushFlatQuad(px1, py1, zTop, px0, py0, zTop, px0, py0, zBot, px1, py1, zBot);
     }
 
-    // 3. Floor circle at Z=MAGNET_FLOOR facing UP — magnet sits on this
     {
       const nx = 0,
         ny = 0,
@@ -620,9 +593,6 @@ function addMagnetHoles(
     }
   }
 }
-
-// ─── Registration Connector Geometry ─────────────────────────────────────────
-
 /**
  * Add a cylindrical nub (male protrusion) at a wall face.
  *
@@ -724,7 +694,6 @@ function addConnectorHole(
     ]);
   }
 
-  // 1. Cancel circle at wall surface, facing outward — punches hole in wall
   // Offset inward by CANCEL_EPSILON (opposite to normal) to avoid z-fighting.
   {
     const cancelCx = cx - nx * CANCEL_EPSILON;
@@ -742,7 +711,6 @@ function addConnectorHole(
     }
   }
 
-  // 2. Cylinder wall from surface to floor (inward-facing = normals toward axis)
   for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
     const j = (i + 1) % NUB_CIRCLE_SEGMENTS;
     const [dx0, dy0, dz0] = circlePts[i];
@@ -765,7 +733,6 @@ function addConnectorHole(
     mb.pushFlatQuad(sx1, sy1, sz1, sx0, sy0, sz0, fx0, fy0, fz0, fx1, fy1, fz1);
   }
 
-  // 3. Floor circle at hole bottom — normal faces toward wall surface (same as outward normal)
   {
     const center = mb.pushVertex(floorX, floorY, floorZ, nx, ny, nz);
     const verts: number[] = [];
@@ -795,9 +762,6 @@ function tangentVectors(nx: number, ny: number): [number, number, number, number
   }
   return [1, 0, 0, 0, 1, 0]; // Normal along Z (fallback)
 }
-
-// ─── Public API ─────────────────────────────────────────────────────────────
-
 /**
  * Generate baseplate mesh data procedurally without BREP boolean operations.
  *
@@ -852,16 +816,13 @@ export function generateBaseplateDirect(
   onProgress('base', 0.1);
   checkCancelled(signal);
 
-  // 1. Outer perimeter profile (with selective corner rounding for split baseplates)
   const outerPts = roundedRectPointsSelective(totalW, totalD, cornerR, CORNER_SEGMENTS, edges);
 
-  // 2. Outer perimeter walls (Z=totalHeight to Z=0)
   addOuterWalls(mb, outerPts, slabOffsetX, slabOffsetY, totalHeight);
 
   onProgress('base', 0.2);
   checkCancelled(signal);
 
-  // 3. Pocket inner walls for each cell
   for (const cell of cells) {
     const cellW_mm = cell.widthUnits * gridUnitMm;
     const cellD_mm = cell.depthUnits * gridUnitMm;
@@ -871,13 +832,11 @@ export function generateBaseplateDirect(
   onProgress('base', 0.5);
   checkCancelled(signal);
 
-  // 4. Top face (Z=totalHeight) — only visible with padding
   addTopFace(mb, outerPts, slabOffsetX, slabOffsetY, gridUnitMm, width, depth, totalHeight);
 
   onProgress('base', 0.6);
   checkCancelled(signal);
 
-  // 5. Bottom face (Z=0) — solid when magnets (slab extends below pockets).
   // Through-cut (no magnets): pockets are open at bottom, no bottom face needed.
   // This eliminates z-fighting from the old cancellation mesh approach.
   if (magnetHoles) {
@@ -887,7 +846,6 @@ export function generateBaseplateDirect(
   onProgress('base', 0.7);
   checkCancelled(signal);
 
-  // 6. Magnet holes (4 corners per full-size cell, skip fractional cells)
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
     for (const cell of cells) {
@@ -896,7 +854,6 @@ export function generateBaseplateDirect(
     }
   }
 
-  // 7. Registration connectors (when enabled, only for split pieces with join edges)
   if (connectorNubs && edges) {
     const nubRadius = NUB_DIAMETER / 2;
     const holeRadius = HOLE_DIAMETER / 2;

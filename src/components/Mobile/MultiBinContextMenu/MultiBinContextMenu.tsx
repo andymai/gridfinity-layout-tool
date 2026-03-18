@@ -76,7 +76,6 @@ export function MultiBinContextMenu({
   };
 
   const handleChangeCategory = (categoryId: CategoryId) => {
-    // Filter to only bins that actually change
     const binsToUpdate = bins.filter((b) => b.category !== categoryId);
     if (binsToUpdate.length === 0) {
       onClose();

@@ -244,9 +244,7 @@ export function STLSearchDropdown({
   );
 }
 
-// ============================================================================
 // Icons (inline to avoid adding dependencies)
-// ============================================================================
 
 function SearchIcon({ className }: { className?: string }) {
   return (

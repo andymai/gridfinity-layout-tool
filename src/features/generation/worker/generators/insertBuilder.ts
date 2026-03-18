@@ -16,9 +16,6 @@ import {
 import type { Shape3D, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-
-// ─── Helper Functions ────────────────────────────────────────────────────────
-
 /**
  * Build the 2D insert profile (Drawing) for a given insert shape.
  * All profiles are centered at the origin.
@@ -45,9 +42,6 @@ function makeInsertProfile(
       return drawRectangle(width, depth);
   }
 }
-
-// ─── Insert Cuts ─────────────────────────────────────────────────────────────
-
 /**
  * Build insert cavity cuts.
  */

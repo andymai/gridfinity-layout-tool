@@ -15,7 +15,6 @@ import type { TFunction } from '@/i18n';
  * Built by useKeyboard from store subscriptions and passed to each handler.
  */
 export interface KeyboardContext {
-  // State
   layout: Layout;
   selectedBinIds: BinId[];
   focusedBinId: BinId | null;

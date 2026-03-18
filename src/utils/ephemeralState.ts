@@ -102,7 +102,7 @@ export function loadEphemeralState(): EphemeralState | null {
     try {
       sessionStorage.removeItem(EPHEMERAL_STATE_KEY);
     } catch {
-      // Ignore
+      // best-effort
     }
     console.warn('Failed to load ephemeral state:', error);
     return null;
@@ -128,6 +128,6 @@ export function clearEphemeralState(): void {
   try {
     sessionStorage.removeItem(EPHEMERAL_STATE_KEY);
   } catch {
-    // Ignore
+    // best-effort
   }
 }

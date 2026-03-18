@@ -201,7 +201,6 @@ function BinComponent({
   const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
   const isTall = layer && bin.height > layer.height;
 
-  // ========== MEMOIZED LAYOUT CALCULATIONS ==========
   // All heavy grid positioning and pixel sizing calculations are memoized together
   // to prevent recalculation when only UI state (hover, focus, etc.) changes.
   const layoutCalcs = useMemo(() => {
@@ -370,7 +369,6 @@ function BinComponent({
   const hasLinkedDesign = !!bin.linkedDesignId;
   const hasMetadata = hasNotes || hasCustomProps;
 
-  // ========== MEMOIZED TEXT CALCULATIONS ==========
   // Memoize font size and label visibility calculations
   const textCalcs = useMemo(() => {
     const minFontSize = 9;

@@ -11,9 +11,6 @@ import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { fuseAllOrNull, findWallSegments } from './compartmentBuilder';
-
-// ─── Helper Functions ────────────────────────────────────────────────────────
-
 /** Auto-compute corner radius: 15% of the smaller dimension, clamped to [0.5, 5] mm. */
 function autoCornerRadius(cutWidth: number, cutHeight: number): number {
   return Math.max(0.5, Math.min(5, Math.min(cutWidth * 0.15, cutHeight * 0.15)));
@@ -119,9 +116,6 @@ function buildSingleCutout(
   const cutZ = wallHeight - userCutHeight / 2 + overshoot / 2;
   return translate(shape, [position.x, position.y, cutZ]);
 }
-
-// ─── Main Export ─────────────────────────────────────────────────────────────
-
 /**
  * Build wall cutout cuts for all enabled sides and interior divider walls.
  *

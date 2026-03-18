@@ -103,9 +103,6 @@ export class WorkerPool {
 
     return this.initPromise;
   }
-
-  // ─── Bin Split Operations ────────────────────────────────────────────────
-
   /**
    * Generate split preview meshes in parallel across pool workers.
    *
@@ -210,9 +207,6 @@ export class WorkerPool {
     allPieces.sort((a, b) => a.col - b.col || a.row - b.row);
     return { pieces: allPieces };
   }
-
-  // ─── Baseplate Operations ────────────────────────────────────────────────
-
   /**
    * Generate multiple baseplate pieces in parallel across pool workers.
    * Distributes pieces round-robin and returns results in original order.
@@ -282,9 +276,6 @@ export class WorkerPool {
     allResults.sort((a, b) => a.index - b.index);
     return allResults;
   }
-
-  // ─── Lifecycle ───────────────────────────────────────────────────────────
-
   /** Number of active workers in the pool */
   get size(): number {
     return this.bridges.length;

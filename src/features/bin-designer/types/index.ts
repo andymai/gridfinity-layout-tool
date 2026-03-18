@@ -8,9 +8,7 @@
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { DesignId } from '@/core/types';
 
-// =============================================================================
 // Bin Configuration Types
-// =============================================================================
 
 /** Base attachment style for bin-to-baseplate connection */
 export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted' | 'flat';
@@ -154,9 +152,7 @@ export interface WallConfig {
   readonly interior: WallCutout;
 }
 
-// =============================================================================
 // Wall Pattern Types
-// =============================================================================
 
 /** Supported wall pattern types. Extensible via pattern registry. */
 export type WallPatternType = 'honeycomb';
@@ -206,9 +202,7 @@ export interface BinParams {
   readonly splitConnectors?: SplitConnectorConfig;
 }
 
-// =============================================================================
 // Insert Types
-// =============================================================================
 
 /** Shape of a cavity cut into the bin floor */
 export type InsertShape = 'rectangle' | 'circle' | 'hexagon' | 'rounded-rect' | 'slot';
@@ -236,9 +230,7 @@ export interface Insert {
   readonly label: string;
 }
 
-// =============================================================================
 // Cutout Types (Top-Down Cavity Cuts for Solid Bins)
-// =============================================================================
 
 /** Shape of a top-down cutout into solid bin body */
 export type CutoutShape = 'rectangle' | 'circle' | 'path';
@@ -306,9 +298,7 @@ export interface Cutout {
   readonly path?: PathPoint[];
 }
 
-// =============================================================================
 // Generation Types
-// =============================================================================
 
 /** Current status of the generation engine */
 export type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
@@ -353,9 +343,7 @@ export interface HistoryEntry {
   readonly mesh: CachedMesh | null;
 }
 
-// =============================================================================
 // Designer UI State Types
-// =============================================================================
 
 /** Active tab in the parameter panel */
 export type DesignerTab = 'dimensions' | 'base' | 'compartments' | 'walls' | 'style';
@@ -417,9 +405,7 @@ export interface DesignerHistory {
   readonly future: readonly HistoryEntry[];
 }
 
-// =============================================================================
 // Export File Name Types
-// =============================================================================
 
 /** File naming style for exports */
 export type FileNameStyle = 'descriptive' | 'compact' | 'custom';
@@ -437,9 +423,7 @@ export interface ExportFileNameConfig {
   readonly format?: ExportFileFormat;
 }
 
-// =============================================================================
 // Storage Types
-// =============================================================================
 
 /** Current thumbnail version - increment when changing thumbnail size/quality/format */
 export const THUMBNAIL_VERSION = 5;
@@ -458,9 +442,7 @@ export interface SavedDesign {
   readonly exportFileNameConfig: ExportFileNameConfig | null;
 }
 
-// =============================================================================
 // Store Types
-// =============================================================================
 
 /** Complete designer store state */
 export interface DesignerState {

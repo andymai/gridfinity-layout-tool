@@ -13,9 +13,7 @@ for (const [canonical, aliases] of Object.entries(VOCABULARY)) {
   }
 }
 
-// ============================================
 // LABEL PROCESSING CACHE
-// ============================================
 
 /**
  * Cache for processLabel results.
@@ -143,7 +141,6 @@ export function processLabel(raw: string): LabelData {
     return result;
   }
 
-  // 1. Exact match
   const exactMatch = ALIAS_MAP.get(cleaned);
   if (exactMatch) {
     const result: LabelData = {
@@ -157,7 +154,6 @@ export function processLabel(raw: string): LabelData {
     return result;
   }
 
-  // 2. Partial match - label contains an alias (e.g., "my phillips screwdriver")
   for (const [alias, canonical] of ALIAS_MAP) {
     if (alias.length >= 3 && cleaned.includes(alias)) {
       const result: LabelData = {
@@ -172,7 +168,6 @@ export function processLabel(raw: string): LabelData {
     }
   }
 
-  // 3. Partial match - alias contains the label (e.g., "screw" matches "screwdriver")
   if (cleaned.length >= 4) {
     for (const [alias, canonical] of ALIAS_MAP) {
       if (alias.includes(cleaned)) {
@@ -189,7 +184,6 @@ export function processLabel(raw: string): LabelData {
     }
   }
 
-  // 4. Unknown label - hash is still valid for grouping!
   const result: LabelData = {
     hash,
     normalized: null,

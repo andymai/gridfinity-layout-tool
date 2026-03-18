@@ -3,11 +3,6 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
 import { PlusIcon, MinusIcon } from '../Icon';
 import { focusRing, disabledStyles, interactiveTransition } from '../variants';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Variants
-// ─────────────────────────────────────────────────────────────────────────────
-
 const containerVariants = cva(['inline-flex items-center'], {
   variants: {
     size: {
@@ -109,9 +104,7 @@ const displayVariants = cva(
 
 type StepperVariantProps = VariantProps<typeof containerVariants>;
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Deferred Input Hook
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Hook for deferred number input - allows users to clear and retype
@@ -190,9 +183,7 @@ function formatNumber(n: number): string {
   return Number.isInteger(n) ? n.toString() : n.toFixed(1);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Stepper Component
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface StepperProps extends StepperVariantProps {
   /**

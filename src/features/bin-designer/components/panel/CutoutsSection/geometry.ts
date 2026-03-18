@@ -5,9 +5,6 @@
 import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
 import { getPathBounds } from './pathGeometry';
 import type { ResizeHandle } from './useCutoutInteraction';
-
-// ─── Rotation Helpers ───────────────────────────────────────────────────────
-
 /** Rotate a point (px,py) around center (cx,cy) by angleDeg degrees. */
 export function rotatePoint(
   px: number,
@@ -515,9 +512,6 @@ export function centerInBin(
   }
   return result;
 }
-
-// ─── Flip Helpers ─────────────────────────────────────────────────────────────
-
 /**
  * Mirror a path point's X coordinate around a center, negating X handle components.
  * Handles are NOT swapped because the point array order is preserved.

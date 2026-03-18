@@ -8,9 +8,6 @@ import type {
   CategoryId,
 } from './types';
 import { binId, layerId, categoryId, mm, gridUnits, heightUnits } from './types';
-
-// === Constraints (from PRD) ===
-
 export const CONSTRAINTS = {
   GRID_MIN: 0.5, // Minimum drawer dimension (supports half-unit increments)
   GRID_MAX: 50,
@@ -69,13 +66,7 @@ export const RESERVED_PROPERTY_KEYS = [
 export function calcMaxGridUnits(printBedSizeMm: number, gridUnitMm: number): number {
   return Math.max(1, Math.floor(printBedSizeMm / gridUnitMm));
 }
-
-// === Staging ===
-
 export const STAGING_ID = '__staging__' as LayerId;
-
-// === Shared Preview ===
-
 /** Sentinel layout ID used when viewing a shared layout in preview mode. */
 export const SHARED_PREVIEW_ID = '__shared_preview__' as LayoutId;
 
@@ -83,9 +74,6 @@ export const SHARED_PREVIEW_ID = '__shared_preview__' as LayoutId;
 export function isRealLayoutId(id: LayoutId | null): id is LayoutId {
   return id !== null && id !== SHARED_PREVIEW_ID;
 }
-
-// === Half-bin Mode ===
-
 /**
  * Scale factor for half-bin mode.
  * In half-bin mode, the grid is rendered at 2x resolution to support 0.5 unit increments.
@@ -139,9 +127,6 @@ export function hasFractionalDimensions(rect: {
     isFractional(rect.depth)
   );
 }
-
-// === Default Colors ===
-
 /** Default category color (slate gray) - used as fallback when category is undefined */
 export const DEFAULT_CATEGORY_COLOR = '#6b7280';
 
@@ -233,9 +218,6 @@ function clampNumber(value: unknown, min: number, max: number, defaultVal: numbe
 
 /** Default layout name for new layouts */
 export const DEFAULT_LAYOUT_NAME = 'Untitled layout';
-
-// === Default Categories ===
-
 export const DEFAULT_CATEGORIES: Category[] = [
   { id: categoryId('coral'), name: 'Coral', color: '#f87171' },
   { id: categoryId('sky'), name: 'Sky', color: '#38bdf8' },
@@ -243,9 +225,6 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: categoryId('cloud'), name: 'Cloud', color: '#e2e8f0' },
   { id: categoryId('charcoal'), name: 'Charcoal', color: '#334155' },
 ];
-
-// === ID Generation ===
-
 export function generateId(): string {
   const bytes = new Uint8Array(5);
   globalThis.crypto.getRandomValues(bytes);
@@ -267,9 +246,6 @@ export function generateLayerId(): LayerId {
 export function generateCategoryId(): CategoryId {
   return categoryId(generateId());
 }
-
-// === Default Layout ===
-
 /**
  * Get default drawer dimensions based on viewport width.
  * Mobile devices get a portrait-oriented layout (like an IKEA Alex drawer)
@@ -352,9 +328,6 @@ export const createLayoutWithSettings = (settings: LayoutSettings): Layout => {
     bins: [],
   };
 };
-
-// === Grid Sizing ===
-
 export const BASE_CELL_SIZE = 32; // px at 100% zoom (default/desktop)
 
 /**
@@ -391,9 +364,6 @@ export function getBaseCellSize(viewportWidth: number): number {
   if (viewportWidth < BREAKPOINTS.LG) return 36; // Tablet (more space available)
   return 32; // Desktop (current default)
 }
-
-// === Keyboard Shortcuts ===
-
 export const SHORTCUTS = {
   DELETE: ['Delete', 'Backspace'],
   ESCAPE: ['Escape'],

@@ -155,7 +155,6 @@ function gatherEphemeralState(): Omit<EphemeralState, 'savedAt'> {
     isometricRotation: view.isometricRotation,
     layerViewMode: view.layerViewMode,
 
-    // Paint mode
     paintSize: interaction.paintSize,
 
     // Note: scroll position would require ref from Grid component
@@ -302,7 +301,7 @@ export function usePWAUpdate(): void {
       try {
         sessionStorage.removeItem(RELOAD_FLAG_KEY);
       } catch {
-        // Ignore storage errors
+        // best-effort
       }
 
       // Check immediately on registration (page load)
@@ -380,7 +379,7 @@ export function usePWAUpdate(): void {
         return;
       }
     } catch {
-      // Ignore storage errors
+      // best-effort
     }
 
     hasTriggeredReload.current = true;
@@ -389,7 +388,7 @@ export function usePWAUpdate(): void {
     try {
       sessionStorage.setItem(RELOAD_FLAG_KEY, Date.now().toString());
     } catch {
-      // Ignore storage errors
+      // best-effort
     }
 
     // Use AbortController for cleanup on unmount

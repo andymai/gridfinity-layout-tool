@@ -140,7 +140,6 @@ export function CategoriesPanel() {
 
     // If bins are selected, update their categories
     if (selectedBinIds.length > 0) {
-      // Filter to only bins that actually change
       const binsToUpdate = selectedBinIds
         .map((id) => bins.find((b) => b.id === id))
         .filter((bin): bin is (typeof bins)[number] => !!bin && bin.category !== catId);

@@ -18,7 +18,6 @@ export const VOCAB_VERSION = 'v1';
  * Format: canonical_term: [EN aliases, DE aliases, FR aliases, ES aliases, ...]
  */
 export const VOCABULARY: Record<string, string[]> = {
-  // === Tools ===
   screwdriver: [
     // EN
     'screwdriver',
@@ -307,7 +306,6 @@ export const VOCABULARY: Record<string, string[]> = {
     'régua',
   ],
 
-  // === Fasteners ===
   screw: [
     // EN
     'screw',
@@ -475,7 +473,6 @@ export const VOCABULARY: Record<string, string[]> = {
     'tacha',
   ],
 
-  // === Electronics ===
   battery_aa: [
     // EN
     'aa',
@@ -723,7 +720,6 @@ export const VOCABULARY: Record<string, string[]> = {
     'microcontrolador',
   ],
 
-  // === Office ===
   pen: [
     // EN
     'pen',
@@ -878,7 +874,6 @@ export const VOCABULARY: Record<string, string[]> = {
     'prendedor',
   ],
 
-  // === Craft & Hobby ===
   paint: [
     // EN
     'paint',
@@ -987,7 +982,6 @@ export const VOCABULARY: Record<string, string[]> = {
     'cola de madeira',
   ],
 
-  // === 3D Printing ===
   nozzle: [
     // EN
     'nozzle',
@@ -1113,7 +1107,6 @@ export const VOCABULARY: Record<string, string[]> = {
     'inserto térmico',
   ],
 
-  // === Misc ===
   key: [
     // EN
     'key',

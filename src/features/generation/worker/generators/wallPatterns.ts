@@ -47,9 +47,6 @@ export function getSlotFreeWalls(params: BinParams): SlotFreeWalls {
     right: !params.slotConfig.x.enabled,
   };
 }
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 /** Keep-out from wall top edge (stacking lip interface). */
 export const TOP_KEEP_OUT = 1.5;
 

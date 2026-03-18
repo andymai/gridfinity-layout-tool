@@ -7,9 +7,6 @@
  */
 
 import { SIZE } from './generatorConstants';
-
-// ─── Cell Decomposition ──────────────────────────────────────────────────────
-
 /** Cell position info for iteration */
 export interface CellInfo {
   /** Cell size in grid units (1 or 0.5) */

@@ -38,7 +38,6 @@ import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './shared/components/Toast';
 import { LoadingFallback } from './shared/components/LoadingFallback';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
-// Import directly to avoid pulling in entire Mobile barrel (67 KB MobileLayoutsPanel etc.)
 import { BinContextMenuWrapper } from './components/Mobile/BinContextMenuWrapper';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
@@ -47,21 +46,18 @@ import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
 import { useEngagementNudges } from '@/features/engagement';
 
-// Lazy load command palette - only opened via Ctrl+K, no need to eagerly load
 const CommandPalette = lazyWithRetry(() =>
   import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
 );
 import { useOnboarding } from '@/features/onboarding';
 import { useThemeEffect } from '@/hooks/useThemeEffect';
 
-// Lazy load design-linking dialogs - loaded when mutations provider wraps content
 const DesignLinkingDialogs = lazyWithRetry(() =>
   import('./features/design-linking/components/DesignLinkingDialogs').then(
     namedExport('DesignLinkingDialogs')
   )
 );
 
-// Lazy load cloud-share components - only needed when viewing/sharing layouts
 const SharedLayoutImporter = lazyWithRetry(() =>
   import('./features/cloud-share/components/SharedLayoutImporter').then(
     namedExport('SharedLayoutImporter')
@@ -73,23 +69,19 @@ const SharedLayoutBanner = lazyWithRetry(() =>
   )
 );
 
-// Lazy load LabsDrawer - experimental feature most users won't use
 const LabsDrawer = lazyWithRetry(() =>
   import('./features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
 );
 
-// Lazy load Welcome Modal - only shown on first visit for new users
 const WelcomeModal = lazyWithRetry(() =>
   import('./components/Modals/WelcomeModal').then(namedExport('WelcomeModal'))
 );
 
-// Lazy load Bin Designer page - only loaded when navigating to /designer
 const DesignerPage = lazyWithRetry(() =>
   import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
 import { useDesignerRouting } from './hooks/useDesignerRouting';
 
-// Lazy load Baseplate Generator page - only loaded when navigating to /baseplate
 const BaseplatePage = lazyWithRetry(() =>
   import('./features/baseplate').then(namedExport('BaseplatePage'))
 );
@@ -97,88 +89,55 @@ import { useBaseplateRouting } from './hooks/useBaseplateRouting';
 import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';
 import { SHORTCUTS } from './core/constants';
 
-// Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const HelpModal = lazyWithRetry(() =>
   import('./components/Modals/HelpModal').then(namedExport('HelpModal'))
 );
 
-// Lazy load mobile layout - only loaded on mobile devices
 const MobileLayout = lazyWithRetry(() =>
   import('./layouts/MobileLayout').then(namedExport('MobileLayout'))
 );
 
-// Lazy load collaborative editing provider - only loaded when Labs feature enabled
-// AND layout has edit permission (most users never need this ~80KB chunk)
 const CollabProvider = lazyWithRetry(() =>
   import('./components/Collab/CollabProvider').then(namedExport('CollabProvider'))
 );
 
-// Track whether the initial layout has rendered, so we only play the fade-in
-// animation on first app load (not when switching between tools).
 let hasRenderedInitialLayout = false;
 
-/**
- * Root application component that composes and renders the responsive app UI, providers, and feature-gated lazy modules.
- *
- * Renders mobile, tablet, or desktop layouts as appropriate; initializes app-level effects (routing, autosave,
- * cross-tab sync, analytics, storage migration, PWA updates, keyboard shortcuts); and wraps content with either
- * collaborative or local mutations providers. Conditionally mounts lazy features such as Designer, LabsDrawer,
- * SharedLayoutImporter, and collaboration provider.
- *
- * @returns The top-level React element for the application UI, including layout, panels, modals, and global providers.
- */
 export default function App() {
   const t = useTranslation();
   useThemeEffect();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
 
-  // Bin Designer route detection
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
-
-  // Baseplate Generator route detection
   const { isBaseplateRoute } = useBaseplateRouting();
-
-  // Command palette state (⌘K / Ctrl+K) — disabled on designer/baseplate routes
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
     disabled: isDesignerRoute || isBaseplateRoute,
   });
   const { isMobile, isTablet } = useResponsive();
 
-  // Onboarding — first-visit welcome modal
   const { shouldShowWelcome, shouldShowDrawTutorial, markWelcomeComplete } = useOnboarding();
 
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
-  // Collaborative mode detection
   const { isCollaborative, shareId } = useCollabMode();
-
-  // Lazy loading conditions - only load chunks when actually needed
   const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
   const hasSharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview !== null);
 
-  // Check if URL contains share parameters (determines if SharedLayoutImporter is needed)
-  // This is checked once at component mount and doesn't re-run on URL changes
-  // (SharedLayoutImporter handles subsequent URL changes internally)
   const [hasShareUrl] = useState(() => {
     const hash = window.location.hash;
     const pathname = window.location.pathname;
     return hash.includes('share=') || /^\/l\/[a-zA-Z0-9]{12}$/.test(pathname);
   });
 
-  // Handle ?placeBin= param from Designer's "Use in Layout" button
   usePlaceBinFromURL();
-
-  // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
 
-  // Initialize layout analytics subscriber (tracks feature usage from state changes)
   useEffect(() => {
     return initLayoutAnalytics();
   }, []);
 
-  // Deferred orphan cleanup — remove library entries whose layouts no longer exist in IndexedDB
   useEffect(() => {
     const library = useLibraryStore.getState().library;
     void reconcileLibraryAsync(library)
@@ -187,12 +146,9 @@ export default function App() {
           useLibraryStore.getState().setLibrary(cleaned);
         }
       })
-      .catch(() => {
-        // Best-effort orphan cleanup — non-critical if IndexedDB is unavailable
-      });
+      .catch(() => {});
   }, []);
 
-  // Tablet panel state (auto-collapses on tablet mode entry)
   const {
     leftPanelOpen: tabletLeftPanelOpen,
     rightPanelOpen: tabletRightPanelOpen,
@@ -202,7 +158,6 @@ export default function App() {
     closeRightPanel,
   } = useTabletPanels(isTablet);
 
-  // Performance: Only subscribe to the specific arrays we need, not the entire layout object
   const { layers, categories } = useLayoutStore(
     useShallow((state) => ({
       layers: state.layout.layers,
@@ -214,61 +169,34 @@ export default function App() {
   const setActiveLayer = useSelectionStore((state) => state.setActiveLayer);
   const setActiveCategory = useSelectionStore((state) => state.setActiveCategory);
 
-  // Initialize activeLayerId and activeCategoryId to valid values (sync before paint)
   useLayoutEffect(() => {
-    // Check if current activeLayerId is valid for the current layout
     const layerExists = layers.some((l) => l.id === activeLayerId);
     if ((!activeLayerId || !layerExists) && layers.length > 0) {
       setActiveLayer(layers[0].id);
     }
-    // Ensure activeCategoryId is valid for current layout
     const categoryExists = categories.some((c) => c.id === activeCategoryId);
     if (!categoryExists && categories.length > 0) {
       setActiveCategory(categories[0].id);
     }
   }, [activeLayerId, activeCategoryId, layers, categories, setActiveLayer, setActiveCategory]);
 
-  // Global keyboard shortcuts
   useKeyboard();
-
-  // Auto-save to localStorage
   const saveStatus = useAutoSave();
-
-  // Cross-tab sync detection
   useCrossTabSync();
-
-  // URL-based layout routing (bookmarkable URLs)
-  // Skip URL manipulation when on designer/baseplate routes (they own their own URLs)
   useLayoutRouting({ skip: isDesignerRoute || isBaseplateRoute });
-
-  // PWA update detection and auto-reload
   usePWAUpdate();
-
-  // Analytics session tracking
   useAnalytics();
-
-  // Engagement-gated feedback & support nudges
   useEngagementNudges();
-
-  // Storage migration (localStorage → IndexedDB)
   useStorageMigration();
-
-  // Periodic layout snapshots for version history (every 2 minutes)
   useSnapshotAutoSave();
-
-  // Clean up stale localStorage layout backup copies (frees ~5 MB quota)
   useLocalStorageCleanup();
-
-  // Prefetch lazy-loaded chunks during idle time (desktop only)
   usePrefetchChunks();
 
-  // Only fade in on initial app load, not when switching between tools
   const entranceClass = hasRenderedInitialLayout ? '' : 'animate-fade-in';
   useEffect(() => {
     hasRenderedInitialLayout = true;
   }, []);
 
-  // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
       return;
@@ -284,21 +212,18 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleHelpKeyboard);
   }, [handleHelpKeyboard]);
 
-  // Custom event listeners for command palette actions
   useEffect(() => {
     const handleOpenHelp = () => setIsHelpOpen(true);
     window.addEventListener('open-help-modal', handleOpenHelp);
     return () => window.removeEventListener('open-help-modal', handleOpenHelp);
   }, []);
 
-  // Switch to designer command palette action
   useEffect(() => {
     const handleSwitchToDesigner = () => navigateToDesigner();
     window.addEventListener('switch-to-designer', handleSwitchToDesigner);
     return () => window.removeEventListener('switch-to-designer', handleSwitchToDesigner);
   }, [navigateToDesigner]);
 
-  // Download layout command palette action
   useEffect(() => {
     const handleDownloadLayout = () => {
       const layout = useLayoutStore.getState().layout;
@@ -309,10 +234,6 @@ export default function App() {
     return () => window.removeEventListener('download-layout', handleDownloadLayout);
   }, []);
 
-  // Helper to wrap content with appropriate MutationsProvider
-  // - Collaborative mode: CollabProvider provides CollabMutationsProvider (lazy loaded)
-  // - Local mode: LocalMutationsProvider
-  // Also renders DesignLinkingDialogs once (uses portal, so placement doesn't matter)
   const wrapWithMutations = (content: React.ReactNode) => {
     const dialogs = (
       <Suspense fallback={null}>
@@ -337,9 +258,7 @@ export default function App() {
     );
   };
 
-  // Route-specific content (shared overlays rendered once below)
   const routeContent = (() => {
-    // Bin Designer route - lazy loaded
     if (isDesignerRoute) {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>
@@ -348,7 +267,6 @@ export default function App() {
       );
     }
 
-    // Baseplate Generator route - lazy loaded
     if (isBaseplateRoute) {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.baseplate')} />}>
@@ -357,7 +275,6 @@ export default function App() {
       );
     }
 
-    // Mobile layout - lazy loaded
     if (isMobile) {
       return wrapWithMutations(
         <div className={`h-screen ${entranceClass}`}>
@@ -372,7 +289,6 @@ export default function App() {
       );
     }
 
-    // Tablet layout - full width grid with overlay panels
     if (isTablet) {
       return wrapWithMutations(
         <div
@@ -385,10 +301,8 @@ export default function App() {
             </Suspense>
           )}
 
-          {/* Header */}
           <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
 
-          {/* Main content area - Grid takes full width */}
           <div className="flex-1 flex overflow-hidden">
             <main className="flex-1 flex flex-col overflow-hidden bg-surface">
               <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
@@ -410,7 +324,6 @@ export default function App() {
             </PanelErrorBoundary>
           </TabletPanelOverlay>
 
-          {/* Floating drag preview */}
           <DragPreview />
 
           {/* Panel trigger buttons (FABs) - shown when panels are closed */}
@@ -421,14 +334,12 @@ export default function App() {
             onOpenRightPanel={openRightPanel}
           />
 
-          {/* Modals */}
           {isHelpOpen && (
             <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
               <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet />
             </Suspense>
           )}
 
-          {/* Context menu (long-press on bin) */}
           {(() => {
             if (contextMenu) {
               const binIds = contextMenu.binIds;
@@ -444,7 +355,6 @@ export default function App() {
             return null;
           })()}
 
-          {/* Shared layout URL importer - only load when URL has share params */}
           {hasShareUrl && (
             <Suspense fallback={null}>
               <SharedLayoutImporter />
@@ -454,7 +364,6 @@ export default function App() {
       );
     }
 
-    // Desktop layout
     return wrapWithMutations(
       <div
         className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
@@ -464,7 +373,6 @@ export default function App() {
           {t('app.skipToGridEditor')}
         </a>
 
-        {/* Shared layout banner (shown when viewing unsaved shared layout) */}
         {hasSharedLayoutPreview && (
           <Suspense fallback={null}>
             <SharedLayoutBanner />
@@ -507,7 +415,6 @@ export default function App() {
           </Suspense>
         )}
 
-        {/* Context menu (right-click on bin) */}
         {(() => {
           if (contextMenu) {
             const binIds = contextMenu.binIds;
@@ -536,7 +443,6 @@ export default function App() {
     );
   })();
 
-  // Shared overlays — rendered once for all routes (designer, mobile, tablet, desktop)
   return (
     <>
       {routeContent}

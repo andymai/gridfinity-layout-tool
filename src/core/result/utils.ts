@@ -14,9 +14,7 @@
 import type { Result } from './types';
 import { ok, err, isOk, isErr } from './types';
 
-// =============================================================================
 // Mapping & Transformation
-// =============================================================================
 
 /**
  * Transform the Ok value while preserving Err.
@@ -79,9 +77,7 @@ export function flatMap<T, U, E>(
  */
 export const andThen = flatMap;
 
-// =============================================================================
 // Value Extraction
-// =============================================================================
 
 /**
  * Extract the Ok value, throwing if Err.
@@ -145,9 +141,7 @@ export function unwrapErr<T, E>(result: Result<T, E>): E {
   throw new Error(`Called unwrapErr on an Ok: ${JSON.stringify(result.value)}`);
 }
 
-// =============================================================================
 // Pattern Matching
-// =============================================================================
 
 /**
  * Pattern match on Result - exhaustive handler.
@@ -174,9 +168,7 @@ export function match<T, E, U>(
   return handlers.err(result.error);
 }
 
-// =============================================================================
 // Try-Catch Wrappers
-// =============================================================================
 
 /**
  * Wrap a synchronous function that may throw into a Result.

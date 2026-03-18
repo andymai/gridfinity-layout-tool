@@ -49,9 +49,6 @@ import { featuresStage } from './pipeline/stages/featuresStage';
 import { booleanStage } from './pipeline/stages/booleanStage';
 import { translateStage } from './pipeline/stages/translateStage';
 import { tessellateStage } from './pipeline/stages/tessellateStage';
-
-// ─── Re-exports (public API) ─────────────────────────────────────────────────
-
 export type { ProgressFn } from './generatorTypes';
 
 /** Export result with binary data and suggested file name. */
@@ -73,9 +70,6 @@ export interface SplitExportResult {
 
 /** Get the last generated solid for export operations. */
 export { getLastSolid };
-
-// ─── Export Functions ─────────────────────────────────────────────────────────
-
 /**
  * Export the last generated solid in the requested format.
  * If no solid is cached (e.g., worker restarted), regenerates from params.
@@ -119,9 +113,6 @@ export async function exportBin(
 
   return { data, fileName: `${name}.stl` };
 }
-
-// ─── Pipeline Configuration ─────────────────────────────────────────────────
-
 /** Default generation pipeline: shell → features → boolean → translate → tessellate */
 const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   shellStage,
@@ -130,9 +121,6 @@ const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   translateStage,
   tessellateStage,
 ];
-
-// ─── Main Entry Point ────────────────────────────────────────────────────────
-
 /**
  * Generate a complete Gridfinity bin from parameters.
  *
@@ -160,9 +148,6 @@ export function generateBin(
 
   return result.mesh;
 }
-
-// ─── Split Shared ────────────────────────────────────────────────────────────
-
 /** Height of the cutting box used for boolean intersection (much taller than any bin) */
 const CUTTING_BOX_HEIGHT = 500;
 
@@ -357,9 +342,6 @@ function splitSolidIntoPieces(
 
   return pieces;
 }
-
-// ─── Split Export ────────────────────────────────────────────────────────────
-
 /**
  * Export the cached (or regenerated) bin solid, split into pieces via boolean cuts.
  *
@@ -385,9 +367,6 @@ export async function exportSplitBin(
 
   return { pieces };
 }
-
-// ─── Split Preview (mesh per piece for 3D rendering) ─────────────────────────
-
 /** Result of split preview generation: mesh data per piece for Three.js */
 export interface SplitPreviewResult {
   readonly pieces: Array<{
@@ -477,9 +456,6 @@ export function generateSplitPreview(
 
   return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, gridUnitMm)) };
 }
-
-// ─── Ranged Split Operations (for worker pool parallelism) ──────────────────
-
 /**
  * Generate split preview meshes for a subset of pieces.
  *

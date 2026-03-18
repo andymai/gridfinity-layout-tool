@@ -219,9 +219,6 @@ function extractExportTransferBuffers(payload: {
 }): ArrayBuffer[] {
   return payload.pieces.map((piece) => piece.data);
 }
-
-// ─── Message Handler ─────────────────────────────────────────────────────────
-
 self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
   void (async () => {
     const message: WorkerMessage = event.data;

@@ -13,9 +13,7 @@
 
 import { useLibraryStore } from '@/core/store/library';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Storage
-// ─────────────────────────────────────────────────────────────────────────────
 
 const NUDGE_STORAGE_KEY = 'gridfinity-nudges-v1';
 const ANALYTICS_STORAGE_KEY = 'gridfinity-analytics-v1';
@@ -70,9 +68,7 @@ function saveNudgeState(state: NudgeState): void {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Session tracking
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Call once at app startup to increment session count and record session start.
@@ -94,9 +90,7 @@ export function getSessionMinutes(): number {
   return Math.floor(elapsed / 60_000);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Feature breadth (reads from existing analytics data)
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface AnalyticsData {
   featureFlags: Record<string, boolean>;
@@ -113,9 +107,7 @@ function getDistinctFeaturesUsed(): number {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Engagement gate
-// ─────────────────────────────────────────────────────────────────────────────
 
 const MIN_SESSIONS = 3;
 const MIN_FEATURES = 3;
@@ -152,9 +144,7 @@ export function checkEngagementGate(): EngagementStatus {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Cooldown management
-// ─────────────────────────────────────────────────────────────────────────────
 
 const COOLDOWN_DAYS = 30;
 

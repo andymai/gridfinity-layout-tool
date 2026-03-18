@@ -87,9 +87,6 @@ export function useOwnedShareSync(): void {
   // Debounced sync effect
   useEffect(() => {
     // Only sync if:
-    // 1. Layout has an active cloud share
-    // 2. This is a local edit (not init or remote sync)
-    // 3. Not viewing a shared preview
     if (!cloudShare) return;
     if (lastEditSource !== 'local') return;
     if (activeLayoutId === SHARED_PREVIEW_ID) return;

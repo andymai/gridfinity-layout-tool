@@ -5,9 +5,6 @@
  * Only used by baseplateDirectMesh.ts — the BREP generator uses dovetail
  * connectors from splitConnectorBuilder.ts instead.
  */
-
-// ─── Legacy Connector Position Computation ───────────────────────────────────
-
 export interface ConnectorPos {
   cx: number;
   cy: number;

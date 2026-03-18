@@ -159,9 +159,6 @@ async function processRetries(): Promise<void> {
   // Schedule next pass if there are still entries
   scheduleProcessing();
 }
-
-// === Test helpers ===
-
 /** Get the number of events awaiting retry. */
 export function getPendingRetryCount(): number {
   return pendingRetries.length;

@@ -5,7 +5,6 @@
  * The registry-based architecture allows easy addition of new patterns.
  */
 
-// Types
 export type { PatternCalculator, PatternCenter, PatternGridConfig } from './types';
 
 // Grid utilities

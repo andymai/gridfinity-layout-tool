@@ -16,23 +16,11 @@ interface UseInlineEditResult {
   handleKeyDown: (e: KeyboardEvent) => void;
 }
 
-/**
- * Hook for inline text editing with keyboard support.
- *
- * Provides a complete editing state machine:
- * - startEditing() enters edit mode (focuses and selects input)
- * - handleChange() updates the editing value
- * - handleFinish() commits changes (on blur or Enter)
- * - handleKeyDown() handles Enter (commit) and Escape (cancel)
- *
- * Used by list/grid items that support inline rename functionality.
- */
 export function useInlineEdit({ initialValue, onSave }: UseInlineEditOptions): UseInlineEditResult {
   const [isEditing, setIsEditing] = useState(false);
   const [editingValue, setEditingValue] = useState(initialValue);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Focus and select input when editing starts
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();

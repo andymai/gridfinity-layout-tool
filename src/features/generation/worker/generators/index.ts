@@ -15,6 +15,5 @@ export {
   getLastSolid,
 } from './binGenerator';
 
-// Types
 export type { ProgressFn } from './generatorTypes';
 export type { ExportResult, SplitExportResult, SplitPreviewResult } from './binGenerator';

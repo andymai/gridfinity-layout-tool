@@ -9,9 +9,6 @@ import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/
 
 /** Geometry kernel backend for BREP operations */
 export type KernelName = 'opencascade' | 'brepkit';
-
-// ─── Main → Worker Messages ──────────────────────────────────────────────────
-
 export type WorkerMessage =
   | InitMessage
   | GenerateMessage
@@ -179,9 +176,6 @@ export interface FaceGroupData {
   /** FeatureTag identifying the modeling step that created these faces. */
   readonly tag: number;
 }
-
-// ─── Worker → Main Responses ─────────────────────────────────────────────────
-
 export type WorkerResponse =
   | InitReadyResponse
   | ProgressResponse
@@ -297,9 +291,6 @@ export interface ErrorResponse {
   readonly requestId: string;
   readonly error: string;
 }
-
-// ─── Shared Types ────────────────────────────────────────────────────────────
-
 /** Stages of geometry generation for progress reporting */
 export type GenerationStage = 'base' | 'shell' | 'features' | 'merge' | 'splitting';
 

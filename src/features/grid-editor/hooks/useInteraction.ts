@@ -104,7 +104,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const setInteraction = useInteractionStore((state) => state.setInteraction);
   const setDropTarget = useInteractionStore((state) => state.setDropTarget);
   const paintSize = useInteractionStore((state) => state.paintSize);
-  // Selection state
   const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
   const setSelectedBin = useSelectionStore((state) => state.setSelectedBin);
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
@@ -355,7 +354,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
             capturedPointerRef.current.pointerId
           );
         } catch {
-          // Ignore
+          // best-effort
         }
         capturedPointerRef.current = null;
       }
