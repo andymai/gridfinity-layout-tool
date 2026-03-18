@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.4...gridfinity-layout-tool-v4.9.5) (2026-03-18)
+
+
+### Bug Fixes
+
+* **parity:** relax bbox tolerance to 1.5mm for lip height difference ([50ae52c](https://github.com/andymai/gridfinity-layout-tool/commit/50ae52c5a044cb4cb1ad74a765af677ab9951bce))
+
 ## [4.9.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.3...gridfinity-layout-tool-v4.9.4) (2026-03-18)
 
 
