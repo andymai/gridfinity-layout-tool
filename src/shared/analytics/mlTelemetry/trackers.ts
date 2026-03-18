@@ -77,9 +77,7 @@ import {
   recordLayoutLabelSizes,
 } from '../purposeInference';
 
-// ============================================
 // COMMON UTILITIES
-// ============================================
 
 /**
  * Check if analytics/telemetry is enabled.
@@ -119,9 +117,7 @@ function getAdjacentBinContext(
   };
 }
 
-// ============================================
 // BIN PLACEMENT TRACKING
-// ============================================
 
 /**
  * Track a bin placement event.
@@ -302,9 +298,7 @@ export function trackBulkPlacement(bins: Bin[], layout: Layout, method: Placemen
   }
 }
 
-// ============================================
 // LAYOUT SNAPSHOT TRACKING
-// ============================================
 
 /**
  * Track a layout snapshot at a commit point.
@@ -365,9 +359,7 @@ export function trackLayoutSnapshot(layout: Layout, trigger: LayoutSnapshotTrigg
   bufferEvent(event);
 }
 
-// ============================================
 // QUALITY SIGNAL TRACKING
-// ============================================
 
 /**
  * Track a quality signal for a layout.
@@ -404,9 +396,7 @@ export function trackQualitySignal(
   bufferEvent(event);
 }
 
-// ============================================
 // DRAWER PURPOSE TRACKING
-// ============================================
 
 /**
  * Track when user sets drawer purpose.
@@ -430,9 +420,7 @@ export function trackDrawerPurpose(
   bufferEvent(event);
 }
 
-// ============================================
 // CATEGORY CHANGE TRACKING
-// ============================================
 
 /**
  * Track a category change event.
@@ -464,9 +452,7 @@ export function trackCategoryChange(bin: Bin, categoryName: string, batchSize: n
   bufferEvent(event);
 }
 
-// ============================================
 // BIN RESIZE TRACKING
-// ============================================
 
 /**
  * Track a bin resize event.
@@ -521,9 +507,7 @@ export function trackBinResize(
   bufferEvent(event);
 }
 
-// ============================================
 // BIN DELETION TRACKING
-// ============================================
 
 /**
  * Track a bin deletion event.
@@ -602,9 +586,7 @@ export function trackBinDeletion(
   bufferEvent(event);
 }
 
-// ============================================
 // BIN MOVE TRACKING
-// ============================================
 
 /**
  * Track a bin move event.
@@ -640,9 +622,7 @@ export function trackBinMove(
   bufferEvent(event);
 }
 
-// ============================================
 // DRAWER RESIZE TRACKING
-// ============================================
 
 /**
  * Track a drawer resize event.
@@ -679,9 +659,7 @@ export function trackDrawerResize(
   bufferEvent(event);
 }
 
-// ============================================
 // FILL OPERATION TRACKING
-// ============================================
 
 /**
  * Track a fill operation.
@@ -712,9 +690,7 @@ export function trackFillOperation(
   bufferEvent(event);
 }
 
-// ============================================
 // LAYER MOVEMENT TRACKING
-// ============================================
 
 /**
  * Track bins moving between layers.
@@ -750,9 +726,7 @@ export function trackLayerMove(
   bufferEvent(event);
 }
 
-// ============================================
 // BIN ROTATION TRACKING
-// ============================================
 
 /**
  * Track a bin rotation event.
@@ -772,9 +746,7 @@ export function trackBinRotation(bin: Bin, batchSize: number = 1): void {
   bufferEvent(event);
 }
 
-// ============================================
 // NEGATIVE SIGNAL TRACKING
-// ============================================
 
 /**
  * Track a placement rejection (cancelled draw/paint).
@@ -942,9 +914,7 @@ export function trackQuickCorrection(
   bufferEvent(event);
 }
 
-// ============================================
 // SESSION SUMMARY TRACKING
-// ============================================
 
 /**
  * Track a session summary event.
@@ -995,9 +965,7 @@ export function trackSessionSummary(
   bufferEvent(event, trigger === 'session_end');
 }
 
-// ============================================
 // CROSS-LAYOUT PATTERN TRACKING
-// ============================================
 
 /**
  * Track cross-layout patterns at commit points.

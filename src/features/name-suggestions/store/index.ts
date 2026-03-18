@@ -28,7 +28,6 @@ interface NameSuggestionState {
   /** Whether LLM-powered suggestions are being fetched */
   isLoadingMore: boolean;
 
-  // Actions
   setSuggestions: (
     result: SuggestionResult,
     layoutId: string,

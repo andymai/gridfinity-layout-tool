@@ -51,9 +51,6 @@ import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
 import { notifyLibraryChanged } from './librarySync';
 import { ACTIVE_ID_STORAGE_KEY } from './storageKeys';
 import { getLayoutStorageKey } from './LayoutService';
-
-// === Types ===
-
 /** Options for saving a layout */
 export interface SaveLayoutOptions {
   /** Custom name (defaults to layout.name) */
@@ -106,9 +103,6 @@ export interface DuplicateResult extends SaveResult {
 // Re-export computePreview from its own module (extracted to break
 // circular dependency with SnapshotService)
 export { computePreview } from './preview';
-
-// === Internal Helpers ===
-
 /**
  * Save library to IndexedDB (primary) with localStorage stub for activeLayoutId.
  * Use this from async callers that can await the result.
@@ -208,9 +202,6 @@ async function deleteLayoutInternal(layoutId: string): Promise<Result<void, Stor
     (error): StorageError => storageUnavailable('indexedDB', error)
   );
 }
-
-// === Primary API ===
-
 /**
  * Save a layout atomically with library metadata update.
  *
@@ -243,25 +234,21 @@ export async function saveLayoutWithMetadata(
   library: LayoutLibrary,
   options: SaveLayoutOptions = {}
 ): Promise<Result<SaveResult, StorageError>> {
-  // 1. Validate entry exists
   const found = findLibraryEntry(library, layoutId);
   if (!found) {
     return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
-  // 2. Save layout data
   const saveResult = await saveLayoutInternal(layoutId, layout);
   if (isErr(saveResult)) {
     return saveResult;
   }
 
-  // 3. Compute updates
   const now = Date.now();
   const preview = options.skipPreview
     ? (options.preview ?? found.entry.preview)
     : computePreview(layout);
 
-  // 4. Build updated library using helper
   const updatedLibrary = updateLibraryEntryAtIndex(library, found.index, {
     name: (options.name ?? layout.name).slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
     modifiedAt: now,
@@ -269,7 +256,6 @@ export async function saveLayoutWithMetadata(
   });
   const updatedEntry = updatedLibrary.entries[found.index];
 
-  // 5. Save library
   const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
     // Layout saved but library failed - data is preserved but metadata may be stale
@@ -318,13 +304,11 @@ export async function createLayoutEntry(
   const layoutId = generateLayoutId();
   const now = Date.now();
 
-  // 1. Save layout data first
   const saveResult = await saveLayoutInternal(layoutId, layout);
   if (isErr(saveResult)) {
     return saveResult;
   }
 
-  // 2. Create entry
   const entry: LayoutEntry = {
     id: layoutId,
     name: (options.name ?? layout.name).slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
@@ -340,13 +324,11 @@ export async function createLayoutEntry(
     entry.forkedFrom = options.forkedFrom;
   }
 
-  // 3. Build updated library
   const updatedLibrary: LayoutLibrary = {
     ...library,
     entries: [...library.entries, entry],
   };
 
-  // 4. Save library
   const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
     // Rollback: delete the layout we just saved
@@ -389,7 +371,6 @@ export async function deleteLayoutWithEntry(
   layoutId: string,
   library: LayoutLibrary
 ): Promise<Result<DeleteResult, StorageError>> {
-  // 1. Validate we can delete
   if (library.entries.length <= 1) {
     return err(storageCorrupted('library', ['Cannot delete the last layout']));
   }
@@ -399,7 +380,6 @@ export async function deleteLayoutWithEntry(
     return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
-  // 2. Delete layout data
   const deleteResult = await deleteLayoutInternal(layoutId);
   if (isErr(deleteResult)) {
     return deleteResult;
@@ -410,7 +390,6 @@ export async function deleteLayoutWithEntry(
     // Snapshot cleanup is best-effort; orphaned snapshots don't cause issues
   });
 
-  // 3. Build updated library
   const remainingEntries = library.entries.filter((e) => e.id !== layoutId);
   let newActiveId: string | undefined;
 
@@ -427,7 +406,6 @@ export async function deleteLayoutWithEntry(
     entries: remainingEntries,
   };
 
-  // 4. Save library
   const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
     // Layout already deleted, but library save failed
@@ -466,26 +444,22 @@ export async function duplicateLayoutEntry(
     return err(layoutLibraryLimit(library.entries.length, CONSTRAINTS.LAYOUTS_MAX));
   }
 
-  // 1. Find source entry
   const sourceEntry = library.entries.find((e) => e.id === sourceId);
   if (!sourceEntry) {
     return err(storageNotFound(getLayoutStorageKey(sourceId)));
   }
 
-  // 2. Load source layout
   const loadResult = await loadLayoutInternal(sourceId);
   if (isErr(loadResult)) {
     return loadResult;
   }
   const sourceLayout = loadResult.value;
 
-  // 3. Create duplicated layout
   const newLayout: Layout = {
     ...sourceLayout,
     name: `${sourceLayout.name} (copy)`.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
   };
 
-  // 4. Use createLayoutEntry for the rest
   const createResult = await createLayoutEntry(newLayout, library, {
     author: library.settings.authorName,
   });
@@ -528,13 +502,11 @@ export async function switchActiveLayout(
   toId: string,
   library: LayoutLibrary
 ): Promise<Result<SwitchResult, StorageError>> {
-  // 1. Validate target exists
   const targetEntry = library.entries.find((e) => e.id === toId);
   if (!targetEntry) {
     return err(storageNotFound(getLayoutStorageKey(toId)));
   }
 
-  // 2. Save current layout (skip if it's a shared preview or was deleted)
   let updatedLibrary = library;
   const fromEntry = library.entries.find((e) => e.id === fromId);
   if (fromId !== SHARED_PREVIEW_ID && fromEntry) {
@@ -546,19 +518,16 @@ export async function switchActiveLayout(
     updatedLibrary = saveResult.value.library;
   }
 
-  // 3. Load target layout
   const loadResult = await loadLayoutInternal(toId);
   if (isErr(loadResult)) {
     return loadResult;
   }
 
-  // 4. Update active layout ID
   updatedLibrary = {
     ...updatedLibrary,
     activeLayoutId: layoutId(toId),
   };
 
-  // 5. Save library with new active ID
   const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
     return librarySaveResult;

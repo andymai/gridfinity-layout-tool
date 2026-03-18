@@ -7,9 +7,7 @@ import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
 import { getStableUserId } from './identity';
 
-// ============================================
 // INITIALIZATION (LAZY LOADED)
-// ============================================
 
 let posthogInstance: PostHog | null = null;
 let initPromise: Promise<void> | null = null;

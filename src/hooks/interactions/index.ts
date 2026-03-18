@@ -14,7 +14,6 @@
  * The facade pattern means consumers of useInteraction see no API changes.
  */
 
-// Types
 export type {
   InteractionContext,
   ModeHandlers,

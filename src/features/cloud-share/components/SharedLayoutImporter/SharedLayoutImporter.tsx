@@ -39,11 +39,9 @@ export function SharedLayoutImporter() {
   const setSharedLayoutPreview = useSharedPreviewStore((state) => state.setSharedLayoutPreview);
   const addToast = useToastStore((state) => state.addToast);
 
-  // Library store
   const libraryIsLoaded = useLibraryStore((state) => state.isLoaded);
   const libraryEntries = useLibraryStore((state) => state.library.entries);
 
-  // Shared with me store
   const sharedWithMeLoaded = useSharedWithMeStore((state) => state.isLoaded);
   const getSharedWithMeByShareId = useSharedWithMeStore((state) => state.getByShareId);
   const addSharedWithMe = useSharedWithMeStore((state) => state.add);

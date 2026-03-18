@@ -28,9 +28,6 @@ import type { BinParams, PathPoint } from '@/shared/types/bin';
 import { MIN_PATH_POINTS } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
-
-// ─── AABB Type ──────────────────────────────────────────────────────────────
-
 /** Axis-aligned bounding box in XY. */
 export interface AABB {
   readonly minX: number;
@@ -38,9 +35,6 @@ export interface AABB {
   readonly maxX: number;
   readonly maxY: number;
 }
-
-// ─── Rotation-Safe AABB ─────────────────────────────────────────────────────
-
 /**
  * Build a rotation-safe AABB for a positioned cutout member.
  * Uses the member's diagonal as a safe half-extent to account for any rotation.
@@ -49,9 +43,6 @@ function computeRotationSafeAABB(cx: number, cy: number, width: number, depth: n
   const diag = Math.sqrt(width ** 2 + depth ** 2) / 2;
   return { minX: cx - diag, minY: cy - diag, maxX: cx + diag, maxY: cy + diag };
 }
-
-// ─── Cutout Shape Builders ──────────────────────────────────────────────────
-
 /** Create an extruded + rotated cutout shape centered at origin (no translation).
  *  Returns null if dimensions are degenerate (would crash WASM).
  */
@@ -117,9 +108,6 @@ function buildCutoutShape(cutout: {
 
   return shape;
 }
-
-// ─── Path Cutout ────────────────────────────────────────────────────────────
-
 /**
  * Build an extruded path cutout from bezier path points.
  * Flattens curves to a polyline and extrudes the closed wire.
@@ -229,9 +217,6 @@ function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): bool
   }
   return false;
 }
-
-// ─── Adaptive Fillet Constants ───────────────────────────────────────────────
-
 /** Find edges near a target Z height within XY bounds, with tolerance margins. */
 export function findBottomEdges(
   shape: Shape3D,
@@ -276,9 +261,6 @@ const JUNCTION_RADIUS_FACTOR = 0.3;
 
 /** Progressive fallback multipliers when a fillet attempt fails. */
 const FALLBACK_FACTORS = [1.0, 0.75, 0.5, 0.25] as const;
-
-// ─── Adaptive Fillet Helpers ─────────────────────────────────────────────────
-
 /**
  * Apply a fillet with progressive radius fallback for ungrouped cutouts.
  * Tries 100%, 75%, 50%, 25% of the target radius. Returns original shape on total failure.
@@ -360,9 +342,6 @@ function applyAdaptiveScoop(
   // Progressive uniform fallback
   return applyFilletWithFallback(shape, edges, targetRadius);
 }
-
-// ─── Cutout Processing Helpers ──────────────────────────────────────────────
-
 /** Build and position an ungrouped cutout with individual scoop fillet. */
 function buildUngroupedCutout(
   cutout: BinParams['cutouts'][number],
@@ -469,9 +448,6 @@ function buildGroupedCutouts(
 
   return fused;
 }
-
-// ─── Main Export ─────────────────────────────────────────────────────────────
-
 /**
  * Build cutout cavity cuts for solid bins.
  * Cutouts cut down from the solid fill surface with configurable depth.

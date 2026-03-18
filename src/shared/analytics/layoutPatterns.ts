@@ -8,9 +8,7 @@
 import type { Layout, Bin, Drawer } from '@/core/types';
 import { getGridBins } from '@/shared/utils/bins';
 
-// ============================================
 // TYPES
-// ============================================
 
 /**
  * High-level layout archetype classification.
@@ -42,9 +40,7 @@ export interface EdgeUsage {
   bottom: boolean;
 }
 
-// ============================================
 // ARCHETYPE DETECTION
-// ============================================
 
 /**
  * Get all non-staging bins from a layout.
@@ -218,9 +214,7 @@ export function areBinsAdjacent(a: Bin, b: Bin): boolean {
   return false;
 }
 
-// ============================================
 // SPATIAL PATTERN DETECTION
-// ============================================
 
 /**
  * Detect spatial patterns in the layout.
@@ -348,9 +342,7 @@ function binTouchesEdge(bin: Bin, drawer: Drawer): boolean {
   );
 }
 
-// ============================================
 // UNIFORMITY SCORE
-// ============================================
 
 /**
  * Compute uniformity score (0-1) for bin sizes.
@@ -392,9 +384,7 @@ export function computeUniformityScore(bins: Bin[]): number {
   return Math.round(uniformity * 100) / 100;
 }
 
-// ============================================
 // EDGE USAGE
-// ============================================
 
 /**
  * Compute which edges of the drawer have bins touching them.

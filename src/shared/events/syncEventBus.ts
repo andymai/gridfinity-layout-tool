@@ -11,9 +11,7 @@
 
 import type { BinId, DesignId } from '@/core/types';
 
-// =============================================================================
 // Event Types
-// =============================================================================
 
 /** Dimensions carried in sync events (width/depth in grid units, height in height units) */
 interface SyncEventDimensions {
@@ -37,9 +35,7 @@ export interface BinResizedEvent {
 
 export type SyncEvent = DesignSavedEvent | BinResizedEvent;
 
-// =============================================================================
 // Event Bus
-// =============================================================================
 
 type Listener<T extends SyncEvent = SyncEvent> = (event: T) => void;
 

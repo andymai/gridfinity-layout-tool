@@ -15,7 +15,6 @@ export const LIBRARY_STORAGE_KEY = 'gridfinity-library-v1';
 export const ACTIVE_ID_STORAGE_KEY = 'gridfinity-library-active-id';
 export const LIBRARY_CHANNEL_NAME = 'gridfinity-library-sync';
 
-// Settings
 export const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
 
 // Migration flags

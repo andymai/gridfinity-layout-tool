@@ -20,9 +20,6 @@ import {
   centerInBin,
 } from '../panel/CutoutsSection/geometry';
 import { autoArrangeCutouts } from '../panel/CutoutsSection/autoArrange';
-
-// ─── Align Icons (14×14 inline SVGs) ──────────────────────────────────────────
-
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v';
 
 function AlignIcon({ type }: { readonly type: AlignType }) {
@@ -85,9 +82,6 @@ function AlignIcon({ type }: { readonly type: AlignType }) {
       );
   }
 }
-
-// ─── Distribute Icons ─────────────────────────────────────────────────────────
-
 function DistributeHIcon() {
   return (
     <svg
@@ -119,9 +113,6 @@ function DistributeVIcon() {
     </svg>
   );
 }
-
-// ─── Auto-Arrange Popover ─────────────────────────────────────────────────────
-
 function AutoArrangePopover({
   onArrange,
 }: {
@@ -198,15 +189,9 @@ function AutoArrangePopover({
     </div>
   );
 }
-
-// ─── Separator ────────────────────────────────────────────────────────────────
-
 function Separator() {
   return <div className="mx-1 h-4 w-px bg-stroke-subtle" />;
 }
-
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 interface WorkspaceHeaderProps {
   readonly zoomPercent: number;
   readonly onZoomIn: () => void;
@@ -267,9 +252,6 @@ export function WorkspaceHeader({
   const selected = useMemo(() => cutouts.filter((c) => selection.has(c.id)), [cutouts, selection]);
   const hasGroup = selected.some((c) => c.groupId !== null);
   const singleCutout = selection.size === 1 ? (selected[0] ?? null) : null;
-
-  // ─── Alignment handlers ──────────────────────────────────────────────
-
   const handleAlign = useCallback(
     (type: AlignType) => {
       const bounds = computeBounds(selected);
@@ -342,9 +324,6 @@ export function WorkspaceHeader({
     },
     [selected, binWidth, binDepth, onUpdate]
   );
-
-  // ─── Compact icon button helper ──────────────────────────────────────
-
   const iconBtn = (
     onClick: () => void,
     title: string,
@@ -377,9 +356,6 @@ export function WorkspaceHeader({
       {label}
     </button>
   );
-
-  // ─── Render context actions ──────────────────────────────────────────
-
   const renderContextActions = () => {
     // No selection: Clear All + Show All
     if (selection.size === 0) {

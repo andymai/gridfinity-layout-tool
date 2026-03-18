@@ -13,14 +13,10 @@
  * @see docs/README.md for complete documentation
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Utilities
-// ─────────────────────────────────────────────────────────────────────────────
 export { cn } from './cn';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Shared Variants
-// ─────────────────────────────────────────────────────────────────────────────
 export {
   // Type scales
   sizeScale,
@@ -45,9 +41,7 @@ export {
 
 export type { Size, Variant, Intent } from './variants';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Primitive Components
-// ─────────────────────────────────────────────────────────────────────────────
 
 // Button
 export { Button } from './Button';
@@ -77,9 +71,7 @@ export type { PopoverProps } from './Popover';
 export { ProgressBar } from './ProgressBar';
 export type { ProgressBarProps } from './ProgressBar';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Composite Components
-// ─────────────────────────────────────────────────────────────────────────────
 
 // Stepper
 export { Stepper } from './Stepper';
@@ -107,9 +99,7 @@ export type { MenuProps, MenuItemProps } from './Menu';
 export { ToastContainer } from './Toast';
 export type { ToastContainerProps, ToastData, ToastType } from './Toast';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Icons
-// ─────────────────────────────────────────────────────────────────────────────
 export {
   // Base icon component
   Icon,

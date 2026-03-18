@@ -9,9 +9,7 @@
 import type { BinId, DesignId } from '@/core/types';
 export type { BinId, DesignId };
 
-// =============================================================================
 // Dimension Types
-// =============================================================================
 
 /** Dimensions that can be synced between design and bin */
 export interface SyncableDimensions {
@@ -36,9 +34,7 @@ export interface DimensionComparison {
   };
 }
 
-// =============================================================================
 // Sync Types
-// =============================================================================
 
 /** Direction of dimension sync */
 export type SyncDirection = 'design-to-bin' | 'bin-to-design';
@@ -75,9 +71,7 @@ export interface SyncResult {
   readonly totalLinked: number;
 }
 
-// =============================================================================
 // Linking Operation Types
-// =============================================================================
 
 /** Types of linking operations for tracking/analytics */
 export type LinkingOperationType =
@@ -91,9 +85,7 @@ export type LinkingOperationType =
 /** Entry point where linking operation was initiated */
 export type LinkingEntryPoint = 'context-menu' | 'inspector' | 'custom-bins-palette';
 
-// =============================================================================
 // UI State Types
-// =============================================================================
 
 /** State for the sync dimensions dialog */
 export interface PendingSyncState {
@@ -158,9 +150,7 @@ export interface PendingLinkDesignState {
   readonly binHeight: number;
 }
 
-// =============================================================================
 // Summary Types
-// =============================================================================
 
 /** Summary of bins linked to a specific design */
 export interface DesignLinkedBinsSummary {

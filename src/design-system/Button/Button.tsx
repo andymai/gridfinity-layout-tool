@@ -53,9 +53,7 @@ const buttonVariants = cva(
 
 type ButtonVariantProps = VariantProps<typeof buttonVariants>;
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Button props
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>, ButtonVariantProps {
@@ -83,9 +81,7 @@ export interface ButtonProps
   touchTarget?: boolean;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Button component
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Interactive element for triggering actions.

@@ -10,9 +10,7 @@
 
 import type { CompartmentConfig } from '../types';
 
-// =============================================================================
 // Grid Creation
-// =============================================================================
 
 /**
  * Create a uniform compartment grid where each cell is its own compartment.
@@ -38,9 +36,7 @@ export function createSingleCell(thickness: number): CompartmentConfig {
   return { cols: 1, rows: 1, thickness, cells: [0] };
 }
 
-// =============================================================================
 // Cell Access Helpers
-// =============================================================================
 
 /** Get the compartment ID for a cell at (col, row) */
 export function getCellId(config: CompartmentConfig, col: number, row: number): number {
@@ -52,9 +48,7 @@ export function cellIndex(cols: number, col: number, row: number): number {
   return row * cols + col;
 }
 
-// =============================================================================
 // Compartment Queries
-// =============================================================================
 
 /** Get all unique compartment IDs in the grid */
 export function getCompartmentIds(config: CompartmentConfig): number[] {
@@ -105,9 +99,7 @@ export function getCompartmentCount(config: CompartmentConfig): number {
   return new Set(config.cells).size;
 }
 
-// =============================================================================
 // Validation
-// =============================================================================
 
 /**
  * Check whether a set of cells forms a valid rectangle.
@@ -168,9 +160,7 @@ export function validateCompartmentGrid(config: CompartmentConfig): number[] {
   return invalid;
 }
 
-// =============================================================================
 // Merge / Split Operations
-// =============================================================================
 
 /**
  * Merge a set of cells into a single compartment.
@@ -242,9 +232,7 @@ export function normalizeIds(cells: number[]): number[] {
   return normalized;
 }
 
-// =============================================================================
 // Wall Segment Derivation
-// =============================================================================
 
 /** A horizontal or vertical wall segment in bin-interior coordinates (mm) */
 export interface WallSegment {
@@ -353,9 +341,7 @@ export function deriveWallSegments(
   return segments;
 }
 
-// =============================================================================
 // Migration from Legacy DividerConfig
-// =============================================================================
 
 /**
  * Convert a legacy DividerConfig (uniform X×Y grid) to CompartmentConfig.

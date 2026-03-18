@@ -16,9 +16,7 @@ import { getLayerBins } from '@/shared/utils/bins';
 import { useLayoutStore } from './layout';
 import { useSelectionStore } from './selection';
 
-// ============================================================================
 // Layout Selectors (pure functions for use with useStore)
-// ============================================================================
 
 /** Select just the bins array from layout state. */
 export const selectBins = (state: { layout: { bins: Bin[] } }): Bin[] => state.layout.bins;
@@ -27,9 +25,7 @@ export const selectBins = (state: { layout: { bins: Bin[] } }): Bin[] => state.l
 export const selectLayers = (state: { layout: { layers: Layer[] } }): Layer[] =>
   state.layout.layers;
 
-// ============================================================================
 // Computed Hooks (cross-store or derived data)
-// ============================================================================
 
 /**
  * Get bins on the active layer (excluding staging).

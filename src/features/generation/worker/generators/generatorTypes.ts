@@ -11,9 +11,6 @@
  *
  * All exports are re-exported here so existing imports continue to work unchanged.
  */
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
 export {
   SIZE,
   CLEARANCE,
@@ -45,18 +42,9 @@ export {
   HOLE_DEPTH,
   NUB_CIRCLE_SEGMENTS,
 } from './generatorConstants';
-
-// ─── Cell Decomposition ──────────────────────────────────────────────────────
-
 export { decomposeCells, decomposeHalfCells, forEachCell } from './cellDecomposition';
 export type { CellInfo, ForEachCellOptions } from './cellDecomposition';
-
-// ─── Mesh Utilities ──────────────────────────────────────────────────────────
-
 export { sketch, checkCancelled, toIndexedMeshData } from './meshUtils';
 export type { ProgressFn, BooleanOpts } from './meshUtils';
-
-// ─── Legacy Connector Utilities ──────────────────────────────────────────────
-
 export { computeConnectorPositions } from './connectorUtils';
 export type { ConnectorPos } from './connectorUtils';

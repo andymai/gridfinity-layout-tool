@@ -85,7 +85,6 @@ export function useAutoSave(): SaveStatus {
             // Get fresh library state at save time (may have changed since effect triggered)
             const currentLibrary = useLibraryStore.getState().library;
 
-            // Atomic save: layout + library entry in one operation
             const result = await saveLayoutWithMetadata(savingLayoutId, layout, currentLibrary);
 
             if (isErr(result)) {

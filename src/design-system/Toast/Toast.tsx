@@ -4,11 +4,6 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
 import { XIcon, CheckIcon, AlertTriangleIcon, InfoIcon } from '../Icon';
 import { focusRing, interactiveTransition } from '../variants';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
 export type ToastType = 'success' | 'error' | 'info';
 
 export interface ToastData {
@@ -21,11 +16,6 @@ export interface ToastData {
     onClick: () => void;
   };
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Variants
-// ─────────────────────────────────────────────────────────────────────────────
-
 const toastVariants = cva(
   [
     'relative',
@@ -64,9 +54,7 @@ const containerVariants = cva(['fixed', 'z-50', 'flex flex-col', 'gap-2', 'point
   },
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Toast Item Component
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface ToastItemProps {
   toast: ToastData;
@@ -223,9 +211,7 @@ function ToastItem({ toast, onDismiss, position }: ToastItemProps) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Toast Container
-// ─────────────────────────────────────────────────────────────────────────────
 
 type ContainerVariantProps = VariantProps<typeof containerVariants>;
 

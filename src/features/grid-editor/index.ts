@@ -11,7 +11,6 @@
 // Main component
 export { Grid } from './components/Grid';
 
-// Hooks
 export {
   useGridAxisLabels,
   useGridCoords,

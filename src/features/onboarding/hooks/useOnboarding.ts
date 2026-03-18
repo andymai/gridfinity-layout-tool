@@ -2,9 +2,7 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
 import { trackEvent } from '@/shared/analytics/posthog';
 
-// ============================================================================
 // localStorage Keys
-// ============================================================================
 
 const WELCOME_SEEN_KEY = 'gridfinity-onboarding-welcome-seen';
 const DRAW_TUTORIAL_SEEN_KEY = 'gridfinity-onboarding-draw-tutorial-seen';
@@ -21,9 +19,7 @@ const ALL_KEYS = [
 /** Engagement threshold: sidebar pulse stops after this many bins created */
 const ENGAGEMENT_BIN_THRESHOLD = 3;
 
-// ============================================================================
 // Reactive localStorage — useSyncExternalStore so all hook instances share state
-// ============================================================================
 
 type OnboardingFlags = {
   welcomeSeen: boolean;
@@ -113,9 +109,7 @@ export function syncOnboardingFlags(): void {
   notifyListeners();
 }
 
-// ============================================================================
 // Hook
-// ============================================================================
 
 export interface UseOnboardingReturn {
   /** Whether the welcome modal should be shown (first visit, single empty layout) */

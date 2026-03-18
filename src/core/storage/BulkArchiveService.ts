@@ -15,9 +15,6 @@ import { CONSTRAINTS } from '@/core/constants';
 import { loadLayoutAsync } from './LayoutService';
 import { createLayoutEntry } from './LayoutManager';
 import { importLayoutJSON } from './ShareService';
-
-// === Types ===
-
 interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
@@ -56,9 +53,6 @@ export interface ImportArchiveResult {
   skipped: number;
   errors: string[];
 }
-
-// === Export ===
-
 /**
  * Check if parsed JSON is a bulk archive (vs. a single layout).
  * Validates structural shape and version to fail fast on malformed archives.
@@ -179,9 +173,6 @@ export async function downloadArchive(
   URL.revokeObjectURL(url);
   return result;
 }
-
-// === Import ===
-
 /**
  * Parse and validate a bulk archive from raw JSON.
  * Returns null if the JSON is not in archive format.

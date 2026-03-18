@@ -41,7 +41,6 @@ export const GridToolbar = memo(function GridToolbar({
   const t = useTranslation();
   const { zoom, canZoomIn, canZoomOut, zoomIn, zoomOut, fitToScreen } = zoomState;
 
-  // View store
   const { showOtherLayers, toggleShowOtherLayers, leftPanelCollapsed, toggleLeftPanel } =
     useViewStore(
       useShallow((state) => ({
@@ -52,7 +51,6 @@ export const GridToolbar = memo(function GridToolbar({
       }))
     );
 
-  // Interaction store
   const {
     paintSize,
     setPaintSize,

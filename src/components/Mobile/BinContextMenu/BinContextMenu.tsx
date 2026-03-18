@@ -120,7 +120,6 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
       return;
     }
 
-    // Rotation is valid, perform it (may include position change)
     execute(() => {
       const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
       if (result.movedTo) {
@@ -130,7 +129,6 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
       updateBin(bin.id, updates);
     });
 
-    // Show toast if bin was relocated to fit rotation
     if (result.movedTo) {
       addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
     }

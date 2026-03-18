@@ -29,10 +29,8 @@ import type { CompartmentConfig } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 
-// =============================================================================
 // Color palette for compartment visualization
 // Uses the same base color as the 3D preview for visual consistency.
-// =============================================================================
 
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
 const DEFAULT_PREVIEW_COLOR = '#d4d8dc';
@@ -82,9 +80,7 @@ function getCompartmentBorder(_id: number, previewColor: string): string {
   return `hsl(${h}, ${s}%, ${borderL}%)`;
 }
 
-// =============================================================================
 // CompartmentEditor Component
-// =============================================================================
 
 export function CompartmentEditor() {
   const t = useTranslation();
@@ -546,9 +542,7 @@ export function CompartmentEditor() {
   );
 }
 
-// =============================================================================
 // Grid Cell Sub-component
-// =============================================================================
 
 /** Renders a single cell in the compartment grid with dynamic styling and keyboard support. */
 function GridCell({
@@ -703,9 +697,7 @@ function GridCell({
   );
 }
 
-// =============================================================================
 // Ghost Preview Sub-component
-// =============================================================================
 
 /** Shows a preview of what the merge/split result will look like during drag. */
 function GhostPreview({

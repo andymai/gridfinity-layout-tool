@@ -14,9 +14,7 @@ import { Button } from '../Button';
 import { XIcon } from '../Icon';
 import { focusRing } from '../variants';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Dialog Context
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface DialogContextValue {
   titleId: string;
@@ -33,11 +31,6 @@ function useDialogContext() {
   }
   return context;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Variants
-// ─────────────────────────────────────────────────────────────────────────────
-
 const overlayVariants = cva(['fixed inset-0 z-50', 'bg-overlay-dark', 'animate-fade-in']);
 
 const contentVariants = cva(
@@ -88,9 +81,7 @@ const footerVariants = cva([
   'flex-shrink-0',
 ]);
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Focus Trap Hook
-// ─────────────────────────────────────────────────────────────────────────────
 
 function useFocusTrap(containerRef: React.RefObject<HTMLElement | null>, isActive: boolean) {
   useEffect(() => {
@@ -141,9 +132,7 @@ function useFocusTrap(containerRef: React.RefObject<HTMLElement | null>, isActiv
   }, [containerRef, isActive]);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Body Scroll Lock Hook
-// ─────────────────────────────────────────────────────────────────────────────
 
 function useBodyScrollLock(isLocked: boolean) {
   useEffect(() => {
@@ -167,9 +156,7 @@ function useBodyScrollLock(isLocked: boolean) {
   }, [isLocked]);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Dialog Root
-// ─────────────────────────────────────────────────────────────────────────────
 
 type ContentVariantProps = VariantProps<typeof contentVariants>;
 
@@ -326,9 +313,7 @@ function DialogRoot({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Dialog Header
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface DialogHeaderProps {
   /**
@@ -368,9 +353,7 @@ function DialogHeader({ title, showCloseButton = true, children }: DialogHeaderP
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Dialog Body
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface DialogBodyProps {
   children: ReactNode;
@@ -387,9 +370,7 @@ function DialogBody({ children, className }: DialogBodyProps) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Dialog Footer
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface DialogFooterProps {
   children: ReactNode;
@@ -400,9 +381,7 @@ function DialogFooter({ children, className }: DialogFooterProps) {
   return <div className={cn(footerVariants(), className)}>{children}</div>;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Compound Component Export
-// ─────────────────────────────────────────────────────────────────────────────
 
 export const Dialog = {
   Root: DialogRoot,
@@ -411,9 +390,7 @@ export const Dialog = {
   Footer: DialogFooter,
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // ConfirmDialog (convenience wrapper)
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface ConfirmDialogProps {
   /**

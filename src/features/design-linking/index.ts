@@ -14,7 +14,6 @@
  * @module design-linking
  */
 
-// Types
 export type {
   DesignId,
   BinId,
@@ -67,10 +66,8 @@ export {
 // Store
 export { useLinkingStore } from './store';
 
-// Hooks
 export { useBinLinking, useLinkedDesign, useLinkedBins } from './hooks';
 
-// Components
 export {
   CreateDesignDialog,
   SyncDimensionsDialog,

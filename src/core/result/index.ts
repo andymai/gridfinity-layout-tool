@@ -61,9 +61,7 @@
  * @module result
  */
 
-// =============================================================================
 // Primary API (used in production)
-// =============================================================================
 
 export type { Result, Ok, Err, Unit } from './types';
 export { ok, err, isOk, isErr, OK } from './types';
@@ -72,9 +70,7 @@ export { getUserMessage, isRetryable, getErrorInfo, formatErrorMessage } from '.
 
 export { tryCatchAsync, unwrapOr } from './utils';
 
-// =============================================================================
 // Extended API (available, not currently used in production)
-// =============================================================================
 
 export {
   map,
@@ -90,9 +86,7 @@ export {
 
 export { getRecoveryHint, getSeverity } from './catalog';
 
-// =============================================================================
 // Domain Error Types
-// =============================================================================
 
 export type {
   // Base type + error code union
@@ -147,9 +141,7 @@ export type {
 
 export type { ErrorCatalogEntry } from './catalog';
 
-// =============================================================================
 // Error Constructors
-// =============================================================================
 
 export {
   // Storage errors

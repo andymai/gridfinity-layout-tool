@@ -59,9 +59,6 @@ export const GRIDFINITY_SPEC = {
   // Fillets (used for BREP generation)
   TOP_FILLET: 0.6, // mm fillet at stacking lip junction
 } as const;
-
-// ─── Nozzle-to-Wall Mapping ──────────────────────────────────────────────────
-
 /**
  * Number of perimeter walls per nozzle size, matching common slicer defaults.
  *

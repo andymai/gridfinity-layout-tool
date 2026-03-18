@@ -328,9 +328,6 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   };
 
   // Migrate wallPattern config, handling 3 cases:
-  // 1. New `wallPattern` field → merge with defaults
-  // 2. Legacy `eco` field → map eco.honeycombWall.enabled / legacy mode string → wallPattern
-  // 3. Neither → fresh default
   // Fresh object each time — avoid returning shared DEFAULT_WALL_PATTERN_CONFIG reference
   let wallPatternConfig: WallPatternConfig = { enabled: false, pattern: 'honeycomb' };
   if (params.wallPattern !== undefined) {

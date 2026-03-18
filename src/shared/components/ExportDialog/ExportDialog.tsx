@@ -349,9 +349,6 @@ export function ExportDialog({
     </Dialog.Root>
   );
 }
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
 function FormatSelector({
   activeFormat,
   onChange,

@@ -143,7 +143,6 @@ export const StagingBin = memo(function StagingBin({
   // Calculate grid row start (must be integer for valid CSS Grid)
   const gridRowStart = gridHeight - Math.ceil(bin.y + bin.depth) + 1;
 
-  // ========== ADAPTIVE LABEL SYSTEM (matches Grid/Bin.tsx) ==========
   const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
   const hasLabel = !!bin.label;
 

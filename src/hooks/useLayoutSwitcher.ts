@@ -46,7 +46,6 @@ export function useLayoutSwitcher() {
   // Layout store (activeLayoutId for return value; getState() used in callbacks)
   const activeLayoutId = useLayoutStore((state) => state.activeLayoutId);
 
-  // Library store
   const { library, getEntry, setLibrary } = useLibraryStore(
     useShallow((state) => ({
       library: state.library,
@@ -55,10 +54,8 @@ export function useLayoutSwitcher() {
     }))
   );
 
-  // Shared preview store
   const clearSharedLayoutPreview = useSharedPreviewStore((state) => state.clearSharedLayoutPreview);
 
-  // Toast store
   const addToast = useToastStore((state) => state.addToast);
 
   /**
@@ -90,23 +87,19 @@ export function useLayoutSwitcher() {
     async (
       targetId: LayoutId
     ): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
-      // 1. Validate target exists
       const targetEntry = getEntry(targetId);
       if (!targetEntry) {
         return err(layoutInvalidOperation('switchLayout', 'Layout not found'));
       }
 
-      // 2. Cancel any pending auto-save (prevent race)
       if (pendingSaveRef.current) {
         clearTimeout(pendingSaveRef.current);
         pendingSaveRef.current = null;
       }
 
       try {
-        // 3. Clear any shared layout preview state
         clearSharedLayoutPreview();
 
-        // 4. Atomic switch: save current, load target, update library
         // Note: Get ALL fresh state to avoid stale closure issues
         // (e.g., when called right after importLayoutFromJSON, deleteLayout, or auto-save)
         const currentLibrary = useLibraryStore.getState().library;
@@ -124,21 +117,16 @@ export function useLayoutSwitcher() {
           return result;
         }
 
-        // 5. Update stores and activate layout
         setLibrary(result.value.library);
         activateLayout(result.value.targetLayout, targetId);
 
-        // 6. Update URL with slug
         setLayoutURL(targetId, result.value.targetLayout.name, true);
 
-        // 9. Track analytics
         trackLayoutAction('switched');
 
-        // 10. Track ML session summary for the layout we're leaving
         // Captures session workflow metrics (bins placed, edit ratio, etc.)
         mlTracking.trackSession('layout_switch');
 
-        // 11. Track ML snapshot for the layout we're leaving (if substantial)
         // The old layout was just saved in step 4, so this captures the "finished" state
         mlTracking.trackSnapshot('layout_switch');
 
@@ -159,7 +147,6 @@ export function useLayoutSwitcher() {
     ]
   );
 
-  // Settings store
   const settings = useSettingsStore((state) => state.settings);
 
   /**
@@ -169,7 +156,6 @@ export function useLayoutSwitcher() {
     async (
       name?: string
     ): Promise<Result<string, StorageError | UnknownError | LayoutLibraryLimitError>> => {
-      // Save current layout first
       await saveCurrentLayout();
 
       // Create new layout with user's default settings
@@ -180,7 +166,6 @@ export function useLayoutSwitcher() {
         // Get fresh library state after saveCurrentLayout (may have updated it)
         const currentLibrary = useLibraryStore.getState().library;
 
-        // Atomic create: save layout, create entry, save library
         const result = await createLayoutEntry(newLayout, currentLibrary, {
           name: newLayout.name,
           author: currentLibrary.settings.authorName,
@@ -191,7 +176,6 @@ export function useLayoutSwitcher() {
           return result;
         }
 
-        // Update stores and activate layout
         setLibrary(result.value.library);
         const newLayoutId = layoutId(result.value.layoutId);
         activateLayout(result.value.layout, newLayoutId);
@@ -226,13 +210,11 @@ export function useLayoutSwitcher() {
       // Get fresh library state to avoid stale closure issues
       const currentLibrary = useLibraryStore.getState().library;
 
-      // Can't delete last layout
       if (currentLibrary.entries.length <= 1) {
         return err(layoutLastEntity('layout'));
       }
 
       try {
-        // Atomic delete: remove layout, update library
         const result = await deleteLayoutWithEntry(id, currentLibrary);
 
         if (isErr(result)) {
@@ -240,10 +222,8 @@ export function useLayoutSwitcher() {
           return result;
         }
 
-        // Update library store
         setLibrary(result.value.library);
 
-        // If deleted the active layout, switch to the new active
         if (result.value.newActiveId) {
           const switchResult = await switchLayout(layoutId(result.value.newActiveId));
           if (isErr(switchResult)) {
@@ -279,7 +259,6 @@ export function useLayoutSwitcher() {
         // Get fresh library state to avoid stale closure
         const currentLibrary = useLibraryStore.getState().library;
 
-        // Atomic duplicate: load source, create copy, save both layout and library
         const result = await duplicateLayoutStorage(id, currentLibrary);
 
         if (isErr(result)) {
@@ -287,7 +266,6 @@ export function useLayoutSwitcher() {
           return result;
         }
 
-        // Update library store
         setLibrary(result.value.library);
 
         trackLayoutAction('duplicated');
@@ -313,13 +291,11 @@ export function useLayoutSwitcher() {
       const currentLibrary = useLibraryStore.getState().library;
       const currentActiveId = useLayoutStore.getState().activeLayoutId;
 
-      // Atomic rename: update library entry and save
       const result = renameLayoutEntry(id, newName, currentLibrary);
 
       if (isOk(result)) {
         setLibrary(result.value);
 
-        // Also update the layout store's name if this is the active layout
         if (id === currentActiveId) {
           mutations.setName(newName);
         }
@@ -344,7 +320,6 @@ export function useLayoutSwitcher() {
         // Get fresh library state to avoid stale closure
         const currentLibrary = useLibraryStore.getState().library;
 
-        // Atomic create: save layout, create entry, save library
         const result = await createLayoutEntry(importedLayout, currentLibrary, {
           name: importedLayout.name,
           author: currentLibrary.settings.authorName,
@@ -356,7 +331,6 @@ export function useLayoutSwitcher() {
           return result;
         }
 
-        // Update library store
         setLibrary(result.value.library);
 
         trackLayoutAction('imported', forkedFrom ? 'url' : 'json');
@@ -372,11 +346,9 @@ export function useLayoutSwitcher() {
   );
 
   return {
-    // State
     activeLayoutId,
     library,
 
-    // Actions (all return Result<T, E>)
     switchLayout,
     createNewLayout,
     deleteLayout,
@@ -385,7 +357,6 @@ export function useLayoutSwitcher() {
     saveCurrentLayout,
     importLayoutFromJSON,
 
-    // Ref for auto-save coordination
     pendingSaveRef,
   };
 }

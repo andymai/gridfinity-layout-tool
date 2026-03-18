@@ -24,9 +24,6 @@ import {
   DEFAULT_PRINT_SETTINGS,
 } from '@/shared/printSettings';
 import { GRIDFINITY_SPEC, wallThicknessForNozzle } from './gridfinityGeometry';
-
-// ─── Calibration Constants ───────────────────────────────────────────────────
-
 /**
  * Effective floor thickness in mm (solid layers above socket cavities).
  * Typical gridfinity bins have ~3 solid bottom layers at 0.2mm = 0.6mm.
@@ -42,9 +39,6 @@ const FLOOR_THICKNESS = 0.6;
  * for conservative relative comparisons, not absolute filament estimation.
  */
 const SOCKET_SHELL_THICKNESS = 1.2;
-
-// ─── Result Type ─────────────────────────────────────────────────────────────
-
 export interface StandardBinEstimate {
   /** Estimated material volume in mm³ */
   readonly volumeMm3: number;
@@ -57,9 +51,6 @@ export interface StandardBinEstimate {
   /** Estimated cost in USD */
   readonly costUSD: number;
 }
-
-// ─── Public API ──────────────────────────────────────────────────────────────
-
 /**
  * Estimate material volume (mm³) for a standard gridfinity bin.
  *
@@ -90,16 +81,12 @@ export function estimateStandardBinVolume(
 
   let volume = 0;
 
-  // 1. Perimeter walls (full height — no solid base slab)
   volume += computeWallsVolume(outerW, outerD, totalH, wall);
 
-  // 2. Floor (thin solid layer above socket cavities)
   volume += computeFloorVolume(outerW, outerD, wall);
 
-  // 3. Base socket (per-cell interface to baseplate)
   volume += computeBaseSocketVolume(widthUnits, depthUnits);
 
-  // 4. Stacking lip (top perimeter)
   volume += computeStackingLipVolume(outerW, outerD);
 
   return Math.max(0, volume);
@@ -147,9 +134,6 @@ export function estimateStandardBinFilament(
     costUSD: Math.round(costUSD * 100) / 100,
   };
 }
-
-// ─── Geometry Helpers ────────────────────────────────────────────────────────
-
 /**
  * Volume of perimeter walls (cross-section × full height).
  *

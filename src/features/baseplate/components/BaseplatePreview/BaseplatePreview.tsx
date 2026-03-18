@@ -29,9 +29,6 @@ import { useThreeColors } from '@/hooks/useThemeEffect';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import type { SplitViewMode } from '../../store/baseplatePageStore';
-
-// ─── Camera Constants ────────────────────────────────────────────────────────
-
 type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
 
 /** Camera positions for each preset (eye position looking toward center) */
@@ -78,9 +75,6 @@ function calculateIdealDistance(
   const halfFovRad = (fov / 2) * (Math.PI / 180);
   return (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
 }
-
-// ─── Dimension Labels ───────────────────────────────────────────────────────
-
 const DIM_FONT_SIZE = 4;
 const DIM_OPACITY = 0.5;
 const DIM_OFFSET = 8; // mm from slab edge to label
@@ -187,9 +181,6 @@ function DimensionLabels({
     </group>
   );
 }
-
-// ─── Mesh Rendering ─────────────────────────────────────────────────────────
-
 /** Duration of geometry crossfade in milliseconds. */
 const CROSSFADE_MS = 300;
 
@@ -441,9 +432,6 @@ function CameraController({
 
   return null;
 }
-
-// ─── Camera Preset Transition Hook ──────────────────────────────────────────
-
 /**
  * Manages smooth camera preset transitions using spherical coordinate interpolation.
  * Adapted from the bin designer's usePresetTransition — uses baseplate's
@@ -553,9 +541,6 @@ function useBaseplatePresetTransition(
 
   return setCameraPreset;
 }
-
-// ─── Preview Controls Overlay ───────────────────────────────────────────────
-
 /** SVG icon for Assembled — 2×2 grid of squares packed tight */
 function IconAssembled() {
   return (
@@ -992,9 +977,6 @@ function overlayStatusText(
   }
   return t('baseplate.generating');
 }
-
-// ─── Main Component ─────────────────────────────────────────────────────────
-
 interface BaseplatePreviewProps {
   width: number;
   depth: number;

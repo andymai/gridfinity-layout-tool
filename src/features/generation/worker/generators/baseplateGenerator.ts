@@ -59,7 +59,6 @@ import {
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import { LRUCache } from './lruCache';
 
-// ─── Pocket Template Cache ──────────────────────────────────────────────────
 // LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
 // Build one loft per unique cell size, then clone+translate for each grid position.
 
@@ -69,14 +68,12 @@ const disposeShape = (_key: string, shape: Shape3D): void => {
 
 const pocketTemplateCache = new LRUCache<Shape3D>(16, disposeShape);
 
-// ─── Mesh Result Cache ──────────────────────────────────────────────────────
 // Caches the fully tessellated mesh data (vertices, normals, indices, edges)
 // keyed by generation params. Skips BREP booleans + tessellation entirely on
 // cache hit — the most expensive operations in the pipeline.
 
 const meshResultCache = new LRUCache<MeshData>(8);
 
-// ─── Intermediate Solid Cache ───────────────────────────────────────────────
 // Caches the slab-with-pockets BREP solid BEFORE magnet holes and connectors
 // are applied. This is the most expensive boolean step. When only magnet or
 // connector params change, we skip pocket cuts and resume from this cached solid.
@@ -91,9 +88,6 @@ function pocketCacheKey(
 ): string {
   return `${cellW}|${cellD}|${forExport}|${throughCut}`;
 }
-
-// ─── Pocket Builders ────────────────────────────────────────────────────────
-
 /** Insets at each Z breakpoint — same taper profile as bin socket but at full cell size */
 const INSET_TOP = 0;
 const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
@@ -202,9 +196,6 @@ function getPocketTemplate(
   pocketTemplateCache.set(key, template);
   return clone(template);
 }
-
-// ─── Magnet Holes ───────────────────────────────────────────────────────────
-
 /**
  * Build magnet hole cutters that open from the pocket floor (top side).
  *
@@ -250,9 +241,6 @@ function buildMagnetHoles(
 
   return holes;
 }
-
-// ─── Dovetail Connectors ─────────────────────────────────────────────────────
-
 /**
  * Build discrete dovetail connectors at grid cell boundary intersections along
  * join edges. Each connector is a small trapezoidal prism — the classic dovetail
@@ -390,9 +378,6 @@ function buildConnectors(
 
   return { nubs: tongues, holes: grooves };
 }
-
-// ─── Edge Line Computation ──────────────────────────────────────────────────
-
 /** Segments per rounded corner arc for edge lines */
 const EDGE_CORNER_SEGMENTS = 4;
 
@@ -765,9 +750,6 @@ function computeBaseplateEdgeLines(params: BaseplateParams): Float32Array {
 
   return new Float32Array(buf);
 }
-
-// ─── Public API ─────────────────────────────────────────────────────────────
-
 function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
   return [
     params.width,
@@ -816,9 +798,6 @@ function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): strin
     forExport,
   ].join('|');
 }
-
-// ─── Slab Profile Builder ──────────────────────────────────────────────────
-
 /**
  * Build the 2D slab outline, rounding only exterior corners.
  *
@@ -980,7 +959,6 @@ function buildBaseplateSolid(
   const slabOffsetY = (paddingBack - paddingFront) / 2;
   const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
 
-  // 1. Get or build the slab-with-pockets intermediate (most expensive step).
   // This is cached separately so that toggling magnets or connectors doesn't
   // redo the pocket boolean cuts.
   const spKey = slabPocketsCacheKey(params, forExport);
@@ -1027,7 +1005,6 @@ function buildBaseplateSolid(
     onProgress?.(0.5);
   }
 
-  // 2. Collect remaining subtractive tools (magnet holes, connector grooves)
   // into a single array for one batched cutAll operation.
   const allCuts: Shape3D[] = [];
 
@@ -1050,21 +1027,18 @@ function buildBaseplateSolid(
   );
   allCuts.push(...connHoles);
 
-  // 3. Batch-fuse connector tongues (single fuseAll instead of sequential fuse loop)
   if (nubs.length > 0) {
     baseplate = unwrap(fuseAll([baseplate, ...nubs]));
   }
 
   onProgress?.(0.6);
 
-  // 4. Single batched cut of all subtractive tools
   if (allCuts.length > 0) {
     baseplate = unwrap(cutAll(baseplate, allCuts));
   }
 
   onProgress?.(0.8);
 
-  // 5. Shift up so bottom face sits at Z=0, matching the bin convention
   baseplate = translate(baseplate, [0, 0, totalHeight]);
 
   return baseplate;

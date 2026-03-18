@@ -7,19 +7,10 @@
 
 import type { Drawing, PlaneName, SketchInterface, BooleanOptions } from 'brepjs';
 import type { MeshData } from '../../bridge/types';
-
-// ─── Progress Callback ───────────────────────────────────────────────────────
-
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
-
-// ─── Boolean Options Type ────────────────────────────────────────────────────
-
 /** Boolean operation options including AbortSignal for cancellation. */
 export type BooleanOpts = BooleanOptions;
-
-// ─── Sketch Helper ───────────────────────────────────────────────────────────
-
 /**
  * Sketch a drawing on a plane, narrowing to SketchInterface.
  * All our drawings are single closed wires, so SketchInterface is always the
@@ -28,16 +19,10 @@ export type BooleanOpts = BooleanOptions;
 export function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
   return drawing.sketchOnPlane(plane, origin) as SketchInterface;
 }
-
-// ─── Cancellation ────────────────────────────────────────────────────────────
-
 /** Throw if the AbortSignal has been triggered (mid-operation cancellation). */
 export function checkCancelled(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('Generation cancelled', 'AbortError');
 }
-
-// ─── Mesh Conversion ─────────────────────────────────────────────────────────
-
 /**
  * Convert brepjs indexed mesh to our MeshData format, keeping indexed representation.
  *

@@ -62,13 +62,9 @@ vi.mock('@/i18n', async () => {
 });
 
 // Suppress jsdom-environment noise from Three.js / React Three Fiber.
-//
-// 1. Three.js "Multiple instances" — the CJS build checks window.__THREE__ and
 //    warns when the module is loaded more than once in the same global (vitest's
 //    thread pool can cause this when a component imports three as ESM and a
 //    dependency loads it via CommonJS). Tests are unaffected — pure noise.
-//
-// 2. R3F "incorrect casing" — React Three Fiber uses lowercase JSX intrinsic
 //    names (hemisphereLight, directionalLight, planeGeometry, meshStandardMaterial,
 //    lineBasicMaterial, lineSegments, …) that are correct inside R3F's custom
 //    WebGL reconciler but unknown to React's DOM reconciler in jsdom. The elements

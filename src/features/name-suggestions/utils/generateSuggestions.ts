@@ -24,9 +24,7 @@ import {
   LOCATION_PATTERNS,
 } from './namingData';
 
-// ============================================
 // HELPERS
-// ============================================
 
 /**
  * Size descriptors based on drawer dimensions.
@@ -72,9 +70,7 @@ function pickCreativeName(names: string[], seed: number): string {
   return names[seed % names.length];
 }
 
-// ============================================
 // ANALYSIS FUNCTIONS
-// ============================================
 
 /**
  * Result of analyzing labels for domains.

@@ -11,9 +11,6 @@
  *         2×2×3u (5.6m, 35min), 3×3×3u (9.9m, 52min)
  * - Max error: ~1 min per bin across calibration set
  */
-
-// ─── Material Constants ──────────────────────────────────────────────────────
-
 /** PLA density in g/cm³ */
 export const PLA_DENSITY = 1.24;
 
@@ -22,9 +19,6 @@ export const FILAMENT_AREA_MM2 = Math.PI * (1.75 / 2) ** 2;
 
 /** Meters of 1.75mm PLA filament per kilogram */
 export const METERS_PER_KG = 330;
-
-// ─── Baseline Calibration ────────────────────────────────────────────────────
-
 /** Layer height the time model was calibrated against (mm) */
 export const BASELINE_LAYER_HEIGHT = 0.2;
 
@@ -36,9 +30,6 @@ export const OVERHEAD_MINUTES = 16;
 
 /** Extrusion rate: extrusion + travel + retractions (minutes per meter) */
 export const MINUTES_PER_METER = 3.6;
-
-// ─── User-Configurable Print Settings ────────────────────────────────────────
-
 /** User-configurable print settings stored in global preferences. */
 export interface PrintSettings {
   /** Filament cost in USD per kilogram */
@@ -74,9 +65,6 @@ export const PRINT_SETTINGS_CONSTRAINTS = {
   NOZZLE_SIZE_MAX: 1.0,
   NOZZLE_SIZE_STEP: 0.2,
 } as const;
-
-// ─── Parametric Time Scaling ─────────────────────────────────────────────────
-
 /**
  * Scale a baseline print time by the user's print settings.
  *
@@ -101,9 +89,6 @@ export function scalePrintTime(baseMinutes: number, settings: PrintSettings): nu
   const infillScale = 1 + 0.003 * (settings.infillPercent - BASELINE_INFILL);
   return baseMinutes * nozzleSpeedFactor * layerScale * infillScale;
 }
-
-// ─── Re-exports ──────────────────────────────────────────────────────────────
-
 export { GRIDFINITY_SPEC, wallThicknessForNozzle } from './gridfinityGeometry';
 export type { StandardBinEstimate } from './standardBinVolume';
 export { estimateStandardBinVolume, estimateStandardBinFilament } from './standardBinVolume';

@@ -6,9 +6,6 @@
  */
 
 import { GRIDFINITY } from '@/shared/constants/bin';
-
-// ─── Gridfinity Socket Constants ─────────────────────────────────────────────
-
 export const SIZE = GRIDFINITY.GRID_SIZE;
 export const CLEARANCE = GRIDFINITY.TOLERANCE;
 export const CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
@@ -18,17 +15,11 @@ export const SOCKET_BIG_TAPER = GRIDFINITY.SOCKET_BIG_TAPER;
 export const SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER;
 export const SOCKET_TAPER_WIDTH = SOCKET_SMALL_TAPER + SOCKET_BIG_TAPER;
 export const TOP_FILLET = GRIDFINITY.TOP_FILLET;
-
-// ─── Stacking Lip Constants (per spec v5) ────────────────────────────────────
-
 export const LIP_SMALL_TAPER = GRIDFINITY.LIP_SMALL_TAPER; // 0.7mm bottom chamfer
 export const LIP_VERTICAL_PART = GRIDFINITY.LIP_VERTICAL_PART; // 1.8mm vertical
 export const LIP_BIG_TAPER = GRIDFINITY.LIP_BIG_TAPER; // 1.9mm top chamfer
 export const LIP_HEIGHT = LIP_SMALL_TAPER + LIP_VERTICAL_PART + LIP_BIG_TAPER; // 4.4mm total
 export const LIP_TAPER_WIDTH = LIP_SMALL_TAPER + LIP_BIG_TAPER; // 2.6mm horizontal inset
-
-// ─── Baseplate Constants ────────────────────────────────────────────────────
-
 /** Corner radius for baseplate outer perimeter (same as socket corner radius) */
 export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
 
@@ -55,17 +46,13 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   return Math.min(CORNER_RADIUS, maxRadius);
 }
 
-// ─── Dovetail Connector Constants ─────────────────────────────────────────────
-//
 // Split baseplate pieces use discrete dovetail connectors at grid cell boundary
 // intersections along join edges. Each connector is a trapezoidal prism with the
 // classic dovetail fan shape visible from the top (X-Y plane): narrower at the
 // wall (BASE_HALF), wider at the protruding tip (TIP_HALF).
-//
 // Assembly: pieces drop in from above (Z-axis). The dovetail taper is in the
 // X-Y plane, so vertical insertion is unimpeded. Once seated, the wider tip
 // prevents horizontal pull-out through the narrower groove opening.
-//
 // Convention: left/front edges get tongues (male), right/back get grooves (female).
 
 /** How far the tongue protrudes horizontally from the wall face (mm) */
@@ -79,9 +66,6 @@ export const TONGUE_TIP_HALF = 1.3;
 
 /** Per-side clearance added to the groove for FDM tolerance (mm) */
 export const TONGUE_CLEARANCE = 0.15;
-
-// ─── Legacy Nub/Hole Constants (used by direct mesh generator) ──────────────
-
 export const NUB_DIAMETER = 1.5;
 export const NUB_DEPTH = 0.8;
 const HOLE_CLEARANCE = 0.1;

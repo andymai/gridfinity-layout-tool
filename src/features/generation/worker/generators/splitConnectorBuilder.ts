@@ -31,9 +31,6 @@ import { drawRectangle, unwrap, fuse, cut, translate, getBounds } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
 /** Overlap into the piece body so booleans have shared volume (mm).
  *  Must be large enough for OCCT to reliably fuse/cut the shapes.
  *  0.15mm was too thin and caused silent boolean failures. */
@@ -67,9 +64,6 @@ const CHAMFER_SLOPE = 0.7;
  *  Below this: half-lap joints (cut-based, works at any wall thickness).
  *  At or above: tongue-and-groove joints (additive, needs room for tongue). */
 const HALF_LAP_WALL_THRESHOLD = 1.4;
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type Extent = [number, number, number];
 
 export interface CutFace {
@@ -94,9 +88,6 @@ export interface BinGeometryContext {
    *  but decoupled so floor tongue sizing is independent of wall changes. */
   readonly floorThickness: number;
 }
-
-// ─── Public API ──────────────────────────────────────────────────────────────
-
 export function applySplitConnectors(
   piece: Shape3D,
   cutFaces: readonly CutFace[],
@@ -221,9 +212,6 @@ export function computeCutFaces(
 
   return faces;
 }
-
-// ─── Prism Builders ─────────────────────────────────────────────────────────
-
 /** Rectangular prism (untapered). Used for grooves and thin features. */
 function buildPrism(
   cutAxis: 'x' | 'y',
@@ -287,9 +275,6 @@ function buildTaperedPrism(
 
   return translate(lofted, [xOffset, yOffset, bottomZ + height / 2]);
 }
-
-// ─── Male/Female Feature Placement ──────────────────────────────────────────
-
 /**
  * Build a connector shape and push it to the appropriate target array.
  *
@@ -337,9 +322,6 @@ function addFeature(
     );
   }
 }
-
-// ─── Half-Lap Wall Joint ────────────────────────────────────────────────────
-
 /**
  * Build an overlapping half-lap joint for a wall at the cut face.
  *
@@ -426,9 +408,6 @@ function addHalfLapWallFeature(
     );
   }
 }
-
-// ─── Tongue & Groove Features ────────────────────────────────────────────────
-
 function addTongueAndGroove(
   face: CutFace,
   context: BinGeometryContext,

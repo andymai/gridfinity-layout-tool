@@ -148,7 +148,7 @@ function saveFrecencyData(usage: Record<string, CommandUsage>): void {
   try {
     localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(usage));
   } catch {
-    // Ignore storage errors
+    // best-effort
   }
 }
 
@@ -215,7 +215,7 @@ export const useRecentCommandsStore = create<FrecencyState>()((set, get) => {
         localStorage.removeItem(STORAGE_KEY_V2);
         localStorage.removeItem(STORAGE_KEY_V1);
       } catch {
-        // Ignore storage errors
+        // best-effort
       }
       set({ usage: {}, recentIds: [] });
     },

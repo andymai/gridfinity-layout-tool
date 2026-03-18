@@ -12,9 +12,7 @@ import { formatDimension } from './syncOperations';
 /** Tolerance for floating-point dimension comparison (half-bin mode uses 0.5 increments) */
 const DIMENSION_TOLERANCE = 0.001;
 
-// =============================================================================
 // Dimension Comparison
-// =============================================================================
 
 /**
  * Check if two sets of dimensions match within tolerance.
@@ -50,9 +48,7 @@ export function compareDimensions(
   };
 }
 
-// =============================================================================
 // Sync Eligibility
-// =============================================================================
 
 /**
  * Check if a bin can be synced to new dimensions at its current position.
@@ -75,15 +71,11 @@ export function checkSyncEligibility(
   }
 
   // Check collision with other bins on the same layer
-  const sameLevelBins = otherBins.filter(
-    (b) => b.id !== bin.id && b.layerId === bin.layerId
-  );
+  const sameLevelBins = otherBins.filter((b) => b.id !== bin.id && b.layerId === bin.layerId);
 
   for (const other of sameLevelBins) {
-    const overlapsX =
-      bin.x < other.x + other.width && bin.x + newDimensions.width > other.x;
-    const overlapsY =
-      bin.y < other.y + other.depth && bin.y + newDimensions.depth > other.y;
+    const overlapsX = bin.x < other.x + other.width && bin.x + newDimensions.width > other.x;
+    const overlapsY = bin.y < other.y + other.depth && bin.y + newDimensions.depth > other.y;
 
     if (overlapsX && overlapsY) {
       return { binId: bin.id, canSync: false, blockReason: 'collision' };
@@ -105,9 +97,7 @@ export function checkBatchSyncEligibility(
   return bins.map((bin) => checkSyncEligibility(bin, newDimensions, layout, allBins));
 }
 
-// =============================================================================
 // Design Name Generation
-// =============================================================================
 
 /**
  * Generate a default design name from dimensions.

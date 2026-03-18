@@ -1,4 +1,3 @@
-// === Branded Unit Types (re-exported from @gridfinity/branded-types) ===
 import type { Mm, GridUnits, HeightUnits } from '@gridfinity/branded-types';
 export type { Mm, GridUnits, HeightUnits } from '@gridfinity/branded-types';
 export {
@@ -11,13 +10,9 @@ export {
   mmToHeightUnits,
 } from '@gridfinity/branded-types';
 
-// === Branded ID Types (re-exported from @gridfinity/branded-types) ===
 import type { BinId, LayerId, CategoryId, LayoutId, DesignId } from '@gridfinity/branded-types';
 export type { BinId, LayerId, CategoryId, LayoutId, DesignId } from '@gridfinity/branded-types';
 export { binId, layerId, categoryId, layoutId, designId } from '@gridfinity/branded-types';
-
-// === Core Data Model (from PRD 05-technical-reference.md) ===
-
 export interface Layout {
   version: string; // "1.0"
   name: string; // max 64 chars
@@ -92,9 +87,6 @@ export interface Bin {
   customProperties?: Record<string, string>; // custom key-value properties for user-defined metadata
   linkedDesignId?: DesignId; // reference to saved design in bin-designer (for one-to-many linking)
 }
-
-// === Coordinate Types ===
-
 /** Grid coordinate (0-based, origin at bottom-left). */
 export interface Coord {
   x: GridUnits;
@@ -114,9 +106,6 @@ export interface Rect3D extends Rect {
   zStart: HeightUnits;
   zEnd: HeightUnits;
 }
-
-// === Interaction State ===
-
 export type ResizeHandle = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 /** Handle placement mode for resize handles */
@@ -214,9 +203,6 @@ export type Interaction =
       blockingInfo?: BlockingInfo;
     }
   | { type: 'paint'; paintSize: { width: number; depth: number }; start: Coord; current: Coord };
-
-// === Validation Results ===
-
 /** Reasons why bin placement may fail */
 export type ValidationReason =
   | 'out_of_bounds'
@@ -240,9 +226,6 @@ export interface BlockingInfo {
 export type ValidationResult =
   | { valid: true }
   | { valid: false; reason: ValidationReason; blockingInfo?: BlockingInfo };
-
-// === Print List ===
-
 export interface PrintPiece {
   width: GridUnits;
   depth: GridUnits;
@@ -263,9 +246,6 @@ export interface PrintRow {
   binIds: BinId[]; // Original bin IDs for click-to-select
   customProperties?: Record<string, string>; // Custom properties (only for individual bins)
 }
-
-// === Enhanced Print List Types ===
-
 export interface PrintListConfig {
   filamentCostPerKg: number; // $/kg - user configurable (default 20)
   metersPerKg: number; // Meters per 1kg spool (~330m for 1.75mm PLA)
@@ -296,9 +276,6 @@ export interface PrintListFilters {
   sortOrder: PrintListSortOrder;
   groupByCategory: boolean;
 }
-
-// === Blocked Zone ===
-
 export interface BlockedZone {
   x: GridUnits;
   y: GridUnits;
@@ -307,9 +284,6 @@ export interface BlockedZone {
   sourceBinId: BinId;
   sourceLayerId: LayerId;
 }
-
-// === Layout Library (Multi-Layout Management) ===
-
 /**
  * Simplified bin data for thumbnail rendering.
  * Compact representation to minimize storage.
@@ -335,9 +309,6 @@ export interface LayoutPreview {
   /** Simplified bin positions for thumbnail (top-down view, all layers merged) */
   binMap?: ThumbnailBin[];
 }
-
-// === Snapshot Types ===
-
 /**
  * A point-in-time snapshot of a layout, displayed in the History panel.
  * The actual layout data is stored compressed in IndexedDB — only metadata is kept in memory.

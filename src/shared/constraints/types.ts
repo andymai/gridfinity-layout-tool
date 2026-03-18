@@ -1,15 +1,4 @@
-/**
- * Constraint system types for bin designer feature compatibility.
- *
- * Defines the type-safe vocabulary for declaring feature constraints,
- * resolving conflicts, and querying feature availability.
- */
-
 import type { BinParams } from '@/shared/types/bin';
-
-// =============================================================================
-// Feature Identifiers
-// =============================================================================
 
 /** Top-level feature keys that can participate in constraints. */
 export type FeatureKey =
@@ -27,10 +16,6 @@ export type FeatureKey =
   | 'cutouts'
   | 'slotConfig'
   | 'wallCutouts';
-
-// =============================================================================
-// Constraint Rule Types
-// =============================================================================
 
 /**
  * Constraint rule: when `source` is active, listed features are disabled.
@@ -59,10 +44,6 @@ export interface ImplicationRule {
   readonly apply: (params: BinParams) => Partial<BinParams>;
 }
 
-// =============================================================================
-// Feature Manifest
-// =============================================================================
-
 /**
  * Declares a feature's relationship to BinParams.
  * Each feature must register: how to check if enabled, and how to toggle it.
@@ -76,10 +57,6 @@ export interface FeatureManifest {
   /** Produce a partial BinParams that enables or disables this feature */
   readonly apply: (params: BinParams, enabled: boolean) => Partial<BinParams>;
 }
-
-// =============================================================================
-// Resolution Types
-// =============================================================================
 
 /** Intent to change a feature's enabled state. */
 export interface FeatureChange {
@@ -97,10 +74,6 @@ export interface ConstraintResolution {
   readonly impliedChanges: Partial<BinParams>;
 }
 
-// =============================================================================
-// Feature Status Query
-// =============================================================================
-
 /** Current availability status of a feature given params. */
 export interface FeatureStatus {
   readonly feature: FeatureKey;
@@ -112,10 +85,6 @@ export interface FeatureStatus {
   /** Features whose active state blocks this feature */
   readonly conflicts: readonly FeatureKey[];
 }
-
-// =============================================================================
-// Constraint Graph (DevTools)
-// =============================================================================
 
 export interface ConstraintGraph {
   readonly nodes: readonly GraphNode[];

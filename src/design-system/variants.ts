@@ -48,9 +48,7 @@ export const intentScale = {
 
 export type Intent = keyof typeof intentScale;
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Shared Tailwind class compositions
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Base focus styles using inset outline to prevent clipping in overflow containers.
@@ -83,9 +81,7 @@ export const interactiveTransition = 'transition-all duration-100' as const;
  */
 export const touchTarget = 'min-h-[44px] min-w-[44px]' as const;
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Size class mappings
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Height classes for non-input interactive controls (e.g. Stepper container).
@@ -136,9 +132,7 @@ export const iconSizes = {
   lg: 'w-5 h-5',
 } as const;
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Visual variant class mappings
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Background and text colors for each visual variant.

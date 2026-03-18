@@ -212,7 +212,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   } else if (interaction.type === 'drag') {
     const { binIds, currentCoord, valid, isOverGrid, swapMode, swapTarget } = interaction;
 
-    // Show swap target highlight when hovering over a compatible bin
     if (swapTarget && swapMode) {
       const targetBin = binMap.get(swapTarget.binId);
       if (targetBin) {
@@ -304,7 +303,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const deltaX = currentCoord.x;
       const deltaY = currentCoord.y;
 
-      // Draw preview for each bin being dragged with uniform delta applied
       let firstPreviewLeft = 0;
       let firstPreviewTop = 0;
       for (const binId of binIds) {
@@ -320,7 +318,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         const rectWidth = calcPixelWidth(newX, bin.width);
         const rectHeight = calcPixelHeight(newY, bin.depth);
 
-        // Track first preview position for indicator
         if (binId === binIds[0]) {
           firstPreviewLeft = left;
           firstPreviewTop = top;
@@ -345,7 +342,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         );
       }
 
-      // Show placement indicator when invalid
       if (!valid && interaction.invalidReason) {
         previews.push(
           <PlacementIndicator
@@ -375,7 +371,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     let firstPreviewTop = 0;
     let isFirstBin = true;
 
-    // Draw preview for each bin being resized
     for (const binId of binIds) {
       const currentRect = currentRects.get(binId);
       const originalBin = binMap.get(binId);
@@ -386,7 +381,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const rectWidth = calcPixels(currentRect.width);
       const rectHeight = calcPixels(currentRect.depth);
 
-      // Track first preview position for indicator
       if (isFirstBin) {
         firstPreviewLeft = left;
         firstPreviewTop = top;
@@ -425,7 +419,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         );
       }
 
-      // New size preview (solid border)
       previews.push(
         <div
           key={`resize-preview-${binId}`}
@@ -498,7 +491,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         />
       );
 
-      // Show placement indicator when invalid
       if (!valid && interaction.invalidReason) {
         previews.push(
           <PlacementIndicator
@@ -522,18 +514,15 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const areaWidth = x2 - x1 + minUnit;
     const areaDepth = y2 - y1 + minUnit;
 
-    // Calculate how many bins fit
     const binsAcross = Math.floor(areaWidth / paintSize.width);
     const binsDown = Math.floor(areaDepth / paintSize.depth);
 
-    // Calculate remainder (leftover space)
     const usedWidth = binsAcross * paintSize.width;
     const usedDepth = binsDown * paintSize.depth;
     const remainderWidth = areaWidth - usedWidth;
     const remainderDepth = areaDepth - usedDepth;
     const hasRemainder = remainderWidth > 0 || remainderDepth > 0;
 
-    // Outer selection area (amber dashed like draw)
     const areaLeft = calcLeft(x1);
     const areaTop = calcTop(y1, areaDepth);
     const areaPixelWidth = calcPixels(areaWidth);
@@ -555,7 +544,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       />
     );
 
-    // Draw grid of bin previews
     if (binsAcross > 0 && binsDown > 0) {
       for (let row = 0; row < binsDown; row++) {
         for (let col = 0; col < binsAcross; col++) {
@@ -586,9 +574,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       }
     }
 
-    // Show remainder area as red/warning if it exists
     if (hasRemainder) {
-      // Right remainder strip
       if (remainderWidth > 0 && binsDown > 0) {
         const stripX = x1 + usedWidth;
 
@@ -613,7 +599,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         );
       }
 
-      // Top remainder strip (full width)
       if (remainderDepth > 0) {
         const stripY = y1 + usedDepth;
 

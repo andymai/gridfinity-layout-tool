@@ -37,7 +37,7 @@ export function useSettingsTab(initialTab?: SettingsTabId) {
     try {
       sessionStorage.setItem(STORAGE_KEY, tab);
     } catch {
-      // Ignore storage errors
+      // best-effort
     }
   }, []);
 
@@ -46,7 +46,7 @@ export function useSettingsTab(initialTab?: SettingsTabId) {
     try {
       sessionStorage.setItem(STORAGE_KEY, activeTab);
     } catch {
-      // Ignore storage errors
+      // best-effort
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only sync of initial value to sessionStorage
   }, []);

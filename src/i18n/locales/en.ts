@@ -14,16 +14,12 @@
  */
 
 const en: Record<string, string> = {
-  // ===========================================================================
   // SEO Meta Tags (dynamically injected into document head)
-  // ===========================================================================
   'seo.title': 'Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers',
   'seo.description':
     'Plan and visualize Gridfinity drawer layouts for 3D printing. Custom bins, multi-layer support, and 3D preview.',
 
-  // ===========================================================================
   // Common / Shared
-  // ===========================================================================
   'common.save': 'Save',
   'common.cancel': 'Cancel',
   'common.delete': 'Delete',
@@ -72,9 +68,7 @@ const en: Record<string, string> = {
   'common.unknown': 'Unknown',
   'common.width': 'Width',
 
-  // ===========================================================================
   // Date/Time (relative formatting)
-  // ===========================================================================
   'date.today': 'Today',
   'date.yesterday': 'Yesterday',
   'date.daysAgo': '{days}d ago',
@@ -82,14 +76,10 @@ const en: Record<string, string> = {
   'date.hoursAgo': '{hours}h ago',
   'date.minutesAgo': '{minutes}m ago',
 
-  // ===========================================================================
   // App
-  // ===========================================================================
   'app.skipToGridEditor': 'Skip to grid planner',
 
-  // ===========================================================================
   // Header
-  // ===========================================================================
   'header.editLayoutName': 'Click to edit layout name',
   'header.layoutName': 'Layout name',
   'header.halfBinMode': 'Half-bin mode',
@@ -117,9 +107,7 @@ const en: Record<string, string> = {
   'header.changeLanguage': 'Change language',
   'header.selectLanguage': 'Select language',
 
-  // ===========================================================================
   // Grid Toolbar
-  // ===========================================================================
   'toolbar.showLayersPanel': 'Show layers panel',
   'toolbar.exitPaintMode': 'Exit paint mode',
   'toolbar.clickToExitPaint': 'Click to exit paint mode',
@@ -147,9 +135,7 @@ const en: Record<string, string> = {
   'toolbar.show3dPreview': 'Show 3D preview',
   'toolbar.hide3dPreview': 'Hide 3D preview',
 
-  // ===========================================================================
   // Sidebar
-  // ===========================================================================
   'sidebar.expandPanel': 'Expand panel',
   'sidebar.collapsePanel': 'Collapse panel',
   'sidebar.settings': 'Settings',
@@ -179,9 +165,7 @@ const en: Record<string, string> = {
   'sidebar.toolBy': 'Tool by',
   'sidebar.top': 'Top',
 
-  // ===========================================================================
   // Right Panel (Bin List)
-  // ===========================================================================
   'rightPanel.expandPanel': 'Expand panel',
   'rightPanel.collapsePanel': 'Collapse panel',
   'rightPanel.copyTSV': 'Copy as TSV for spreadsheets',
@@ -205,9 +189,7 @@ const en: Record<string, string> = {
   'rightPanel.unknownCategory': 'Unknown category',
   'rightPanel.historyTab': 'History',
 
-  // ===========================================================================
   // Snapshots / Version History
-  // ===========================================================================
   'snapshots.title': 'Version history',
   'snapshots.empty': 'No snapshots yet',
   'snapshots.emptyDescription': 'Snapshots are saved automatically every 2 minutes',
@@ -233,9 +215,7 @@ const en: Record<string, string> = {
   'snapshots.deleted': 'Snapshot deleted',
   'snapshots.deleteSnapshot': 'Delete snapshot',
 
-  // ===========================================================================
   // Bin Inspector
-  // ===========================================================================
   'inspector.bin': '{width}×{depth} Bin',
   'inspector.clearance': 'Clearance',
   'inspector.clearanceTooltip': 'Extra blocked space above for tall contents',
@@ -297,9 +277,7 @@ const en: Record<string, string> = {
   'inspector.setTheSamePropertyOnAllSelectedBins': 'Set the same property on all selected bins',
   'inspector.swapWidthAndDepth': 'Swap width and depth',
 
-  // ===========================================================================
   // Layers
-  // ===========================================================================
   'layers.addLayer': 'Add Layer',
   'layers.heightTooltip': 'Height for new bins placed on this layer',
   'layers.deleteTooltip': 'Delete this layer',
@@ -351,9 +329,7 @@ const en: Record<string, string> = {
   'layers.tall': 'Tall',
   'layers.wide': 'Wide',
 
-  // ===========================================================================
   // Categories
-  // ===========================================================================
   'categories.addCategory': 'Add category',
   'categories.deleteCategory': 'Delete category',
   'categories.editCategory': 'Edit category',
@@ -377,9 +353,7 @@ const en: Record<string, string> = {
   'categories.saveAsDefaults': 'Save as defaults',
   'categories.saveAsDefaultsTitle': 'Save current categories as defaults for new layouts',
 
-  // ===========================================================================
   // Staging / Stash
-  // ===========================================================================
   'staging.rotateBin': 'Rotate bin (R)',
   'staging.clearStash.title': 'Clear Stash',
   'staging.clearStash.message': 'Delete all {count} stashed bin(s)? This cannot be undone.',
@@ -396,9 +370,7 @@ const en: Record<string, string> = {
   'staging.stash': 'Stash',
   'staging.unlabeled': 'Unlabeled',
 
-  // ===========================================================================
   // Print / Export
-  // ===========================================================================
   'print.title': 'Print Layout',
   'print.printNow': 'Print Now',
   'print.options': 'Options',
@@ -471,9 +443,7 @@ const en: Record<string, string> = {
   'print.portrait': 'Portrait',
   'print.landscape': 'Landscape',
 
-  // ===========================================================================
   // Cloud Share
-  // ===========================================================================
   'share.title': 'Share Layout',
   'share.tabs.cloud': 'Cloud',
   'share.tabs.link': 'Link',
@@ -530,9 +500,7 @@ const en: Record<string, string> = {
   'share.shareAnother': 'Share another',
   'share.useShareLinkInstead': 'Use share link instead',
 
-  // ===========================================================================
   // Layout Library
-  // ===========================================================================
   'layouts.newLayout': 'New Layout',
   'layouts.createNewLayoutHint': 'Start with a blank canvas',
   'layouts.shareLayout': 'Share Layout',
@@ -612,9 +580,6 @@ const en: Record<string, string> = {
   'layouts.sortBinCount': 'Bin Count',
   'layouts.viewOnly': 'View only',
 
-  // ===========================================================================
-  // Settings
-  // ===========================================================================
   'settings.title': 'Settings',
   'settings.defaultPreferences': 'Default Preferences',
   'settings.defaultPreferencesHint': 'New layouts will use these settings:',
@@ -735,9 +700,7 @@ const en: Record<string, string> = {
   'settings.storage.confirmClearAll':
     'This will permanently delete all your layouts and data. Your settings will be preserved. This cannot be undone.',
 
-  // ===========================================================================
   // Help
-  // ===========================================================================
   'help.title': 'Keyboard Shortcuts',
   'help.searchPlaceholder': 'Search shortcuts...',
   'help.commandPaletteTip': 'Quick tip: Use the command palette for fast access to all actions',
@@ -854,9 +817,7 @@ const en: Record<string, string> = {
   'help.clearanceHowTo':
     'Set clearance in the bin inspector (right panel) when you have multiple layers. The 3D preview shows clearance as a translucent red zone above the bin.',
 
-  // ===========================================================================
   // Mobile
-  // ===========================================================================
   'mobile.nav.bin': 'Bin',
   'mobile.nav.list': 'List',
   'mobile.help': 'Help',
@@ -939,14 +900,10 @@ const en: Record<string, string> = {
   'mobile.settings.openAppSettings': 'Language, defaults, privacy & more',
   'mobile.toolbar.defaultLayer': 'Default layer',
 
-  // ===========================================================================
   // Error States
-  // ===========================================================================
   'error.tryAgain': 'Try Again',
 
-  // ===========================================================================
   // Toast Messages
-  // ===========================================================================
   'toast.layoutCreated': 'New layout created',
   'toast.layoutDuplicated': 'Layout duplicated',
   'toast.layoutDeleted': 'Layout deleted',
@@ -1006,9 +963,7 @@ const en: Record<string, string> = {
   'toast.redone': 'Redone',
   'toast.cutoutsCopied': 'Copied {count} cutout(s)',
 
-  // ===========================================================================
   // Grid Editor
-  // ===========================================================================
   'grid.exceedsPrintSize': 'Exceeds print size, will be split',
   'grid.all': 'All',
   'grid.allShowAllLayers': 'All: Show all layers',
@@ -1052,29 +1007,21 @@ const en: Record<string, string> = {
   'grid.hasLinkedDesign': 'Has linked design',
   'grid.clickToSeeSplitPreview': 'Click to see split preview',
 
-  // ===========================================================================
   // 3D Preview
-  // ===========================================================================
 
-  // ===========================================================================
   // STL Search
-  // ===========================================================================
   'stlSearch.findSTL': 'Find STL',
   'stlSearch.findOnSite': 'Find on {site}',
   'stlSearch.searchFor': 'Search for {width}×{depth} bin',
   'stlSearch.searchForSplit': 'Search for split bin generators',
 
-  // ===========================================================================
   // Slicer Open
-  // ===========================================================================
   'slicerOpen.notDetected': '{slicer} not detected — is it installed?',
   'slicerOpen.uploadFailed': 'Upload failed — file downloaded instead',
   'slicerOpen.generationFailed': 'Failed to generate file for slicer',
   'slicerOpen.opening': 'Opening...',
 
-  // ===========================================================================
   // Shared Export Dialog
-  // ===========================================================================
   'export.format': 'Format',
   'export.fileName': 'File Name',
   'export.filenamePlaceholder': 'Enter filename',
@@ -1097,13 +1044,9 @@ const en: Record<string, string> = {
   'baseplate.export.threeDModel': '3D Model',
   'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
 
-  // ===========================================================================
   // Drawer Settings
-  // ===========================================================================
 
-  // ===========================================================================
   // Half-Bin Mode Blocked
-  // ===========================================================================
   'halfBinBlocked.title': 'Cannot Disable Half-Bin Mode',
   'halfBinBlocked.message':
     'Some bins use fractional dimensions. Resize or delete these bins before disabling half-bin mode.',
@@ -1113,9 +1056,7 @@ const en: Record<string, string> = {
   'halfBinMode.remediate.ariaLabel':
     'Move {count} fractional bins to stash and disable half-bin mode',
 
-  // ===========================================================================
   // Inspiration Gallery
-  // ===========================================================================
   'gallery.title': 'Inspiration Gallery',
   'gallery.empty': 'No layouts in the gallery yet',
   'gallery.all': 'All',
@@ -1142,9 +1083,7 @@ const en: Record<string, string> = {
   'gallery.useAsStartingPoint': 'Use as Starting Point',
   'gallery.yourSize': '(yours: {size})',
 
-  // ===========================================================================
   // Onboarding
-  // ===========================================================================
   'onboarding.welcome.title': 'Plan it before you print it',
   'onboarding.welcome.subtitle': 'Layout your bins, then print with confidence',
   'onboarding.welcome.startBlank': 'Start with an empty drawer',
@@ -1154,9 +1093,7 @@ const en: Record<string, string> = {
   'settings.resetOnboarding': 'Reset onboarding',
   'toast.onboardingReset': 'Onboarding reset — reload to see the welcome screen',
 
-  // ===========================================================================
   // Tool Switcher
-  // ===========================================================================
   'toolSwitcher.layout': 'Layout',
   'toolSwitcher.binDesigner': 'Bins',
   'toolSwitcher.activeTool': 'Active tool',
@@ -1167,9 +1104,7 @@ const en: Record<string, string> = {
   'toolSwitcher.baseplateGenerator': 'Baseplate',
   'toolSwitcher.switchToBaseplate': 'Switch to Baseplate Generator',
 
-  // ===========================================================================
   // Bin Designer
-  // ===========================================================================
   'binDesigner.exportSTL': 'Export bin as STL',
   'binDesigner.exportSuccess': '{format} exported successfully',
   'binDesigner.clickToRename': 'Click to rename design',
@@ -1452,9 +1387,7 @@ const en: Record<string, string> = {
   'binDesigner.moreActionsForDesign': 'More actions for {name}',
   'binDesigner.compartmentsShort': '{count} comp.',
 
-  // ===========================================================================
   // Baseplate Generator (standalone feature)
-  // ===========================================================================
   'baseplate.title': 'Baseplate',
   'baseplate.magnetHoles': 'Magnet holes',
   'baseplate.magnetDiameter': 'Magnet diameter',
@@ -1508,9 +1441,7 @@ const en: Record<string, string> = {
   'baseplate.initializingEngine': 'Initializing 3D engine...',
   'baseplate.elapsed': '{seconds}s',
 
-  // ===========================================================================
   // Collaboration
-  // ===========================================================================
   'collab.connected': 'Connected',
   'collab.reconnecting': 'Reconnecting',
   'collab.connecting': 'Connecting',
@@ -1524,22 +1455,16 @@ const en: Record<string, string> = {
   'collab.mobileButton.title': '{count} collaborators',
   'collab.participantCount': '{count} {count, plural, one {person} other {people}}',
 
-  // ===========================================================================
   // Mobile Tabs
-  // ===========================================================================
   'mobile.tabs.tools': 'Tools',
 
-  // ===========================================================================
   // Tablet
-  // ===========================================================================
   'tablet.layersCategories': 'Layers & Categories',
   'tablet.selectionActions': 'Selection & Actions',
   'tablet.openInspectorPanel': 'Open inspector panel',
   'tablet.openLayersPanel': 'Open layers panel',
 
-  // ===========================================================================
   // Loading States
-  // ===========================================================================
   'loading.gallery': 'Loading gallery',
   'loading.settings': 'Loading settings',
   'loading.collaboration': 'Loading collaboration',
@@ -1549,19 +1474,13 @@ const en: Record<string, string> = {
   'loading.help': 'Loading help',
   'loading.sharedWithMe': 'Loading...',
 
-  // ===========================================================================
   // Context Menu
-  // ===========================================================================
   'contextMenu.contextMenu': 'Context menu',
 
-  // ===========================================================================
   // Key (reserved)
-  // ===========================================================================
   key: 'key',
 
-  // ===========================================================================
   // Labs
-  // ===========================================================================
   'labs.alwaysOn': 'Always on',
   'labs.checkBackLater': 'Check back later',
   'labs.closeLabs': 'Close labs',
@@ -1577,14 +1496,10 @@ const en: Record<string, string> = {
   'labs.tryExperimentalFeatures': 'Try experimental features',
   'labs.whatsNew': "What's new ({count})",
 
-  // ===========================================================================
   // Layout (Collaboration)
-  // ===========================================================================
   'layout.collaborativeEditingIsNotActive': 'Collaborative editing is not active',
 
-  // ===========================================================================
   // Name Suggestions
-  // ===========================================================================
   'nameSuggestion.title': 'Suggested Name',
   'nameSuggestion.useThis': 'Use this',
   'nameSuggestion.showAlternatives': '{count} more suggestions',
@@ -1599,9 +1514,7 @@ const en: Record<string, string> = {
   'nameSuggestion.suggestedName': 'Suggested name: {name}',
   'common.dismiss': 'Dismiss',
 
-  // ===========================================================================
   // Command Palette
-  // ===========================================================================
   'commandPalette.placeholder': 'Search commands...',
   'commandPalette.noResults': 'No commands found',
   'commandPalette.recent': 'Recent',
@@ -1689,15 +1602,11 @@ const en: Record<string, string> = {
   'commandPalette.footer.navigate': 'Navigate',
   'commandPalette.footer.commandCount': '{count} commands',
 
-  // ===========================================================================
   // Snapping Slider (shared component)
-  // ===========================================================================
   'snappingSlider.default': 'Default',
   'snappingSlider.select': 'Select {value}{unit}',
 
-  // ===========================================================================
   // Design Linking (Bin Designer ↔ Layout Planner integration)
-  // ===========================================================================
 
   // Context menu actions
   'designLinking.menu.sectionTitle': 'Bin Design',
@@ -1799,9 +1708,7 @@ const en: Record<string, string> = {
   'designLinking.designerUpdated.description':
     'The dimensions of "{name}" in the designer have been updated to match the bin resize. You can review the changes in the designer.',
 
-  // ===========================================================================
   // Engagement Nudges
-  // ===========================================================================
   'engagement.feedbackNudge': 'Have ideas for the tool? Your feedback shapes what gets built next.',
   'engagement.giveFeedback': 'Share Feedback',
   'engagement.kofiNudge':

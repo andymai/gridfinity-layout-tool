@@ -27,9 +27,6 @@ import {
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
-
-// ─── Result Type ─────────────────────────────────────────────────────────────
-
 export interface PrintEstimate {
   /** Estimated material volume in mm³ */
   readonly volumeMm3: number;
@@ -42,9 +39,6 @@ export interface PrintEstimate {
   /** Estimated cost in USD */
   readonly costUSD: number;
 }
-
-// ─── Public API ──────────────────────────────────────────────────────────────
-
 /**
  * Computes print estimates from bin parameters.
  *
@@ -93,9 +87,6 @@ export function formatFilament(meters: number): string {
   if (meters < 1) return `${Math.round(meters * 100)}cm`;
   return `${meters.toFixed(1)}m`;
 }
-
-// ─── Volume Calculation ──────────────────────────────────────────────────────
-
 /**
  * Computes total material volume analytically from bin parameters.
  *
@@ -156,9 +147,6 @@ function computeBinVolume(params: BinParams): number {
   // Volume cannot be negative (scoops on tiny bins)
   return Math.max(0, volume);
 }
-
-// ─── Shell & Structure ───────────────────────────────────────────────────────
-
 /**
  * Volume of a hollow box (outer - inner cavity).
  */
@@ -213,9 +201,6 @@ function computeStackingLipVolume(outerW: number, outerD: number): number {
   const perimeter = 2 * (outerW + outerD);
   return perimeter * lipThickness * GRIDFINITY.LIP_HEIGHT;
 }
-
-// ─── Dividers ────────────────────────────────────────────────────────────────
-
 /**
  * Volume of all divider walls inside the cavity.
  */
@@ -263,9 +248,6 @@ function computeDividerVolume(
   // Volume = total wall length × thickness × height
   return totalLength * thickness * dividerH;
 }
-
-// ─── Interior Features ───────────────────────────────────────────────────────
-
 /**
  * Volume of label tabs (one per compartment column, back wall).
  *
@@ -346,9 +328,6 @@ function computeScoopVolume(
 
   return numScoops * volumePerScoop;
 }
-
-// ─── Wall Pattern Features ────────────────────────────────────────────────────
-
 /**
  * Volume removed by honeycomb wall cutouts.
  *
@@ -398,9 +377,6 @@ function computeHoneycombWallReduction(
 
   return hexCoverage * cutDepth;
 }
-
-// ─── Wall Pattern Savings ─────────────────────────────────────────────────────
-
 export interface WallPatternSavings {
   readonly savingsPercent: number;
   readonly patternEstimate: PrintEstimate;
