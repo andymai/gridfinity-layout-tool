@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.2...gridfinity-layout-tool-v4.9.3) (2026-03-18)
+
+
+### Bug Fixes
+
+* **parity:** pre-compute bounds to avoid disposed handle error ([5a82f34](https://github.com/andymai/gridfinity-layout-tool/commit/5a82f345bc7aebbb65ee754869f5c9994fe096e2))
+
 ## [4.9.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.1...gridfinity-layout-tool-v4.9.2) (2026-03-17)
 
 
