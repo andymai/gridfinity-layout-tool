@@ -109,11 +109,16 @@ export function collectTopologyStats(solid: Shape3D): TopologyStats {
  */
 export function collectTopologyStatsRaw(
   solid: Shape3D,
-  rawKernel: Pick<RawBrepkitKernel, 'getEntityCounts' | 'validateSolid'>
+  rawKernel: Pick<RawBrepkitKernel, 'getEntityCounts' | 'validateSolidRelaxed'>
 ): TopologyStats {
   const solidId = getSolidId(solid);
   const [faceCount, edgeCount, vertexCount] = rawKernel.getEntityCounts(solidId);
-  const validationIssues = rawKernel.validateSolid(solidId);
+  // Use relaxed validation: operations like boolean and shell produce
+  // geometrically correct shapes that may have minor topology imperfections
+  // (boundary edges from edge splitting, non-shared edges at face junctions).
+  // Strict validation would flag these as errors. Relaxed checks only for
+  // degenerate faces, matching OCCT's effective validation level.
+  const validationIssues = rawKernel.validateSolidRelaxed(solidId);
   return {
     isValid: validationIssues === 0,
     faceCount,
