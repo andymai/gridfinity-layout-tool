@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.3...gridfinity-layout-tool-v4.9.4) (2026-03-18)
+
+
+### Bug Fixes
+
+* **parity:** use relaxed validation for brepkit topology stats ([1a11b2a](https://github.com/andymai/gridfinity-layout-tool/commit/1a11b2a0c5f312408868998dfa7406349591c11c))
+
 ## [4.9.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.2...gridfinity-layout-tool-v4.9.3) (2026-03-18)
 
 
