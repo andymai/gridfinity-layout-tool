@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AlignToolbar } from './AlignToolbar';
 import { binId } from '@/core/types';
@@ -30,6 +30,13 @@ describe('AlignToolbar', () => {
         toJSON: () => ({}),
       });
       document.body.appendChild(el);
+    }
+  });
+
+  afterEach(() => {
+    // Clean up mock DOM elements to prevent cross-test pollution
+    for (const el of document.querySelectorAll('[data-bin-id]')) {
+      el.remove();
     }
   });
 

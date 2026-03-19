@@ -74,15 +74,16 @@ describe('computeAlignedPositions', () => {
     });
   });
 
-  it('marks bins as skipped when they would collide with non-selected bins', () => {
+  it('skips bins that would collide with non-selected blocker', () => {
+    // Blocker at x=0..3, y=0..3 (non-selected).
+    // Selected bins at x=5 and x=7. Align left → ref=5 → bin 'b' moves to x=5.
+    // Neither collides with blocker at this position.
     const blocker = createTestBin({ id: binId('blocker'), x: 0, y: 0, w: 3, d: 3 });
-    const bins = [
-      blocker,
-      ...makeBins({ id: 'a', x: 5, y: 0, w: 2, d: 2 }, { id: 'b', x: 7, y: 0, w: 2, d: 2 }),
-    ];
-    // align left → ref=5. Bin 'a' stays at x=5 (no-op). Bin 'b' moves to x=5.
-    // But 'a' and 'b' are both selected so they exclude each other — no collision between them.
-    // However if we align further left, e.g. change a to x=0, it would collide with blocker.
+    const selected = makeBins(
+      { id: 'a', x: 5, y: 0, w: 2, d: 2 },
+      { id: 'b', x: 7, y: 0, w: 2, d: 2 }
+    );
+    const bins = [blocker, ...selected];
     const results = computeAlignedPositions(
       bins,
       [binId('a'), binId('b')],
@@ -90,17 +91,33 @@ describe('computeAlignedPositions', () => {
       createTestLayout({ bins })
     );
 
-    // Both should succeed — they don't collide with the blocker at x=5
     expect(results[0].skipped).toBe(false);
     expect(results[1].skipped).toBe(false);
   });
 
-  it('skips bins that would go out of bounds', () => {
-    // Drawer is 10 wide. Align right with a bin at x=8, w=2 → right edge = 10.
-    // Another bin with w=3 would need x=7 to right-align, which is valid.
-    // But a wider bin might go negative on left-align.
+  it('skips a bin when alignment would overlap a non-selected blocker', () => {
+    // Blocker occupies x=0..2, y=0..2. Selected bin 'a' at x=0, y=3 (no conflict).
+    // Selected bin 'b' at x=5, y=0. Align left → ref=0 → 'b' tries x=0, y=0 → overlaps blocker.
+    const blocker = createTestBin({ id: binId('blocker'), x: 0, y: 0, w: 2, d: 2 });
+    const bins = [
+      blocker,
+      ...makeBins({ id: 'a', x: 0, y: 3, w: 2, d: 2 }, { id: 'b', x: 5, y: 0, w: 2, d: 2 }),
+    ];
+    const results = computeAlignedPositions(
+      bins,
+      [binId('a'), binId('b')],
+      'left',
+      createTestLayout({ bins })
+    );
+
+    // 'a' is already at x=0 (no-op, not skipped), 'b' collides with blocker → skipped
+    expect(results[0].skipped).toBe(false);
+    expect(results[1].skipped).toBe(true);
+  });
+
+  it('allows alignment when bins fit within drawer bounds', () => {
+    // Drawer is 10 wide. Bin 'b' is 8 wide. Align left → x=0, x+w=8 ≤ 10, valid.
     const bins = makeBins({ id: 'a', x: 0, y: 0, w: 1, d: 1 }, { id: 'b', x: 5, y: 2, w: 8, d: 1 });
-    // align left → ref=0, bin 'b' would move to x=0 but x+w=8 ≤ 10, so valid
     const results = computeAlignedPositions(
       bins,
       [binId('a'), binId('b')],

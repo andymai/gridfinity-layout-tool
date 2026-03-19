@@ -7,7 +7,6 @@
  * and breakpoint.
  */
 
-import { useMemo, useRef } from 'react';
 import { useTranslation } from '@/i18n';
 import type { BinId } from '@/core/types';
 import type { AlignEdge } from '@/shared/utils/alignBins';
@@ -56,11 +55,9 @@ function computePosition(selectedBinIds: readonly BinId[]): { top: number; left:
 
 export function AlignToolbar({ selectedBinIds, onAlign }: AlignToolbarProps) {
   const t = useTranslation();
-  const toolbarRef = useRef<HTMLDivElement>(null);
 
-  // Position is computed during render (no effect needed — DOM elements are already present)
-
-  const position = useMemo(() => computePosition(selectedBinIds), [selectedBinIds]);
+  // Recompute every render so position stays correct after pan/zoom/align
+  const position = computePosition(selectedBinIds);
 
   if (!position) return null;
 
@@ -73,7 +70,6 @@ export function AlignToolbar({ selectedBinIds, onAlign }: AlignToolbarProps) {
 
   return (
     <div
-      ref={toolbarRef}
       className="fixed z-50 flex items-center gap-0.5 rounded-lg border border-stroke-subtle bg-surface-elevated px-1.5 py-1 shadow-lg animate-scale-in"
       style={{
         top: position.top,
