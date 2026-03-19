@@ -639,7 +639,14 @@ describe('clearCloudShare', () => {
 describe('setCloudShare persist safety', () => {
   it('should persist library without accessing revoked proxy', () => {
     const store = useLibraryStore.getState();
-    const entry = store.createEntry('Test', 'layout-1' as LayoutId, undefined);
+    const preview: LayoutPreview = {
+      drawerWidth: 10,
+      drawerDepth: 8,
+      drawerHeight: 12,
+      binCount: 0,
+      layerCount: 1,
+    };
+    const entry = store.createEntry('Test', 'layout-1' as LayoutId, preview);
     expect(() => {
       store.setCloudShare(entry.id, {
         id: 'share-1',

@@ -217,6 +217,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
             <button
               onClick={() => onClose('blank')}
               className="btn btn-primary px-8 py-2.5 text-sm font-semibold rounded-lg"
+              disabled={isImporting}
               // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
               autoFocus
             >
