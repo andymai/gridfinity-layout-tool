@@ -1,6 +1,9 @@
 # Git worktrees
 .worktrees/
 
+# Claude Code local agent memory
+.claude/agent-memory-local/
+
 # Logs
 logs
 *.log
