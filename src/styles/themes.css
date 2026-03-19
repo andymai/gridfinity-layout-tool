@@ -264,7 +264,7 @@ html[data-reduce-motion='true'] *::after {
 }
 
 /* Instructional animations — teach interaction, exempt from blanket kill.
-   Class specificity (0,1,0) beats * (0,0,0) when both use !important. */
+   html[attr] .class (0,2,0) beats html[attr] * (0,1,0) when both use !important. */
 html[data-reduce-motion='true'] .animate-draw-hint-click {
   animation: draw-hint-click 4s ease-out infinite !important;
 }
