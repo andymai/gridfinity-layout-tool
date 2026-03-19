@@ -2,7 +2,7 @@
 
 Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organizer layouts.
 
-**Stack:** React 19, TypeScript 5.9, Vite 7, Zustand 5 + Immer, Tailwind CSS 4, Three.js, AI SDK, Vitest, Playwright, PWA, Vercel Blob + Redis, Liveblocks, PostHog.
+**Stack:** React 19, TypeScript 5.9, Vite 7, Zustand 5 + Immer, Tailwind CSS 4, Three.js, Vitest, Playwright, PWA, Vercel Blob + Redis, Liveblocks, PostHog.
 
 ## Git & Quality
 
@@ -130,19 +130,17 @@ Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Loc
 
 ## API (`api/`)
 
-| Endpoint                    | Purpose                                                            |
-| --------------------------- | ------------------------------------------------------------------ |
-| `share.ts`                  | POST: Create share                                                 |
-| `share/[id].ts`             | GET/PUT/DELETE share                                               |
-| `liveblocks-auth.ts`        | Liveblocks auth token endpoint                                     |
-| `ml-telemetry.ts`           | ML usage telemetry                                                 |
-| `feedback.ts`               | POST: Submit feedback (LLM title via AI SDK, creates GitHub Issue) |
-| `report/[id].ts`            | Report shared layout                                               |
-| `lib/rateLimit.ts`          | 100/min (CRUD), 10/hr (report), 5/hr (feedback)                    |
-| `lib/validation.ts`         | 500KB max, 2500 bins max                                           |
-| `lib/contentFilter.ts`      | Content moderation                                                 |
-| `lib/designerValidation.ts` | Bin designer input validation                                      |
-| `lib/llm.ts`                | LLM provider config (AI SDK)                                       |
+| Endpoint                    | Purpose                        |
+| --------------------------- | ------------------------------ |
+| `share.ts`                  | POST: Create share             |
+| `share/[id].ts`             | GET/PUT/DELETE share           |
+| `liveblocks-auth.ts`        | Liveblocks auth token endpoint |
+| `ml-telemetry.ts`           | ML usage telemetry             |
+| `report/[id].ts`            | Report shared layout           |
+| `lib/rateLimit.ts`          | 100/min (CRUD), 10/hr (report) |
+| `lib/validation.ts`         | 500KB max, 2500 bins max       |
+| `lib/contentFilter.ts`      | Content moderation             |
+| `lib/designerValidation.ts` | Bin designer input validation  |
 
 ## Testing
 
@@ -182,4 +180,4 @@ pnpm run size          # Bundle size check
 
 **Vercel (required):** `BLOB_READ_WRITE_TOKEN`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `TOKEN_SALT`
 
-**Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`, `VITE_PUBLIC_POSTHOG_KEY`, `GITHUB_FEEDBACK_TOKEN`
+**Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`, `VITE_PUBLIC_POSTHOG_KEY`

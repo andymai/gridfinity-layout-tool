@@ -1,7 +1,6 @@
 import type {
   BinListSortOrder,
   STLSearchSite,
-  SlicerSite,
   PrintViewSettings,
   UserSettings,
 } from './settings.types';
@@ -9,7 +8,6 @@ import {
   DEFAULT_BIN_LIST_SORT_ORDER,
   DEFAULT_STL_SEARCH_SITES,
   STL_SEARCH_CONSTRAINTS,
-  DEFAULT_SLICER_SITES,
   DEFAULT_PRINT_VIEW_SETTINGS,
   DEFAULT_SETTINGS,
 } from './settings.types';
@@ -95,33 +93,6 @@ export function normalizeSTLSearchSites(stored: STLSearchSite[] | undefined): ST
 }
 
 /**
- * Normalize slicer sites to ensure all default sites are present.
- * Handles migration when new default slicers are added.
- */
-export function normalizeSlicerSites(stored: SlicerSite[] | undefined): SlicerSite[] {
-  if (!stored || !Array.isArray(stored)) {
-    return [...DEFAULT_SLICER_SITES];
-  }
-
-  const defaultIds = new Set(DEFAULT_SLICER_SITES.map((s) => s.id));
-  const storedIds = new Set(stored.map((s) => s.id));
-
-  // Keep only known default slicer IDs. Unlike STL search sites, slicers are
-  // default-only (no custom slicers can be added by the user), so non-default
-  // entries are intentionally dropped rather than preserved.
-  const validStored = stored.filter((s) => defaultIds.has(s.id));
-
-  // Add any new default sites (disabled by default for existing users)
-  for (const defaultSite of DEFAULT_SLICER_SITES) {
-    if (!storedIds.has(defaultSite.id)) {
-      validStored.push({ ...defaultSite, enabled: false });
-    }
-  }
-
-  return validStored;
-}
-
-/**
  * Normalize view mode values from localStorage.
  * Ensures corrupted or invalid values fall back to the provided default.
  */
@@ -147,8 +118,6 @@ export function loadSettings(): UserSettings {
     };
     // Normalize STL search sites
     const stlSearchSites = normalizeSTLSearchSites(parsed.stlSearchSites);
-    // Normalize slicer sites
-    const slicerSites = normalizeSlicerSites(parsed.slicerSites);
     // Normalize default categories
     const defaultCategories = normalizeCategories(parsed.defaultCategories);
     // Normalize view mode settings
@@ -171,7 +140,6 @@ export function loadSettings(): UserSettings {
       ...parsed,
       printViewSettings,
       stlSearchSites,
-      slicerSites,
       defaultCategories,
       layoutManagerViewMode,
       designListViewMode,

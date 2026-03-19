@@ -14,8 +14,6 @@ graph TB
         REPORT["POST /api/report/[id]"]
         AUTH["POST /api/liveblocks-auth"]
         ML["POST /api/ml-telemetry"]
-        UPLOAD["POST /api/slicer-upload"]
-        CLEANUP["GET /api/slicer-cleanup (cron)"]
     end
 
     subgraph "Validation (lib/)"
@@ -29,8 +27,7 @@ graph TB
         REDIS[(Redis KV)]
     end
 
-    Client --> POST_S & GET_S & PUT_S & DEL_S & REPORT & AUTH & ML & UPLOAD
-    Vercel -->|cron: 0 * * * *| CLEANUP
+    Client --> POST_S & GET_S & PUT_S & DEL_S & REPORT & AUTH & ML
     POST_S & PUT_S --> VAL & CF
     POST_S --> DVAL
     RL --> REDIS
@@ -41,17 +38,15 @@ graph TB
 
 ## Endpoints
 
-| Endpoint               | Method | Rate Limit | Purpose                                        |
-| ---------------------- | ------ | ---------- | ---------------------------------------------- |
-| `/api/share`           | POST   | 100/min    | Create layout or designer share                |
-| `/api/share/[id]`      | GET    | 100/min    | Fetch share with metadata                      |
-| `/api/share/[id]`      | PUT    | 100/min    | Update share (requires delete token)           |
-| `/api/share/[id]`      | DELETE | 100/min    | Delete share (requires delete token)           |
-| `/api/report/[id]`     | POST   | 10/hr      | Report inappropriate share                     |
-| `/api/liveblocks-auth` | POST   | 100/min    | Collaborative editing session auth             |
-| `/api/ml-telemetry`    | POST   | 100/min    | Aggregated ML training data                    |
-| `/api/slicer-upload`   | POST   | 30/hr      | Upload temp 3MF for "Open in Slicer" deep-link |
-| `/api/slicer-cleanup`  | GET    | cron only  | Delete `slicer-temp/` blobs older than 2 hours |
+| Endpoint               | Method | Rate Limit | Purpose                              |
+| ---------------------- | ------ | ---------- | ------------------------------------ |
+| `/api/share`           | POST   | 100/min    | Create layout or designer share      |
+| `/api/share/[id]`      | GET    | 100/min    | Fetch share with metadata            |
+| `/api/share/[id]`      | PUT    | 100/min    | Update share (requires delete token) |
+| `/api/share/[id]`      | DELETE | 100/min    | Delete share (requires delete token) |
+| `/api/report/[id]`     | POST   | 10/hr      | Report inappropriate share           |
+| `/api/liveblocks-auth` | POST   | 100/min    | Collaborative editing session auth   |
+| `/api/ml-telemetry`    | POST   | 100/min    | Aggregated ML training data          |
 
 ## Validation Library (`lib/`)
 
@@ -111,5 +106,3 @@ graph TB
 7. **Liveblocks optional** — fails gracefully if `LIVEBLOCKS_SECRET_KEY` not set
 8. **Content filter minimal** — ~30 term blocklist; production should supplement with external service
 9. **IP hashing for privacy** — rate limiter hashes IP with SHA-256 before using as Redis key
-10. **Slicer blobs are public** — `slicer-temp/` blobs have public access; they're cleaned up hourly via cron
-11. **CRON_SECRET optional in dev** — cleanup endpoint skips auth check if `CRON_SECRET` is not set

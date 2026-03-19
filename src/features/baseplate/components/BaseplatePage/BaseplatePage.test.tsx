@@ -74,15 +74,6 @@ vi.mock('@/shared/components/HeaderSupportLinks', () => ({
   HeaderSupportLinks: () => <div data-testid="header-support-links" />,
 }));
 
-// Mock slicer open hook
-vi.mock('../../hooks/useBaseplateSlicerOpen', () => ({
-  useBaseplateSlicerOpen: () => ({
-    isOpening: false,
-    openingSlicerId: null,
-    openInSlicer: vi.fn(),
-  }),
-}));
-
 describe('BaseplatePage', () => {
   beforeEach(() => {
     mockResponsive = { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false };

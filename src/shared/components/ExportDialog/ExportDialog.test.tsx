@@ -7,7 +7,6 @@ const defaultProps: ExportDialogProps = {
   open: true,
   onClose: vi.fn(),
   activeFormat: 'stl',
-  onFormatChange: vi.fn(),
   fileNameConfig: { style: 'descriptive', customName: '', format: 'stl' },
   onFileNameConfigChange: vi.fn(),
   fileName: 'gridfinity_2x3x6.stl',
@@ -127,25 +126,5 @@ describe('ExportDialog', () => {
       />
     );
     expect(screen.getByText('Download Dividers')).toBeInTheDocument();
-  });
-
-  it('hides slicer section when not provided', () => {
-    render(<ExportDialog {...defaultProps} />);
-    expect(screen.queryByText('Open in Slicer')).not.toBeInTheDocument();
-  });
-
-  it('shows slicer buttons when slicerSection provided', () => {
-    render(
-      <ExportDialog
-        {...defaultProps}
-        slicerSection={{
-          slicers: [{ id: 'orca', name: 'OrcaSlicer', protocol: 'orcaslicer', enabled: true }],
-          isOpening: false,
-          openingSlicerId: null,
-          onOpenInSlicer: vi.fn(),
-        }}
-      />
-    );
-    expect(screen.getByText('OrcaSlicer')).toBeInTheDocument();
   });
 });
