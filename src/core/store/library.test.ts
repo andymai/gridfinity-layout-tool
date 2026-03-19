@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useLibraryStore, computePreview, createDefaultLibrary } from '@/core/store/library';
 import { createDefaultLayout, CONSTRAINTS } from '@/core/constants';
 import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview } from '@/core/types';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview, LayoutId } from '@/core/types';
 
 // Helper to create test library with multiple entries (uses testUtils createTestLibrary as base)
 function createTestLibraryWithEntries(entryCount: number): LayoutLibrary {
@@ -484,58 +484,6 @@ describe('library store', () => {
       );
     });
   });
-
-  describe('name suggestion state', () => {
-    beforeEach(() => {
-      useLibraryStore.setState({
-        library: createTestLibraryWithEntries(2),
-        isLoaded: true,
-      });
-    });
-
-    it('setNameSuggestionDismissed sets dismissed state', () => {
-      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
-
-      const state = useLibraryStore.getState().getNameSuggestionState('layout-0');
-      expect(state?.dismissed).toBe(true);
-      expect(state?.dismissCount).toBe(1);
-      expect(state?.dismissedAt).toBeGreaterThan(0);
-    });
-
-    it('setNameSuggestionDismissed increments dismiss count', () => {
-      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
-      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
-
-      const state = useLibraryStore.getState().getNameSuggestionState('layout-0');
-      expect(state?.dismissCount).toBe(2);
-    });
-
-    it('setNameSuggestionDismissed clears state when false', () => {
-      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
-      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', false);
-
-      const state = useLibraryStore.getState().getNameSuggestionState('layout-0');
-      expect(state).toBeUndefined();
-    });
-
-    it('clearNameSuggestionState clears the state', () => {
-      useLibraryStore.getState().setNameSuggestionDismissed('layout-0', true);
-      useLibraryStore.getState().clearNameSuggestionState('layout-0');
-
-      const state = useLibraryStore.getState().getNameSuggestionState('layout-0');
-      expect(state).toBeUndefined();
-    });
-
-    it('getNameSuggestionState returns undefined for entry without state', () => {
-      const state = useLibraryStore.getState().getNameSuggestionState('layout-1');
-      expect(state).toBeUndefined();
-    });
-
-    it('getNameSuggestionState returns undefined for non-existent entry', () => {
-      const state = useLibraryStore.getState().getNameSuggestionState('non-existent');
-      expect(state).toBeUndefined();
-    });
-  });
 });
 
 describe('computePreview', () => {
@@ -685,6 +633,28 @@ describe('clearCloudShare', () => {
 
     // Should not throw or change anything
     expect(useLibraryStore.getState().getEntry('layout-1')?.cloudShare).toBeUndefined();
+  });
+});
+
+describe('setCloudShare persist safety', () => {
+  it('should persist library without accessing revoked proxy', () => {
+    const store = useLibraryStore.getState();
+    const preview: LayoutPreview = {
+      drawerWidth: 10,
+      drawerDepth: 8,
+      drawerHeight: 12,
+      binCount: 0,
+      layerCount: 1,
+    };
+    const entry = store.createEntry('Test', 'layout-1' as LayoutId, preview);
+    expect(() => {
+      store.setCloudShare(entry.id, {
+        id: 'share-1',
+        deleteToken: 'token-1',
+        permission: 'view',
+        sharedAt: Date.now(),
+      });
+    }).not.toThrow();
   });
 });
 

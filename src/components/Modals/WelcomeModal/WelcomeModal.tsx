@@ -154,7 +154,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
       const cardCount = cards.length;
       if (cardCount === 0) return;
 
-      const cols = isMobile ? 2 : 4;
+      const cols = 4;
       let newIndex = focusedIndex;
 
       switch (e.key) {
@@ -181,7 +181,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
         (cards[newIndex] as HTMLElement).focus();
       }
     },
-    [focusedIndex, isMobile]
+    [focusedIndex]
   );
 
   return (
@@ -205,55 +205,81 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
           ${isMobile ? 'w-full h-full rounded-none' : 'w-full max-w-3xl max-h-[90vh]'}
         `}
       >
-        {/* Hero — compact, confident, one clear action */}
-        <div className="px-6 pt-8 pb-5 text-center flex-shrink-0">
-          <h1 className="text-2xl font-bold text-content mb-1.5">
-            {t('onboarding.welcome.title')}
-          </h1>
-          <p className="text-sm text-content-secondary mb-6">{t('onboarding.welcome.subtitle')}</p>
-          <button
-            onClick={() => onClose('blank')}
-            className="btn btn-primary px-8 py-2.5 text-sm font-semibold rounded-lg"
-            disabled={isImporting}
-            // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
-            autoFocus
-          >
-            {t('onboarding.welcome.startBlank')}
-          </button>
-        </div>
-
-        {/* Showcase — "here's what people build" */}
-        <div className="border-t border-stroke-subtle flex-shrink-0 px-6 pt-4 pb-2 flex items-baseline justify-between">
-          <h2 className="text-sm font-medium text-content-secondary">
-            {t('onboarding.welcome.showcaseHeading')}
-          </h2>
-          <span className="text-xs text-content-disabled">
-            {t('onboarding.welcome.showcaseAction')}
-          </span>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 pb-4">
-          <div
-            ref={gridRef}
-            className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}
-            role="listbox"
-            tabIndex={0}
-            aria-label={t('onboarding.welcome.showcaseHeading')}
-            onKeyDown={handleGridKeyDown}
-          >
-            {CURATED_TEMPLATES.map((layout, index) => (
-              <WelcomeTemplateCard
-                key={layout.id}
-                layout={layout}
-                index={index}
-                isImporting={isImporting}
-                isFocusTarget={focusedIndex === index || (focusedIndex === -1 && index === 0)}
-                onSelect={() => handleTemplateSelect(layout)}
-                onFocus={() => setFocusedIndex(index)}
-              />
-            ))}
+        {isMobile ? (
+          /* Mobile — desktop nudge + single action */
+          <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+            <h1 className="text-2xl font-bold text-content mb-3">
+              {t('onboarding.welcome.title')}
+            </h1>
+            <p className="text-sm text-content-secondary mb-8 max-w-xs">
+              {t('onboarding.welcome.desktopNudge')}
+            </p>
+            <button
+              onClick={() => onClose('blank')}
+              className="btn btn-primary px-8 py-2.5 text-sm font-semibold rounded-lg"
+              disabled={isImporting}
+              // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
+              autoFocus
+            >
+              {t('onboarding.welcome.startDesigning')}
+            </button>
           </div>
-        </div>
+        ) : (
+          /* Desktop — hero + template showcase (unchanged) */
+          <>
+            {/* Hero — compact, confident, one clear action */}
+            <div className="px-6 pt-8 pb-5 text-center flex-shrink-0">
+              <h1 className="text-2xl font-bold text-content mb-1.5">
+                {t('onboarding.welcome.title')}
+              </h1>
+              <p className="text-sm text-content-secondary mb-6">
+                {t('onboarding.welcome.subtitle')}
+              </p>
+              <button
+                onClick={() => onClose('blank')}
+                className="btn btn-primary px-8 py-2.5 text-sm font-semibold rounded-lg"
+                disabled={isImporting}
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
+                autoFocus
+              >
+                {t('onboarding.welcome.startBlank')}
+              </button>
+            </div>
+
+            {/* Showcase — "here's what people build" */}
+            <div className="border-t border-stroke-subtle flex-shrink-0 px-6 pt-4 pb-2 flex items-baseline justify-between">
+              <h2 className="text-sm font-medium text-content-secondary">
+                {t('onboarding.welcome.showcaseHeading')}
+              </h2>
+              <span className="text-xs text-content-disabled">
+                {t('onboarding.welcome.showcaseAction')}
+              </span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 pb-4">
+              <div
+                ref={gridRef}
+                className="grid gap-3 grid-cols-4"
+                role="listbox"
+                tabIndex={0}
+                aria-label={t('onboarding.welcome.showcaseHeading')}
+                onKeyDown={handleGridKeyDown}
+              >
+                {CURATED_TEMPLATES.map((layout, index) => (
+                  <WelcomeTemplateCard
+                    key={layout.id}
+                    layout={layout}
+                    index={index}
+                    isImporting={isImporting}
+                    isFocusTarget={focusedIndex === index || (focusedIndex === -1 && index === 0)}
+                    onSelect={() => handleTemplateSelect(layout)}
+                    onFocus={() => setFocusedIndex(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

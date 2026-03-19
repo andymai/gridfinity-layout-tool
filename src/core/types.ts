@@ -376,19 +376,6 @@ export interface SharedWithMeEntry {
  * Metadata entry for a layout in the library.
  * The actual layout data is stored separately by ID.
  */
-/**
- * State for name suggestion dismissal tracking.
- * Persisted per-layout to remember user's decision across sessions.
- */
-export interface NameSuggestionState {
-  /** Whether suggestions were dismissed for this layout */
-  dismissed: boolean;
-  /** When suggestions were dismissed (Unix timestamp) */
-  dismissedAt: number;
-  /** Number of times dismissed (for analytics) */
-  dismissCount: number;
-}
-
 export interface LayoutEntry {
   id: LayoutId; // UUID for identification and future sharing
   name: string; // Display name (max 64 chars)
@@ -402,7 +389,6 @@ export interface LayoutEntry {
   };
   preview: LayoutPreview; // Cached preview data
   cloudShare?: CloudShareInfo; // Cloud sharing metadata (if shared)
-  nameSuggestionState?: NameSuggestionState; // Name suggestion dismissal tracking
   /** Optional folder ID for organization. null/undefined = root level (future feature) */
   folderId?: string | null;
 }

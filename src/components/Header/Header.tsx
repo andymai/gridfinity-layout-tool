@@ -27,11 +27,6 @@ const PrintModal = lazyWithRetry(() =>
   import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
 );
 
-// Lazy load name suggestions feature to reduce main bundle size
-const NameFieldHighlight = lazyWithRetry(() =>
-  import('@/features/name-suggestions').then(namedExport('NameFieldHighlight'))
-);
-
 interface HeaderProps {
   saveStatus: SaveStatus;
 }
@@ -129,27 +124,13 @@ export function Header({ saveStatus }: HeaderProps) {
             }}
           />
         ) : (
-          <Suspense
-            fallback={
-              <button
-                onClick={handleNameClick}
-                className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
-                title={t('header.editLayoutName')}
-              >
-                {layout.name}
-              </button>
-            }
+          <button
+            onClick={handleNameClick}
+            className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+            title={t('header.editLayoutName')}
           >
-            <NameFieldHighlight>
-              <button
-                onClick={handleNameClick}
-                className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
-                title={t('header.editLayoutName')}
-              >
-                {layout.name}
-              </button>
-            </NameFieldHighlight>
-          </Suspense>
+            {layout.name}
+          </button>
         )}
 
         {/* Half-bin mode indicator badge */}

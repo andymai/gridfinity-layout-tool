@@ -566,7 +566,6 @@ const en: Record<string, string> = {
   'layouts.readyToImport': 'Ready to import',
   'layouts.removeFromList': 'Remove from list',
   'layouts.searchLayouts': 'Search layouts',
-  'layouts.suggestName': 'Suggest Name',
   'layouts.sharedBy': 'Shared by {name}',
   'layouts.sharedLayoutCount': '{count} shared layout(s)',
   'layouts.sharedLayouts': 'Shared Layouts',
@@ -1090,6 +1089,9 @@ const en: Record<string, string> = {
   'onboarding.welcome.startBlank': 'Start with an empty drawer',
   'onboarding.welcome.showcaseHeading': 'See what others have built',
   'onboarding.welcome.showcaseAction': 'Click any to start from it',
+  'onboarding.welcome.desktopNudge':
+    'This tool works best on desktop. Visit on a larger screen for the full experience.',
+  'onboarding.welcome.startDesigning': 'Start designing',
   'onboarding.drawTutorial.hint': 'Drag to draw your first bin',
   'settings.resetOnboarding': 'Reset onboarding',
   'toast.onboardingReset': 'Onboarding reset — reload to see the welcome screen',
@@ -1500,19 +1502,6 @@ const en: Record<string, string> = {
   // Layout (Collaboration)
   'layout.collaborativeEditingIsNotActive': 'Collaborative editing is not active',
 
-  // Name Suggestions
-  'nameSuggestion.title': 'Suggested Name',
-  'nameSuggestion.useThis': 'Use this',
-  'nameSuggestion.showAlternatives': '{count} more suggestions',
-  'nameSuggestion.hint': 'Click to use, or dismiss to keep your current name',
-  'nameSuggestion.source.labels': 'Based on bin labels',
-  'nameSuggestion.source.purpose': 'Based on drawer contents',
-  'nameSuggestion.source.categories': 'Based on categories',
-  'nameSuggestion.source.dimensions': 'Based on drawer size',
-  'nameSuggestion.source.server_ml': 'AI-generated suggestion',
-  'nameSuggestion.loadingMore': 'Getting better suggestions...',
-  'nameSuggestion.pressTabToAccept': 'Press Tab to accept',
-  'nameSuggestion.suggestedName': 'Suggested name: {name}',
   'common.dismiss': 'Dismiss',
 
   // Command Palette
@@ -1594,9 +1583,6 @@ const en: Record<string, string> = {
   // Staging commands
   'commandPalette.clearStaging': 'Clear Staging Area',
   'commandPalette.restoreFromStaging': 'Restore All from Staging',
-
-  // Name suggestion command
-  'commandPalette.suggestLayoutName': 'Suggest Layout Name',
 
   // Footer
   'commandPalette.footer.run': 'Run',
@@ -1717,6 +1703,9 @@ const en: Record<string, string> = {
   'engagement.support': 'Support on Ko-fi',
   'engagement.feedbackThankYou':
     'Thanks for your feedback! If you enjoy the tool, consider supporting on Ko-fi.',
+  'engagement.layoutPromotion.message':
+    'Planning another drawer? Save this layout and start a new one.',
+  'engagement.layoutPromotion.action': 'Open Layout Library',
 };
 
 export default en;

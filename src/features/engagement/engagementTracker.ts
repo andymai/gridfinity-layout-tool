@@ -18,7 +18,7 @@ import { useLibraryStore } from '@/core/store/library';
 const NUDGE_STORAGE_KEY = 'gridfinity-nudges-v1';
 const ANALYTICS_STORAGE_KEY = 'gridfinity-analytics-v1';
 
-export type NudgeType = 'feedback_rating' | 'kofi_support';
+export type NudgeType = 'feedback_rating' | 'kofi_support' | 'layout_promotion';
 
 interface NudgeState {
   /** ISO timestamps of when each nudge was last dismissed or acted on */

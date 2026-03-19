@@ -1,6 +1,6 @@
 # API
 
-Vercel serverless endpoints for cloud sharing, collaborative editing auth, LLM name suggestions, and ML telemetry.
+Vercel serverless endpoints for cloud sharing, collaborative editing auth, and ML telemetry.
 
 ```mermaid
 graph TB
@@ -12,7 +12,6 @@ graph TB
         PUT_S["PUT /api/share/[id]"]
         DEL_S["DELETE /api/share/[id]"]
         REPORT["POST /api/report/[id]"]
-        NAME["POST /api/suggest-name"]
         AUTH["POST /api/liveblocks-auth"]
         ML["POST /api/ml-telemetry"]
         UPLOAD["POST /api/slicer-upload"]
@@ -30,13 +29,12 @@ graph TB
         REDIS[(Redis KV)]
     end
 
-    Client --> POST_S & GET_S & PUT_S & DEL_S & REPORT & NAME & AUTH & ML & UPLOAD
+    Client --> POST_S & GET_S & PUT_S & DEL_S & REPORT & AUTH & ML & UPLOAD
     Vercel -->|cron: 0 * * * *| CLEANUP
     POST_S & PUT_S --> VAL & CF
     POST_S --> DVAL
     RL --> REDIS
     POST_S & GET_S & PUT_S & DEL_S --> BLOB
-    NAME --> REDIS
     ML --> REDIS
     AUTH -->|Liveblocks SDK| BLOB
 ```
@@ -50,7 +48,6 @@ graph TB
 | `/api/share/[id]`      | PUT    | 100/min    | Update share (requires delete token)           |
 | `/api/share/[id]`      | DELETE | 100/min    | Delete share (requires delete token)           |
 | `/api/report/[id]`     | POST   | 10/hr      | Report inappropriate share                     |
-| `/api/suggest-name`    | POST   | 20/hr      | LLM-generated layout names (GPT-4o-mini)       |
 | `/api/liveblocks-auth` | POST   | 100/min    | Collaborative editing session auth             |
 | `/api/ml-telemetry`    | POST   | 100/min    | Aggregated ML training data                    |
 | `/api/slicer-upload`   | POST   | 30/hr      | Upload temp 3MF for "Open in Slicer" deep-link |
@@ -58,14 +55,13 @@ graph TB
 
 ## Validation Library (`lib/`)
 
-| File                    | Purpose                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| `validation.ts`         | Layout schema: 500KB max, 2500 bins, sanitize strings, validate hex colors     |
-| `designerValidation.ts` | BinParams schema: 100KB max, enum checking, dimension constraints              |
-| `contentFilter.ts`      | Blocklist (~30 terms), XSS pattern detection, spam filtering                   |
-| `rateLimit.ts`          | Sliding window counters via Redis; fail-closed if Redis unavailable            |
-| `shared.ts`             | Share ID validation, `hashToken()` (SHA-256), error codes                      |
-| `llm.ts`                | Name generation via AI Gateway, 7-day Redis cache, prompt injection prevention |
+| File                    | Purpose                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `validation.ts`         | Layout schema: 500KB max, 2500 bins, sanitize strings, validate hex colors |
+| `designerValidation.ts` | BinParams schema: 100KB max, enum checking, dimension constraints          |
+| `contentFilter.ts`      | Blocklist (~30 terms), XSS pattern detection, spam filtering               |
+| `rateLimit.ts`          | Sliding window counters via Redis; fail-closed if Redis unavailable        |
+| `shared.ts`             | Share ID validation, `hashToken()` (SHA-256), error codes                  |
 
 ## Share System
 
@@ -114,7 +110,6 @@ graph TB
 6. **Permission coupling** — `edit` permission auto-grants Liveblocks `FULL_ACCESS`
 7. **Liveblocks optional** — fails gracefully if `LIVEBLOCKS_SECRET_KEY` not set
 8. **Content filter minimal** — ~30 term blocklist; production should supplement with external service
-9. **LLM cache degrades gracefully** — name suggestions continue without cache if Redis fails
-10. **IP hashing for privacy** — rate limiter hashes IP with SHA-256 before using as Redis key
-11. **Slicer blobs are public** — `slicer-temp/` blobs have public access; they're cleaned up hourly via cron
-12. **CRON_SECRET optional in dev** — cleanup endpoint skips auth check if `CRON_SECRET` is not set
+9. **IP hashing for privacy** — rate limiter hashes IP with SHA-256 before using as Redis key
+10. **Slicer blobs are public** — `slicer-temp/` blobs have public access; they're cleaned up hourly via cron
+11. **CRON_SECRET optional in dev** — cleanup endpoint skips auth check if `CRON_SECRET` is not set

@@ -134,7 +134,6 @@ Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Loc
 | --------------------------- | ------------------------------------------------------------------ |
 | `share.ts`                  | POST: Create share                                                 |
 | `share/[id].ts`             | GET/PUT/DELETE share                                               |
-| `suggest-name.ts`           | AI-powered layout name suggestions                                 |
 | `liveblocks-auth.ts`        | Liveblocks auth token endpoint                                     |
 | `ml-telemetry.ts`           | ML usage telemetry                                                 |
 | `feedback.ts`               | POST: Submit feedback (LLM title via AI SDK, creates GitHub Issue) |
