@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.10.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.0...gridfinity-layout-tool-v4.10.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* harden runtime error handling for Immer proxies, IndexedDB, and WebGL ([#1132](https://github.com/andymai/gridfinity-layout-tool/issues/1132)) ([1d48d3d](https://github.com/andymai/gridfinity-layout-tool/commit/1d48d3db83fe750253fdc445a0eb506b0f43cbc7))
+
 ## [4.10.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.5...gridfinity-layout-tool-v4.10.0) (2026-03-19)
 
 
