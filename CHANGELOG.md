@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.10.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.3...gridfinity-layout-tool-v4.10.4) (2026-03-19)
+
+
+### Bug Fixes
+
+* exempt instructional animations from app-level reduce motion ([#1138](https://github.com/andymai/gridfinity-layout-tool/issues/1138)) ([6e6cfc6](https://github.com/andymai/gridfinity-layout-tool/commit/6e6cfc62c16b389bbf02b1389fc0c4091745a045))
+
 ## [4.10.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.2...gridfinity-layout-tool-v4.10.3) (2026-03-19)
 
 
