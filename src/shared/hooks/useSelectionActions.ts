@@ -133,21 +133,43 @@ export function useSelectionActions() {
     if (selected.length === 0) return;
 
     const maxHeight = Math.max(...selected.map((b) => b.height)) as HeightUnits;
-    const needsUpdate = selected.filter((b) => b.height !== maxHeight);
-    if (needsUpdate.length === 0) return;
+    const candidates = selected.filter((b) => b.height !== maxHeight);
+    if (candidates.length === 0) return;
+
+    // Validate height is legal per-layer (higher layers have less vertical budget)
+    const excludeIds = new Set(selectedBinIds);
+    const updatable = candidates.filter((bin) => {
+      const validation = canPlaceBin(
+        {
+          x: bin.x,
+          y: bin.y,
+          width: bin.width,
+          depth: bin.depth,
+          height: maxHeight,
+          clearanceHeight: bin.clearanceHeight,
+        },
+        bin.layerId,
+        layout,
+        bin.id,
+        excludeIds
+      );
+      return validation.valid;
+    });
+
+    if (updatable.length === 0) return;
 
     execute(() => {
-      for (const bin of needsUpdate) {
+      for (const bin of updatable) {
         updateBin(bin.id, { height: maxHeight });
       }
     });
 
     addToast({
-      message: t('toast.matchHeightComplete', { count: needsUpdate.length, height: maxHeight }),
+      message: t('toast.matchHeightComplete', { count: updatable.length, height: maxHeight }),
       type: 'success',
       duration: 2000,
     });
-  }, [getSelectedBins, execute, updateBin, addToast, t]);
+  }, [getSelectedBins, selectedBinIds, layout, execute, updateBin, addToast, t]);
 
   const moveToLayer = useCallback(
     (targetLayerId: LayerId) => {
