@@ -5,7 +5,6 @@ import type {
   LayoutEntry,
   LayoutPreview,
   CloudShareInfo,
-  NameSuggestionState,
   LayoutId,
 } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
@@ -87,11 +86,6 @@ interface LibraryState {
 
   setCloudShare: (layoutId: LayoutId, share: CloudShareInfo) => void;
   clearCloudShare: (layoutId: LayoutId) => void;
-
-  // Name suggestion state actions
-  setNameSuggestionDismissed: (layoutId: LayoutId, dismissed: boolean) => void;
-  clearNameSuggestionState: (layoutId: LayoutId) => void;
-  getNameSuggestionState: (layoutId: LayoutId) => NameSuggestionState | undefined;
 }
 
 /**
@@ -230,42 +224,6 @@ export const useLibraryStore = create<LibraryState>()(
       });
       // Persist library immediately
       persistLibrary();
-    },
-    setNameSuggestionDismissed: (layoutId, dismissed) => {
-      set((state) => {
-        const entry = state.library.entries.find((e) => e.id === layoutId);
-        if (entry) {
-          if (dismissed) {
-            // Set or increment dismiss state
-            entry.nameSuggestionState = {
-              dismissed: true,
-              dismissedAt: Date.now(),
-              dismissCount: (entry.nameSuggestionState?.dismissCount ?? 0) + 1,
-            };
-          } else {
-            // Clear dismiss state
-            entry.nameSuggestionState = undefined;
-          }
-        }
-      });
-      // Persist library immediately so dismiss state survives refresh
-      persistLibrary();
-    },
-
-    clearNameSuggestionState: (layoutId) => {
-      set((state) => {
-        const entry = state.library.entries.find((e) => e.id === layoutId);
-        if (entry) {
-          entry.nameSuggestionState = undefined;
-        }
-      });
-      // Persist library immediately
-      persistLibrary();
-    },
-
-    getNameSuggestionState: (layoutId) => {
-      const entry = get().library.entries.find((e) => e.id === layoutId);
-      return entry?.nameSuggestionState;
     },
   }))
 );

@@ -220,11 +220,6 @@ export function LayoutList({
     [entries, onDelete, announceToScreenReader]
   );
 
-  const handleSuggestName = useCallback(() => {
-    // Dispatch event to trigger name suggestions via the NameFieldHighlight component
-    window.dispatchEvent(new CustomEvent('trigger-name-suggestions'));
-  }, []);
-
   return (
     <div className="h-full grid grid-rows-[auto_1fr_auto]">
       {/* Header: Search */}
@@ -344,7 +339,6 @@ export function LayoutList({
               onDelete={() => handleDelete(entry.id)}
               onCopyLink={() => onShare(entry.id)}
               onDownload={() => handleDownload(entry)}
-              onSuggestName={entry.id === activeLayoutId ? handleSuggestName : undefined}
               onFocus={() => setFocusedIndex(index)}
               itemRef={(el) => {
                 if (el) itemRefs.current.set(entry.id, el);
@@ -379,7 +373,6 @@ export function LayoutList({
               onDelete={() => handleDelete(entry.id)}
               onCopyLink={() => onShare(entry.id)}
               onDownload={() => handleDownload(entry)}
-              onSuggestName={entry.id === activeLayoutId ? handleSuggestName : undefined}
               onFocus={() => setFocusedIndex(index)}
               itemRef={(el) => {
                 if (el) itemRefs.current.set(entry.id, el);

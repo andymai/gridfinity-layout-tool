@@ -398,7 +398,6 @@ function useActionHandlers(): Record<string, ActionHandler> {
           addToast(t('toast.layerFilled'), 'success');
         }
       },
-      'suggest-layout-name': () => dispatchWindowEvent('trigger-name-suggestions'),
     };
 
     // --- Export ---

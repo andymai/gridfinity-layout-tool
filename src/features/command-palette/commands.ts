@@ -268,13 +268,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['auto', 'complete'],
   },
   {
-    id: 'suggest-layout-name',
-    labelKey: 'commandPalette.suggestLayoutName',
-    category: 'tools',
-    keywords: ['name', 'rename', 'auto', 'suggest', 'title'],
-  },
-
-  {
     id: 'download-layout',
     labelKey: 'commandPalette.downloadLayout',
     category: 'export',
