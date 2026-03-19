@@ -160,12 +160,13 @@ export function trackBinCreated(props: BinCreatedProperties): void {
 }
 
 export const MILESTONE_THRESHOLDS: Array<{
-  key: 'first_bin' | 'engaged' | 'substantial';
+  key: 'first_bin' | 'engaged' | 'substantial' | 'power_user';
   min: number;
 }> = [
   { key: 'first_bin', min: 1 },
   { key: 'engaged', min: 5 },
   { key: 'substantial', min: 15 },
+  { key: 'power_user', min: 30 },
 ];
 
 /**
