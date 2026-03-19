@@ -1456,5 +1456,7 @@
   "engagement.giveFeedback": "Feedback geben",
   "engagement.kofiNudge": "Gefällt dir das Gridfinity Layout Tool? Trinkgelder helfen, es kostenlos und gepflegt zu halten.",
   "engagement.support": "Auf Ko-fi unterstützen",
-  "engagement.feedbackThankYou": "Danke für dein Feedback! Wenn dir das Tool gefällt, unterstütze uns gerne auf Ko-fi."
+  "engagement.feedbackThankYou": "Danke für dein Feedback! Wenn dir das Tool gefällt, unterstütze uns gerne auf Ko-fi.",
+  "engagement.layoutPromotion.message": "Noch eine Schublade geplant? Speichere dieses Layout und starte ein neues.",
+  "engagement.layoutPromotion.action": "Layout-Bibliothek öffnen"
 }

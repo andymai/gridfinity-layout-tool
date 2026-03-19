@@ -1703,6 +1703,9 @@ const en: Record<string, string> = {
   'engagement.support': 'Support on Ko-fi',
   'engagement.feedbackThankYou':
     'Thanks for your feedback! If you enjoy the tool, consider supporting on Ko-fi.',
+  'engagement.layoutPromotion.message':
+    'Planning another drawer? Save this layout and start a new one.',
+  'engagement.layoutPromotion.action': 'Open Layout Library',
 };
 
 export default en;

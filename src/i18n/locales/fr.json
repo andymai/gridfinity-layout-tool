@@ -1456,5 +1456,7 @@
   "engagement.giveFeedback": "Donner son avis",
   "engagement.kofiNudge": "Vous appréciez le Gridfinity Layout Tool ? Les pourboires aident à le maintenir gratuit et à jour.",
   "engagement.support": "Soutenir sur Ko-fi",
-  "engagement.feedbackThankYou": "Merci pour votre retour ! Si vous appréciez l'outil, pensez à nous soutenir sur Ko-fi."
+  "engagement.feedbackThankYou": "Merci pour votre retour ! Si vous appréciez l'outil, pensez à nous soutenir sur Ko-fi.",
+  "engagement.layoutPromotion.message": "Vous préparez un autre tiroir ? Sauvegardez ce layout et commencez-en un nouveau.",
+  "engagement.layoutPromotion.action": "Ouvrir la bibliothèque de layouts"
 }

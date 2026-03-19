@@ -1456,5 +1456,7 @@
   "engagement.giveFeedback": "Feedback geven",
   "engagement.kofiNudge": "Geniet je van het Gridfinity Layout Tool? Fooien helpen om het gratis en onderhouden te houden.",
   "engagement.support": "Steunen op Ko-fi",
-  "engagement.feedbackThankYou": "Bedankt voor je feedback! Als je de tool leuk vindt, overweeg dan om ons te steunen op Ko-fi."
+  "engagement.feedbackThankYou": "Bedankt voor je feedback! Als je de tool leuk vindt, overweeg dan om ons te steunen op Ko-fi.",
+  "engagement.layoutPromotion.message": "Nog een lade gepland? Sla deze layout op en begin een nieuwe.",
+  "engagement.layoutPromotion.action": "Layout-bibliotheek openen"
 }

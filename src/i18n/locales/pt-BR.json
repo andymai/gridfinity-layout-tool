@@ -1456,5 +1456,7 @@
   "engagement.giveFeedback": "Enviar feedback",
   "engagement.kofiNudge": "Curtindo o Gridfinity Layout Tool? Gorjetas ajudam a mantê-lo gratuito e atualizado.",
   "engagement.support": "Apoiar no Ko-fi",
-  "engagement.feedbackThankYou": "Obrigado pelo seu feedback! Se você curte a ferramenta, considere nos apoiar no Ko-fi."
+  "engagement.feedbackThankYou": "Obrigado pelo seu feedback! Se você curte a ferramenta, considere nos apoiar no Ko-fi.",
+  "engagement.layoutPromotion.message": "Planejando outra gaveta? Salve este layout e comece um novo.",
+  "engagement.layoutPromotion.action": "Abrir biblioteca de layouts"
 }

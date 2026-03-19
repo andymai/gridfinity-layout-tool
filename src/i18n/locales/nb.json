@@ -1456,5 +1456,7 @@
   "engagement.giveFeedback": "Gi tilbakemelding",
   "engagement.kofiNudge": "Liker du Gridfinity Layout Tool? Tips hjelper med å holde det gratis og vedlikeholdt.",
   "engagement.support": "Støtt på Ko-fi",
-  "engagement.feedbackThankYou": "Takk for tilbakemeldingen! Hvis du liker verktøyet, vurder å støtte oss på Ko-fi."
+  "engagement.feedbackThankYou": "Takk for tilbakemeldingen! Hvis du liker verktøyet, vurder å støtte oss på Ko-fi.",
+  "engagement.layoutPromotion.message": "Planlegger du en skuff til? Lagre dette layoutet og start et nytt.",
+  "engagement.layoutPromotion.action": "Åpne layout-biblioteket"
 }

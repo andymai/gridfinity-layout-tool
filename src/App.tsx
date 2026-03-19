@@ -44,7 +44,7 @@ import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
-import { useEngagementNudges } from '@/features/engagement';
+import { useEngagementNudges, useLayoutPromotion } from '@/features/engagement';
 
 const CommandPalette = lazyWithRetry(() =>
   import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
@@ -187,6 +187,7 @@ export default function App() {
   usePWAUpdate();
   useAnalytics();
   useEngagementNudges();
+  useLayoutPromotion();
   useStorageMigration();
   useSnapshotAutoSave();
   useLocalStorageCleanup();
