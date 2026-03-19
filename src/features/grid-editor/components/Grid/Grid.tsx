@@ -12,6 +12,7 @@ import {
   useGridAxisLabels,
   useGridRowColumnSelection,
   useGridFirstUseHints,
+  useAlignBins,
 } from '@/features/grid-editor/hooks';
 import { useResponsive } from '@/shared/hooks';
 import { getBaseCellSize, HALF_BIN_SCALE } from '@/core/constants';
@@ -21,6 +22,7 @@ import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
+import { AlignToolbar } from './AlignToolbar';
 import { GridToolbar } from './GridToolbar';
 import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
@@ -72,12 +74,16 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   const showIsometricPreview = useViewStore((state) => state.showIsometricPreview);
 
   // Selection store - active layer, selected bins
-  const { activeLayerId, setSelectedBins } = useSelectionStore(
+  const { activeLayerId, selectedBinIds, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
+      selectedBinIds: state.selectedBinIds,
       setSelectedBins: state.setSelectedBins,
     }))
   );
+
+  // Alignment hook - for floating toolbar
+  const { alignBins, canAlign } = useAlignBins();
 
   // Half-bin mode - single value, no useShallow needed
   const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
@@ -518,6 +524,11 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
 
       {/* Quick label popover for desktop double-click / L shortcut */}
       <QuickLabelPopover />
+
+      {/* Floating alignment toolbar for multi-selected bins (desktop only) */}
+      {!isMobile && canAlign && (
+        <AlignToolbar selectedBinIds={selectedBinIds} onAlign={alignBins} />
+      )}
     </div>
   );
 }

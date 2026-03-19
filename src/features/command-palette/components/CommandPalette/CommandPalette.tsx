@@ -23,6 +23,7 @@ import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../comm
 import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/utils/entity';
 import { STAGING_ID } from '@/core/constants';
+import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { isOk, isErr } from '@/core/result';
 import type { BinId } from '@/core/types';
 import { binId } from '@/core/types';
@@ -115,10 +116,12 @@ function useActionHandlers(): Record<string, ActionHandler> {
   const { execute } = useUndoableAction();
   const { deleteBin, duplicateBin, updateBin, addLayer } = useMutations();
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
+  const { alignBins } = useAlignBins();
 
   return useMemo(() => {
     const hasBinsSelected = selectedBinIds.length > 0;
     const hasSingleBin = selectedBinIds.length === 1;
+    const hasMultipleBins = selectedBinIds.length >= 2;
     const layerBins = getLayerBins(layout.bins, activeLayerId);
     const stagingBins = getStagingBins(layout.bins);
     const categories = layout.categories;
@@ -246,6 +249,10 @@ function useActionHandlers(): Record<string, ActionHandler> {
       'rotate-bin': rotateBin(),
       'quick-label': hasSingleBin ? () => showQuickLabel(selectedBinIds[0]) : null,
       'clear-selection': () => clearSelection(),
+      'align-left': hasMultipleBins ? () => alignBins('left') : null,
+      'align-right': hasMultipleBins ? () => alignBins('right') : null,
+      'align-top': hasMultipleBins ? () => alignBins('top') : null,
+      'align-bottom': hasMultipleBins ? () => alignBins('bottom') : null,
     };
 
     // --- Selection ---
@@ -453,6 +460,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
     toggleHalfBinMode,
     zoomIn,
     zoomOut,
+    alignBins,
     addToast,
     t,
   ]);
@@ -705,6 +713,7 @@ function useContextBoosts(): Record<string, number> {
   return useMemo(() => {
     const hasBinsSelected = selectedBinIds.length > 0;
     const hasSingleBin = selectedBinIds.length === 1;
+    const hasMultipleBins = selectedBinIds.length >= 2;
     const hasMultipleLayers = layout.layers.length > 1;
     const hasLayerBins = layout.bins.some((b) => b.layerId === activeLayerId);
     const hasStagingBins = getStagingBins(layout.bins).length > 0;
@@ -716,6 +725,10 @@ function useContextBoosts(): Record<string, number> {
       'rotate-bin': hasSingleBin ? 2.0 : 0.3,
       'quick-label': hasSingleBin ? 1.8 : 0.4,
       'clear-selection': hasBinsSelected ? 1.5 : 0.3,
+      'align-left': hasMultipleBins ? 2.0 : 0.3,
+      'align-right': hasMultipleBins ? 2.0 : 0.3,
+      'align-top': hasMultipleBins ? 2.0 : 0.3,
+      'align-bottom': hasMultipleBins ? 2.0 : 0.3,
       'move-to-stash': hasBinsSelected ? 1.8 : 0.4,
 
       // Layer commands - boost when multiple layers

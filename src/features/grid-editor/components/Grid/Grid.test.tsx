@@ -140,6 +140,10 @@ vi.mock('@/features/grid-editor/hooks', () => ({
   useGridCoords: () => ({
     getPixelCoords: vi.fn(() => ({ nx: 0.5, ny: 0.5 })),
   }),
+  useAlignBins: () => ({
+    alignBins: vi.fn(),
+    canAlign: false,
+  }),
 }));
 
 vi.mock('@/shared/hooks', () => ({

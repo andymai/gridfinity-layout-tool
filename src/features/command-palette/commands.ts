@@ -151,6 +151,30 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     shortcut: { keys: formatShortcutKeys(SHORTCUTS.ESCAPE) },
     keywords: ['deselect', 'none'],
   },
+  {
+    id: 'align-left',
+    labelKey: 'commandPalette.alignLeft',
+    category: 'edit',
+    keywords: ['align', 'left', 'edge'],
+  },
+  {
+    id: 'align-right',
+    labelKey: 'commandPalette.alignRight',
+    category: 'edit',
+    keywords: ['align', 'right', 'edge'],
+  },
+  {
+    id: 'align-top',
+    labelKey: 'commandPalette.alignTop',
+    category: 'edit',
+    keywords: ['align', 'top', 'edge'],
+  },
+  {
+    id: 'align-bottom',
+    labelKey: 'commandPalette.alignBottom',
+    category: 'edit',
+    keywords: ['align', 'bottom', 'edge'],
+  },
 
   {
     id: 'add-layer',

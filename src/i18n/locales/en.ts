@@ -955,6 +955,9 @@ const en: Record<string, string> = {
   'toast.undone': 'Undone',
   'toast.redone': 'Redone',
   'toast.cutoutsCopied': 'Copied {count} cutout(s)',
+  'toast.alignToolbar': 'Alignment tools',
+  'toast.alignComplete': 'Aligned {aligned} of {total} bins',
+  'toast.alignSkipped': 'Aligned {aligned}/{total} bins ({skipped} skipped due to overlap)',
 
   // Grid Editor
   'grid.exceedsPrintSize': 'Exceeds print size, will be split',
@@ -1519,6 +1522,10 @@ const en: Record<string, string> = {
   'commandPalette.rotateBin': 'Rotate Bin',
   'commandPalette.quickLabel': 'Quick Label',
   'commandPalette.clearSelection': 'Clear Selection',
+  'commandPalette.alignLeft': 'Align Left',
+  'commandPalette.alignRight': 'Align Right',
+  'commandPalette.alignTop': 'Align Top',
+  'commandPalette.alignBottom': 'Align Bottom',
 
   // Layer commands
   'commandPalette.addLayer': 'Add Layer',
