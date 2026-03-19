@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.10.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.4...gridfinity-layout-tool-v4.10.5) (2026-03-19)
+
+
+### Bug Fixes
+
+* posthog-driven product improvements ([#1140](https://github.com/andymai/gridfinity-layout-tool/issues/1140)) ([ed2bda0](https://github.com/andymai/gridfinity-layout-tool/commit/ed2bda0c3bf685a6d3d90b738bc275ab43b55baa))
+
 ## [4.10.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.3...gridfinity-layout-tool-v4.10.4) (2026-03-19)
 
 
