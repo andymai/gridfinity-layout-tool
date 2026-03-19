@@ -148,5 +148,11 @@ describe('interaction store', () => {
       vi.advanceTimersByTime(1000);
       expect(getState().liveMessage).toBeNull();
     });
+
+    it('should not throw when clearing message after timeout', () => {
+      getState().announceToScreenReader('Test message');
+      expect(() => vi.advanceTimersByTime(1000)).not.toThrow();
+      expect(getState().liveMessage).toBeNull();
+    });
   });
 });

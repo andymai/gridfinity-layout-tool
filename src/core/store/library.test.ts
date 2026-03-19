@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useLibraryStore, computePreview, createDefaultLibrary } from '@/core/store/library';
 import { createDefaultLayout, CONSTRAINTS } from '@/core/constants';
 import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview } from '@/core/types';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview, LayoutId } from '@/core/types';
 
 // Helper to create test library with multiple entries (uses testUtils createTestLibrary as base)
 function createTestLibraryWithEntries(entryCount: number): LayoutLibrary {
@@ -685,6 +685,21 @@ describe('clearCloudShare', () => {
 
     // Should not throw or change anything
     expect(useLibraryStore.getState().getEntry('layout-1')?.cloudShare).toBeUndefined();
+  });
+});
+
+describe('setCloudShare persist safety', () => {
+  it('should persist library without accessing revoked proxy', () => {
+    const store = useLibraryStore.getState();
+    const entry = store.createEntry('Test', 'layout-1' as LayoutId, undefined);
+    expect(() => {
+      store.setCloudShare(entry.id, {
+        id: 'share-1',
+        deleteToken: 'token-1',
+        permission: 'view',
+        sharedAt: Date.now(),
+      });
+    }).not.toThrow();
   });
 });
 
