@@ -55,6 +55,11 @@ vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isDesktop: true, isMobile: false, isTablet: false }),
 }));
 
+// Mock HeaderSupportLinks to avoid deep dependency tree (LanguageSelector, analytics, etc.)
+vi.mock('@/shared/components/HeaderSupportLinks', () => ({
+  HeaderSupportLinks: () => <div data-testid="header-support-links" />,
+}));
+
 describe('DesignerPage', () => {
   beforeEach(() => {
     resetAllStores();
@@ -87,6 +92,11 @@ describe('DesignerPage', () => {
     render(<DesignerPage />);
     expect(screen.getByTestId('parameter-panel')).toBeInTheDocument();
     expect(screen.getByTestId('preview-canvas')).toBeInTheDocument();
+  });
+
+  it('renders header support links on desktop', () => {
+    render(<DesignerPage />);
+    expect(screen.getByTestId('header-support-links')).toBeInTheDocument();
   });
 
   it('shows design name in header', () => {
