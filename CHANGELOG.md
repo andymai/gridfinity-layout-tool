@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.10.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.5...gridfinity-layout-tool-v4.10.0) (2026-03-19)
+
+
+### Features
+
+* unify header support links across all desktop views ([#1130](https://github.com/andymai/gridfinity-layout-tool/issues/1130)) ([910a6f7](https://github.com/andymai/gridfinity-layout-tool/commit/910a6f76808519e20283af00c3a3d5eeccd7e19f))
+
 ## [4.9.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.9.4...gridfinity-layout-tool-v4.9.5) (2026-03-18)
 
 ### Bug Fixes
