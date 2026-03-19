@@ -13,7 +13,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { gridUnits } from '@/core/types';
 import { useTranslation } from '@/i18n';
@@ -24,7 +23,6 @@ import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
-import { useBaseplateSlicerOpen } from '../../hooks/useBaseplateSlicerOpen';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
@@ -64,14 +62,10 @@ export function BaseplatePage() {
     }))
   );
 
-  const slicerSites = useSettingsStore((s) => s.settings.slicerSites);
-  const enabledSlicers = useMemo(() => slicerSites.filter((s) => s.enabled), [slicerSites]);
-
   // Initialize generation bridge
   useBaseplateGeneration();
 
   const { isExporting, canExport, exportProgress, downloadBaseplate } = useBaseplateExport();
-  const { isOpening, openingSlicerId, openInSlicer } = useBaseplateSlicerOpen();
   const { isStandalone } = useBaseplateRouting();
   const setBaseplateParams = useLayoutStore((s) => s.setBaseplateParams);
   const hasBaseplateParams = useLayoutStore((s) => s.layout.baseplateParams !== undefined);
@@ -256,16 +250,6 @@ export function BaseplatePage() {
                 checkboxLabel: t('baseplate.export.enableSplit'),
                 checked: splitEnabled,
                 onCheckedChange: setSplitEnabled,
-              }
-            : null
-        }
-        slicerSection={
-          enabledSlicers.length > 0
-            ? {
-                slicers: enabledSlicers,
-                isOpening,
-                openingSlicerId,
-                onOpenInSlicer: (slicer) => void openInSlicer(slicer),
               }
             : null
         }

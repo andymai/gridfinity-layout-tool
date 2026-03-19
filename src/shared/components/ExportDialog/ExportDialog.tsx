@@ -3,8 +3,8 @@
  *
  * Props-driven component used by both the bin designer and baseplate generator.
  * Renders format selector, editable filename with style switcher, optional
- * split export banner, optional print estimates, download button(s), optional
- * progress bar, and optional slicer integration section.
+ * split export banner, optional print estimates, progress bar, and download
+ * button(s).
  */
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -12,7 +12,6 @@ import { Dialog } from '@/design-system/Dialog';
 import { ProgressBar } from '@/design-system/ProgressBar';
 import { useTranslation } from '@/i18n';
 import type { ExportFileFormat, ExportFileNameConfig, FileNameStyle } from '@/shared/types/bin';
-import type { SlicerSite } from '@/core/store/settings';
 
 /** Ordered format options for the selector */
 const FORMAT_OPTIONS: readonly ExportFileFormat[] = ['3mf', 'stl', 'step'] as const;
@@ -30,8 +29,6 @@ export interface ExportDialogProps {
 
   /** Active export format */
   activeFormat: ExportFileFormat;
-  /** @deprecated Format is now managed via fileNameConfig.format. Kept for backward compat. */
-  onFormatChange?: (format: ExportFileFormat) => void;
 
   /** Filename configuration */
   fileNameConfig: ExportFileNameConfig;
@@ -74,14 +71,6 @@ export interface ExportDialogProps {
     visible: boolean;
   } | null;
 
-  /** Optional slicer integration */
-  slicerSection?: {
-    slicers: readonly SlicerSite[];
-    isOpening: boolean;
-    openingSlicerId: string | null;
-    onOpenInSlicer: (s: SlicerSite) => void;
-  } | null;
-
   /** Warning when no mesh is available */
   noMeshWarning?: string | null;
 
@@ -109,7 +98,6 @@ export function ExportDialog({
   estimatesTitle,
   estimatesDisclaimer,
   secondaryDownload,
-  slicerSection,
   noMeshWarning,
   sectionTitle,
   sectionDescription,
@@ -327,24 +315,6 @@ export function ExportDialog({
             <p className="mt-2 text-center text-xs text-warning">{noMeshWarning}</p>
           )}
         </div>
-
-        {/* Open in Slicer Section */}
-        {slicerSection && slicerSection.slicers.length > 0 && (
-          <div className="mt-5 border-t border-stroke-subtle pt-5">
-            <h3 className="mb-3 text-sm font-semibold text-content">{t('export.openInSlicer')}</h3>
-            <div className="flex flex-wrap gap-2">
-              {slicerSection.slicers.map((slicer) => (
-                <SlicerButton
-                  key={slicer.id}
-                  slicer={slicer}
-                  disabled={!canExport || isExporting || slicerSection.isOpening}
-                  isOpening={slicerSection.openingSlicerId === slicer.id}
-                  onClick={() => slicerSection.onOpenInSlicer(slicer)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </Dialog.Body>
     </Dialog.Root>
   );
@@ -472,37 +442,5 @@ function ExportSpinner() {
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
       />
     </svg>
-  );
-}
-
-function SlicerButton({
-  slicer,
-  disabled,
-  isOpening,
-  onClick,
-}: {
-  slicer: SlicerSite;
-  disabled: boolean;
-  isOpening: boolean;
-  onClick: () => void;
-}) {
-  const t = useTranslation();
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="flex items-center gap-1.5 rounded-md border border-stroke-subtle bg-surface px-3 py-2 text-sm font-medium text-content transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:text-content-disabled"
-      aria-label={`${t('export.openInSlicer')}: ${slicer.name}`}
-    >
-      {isOpening ? (
-        <>
-          <ExportSpinner />
-          {t('slicerOpen.opening')}
-        </>
-      ) : (
-        slicer.name
-      )}
-    </button>
   );
 }

@@ -6,10 +6,9 @@ import {
   DEFAULT_BIN_LIST_SORT_ORDER,
   normalizeSortOrder,
   DEFAULT_STL_SEARCH_SITES,
-  DEFAULT_SLICER_SITES,
   STL_SEARCH_CONSTRAINTS,
 } from '@/core/store/settings';
-import type { BinListSortOrder, STLSearchSite, SlicerSite } from '@/core/store/settings';
+import type { BinListSortOrder, STLSearchSite } from '@/core/store/settings';
 import { resetAllStores, createIsolatedLocalStorageMock } from '@/test/testUtils';
 import { isOk, isErr } from '@/core/result';
 
@@ -554,67 +553,6 @@ describe('settings store', () => {
 
       const settings = useSettingsStore.getState().settings;
       expect(settings.defaultCategories).toBeNull();
-    });
-  });
-
-  describe('slicer sites', () => {
-    it('has default slicer sites', () => {
-      const settings = useSettingsStore.getState().settings;
-      expect(settings.slicerSites).toBeDefined();
-      expect(settings.slicerSites.length).toBeGreaterThan(0);
-    });
-
-    it('can update slicer sites', () => {
-      const { updateSetting } = useSettingsStore.getState();
-      const newSites: SlicerSite[] = [
-        { id: 'prusaslicer', name: 'PrusaSlicer', protocol: 'prusaslicer', enabled: false },
-      ];
-
-      updateSetting('slicerSites', newSites);
-
-      const settings = useSettingsStore.getState().settings;
-      expect(settings.slicerSites).toEqual(newSites);
-    });
-
-    it('persists slicer sites to localStorage', () => {
-      const { updateSetting } = useSettingsStore.getState();
-      const newSites: SlicerSite[] = [
-        { id: 'orcaslicer', name: 'OrcaSlicer', protocol: 'orcaslicer', enabled: false },
-      ];
-
-      updateSetting('slicerSites', newSites);
-
-      const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
-      expect(savedData.slicerSites).toEqual(newSites);
-    });
-  });
-
-  describe('DEFAULT_SLICER_SITES', () => {
-    it('includes PrusaSlicer', () => {
-      const prusaslicer = DEFAULT_SLICER_SITES.find((s) => s.id === 'prusaslicer');
-      expect(prusaslicer).toBeDefined();
-      expect(prusaslicer?.protocol).toBe('prusaslicer');
-      expect(prusaslicer?.enabled).toBe(true);
-    });
-
-    it('includes OrcaSlicer', () => {
-      const orcaslicer = DEFAULT_SLICER_SITES.find((s) => s.id === 'orcaslicer');
-      expect(orcaslicer).toBeDefined();
-      expect(orcaslicer?.protocol).toBe('orcaslicer');
-      expect(orcaslicer?.enabled).toBe(true);
-    });
-
-    it('includes Bambu Studio with consistent id and protocol', () => {
-      const bambu = DEFAULT_SLICER_SITES.find((s) => s.id === 'bambustudio');
-      expect(bambu).toBeDefined();
-      expect(bambu?.protocol).toBe('bambustudio');
-      expect(bambu?.enabled).toBe(true);
-    });
-
-    it('has matching id and protocol for all entries', () => {
-      for (const slicer of DEFAULT_SLICER_SITES) {
-        expect(slicer.id).toBe(slicer.protocol);
-      }
     });
   });
 

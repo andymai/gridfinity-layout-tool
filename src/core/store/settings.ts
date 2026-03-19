@@ -8,7 +8,6 @@ import { loadSettings, saveSettings } from './settings.normalize';
 // Re-export types and constants for existing consumers
 export type {
   STLSearchSite,
-  SlicerSite,
   BinSortField,
   SortFieldConfig,
   BinListSortOrder,
@@ -19,7 +18,6 @@ export type {
 export {
   STL_SEARCH_CONSTRAINTS,
   DEFAULT_STL_SEARCH_SITES,
-  DEFAULT_SLICER_SITES,
   DEFAULT_BIN_LIST_SORT_ORDER,
   DEFAULT_PRINT_VIEW_SETTINGS,
   DEFAULT_SETTINGS,

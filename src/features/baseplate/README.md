@@ -24,7 +24,6 @@ graph TB
 - `components/BaseplatePreview.tsx` — Three.js 3D preview with assembled/exploded split views
 - `hooks/useBaseplateGeneration.ts` — lifecycle: WASM bridge acquisition, auto-regeneration, epoch-based stale detection
 - `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging
-- `hooks/useBaseplateSlicerOpen.ts` — direct slicer integration (PrusaSlicer, Cura, Bambu)
 - `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
 - `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces
 - `utils/buildFullParams.ts` — resolves sync mode: drawer dims vs custom width/depth

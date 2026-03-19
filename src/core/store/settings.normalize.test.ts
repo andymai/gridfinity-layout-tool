@@ -3,14 +3,9 @@ import {
   normalizeSortOrder,
   normalizeCategories,
   normalizeSTLSearchSites,
-  normalizeSlicerSites,
   normalizeViewMode,
 } from './settings.normalize';
-import {
-  DEFAULT_BIN_LIST_SORT_ORDER,
-  DEFAULT_STL_SEARCH_SITES,
-  DEFAULT_SLICER_SITES,
-} from './settings.types';
+import { DEFAULT_BIN_LIST_SORT_ORDER, DEFAULT_STL_SEARCH_SITES } from './settings.types';
 
 describe('normalizeSortOrder', () => {
   it('returns defaults when stored is undefined', () => {
@@ -77,7 +72,7 @@ describe('normalizeCategories', () => {
     ];
     const result = normalizeCategories(categories);
     expect(result).toHaveLength(1);
-    expect(result![0].id).toBe('cat-1');
+    expect(result?.[0].id).toBe('cat-1');
   });
 
   it('returns null if all categories are invalid', () => {
@@ -118,30 +113,6 @@ describe('normalizeSTLSearchSites', () => {
     ];
     const result = normalizeSTLSearchSites(stored);
     expect(result.some((s) => s.id === 'removed-default')).toBe(false);
-  });
-});
-
-describe('normalizeSlicerSites', () => {
-  it('returns defaults when stored is undefined', () => {
-    expect(normalizeSlicerSites(undefined)).toEqual(DEFAULT_SLICER_SITES);
-  });
-
-  it('drops non-default sites', () => {
-    const stored = [
-      ...DEFAULT_SLICER_SITES,
-      { id: 'custom-slicer', name: 'Custom', protocol: 'custom://', enabled: true } as never,
-    ];
-    const result = normalizeSlicerSites(stored);
-    expect(result.some((s) => s.id === 'custom-slicer')).toBe(false);
-  });
-
-  it('adds missing defaults as disabled', () => {
-    const stored = [DEFAULT_SLICER_SITES[0]];
-    const result = normalizeSlicerSites(stored);
-    const resultIds = new Set(result.map((s) => s.id));
-    for (const defaultSite of DEFAULT_SLICER_SITES) {
-      expect(resultIds.has(defaultSite.id)).toBe(true);
-    }
   });
 });
 

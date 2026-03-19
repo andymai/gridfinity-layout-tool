@@ -590,9 +590,6 @@ const en: Record<string, string> = {
   'settings.stlSearch': 'STL Search',
   'settings.stlSearchHint': 'Choose which sites to search for Gridfinity STL files:',
   'settings.toggleSite': 'Toggle {name}',
-  'settings.slicers': 'Slicers',
-  'settings.slicersHint': 'Choose which slicers appear as quick-launch options when exporting:',
-  'settings.toggleSlicer': 'Toggle {name}',
   'settings.privacy': 'Privacy',
   'settings.helpImprove': 'Help improve suggestions',
   'settings.helpImproveHint': 'Share bin sizes and placement patterns (no personal data)',
@@ -1015,12 +1012,6 @@ const en: Record<string, string> = {
   'stlSearch.searchFor': 'Search for {width}×{depth} bin',
   'stlSearch.searchForSplit': 'Search for split bin generators',
 
-  // Slicer Open
-  'slicerOpen.notDetected': '{slicer} not detected — is it installed?',
-  'slicerOpen.uploadFailed': 'Upload failed — file downloaded instead',
-  'slicerOpen.generationFailed': 'Failed to generate file for slicer',
-  'slicerOpen.opening': 'Opening...',
-
   // Shared Export Dialog
   'export.format': 'Format',
   'export.fileName': 'File Name',
@@ -1032,7 +1023,6 @@ const en: Record<string, string> = {
   'export.downloadFormat': 'Download {format}',
   'export.exporting': 'Exporting...',
   'export.noMeshWarning': 'Generate a mesh first to enable export',
-  'export.openInSlicer': 'Open in Slicer',
   'export.progressLabel': 'Exporting piece {current} of {total}',
 
   // Baseplate-specific export keys

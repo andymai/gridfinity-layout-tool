@@ -10,7 +10,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
-import { useSlicerOpen } from '@/features/bin-designer/hooks/useSlicerOpen';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
@@ -28,15 +27,13 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
 
 export function ExportDialog() {
   const t = useTranslation();
-  const { printSettings, defaultPrintBedSize, slicerSites } = useSettingsStore(
+  const { printSettings, defaultPrintBedSize } = useSettingsStore(
     useShallow((s) => ({
       printSettings: s.settings.printSettings,
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
-      slicerSites: s.settings.slicerSites,
     }))
   );
 
-  const enabledSlicers = useMemo(() => slicerSites.filter((s) => s.enabled), [slicerSites]);
   const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
     useDesignerStore(
       useShallow((state) => ({
@@ -65,7 +62,6 @@ export function ExportDialog() {
     splitPieceCount,
     downloadSplit,
   } = useExport();
-  const { isOpening, openingSlicerId, openInSlicer } = useSlicerOpen();
   const [splitEnabled, setSplitEnabled] = useState(true);
   const addToast = useToastStore((s) => s.addToast);
 
@@ -208,16 +204,6 @@ export function ExportDialog() {
               isExporting: isExportingDividers,
               onClick: () => void handleDividersDownload(),
               visible: true,
-            }
-          : null
-      }
-      slicerSection={
-        enabledSlicers.length > 0
-          ? {
-              slicers: enabledSlicers,
-              isOpening,
-              openingSlicerId,
-              onOpenInSlicer: (slicer) => void openInSlicer(slicer),
             }
           : null
       }

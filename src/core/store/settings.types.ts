@@ -56,31 +56,6 @@ export const DEFAULT_STL_SEARCH_SITES: STLSearchSite[] = [
   },
 ];
 
-// Slicer Sites Configuration
-
-/**
- * Configuration for a single slicer's protocol handler integration.
- * Clicking "Open in Slicer" uploads the 3MF to a temporary URL and fires
- * `<protocol>://open?file_url=<url>` to launch the slicer with the file.
- */
-export interface SlicerSite {
-  id: string;
-  name: string;
-  /** URL protocol scheme (without "://"), e.g. "prusaslicer" */
-  protocol: string;
-  /** Whether this slicer appears in the Export Dialog */
-  enabled: boolean;
-}
-
-/**
- * Default slicer sites shipped with the app.
- */
-export const DEFAULT_SLICER_SITES: SlicerSite[] = [
-  { id: 'prusaslicer', name: 'PrusaSlicer', protocol: 'prusaslicer', enabled: true },
-  { id: 'orcaslicer', name: 'OrcaSlicer', protocol: 'orcaslicer', enabled: true },
-  { id: 'bambustudio', name: 'Bambu Studio', protocol: 'bambustudio', enabled: true },
-];
-
 // Bin List Sort Configuration
 
 /**
@@ -216,9 +191,6 @@ export interface UserSettings {
   // STL search sites configuration
   stlSearchSites: STLSearchSite[];
 
-  // Slicer sites configuration (for "Open in Slicer" in the bin designer export dialog)
-  slicerSites: SlicerSite[];
-
   // Privacy settings
   /**
    * Enable anonymous analytics and telemetry.
@@ -300,9 +272,6 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // STL search sites
   stlSearchSites: [...DEFAULT_STL_SEARCH_SITES],
-
-  // Slicer sites
-  slicerSites: [...DEFAULT_SLICER_SITES],
 
   // Privacy - opt-out by default (enabled)
   analyticsEnabled: true,
