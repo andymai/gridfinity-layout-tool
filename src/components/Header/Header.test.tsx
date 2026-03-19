@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Header } from '@/components/Header';
 import { useLayoutStore, useHistoryStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { resetAllStores } from '@/test/testUtils';
 
 // Mock the LayoutManagerModal to avoid deep component tree
@@ -257,21 +256,6 @@ describe('Header', () => {
       render(<Header {...defaultProps} saveStatus="saving" />);
 
       expect(screen.getByText('Saving...')).toBeInTheDocument();
-    });
-  });
-
-  describe('half-bin mode indicator', () => {
-    it('does not show half-bin badge when mode is off', () => {
-      render(<Header {...defaultProps} />);
-
-      expect(screen.queryByText('Half-bin mode')).not.toBeInTheDocument();
-    });
-
-    it('shows half-bin badge when mode is on', () => {
-      useHalfBinModeStore.getState().toggleHalfBinMode();
-      render(<Header {...defaultProps} />);
-
-      expect(screen.getByText('Half-bin mode')).toBeInTheDocument();
     });
   });
 

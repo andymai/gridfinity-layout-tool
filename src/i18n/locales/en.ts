@@ -82,10 +82,6 @@ const en: Record<string, string> = {
   // Header
   'header.editLayoutName': 'Click to edit layout name',
   'header.layoutName': 'Layout name',
-  'header.halfBinMode': 'Half-bin mode',
-  'header.halfBinModeShort': '½-bin',
-  'header.halfBinModeTitle':
-    'Half-bin mode is active: 0.5 unit precision enabled (press H to toggle)',
   'header.layouts': 'Layouts',
   'header.openLayoutManager': 'Open layout manager',
   'header.print': 'Print',
