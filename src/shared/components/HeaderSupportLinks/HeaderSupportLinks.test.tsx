@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { HeaderSupportLinks } from './HeaderSupportLinks';
 
@@ -32,6 +32,7 @@ describe('HeaderSupportLinks', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.useRealTimers();
   });
 
@@ -75,7 +76,6 @@ describe('HeaderSupportLinks', () => {
       '_blank',
       'noopener,noreferrer'
     );
-    openSpy.mockRestore();
   });
 
   it('shows Ko-fi thank-you toast after feedback click', () => {
@@ -91,7 +91,6 @@ describe('HeaderSupportLinks', () => {
         type: 'success',
       })
     );
-    vi.spyOn(window, 'open').mockRestore();
   });
 
   it('dispatches open-help-modal event on help click', () => {
@@ -116,6 +115,5 @@ describe('HeaderSupportLinks', () => {
       '_blank',
       'noopener,noreferrer'
     );
-    openSpy.mockRestore();
   });
 });
