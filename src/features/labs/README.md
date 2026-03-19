@@ -27,13 +27,15 @@ graph TB
 
 ## Current Flags
 
-| Flag                    | Status       | Purpose                        |
-| ----------------------- | ------------ | ------------------------------ |
-| `bin_designer`          | Graduated    | Custom bin designer            |
-| `baseplate_generator`   | Graduated    | Custom baseplate generator     |
-| `collaborative_editing` | Experimental | Real-time Liveblocks collab    |
-| `brepkit_kernel`        | Experimental | Alternative 3D geometry engine |
-| `cqrs_undo`             | Experimental | Improved undo/redo system      |
+Internal status enum values → UI badge labels: `experimental` → "Early access", `preview` → "Beta", `graduated` → "Shipped".
+
+| Flag                    | Status (`enum`) | Purpose                        |
+| ----------------------- | --------------- | ------------------------------ |
+| `bin_designer`          | `graduated`     | Custom bin designer            |
+| `baseplate_generator`   | `graduated`     | Custom baseplate generator     |
+| `collaborative_editing` | `experimental`  | Real-time Liveblocks collab    |
+| `brepkit_kernel`        | `experimental`  | Alternative 3D geometry engine |
+| `cqrs_undo`             | `experimental`  | Improved undo/redo system      |
 
 ## Usage
 

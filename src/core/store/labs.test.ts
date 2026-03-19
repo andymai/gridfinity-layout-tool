@@ -105,9 +105,9 @@ describe('Labs Feature Registry', () => {
       expect(uniqueIds.size).toBe(ids.length);
     });
 
-    it('has no coming soon features', () => {
-      const comingSoon = FEATURE_FLAGS.filter((f) => f.comingSoon);
-      expect(comingSoon.length).toBe(0);
+    it('does not include layout_to_print', () => {
+      const ids = FEATURE_FLAGS.map((f) => f.id);
+      expect(ids).not.toContain('layout_to_print');
     });
   });
 });
