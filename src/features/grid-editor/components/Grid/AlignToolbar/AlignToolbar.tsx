@@ -77,7 +77,7 @@ export function AlignToolbar({ selectedBinIds, onAlign }: AlignToolbarProps) {
         transform: 'translateX(-50%)',
       }}
       role="toolbar"
-      aria-label={t('toast.alignToolbar')}
+      aria-label={t('selectionToolbar.ariaLabel')}
     >
       {buttons.map(({ edge, label }) => (
         <button

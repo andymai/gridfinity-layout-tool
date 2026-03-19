@@ -24,6 +24,7 @@ import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/utils/entity';
 import { STAGING_ID } from '@/core/constants';
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
+import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { isOk, isErr } from '@/core/result';
 import type { BinId } from '@/core/types';
 import { binId } from '@/core/types';
@@ -117,6 +118,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
   const { deleteBin, duplicateBin, updateBin, addLayer } = useMutations();
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
   const { alignBins } = useAlignBins();
+  const { rotateAll, matchHeight } = useSelectionActions();
 
   return useMemo(() => {
     const hasBinsSelected = selectedBinIds.length > 0;
@@ -253,6 +255,8 @@ function useActionHandlers(): Record<string, ActionHandler> {
       'align-right': hasMultipleBins ? () => alignBins('right') : null,
       'align-top': hasMultipleBins ? () => alignBins('top') : null,
       'align-bottom': hasMultipleBins ? () => alignBins('bottom') : null,
+      'rotate-all': hasMultipleBins ? () => rotateAll() : null,
+      'match-height': hasMultipleBins ? () => matchHeight() : null,
     };
 
     // --- Selection ---
@@ -461,6 +465,8 @@ function useActionHandlers(): Record<string, ActionHandler> {
     zoomIn,
     zoomOut,
     alignBins,
+    rotateAll,
+    matchHeight,
     addToast,
     t,
   ]);
@@ -729,6 +735,8 @@ function useContextBoosts(): Record<string, number> {
       'align-right': hasMultipleBins ? 2.0 : 0.3,
       'align-top': hasMultipleBins ? 2.0 : 0.3,
       'align-bottom': hasMultipleBins ? 2.0 : 0.3,
+      'rotate-all': hasMultipleBins ? 2.0 : 0.3,
+      'match-height': hasMultipleBins ? 2.0 : 0.3,
       'move-to-stash': hasBinsSelected ? 1.8 : 0.4,
 
       // Layer commands - boost when multiple layers

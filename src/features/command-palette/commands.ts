@@ -175,6 +175,18 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     category: 'edit',
     keywords: ['align', 'bottom', 'edge'],
   },
+  {
+    id: 'rotate-all',
+    labelKey: 'commandPalette.rotateAll',
+    category: 'edit',
+    keywords: ['flip', 'turn', 'swap', 'all', 'rotate'],
+  },
+  {
+    id: 'match-height',
+    labelKey: 'commandPalette.matchHeight',
+    category: 'edit',
+    keywords: ['height', 'equalize', 'normalize', 'tallest'],
+  },
 
   {
     id: 'add-layer',

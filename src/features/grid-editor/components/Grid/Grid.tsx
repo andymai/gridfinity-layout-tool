@@ -22,7 +22,8 @@ import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
-import { AlignToolbar } from './AlignToolbar';
+import { SelectionToolbar } from './SelectionToolbar';
+import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { GridToolbar } from './GridToolbar';
 import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
@@ -85,14 +86,19 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   // Alignment hook - for floating toolbar
   const { alignBins, canAlign } = useAlignBins();
 
+  // Bulk action hooks - for selection toolbar
+  const { setCategory, rotateAll, matchHeight, moveToLayer, moveToStash, deleteAll } =
+    useSelectionActions();
+
   // Half-bin mode - single value, no useShallow needed
   const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
 
-  const { drawer, layers, bins } = useLayoutStore(
+  const { drawer, layers, bins, categories } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
       layers: state.layout.layers,
       bins: state.layout.bins,
+      categories: state.layout.categories,
     }))
   );
 
@@ -525,9 +531,22 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
       {/* Quick label popover for desktop double-click / L shortcut */}
       <QuickLabelPopover />
 
-      {/* Floating alignment toolbar for multi-selected bins (desktop only) */}
+      {/* Floating selection toolbar for multi-selected bins (desktop only) */}
       {!isMobile && canAlign && (
-        <AlignToolbar selectedBinIds={selectedBinIds} onAlign={alignBins} />
+        <SelectionToolbar
+          selectedBinIds={selectedBinIds}
+          onAlign={alignBins}
+          onSetCategory={setCategory}
+          onRotateAll={rotateAll}
+          onMatchHeight={matchHeight}
+          onMoveToLayer={moveToLayer}
+          onMoveToStash={moveToStash}
+          onDeleteAll={deleteAll}
+          categories={categories}
+          otherLayers={layers.filter(
+            (l) => !selectedBinIds.some((id) => bins.find((b) => b.id === id)?.layerId === l.id)
+          )}
+        />
       )}
     </div>
   );

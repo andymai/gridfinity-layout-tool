@@ -146,6 +146,17 @@ vi.mock('@/features/grid-editor/hooks', () => ({
   }),
 }));
 
+vi.mock('@/shared/hooks/useSelectionActions', () => ({
+  useSelectionActions: () => ({
+    setCategory: vi.fn(),
+    rotateAll: vi.fn(),
+    matchHeight: vi.fn(),
+    moveToLayer: vi.fn(),
+    moveToStash: vi.fn(),
+    deleteAll: vi.fn(),
+  }),
+}));
+
 vi.mock('@/shared/hooks', () => ({
   useResponsive: () => ({
     isMobile: false,
