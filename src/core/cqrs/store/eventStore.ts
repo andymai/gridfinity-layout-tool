@@ -27,7 +27,7 @@ let dbInstance: IDBPDatabase | null = null;
 async function getDb(): Promise<IDBPDatabase> {
   if (dbInstance) return dbInstance;
 
-  dbInstance = await openDB(DB_NAME, DB_VERSION, {
+  const db = await openDB(DB_NAME, DB_VERSION, {
     upgrade(db) {
       if (!db.objectStoreNames.contains(EVENTS_STORE)) {
         const store = db.createObjectStore(EVENTS_STORE, { keyPath: 'meta.id' });
@@ -38,6 +38,14 @@ async function getDb(): Promise<IDBPDatabase> {
     },
   });
 
+  // Clear cached instance if the browser closes the connection unexpectedly
+  db.addEventListener('close', () => {
+    if (dbInstance === db) {
+      dbInstance = null;
+    }
+  });
+
+  dbInstance = db;
   return dbInstance;
 }
 

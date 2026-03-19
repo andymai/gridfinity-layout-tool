@@ -15,7 +15,6 @@ import {
 } from '@/shared/analytics/posthog';
 import { useLayoutStore, type FillMeta } from './layout';
 import { useInteractionStore, type PaintSize } from './interaction';
-import type { Layout } from '@/core/types';
 
 export type { FillMeta };
 
@@ -24,19 +23,21 @@ export type { FillMeta };
  * Call once at app startup to begin tracking store mutations.
  */
 export function initLayoutAnalytics(): () => void {
-  let prevLayout: Layout = useLayoutStore.getState().layout;
+  const initialLayout = useLayoutStore.getState().layout;
+  let prevLayerCount = initialLayout.layers.length;
+  let prevCategoryCount = initialLayout.categories.length;
   let prevPaintSize: PaintSize | null = useInteractionStore.getState().paintSize;
 
   const unsubLayout = useLayoutStore.subscribe((state) => {
     const curr = state.layout;
 
     // Track multi-layer usage when a new layer is added (2+ layers)
-    if (curr.layers.length > prevLayout.layers.length && curr.layers.length >= 2) {
+    if (curr.layers.length > prevLayerCount && curr.layers.length >= 2) {
       markFeatureUsed('multi_layer');
     }
 
     // Track custom category usage when a category is added
-    if (curr.categories.length > prevLayout.categories.length) {
+    if (curr.categories.length > prevCategoryCount) {
       markFeatureUsed('custom_categories');
     }
 
@@ -65,7 +66,8 @@ export function initLayoutAnalytics(): () => void {
       useLayoutStore.setState({ _fillMeta: null });
     }
 
-    prevLayout = curr;
+    prevLayerCount = curr.layers.length;
+    prevCategoryCount = curr.categories.length;
   });
 
   // Track paint mode entry/exit

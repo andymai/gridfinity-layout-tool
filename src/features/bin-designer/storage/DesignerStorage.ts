@@ -40,7 +40,7 @@ async function getDb(): Promise<IDBPDatabase> {
     return dbInstance;
   }
 
-  dbInstance = await openDB(DB_NAME, DB_VERSION, {
+  const db = await openDB(DB_NAME, DB_VERSION, {
     upgrade(db) {
       if (!db.objectStoreNames.contains(DESIGNS_STORE)) {
         const store = db.createObjectStore(DESIGNS_STORE, { keyPath: 'id' });
@@ -49,6 +49,14 @@ async function getDb(): Promise<IDBPDatabase> {
     },
   });
 
+  // Clear cached instance if the browser closes the connection unexpectedly
+  db.addEventListener('close', () => {
+    if (dbInstance === db) {
+      dbInstance = null;
+    }
+  });
+
+  dbInstance = db;
   return dbInstance;
 }
 
