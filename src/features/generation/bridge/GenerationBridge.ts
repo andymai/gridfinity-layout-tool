@@ -9,6 +9,7 @@ import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/
 import type {
   WorkerMessage,
   WorkerResponse,
+  WorkerCacheStats,
   MeshData,
   GenerationStage,
   ExportFormat,
@@ -74,6 +75,19 @@ export interface BaseplateExportResult {
   readonly format: ExportFormat;
 }
 
+/** Aggregated cache performance stats for analytics. */
+export interface CacheStatsPayload {
+  readonly total_hits: number;
+  readonly total_misses: number;
+  readonly total_evictions: number;
+  readonly hit_rate: number;
+  readonly cache_count: number;
+  readonly per_cache: readonly WorkerCacheStats[];
+}
+
+/** Callback for cache stats reporting */
+export type CacheStatsCallback = (stats: CacheStatsPayload) => void;
+
 /** Information about the WASM threading capabilities */
 export interface ThreadingInfo {
   /** Whether multi-threaded WASM is being used */
@@ -115,6 +129,9 @@ export class GenerationBridge {
   private destroyed = false;
   private adaptiveDebounce = new AdaptiveDebounce();
   private threadingInfo: ThreadingInfo | null = null;
+
+  /** Optional callback for cache performance stats (called after each generation). */
+  onCacheStats: CacheStatsCallback | null = null;
 
   constructor(kernel: KernelName = 'opencascade') {
     this.kernel = kernel;
@@ -698,10 +715,38 @@ export class GenerationBridge {
           });
           break;
 
+        case 'CACHE_STATS':
+          this.handleCacheStats(response.caches);
+          break;
+
         case 'INIT_READY':
           // Already handled during init
           break;
       }
+    });
+  }
+
+  private handleCacheStats(caches: readonly WorkerCacheStats[]): void {
+    if (!this.onCacheStats) return;
+
+    let totalHits = 0;
+    let totalMisses = 0;
+    let totalEvictions = 0;
+    for (const c of caches) {
+      totalHits += c.hits;
+      totalMisses += c.misses;
+      totalEvictions += c.evictions;
+    }
+    const total = totalHits + totalMisses;
+    if (total === 0) return;
+
+    this.onCacheStats({
+      total_hits: totalHits,
+      total_misses: totalMisses,
+      total_evictions: totalEvictions,
+      hit_rate: Math.round((totalHits / total) * 1000) / 1000,
+      cache_count: caches.length,
+      per_cache: caches,
     });
   }
 

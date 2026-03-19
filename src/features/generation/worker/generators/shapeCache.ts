@@ -18,7 +18,9 @@
 
 import { clone } from 'brepjs';
 import type { Shape3D } from 'brepjs';
+import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
+import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
 /** Dispose callback for LRU caches holding WASM-backed shapes. */
 const disposeShape = (_key: string, shape: Shape3D): void => {
   shape.delete();
@@ -45,11 +47,11 @@ function createCloningAccessors(cache: LRUCache<Shape3D>): {
   };
 }
 
-/** LRU shape caches — maxSize=5 lets users toggle between a few bin sizes without misses */
-const socketCache = new LRUCache<Shape3D>(5, disposeShape);
-const lipCache = new LRUCache<Shape3D>(5, disposeShape);
-const boxCache = new LRUCache<Shape3D>(5, disposeShape);
-const shellCache = new LRUCache<Shape3D>(5, disposeShape);
+/** LRU shape caches — sized for iterative design workflows (3-4x previous sizes) */
+const socketCache = new LRUCache<Shape3D>('socket', 20, disposeShape);
+const lipCache = new LRUCache<Shape3D>('lip', 20, disposeShape);
+const boxCache = new LRUCache<Shape3D>('box', 20, disposeShape);
+const shellCache = new LRUCache<Shape3D>('shell', 15, disposeShape);
 
 const socket = createCloningAccessors(socketCache);
 const box = createCloningAccessors(boxCache);
@@ -63,7 +65,7 @@ interface CacheEntry {
 
 let patternTemplateCache: CacheEntry | null = null;
 let lastSolid: Shape3D | null = null;
-/** Feature tool caches — maxSize=3: typical user edits one feature at a time */
+/** Feature tool caches — sized for multi-feature iteration workflows */
 const FEATURE_NAMES = [
   'compartmentWalls',
   'insertCuts',
@@ -74,7 +76,7 @@ const FEATURE_NAMES = [
 ] as const;
 
 const featureToolCaches = new Map<string, LRUCache<Shape3D>>(
-  FEATURE_NAMES.map((name) => [name, new LRUCache<Shape3D>(3, disposeShape)])
+  FEATURE_NAMES.map((name) => [name, new LRUCache<Shape3D>(`feature-${name}`, 12, disposeShape)])
 );
 
 /** All LRU caches, for batch disposal in clearAllCaches. */
@@ -96,7 +98,20 @@ export function socketCacheKey(
   forExport: boolean,
   halfSockets: boolean
 ): string {
-  return `${gridW}|${gridD}|${withMagnet}|${withScrew}|${magnetRadius}|${magnetDepth}|${screwRadius}|${forExport}|${halfSockets}`;
+  return compactKey(
+    buildCacheKey(
+      'v1',
+      quantize(gridW),
+      quantize(gridD),
+      withMagnet,
+      withScrew,
+      quantize(magnetRadius),
+      quantize(magnetDepth),
+      quantize(screwRadius),
+      forExport,
+      halfSockets
+    )
+  );
 }
 
 export const getSocketCache = socket.get;
@@ -154,5 +169,17 @@ export function clearAllCaches(): void {
   if (lastSolid) {
     lastSolid.delete();
     lastSolid = null;
+  }
+}
+
+/** Collect stats from all shape LRU caches. */
+export function getAllShapeCacheStats(): CacheStats[] {
+  return allLruCaches.map((cache) => cache.getStats());
+}
+
+/** Reset stats counters on all shape LRU caches. */
+export function resetAllShapeCacheStats(): void {
+  for (const cache of allLruCaches) {
+    cache.resetStats();
   }
 }

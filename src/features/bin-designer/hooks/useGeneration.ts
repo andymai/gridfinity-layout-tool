@@ -5,7 +5,7 @@ import { useDesignerStore } from '../store';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { validateCompartmentSizes } from '../utils/validation';
-import { trackWasmThreadingStatus } from '@/shared/analytics/posthog';
+import { trackWasmThreadingStatus, trackCachePerformance } from '@/shared/analytics/posthog';
 import type { BinParams } from '../types';
 
 /**
@@ -114,6 +114,9 @@ export function useGeneration(): void {
         if (threadingInfo) {
           trackWasmThreadingStatus(threadingInfo.isThreaded, threadingInfo.hardwareConcurrency);
         }
+
+        // Wire up cache stats reporting to PostHog
+        bridge.onCacheStats = trackCachePerformance;
 
         // Trigger initial generation
         const currentState = useDesignerStore.getState();

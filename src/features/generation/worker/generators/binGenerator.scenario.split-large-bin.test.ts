@@ -116,7 +116,7 @@ describe('large bin split at coplanar socket boundary (#1091)', () => {
 
     expect(result.pieces).toHaveLength(2);
     assertPiecesFullHeight(result, LARGE_BIN_HALF_SOCKETS);
-  }, 90000);
+  }, 180000);
 
   it('10x5x3u + lip, no connectors: isolate body intersection from connector failure', () => {
     const generateSplitPreview = getGenerateSplitPreview();

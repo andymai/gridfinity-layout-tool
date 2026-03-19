@@ -6,20 +6,40 @@
  * position (delete + re-insert). On `set`, the oldest entry is
  * evicted if the cache is at capacity.
  */
+
+export interface CacheStats {
+  readonly name: string;
+  readonly hits: number;
+  readonly misses: number;
+  readonly evictions: number;
+  readonly size: number;
+  readonly maxSize: number;
+}
+
 export class LRUCache<T> {
   private readonly map = new Map<string, T>();
+  private readonly name: string;
   private readonly maxSize: number;
   private readonly onEvict?: (key: string, value: T) => void;
 
-  constructor(maxSize: number, onEvict?: (key: string, value: T) => void) {
+  private _hits = 0;
+  private _misses = 0;
+  private _evictions = 0;
+
+  constructor(name: string, maxSize: number, onEvict?: (key: string, value: T) => void) {
+    this.name = name;
     this.maxSize = maxSize;
     this.onEvict = onEvict;
   }
 
   get(key: string): T | undefined {
     const value = this.map.get(key);
-    if (value === undefined) return undefined;
+    if (value === undefined) {
+      this._misses++;
+      return undefined;
+    }
 
+    this._hits++;
     // Move to newest position
     this.map.delete(key);
     this.map.set(key, value);
@@ -31,11 +51,15 @@ export class LRUCache<T> {
     if (existing !== undefined) {
       // Key exists — delete to refresh position
       this.map.delete(key);
-      if (existing !== value) this.onEvict?.(key, existing);
+      if (existing !== value) {
+        this._evictions++;
+        this.onEvict?.(key, existing);
+      }
     } else if (this.map.size >= this.maxSize) {
       // At capacity — evict oldest (first key in Map iteration order)
       for (const [oldestKey, evicted] of this.map) {
         this.map.delete(oldestKey);
+        this._evictions++;
         this.onEvict?.(oldestKey, evicted);
         break; // only evict the first (oldest) entry
       }
@@ -45,6 +69,23 @@ export class LRUCache<T> {
 
   get size(): number {
     return this.map.size;
+  }
+
+  getStats(): CacheStats {
+    return {
+      name: this.name,
+      hits: this._hits,
+      misses: this._misses,
+      evictions: this._evictions,
+      size: this.map.size,
+      maxSize: this.maxSize,
+    };
+  }
+
+  resetStats(): void {
+    this._hits = 0;
+    this._misses = 0;
+    this._evictions = 0;
   }
 
   clear(): void {

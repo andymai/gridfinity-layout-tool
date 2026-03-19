@@ -102,13 +102,27 @@ describe('createInitialContext', () => {
     expect(ctx.dimensions.wallHeight).toBe(21); // No socket deduction for flat
   });
 
-  it('produces identical shellKey as original implementation', () => {
+  it('produces versioned shellKey with v1 prefix', () => {
     const ctx = createInitialContext(createTestParams());
 
-    // Manually compute expected shellKey matching original binGenerator logic
-    const expected = [2, 2, false, false, false, false, 6, 2, 3, true, 16, 1.2, false, false].join(
-      '|'
-    );
+    // shellKey now uses buildCacheKey with v1 prefix and quantized floats
+    const expected = [
+      'v1',
+      2,
+      2,
+      false,
+      false,
+      false,
+      false,
+      6,
+      2,
+      3,
+      true,
+      16,
+      1.2,
+      false,
+      false,
+    ].join('|');
 
     expect(ctx.dimensions.shellKey).toBe(expected);
   });

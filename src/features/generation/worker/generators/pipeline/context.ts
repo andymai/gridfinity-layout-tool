@@ -9,6 +9,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 import type { ProgressFn } from '../meshUtils';
+import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 
 /** Derive all dimensions from bin parameters. */
@@ -37,23 +38,26 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
   const hasLip = params.base.stackingLip;
   const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
 
-  // Shell cache key — must match the original binGenerator computation exactly
-  const shellKey = [
-    params.width,
-    params.depth,
-    isFlat,
-    halfSockets,
-    withMagnet,
-    withScrew,
-    params.base.magnetDiameter,
-    params.base.magnetDepth,
-    params.base.screwDiameter,
-    useHighQuality,
-    wallHeight,
-    params.wallThickness,
-    params.base.stackingLip,
-    solid,
-  ].join('|');
+  // Shell cache key — versioned + quantized for deterministic matching
+  const shellKey = compactKey(
+    buildCacheKey(
+      'v1',
+      quantize(params.width),
+      quantize(params.depth),
+      isFlat,
+      halfSockets,
+      withMagnet,
+      withScrew,
+      quantize(params.base.magnetDiameter),
+      quantize(params.base.magnetDepth),
+      quantize(params.base.screwDiameter),
+      useHighQuality,
+      quantize(wallHeight),
+      quantize(params.wallThickness),
+      params.base.stackingLip,
+      solid
+    )
+  );
 
   return {
     outerW,
