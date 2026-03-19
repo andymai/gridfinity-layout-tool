@@ -1,1 +1,0 @@
-export { AlignToolbar } from './AlignToolbar';
