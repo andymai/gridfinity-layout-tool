@@ -113,6 +113,7 @@ const en: Record<string, string> = {
   'header.help': 'Help',
   'header.sendFeedback': 'Feedback',
   'header.starOnGithub': 'Star',
+  'header.tip': 'Tip',
   'header.loadingLayouts': 'Loading layouts',
   'header.changeLanguage': 'Change language',
   'header.selectLanguage': 'Select language',

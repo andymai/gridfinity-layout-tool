@@ -642,6 +642,7 @@
   "header.sendFeedback": "Feedback",
   "header.showHelp": "Tastaturkürzel anzeigen (? oder /)",
   "header.starOnGithub": "Star",
+  "header.tip": "Trinkgeld",
   "header.undo": "Rückgängig ({mod}+Z)",
   "header.undoAction": "Letzte Aktion rückgängig machen ({mod}+Z)",
   "help.binClearance": "Bin-Freigang",

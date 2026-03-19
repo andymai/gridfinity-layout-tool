@@ -642,6 +642,7 @@
   "header.sendFeedback": "Feedback",
   "header.showHelp": "Afficher les raccourcis clavier (? ou /)",
   "header.starOnGithub": "Star",
+  "header.tip": "Pourboire",
   "header.undo": "Annuler ({mod}+Z)",
   "header.undoAction": "Annuler la dernière action ({mod}+Z)",
   "help.binClearance": "Dégagement de bin",

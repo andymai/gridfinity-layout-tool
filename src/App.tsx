@@ -386,7 +386,7 @@ export default function App() {
           )}
 
           {/* Header */}
-          <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
+          <Header saveStatus={saveStatus} />
 
           {/* Main content area - Grid takes full width */}
           <div className="flex-1 flex overflow-hidden">
@@ -420,13 +420,6 @@ export default function App() {
             onOpenLeftPanel={openLeftPanel}
             onOpenRightPanel={openRightPanel}
           />
-
-          {/* Modals */}
-          {isHelpOpen && (
-            <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
-              <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet />
-            </Suspense>
-          )}
 
           {/* Context menu (long-press on bin) */}
           {(() => {
@@ -472,7 +465,7 @@ export default function App() {
         )}
 
         {/* Header */}
-        <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
+        <Header saveStatus={saveStatus} />
 
         {/* Main content area */}
         <div className="flex-1 flex overflow-hidden">
@@ -499,13 +492,6 @@ export default function App() {
 
         {/* Floating drag preview */}
         <DragPreview />
-
-        {/* Modals */}
-        {isHelpOpen && (
-          <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
-            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-          </Suspense>
-        )}
 
         {/* Context menu (right-click on bin) */}
         {(() => {
@@ -554,6 +540,11 @@ export default function App() {
       {shouldShowWelcome && (
         <Suspense fallback={null}>
           <WelcomeModal isOpen onClose={markWelcomeComplete} />
+        </Suspense>
+      )}
+      {isHelpOpen && (
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
+          <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet={isTablet} />
         </Suspense>
       )}
     </>
