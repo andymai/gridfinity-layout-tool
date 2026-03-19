@@ -262,3 +262,29 @@ html[data-reduce-motion='true'] *::after {
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
+
+/* Instructional animations — teach interaction, exempt from blanket kill.
+   html[attr] .class (0,2,0) beats html[attr] * (0,1,0) when both use !important. */
+html[data-reduce-motion='true'] .animate-draw-hint-click {
+  animation: draw-hint-click 4s ease-out infinite !important;
+}
+
+html[data-reduce-motion='true'] .animate-draw-hint-cursor {
+  animation: draw-hint-cursor 4s ease-in-out infinite !important;
+}
+
+html[data-reduce-motion='true'] .animate-draw-hint-rect {
+  animation: draw-hint-rect 4s ease-in-out infinite !important;
+}
+
+html[data-reduce-motion='true'] .animate-cutout-draw-hint-click {
+  animation: draw-hint-click 4s ease-out 1 !important;
+}
+
+html[data-reduce-motion='true'] .animate-cutout-draw-hint-cursor {
+  animation: draw-hint-cursor 4s ease-in-out 1 !important;
+}
+
+html[data-reduce-motion='true'] .animate-cutout-draw-hint-rect {
+  animation: draw-hint-rect 4s ease-in-out 1 !important;
+}
