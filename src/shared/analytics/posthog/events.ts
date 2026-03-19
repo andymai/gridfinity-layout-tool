@@ -530,6 +530,28 @@ export function trackWasmThreadingStatus(isThreaded: boolean, hardwareConcurrenc
   });
 }
 
+// CACHE PERFORMANCE TRACKING
+
+/**
+ * Track generation cache performance for capacity planning.
+ * Called after each geometry generation with per-generation hit/miss/eviction deltas.
+ */
+export function trackCachePerformance(stats: {
+  total_hits: number;
+  total_misses: number;
+  total_evictions: number;
+  hit_rate: number;
+  cache_count: number;
+}): void {
+  trackEvent('generation_cache_stats', {
+    total_hits: stats.total_hits,
+    total_misses: stats.total_misses,
+    total_evictions: stats.total_evictions,
+    hit_rate: stats.hit_rate,
+    cache_count: stats.cache_count,
+  });
+}
+
 // GALLERY TRACKING
 
 /**

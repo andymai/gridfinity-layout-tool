@@ -185,8 +185,26 @@ export type WorkerResponse =
   | ExportResultResponse
   | DividersExportResultResponse
   | SplitExportResultResponse
+  | CacheStatsResponse
   | CleanupDoneResponse
   | ErrorResponse;
+
+/** Per-cache statistics snapshot from the worker. */
+export interface WorkerCacheStats {
+  readonly name: string;
+  readonly hits: number;
+  readonly misses: number;
+  readonly evictions: number;
+  readonly size: number;
+  readonly maxSize: number;
+}
+
+/** Aggregated cache stats posted after each generation. */
+export interface CacheStatsResponse {
+  readonly type: 'CACHE_STATS';
+  readonly requestId: string;
+  readonly caches: readonly WorkerCacheStats[];
+}
 
 export interface CleanupDoneResponse {
   readonly type: 'CLEANUP_DONE';

@@ -57,7 +57,9 @@ import {
   TONGUE_CLEARANCE,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
+import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
+import { buildCacheKey, quantize } from './cacheKeyUtils';
 
 // LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
 // Build one loft per unique cell size, then clone+translate for each grid position.
@@ -66,19 +68,19 @@ const disposeShape = (_key: string, shape: Shape3D): void => {
   shape.delete();
 };
 
-const pocketTemplateCache = new LRUCache<Shape3D>(16, disposeShape);
+const pocketTemplateCache = new LRUCache<Shape3D>('baseplate-pocket-template', 48, disposeShape);
 
 // Caches the fully tessellated mesh data (vertices, normals, indices, edges)
 // keyed by generation params. Skips BREP booleans + tessellation entirely on
 // cache hit — the most expensive operations in the pipeline.
 
-const meshResultCache = new LRUCache<MeshData>(8);
+const meshResultCache = new LRUCache<MeshData>('baseplate-mesh-result', 32);
 
 // Caches the slab-with-pockets BREP solid BEFORE magnet holes and connectors
 // are applied. This is the most expensive boolean step. When only magnet or
 // connector params change, we skip pocket cuts and resume from this cached solid.
 
-const slabWithPocketsCache = new LRUCache<Shape3D>(4, disposeShape);
+const slabWithPocketsCache = new LRUCache<Shape3D>('baseplate-slab-with-pockets', 16, disposeShape);
 
 function pocketCacheKey(
   cellW: number,
@@ -86,7 +88,7 @@ function pocketCacheKey(
   forExport: boolean,
   throughCut: boolean
 ): string {
-  return `${cellW}|${cellD}|${forExport}|${throughCut}`;
+  return buildCacheKey('v1', quantize(cellW), quantize(cellD), forExport, throughCut);
 }
 /** Insets at each Z breakpoint — same taper profile as bin socket but at full cell size */
 const INSET_TOP = 0;
@@ -751,17 +753,18 @@ function computeBaseplateEdgeLines(params: BaseplateParams): Float32Array {
   return new Float32Array(buf);
 }
 function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
-  return [
-    params.width,
-    params.depth,
-    params.gridUnitMm,
+  return buildCacheKey(
+    'v1',
+    quantize(params.width),
+    quantize(params.depth),
+    quantize(params.gridUnitMm),
     params.magnetHoles,
-    params.magnetDiameter,
-    params.magnetDepth,
-    params.paddingLeft,
-    params.paddingRight,
-    params.paddingFront,
-    params.paddingBack,
+    quantize(params.magnetDiameter),
+    quantize(params.magnetDepth),
+    quantize(params.paddingLeft),
+    quantize(params.paddingRight),
+    quantize(params.paddingFront),
+    quantize(params.paddingBack),
     params.fractionalEdgeX,
     params.fractionalEdgeY,
     params.edges?.left ?? '',
@@ -769,8 +772,8 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
     params.edges?.front ?? '',
     params.edges?.back ?? '',
     params.connectorNubs ?? false,
-    forExport,
-  ].join('|');
+    forExport
+  );
 }
 
 /**
@@ -779,24 +782,25 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
  * holes or connectors, so toggling those reuses the cached intermediate.
  */
 function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): string {
-  return [
-    params.width,
-    params.depth,
-    params.gridUnitMm,
-    params.magnetHoles, // affects throughCut and slab height
-    params.magnetDepth, // affects slab height (floorDepth)
-    params.paddingLeft,
-    params.paddingRight,
-    params.paddingFront,
-    params.paddingBack,
+  return buildCacheKey(
+    'v1',
+    quantize(params.width),
+    quantize(params.depth),
+    quantize(params.gridUnitMm),
+    params.magnetHoles,
+    quantize(params.magnetDepth),
+    quantize(params.paddingLeft),
+    quantize(params.paddingRight),
+    quantize(params.paddingFront),
+    quantize(params.paddingBack),
     params.fractionalEdgeX,
     params.fractionalEdgeY,
     params.edges?.left ?? '',
     params.edges?.right ?? '',
     params.edges?.front ?? '',
     params.edges?.back ?? '',
-    forExport,
-  ].join('|');
+    forExport
+  );
 }
 /**
  * Build the 2D slab outline, rounding only exterior corners.
@@ -1185,4 +1189,16 @@ export function clearBaseplateCaches(): void {
   pocketTemplateCache.dispose();
   meshResultCache.clear(); // MeshData is plain JS — no WASM disposal needed
   slabWithPocketsCache.dispose();
+}
+
+/** Collect stats from all baseplate LRU caches. */
+export function getBaseplateCacheStats(): CacheStats[] {
+  return [pocketTemplateCache, meshResultCache, slabWithPocketsCache].map((c) => c.getStats());
+}
+
+/** Reset stats counters on all baseplate LRU caches. */
+export function resetBaseplateCacheStats(): void {
+  pocketTemplateCache.resetStats();
+  meshResultCache.resetStats();
+  slabWithPocketsCache.resetStats();
 }

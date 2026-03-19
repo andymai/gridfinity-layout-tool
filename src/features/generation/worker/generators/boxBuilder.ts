@@ -38,6 +38,7 @@ import {
   sketch,
 } from './generatorTypes';
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
+import { buildCacheKey, quantize } from './cacheKeyUtils';
 /**
  * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
  * The box starts at Z=0 (socket interface) and goes up to wallHeight.
@@ -53,7 +54,15 @@ export function buildBinBox(
   solid: boolean,
   cutoutTopOffset: number = 0
 ): Shape3D {
-  const boxKey = `${gridW}|${gridD}|${wallHeight}|${wallThickness}|${solid}|${cutoutTopOffset}`;
+  const boxKey = buildCacheKey(
+    'v1',
+    quantize(gridW),
+    quantize(gridD),
+    quantize(wallHeight),
+    quantize(wallThickness),
+    solid,
+    quantize(cutoutTopOffset)
+  );
   const cached = getBoxCache(boxKey);
   if (cached) {
     return cached;
@@ -250,7 +259,7 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
  * Built at Z=0 locally, caller translates to wallHeight.
  */
 export function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape3D {
-  const lipKey = `${gridW}|${gridD}|${includeLip}`;
+  const lipKey = buildCacheKey('v1', quantize(gridW), quantize(gridD), includeLip);
   const cached = getLipCache(lipKey);
   if (cached) {
     return cached;

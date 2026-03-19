@@ -46,6 +46,7 @@ export {
   track3DRenderError,
   trackTemplateLoadError,
   trackWasmThreadingStatus,
+  trackCachePerformance,
   trackGalleryOpened,
   trackGalleryClosed,
 } from './events';

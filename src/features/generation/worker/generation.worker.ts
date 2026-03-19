@@ -28,8 +28,14 @@ import {
   generateBaseplate,
   exportBaseplate,
   clearBaseplateCaches,
+  getBaseplateCacheStats,
+  resetBaseplateCacheStats,
 } from './generators/baseplateGenerator';
-import { clearAllCaches } from './generators/shapeCache';
+import {
+  clearAllCaches,
+  getAllShapeCacheStats,
+  resetAllShapeCacheStats,
+} from './generators/shapeCache';
 import type { KernelName } from '../bridge/types';
 import { loadOpenCascade, loadBrepkit } from './wasmInstantiator';
 
@@ -145,6 +151,12 @@ function runGeneration(
         (b) => b.byteLength > 0
       ),
     });
+
+    // Post cache stats for instrumentation (per-generation deltas)
+    const cacheStats = [...getAllShapeCacheStats(), ...getBaseplateCacheStats()];
+    respond({ type: 'CACHE_STATS', requestId, caches: cacheStats });
+    resetAllShapeCacheStats();
+    resetBaseplateCacheStats();
   } catch (e) {
     // AbortError = expected cancellation -- silently discard
     if (e instanceof DOMException && e.name === 'AbortError') return;

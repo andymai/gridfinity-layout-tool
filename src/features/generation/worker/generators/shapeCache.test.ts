@@ -7,6 +7,8 @@ import {
   getPatternTemplateCache,
   setFeatureCache,
   clearAllCaches,
+  getAllShapeCacheStats,
+  resetAllShapeCacheStats,
 } from './shapeCache';
 import type { Shape3D } from 'brepjs';
 
@@ -16,9 +18,9 @@ function mockShape(): Shape3D & { delete: ReturnType<typeof vi.fn> } {
 }
 
 describe('socketCacheKey', () => {
-  it('produces deterministic key from parameters', () => {
+  it('produces deterministic versioned key from parameters', () => {
     const key = socketCacheKey(2, 2, true, false, 3.1, 2.0, 1.5, false, false);
-    expect(key).toBe('2|2|true|false|3.1|2|1.5|false|false');
+    expect(key).toBe('v1|2|2|true|false|3.1|2|1.5|false|false');
   });
 
   it('differs when magnet flag changes', () => {
@@ -53,6 +55,7 @@ describe('socketCacheKey', () => {
 
   it('includes all parameters in key', () => {
     const key = socketCacheKey(1.5, 2.5, true, true, 3.1, 2.4, 1.75, true, true);
+    expect(key).toMatch(/^v1\|/);
     expect(key).toContain('1.5');
     expect(key).toContain('2.5');
     expect(key).toContain('true');
@@ -140,5 +143,28 @@ describe('shape disposal', () => {
 
       expect(wall.delete).toHaveBeenCalledOnce();
     });
+  });
+});
+
+describe('cache stats exports', () => {
+  beforeEach(() => {
+    clearAllCaches();
+    resetAllShapeCacheStats();
+  });
+
+  it('getAllShapeCacheStats returns stats for all LRU caches', () => {
+    const stats = getAllShapeCacheStats();
+    // 4 base caches (socket, lip, box, shell) + 6 feature caches = 10
+    expect(stats.length).toBe(10);
+    expect(stats.every((s) => s.hits === 0 && s.misses === 0)).toBe(true);
+  });
+
+  it('resetAllShapeCacheStats zeroes all counters', () => {
+    // Force some misses by reading from empty caches
+    const stats = getAllShapeCacheStats();
+    expect(stats[0].hits).toBe(0);
+    resetAllShapeCacheStats();
+    const after = getAllShapeCacheStats();
+    expect(after.every((s) => s.hits === 0 && s.misses === 0 && s.evictions === 0)).toBe(true);
   });
 });

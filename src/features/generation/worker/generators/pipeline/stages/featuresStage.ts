@@ -15,6 +15,7 @@ import type { Shape3D, TransformOp } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from '../../generatorConstants';
 import { checkCancelled, sketch } from '../../meshUtils';
+import { buildCacheKey, quantize, stableSerialize, compactKey } from '../../cacheKeyUtils';
 import {
   getFeatureCache,
   setFeatureCache,
@@ -102,7 +103,19 @@ export const featuresStage: PipelineStage = {
     // Compartment walls
     if (!isSlotted) {
       checkCancelled(signal);
-      const cwKey = `${shellKey}|${innerW}|${innerD}|${interiorHeight}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.thickness}|${params.compartments.cells.join(',')}`;
+      const cwKey = compactKey(
+        buildCacheKey(
+          'v1',
+          shellKey,
+          quantize(innerW),
+          quantize(innerD),
+          quantize(interiorHeight),
+          params.compartments.cols,
+          params.compartments.rows,
+          quantize(params.compartments.thickness),
+          params.compartments.cells.join(',')
+        )
+      );
       cachedFeature(
         'compartmentWalls',
         cwKey,
@@ -115,7 +128,7 @@ export const featuresStage: PipelineStage = {
 
     // Insert cuts
     checkCancelled(signal);
-    const icKey = `${shellKey}|${JSON.stringify(params.inserts)}`;
+    const icKey = compactKey(buildCacheKey('v1', shellKey, stableSerialize(params.inserts)));
     cachedFeature(
       'insertCuts',
       icKey,
@@ -131,7 +144,24 @@ export const featuresStage: PipelineStage = {
       const lipInfo = hasLip
         ? { wallHeight: dim.wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
         : undefined;
-      const scKey = `${shellKey}|${JSON.stringify(params.slotConfig)}|${innerW}|${innerD}|${interiorHeight}|${lipInfo ? `${lipInfo.wallHeight}|${lipInfo.lipHeight}|${lipInfo.lipTaperWidth}` : 'none'}`;
+      const scKey = compactKey(
+        buildCacheKey(
+          'v1',
+          shellKey,
+          stableSerialize(params.slotConfig),
+          quantize(innerW),
+          quantize(innerD),
+          quantize(interiorHeight),
+          lipInfo
+            ? buildCacheKey(
+                'lip',
+                quantize(lipInfo.wallHeight),
+                quantize(lipInfo.lipHeight),
+                quantize(lipInfo.lipTaperWidth)
+              )
+            : 'none'
+        )
+      );
       cachedFeature(
         'slotCuts',
         scKey,
@@ -145,7 +175,20 @@ export const featuresStage: PipelineStage = {
     // Label tabs
     if (!isSlotted) {
       checkCancelled(signal);
-      const ltKey = `${shellKey}|${JSON.stringify(params.label)}|${innerW}|${innerD}|${interiorHeight}|${params.wallThickness}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
+      const ltKey = compactKey(
+        buildCacheKey(
+          'v1',
+          shellKey,
+          stableSerialize(params.label),
+          quantize(innerW),
+          quantize(innerD),
+          quantize(interiorHeight),
+          quantize(params.wallThickness),
+          params.compartments.cols,
+          params.compartments.rows,
+          params.compartments.cells.join(',')
+        )
+      );
       cachedFeature(
         'labelTabs',
         ltKey,
@@ -159,7 +202,22 @@ export const featuresStage: PipelineStage = {
     // Scoop ramps
     if (!isSlotted) {
       checkCancelled(signal);
-      const srKey = `${shellKey}|${JSON.stringify(params.scoop)}|${params.style}|${innerW}|${innerD}|${dim.wallHeight}|${params.wallThickness}|${hasLip}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
+      const srKey = compactKey(
+        buildCacheKey(
+          'v1',
+          shellKey,
+          stableSerialize(params.scoop),
+          params.style,
+          quantize(innerW),
+          quantize(innerD),
+          quantize(dim.wallHeight),
+          quantize(params.wallThickness),
+          hasLip,
+          params.compartments.cols,
+          params.compartments.rows,
+          params.compartments.cells.join(',')
+        )
+      );
       cachedFeature(
         'scoopRamps',
         srKey,
@@ -173,7 +231,20 @@ export const featuresStage: PipelineStage = {
     // Wall cutouts
     if (params.walls.enabled) {
       checkCancelled(signal);
-      const wcKey = `${shellKey}|${JSON.stringify(params.walls)}|${innerW}|${innerD}|${dim.wallHeight}|${hasLip}|${params.compartments.cols}|${params.compartments.rows}|${params.compartments.cells.join(',')}`;
+      const wcKey = compactKey(
+        buildCacheKey(
+          'v1',
+          shellKey,
+          stableSerialize(params.walls),
+          quantize(innerW),
+          quantize(innerD),
+          quantize(dim.wallHeight),
+          hasLip,
+          params.compartments.cols,
+          params.compartments.rows,
+          params.compartments.cells.join(',')
+        )
+      );
       cachedFeature(
         'wallCutoutCuts',
         wcKey,
@@ -195,7 +266,12 @@ export const featuresStage: PipelineStage = {
           const patternType = calculator.getPatternType();
           const shapeRadius = calculator.getShapeRadius();
 
-          const templateKey = `${patternType}|${shapeRadius}|${cutDepth}`;
+          const templateKey = buildCacheKey(
+            'v1',
+            patternType,
+            quantize(shapeRadius),
+            quantize(cutDepth)
+          );
           const shapeTemplate =
             getPatternTemplateCache(templateKey) ??
             (() => {
