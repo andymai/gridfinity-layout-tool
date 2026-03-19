@@ -54,8 +54,8 @@ export async function isIndexedDBAvailable(): Promise<boolean> {
 /**
  * Open and return the layout database.
  * Creates the database and object stores if they don't exist.
- * Automatically reconnects if the cached connection was closed
- * (e.g. by browser eviction, version upgrade from another tab).
+ * Automatically reconnects if the browser closes the cached connection
+ * (e.g. mobile background tab eviction, memory pressure).
  */
 export async function openLayoutDatabase(): Promise<IDBPDatabase> {
   if (dbInstance) {
