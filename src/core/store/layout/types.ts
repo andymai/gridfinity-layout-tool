@@ -82,7 +82,6 @@ export interface LayoutState {
   // Baseplate
   setBaseplateParams: (params: BaseplateParams) => void;
 
-  // Settings
   setPrintBedSize: (size: number) => void;
   setGridUnitMm: (mm: number) => void;
   setHeightUnitMm: (mm: number) => void;

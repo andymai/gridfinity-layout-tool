@@ -13,9 +13,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
 import { focusRing, interactiveTransition } from '../variants';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Menu Context
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface MenuContextValue {
   onClose: () => void;
@@ -31,11 +29,6 @@ function useMenuContext() {
   }
   return context;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Variants
-// ─────────────────────────────────────────────────────────────────────────────
-
 const overlayVariants = cva(['fixed inset-0 z-40', 'bg-overlay-light']);
 
 const contentVariants = cva([
@@ -78,9 +71,7 @@ const itemVariants = cva(
 
 const dividerVariants = cva(['h-px', 'bg-stroke-subtle', 'my-1', 'mx-2']);
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Menu Root
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface MenuRootProps {
   /**
@@ -208,7 +199,6 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
     menu.style.top = `${y}px`;
   }, [open, position]);
 
-  // Keyboard navigation
   const handleKeyDown = useCallback(
     (e: ReactKeyboardEvent) => {
       const items = itemsRef.current;
@@ -286,9 +276,7 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Menu Item
-// ─────────────────────────────────────────────────────────────────────────────
 
 type ItemVariantProps = VariantProps<typeof itemVariants>;
 
@@ -369,17 +357,13 @@ function MenuItem({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Menu Divider
-// ─────────────────────────────────────────────────────────────────────────────
 
 function MenuDivider() {
   return <div role="separator" className={dividerVariants()} aria-hidden="true" />;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Compound Component Export
-// ─────────────────────────────────────────────────────────────────────────────
 
 export const Menu = {
   Root: MenuRoot,

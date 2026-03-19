@@ -15,9 +15,6 @@ import type { Layout, LayerId, CategoryId, DesignId } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
 import type { BinParams } from '@/shared/types/bin';
-
-// === JSON Import/Export ===
-
 interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
@@ -223,9 +220,6 @@ export async function restoreEmbeddedDesigns(
 
   return { layout, importedDesignCount };
 }
-
-// === TSV Export ===
-
 /**
  * Escape a value for TSV format.
  * Replaces tabs and newlines with spaces to prevent breaking the format.
@@ -307,9 +301,6 @@ export function exportPrintListTSV(
 
   return [header, ...lines].join('\n');
 }
-
-// === URL Encoding (Hash-based sharing) ===
-
 /**
  * Compress a string using base64 encoding.
  */
@@ -431,9 +422,6 @@ export function clearSharedLayoutFromURL(): void {
   const url = window.location.href.split('#')[0];
   window.history.replaceState(null, '', url);
 }
-
-// === Cloud Share URLs ===
-
 /**
  * Get layout ID from URL if present.
  * Matches: /l/{12-char-id} or /l/{12-char-id}/{slug}

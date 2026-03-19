@@ -240,7 +240,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [addToast]
   );
 
-  // Keyboard navigation
   const getGridColumns = useCallback(() => {
     if (effectiveViewMode === 'list' || !gridRef.current) return 1;
     const style = window.getComputedStyle(gridRef.current);

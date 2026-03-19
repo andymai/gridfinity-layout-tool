@@ -19,7 +19,6 @@
  * ```
  */
 
-// === Core Types ===
 export type {
   CommandId,
   EventId,
@@ -38,7 +37,6 @@ export type {
 
 export { commandId, eventId, correlationId } from './types';
 
-// === Commands ===
 export type { Command, CommandType } from './commands';
 export { createCommand } from './commands';
 // Re-export individual command types for type-narrowing
@@ -71,7 +69,6 @@ export type {
   DrawerCommand,
 } from './commands';
 
-// === Events ===
 export type { DomainEvent, DomainEventType } from './events';
 export type {
   BinAddedEvent,
@@ -102,31 +99,24 @@ export type {
   DrawerEvent,
 } from './events';
 
-// === Bus Singletons ===
 export { commandBus, createCommandBus } from './bus/commandBus';
 export type { CommandBus } from './bus/commandBus';
 export { eventBus, createEventBus } from './bus/eventBus';
 export type { EventBus } from './bus/eventBus';
 
-// === Event Store ===
 export { eventStore, connectEventStoreToBus, resetEventStoreDb } from './store/eventStore';
 export type { EventStore, EventStoreQuery } from './store/eventStore';
 
-// === Retry Queue ===
 export { getPendingRetryCount, clearRetryQueue } from './store/retryQueue';
 
-// === Middleware ===
 export { undoCaptureMiddleware, _resetUndoCaptureState } from './middleware/undoCapture';
 export { loggingMiddleware } from './middleware/logging';
 export { analyticsMiddleware } from './middleware/analytics';
 /** @deprecated Use `getDefaultPipeline()` instead */
 export { defaultPipeline, getDefaultPipeline } from './middleware';
 
-// === Validation ===
 export { validationMiddleware, COMMAND_SCHEMAS, getCommandSchema } from './validation';
 
-// === Integration ===
 export { createCqrsMutations } from './integration/mutationsAdapter';
 
-// === Replay (dev tools) ===
 export { applyEvent, replayEvents, replayFromStore } from './projection/replay';

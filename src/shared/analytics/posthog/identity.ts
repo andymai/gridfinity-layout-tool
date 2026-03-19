@@ -5,9 +5,7 @@
 
 import { generateUUID } from '@/shared/utils';
 
-// ============================================
 // CONSOLIDATED ANALYTICS STORAGE
-// ============================================
 
 export const ANALYTICS_STORAGE_KEY = 'gridfinity-analytics-v1';
 
@@ -61,9 +59,7 @@ export function pruneAnalyticsData(): void {
   }
 }
 
-// ============================================
 // STABLE USER IDENTITY
-// ============================================
 
 /**
  * Get or create a stable user ID for anonymous users.

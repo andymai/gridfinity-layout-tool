@@ -1,8 +1,6 @@
 import type { PlacementMethod } from './types';
 
-// ============================================
 // SESSION STATE
-// ============================================
 
 export interface SessionState {
   /** Last bin size placed this session */
@@ -69,9 +67,7 @@ export let layoutSession: LayoutSessionState = {
 // Minimum time between snapshots for same layout (60 seconds)
 export const MIN_SNAPSHOT_INTERVAL_MS = 60_000;
 
-// ============================================
 // BIN TIMESTAMP TRACKING (for quick-correction detection)
-// ============================================
 
 /**
  * Tracks when bins were created and how they were placed.
@@ -153,9 +149,7 @@ export function removeBinCreationRecord(binId: string): BinCreationRecord | null
   return record ?? null;
 }
 
-// ============================================
 // UNDO TIMESTAMP TRACKING
-// ============================================
 
 /** Timestamp of the last action (for undo timing) */
 let lastActionTimestamp = Date.now();
@@ -216,9 +210,7 @@ export function getSessionContext(): { durationMs: number; editCount: number } {
   };
 }
 
-// ============================================
 // IDLE / EDIT ACTIVITY TRACKING
-// ============================================
 
 /** Tracks last edit time for idle detection */
 let lastEditTime = Date.now();

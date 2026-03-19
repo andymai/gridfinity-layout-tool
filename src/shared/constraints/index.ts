@@ -4,7 +4,6 @@
  * Import from '@/shared/constraints' for all constraint operations.
  */
 
-// Types
 export type {
   FeatureKey,
   FeatureChange,

@@ -46,9 +46,6 @@ export type {
   SetHeightUnitMmCommand,
   SetBaseplateParamsCommand,
 } from './drawerCommands';
-
-// === Union of all commands ===
-
 import type { BinCommand } from './binCommands';
 import type { LayerCommand } from './layerCommands';
 import type { CategoryCommand } from './categoryCommands';
@@ -58,9 +55,6 @@ export type Command = BinCommand | LayerCommand | CategoryCommand | DrawerComman
 
 /** All possible command type strings, derived from the Command union */
 export type CommandType = Command['type'];
-
-// === ID Generation ===
-
 let commandCounter = 0;
 let correlationCounter = 0;
 
@@ -71,9 +65,6 @@ function generateCommandId(): CommandId {
 function generateCorrelationId(): CorrelationId {
   return correlationId(`cor_${Date.now()}_${++correlationCounter}`);
 }
-
-// === Factory ===
-
 /**
  * Create a command with auto-generated metadata.
  *

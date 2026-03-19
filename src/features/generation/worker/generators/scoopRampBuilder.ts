@@ -17,9 +17,6 @@ import {
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 import { fuseAllOrNull, findCompartmentBounds } from './compartmentBuilder';
 import { applyFilletWithFallback } from './cutoutBuilder';
-
-// ─── Finger Scoop Builder ────────────────────────────────────────────────────
-
 /**
  * Build finger scoop ramps that curve from the bin floor up to the front wall.
  *
@@ -95,10 +92,8 @@ export function buildScoopRamps(
 
       // Build scoop ramp solid.
       // Profile in YZ plane: draw([u, v]) where u->Y (depth), v->Z (height).
-      //
       // Without lip offset (lipOffset = 0):
       //   (0, 0) -> (0, R) -> arc -> (R, 0) -> close
-      //
       // With lip offset (lo), extends to wallHeight so scoop meets lip:
       //   (0, 0) -> (0, wH) -> (lo, wH) -> (lo, R) -> arc -> (lo+R, 0) -> close
       //   Goes up the wall to wallHeight, across to the lip's inner face,

@@ -14,13 +14,9 @@ import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import { createDefaultLabsPreferences } from '@/core/labs';
 import type { LabsPreferences } from '@/core/labs';
 
-/**
- * Hook to automatically sync layout data when modified in another browser tab.
- * The storage event only fires for changes from OTHER tabs, so this won't loop.
- */
+/** Syncs layout data modified in another browser tab (storage events are cross-tab only). */
 export function useCrossTabSync() {
   useEffect(() => {
-    // BroadcastChannel for library index sync (IndexedDB has no storage events)
     const cleanupLibraryChannel = listenForLibraryChanges(() => {
       loadLibraryAsync()
         .then((newLibrary) => {
@@ -34,7 +30,6 @@ export function useCrossTabSync() {
     });
 
     const handleStorageChange = (e: StorageEvent) => {
-      // Labs preferences changed - sync them
       if (e.key === LABS_STORAGE_KEY) {
         try {
           const newPrefs: unknown = e.newValue
@@ -50,32 +45,22 @@ export function useCrossTabSync() {
         return;
       }
 
-      // A specific layout changed - check if it's the active one
-      // Note: With IndexedDB migration, localStorage events only fire for legacy writes.
-      // IndexedDB doesn't have cross-tab events, so this is backwards compatibility.
+      // Legacy backwards compatibility: IndexedDB has no cross-tab events
       if (e.key?.startsWith('gridfinity-layout-')) {
         const layoutId = e.key.replace('gridfinity-layout-', '');
         const activeLayoutId = useLayoutStore.getState().activeLayoutId;
 
-        // Only reload if it's the currently active layout
         if (layoutId === activeLayoutId) {
-          // Load asynchronously from IndexedDB (with localStorage fallback)
           loadLayoutAsync(layoutId)
             .then((newLayout) => {
               if (newLayout) {
-                // Re-check active layout hasn't changed during async load
                 if (useLayoutStore.getState().activeLayoutId !== layoutId) return;
 
-                // Validate before applying
                 const validation = validateLayoutIntegrity(newLayout);
                 if (validation.valid) {
-                  // Update layout store (from another tab, treat as remote)
                   useLayoutStore.getState().importLayout(newLayout, toLayoutId(layoutId), 'remote');
-
-                  // Clear undo history since we're syncing external changes
                   useHistoryStore.getState().clear();
 
-                  // Update active layer/category if they no longer exist
                   const selectionState = useSelectionStore.getState();
                   const activeLayer = selectionState.activeLayerId;
                   const activeCategory = selectionState.activeCategoryId;
@@ -90,7 +75,6 @@ export function useCrossTabSync() {
                     selectionState.setActiveCategory(newLayout.categories[0]?.id ?? '');
                   }
 
-                  // Clear selection since bins may have changed
                   selectionState.clearSelection();
                 }
               }

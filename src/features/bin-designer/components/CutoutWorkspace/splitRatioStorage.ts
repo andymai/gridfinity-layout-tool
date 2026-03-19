@@ -13,7 +13,7 @@ export function loadSplitRatio(): number {
       if (!isNaN(parsed) && parsed >= MIN_RATIO && parsed <= MAX_RATIO) return parsed;
     }
   } catch {
-    // Ignore
+    // best-effort
   }
   return DEFAULT_RATIO;
 }
@@ -22,6 +22,6 @@ export function saveSplitRatio(ratio: number): void {
   try {
     localStorage.setItem(STORAGE_KEY, String(ratio));
   } catch {
-    // Ignore storage errors
+    // best-effort
   }
 }

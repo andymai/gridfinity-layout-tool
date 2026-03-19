@@ -13,7 +13,6 @@
  * - init.ts: Initialization, cleanup, idle detection
  */
 
-// Types
 export type {
   BinPlacementEvent,
   LabelUpdateEvent,

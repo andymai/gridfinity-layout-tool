@@ -13,9 +13,7 @@ import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { processLabel, type LabelDomain } from './labelVocabulary';
 import { saveMlData, loadMlData } from '@/core/storage/backends/indexedDB';
 
-// ============================================
 // TYPES
-// ============================================
 
 /**
  * A signal that contributes to purpose inference.
@@ -41,9 +39,7 @@ export interface PurposeInferenceResult {
   signals: PurposeSignal[];
 }
 
-// ============================================
 // SIZE PATTERN DEFINITIONS
-// ============================================
 
 /**
  * Known size patterns that suggest specific purposes.
@@ -79,9 +75,7 @@ const SIZE_PATTERNS: Record<string, SizePatternDef> = {
   },
 };
 
-// ============================================
 // INFERENCE LOGIC
-// ============================================
 
 /**
  * Calculate domain distribution from bins.
@@ -224,7 +218,6 @@ export function inferDrawerPurpose(layout: Layout): PurposeInferenceResult {
 
   // Collect signals
 
-  // 1. Domain concentration (strongest signal)
   const domainDistribution = getDomainDistribution(gridBins);
   const totalLabeled = Array.from(domainDistribution.values()).reduce((a, b) => a + b, 0);
 
@@ -244,10 +237,8 @@ export function inferDrawerPurpose(layout: Layout): PurposeInferenceResult {
     }
   }
 
-  // 2. Size patterns
   signals.push(...getSizePatternSignals(gridBins));
 
-  // 3. Label patterns
   signals.push(...getLabelPatternSignals(gridBins));
 
   // Aggregate signals by purpose
@@ -279,9 +270,7 @@ export function inferDrawerPurpose(layout: Layout): PurposeInferenceResult {
   };
 }
 
-// ============================================
 // CROSS-LAYOUT LABEL SIZE TRACKING
-// ============================================
 
 const ML_LABEL_SIZES_KEY = 'label-sizes';
 

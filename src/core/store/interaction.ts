@@ -30,7 +30,6 @@ interface InteractionState {
   interaction: Interaction | null;
   dropTarget: DropTarget;
 
-  // Paint mode
   paintSize: PaintSize | null;
 
   // Keyboard modes
@@ -46,7 +45,6 @@ interface InteractionActions {
   setInteraction: (interaction: Interaction | null) => void;
   setDropTarget: (target: DropTarget) => void;
 
-  // Paint mode
   setPaintSize: (size: PaintSize | null) => void;
   togglePaintSize: (size: PaintSize) => void;
 
@@ -74,7 +72,6 @@ export const INITIAL_INTERACTION_STATE = {
  * Also manages drop targets, layer view mode (focus/stack/all), and paint size.
  */
 export const useInteractionStore = create<InteractionStore>((set) => ({
-  // Initial state
   ...INITIAL_INTERACTION_STATE,
 
   // Interaction actions

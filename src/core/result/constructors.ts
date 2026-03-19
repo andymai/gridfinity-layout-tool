@@ -56,9 +56,7 @@ import type {
 } from './errors';
 import { getErrorInfo } from './catalog';
 
-// =============================================================================
 // Internal Helpers
-// =============================================================================
 
 /**
  * Build a metadata object from the given fields, filtering out undefined values.
@@ -87,9 +85,7 @@ function createError<T extends AppError>(
   } as T;
 }
 
-// =============================================================================
 // Storage Error Constructors
-// =============================================================================
 
 /** Create a storage quota exceeded error. */
 export function storageQuotaExceeded(
@@ -135,9 +131,7 @@ export function storageNetworkError(cause?: unknown): StorageNetworkError {
   return createError('StorageError', 'STORAGE_NETWORK_ERROR', { cause });
 }
 
-// =============================================================================
 // Validation Error Constructors
-// =============================================================================
 
 /** Create a validation out of bounds error. */
 export function validationOutOfBounds(
@@ -179,9 +173,7 @@ export function validationImportFailed(errors: string[]): ValidationImportError 
   return createError('ValidationError', 'VALIDATION_IMPORT_FAILED', { errors });
 }
 
-// =============================================================================
 // Layout Error Constructors
-// =============================================================================
 
 /** Create a layout layer limit error. */
 export function layoutLayerLimit(currentCount: number, maxCount: number): LayoutLayerLimitError {
@@ -234,9 +226,7 @@ export function layoutInvalidOperation(
   return createError('LayoutError', 'LAYOUT_INVALID_OPERATION', { operation, reason });
 }
 
-// =============================================================================
 // API Error Constructors
-// =============================================================================
 
 /** Create an API rate limited error. */
 export function apiRateLimited(retryAfter?: number): ApiRateLimitedError {
@@ -309,9 +299,7 @@ export function apiInvalidExpiration(providedValue?: number): ApiInvalidExpirati
   return createError('ApiError', 'API_INVALID_EXPIRATION', { providedValue });
 }
 
-// =============================================================================
 // Unknown Error Constructor
-// =============================================================================
 
 /** Create an unknown error. Use this as a fallback when wrapping unknown exceptions. */
 export function unknownError(cause?: unknown): UnknownError {

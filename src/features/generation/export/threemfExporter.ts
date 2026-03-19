@@ -135,9 +135,6 @@ export function deduplicateVertices(vertices: Float32Array): IndexedMesh {
 
   return { vertices: uniqueVertices, triangles };
 }
-
-// ─── XML Builders ────────────────────────────────────────────────────────────
-
 function buildContentTypes(hasThumbnail: boolean): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n';
@@ -228,9 +225,6 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   xml += '</model>';
   return xml;
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, '&amp;')

@@ -560,9 +560,6 @@ export class GenerationBridge {
   getThreadingInfo(): ThreadingInfo | null {
     return this.threadingInfo;
   }
-
-  // ─── Private ────────────────────────────────────────────────────────────────
-
   /**
    * Prepare an export slot: check destroyed state, ensure worker is initialized,
    * reject any existing pending export on the same slot, and return a new request ID.

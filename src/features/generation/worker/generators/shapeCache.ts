@@ -19,9 +19,6 @@
 import { clone } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { LRUCache } from './lruCache';
-
-// ─── Cache State ─────────────────────────────────────────────────────────────
-
 /** Dispose callback for LRU caches holding WASM-backed shapes. */
 const disposeShape = (_key: string, shape: Shape3D): void => {
   shape.delete();
@@ -66,9 +63,6 @@ interface CacheEntry {
 
 let patternTemplateCache: CacheEntry | null = null;
 let lastSolid: Shape3D | null = null;
-
-// ─── All LRU caches for batch disposal ───────────────────────────────────────
-
 /** Feature tool caches — maxSize=3: typical user edits one feature at a time */
 const FEATURE_NAMES = [
   'compartmentWalls',
@@ -91,9 +85,6 @@ const allLruCaches: readonly LRUCache<Shape3D>[] = [
   shellCache,
   ...featureToolCaches.values(),
 ];
-
-// ─── Socket Cache ────────────────────────────────────────────────────────────
-
 export function socketCacheKey(
   gridW: number,
   gridD: number,
@@ -110,19 +101,10 @@ export function socketCacheKey(
 
 export const getSocketCache = socket.get;
 export const setSocketCache = socket.set;
-
-// ─── Box Cache ───────────────────────────────────────────────────────────────
-
 export const getBoxCache = box.get;
 export const setBoxCache = box.set;
-
-// ─── Lip Cache ───────────────────────────────────────────────────────────────
-
 export const getLipCache = lip.get;
 export const setLipCache = lip.set;
-
-// ─── Shell Cache ─────────────────────────────────────────────────────────────
-
 export function getShellCache(key: string): Shape3D | null {
   const shape = shellCache.get(key);
   return shape !== undefined ? clone(shape) : null;
@@ -131,9 +113,6 @@ export function getShellCache(key: string): Shape3D | null {
 export function setShellCache(key: string, shape: Shape3D): void {
   shellCache.set(key, shape);
 }
-
-// ─── Pattern Template Cache ──────────────────────────────────────────────────
-
 /** Returns raw shape (no clone) — caller uses transformCopy which is non-destructive. */
 export function getPatternTemplateCache(key: string): Shape3D | null {
   return patternTemplateCache?.key === key ? patternTemplateCache.shape : null;
@@ -145,9 +124,6 @@ export function setPatternTemplateCache(key: string, shape: Shape3D): void {
   }
   patternTemplateCache = { key, shape };
 }
-
-// ─── Last Solid Cache ────────────────────────────────────────────────────────
-
 export function getLastSolid(): Shape3D | null {
   return lastSolid;
 }
@@ -156,9 +132,6 @@ export function setLastSolid(shape: Shape3D | null): void {
   if (lastSolid && lastSolid !== shape) lastSolid.delete();
   lastSolid = shape;
 }
-
-// ─── Feature Tool Caches ─────────────────────────────────────────────────────
-
 export function getFeatureCache(feature: string, key: string): Shape3D | null {
   const cache = featureToolCaches.get(feature);
   if (!cache) return null;
@@ -169,9 +142,6 @@ export function getFeatureCache(feature: string, key: string): Shape3D | null {
 export function setFeatureCache(feature: string, key: string, shape: Shape3D): void {
   featureToolCaches.get(feature)?.set(key, shape);
 }
-
-// ─── Disposal ────────────────────────────────────────────────────────────────
-
 /** Clear all shape caches, disposing WASM handles. Required when switching geometry kernels in tests. */
 export function clearAllCaches(): void {
   for (const cache of allLruCaches) {

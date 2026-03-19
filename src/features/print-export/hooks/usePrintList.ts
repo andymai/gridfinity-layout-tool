@@ -65,7 +65,6 @@ export interface UsePrintListReturn {
   nozzleSizeMm: number;
   setFilamentCostPerKg: (cost: number) => void;
 
-  // Actions
   selectBinsByRow: (row: EnhancedPrintRow) => void;
 
   // Categories (for filter UI)
@@ -136,7 +135,6 @@ export function usePrintList(): UsePrintListReturn {
     };
   }, [rows, config.filamentCostPerKg, config.metersPerKg, printSettings]);
 
-  // Actions
   const setSort = useCallback((key: PrintListSortKey) => {
     setFilters((f) => ({
       ...f,

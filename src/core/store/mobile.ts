@@ -42,10 +42,8 @@ export const INITIAL_MOBILE_STATE = {
 } as const;
 
 export const useMobileStore = create<MobileStore>((set) => ({
-  // Initial state
   ...INITIAL_MOBILE_STATE,
 
-  // Actions
   setActiveMobilePanel: (panel) => set({ activeMobilePanel: panel }),
   closeMobilePanel: () => set({ activeMobilePanel: null }),
   toggleMobilePanel: (panel) =>

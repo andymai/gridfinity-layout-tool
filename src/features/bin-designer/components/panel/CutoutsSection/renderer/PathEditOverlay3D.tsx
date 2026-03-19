@@ -142,9 +142,6 @@ export function PathEditOverlay3D({
     </group>
   );
 }
-
-// ─── Vertex Handle ──────────────────────────────────────────────────────────
-
 interface VertexHandleProps {
   readonly x: number;
   readonly y: number;
@@ -198,9 +195,6 @@ function VertexHandle({
     </group>
   );
 }
-
-// ─── Handle Line Sub-Component ──────────────────────────────────────────────
-
 interface HandleLineProps {
   readonly pointX: number;
   readonly pointY: number;
@@ -289,9 +283,6 @@ function HandleLine({
     </>
   );
 }
-
-// ─── Segment Hover Preview ──────────────────────────────────────────────────
-
 interface SegmentHoverPreviewProps {
   readonly path: readonly PathPoint[];
   readonly hover: SegmentHoverInfo;

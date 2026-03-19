@@ -1,8 +1,6 @@
 import type { LayoutArchetype, SpatialPattern, EdgeUsage } from '../layoutPatterns';
 
-// ============================================
 // EVENT TYPES
-// ============================================
 
 /**
  * Bin placement event for ML training.
@@ -10,7 +8,6 @@ import type { LayoutArchetype, SpatialPattern, EdgeUsage } from '../layoutPatter
 export interface BinPlacementEvent {
   type: 'bin_placed';
 
-  // === Core (for transition matrix) ===
   /** Bin size as "WxDxH" string */
   bin_size: string;
   /** Previous bin size this session, or null if first bin */
@@ -18,7 +15,6 @@ export interface BinPlacementEvent {
   /** Drawer size as "WxDxH" string */
   drawer_size: string;
 
-  // === Spatial context ===
   /** Position as "X,Y" string */
   position: string;
   /** Layer index (0 = bottom) */
@@ -30,7 +26,6 @@ export interface BinPlacementEvent {
   /** Whether bin fills a gap exactly, partially, or not at all */
   gap_fit: 'exact' | 'partial' | 'none';
 
-  // === Label data (hash-first strategy) ===
   /** Label hash - ALWAYS populated if label exists */
   label_hash: string | null;
   /** Normalized label from vocabulary, or null */
@@ -42,7 +37,6 @@ export interface BinPlacementEvent {
   /** Category ID from the layout */
   category_id: string;
 
-  // === Adjacent context (for co-location learning) ===
   /** Label hashes of adjacent bins on same layer (max 4) */
   adjacent_label_hashes: string[];
   /** Sizes of adjacent bins on same layer (max 4) */
@@ -50,7 +44,6 @@ export interface BinPlacementEvent {
   /** Number of adjacent bins */
   adjacent_count: number;
 
-  // === Sequence context (for workflow learning) ===
   /** Sizes of last 3 placements in this session */
   recent_sizes: string[];
   /** Time since last placement in ms, or null if first placement */
@@ -58,13 +51,11 @@ export interface BinPlacementEvent {
   /** Whether this is the first bin with this label in the session */
   is_first_of_label: boolean;
 
-  // === Context ===
   /** How the bin was placed */
   method: PlacementMethod;
   /** nth bin placed this session */
   session_index: number;
 
-  // === Versioning ===
   /** Vocabulary version for label normalization */
   vocab_version: string;
 }
@@ -98,17 +89,14 @@ export interface LabelUpdateEvent {
 export interface LayoutSnapshotEvent {
   type: 'layout_snapshot';
 
-  // === Trigger context ===
   /** What action triggered the snapshot */
   trigger: LayoutSnapshotTrigger;
 
-  // === Layout identity ===
   /** Hash of layout for deduplication */
   layout_hash: string;
   /** nth snapshot of this layout in current session */
   snapshot_index: number;
 
-  // === Drawer context ===
   /** Drawer size as "WxDxH" string */
   drawer_size: string;
   /** Number of layers in the layout */
@@ -116,7 +104,6 @@ export interface LayoutSnapshotEvent {
   /** Optional drawer purpose if set */
   purpose: string | null;
 
-  // === Composition (aggregated, not positions) ===
   /** Total number of bins (excluding staging) */
   bin_count: number;
   /** Distribution of bin sizes: {"1x1x6": 4, "2x2x3": 2} */
@@ -126,27 +113,22 @@ export interface LayoutSnapshotEvent {
   /** Distribution by label domain: {"tools": 5, "fasteners": 3} */
   domain_distribution: Record<string, number>;
 
-  // === Label data (for co-occurrence learning) ===
   /** Top 10 most common label hashes in layout */
   top_label_hashes: string[];
 
-  // === Quality metrics ===
   /** Percentage of drawer filled (0-100) */
   fill_percentage: number;
   /** Percentage of bins with labels (0-100) */
   labeled_percentage: number;
 
-  // === Session context ===
   /** Milliseconds since session started */
   session_duration_ms: number;
   /** Number of edits in current session */
   edit_count: number;
 
-  // === Quality tier ===
   /** Assessed quality tier for backend weighting */
   quality_tier: LayoutQualityTier;
 
-  // === Pattern detection ===
   /** High-level layout archetype */
   archetype: LayoutArchetype;
   /** Spatial patterns detected in layout */
@@ -156,7 +138,6 @@ export interface LayoutSnapshotEvent {
   /** Which drawer edges have bins touching */
   edge_usage: EdgeUsage;
 
-  // === Temporal patterns ===
   /** Hour of day when snapshot was taken (0-23) */
   hour_of_day: number;
   /** Day of week (0 = Sunday, 6 = Saturday) */
@@ -164,7 +145,6 @@ export interface LayoutSnapshotEvent {
   /** Whether this is a weekend day */
   is_weekend: boolean;
 
-  // === Structure clustering ===
   /** Structural fingerprint hash for clustering similar layouts */
   structure_hash: string;
 
@@ -479,9 +459,7 @@ export interface BinRotatedEvent {
   batch_size: number;
 }
 
-// ============================================
 // NEGATIVE SIGNAL EVENT TYPES
-// ============================================
 
 /**
  * Placement rejected event - when user cancels a draw/paint interaction.
@@ -558,9 +536,7 @@ export interface QuickCorrectionEvent {
   layer_index: number;
 }
 
-// ============================================
 // SESSION SUMMARY EVENT (PR 1)
-// ============================================
 
 /**
  * Session summary event - captures workflow metrics at session end.
@@ -569,7 +545,6 @@ export interface QuickCorrectionEvent {
 export interface SessionSummaryEvent {
   type: 'session_summary';
 
-  // === Session activity ===
   /** Total bins placed this session */
   bins_placed: number;
   /** Total bins deleted this session */
@@ -577,17 +552,14 @@ export interface SessionSummaryEvent {
   /** Total edit actions this session */
   edits_total: number;
 
-  // === Timing ===
   /** Milliseconds from session start to first bin placement, or null if no bins */
   time_to_first_bin_ms: number | null;
   /** Total session duration in milliseconds */
   session_duration_ms: number;
 
-  // === Size sequence ===
   /** Full ordered sequence of bin sizes placed (max 100) */
   size_sequence: string[];
 
-  // === Workflow quality ===
   /** Ratio of corrections (deletes+resizes+moves) to total bins */
   edit_to_done_ratio: number;
   /** Number of undo operations this session */
@@ -595,16 +567,13 @@ export interface SessionSummaryEvent {
   /** Confidence score 0-1 based on workflow signals */
   confidence_score: number;
 
-  // === Final state ===
   /** Drawer size as "WxDxH" string */
   drawer_size: string;
   /** Final fill percentage (0-100) */
   final_fill_pct: number;
 }
 
-// ============================================
 // CROSS-LAYOUT PATTERN EVENT (PR 4)
-// ============================================
 
 /**
  * Cross-layout pattern event - tracks label-size consistency across layouts.
@@ -707,9 +676,7 @@ export type QualitySignal =
  */
 export type LayoutQualityTier = 'high' | 'medium' | 'low' | 'skip';
 
-// ============================================
 // DRAWER PURPOSE CONSTANTS
-// ============================================
 
 export type DrawerPurpose =
   | 'workshop'

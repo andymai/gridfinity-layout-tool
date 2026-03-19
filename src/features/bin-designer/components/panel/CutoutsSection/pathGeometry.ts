@@ -12,9 +12,6 @@ import type { PathPoint } from '@/features/bin-designer/types';
 import type { Bounds } from './geometry';
 
 export { MIN_PATH_POINTS };
-
-// ─── Constants ──────────────────────────────────────────────────────────────
-
 /** Maximum number of path points to prevent performance issues */
 export const MAX_PATH_POINTS = 200;
 
@@ -23,9 +20,6 @@ export const CLOSE_SNAP_THRESHOLD = 5;
 
 /** Default bezier flattening tolerance in mm */
 const DEFAULT_FLATTEN_TOLERANCE = 0.1;
-
-// ─── Bezier Math ────────────────────────────────────────────────────────────
-
 interface Point2D {
   readonly x: number;
   readonly y: number;
@@ -107,9 +101,6 @@ function flattenCubicBezier(
 function mid(a: Point2D, b: Point2D): Point2D {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
-
-// ─── Path Flattening ────────────────────────────────────────────────────────
-
 /**
  * Convert a bezier path to a polyline by flattening all curves.
  *
@@ -166,9 +157,6 @@ export function flattenPath(
 
   return result;
 }
-
-// ─── Triangulation ──────────────────────────────────────────────────────────
-
 /**
  * Triangulate a closed polygon using the ear-clipping algorithm.
  *
@@ -285,9 +273,6 @@ function pointInTriangle(
   const d3 = (px - ax) * (cy - ay) - (cx - ax) * (py - ay);
   return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
 }
-
-// ─── Path Bounds ────────────────────────────────────────────────────────────
-
 /** Compute the axis-aligned bounding box of a path's vertices. */
 export function getPathBounds(points: readonly PathPoint[]): Bounds {
   if (points.length === 0) {
@@ -310,9 +295,6 @@ export function getPathBounds(points: readonly PathPoint[]): Bounds {
 
   return { minX, minY, maxX, maxY };
 }
-
-// ─── Path Point Operations ──────────────────────────────────────────────────
-
 /** Scale all path points proportionally around an origin. */
 export function scalePathPoints(
   points: readonly PathPoint[],
@@ -392,9 +374,6 @@ export function enforceSymmetry(point: PathPoint, changedHandle: 'in' | 'out'): 
   }
   return point;
 }
-
-// ─── Hit Testing ────────────────────────────────────────────────────────────
-
 /** Check if a point is within threshold distance of a target. */
 export function isNearPoint(
   px: number,
@@ -550,9 +529,6 @@ function pointToLineSegmentDist(
     t,
   };
 }
-
-// ─── Angle Snapping ─────────────────────────────────────────────────────────
-
 /**
  * Constrain an angle to the nearest 45-degree increment.
  * Used with Shift key during pen tool drawing.
@@ -626,9 +602,6 @@ export function splitBezierSegment(
 function lerp(a: Point2D, b: Point2D, t: number): Point2D {
   return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
 }
-
-// ─── Path Validation ─────────────────────────────────────────────────────────
-
 /**
  * Clamp all path points and their bezier handles to stay within bin bounds.
  * Points are clamped to [0, width] × [0, depth]. Handles are shortened

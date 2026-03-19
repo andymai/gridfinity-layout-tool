@@ -10,9 +10,7 @@ import { gridUnits, heightUnits } from '@/core/types';
 import type { BinParams } from '@/features/bin-designer';
 import type { SyncableDimensions } from '../types';
 
-// =============================================================================
 // Dimension Extraction
-// =============================================================================
 
 /**
  * Extract syncable dimensions from a layout bin.
@@ -36,9 +34,7 @@ export function extractDesignDimensions(params: BinParams): SyncableDimensions {
   };
 }
 
-// =============================================================================
 // Update Object Creation
-// =============================================================================
 
 /**
  * Create a bin update object for syncing dimensions from a design.
@@ -52,9 +48,7 @@ export function createBinSyncUpdate(dimensions: SyncableDimensions): Partial<Bin
   };
 }
 
-// =============================================================================
 // Dimension Formatting
-// =============================================================================
 
 /**
  * Format a single dimension value, showing decimals only if fractional.

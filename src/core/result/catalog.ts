@@ -42,9 +42,7 @@ export interface ErrorCatalogEntry {
  * - UNKNOWN_*: Fallback errors
  */
 export const ERROR_CATALOG: Record<ErrorCode, ErrorCatalogEntry> = {
-  // ===========================================================================
   // Storage Errors
-  // ===========================================================================
 
   STORAGE_QUOTA_EXCEEDED: {
     code: 'STORAGE_QUOTA_EXCEEDED',
@@ -91,9 +89,7 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorCatalogEntry> = {
     severity: 'error',
   },
 
-  // ===========================================================================
   // Validation Errors
-  // ===========================================================================
 
   VALIDATION_OUT_OF_BOUNDS: {
     code: 'VALIDATION_OUT_OF_BOUNDS',
@@ -149,9 +145,7 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorCatalogEntry> = {
     severity: 'error',
   },
 
-  // ===========================================================================
   // Layout Errors
-  // ===========================================================================
 
   LAYOUT_LAYER_LIMIT: {
     code: 'LAYOUT_LAYER_LIMIT',
@@ -198,9 +192,7 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorCatalogEntry> = {
     severity: 'error',
   },
 
-  // ===========================================================================
   // API Errors
-  // ===========================================================================
 
   API_RATE_LIMITED: {
     code: 'API_RATE_LIMITED',
@@ -310,9 +302,7 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorCatalogEntry> = {
     severity: 'error',
   },
 
-  // ===========================================================================
   // Unknown/Generic Errors
-  // ===========================================================================
 
   UNKNOWN_ERROR: {
     code: 'UNKNOWN_ERROR',

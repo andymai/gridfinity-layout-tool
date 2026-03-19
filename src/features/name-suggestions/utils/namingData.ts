@@ -7,9 +7,7 @@
 
 import type { LabelDomain } from '@/shared/analytics/labelVocabulary';
 
-// ============================================
 // NAMING PATTERNS & TEMPLATES
-// ============================================
 
 /**
  * Naming patterns for different contexts.
@@ -213,9 +211,7 @@ export const PURPOSE_NAMES: Record<string, string> = {
   general: 'Storage',
 };
 
-// ============================================
 // SUBCATEGORY & ACTIVITY DETECTION
-// ============================================
 
 /**
  * Subcategory patterns for more specific naming.
@@ -602,10 +598,8 @@ export const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
     ['board game', 'meeple', 'token', 'cube', 'sleeve', 'component'],
     ['Board Game Bits', 'Game Night', 'Gaming Drawer', 'Game Components']
   ),
-  // ============================================
   // COMMUNITY-REQUESTED PATTERNS (HIGH PRIORITY)
   // Based on real Gridfinity usage research
-  // ============================================
 
   // Kitchen utensils & cooking (very popular use case)
   subcategory(

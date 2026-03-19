@@ -75,7 +75,6 @@ export interface ConfirmDeleteState {
 }
 
 export interface UseBinInspectorReturn {
-  // Selection state
   selectedBins: Bin[];
   isMultiSelect: boolean;
   bin: Bin | null;
@@ -85,7 +84,6 @@ export interface UseBinInspectorReturn {
   // Constraints (derived)
   constraints: BinConstraints;
 
-  // Update handlers
   updateField: (field: BinField, value: string | number) => void;
   updateCustomProperties: (properties: Record<string, string>) => void;
   updateMultiCustomProperty: (key: string, value: string) => void;
@@ -93,11 +91,9 @@ export interface UseBinInspectorReturn {
   updateMultiHeight: (delta: number) => void;
   updateMultiClearance: (delta: number) => void;
 
-  // Layer movement
   moveToLayer: (targetLayerId: string) => void;
   updateMultiLayer: (targetLayerId: string) => void;
 
-  // Actions
   requestDelete: () => void;
   confirmDelete: () => void;
   cancelDelete: () => void;
@@ -105,10 +101,8 @@ export interface UseBinInspectorReturn {
   clearSelection: () => void;
   rotateBin: () => boolean;
 
-  // Confirmation state
   deleteConfirmState: ConfirmDeleteState | null;
 
-  // Context
   layout: Layout;
   categories: Category[];
   /** All unique custom property keys used across all bins in the layout */
@@ -123,7 +117,6 @@ export function useBinInspector(): UseBinInspectorReturn {
   const t = useTranslation();
   const [deleteConfirmState, setDeleteConfirmState] = useState<ConfirmDeleteState | null>(null);
 
-  // Selection Store
   const { selectedBinIds, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,
@@ -131,10 +124,8 @@ export function useBinInspector(): UseBinInspectorReturn {
     }))
   );
 
-  // Mobile Store
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
-  // Layout Store
   const { layout, updateBin, deleteBin, moveBinToStaging } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
@@ -146,7 +137,6 @@ export function useBinInspector(): UseBinInspectorReturn {
 
   const { execute } = useUndoableAction();
 
-  // Derived selection state
   const selectedBins = useMemo(
     () => layout.bins.filter((b) => selectedBinIds.includes(b.id)),
     [layout.bins, selectedBinIds]
@@ -156,7 +146,6 @@ export function useBinInspector(): UseBinInspectorReturn {
   const category = bin ? (layout.categories.find((c) => c.id === bin.category) ?? null) : null;
   const layer = bin ? (layout.layers.find((l) => l.id === bin.layerId) ?? null) : null;
 
-  // Calculate constraints
   const constraints = useMemo<BinConstraints>(() => {
     if (!bin) {
       return {
@@ -309,7 +298,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     (properties: Record<string, string>) => {
       if (!bin) return;
 
-      // Validate properties before updating
       const validation = validateCustomProperties(properties);
       if (isErr(validation)) {
         addToast(validation.error.message, 'error');
@@ -328,7 +316,6 @@ export function useBinInspector(): UseBinInspectorReturn {
       if (selectedBins.length === 0) return;
       const brandedCategoryId: CategoryId = toCategoryId(rawCategoryId);
 
-      // Filter to only bins whose category actually changes
       const binsToUpdate = selectedBins.filter((b) => b.category !== brandedCategoryId);
       if (binsToUpdate.length === 0) return;
 
@@ -442,7 +429,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
   );
 
-  // Move single bin to a different layer
   const moveToLayer = useCallback(
     (rawTargetLayerId: string) => {
       const targetLayerId: LayerId = toLayerId(rawTargetLayerId);
@@ -491,7 +477,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     [bin, layout, execute, updateBin, addToast, t]
   );
 
-  // Move multiple bins to a different layer
   const updateMultiLayer = useCallback(
     (rawTargetLayerId: string) => {
       if (selectedBins.length === 0) return;
@@ -500,7 +485,6 @@ export function useBinInspector(): UseBinInspectorReturn {
       const targetLayer = layout.layers.find((l) => l.id === targetLayerId);
       if (!targetLayer) return;
 
-      // Filter out staging bins and bins already on target layer
       const binsToMove = selectedBins.filter(
         (b) => b.layerId !== STAGING_ID && b.layerId !== targetLayerId
       );
@@ -561,7 +545,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     [selectedBins, layout, execute, updateBin, addToast, t]
   );
 
-  // Request delete (shows confirmation)
   const requestDelete = useCallback(() => {
     if (selectedBins.length === 0) return;
 
@@ -574,7 +557,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     });
   }, [selectedBins, bin]);
 
-  // Confirm delete
   const confirmDeleteAction = useCallback(() => {
     if (selectedBins.length === 0) return;
 
@@ -592,7 +574,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     closeMobilePanel();
   }, [selectedBins, execute, deleteBin, setSelectedBins, closeMobilePanel]);
 
-  // Cancel delete
   const cancelDelete = useCallback(() => {
     setDeleteConfirmState(null);
   }, []);
@@ -628,7 +609,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Track rotation BEFORE executing (capture original dimensions)
     mlTracking.trackRotation(bin, 1);
 
-    // Rotation is valid, perform it (may include position change)
     execute(() => {
       const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
       if (result.movedTo) {
@@ -638,10 +618,8 @@ export function useBinInspector(): UseBinInspectorReturn {
       updateBin(bin.id, updates);
     });
 
-    // Sync swapped dimensions to linked design
     emitLinkedBinResize(bin, { width: bin.depth, depth: bin.width, height: bin.height });
 
-    // Show toast if bin was relocated to fit rotation
     if (result.movedTo) {
       addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
     }
@@ -650,17 +628,14 @@ export function useBinInspector(): UseBinInspectorReturn {
   }, [bin, layout, execute, updateBin, addToast, t]);
 
   return {
-    // Selection state
     selectedBins,
     isMultiSelect,
     bin,
     category,
     layer,
 
-    // Constraints
     constraints,
 
-    // Update handlers
     updateField,
     updateCustomProperties,
     updateMultiCustomProperty,
@@ -668,11 +643,9 @@ export function useBinInspector(): UseBinInspectorReturn {
     updateMultiHeight,
     updateMultiClearance,
 
-    // Layer movement
     moveToLayer,
     updateMultiLayer,
 
-    // Actions
     requestDelete,
     confirmDelete: confirmDeleteAction,
     cancelDelete,
@@ -680,10 +653,8 @@ export function useBinInspector(): UseBinInspectorReturn {
     clearSelection,
     rotateBin,
 
-    // Confirmation state
     deleteConfirmState,
 
-    // Context
     layout,
     categories: layout.categories,
     existingPropertyKeys,

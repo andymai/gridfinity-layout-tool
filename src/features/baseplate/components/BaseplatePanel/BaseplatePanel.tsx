@@ -36,9 +36,6 @@ const PADDING_HINT_AXIS_KEYS: Record<PaddingReductionHint['axis'], string> = {
   y: 'baseplate.paddingHintAxisY',
   both: 'baseplate.paddingHintAxisBoth',
 };
-
-// ─── Main Component ──────────────────────────────────────────────────────────
-
 export function BaseplatePanel() {
   const t = useTranslation();
 
@@ -297,9 +294,6 @@ export function BaseplatePanel() {
     </div>
   );
 }
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
 interface SplitViewStripProps {
   readonly tiling: BaseplateTiling;
   readonly hoveredPieceLabel: string | null;

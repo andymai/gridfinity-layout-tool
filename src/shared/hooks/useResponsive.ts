@@ -71,7 +71,6 @@ export function useResponsive(): ResponsiveState {
     // Debounce resize events for viewport dimension updates
     window.addEventListener('resize', debouncedResizeHandler);
 
-    // Initial state
     updateState();
 
     return () => {

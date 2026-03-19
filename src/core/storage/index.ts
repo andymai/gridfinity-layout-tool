@@ -14,7 +14,6 @@
  * - Migration: isMigrationNeeded, migrateAllLayoutsToIndexedDB
  */
 
-// === Atomic Operations (PREFERRED API) ===
 // These functions provide atomic layout + library saves.
 // Use these instead of separate saveLayout + updateEntry + saveLibrary calls.
 export {
@@ -37,19 +36,15 @@ export type {
   DuplicateResult,
 } from './LayoutManager';
 
-// === Layout CRUD (Async - Legacy API) ===
 // Consider using atomic operations above instead for automatic library sync.
 export { saveLayoutAsync, loadLayoutAsync } from './LayoutService';
 
-// === Layout CRUD (Async - Result-Based) ===
 // Use these when you need explicit error handling with Result types
 export { loadLayoutResult, deleteLayoutResult } from './LayoutService';
 
-// === Layout CRUD (Sync - Initialization Only) ===
 // Use only during app startup when async is not available
 export { saveLayoutSync, loadLayoutSync, deleteLayoutSync } from './LayoutService';
 
-// === Library Management ===
 export {
   saveLibrary,
   loadLibrary,
@@ -63,7 +58,6 @@ export {
   migrateFromLegacyStorageResult,
 } from './LayoutService';
 
-// === Import/Export ===
 export {
   exportLayoutJSON,
   exportLayoutJSONWithDesigns,
@@ -74,7 +68,6 @@ export {
   type PrintListTSVMeta,
 } from './ShareService';
 
-// === Bulk Archive ===
 export {
   exportAllLayouts,
   downloadArchive,
@@ -89,7 +82,6 @@ export type {
   ExportResult,
 } from './BulkArchiveService';
 
-// === URL Sharing ===
 export {
   encodeLayoutForURL,
   decodeLayoutFromURL,
@@ -102,13 +94,10 @@ export {
   clearCloudShareFromURL,
 } from './ShareService';
 
-// === Utilities ===
 export { copyToClipboard, downloadLayoutAsFile } from './utils';
 
-// === Shared With Me ===
 export { saveSharedWithMe, loadSharedWithMe, clearSharedWithMe } from './SharedWithMeService';
 
-// === Migration ===
 export {
   isMigrationNeeded,
   migrateAllLayoutsToIndexedDB,
@@ -117,7 +106,6 @@ export {
   clearMigrationFlag,
 } from './migration';
 
-// === Migration (Result-Based) ===
 export {
   migrateLayoutToIndexedDBResult,
   migrateAllLayoutsToIndexedDBResult,
@@ -125,7 +113,6 @@ export {
 } from './migration';
 export type { MigrationStats } from './migration';
 
-// === Snapshots ===
 export {
   createSnapshot,
   loadSnapshots,
@@ -135,15 +122,11 @@ export {
   updateSnapshotLabel,
 } from './SnapshotService';
 
-// === localStorage Migrations ===
 export { runLocalStorageMigrations } from './localStorageMigrations';
 
-// === Clear All Data ===
 export { clearAllAppData } from './clearAppData';
 
-// === localStorage Cleanup ===
 export { cleanupLocalStorageBackups, clearCleanupFlag } from './localStorageCleanup';
 export type { CleanupStats } from './localStorageCleanup';
 
-// === Backend (Internal - for useStorageMigration hook) ===
 export { getStorageBackend, resetStorageBackendCache } from './backend';

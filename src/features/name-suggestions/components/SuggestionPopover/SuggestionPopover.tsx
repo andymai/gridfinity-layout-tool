@@ -117,7 +117,14 @@ export function SuggestionPopover({ anchorRef, isOpen, onClose }: SuggestionPopo
       acceptAlternative(focusedIndex - 1);
       onClose();
     }
-  }, [focusedIndex, showAlternatives, alternatives.length, acceptPrimary, acceptAlternative, onClose]);
+  }, [
+    focusedIndex,
+    showAlternatives,
+    alternatives.length,
+    acceptPrimary,
+    acceptAlternative,
+    onClose,
+  ]);
 
   // Close on click outside and keyboard navigation
   useEffect(() => {
@@ -134,7 +141,6 @@ export function SuggestionPopover({ anchorRef, isOpen, onClose }: SuggestionPopo
       }
     };
 
-    // Keyboard navigation
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
@@ -148,7 +154,10 @@ export function SuggestionPopover({ anchorRef, isOpen, onClose }: SuggestionPopo
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setFocusedIndex((prev) => (prev - 1 + totalSuggestions) % totalSuggestions);
-      } else if (e.key === 'Enter' && !(e.target instanceof Element && e.target.closest('button'))) {
+      } else if (
+        e.key === 'Enter' &&
+        !(e.target instanceof Element && e.target.closest('button'))
+      ) {
         // Only accept if not already on a button (button will handle its own click)
         e.preventDefault();
         acceptFocused();
@@ -230,10 +239,15 @@ export function SuggestionPopover({ anchorRef, isOpen, onClose }: SuggestionPopo
           }`}
         >
           <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-content truncate flex-1" title={primarySuggestion.name}>
+            <span
+              className="font-medium text-content truncate flex-1"
+              title={primarySuggestion.name}
+            >
               {primarySuggestion.name}
             </span>
-            <span className={`text-xs text-accent transition-opacity shrink-0 ${focusedIndex === 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+            <span
+              className={`text-xs text-accent transition-opacity shrink-0 ${focusedIndex === 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+            >
               {t('nameSuggestion.useThis')}
             </span>
           </div>
@@ -285,7 +299,11 @@ export function SuggestionPopover({ anchorRef, isOpen, onClose }: SuggestionPopo
           </button>
 
           {showAlternatives && (
-            <div className="mt-2 space-y-1" role="listbox" aria-label={t('nameSuggestion.showAlternatives', { count: alternatives.length })}>
+            <div
+              className="mt-2 space-y-1"
+              role="listbox"
+              aria-label={t('nameSuggestion.showAlternatives', { count: alternatives.length })}
+            >
               {alternatives.map((alt, index) => (
                 <button
                   key={`${alt.name}-${index}`}

@@ -7,9 +7,6 @@
 
 import type { BaseCommand } from '../types';
 import type { Bin, BinId, LayerId, CategoryId } from '@/core/types';
-
-// === Command Types ===
-
 export type AddBinCommand = BaseCommand<'bin.add', Omit<Bin, 'id'>>;
 
 export type UpdateBinCommand = BaseCommand<
@@ -50,9 +47,6 @@ export type FillLayerCommand = BaseCommand<
 >;
 
 export type ClearLayerCommand = BaseCommand<'bin.clearLayer', { readonly layerId: LayerId }>;
-
-// === Union ===
-
 export type BinCommand =
   | AddBinCommand
   | UpdateBinCommand

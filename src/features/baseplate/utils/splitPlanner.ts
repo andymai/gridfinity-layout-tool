@@ -21,9 +21,6 @@ const FRACTIONAL_THRESHOLD = 0.49;
 export function colToLetter(col: number): string {
   return String.fromCharCode(65 + col);
 }
-
-// ─── 2D Optimal Tiling ────────────────────────────────────────────────────────
-
 /**
  * Partition `totalUnits` into exactly `numChunks` pieces that each fit the bed.
  *
@@ -237,9 +234,6 @@ function findOptimalTiling(
 
   return { colSizes: best.colSizes, rowSizes: best.rowSizes };
 }
-
-// ─── Padding Reduction Hint ───────────────────────────────────────────────────
-
 /**
  * Check if reducing padding would eliminate a split or save pieces.
  *
@@ -327,9 +321,6 @@ function computePaddingReductionHint(
   candidates.sort((a, b) => b.piecesSaved - a.piecesSaved || a.reductionMm - b.reductionMm);
   return candidates[0];
 }
-
-// ─── Public API ───────────────────────────────────────────────────────────────
-
 /**
  * Compute the full 2D tiling for a baseplate.
  *
@@ -483,9 +474,6 @@ export function pieceToBaseplateParams(
     connectorNubs: parentParams.connectorNubs,
   };
 }
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
 /**
  * Reorder sizes for display: largest pieces at lowest indices (front/left),
  * while respecting edge constraints and fractional edge placement.

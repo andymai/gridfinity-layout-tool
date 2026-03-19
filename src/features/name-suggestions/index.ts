@@ -15,10 +15,8 @@
  * ```
  */
 
-// Components
 export { NameFieldHighlight, SuggestionPopover } from './components';
 
-// Hooks
 export { useNameSuggestions, useSuggestionTrigger } from './hooks';
 export type { UseNameSuggestionsReturn } from './hooks';
 
@@ -28,7 +26,6 @@ export { useNameSuggestionStore } from './store';
 // Utils (generateSuggestions is lazy-loaded, not exported from barrel)
 export { hashName, editDistance } from './utils';
 
-// Types
 export type {
   NameSuggestion,
   SuggestionResult,

@@ -289,9 +289,6 @@ export async function updateDesignThumbnail(
     thumbnail,
   });
 }
-
-// === Active Design Tracking ===
-
 /**
  * Get the active design ID from localStorage.
  * Returns null if no active design is set.

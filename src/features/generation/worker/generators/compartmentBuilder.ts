@@ -8,9 +8,6 @@
 import { box, unwrap, fuseAll } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-
-// ─── Helper Functions ────────────────────────────────────────────────────────
-
 /** Fuse an array of shapes into one, returning null if the array is empty. */
 export function fuseAllOrNull(shapes: Shape3D[]): Shape3D | null {
   if (shapes.length === 0) return null;
@@ -75,9 +72,6 @@ export function findCompartmentBounds(
   if (maxCol === -1) return null;
   return { minCol, maxCol, minRow, maxRow };
 }
-
-// ─── Compartment Walls ───────────────────────────────────────────────────────
-
 /**
  * Build compartment divider walls inside the bin.
  *

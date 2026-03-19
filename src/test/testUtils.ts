@@ -69,7 +69,6 @@ export function resetLibraryStore(): void {
  * Call this in beforeEach for complete test isolation.
  */
 export function resetAllStores(): void {
-  // Layout store
   useLayoutStore.setState({
     layout: createDefaultLayout(),
     activeLayoutId: null,
@@ -77,25 +76,19 @@ export function resetAllStores(): void {
     _fillMeta: null,
   });
 
-  // Selection store
   useSelectionStore.setState(INITIAL_SELECTION_STATE);
 
-  // View store
   useViewStore.setState(INITIAL_VIEW_STATE);
 
-  // Interaction store
   useInteractionStore.setState(INITIAL_INTERACTION_STATE);
 
-  // Mobile store
   useMobileStore.setState(INITIAL_MOBILE_STATE);
 
   // Half-bin mode store
   useHalfBinModeStore.setState(INITIAL_HALF_BIN_MODE_STATE);
 
-  // Shared preview store
   useSharedPreviewStore.setState(INITIAL_SHARED_PREVIEW_STATE);
 
-  // History store
   useHistoryStore.setState({
     past: [],
     future: [],
@@ -103,10 +96,8 @@ export function resetAllStores(): void {
     canRedo: false,
   });
 
-  // Toast store
   useToastStore.setState(INITIAL_TOAST_STATE);
 
-  // Settings store
   useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
 
   // Library store - create minimal valid state
@@ -115,16 +106,13 @@ export function resetAllStores(): void {
     isLoaded: false,
   });
 
-  // Shared with me store
   useSharedWithMeStore.setState(INITIAL_SHARED_WITH_ME_STATE);
 
-  // Labs store
   useLabsStore.setState({
     preferences: createDefaultLabsPreferences(),
     isDrawerOpen: false,
   });
 
-  // Snapshot store
   useSnapshotStore.setState(INITIAL_SNAPSHOT_STATE);
 }
 

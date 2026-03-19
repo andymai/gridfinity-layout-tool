@@ -27,16 +27,13 @@ function adjustColor(baseColor: THREE.Color, brightness: number): THREE.Color {
     hsl.l = hsl.l + (1 - hsl.l) * brightness;
   } else {
     // Darken with color theory:
-    // 1. Reduce lightness
     const darkenAmount = -brightness;
     hsl.l = hsl.l * (1 - darkenAmount * 0.8);
 
-    // 2. Shift hue toward blue (0.6 in HSL) for cooler shadows
     const blueHue = 0.6;
     const hueShift = darkenAmount * 0.08; // Subtle shift
     hsl.h = hsl.h + (blueHue - hsl.h) * hueShift;
 
-    // 3. Boost saturation slightly (shadows are rich, not gray)
     hsl.s = Math.min(1, hsl.s * (1 + darkenAmount * 0.2));
   }
 
@@ -134,7 +131,6 @@ export function createBinGeometry({
   const iy0 = WALL_THICKNESS,
     iy1 = depth - WALL_THICKNESS;
 
-  // === OUTER WALLS ===
   // Use base color for outer walls - let PBR materials handle lighting
   // This preserves category colors more accurately
   const outerWallColor = color;
@@ -184,7 +180,6 @@ export function createBinGeometry({
     outerWallColor
   );
 
-  // === TOP EDGE BEVELS ===
   // Chamfered edges from bz to z1, angling inward
   const bevelColor = color;
 
@@ -232,7 +227,6 @@ export function createBinGeometry({
     bevelColor
   );
 
-  // === EXTERIOR FLOOR ===
   // Bottom face (slightly darkened) - winding order for upward-facing normal
   const exteriorFloorColor = adjustColor(color, -0.08);
   addQuad(
@@ -245,7 +239,6 @@ export function createBinGeometry({
     exteriorFloorColor
   );
 
-  // === INTERIOR CAVITY ===
   // Interior surfaces use offset Z positions to prevent Z-fighting with exterior surfaces
   const interiorFloorZ = z0 + INTERIOR_OFFSET;
   const interiorCeilingZ = z1 - INTERIOR_OFFSET;
@@ -312,7 +305,6 @@ export function createBinGeometry({
     interiorWallColor
   );
 
-  // === TOP RIM ===
   // Use base color for top rim - let PBR handle lighting
   const topColor = color;
 

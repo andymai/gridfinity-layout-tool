@@ -64,7 +64,6 @@ export interface CommandDefinition {
  * Actions are wired up in the CommandPalette component where stores are available.
  */
 export const COMMAND_DEFINITIONS: CommandDefinition[] = [
-  // === Navigation ===
   {
     id: 'open-layout-manager',
     labelKey: 'commandPalette.openLayoutManager',
@@ -105,7 +104,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['feedback', 'report', 'bug', 'suggestion', 'contact', 'feature'],
   },
 
-  // === Edit ===
   {
     id: 'undo',
     labelKey: 'common.undo',
@@ -154,7 +152,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['deselect', 'none'],
   },
 
-  // === Layers ===
   {
     id: 'add-layer',
     labelKey: 'commandPalette.addLayer',
@@ -182,7 +179,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['remove all', 'empty'],
   },
 
-  // === View ===
   {
     id: 'zoom-in',
     labelKey: 'commandPalette.zoomIn',
@@ -210,7 +206,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['show', 'hide', 'visibility'],
   },
 
-  // === 3D Preview ===
   {
     id: 'toggle-preview',
     labelKey: 'commandPalette.togglePreview',
@@ -226,7 +221,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['fullscreen', 'maximize'],
   },
 
-  // === Bins ===
   {
     id: 'prev-bin',
     labelKey: 'commandPalette.prevBin',
@@ -260,7 +254,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['staging', 'temporary', 'hold'],
   },
 
-  // === Tools ===
   {
     id: 'toggle-half-bin',
     labelKey: 'commandPalette.toggleHalfBin',
@@ -281,7 +274,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['name', 'rename', 'auto', 'suggest', 'title'],
   },
 
-  // === Export ===
   {
     id: 'download-layout',
     labelKey: 'commandPalette.downloadLayout',
@@ -294,7 +286,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     category: 'export',
     keywords: ['url', 'share'],
   },
-  // === Selection ===
   {
     id: 'select-all',
     labelKey: 'commandPalette.selectAll',
@@ -321,7 +312,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['filter', 'group', 'same category'],
   },
 
-  // === Layout Management ===
   {
     id: 'new-layout',
     labelKey: 'commandPalette.newLayout',
@@ -336,7 +326,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['copy', 'clone', 'layout'],
   },
 
-  // === Tools ===
   {
     id: 'toggle-paint-mode',
     labelKey: 'commandPalette.togglePaintMode',
@@ -351,7 +340,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['fill', 'uniform', 'complete', 'auto'],
   },
 
-  // === Staging ===
   {
     id: 'clear-staging',
     labelKey: 'commandPalette.clearStaging',

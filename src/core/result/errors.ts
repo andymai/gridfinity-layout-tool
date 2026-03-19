@@ -92,9 +92,7 @@ export interface AppError {
   readonly cause?: unknown;
 }
 
-// =============================================================================
 // Storage Errors
-// =============================================================================
 
 /**
  * Error when browser storage quota is exceeded.
@@ -161,9 +159,7 @@ export type StorageError =
   | StorageUnavailableError
   | StorageNetworkError;
 
-// =============================================================================
 // Validation Errors
-// =============================================================================
 
 /**
  * Error when bin placement is outside drawer bounds.
@@ -245,9 +241,7 @@ export type ValidationError =
   | ValidationBlockedZoneError
   | ValidationImportError;
 
-// =============================================================================
 // Layout Operation Errors
-// =============================================================================
 
 /**
  * Error when maximum layer count is reached.
@@ -317,9 +311,7 @@ export type LayoutError =
   | LayoutLastEntityError
   | LayoutInvalidOperationError;
 
-// =============================================================================
 // API Errors (Cloud Sharing)
-// =============================================================================
 
 /**
  * Error when API rate limit is exceeded.
@@ -456,9 +448,7 @@ export type ApiError =
   | ApiExpiredError
   | ApiInvalidExpirationError;
 
-// =============================================================================
 // Generic Errors
-// =============================================================================
 
 /**
  * Error for unexpected/unknown errors.

@@ -3,9 +3,7 @@ import type { Category } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
-// ============================================================================
 // STL Search Sites Configuration
-// ============================================================================
 
 /**
  * Configuration for a single STL search site.
@@ -58,9 +56,7 @@ export const DEFAULT_STL_SEARCH_SITES: STLSearchSite[] = [
   },
 ];
 
-// ============================================================================
 // Slicer Sites Configuration
-// ============================================================================
 
 /**
  * Configuration for a single slicer's protocol handler integration.
@@ -85,9 +81,7 @@ export const DEFAULT_SLICER_SITES: SlicerSite[] = [
   { id: 'bambustudio', name: 'Bambu Studio', protocol: 'bambustudio', enabled: true },
 ];
 
-// ============================================================================
 // Bin List Sort Configuration
-// ============================================================================
 
 /**
  * Available fields for sorting the bin list.
@@ -119,9 +113,7 @@ export const DEFAULT_BIN_LIST_SORT_ORDER: BinListSortOrder = [
   { field: 'label', enabled: false },
 ];
 
-// ============================================================================
 // Print View Settings
-// ============================================================================
 
 /**
  * Page orientation for print.
@@ -180,9 +172,7 @@ export const DEFAULT_PRINT_VIEW_SETTINGS: PrintViewSettings = {
   binListSortOrder: [...DEFAULT_BIN_LIST_SORT_ORDER],
 };
 
-// ============================================================================
 // User Settings
-// ============================================================================
 
 /**
  * User preferences that persist across sessions.

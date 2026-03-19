@@ -132,7 +132,6 @@ export const useLibraryStore = create<LibraryState>()(
     deleteEntry: (id) => {
       const { library } = get();
 
-      // Can't delete last layout
       if (library.entries.length <= 1) {
         return err(layoutLastEntity('layout'));
       }
@@ -231,9 +230,6 @@ export const useLibraryStore = create<LibraryState>()(
       // Persist library immediately
       persistLibrary(get().library);
     },
-
-    // === Name suggestion state actions ===
-
     setNameSuggestionDismissed: (layoutId, dismissed) => {
       set((state) => {
         const entry = state.library.entries.find((e) => e.id === layoutId);

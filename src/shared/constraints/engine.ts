@@ -12,14 +12,6 @@ import type { FeatureKey, FeatureChange, ConstraintResolution, FeatureStatus } f
 import { FEATURE_MANIFESTS } from './features';
 import { CONSTRAINT_RULES, IMPLICATION_RULES } from './rules';
 
-// =============================================================================
-// Deep Merge
-// =============================================================================
-
-/**
- * Shallow-merge a partial BinParams into a base, handling nested objects.
- * Only merges one level deep for known nested config objects.
- */
 function mergeParams(base: BinParams, partial: Partial<BinParams>): BinParams {
   const result = { ...base };
 
@@ -73,10 +65,6 @@ function mergeParams(base: BinParams, partial: Partial<BinParams>): BinParams {
   return result;
 }
 
-// =============================================================================
-// Resolution
-// =============================================================================
-
 /**
  * Resolve constraints for a user action.
  *
@@ -101,13 +89,10 @@ export function resolveConstraints(
   const autoDisabled: FeatureKey[] = [];
   const impliedChanges: Partial<BinParams> = {};
 
-  // Iterative resolution: apply implications → check constraints → disable → repeat
-  // Max iterations prevents infinite loops from malformed rules.
   const MAX_ITERATIONS = 10;
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     let changed = false;
 
-    // Apply implication rules
     for (const rule of IMPLICATION_RULES) {
       if (rule.when(params)) {
         const patch = rule.apply(params);
@@ -117,7 +102,6 @@ export function resolveConstraints(
       }
     }
 
-    // Disable features that violate constraints
     for (const rule of CONSTRAINT_RULES) {
       if (!rule.when(params)) continue;
 
@@ -156,10 +140,6 @@ export function resolveConstraints(
   return { params, autoDisabled, impliedChanges };
 }
 
-// =============================================================================
-// Feature Status Queries
-// =============================================================================
-
 /**
  * Get the current availability status of a feature.
  * Returns whether it's enabled, available, and why it might be blocked.
@@ -168,7 +148,6 @@ export function getFeatureStatus(params: BinParams, feature: FeatureKey): Featur
   const manifest = FEATURE_MANIFESTS[feature];
   const enabled = manifest.isEnabled(params);
 
-  // Find all active constraint rules that block this feature
   const conflicts: FeatureKey[] = [];
   let reason: string | undefined;
 
@@ -176,11 +155,9 @@ export function getFeatureStatus(params: BinParams, feature: FeatureKey): Featur
     if (!rule.disables.includes(feature)) continue;
     if (!rule.when(params)) continue;
 
-    // This rule's source is active and disables our feature
     if (!conflicts.includes(rule.source)) {
       conflicts.push(rule.source);
     }
-    // Use the first matching reason
     if (!reason) {
       reason = rule.reason;
     }
@@ -190,9 +167,6 @@ export function getFeatureStatus(params: BinParams, feature: FeatureKey): Featur
   return { feature, enabled, available, reason, conflicts };
 }
 
-/**
- * Get statuses for all features at once.
- */
 export function getAllFeatureStatuses(params: BinParams): ReadonlyMap<FeatureKey, FeatureStatus> {
   const keys = Object.keys(FEATURE_MANIFESTS) as FeatureKey[];
   const statuses = new Map<FeatureKey, FeatureStatus>();

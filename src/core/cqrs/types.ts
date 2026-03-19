@@ -7,9 +7,6 @@
 
 import type { LayoutId } from '@/core/types';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
-
-// === Branded IDs ===
-
 export type CommandId = string & { readonly __brand: 'CommandId' };
 export type EventId = string & { readonly __brand: 'EventId' };
 export type CorrelationId = string & { readonly __brand: 'CorrelationId' };
@@ -17,9 +14,6 @@ export type CorrelationId = string & { readonly __brand: 'CorrelationId' };
 export const commandId = (id: string): CommandId => id as CommandId;
 export const eventId = (id: string): EventId => id as EventId;
 export const correlationId = (id: string): CorrelationId => id as CorrelationId;
-
-// === Command Metadata ===
-
 /** Source of a command — who/what initiated it */
 export type CommandSource = 'user' | 'system' | 'replay' | 'collab';
 
@@ -29,9 +23,6 @@ export interface CommandMeta {
   readonly correlationId: CorrelationId;
   readonly source: CommandSource;
 }
-
-// === Event Metadata ===
-
 export interface EventMeta {
   readonly id: EventId;
   readonly timestamp: number;
@@ -43,9 +34,6 @@ export interface EventMeta {
   /** Schema version for forward-compatible event migration */
   readonly schemaVersion: number;
 }
-
-// === Base Shapes ===
-
 export interface BaseCommand<TType extends string, TPayload> {
   readonly type: TType;
   readonly payload: TPayload;
@@ -58,7 +46,6 @@ export interface BaseDomainEvent<TType extends string, TPayload> {
   readonly meta: EventMeta;
 }
 
-// === Handler Types ===
 // Note: Command and DomainEvent union types are defined in commands/index.ts and events/index.ts
 // and re-exported from the cqrs barrel. Types here use generics to avoid circular deps.
 
@@ -82,9 +69,6 @@ export type CommandResult<T = void, TEvent = unknown> = Result<
 export type CommandHandler<TCommand, TEvent = unknown> = (
   command: TCommand
 ) => CommandResult<unknown, TEvent>;
-
-// === Middleware ===
-
 export type NextFn<TCommand = unknown, TEvent = unknown> = (
   command: TCommand
 ) => CommandResult<unknown, TEvent>;
@@ -97,8 +81,5 @@ export type Middleware<TCommand = unknown, TEvent = unknown> = (
   command: TCommand,
   next: NextFn<TCommand, TEvent>
 ) => CommandResult<unknown, TEvent>;
-
-// === Event Bus ===
-
 export type EventHandler<T = unknown> = (event: T) => void;
 export type UnsubscribeFn = () => void;

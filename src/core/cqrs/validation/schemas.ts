@@ -11,9 +11,6 @@
 import * as z from 'zod';
 import { CONSTRAINTS } from '@/core/constants';
 import type { CommandType } from '../commands';
-
-// === Shared Primitives ===
-
 /** Branded string IDs are strings at runtime */
 const binIdSchema = z.string().min(1);
 const layerIdSchema = z.string().min(1);
@@ -45,9 +42,6 @@ const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 /** Positive number (for mm values) */
 const positiveMm = z.number().gt(0);
-
-// === Bin Schemas ===
-
 /** bin.add: Omit<Bin, 'id'> */
 const binAddSchema = z.object({
   layerId: layerIdSchema,
@@ -122,9 +116,6 @@ const binFillLayerSchema = z.object({
 
 /** bin.clearLayer */
 const binClearLayerSchema = z.object({ layerId: layerIdSchema });
-
-// === Layer Schemas ===
-
 /** layer.add: empty payload */
 const layerAddSchema = z.object({});
 
@@ -151,9 +142,6 @@ const layerReorderSchema = z.object({
   fromIndex: z.number().int().min(0),
   toIndex: z.number().int().min(0),
 });
-
-// === Category Schemas ===
-
 /** category.add: Omit<Category, 'id'> */
 const categoryAddSchema = z.object({
   name: labelStr.min(1),
@@ -177,9 +165,6 @@ const categoryUpdateSchema = z.object({
 
 /** category.delete */
 const categoryDeleteSchema = z.object({ id: categoryIdSchema });
-
-// === Drawer / Layout Schemas ===
-
 /** drawer.update: Partial<Drawer> */
 const drawerUpdateSchema = z
   .object({
@@ -220,9 +205,6 @@ const baseplateParamsSchema = z.object({
 
 /** layout.setBaseplateParams */
 const layoutSetBaseplateParamsSchema = z.object({ params: baseplateParamsSchema });
-
-// === Schema Registry ===
-
 /**
  * Maps command type strings to their payload Zod schemas.
  * All 22 command types are registered.

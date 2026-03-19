@@ -13,9 +13,7 @@ import {
   isEnabled,
 } from './trackers';
 
-// ============================================
 // INITIALIZATION
-// ============================================
 
 // Idle detection constants
 const IDLE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes

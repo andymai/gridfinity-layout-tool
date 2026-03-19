@@ -9,9 +9,7 @@ import type { BinId, DesignId, DesignLinkedBinsSummary, SyncableDimensions } fro
 import type { CustomBinRef } from '@/features/bin-designer';
 import { dimensionsMatch } from './linkingRules';
 
-// =============================================================================
 // Single Entity Queries
-// =============================================================================
 
 /**
  * Get the linked design ID for a bin (or null if not linked).
@@ -34,9 +32,7 @@ export function isLinkedTo(bin: Bin, designId: DesignId): boolean {
   return bin.linkedDesignId === designId;
 }
 
-// =============================================================================
 // Collection Queries
-// =============================================================================
 
 /**
  * Get all bins linked to a specific design.
@@ -86,9 +82,7 @@ export function getLinkedBins(bins: Bin[]): Bin[] {
   return bins.filter((bin) => bin.linkedDesignId !== undefined);
 }
 
-// =============================================================================
 // Dimension Mismatch Queries
-// =============================================================================
 
 /**
  * Check if a bin's dimensions match its linked design.
@@ -113,9 +107,7 @@ export function getBinsWithDimensionMismatch(
   );
 }
 
-// =============================================================================
 // Summary Builders
-// =============================================================================
 
 /**
  * Build a summary of bins linked to a specific design.

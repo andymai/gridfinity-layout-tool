@@ -45,7 +45,6 @@ export function resetStorageBackendCache(): void {
   cachedBackend = null;
 }
 
-// === Async Operations (Primary API) ===
 // IndexedDB only — no localStorage backup (saves ~5 MB quota for other uses)
 
 /**
@@ -119,7 +118,6 @@ export async function deleteAsync(key: string): Promise<void> {
   localStorage.deleteFromLocalStorage(key);
 }
 
-// === Sync Operations (Initialization Only) ===
 // Use localStorage only - fast and synchronous
 
 /**
@@ -146,9 +144,6 @@ export function loadSync(key: string): Layout | null {
 export function deleteSync(key: string): void {
   localStorage.deleteFromLocalStorage(key);
 }
-
-// === Generic Sync Operations (for non-Layout data like library index) ===
-
 /**
  * Save arbitrary data synchronously to localStorage.
  * Returns Result with StorageError if storage is full.
@@ -165,9 +160,6 @@ export function loadSyncGeneric<T>(key: string): T | null {
   const result = localStorage.loadFromLocalStorage<T>(key);
   return isOk(result) ? result.value : null;
 }
-
-// === Utility Exports ===
-
 export { getStorageUsagePercent } from './backends/localStorage';
 export { getAllLayoutIds as getIndexedDBLayoutIds } from './backends/indexedDB';
 export { isIndexedDBAvailable } from './backends/indexedDB';

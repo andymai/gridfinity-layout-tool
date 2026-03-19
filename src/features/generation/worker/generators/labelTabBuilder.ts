@@ -10,9 +10,6 @@ import type { Shape3D, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
-
-// ─── Helper Functions ────────────────────────────────────────────────────────
-
 /**
  * Build a 45deg right-triangle profile for label tab gusset supports.
  * The triangle has its right angle at the origin, with legs extending
@@ -21,9 +18,6 @@ import { fuseAllOrNull } from './compartmentBuilder';
 function buildGussetProfile(leg: number): Drawing {
   return draw([0, leg]).lineTo([-leg, leg]).lineTo([0, 0]).close();
 }
-
-// ─── Label Tab Builder ───────────────────────────────────────────────────────
-
 /**
  * Build label tabs for every compartment.
  *

@@ -40,9 +40,7 @@ import {
 } from './collision';
 import { isOk } from '@/core/result';
 
-// ============================================================================
 // Type Guards for Import Validation
-// ============================================================================
 
 interface DrawerShape {
   width: number;

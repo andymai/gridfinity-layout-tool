@@ -32,9 +32,6 @@ import {
   forEachCell,
 } from './generatorTypes';
 import { socketCacheKey, getSocketCache, setSocketCache } from './shapeCache';
-
-// ─── Socket Cell Builders ────────────────────────────────────────────────────
-
 /**
  * Build a single socket cell solid at the origin using multi-section loft.
  *
@@ -119,9 +116,6 @@ export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): S
 
   return s1.loftWith([s3], { ruled: true });
 }
-
-// ─── Socket Grid Assembly ────────────────────────────────────────────────────
-
 /**
  * Build the segmented base socket grid for the bin.
  *

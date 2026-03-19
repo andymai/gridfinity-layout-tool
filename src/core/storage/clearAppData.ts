@@ -28,13 +28,10 @@ const PRESERVED_KEYS = new Set([SETTINGS_STORAGE_KEY]);
 export async function clearAllAppData(): Promise<void> {
   // Sync operations first so they always complete regardless of IDB timing.
 
-  // 1. Clear analytics data and in-memory cache
   pruneAnalyticsData();
 
-  // 2. Clear ML label sizes in-memory cache
   clearLabelSizesCache();
 
-  // 3. Clear all localStorage keys except preserved ones
   // Keys are collected before removal because deleting during iteration skips entries.
   try {
     const keysToRemove = Array.from({ length: localStorage.length }, (_, i) =>
@@ -48,6 +45,5 @@ export async function clearAllAppData(): Promise<void> {
     /* localStorage may be unavailable */
   }
 
-  // 4. Clear IndexedDB last — async, must complete before the caller reloads.
   await clearIndexedDB();
 }

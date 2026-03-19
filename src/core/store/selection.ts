@@ -69,7 +69,6 @@ export const INITIAL_SELECTION_STATE = {
  * Use `useShallow` when selecting multiple fields to avoid unnecessary rerenders.
  */
 export const useSelectionStore = create<SelectionStore>((set) => ({
-  // Initial state
   ...INITIAL_SELECTION_STATE,
 
   // Bin selection actions

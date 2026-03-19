@@ -52,9 +52,6 @@ export function getLayoutStorageKey(layoutId: string): string {
 export function getStorageUsage(): number {
   return backend.getStorageUsagePercent();
 }
-
-// === Schema Migration ===
-
 /**
  * Migrate old layout data to current schema.
  * Adds default values for any missing fields.
@@ -128,9 +125,6 @@ function validateLoadedData(layoutId: string, data: unknown, silent = false): La
 
   return result.layout;
 }
-
-// === Async Layout Operations (Primary API) ===
-
 /**
  * Save a layout asynchronously to IndexedDB.
  * Falls back to localStorage when IndexedDB is unavailable.
@@ -154,7 +148,6 @@ export async function loadLayoutAsync(layoutId: string): Promise<Layout | null> 
   return validateLoadedData(layoutId, data);
 }
 
-// === Result-Based Async Operations ===
 // These functions return Result<T, StorageError> for explicit error handling.
 // Use these when you need detailed error information for user feedback.
 
@@ -214,9 +207,6 @@ export async function deleteLayoutResult(layoutId: string): Promise<Result<void,
     (error): StorageError => storageUnavailable('indexedDB', error)
   );
 }
-
-// === Sync Layout Operations (Initialization Only) ===
-
 /**
  * Save a layout synchronously to localStorage.
  * Use only during initialization when async is not available.
@@ -248,9 +238,6 @@ export function deleteLayoutSync(layoutId: string): void {
   const key = getLayoutStorageKey(layoutId);
   backend.deleteSync(key);
 }
-
-// === Library Management ===
-
 /**
  * Save the layout library index to IndexedDB.
  * Also writes activeLayoutId to localStorage for recovery.

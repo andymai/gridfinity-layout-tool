@@ -8,9 +8,7 @@ import type {
 import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { layoutSession } from './sessionState';
 
-// ============================================
 // LAYOUT QUALITY ASSESSMENT
-// ============================================
 
 /**
  * Assess quality of a layout for ML training purposes.
@@ -63,9 +61,7 @@ export function isSubstantialLayout(layout: Layout): boolean {
   return assessLayoutQuality(layout) !== 'skip';
 }
 
-// ============================================
 // DISTRIBUTION COMPUTATIONS
-// ============================================
 
 /**
  * Compute a hash of the layout for deduplication.
@@ -181,9 +177,7 @@ export function computeLabeledPercentage(bins: Bin[]): number {
   return Math.round((labeledCount / gridBins.length) * 100);
 }
 
-// ============================================
 // CONFIDENCE & QUALITY SCORING
-// ============================================
 
 /**
  * Compute session confidence score (0-1).
@@ -316,9 +310,7 @@ export function detectAbandonmentType(
   return null;
 }
 
-// ============================================
 // CATEGORY HASHING
-// ============================================
 
 /**
  * Default category names that we skip tracking (color-based, not meaningful).
@@ -353,9 +345,7 @@ export function hashCategoryName(name: string): string {
   return Math.abs(hash).toString(16).padStart(8, '0');
 }
 
-// ============================================
 // CROSS-LAYOUT USER HASH
-// ============================================
 
 const USER_HASH_STORAGE_KEY = 'gridfinity-ml-user-hash-v1';
 

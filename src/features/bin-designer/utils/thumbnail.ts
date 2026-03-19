@@ -20,8 +20,6 @@ let previewCanvasEl: HTMLCanvasElement | null = null;
 let previewRenderer: WebGLRenderer | null = null;
 let previewScene: Scene | null = null;
 let previewCamera: PerspectiveCamera | null = null;
-
-
 /**
  * Register the provided canvas as the module-level preview canvas used for thumbnail generation.
  *

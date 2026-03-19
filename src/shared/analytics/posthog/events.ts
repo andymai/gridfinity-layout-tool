@@ -16,9 +16,7 @@ import { isFirstSession, loadAnalyticsData, saveAnalyticsData, getFirstSeenDate 
 import { capture, getPosthogInstance } from './init';
 import { computeLayoutMetrics, computeLabsMetrics } from './metrics';
 
-// ============================================
 // TRACKING FUNCTIONS
-// ============================================
 
 export type AnalyticsTrigger = 'export_json' | 'export_url' | 'export_tsv' | 'session_engaged';
 
@@ -198,9 +196,7 @@ function checkEngagementMilestones(): void {
   }
 }
 
-// ============================================
 // ACTIVITY CONTEXT (for PostHog heartbeat)
-// ============================================
 
 export type ActivityContext = 'drawing' | 'editing' | 'viewing';
 
@@ -231,9 +227,7 @@ export function getActivityContext(): ActivityContext {
   return 'viewing';
 }
 
-// ============================================
 // HEARTBEAT PAYLOAD
-// ============================================
 
 export interface HeartbeatPayload {
   // Engagement
@@ -310,9 +304,7 @@ export function trackHeartbeat(sessionMinutes: number): void {
   }
 }
 
-// ============================================
 // PERSON PROPERTIES (for cohorts & targeting)
-// ============================================
 
 /**
  * Compute the engagement tier based on usage patterns.
@@ -425,14 +417,12 @@ export function markFeatureUsed(
     data.featureFlags[feature] = true;
     saveAnalyticsData(data);
   } catch {
-    // Ignore storage errors
+    // best-effort
   }
   updatePersonProperties();
 }
 
-// ============================================
 // ERROR CONTEXT (enriches error tracking)
-// ============================================
 
 /**
  * Get current layout context for error enrichment.
@@ -477,9 +467,7 @@ export function captureException(error: Error, additionalContext?: Record<string
   }
 }
 
-// ============================================
 // FAILURE TRACKING
-// ============================================
 
 /**
  * Track layout save failures.
@@ -529,9 +517,7 @@ export function trackTemplateLoadError(templateId: string, errorMessage: string)
   });
 }
 
-// ============================================
 // WASM THREADING TRACKING
-// ============================================
 
 /**
  * Track WASM threading status when generation bridge initializes.
@@ -544,9 +530,7 @@ export function trackWasmThreadingStatus(isThreaded: boolean, hardwareConcurrenc
   });
 }
 
-// ============================================
 // GALLERY TRACKING
-// ============================================
 
 /**
  * Track gallery opened with first-session context.

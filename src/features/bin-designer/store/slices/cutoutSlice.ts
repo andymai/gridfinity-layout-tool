@@ -14,9 +14,7 @@ import { generateLayoutId } from '@/shared/utils/uuid';
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 
 export function createCutoutSlice(set: Set) {
-  // -------------------------------------------------------------------
   // Core actions
-  // -------------------------------------------------------------------
 
   const setCutoutProperty = (ids: readonly string[], partial: CutoutToggleProperties): void => {
     if (ids.length === 0) return;
@@ -77,9 +75,7 @@ export function createCutoutSlice(set: Set) {
     });
   };
 
-  // -------------------------------------------------------------------
   // CRUD actions
-  // -------------------------------------------------------------------
 
   return {
     // Core consolidated actions

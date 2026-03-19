@@ -46,7 +46,6 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
     };
   }, []);
 
-  // Shared with me store
   const {
     sharedWithMe,
     isLoaded,
@@ -67,10 +66,8 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
   // Interaction store (still needed for removeLayout announcement)
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
-  // Shared preview store
   const setSharedLayoutPreview = useSharedPreviewStore((state) => state.setSharedLayoutPreview);
 
-  // Toast store
   const addToast = useToastStore((state) => state.addToast);
 
   /**
