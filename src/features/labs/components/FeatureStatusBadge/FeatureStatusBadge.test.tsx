@@ -5,22 +5,22 @@ import { FeatureStatusBadge } from '.';
 describe('FeatureStatusBadge', () => {
   it('renders experimental status', () => {
     render(<FeatureStatusBadge status="experimental" />);
-    expect(screen.getByText('Experimental')).toBeDefined();
-    expect(screen.getByLabelText('Status: Experimental')).toBeDefined();
+    expect(screen.getByText('Early access')).toBeDefined();
+    expect(screen.getByLabelText('Status: Early access')).toBeDefined();
   });
 
   it('renders preview status', () => {
     render(<FeatureStatusBadge status="preview" />);
-    expect(screen.getByText('Preview')).toBeDefined();
+    expect(screen.getByText('Beta')).toBeDefined();
   });
 
   it('renders graduated status', () => {
     render(<FeatureStatusBadge status="graduated" />);
-    expect(screen.getByText('Graduated')).toBeDefined();
+    expect(screen.getByText('Shipped')).toBeDefined();
   });
 
   it('renders deprecated status', () => {
     render(<FeatureStatusBadge status="deprecated" />);
-    expect(screen.getByText('Deprecated')).toBeDefined();
+    expect(screen.getByText('Retiring')).toBeDefined();
   });
 });

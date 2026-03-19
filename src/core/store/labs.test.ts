@@ -105,11 +105,9 @@ describe('Labs Feature Registry', () => {
       expect(uniqueIds.size).toBe(ids.length);
     });
 
-    it('marks coming soon features correctly', () => {
-      // Only layout_to_print is coming soon, collaborative_editing is now active
-      const comingSoon = FEATURE_FLAGS.filter((f) => f.comingSoon);
-      expect(comingSoon.length).toBe(1);
-      expect(comingSoon[0].id).toBe('layout_to_print');
+    it('does not include layout_to_print', () => {
+      const ids = FEATURE_FLAGS.map((f) => f.id);
+      expect(ids).not.toContain('layout_to_print');
     });
   });
 });
@@ -205,7 +203,7 @@ describe('Labs Store', () => {
       store.enableFeature('collaborative_editing');
       expect(useLabsStore.getState().getEnabledCount()).toBe(1);
 
-      store.enableFeature('layout_to_print');
+      store.enableFeature('brepkit_kernel');
       expect(useLabsStore.getState().getEnabledCount()).toBe(2);
 
       store.disableFeature('collaborative_editing');
@@ -231,7 +229,7 @@ describe('Labs Store', () => {
       localStorage.setItem(
         LABS_STORAGE_KEY,
         JSON.stringify({
-          enabledFeatures: { layout_to_print: true },
+          enabledFeatures: { brepkit_kernel: true },
           lastModified: new Date().toISOString(),
           version: 1,
         })
@@ -240,13 +238,13 @@ describe('Labs Store', () => {
       // Force reload store state
       useLabsStore.setState({
         preferences: {
-          enabledFeatures: { layout_to_print: true },
+          enabledFeatures: { brepkit_kernel: true },
           lastModified: new Date().toISOString(),
           version: 1,
         },
       });
 
-      expect(useLabsStore.getState().isFeatureEnabled('layout_to_print')).toBe(true);
+      expect(useLabsStore.getState().isFeatureEnabled('brepkit_kernel')).toBe(true);
     });
   });
 
@@ -255,7 +253,7 @@ describe('Labs Store', () => {
       const store = useLabsStore.getState();
 
       const newPrefs = {
-        enabledFeatures: { collaborative_editing: true, layout_to_print: true },
+        enabledFeatures: { collaborative_editing: true, brepkit_kernel: true },
         lastModified: new Date().toISOString(),
         version: 1,
       };
@@ -263,7 +261,7 @@ describe('Labs Store', () => {
       store.syncFromStorage(newPrefs);
 
       expect(useLabsStore.getState().isFeatureEnabled('collaborative_editing')).toBe(true);
-      expect(useLabsStore.getState().isFeatureEnabled('layout_to_print')).toBe(true);
+      expect(useLabsStore.getState().isFeatureEnabled('brepkit_kernel')).toBe(true);
     });
   });
 
@@ -286,7 +284,7 @@ describe('FeatureId type', () => {
   it('includes all feature IDs from registry', () => {
     // This is a compile-time check - if FeatureId doesn't include
     // all IDs, this would fail to compile
-    const ids: FeatureId[] = ['collaborative_editing', 'layout_to_print'];
+    const ids: FeatureId[] = ['collaborative_editing', 'brepkit_kernel'];
     expect(ids).toHaveLength(2);
   });
 });
