@@ -59,14 +59,7 @@ export async function isIndexedDBAvailable(): Promise<boolean> {
  */
 export async function openLayoutDatabase(): Promise<IDBPDatabase> {
   if (dbInstance) {
-    // Liveness check: accessing objectStoreNames throws on a closed connection
-    // in some browsers, so a caught error means we need to reconnect.
-    try {
-      void dbInstance.objectStoreNames;
-      return dbInstance;
-    } catch {
-      dbInstance = null;
-    }
+    return dbInstance;
   }
 
   const db = await openDB(DB_NAME, DB_VERSION, {
