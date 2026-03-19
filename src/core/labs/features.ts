@@ -12,7 +12,7 @@ export const FEATURE_FLAGS = [
     id: 'bin_designer',
     name: 'Bin Designer',
     description:
-      'Create custom parametric Gridfinity bins with a visual designer. Configure dimensions, compartments, magnet/screw holes, and export STL or 3MF files for 3D printing.',
+      'Design your own custom Gridfinity bins. Set dimensions, add compartments, magnets, and screw holes, then export ready-to-print STL or 3MF files.',
     status: 'graduated',
     risk: 'medium',
     addedAt: '2026-01',
@@ -23,10 +23,11 @@ export const FEATURE_FLAGS = [
     id: 'collaborative_editing',
     name: 'Collaborative Editing',
     description:
-      "Work on layouts together in real-time with other people. Share a link and see each other's cursors as you design.",
+      "Work on layouts together in real-time. Share a link and see each other's cursors as you design.",
     status: 'experimental',
     risk: 'medium',
-    warning: 'This feature is experimental. Real-time sync may have delays or conflicts.',
+    warning:
+      'Good to know: Real-time sync may occasionally have small delays when multiple people edit the same area.',
     addedAt: '2026-01',
     requiresRefresh: false,
     comingSoon: false,
@@ -35,7 +36,7 @@ export const FEATURE_FLAGS = [
     id: 'baseplate_generator',
     name: 'Baseplate Generator',
     description:
-      'Generate parametric Gridfinity baseplates in the Bin Designer. Configure grid size, magnet holes, and half-cell pegs, then export STL, STEP, or 3MF files for 3D printing.',
+      'Create custom Gridfinity baseplates. Choose your grid size, add magnet holes or half-cell pegs, then export STL, STEP, or 3MF files for printing.',
     status: 'graduated',
     risk: 'low',
     addedAt: '2026-02',
@@ -44,38 +45,27 @@ export const FEATURE_FLAGS = [
   },
   {
     id: 'brepkit_kernel',
-    name: 'Brepkit WASM Kernel',
+    name: 'Alternative 3D Engine',
     description:
-      'Use the lightweight Rust-native brepkit geometry kernel instead of OpenCascade. Produces equivalent geometry with a smaller WASM binary. Geometry output may differ slightly from the OpenCascade kernel.',
+      'Try a faster, lighter 3D engine for generating your bin models. Uses less memory and loads quicker than the default engine.',
     status: 'experimental',
     risk: 'high',
     warning:
-      'Switches the geometry engine. Generated meshes and exports may differ from the default OpenCascade kernel. Requires a page reload to take effect.',
+      'Good to know: Your exported files may look slightly different with this engine. Reload the page after toggling.',
     addedAt: '2026-03',
     requiresRefresh: true,
   },
   {
     id: 'cqrs_undo',
-    name: 'CQRS Undo Pipeline',
+    name: 'Improved Undo System',
     description:
-      'Routes undo/redo capture through the CQRS middleware pipeline instead of the component-level useUndoableAction() wrapper.',
+      'A redesigned undo/redo system that tracks your changes more reliably across the app.',
     status: 'experimental',
     risk: 'medium',
     warning:
-      'This changes how undo/redo works internally. If you notice undo issues, disable this flag.',
+      'Good to know: If undo doesn\u2019t work as expected, just toggle this off to switch back.',
     addedAt: '2026-03',
     requiresRefresh: true,
-  },
-  {
-    id: 'layout_to_print',
-    name: 'Layout-to-Print Export',
-    description:
-      'Generate STL files for all bins in your layout. Download a complete package with everything you need to 3D print your layout.',
-    status: 'experimental',
-    risk: 'low',
-    addedAt: '2026-01',
-    requiresRefresh: false,
-    comingSoon: true,
   },
 ] as const satisfies readonly FeatureFlag[];
 

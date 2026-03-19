@@ -22,16 +22,18 @@ graph TB
 - **LabsButton** - Opens labs drawer
 - **LabsDrawer** - Main drawer UI with feature list
 - **FeatureCard** - Individual feature toggle card
-- **FeatureStatusBadge** - Status indicator (experimental/preview/graduated)
-- **GraduatedSection** - Collapsible "What's New" section for graduated features
+- **FeatureStatusBadge** - Status indicator (early access/beta/shipped)
+- **GraduatedSection** - Collapsible "Now for everyone" section for shipped features
 
 ## Current Flags
 
-| Flag                    | Status       | Purpose                     |
-| ----------------------- | ------------ | --------------------------- |
-| `bin_designer`          | Graduated    | Parametric bin generator    |
-| `collaborative_editing` | Experimental | Real-time Liveblocks collab |
-| `layout_to_print`       | Experimental | STL export from layout      |
+| Flag                    | Status       | Purpose                        |
+| ----------------------- | ------------ | ------------------------------ |
+| `bin_designer`          | Graduated    | Custom bin designer            |
+| `baseplate_generator`   | Graduated    | Custom baseplate generator     |
+| `collaborative_editing` | Experimental | Real-time Liveblocks collab    |
+| `brepkit_kernel`        | Experimental | Alternative 3D geometry engine |
+| `cqrs_undo`             | Experimental | Improved undo/redo system      |
 
 ## Usage
 
