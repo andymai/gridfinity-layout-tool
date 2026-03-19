@@ -642,6 +642,7 @@
   "header.sendFeedback": "Tilbakemelding",
   "header.showHelp": "Vis hurtigtaster (? eller /)",
   "header.starOnGithub": "Stjernemerke",
+  "header.tip": "Tips",
   "header.undo": "Angre ({mod}+Z)",
   "header.undoAction": "Angre siste handling ({mod}+Z)",
   "help.binClearance": "Bin klaring",

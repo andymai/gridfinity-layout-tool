@@ -69,6 +69,11 @@ vi.mock('@/shared/components/ToolSwitcher', () => ({
   ),
 }));
 
+// Mock HeaderSupportLinks to avoid deep dependency tree (LanguageSelector, analytics, etc.)
+vi.mock('@/shared/components/HeaderSupportLinks', () => ({
+  HeaderSupportLinks: () => <div data-testid="header-support-links" />,
+}));
+
 // Mock slicer open hook
 vi.mock('../../hooks/useBaseplateSlicerOpen', () => ({
   useBaseplateSlicerOpen: () => ({
@@ -97,6 +102,17 @@ describe('BaseplatePage', () => {
     render(<BaseplatePage />);
     expect(screen.getByTestId('panel')).toBeInTheDocument();
     expect(screen.getByTestId('preview')).toBeInTheDocument();
+  });
+
+  it('renders header support links on desktop', () => {
+    render(<BaseplatePage />);
+    expect(screen.getByTestId('header-support-links')).toBeInTheDocument();
+  });
+
+  it('does not render header support links on mobile', () => {
+    mockResponsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
+    render(<BaseplatePage />);
+    expect(screen.queryByTestId('header-support-links')).not.toBeInTheDocument();
   });
 
   it('passes responsive props to ToolSwitcher on mobile', () => {

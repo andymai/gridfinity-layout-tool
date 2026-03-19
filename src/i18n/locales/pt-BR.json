@@ -642,6 +642,7 @@
   "header.sendFeedback": "Feedback",
   "header.showHelp": "Mostrar atalhos de teclado (? ou /)",
   "header.starOnGithub": "Star",
+  "header.tip": "Gorjeta",
   "header.undo": "Desfazer ({mod}+Z)",
   "header.undoAction": "Desfazer última ação ({mod}+Z)",
   "help.binClearance": "Clearance de bin",

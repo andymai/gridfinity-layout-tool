@@ -72,7 +72,7 @@ beforeEach(() => {
 
 describe('Accessibility - Critical Issues', () => {
   it('Header has no critical accessibility violations', async () => {
-    const { container } = render(<Header onHelpClick={() => {}} />);
+    const { container } = render(<Header saveStatus="idle" />);
     const results = await axe(container, {
       rules: {
         // Focus on critical issues

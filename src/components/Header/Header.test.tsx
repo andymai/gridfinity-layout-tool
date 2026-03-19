@@ -80,10 +80,7 @@ vi.mock('@/components/Collab', () => ({
 }));
 
 describe('Header', () => {
-  const mockOnHelpClick = vi.fn();
-
   const defaultProps = {
-    onHelpClick: mockOnHelpClick,
     saveStatus: 'idle' as const,
   };
 
@@ -348,12 +345,15 @@ describe('Header', () => {
   });
 
   describe('help button', () => {
-    it('calls onHelpClick when help button clicked', () => {
-      render(<Header {...defaultProps} />);
+    it('dispatches open-help-modal event when help button clicked', () => {
+      const handler = vi.fn();
+      window.addEventListener('open-help-modal', handler);
 
+      render(<Header {...defaultProps} />);
       fireEvent.click(screen.getByLabelText('Show help and keyboard shortcuts'));
 
-      expect(mockOnHelpClick).toHaveBeenCalledOnce();
+      expect(handler).toHaveBeenCalledOnce();
+      window.removeEventListener('open-help-modal', handler);
     });
   });
 

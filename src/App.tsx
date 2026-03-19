@@ -301,7 +301,8 @@ export default function App() {
             </Suspense>
           )}
 
-          <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
+          {/* Header */}
+          <Header saveStatus={saveStatus} />
 
           <div className="flex-1 flex overflow-hidden">
             <main className="flex-1 flex flex-col overflow-hidden bg-surface">
@@ -334,12 +335,7 @@ export default function App() {
             onOpenRightPanel={openRightPanel}
           />
 
-          {isHelpOpen && (
-            <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
-              <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet />
-            </Suspense>
-          )}
-
+          {/* Context menu (long-press on bin) */}
           {(() => {
             if (contextMenu) {
               const binIds = contextMenu.binIds;
@@ -380,7 +376,7 @@ export default function App() {
         )}
 
         {/* Header */}
-        <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
+        <Header saveStatus={saveStatus} />
 
         {/* Main content area */}
         <div className="flex-1 flex overflow-hidden">
@@ -408,13 +404,7 @@ export default function App() {
         {/* Floating drag preview */}
         <DragPreview />
 
-        {/* Modals */}
-        {isHelpOpen && (
-          <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
-            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-          </Suspense>
-        )}
-
+        {/* Context menu (right-click on bin) */}
         {(() => {
           if (contextMenu) {
             const binIds = contextMenu.binIds;
@@ -460,6 +450,11 @@ export default function App() {
       {shouldShowWelcome && (
         <Suspense fallback={null}>
           <WelcomeModal isOpen onClose={markWelcomeComplete} />
+        </Suspense>
+      )}
+      {isHelpOpen && (
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
+          <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet={isTablet} />
         </Suspense>
       )}
     </>

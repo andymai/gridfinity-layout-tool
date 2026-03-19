@@ -44,6 +44,7 @@ import type { SaveStatus } from '@/features/bin-designer/types';
 import { binId, designId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 
 /** CSS class for each save status */
 const SAVE_STATUS_CLASSES: Record<Exclude<SaveStatus, 'idle'>, string> = {
@@ -515,6 +516,9 @@ export function DesignerPage() {
                   </svg>
                 </button>
               </div>
+
+              <div className="w-px h-6 bg-stroke-subtle mx-2" />
+              <HeaderSupportLinks />
             </div>
           </>
         ) : (

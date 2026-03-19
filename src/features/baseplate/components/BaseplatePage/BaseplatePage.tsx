@@ -20,6 +20,7 @@ import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
+import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
@@ -149,49 +150,57 @@ export function BaseplatePage() {
   return (
     <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
-      <header className="h-12 flex items-center gap-3 px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
-        <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
+      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+        <div className="flex items-center gap-3 min-w-0">
+          <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
 
-        <button
-          onClick={() => setExportDialogOpen(true)}
-          disabled={!canExport || isExporting}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-content-secondary transition-all bg-transparent hover:bg-surface-hover hover:text-content disabled:opacity-50 disabled:pointer-events-none"
-          title={t('common.export')}
-          aria-label={t('common.export')}
-        >
-          {isExporting ? (
-            <svg
-              className="h-4 w-4 animate-spin motion-reduce:animate-none"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-          )}
-          <span className="hidden lg:inline">{t('common.export')}</span>
-        </button>
+          <button
+            onClick={() => setExportDialogOpen(true)}
+            disabled={!canExport || isExporting}
+            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-content-secondary transition-all bg-transparent hover:bg-surface-hover hover:text-content disabled:opacity-50 disabled:pointer-events-none"
+            title={t('common.export')}
+            aria-label={t('common.export')}
+          >
+            {isExporting ? (
+              <svg
+                className="h-4 w-4 animate-spin motion-reduce:animate-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+            )}
+            <span className="hidden lg:inline">{t('common.export')}</span>
+          </button>
+        </div>
+
+        {isDesktop && (
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <HeaderSupportLinks />
+          </div>
+        )}
       </header>
 
       {/* Main content — 4 responsive states */}
