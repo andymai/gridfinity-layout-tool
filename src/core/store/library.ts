@@ -17,10 +17,11 @@ import { saveLibrary } from '@/core/storage';
 
 /**
  * Persist library in the background, logging on failure.
- * Replaces bare `void saveLibrary()` calls that silently dropped errors.
+ * Uses structuredClone to detach from Immer proxies before the async save.
  */
 function persistLibrary(library: LayoutLibrary): void {
-  void saveLibrary(library).then((result) => {
+  const snapshot = structuredClone(library);
+  void saveLibrary(snapshot).then((result) => {
     if (isErr(result)) {
       console.warn('[library] Background save failed:', result.error.code, result.error.message);
     }

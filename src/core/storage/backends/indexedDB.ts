@@ -54,13 +54,15 @@ export async function isIndexedDBAvailable(): Promise<boolean> {
 /**
  * Open and return the layout database.
  * Creates the database and object stores if they don't exist.
+ * Automatically reconnects if the browser closes the cached connection
+ * (e.g. mobile background tab eviction, memory pressure).
  */
 export async function openLayoutDatabase(): Promise<IDBPDatabase> {
   if (dbInstance) {
     return dbInstance;
   }
 
-  dbInstance = await openDB(DB_NAME, DB_VERSION, {
+  const db = await openDB(DB_NAME, DB_VERSION, {
     upgrade(db) {
       // Create layouts store if it doesn't exist
       if (!db.objectStoreNames.contains(LAYOUTS_STORE)) {
@@ -86,6 +88,15 @@ export async function openLayoutDatabase(): Promise<IDBPDatabase> {
     },
   });
 
+  // Clear cached instance if the browser closes the connection unexpectedly
+  // (e.g. background tab eviction on mobile, version change from another tab)
+  db.addEventListener('close', () => {
+    if (dbInstance === db) {
+      dbInstance = null;
+    }
+  });
+
+  dbInstance = db;
   return dbInstance;
 }
 

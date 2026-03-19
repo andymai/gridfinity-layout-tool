@@ -15,6 +15,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { calcMaxGridUnits } from '@/core/constants';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
 import {
   BinMesh,
   BinAxisLabels,
@@ -495,7 +496,7 @@ export function PreviewCanvas() {
           canRevert={canRevert}
         />
       ) : (
-        <>
+        <PanelErrorBoundary panelName="3D Preview">
           <Canvas
             frameloop="demand"
             camera={{
@@ -603,7 +604,7 @@ export function PreviewCanvas() {
 
           {/* Touch gesture hint (mobile/tablet first visit) */}
           <TouchHint />
-        </>
+        </PanelErrorBoundary>
       )}
     </div>
   );
