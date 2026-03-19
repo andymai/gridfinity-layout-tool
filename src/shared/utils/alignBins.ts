@@ -62,13 +62,13 @@ export function computeAlignedPositions(
 function computeReferenceValue(bins: readonly Bin[], edge: AlignEdge): number {
   switch (edge) {
     case 'left':
-      return Math.min(...bins.map((b) => b.x as number));
+      return Math.min(...bins.map((b) => b.x));
     case 'right':
-      return Math.max(...bins.map((b) => (b.x as number) + (b.width as number)));
+      return Math.max(...bins.map((b) => b.x + b.width));
     case 'top':
-      return Math.max(...bins.map((b) => (b.y as number) + (b.depth as number)));
+      return Math.max(...bins.map((b) => b.y + b.depth));
     case 'bottom':
-      return Math.min(...bins.map((b) => b.y as number));
+      return Math.min(...bins.map((b) => b.y));
   }
 }
 
@@ -81,9 +81,9 @@ function computeTarget(
     case 'left':
       return { newX: ref as GridUnits, newY: bin.y };
     case 'right':
-      return { newX: (ref - (bin.width as number)) as GridUnits, newY: bin.y };
+      return { newX: (ref - bin.width) as GridUnits, newY: bin.y };
     case 'top':
-      return { newX: bin.x, newY: (ref - (bin.depth as number)) as GridUnits };
+      return { newX: bin.x, newY: (ref - bin.depth) as GridUnits };
     case 'bottom':
       return { newX: bin.x, newY: ref as GridUnits };
   }

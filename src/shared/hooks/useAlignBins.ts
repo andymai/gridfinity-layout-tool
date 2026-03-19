@@ -34,12 +34,12 @@ export function useAlignBins() {
       const results = computeAlignedPositions(bins, selectedBinIds, edge, layout);
       if (results.length === 0) return;
 
-      const movable = results.filter(
-        (r) =>
-          !r.skipped &&
-          (r.newX !== bins.find((b) => b.id === r.binId)?.x ||
-            r.newY !== bins.find((b) => b.id === r.binId)?.y)
-      );
+      const binMap = new Map(bins.map((b) => [b.id, b]));
+      const movable = results.filter((r) => {
+        if (r.skipped) return false;
+        const bin = binMap.get(r.binId);
+        return bin !== undefined && (r.newX !== bin.x || r.newY !== bin.y);
+      });
       const skipped = results.filter((r) => r.skipped).length;
       const total = results.length;
 
