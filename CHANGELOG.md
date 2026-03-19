@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.10.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.2...gridfinity-layout-tool-v4.10.3) (2026-03-19)
+
+
+### Internationalization
+
+* rewrite labs settings copy for hobbyist audience ([#1136](https://github.com/andymai/gridfinity-layout-tool/issues/1136)) ([bf63940](https://github.com/andymai/gridfinity-layout-tool/commit/bf63940080a2c2dbb57d8a70009f9cd87fa72c0e))
+
 ## [4.10.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.1...gridfinity-layout-tool-v4.10.2) (2026-03-19)
 
 
