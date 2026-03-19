@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.10.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.1...gridfinity-layout-tool-v4.10.2) (2026-03-19)
+
+
+### Bug Fixes
+
+* stabilize flaky scenario and performance tests in full-suite runs ([#1134](https://github.com/andymai/gridfinity-layout-tool/issues/1134)) ([07b3d82](https://github.com/andymai/gridfinity-layout-tool/commit/07b3d82475fdafee2b398710fad8a2b4ea92bf5d))
+
 ## [4.10.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.0...gridfinity-layout-tool-v4.10.1) (2026-03-19)
 
 
