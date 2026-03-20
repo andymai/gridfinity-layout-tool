@@ -87,16 +87,9 @@ export type GenerateSplitPreviewFn = (
 
 // ─── Split export ───────────────────────────────────────────────────────────
 
-export interface SplitExportPiece {
-  readonly data: ArrayBuffer;
-  readonly label: string;
-  readonly col: number;
-  readonly row: number;
-}
-
-export interface SplitExportResult {
-  readonly pieces: readonly SplitExportPiece[];
-}
+// Re-use the canonical type from binGenerator
+import type { SplitExportResult } from '@/features/generation/worker/generators/binGenerator';
+export type { SplitExportResult };
 
 export type ExportSplitBinFn = (
   params: BinParams,

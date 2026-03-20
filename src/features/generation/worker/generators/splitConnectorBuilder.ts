@@ -31,7 +31,7 @@ import type { SplitConnectorConfig } from '@/shared/types/bin';
 import { sketch } from './generatorTypes';
 
 /** Overlap into the piece body so booleans have shared volume (mm). */
-const OVERLAP = 1.0;
+export const OVERLAP = 1.0;
 
 /** Minimum printable feature width (mm). */
 const MIN_FEATURE_WIDTH = 0.7;

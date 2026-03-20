@@ -69,7 +69,7 @@ describe('split export: geometry completeness', () => {
       const previewZ = previewBB.maxZ - previewBB.minZ;
       const exportZ = exportBB.maxZ - exportBB.minZ;
 
-      // Export Z extent must match preview within 1mm tolerance
+      // Export must not be shorter than preview (regression: missing geometry)
       expect(
         exportZ,
         `piece ${i}: export Z=${exportZ.toFixed(1)}mm vs preview Z=${previewZ.toFixed(1)}mm — ` +
@@ -121,7 +121,7 @@ describe('split export: geometry completeness', () => {
         totalHeight
       );
 
-      // Export should match preview within tolerance
+      // Export must not be shorter than preview (regression: missing geometry)
       expect(
         exportZ,
         `piece ${i}: export Z=${exportZ.toFixed(1)}mm vs preview Z=${previewZ.toFixed(1)}mm`
