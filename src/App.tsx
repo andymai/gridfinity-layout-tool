@@ -10,7 +10,6 @@ import {
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { initLayoutAnalytics } from '@/core/store/layoutAnalytics';
 import {
-  useLayoutRouting,
   useAnalytics,
   useStorageMigration,
   useSnapshotAutoSave,
@@ -18,6 +17,7 @@ import {
   useTabletPanels,
   useKeyboard,
 } from '@/shared/hooks';
+import { useLayoutRouting } from '@/features/layout-library';
 import {
   useAutoSave,
   useResponsive,
