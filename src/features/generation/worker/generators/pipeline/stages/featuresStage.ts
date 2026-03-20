@@ -6,7 +6,8 @@
  *
  * Solid mode: only cutout cuts (top-down cavity carving).
  *
- * Populates fuseTargets (additive) and cutTargets (subtractive) arrays
+ * Populates fuseTargets (additive), cutTargets (subtractive), and
+ * patternCutTargets (pattern cuts — separate boolean pass) arrays
  * for the subsequent boolean stage.
  */
 
@@ -270,6 +271,7 @@ export const featuresStage: PipelineStage = {
       const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
       if (patternResult) {
         const { descriptors: wallDescriptors, calculator } = patternResult;
+        const patternElements: Shape3D[] = [];
         try {
           const cutDepth = params.wallThickness * 4;
           const halfDepth = cutDepth / 2;
@@ -291,7 +293,6 @@ export const featuresStage: PipelineStage = {
               return template;
             })();
 
-          const patternElements: Shape3D[] = [];
           for (const wall of wallDescriptors) {
             for (const center of wall.centers) {
               const ops: TransformOp[] = [
@@ -330,11 +331,14 @@ export const featuresStage: PipelineStage = {
               // Dispose individual handles — compound shares the underlying
               // OCCT TShape references, so the geometry stays alive.
               for (const el of patternElements) el.delete();
+              patternElements.length = 0;
               collectOrigins(grouped, FeatureTag.WALL_PATTERN, originToTag);
               patternCutTargets.push(grouped);
             }
           }
         } catch (e: unknown) {
+          // Dispose any pattern elements not handed off to patternCutTargets
+          for (const el of patternElements) el.delete();
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
           // Pattern generation can fail on complex geometries; skip if it does
         }

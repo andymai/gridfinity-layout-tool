@@ -63,6 +63,6 @@ export const combinedFeatures: ScenarioCase[] = [
         right: { enabled: true, width: 70, depth: 50 },
       },
     },
-    timeout: 120_000,
+    timeout: 60_000,
   }),
 ];
