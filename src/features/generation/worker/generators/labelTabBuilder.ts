@@ -10,6 +10,7 @@ import type { Shape3D, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
+import { buildFilletProfile } from './filletProfile';
 /**
  * Build a 45deg right-triangle profile for label tab gusset supports.
  * The triangle has its right angle at the origin, with legs extending
@@ -192,6 +193,12 @@ export function buildLabelTabs(
           // Solid style: single continuous 45deg right-triangle prism under the shelf
           const solidSupport = sketch(gussetProfile, 'YZ', 0).extrude(tabWidth);
           tabSolid = unwrap(fuse(tabSolid, solidSupport));
+        } else if (params.label.support === 'fillet') {
+          // Fillet style: continuous concave quarter-circle prism under the shelf
+          const filletR = Math.min(gussetLeg, tabDepth * 0.8);
+          const filletProfile = buildFilletProfile(filletR, gussetLeg);
+          const filletSupport = sketch(filletProfile, 'YZ', 0).extrude(tabWidth);
+          tabSolid = unwrap(fuse(tabSolid, filletSupport));
         } else if (gussetPositions.length > 0) {
           // Bracket style: discrete triangular gussets at edges + every <=10mm
           const gussetShapes: Shape3D[] = gussetPositions.map((gx) => {
