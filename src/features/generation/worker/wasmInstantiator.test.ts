@@ -5,7 +5,6 @@ vi.mock('brepjs', () => ({
   initFromOC: vi.fn(),
   registerKernel: vi.fn(),
   BrepkitAdapter: vi.fn(),
-  prewarm: vi.fn(),
 }));
 
 // Mock Emscripten single-threaded factory
@@ -102,16 +101,6 @@ describe('wasmInstantiator', () => {
     await loadOpenCascade();
 
     expect(initFromOC).toHaveBeenCalledWith({ ready: true });
-  });
-
-  it('calls prewarm after initFromOC to eliminate first-operation JIT penalty', async () => {
-    const { initFromOC, prewarm } = await import('brepjs');
-    const { loadOpenCascade } = await import('./wasmInstantiator');
-
-    await loadOpenCascade();
-
-    expect(initFromOC).toHaveBeenCalledTimes(1);
-    expect(prewarm).toHaveBeenCalledTimes(1);
   });
 
   it('returns hardwareConcurrency from navigator', async () => {
