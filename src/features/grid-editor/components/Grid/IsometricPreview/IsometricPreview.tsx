@@ -296,11 +296,18 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   const explodedGroupsWithSelection = useMemo(() => {
     if (!explodedLayerGroups) return null;
     const selectedSet = new Set(selectedBinIds);
-    return explodedLayerGroups.map((group) => ({
-      ...group,
-      selectedBins: group.bins.filter((b) => selectedSet.has(b.bin.id)),
-      nonSelectedBins: group.bins.filter((b) => !selectedSet.has(b.bin.id)),
-    }));
+    return explodedLayerGroups.map((group) => {
+      const selectedBins: typeof group.bins = [];
+      const nonSelectedBins: typeof group.bins = [];
+      for (const bin of group.bins) {
+        if (selectedSet.has(bin.bin.id)) {
+          selectedBins.push(bin);
+        } else {
+          nonSelectedBins.push(bin);
+        }
+      }
+      return { ...group, selectedBins, nonSelectedBins };
+    });
   }, [explodedLayerGroups, selectedBinIds]);
 
   if (!showIsometricPreview) {

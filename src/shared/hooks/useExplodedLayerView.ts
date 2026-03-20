@@ -105,7 +105,11 @@ export function useExplodedLayerView({
     }
 
     for (const group of groups) {
-      group.bins.sort((a, b) => a.x - a.y - (b.x - b.y));
+      group.bins.sort((a, b) => {
+        const depthA = a.x - a.y;
+        const depthB = b.x - b.y;
+        return depthA - depthB;
+      });
 
       for (let i = 0; i < group.bins.length; i++) {
         group.bins[i].z += i * 0.0002;

@@ -186,7 +186,11 @@ export const useViewStore = create<ViewStore>((set) => ({
     set({
       isometricRotation: ((rotation % 360) + 360) % 360, // Normalize to 0-360
     }),
-  setLayerViewMode: (mode) => set({ layerViewMode: mode, isExplodedView: false }),
+  setLayerViewMode: (mode) =>
+    set((state) => ({
+      layerViewMode: mode,
+      isExplodedView: mode === 'all' ? state.isExplodedView : false,
+    })),
   snapToIsometric: () =>
     set((state) => {
       // Snap to nearest 90° angle

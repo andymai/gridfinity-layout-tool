@@ -313,13 +313,22 @@ describe('view store', () => {
       expect(getState().layerViewMode).toBe('all');
     });
 
-    it('setLayerViewMode clears exploded view', () => {
+    it('setLayerViewMode clears exploded view for non-all modes', () => {
       getState().setExplodedView(true);
       expect(getState().isExplodedView).toBe(true);
 
       getState().setLayerViewMode('focus');
       expect(getState().isExplodedView).toBe(false);
       expect(getState().layerViewMode).toBe('focus');
+    });
+
+    it('setLayerViewMode preserves exploded view when switching to all', () => {
+      getState().setExplodedView(true);
+      expect(getState().isExplodedView).toBe(true);
+
+      getState().setLayerViewMode('all');
+      expect(getState().isExplodedView).toBe(true);
+      expect(getState().layerViewMode).toBe('all');
     });
   });
 });
