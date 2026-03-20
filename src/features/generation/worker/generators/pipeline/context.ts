@@ -97,6 +97,7 @@ export function createInitialContext(
     originToTag: new Map<number, number>(),
     fuseTargets: [],
     cutTargets: [],
+    patternCutTargets: [],
     mesh: null,
   };
 }
