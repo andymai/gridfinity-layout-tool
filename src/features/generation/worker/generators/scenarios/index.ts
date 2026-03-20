@@ -28,6 +28,7 @@ import { wallCutouts } from './wallCutouts';
 import { cutoutOffset } from './cutoutOffset';
 import { groupedScoop } from './groupedScoop';
 import { lipWall } from './lipWall';
+import { handles } from './handles';
 
 export type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
 
@@ -57,4 +58,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...cutoutOffset,
   ...groupedScoop,
   ...lipWall,
+  ...handles,
 ];
