@@ -15,7 +15,8 @@ export type FeatureKey =
   | 'inserts'
   | 'cutouts'
   | 'slotConfig'
-  | 'wallCutouts';
+  | 'wallCutouts'
+  | 'handles';
 
 /**
  * Constraint rule: when `source` is active, listed features are disabled.
