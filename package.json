@@ -133,7 +133,8 @@
       "@vercel/build-utils>minimatch": "^10.2.3",
       "@vercel/python-analysis>minimatch": "^10.2.3",
       "@vercel/static-config>ajv": "^8.18.0",
-      "glob>minimatch": "^10.2.3"
+      "glob>minimatch": "^10.2.3",
+      "flatted": "^3.4.2"
     }
   },
   "devDependencies": {
