@@ -1190,10 +1190,12 @@ describe('listenForPwaInstall', () => {
     expect(() => listenForPwaInstall()).not.toThrow();
   });
 
-  it('registers appinstalled event listener', () => {
+  it('registers appinstalled event listener with once option', () => {
     const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
     listenForPwaInstall();
-    expect(addEventListenerSpy).toHaveBeenCalledWith('appinstalled', expect.any(Function));
+    expect(addEventListenerSpy).toHaveBeenCalledWith('appinstalled', expect.any(Function), {
+      once: true,
+    });
     addEventListenerSpy.mockRestore();
   });
 });
@@ -1209,24 +1211,15 @@ describe('captureUtmParameters', () => {
     expect(() => captureUtmParameters()).not.toThrow();
   });
 
-  it('strips UTM params from URL after capture', () => {
+  it('does not strip UTM params when PostHog is unavailable', () => {
     window.history.replaceState({}, '', '/?utm_source=reddit&utm_medium=post&utm_campaign=launch');
 
     captureUtmParameters();
 
+    // UTMs should remain — stripping only happens after successful PostHog capture
     const url = new URL(window.location.href);
-    expect(url.searchParams.has('utm_source')).toBe(false);
-    expect(url.searchParams.has('utm_medium')).toBe(false);
-    expect(url.searchParams.has('utm_campaign')).toBe(false);
-  });
-
-  it('preserves non-UTM query params', () => {
-    window.history.replaceState({}, '', '/?utm_source=reddit&other=keep');
-
-    captureUtmParameters();
-
-    const url = new URL(window.location.href);
-    expect(url.searchParams.get('other')).toBe('keep');
-    expect(url.searchParams.has('utm_source')).toBe(false);
+    expect(url.searchParams.has('utm_source')).toBe(true);
+    expect(url.searchParams.has('utm_medium')).toBe(true);
+    expect(url.searchParams.has('utm_campaign')).toBe(true);
   });
 });

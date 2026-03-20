@@ -562,12 +562,16 @@ export function trackCachePerformance(stats: {
  */
 export function listenForPwaInstall(): void {
   try {
-    window.addEventListener('appinstalled', () => {
-      trackEvent('pwa_installed', {
-        is_first_session: isFirstSession(),
-      });
-      markFeatureUsed('pwa_installed');
-    });
+    window.addEventListener(
+      'appinstalled',
+      () => {
+        trackEvent('pwa_installed', {
+          is_first_session: isFirstSession(),
+        });
+        markFeatureUsed('pwa_installed');
+      },
+      { once: true }
+    );
   } catch {
     // Fail silently
   }
@@ -605,9 +609,9 @@ export function captureUtmParameters(): void {
 
     // Set as once-only person properties (first-touch attribution)
     const posthogInstance = getPosthogInstance();
-    if (posthogInstance) {
-      posthogInstance.setPersonPropertiesForFlags(params);
-    }
+    if (!posthogInstance) return;
+
+    posthogInstance.setPersonProperties({}, params);
 
     // Also fire a discrete event so UTMs appear in the event stream
     trackEvent('utm_captured', params);
@@ -616,7 +620,8 @@ export function captureUtmParameters(): void {
     for (const key of utmKeys) {
       url.searchParams.delete(key);
     }
-    window.history.replaceState({}, '', url.toString());
+    const currentState = window.history.state ?? null;
+    window.history.replaceState(currentState, '', url.toString());
   } catch {
     // Fail silently
   }
