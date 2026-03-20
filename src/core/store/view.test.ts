@@ -269,4 +269,66 @@ describe('view store', () => {
       expect(getState().isPreviewExpanded).toBe(false);
     });
   });
+
+  describe('exploded view', () => {
+    it('starts with exploded view off', () => {
+      expect(getState().isExplodedView).toBe(false);
+    });
+
+    it('toggleExplodedView toggles state', () => {
+      getState().toggleExplodedView();
+      expect(getState().isExplodedView).toBe(true);
+
+      getState().toggleExplodedView();
+      expect(getState().isExplodedView).toBe(false);
+    });
+
+    it('toggleExplodedView forces layerViewMode to all when enabling', () => {
+      getState().setLayerViewMode('focus');
+      getState().toggleExplodedView();
+      expect(getState().isExplodedView).toBe(true);
+      expect(getState().layerViewMode).toBe('all');
+    });
+
+    it('toggleExplodedView preserves layerViewMode when disabling', () => {
+      getState().toggleExplodedView(); // enable → forces 'all'
+      expect(getState().layerViewMode).toBe('all');
+
+      getState().toggleExplodedView(); // disable → keeps 'all'
+      expect(getState().isExplodedView).toBe(false);
+      expect(getState().layerViewMode).toBe('all');
+    });
+
+    it('setExplodedView(true) forces layerViewMode to all', () => {
+      getState().setLayerViewMode('stack');
+      getState().setExplodedView(true);
+      expect(getState().isExplodedView).toBe(true);
+      expect(getState().layerViewMode).toBe('all');
+    });
+
+    it('setExplodedView(false) preserves layerViewMode', () => {
+      getState().setExplodedView(true);
+      getState().setExplodedView(false);
+      expect(getState().isExplodedView).toBe(false);
+      expect(getState().layerViewMode).toBe('all');
+    });
+
+    it('setLayerViewMode clears exploded view for non-all modes', () => {
+      getState().setExplodedView(true);
+      expect(getState().isExplodedView).toBe(true);
+
+      getState().setLayerViewMode('focus');
+      expect(getState().isExplodedView).toBe(false);
+      expect(getState().layerViewMode).toBe('focus');
+    });
+
+    it('setLayerViewMode preserves exploded view when switching to all', () => {
+      getState().setExplodedView(true);
+      expect(getState().isExplodedView).toBe(true);
+
+      getState().setLayerViewMode('all');
+      expect(getState().isExplodedView).toBe(true);
+      expect(getState().layerViewMode).toBe('all');
+    });
+  });
 });

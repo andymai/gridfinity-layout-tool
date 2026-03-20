@@ -15,6 +15,8 @@ import { BinMesh } from './BinMesh';
 import { SplitLineOverlay } from './SplitLineOverlay';
 import { BatchedCornerMarkers } from './BatchedCornerMarkers';
 import { MergedBinMeshes } from './MergedBinMeshes';
+import { ExplodedLayerGroup } from './ExplodedLayerGroup';
+import { useExplodedLayerView } from '@/shared/hooks/useExplodedLayerView';
 import { useTranslation } from '@/i18n';
 import { useSettingsStore } from '@/core/store/settings';
 
@@ -37,24 +39,29 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
+  const setActiveLayer = useSelectionStore((state) => state.setActiveLayer);
 
   const {
     showIsometricPreview,
     layerViewMode,
     isPreviewExpanded,
+    isExplodedView,
     setLayerViewMode,
     togglePreviewExpanded,
     setPreviewExpanded,
     toggleIsometricPreview,
+    toggleExplodedView,
   } = useViewStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
       layerViewMode: state.layerViewMode,
       isPreviewExpanded: state.isPreviewExpanded,
+      isExplodedView: state.isExplodedView,
       setLayerViewMode: state.setLayerViewMode,
       togglePreviewExpanded: state.togglePreviewExpanded,
       setPreviewExpanded: state.setPreviewExpanded,
       toggleIsometricPreview: state.toggleIsometricPreview,
+      toggleExplodedView: state.toggleExplodedView,
     }))
   );
 
@@ -100,16 +107,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     }
   }, [inline, containerSize, isPreviewExpanded, isMobile, isTablet]);
 
-  // Keyboard shortcuts for 3D preview navigation
-  use3DPreviewKeyboard({
-    sceneRef,
-    isPreviewVisible: showIsometricPreview,
-    isPreviewExpanded,
-    togglePreviewVisibility: toggleIsometricPreview,
-    togglePreviewExpanded,
-    setPreviewExpanded,
-  });
-
   // Handle backdrop click
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
@@ -138,6 +135,17 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   // Calculate height-to-grid scale from user settings
   const heightToGridScale = heightUnitMm / gridUnitMm;
   const activeLayerId = useSelectionStore((state) => state.activeLayerId);
+
+  // Keyboard shortcuts for 3D preview navigation (after layout store so `layers` is available)
+  use3DPreviewKeyboard({
+    isPreviewVisible: showIsometricPreview,
+    isPreviewExpanded,
+    togglePreviewVisibility: toggleIsometricPreview,
+    togglePreviewExpanded,
+    setPreviewExpanded,
+    toggleExplodedView,
+    isExplodedSupported: !isMobile && !isTablet && layers.length > 1,
+  });
 
   // Memoize active layer index calculation
   const activeLayerIndex = useMemo(
@@ -273,6 +281,47 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     };
   }, [binsToRender, selectedBinIds, maxGridUnits]);
 
+  // Track exit animation — keep groups mounted with offset=0 so useFrame can lerp back.
+  // The cleanup function fires when isExplodedView goes from true→false, starting exit animation.
+  const [isExplodeExiting, setIsExplodeExiting] = useState(false);
+  useEffect(() => {
+    if (!isExplodedView) return;
+    return () => {
+      setIsExplodeExiting(true);
+      setTimeout(() => setIsExplodeExiting(false), 600);
+    };
+  }, [isExplodedView]);
+
+  // Exploded layer view: per-layer bin groups with Z offsets and opacity
+  const explodedLayerGroups = useExplodedLayerView({
+    bins,
+    layers,
+    categories,
+    heightToGridScale,
+    heightUnitMm,
+    activeLayerId,
+    isExplodedView,
+    isExitAnimating: isExplodeExiting,
+  });
+
+  // Pre-split exploded groups into selected/non-selected bins (avoids .filter() in JSX)
+  const explodedGroupsWithSelection = useMemo(() => {
+    if (!explodedLayerGroups) return null;
+    const selectedSet = new Set(selectedBinIds);
+    return explodedLayerGroups.map((group) => {
+      const selectedBins: typeof group.bins = [];
+      const nonSelectedBins: typeof group.bins = [];
+      for (const bin of group.bins) {
+        if (selectedSet.has(bin.bin.id)) {
+          selectedBins.push(bin);
+        } else {
+          nonSelectedBins.push(bin);
+        }
+      }
+      return { ...group, selectedBins, nonSelectedBins };
+    });
+  }, [explodedLayerGroups, selectedBinIds]);
+
   if (!showIsometricPreview) {
     return null;
   }
@@ -316,78 +365,104 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           fractionalEdgeX={drawer.fractionalEdgeX}
           fractionalEdgeY={drawer.fractionalEdgeY}
         >
-          {/* Non-selected bins: merged geometry for performance */}
-          <MergedBinMeshes bins={nonSelectedBins} />
+          {/* Bins: exploded per-layer groups or normal flat rendering */}
+          {explodedGroupsWithSelection ? (
+            explodedGroupsWithSelection.map((group) => (
+              <ExplodedLayerGroup
+                key={group.layer.id}
+                layerId={group.layer.id}
+                layerName={group.layer.name}
+                layerHeightMm={group.labelHeightMm}
+                nonSelectedBins={group.nonSelectedBins}
+                selectedBins={group.selectedBins}
+                explodedZOffset={group.explodedZOffset}
+                isActive={group.isActive}
+                drawerWidth={drawer.width}
+                drawerDepth={drawer.depth}
+                layerCenterZ={group.baseZ + (group.layer.height * heightToGridScale) / 2}
+                showChrome={isExplodedView}
+                onLayerClick={setActiveLayer}
+              />
+            ))
+          ) : (
+            <>
+              {/* Non-selected bins: merged geometry for performance */}
+              <MergedBinMeshes bins={nonSelectedBins} />
 
-          {/* Selected bins: individual meshes for glow animation */}
-          {selectedBins.map((binData) => (
-            <BinMesh
-              key={binData.bin.id}
-              bin={binData.bin}
-              x={binData.x}
-              y={binData.y}
-              z={binData.z}
-              height={binData.height}
-              color={binData.color}
-              opacity={binData.opacity}
-              isSelected={true}
-            />
-          ))}
-
-          {/* Per-bin overlays (clearance zones, split lines) - only for bins that need them */}
-          {binsWithOverlays.map((binData) => (
-            <group key={`overlay-${binData.bin.id}`}>
-              {/* Clearance zone visualization - translucent box above bin */}
-              {binData.clearanceHeight > 0 && (
-                <mesh
-                  position={[
-                    binData.x + binData.bin.width / 2,
-                    binData.y + binData.bin.depth / 2,
-                    binData.z + binData.height + binData.clearanceHeight / 2,
-                  ]}
-                >
-                  <boxGeometry
-                    args={[
-                      binData.bin.width - 0.05,
-                      binData.bin.depth - 0.05,
-                      binData.clearanceHeight,
-                    ]}
-                  />
-                  <meshStandardMaterial
-                    color="#ff6b6b"
-                    transparent
-                    opacity={0.25 * binData.opacity}
-                    depthWrite={false}
-                  />
-                </mesh>
-              )}
-              {/* Split lines for oversized bins */}
-              {(binData.bin.width > maxGridUnits || binData.bin.depth > maxGridUnits) && (
-                <SplitLineOverlay
+              {/* Selected bins: individual meshes for glow animation */}
+              {selectedBins.map((binData) => (
+                <BinMesh
+                  key={binData.bin.id}
+                  bin={binData.bin}
                   x={binData.x}
                   y={binData.y}
                   z={binData.z}
-                  width={binData.bin.width}
-                  depth={binData.bin.depth}
                   height={binData.height}
-                  maxGridUnits={maxGridUnits}
+                  color={binData.color}
                   opacity={binData.opacity}
+                  isSelected={true}
                 />
-              )}
-            </group>
-          ))}
-          {/* Batched corner markers - single geometry for all bins */}
-          <BatchedCornerMarkers
-            bins={binsToRender.map((binData) => ({
-              x: binData.x,
-              y: binData.y,
-              z: binData.z,
-              width: binData.bin.width,
-              depth: binData.bin.depth,
-              height: binData.height,
-              opacity: binData.opacity,
-            }))}
-          />
+              ))}
+            </>
+          )}
+
+          {/* Per-bin overlays and corner markers — hidden in exploded mode (positions would desync) */}
+          {!isExplodedView && (
+            <>
+              {binsWithOverlays.map((binData) => (
+                <group key={`overlay-${binData.bin.id}`}>
+                  {/* Clearance zone visualization - translucent box above bin */}
+                  {binData.clearanceHeight > 0 && (
+                    <mesh
+                      position={[
+                        binData.x + binData.bin.width / 2,
+                        binData.y + binData.bin.depth / 2,
+                        binData.z + binData.height + binData.clearanceHeight / 2,
+                      ]}
+                    >
+                      <boxGeometry
+                        args={[
+                          binData.bin.width - 0.05,
+                          binData.bin.depth - 0.05,
+                          binData.clearanceHeight,
+                        ]}
+                      />
+                      <meshStandardMaterial
+                        color="#ff6b6b"
+                        transparent
+                        opacity={0.25 * binData.opacity}
+                        depthWrite={false}
+                      />
+                    </mesh>
+                  )}
+                  {/* Split lines for oversized bins */}
+                  {(binData.bin.width > maxGridUnits || binData.bin.depth > maxGridUnits) && (
+                    <SplitLineOverlay
+                      x={binData.x}
+                      y={binData.y}
+                      z={binData.z}
+                      width={binData.bin.width}
+                      depth={binData.bin.depth}
+                      height={binData.height}
+                      maxGridUnits={maxGridUnits}
+                      opacity={binData.opacity}
+                    />
+                  )}
+                </group>
+              ))}
+              <BatchedCornerMarkers
+                bins={binsToRender.map((binData) => ({
+                  x: binData.x,
+                  y: binData.y,
+                  z: binData.z,
+                  width: binData.bin.width,
+                  depth: binData.bin.depth,
+                  height: binData.height,
+                  opacity: binData.opacity,
+                }))}
+              />
+            </>
+          )}
         </Scene>
       </Canvas>
       {/* Empty state - shown when no bins are placed */}
@@ -630,6 +705,45 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             </svg>
             {isPreviewExpanded && !isMobile && <span className="text-xs">{t('grid.all')}</span>}
           </button>
+          {/* Explode — separate layers vertically (desktop only) */}
+          {!isMobile && !isTablet && (
+            <>
+              {/* Separator */}
+              <div
+                className={`${isPreviewExpanded ? 'w-px h-6 mx-0.5' : 'w-px h-4 mx-0'} bg-stroke-subtle/50 self-center`}
+              />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleExplodedView();
+                }}
+                className={`flex items-center justify-center transition-colors ${
+                  isPreviewExpanded && !isMobile
+                    ? `btn ${isExplodedView ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
+                    : `w-7 h-7 ${isExplodedView ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                }`}
+                title={t('grid.explodedView.toggle')}
+              >
+                <svg
+                  className={isPreviewExpanded && !isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  {/* Three layers spreading apart vertically */}
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 14l10 5 10-5" />
+                  <path d="M2 20l10 5 10-5" />
+                </svg>
+                {isPreviewExpanded && !isMobile && (
+                  <span className="text-xs">{t('grid.explodedView.label')}</span>
+                )}
+              </button>
+            </>
+          )}
         </div>
       )}
       {/* Top button row */}
@@ -747,6 +861,14 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               </kbd>{' '}
               {t('common.close')}
             </span>
+            {layers.length > 1 && (
+              <span>
+                <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
+                  E
+                </kbd>{' '}
+                {t('grid.explodedView.label')}
+              </span>
+            )}
           </div>
         </div>
       )}

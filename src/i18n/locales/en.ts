@@ -998,6 +998,8 @@ const en: Record<string, string> = {
   'grid.emptyHint.stripedBlocked': 'Striped areas are blocked by bins below',
   'grid.emptyHint.tapToDraw': 'Tap and drag to draw a bin',
   'grid.expand': 'Expand',
+  'grid.explodedView.label': 'Explode',
+  'grid.explodedView.toggle': 'Exploded view: Separate layers vertically (E)',
   'grid.focus': 'Focus',
   'grid.focusShowOnlyActiveLayer': 'Focus: Show only active layer',
   'grid.front': 'Front',

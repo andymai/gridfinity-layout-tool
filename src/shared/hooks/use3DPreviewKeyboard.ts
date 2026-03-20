@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import type { SceneHandle } from '@/features/grid-editor';
 
 interface Use3DPreviewKeyboardProps {
-  sceneRef: React.RefObject<SceneHandle | null>;
   isPreviewVisible: boolean;
   isPreviewExpanded: boolean;
   togglePreviewVisibility: () => void;
   togglePreviewExpanded: () => void;
   setPreviewExpanded: (expanded: boolean) => void;
+  toggleExplodedView: () => void;
+  isExplodedSupported: boolean;
 }
 
 /**
@@ -15,12 +15,13 @@ interface Use3DPreviewKeyboardProps {
  * Provides intuitive keyboard navigation for power users.
  */
 export function use3DPreviewKeyboard({
-  sceneRef,
   isPreviewVisible,
   isPreviewExpanded,
   togglePreviewVisibility,
   togglePreviewExpanded,
   setPreviewExpanded,
+  toggleExplodedView,
+  isExplodedSupported,
 }: Use3DPreviewKeyboardProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -57,6 +58,14 @@ export function use3DPreviewKeyboard({
             setPreviewExpanded(false);
           }
           break;
+
+        case 'e':
+          // Toggle exploded layer view (desktop only, requires multiple layers)
+          if (isPreviewVisible && isExplodedSupported) {
+            e.preventDefault();
+            toggleExplodedView();
+          }
+          break;
       }
     };
 
@@ -66,11 +75,12 @@ export function use3DPreviewKeyboard({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [
-    sceneRef,
     isPreviewVisible,
     isPreviewExpanded,
     togglePreviewVisibility,
     togglePreviewExpanded,
     setPreviewExpanded,
+    toggleExplodedView,
+    isExplodedSupported,
   ]);
 }
