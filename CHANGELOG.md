@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.12.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.12.1...gridfinity-layout-tool-v4.12.2) (2026-03-20)
+
+
+### Bug Fixes
+
+* split bin export geometry and seamless wall connectors ([#1156](https://github.com/andymai/gridfinity-layout-tool/issues/1156)) ([e317948](https://github.com/andymai/gridfinity-layout-tool/commit/e317948f9a95f7d650d1ab1ff8d70a8e3b24eaa2))
+
 ## [4.12.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.12.0...gridfinity-layout-tool-v4.12.1) (2026-03-20)
 
 
