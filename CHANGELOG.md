@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.12.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.11.1...gridfinity-layout-tool-v4.12.0) (2026-03-20)
+
+
+### Features
+
+* add exploded layer view to 3D preview ([#1150](https://github.com/andymai/gridfinity-layout-tool/issues/1150)) ([9d8cc22](https://github.com/andymai/gridfinity-layout-tool/commit/9d8cc22ca680a17b7bfe801913a3daf66bb1de2f))
+* add PWA install and UTM parameter analytics tracking ([#1153](https://github.com/andymai/gridfinity-layout-tool/issues/1153)) ([8f4c56d](https://github.com/andymai/gridfinity-layout-tool/commit/8f4c56d2f41fd8b6e91695b44b419843c071c8de))
+
 ## [4.11.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.11.0...gridfinity-layout-tool-v4.11.1) (2026-03-20)
 
 
