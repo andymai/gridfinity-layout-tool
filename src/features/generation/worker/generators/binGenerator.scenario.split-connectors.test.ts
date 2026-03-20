@@ -8,6 +8,7 @@ import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constant
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import { initBrepjs, getGenerateSplitPreview } from './__dual-kernel__/wasmInit';
 import { boundingBox, hasNoNaNOrInfinity } from './__dual-kernel__/meshAssertions';
+import { OVERLAP } from './splitConnectorBuilder';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -37,7 +38,7 @@ const OVERSIZED_NO_LIP: BinParams = {
   base: { ...OVERSIZED_PARAMS.base, stackingLip: false },
 };
 
-/** 7x3x3 bin with 1.6mm walls — above the half-lap threshold, so T&G is used. */
+/** 7x3x3 bin with 1.6mm walls — thicker half-lap tabs than the default 1.2mm. */
 const THICK_WALL_PARAMS: BinParams = {
   ...DEFAULT_BIN_PARAMS,
   width: 7,
@@ -164,7 +165,9 @@ describe('split connector geometry in preview meshes', () => {
     const bbWith = boundingBox(maleWith.vertices);
     const bbWithout = boundingBox(maleWithout.vertices);
 
-    const protrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
+    // Wall half-lap tabs extend lapDepth + OVERLAP past the cut face to
+    // fill the opposing groove completely (no gap at the bottom of the recess).
+    const protrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion + OVERLAP;
     const extensionX = bbWith.maxX - bbWithout.maxX;
     expect(extensionX).toBeGreaterThan(protrusion - TESS_TOL - 0.5);
     expect(extensionX).toBeLessThan(protrusion + TESS_TOL + 0.5);
@@ -346,11 +349,11 @@ describe('split connector geometry in preview meshes', () => {
     }
   }, 60000);
 
-  it('half-lap at 1.2mm walls produces less X-extension than T&G at 1.6mm', () => {
+  it('half-lap at 1.2mm walls produces similar X-extension to 1.6mm walls', () => {
     const generateSplitPreview = getGenerateSplitPreview();
-    // At 1.2mm walls, half-lap adds wall tabs (half-wall protrusion) + floor tongue.
-    // At 1.6mm walls, T&G adds full wall tongues + floor tongues.
-    // The 1.2mm half-lap male piece should extend less than the 1.6mm T&G male piece.
+    // Both use half-lap joints. The 1.2mm wall has 0.6mm half-width tabs,
+    // the 1.6mm wall has 0.8mm half-width tabs. Both extend lapDepth + OVERLAP
+    // past the cut face, so X-extension is approximately equal.
     const thinResult = generateSplitPreview(
       OVERSIZED_PARAMS,
       CUT_PLANES_X,
@@ -381,7 +384,8 @@ describe('split connector geometry in preview meshes', () => {
     const thinMaxX = boundingBox(thinMale.vertices).maxX;
     const thickMaxX = boundingBox(thickMale.vertices).maxX;
 
-    // T&G adds wall tongues that extend further; half-lap only has floor tongue
+    // Both half-lap tabs extend the same depth; thicker walls may add slightly
+    // more due to wider tab geometry
     expect(thinMaxX).toBeLessThan(thickMaxX + TESS_TOL);
   }, 60000);
 
@@ -529,7 +533,7 @@ describe('split connector geometry in preview meshes', () => {
     expect(femaleProtrusion).toBeGreaterThan(expectedProtrusion - TESS_TOL - 0.5);
   }, 60000);
 
-  it('tongue-and-groove activates at 1.6mm walls (male extends past cut face)', () => {
+  it('half-lap at 1.6mm walls extends male piece past cut face', () => {
     const generateSplitPreview = getGenerateSplitPreview();
     const withConnectors = generateSplitPreview(
       THICK_WALL_PARAMS,

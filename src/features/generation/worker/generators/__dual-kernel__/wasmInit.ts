@@ -85,11 +85,27 @@ export type GenerateSplitPreviewFn = (
   splitConnectorConfig?: SplitConnectorConfig
 ) => SplitPreviewResult;
 
+// ─── Split export ───────────────────────────────────────────────────────────
+
+// Re-use the canonical type from binGenerator
+import type { SplitExportResult } from '@/features/generation/worker/generators/binGenerator';
+export type { SplitExportResult };
+
+export type ExportSplitBinFn = (
+  params: BinParams,
+  cutPlanesX: readonly number[],
+  cutPlanesY: readonly number[],
+  tolerance?: number,
+  angularTolerance?: number,
+  splitConnectorConfig?: SplitConnectorConfig
+) => Promise<SplitExportResult>;
+
 // ─── Cached instances ────────────────────────────────────────────────────────
 
 let generateBin: GenerateBinFn | undefined;
 let generateBaseplate: GenerateBaseplateFn | undefined;
 let generateSplitPreview: GenerateSplitPreviewFn | undefined;
+let exportSplitBinFn: ExportSplitBinFn | undefined;
 
 // ─── Kernel-specific init ────────────────────────────────────────────────────
 // Delegates to shared kernelInit.ts to avoid duplicating WASM loading logic.
@@ -106,7 +122,7 @@ import {
  * Safe to call multiple times — only the first call does real work.
  */
 export async function initBrepjs(): Promise<void> {
-  if (generateBin && generateSplitPreview && generateBaseplate) return;
+  if (generateBin && generateSplitPreview && generateBaseplate && exportSplitBinFn) return;
 
   if (kernelName === 'brepkit') {
     await initWasmKernel();
@@ -117,6 +133,7 @@ export async function initBrepjs(): Promise<void> {
   const binMod = await import('@/features/generation/worker/generators/binGenerator');
   generateBin = binMod.generateBin as GenerateBinFn;
   generateSplitPreview = binMod.generateSplitPreview as GenerateSplitPreviewFn;
+  exportSplitBinFn = binMod.exportSplitBin as ExportSplitBinFn;
 
   const baseplateMod = await import('@/features/generation/worker/generators/baseplateGenerator');
   generateBaseplate = baseplateMod.generateBaseplate as GenerateBaseplateFn;
@@ -138,4 +155,10 @@ export function getGenerateBaseplate(): GenerateBaseplateFn {
 export function getGenerateSplitPreview(): GenerateSplitPreviewFn {
   if (!generateSplitPreview) throw new Error('Call initBrepjs() in beforeAll first');
   return generateSplitPreview;
+}
+
+/** Returns the cached `exportSplitBin` function. Throws if `initBrepjs()` was not called. */
+export function getExportSplitBin(): ExportSplitBinFn {
+  if (!exportSplitBinFn) throw new Error('Call initBrepjs() in beforeAll first');
+  return exportSplitBinFn;
 }
