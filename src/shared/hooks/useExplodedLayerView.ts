@@ -41,6 +41,7 @@ interface UseExplodedLayerViewOptions {
   heightUnitMm: number;
   activeLayerId: LayerId;
   isExplodedView: boolean;
+  isExitAnimating?: boolean;
 }
 
 /**
@@ -55,11 +56,15 @@ export function useExplodedLayerView({
   heightUnitMm,
   activeLayerId,
   isExplodedView,
+  isExitAnimating = false,
 }: UseExplodedLayerViewOptions): LayerRenderGroup[] | null {
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
 
+  // Keep groups mounted during exit animation (offsets → 0) so useFrame can lerp back
+  const shouldRender = isExplodedView || isExitAnimating;
+
   return useMemo(() => {
-    if (!isExplodedView) return null;
+    if (!shouldRender) return null;
 
     const layerIndexMap = new Map(layers.map((l, idx) => [l.id, idx]));
 
@@ -71,10 +76,10 @@ export function useExplodedLayerView({
       return {
         layer,
         baseZ,
-        explodedZOffset: idx * EXPLODE_GAP,
+        explodedZOffset: isExplodedView ? idx * EXPLODE_GAP : 0,
         bins: [],
         isActive,
-        opacity: isActive ? 1 : EXPLODE_DIM_OPACITY,
+        opacity: isExplodedView && !isActive ? EXPLODE_DIM_OPACITY : 1,
         labelHeightMm: layer.height * heightUnitMm,
       };
     });
@@ -117,5 +122,14 @@ export function useExplodedLayerView({
     }
 
     return groups;
-  }, [isExplodedView, bins, layers, categoryMap, heightToGridScale, heightUnitMm, activeLayerId]);
+  }, [
+    shouldRender,
+    isExplodedView,
+    bins,
+    layers,
+    categoryMap,
+    heightToGridScale,
+    heightUnitMm,
+    activeLayerId,
+  ]);
 }

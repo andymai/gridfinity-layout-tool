@@ -226,4 +226,45 @@ describe('useExplodedLayerView', () => {
     expect(result.current![2].bins).toHaveLength(0);
     expect(result.current![2].explodedZOffset).toBe(3); // 2 * 1.5
   });
+
+  it('returns groups with zero offsets during exit animation', () => {
+    const { result } = renderHook(() =>
+      useExplodedLayerView({
+        bins: defaultBins,
+        layers: defaultLayers,
+        categories: defaultCategories,
+        heightToGridScale,
+        heightUnitMm,
+        activeLayerId: layerId('layer0'),
+        isExplodedView: false,
+        isExitAnimating: true,
+      })
+    );
+
+    expect(result.current).not.toBeNull();
+    expect(result.current).toHaveLength(2);
+    // Offsets should be 0 (layers animate back to stacked position)
+    expect(result.current![0].explodedZOffset).toBe(0);
+    expect(result.current![1].explodedZOffset).toBe(0);
+    // Opacity should be full (no dimming during exit)
+    expect(result.current![0].opacity).toBe(1);
+    expect(result.current![1].opacity).toBe(1);
+  });
+
+  it('returns null when not exploded and not exit-animating', () => {
+    const { result } = renderHook(() =>
+      useExplodedLayerView({
+        bins: defaultBins,
+        layers: defaultLayers,
+        categories: defaultCategories,
+        heightToGridScale,
+        heightUnitMm,
+        activeLayerId: layerId('layer0'),
+        isExplodedView: false,
+        isExitAnimating: false,
+      })
+    );
+
+    expect(result.current).toBeNull();
+  });
 });

@@ -281,6 +281,17 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     };
   }, [binsToRender, selectedBinIds, maxGridUnits]);
 
+  // Track exit animation — keep groups mounted with offset=0 so useFrame can lerp back.
+  // The cleanup function fires when isExplodedView goes from true→false, starting exit animation.
+  const [isExplodeExiting, setIsExplodeExiting] = useState(false);
+  useEffect(() => {
+    if (!isExplodedView) return;
+    return () => {
+      setIsExplodeExiting(true);
+      setTimeout(() => setIsExplodeExiting(false), 600);
+    };
+  }, [isExplodedView]);
+
   // Exploded layer view: per-layer bin groups with Z offsets and opacity
   const explodedLayerGroups = useExplodedLayerView({
     bins,
@@ -290,6 +301,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     heightUnitMm,
     activeLayerId,
     isExplodedView,
+    isExitAnimating: isExplodeExiting,
   });
 
   // Pre-split exploded groups into selected/non-selected bins (avoids .filter() in JSX)

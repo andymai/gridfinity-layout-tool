@@ -5,13 +5,8 @@ import type { LayerId } from '@/core/types';
 import { MergedBinMeshes } from '../MergedBinMeshes';
 import { BinMesh } from '../BinMesh';
 import { LayerLabel } from './LayerLabel';
+import { lerpStep } from './lerpStep';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
-
-/** Exponential lerp speed — higher = faster convergence. */
-const LERP_SPEED = 8;
-
-/** Threshold below which we snap to target to avoid infinite tiny updates. */
-const SNAP_THRESHOLD = 0.001;
 
 interface ExplodedLayerGroupProps {
   layerId: LayerId;
@@ -49,16 +44,11 @@ export function ExplodedLayerGroup({
   const currentZRef = useRef(0);
 
   useFrame((_, delta) => {
-    const diff = explodedZOffset - currentZRef.current;
-    if (Math.abs(diff) > SNAP_THRESHOLD) {
-      currentZRef.current += diff * Math.min(delta * LERP_SPEED, 1);
-    } else if (currentZRef.current !== explodedZOffset) {
-      currentZRef.current = explodedZOffset;
-    } else {
-      return;
-    }
+    const newZ = lerpStep(currentZRef.current, explodedZOffset, delta);
+    if (newZ === null) return;
+    currentZRef.current = newZ;
     if (groupRef.current) {
-      groupRef.current.position.z = currentZRef.current;
+      groupRef.current.position.z = newZ;
     }
   });
 
