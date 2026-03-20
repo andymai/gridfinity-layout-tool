@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.12.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.12.0...gridfinity-layout-tool-v4.12.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* add security headers, restrict PostHog proxy, block source maps ([#1154](https://github.com/andymai/gridfinity-layout-tool/issues/1154)) ([7210166](https://github.com/andymai/gridfinity-layout-tool/commit/7210166aa885091dcf254de353261564d350e3f8))
+
 ## [4.12.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.11.1...gridfinity-layout-tool-v4.12.0) (2026-03-20)
 
 
