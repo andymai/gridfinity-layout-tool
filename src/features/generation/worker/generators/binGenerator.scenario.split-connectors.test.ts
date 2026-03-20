@@ -164,7 +164,9 @@ describe('split connector geometry in preview meshes', () => {
     const bbWith = boundingBox(maleWith.vertices);
     const bbWithout = boundingBox(maleWithout.vertices);
 
-    const protrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion;
+    // Wall half-lap tabs extend lapDepth + OVERLAP past the cut face to
+    // fill the opposing groove completely (no gap at the bottom of the recess).
+    const protrusion = DEFAULT_SPLIT_CONNECTOR_CONFIG.tongueProtrusion + 1.0; // + OVERLAP
     const extensionX = bbWith.maxX - bbWithout.maxX;
     expect(extensionX).toBeGreaterThan(protrusion - TESS_TOL - 0.5);
     expect(extensionX).toBeLessThan(protrusion + TESS_TOL + 0.5);

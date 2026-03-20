@@ -360,6 +360,13 @@ export async function exportSplitBin(
   const pieces: SplitExportResult['pieces'] = [];
 
   for (const { solid: pieceSolid, label, col, row } of splitPieces) {
+    // Force complete tessellation before export. Boolean intersection reuses
+    // some original faces (with existing triangulation) but creates new faces
+    // at cut planes (without triangulation). brepjs exportSTL skips meshing
+    // when hasTriangulation() finds ANY tessellated face, leaving new faces
+    // un-tessellated. Calling mesh() first runs BRepMesh_IncrementalMesh which
+    // fills in the missing triangulation on cut-plane faces.
+    mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
     const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));
     const data = await blob.arrayBuffer();
     pieces.push({ data, label, col, row });
@@ -512,6 +519,8 @@ export async function exportSplitBinRange(
     }
 
     const { solid: pieceSolid, label, col, row } = splitPieces[idx];
+    // Force complete tessellation (see exportSplitBin comment for rationale)
+    mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
     const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));
     const data = await blob.arrayBuffer();
     pieces.push({ data, label, col, row });
