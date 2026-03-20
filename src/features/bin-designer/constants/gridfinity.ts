@@ -75,6 +75,16 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_SCOOP_RADIUS: 5, // mm
   MAX_SCOOP_RADIUS: 25, // mm
   SCOOP_RADIUS_STEP: 1, // mm
+  // Handle ledges
+  MIN_HANDLE_DEPTH: 4, // mm
+  MAX_HANDLE_DEPTH: 20, // mm
+  HANDLE_DEPTH_STEP: 1, // mm
+  MIN_HANDLE_WIDTH: 10, // % of wall span
+  MAX_HANDLE_WIDTH: 100, // %
+  HANDLE_WIDTH_STEP: 10, // %
+  MIN_HANDLE_FILLET: 2, // mm
+  MAX_HANDLE_FILLET: 10, // mm
+  HANDLE_FILLET_STEP: 1, // mm
 } as const;
 
 /**

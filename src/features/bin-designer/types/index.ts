@@ -103,7 +103,7 @@ export interface ScoopConfig {
 export type LabelTabAlignment = 'left' | 'center' | 'right';
 
 /** Support structure style for the label tab */
-export type LabelTabSupport = 'bracket' | 'solid';
+export type LabelTabSupport = 'bracket' | 'solid' | 'fillet';
 
 /** Label tab configuration for back-wall identification shelf */
 export interface LabelTabConfig {
@@ -116,6 +116,31 @@ export interface LabelTabConfig {
   readonly width: number;
   /** Horizontal alignment within each compartment column */
   readonly alignment: LabelTabAlignment;
+}
+
+/** Handle-eligible wall sides (outer walls only, no interior dividers) */
+export type HandleWallSide = 'front' | 'back' | 'left' | 'right';
+
+/** Per-side handle toggle */
+export interface HandleSide {
+  /** Whether this side's handle is individually enabled */
+  readonly enabled: boolean;
+}
+
+/** Handle configuration for interior grip ledges */
+export interface HandleConfig {
+  /** Master toggle for the handles feature */
+  readonly enabled: boolean;
+  /** Ledge depth inward from wall face (mm). Default: 10 */
+  readonly depth: number;
+  /** Ledge width as % of wall interior span (1-100). Default: 70 */
+  readonly width: number;
+  /** Concave fillet radius under the shelf (mm). Default: 5 */
+  readonly filletRadius: number;
+  readonly front: HandleSide;
+  readonly back: HandleSide;
+  readonly left: HandleSide;
+  readonly right: HandleSide;
 }
 
 /** A single wall cutout: per-side override with its own enabled flag */
@@ -192,6 +217,7 @@ export interface BinParams {
   readonly scoop: ScoopConfig;
   readonly label: LabelTabConfig;
   readonly walls: WallConfig;
+  readonly handles: HandleConfig;
   readonly slotConfig: SlotConfig;
   readonly dividerPieces: DividerPieceConfig;
   readonly inserts: Insert[];
@@ -475,6 +501,8 @@ export interface DesignerState {
   updateScoop: (partial: Partial<ScoopConfig>) => void;
   updateWalls: (partial: Partial<WallConfig>) => void;
   updateWallSide: (side: WallSide, partial: Partial<WallCutout>) => void;
+  updateHandles: (partial: Partial<HandleConfig>) => void;
+  updateHandleSide: (side: HandleWallSide, partial: Partial<HandleSide>) => void;
 
   // History actions
   undo: () => void;

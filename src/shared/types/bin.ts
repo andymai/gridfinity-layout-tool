@@ -32,6 +32,9 @@ export type {
   WallPatternConfig,
   WallPatternType,
   SplitConnectorConfig,
+  HandleConfig,
+  HandleSide,
+  HandleWallSide,
 } from '@/features/bin-designer/types';
 
 export { MIN_PATH_POINTS } from '@/features/bin-designer/types';
