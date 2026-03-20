@@ -41,7 +41,7 @@ while IFS= read -r FILE; do
     index|types|constants|vite-env) continue ;;
   esac
   case "$DIR" in
-    src/i18n/locales*|src/layouts*|src/styles*|src/test*) continue ;;
+    src/i18n/locales*|src/shell/layouts*|src/shell/styles*|src/test*) continue ;;
   esac
   # Skip type-only directories
   case "$DIR" in

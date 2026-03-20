@@ -2,8 +2,8 @@
  * Segmented control for switching between Layout, Bins, and Baseplate Generator.
  */
 
-import { useDesignerRouting } from '@/hooks/useDesignerRouting';
-import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
+import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
+import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 

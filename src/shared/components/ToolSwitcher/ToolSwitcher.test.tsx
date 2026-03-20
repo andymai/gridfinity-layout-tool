@@ -7,7 +7,7 @@ const mockNavigateToDesigner = vi.fn();
 const mockNavigateToPlanner = vi.fn();
 let mockIsDesignerRoute = false;
 
-vi.mock('@/hooks/useDesignerRouting', () => ({
+vi.mock('@/shared/hooks/useDesignerRouting', () => ({
   useDesignerRouting: () => ({
     isDesignerRoute: mockIsDesignerRoute,
     navigateToDesigner: mockNavigateToDesigner,
@@ -18,7 +18,7 @@ vi.mock('@/hooks/useDesignerRouting', () => ({
 const mockNavigateToBaseplate = vi.fn();
 let mockIsBaseplateRoute = false;
 
-vi.mock('@/hooks/useBaseplateRouting', () => ({
+vi.mock('@/shared/hooks/useBaseplateRouting', () => ({
   useBaseplateRouting: () => ({
     isBaseplateRoute: mockIsBaseplateRoute,
     navigateToBaseplate: mockNavigateToBaseplate,

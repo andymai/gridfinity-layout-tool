@@ -8,7 +8,7 @@
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { GRIDFINITY } from '@/shared/constants/bin';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface FootprintGridProps {
   /** Bin width in grid units */

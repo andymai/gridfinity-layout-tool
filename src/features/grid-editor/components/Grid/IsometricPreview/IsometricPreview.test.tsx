@@ -186,7 +186,7 @@ vi.mock('@/shared/hooks', () => ({
   useResponsive: () => ({ isMobile: false, isTablet: false }),
 }));
 
-vi.mock('@/hooks/use3DPreviewKeyboard', () => ({
+vi.mock('@/shared/hooks/use3DPreviewKeyboard', () => ({
   use3DPreviewKeyboard: vi.fn(),
 }));
 

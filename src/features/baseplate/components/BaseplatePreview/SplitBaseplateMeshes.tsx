@@ -17,7 +17,7 @@ import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EXPLODE_GAP_MM } from '../../constants';
 import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { useSettingsStore } from '@/core/store';
 import type { PieceMeshEntry, SplitViewMode } from '../../store/baseplatePageStore';
 

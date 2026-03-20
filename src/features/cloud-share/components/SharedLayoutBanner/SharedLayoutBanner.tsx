@@ -12,7 +12,7 @@ import { isErr } from '@/core/result';
 import { useResultToast } from '@/shared/hooks';
 import { layoutId as toLayoutId } from '@/core/types';
 import { ConfirmDialog } from '@/shared/components';
-import { useCollabMode } from '@/hooks/useCollabMode';
+import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { useTranslation } from '@/i18n';
 
 /**

@@ -104,7 +104,7 @@ vi.mock('three', () => {
 });
 
 // Mock useBinGeometry hook
-vi.mock('@/hooks/useBinGeometry', () => ({
+vi.mock('@/shared/hooks/useBinGeometry', () => ({
   useBinGeometry: () => ({ setAttribute: vi.fn(), dispose: vi.fn() }),
 }));
 

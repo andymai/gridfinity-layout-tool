@@ -1,6 +1,6 @@
 import { Line, Text } from '@react-three/drei';
 import { useMemo } from 'react';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface DrawerDimensionsProps {
   width: number;

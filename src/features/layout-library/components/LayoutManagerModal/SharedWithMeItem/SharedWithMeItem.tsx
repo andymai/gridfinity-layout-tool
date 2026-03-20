@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { SharedWithMeEntry } from '@/core/types';
-import { LayoutThumbnail } from '@/components/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { useTranslation, useFormatting } from '@/i18n';
 
 interface SharedWithMeItemProps {

@@ -20,7 +20,7 @@ vi.mock('@/features/cloud-share/hooks/useCloudShare', () => ({
   })),
 }));
 
-vi.mock('@/hooks/useCollabMode', () => ({
+vi.mock('@/shared/hooks/useCollabMode', () => ({
   useCollabMode: () => ({ isCollaborative: false }),
 }));
 
@@ -28,7 +28,7 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-vi.mock('@/utils/slug', () => ({
+vi.mock('@/shared/utils/slug', () => ({
   slugify: (str: string) => str.toLowerCase().replace(/\s+/g, '-'),
 }));
 

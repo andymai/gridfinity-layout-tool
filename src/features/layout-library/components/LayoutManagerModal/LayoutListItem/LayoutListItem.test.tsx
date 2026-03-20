@@ -4,7 +4,7 @@ import { LayoutListItem } from '@/features/layout-library/components/LayoutManag
 import type { LayoutEntry } from '@/core/types';
 
 // Mock LayoutThumbnail
-vi.mock('@/components/LayoutThumbnail', () => ({
+vi.mock('@/shell/LayoutThumbnail', () => ({
   LayoutThumbnail: ({ size }: { preview: object; size: number }) => (
     <div data-testid="layout-thumbnail" data-size={size}>
       Thumbnail

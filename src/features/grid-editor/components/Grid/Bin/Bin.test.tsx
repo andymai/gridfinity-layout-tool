@@ -8,7 +8,7 @@ import { resetAllStores } from '@/test/testUtils';
 import type { Bin as BinType, Category, Layer, Drawer } from '@/core/types';
 
 // Mock useResponsive
-vi.mock('@/hooks/useResponsive', () => ({
+vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({
     isMobile: false,
     isTablet: false,

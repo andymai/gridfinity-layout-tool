@@ -1,13 +1,13 @@
 import { Suspense, lazy } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
-import { getBinLocationContext } from '@/utils/binLocation';
+import { getBinLocationContext } from '@/shared/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
-import { STLSearchDropdown } from '@/components/STLSearchDropdown';
+import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
 
 // Lazy load LinkedDesignSection

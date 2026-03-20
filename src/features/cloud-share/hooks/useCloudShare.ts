@@ -19,7 +19,7 @@ import { isOk, getUserMessage } from '@/core/result';
 import type { ApiError } from '@/core/result';
 import { copyToClipboard } from '@/core/storage';
 import { markFeatureUsed, trackShareFailure } from '@/shared/analytics/posthog';
-import { slugify } from '@/utils/slug';
+import { slugify } from '@/shared/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 export type CloudShareStatus = 'idle' | 'sharing' | 'updating' | 'deleting' | 'success' | 'error';

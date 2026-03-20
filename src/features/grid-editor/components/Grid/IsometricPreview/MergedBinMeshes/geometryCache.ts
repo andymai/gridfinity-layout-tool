@@ -1,5 +1,5 @@
 import type * as THREE from 'three';
-import { createBinGeometry } from '@/hooks/useBinGeometry';
+import { createBinGeometry } from '@/shared/hooks/useBinGeometry';
 
 /**
  * Geometry cache for reusing identical bin geometries.

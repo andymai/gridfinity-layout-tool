@@ -78,17 +78,17 @@ export function usePrefetchChunks(): void {
           prefetch(() => import('@/features/print-export/components/PrintModal'));
           prefetch(() => import('@/features/layout-library/components/LayoutManagerModal'));
           prefetch(() => import('@/features/bin-designer/components/DesignerPage'));
-          prefetch(() => import('@/components/Modals/SettingsModal'));
+          prefetch(() => import('@/shell/Modals/SettingsModal'));
 
           // Tier 2: Medium priority — commonly used but not immediately
           scheduleNext(() => {
             prefetch(() => import('@/features/inspiration-gallery'));
-            prefetch(() => import('@/components/Modals/HelpModal'));
+            prefetch(() => import('@/shell/Modals/HelpModal'));
 
             // Tier 3: Low priority — rarely needed on desktop
             scheduleNext(() => {
               prefetch(() => import('@/features/labs/components/LabsDrawer'));
-              prefetch(() => import('@/components/Collab/CollabProvider'));
+              prefetch(() => import('@/shell/Collab/CollabProvider'));
             });
           });
         });

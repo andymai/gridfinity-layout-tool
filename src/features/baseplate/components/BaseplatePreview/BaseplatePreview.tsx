@@ -25,7 +25,7 @@ import { GhostPaddingOutline } from './GhostPaddingOutline';
 import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useResponsive } from '@/shared/hooks/useResponsive';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import type { SplitViewMode } from '../../store/baseplatePageStore';

@@ -10,7 +10,7 @@ import { STAGING_ID } from '@/core/constants';
 import type { Bin } from '@/core/types';
 
 // Mock useResponsive
-vi.mock('@/hooks/useResponsive', () => ({
+vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isTouchDevice: false, isTablet: false, isMobile: false }),
 }));
 

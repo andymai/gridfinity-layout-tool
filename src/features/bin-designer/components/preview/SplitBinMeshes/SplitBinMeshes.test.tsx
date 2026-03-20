@@ -41,7 +41,7 @@ vi.mock('@/shared/components/preview/useMeshGeometry', () => ({
   }),
 }));
 
-vi.mock('@/hooks/useThemeEffect', () => ({
+vi.mock('@/shared/hooks/useThemeEffect', () => ({
   useThreeColors: () => ({
     labelColor: '#ffffff',
     gradientBottom: '#2a2a3e',

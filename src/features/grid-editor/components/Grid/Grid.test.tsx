@@ -19,7 +19,7 @@ vi.mock('./IsometricPreview', () => ({
   ),
 }));
 
-vi.mock('@/components/Mobile', () => ({
+vi.mock('@/shell/Mobile', () => ({
   MobileGridToolbar: ({ onFitToScreen }: { onFitToScreen: () => void }) => (
     <div data-testid="mobile-toolbar">
       <button onClick={onFitToScreen}>Fit Mobile</button>
@@ -88,12 +88,12 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-vi.mock('@/components/PanelErrorBoundary', () => ({
+vi.mock('@/shell/PanelErrorBoundary', () => ({
   PanelErrorBoundary: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 // Mock collaborative components
-vi.mock('@/components/Collab', () => ({
+vi.mock('@/shell/Collab', () => ({
   CollabCursors: () => <div data-testid="collab-cursors">Cursors</div>,
   CollabGhosts: () => <div data-testid="collab-ghosts">Ghosts</div>,
   CollabSelectionRings: () => <div data-testid="collab-selection-rings">Selection Rings</div>,
@@ -166,11 +166,11 @@ vi.mock('@/shared/hooks', () => ({
   }),
 }));
 
-vi.mock('@/hooks/useCollabMode', () => ({
+vi.mock('@/shared/hooks/useCollabMode', () => ({
   useCollabMode: () => ({ isCollaborative: false }),
 }));
 
-vi.mock('@/hooks/useCollabPresence', () => ({
+vi.mock('@/shared/hooks/useCollabPresence', () => ({
   useCollabPresence: () => ({
     updateCursor: vi.fn(),
     clearPresence: vi.fn(),

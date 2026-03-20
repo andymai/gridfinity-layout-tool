@@ -11,7 +11,7 @@ import { SHARED_PREVIEW_ID } from '@/core/constants';
 
 // Mock the storage module with atomic API functions
 // Note: vi.mock is hoisted, so we must define the factory inline
-vi.mock('../../core/storage', () => {
+vi.mock('@/core/storage', () => {
   const mockPreview = {
     drawerWidth: 10,
     drawerDepth: 8,
@@ -70,7 +70,7 @@ vi.mock('../../core/storage', () => {
 
 // Mock the idle utility to execute callbacks immediately (synchronously)
 // This simplifies testing since we only need to test debounce behavior
-vi.mock('../../shared/utils/idle', () => ({
+vi.mock('@/shared/utils/idle', () => ({
   scheduleIdleCallback: vi.fn((callback) => {
     // Execute immediately for testing purposes
     callback({ didTimeout: false, timeRemaining: () => 50 });

@@ -17,7 +17,7 @@ import { isOk, getUserMessage } from '@/core/result';
 import { designId } from '@/core/types';
 import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
-import { useDesignerRouting } from '@/hooks/useDesignerRouting';
+import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useToastStore } from '@/core/store/toast';
 
 /**

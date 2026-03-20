@@ -7,7 +7,7 @@
 
 import { Text } from '@react-three/drei';
 import { GRIDFINITY } from '@/shared/constants/bin';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface BinNameLabelProps {
   /** Bin width in grid units (for centering) */

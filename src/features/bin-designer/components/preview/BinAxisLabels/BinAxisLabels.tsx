@@ -15,7 +15,7 @@ import { useMemo, useEffect } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface BinAxisLabelsProps {
   /** Bin width in grid units (can be fractional for half-bin mode) */

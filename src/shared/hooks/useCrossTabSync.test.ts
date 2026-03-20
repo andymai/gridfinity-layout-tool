@@ -9,18 +9,18 @@ import { useLabsStore, LABS_STORAGE_KEY } from '@/core/store/labs';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import * as validation from '@/shared/utils/validation';
-vi.mock('../../core/storage', () => ({
+vi.mock('@/core/storage', () => ({
   loadLayoutAsync: vi.fn(),
   loadLibraryAsync: vi.fn(),
 }));
 
-vi.mock('../../shared/utils/validation', () => ({
+vi.mock('@/shared/utils/validation', () => ({
   validateLayoutIntegrity: vi.fn(),
 }));
 
 // Capture the listener so tests can trigger it
 let capturedLibraryListener: (() => void) | null = null;
-vi.mock('../../core/storage/librarySync', () => ({
+vi.mock('@/core/storage/librarySync', () => ({
   listenForLibraryChanges: vi.fn((cb: () => void) => {
     capturedLibraryListener = cb;
     return () => {

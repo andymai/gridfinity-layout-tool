@@ -12,7 +12,7 @@
 import { Line, Text } from '@react-three/drei';
 import { useMemo } from 'react';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface BinDimensionsProps {
   /** Bin width in grid units */

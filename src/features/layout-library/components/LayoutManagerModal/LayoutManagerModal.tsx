@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { useLayoutSwitcher } from '@/hooks';
+import { useLayoutSwitcher } from '@/shared/hooks';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';

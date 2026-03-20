@@ -7,7 +7,8 @@ import { useToastStore } from '@/core/store/toast';
 import type { InspirationLayout } from '../../types';
 
 // Mock hooks
-vi.mock('@/shared/hooks', () => ({
+vi.mock('@/shared/hooks', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useResponsive: () => ({ isMobile: false, viewportWidth: 1280 }),
 }));
 
@@ -28,7 +29,7 @@ vi.mock('@/shared/analytics/posthog', () => ({
 const mockImportLayoutFromJSON = vi.fn();
 const mockSwitchLayout = vi.fn();
 
-vi.mock('@/hooks/useLayoutSwitcher', () => ({
+vi.mock('@/shared/hooks/useLayoutSwitcher', () => ({
   useLayoutSwitcher: () => ({
     importLayoutFromJSON: mockImportLayoutFromJSON,
     switchLayout: mockSwitchLayout,

@@ -29,13 +29,10 @@ src/
 │                   # name-suggestions, onboarding, print-export, staging
 ├── shared/         # Cross-cutting: analytics/, components/, constants/, contexts/,
 │                   # generation/, hooks/, printSettings/, types/, utils/
+├── shell/          # App shell: Header/, Sidebar/, Collab/, Mobile/, Modals/,
+│                   # Tablet/, layouts/, styles/
 ├── design-system/  # UI primitives: Button, Checkbox, Dialog, Input, Select, etc.
-├── components/     # App-level: Collab/, Mobile/, Modals/, Sidebar/, Tablet/
-├── hooks/          # App-level hooks + interactions/
-├── i18n/           # Localization (en, de, es, fr, nb, nl, pt-BR)
-├── styles/         # Print CSS
-├── utils/          # App-level utilities (binLocation, entity, rotation, slug, etc.)
-└── layouts/        # Responsive layout shells
+└── i18n/           # Localization (en, de, es, fr, nb, nl, pt-BR)
 ```
 
 ## Core Architecture

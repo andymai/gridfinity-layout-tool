@@ -15,7 +15,7 @@ import { Checkbox } from '@/shared/components/Checkbox';
 import { getBinCountByLayer } from '@/features/print-export/utils/printLayout';
 import { getDisplayLayers } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import '@/styles/print.css';
+import '@/shell/styles/print.css';
 
 // Style constants
 const ORIENTATION_OPTIONS = ['portrait', 'landscape'] as const;

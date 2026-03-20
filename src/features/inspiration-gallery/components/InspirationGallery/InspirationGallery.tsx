@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useResponsive } from '@/shared/hooks';
-import { useLayoutSwitcher } from '@/hooks';
+import { useLayoutSwitcher } from '@/shared/hooks';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useMobileStore } from '@/core/store/mobile';
 import { useToastStore } from '@/core/store/toast';

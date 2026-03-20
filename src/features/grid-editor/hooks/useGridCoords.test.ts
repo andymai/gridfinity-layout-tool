@@ -8,7 +8,7 @@ import { resetAllStores } from '@/test/testUtils';
 import type { RefObject } from 'react';
 
 // Mock useResponsive
-vi.mock('../../hooks/useResponsive', () => ({
+vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({
     viewportWidth: 1200,
     isMobile: false,

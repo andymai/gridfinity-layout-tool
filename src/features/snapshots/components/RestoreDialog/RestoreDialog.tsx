@@ -1,6 +1,6 @@
 import { Dialog } from '@/design-system';
 import { Button } from '@/design-system';
-import { LayoutThumbnail } from '@/components/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { useTranslation } from '@/i18n';
 import type { Snapshot } from '@/core/types';
 

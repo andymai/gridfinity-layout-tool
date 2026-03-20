@@ -6,7 +6,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
-import * as url from '@/utils/url';
+import * as url from '@/shared/utils/url';
 import * as validation from '@/shared/utils/validation';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 
@@ -16,7 +16,7 @@ vi.mock('@/core/storage', () => ({
 }));
 
 // Mock url module - using the new URL API
-vi.mock('@/utils/url', () => ({
+vi.mock('@/shared/utils/url', () => ({
   parseLayoutFromURL: vi.fn(),
   setLayoutURL: vi.fn(),
   clearLayoutURL: vi.fn(),

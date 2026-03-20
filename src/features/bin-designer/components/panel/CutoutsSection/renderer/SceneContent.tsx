@@ -32,7 +32,7 @@ import { PathEditOverlay3D } from './PathEditOverlay3D';
 import { RulerMeasurement3D } from './RulerMeasurement3D';
 import { LockBadge3D } from './LockBadge3D';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface DrawingPreview {
   readonly x: number;
