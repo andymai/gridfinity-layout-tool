@@ -380,6 +380,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 drawerWidth={drawer.width}
                 drawerDepth={drawer.depth}
                 layerCenterZ={group.baseZ + (group.layer.height * heightToGridScale) / 2}
+                showChrome={isExplodedView}
                 onLayerClick={setActiveLayer}
               />
             ))

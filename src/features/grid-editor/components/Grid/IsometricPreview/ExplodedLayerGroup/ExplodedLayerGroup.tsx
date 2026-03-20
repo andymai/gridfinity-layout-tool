@@ -26,6 +26,7 @@ interface ExplodedLayerGroupProps {
   drawerWidth: number;
   drawerDepth: number;
   layerCenterZ: number;
+  showChrome: boolean;
   onLayerClick: (layerId: LayerId) => void;
 }
 
@@ -45,6 +46,7 @@ export function ExplodedLayerGroup({
   drawerWidth,
   drawerDepth,
   layerCenterZ,
+  showChrome,
   onLayerClick,
 }: ExplodedLayerGroupProps) {
   const groupRef = useRef<Group>(null);
@@ -68,16 +70,18 @@ export function ExplodedLayerGroup({
       }}
     >
       {/* Translucent floor plane — anchors each layer visually in space */}
-      <mesh position={[drawerWidth / 2, drawerDepth / 2, 0.005]}>
-        <planeGeometry args={[drawerWidth, drawerDepth]} />
-        <meshBasicMaterial
-          color={isActive ? '#f59e0b' : '#ffffff'}
-          transparent
-          opacity={isActive ? FLOOR_OPACITY_ACTIVE : FLOOR_OPACITY}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
+      {showChrome && (
+        <mesh position={[drawerWidth / 2, drawerDepth / 2, 0.005]}>
+          <planeGeometry args={[drawerWidth, drawerDepth]} />
+          <meshBasicMaterial
+            color={isActive ? '#f59e0b' : '#ffffff'}
+            transparent
+            opacity={isActive ? FLOOR_OPACITY_ACTIVE : FLOOR_OPACITY}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
 
       {/* Non-selected bins: merged for performance */}
       <MergedBinMeshes bins={nonSelectedBins} />
@@ -97,16 +101,18 @@ export function ExplodedLayerGroup({
         />
       ))}
 
-      {/* Floating label */}
-      <LayerLabel
-        layerId={layerId}
-        layerName={layerName}
-        layerHeightMm={layerHeightMm}
-        isActive={isActive}
-        drawerWidth={drawerWidth}
-        layerCenterZ={layerCenterZ}
-        onLayerClick={onLayerClick}
-      />
+      {/* Floating label — hidden during exit animation to avoid overlap */}
+      {showChrome && (
+        <LayerLabel
+          layerId={layerId}
+          layerName={layerName}
+          layerHeightMm={layerHeightMm}
+          isActive={isActive}
+          drawerWidth={drawerWidth}
+          layerCenterZ={layerCenterZ}
+          onLayerClick={onLayerClick}
+        />
+      )}
     </group>
   );
 }
