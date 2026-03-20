@@ -49,4 +49,6 @@ export {
   trackCachePerformance,
   trackGalleryOpened,
   trackGalleryClosed,
+  listenForPwaInstall,
+  captureUtmParameters,
 } from './events';

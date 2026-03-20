@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import type { Layout } from '@/core/types';
 import {
   computeLayoutMetrics,
@@ -14,6 +14,8 @@ import {
   trackFillOperation,
   trackPaintMode,
   initAnalytics,
+  listenForPwaInstall,
+  captureUtmParameters,
 } from '@/shared/analytics/posthog';
 import { useInteractionStore, useLabsStore, useViewStore, useHalfBinModeStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
@@ -1180,5 +1182,44 @@ describe('buildHeartbeatPayload', () => {
 describe('trackHeartbeat', () => {
   it('does not throw', () => {
     expect(() => trackHeartbeat(5)).not.toThrow();
+  });
+});
+
+describe('listenForPwaInstall', () => {
+  it('does not throw when called', () => {
+    expect(() => listenForPwaInstall()).not.toThrow();
+  });
+
+  it('registers appinstalled event listener with once option', () => {
+    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+    listenForPwaInstall();
+    expect(addEventListenerSpy).toHaveBeenCalledWith('appinstalled', expect.any(Function), {
+      once: true,
+    });
+    addEventListenerSpy.mockRestore();
+  });
+});
+
+describe('captureUtmParameters', () => {
+  const originalLocation = window.location.href;
+
+  afterEach(() => {
+    window.history.replaceState({}, '', originalLocation);
+  });
+
+  it('does not throw when no UTM params present', () => {
+    expect(() => captureUtmParameters()).not.toThrow();
+  });
+
+  it('does not strip UTM params when PostHog is unavailable', () => {
+    window.history.replaceState({}, '', '/?utm_source=reddit&utm_medium=post&utm_campaign=launch');
+
+    captureUtmParameters();
+
+    // UTMs should remain — stripping only happens after successful PostHog capture
+    const url = new URL(window.location.href);
+    expect(url.searchParams.has('utm_source')).toBe(true);
+    expect(url.searchParams.has('utm_medium')).toBe(true);
+    expect(url.searchParams.has('utm_campaign')).toBe(true);
   });
 });

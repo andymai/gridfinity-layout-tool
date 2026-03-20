@@ -48,7 +48,7 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       brepjs:
-        specifier: ^12.12.0
+        specifier: 12.12.0
         version: 12.12.0(brepjs-opencascade@0.9.0)(brepkit-wasm@1.3.2)
       brepjs-opencascade:
         specifier: ^0.9.0

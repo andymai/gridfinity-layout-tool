@@ -411,6 +411,7 @@ export function markFeatureUsed(
     | 'cloud_share'
     | 'fill'
     | 'paint_mode'
+    | 'pwa_installed'
 ): void {
   try {
     const data = loadAnalyticsData();
@@ -551,6 +552,79 @@ export function trackCachePerformance(stats: {
     hit_rate: stats.hit_rate,
     cache_count: stats.cache_count,
   });
+}
+
+// PWA INSTALL TRACKING
+
+/**
+ * Track PWA app installation via the `appinstalled` browser event.
+ * Call once from the app shell — the listener fires at most once per install.
+ */
+export function listenForPwaInstall(): void {
+  try {
+    window.addEventListener(
+      'appinstalled',
+      () => {
+        trackEvent('pwa_installed', {
+          is_first_session: isFirstSession(),
+        });
+        markFeatureUsed('pwa_installed');
+      },
+      { once: true }
+    );
+  } catch {
+    // Fail silently
+  }
+}
+
+// UTM PARAMETER TRACKING
+
+/**
+ * Parse UTM parameters from the current URL and set them as
+ * once-only person properties in PostHog (first-touch attribution).
+ * Strips UTM params from the URL after capture to keep it clean.
+ */
+export function captureUtmParameters(): void {
+  try {
+    const url = new URL(window.location.href);
+    const utmKeys = [
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_term',
+      'utm_content',
+    ] as const;
+    const params: Record<string, string> = {};
+    let hasUtm = false;
+
+    for (const key of utmKeys) {
+      const value = url.searchParams.get(key);
+      if (value) {
+        params[key] = value;
+        hasUtm = true;
+      }
+    }
+
+    if (!hasUtm) return;
+
+    // Set as once-only person properties (first-touch attribution)
+    const posthogInstance = getPosthogInstance();
+    if (!posthogInstance) return;
+
+    posthogInstance.setPersonProperties({}, params);
+
+    // Also fire a discrete event so UTMs appear in the event stream
+    trackEvent('utm_captured', params);
+
+    // Clean UTM params from URL to avoid double-counting on refresh
+    for (const key of utmKeys) {
+      url.searchParams.delete(key);
+    }
+    const currentState = window.history.state ?? null;
+    window.history.replaceState(currentState, '', url.toString());
+  } catch {
+    // Fail silently
+  }
 }
 
 // GALLERY TRACKING
