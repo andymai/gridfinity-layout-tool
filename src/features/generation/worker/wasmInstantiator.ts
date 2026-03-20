@@ -17,7 +17,7 @@
  * sub-workers via mainScriptUrlOrBlob). Vite handles both correctly.
  */
 
-import { initFromOC, registerKernel, BrepkitAdapter } from 'brepjs';
+import { initFromOC, registerKernel, BrepkitAdapter, prewarm } from 'brepjs';
 
 // Single-threaded WASM (always available as fallback)
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
@@ -86,6 +86,7 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
   }
 
   initFromOC(OC);
+  prewarm();
 
   return { isThreaded: useThreaded, hardwareConcurrency };
 }

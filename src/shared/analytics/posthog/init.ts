@@ -70,8 +70,15 @@ export function initAnalytics(): void {
       // This makes the .then() callback async, which means error handlers below are installed
       // after this await resolves. PostHog's capture_exceptions: true provides native coverage
       // during that brief gap, so no errors are lost.
-      const { updatePersonProperties, captureException } = await import('./events');
+      const {
+        updatePersonProperties,
+        captureException,
+        listenForPwaInstall,
+        captureUtmParameters,
+      } = await import('./events');
       updatePersonProperties();
+      captureUtmParameters();
+      listenForPwaInstall();
 
       // Flush queued events
       for (const event of eventQueue) {

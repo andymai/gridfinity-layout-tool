@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import type { Layout } from '@/core/types';
 import {
   computeLayoutMetrics,
@@ -14,6 +14,8 @@ import {
   trackFillOperation,
   trackPaintMode,
   initAnalytics,
+  listenForPwaInstall,
+  captureUtmParameters,
 } from '@/shared/analytics/posthog';
 import { useInteractionStore, useLabsStore, useViewStore, useHalfBinModeStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
@@ -1180,5 +1182,51 @@ describe('buildHeartbeatPayload', () => {
 describe('trackHeartbeat', () => {
   it('does not throw', () => {
     expect(() => trackHeartbeat(5)).not.toThrow();
+  });
+});
+
+describe('listenForPwaInstall', () => {
+  it('does not throw when called', () => {
+    expect(() => listenForPwaInstall()).not.toThrow();
+  });
+
+  it('registers appinstalled event listener', () => {
+    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+    listenForPwaInstall();
+    expect(addEventListenerSpy).toHaveBeenCalledWith('appinstalled', expect.any(Function));
+    addEventListenerSpy.mockRestore();
+  });
+});
+
+describe('captureUtmParameters', () => {
+  const originalLocation = window.location.href;
+
+  afterEach(() => {
+    window.history.replaceState({}, '', originalLocation);
+  });
+
+  it('does not throw when no UTM params present', () => {
+    expect(() => captureUtmParameters()).not.toThrow();
+  });
+
+  it('strips UTM params from URL after capture', () => {
+    window.history.replaceState({}, '', '/?utm_source=reddit&utm_medium=post&utm_campaign=launch');
+
+    captureUtmParameters();
+
+    const url = new URL(window.location.href);
+    expect(url.searchParams.has('utm_source')).toBe(false);
+    expect(url.searchParams.has('utm_medium')).toBe(false);
+    expect(url.searchParams.has('utm_campaign')).toBe(false);
+  });
+
+  it('preserves non-UTM query params', () => {
+    window.history.replaceState({}, '', '/?utm_source=reddit&other=keep');
+
+    captureUtmParameters();
+
+    const url = new URL(window.location.href);
+    expect(url.searchParams.get('other')).toBe('keep');
+    expect(url.searchParams.has('utm_source')).toBe(false);
   });
 });
