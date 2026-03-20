@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.11.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.11.0...gridfinity-layout-tool-v4.11.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* speed up honeycomb wall + wall cutout generation 3.6× ([#1148](https://github.com/andymai/gridfinity-layout-tool/issues/1148)) ([9f59224](https://github.com/andymai/gridfinity-layout-tool/commit/9f59224901fe139e2c7ae60944a9cbbec42b80e6))
+
 ## [4.11.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.5...gridfinity-layout-tool-v4.11.0) (2026-03-20)
 
 
