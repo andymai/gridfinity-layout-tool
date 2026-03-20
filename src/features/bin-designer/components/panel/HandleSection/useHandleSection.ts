@@ -6,7 +6,7 @@ import { getFeatureStatus } from '@/shared/constraints';
 import type { HandleWallSide } from '@/features/bin-designer/types';
 import type { SectionMeta } from '../types';
 
-const ALL_SIDES: readonly HandleWallSide[] = ['front', 'back', 'left', 'right'];
+export const HANDLE_SIDES: readonly HandleWallSide[] = ['front', 'back', 'left', 'right'];
 
 export function useHandleSection() {
   const { handles, updateHandles, updateHandleSide, params } = useDesignerStore(
@@ -23,13 +23,10 @@ export function useHandleSection() {
   const isUnavailable = !featureStatus.available;
   const isBackDisabled = params.label.enabled;
 
-  const activeSides = useMemo(() => {
-    const sides: HandleWallSide[] = [];
-    for (const side of ALL_SIDES) {
-      if (handles[side].enabled) sides.push(side);
-    }
-    return sides;
-  }, [handles]);
+  const activeSides = useMemo(
+    () => HANDLE_SIDES.filter((side) => handles[side].enabled),
+    [handles]
+  );
 
   const toggleEnabled = useCallback(() => {
     updateHandles({ enabled: !handles.enabled });
@@ -65,8 +62,7 @@ export function useHandleSection() {
   );
 
   const summary = useMemo(() => {
-    if (!handles.enabled) return undefined;
-    if (activeSides.length === 0) return undefined;
+    if (!handles.enabled || activeSides.length === 0) return undefined;
     const sideNames = activeSides.map((s) => t(`binDesigner.handles.${s}`)).join(', ');
     return t('binDesigner.handles.summary', {
       sides: sideNames,
@@ -85,7 +81,7 @@ export function useHandleSection() {
   );
 
   return {
-    state: { handles, activeSides, isBackDisabled },
+    state: { handles, isBackDisabled },
     handlers: { toggleEnabled, toggleSide, setWidth, setDepth, setFilletRadius },
     meta,
     t,

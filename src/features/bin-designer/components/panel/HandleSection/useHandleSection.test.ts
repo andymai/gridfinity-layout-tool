@@ -140,7 +140,7 @@ describe('useHandleSection', () => {
     expect(useDesignerStore.getState().params.handles.filletRadius).toBe(3);
   });
 
-  it('activeSides reflects enabled sides', () => {
+  it('summary reflects only enabled sides', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -156,7 +156,11 @@ describe('useHandleSection', () => {
     });
 
     const { result } = renderHook(() => useHandleSection());
-    expect(result.current.state.activeSides).toEqual(['front', 'left']);
+    const summary = result.current.meta.summary ?? '';
+    expect(summary).toContain('Front');
+    expect(summary).toContain('Left');
+    expect(summary).not.toContain('Back');
+    expect(summary).not.toContain('Right');
   });
 
   it('summary is undefined when handles disabled', () => {

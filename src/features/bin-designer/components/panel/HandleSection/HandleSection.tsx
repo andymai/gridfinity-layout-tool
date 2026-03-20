@@ -8,10 +8,18 @@
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
-import { useHandleSection } from './useHandleSection';
-import type { HandleWallSide } from '@/features/bin-designer/types';
+import { useHandleSection, HANDLE_SIDES } from './useHandleSection';
 
-const SIDE_ORDER: readonly HandleWallSide[] = ['front', 'back', 'left', 'right'];
+const CHIP_BASE = 'flex-1 rounded px-2 py-1 text-xs font-medium transition-colors';
+const CHIP_ACTIVE = `${CHIP_BASE} bg-accent text-on-accent`;
+const CHIP_INACTIVE = `${CHIP_BASE} border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover`;
+const CHIP_DISABLED = `${CHIP_BASE} border border-stroke-subtle bg-surface-secondary text-content-tertiary cursor-not-allowed opacity-50`;
+
+function chipClass(active: boolean, disabled: boolean): string {
+  if (disabled) return CHIP_DISABLED;
+  if (active) return CHIP_ACTIVE;
+  return CHIP_INACTIVE;
+}
 
 export function HandleSection() {
   const { state, handlers, meta, t } = useHandleSection();
@@ -27,7 +35,7 @@ export function HandleSection() {
     >
       {/* Side toggle chips */}
       <div className="flex gap-1">
-        {SIDE_ORDER.map((side) => {
+        {HANDLE_SIDES.map((side) => {
           const isActive = handles[side].enabled;
           const isDisabled = side === 'back' && isBackDisabled;
           return (
@@ -39,13 +47,7 @@ export function HandleSection() {
               disabled={isDisabled}
               title={isDisabled ? t('binDesigner.handles.backDisabledByLabelTab') : undefined}
               onClick={() => handlers.toggleSide(side)}
-              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                isDisabled
-                  ? 'border border-stroke-subtle bg-surface-secondary text-content-tertiary cursor-not-allowed opacity-50'
-                  : isActive
-                    ? 'bg-accent text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-              }`}
+              className={chipClass(isActive, isDisabled)}
             >
               {t(`binDesigner.handles.${side}`)}
             </button>

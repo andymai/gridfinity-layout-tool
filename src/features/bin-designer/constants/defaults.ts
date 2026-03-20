@@ -368,23 +368,20 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   };
 
   // Migrate handle config
-  const rawHandles = (params as Record<string, unknown>).handles as
-    | Partial<HandleConfig>
-    | undefined;
   const handlesConfig: HandleConfig = {
     ...DEFAULT_HANDLE_CONFIG,
-    ...(rawHandles ?? {}),
-    front: { ...DEFAULT_HANDLE_CONFIG.front, ...(rawHandles?.front ?? {}) },
-    back: { ...DEFAULT_HANDLE_CONFIG.back, ...(rawHandles?.back ?? {}) },
-    left: { ...DEFAULT_HANDLE_CONFIG.left, ...(rawHandles?.left ?? {}) },
-    right: { ...DEFAULT_HANDLE_CONFIG.right, ...(rawHandles?.right ?? {}) },
+    ...(params.handles ?? {}),
+    front: { ...DEFAULT_HANDLE_CONFIG.front, ...(params.handles?.front ?? {}) },
+    back: { ...DEFAULT_HANDLE_CONFIG.back, ...(params.handles?.back ?? {}) },
+    left: { ...DEFAULT_HANDLE_CONFIG.left, ...(params.handles?.left ?? {}) },
+    right: { ...DEFAULT_HANDLE_CONFIG.right, ...(params.handles?.right ?? {}) },
   };
 
-  // Remove legacy dividers and eco fields from spread
+  // Remove legacy and already-handled fields from spread
   const {
     dividers: _legacyDividers,
     eco: _legacyEco,
-    handles: _rawHandles,
+    handles: _handlesHandled,
     ...rest
   } = params as Record<string, unknown>;
 

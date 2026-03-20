@@ -10,7 +10,7 @@
 
 import { draw, unwrap, fuse, translate, rotate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import type { BinParams, HandleConfig } from '@/shared/types/bin';
+import type { BinParams, HandleWallSide } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
 import { buildFilletProfile } from './filletProfile';
@@ -19,7 +19,7 @@ import { buildFilletProfile } from './filletProfile';
 const MIN_SHELF_THICKNESS = 2.0;
 
 interface WallDef {
-  readonly side: keyof Pick<HandleConfig, 'front' | 'back' | 'left' | 'right'>;
+  readonly side: HandleWallSide;
   readonly wallSpan: number;
   readonly depthSpan: number;
   readonly x: number;
