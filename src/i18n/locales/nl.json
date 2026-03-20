@@ -601,6 +601,8 @@
   "grid.emptyHint.tapToDraw": "Tik en sleep om een bin te tekenen",
   "grid.exceedsPrintSize": "Overschrijdt printformaat, wordt gesplitst",
   "grid.expand": "Uitvouwen",
+  "grid.explodedView.label": "Exploderen",
+  "grid.explodedView.toggle": "Explodeerweergave: Lagen verticaal scheiden (E)",
   "grid.focus": "Focus",
   "grid.focusShowOnlyActiveLayer": "Focus: Alleen actieve layer tonen",
   "grid.front": "Voorkant",

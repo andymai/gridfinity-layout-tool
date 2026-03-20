@@ -54,6 +54,7 @@ interface ViewState {
   isometricRotation: number;
   layerViewMode: LayerViewMode;
   isPreviewExpanded: boolean;
+  isExplodedView: boolean;
 }
 
 interface ViewActions {
@@ -93,6 +94,8 @@ interface ViewActions {
   snapToIsometric: () => void;
   togglePreviewExpanded: () => void;
   setPreviewExpanded: (expanded: boolean) => void;
+  toggleExplodedView: () => void;
+  setExplodedView: (active: boolean) => void;
 }
 
 export type ViewStore = ViewState & ViewActions;
@@ -112,6 +115,7 @@ export const INITIAL_VIEW_STATE = {
   isometricRotation: 0,
   layerViewMode: 'stack' as LayerViewMode,
   isPreviewExpanded: false,
+  isExplodedView: false,
 } as const;
 
 /** View store — 3D preview camera state, zoom level, and isometric snap toggle. */
@@ -182,7 +186,7 @@ export const useViewStore = create<ViewStore>((set) => ({
     set({
       isometricRotation: ((rotation % 360) + 360) % 360, // Normalize to 0-360
     }),
-  setLayerViewMode: (mode) => set({ layerViewMode: mode }),
+  setLayerViewMode: (mode) => set({ layerViewMode: mode, isExplodedView: false }),
   snapToIsometric: () =>
     set((state) => {
       // Snap to nearest 90° angle
@@ -194,4 +198,14 @@ export const useViewStore = create<ViewStore>((set) => ({
       isPreviewExpanded: !state.isPreviewExpanded,
     })),
   setPreviewExpanded: (expanded) => set({ isPreviewExpanded: expanded }),
+  toggleExplodedView: () =>
+    set((state) => ({
+      isExplodedView: !state.isExplodedView,
+      layerViewMode: !state.isExplodedView ? 'all' : state.layerViewMode,
+    })),
+  setExplodedView: (active) =>
+    set((state) => ({
+      isExplodedView: active,
+      layerViewMode: active ? 'all' : state.layerViewMode,
+    })),
 }));

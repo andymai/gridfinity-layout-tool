@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { use3DPreviewKeyboard } from '@/shared/hooks/use3DPreviewKeyboard';
-import type { SceneHandle } from '@/features/grid-editor';
 
 // Helper to create keyboard event
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
@@ -26,42 +25,31 @@ function pressKey(
 }
 
 describe('use3DPreviewKeyboard', () => {
-  let mockSceneRef: React.RefObject<SceneHandle | null>;
   let mockTogglePreviewVisibility: Mock<() => void>;
   let mockTogglePreviewExpanded: Mock<() => void>;
   let mockSetPreviewExpanded: Mock<(expanded: boolean) => void>;
-  let mockResetView: Mock<() => void>;
-  let mockSetPreset: Mock<SceneHandle['setPreset']>;
+  let mockToggleExplodedView: Mock<() => void>;
+
+  const defaultProps = () => ({
+    isPreviewVisible: true,
+    isPreviewExpanded: false,
+    togglePreviewVisibility: mockTogglePreviewVisibility,
+    togglePreviewExpanded: mockTogglePreviewExpanded,
+    setPreviewExpanded: mockSetPreviewExpanded,
+    toggleExplodedView: mockToggleExplodedView,
+    isExplodedSupported: true,
+  });
 
   beforeEach(() => {
-    // Create mock functions with proper types
     mockTogglePreviewVisibility = vi.fn();
     mockTogglePreviewExpanded = vi.fn();
     mockSetPreviewExpanded = vi.fn();
-    mockResetView = vi.fn();
-    mockSetPreset = vi.fn();
-
-    // Create mock scene ref
-    mockSceneRef = {
-      current: {
-        resetView: mockResetView,
-        setPreset: mockSetPreset,
-      },
-    };
+    mockToggleExplodedView = vi.fn();
   });
 
   describe('v key - toggle preview visibility', () => {
     it('toggles preview visibility when v is pressed', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
 
       act(() => {
         const event = pressKey('v');
@@ -72,16 +60,7 @@ describe('use3DPreviewKeyboard', () => {
     });
 
     it('works when preview is hidden (special case)', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: false,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard({ ...defaultProps(), isPreviewVisible: false }));
 
       act(() => {
         pressKey('v');
@@ -93,16 +72,7 @@ describe('use3DPreviewKeyboard', () => {
 
   describe('Space key - toggle expand/collapse', () => {
     it('toggles expanded state when preview is visible', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
 
       act(() => {
         const event = pressKey(' ');
@@ -113,16 +83,7 @@ describe('use3DPreviewKeyboard', () => {
     });
 
     it('does not toggle when preview is hidden', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: false,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard({ ...defaultProps(), isPreviewVisible: false }));
 
       act(() => {
         pressKey(' ');
@@ -134,16 +95,7 @@ describe('use3DPreviewKeyboard', () => {
 
   describe('Escape key - close expanded view', () => {
     it('closes expanded view when preview is visible and expanded', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: true,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard({ ...defaultProps(), isPreviewExpanded: true }));
 
       act(() => {
         const event = pressKey('Escape');
@@ -154,16 +106,7 @@ describe('use3DPreviewKeyboard', () => {
     });
 
     it('does not close when preview is not expanded', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
 
       act(() => {
         pressKey('Escape');
@@ -175,12 +118,9 @@ describe('use3DPreviewKeyboard', () => {
     it('does not close when preview is hidden', () => {
       renderHook(() =>
         use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
+          ...defaultProps(),
           isPreviewVisible: false,
           isPreviewExpanded: true,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
         })
       );
 
@@ -192,18 +132,42 @@ describe('use3DPreviewKeyboard', () => {
     });
   });
 
+  describe('e key - toggle exploded view', () => {
+    it('toggles exploded view when preview is visible and supported', () => {
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
+
+      act(() => {
+        const event = pressKey('e');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockToggleExplodedView).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not toggle when preview is hidden', () => {
+      renderHook(() => use3DPreviewKeyboard({ ...defaultProps(), isPreviewVisible: false }));
+
+      act(() => {
+        pressKey('e');
+      });
+
+      expect(mockToggleExplodedView).not.toHaveBeenCalled();
+    });
+
+    it('does not toggle when exploded is not supported (mobile/single layer)', () => {
+      renderHook(() => use3DPreviewKeyboard({ ...defaultProps(), isExplodedSupported: false }));
+
+      act(() => {
+        pressKey('e');
+      });
+
+      expect(mockToggleExplodedView).not.toHaveBeenCalled();
+    });
+  });
+
   describe('input field detection', () => {
     it('does not handle shortcuts when typing in INPUT element', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
 
       const input = document.createElement('input');
       document.body.appendChild(input);
@@ -211,30 +175,18 @@ describe('use3DPreviewKeyboard', () => {
       act(() => {
         pressKey('v', input);
         pressKey(' ', input);
-        pressKey('1', input);
+        pressKey('e', input);
       });
 
-      // v key should work even in input (it's a special case - only for toggle visibility)
-      // Actually, looking at the code, it checks the target BEFORE handling any key
-      // So v key should also be blocked in input fields
       expect(mockTogglePreviewVisibility).not.toHaveBeenCalled();
       expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
-      expect(mockSetPreset).not.toHaveBeenCalled();
+      expect(mockToggleExplodedView).not.toHaveBeenCalled();
 
       document.body.removeChild(input);
     });
 
     it('does not handle shortcuts when typing in TEXTAREA element', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
 
       const textarea = document.createElement('textarea');
       document.body.appendChild(textarea);
@@ -251,20 +203,10 @@ describe('use3DPreviewKeyboard', () => {
     });
 
     it('does not handle shortcuts in contentEditable elements', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
 
       const div = document.createElement('div');
       div.setAttribute('contenteditable', 'true');
-      // Manually set isContentEditable since jsdom doesn't fully support it
       Object.defineProperty(div, 'isContentEditable', {
         value: true,
         writable: true,
@@ -283,16 +225,7 @@ describe('use3DPreviewKeyboard', () => {
     });
 
     it('handles shortcuts normally when target is a regular element', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
 
       const div = document.createElement('div');
       document.body.appendChild(div);
@@ -312,16 +245,7 @@ describe('use3DPreviewKeyboard', () => {
       const addEventListenerSpy = vi.spyOn(document, 'addEventListener');
       const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
 
-      const { unmount } = renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
+      const { unmount } = renderHook(() => use3DPreviewKeyboard(defaultProps()));
 
       expect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
 
@@ -337,19 +261,10 @@ describe('use3DPreviewKeyboard', () => {
   describe('dependency updates', () => {
     it('updates handler when visibility changes', () => {
       const { rerender } = renderHook(
-        ({ visible }) =>
-          use3DPreviewKeyboard({
-            sceneRef: mockSceneRef,
-            isPreviewVisible: visible,
-            isPreviewExpanded: false,
-            togglePreviewVisibility: mockTogglePreviewVisibility,
-            togglePreviewExpanded: mockTogglePreviewExpanded,
-            setPreviewExpanded: mockSetPreviewExpanded,
-          }),
+        ({ visible }) => use3DPreviewKeyboard({ ...defaultProps(), isPreviewVisible: visible }),
         { initialProps: { visible: true } }
       );
 
-      // When visible, Space should toggle expanded
       act(() => {
         pressKey(' ');
       });
@@ -358,7 +273,6 @@ describe('use3DPreviewKeyboard', () => {
 
       mockTogglePreviewExpanded.mockClear();
 
-      // After rerender with hidden, Space should not toggle expanded
       rerender({ visible: false });
 
       act(() => {

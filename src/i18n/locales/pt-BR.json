@@ -601,6 +601,8 @@
   "grid.emptyHint.tapToDraw": "Toque e arraste para desenhar um bin",
   "grid.exceedsPrintSize": "Excede o tamanho de impressão, será dividido",
   "grid.expand": "Expandir",
+  "grid.explodedView.label": "Explodir",
+  "grid.explodedView.toggle": "Vista explodida: Separar camadas verticalmente (E)",
   "grid.focus": "Foco",
   "grid.focusShowOnlyActiveLayer": "Foco: Mostrar apenas o layer ativo",
   "grid.front": "Frente",

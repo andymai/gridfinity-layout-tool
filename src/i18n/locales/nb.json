@@ -601,6 +601,8 @@
   "grid.emptyHint.tapToDraw": "Trykk og dra for å tegne en bin",
   "grid.exceedsPrintSize": "Overskrider utskriftsstørrelse, vil bli delt",
   "grid.expand": "Utvid",
+  "grid.explodedView.label": "Eksplodere",
+  "grid.explodedView.toggle": "Eksplodert visning: Skill lag vertikalt (E)",
   "grid.focus": "Fokus",
   "grid.focusShowOnlyActiveLayer": "Fokus: Vis bare aktivt lag",
   "grid.front": "Front",
