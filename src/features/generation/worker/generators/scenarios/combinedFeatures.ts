@@ -47,4 +47,22 @@ export const combinedFeatures: ScenarioCase[] = [
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
     },
   }),
+  defineScenario('combined features', '2\u00d72 honeycomb walls + wall cutouts', {
+    assert: 'structural',
+    params: {
+      width: 2,
+      depth: 2,
+      height: 5,
+      wallPattern: { enabled: true, pattern: 'honeycomb' },
+      walls: {
+        ...DEFAULT_BIN_PARAMS.walls,
+        enabled: true,
+        front: { enabled: true, width: 70, depth: 50 },
+        back: { enabled: true, width: 70, depth: 50 },
+        left: { enabled: true, width: 70, depth: 50 },
+        right: { enabled: true, width: 70, depth: 50 },
+      },
+    },
+    timeout: 60_000,
+  }),
 ];

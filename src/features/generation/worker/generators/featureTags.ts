@@ -15,6 +15,7 @@ export const FeatureTag = {
   SLOT: 7,
   INSERT: 8,
   CUTOUT: 9,
+  WALL_PATTERN: 10,
   UNKNOWN: 255,
 } as const;
 

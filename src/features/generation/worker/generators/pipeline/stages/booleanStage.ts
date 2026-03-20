@@ -44,12 +44,35 @@ function batchWithFallback(
   }
 }
 
+/**
+ * Apply a cut pass: batch-cut targets from bin, disposing the previous
+ * intermediate if it was replaced (and isn't the original solid).
+ */
+function applyCutPass(
+  bin: Shape3D,
+  originalSolid: Shape3D,
+  targets: readonly Shape3D[],
+  opts: BooleanOpts
+): Shape3D {
+  const prev = bin;
+  const result = batchWithFallback(
+    bin,
+    targets,
+    (b, ts) => unwrap(cutAll(b, [...ts], opts)),
+    (b, t) => unwrap(cut(b, t))
+  );
+  if (prev !== originalSolid && prev !== result) prev.delete();
+  return result;
+}
+
 export const booleanStage: PipelineStage = {
   name: 'features',
   progressValue: 0.6,
 
   shouldRun(ctx: PipelineContext): boolean {
-    return ctx.fuseTargets.length > 0 || ctx.cutTargets.length > 0;
+    return (
+      ctx.fuseTargets.length > 0 || ctx.cutTargets.length > 0 || ctx.patternCutTargets.length > 0
+    );
   },
 
   execute(ctx: PipelineContext): PipelineContext {
@@ -57,6 +80,7 @@ export const booleanStage: PipelineStage = {
     let bin = ctx.solid;
     if (!bin) return ctx;
     const originalSolid = bin;
+    const cutOpts = { simplify: forExport, signal } as BooleanOpts;
 
     if (ctx.fuseTargets.length > 0) {
       checkCancelled(signal);
@@ -68,26 +92,22 @@ export const booleanStage: PipelineStage = {
       );
     }
 
+    // Cut passes are separated so OCCT doesn't compute pairwise intersections
+    // between unrelated tool shapes (e.g. wall cutouts vs pattern elements).
     if (ctx.cutTargets.length > 0) {
       checkCancelled(signal);
-      const preCut = bin;
-      bin = batchWithFallback(
-        bin,
-        ctx.cutTargets,
-        (b, targets) =>
-          unwrap(cutAll(b, [...targets], { simplify: forExport, signal } as BooleanOpts)),
-        (b, t) => unwrap(cut(b, t))
-      );
-      // Dispose the fuse result if it was replaced by cut (and isn't the original)
-      if (preCut !== originalSolid && preCut !== bin) preCut.delete();
+      bin = applyCutPass(bin, originalSolid, ctx.cutTargets, cutOpts);
     }
 
-    // Dispose original solid if replaced by boolean ops
-    if (bin !== originalSolid) originalSolid.delete();
-    // Dispose all consumed targets
-    for (const t of ctx.fuseTargets) t.delete();
-    for (const t of ctx.cutTargets) t.delete();
+    if (ctx.patternCutTargets.length > 0) {
+      checkCancelled(signal);
+      bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, cutOpts);
+    }
 
-    return { ...ctx, solid: bin, fuseTargets: [], cutTargets: [] };
+    if (bin !== originalSolid) originalSolid.delete();
+    const allTargets = [...ctx.fuseTargets, ...ctx.cutTargets, ...ctx.patternCutTargets];
+    for (const t of allTargets) t.delete();
+
+    return { ...ctx, solid: bin, fuseTargets: [], cutTargets: [], patternCutTargets: [] };
   },
 };

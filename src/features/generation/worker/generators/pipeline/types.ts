@@ -50,6 +50,8 @@ export interface PipelineContext {
   readonly fuseTargets: readonly Shape3D[];
   /** Subtractive feature shapes to cut from the bin */
   readonly cutTargets: readonly Shape3D[];
+  /** Pattern cut targets — applied in a separate boolean pass after cutTargets */
+  readonly patternCutTargets: readonly Shape3D[];
   /** Final mesh output (set by tessellate stage) */
   readonly mesh: MeshData | null;
 }

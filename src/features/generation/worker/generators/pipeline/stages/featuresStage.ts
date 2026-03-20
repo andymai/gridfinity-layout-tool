@@ -6,11 +6,20 @@
  *
  * Solid mode: only cutout cuts (top-down cavity carving).
  *
- * Populates fuseTargets (additive) and cutTargets (subtractive) arrays
+ * Populates fuseTargets (additive), cutTargets (subtractive), and
+ * patternCutTargets (pattern cuts — separate boolean pass) arrays
  * for the subsequent boolean stage.
  */
 
-import { drawPolysides, unwrap, cut, composeTransforms, transformCopy, clone } from 'brepjs';
+import {
+  drawPolysides,
+  unwrap,
+  cut,
+  compound,
+  composeTransforms,
+  transformCopy,
+  clone,
+} from 'brepjs';
 import type { Shape3D, TransformOp } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from '../../generatorConstants';
@@ -99,6 +108,7 @@ export const featuresStage: PipelineStage = {
     // Standard mode: all interior features
     const fuseTargets: Shape3D[] = [];
     const cutTargets: Shape3D[] = [];
+    const patternCutTargets: Shape3D[] = [];
 
     // Compartment walls
     if (!isSlotted) {
@@ -255,11 +265,13 @@ export const featuresStage: PipelineStage = {
       );
     }
 
-    // Wall patterns
+    // Wall patterns — pre-fuse all hex elements into a single compound shape
+    // to avoid O(n²) boolean degradation from hundreds of individual cuts.
     if (params.wallPattern.enabled) {
       const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
       if (patternResult) {
         const { descriptors: wallDescriptors, calculator } = patternResult;
+        const patternElements: Shape3D[] = [];
         try {
           const cutDepth = params.wallThickness * 4;
           const halfDepth = cutDepth / 2;
@@ -286,32 +298,53 @@ export const featuresStage: PipelineStage = {
               const ops: TransformOp[] = [
                 { type: 'translate', v: [center.x, center.y, -halfDepth] },
                 { type: 'rotate', angle: 90, axis: [1, 0, 0] },
-                ...(wall.zRotation !== undefined
-                  ? [
-                      {
-                        type: 'rotate' as const,
-                        angle: wall.zRotation,
-                        axis: [0, 0, 1] as [number, number, number],
-                      },
-                    ]
-                  : []),
-                { type: 'translate', v: [wall.translateX, wall.translateY, wall.translateZ] },
               ];
+              if (wall.zRotation !== undefined) {
+                ops.push({ type: 'rotate', angle: wall.zRotation, axis: [0, 0, 1] });
+              }
+              ops.push({
+                type: 'translate',
+                v: [wall.translateX, wall.translateY, wall.translateZ],
+              });
               const trsf = composeTransforms(ops);
               try {
-                cutTargets.push(transformCopy(shapeTemplate, trsf));
+                patternElements.push(transformCopy(shapeTemplate, trsf));
               } finally {
                 trsf.cleanup();
               }
             }
           }
+
+          if (patternElements.length > 0) {
+            checkCancelled(signal);
+            // Use compound() (O(n) topology grouping) instead of fuseAll()
+            // (O(n²) boolean union). cutAll() already handles compounds.
+            // Routed to patternCutTargets for a separate boolean pass —
+            // cutting patterns and cutouts in one batch forces OCCT to
+            // compute pairwise intersections between tool shapes.
+            if (patternElements.length === 1) {
+              const single = patternElements[0];
+              collectOrigins(single, FeatureTag.WALL_PATTERN, originToTag);
+              patternCutTargets.push(single);
+            } else {
+              const grouped = compound(patternElements);
+              // Dispose individual handles — compound shares the underlying
+              // OCCT TShape references, so the geometry stays alive.
+              for (const el of patternElements) el.delete();
+              patternElements.length = 0;
+              collectOrigins(grouped, FeatureTag.WALL_PATTERN, originToTag);
+              patternCutTargets.push(grouped);
+            }
+          }
         } catch (e: unknown) {
+          // Dispose any pattern elements not handed off to patternCutTargets
+          for (const el of patternElements) el.delete();
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
           // Pattern generation can fail on complex geometries; skip if it does
         }
       }
     }
 
-    return { ...ctx, fuseTargets, cutTargets };
+    return { ...ctx, fuseTargets, cutTargets, patternCutTargets };
   },
 };
