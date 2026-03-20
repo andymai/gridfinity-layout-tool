@@ -5,7 +5,7 @@ import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk } from '@/core/result';
 
 /** Gap between layers in grid units when exploded. */
-const EXPLODE_GAP = 1.5;
+const EXPLODE_GAP = 2.5;
 
 /** Opacity for inactive (non-active) layers in exploded mode. */
 const EXPLODE_DIM_OPACITY = 0.35;

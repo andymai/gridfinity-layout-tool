@@ -113,7 +113,7 @@ describe('useExplodedLayerView', () => {
     );
 
     expect(result.current![0].explodedZOffset).toBe(0);
-    expect(result.current![1].explodedZOffset).toBe(1.5); // EXPLODE_GAP = 1.5
+    expect(result.current![1].explodedZOffset).toBe(2.5); // EXPLODE_GAP = 2.5
   });
 
   it('sets active layer to full opacity and others dimmed', () => {
@@ -224,7 +224,7 @@ describe('useExplodedLayerView', () => {
 
     expect(result.current).toHaveLength(3);
     expect(result.current![2].bins).toHaveLength(0);
-    expect(result.current![2].explodedZOffset).toBe(3); // 2 * 1.5
+    expect(result.current![2].explodedZOffset).toBe(5); // 2 * 2.5
   });
 
   it('returns groups with zero offsets during exit animation', () => {

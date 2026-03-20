@@ -16,7 +16,6 @@ describe('LayerLabel', () => {
     layerHeightMm: 21,
     isActive: false,
     drawerWidth: 6,
-    drawerDepth: 4,
     layerCenterZ: 0.5,
     onLayerClick: vi.fn(),
   };

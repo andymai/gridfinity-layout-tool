@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 import type { Group } from 'three';
 import type { LayerId } from '@/core/types';
 import { MergedBinMeshes } from '../MergedBinMeshes';
@@ -7,6 +8,12 @@ import { BinMesh } from '../BinMesh';
 import { LayerLabel } from './LayerLabel';
 import { lerpStep } from './lerpStep';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
+
+/** Opacity of the per-layer floor plane. */
+const FLOOR_OPACITY = 0.06;
+
+/** Active layer floor is slightly more visible. */
+const FLOOR_OPACITY_ACTIVE = 0.1;
 
 interface ExplodedLayerGroupProps {
   layerId: LayerId;
@@ -25,7 +32,7 @@ interface ExplodedLayerGroupProps {
 /**
  * Renders all bins for a single layer in the exploded 3D view.
  * Manages a spring-like Z offset animation via useFrame (exponential lerp).
- * Includes the HTML label overlay and onClick for layer selection.
+ * Includes a translucent floor plane, HTML label overlay, and onClick for layer selection.
  */
 export function ExplodedLayerGroup({
   layerId,
@@ -60,6 +67,18 @@ export function ExplodedLayerGroup({
         onLayerClick(layerId);
       }}
     >
+      {/* Translucent floor plane — anchors each layer visually in space */}
+      <mesh position={[drawerWidth / 2, drawerDepth / 2, 0.005]}>
+        <planeGeometry args={[drawerWidth, drawerDepth]} />
+        <meshBasicMaterial
+          color={isActive ? '#f59e0b' : '#ffffff'}
+          transparent
+          opacity={isActive ? FLOOR_OPACITY_ACTIVE : FLOOR_OPACITY}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+
       {/* Non-selected bins: merged for performance */}
       <MergedBinMeshes bins={nonSelectedBins} />
 
@@ -85,7 +104,6 @@ export function ExplodedLayerGroup({
         layerHeightMm={layerHeightMm}
         isActive={isActive}
         drawerWidth={drawerWidth}
-        drawerDepth={drawerDepth}
         layerCenterZ={layerCenterZ}
         onLayerClick={onLayerClick}
       />

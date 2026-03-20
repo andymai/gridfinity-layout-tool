@@ -7,15 +7,14 @@ interface LayerLabelProps {
   layerHeightMm: number;
   isActive: boolean;
   drawerWidth: number;
-  drawerDepth: number;
   layerCenterZ: number;
   onLayerClick: (layerId: LayerId) => void;
 }
 
 /**
  * HTML overlay label positioned next to a layer in the exploded 3D view.
- * Shows the layer name and height. Highlights when active.
- * Uses drei's Html component to anchor DOM elements to 3D positions.
+ * Anchored at the front-right corner of the drawer (closest to isometric camera)
+ * so labels stay visually connected to their layer content.
  */
 export function LayerLabel({
   layerId,
@@ -23,13 +22,12 @@ export function LayerLabel({
   layerHeightMm,
   isActive,
   drawerWidth,
-  drawerDepth,
   layerCenterZ,
   onLayerClick,
 }: LayerLabelProps) {
   return (
     <Html
-      position={[drawerWidth + 0.5, drawerDepth / 2, layerCenterZ]}
+      position={[drawerWidth + 0.3, -0.3, layerCenterZ]}
       zIndexRange={[50, 0]}
       style={{ pointerEvents: 'none' }}
     >
@@ -38,12 +36,16 @@ export function LayerLabel({
           e.stopPropagation();
           onLayerClick(layerId);
         }}
-        className={`rounded px-1.5 py-0.5 text-[11px] cursor-pointer whitespace-nowrap border transition-colors ${
+        className={`rounded-md px-2 py-1 text-xs font-medium cursor-pointer whitespace-nowrap border transition-all ${
           isActive
-            ? 'bg-accent text-on-dark border-accent'
-            : 'bg-surface-elevated text-content-secondary border-stroke-subtle hover:bg-surface-hover'
+            ? 'bg-accent text-on-dark border-accent shadow-sm'
+            : 'bg-surface-elevated/80 text-content-tertiary border-stroke-subtle hover:bg-surface-hover hover:text-content-secondary'
         }`}
-        style={{ pointerEvents: 'auto' }}
+        style={{
+          pointerEvents: 'auto',
+          opacity: isActive ? 1 : 0.7,
+          backdropFilter: 'blur(4px)',
+        }}
       >
         {layerName} · {layerHeightMm}mm
       </button>
