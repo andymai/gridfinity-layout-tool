@@ -13,7 +13,7 @@ import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { SplitPieceMeshEntry } from '../../../types';
 

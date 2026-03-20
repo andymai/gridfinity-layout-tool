@@ -12,11 +12,11 @@ import { useLayoutRouting } from '@/features/layout-library/hooks/useLayoutRouti
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import * as url from '@/utils/url';
+import * as url from '@/shared/utils/url';
 
 // Mock the url utilities
-vi.mock('@/utils/url', async () => {
-  const actual = await vi.importActual('@/utils/url');
+vi.mock('@/shared/utils/url', async () => {
+  const actual = await vi.importActual('@/shared/utils/url');
   return {
     ...actual,
     parseLayoutFromURL: vi.fn(),

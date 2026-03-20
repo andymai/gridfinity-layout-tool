@@ -18,10 +18,10 @@ import {
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutSwitcher } from '@/hooks';
+import { useLayoutSwitcher } from '@/shared/hooks';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
 import { getStagingBins, getLayerBins } from '@/shared/utils';
-import { findBinById } from '@/utils/entity';
+import { findBinById } from '@/shared/utils/entity';
 import { STAGING_ID } from '@/core/constants';
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';

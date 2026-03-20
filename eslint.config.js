@@ -149,10 +149,7 @@ export default defineConfig([
         { type: 'shared', pattern: ['src/shared/*'] },
         { type: 'design-system', pattern: ['src/design-system/*'] },
         { type: 'feature', pattern: ['src/features/*'], capture: ['featureName'] },
-        { type: 'app-hooks', pattern: ['src/hooks/*'] },
-        { type: 'app-utils', pattern: ['src/utils/*'] },
-        { type: 'app-components', pattern: ['src/components/*'] },
-        { type: 'app-layouts', pattern: ['src/layouts/*'] },
+        { type: 'shell', pattern: ['src/shell/*'] },
         { type: 'i18n', pattern: ['src/i18n/*'] },
         { type: 'test-infra', pattern: ['src/test/*'] },
       ],
@@ -253,7 +250,7 @@ export default defineConfig([
       'src/shared/analytics/labelVocabulary/vocabulary.ts', // post-split equivalent
       'src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.ts',
       'src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx',
-      'src/components/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx',
+      'src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx',
       'src/shared/analytics/mlTelemetry/trackers.ts',
       'api/ml-telemetry.ts', // pre-split (2268 LOC)
       'api/lib/mlTelemetry/aggregators.ts', // post-split equivalent

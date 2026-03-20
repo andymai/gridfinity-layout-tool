@@ -13,7 +13,7 @@ import { isOk, getUserMessage } from '@/core/result';
 import type { Layout, SharePermission, LayoutPreview } from '@/core/types';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { useTranslation } from '@/i18n';
-import { useLayoutActivation } from '@/hooks/useLayoutActivation';
+import { useLayoutActivation } from '@/shared/hooks/useLayoutActivation';
 
 // Check for shared layout once at module load time (URL-encoded shares)
 const initialShareResult = getSharedLayoutFromURL();

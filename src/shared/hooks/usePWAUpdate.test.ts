@@ -8,7 +8,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
-import { saveEphemeralState, type EphemeralState } from '@/utils/ephemeralState';
+import { saveEphemeralState, type EphemeralState } from '@/shared/utils/ephemeralState';
 
 // Constants from usePWAUpdate (mirrored for testing)
 const UPDATE_TOAST_MS = 5000;

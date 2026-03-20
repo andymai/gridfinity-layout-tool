@@ -14,7 +14,7 @@ import { bridgeManager } from '@/shared/generation/bridge';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams } from '@/features/bin-designer/types';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
-import { THREE_COLORS } from '@/hooks/useThemeEffect';
+import { THREE_COLORS } from '@/shared/hooks/useThemeEffect';
 
 /** Thumbnail size matching the main capture utility */
 const THUMBNAIL_SIZE = 384;

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { LayoutThumbnail } from '@/components/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { useRelativeTime } from '../../hooks/useRelativeTime';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';

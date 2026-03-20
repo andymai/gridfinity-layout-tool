@@ -10,7 +10,7 @@ import { createDefaultLayout } from '@/core/constants';
 import type { SharedWithMeEntry, Layout } from '@/core/types';
 
 // Mock the API module
-vi.mock('../../core/api/share', () => ({
+vi.mock('@/core/api/share', () => ({
   fetchShare: vi.fn(),
 }));
 

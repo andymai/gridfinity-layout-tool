@@ -2,7 +2,7 @@ import { memo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import type { Bin } from '@/core/types';
-import { useBinGeometry } from '@/hooks/useBinGeometry';
+import { useBinGeometry } from '@/shared/hooks/useBinGeometry';
 
 interface BinMeshProps {
   bin: Bin;

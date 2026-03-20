@@ -4,7 +4,7 @@ import { LayoutGridItem } from './LayoutGridItem';
 import type { LayoutEntry } from '@/core/types';
 
 // Mock components
-vi.mock('@/components/LayoutThumbnail', () => ({
+vi.mock('@/shell/LayoutThumbnail', () => ({
   LayoutThumbnail: ({ preview }: { preview: unknown }) => (
     <div data-testid="layout-thumbnail">Thumbnail: {JSON.stringify(preview)}</div>
   ),

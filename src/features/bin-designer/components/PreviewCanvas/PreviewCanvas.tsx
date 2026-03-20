@@ -12,10 +12,10 @@ import { Vector3, Spherical } from 'three';
 import type { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useDesignerRouting } from '@/hooks/useDesignerRouting';
+import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { calcMaxGridUnits } from '@/core/constants';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
+import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
 import {
   BinMesh,
   BinAxisLabels,
@@ -46,7 +46,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 /** localStorage key for persisting the user's preview color preference */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';

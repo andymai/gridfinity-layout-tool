@@ -2,21 +2,21 @@ import { createRoot } from 'react-dom/client';
 import { Analytics } from '@vercel/analytics/react';
 import './index.css';
 import App from './App.tsx';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { LocaleProvider } from './i18n/context.tsx';
-import { detectBrowserLocale } from './i18n/detection.ts';
-import { isLocale } from './i18n/types.ts';
-import { useSettingsStore } from './core/store/settings.ts';
-import { initAnalytics } from './shared/analytics/posthog';
-import { useLayoutStore } from './core/store/layout';
-import { useLibraryStore } from './core/store/library.ts';
-import { useSharedWithMeStore } from './core/store/sharedWithMe.ts';
+import { ErrorBoundary } from '@/shell/ErrorBoundary';
+import { LocaleProvider } from '@/i18n/context.tsx';
+import { detectBrowserLocale } from '@/i18n/detection.ts';
+import { isLocale } from '@/i18n/types.ts';
+import { useSettingsStore } from '@/core/store/settings.ts';
+import { initAnalytics } from '@/shared/analytics/posthog';
+import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library.ts';
+import { useSharedWithMeStore } from '@/core/store/sharedWithMe.ts';
 import { initializeLayoutLibrary, loadSharedWithMe } from '@/core/storage';
 import { isOk } from '@/core/result';
-import type { Locale } from './i18n/types.ts';
-import { recoverFromBadWwwMigration } from './core/storage/wwwMigrationRecovery';
-import { connectEventStoreToBus } from './core/cqrs';
-import { InitErrorFallback } from './components/InitErrorFallback';
+import type { Locale } from '@/i18n/types.ts';
+import { recoverFromBadWwwMigration } from '@/core/storage/wwwMigrationRecovery';
+import { connectEventStoreToBus } from '@/core/cqrs';
+import { InitErrorFallback } from '@/shell/InitErrorFallback';
 
 // Recovery for canonical users who went through a broken www→canonical migration
 // (before the fix that excluded migration-state flags from bridge LS copy).

@@ -175,8 +175,8 @@ vi.mock('@/core/storage', () => {
 });
 
 // Mock validation
-vi.mock('@/utils/validation', async () => {
-  const actual = await vi.importActual('../../utils/validation');
+vi.mock('@/shared/utils/validation', async () => {
+  const actual = await vi.importActual('@/shared/utils/validation');
   return {
     ...actual,
     validateLayoutIntegrity: vi.fn(() => ({ valid: true })),

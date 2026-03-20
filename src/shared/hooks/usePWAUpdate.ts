@@ -10,7 +10,7 @@ import {
   saveEphemeralState,
   loadEphemeralState,
   type EphemeralState,
-} from '@/utils/ephemeralState';
+} from '@/shared/utils/ephemeralState';
 import { binId, layerId, categoryId } from '@/core/types';
 import type { BinId } from '@/core/types';
 import { useTranslation } from '@/i18n';

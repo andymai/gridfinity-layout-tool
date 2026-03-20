@@ -6,7 +6,7 @@
 
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;

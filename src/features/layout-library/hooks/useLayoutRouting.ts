@@ -11,7 +11,7 @@ import {
   clearLayoutURL,
   getLayoutIdFromHistoryState,
   getCanonicalRedirect,
-} from '@/utils/url';
+} from '@/shared/utils/url';
 import { useTranslation } from '@/i18n';
 import {
   layoutId as toLayoutId,

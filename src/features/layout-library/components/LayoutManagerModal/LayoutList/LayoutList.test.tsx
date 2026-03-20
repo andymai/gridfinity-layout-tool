@@ -25,7 +25,7 @@ vi.mock('@/core/storage', () => ({
 }));
 
 // Mock LayoutThumbnail
-vi.mock('@/components/LayoutThumbnail', () => ({
+vi.mock('@/shell/LayoutThumbnail', () => ({
   LayoutThumbnail: ({ size }: { size: number }) => (
     <div data-testid="layout-thumbnail" style={{ width: size, height: size }}>
       Thumbnail

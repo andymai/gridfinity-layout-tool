@@ -14,7 +14,7 @@ import type { SharedWithMeEntry } from '@/core/types';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { fetchShare } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
-import { useLayoutActivation } from '@/hooks/useLayoutActivation';
+import { useLayoutActivation } from '@/shared/hooks/useLayoutActivation';
 
 export type SharedWithMeStatus = 'idle' | 'loading' | 'error';
 

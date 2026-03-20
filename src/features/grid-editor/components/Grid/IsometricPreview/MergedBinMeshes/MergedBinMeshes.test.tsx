@@ -108,7 +108,7 @@ vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
 }));
 
 // Mock useBinGeometry hook
-vi.mock('@/hooks/useBinGeometry', () => ({
+vi.mock('@/shared/hooks/useBinGeometry', () => ({
   createBinGeometry: vi.fn(() => {
     const mockGeometry = {
       setAttribute: vi.fn(),
@@ -264,7 +264,7 @@ describe('geometry caching', () => {
   });
 
   it('reuses geometry for bins with identical dimensions', async () => {
-    const { createBinGeometry } = vi.mocked(await import('@/hooks/useBinGeometry'));
+    const { createBinGeometry } = vi.mocked(await import('@/shared/hooks/useBinGeometry'));
 
     // Two bins with same dimensions and color
     const bins = [
@@ -296,7 +296,7 @@ describe('geometry caching', () => {
   });
 
   it('creates separate geometries for different dimensions', async () => {
-    const { createBinGeometry } = vi.mocked(await import('@/hooks/useBinGeometry'));
+    const { createBinGeometry } = vi.mocked(await import('@/shared/hooks/useBinGeometry'));
 
     // Two bins with different dimensions
     const bins = [

@@ -20,7 +20,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
-import { useBaseplateRouting } from '@/hooks/useBaseplateRouting';
+import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';

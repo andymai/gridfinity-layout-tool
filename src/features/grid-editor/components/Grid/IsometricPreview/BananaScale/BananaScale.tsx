@@ -5,7 +5,7 @@
  */
 import { useGLTF, Text, Clone } from '@react-three/drei';
 import { useTranslation } from '@/i18n';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 const TEXT_OPACITY = 0.6;
 const FONT_SIZE = 0.25;

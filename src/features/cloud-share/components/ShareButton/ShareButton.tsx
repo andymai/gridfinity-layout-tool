@@ -7,9 +7,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLabsStore, useLayoutStore, useToastStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
-import { useCollabMode } from '@/hooks/useCollabMode';
+import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { useTranslation } from '@/i18n';
-import { slugify } from '@/utils/slug';
+import { slugify } from '@/shared/utils/slug';
 import type { SharePermission } from '@/core/types';
 
 /** Minimum distance from viewport edge for popover positioning */

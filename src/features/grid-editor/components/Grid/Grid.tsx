@@ -19,7 +19,7 @@ import { useResponsive } from '@/shared/hooks';
 import { getBaseCellSize, HALF_BIN_SCALE } from '@/core/constants';
 import { getLayerBins } from '@/shared/utils';
 import type { GridUnits } from '@/core/types';
-import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
@@ -29,10 +29,10 @@ import { GridToolbar } from './GridToolbar';
 import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
-import { CollabCursors, CollabGhosts, CollabSelectionRings } from '@/components/Collab';
-import { useCollabMode } from '@/hooks/useCollabMode';
-import { useCollabPresence } from '@/hooks/useCollabPresence';
+import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { CollabCursors, CollabGhosts, CollabSelectionRings } from '@/shell/Collab';
+import { useCollabMode } from '@/shared/hooks/useCollabMode';
+import { useCollabPresence } from '@/shared/hooks/useCollabPresence';
 import { useTranslation } from '@/i18n';
 
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
@@ -42,7 +42,7 @@ const IsometricPreview = lazyWithRetry(() =>
 
 // Lazy load mobile toolbar (only used on mobile)
 const MobileGridToolbar = lazyWithRetry(() =>
-  import('@/components/Mobile').then(namedExport('MobileGridToolbar'))
+  import('@/shell/Mobile').then(namedExport('MobileGridToolbar'))
 );
 
 /**

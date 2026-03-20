@@ -16,7 +16,7 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { removeRegistryEntry } from '../../store/customBinRegistry';
 import { useDesignerStore } from '../../store';
-import { useDesignerRouting } from '@/hooks/useDesignerRouting';
+import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';

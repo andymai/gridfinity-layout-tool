@@ -9,13 +9,13 @@ import {
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useGridCoords } from './useGridCoords';
-import { useCollabPresence } from '@/hooks/useCollabPresence';
+import { useCollabPresence } from '@/shared/hooks/useCollabPresence';
 import { throttleRAF, cancelThrottledRAF } from '@/shared/utils';
-import { mapInteractionToHint } from '@/hooks/interactions/interaction';
-import { useDrawInteraction } from '@/hooks/interactions/useDrawInteraction';
-import { useDragInteraction } from '@/hooks/interactions/useDragInteraction';
-import { useResizeInteraction } from '@/hooks/interactions/useResizeInteraction';
-import { useStagingDragInteraction } from '@/hooks/interactions/useStagingDragInteraction';
+import { mapInteractionToHint } from '@/shared/hooks/interactions/interaction';
+import { useDrawInteraction } from '@/shared/hooks/interactions/useDrawInteraction';
+import { useDragInteraction } from '@/shared/hooks/interactions/useDragInteraction';
+import { useResizeInteraction } from '@/shared/hooks/interactions/useResizeInteraction';
+import { useStagingDragInteraction } from '@/shared/hooks/interactions/useStagingDragInteraction';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type {
   InteractionContext,
@@ -24,7 +24,7 @@ import type {
   DragStartArgs,
   ResizeStartArgs,
   StagingDragStartArgs,
-} from '@/hooks/interactions/types';
+} from '@/shared/hooks/interactions/types';
 
 /**
  * Hook for managing all grid interactions including bin creation, movement, and resizing.

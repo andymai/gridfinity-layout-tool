@@ -114,7 +114,7 @@ vi.mock('@/shared/utils/uuid', () => ({
 }));
 
 // Mock hooks (required by SharedLayoutImporter)
-vi.mock('@/hooks/useCollabMode', () => ({
+vi.mock('@/shared/hooks/useCollabMode', () => ({
   useCollabMode: vi.fn(() => ({ isCollaborative: false })),
 }));
 

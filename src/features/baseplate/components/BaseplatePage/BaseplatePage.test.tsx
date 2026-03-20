@@ -53,7 +53,7 @@ vi.mock('../BaseplatePreview/BaseplatePreview', () => ({
 }));
 
 // Mock routing hook
-vi.mock('@/hooks/useBaseplateRouting', () => ({
+vi.mock('@/shared/hooks/useBaseplateRouting', () => ({
   useBaseplateRouting: () => ({
     isStandalone: false,
     isBaseplateRoute: true,

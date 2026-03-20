@@ -1,5 +1,5 @@
 import { Line, Text } from '@react-three/drei';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface ScaleIndicatorProps {
   gridUnitMm: number;

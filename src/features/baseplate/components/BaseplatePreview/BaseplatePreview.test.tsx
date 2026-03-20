@@ -60,7 +60,7 @@ vi.mock('@/shared/components/preview/Spinner', () => ({
 }));
 
 // Mock hooks
-vi.mock('@/hooks/useThemeEffect', () => ({
+vi.mock('@/shared/hooks/useThemeEffect', () => ({
   useThreeColors: () => ({
     groundBounce: '#1a1a2e',
     gradientTop: '#2a2a3e',

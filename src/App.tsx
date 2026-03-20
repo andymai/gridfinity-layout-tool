@@ -6,99 +6,88 @@ import {
   useSelectionStore,
   useViewStore,
   useLabsStore,
-} from './core/store';
-import { useSharedPreviewStore } from './core/store/sharedPreview';
-import { initLayoutAnalytics } from './core/store/layoutAnalytics';
-import {
-  useLayoutRouting,
-  useAnalytics,
-  useStorageMigration,
-  useSnapshotAutoSave,
-  useLocalStorageCleanup,
-  useTabletPanels,
-  useKeyboard,
-} from './hooks';
+} from '@/core/store';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
+import { initLayoutAnalytics } from '@/core/store/layoutAnalytics';
 import {
   useAutoSave,
   useResponsive,
   useCrossTabSync,
   usePWAUpdate,
   usePrefetchChunks,
-} from './shared/hooks';
-import { useCollabMode } from './hooks/useCollabMode';
-import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
+  useAnalytics,
+  useStorageMigration,
+  useSnapshotAutoSave,
+  useLocalStorageCleanup,
+  useTabletPanels,
+  useKeyboard,
+  useCollabMode,
+} from '@/shared/hooks';
+import { useLayoutRouting } from '@/features/layout-library';
+import { useOwnedShareSync } from '@/features/cloud-share/hooks/useOwnedShareSync';
 import { downloadLayoutAsFile, reconcileLibraryAsync } from '@/core/storage';
-import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
-import { Grid } from './features/grid-editor';
-import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
-import { Staging } from './features/staging/components/Staging';
-import { RightPanel } from './components/RightPanel';
-import { DragPreview } from './components/DragPreview';
-import { ToastContainer } from './shared/components/Toast';
-import { LoadingFallback } from './shared/components/LoadingFallback';
-import { PanelErrorBoundary } from './components/PanelErrorBoundary';
-import { BinContextMenuWrapper } from './components/Mobile/BinContextMenuWrapper';
-import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
-import { LiveRegion } from './components/LiveRegion';
-import { LocalMutationsProvider } from './shared/contexts';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+import { Grid } from '@/features/grid-editor';
+import { Sidebar } from '@/shell/Sidebar';
+import { Header } from '@/shell/Header';
+import { Staging } from '@/features/staging/components/Staging';
+import { RightPanel } from '@/shell/RightPanel';
+import { DragPreview } from '@/shell/DragPreview';
+import { ToastContainer } from '@/shared/components/Toast';
+import { LoadingFallback } from '@/shared/components/LoadingFallback';
+import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { BinContextMenuWrapper } from '@/shell/Mobile/BinContextMenuWrapper';
+import { TabletPanelOverlay, TabletPanelTriggers } from '@/shell/Tablet';
+import { LiveRegion } from '@/shell/LiveRegion';
+import { LocalMutationsProvider } from '@/shared/contexts';
 import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
 import { useEngagementNudges, useLayoutPromotion } from '@/features/engagement';
+import { useOnboarding } from '@/features/onboarding';
+import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
+import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
+import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
+import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
+import { SHORTCUTS } from '@/core/constants';
 
 const CommandPalette = lazyWithRetry(() =>
   import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
 );
-import { useOnboarding } from '@/features/onboarding';
-import { useThemeEffect } from '@/hooks/useThemeEffect';
-
 const DesignLinkingDialogs = lazyWithRetry(() =>
-  import('./features/design-linking/components/DesignLinkingDialogs').then(
+  import('@/features/design-linking/components/DesignLinkingDialogs').then(
     namedExport('DesignLinkingDialogs')
   )
 );
-
 const SharedLayoutImporter = lazyWithRetry(() =>
-  import('./features/cloud-share/components/SharedLayoutImporter').then(
+  import('@/features/cloud-share/components/SharedLayoutImporter').then(
     namedExport('SharedLayoutImporter')
   )
 );
 const SharedLayoutBanner = lazyWithRetry(() =>
-  import('./features/cloud-share/components/SharedLayoutBanner').then(
+  import('@/features/cloud-share/components/SharedLayoutBanner').then(
     namedExport('SharedLayoutBanner')
   )
 );
-
 const LabsDrawer = lazyWithRetry(() =>
-  import('./features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
+  import('@/features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
 );
-
 const WelcomeModal = lazyWithRetry(() =>
-  import('./components/Modals/WelcomeModal').then(namedExport('WelcomeModal'))
+  import('@/shell/Modals/WelcomeModal').then(namedExport('WelcomeModal'))
 );
-
 const DesignerPage = lazyWithRetry(() =>
-  import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
+  import('@/features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
-import { useDesignerRouting } from './hooks/useDesignerRouting';
-
 const BaseplatePage = lazyWithRetry(() =>
-  import('./features/baseplate').then(namedExport('BaseplatePage'))
+  import('@/features/baseplate').then(namedExport('BaseplatePage'))
 );
-import { useBaseplateRouting } from './hooks/useBaseplateRouting';
-import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';
-import { SHORTCUTS } from './core/constants';
-
 const HelpModal = lazyWithRetry(() =>
-  import('./components/Modals/HelpModal').then(namedExport('HelpModal'))
+  import('@/shell/Modals/HelpModal').then(namedExport('HelpModal'))
 );
-
 const MobileLayout = lazyWithRetry(() =>
-  import('./layouts/MobileLayout').then(namedExport('MobileLayout'))
+  import('@/shell/layouts/MobileLayout').then(namedExport('MobileLayout'))
 );
-
 const CollabProvider = lazyWithRetry(() =>
-  import('./components/Collab/CollabProvider').then(namedExport('CollabProvider'))
+  import('@/shell/Collab/CollabProvider').then(namedExport('CollabProvider'))
 );
 
 let hasRenderedInitialLayout = false;

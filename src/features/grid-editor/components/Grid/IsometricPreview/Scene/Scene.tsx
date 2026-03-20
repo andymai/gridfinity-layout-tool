@@ -11,7 +11,7 @@ import { DrawerDimensions } from '../DrawerDimensions';
 import { ScaleIndicator } from '../ScaleIndicator';
 import { BananaScale } from '../BananaScale';
 import { useSettingsStore } from '@/core/store/settings';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 import type { FractionalEdge } from '@/core/types';
 

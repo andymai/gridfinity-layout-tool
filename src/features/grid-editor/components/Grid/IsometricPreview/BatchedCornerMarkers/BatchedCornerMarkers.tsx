@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
-import { useThreeColors } from '@/hooks/useThemeEffect';
+import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 // L-shaped marker arm length
 const MARKER_SIZE = 0.12;

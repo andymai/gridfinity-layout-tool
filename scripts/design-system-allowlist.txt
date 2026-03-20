@@ -16,47 +16,47 @@
 
 # App-level components
 src/App.tsx
-src/components/Collab/PresenceAvatarBar/PresenceAvatarBar.tsx
-src/components/Collab/PresenceDropdown/PresenceDropdown.tsx
-src/components/Collab/PresenceMobileButton/PresenceMobileButton.tsx
-src/components/ErrorBoundary/ErrorBoundary.tsx
-src/components/Header/Header.tsx
-src/components/PanelErrorBoundary/PanelErrorBoundary.tsx
-src/components/RightPanel/RightPanel.tsx
-src/components/Sidebar/Sidebar.tsx
-src/components/STLSearchDropdown/STLSearchDropdown.tsx
+src/shell/Collab/PresenceAvatarBar/PresenceAvatarBar.tsx
+src/shell/Collab/PresenceDropdown/PresenceDropdown.tsx
+src/shell/Collab/PresenceMobileButton/PresenceMobileButton.tsx
+src/shell/ErrorBoundary/ErrorBoundary.tsx
+src/shell/Header/Header.tsx
+src/shell/PanelErrorBoundary/PanelErrorBoundary.tsx
+src/shell/RightPanel/RightPanel.tsx
+src/shell/Sidebar/Sidebar.tsx
+src/shell/STLSearchDropdown/STLSearchDropdown.tsx
 
 # Mobile components
-src/components/Mobile/BottomNavBar/BottomNavBar.tsx
-src/components/Mobile/BottomSheet/BottomSheet.tsx
-src/components/Mobile/MobileCategoriesPanel/MobileCategoriesPanel.tsx
-src/components/Mobile/MobileGridToolbar/MobileGridToolbar.tsx
-src/components/Mobile/MobileHeader/MobileHeader.tsx
-src/components/Mobile/MobileHelpModal/MobileHelpModal.tsx
-src/components/Mobile/MobileLayersPanel/LayersTab/LayersTab.tsx
-src/components/Mobile/MobileLayersPanel/TabBar/TabBar.tsx
-src/components/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
-src/components/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
-src/components/Mobile/MobilePrintList/MobilePrintList.tsx
-src/components/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
-src/components/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
+src/shell/Mobile/BottomNavBar/BottomNavBar.tsx
+src/shell/Mobile/BottomSheet/BottomSheet.tsx
+src/shell/Mobile/MobileCategoriesPanel/MobileCategoriesPanel.tsx
+src/shell/Mobile/MobileGridToolbar/MobileGridToolbar.tsx
+src/shell/Mobile/MobileHeader/MobileHeader.tsx
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.tsx
+src/shell/Mobile/MobileLayersPanel/LayersTab/LayersTab.tsx
+src/shell/Mobile/MobileLayersPanel/TabBar/TabBar.tsx
+src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+src/shell/Mobile/MobilePrintList/MobilePrintList.tsx
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
 
 # Tablet components
-src/components/Tablet/TabletPanelTriggers/TabletPanelTriggers.tsx
+src/shell/Tablet/TabletPanelTriggers/TabletPanelTriggers.tsx
 
 # Modal components
-src/components/Modals/BinListModal/BinListDashboard/BinListDashboard.tsx
-src/components/Modals/BinListModal/BinListFilters/BinListFilters.tsx
-src/components/Modals/BinListModal/BinListModal.tsx
-src/components/Modals/BinListModal/BulkActions/BulkActions.tsx
-src/components/Modals/BinListModal/MobileBinList/MobileBinList.tsx
-src/components/Modals/HalfBinModeBlockedModal/HalfBinModeBlockedModal.tsx
-src/components/Modals/HelpModal/HelpModal.tsx
-src/components/Modals/ImportModal/ImportModal.tsx
-src/components/Modals/SettingsModal/SettingsModal.tsx
-src/components/Modals/SettingsModal/TabNavigation/TabNavigation.tsx
-src/components/Modals/SettingsModal/tabs/DefaultsTab/DefaultsTab.tsx
-src/components/Modals/WelcomeModal/WelcomeModal.tsx
+src/shell/Modals/BinListModal/BinListDashboard/BinListDashboard.tsx
+src/shell/Modals/BinListModal/BinListFilters/BinListFilters.tsx
+src/shell/Modals/BinListModal/BinListModal.tsx
+src/shell/Modals/BinListModal/BulkActions/BulkActions.tsx
+src/shell/Modals/BinListModal/MobileBinList/MobileBinList.tsx
+src/shell/Modals/HalfBinModeBlockedModal/HalfBinModeBlockedModal.tsx
+src/shell/Modals/HelpModal/HelpModal.tsx
+src/shell/Modals/ImportModal/ImportModal.tsx
+src/shell/Modals/SettingsModal/SettingsModal.tsx
+src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.tsx
+src/shell/Modals/SettingsModal/tabs/DefaultsTab/DefaultsTab.tsx
+src/shell/Modals/WelcomeModal/WelcomeModal.tsx
 
 # Bin designer feature
 src/features/bin-designer/components/CartDialog/CartDialog.tsx

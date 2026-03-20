@@ -26,7 +26,7 @@ import {
   setActiveDesignId,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
-import { useDesignerRouting } from '@/hooks/useDesignerRouting';
+import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
 
 /**

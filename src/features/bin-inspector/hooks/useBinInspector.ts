@@ -7,7 +7,7 @@ import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk, isErr } from '@/core/result';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
-import { validateBinRotation } from '@/utils/binLocation';
+import { validateBinRotation } from '@/shared/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import type {

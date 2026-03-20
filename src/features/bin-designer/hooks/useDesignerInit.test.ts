@@ -8,7 +8,7 @@ import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { SavedDesign } from '../types';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
-vi.mock('@/hooks/useDesignerRouting', () => ({
+vi.mock('@/shared/hooks/useDesignerRouting', () => ({
   useDesignerRouting: () => ({
     designIdFromUrl: null,
     syncUrlToDesign: vi.fn(),
