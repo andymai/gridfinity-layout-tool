@@ -12,6 +12,8 @@ import {
   useGridAxisLabels,
   useGridRowColumnSelection,
   useGridFirstUseHints,
+  useAlignBins,
+  useGridCoords,
 } from '@/features/grid-editor/hooks';
 import { useResponsive } from '@/shared/hooks';
 import { getBaseCellSize, HALF_BIN_SCALE } from '@/core/constants';
@@ -21,6 +23,8 @@ import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
+import { SelectionToolbar } from './SelectionToolbar';
+import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { GridToolbar } from './GridToolbar';
 import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
@@ -29,7 +33,6 @@ import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
 import { CollabCursors, CollabGhosts, CollabSelectionRings } from '@/components/Collab';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { useCollabPresence } from '@/hooks/useCollabPresence';
-import { useGridCoords } from '@/features/grid-editor/hooks/useGridCoords';
 import { useTranslation } from '@/i18n';
 
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
@@ -72,21 +75,30 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   const showIsometricPreview = useViewStore((state) => state.showIsometricPreview);
 
   // Selection store - active layer, selected bins
-  const { activeLayerId, setSelectedBins } = useSelectionStore(
+  const { activeLayerId, selectedBinIds, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
+      selectedBinIds: state.selectedBinIds,
       setSelectedBins: state.setSelectedBins,
     }))
   );
 
+  // Alignment hook - for floating toolbar
+  const { alignBins, canAlign } = useAlignBins();
+
+  // Bulk action hooks - for selection toolbar
+  const { setCategory, rotateAll, matchHeight, moveToLayer, moveToStash, deleteAll } =
+    useSelectionActions();
+
   // Half-bin mode - single value, no useShallow needed
   const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
 
-  const { drawer, layers, bins } = useLayoutStore(
+  const { drawer, layers, bins, categories } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
       layers: state.layout.layers,
       bins: state.layout.bins,
+      categories: state.layout.categories,
     }))
   );
 
@@ -220,6 +232,15 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   const layerBins = useMemo(() => getLayerBins(bins, activeLayerId), [bins, activeLayerId]);
   const isEmpty = layerBins.length === 0;
   const isFirstLayer = layers.length > 0 && activeLayerId === layers[0].id;
+
+  // Layers that don't contain any selected bins (for "move to layer" dropdown)
+  const otherLayers = useMemo(() => {
+    const selectedSet = new Set(selectedBinIds);
+    const occupiedLayerIds = new Set(
+      bins.filter((b) => selectedSet.has(b.id)).map((b) => b.layerId)
+    );
+    return layers.filter((l) => !occupiedLayerIds.has(l.id));
+  }, [layers, bins, selectedBinIds]);
 
   // Grid dimensions in pixels
   const gridWidth = drawer.width * scale * (visualCellSize + gap) + gap;
@@ -518,6 +539,22 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
 
       {/* Quick label popover for desktop double-click / L shortcut */}
       <QuickLabelPopover />
+
+      {/* Floating selection toolbar for multi-selected bins (desktop only) */}
+      {!isMobile && canAlign && (
+        <SelectionToolbar
+          selectedBinIds={selectedBinIds}
+          onAlign={alignBins}
+          onSetCategory={setCategory}
+          onRotateAll={rotateAll}
+          onMatchHeight={matchHeight}
+          onMoveToLayer={moveToLayer}
+          onMoveToStash={moveToStash}
+          onDeleteAll={deleteAll}
+          categories={categories}
+          otherLayers={otherLayers}
+        />
+      )}
     </div>
   );
 }

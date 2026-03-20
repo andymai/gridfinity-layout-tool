@@ -955,6 +955,27 @@ const en: Record<string, string> = {
   'toast.undone': 'Undone',
   'toast.redone': 'Redone',
   'toast.cutoutsCopied': 'Copied {count} cutout(s)',
+  'toast.alignComplete': 'Aligned {aligned} of {total} bins',
+  'toast.alignSkipped': 'Aligned {aligned}/{total} bins ({skipped} skipped due to overlap)',
+  'toast.rotateAllComplete': 'Rotated {rotated} bin(s)',
+  'toast.rotateAllPartial': 'Rotated {rotated}/{total} bins ({skipped} skipped due to collision)',
+  'toast.matchHeightComplete': 'Set {count} bin(s) to height {height}u',
+  'toast.moveToLayerComplete': 'Moved {count} bin(s) to {name}',
+  'toast.moveToLayerPartial':
+    'Moved {moved}/{total} to {name} ({skipped} skipped due to collision)',
+
+  // Selection Toolbar
+  'selectionToolbar.ariaLabel': 'Selection actions',
+  'selectionToolbar.setCategory': 'Set category: {name}',
+  'selectionToolbar.rotateAll': 'Rotate all selected bins',
+  'selectionToolbar.matchHeight': 'Match height to tallest',
+  'selectionToolbar.moveToLayer': 'Move to layer',
+  'selectionToolbar.moveToStash': 'Move to stash',
+  'selectionToolbar.deleteAll': 'Delete selected bins',
+  'selectionToolbar.deleteConfirmTitle': 'Delete {count} bins?',
+  'selectionToolbar.deleteConfirmMessage':
+    'This will delete {count} selected bins. You can undo this.',
+  'selectionToolbar.deleteConfirmButton': 'Delete',
 
   // Grid Editor
   'grid.exceedsPrintSize': 'Exceeds print size, will be split',
@@ -1519,6 +1540,12 @@ const en: Record<string, string> = {
   'commandPalette.rotateBin': 'Rotate Bin',
   'commandPalette.quickLabel': 'Quick Label',
   'commandPalette.clearSelection': 'Clear Selection',
+  'commandPalette.alignLeft': 'Align Left',
+  'commandPalette.alignRight': 'Align Right',
+  'commandPalette.alignTop': 'Align Top',
+  'commandPalette.alignBottom': 'Align Bottom',
+  'commandPalette.rotateAll': 'Rotate All Selected',
+  'commandPalette.matchHeight': 'Match Height to Tallest',
 
   // Layer commands
   'commandPalette.addLayer': 'Add Layer',

@@ -10,3 +10,5 @@ export { useGridTemplate } from '@/shared/hooks';
 export type { GridTemplateState, UseGridTemplateOptions } from '@/shared/hooks';
 export { useGridZoom } from './useGridZoom';
 export { useInteraction } from './useInteraction';
+// Re-export from shared (used by both grid-editor and command-palette)
+export { useAlignBins } from '@/shared/hooks/useAlignBins';
