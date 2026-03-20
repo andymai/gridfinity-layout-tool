@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.11.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.5...gridfinity-layout-tool-v4.11.0) (2026-03-20)
+
+
+### Features
+
+* add selection toolbar with alignment and bulk actions ([#1145](https://github.com/andymai/gridfinity-layout-tool/issues/1145)) ([87e4093](https://github.com/andymai/gridfinity-layout-tool/commit/87e409369a004c805de6191fe759dcf47853c7e9))
+
 ## [4.10.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.10.4...gridfinity-layout-tool-v4.10.5) (2026-03-19)
 
 
