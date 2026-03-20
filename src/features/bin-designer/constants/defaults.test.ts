@@ -276,6 +276,34 @@ describe('migrateParams', () => {
     expect(result.walls.shape).toBe('u-shape');
   });
 
+  it('backfills handles with defaults for old designs', () => {
+    const old = { width: 2, depth: 2, height: 3 }; // no handles field
+    const result = migrateParams(old);
+    expect(result.handles).toEqual(DEFAULT_BIN_PARAMS.handles);
+  });
+
+  it('preserves existing handle config with nested side merging', () => {
+    const old = {
+      width: 2,
+      depth: 2,
+      height: 3,
+      handles: {
+        enabled: true,
+        depth: 12,
+        width: 80,
+        filletRadius: 6,
+        front: { enabled: false },
+        // back, left, right omitted — should get defaults
+      },
+    };
+    const result = migrateParams(old as any);
+    expect(result.handles.enabled).toBe(true);
+    expect(result.handles.depth).toBe(12);
+    expect(result.handles.front.enabled).toBe(false);
+    expect(result.handles.back.enabled).toBe(false); // default
+    expect(result.handles.left.enabled).toBe(true); // default
+  });
+
   it('should preserve valid walls.shape values', () => {
     const resultScoop = migrateParams({
       walls: {
