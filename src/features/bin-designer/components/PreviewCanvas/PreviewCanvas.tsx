@@ -32,6 +32,7 @@ import {
   GhostDividerPieces,
   GhostCutouts,
   GhostWallCutouts,
+  GhostHandles,
   BinSplitLines,
   SplitBinMeshes,
   type CameraPreset,
@@ -545,6 +546,7 @@ export function PreviewCanvas() {
             <GhostDividerPieces />
             <GhostCutouts />
             <GhostWallCutouts />
+            <GhostHandles />
 
             {/* Split lines for oversized bins — hidden when pieces are shown */}
             {!showSplitPieces && <BinSplitLines />}

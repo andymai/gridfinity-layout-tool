@@ -181,11 +181,16 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
 
   // Label tab validation
   if (params.label.enabled) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime guard for external data
-    if (params.label.support !== 'bracket' && params.label.support !== 'solid') {
+    /* eslint-disable @typescript-eslint/no-unnecessary-condition -- runtime guard for external data */
+    if (
+      params.label.support !== 'bracket' &&
+      params.label.support !== 'solid' &&
+      params.label.support !== 'fillet'
+    ) {
+      /* eslint-enable @typescript-eslint/no-unnecessary-condition */
       return err({
         code: 'LABEL_TAB_SUPPORT_INVALID',
-        message: 'Label tab support must be "bracket" or "solid"',
+        message: 'Label tab support must be "bracket", "solid", or "fillet"',
         field: 'label.support',
       });
     }

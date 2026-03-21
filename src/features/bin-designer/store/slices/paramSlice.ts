@@ -15,6 +15,9 @@ import type {
   WallPatternConfig,
   CutoutConfig,
   Insert,
+  HandleConfig,
+  HandleSide,
+  HandleWallSide,
 } from '../../types';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
@@ -116,6 +119,23 @@ export function createParamSlice(set: Set, get: Get) {
         state.params.walls = {
           ...state.params.walls,
           [side]: { ...state.params.walls[side], ...partial },
+        };
+      });
+    },
+
+    updateHandles: (partial: Partial<HandleConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.handles = { ...state.params.handles, ...partial };
+      });
+    },
+
+    updateHandleSide: (side: HandleWallSide, partial: Partial<HandleSide>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.handles = {
+          ...state.params.handles,
+          [side]: { ...state.params.handles[side], ...partial },
         };
       });
     },

@@ -147,6 +147,15 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     isEnabled: (p) => p.walls.enabled,
     apply: (p, enabled) => ({ walls: { ...p.walls, enabled } }),
   },
+
+  handles: {
+    key: 'handles',
+    label: 'Handles',
+    isEnabled: (p) => p.handles.enabled,
+    apply: (p, enabled) => ({
+      handles: { ...p.handles, enabled },
+    }),
+  },
 };
 
 // Compile-time exhaustiveness: ensures every FeatureKey has a manifest entry.

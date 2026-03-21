@@ -72,13 +72,28 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     disables: ['scoop'],
     reason: 'binDesigner.fingerScoopUnavailableSlotted',
   },
+  {
+    description: 'Slotted bins cannot have handles',
+    source: 'style.slotted',
+    when: (p) => p.style === 'slotted',
+    disables: ['handles'],
+    reason: 'binDesigner.handles.unavailableSlotted',
+  },
 
   // ── Style: solid ─────────────────────────────────────────────────────────
   {
     description: 'Solid style disables cavity features',
     source: 'style.solid',
     when: (p) => p.style === 'solid',
-    disables: ['compartments', 'label', 'scoop', 'wallPattern', 'inserts', 'wallCutouts'],
+    disables: [
+      'compartments',
+      'label',
+      'scoop',
+      'wallPattern',
+      'inserts',
+      'wallCutouts',
+      'handles',
+    ],
     reason: 'binDesigner.solidDisablesCavity',
   },
 

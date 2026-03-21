@@ -7,6 +7,7 @@ import type {
   DesignerUIState,
   GenerationState,
   DesignerHistory,
+  HandleConfig,
   WallCutout,
   WallConfig,
   WallCutoutShape,
@@ -52,6 +53,18 @@ export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   clearance: 0.15,
   tongueThickness: 2.4,
   tongueProtrusion: 3.0,
+} as const;
+
+/** Default handle configuration: disabled, front + sides enabled when toggled on */
+const DEFAULT_HANDLE_CONFIG: HandleConfig = {
+  enabled: false,
+  depth: 10,
+  width: 70,
+  filletRadius: 5,
+  front: { enabled: true },
+  back: { enabled: false },
+  left: { enabled: true },
+  right: { enabled: true },
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -100,6 +113,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     right: { enabled: true, width: 70, depth: 50 },
     interior: { enabled: false, width: 0, depth: 0 },
   },
+  handles: DEFAULT_HANDLE_CONFIG,
   slotConfig: DEFAULT_SLOT_CONFIG,
   dividerPieces: DEFAULT_DIVIDER_PIECE_CONFIG,
   inserts: [],
@@ -353,8 +367,23 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ...((params.cutoutConfig as Partial<CutoutConfig> | undefined) ?? {}),
   };
 
-  // Remove legacy dividers and eco fields from spread
-  const { dividers: _legacyDividers, eco: _legacyEco, ...rest } = params as Record<string, unknown>;
+  // Migrate handle config
+  const handlesConfig: HandleConfig = {
+    ...DEFAULT_HANDLE_CONFIG,
+    ...(params.handles ?? {}),
+    front: { ...DEFAULT_HANDLE_CONFIG.front, ...(params.handles?.front ?? {}) },
+    back: { ...DEFAULT_HANDLE_CONFIG.back, ...(params.handles?.back ?? {}) },
+    left: { ...DEFAULT_HANDLE_CONFIG.left, ...(params.handles?.left ?? {}) },
+    right: { ...DEFAULT_HANDLE_CONFIG.right, ...(params.handles?.right ?? {}) },
+  };
+
+  // Remove legacy and already-handled fields from spread
+  const {
+    dividers: _legacyDividers,
+    eco: _legacyEco,
+    handles: _handlesHandled,
+    ...rest
+  } = params as Record<string, unknown>;
 
   return {
     ...DEFAULT_BIN_PARAMS,
@@ -365,6 +394,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     scoop: scoopConfig,
     label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
     walls: wallsConfig,
+    handles: handlesConfig,
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,

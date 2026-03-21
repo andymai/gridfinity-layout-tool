@@ -12,7 +12,7 @@ import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
 import { useLabelTabsSection } from './useLabelTabsSection';
 
 const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
-const SUPPORT_OPTIONS: LabelTabSupport[] = ['bracket', 'solid'];
+const SUPPORT_OPTIONS: LabelTabSupport[] = ['bracket', 'solid', 'fillet'];
 
 export function LabelTabsSection() {
   const { state, handlers, meta, t } = useLabelTabsSection();

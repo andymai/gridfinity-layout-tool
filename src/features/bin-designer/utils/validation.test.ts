@@ -198,6 +198,15 @@ describe('validateBinParams', () => {
       expectOk(result);
     });
 
+    it('should accept fillet label tab support', () => {
+      const result = validateBinParams(
+        makeParams({
+          label: { enabled: true, support: 'fillet', depth: 12, width: 100, alignment: 'left' },
+        })
+      );
+      expectOk(result);
+    });
+
     it('should reject invalid label tab support', () => {
       const result = validateBinParams(
         makeParams({

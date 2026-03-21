@@ -11,6 +11,7 @@ import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { WallCutoutsSection } from '../WallCutoutsSection';
+import { HandleSection } from '../HandleSection';
 
 export function WallsSection() {
   const { state, handlers, t } = useWallsSection();
@@ -38,6 +39,9 @@ export function WallsSection() {
       </div>
       <div className="pt-3 border-t border-stroke-subtle/50">
         <WallCutoutsSection />
+      </div>
+      <div className="pt-3 border-t border-stroke-subtle/50">
+        <HandleSection />
       </div>
     </div>
   );

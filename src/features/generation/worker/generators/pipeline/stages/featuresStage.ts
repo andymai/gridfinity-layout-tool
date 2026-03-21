@@ -36,6 +36,7 @@ import {
   buildInsertCuts,
   buildCutoutCuts,
   buildLabelTabs,
+  buildHandles,
   buildScoopRamps,
   buildWallCutoutCuts,
 } from '../../featureBuilder';
@@ -204,6 +205,32 @@ export const featuresStage: PipelineStage = {
         ltKey,
         () => buildLabelTabs(params, innerW, innerD, interiorHeight, params.wallThickness),
         FeatureTag.LABEL_TAB,
+        originToTag,
+        fuseTargets
+      );
+    }
+
+    // Handle ledges (solid mode returns early above, so !dim.solid is implicit here)
+    if (params.handles.enabled && !isSlotted) {
+      checkCancelled(signal);
+      const hKey = compactKey(
+        buildCacheKey(
+          'v1',
+          shellKey,
+          stableSerialize(params.handles),
+          quantize(innerW),
+          quantize(innerD),
+          quantize(interiorHeight),
+          quantize(params.wallThickness),
+          params.label.enabled,
+          hasLip
+        )
+      );
+      cachedFeature(
+        'handles',
+        hKey,
+        () => buildHandles(params, innerW, innerD, interiorHeight, params.wallThickness, hasLip),
+        FeatureTag.HANDLE,
         originToTag,
         fuseTargets
       );
