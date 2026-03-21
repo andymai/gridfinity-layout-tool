@@ -46,4 +46,13 @@ describe('HandleSection', () => {
     render(<HandleSection />);
     expect(screen.getByText(/Not available/)).toBeDefined();
   });
+
+  it('shows disabled reason for solid bins', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, style: 'solid' },
+    });
+
+    render(<HandleSection />);
+    expect(screen.getByText(/Not available/)).toBeDefined();
+  });
 });

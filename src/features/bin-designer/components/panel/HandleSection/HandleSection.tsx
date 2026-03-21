@@ -54,7 +54,8 @@ export function HandleSection() {
       <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.handles.width')}
+            {/* eslint-disable-next-line i18next/no-literal-string -- unit suffix */}
+            {t('binDesigner.handles.width')} {'(%)'}
           </span>
           <StepperControl
             value={handles.width}
@@ -79,7 +80,8 @@ export function HandleSection() {
         </div>
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.handles.depth')}
+            {/* eslint-disable-next-line i18next/no-literal-string -- unit suffix */}
+            {t('binDesigner.handles.depth')} {'(mm)'}
           </span>
           <StepperControl
             value={handles.depth}

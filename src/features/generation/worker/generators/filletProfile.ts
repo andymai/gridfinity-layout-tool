@@ -66,9 +66,11 @@ export function buildFilletProfile(radius: number, height: number): Drawing {
   //
   // sagittaArc takes relative dx, dy from current point to endpoint.
   // From (0, -safeR) to (-depth, 0): dx = -depth, dy = safeR.
-  // Positive sagitta curves left of the travel direction. From bottom-right
-  // to top-left, "left" is toward the origin — which is the concave direction
-  // we want.
+  // Travel direction is upper-left (direction vector (-1, +1) normalized).
+  // "Left" of this travel direction points toward the third quadrant (away
+  // from origin). Positive sagitta therefore curves the arc away from the
+  // origin, producing the desired concave shape (bulging away from the
+  // wall-shelf junction).
   return draw([-depth, 0])
     .lineTo([0, 0])
     .lineTo([0, -safeR])

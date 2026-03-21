@@ -210,7 +210,7 @@ export const featuresStage: PipelineStage = {
       );
     }
 
-    // Handle ledges
+    // Handle ledges (solid mode returns early above, so !dim.solid is implicit here)
     if (params.handles.enabled && !isSlotted) {
       checkCancelled(signal);
       const hKey = compactKey(
