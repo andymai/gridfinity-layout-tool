@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.13.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.12.2...gridfinity-layout-tool-v4.13.0) (2026-03-21)
+
+
+### Features
+
+* add interior handle ledges and fillet label tab support ([#1105](https://github.com/andymai/gridfinity-layout-tool/issues/1105)) ([#1158](https://github.com/andymai/gridfinity-layout-tool/issues/1158)) ([b250d96](https://github.com/andymai/gridfinity-layout-tool/commit/b250d9691117a1107ba0bf455ba8f76bd28990b8))
+
 ## [4.12.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.12.1...gridfinity-layout-tool-v4.12.2) (2026-03-20)
 
 
