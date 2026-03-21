@@ -22,7 +22,7 @@
  * 4. Bounding box within expected dimensions
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT, GRIDFINITY } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import { initBrepjs, getGenerateSplitPreview } from './__dual-kernel__/wasmInit';
@@ -202,11 +202,11 @@ describe('split robustness: interior features', () => {
         shape: 'u-shape',
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 70, depth: 50 },
-        back: { enabled: true, width: 70, depth: 50 },
-        left: { enabled: true, width: 70, depth: 50 },
-        right: { enabled: true, width: 70, depth: 50 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        left: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        right: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
 

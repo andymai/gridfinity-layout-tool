@@ -299,4 +299,121 @@ describe('useWallCutoutsSection', () => {
 
     expect(useDesignerStore.getState().params.walls.shape).toBe('u-shape');
   });
+
+  it('setSideAlignment updates all active sides when linked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setSideAlignment('left', 'right');
+    });
+
+    const { walls } = useDesignerStore.getState().params;
+    expect(walls.left.alignment).toBe('right');
+    expect(walls.right.alignment).toBe('right'); // synced
+  });
+
+  it('setSideAlignment updates only target side when unlinked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.toggleLinked(); // unlink
+    });
+    act(() => {
+      result.current.handlers.setSideAlignment('left', 'left');
+    });
+
+    const { walls } = useDesignerStore.getState().params;
+    expect(walls.left.alignment).toBe('left');
+    expect(walls.right.alignment).toBe('center'); // unchanged
+  });
+
+  it('setSideOffset updates all active sides when linked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setSideOffset('left', 5);
+    });
+
+    const { walls } = useDesignerStore.getState().params;
+    expect(walls.left.offset).toBe(5);
+    expect(walls.right.offset).toBe(5); // synced
+  });
+
+  it('setSideOffset clamps to ±50mm', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setSideOffset('left', 100);
+    });
+
+    expect(useDesignerStore.getState().params.walls.left.offset).toBe(50);
+  });
+
+  it('setSideWidthMm updates all active sides when linked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setSideWidthMm('left', 30);
+    });
+
+    const { walls } = useDesignerStore.getState().params;
+    expect(walls.left.widthMm).toBe(30);
+    expect(walls.right.widthMm).toBe(30); // synced
+  });
+
+  it('setSideWidthMm sets null to switch back to percentage mode', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, widthMm: 30 },
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setSideWidthMm('left', null);
+    });
+
+    expect(useDesignerStore.getState().params.walls.left.widthMm).toBeNull();
+  });
 });

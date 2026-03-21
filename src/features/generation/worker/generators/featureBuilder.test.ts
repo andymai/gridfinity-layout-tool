@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { Shape3D } from 'brepjs';
 
@@ -281,11 +281,11 @@ describe('buildWallCutoutCuts', () => {
         enabled: true,
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 70, depth: 50 },
-        back: { enabled: true, width: 70, depth: 50 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);
@@ -301,11 +301,11 @@ describe('buildWallCutoutCuts', () => {
         enabled: true,
         width: 70,
         depth: 50,
-        front: { enabled: false, width: 0, depth: 0 },
-        back: { enabled: false, width: 0, depth: 0 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: DISABLED_WALL_CUTOUT,
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);
@@ -319,11 +319,11 @@ describe('buildWallCutoutCuts', () => {
         enabled: true,
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 60, depth: 40 },
-        back: { enabled: false, width: 0, depth: 0 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 40 },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);
@@ -339,11 +339,11 @@ describe('buildWallCutoutCuts', () => {
         enabled: true,
         width: 0,
         depth: 0,
-        front: { enabled: false, width: 0, depth: 0 },
-        back: { enabled: false, width: 0, depth: 0 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: DISABLED_WALL_CUTOUT,
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);
@@ -358,11 +358,11 @@ describe('buildWallCutoutCuts', () => {
         enabled: true,
         width: 70,
         depth: 50,
-        front: { enabled: false, width: 0, depth: 0 },
-        back: { enabled: false, width: 0, depth: 0 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: true, width: 70, depth: 50 },
+        front: DISABLED_WALL_CUTOUT,
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);
@@ -378,11 +378,11 @@ describe('buildWallCutoutCuts', () => {
         enabled: true,
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 70, depth: 100 },
-        back: { enabled: false, width: 0, depth: 0 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 100 },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, true);
@@ -399,11 +399,11 @@ describe('buildWallCutoutCuts', () => {
         shape: 'scoop',
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 70, depth: 50 },
-        back: { enabled: true, width: 70, depth: 50 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);
@@ -420,11 +420,11 @@ describe('buildWallCutoutCuts', () => {
         shape: 'funnel',
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 70, depth: 50 },
-        back: { enabled: false, width: 0, depth: 0 },
-        left: { enabled: true, width: 70, depth: 50 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: DISABLED_WALL_CUTOUT,
+        left: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);
@@ -441,11 +441,11 @@ describe('buildWallCutoutCuts', () => {
         shape: 'scoop',
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 90, depth: 30 },
-        back: { enabled: false, width: 0, depth: 0 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 90, depth: 30 },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     };
     const result = buildWallCutoutCuts(params, 80, 80, 16, false);

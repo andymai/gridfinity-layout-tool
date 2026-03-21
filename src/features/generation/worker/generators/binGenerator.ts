@@ -318,11 +318,23 @@ function splitSolidIntoPieces(
           centerX,
           centerY
         );
+        // Compute max cutout depth fraction across outer walls for tab clipping
+        let wallCutoutDepthFraction: number | undefined;
+        if (params.walls.enabled) {
+          for (const wallSide of ['front', 'back', 'left', 'right'] as const) {
+            const wallCfg = params.walls[wallSide];
+            if (wallCfg.enabled && wallCfg.depth > 0) {
+              const fraction = wallCfg.depth / 100;
+              wallCutoutDepthFraction = Math.max(wallCutoutDepthFraction ?? 0, fraction);
+            }
+          }
+        }
         const geometryContext: BinGeometryContext = {
           floorZ,
           wallTopZ,
           wallThickness: params.wallThickness,
           floorThickness: params.wallThickness,
+          wallCutoutDepthFraction,
         };
         piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
       }

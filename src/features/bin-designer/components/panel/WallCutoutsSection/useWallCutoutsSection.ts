@@ -3,7 +3,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
-import type { WallSide, WallCutoutShape } from '@/features/bin-designer/types';
+import type {
+  WallSide,
+  WallCutout,
+  WallCutoutShape,
+  LabelTabAlignment,
+} from '@/features/bin-designer/types';
+import { DISABLED_WALL_CUTOUT } from '@/features/bin-designer/constants/defaults';
 import type { SectionMeta } from '../types';
 
 const ALL_SIDES: readonly WallSide[] = ['front', 'back', 'left', 'right', 'interior'];
@@ -42,45 +48,55 @@ export function useWallCutoutsSection() {
     (side: WallSide) => {
       const current = walls[side];
       if (current.enabled) {
-        updateWallSide(side, { enabled: false, width: 0, depth: 0 });
+        updateWallSide(side, DISABLED_WALL_CUTOUT);
       } else {
         // When linked, copy values from first active side; otherwise use defaults
         const source =
           linked && activeSides.length > 0
             ? walls[activeSides[0]]
-            : { width: DEFAULT_SPAN, depth: DEFAULT_HEIGHT };
-        updateWallSide(side, { enabled: true, width: source.width, depth: source.depth });
+            : {
+                width: DEFAULT_SPAN,
+                depth: DEFAULT_HEIGHT,
+                alignment: 'center' as const,
+                offset: 0,
+                widthMm: null,
+              };
+        updateWallSide(side, {
+          enabled: true,
+          width: source.width,
+          depth: source.depth,
+          alignment: source.alignment,
+          offset: source.offset,
+          widthMm: source.widthMm,
+        });
       }
     },
     [walls, updateWallSide, linked, activeSides]
   );
 
-  const setSideWidth = useCallback(
-    (side: WallSide, width: number) => {
-      const clamped = Math.max(0, Math.min(100, width));
-      if (linked) {
-        for (const s of activeSides) {
-          updateWallSide(s, { width: clamped });
-        }
-      } else {
-        updateWallSide(side, { width: clamped });
+  /** Apply a partial update to the target side, or all active sides when linked. */
+  const applySideUpdate = useCallback(
+    (side: WallSide, patch: Partial<WallCutout>) => {
+      const targets = linked ? activeSides : [side];
+      for (const s of targets) {
+        updateWallSide(s, patch);
       }
     },
     [updateWallSide, linked, activeSides]
   );
 
+  const setSideWidth = useCallback(
+    (side: WallSide, width: number) => {
+      applySideUpdate(side, { width: Math.max(0, Math.min(100, width)) });
+    },
+    [applySideUpdate]
+  );
+
   const setSideDepth = useCallback(
     (side: WallSide, depth: number) => {
-      const clamped = Math.max(0, Math.min(100, depth));
-      if (linked) {
-        for (const s of activeSides) {
-          updateWallSide(s, { depth: clamped });
-        }
-      } else {
-        updateWallSide(side, { depth: clamped });
-      }
+      applySideUpdate(side, { depth: Math.max(0, Math.min(100, depth)) });
     },
-    [updateWallSide, linked, activeSides]
+    [applySideUpdate]
   );
 
   const toggleLinked = useCallback(() => {
@@ -92,6 +108,27 @@ export function useWallCutoutsSection() {
       updateWalls({ shape });
     },
     [updateWalls]
+  );
+
+  const setSideAlignment = useCallback(
+    (side: WallSide, alignment: LabelTabAlignment) => {
+      applySideUpdate(side, { alignment });
+    },
+    [applySideUpdate]
+  );
+
+  const setSideOffset = useCallback(
+    (side: WallSide, offset: number) => {
+      applySideUpdate(side, { offset: Math.max(-50, Math.min(50, offset)) });
+    },
+    [applySideUpdate]
+  );
+
+  const setSideWidthMm = useCallback(
+    (side: WallSide, widthMm: number | null) => {
+      applySideUpdate(side, { widthMm });
+    },
+    [applySideUpdate]
   );
 
   const summary = useMemo(() => {
@@ -123,6 +160,9 @@ export function useWallCutoutsSection() {
       toggleSide,
       setSideWidth,
       setSideDepth,
+      setSideAlignment,
+      setSideOffset,
+      setSideWidthMm,
       toggleLinked,
       setShape,
     },

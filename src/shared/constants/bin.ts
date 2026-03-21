@@ -5,5 +5,8 @@
  * This barrel allows other features to depend on these values
  * without a cross-feature import violation.
  */
-export { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+export {
+  DEFAULT_BIN_PARAMS,
+  DISABLED_WALL_CUTOUT,
+} from '@/features/bin-designer/constants/defaults';
 export { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';

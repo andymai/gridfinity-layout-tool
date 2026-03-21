@@ -11,7 +11,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { initBrepjs, getGenerateBin, getGenerateBaseplate, getKernelName } from './wasmInit';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams, BaseplateParams } from '@/shared/types/bin';
 
 interface ProfileEntry {
@@ -161,11 +161,11 @@ describe(`profile bins (${getKernelName()})`, () => {
         shape: 'u-shape',
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 70, depth: 50 },
-        back: { enabled: true, width: 70, depth: 50 },
-        left: { enabled: true, width: 70, depth: 50 },
-        right: { enabled: true, width: 70, depth: 50 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        left: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        right: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        interior: DISABLED_WALL_CUTOUT,
       },
     });
   }, 30_000);

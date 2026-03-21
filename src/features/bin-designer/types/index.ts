@@ -147,10 +147,16 @@ export interface HandleConfig {
 export interface WallCutout {
   /** Whether this side's cutout is individually enabled */
   readonly enabled: boolean;
-  /** Width of the cutout as 0-100% of the wall span (centered) */
+  /** Width of the cutout as 0-100% of the wall span */
   readonly width: number;
   /** Depth of the cutout as 0-100% of the wall height (from top) */
   readonly depth: number;
+  /** Horizontal alignment of the cutout within the wall span */
+  readonly alignment: LabelTabAlignment;
+  /** Horizontal offset from the alignment anchor in mm (positive = toward right/back) */
+  readonly offset: number;
+  /** Absolute cutout width in mm. When null, the percentage `width` field is used instead. */
+  readonly widthMm: number | null;
 }
 
 /** Wall side identifier for per-side operations */

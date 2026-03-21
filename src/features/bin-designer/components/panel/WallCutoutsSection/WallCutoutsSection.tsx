@@ -8,9 +8,11 @@
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
-import type { WallSide, WallCutoutShape } from '@/features/bin-designer/types';
+import type { WallSide, WallCutoutShape, LabelTabAlignment } from '@/features/bin-designer/types';
 
 const SIDE_ORDER: readonly Exclude<WallSide, 'interior'>[] = ['left', 'right', 'front', 'back'];
+const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
+const OFFSET_STEP = 1;
 
 const SHAPE_OPTIONS: readonly { value: WallCutoutShape; labelKey: string }[] = [
   { value: 'u-shape', labelKey: 'binDesigner.wallCutouts.shape.uShape' },
@@ -107,6 +109,140 @@ function SpanHeightSteppers({
   );
 }
 
+/** Alignment + offset + width mode controls for a single side (outer walls only). */
+function PositionControls({
+  side,
+  alignment,
+  offset,
+  widthMm,
+  widthPct,
+  onAlignmentChange,
+  onOffsetChange,
+  onWidthMmChange,
+  onWidthPctChange,
+  spanLabel,
+  t,
+  step,
+}: {
+  side: WallSide;
+  alignment: LabelTabAlignment;
+  offset: number;
+  widthMm: number | null;
+  widthPct: number;
+  onAlignmentChange: (side: WallSide, alignment: LabelTabAlignment) => void;
+  onOffsetChange: (side: WallSide, offset: number) => void;
+  onWidthMmChange: (side: WallSide, widthMm: number | null) => void;
+  onWidthPctChange: (side: WallSide, value: number) => void;
+  spanLabel: string;
+  t: (key: string) => string;
+  step: number;
+}) {
+  const isMmMode = widthMm !== null;
+
+  return (
+    <div className="space-y-2">
+      {/* Width mode toggle + span stepper */}
+      <div className="flex items-end gap-2">
+        <div className="flex-1 min-w-0">
+          <span className="mb-1 block text-xs text-content-tertiary">{spanLabel}</span>
+          {isMmMode ? (
+            <StepperControl
+              value={widthMm}
+              onChange={(v) => onWidthMmChange(side, Math.max(1, v))}
+              onStep={(delta) => onWidthMmChange(side, Math.max(1, widthMm + delta))}
+              min={1}
+              max={500}
+              step={1}
+              variant="desktop"
+              ariaLabel="Span mm"
+            />
+          ) : (
+            <StepperControl
+              value={widthPct}
+              onChange={(v) => onWidthPctChange(side, v)}
+              onStep={(delta) =>
+                onWidthPctChange(side, Math.max(0, Math.min(100, widthPct + delta * step)))
+              }
+              min={0}
+              max={100}
+              step={step}
+              variant="desktop"
+              ariaLabel="Span %"
+            />
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (isMmMode) {
+              onWidthMmChange(side, null);
+            } else {
+              // Switch to mm mode with a sensible default
+              onWidthMmChange(side, 30);
+            }
+          }}
+          className={`shrink-0 rounded px-1.5 py-1 text-xs font-medium transition-colors ${
+            isMmMode
+              ? 'bg-accent text-on-accent'
+              : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+          }`}
+          title={
+            isMmMode
+              ? t('binDesigner.wallCutouts.widthUnit.percent')
+              : t('binDesigner.wallCutouts.widthUnit.mm')
+          }
+        >
+          {isMmMode
+            ? t('binDesigner.wallCutouts.widthUnit.mm')
+            : t('binDesigner.wallCutouts.widthUnit.percent')}
+        </button>
+      </div>
+
+      {/* Alignment picker */}
+      <div>
+        <span className="mb-1 block text-xs text-content-tertiary">
+          {t('binDesigner.wallCutouts.position')}
+        </span>
+        <div className="flex gap-1">
+          {ALIGNMENT_OPTIONS.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onAlignmentChange(side, option)}
+              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                alignment === option
+                  ? 'bg-accent text-on-accent'
+                  : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+              }`}
+            >
+              {t(`binDesigner.alignment.${option}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Offset stepper — shown when not centered or has nonzero offset */}
+      {(alignment !== 'center' || offset !== 0) && (
+        <div>
+          <span className="mb-1 block text-xs text-content-tertiary">
+            {t('binDesigner.wallCutouts.offset')}
+          </span>
+          <StepperControl
+            value={offset}
+            onChange={(v) => onOffsetChange(side, v)}
+            onStep={(delta) => onOffsetChange(side, offset + delta * OFFSET_STEP)}
+            min={-50}
+            max={50}
+            step={OFFSET_STEP}
+            variant="desktop"
+            ariaLabel="Offset mm"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function WallCutoutsSection() {
   const { state, handlers, meta, t, STEP } = useWallCutoutsSection();
   const { walls, activeSides, linked } = state;
@@ -186,41 +322,91 @@ export function WallCutoutsSection() {
                 </button>
               </div>
 
-              {/* Shared steppers (linked mode) */}
+              {/* Shared controls (linked mode) */}
               {linked && sharedSide && (
-                <SpanHeightSteppers
-                  side={sharedSide}
-                  label={t('binDesigner.wallCutouts')}
-                  width={walls[sharedSide].width}
-                  depth={walls[sharedSide].depth}
-                  step={STEP}
-                  onWidthChange={handlers.setSideWidth}
-                  onDepthChange={handlers.setSideDepth}
-                  spanLabel={t('binDesigner.wallCutouts.span')}
-                  heightLabel={t('binDesigner.wallCutouts.height')}
-                  hideDepth={walls.shape === 'scoop'}
-                />
+                <>
+                  <PositionControls
+                    side={sharedSide}
+                    alignment={walls[sharedSide].alignment}
+                    offset={walls[sharedSide].offset}
+                    widthMm={walls[sharedSide].widthMm}
+                    widthPct={walls[sharedSide].width}
+                    onAlignmentChange={handlers.setSideAlignment}
+                    onOffsetChange={handlers.setSideOffset}
+                    onWidthMmChange={handlers.setSideWidthMm}
+                    onWidthPctChange={handlers.setSideWidth}
+                    spanLabel={t('binDesigner.wallCutouts.span')}
+                    t={t}
+                    step={STEP}
+                  />
+                  {walls.shape !== 'scoop' && (
+                    <div>
+                      <span className="mb-1 block text-xs text-content-tertiary">
+                        {t('binDesigner.wallCutouts.height')}
+                      </span>
+                      <StepperControl
+                        value={walls[sharedSide].depth}
+                        onChange={(v) => handlers.setSideDepth(sharedSide, v)}
+                        onStep={(delta) =>
+                          handlers.setSideDepth(
+                            sharedSide,
+                            Math.max(0, Math.min(100, walls[sharedSide].depth + delta * STEP))
+                          )
+                        }
+                        min={0}
+                        max={100}
+                        step={STEP}
+                        variant="desktop"
+                        ariaLabel="Height %"
+                      />
+                    </div>
+                  )}
+                </>
               )}
 
-              {/* Per-side steppers (independent mode) */}
+              {/* Per-side controls (independent mode) */}
               {!linked &&
                 SIDE_ORDER.filter((side) => walls[side].enabled).map((side) => (
-                  <div key={side}>
-                    <label className="text-xs font-medium text-content-secondary mb-1 block">
+                  <div key={side} className="space-y-2">
+                    <label className="text-xs font-medium text-content-secondary block">
                       {t(`binDesigner.wallCutouts.${side}`)}
                     </label>
-                    <SpanHeightSteppers
+                    <PositionControls
                       side={side}
-                      label={t(`binDesigner.wallCutouts.${side}`)}
-                      width={walls[side].width}
-                      depth={walls[side].depth}
-                      step={STEP}
-                      onWidthChange={handlers.setSideWidth}
-                      onDepthChange={handlers.setSideDepth}
+                      alignment={walls[side].alignment}
+                      offset={walls[side].offset}
+                      widthMm={walls[side].widthMm}
+                      widthPct={walls[side].width}
+                      onAlignmentChange={handlers.setSideAlignment}
+                      onOffsetChange={handlers.setSideOffset}
+                      onWidthMmChange={handlers.setSideWidthMm}
+                      onWidthPctChange={handlers.setSideWidth}
                       spanLabel={t('binDesigner.wallCutouts.span')}
-                      heightLabel={t('binDesigner.wallCutouts.height')}
-                      hideDepth={walls.shape === 'scoop'}
+                      t={t}
+                      step={STEP}
                     />
+                    {walls.shape !== 'scoop' && (
+                      <div>
+                        <span className="mb-1 block text-xs text-content-tertiary">
+                          {t('binDesigner.wallCutouts.height')}
+                        </span>
+                        <StepperControl
+                          value={walls[side].depth}
+                          onChange={(v) => handlers.setSideDepth(side, v)}
+                          onStep={(delta) =>
+                            handlers.setSideDepth(
+                              side,
+                              Math.max(0, Math.min(100, walls[side].depth + delta * STEP))
+                            )
+                          }
+                          min={0}
+                          max={100}
+                          step={STEP}
+                          variant="desktop"
+                          ariaLabel={`${t(`binDesigner.wallCutouts.${side}`)} height`}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
             </>

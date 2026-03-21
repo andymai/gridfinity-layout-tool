@@ -39,6 +39,21 @@ const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
   pattern: 'honeycomb',
 } as const;
 
+/** Default position fields shared by all wall cutouts */
+const DEFAULT_CUTOUT_POSITION = {
+  alignment: 'center' as const,
+  offset: 0,
+  widthMm: null,
+};
+
+/** A disabled wall cutout with zeroed dimensions */
+export const DISABLED_WALL_CUTOUT: WallCutout = {
+  enabled: false,
+  width: 0,
+  depth: 0,
+  ...DEFAULT_CUTOUT_POSITION,
+} as const;
+
 /** Default cutout configuration: flush with rim (no offset) */
 const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
   topOffset: 0,
@@ -107,11 +122,11 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     shape: 'u-shape',
     width: 0,
     depth: 0,
-    front: { enabled: false, width: 0, depth: 0 },
-    back: { enabled: false, width: 0, depth: 0 },
-    left: { enabled: true, width: 70, depth: 50 },
-    right: { enabled: true, width: 70, depth: 50 },
-    interior: { enabled: false, width: 0, depth: 0 },
+    front: DISABLED_WALL_CUTOUT,
+    back: DISABLED_WALL_CUTOUT,
+    left: { enabled: true, width: 70, depth: 50, ...DEFAULT_CUTOUT_POSITION },
+    right: { enabled: true, width: 70, depth: 50, ...DEFAULT_CUTOUT_POSITION },
+    interior: DISABLED_WALL_CUTOUT,
   },
   handles: DEFAULT_HANDLE_CONFIG,
   slotConfig: DEFAULT_SLOT_CONFIG,
@@ -238,7 +253,12 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ) {
       const toWallCutout = (val: number | Partial<WallCutout> | undefined): WallCutout => {
         if (typeof val === 'number') {
-          return { enabled: val > 0, width: val, depth: val > 0 ? 100 : 0 };
+          return {
+            ...DISABLED_WALL_CUTOUT,
+            enabled: val > 0,
+            width: val,
+            depth: val > 0 ? 100 : 0,
+          };
         }
         if (val && typeof val === 'object' && 'width' in val) {
           return inferEnabled({
