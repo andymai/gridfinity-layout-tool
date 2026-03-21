@@ -29,9 +29,11 @@ export function computeCutoutCenter(
       anchor = 0;
   }
 
-  // Apply offset, clamped so cutout stays within wall span
+  // Apply offset, clamped so cutout respects corner margin on both sides
   const raw = anchor + offset;
-  const minCenter = -halfSpan + halfCut;
-  const maxCenter = halfSpan - halfCut;
+  const minCenter = -halfSpan + margin + halfCut;
+  const maxCenter = halfSpan - margin - halfCut;
+  // If cutout is too wide for margin, allow it centered (degenerate case)
+  if (minCenter > maxCenter) return 0;
   return Math.max(minCenter, Math.min(maxCenter, raw));
 }

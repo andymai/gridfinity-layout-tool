@@ -168,14 +168,15 @@ export function buildWallCutoutCuts(
 
   for (const side of sides) {
     const cfg = params.walls[side.key];
+    if (!cfg.enabled) continue;
     const { effectiveWidth, effectiveDepth } = resolveEffective(side.key);
-    if (effectiveWidth <= 0 || effectiveDepth <= 0) continue;
 
     // Resolve cutout width: absolute mm override or percentage of wall span
     const cutWidth =
       cfg.widthMm !== null
         ? Math.min(cfg.widthMm, side.wallSpan)
         : side.wallSpan * (effectiveWidth / 100);
+    if (cutWidth <= 0 || effectiveDepth <= 0) continue;
     const interiorHeight = wallHeight - wallThickness;
     const userCutHeight = interiorHeight * (effectiveDepth / 100);
     if (cutWidth < 0.1 || userCutHeight < 0.1) continue;

@@ -323,7 +323,8 @@ function splitSolidIntoPieces(
         if (params.walls.enabled) {
           for (const wallSide of ['front', 'back', 'left', 'right'] as const) {
             const wallCfg = params.walls[wallSide];
-            if (wallCfg.enabled && wallCfg.depth > 0) {
+            const hasWidth = wallCfg.widthMm !== null ? wallCfg.widthMm > 0 : wallCfg.width > 0;
+            if (wallCfg.enabled && wallCfg.depth > 0 && hasWidth) {
               const fraction = wallCfg.depth / 100;
               wallCutoutDepthFraction = Math.max(wallCutoutDepthFraction ?? 0, fraction);
             }

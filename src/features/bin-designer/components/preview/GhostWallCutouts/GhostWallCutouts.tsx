@@ -171,17 +171,18 @@ export function GhostWallCutouts() {
 
     for (const side of sides) {
       const sideConfig = walls[side.key];
-      const effectiveWidth = sideConfig.enabled ? sideConfig.width : walls.width;
-      const effectiveDepth = sideConfig.enabled ? sideConfig.depth : walls.depth;
-      const effectiveAlignment = sideConfig.enabled ? sideConfig.alignment : 'center';
-      const effectiveOffset = sideConfig.enabled ? sideConfig.offset : 0;
-      const effectiveWidthMm = sideConfig.enabled ? sideConfig.widthMm : null;
-      if (effectiveWidth <= 0 || effectiveDepth <= 0) continue;
+      if (!sideConfig.enabled) continue;
+      const effectiveWidth = sideConfig.width;
+      const effectiveDepth = sideConfig.depth;
+      const effectiveAlignment = sideConfig.alignment;
+      const effectiveOffset = sideConfig.offset;
+      const effectiveWidthMm = sideConfig.widthMm;
 
       const cutW =
         effectiveWidthMm !== null
           ? Math.min(effectiveWidthMm, side.wallSpan)
           : side.wallSpan * (effectiveWidth / 100);
+      if (cutW <= 0 || effectiveDepth <= 0) continue;
       const userCutH = wallHeight * (effectiveDepth / 100);
       if (cutW < 0.1 || userCutH < 0.1) continue;
 

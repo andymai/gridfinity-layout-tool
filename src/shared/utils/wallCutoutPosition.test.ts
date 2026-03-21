@@ -34,21 +34,21 @@ describe('computeCutoutCenter', () => {
     expect(result).toBeCloseTo(8.8);
   });
 
-  it('clamps so cutout does not exceed left wall edge', () => {
+  it('clamps so cutout respects margin from left edge', () => {
     const result = computeCutoutCenter(wallSpan, cutWidth, wallThickness, 'left', -50);
-    // Min center: -halfSpan + halfCut = -40 + 20 = -20
-    expect(result).toBe(-20);
+    // Min center with margin: -halfSpan + margin + halfCut = -40 + 1.2 + 20 = -18.8
+    expect(result).toBeCloseTo(-18.8);
   });
 
-  it('clamps so cutout does not exceed right wall edge', () => {
+  it('clamps so cutout respects margin from right edge', () => {
     const result = computeCutoutCenter(wallSpan, cutWidth, wallThickness, 'right', 50);
-    // Max center: halfSpan - halfCut = 40 - 20 = 20
-    expect(result).toBe(20);
+    // Max center with margin: halfSpan - margin - halfCut = 40 - 1.2 - 20 = 18.8
+    expect(result).toBeCloseTo(18.8);
   });
 
-  it('handles cutWidth equal to wallSpan (full width)', () => {
+  it('returns 0 when cutout is too wide for margins (degenerate case)', () => {
+    // cutWidth nearly fills the span, margins can't be satisfied
     const result = computeCutoutCenter(wallSpan, wallSpan, wallThickness, 'left', 0);
-    // halfCut = halfSpan, so minCenter = maxCenter = 0
     expect(result).toBe(0);
   });
 
@@ -57,15 +57,21 @@ describe('computeCutoutCenter', () => {
     expect(result).toBe(10);
   });
 
-  it('clamps center alignment offset at wall edge', () => {
+  it('clamps center alignment offset at margin', () => {
     const result = computeCutoutCenter(wallSpan, cutWidth, wallThickness, 'center', 100);
-    // Max center: 40 - 20 = 20
-    expect(result).toBe(20);
+    // Max center with margin: 40 - 1.2 - 20 = 18.8
+    expect(result).toBeCloseTo(18.8);
   });
 
-  it('handles very small wallSpan', () => {
+  it('returns 0 when wallSpan is too small for margin (degenerate)', () => {
+    // wallSpan=10, cutWidth=8, margin=1.2 → minCenter=0.2, maxCenter=-0.2 → degenerate → 0
     const result = computeCutoutCenter(10, 8, 1.2, 'left', 0);
-    // -5 + 1.2 + 4 = 0.2
-    expect(result).toBeCloseTo(0.2);
+    expect(result).toBe(0);
+  });
+
+  it('handles small wallSpan where margin still fits', () => {
+    // wallSpan=20, cutWidth=8, margin=1.2 → left anchor = -10 + 1.2 + 4 = -4.8
+    const result = computeCutoutCenter(20, 8, 1.2, 'left', 0);
+    expect(result).toBeCloseTo(-4.8);
   });
 });
