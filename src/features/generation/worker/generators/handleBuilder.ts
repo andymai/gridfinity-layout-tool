@@ -55,6 +55,9 @@ export function buildHandles(
   const { depth, width, filletRadius } = params.handles;
   const shelfThickness = Math.max(wallThickness, MIN_SHELF_THICKNESS);
 
+  // Each wall is positioned at its center (x, y) with the other axis at 0.
+  // rotateZ maps the local shelf (-Y = depth direction) onto the bin interior.
+  // After rotation, the local X extrusion axis aligns with the wall's span.
   const walls: readonly WallDef[] = [
     { side: 'front', wallSpan: innerW, depthSpan: innerD, x: 0, y: -innerD / 2, rotateZ: 180 },
     { side: 'back', wallSpan: innerW, depthSpan: innerD, x: 0, y: innerD / 2, rotateZ: 0 },
