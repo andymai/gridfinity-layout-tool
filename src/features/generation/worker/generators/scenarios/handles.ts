@@ -1,4 +1,4 @@
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { defineScenario } from '../__dual-kernel__/scenarioTypes';
 import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
 
@@ -43,7 +43,7 @@ export const handles: ScenarioCase[] = [
       walls: {
         ...DEFAULT_BIN_PARAMS.walls,
         enabled: true,
-        front: { enabled: true, width: 70, depth: 50 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
       handles: {
         ...DEFAULT_BIN_PARAMS.handles,

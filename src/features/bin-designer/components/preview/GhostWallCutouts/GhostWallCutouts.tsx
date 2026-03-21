@@ -16,6 +16,7 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 
 const GHOST_COLOR = '#fbbf24';
 const GHOST_OPACITY = 0.75;
@@ -170,20 +171,35 @@ export function GhostWallCutouts() {
 
     for (const side of sides) {
       const sideConfig = walls[side.key];
-      const effectiveWidth = sideConfig.enabled ? sideConfig.width : walls.width;
-      const effectiveDepth = sideConfig.enabled ? sideConfig.depth : walls.depth;
-      if (effectiveWidth <= 0 || effectiveDepth <= 0) continue;
+      if (!sideConfig.enabled) continue;
+      const effectiveWidth = sideConfig.width;
+      const effectiveDepth = sideConfig.depth;
+      const effectiveAlignment = sideConfig.alignment;
+      const effectiveOffset = sideConfig.offset;
+      const effectiveWidthMm = sideConfig.widthMm;
 
-      const cutW = side.wallSpan * (effectiveWidth / 100);
+      const cutW =
+        effectiveWidthMm !== null
+          ? Math.min(effectiveWidthMm, side.wallSpan)
+          : side.wallSpan * (effectiveWidth / 100);
+      if (cutW <= 0 || effectiveDepth <= 0) continue;
       const userCutH = wallHeight * (effectiveDepth / 100);
       if (cutW < 0.1 || userCutH < 0.1) continue;
+
+      const centerOffset = computeCutoutCenter(
+        side.wallSpan,
+        cutW,
+        wallThickness,
+        effectiveAlignment,
+        effectiveOffset
+      );
 
       // Ghost Z is in final mesh coordinates (translated up by SOCKET_HEIGHT).
       // Only show the user-visible portion (bottom of U-notch), not the overshoot.
       const topZ = totalH;
       const cutCenterZ = topZ - userCutH / 2;
 
-      addOutline(side.cx, side.cy, cutCenterZ, cutW / 2, userCutH / 2, side.axis);
+      addOutline(side.cx + centerOffset, side.cy, cutCenterZ, cutW / 2, userCutH / 2, side.axis);
     }
 
     if (positions.length === 0) return null;
@@ -191,7 +207,7 @@ export function GhostWallCutouts() {
     const geo = new LineSegmentsGeometry();
     geo.setPositions(positions);
     return geo;
-  }, [shouldShow, walls, innerW, innerD, wallHeight, totalH]);
+  }, [shouldShow, walls, innerW, innerD, wallHeight, wallThickness, totalH]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;

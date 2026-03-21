@@ -1,16 +1,24 @@
 /**
  * Wall cutouts section: U-shaped notches from the top of bin walls.
  *
- * Controls: master toggle, toggle chip row (L/R/F/B), linked/independent mode,
- * shared or per-side span/height steppers, interior checkbox.
+ * Controls: master toggle, shape selector, side toggle chips, linked/independent mode,
+ * span/height steppers with %/mm toggle, collapsible position controls (alignment + offset).
  */
 
+import { useState } from 'react';
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
-import type { WallSide, WallCutoutShape } from '@/features/bin-designer/types';
+import type {
+  WallSide,
+  WallCutout,
+  WallCutoutShape,
+  LabelTabAlignment,
+} from '@/features/bin-designer/types';
 
 const SIDE_ORDER: readonly Exclude<WallSide, 'interior'>[] = ['left', 'right', 'front', 'back'];
+const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
+const OFFSET_STEP = 1;
 
 const SHAPE_OPTIONS: readonly { value: WallCutoutShape; labelKey: string }[] = [
   { value: 'u-shape', labelKey: 'binDesigner.wallCutouts.shape.uShape' },
@@ -48,59 +56,190 @@ function LinkIcon({ linked }: { linked: boolean }) {
   );
 }
 
-function SpanHeightSteppers({
+/** Inline SVG chevron (8×8). */
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="8"
+      height="8"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`flex-shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
+    >
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
+/** Whether a cutout has non-default positioning (worth showing in collapsed label). */
+function hasCustomPosition(cfg: WallCutout): boolean {
+  return cfg.alignment !== 'center' || cfg.offset !== 0;
+}
+
+/** Span + height steppers on one row, with optional %/mm toggle on the span. */
+function SizeControls({
   side,
-  label,
-  width,
-  depth,
-  step,
-  onWidthChange,
-  onDepthChange,
+  cfg,
+  hideDepth,
+  handlers,
   spanLabel,
   heightLabel,
-  hideDepth,
+  step,
 }: {
   side: WallSide;
-  label: string;
-  width: number;
-  depth: number;
-  step: number;
-  onWidthChange: (side: WallSide, value: number) => void;
-  onDepthChange: (side: WallSide, value: number) => void;
+  cfg: WallCutout;
+  hideDepth: boolean;
+  handlers: ReturnType<typeof useWallCutoutsSection>['handlers'];
   spanLabel: string;
   heightLabel: string;
-  hideDepth?: boolean;
+  step: number;
 }) {
+  const isMmMode = cfg.widthMm !== null;
+
   return (
     <div className="flex items-end gap-2">
+      {/* Span stepper */}
       <div className="flex-1 min-w-0">
         <span className="mb-1 block text-xs text-content-tertiary">{spanLabel}</span>
-        <StepperControl
-          value={width}
-          onChange={(v) => onWidthChange(side, v)}
-          onStep={(delta) => onWidthChange(side, Math.max(0, Math.min(100, width + delta * step)))}
-          min={0}
-          max={100}
-          step={step}
-          variant="desktop"
-          ariaLabel={`${label} span`}
-        />
-      </div>
-      {!hideDepth && (
-        <div className="flex-1 min-w-0">
-          <span className="mb-1 block text-xs text-content-tertiary">{heightLabel}</span>
+        {isMmMode ? (
           <StepperControl
-            value={depth}
-            onChange={(v) => onDepthChange(side, v)}
+            value={cfg.widthMm}
+            onChange={(v) => handlers.setSideWidthMm(side, Math.max(1, v))}
             onStep={(delta) =>
-              onDepthChange(side, Math.max(0, Math.min(100, depth + delta * step)))
+              handlers.setSideWidthMm(side, Math.max(1, (cfg.widthMm as number) + delta))
+            }
+            min={1}
+            max={500}
+            step={1}
+            variant="desktop"
+            ariaLabel="Span mm"
+          />
+        ) : (
+          <StepperControl
+            value={cfg.width}
+            onChange={(v) => handlers.setSideWidth(side, v)}
+            onStep={(delta) =>
+              handlers.setSideWidth(side, Math.max(0, Math.min(100, cfg.width + delta * step)))
             }
             min={0}
             max={100}
             step={step}
             variant="desktop"
-            ariaLabel={`${label} height`}
+            ariaLabel="Span %"
           />
+        )}
+      </div>
+
+      {/* %/mm toggle */}
+      <button
+        type="button"
+        onClick={() => handlers.setSideWidthMm(side, isMmMode ? null : 30)}
+        className={`shrink-0 rounded px-1.5 py-1 text-xs font-medium transition-colors ${
+          isMmMode
+            ? 'bg-accent text-on-accent'
+            : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+        }`}
+      >
+        {isMmMode ? 'mm' : '%'}
+      </button>
+
+      {/* Height stepper */}
+      {!hideDepth && (
+        <div className="flex-1 min-w-0">
+          <span className="mb-1 block text-xs text-content-tertiary">{heightLabel}</span>
+          <StepperControl
+            value={cfg.depth}
+            onChange={(v) => handlers.setSideDepth(side, v)}
+            onStep={(delta) =>
+              handlers.setSideDepth(side, Math.max(0, Math.min(100, cfg.depth + delta * step)))
+            }
+            min={0}
+            max={100}
+            step={step}
+            variant="desktop"
+            ariaLabel="Height %"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Collapsible alignment + offset controls. Auto-expands when non-default. */
+function PositionDisclosure({
+  side,
+  cfg,
+  handlers,
+  t,
+}: {
+  side: WallSide;
+  cfg: WallCutout;
+  handlers: ReturnType<typeof useWallCutoutsSection>['handlers'];
+  t: (key: string) => string;
+}) {
+  const isCustom = hasCustomPosition(cfg);
+  const [manualOpen, setManualOpen] = useState(false);
+  const isOpen = manualOpen || isCustom;
+
+  const alignmentLabel = t(`binDesigner.alignment.${cfg.alignment}`);
+  const summary = isCustom
+    ? `${alignmentLabel}${cfg.offset !== 0 ? ` ${cfg.offset > 0 ? '+' : ''}${cfg.offset}mm` : ''}`
+    : alignmentLabel;
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setManualOpen((prev) => !prev)}
+        className="flex items-center gap-1.5 text-xs text-content-tertiary hover:text-content-secondary transition-colors"
+      >
+        <ChevronIcon open={isOpen} />
+        <span>{t('binDesigner.wallCutouts.position')}:</span>
+        <span className="text-content-secondary font-medium">{summary}</span>
+      </button>
+
+      {isOpen && (
+        <div className="mt-2 space-y-2 ml-3.5">
+          {/* Alignment picker */}
+          <div className="flex gap-1">
+            {ALIGNMENT_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => handlers.setSideAlignment(side, option)}
+                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                  cfg.alignment === option
+                    ? 'bg-accent text-on-accent'
+                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                }`}
+              >
+                {t(`binDesigner.alignment.${option}`)}
+              </button>
+            ))}
+          </div>
+
+          {/* Offset stepper */}
+          {(cfg.alignment !== 'center' || cfg.offset !== 0) && (
+            <div>
+              <span className="mb-1 block text-xs text-content-tertiary">
+                {t('binDesigner.wallCutouts.offset')}
+              </span>
+              <StepperControl
+                value={cfg.offset}
+                onChange={(v) => handlers.setSideOffset(side, v)}
+                onStep={(delta) => handlers.setSideOffset(side, cfg.offset + delta * OFFSET_STEP)}
+                min={-50}
+                max={50}
+                step={OFFSET_STEP}
+                variant="desktop"
+                ariaLabel="Offset mm"
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -111,8 +250,8 @@ export function WallCutoutsSection() {
   const { state, handlers, meta, t, STEP } = useWallCutoutsSection();
   const { walls, activeSides, linked } = state;
 
-  // For linked mode, use first active side's values for the shared steppers
   const sharedSide = activeSides.length > 0 ? activeSides[0] : undefined;
+  const hideDepth = walls.shape === 'scoop';
 
   return (
     <FeatureToggle
@@ -166,7 +305,7 @@ export function WallCutoutsSection() {
             })}
           </div>
 
-          {/* Link/unlink toggle + steppers */}
+          {/* Controls — shown when at least one side is active */}
           {activeSides.length > 0 && (
             <>
               <div className="flex items-center gap-1.5">
@@ -186,41 +325,44 @@ export function WallCutoutsSection() {
                 </button>
               </div>
 
-              {/* Shared steppers (linked mode) */}
+              {/* Shared controls (linked mode) */}
               {linked && sharedSide && (
-                <SpanHeightSteppers
-                  side={sharedSide}
-                  label={t('binDesigner.wallCutouts')}
-                  width={walls[sharedSide].width}
-                  depth={walls[sharedSide].depth}
-                  step={STEP}
-                  onWidthChange={handlers.setSideWidth}
-                  onDepthChange={handlers.setSideDepth}
-                  spanLabel={t('binDesigner.wallCutouts.span')}
-                  heightLabel={t('binDesigner.wallCutouts.height')}
-                  hideDepth={walls.shape === 'scoop'}
-                />
+                <>
+                  <SizeControls
+                    side={sharedSide}
+                    cfg={walls[sharedSide]}
+                    hideDepth={hideDepth}
+                    handlers={handlers}
+                    spanLabel={t('binDesigner.wallCutouts.span')}
+                    heightLabel={t('binDesigner.wallCutouts.height')}
+                    step={STEP}
+                  />
+                  <PositionDisclosure
+                    side={sharedSide}
+                    cfg={walls[sharedSide]}
+                    handlers={handlers}
+                    t={t}
+                  />
+                </>
               )}
 
-              {/* Per-side steppers (independent mode) */}
+              {/* Per-side controls (independent mode) */}
               {!linked &&
                 SIDE_ORDER.filter((side) => walls[side].enabled).map((side) => (
-                  <div key={side}>
-                    <label className="text-xs font-medium text-content-secondary mb-1 block">
+                  <div key={side} className="space-y-2">
+                    <label className="text-xs font-medium text-content-secondary block">
                       {t(`binDesigner.wallCutouts.${side}`)}
                     </label>
-                    <SpanHeightSteppers
+                    <SizeControls
                       side={side}
-                      label={t(`binDesigner.wallCutouts.${side}`)}
-                      width={walls[side].width}
-                      depth={walls[side].depth}
-                      step={STEP}
-                      onWidthChange={handlers.setSideWidth}
-                      onDepthChange={handlers.setSideDepth}
+                      cfg={walls[side]}
+                      hideDepth={hideDepth}
+                      handlers={handlers}
                       spanLabel={t('binDesigner.wallCutouts.span')}
                       heightLabel={t('binDesigner.wallCutouts.height')}
-                      hideDepth={walls.shape === 'scoop'}
+                      step={STEP}
                     />
+                    <PositionDisclosure side={side} cfg={walls[side]} handlers={handlers} t={t} />
                   </div>
                 ))}
             </>
@@ -239,17 +381,14 @@ export function WallCutoutsSection() {
             </label>
             {walls.interior.enabled && !linked && (
               <div className="mt-2 ml-6">
-                <SpanHeightSteppers
+                <SizeControls
                   side="interior"
-                  label={t('binDesigner.wallCutouts.interior')}
-                  width={walls.interior.width}
-                  depth={walls.interior.depth}
-                  step={STEP}
-                  onWidthChange={handlers.setSideWidth}
-                  onDepthChange={handlers.setSideDepth}
+                  cfg={walls.interior}
+                  hideDepth={hideDepth}
+                  handlers={handlers}
                   spanLabel={t('binDesigner.wallCutouts.span')}
                   heightLabel={t('binDesigner.wallCutouts.height')}
-                  hideDepth={walls.shape === 'scoop'}
+                  step={STEP}
                 />
               </div>
             )}

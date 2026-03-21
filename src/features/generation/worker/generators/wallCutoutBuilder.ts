@@ -11,6 +11,11 @@ import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { fuseAllOrNull, findWallSegments } from './compartmentBuilder';
+import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+
+// Re-export for consumers that were importing from this module
+export { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+
 /** Auto-compute corner radius: 15% of the smaller dimension, clamped to [0.5, 5] mm. */
 function autoCornerRadius(cutWidth: number, cutHeight: number): number {
   return Math.max(0.5, Math.min(5, Math.min(cutWidth * 0.15, cutHeight * 0.15)));
@@ -116,6 +121,7 @@ function buildSingleCutout(
   const cutZ = wallHeight - userCutHeight / 2 + overshoot / 2;
   return translate(shape, [position.x, position.y, cutZ]);
 }
+
 /**
  * Build wall cutout cuts for all enabled sides and interior divider walls.
  *
@@ -161,18 +167,33 @@ export function buildWallCutoutCuts(
   ];
 
   for (const side of sides) {
+    const cfg = params.walls[side.key];
+    if (!cfg.enabled) continue;
     const { effectiveWidth, effectiveDepth } = resolveEffective(side.key);
-    if (effectiveWidth <= 0 || effectiveDepth <= 0) continue;
 
-    const cutWidth = side.wallSpan * (effectiveWidth / 100);
+    // Resolve cutout width: absolute mm override or percentage of wall span
+    const cutWidth =
+      cfg.widthMm !== null
+        ? Math.min(cfg.widthMm, side.wallSpan)
+        : side.wallSpan * (effectiveWidth / 100);
+    if (cutWidth <= 0 || effectiveDepth <= 0) continue;
     const interiorHeight = wallHeight - wallThickness;
     const userCutHeight = interiorHeight * (effectiveDepth / 100);
     if (cutWidth < 0.1 || userCutHeight < 0.1) continue;
 
+    // Resolve horizontal position from alignment + offset
+    const centerOffset = computeCutoutCenter(
+      side.wallSpan,
+      cutWidth,
+      wallThickness,
+      cfg.alignment,
+      cfg.offset
+    );
+
     cutShapes.push(
       buildSingleCutout(cutoutShape, cutWidth, userCutHeight, overshoot, extrudeDepth, wallHeight, {
-        x: side.x,
-        y: side.y,
+        x: side.rotateZ === 0 ? side.x + centerOffset : side.x,
+        y: side.rotateZ !== 0 ? side.y + centerOffset : side.y,
         rotateZ: side.rotateZ,
       })
     );

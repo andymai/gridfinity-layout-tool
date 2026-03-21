@@ -65,6 +65,8 @@ export interface BinGeometryContext {
   readonly wallTopZ: number;
   readonly wallThickness: number;
   readonly floorThickness: number;
+  /** Fraction of wall height removed by the deepest wall cutout (0-1). Undefined = no cutout. */
+  readonly wallCutoutDepthFraction?: number;
 }
 
 export function applySplitConnectors(
@@ -372,17 +374,24 @@ function addConnectors(
   const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
 
   // ── Wall half-laps (seamless exterior/interior surfaces) ───────────────
+  // Clip tab height so it doesn't extend into the wall cutout region
+  const effectiveWallHeight =
+    context.wallCutoutDepthFraction !== undefined
+      ? wallHeight * (1 - context.wallCutoutDepthFraction)
+      : wallHeight;
+
   for (const edgePos of [-wallOffset, wallOffset]) {
     if (edgePos < pieceMin || edgePos > pieceMax) continue;
     const nearCut = face.perpendicularCuts.some((cp) => Math.abs(edgePos - cp) < wt * 2);
     if (nearCut) continue;
+    if (effectiveWallHeight < MIN_FEATURE_HEIGHT) continue;
 
     addHalfLapWallFeature(
       face,
       fuseTargets,
       cutTargets,
       config.tongueProtrusion,
-      wallHeight,
+      effectiveWallHeight,
       context.floorZ,
       edgePos,
       wt

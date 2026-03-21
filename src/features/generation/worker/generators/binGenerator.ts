@@ -318,11 +318,30 @@ function splitSolidIntoPieces(
           centerX,
           centerY
         );
+        // Compute max cutout depth fraction across outer walls for tab clipping.
+        // Uses the global max across all 4 sides (conservative — tabs on walls with
+        // shallower cutouts will be shorter than necessary, but never protrude).
+        // Per-axis precision would require CutFace to carry wall side info.
+        const wallHeight = wallTopZ - floorZ;
+        let wallCutoutDepthFraction: number | undefined;
+        if (params.walls.enabled && wallHeight > 0) {
+          const interiorH = wallHeight - params.wallThickness;
+          for (const wallSide of ['front', 'back', 'left', 'right'] as const) {
+            const wallCfg = params.walls[wallSide];
+            const hasWidth = wallCfg.widthMm !== null ? wallCfg.widthMm > 0 : wallCfg.width > 0;
+            if (wallCfg.enabled && wallCfg.depth > 0 && hasWidth) {
+              // depth% is relative to interiorHeight, convert to fraction of total wallHeight
+              const fraction = (interiorH * wallCfg.depth) / (100 * wallHeight);
+              wallCutoutDepthFraction = Math.max(wallCutoutDepthFraction ?? 0, fraction);
+            }
+          }
+        }
         const geometryContext: BinGeometryContext = {
           floorZ,
           wallTopZ,
           wallThickness: params.wallThickness,
           floorThickness: params.wallThickness,
+          wallCutoutDepthFraction,
         };
         piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
       }

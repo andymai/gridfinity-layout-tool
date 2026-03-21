@@ -21,7 +21,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { clearAllCaches } from '@/features/generation/worker/generators/shapeCache';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams, BaseStyle } from '@/shared/types/bin';
 import { withKernel } from 'brepjs';
 import { initOcctKernel, initBrepkitKernel, loadGenerateBin } from './dualKernelInit';
@@ -208,11 +208,11 @@ const STRESS_CASES: readonly StressCase[] = [
         shape: 'u-shape',
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 60, depth: 40 },
-        back: { enabled: true, width: 60, depth: 40 },
-        left: { enabled: true, width: 60, depth: 40 },
-        right: { enabled: true, width: 60, depth: 40 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 40 },
+        back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 40 },
+        left: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 40 },
+        right: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 40 },
+        interior: DISABLED_WALL_CUTOUT,
       },
     },
   },
@@ -229,11 +229,11 @@ const STRESS_CASES: readonly StressCase[] = [
         shape: 'scoop',
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 80, depth: 60 },
-        back: { enabled: true, width: 80, depth: 60 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 80, depth: 60 },
+        back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 80, depth: 60 },
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     },
   },
@@ -248,11 +248,11 @@ const STRESS_CASES: readonly StressCase[] = [
         shape: 'funnel',
         width: 0,
         depth: 0,
-        front: { enabled: true, width: 80, depth: 60 },
-        back: { enabled: true, width: 80, depth: 60 },
-        left: { enabled: false, width: 0, depth: 0 },
-        right: { enabled: false, width: 0, depth: 0 },
-        interior: { enabled: false, width: 0, depth: 0 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 80, depth: 60 },
+        back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 80, depth: 60 },
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
       },
     },
   },
