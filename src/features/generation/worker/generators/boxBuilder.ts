@@ -244,7 +244,6 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
     const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
 
     if (TOP_FILLET > 0) {
-      scope.register(swept); // consumed by fillet
       const lipEdges = edgeFinder()
         .when((e) => {
           const bounds = getBounds(e);
@@ -253,6 +252,7 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
         .findAll(swept);
 
       if (lipEdges.length > 0) {
+        scope.register(swept); // consumed by fillet
         return unwrap(fillet(swept, lipEdges, TOP_FILLET));
       }
     }

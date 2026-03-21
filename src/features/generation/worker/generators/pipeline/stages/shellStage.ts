@@ -69,7 +69,7 @@ export const shellStage: PipelineStage = {
             );
           } catch (e: unknown) {
             if (e instanceof DOMException && e.name === 'AbortError') throw e;
-            return binBody; // fuse failed, binBody is the result (NOT registered)
+            return binBody; // fuse failed — withScope exempts returned value from disposal
           }
         }
         return binBody; // no lip — binBody is the result (NOT registered)
