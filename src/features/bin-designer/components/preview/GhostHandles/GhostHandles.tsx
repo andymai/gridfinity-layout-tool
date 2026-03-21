@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { HandleWallSide } from '@/features/bin-designer/types';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
@@ -34,6 +35,7 @@ interface WallDef {
 
 export function GhostHandles() {
   const { invalidate } = useThree();
+  const flagEnabled = useFeatureFlag('handle_ledges');
 
   const { params, generationStatus } = useDesignerStore(
     useShallow((s) => ({
@@ -57,6 +59,7 @@ export function GhostHandles() {
   const shelfThickness = Math.max(wallThickness, MIN_SHELF_THICKNESS);
 
   const shouldShow =
+    flagEnabled &&
     handles.enabled &&
     style !== 'slotted' &&
     style !== 'solid' &&

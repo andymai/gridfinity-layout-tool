@@ -67,6 +67,16 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-03',
     requiresRefresh: true,
   },
+  {
+    id: 'handle_ledges',
+    name: 'Handle Ledges',
+    description:
+      'Add interior grip ledges to bin walls. Small shelves with concave fillet supports make it easy to pull bins out of drawers.',
+    status: 'experimental',
+    risk: 'low',
+    addedAt: '2026-03',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];
