@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.14.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.13.0...gridfinity-layout-tool-v4.14.0) (2026-03-21)
+
+
+### Features
+
+* gate handle ledges behind labs feature flag ([#1160](https://github.com/andymai/gridfinity-layout-tool/issues/1160)) ([f4cf594](https://github.com/andymai/gridfinity-layout-tool/commit/f4cf5948019fef18f0902909f55aa399947b97d5))
+
 ## [4.13.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.12.2...gridfinity-layout-tool-v4.13.0) (2026-03-21)
 
 
