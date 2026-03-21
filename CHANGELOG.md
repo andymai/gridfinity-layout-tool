@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.15.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.14.0...gridfinity-layout-tool-v4.15.0) (2026-03-21)
+
+
+### Features
+
+* add wall cutout positioning and fix split connector tab clipping ([#1162](https://github.com/andymai/gridfinity-layout-tool/issues/1162)) ([a049a48](https://github.com/andymai/gridfinity-layout-tool/commit/a049a48bef703c46b9fbc2db3d9724bc8eb219a7))
+
 ## [4.14.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.13.0...gridfinity-layout-tool-v4.14.0) (2026-03-21)
 
 
