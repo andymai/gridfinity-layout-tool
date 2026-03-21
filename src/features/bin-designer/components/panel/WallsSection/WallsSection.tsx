@@ -16,7 +16,7 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 
 export function WallsSection() {
   const { state, handlers, t } = useWallsSection();
-  const handlesEnabled = useFeatureFlag('handle_ledges');
+  const handleLedgesFlag = useFeatureFlag('handle_ledges');
 
   return (
     <div className="space-y-4">
@@ -42,7 +42,7 @@ export function WallsSection() {
       <div className="pt-3 border-t border-stroke-subtle/50">
         <WallCutoutsSection />
       </div>
-      {handlesEnabled && (
+      {handleLedgesFlag && (
         <div className="pt-3 border-t border-stroke-subtle/50">
           <HandleSection />
         </div>
