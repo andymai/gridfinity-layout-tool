@@ -56,8 +56,14 @@ export const GRIDFINITY_SPEC = {
   // Corner radius for socket profile
   SOCKET_CORNER_RADIUS: 4, // mm (r_base from spec)
 
+  // Corner radius for box body (outer wall profile)
+  // Per gridfinity.xyz spec: boxes use 3.75mm, baseplates use 4mm.
+  // The 0.25mm difference creates a slight interference fit so bins seat
+  // flush on the baseplate without magnets.
+  BOX_CORNER_RADIUS: 3.75, // mm (r_base - 0.25mm per original spec)
+
   // Fillets (used for BREP generation)
-  TOP_FILLET: 0.6, // mm fillet at stacking lip junction
+  TOP_FILLET: 0, // mm — original spec has no fillet at stacking lip peak
 } as const;
 /**
  * Number of perimeter walls per nozzle size, matching common slicer defaults.

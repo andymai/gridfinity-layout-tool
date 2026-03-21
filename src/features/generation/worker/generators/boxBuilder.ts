@@ -28,7 +28,7 @@ import type { Shape3D, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
 import {
   SIZE,
   CLEARANCE,
-  CORNER_RADIUS,
+  BOX_CORNER_RADIUS,
   LIP_SMALL_TAPER,
   LIP_VERTICAL_PART,
   LIP_BIG_TAPER,
@@ -72,7 +72,7 @@ export function buildBinBox(
   const outerD = gridD * SIZE - CLEARANCE;
 
   return withScope((scope: DisposalScope) => {
-    const box = sketch(drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)).extrude(wallHeight);
+    const box = sketch(drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS)).extrude(wallHeight);
 
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
@@ -98,7 +98,7 @@ export function buildBinBox(
 
         const innerFill = scope.register(
           sketch(
-            drawRoundedRectangle(innerW, innerD, Math.max(0, CORNER_RADIUS - wallThickness)),
+            drawRoundedRectangle(innerW, innerD, Math.max(0, BOX_CORNER_RADIUS - wallThickness)),
             'XY'
           ).extrude(fillHeight)
         );
@@ -144,7 +144,7 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
   const sectionAt = (z: number, inset: number): Sketch => {
     const w = outerW - 2 * inset;
     const d = outerD - 2 * inset;
-    const r = Math.max(CORNER_RADIUS - inset, 0.1);
+    const r = Math.max(BOX_CORNER_RADIUS - inset, 0.1);
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
@@ -178,17 +178,19 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
     // Boolean subtract inner from outer to create hollow ring
     let result = unwrap(cut(outerFrustum, innerFrustum));
 
-    // Fillet the peak edge
-    const lipEdges = edgeFinder()
-      .when((e) => {
-        const bounds = getBounds(e);
-        return bounds.zMax >= Z_PEAK - 1 && bounds.zMin <= Z_PEAK;
-      })
-      .findAll(result);
+    // Fillet the peak edge (only when TOP_FILLET > 0; spec default is 0)
+    if (TOP_FILLET > 0) {
+      const lipEdges = edgeFinder()
+        .when((e) => {
+          const bounds = getBounds(e);
+          return bounds.zMax >= Z_PEAK - 1 && bounds.zMin <= Z_PEAK;
+        })
+        .findAll(result);
 
-    if (lipEdges.length > 0) {
-      scope.register(result); // consumed by fillet
-      result = unwrap(fillet(result, lipEdges, TOP_FILLET));
+      if (lipEdges.length > 0) {
+        scope.register(result); // consumed by fillet
+        result = unwrap(fillet(result, lipEdges, TOP_FILLET));
+      }
     }
 
     return result;
@@ -234,17 +236,27 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
   };
 
   return withScope((scope: DisposalScope) => {
-    const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as Sketch;
-    const swept = scope.register(boxSketch.sweepSketch(topProfile, { withContact: true }));
+    const boxSketch = drawRoundedRectangle(
+      outerW,
+      outerD,
+      BOX_CORNER_RADIUS
+    ).sketchOnPlane() as Sketch;
+    const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
 
-    const lipEdges = edgeFinder()
-      .when((e) => {
-        const bounds = getBounds(e);
-        return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
-      })
-      .findAll(swept);
+    if (TOP_FILLET > 0) {
+      const lipEdges = edgeFinder()
+        .when((e) => {
+          const bounds = getBounds(e);
+          return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
+        })
+        .findAll(swept);
 
-    return unwrap(fillet(swept, lipEdges, TOP_FILLET));
+      if (lipEdges.length > 0) {
+        scope.register(swept); // consumed by fillet
+        return unwrap(fillet(swept, lipEdges, TOP_FILLET));
+      }
+    }
+    return swept;
   });
 }
 

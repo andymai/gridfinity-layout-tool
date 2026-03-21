@@ -61,10 +61,15 @@ export const shellStage: PipelineStage = {
             );
             collectOrigins(top, FeatureTag.LIP, originToTag);
             scope.register(binBody); // consumed by fuse
-            return unwrap(fuse(binBody, top, { optimisation: 'commonFace' }));
+            return unwrap(
+              fuse(
+                binBody,
+                top /* no commonFace: box (3.75mm corners) and socket/lip profiles differ */
+              )
+            );
           } catch (e: unknown) {
             if (e instanceof DOMException && e.name === 'AbortError') throw e;
-            return binBody; // fuse failed, binBody is the result (NOT registered)
+            return binBody; // fuse failed — withScope exempts returned value from disposal
           }
         }
         return binBody; // no lip — binBody is the result (NOT registered)
@@ -72,6 +77,8 @@ export const shellStage: PipelineStage = {
 
       // Socket style: build base socket and fuse with box.
       // Register binBody eagerly — all socket paths consume it via fuse.
+      // Box uses BOX_CORNER_RADIUS (3.75mm) while socket uses SOCKET_CORNER_RADIUS
+      // (4mm), so they do NOT share a common face at Z=0 — full boolean required.
       scope.register(binBody);
       const base = scope.register(
         buildBaseSocket(
@@ -96,17 +103,20 @@ export const shellStage: PipelineStage = {
             translate(buildTopShape(params.width, params.depth, true), [0, 0, dim.wallHeight])
           );
           collectOrigins(top, FeatureTag.LIP, originToTag);
-          const baseAndBody = scope.register(
-            unwrap(fuse(base, binBody, { optimisation: 'commonFace' }))
+          const baseAndBody = scope.register(unwrap(fuse(base, binBody)));
+          return unwrap(
+            fuse(
+              baseAndBody,
+              top /* no commonFace: box (3.75mm corners) and socket/lip profiles differ */
+            )
           );
-          return unwrap(fuse(baseAndBody, top, { optimisation: 'commonFace' }));
         } catch (e: unknown) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          return unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
+          return unwrap(fuse(base, binBody));
         }
       }
 
-      return unwrap(fuse(base, binBody, { optimisation: 'commonFace' }));
+      return unwrap(fuse(base, binBody));
     });
 
     setShellCache(dim.shellKey, bin);
