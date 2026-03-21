@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.15.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.15.0...gridfinity-layout-tool-v4.15.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* align box corner radius and lip fillet with Gridfinity spec ([#1164](https://github.com/andymai/gridfinity-layout-tool/issues/1164)) ([31aaadb](https://github.com/andymai/gridfinity-layout-tool/commit/31aaadbd092c02189f3a23ec46a14d74a59444b4))
+
 ## [4.15.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.14.0...gridfinity-layout-tool-v4.15.0) (2026-03-21)
 
 
