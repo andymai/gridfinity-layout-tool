@@ -40,8 +40,11 @@ const HEIGHT_CLEARANCE = 0.1;
  * @returns Closed 2D Drawing suitable for extrusion
  */
 export function buildFilletProfile(radius: number, height: number): Drawing {
-  // Clamp radius so the fillet fits within the available vertical space.
-  const safeR = Math.max(MIN_RADIUS, Math.min(radius, height - HEIGHT_CLEARANCE));
+  // Clamp radius: must fit within available height, with a minimum for valid geometry.
+  const maxR = height - HEIGHT_CLEARANCE;
+  if (maxR < MIN_RADIUS)
+    return draw([0, 0]).lineTo([-MIN_RADIUS, 0]).lineTo([0, -MIN_RADIUS]).close();
+  const safeR = Math.max(MIN_RADIUS, Math.min(radius, maxR));
   const depth = safeR;
 
   // The three corner points of the right triangle:

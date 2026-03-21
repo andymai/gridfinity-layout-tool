@@ -24,8 +24,12 @@ export function useHandleSection() {
   const isBackDisabled = params.label.enabled;
 
   const activeSides = useMemo(
-    () => HANDLE_SIDES.filter((side) => handles[side].enabled),
-    [handles]
+    () =>
+      HANDLE_SIDES.filter((side) => {
+        if (side === 'back' && isBackDisabled) return false;
+        return handles[side].enabled;
+      }),
+    [handles, isBackDisabled]
   );
 
   const toggleEnabled = useCallback(() => {

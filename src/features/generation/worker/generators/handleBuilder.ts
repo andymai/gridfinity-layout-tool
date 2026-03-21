@@ -58,8 +58,8 @@ export function buildHandles(
   const walls: readonly WallDef[] = [
     { side: 'front', wallSpan: innerW, depthSpan: innerD, x: 0, y: -innerD / 2, rotateZ: 180 },
     { side: 'back', wallSpan: innerW, depthSpan: innerD, x: 0, y: innerD / 2, rotateZ: 0 },
-    { side: 'left', wallSpan: innerD, depthSpan: innerW, x: -innerW / 2, y: 0, rotateZ: 270 },
-    { side: 'right', wallSpan: innerD, depthSpan: innerW, x: innerW / 2, y: 0, rotateZ: 90 },
+    { side: 'left', wallSpan: innerD, depthSpan: innerW, x: -innerW / 2, y: 0, rotateZ: 90 },
+    { side: 'right', wallSpan: innerD, depthSpan: innerW, x: innerW / 2, y: 0, rotateZ: 270 },
   ];
 
   const allHandles: Shape3D[] = [];
@@ -99,12 +99,12 @@ export function buildHandles(
 
     if (filletHeight > 0) {
       const filletProfile = buildFilletProfile(effectiveFilletR, filletHeight);
-      // Profile is in XY plane; sketch on YZ and extrude along X for handleWidth
+      // Profile is in XY plane; sketch on YZ and extrude along X for handleWidth.
+      // The fillet profile spans from Z=0 downward, so its top edge already
+      // meets the shelf underside (at local Z=0). No Z shift needed.
       const filletShape = sketch(filletProfile, 'YZ', 0).extrude(handleWidth);
-      // Position fillet below the shelf: shift down by shelfThickness in Z
-      const positionedFillet = translate(filletShape, [0, 0, -filletHeight]);
 
-      handleSolid = unwrap(fuse(shelf, positionedFillet));
+      handleSolid = unwrap(fuse(shelf, filletShape));
     } else {
       handleSolid = shelf;
     }
