@@ -163,6 +163,18 @@ describe('useHandleSection', () => {
     expect(summary).not.toContain('Right');
   });
 
+  it('computes handleWidthMm from bin width and wall thickness', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        handles: { ...DEFAULT_BIN_PARAMS.handles, enabled: true, width: 50 },
+      },
+    });
+
+    const { result } = renderHook(() => useHandleSection());
+    expect(result.current.state.handleWidthMm).toBeGreaterThan(0);
+  });
+
   it('summary is undefined when handles disabled', () => {
     const { result } = renderHook(() => useHandleSection());
     expect(result.current.meta.summary).toBeUndefined();

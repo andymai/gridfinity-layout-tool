@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import type { HandleWallSide } from '@/features/bin-designer/types';
@@ -9,14 +10,17 @@ import type { SectionMeta } from '../types';
 export const HANDLE_SIDES: readonly HandleWallSide[] = ['front', 'back', 'left', 'right'];
 
 export function useHandleSection() {
-  const { handles, updateHandles, updateHandleSide, params } = useDesignerStore(
-    useShallow((s) => ({
-      handles: s.params.handles,
-      updateHandles: s.updateHandles,
-      updateHandleSide: s.updateHandleSide,
-      params: s.params,
-    }))
-  );
+  const { handles, updateHandles, updateHandleSide, params, width, wallThickness } =
+    useDesignerStore(
+      useShallow((s) => ({
+        handles: s.params.handles,
+        updateHandles: s.updateHandles,
+        updateHandleSide: s.updateHandleSide,
+        params: s.params,
+        width: s.params.width,
+        wallThickness: s.params.wallThickness,
+      }))
+    );
   const t = useTranslation();
 
   const featureStatus = getFeatureStatus(params, 'handles');
@@ -65,6 +69,12 @@ export function useHandleSection() {
     [updateHandles]
   );
 
+  const handleWidthMm = useMemo(() => {
+    const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+    const innerW = outerW - 2 * wallThickness;
+    return Math.round(innerW * (handles.width / 100) * 10) / 10;
+  }, [width, wallThickness, handles.width]);
+
   const summary = useMemo(() => {
     if (!handles.enabled || activeSides.length === 0) return undefined;
     const sideNames = activeSides.map((s) => t(`binDesigner.handles.${s}`)).join(', ');
@@ -85,7 +95,7 @@ export function useHandleSection() {
   );
 
   return {
-    state: { handles, isBackDisabled },
+    state: { handles, isBackDisabled, handleWidthMm },
     handlers: { toggleEnabled, toggleSide, setWidth, setDepth, setFilletRadius },
     meta,
     t,

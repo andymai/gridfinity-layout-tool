@@ -10,20 +10,9 @@ import { StepperControl } from '@/shared/components/StepperControl';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useHandleSection, HANDLE_SIDES } from './useHandleSection';
 
-const CHIP_BASE = 'flex-1 rounded px-2 py-1 text-xs font-medium transition-colors';
-const CHIP_ACTIVE = `${CHIP_BASE} bg-accent text-on-accent`;
-const CHIP_INACTIVE = `${CHIP_BASE} border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover`;
-const CHIP_DISABLED = `${CHIP_BASE} border border-stroke-subtle bg-surface-secondary text-content-tertiary cursor-not-allowed opacity-50`;
-
-function chipClass(active: boolean, disabled: boolean): string {
-  if (disabled) return CHIP_DISABLED;
-  if (active) return CHIP_ACTIVE;
-  return CHIP_INACTIVE;
-}
-
 export function HandleSection() {
   const { state, handlers, meta, t } = useHandleSection();
-  const { handles, isBackDisabled } = state;
+  const { handles, isBackDisabled, handleWidthMm } = state;
 
   return (
     <FeatureToggle
@@ -47,7 +36,13 @@ export function HandleSection() {
               disabled={isDisabled}
               title={isDisabled ? t('binDesigner.handles.backDisabledByLabelTab') : undefined}
               onClick={() => handlers.toggleSide(side)}
-              className={chipClass(isActive, isDisabled)}
+              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                isDisabled
+                  ? 'border border-stroke-subtle bg-surface-secondary text-content-tertiary cursor-not-allowed opacity-50'
+                  : isActive
+                    ? 'bg-accent text-on-accent'
+                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+              }`}
             >
               {t(`binDesigner.handles.${side}`)}
             </button>
@@ -55,7 +50,7 @@ export function HandleSection() {
         })}
       </div>
 
-      {/* Width stepper */}
+      {/* Width + Depth steppers side by side */}
       <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
@@ -82,10 +77,6 @@ export function HandleSection() {
             ariaLabel="Handle width"
           />
         </div>
-      </div>
-
-      {/* Depth stepper */}
-      <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.handles.depth')}
@@ -111,6 +102,26 @@ export function HandleSection() {
             ariaLabel="Handle depth"
           />
         </div>
+      </div>
+
+      {/* Physical dimensions */}
+      <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
+        <svg
+          className="h-3.5 w-3.5 flex-shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
+          />
+        </svg>
+        <span className="tabular-nums">
+          {handleWidthMm} × {handles.depth} mm
+        </span>
       </div>
 
       {/* Fillet radius stepper */}

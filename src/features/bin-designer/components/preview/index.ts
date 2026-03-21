@@ -15,5 +15,6 @@ export { GhostSlotLines } from './GhostSlotLines/GhostSlotLines';
 export { GhostDividerPieces } from './GhostDividerPieces/GhostDividerPieces';
 export { GhostCutouts } from './GhostCutouts';
 export { GhostWallCutouts } from './GhostWallCutouts';
+export { GhostHandles } from './GhostHandles';
 export { BinSplitLines } from './BinSplitLines';
 export { SplitBinMeshes } from './SplitBinMeshes/SplitBinMeshes';
