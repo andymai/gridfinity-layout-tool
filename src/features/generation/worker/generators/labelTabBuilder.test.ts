@@ -50,4 +50,30 @@ describe('buildLabelTabs', () => {
     const result = buildLabelTabs(params, 80, 80, 35, 1.2);
     expect(result).not.toBeNull();
   });
+
+  it('fillet support is positioned under the shelf, not at the bin floor', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+    const { mesh } = await import('brepjs');
+    const wallHeight = 35;
+    const wt = 1.2;
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'fillet' as const },
+    };
+    const result = buildLabelTabs(params, 80, 80, wallHeight, wt);
+    expect(result).not.toBeNull();
+
+    // Tessellate and check Z bounds — fillet must sit near the top of the
+    // wall (wallHeight), not at Z=0 (the bin floor). Before the fix, the
+    // fillet was placed at Z=0..gussetLeg instead of (wallHeight-tabHeight)..wallHeight.
+    const tessellated = mesh(result!, { tolerance: 0.5, angularTolerance: 15 });
+    const verts = tessellated.vertices;
+    let minZ = Infinity;
+    for (let i = 2; i < verts.length; i += 3) {
+      if (verts[i] < minZ) minZ = verts[i];
+    }
+    // The tab's lowest point should be above half the wall height
+    // (it sits near the top, not at the floor)
+    expect(minZ).toBeGreaterThan(wallHeight / 2);
+  });
 });
