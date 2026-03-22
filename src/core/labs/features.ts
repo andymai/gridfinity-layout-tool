@@ -77,6 +77,16 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-03',
     requiresRefresh: false,
   },
+  {
+    id: 'multi_color_export',
+    name: 'Multi-Color 3MF Export',
+    description:
+      'Assign different filament colors to body, lip, and label tabs. Exports multi-color 3MF files for multi-material printers.',
+    status: 'experimental',
+    risk: 'low',
+    addedAt: '2026-03',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

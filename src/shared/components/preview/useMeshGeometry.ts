@@ -8,11 +8,20 @@
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 
+/** Per-face group defining a material index range within the index buffer */
+export interface MeshFaceGroup {
+  readonly start: number;
+  readonly count: number;
+  readonly materialIndex: number;
+}
+
 interface MeshArrays {
   readonly vertices: Float32Array | null;
   readonly normals: Float32Array | null;
   readonly indices: Uint32Array | null;
   readonly edgeVertices: Float32Array | null;
+  /** Optional face groups for multi-material rendering. Each group maps a range of indices to a material index. */
+  readonly faceGroups?: readonly MeshFaceGroup[];
 }
 
 interface MeshGeometryResult {
@@ -26,7 +35,7 @@ interface MeshGeometryResult {
  * Handles normal computation fallback and automatic disposal.
  */
 export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
-  const { vertices, normals, indices, edgeVertices } = arrays;
+  const { vertices, normals, indices, edgeVertices, faceGroups } = arrays;
   const hasPrecomputedNormals = normals !== null && normals.length > 0;
 
   const geometry = useMemo(() => {
@@ -45,8 +54,16 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
       geo.computeVertexNormals();
     }
 
+    // Add material groups for multi-material rendering
+    if (faceGroups && faceGroups.length > 0) {
+      geo.clearGroups();
+      for (const group of faceGroups) {
+        geo.addGroup(group.start, group.count, group.materialIndex);
+      }
+    }
+
     return geo;
-  }, [vertices, normals, indices, hasPrecomputedNormals]);
+  }, [vertices, normals, indices, hasPrecomputedNormals, faceGroups]);
 
   const edgesGeometry = useMemo(() => {
     if (!edgeVertices || edgeVertices.length === 0) return null;

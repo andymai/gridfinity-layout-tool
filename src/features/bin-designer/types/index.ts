@@ -7,6 +7,7 @@
 
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { DesignId } from '@/core/types';
+import type { FeatureColorConfig } from './featureColors';
 
 // Bin Configuration Types
 
@@ -236,6 +237,8 @@ export interface BinParams {
   readonly wallPattern: WallPatternConfig;
   /** Split connector config. If omitted/undefined, default split connector settings are applied (connectors enabled with defaults). */
   readonly splitConnectors?: SplitConnectorConfig;
+  /** Per-feature filament color assignment for multi-color 3MF export. If omitted, single-color export. */
+  readonly featureColors?: FeatureColorConfig;
 }
 
 // Insert Types
@@ -513,6 +516,7 @@ export interface DesignerState {
   updateWallSide: (side: WallSide, partial: Partial<WallCutout>) => void;
   updateHandles: (partial: Partial<HandleConfig>) => void;
   updateHandleSide: (side: HandleWallSide, partial: Partial<HandleSide>) => void;
+  updateFeatureColors: (partial: Partial<FeatureColorConfig>) => void;
 
   // History actions
   undo: () => void;

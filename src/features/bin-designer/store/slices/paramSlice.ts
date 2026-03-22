@@ -19,7 +19,9 @@ import type {
   HandleSide,
   HandleWallSide,
 } from '../../types';
+import type { FeatureColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
+import { DEFAULT_FEATURE_COLOR_CONFIG } from '../../constants/defaults';
 import { isErr } from '@/core/result';
 import { isRectangularSelection, normalizeIds } from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
@@ -145,6 +147,15 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.wallPattern = { ...state.params.wallPattern, ...partial };
+      });
+    },
+
+    // Feature color actions
+    updateFeatureColors: (partial: Partial<FeatureColorConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const current = state.params.featureColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
+        state.params.featureColors = { ...current, ...partial };
       });
     },
 

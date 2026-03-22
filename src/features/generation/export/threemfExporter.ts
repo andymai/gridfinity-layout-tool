@@ -16,6 +16,14 @@
 import { zipSync, strToU8 } from 'fflate';
 import { validateMeshData } from './validation';
 
+/** Multi-material color configuration for 3MF basematerials extension */
+export interface ThreeMFColorConfig {
+  /** Deduplicated materials list (name + displaycolor) */
+  readonly materials: readonly { readonly name: string; readonly color: string }[];
+  /** Per-triangle material index into the materials array (length = triangle count) */
+  readonly triangleMaterialIndices: readonly number[];
+}
+
 /** Options for 3MF export */
 export interface ThreeMFOptions {
   /** Model name for metadata */
@@ -24,6 +32,8 @@ export interface ThreeMFOptions {
   readonly thumbnail?: Uint8Array;
   /** Optional print settings hints (embedded as metadata) */
   readonly printSettings?: ThreeMFPrintSettings;
+  /** Optional multi-material color configuration */
+  readonly colorConfig?: ThreeMFColorConfig;
 }
 
 /** Suggested print settings embedded as metadata */
@@ -162,6 +172,7 @@ function buildRelationships(): string {
 
 function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   const NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
+  const hasColors = options.colorConfig && options.colorConfig.materials.length > 0;
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += `<model unit="millimeter" xml:lang="en-US" xmlns="${NS}">\n`;
@@ -196,6 +207,18 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
 
   // Resources
   xml += '  <resources>\n';
+
+  // Basematerials resource (3MF Core Spec section 5.1 — no namespace prefix)
+  const BASEMATERIALS_ID = 2;
+  const colorConfig = hasColors ? options.colorConfig : undefined;
+  if (colorConfig) {
+    xml += `    <basematerials id="${BASEMATERIALS_ID}">\n`;
+    for (const mat of colorConfig.materials) {
+      xml += `      <base name="${escapeXml(mat.name)}" displaycolor="${escapeXml(mat.color)}" />\n`;
+    }
+    xml += '    </basematerials>\n';
+  }
+
   xml += `    <object id="1" type="model" name="${escapeXml(options.name)}">\n`;
   xml += '      <mesh>\n';
 
@@ -208,8 +231,17 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
 
   // Triangles
   xml += '        <triangles>\n';
-  for (const [v1, v2, v3] of mesh.triangles) {
-    xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
+  if (colorConfig) {
+    const indices = colorConfig.triangleMaterialIndices;
+    for (let i = 0; i < mesh.triangles.length; i++) {
+      const [v1, v2, v3] = mesh.triangles[i];
+      const pindex = indices[i] ?? 0;
+      xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="${BASEMATERIALS_ID}" p1="${pindex}" />\n`;
+    }
+  } else {
+    for (const [v1, v2, v3] of mesh.triangles) {
+      xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
+    }
   }
   xml += '        </triangles>\n';
 

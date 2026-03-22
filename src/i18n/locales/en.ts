@@ -1190,6 +1190,10 @@ const en: Record<string, string> = {
   'binDesigner.group.shape': 'Shape',
   'binDesigner.group.interior': 'Interior',
   'binDesigner.group.base': 'Base',
+  'binDesigner.group.colors': 'Colors',
+  'binDesigner.colors.body': 'Body',
+  'binDesigner.colors.lip': 'Stacking Lip',
+  'binDesigner.colors.labelTab': 'Label Tab',
 
   'binDesigner.splitAxisInfo': 'Split along {axis} into {count} pieces',
 

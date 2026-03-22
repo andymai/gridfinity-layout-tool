@@ -20,12 +20,14 @@ import { WallsSection } from '../panel/WallsSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SplitOptionsSection } from '../panel/SplitOptionsSection';
 import { StickyGroupHeader } from '../panel/StickyGroupHeader';
+import { ColorsSection } from '../panel/ColorsSection';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 
 export function ParameterPanel() {
   const t = useTranslation();
@@ -34,6 +36,7 @@ export function ParameterPanel() {
   const baseSummary = useBaseGroupSummary();
   const showLabelTabs = useDesignerStore(useShallow((s) => s.params.style === 'standard'));
   const { needsSplit } = useSplitOptionsSection();
+  const showColors = useFeatureFlag('multi_color_export');
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-scroll scrollbar-thin">
@@ -74,6 +77,15 @@ export function ParameterPanel() {
             <ScoopSection />
           </div>
         </StickyGroupHeader>
+
+        {/* Colors group (Labs: multi_color_export) */}
+        {showColors && (
+          <StickyGroupHeader title={t('binDesigner.group.colors')} defaultExpanded={false}>
+            <div className="px-4 py-4">
+              <ColorsSection />
+            </div>
+          </StickyGroupHeader>
+        )}
 
         {/* Base group */}
         <StickyGroupHeader
