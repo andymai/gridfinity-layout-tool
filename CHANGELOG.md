@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.17.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.17.1...gridfinity-layout-tool-v4.17.2) (2026-03-22)
+
+
+### Bug Fixes
+
+* make fillet support concave (less material) instead of convex bulge ([#1177](https://github.com/andymai/gridfinity-layout-tool/issues/1177)) ([eadee5a](https://github.com/andymai/gridfinity-layout-tool/commit/eadee5a13dcf7cd17d73a029c98bc17a08a85d0e))
+
 ## [4.17.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.17.0...gridfinity-layout-tool-v4.17.1) (2026-03-22)
 
 
