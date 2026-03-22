@@ -194,10 +194,16 @@ export function buildLabelTabs(
           const solidSupport = sketch(gussetProfile, 'YZ', 0).extrude(tabWidth);
           tabSolid = unwrap(fuse(tabSolid, solidSupport));
         } else if (params.label.support === 'fillet') {
-          // Fillet style: continuous concave quarter-circle prism under the shelf
+          // Fillet style: continuous concave quarter-circle prism under the shelf.
+          // The fillet profile spans from Z=0 downward, so we translate it up
+          // by gussetLeg to align the top edge with the shelf underside.
           const filletR = Math.min(gussetLeg, tabDepth * 0.8);
           const filletProfile = buildFilletProfile(filletR, gussetLeg);
-          const filletSupport = sketch(filletProfile, 'YZ', 0).extrude(tabWidth);
+          const filletSupport = translate(sketch(filletProfile, 'YZ', 0).extrude(tabWidth), [
+            0,
+            0,
+            gussetLeg,
+          ]);
           tabSolid = unwrap(fuse(tabSolid, filletSupport));
         } else if (gussetPositions.length > 0) {
           // Bracket style: discrete triangular gussets at edges + every <=10mm
