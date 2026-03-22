@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.19.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.18.3...gridfinity-layout-tool-v4.19.0) (2026-03-22)
+
+
+### Features
+
+* **bin-designer:** multi-color 3MF export ([#1182](https://github.com/andymai/gridfinity-layout-tool/issues/1182)) ([f79a60a](https://github.com/andymai/gridfinity-layout-tool/commit/f79a60af2844ebf5d65519da2916944d33bf5a2e))
+
+
+### Bug Fixes
+
+* **ci:** use -- separator for pnpm shard arg forwarding ([#1193](https://github.com/andymai/gridfinity-layout-tool/issues/1193)) ([e28d8d2](https://github.com/andymai/gridfinity-layout-tool/commit/e28d8d266473024b5c19fc0360884a05af78ee56))
+
+
+### Performance
+
+* **ci:** shard PR unit tests across 2 parallel runners ([#1191](https://github.com/andymai/gridfinity-layout-tool/issues/1191)) ([15ab9e3](https://github.com/andymai/gridfinity-layout-tool/commit/15ab9e35f3bfe8b8f5381984700e2b47ab4fa970))
+
 ## [4.18.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.18.2...gridfinity-layout-tool-v4.18.3) (2026-03-22)
 
 
