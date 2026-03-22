@@ -34,6 +34,7 @@ export {
   INSET_BOT,
   MAGNET_OFFSETS,
   pocketCornerRadius,
+  resolveCornerRadii,
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,

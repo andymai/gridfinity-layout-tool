@@ -28,6 +28,7 @@ import {
   draw,
   unwrap,
   cutAll,
+  intersect,
   clone,
   translate,
   fuseAll,
@@ -51,6 +52,7 @@ import {
   MAGNET_OFFSETS,
   INSET_BOT,
   pocketCornerRadius,
+  resolveCornerRadii,
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,
@@ -772,6 +774,11 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
     params.edges?.back ?? '',
     params.connectorNubs ?? false,
     params.lightweight ?? true,
+    quantize(params.cornerRadius ?? -1),
+    quantize(params.cornerRadii?.tl ?? -1),
+    quantize(params.cornerRadii?.tr ?? -1),
+    quantize(params.cornerRadii?.bl ?? -1),
+    quantize(params.cornerRadii?.br ?? -1),
     forExport
   );
 }
@@ -802,6 +809,7 @@ function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): strin
     forExport
   );
 }
+
 /**
  * Build the 2D slab outline, rounding only exterior corners.
  *
@@ -817,47 +825,56 @@ function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): strin
 function buildSlabProfile(
   totalW: number,
   totalD: number,
-  cornerR: number,
+  cornerRadii: { tl: number; tr: number; bl: number; br: number },
   edges?: BaseplateParams['edges']
 ): Drawing {
-  // No edges info (unsplit) or all edges exterior → round all corners
-  if (
-    !edges ||
-    (edges.left === 'exterior' &&
-      edges.right === 'exterior' &&
-      edges.front === 'exterior' &&
-      edges.back === 'exterior')
-  ) {
-    return drawRoundedRectangle(totalW, totalD, cornerR);
-  }
-
-  // A corner should be rounded only when BOTH adjacent edges are exterior
   const hw = totalW / 2;
   const hd = totalD / 2;
+  const { tl, tr, bl, br } = cornerRadii;
 
-  type Point2D = [number, number];
-  const exteriorCorners: Point2D[] = [];
+  // Determine which corners are eligible for rounding (split piece logic)
+  const isExt = (corner: 'tl' | 'tr' | 'bl' | 'br'): boolean => {
+    if (!edges) return true;
+    switch (corner) {
+      case 'tl':
+        return edges.left === 'exterior' && edges.back === 'exterior';
+      case 'tr':
+        return edges.right === 'exterior' && edges.back === 'exterior';
+      case 'bl':
+        return edges.left === 'exterior' && edges.front === 'exterior';
+      case 'br':
+        return edges.right === 'exterior' && edges.front === 'exterior';
+    }
+  };
 
-  if (edges.left === 'exterior' && edges.front === 'exterior') {
-    exteriorCorners.push([-hw, -hd]);
-  }
-  if (edges.right === 'exterior' && edges.front === 'exterior') {
-    exteriorCorners.push([hw, -hd]);
-  }
-  if (edges.right === 'exterior' && edges.back === 'exterior') {
-    exteriorCorners.push([hw, hd]);
-  }
-  if (edges.left === 'exterior' && edges.back === 'exterior') {
-    exteriorCorners.push([-hw, hd]);
-  }
+  const rBL = isExt('bl') && bl > 0 ? bl : 0;
+  const rBR = isExt('br') && br > 0 ? br : 0;
+  const rTR = isExt('tr') && tr > 0 ? tr : 0;
+  const rTL = isExt('tl') && tl > 0 ? tl : 0;
 
-  // No exterior corners → plain rectangle
-  if (exteriorCorners.length === 0) {
+  // Fast path: all zero → plain rectangle
+  if (rBL === 0 && rBR === 0 && rTR === 0 && rTL === 0) {
     return drawRectangle(totalW, totalD);
   }
 
-  // Start with sharp rectangle, then fillet only the exterior corners
-  return drawRectangle(totalW, totalD).fillet(cornerR, (f) => f.inList(exteriorCorners));
+  // Fast path: all same → use built-in rounded rectangle
+  if (rBL === rBR && rBR === rTR && rTR === rTL) {
+    return drawRoundedRectangle(totalW, totalD, rBL);
+  }
+
+  // Draw CCW starting from mid-bottom-edge so close() creates a real
+  // edge through BL, allowing customCorner(rBL) to apply correctly.
+  // Starting at a corner would make close() degenerate (zero-length).
+  let pen = draw([0, -hd]);
+  pen = pen.lineTo([hw, -hd]);
+  if (rBR > 0) pen = pen.customCorner(rBR);
+  pen = pen.lineTo([hw, hd]);
+  if (rTR > 0) pen = pen.customCorner(rTR);
+  pen = pen.lineTo([-hw, hd]);
+  if (rTL > 0) pen = pen.customCorner(rTL);
+  pen = pen.lineTo([-hw, -hd]);
+  if (rBL > 0) pen = pen.customCorner(rBL);
+  return pen.close();
 }
 
 /**
@@ -973,11 +990,12 @@ function buildBaseplateSolid(
     baseplate = clone(cachedSlab);
     onProgress?.(0.5);
   } else {
-    // Build solid slab
-    const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
-    const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
-    const profile = buildSlabProfile(totalW, totalD, cornerR, edges);
-    baseplate = (profile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }).extrude(
+    // Build solid slab with RECTANGULAR profile for caching — pocket cuts are
+    // independent of corner radius, so we cache the rectangular slab+pockets
+    // and apply corner rounding as a post-cache step. This avoids expensive
+    // pocket re-cuts when only corner radius changes.
+    const rectProfile = drawRectangle(totalW, totalD);
+    baseplate = (rectProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }).extrude(
       -totalHeight
     );
     baseplate = translate(baseplate, [slabOffsetX, slabOffsetY, 0]);
@@ -1007,6 +1025,33 @@ function buildBaseplateSolid(
     // Clone after caching so subsequent mutations don't corrupt the cached solid
     baseplate = clone(baseplate);
     onProgress?.(0.5);
+  }
+
+  // Apply corner rounding as a post-cache step — this is fast (single boolean
+  // cut) and avoids redoing expensive pocket cuts when corner radius changes.
+  //
+  // Max radius: half a grid unit + padding. The arc can enter the corner cell
+  // but won't reach past the cell center, preserving the pocket structure.
+  // Also clamped to half the slab to prevent degenerate geometry.
+  const minPadding = Math.min(
+    Math.min(paddingLeft, paddingRight),
+    Math.min(paddingFront, paddingBack)
+  );
+  const cellLimit = gridUnitMm / 2 + minPadding;
+  const geomLimit = Math.min(totalW, totalD) / 2 - 0.1;
+  const maxRadius = Math.min(cellLimit, geomLimit);
+  const cornerRadii = resolveCornerRadii(params, maxRadius);
+  const hasRounding =
+    cornerRadii.tl > 0 || cornerRadii.tr > 0 || cornerRadii.bl > 0 || cornerRadii.br > 0;
+  if (hasRounding) {
+    const roundedProfile = buildSlabProfile(totalW, totalD, cornerRadii, edges);
+    const roundedSlab = (
+      roundedProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
+    ).extrude(-totalHeight);
+    const roundedTranslated = translate(roundedSlab, [slabOffsetX, slabOffsetY, 0]);
+    // Intersect: keep only material that's inside both the cached rectangular
+    // slab-with-pockets AND the rounded profile.
+    baseplate = unwrap(intersect(baseplate, roundedTranslated));
   }
 
   // into a single array for one batched cutAll operation.

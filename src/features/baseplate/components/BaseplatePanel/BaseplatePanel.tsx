@@ -237,6 +237,29 @@ export function BaseplatePanel() {
                 info={t('baseplate.magnetDepthInfo')}
               />
             </FeatureToggle>
+            <CornerRadiusControl
+              cornerRadius={baseplateParams.cornerRadius}
+              cornerRadii={baseplateParams.cornerRadii}
+              maxRadius={
+                gridUnitMm / 2 +
+                Math.min(
+                  Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
+                  Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
+                )
+              }
+              onUniformChange={(r) => {
+                updateParam('cornerRadius', mm(r));
+                updateParam('cornerRadii', undefined);
+              }}
+              onPerCornerChange={(radii) => {
+                updateParam('cornerRadii', {
+                  tl: mm(radii.tl),
+                  tr: mm(radii.tr),
+                  bl: mm(radii.bl),
+                  br: mm(radii.br),
+                });
+              }}
+            />
           </div>
         </StickyGroupHeader>
 
@@ -379,6 +402,94 @@ function SplitViewStrip({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Corner radius controls with optional per-corner mode. */
+function CornerRadiusControl({
+  cornerRadius,
+  cornerRadii,
+  maxRadius,
+  onUniformChange,
+  onPerCornerChange,
+}: {
+  readonly cornerRadius: number | undefined;
+  readonly cornerRadii:
+    | { readonly tl: number; readonly tr: number; readonly bl: number; readonly br: number }
+    | undefined;
+  readonly maxRadius: number;
+  readonly onUniformChange: (r: number) => void;
+  readonly onPerCornerChange: (radii: { tl: number; tr: number; bl: number; br: number }) => void;
+}) {
+  const t = useTranslation();
+  const perCorner = cornerRadii !== undefined;
+  const uniformR = cornerRadius ?? 2.5;
+
+  return (
+    <>
+      <SliderInput
+        label={t('baseplate.cornerRadius')}
+        value={uniformR}
+        onChange={onUniformChange}
+        min={0}
+        max={maxRadius}
+        step={0.5}
+        unit="mm"
+        info={t('baseplate.cornerRadiusInfo')}
+        disabled={perCorner}
+      />
+      <Checkbox
+        label={t('baseplate.cornerRadiusUnlink')}
+        checked={perCorner}
+        onChange={() => {
+          if (perCorner) {
+            onUniformChange(cornerRadii.tl);
+          } else {
+            onPerCornerChange({ tl: uniformR, tr: uniformR, bl: uniformR, br: uniformR });
+          }
+        }}
+      />
+      {perCorner && (
+        <>
+          <SliderInput
+            label={t('baseplate.cornerRadiusTL')}
+            value={cornerRadii.tl}
+            onChange={(v) => onPerCornerChange({ ...cornerRadii, tl: v })}
+            min={0}
+            max={maxRadius}
+            step={0.5}
+            unit="mm"
+          />
+          <SliderInput
+            label={t('baseplate.cornerRadiusTR')}
+            value={cornerRadii.tr}
+            onChange={(v) => onPerCornerChange({ ...cornerRadii, tr: v })}
+            min={0}
+            max={maxRadius}
+            step={0.5}
+            unit="mm"
+          />
+          <SliderInput
+            label={t('baseplate.cornerRadiusBL')}
+            value={cornerRadii.bl}
+            onChange={(v) => onPerCornerChange({ ...cornerRadii, bl: v })}
+            min={0}
+            max={maxRadius}
+            step={0.5}
+            unit="mm"
+          />
+          <SliderInput
+            label={t('baseplate.cornerRadiusBR')}
+            value={cornerRadii.br}
+            onChange={(v) => onPerCornerChange({ ...cornerRadii, br: v })}
+            min={0}
+            max={maxRadius}
+            step={0.5}
+            unit="mm"
+          />
+        </>
+      )}
+    </>
   );
 }
 

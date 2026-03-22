@@ -22,12 +22,12 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { resolveCornerRadii } from './generatorConstants';
 import type { MeshData } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
   forEachCell,
   checkCancelled,
-  PLATE_CORNER_RADIUS,
   MAGNET_FLOOR,
   MAGNET_OFFSETS,
   INSET_BOT,
@@ -801,7 +801,8 @@ export function generateBaseplateDirect(
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMm + paddingFront + paddingBack;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
-  const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
+  const resolved = resolveCornerRadii(params, maxRadius);
+  const cornerR = Math.min(Math.max(resolved.tl, resolved.tr, resolved.bl, resolved.br), maxRadius);
 
   // Slab center offset for asymmetric padding (grid stays at origin)
   const slabOffsetX = (paddingRight - paddingLeft) / 2;

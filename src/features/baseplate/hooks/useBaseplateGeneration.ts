@@ -97,6 +97,8 @@ export function useBaseplateGeneration(): void {
     syncWithLayout,
     baseplateWidth,
     baseplateDepth,
+    cornerRadius,
+    cornerRadii,
   } = useLayoutStore(
     useShallow((state) => {
       const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -118,6 +120,8 @@ export function useBaseplateGeneration(): void {
         syncWithLayout: bp.syncWithLayout,
         baseplateWidth: bp.baseplateWidth,
         baseplateDepth: bp.baseplateDepth,
+        cornerRadius: bp.cornerRadius,
+        cornerRadii: bp.cornerRadii,
       };
     })
   );
@@ -333,6 +337,8 @@ export function useBaseplateGeneration(): void {
     syncWithLayout,
     baseplateWidth,
     baseplateDepth,
+    cornerRadius,
+    cornerRadii,
     runGeneration,
   ]);
 }
