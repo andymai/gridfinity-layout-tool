@@ -472,6 +472,7 @@ export function pieceToBaseplateParams(
     fractionalEdgeY,
     edges: piece.edges,
     connectorNubs: parentParams.connectorNubs,
+    lightweight: parentParams.lightweight,
   };
 }
 /**
