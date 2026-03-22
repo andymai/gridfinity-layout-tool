@@ -119,9 +119,10 @@ describe('BaseplatePanel', () => {
 
   it('renders dimensions strip with grid and mm values (no padding)', () => {
     render(<BaseplatePanel />);
-    // No padding: single line with grid units and mm dimensions
+    // No padding: single line with grid units and editable mm dimensions
     expect(screen.getByText('baseplate.dimensionsUnits')).toBeInTheDocument();
-    expect(screen.getByText(/168\s*×\s*252\s*mm/)).toBeInTheDocument();
+    const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
+    expect(editBtn).toHaveTextContent(/168\s*×\s*252\s*mm/);
   });
 
   it('renders hero total dimensions when padding is set', () => {
@@ -230,7 +231,7 @@ describe('BaseplatePanel', () => {
       render(<BaseplatePanel />);
       expect(screen.getByText('baseplate.sectionGridSize')).toBeInTheDocument();
       expect(screen.getByText('baseplate.syncWithLayout')).toBeInTheDocument();
-      const checkbox = screen.getByRole('checkbox');
+      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
       expect(checkbox).toBeChecked();
     });
 
@@ -258,7 +259,7 @@ describe('BaseplatePanel', () => {
         baseplateDepth: 10,
       };
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox');
+      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
       expect(checkbox).not.toBeChecked();
       const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
       const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
@@ -270,7 +271,7 @@ describe('BaseplatePanel', () => {
 
     it('initializes custom dims from drawer when unchecking sync', () => {
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox');
+      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
       fireEvent.click(checkbox);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -289,10 +290,165 @@ describe('BaseplatePanel', () => {
         baseplateDepth: 10,
       };
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox');
+      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
       fireEvent.click(checkbox);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ syncWithLayout: true })
+      );
+    });
+  });
+
+  describe('editable dimensions', () => {
+    it('renders editable dimension button in no-padding mode', () => {
+      render(<BaseplatePanel />);
+      const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
+      expect(editBtn).toHaveTextContent(/168\s*×\s*252\s*mm/);
+    });
+
+    it('enters edit mode on click and shows two inputs', () => {
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+      expect(screen.getByLabelText('baseplate.editDimensionsWidth')).toBeInTheDocument();
+      expect(screen.getByLabelText('baseplate.editDimensionsDepth')).toBeInTheDocument();
+    });
+
+    it('commits mm values, snaps grid, distributes padding, and unchecks sync', () => {
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+
+      const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+      const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+
+      // Enter 500mm wide × 300mm deep (halfBinMode=false, step=1)
+      // 500 / 42 = 11.90 → floor to 11 units = 462mm, remainder = 38mm → 19 each
+      // 300 / 42 = 7.14 → floor to 7 = 294mm, remainder = 6mm → 3 each
+      fireEvent.change(widthInput, { target: { value: '500' } });
+      fireEvent.change(depthInput, { target: { value: '300' } });
+      fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          syncWithLayout: false,
+          baseplateWidth: 11,
+          baseplateDepth: 7,
+          paddingLeft: 19,
+          paddingRight: 19,
+          paddingFront: 3,
+          paddingBack: 3,
+        })
+      );
+    });
+
+    it('renders editable dimension button in with-padding mode', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        paddingLeft: 5,
+        paddingRight: 3,
+      };
+      render(<BaseplatePanel />);
+      const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
+      // Total: 168 (grid) + 5 + 3 (padding) = 176mm wide
+      expect(editBtn).toHaveTextContent(/176\s*×\s*252\s*mm/);
+    });
+
+    it('exact grid multiple produces zero padding', () => {
+      // 420 / 42 = exactly 10 units → no remainder
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+      const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+      const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+      fireEvent.change(widthInput, { target: { value: '420' } });
+      fireEvent.change(depthInput, { target: { value: '252' } });
+      fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseplateWidth: 10,
+          baseplateDepth: 6,
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingFront: 0,
+          paddingBack: 0,
+        })
+      );
+    });
+
+    it('half-bin mode snaps to 0.5 increments', () => {
+      mockHalfBinMode = true;
+      // 450 / 42 = 10.71 → floor to 10.5 (step=0.5) = 441mm, remainder = 9mm → 4.5 each
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+      const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+      const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+      fireEvent.change(widthInput, { target: { value: '450' } });
+      fireEvent.change(depthInput, { target: { value: '252' } });
+      fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseplateWidth: 10.5,
+          paddingLeft: 4.5,
+          paddingRight: 4.5,
+        })
+      );
+    });
+
+    it('clamps grid to GRID_MIN when mm value is very small', () => {
+      // 10mm / 42 = 0.24 → floor to 0 but clamped to GRID_MIN (0.5)
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+      const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+      const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+      fireEvent.change(widthInput, { target: { value: '21' } });
+      fireEvent.change(depthInput, { target: { value: '21' } });
+      fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseplateWidth: 0.5,
+          baseplateDepth: 0.5,
+        })
+      );
+    });
+
+    it('clamps grid to GRID_MAX when mm value is very large', () => {
+      // 2200 / 42 = 52.38 → floor to 52 but clamped to GRID_MAX (50)
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+      const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+      const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+      fireEvent.change(widthInput, { target: { value: '2200' } });
+      fireEvent.change(depthInput, { target: { value: '252' } });
+      fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseplateWidth: 50,
+          // remainder: 2200 - 50*42 = 2200 - 2100 = 100mm → 50 each
+          paddingLeft: 50,
+          paddingRight: 50,
+        })
+      );
+    });
+
+    it('small remainder distributes fractional padding evenly', () => {
+      // 43 / 42 = 1.024 → floor to 1 unit = 42mm, remainder = 1mm → 0.5 each
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+      const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+      const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+      fireEvent.change(widthInput, { target: { value: '43' } });
+      fireEvent.change(depthInput, { target: { value: '42' } });
+      fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseplateWidth: 1,
+          paddingLeft: 0.5,
+          paddingRight: 0.5,
+          paddingFront: 0,
+          paddingBack: 0,
+        })
       );
     });
   });
