@@ -126,13 +126,16 @@ export function useCreateFromBin(): void {
       useDesignerStore.getState().toggleHalfBinMode();
     }
 
-    // Build the bin params for saving
+    // Build the bin params for saving — inherit physical units from layout store
     const designerState = useDesignerStore.getState();
+    const layoutState = useLayoutStore.getState();
     const binParams = {
       ...designerState.params,
       width: urlParams.width,
       depth: urlParams.depth,
       height: urlParams.height,
+      gridUnitMm: layoutState.layout.gridUnitMm,
+      heightUnitMm: layoutState.layout.heightUnitMm,
     };
 
     // Set the dimensions (don't use setParams as it pushes to history)

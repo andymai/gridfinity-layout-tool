@@ -1,16 +1,15 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import type { SectionMeta } from '../types';
 
 export function usePhysicalUnitsSection() {
-  const { gridUnitMm, heightUnitMm, setParam } = useDesignerStore(
+  const { gridUnitMm, heightUnitMm } = useLayoutStore(
     useShallow((s) => ({
-      gridUnitMm: s.params.gridUnitMm,
-      heightUnitMm: s.params.heightUnitMm,
-      setParam: s.setParam,
+      gridUnitMm: s.layout.gridUnitMm,
+      heightUnitMm: s.layout.heightUnitMm,
     }))
   );
   const { printBedSize, updateSetting } = useSettingsStore(
@@ -21,19 +20,13 @@ export function usePhysicalUnitsSection() {
   );
   const t = useTranslation();
 
-  const handleGridUnitChange = useCallback(
-    (value: number) => {
-      setParam('gridUnitMm', value);
-    },
-    [setParam]
-  );
+  const handleGridUnitChange = useCallback((value: number) => {
+    useLayoutStore.getState().setGridUnitMm(value);
+  }, []);
 
-  const handleHeightUnitChange = useCallback(
-    (value: number) => {
-      setParam('heightUnitMm', value);
-    },
-    [setParam]
-  );
+  const handleHeightUnitChange = useCallback((value: number) => {
+    useLayoutStore.getState().setHeightUnitMm(value);
+  }, []);
 
   const handlePrintBedChange = useCallback(
     (value: number) => {
