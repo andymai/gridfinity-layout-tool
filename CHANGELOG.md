@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.18.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.18.0...gridfinity-layout-tool-v4.18.1) (2026-03-22)
+
+
+### Performance
+
+* **ci:** optimize unit test speed with workspace split ([#1185](https://github.com/andymai/gridfinity-layout-tool/issues/1185)) ([116a4a6](https://github.com/andymai/gridfinity-layout-tool/commit/116a4a69079bdeed7457e44f0920a141abd31e7c))
+
 ## [4.18.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.17.2...gridfinity-layout-tool-v4.18.0) (2026-03-22)
 
 
