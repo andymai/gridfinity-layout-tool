@@ -17,21 +17,13 @@ import type { PathPoint } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec, SvgImportError } from './types';
 import { MAX_SVG_SHAPES } from './types';
 
-/** Geometric SVG element tag names we process. */
-const GEOMETRIC_TAGS = 'rect, circle, ellipse, polygon, polyline, path';
-
-/** SVG containers whose children are not directly rendered. */
-const NON_RENDERED_CONTAINERS = new Set(['defs', 'clipPath', 'mask', 'symbol', 'pattern']);
-
-/** Check if an element is nested inside a non-rendered container (defs, clipPath, etc.). */
-function isInsideNonRenderedContainer(el: Element, root: Element): boolean {
-  let node = el.parentElement;
-  while (node && node !== root) {
-    if (NON_RENDERED_CONTAINERS.has(node.localName)) return true;
-    node = node.parentElement;
-  }
-  return false;
-}
+/**
+ * Geometric SVG elements, excluding those inside non-rendered containers.
+ * The :not() selectors filter out shapes inside defs, clipPath, mask, symbol, and pattern.
+ */
+const GEOMETRIC_SELECTOR = ['rect', 'circle', 'ellipse', 'polygon', 'polyline', 'path']
+  .map((tag) => `${tag}:not(defs *, clipPath *, mask *, symbol *, pattern *)`)
+  .join(', ');
 
 /**
  * Parse an SVG string into intermediate cutout specs.
@@ -55,11 +47,8 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
     return err({ code: 'SVG_UNSUPPORTED', detail: 'No <svg> root element found' });
   }
 
-  // Collect geometric elements, excluding those inside non-rendered containers
-  const allElements = svgRoot.querySelectorAll(GEOMETRIC_TAGS);
-  const elements = Array.from(allElements).filter(
-    (el) => !isInsideNonRenderedContainer(el, svgRoot)
-  );
+  // Collect geometric elements (selector excludes non-rendered containers like defs)
+  const elements = svgRoot.querySelectorAll(GEOMETRIC_SELECTOR);
 
   if (elements.length === 0) {
     return err({ code: 'SVG_NO_SHAPES', detail: 'No geometric elements found' });
@@ -648,13 +637,7 @@ function pointsToPathSpec(
   return pathPointsToSpec(pathPoints);
 }
 
-/**
- * Compute bounds and build spec from PathPoint array.
- *
- * Note: bounds are computed from anchor points only, not bezier control-point
- * extents. For paths with convex handles the visual extent may exceed this box.
- * A proper fix would solve for cubic bezier axis-extrema (dB/dt = 0).
- */
+/** Compute bounds from anchor points (does not account for bezier handle extents). */
 function pathPointsToSpec(pathPoints: PathPoint[]): ParsedCutoutSpec | null {
   if (pathPoints.length < 2) return null;
 
