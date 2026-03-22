@@ -153,7 +153,6 @@
     "baseplate.sectionBase",
     "baseplate.sideView",
     "baseplate.connectorNubs",
-    "baseplate.sectionOptions",
     "baseplate.connectorNubsHelp",
     "export.format",
     "export.nameStyle.compact"
