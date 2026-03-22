@@ -7,15 +7,9 @@
 
 import { FeatureTag } from '@/shared/types/generation';
 
-/** Identifier for a filament slot in the user's palette (up to 4 slots) */
-export type FilamentSlotId = 'slot1' | 'slot2' | 'slot3' | 'slot4';
-
-/** A single filament slot with user-defined name and color */
-export interface FilamentSlot {
-  readonly id: FilamentSlotId;
-  readonly name: string;
-  readonly color: string; // hex, e.g. '#d4d8dc'
-}
+// Re-export filament types from shared (canonical location for cross-layer imports)
+export type { FilamentSlotId, FilamentSlot } from '@/shared/types/filament';
+import type { FilamentSlotId, FilamentSlot } from '@/shared/types/filament';
 
 /** High-level color zone grouping multiple FeatureTags */
 export type ColorZone = 'body' | 'lip' | 'labelTab';

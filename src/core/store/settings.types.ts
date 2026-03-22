@@ -2,7 +2,7 @@ import type { Locale } from '@/i18n/types';
 import type { Category } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
-import type { FilamentSlot } from '@/features/bin-designer/types/featureColors';
+import type { FilamentSlot } from '@/shared/types/filament';
 
 // STL Search Sites Configuration
 
