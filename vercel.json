@@ -162,19 +162,9 @@
       "source": "/ph/static/:path(.*)",
       "destination": "https://us-assets.i.posthog.com/static/:path"
     },
-    { "source": "/ph/e", "destination": "https://us.i.posthog.com/e" },
-    { "source": "/ph/e/", "destination": "https://us.i.posthog.com/e/" },
-    { "source": "/ph/decide", "destination": "https://us.i.posthog.com/decide" },
-    { "source": "/ph/decide/", "destination": "https://us.i.posthog.com/decide/" },
-    { "source": "/ph/batch", "destination": "https://us.i.posthog.com/batch" },
-    { "source": "/ph/batch/", "destination": "https://us.i.posthog.com/batch/" },
     {
-      "source": "/ph/ses/:path(.*)",
-      "destination": "https://us.i.posthog.com/ses/:path"
-    },
-    {
-      "source": "/ph/s/:path(.*)",
-      "destination": "https://us.i.posthog.com/s/:path"
+      "source": "/ph/:path(.*)",
+      "destination": "https://us.i.posthog.com/:path"
     },
     { "source": "/what-is-gridfinity", "destination": "/what-is-gridfinity/index.html" },
     { "source": "/guide", "destination": "/guide/index.html" },
