@@ -1,10 +1,9 @@
 /**
  * Shared concave fillet profile builder.
  *
- * Generates a closed 2D Drawing (brepjs) representing a concave quarter-circle
- * fillet. When extruded, this creates a smooth structural support curve between
- * a horizontal shelf and a vertical wall — replacing the 45-degree triangular
- * gusset used by label tabs with a concave arc.
+ * Generates a closed 2D Drawing (brepjs) representing a small concave
+ * fillet under a shelf. The fillet is kept minimal to maximize interior
+ * bin volume while providing structural support for the shelf.
  *
  * Used by both handle ledges and label tab fillet supports.
  */
@@ -19,61 +18,42 @@ const MIN_RADIUS = 0.5;
 const HEIGHT_CLEARANCE = 0.1;
 
 /**
- * Build a concave quarter-circle fillet profile in the XY plane.
+ * Build a concave fillet profile in the XY plane.
+ *
+ * The profile is a small right triangle with the hypotenuse replaced by
+ * a concave arc. Both legs equal the clamped radius — keeping the fillet
+ * compact to preserve bin interior volume.
  *
  * Coordinate system (looking from front):
  * ```
- * (0, 0) ────────── (-depth, 0)     shelf underside (top edge)
- *   |                     |
- *   |           concave   |
- *   |            arc    ╱
- * (0, -height) ─────╱
+ * (0, 0) ──── (-R, 0)     shelf underside
+ *   |              ╲
+ *   |    concave    ╲
+ * (0, -R) ──────────╱
  * ```
  *
- * The profile is a closed shape with:
- * 1. Top edge: horizontal line along the shelf underside
- * 2. Right edge: vertical line along the wall face
- * 3. Hypotenuse: concave sagittaArc replacing the diagonal
- *
- * @param radius - Fillet arc radius in mm (clamped to fit within height)
+ * @param radius - Fillet arc radius in mm (controls size of the support)
  * @param height - Available vertical space below the shelf in mm
  * @returns Closed 2D Drawing suitable for extrusion
  */
 export function buildFilletProfile(radius: number, height: number): Drawing {
-  // Clamp radius: must fit within available height, with a minimum for valid geometry.
   const maxR = height - HEIGHT_CLEARANCE;
   if (maxR < MIN_RADIUS)
     return draw([0, 0]).lineTo([-MIN_RADIUS, 0]).lineTo([0, -MIN_RADIUS]).close();
   const safeR = Math.max(MIN_RADIUS, Math.min(radius, maxR));
   const depth = safeR;
 
-  // The three corner points of the right triangle:
-  //   origin  = (0, 0)        — wall-shelf junction
-  //   tip     = (-depth, 0)   — shelf tip
-  //   bottom  = (0, -safeR)   — wall bottom
-  //
-  // The arc replaces the hypotenuse from tip to bottom.
-  // Chord length = sqrt(depth^2 + safeR^2). For equal legs: depth = safeR,
-  // so chord = safeR * sqrt(2).
-  //
-  // For a quarter-circle arc inscribed in a right triangle with equal legs,
-  // sagitta = R * (1 - 1/sqrt(2)) ≈ R * 0.2929.
-  // The sagitta is the perpendicular distance from chord midpoint to the arc.
-  const sagitta = safeR * (1 - 1 / Math.sqrt(2));
+  // Sagitta for a gentle concave curve on the hypotenuse.
+  // For equal legs, chord = R * sqrt(2). A sagitta of ~15% of chord
+  // gives a subtle scoop — enough to look concave without deep undercut.
+  const chord = safeR * Math.sqrt(2);
+  const sagitta = chord * 0.15;
 
-  // Draw: start at shelf tip, go right along shelf to origin, down the wall
-  // to bottom, then arc back to shelf tip (concave, curving toward origin).
-  //
-  // sagittaArc takes relative dx, dy from current point to endpoint.
-  // From (0, -safeR) to (-depth, 0): dx = -depth, dy = safeR.
-  // Travel direction is upper-left (direction vector (-1, +1) normalized).
-  // "Left" of this travel direction points toward the third quadrant (away
-  // from origin). Positive sagitta therefore curves the arc away from the
-  // origin, producing the desired concave shape (bulging away from the
-  // wall-shelf junction).
+  // Draw: shelf tip → origin → wall bottom → arc back to shelf tip.
+  // Negative sagitta curves toward the origin (concave scoop).
   return draw([-depth, 0])
     .lineTo([0, 0])
     .lineTo([0, -safeR])
-    .sagittaArc(-depth, safeR, sagitta)
+    .sagittaArc(-depth, safeR, -sagitta)
     .close();
 }
