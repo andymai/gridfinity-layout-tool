@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.18.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.17.2...gridfinity-layout-tool-v4.18.0) (2026-03-22)
+
+
+### Features
+
+* **baseplate:** click-to-edit mm dimensions ([#1181](https://github.com/andymai/gridfinity-layout-tool/issues/1181)) ([d1b25bf](https://github.com/andymai/gridfinity-layout-tool/commit/d1b25bf113c8d3ad59ea6507809bc65b9273883b))
+
 ## [4.17.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.17.1...gridfinity-layout-tool-v4.17.2) (2026-03-22)
 
 
