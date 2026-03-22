@@ -58,7 +58,8 @@
     "knip": "knip",
     "knip:fix": "knip --fix",
     "typecheck": "tsc -b --noEmit",
-    "quality": "pnpm run typecheck && pnpm run lint && pnpm run knip"
+    "quality": "pnpm run typecheck && pnpm run lint && pnpm run knip",
+    "test:profile": "pnpm run build:en-locale && tsx scripts/profile-tests.ts"
   },
   "size-limit": [
     {
