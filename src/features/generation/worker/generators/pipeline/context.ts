@@ -8,6 +8,8 @@
 import type { BinParams } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
+// SIZE is kept as a fallback default for backwards compatibility with callers
+// that construct BinParams without gridUnitMm.
 import type { ProgressFn } from '../meshUtils';
 import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
@@ -20,8 +22,10 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
   const solid = params.base.solid;
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
-  const outerW = params.width * SIZE - CLEARANCE;
-  const outerD = params.depth * SIZE - CLEARANCE;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
+  const gridUnit = params.gridUnitMm ?? SIZE;
+  const outerW = params.width * gridUnit - CLEARANCE;
+  const outerD = params.depth * gridUnit - CLEARANCE;
   const innerW = outerW - 2 * params.wallThickness;
   const innerD = outerD - 2 * params.wallThickness;
   const isSlotted = params.style === 'slotted';
@@ -31,7 +35,7 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
   const withScrew =
     !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
-  const maxDimension = Math.max(params.width, params.depth) * SIZE;
+  const maxDimension = Math.max(params.width, params.depth) * gridUnit;
   const isSmallBin = maxDimension <= 200;
   const useHighQuality = forExport || isSmallBin || params.base.stackingLip;
 
@@ -41,9 +45,10 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
   // Shell cache key — versioned + quantized for deterministic matching
   const shellKey = compactKey(
     buildCacheKey(
-      'v1',
+      'v2',
       quantize(params.width),
       quantize(params.depth),
+      quantize(gridUnit),
       isFlat,
       halfSockets,
       withMagnet,

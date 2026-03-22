@@ -61,6 +61,8 @@ function createTestParams(overrides?: Record<string, unknown>): BinParams {
       spacing: 10,
       sides: { front: false, back: false, left: false, right: false },
     },
+    gridUnitMm: 42,
+    heightUnitMm: 7,
     ...overrides,
   } as BinParams;
 }
@@ -102,14 +104,15 @@ describe('createInitialContext', () => {
     expect(ctx.dimensions.wallHeight).toBe(21); // No socket deduction for flat
   });
 
-  it('produces versioned shellKey with v1 prefix', () => {
+  it('produces versioned shellKey with v2 prefix including gridUnitMm', () => {
     const ctx = createInitialContext(createTestParams());
 
-    // shellKey now uses buildCacheKey with v1 prefix and quantized floats
+    // shellKey uses buildCacheKey with v2 prefix, gridUnitMm, and quantized floats
     const expected = [
-      'v1',
+      'v2',
       2,
       2,
+      42, // gridUnitMm
       false,
       false,
       false,
@@ -134,6 +137,15 @@ describe('createInitialContext', () => {
     expect(ctx.fuseTargets).toEqual([]);
     expect(ctx.cutTargets).toEqual([]);
     expect(ctx.originToTag.size).toBe(0);
+  });
+
+  it('should use params.gridUnitMm instead of hardcoded 42mm', () => {
+    const ctx = createInitialContext(createTestParams({ gridUnitMm: 50 }));
+    const dim = ctx.dimensions;
+    // outerW should be 2 * 50 - 0.5, not 2 * 42 - 0.5
+    expect(dim.outerW).toBeCloseTo(99.5);
+    expect(dim.outerD).toBeCloseTo(99.5);
+    expect(dim.maxDimension).toBeCloseTo(100);
   });
 
   it('computes interiorHeight with lip deduction', () => {
