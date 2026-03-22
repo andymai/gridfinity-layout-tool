@@ -51,6 +51,7 @@ import {
   MAGNET_OFFSETS,
   INSET_BOT,
   pocketCornerRadius,
+  resolveCornerRadii,
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,
@@ -804,26 +805,13 @@ function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): strin
     params.edges?.right ?? '',
     params.edges?.front ?? '',
     params.edges?.back ?? '',
+    quantize(params.cornerRadius ?? -1),
+    quantize(params.cornerRadii?.tl ?? -1),
+    quantize(params.cornerRadii?.tr ?? -1),
+    quantize(params.cornerRadii?.bl ?? -1),
+    quantize(params.cornerRadii?.br ?? -1),
     forExport
   );
-}
-/**
- * Resolve per-corner radii from params, applying defaults and clamping.
- * Priority: cornerRadii > cornerRadius > PLATE_CORNER_RADIUS (spec default).
- */
-export function resolveCornerRadii(
-  params: BaseplateParams,
-  maxRadius: number
-): { tl: number; tr: number; bl: number; br: number } {
-  const defaultR = params.cornerRadius ?? PLATE_CORNER_RADIUS;
-  const radii = params.cornerRadii ?? { tl: defaultR, tr: defaultR, bl: defaultR, br: defaultR };
-  const clamp = (r: number): number => Math.max(0, Math.min(r, maxRadius));
-  return {
-    tl: clamp(radii.tl),
-    tr: clamp(radii.tr),
-    bl: clamp(radii.bl),
-    br: clamp(radii.br),
-  };
 }
 
 /**
@@ -878,8 +866,10 @@ function buildSlabProfile(
     return drawRoundedRectangle(totalW, totalD, rBL);
   }
 
-  // Draw CCW from bottom-left, applying customCorner at each corner
-  let pen = draw([-hw, -hd]);
+  // Draw CCW starting from mid-bottom-edge so close() creates a real
+  // edge through BL, allowing customCorner(rBL) to apply correctly.
+  // Starting at a corner would make close() degenerate (zero-length).
+  let pen = draw([0, -hd]);
   pen = pen.lineTo([hw, -hd]);
   if (rBR > 0) pen = pen.customCorner(rBR);
   pen = pen.lineTo([hw, hd]);

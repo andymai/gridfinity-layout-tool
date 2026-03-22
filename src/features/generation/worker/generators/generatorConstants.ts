@@ -50,6 +50,28 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   return Math.min(CORNER_RADIUS, maxRadius);
 }
 
+/**
+ * Resolve per-corner radii from params, applying defaults and clamping.
+ * Priority: cornerRadii > cornerRadius > PLATE_CORNER_RADIUS (spec default).
+ */
+export function resolveCornerRadii(
+  params: {
+    cornerRadius?: number;
+    cornerRadii?: { tl: number; tr: number; bl: number; br: number };
+  },
+  maxRadius: number
+): { tl: number; tr: number; bl: number; br: number } {
+  const defaultR = params.cornerRadius ?? PLATE_CORNER_RADIUS;
+  const radii = params.cornerRadii ?? { tl: defaultR, tr: defaultR, bl: defaultR, br: defaultR };
+  const clamp = (r: number): number => Math.max(0, Math.min(r, maxRadius));
+  return {
+    tl: clamp(radii.tl),
+    tr: clamp(radii.tr),
+    bl: clamp(radii.bl),
+    br: clamp(radii.br),
+  };
+}
+
 // Split baseplate pieces use discrete dovetail connectors at grid cell boundary
 // intersections along join edges. Each connector is a trapezoidal prism with the
 // classic dovetail fan shape visible from the top (X-Y plane): narrower at the

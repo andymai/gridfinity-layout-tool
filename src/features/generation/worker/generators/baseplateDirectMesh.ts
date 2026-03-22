@@ -22,7 +22,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import { resolveCornerRadii } from './baseplateGenerator';
+import { resolveCornerRadii } from './generatorConstants';
 import type { MeshData } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
