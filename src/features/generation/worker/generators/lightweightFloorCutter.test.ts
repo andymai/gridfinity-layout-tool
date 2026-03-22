@@ -31,11 +31,14 @@ describe('buildLightweightFloorCutters', () => {
     expect(result).toHaveLength(1);
   });
 
-  it('each cutter is a valid Shape3D', async () => {
+  it('each cutter is a valid Shape3D with geometry', async () => {
     const { buildLightweightFloorCutters } = await import('./lightweightFloorCutter');
+    const { mesh } = await import('brepjs');
     const result = buildLightweightFloorCutters(2, 2, 3.25, 2, cellOpts());
     for (const cutter of result) {
       expect(cutter).toBeDefined();
+      const tessellated = mesh(cutter, { tolerance: 0.5, angularTolerance: 15 });
+      expect(tessellated.vertices.length).toBeGreaterThan(0);
     }
   });
 
