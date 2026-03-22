@@ -7,4 +7,3 @@
  */
 export type { FaceGroupData } from '@/features/generation/bridge/types';
 export { FeatureTag } from '@/features/generation/worker/generators/featureTags';
-export type { FeatureTag as FeatureTagType } from '@/features/generation/worker/generators/featureTags';

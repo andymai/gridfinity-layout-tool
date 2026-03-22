@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FeatureTag } from '@/features/generation/worker/generators/featureTags';
+import { FeatureTag } from '@/shared/types/generation';
 import { buildTriangleMaterialIndices } from './materialMapping';
 import type { FilamentSlot, FeatureColorConfig } from '../types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FeatureTag } from '@/features/generation/worker/generators/featureTags';
+import { FeatureTag } from '@/shared/types/generation';
 import { featureTagToColorZone } from './featureColors';
 
 describe('featureTagToColorZone', () => {

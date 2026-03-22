@@ -53,24 +53,27 @@ function buildMultiColorGroups(
     defaultIndex,
   } = resolveSlotMapping(featureColors, palette, (slot) => slot.color);
 
-  const groups: MeshFaceGroup[] = faceGroups.map((fg) => {
+  // Sort by start position, then fill leading/interior/trailing gaps with body default
+  const sorted = [...faceGroups].sort((a, b) => a.start - b.start);
+  const groups: MeshFaceGroup[] = [];
+  let cursor = 0;
+
+  for (const fg of sorted) {
+    if (fg.start > cursor) {
+      groups.push({ start: cursor, count: fg.start - cursor, materialIndex: defaultIndex });
+    }
     const zone = featureTagToColorZone(fg.tag);
     const slotId = featureColors[zone];
-    return {
+    groups.push({
       start: fg.start,
       count: fg.count,
       materialIndex: slotToIndex.get(slotId) ?? defaultIndex,
-    };
-  });
-
-  // Ensure any indices not covered by faceGroups still render (body default)
-  const coveredEnd = faceGroups.reduce((max, fg) => Math.max(max, fg.start + fg.count), 0);
-  if (coveredEnd < totalIndexCount) {
-    groups.push({
-      start: coveredEnd,
-      count: totalIndexCount - coveredEnd,
-      materialIndex: defaultIndex,
     });
+    cursor = fg.start + fg.count;
+  }
+
+  if (cursor < totalIndexCount) {
+    groups.push({ start: cursor, count: totalIndexCount - cursor, materialIndex: defaultIndex });
   }
 
   return { groups, colors };
