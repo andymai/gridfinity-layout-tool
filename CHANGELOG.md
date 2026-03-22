@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.18.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.18.1...gridfinity-layout-tool-v4.18.2) (2026-03-22)
+
+
+### Bug Fixes
+
+* use configurable gridUnitMm in generation pipeline ([#1187](https://github.com/andymai/gridfinity-layout-tool/issues/1187)) ([3c33cfc](https://github.com/andymai/gridfinity-layout-tool/commit/3c33cfc7967b5537bfd9278f06afdd4fc6b501c9))
+
 ## [4.18.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.18.0...gridfinity-layout-tool-v4.18.1) (2026-03-22)
 
 
