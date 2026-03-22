@@ -427,18 +427,17 @@ function CornerRadiusControl({
 
   return (
     <>
-      {!perCorner && (
-        <SliderInput
-          label={t('baseplate.cornerRadius')}
-          value={uniformR}
-          onChange={onUniformChange}
-          min={0}
-          max={maxRadius}
-          step={0.5}
-          unit="mm"
-          info={t('baseplate.cornerRadiusInfo')}
-        />
-      )}
+      <SliderInput
+        label={t('baseplate.cornerRadius')}
+        value={uniformR}
+        onChange={onUniformChange}
+        min={0}
+        max={maxRadius}
+        step={0.5}
+        unit="mm"
+        info={t('baseplate.cornerRadiusInfo')}
+        disabled={perCorner}
+      />
       <Checkbox
         label={t('baseplate.cornerRadiusUnlink')}
         checked={perCorner}
