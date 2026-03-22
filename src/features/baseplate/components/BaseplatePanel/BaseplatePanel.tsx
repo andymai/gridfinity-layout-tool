@@ -106,7 +106,7 @@ export function BaseplatePanel() {
     : undefined;
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
-  const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + 200; // grid max + generous padding headroom
+  const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
 
   /**
    * When the user enters target mm dimensions:
@@ -134,8 +134,8 @@ export function BaseplatePanel() {
       const remainderWidth = Math.max(0, targetWidthMm - snappedWidth * gridUnitMm);
       const remainderDepth = Math.max(0, targetDepthMm - snappedDepth * gridUnitMm);
 
-      const halfPadWidth = Math.round((remainderWidth / 2) * 10) / 10;
-      const halfPadDepth = Math.round((remainderDepth / 2) * 10) / 10;
+      const halfPadWidth = Math.floor((remainderWidth / 2) * 10) / 10;
+      const halfPadDepth = Math.floor((remainderDepth / 2) * 10) / 10;
 
       const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       useLayoutStore.getState().setBaseplateParams({

@@ -106,6 +106,7 @@ export function EditableDimensions({
         ref={containerRef}
         className={`inline-flex items-baseline gap-1 ${className ?? ''}`}
         onBlur={handleBlur}
+        role="group"
         aria-label={ariaLabel}
       >
         <input
