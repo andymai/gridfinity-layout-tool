@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.16.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.16.0...gridfinity-layout-tool-v4.16.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* use catch-all rewrite for PostHog proxy routes ([#1169](https://github.com/andymai/gridfinity-layout-tool/issues/1169)) ([8db20e9](https://github.com/andymai/gridfinity-layout-tool/commit/8db20e96a621a8f16d0283d17a93e81f9fc4116d))
+
 ## [4.16.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.15.1...gridfinity-layout-tool-v4.16.0) (2026-03-22)
 
 
