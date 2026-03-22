@@ -17,6 +17,7 @@ import type {
   CutoutConfig,
   SplitConnectorConfig,
 } from '../types';
+import type { FeatureColorConfig } from '../types/featureColors';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
 const DEFAULT_SLOT_CONFIG: SlotConfig = {
@@ -82,6 +83,13 @@ const DEFAULT_HANDLE_CONFIG: HandleConfig = {
   back: { enabled: false },
   left: { enabled: true },
   right: { enabled: true },
+} as const;
+
+/** Default feature color config: all zones use the primary filament slot */
+export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
+  body: 'slot1',
+  lip: 'slot1',
+  labelTab: 'slot1',
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */

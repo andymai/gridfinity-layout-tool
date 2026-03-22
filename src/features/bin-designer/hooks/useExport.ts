@@ -30,8 +30,11 @@ import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
+import type { ThreeMFColorConfig } from '@/shared/generation/export';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
+import { isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
+import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 
@@ -146,8 +149,28 @@ export function useExport(): UseExportReturn {
           const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
           const currentEstimates = estimatePrint(params, currentPrintSettings);
 
+          // Build multi-color config when Labs flag is enabled and face groups are available
+          let colorConfig: ThreeMFColorConfig | undefined;
+          if (
+            isFeatureEnabled('multi_color_export') &&
+            stlResult.faceGroups &&
+            params.featureColors
+          ) {
+            const palette = useSettingsStore.getState().settings.filamentPalette;
+            const featureColors = params.featureColors;
+            const triangleCount = vertices.length / 9;
+            colorConfig =
+              buildTriangleMaterialIndices(
+                stlResult.faceGroups,
+                featureColors,
+                palette,
+                triangleCount
+              ) ?? undefined;
+          }
+
           const blob = export3MF(vertices, normals, {
             name: designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`,
+            colorConfig,
             printSettings: {
               layerHeight: currentPrintSettings.layerHeightMm,
               infillPercent: currentPrintSettings.infillPercent,

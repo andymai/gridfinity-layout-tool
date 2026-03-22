@@ -393,6 +393,62 @@ describe('threemfExporter', () => {
     });
   });
 
+  describe('multi-color basematerials', () => {
+    it('emits basematerials and pid/pindex when colorConfig is provided', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'color-test',
+        colorConfig: {
+          materials: [
+            { name: 'White', color: '#ffffff' },
+            { name: 'Blue', color: '#0000ff' },
+          ],
+          triangleMaterialIndices: [0, 1],
+        },
+      });
+      const files = unzipSync(buffer);
+      const model = strFromU8(files['3D/3dmodel.model']);
+
+      // Basematerials in core namespace (no m: prefix — 3MF Core Spec section 5.1)
+      // IDs in ascending document order per §4.1.2: basematerials=1, object=2
+      expect(model).not.toContain('xmlns:m=');
+      expect(model).toContain('<basematerials id="1">');
+      expect(model).toContain('<base name="White" displaycolor="#ffffff" />');
+      expect(model).toContain('<base name="Blue" displaycolor="#0000ff" />');
+      expect(model).toContain('</basematerials>');
+      expect(model).toContain('object id="2"');
+      expect(model).toContain('objectid="2"');
+
+      // Triangle material assignments
+      expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="1" p1="0"/);
+      expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="1" p1="1"/);
+    });
+
+    it('omits basematerials when colorConfig is absent', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, { name: 'no-color' });
+      const files = unzipSync(buffer);
+      const model = strFromU8(files['3D/3dmodel.model']);
+
+      expect(model).not.toContain('basematerials');
+      expect(model).not.toContain('pid=');
+      expect(model).not.toContain('xmlns:m=');
+    });
+
+    it('omits basematerials when colorConfig has empty materials', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'empty-color',
+        colorConfig: { materials: [], triangleMaterialIndices: [] },
+      });
+      const files = unzipSync(buffer);
+      const model = strFromU8(files['3D/3dmodel.model']);
+
+      expect(model).not.toContain('basematerials');
+      expect(model).not.toContain('pid=');
+    });
+  });
+
   describe('OPC relationships', () => {
     it('references 3D model in relationships', () => {
       const { vertices, normals } = createSingleTriangle();

@@ -6,3 +6,4 @@
  * depend on these types without a cross-feature import violation.
  */
 export type { FaceGroupData } from '@/features/generation/bridge/types';
+export { FeatureTag } from '@/features/generation/worker/generators/featureTags';

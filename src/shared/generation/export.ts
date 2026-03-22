@@ -12,3 +12,4 @@ export {
   getSTLFileSize,
 } from '@/features/generation/export/stlExporter';
 export { export3MF, estimate3MFFileSize } from '@/features/generation/export/threemfExporter';
+export type { ThreeMFColorConfig } from '@/features/generation/export/threemfExporter';
