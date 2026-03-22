@@ -171,6 +171,7 @@ export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   paddingRight: mm(0),
   paddingFront: mm(0),
   paddingBack: mm(0),
+  lightweight: true,
 } as const;
 
 /**

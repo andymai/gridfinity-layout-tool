@@ -41,6 +41,7 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
   paddingBack: 0,
   fractionalEdgeX: 'end',
   fractionalEdgeY: 'end',
+  lightweight: false,
   ...overrides,
 });
 

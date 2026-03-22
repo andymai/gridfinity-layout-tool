@@ -60,6 +60,7 @@ import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
+import { buildLightweightFloorCutters } from './lightweightFloorCutter';
 
 // LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
 // Build one loft per unique cell size, then clone+translate for each grid position.
@@ -772,6 +773,7 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
     params.edges?.front ?? '',
     params.edges?.back ?? '',
     params.connectorNubs ?? false,
+    params.lightweight ?? true,
     forExport
   );
 }
@@ -1016,6 +1018,18 @@ function buildBaseplateSolid(
   if (magnetHoles) {
     const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
     allCuts.push(...holes);
+  }
+
+  // 2a-ii. Lightweight floor cutters (cross-shaped material removal)
+  if (magnetHoles && params.lightweight !== false) {
+    const floorCutters = buildLightweightFloorCutters(
+      width,
+      depth,
+      magnetDiameter / 2,
+      magnetDepth,
+      { ...cellOpts, gridUnitMm }
+    );
+    allCuts.push(...floorCutters);
   }
 
   onProgress?.(0.4);
