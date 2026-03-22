@@ -27,6 +27,7 @@ import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { colToLetter } from '../../utils/splitPlanner';
+import { EditableDimensions } from './EditableDimensions';
 import type { BaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
 import type { BaseplateTiling, PaddingReductionHint } from '../../types/tiling';
@@ -104,6 +105,53 @@ export function BaseplatePanel() {
     ? `L:${baseplateParams.paddingLeft} R:${baseplateParams.paddingRight} F:${baseplateParams.paddingFront} B:${baseplateParams.paddingBack}`
     : undefined;
 
+  const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
+  const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
+
+  /**
+   * When the user enters target mm dimensions:
+   * 1. Snap to the nearest valid grid size (half-unit or whole-unit)
+   * 2. Distribute remaining mm evenly as padding (left=right, front=back)
+   * 3. Auto-uncheck "Synced with layout"
+   */
+  const handleDimensionCommit = useCallback(
+    (targetWidthMm: number, targetDepthMm: number) => {
+      const step = halfBinMode ? 0.5 : 1;
+
+      const rawWidthUnits = targetWidthMm / gridUnitMm;
+      const rawDepthUnits = targetDepthMm / gridUnitMm;
+
+      // Floor so the grid never exceeds the target — remainder becomes positive padding
+      const snappedWidth = Math.max(
+        CONSTRAINTS.GRID_MIN,
+        Math.min(CONSTRAINTS.GRID_MAX, Math.floor(rawWidthUnits / step) * step)
+      );
+      const snappedDepth = Math.max(
+        CONSTRAINTS.GRID_MIN,
+        Math.min(CONSTRAINTS.GRID_MAX, Math.floor(rawDepthUnits / step) * step)
+      );
+
+      const remainderWidth = Math.max(0, targetWidthMm - snappedWidth * gridUnitMm);
+      const remainderDepth = Math.max(0, targetDepthMm - snappedDepth * gridUnitMm);
+
+      const halfPadWidth = Math.floor((remainderWidth / 2) * 10) / 10;
+      const halfPadDepth = Math.floor((remainderDepth / 2) * 10) / 10;
+
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({
+        ...current,
+        syncWithLayout: false,
+        baseplateWidth: gridUnits(snappedWidth),
+        baseplateDepth: gridUnits(snappedDepth),
+        paddingLeft: mm(halfPadWidth),
+        paddingRight: mm(halfPadWidth),
+        paddingFront: mm(halfPadDepth),
+        paddingBack: mm(halfPadDepth),
+      });
+    },
+    [gridUnitMm, halfBinMode]
+  );
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
@@ -111,12 +159,16 @@ export function BaseplatePanel() {
         <div className="border-b border-stroke-subtle px-4 py-2.5">
           {hasPadding ? (
             <>
-              <div className="text-sm font-semibold tabular-nums text-content">
-                {t('baseplate.totalDimensions', {
-                  width: Math.round(totalWidthMm),
-                  depth: Math.round(totalDepthMm),
-                })}
-              </div>
+              <EditableDimensions
+                widthMm={totalWidthMm}
+                depthMm={totalDepthMm}
+                minMm={minMm}
+                maxMm={maxMm}
+                onCommit={handleDimensionCommit}
+                aria-label={t('baseplate.editDimensions')}
+                widthLabel={t('baseplate.editDimensionsWidth')}
+                depthLabel={t('baseplate.editDimensionsDepth')}
+              />
               <div className="text-xs tabular-nums text-content-tertiary">
                 {t('baseplate.gridPlusPadding', {
                   width: effectiveWidth,
@@ -132,9 +184,16 @@ export function BaseplatePanel() {
                   depth: effectiveDepth,
                 })}
               </span>
-              <span className="text-sm font-semibold tabular-nums text-content">
-                {Math.round(gridWidthMm)} &times; {Math.round(gridDepthMm)} mm
-              </span>
+              <EditableDimensions
+                widthMm={gridWidthMm}
+                depthMm={gridDepthMm}
+                minMm={minMm}
+                maxMm={maxMm}
+                onCommit={handleDimensionCommit}
+                aria-label={t('baseplate.editDimensions')}
+                widthLabel={t('baseplate.editDimensionsWidth')}
+                depthLabel={t('baseplate.editDimensionsDepth')}
+              />
             </div>
           )}
         </div>
