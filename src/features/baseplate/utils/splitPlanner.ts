@@ -473,6 +473,8 @@ export function pieceToBaseplateParams(
     edges: piece.edges,
     connectorNubs: parentParams.connectorNubs,
     lightweight: parentParams.lightweight,
+    cornerRadius: parentParams.cornerRadius,
+    cornerRadii: parentParams.cornerRadii,
   };
 }
 /**
