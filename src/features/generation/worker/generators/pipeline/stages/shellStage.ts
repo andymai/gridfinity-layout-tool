@@ -47,7 +47,8 @@ export const shellStage: PipelineStage = {
         dim.wallHeight,
         params.wallThickness,
         dim.solid,
-        cutoutTopOffset
+        cutoutTopOffset,
+        params.gridUnitMm
       );
       collectOrigins(binBody, FeatureTag.BASE, originToTag);
 
@@ -57,7 +58,11 @@ export const shellStage: PipelineStage = {
         if (dim.hasLip) {
           try {
             const top = scope.register(
-              translate(buildTopShape(params.width, params.depth, true), [0, 0, dim.wallHeight])
+              translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
+                0,
+                0,
+                dim.wallHeight,
+              ])
             );
             collectOrigins(top, FeatureTag.LIP, originToTag);
             scope.register(binBody); // consumed by fuse
@@ -100,7 +105,11 @@ export const shellStage: PipelineStage = {
       if (dim.hasLip) {
         try {
           const top = scope.register(
-            translate(buildTopShape(params.width, params.depth, true), [0, 0, dim.wallHeight])
+            translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
+              0,
+              0,
+              dim.wallHeight,
+            ])
           );
           collectOrigins(top, FeatureTag.LIP, originToTag);
           const baseAndBody = scope.register(unwrap(fuse(base, binBody)));
