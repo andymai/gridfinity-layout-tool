@@ -7,15 +7,21 @@
  * magnet hole radius for a clean transition.
  */
 
-import { draw, clone, translate } from 'brepjs';
+import { draw, drawRectangle, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN } from './generatorConstants';
+import {
+  SOCKET_HEIGHT,
+  MAGNET_FLOOR,
+  COPLANAR_MARGIN,
+  INSET_BOT,
+  HOLE_OFFSET,
+} from './generatorConstants';
 import { forEachCell } from './cellDecomposition';
 import type { ForEachCellOptions } from './cellDecomposition';
 import { sketch } from './meshUtils';
 
 /** Margin around each magnet hole center that defines the pad extent (mm). */
-const PAD_MARGIN = 2;
+const PAD_MARGIN = 1;
 
 /** Minimum arm width for the cross cutout (mm). Skip cell if arms too narrow. */
 const MIN_ARM_WIDTH = 2;
@@ -43,7 +49,13 @@ export function buildLightweightFloorCutters(
   if (lightweight === false) return [];
 
   const gridUnitMm = cellOpts.gridUnitMm;
-  const padHalf = magnetRadius + PAD_MARGIN;
+  // padHalf = distance from cell center to the inner edge of the magnet pad.
+  // Magnets sit at HOLE_OFFSET (13mm) from center. The pad extends
+  // magnetRadius + PAD_MARGIN around each hole, so the cross arm boundary
+  // starts at HOLE_OFFSET - magnetRadius - PAD_MARGIN from center.
+  const padHalf = HOLE_OFFSET - magnetRadius - PAD_MARGIN;
+  // If magnets are so large they overlap the cell center, skip lightweight
+  if (padHalf < MIN_ARM_WIDTH) return [];
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
 
@@ -54,13 +66,30 @@ export function buildLightweightFloorCutters(
     gridW,
     gridD,
     (cell) => {
-      // Skip fractional cells -- no magnet holes in sub-unit cells
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
-
       const cellW_mm = cell.widthUnits * gridUnitMm;
       const cellD_mm = cell.depthUnits * gridUnitMm;
-      const hw = cellW_mm / 2;
-      const hd = cellD_mm / 2;
+
+      // Fractional cells (half-unit) have no magnets — cut through their
+      // entire floor since the solid material serves no purpose.
+      if (cell.widthUnits < 1 || cell.depthUnits < 1) {
+        const fhw = cellW_mm / 2 - INSET_BOT;
+        const fhd = cellD_mm / 2 - INSET_BOT;
+        if (fhw <= 0 || fhd <= 0) return;
+        const fractionalKey = `frac-${cell.widthUnits}x${cell.depthUnits}`;
+        let fractionalTemplate = templates.get(fractionalKey);
+        if (!fractionalTemplate) {
+          const rectProfile = drawRectangle(fhw * 2, fhd * 2);
+          fractionalTemplate = sketch(rectProfile, 'XY', cutterZ).extrude(-cutterDepth);
+          templates.set(fractionalKey, fractionalTemplate);
+        }
+        cutters.push(translate(clone(fractionalTemplate), [cell.centerX, cell.centerY, 0]));
+        return;
+      }
+
+      // Inset by INSET_BOT so the cutout stays within the flat pocket floor
+      // and doesn't undercut the tapered pocket walls (which would create overhangs).
+      const hw = cellW_mm / 2 - INSET_BOT;
+      const hd = cellD_mm / 2 - INSET_BOT;
 
       // Guard: skip if cross arms would be too narrow
       const armW = hw - padHalf;

@@ -25,10 +25,11 @@ describe('buildLightweightFloorCutters', () => {
     expect(result).toHaveLength(4);
   });
 
-  it('returns 1 cutter for 1.5x1.5 grid (skips fractional cells)', async () => {
+  it('includes fractional cells with full floor cutout', async () => {
     const { buildLightweightFloorCutters } = await import('./lightweightFloorCutter');
+    // 1.5×1.5 = 1 full cell (cross cutout) + fractional cells (full rectangular cutout)
     const result = buildLightweightFloorCutters(1.5, 1.5, 3.25, 2, cellOpts());
-    expect(result).toHaveLength(1);
+    expect(result.length).toBeGreaterThan(1);
   });
 
   it('each cutter is a valid Shape3D with geometry', async () => {
