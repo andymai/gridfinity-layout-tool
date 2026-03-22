@@ -66,8 +66,10 @@ const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
 export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   enabled: true,
   clearance: 0.15,
-  tongueThickness: 2.4,
+  tongueThickness: 2.4, // legacy — unused by scarf lap, kept for saved design compat
   tongueProtrusion: 3.0,
+  ridgeWidthFraction: 0.35,
+  ridgeHeightFraction: 0.8,
 } as const;
 
 /** Default handle configuration: disabled, front + sides enabled when toggled on */

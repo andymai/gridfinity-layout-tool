@@ -198,12 +198,16 @@ export interface WallPatternConfig {
 export interface SplitConnectorConfig {
   /** Whether to add alignment connectors (default: true when split needed) */
   readonly enabled: boolean;
-  /** FDM fit clearance applied to all groove dimensions per side (mm, 0.05–0.3) */
+  /** FDM fit clearance applied to groove/channel dimensions per side, normal to surface (mm, 0.05–0.3) */
   readonly clearance: number;
-  /** Tongue cross-section thickness (mm) */
-  readonly tongueThickness: number;
-  /** Tongue protrusion depth from cut face (mm) */
+  /** Legacy tongue protrusion depth; kept for backward compat, unused by current scarf lap (mm) */
   readonly tongueProtrusion: number;
+  /** Tongue cross-section thickness — kept for backward compat, unused by scarf lap (mm) */
+  readonly tongueThickness: number;
+  /** Reserved for future wall ridge feature — ridge width as fraction of wall thickness */
+  readonly ridgeWidthFraction?: number;
+  /** Reserved for future wall ridge feature — ridge height as fraction of wall height */
+  readonly ridgeHeightFraction?: number;
 }
 
 /** Complete bin parameter set for generation */

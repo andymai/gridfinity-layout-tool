@@ -42,9 +42,8 @@ const NO_CONNECTORS: SplitConnectorConfig = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
 // ─── Wall Thickness Permutations ────────────────────────────────────────────
 
 describe('split robustness: wall thickness permutations', () => {
-  // Test every discrete wall thickness option. The original crash was at 1.6mm
-  // where wall tongues first activate. Thicker walls produce wider tongues with
-  // different loft geometry. Thinner walls skip tongue features entirely.
+  // Test every discrete wall thickness option to ensure the floor scarf lap
+  // works correctly across all wall thicknesses without crashing.
   const wallThicknesses = [0.4, 0.8, 1.2, 1.6, 2.0, 2.4];
 
   for (const wt of wallThicknesses) {
@@ -108,8 +107,8 @@ describe('split robustness: base style permutations', () => {
 // ─── Lip + Thick Wall Combinations ──────────────────────────────────────────
 
 describe('split robustness: lip + wall thickness combinations', () => {
-  // The original crash was lip + 1.6mm. Test lip with all wall thicknesses
-  // that activate wall tongues (≥1.4mm where tongueWidth ≥ MIN_FEATURE_WIDTH).
+  // The original crash was lip + 1.6mm. Test lip with thicker wall options
+  // to ensure floor scarf lap works alongside the stacking lip.
   const thickWalls = [1.6, 1.8, 2.0, 2.4];
 
   for (const wt of thickWalls) {
@@ -394,7 +393,7 @@ describe('split robustness: connector configuration', () => {
     assertValidSplit(result, 2, params, 'zero clearance');
   }, 60000);
 
-  it('thick tongue (3.0mm) connectors at 2.0mm walls', () => {
+  it('deep protrusion (4.0mm) connectors at 2.0mm walls', () => {
     const generateSplitPreview = getGenerateSplitPreview();
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
@@ -411,7 +410,7 @@ describe('split robustness: connector configuration', () => {
     };
 
     const result = generateSplitPreview(params, [0], [], config);
-    assertValidSplit(result, 2, params, 'thick tongue');
+    assertValidSplit(result, 2, params, 'deep protrusion');
   }, 60000);
 
   it('disabled connectors still produce valid split at 2.4mm walls', () => {
@@ -449,7 +448,7 @@ describe('split robustness: regression tests', () => {
     const withoutConn = generateSplitPreview(params, [0], [], NO_CONNECTORS);
     assertValidSplit(withoutConn, 2, params, '7×3 1.6mm no connectors');
 
-    // With connectors should have more geometry (tongue protrusions)
+    // With connectors should have more geometry (ridge/scarf protrusions)
     const vertsWith = withConn.pieces.reduce((s, p) => s + p.vertices.length, 0);
     const vertsWithout = withoutConn.pieces.reduce((s, p) => s + p.vertices.length, 0);
     expect(vertsWith).toBeGreaterThan(vertsWithout);
