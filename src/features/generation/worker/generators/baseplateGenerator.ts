@@ -28,6 +28,7 @@ import {
   draw,
   unwrap,
   cutAll,
+  intersect,
   clone,
   translate,
   fuseAll,
@@ -805,11 +806,6 @@ function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): strin
     params.edges?.right ?? '',
     params.edges?.front ?? '',
     params.edges?.back ?? '',
-    quantize(params.cornerRadius ?? -1),
-    quantize(params.cornerRadii?.tl ?? -1),
-    quantize(params.cornerRadii?.tr ?? -1),
-    quantize(params.cornerRadii?.bl ?? -1),
-    quantize(params.cornerRadii?.br ?? -1),
     forExport
   );
 }
@@ -994,11 +990,12 @@ function buildBaseplateSolid(
     baseplate = clone(cachedSlab);
     onProgress?.(0.5);
   } else {
-    // Build solid slab
-    const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
-    const cornerRadii = resolveCornerRadii(params, maxRadius);
-    const profile = buildSlabProfile(totalW, totalD, cornerRadii, edges);
-    baseplate = (profile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }).extrude(
+    // Build solid slab with RECTANGULAR profile for caching — pocket cuts are
+    // independent of corner radius, so we cache the rectangular slab+pockets
+    // and apply corner rounding as a post-cache step. This avoids expensive
+    // pocket re-cuts when only corner radius changes.
+    const rectProfile = drawRectangle(totalW, totalD);
+    baseplate = (rectProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }).extrude(
       -totalHeight
     );
     baseplate = translate(baseplate, [slabOffsetX, slabOffsetY, 0]);
@@ -1028,6 +1025,23 @@ function buildBaseplateSolid(
     // Clone after caching so subsequent mutations don't corrupt the cached solid
     baseplate = clone(baseplate);
     onProgress?.(0.5);
+  }
+
+  // Apply corner rounding as a post-cache step — this is fast (single boolean
+  // cut) and avoids redoing expensive pocket cuts when corner radius changes.
+  const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
+  const cornerRadii = resolveCornerRadii(params, maxRadius);
+  const hasRounding =
+    cornerRadii.tl > 0 || cornerRadii.tr > 0 || cornerRadii.bl > 0 || cornerRadii.br > 0;
+  if (hasRounding) {
+    const roundedProfile = buildSlabProfile(totalW, totalD, cornerRadii, edges);
+    const roundedSlab = (
+      roundedProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
+    ).extrude(-totalHeight);
+    const roundedTranslated = translate(roundedSlab, [slabOffsetX, slabOffsetY, 0]);
+    // Intersect: keep only material that's inside both the cached rectangular
+    // slab-with-pockets AND the rounded profile.
+    baseplate = unwrap(intersect(baseplate, roundedTranslated));
   }
 
   // into a single array for one batched cutAll operation.
