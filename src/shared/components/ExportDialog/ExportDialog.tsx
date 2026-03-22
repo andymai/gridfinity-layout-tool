@@ -159,7 +159,7 @@ export function ExportDialog({
     <Dialog.Root open={open} onClose={onClose} size="md">
       <Dialog.Header title={t('common.export')} />
       <Dialog.Body>
-        <div>
+        <div className="pb-2">
           {/* Section Title */}
           {sectionTitle && (
             <>
