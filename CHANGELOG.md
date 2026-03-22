@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.17.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.16.1...gridfinity-layout-tool-v4.17.0) (2026-03-22)
+
+
+### Features
+
+* **baseplate:** lightweight floor with cross-shaped cutout ([#1172](https://github.com/andymai/gridfinity-layout-tool/issues/1172)) ([13fb101](https://github.com/andymai/gridfinity-layout-tool/commit/13fb1012f4705cf28003e81bb33d6642f2a3369f))
+
+
+### Bug Fixes
+
+* position label tab fillet support under shelf ([#1171](https://github.com/andymai/gridfinity-layout-tool/issues/1171)) ([4dafd83](https://github.com/andymai/gridfinity-layout-tool/commit/4dafd830446f5bb478e835062b56fa2a53991eee))
+
 ## [4.16.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.16.0...gridfinity-layout-tool-v4.16.1) (2026-03-22)
 
 
