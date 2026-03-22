@@ -95,7 +95,8 @@ export const shellStage: PipelineStage = {
           params.base.magnetDepth,
           params.base.screwDiameter / 2,
           dim.useHighQuality,
-          dim.halfSockets
+          dim.halfSockets,
+          params.gridUnitMm
         )
       );
       collectOrigins(base, FeatureTag.SOCKET, originToTag);

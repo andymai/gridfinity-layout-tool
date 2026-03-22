@@ -96,13 +96,15 @@ export function socketCacheKey(
   magnetDepth: number,
   screwRadius: number,
   forExport: boolean,
-  halfSockets: boolean
+  halfSockets: boolean,
+  gridUnitMm: number = 42
 ): string {
   return compactKey(
     buildCacheKey(
-      'v1',
+      'v2',
       quantize(gridW),
       quantize(gridD),
+      quantize(gridUnitMm),
       withMagnet,
       withScrew,
       quantize(magnetRadius),
