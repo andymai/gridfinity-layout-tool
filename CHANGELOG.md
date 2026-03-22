@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.18.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.18.2...gridfinity-layout-tool-v4.18.3) (2026-03-22)
+
+
+### Bug Fixes
+
+* **bin-designer:** add bottom padding to export dialog ([#1189](https://github.com/andymai/gridfinity-layout-tool/issues/1189)) ([9710caa](https://github.com/andymai/gridfinity-layout-tool/commit/9710caa1779c39fd50daba312077f77c48273891))
+
 ## [4.18.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.18.1...gridfinity-layout-tool-v4.18.2) (2026-03-22)
 
 
