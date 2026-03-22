@@ -41,6 +41,8 @@ export interface BaseplateParams {
   readonly paddingBack: Mm;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
+  /** Remove center floor material, keeping only magnet pads (default true). */
+  readonly lightweight?: boolean;
   /** When true (or undefined), grid dims are derived from the drawer. */
   readonly syncWithLayout?: boolean;
   /** Custom grid width in units, only used when syncWithLayout is false. */

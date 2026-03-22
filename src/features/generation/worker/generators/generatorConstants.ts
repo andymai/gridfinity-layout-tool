@@ -27,6 +27,9 @@ export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
 /** Thin floor under each magnet hole — retains the magnet (mm) */
 export const MAGNET_FLOOR = 0.5;
 
+/** Z extension above/below to avoid coplanar boolean failures (mm). */
+export const COPLANAR_MARGIN = 1;
+
 /** Distance from cell center to magnet position (Gridfinity spec, mm) */
 export const HOLE_OFFSET = 13;
 

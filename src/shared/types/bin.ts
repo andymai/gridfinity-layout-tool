@@ -75,4 +75,6 @@ export interface BaseplateParams {
   readonly edges?: BaseplateEdges;
   /** Enable registration nubs/holes on join edges for split piece alignment. */
   readonly connectorNubs?: boolean;
+  /** Remove center floor material, keeping only magnet pads. */
+  readonly lightweight?: boolean;
 }

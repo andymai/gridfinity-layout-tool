@@ -41,6 +41,7 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
   paddingBack: 0,
   fractionalEdgeX: 'end',
   fractionalEdgeY: 'end',
+  lightweight: true,
   ...overrides,
 });
 
@@ -298,5 +299,41 @@ describe('baseplateGenerator', () => {
     );
     expect(mesh.vertices.length).toBeGreaterThan(0);
     expect(mesh.indices.length).toBeGreaterThan(0);
+  });
+
+  // ─── Lightweight floor ──────────────────────────────────────────────────
+
+  it('generates valid mesh with lightweight floor', () => {
+    const result = generateBaseplate(
+      defaults({ magnetHoles: true, lightweight: true }),
+      noop,
+      false
+    );
+    expect(result.vertices.length).toBeGreaterThan(0);
+    expect(result.indices.length).toBeGreaterThan(0);
+  });
+
+  it('generates valid mesh without lightweight floor', () => {
+    const result = generateBaseplate(
+      defaults({ magnetHoles: true, lightweight: false }),
+      noop,
+      false
+    );
+    expect(result.vertices.length).toBeGreaterThan(0);
+  });
+
+  it('lightweight produces different geometry than solid floor', () => {
+    const light = generateBaseplate(
+      defaults({ magnetHoles: true, lightweight: true }),
+      noop,
+      false
+    );
+    const solid = generateBaseplate(
+      defaults({ magnetHoles: true, lightweight: false }),
+      noop,
+      false
+    );
+    // Cross cutouts change the mesh
+    expect(light.vertices.length).not.toBe(solid.vertices.length);
   });
 });
