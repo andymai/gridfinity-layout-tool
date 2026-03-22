@@ -54,11 +54,15 @@ jobs:
           project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
           api-key: ${{ secrets.POSTHOG_API_KEY }}
 
-  # PRs: Full test suite without coverage (fast feedback)
-  # Main: Full test suite with coverage thresholds (regression guard)
+  # PRs: Sharded test suite without coverage (fast feedback, 2 parallel runners)
+  # Main: Full test suite with coverage thresholds (regression guard, single runner)
   test:
-    name: Unit Tests
+    name: Unit Tests (${{ matrix.shard }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ github.event_name == 'pull_request' && fromJSON('["1/2", "2/2"]') || fromJSON('["1/1"]') }}
     steps:
       - uses: actions/checkout@v6
 
@@ -82,13 +86,14 @@ jobs:
       - name: Run tests
         env:
           GIT_REF: ${{ github.ref }}
+          SHARD: ${{ matrix.shard }}
         run: |
           if [ "$GIT_REF" = "refs/heads/main" ]; then
             echo "Running with coverage (main branch)"
             pnpm run test:coverage
           else
-            echo "Running without coverage (PR)"
-            pnpm run test:run
+            echo "Running without coverage (PR, shard $SHARD)"
+            pnpm run test:run --shard="$SHARD"
           fi
 
       - name: Upload coverage report
