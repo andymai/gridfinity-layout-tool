@@ -9,13 +9,13 @@
 
 import { draw, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN } from './generatorConstants';
+import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN, INSET_BOT } from './generatorConstants';
 import { forEachCell } from './cellDecomposition';
 import type { ForEachCellOptions } from './cellDecomposition';
 import { sketch } from './meshUtils';
 
 /** Margin around each magnet hole center that defines the pad extent (mm). */
-const PAD_MARGIN = 2;
+const PAD_MARGIN = 1;
 
 /** Minimum arm width for the cross cutout (mm). Skip cell if arms too narrow. */
 const MIN_ARM_WIDTH = 2;
@@ -59,8 +59,10 @@ export function buildLightweightFloorCutters(
 
       const cellW_mm = cell.widthUnits * gridUnitMm;
       const cellD_mm = cell.depthUnits * gridUnitMm;
-      const hw = cellW_mm / 2;
-      const hd = cellD_mm / 2;
+      // Inset by INSET_BOT so the cutout stays within the flat pocket floor
+      // and doesn't undercut the tapered pocket walls (which would create overhangs).
+      const hw = cellW_mm / 2 - INSET_BOT;
+      const hd = cellD_mm / 2 - INSET_BOT;
 
       // Guard: skip if cross arms would be too narrow
       const armW = hw - padHalf;
