@@ -55,6 +55,7 @@ import {
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
+  COPLANAR_MARGIN,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import type { CacheStats } from './lruCache';
@@ -94,9 +95,6 @@ function pocketCacheKey(
 /** Insets at each Z breakpoint — same taper profile as bin socket but at full cell size */
 const INSET_TOP = 0;
 const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-
-/** Z extension above/below to avoid coplanar boolean failures */
-const COPLANAR_MARGIN = 1;
 
 function pocketSection(
   cellW_mm: number,

@@ -9,7 +9,7 @@
 
 import { draw, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import { SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorConstants';
+import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN } from './generatorConstants';
 import { forEachCell } from './cellDecomposition';
 import type { ForEachCellOptions } from './cellDecomposition';
 import { sketch } from './meshUtils';
@@ -19,12 +19,6 @@ const PAD_MARGIN = 2;
 
 /** Minimum arm width for the cross cutout (mm). Skip cell if arms too narrow. */
 const MIN_ARM_WIDTH = 2;
-
-// Matches COPLANAR_MARGIN in baseplateGenerator.ts
-const COPLANAR_MARGIN = 1;
-
-/** Cache cross-shaped cutter templates by cell size key. */
-const templateCache = new Map<string, Shape3D>();
 
 /**
  * Build cross-shaped floor cutters that remove center material under each cell,
@@ -54,6 +48,7 @@ export function buildLightweightFloorCutters(
   const cutterDepth = MAGNET_FLOOR + magnetDepth + COPLANAR_MARGIN;
 
   const cutters: Shape3D[] = [];
+  const templates = new Map<string, Shape3D>();
 
   forEachCell(
     gridW,
@@ -73,7 +68,7 @@ export function buildLightweightFloorCutters(
       if (armW < MIN_ARM_WIDTH || armD < MIN_ARM_WIDTH) return;
 
       const cacheKey = `${cell.widthUnits}x${cell.depthUnits}`;
-      let template = templateCache.get(cacheKey);
+      let template = templates.get(cacheKey);
 
       if (!template) {
         const r = magnetRadius;
@@ -99,7 +94,7 @@ export function buildLightweightFloorCutters(
           .close();
 
         template = sketch(profile, 'XY', cutterZ).extrude(-cutterDepth);
-        templateCache.set(cacheKey, template);
+        templates.set(cacheKey, template);
       }
 
       cutters.push(translate(clone(template), [cell.centerX, cell.centerY, 0]));
