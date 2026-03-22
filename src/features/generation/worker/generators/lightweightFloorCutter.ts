@@ -45,7 +45,7 @@ export function buildLightweightFloorCutters(
   const gridUnitMm = cellOpts.gridUnitMm;
   const padHalf = magnetRadius + PAD_MARGIN;
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
-  const cutterDepth = MAGNET_FLOOR + magnetDepth + COPLANAR_MARGIN;
+  const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
 
   const cutters: Shape3D[] = [];
   const templates = new Map<string, Shape3D>();
@@ -71,7 +71,7 @@ export function buildLightweightFloorCutters(
       let template = templates.get(cacheKey);
 
       if (!template) {
-        const r = magnetRadius;
+        const r = Math.min(magnetRadius, Math.min(armW, armD));
 
         // Cross-shaped profile (CCW), 12 segments + 4 inner corner fillets.
         // Walking CCW from top-right of vertical arm:

@@ -1025,7 +1025,7 @@ function buildBaseplateSolid(
       depth,
       magnetDiameter / 2,
       magnetDepth,
-      { ...cellOpts, gridUnitMm }
+      cellOpts
     );
     allCuts.push(...floorCutters);
   }
