@@ -66,13 +66,13 @@
       "name": "Main bundle (gzip)",
       "path": "dist/assets/main-*.js",
       "gzip": true,
-      "limit": "185 kB"
+      "limit": "186 kB"
     },
     {
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "1310 kB"
+      "limit": "1355 kB"
     }
   ],
   "dependencies": {
@@ -99,6 +99,7 @@
     "posthog-js": "^1.360.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "svg-pathdata": "^8.0.0",
     "tailwind-merge": "^3.5.0",
     "three": "^0.183.2",
     "three-stdlib": "^2.36.1",
