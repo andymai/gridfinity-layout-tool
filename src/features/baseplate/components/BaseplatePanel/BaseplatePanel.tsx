@@ -240,6 +240,35 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
+        {/* Corner Radius — adjustable outer corners */}
+        <StickyGroupHeader
+          title={t('baseplate.cornerRadius')}
+          summary={
+            baseplateParams.cornerRadii
+              ? `${baseplateParams.cornerRadii.tl}/${baseplateParams.cornerRadii.tr}/${baseplateParams.cornerRadii.bl}/${baseplateParams.cornerRadii.br}mm`
+              : `${baseplateParams.cornerRadius ?? 2.5}mm`
+          }
+        >
+          <div className="space-y-3 px-4 py-3">
+            <CornerRadiusControl
+              cornerRadius={baseplateParams.cornerRadius}
+              cornerRadii={baseplateParams.cornerRadii}
+              onUniformChange={(r) => {
+                updateParam('cornerRadius', mm(r));
+                updateParam('cornerRadii', undefined);
+              }}
+              onPerCornerChange={(radii) => {
+                updateParam('cornerRadii', {
+                  tl: mm(radii.tl),
+                  tr: mm(radii.tr),
+                  bl: mm(radii.bl),
+                  br: mm(radii.br),
+                });
+              }}
+            />
+          </div>
+        </StickyGroupHeader>
+
         {/* 4. Print Settings — advanced, rarely changed */}
         <StickyGroupHeader title={t('baseplate.sectionPrintSettings')}>
           <div className="space-y-3 px-4 py-3">
@@ -379,6 +408,102 @@ function SplitViewStrip({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Linked/unlinked corner radius controls. */
+function CornerRadiusControl({
+  cornerRadius,
+  cornerRadii,
+  onUniformChange,
+  onPerCornerChange,
+}: {
+  readonly cornerRadius: number | undefined;
+  readonly cornerRadii:
+    | { readonly tl: number; readonly tr: number; readonly bl: number; readonly br: number }
+    | undefined;
+  readonly onUniformChange: (r: number) => void;
+  readonly onPerCornerChange: (radii: { tl: number; tr: number; bl: number; br: number }) => void;
+}) {
+  const t = useTranslation();
+  const linked = cornerRadii === undefined;
+  const uniformR = cornerRadius ?? 2.5;
+
+  const toggleLink = () => {
+    if (linked) {
+      onPerCornerChange({ tl: uniformR, tr: uniformR, bl: uniformR, br: uniformR });
+    } else {
+      onUniformChange(cornerRadii.tl);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-content-secondary">
+          {linked ? t('baseplate.cornerRadiusLinked') : t('baseplate.cornerRadiusUnlink')}
+        </span>
+        <button
+          type="button"
+          onClick={toggleLink}
+          className="text-xs text-accent hover:text-accent-hover"
+          title={linked ? t('baseplate.cornerRadiusUnlink') : t('baseplate.cornerRadiusLinked')}
+        >
+          {linked ? t('baseplate.cornerRadiusUnlink') : t('baseplate.cornerRadiusLinked')}
+        </button>
+      </div>
+      {linked ? (
+        <SliderInput
+          label={t('baseplate.cornerRadius')}
+          value={uniformR}
+          onChange={onUniformChange}
+          min={0}
+          max={25}
+          step={0.5}
+          unit="mm"
+          info={t('baseplate.cornerRadiusInfo')}
+        />
+      ) : (
+        <>
+          <SliderInput
+            label={t('baseplate.cornerRadiusTL')}
+            value={cornerRadii.tl}
+            onChange={(v) => onPerCornerChange({ ...cornerRadii, tl: v })}
+            min={0}
+            max={25}
+            step={0.5}
+            unit="mm"
+          />
+          <SliderInput
+            label={t('baseplate.cornerRadiusTR')}
+            value={cornerRadii.tr}
+            onChange={(v) => onPerCornerChange({ ...cornerRadii, tr: v })}
+            min={0}
+            max={25}
+            step={0.5}
+            unit="mm"
+          />
+          <SliderInput
+            label={t('baseplate.cornerRadiusBL')}
+            value={cornerRadii.bl}
+            onChange={(v) => onPerCornerChange({ ...cornerRadii, bl: v })}
+            min={0}
+            max={25}
+            step={0.5}
+            unit="mm"
+          />
+          <SliderInput
+            label={t('baseplate.cornerRadiusBR')}
+            value={cornerRadii.br}
+            onChange={(v) => onPerCornerChange({ ...cornerRadii, br: v })}
+            min={0}
+            max={25}
+            step={0.5}
+            unit="mm"
+          />
+        </>
+      )}
+    </>
   );
 }
 

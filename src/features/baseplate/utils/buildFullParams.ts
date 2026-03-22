@@ -37,5 +37,7 @@ export function buildFullParams(
     fractionalEdgeY,
     connectorNubs: stored.connectorNubs,
     lightweight: stored.lightweight,
+    cornerRadius: stored.cornerRadius,
+    cornerRadii: stored.cornerRadii,
   };
 }

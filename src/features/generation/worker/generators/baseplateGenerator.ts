@@ -772,6 +772,11 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
     params.edges?.back ?? '',
     params.connectorNubs ?? false,
     params.lightweight ?? true,
+    quantize(params.cornerRadius ?? -1),
+    quantize(params.cornerRadii?.tl ?? -1),
+    quantize(params.cornerRadii?.tr ?? -1),
+    quantize(params.cornerRadii?.bl ?? -1),
+    quantize(params.cornerRadii?.br ?? -1),
     forExport
   );
 }
@@ -803,6 +808,25 @@ function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): strin
   );
 }
 /**
+ * Resolve per-corner radii from params, applying defaults and clamping.
+ * Priority: cornerRadii > cornerRadius > PLATE_CORNER_RADIUS (spec default).
+ */
+export function resolveCornerRadii(
+  params: BaseplateParams,
+  maxRadius: number
+): { tl: number; tr: number; bl: number; br: number } {
+  const defaultR = params.cornerRadius ?? PLATE_CORNER_RADIUS;
+  const radii = params.cornerRadii ?? { tl: defaultR, tr: defaultR, bl: defaultR, br: defaultR };
+  const clamp = (r: number): number => Math.max(0, Math.min(r, maxRadius));
+  return {
+    tl: clamp(radii.tl),
+    tr: clamp(radii.tr),
+    bl: clamp(radii.bl),
+    br: clamp(radii.br),
+  };
+}
+
+/**
  * Build the 2D slab outline, rounding only exterior corners.
  *
  * A corner is "exterior" when both adjacent edges are exterior (not join edges).
@@ -817,47 +841,54 @@ function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): strin
 function buildSlabProfile(
   totalW: number,
   totalD: number,
-  cornerR: number,
+  cornerRadii: { tl: number; tr: number; bl: number; br: number },
   edges?: BaseplateParams['edges']
 ): Drawing {
-  // No edges info (unsplit) or all edges exterior → round all corners
-  if (
-    !edges ||
-    (edges.left === 'exterior' &&
-      edges.right === 'exterior' &&
-      edges.front === 'exterior' &&
-      edges.back === 'exterior')
-  ) {
-    return drawRoundedRectangle(totalW, totalD, cornerR);
-  }
-
-  // A corner should be rounded only when BOTH adjacent edges are exterior
   const hw = totalW / 2;
   const hd = totalD / 2;
+  const { tl, tr, bl, br } = cornerRadii;
 
-  type Point2D = [number, number];
-  const exteriorCorners: Point2D[] = [];
+  // Determine which corners are eligible for rounding (split piece logic)
+  const isExt = (corner: 'tl' | 'tr' | 'bl' | 'br'): boolean => {
+    if (!edges) return true;
+    switch (corner) {
+      case 'tl':
+        return edges.left === 'exterior' && edges.back === 'exterior';
+      case 'tr':
+        return edges.right === 'exterior' && edges.back === 'exterior';
+      case 'bl':
+        return edges.left === 'exterior' && edges.front === 'exterior';
+      case 'br':
+        return edges.right === 'exterior' && edges.front === 'exterior';
+    }
+  };
 
-  if (edges.left === 'exterior' && edges.front === 'exterior') {
-    exteriorCorners.push([-hw, -hd]);
-  }
-  if (edges.right === 'exterior' && edges.front === 'exterior') {
-    exteriorCorners.push([hw, -hd]);
-  }
-  if (edges.right === 'exterior' && edges.back === 'exterior') {
-    exteriorCorners.push([hw, hd]);
-  }
-  if (edges.left === 'exterior' && edges.back === 'exterior') {
-    exteriorCorners.push([-hw, hd]);
-  }
+  const rBL = isExt('bl') && bl > 0 ? bl : 0;
+  const rBR = isExt('br') && br > 0 ? br : 0;
+  const rTR = isExt('tr') && tr > 0 ? tr : 0;
+  const rTL = isExt('tl') && tl > 0 ? tl : 0;
 
-  // No exterior corners → plain rectangle
-  if (exteriorCorners.length === 0) {
+  // Fast path: all zero → plain rectangle
+  if (rBL === 0 && rBR === 0 && rTR === 0 && rTL === 0) {
     return drawRectangle(totalW, totalD);
   }
 
-  // Start with sharp rectangle, then fillet only the exterior corners
-  return drawRectangle(totalW, totalD).fillet(cornerR, (f) => f.inList(exteriorCorners));
+  // Fast path: all same → use built-in rounded rectangle
+  if (rBL === rBR && rBR === rTR && rTR === rTL) {
+    return drawRoundedRectangle(totalW, totalD, rBL);
+  }
+
+  // Draw CCW from bottom-left, applying customCorner at each corner
+  let pen = draw([-hw, -hd]);
+  pen = pen.lineTo([hw, -hd]);
+  if (rBR > 0) pen = pen.customCorner(rBR);
+  pen = pen.lineTo([hw, hd]);
+  if (rTR > 0) pen = pen.customCorner(rTR);
+  pen = pen.lineTo([-hw, hd]);
+  if (rTL > 0) pen = pen.customCorner(rTL);
+  pen = pen.lineTo([-hw, -hd]);
+  if (rBL > 0) pen = pen.customCorner(rBL);
+  return pen.close();
 }
 
 /**
@@ -975,8 +1006,8 @@ function buildBaseplateSolid(
   } else {
     // Build solid slab
     const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
-    const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
-    const profile = buildSlabProfile(totalW, totalD, cornerR, edges);
+    const cornerRadii = resolveCornerRadii(params, maxRadius);
+    const profile = buildSlabProfile(totalW, totalD, cornerRadii, edges);
     baseplate = (profile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }).extrude(
       -totalHeight
     );

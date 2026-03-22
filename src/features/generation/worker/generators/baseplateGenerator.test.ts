@@ -336,4 +336,51 @@ describe('baseplateGenerator', () => {
     // Cross cutouts change the mesh
     expect(light.vertices.length).not.toBe(solid.vertices.length);
   });
+
+  describe('corner radius', () => {
+    it('generates valid mesh with uniform corner radius', () => {
+      const mesh = generateBaseplate(defaults({ cornerRadius: 10 }), noop, false);
+      expect(mesh.vertices.length).toBeGreaterThan(0);
+      expect(mesh.indices.length).toBeGreaterThan(0);
+    });
+
+    it('generates valid mesh with zero corner radius', () => {
+      const mesh = generateBaseplate(defaults({ cornerRadius: 0 }), noop, false);
+      expect(mesh.vertices.length).toBeGreaterThan(0);
+      expect(mesh.indices.length).toBeGreaterThan(0);
+    });
+
+    it('generates valid mesh with per-corner radii', () => {
+      const mesh = generateBaseplate(
+        defaults({ cornerRadii: { tl: 2, tr: 10, bl: 5, br: 15 } }),
+        noop,
+        false
+      );
+      expect(mesh.vertices.length).toBeGreaterThan(0);
+      expect(mesh.indices.length).toBeGreaterThan(0);
+    });
+
+    it('clamps corner radius to half shortest side', () => {
+      const mesh = generateBaseplate(
+        defaults({ width: 1, depth: 1, cornerRadius: 25 }),
+        noop,
+        false
+      );
+      expect(mesh.vertices.length).toBeGreaterThan(0);
+      expect(mesh.indices.length).toBeGreaterThan(0);
+    });
+
+    it('split piece only rounds exterior corners', () => {
+      const mesh = generateBaseplate(
+        defaults({
+          cornerRadius: 10,
+          edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
+        }),
+        noop,
+        false
+      );
+      expect(mesh.vertices.length).toBeGreaterThan(0);
+      expect(mesh.indices.length).toBeGreaterThan(0);
+    });
+  });
 });

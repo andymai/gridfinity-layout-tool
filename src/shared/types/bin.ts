@@ -77,4 +77,13 @@ export interface BaseplateParams {
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
+  /** Uniform outer corner radius in mm. */
+  readonly cornerRadius?: number;
+  /** Per-corner radius overrides (tl/tr/bl/br in mm). */
+  readonly cornerRadii?: {
+    readonly tl: number;
+    readonly tr: number;
+    readonly bl: number;
+    readonly br: number;
+  };
 }
