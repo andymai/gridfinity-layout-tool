@@ -93,7 +93,7 @@ jobs:
             pnpm run test:coverage
           else
             echo "Running without coverage (PR, shard $SHARD)"
-            pnpm run test:run --shard="$SHARD"
+            pnpm run test:run -- --shard="$SHARD"
           fi
 
       - name: Upload coverage report
