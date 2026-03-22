@@ -209,7 +209,9 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   xml += '  <resources>\n';
 
   // Basematerials resource (3MF Core Spec section 5.1 — no namespace prefix)
-  const BASEMATERIALS_ID = 2;
+  // IDs assigned in ascending document order per 3MF Core Spec §4.1.2
+  const BASEMATERIALS_ID = 1;
+  const OBJECT_ID = 2;
   const colorConfig = hasColors ? options.colorConfig : undefined;
   if (colorConfig) {
     xml += `    <basematerials id="${BASEMATERIALS_ID}">\n`;
@@ -219,7 +221,7 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
     xml += '    </basematerials>\n';
   }
 
-  xml += `    <object id="1" type="model" name="${escapeXml(options.name)}">\n`;
+  xml += `    <object id="${colorConfig ? OBJECT_ID : 1}" type="model" name="${escapeXml(options.name)}">\n`;
   xml += '      <mesh>\n';
 
   // Vertices
@@ -251,7 +253,7 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
 
   // Build instructions
   xml += '  <build>\n';
-  xml += '    <item objectid="1" />\n';
+  xml += `    <item objectid="${colorConfig ? OBJECT_ID : 1}" />\n`;
   xml += '  </build>\n';
 
   xml += '</model>';

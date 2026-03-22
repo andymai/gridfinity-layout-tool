@@ -410,15 +410,18 @@ describe('threemfExporter', () => {
       const model = strFromU8(files['3D/3dmodel.model']);
 
       // Basematerials in core namespace (no m: prefix — 3MF Core Spec section 5.1)
+      // IDs in ascending document order per §4.1.2: basematerials=1, object=2
       expect(model).not.toContain('xmlns:m=');
-      expect(model).toContain('<basematerials id="2">');
+      expect(model).toContain('<basematerials id="1">');
       expect(model).toContain('<base name="White" displaycolor="#ffffff" />');
       expect(model).toContain('<base name="Blue" displaycolor="#0000ff" />');
       expect(model).toContain('</basematerials>');
+      expect(model).toContain('object id="2"');
+      expect(model).toContain('objectid="2"');
 
       // Triangle material assignments
-      expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="2" p1="0"/);
-      expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="2" p1="1"/);
+      expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="1" p1="0"/);
+      expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="1" p1="1"/);
     });
 
     it('omits basematerials when colorConfig is absent', () => {

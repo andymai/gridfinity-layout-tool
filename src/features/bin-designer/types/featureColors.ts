@@ -68,15 +68,19 @@ export function resolveSlotMapping<T>(
   palette: readonly FilamentSlot[],
   resolve: (slot: FilamentSlot) => T
 ): SlotMapping<T> {
-  const activeSlotIds = new Set<FilamentSlotId>([
-    featureColors.body,
-    featureColors.lip,
-    featureColors.labelTab,
-  ]);
+  // Insert body slot first to guarantee it's at index 0 (safe fallback)
   const slotToIndex = new Map<FilamentSlotId, number>();
   const items: T[] = [];
 
-  for (const slotId of activeSlotIds) {
+  const bodySlot = palette.find((s) => s.id === featureColors.body);
+  if (bodySlot) {
+    slotToIndex.set(featureColors.body, 0);
+    items.push(resolve(bodySlot));
+  }
+
+  // Add remaining unique slots
+  for (const slotId of [featureColors.lip, featureColors.labelTab]) {
+    if (slotToIndex.has(slotId)) continue;
     const slot = palette.find((s) => s.id === slotId);
     if (slot) {
       slotToIndex.set(slotId, items.length);
