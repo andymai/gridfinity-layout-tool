@@ -254,7 +254,8 @@ export function BaseplatePanel() {
               cornerRadius={baseplateParams.cornerRadius}
               cornerRadii={baseplateParams.cornerRadii}
               maxRadius={
-                gridUnitMm / 2 +
+                2.5 +
+                0.25 +
                 Math.min(
                   Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
                   Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)

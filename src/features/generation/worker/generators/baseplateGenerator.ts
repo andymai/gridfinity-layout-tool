@@ -1029,12 +1029,18 @@ function buildBaseplateSolid(
 
   // Apply corner rounding as a post-cache step — this is fast (single boolean
   // cut) and avoids redoing expensive pocket cuts when corner radius changes.
-  // Max radius = half a grid unit + minimum padding on adjacent sides.
-  // This ensures the corner arc never clips into grid cell pockets.
-  // Also clamp to half the slab dimension to prevent degenerate geometry.
-  const minPaddingX = Math.min(paddingLeft, paddingRight);
-  const minPaddingY = Math.min(paddingFront, paddingBack);
-  const cellLimit = gridUnitMm / 2 + Math.min(minPaddingX, minPaddingY);
+  //
+  // Max radius: the baseplate corner arc must not clip into the corner cell's
+  // pocket opening. The pocket sits CLEARANCE/2 inside the grid edge with its
+  // own corner radius (pocketCornerRadius). The safe limit is:
+  //   pocketCornerR + CLEARANCE/2 + padding
+  // Also clamped to half the slab to prevent degenerate geometry.
+  const minPadding = Math.min(
+    Math.min(paddingLeft, paddingRight),
+    Math.min(paddingFront, paddingBack)
+  );
+  const pocketR = pocketCornerRadius(gridUnitMm, gridUnitMm);
+  const cellLimit = pocketR + CLEARANCE / 2 + minPadding;
   const geomLimit = Math.min(totalW, totalD) / 2 - 0.1;
   const maxRadius = Math.min(cellLimit, geomLimit);
   const cornerRadii = resolveCornerRadii(params, maxRadius);
