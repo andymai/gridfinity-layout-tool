@@ -253,6 +253,13 @@ export function BaseplatePanel() {
             <CornerRadiusControl
               cornerRadius={baseplateParams.cornerRadius}
               cornerRadii={baseplateParams.cornerRadii}
+              maxRadius={
+                gridUnitMm / 2 +
+                Math.min(
+                  Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
+                  Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
+                )
+              }
               onUniformChange={(r) => {
                 updateParam('cornerRadius', mm(r));
                 updateParam('cornerRadii', undefined);
@@ -415,6 +422,7 @@ function SplitViewStrip({
 function CornerRadiusControl({
   cornerRadius,
   cornerRadii,
+  maxRadius,
   onUniformChange,
   onPerCornerChange,
 }: {
@@ -422,6 +430,7 @@ function CornerRadiusControl({
   readonly cornerRadii:
     | { readonly tl: number; readonly tr: number; readonly bl: number; readonly br: number }
     | undefined;
+  readonly maxRadius: number;
   readonly onUniformChange: (r: number) => void;
   readonly onPerCornerChange: (radii: { tl: number; tr: number; bl: number; br: number }) => void;
 }) {
@@ -458,7 +467,7 @@ function CornerRadiusControl({
           value={uniformR}
           onChange={onUniformChange}
           min={0}
-          max={25}
+          max={maxRadius}
           step={0.5}
           unit="mm"
           info={t('baseplate.cornerRadiusInfo')}
@@ -470,7 +479,7 @@ function CornerRadiusControl({
             value={cornerRadii.tl}
             onChange={(v) => onPerCornerChange({ ...cornerRadii, tl: v })}
             min={0}
-            max={25}
+            max={maxRadius}
             step={0.5}
             unit="mm"
           />
@@ -479,7 +488,7 @@ function CornerRadiusControl({
             value={cornerRadii.tr}
             onChange={(v) => onPerCornerChange({ ...cornerRadii, tr: v })}
             min={0}
-            max={25}
+            max={maxRadius}
             step={0.5}
             unit="mm"
           />
@@ -488,7 +497,7 @@ function CornerRadiusControl({
             value={cornerRadii.bl}
             onChange={(v) => onPerCornerChange({ ...cornerRadii, bl: v })}
             min={0}
-            max={25}
+            max={maxRadius}
             step={0.5}
             unit="mm"
           />
@@ -497,7 +506,7 @@ function CornerRadiusControl({
             value={cornerRadii.br}
             onChange={(v) => onPerCornerChange({ ...cornerRadii, br: v })}
             min={0}
-            max={25}
+            max={maxRadius}
             step={0.5}
             unit="mm"
           />

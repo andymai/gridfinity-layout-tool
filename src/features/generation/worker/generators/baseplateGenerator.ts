@@ -1029,7 +1029,14 @@ function buildBaseplateSolid(
 
   // Apply corner rounding as a post-cache step — this is fast (single boolean
   // cut) and avoids redoing expensive pocket cuts when corner radius changes.
-  const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
+  // Max radius = half a grid unit + minimum padding on adjacent sides.
+  // This ensures the corner arc never clips into grid cell pockets.
+  // Also clamp to half the slab dimension to prevent degenerate geometry.
+  const minPaddingX = Math.min(paddingLeft, paddingRight);
+  const minPaddingY = Math.min(paddingFront, paddingBack);
+  const cellLimit = gridUnitMm / 2 + Math.min(minPaddingX, minPaddingY);
+  const geomLimit = Math.min(totalW, totalD) / 2 - 0.1;
+  const maxRadius = Math.min(cellLimit, geomLimit);
   const cornerRadii = resolveCornerRadii(params, maxRadius);
   const hasRounding =
     cornerRadii.tl > 0 || cornerRadii.tr > 0 || cornerRadii.bl > 0 || cornerRadii.br > 0;
