@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.16.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.15.1...gridfinity-layout-tool-v4.16.0) (2026-03-22)
+
+
+### Features
+
+* **split:** replace connectors with FDM-friendly scarf lap floor joint ([#1166](https://github.com/andymai/gridfinity-layout-tool/issues/1166)) ([97d4460](https://github.com/andymai/gridfinity-layout-tool/commit/97d44600a7f9d0b6fc7963c5dbc54b5f30ccc164))
+
 ## [4.15.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.15.0...gridfinity-layout-tool-v4.15.1) (2026-03-21)
 
 
