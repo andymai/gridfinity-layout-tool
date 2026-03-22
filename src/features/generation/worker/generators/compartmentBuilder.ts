@@ -6,13 +6,13 @@
  */
 
 import { box, unwrap, fuseAll } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 /** Fuse an array of shapes into one, returning null if the array is empty. */
 export function fuseAllOrNull(shapes: Shape3D[]): Shape3D | null {
   if (shapes.length === 0) return null;
   if (shapes.length === 1) return shapes[0];
-  return unwrap(fuseAll(shapes));
+  return unwrap(fuseAll(shapes as ValidSolid[]));
 }
 
 /** Build a positioned wall segment solid. */

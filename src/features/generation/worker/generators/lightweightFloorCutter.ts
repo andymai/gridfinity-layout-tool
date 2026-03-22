@@ -7,7 +7,7 @@
  * magnet hole radius for a clean transition.
  */
 
-import { draw, drawRectangle, clone, translate } from 'brepjs';
+import { draw, drawRectangle, clone, unwrap, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import {
   SOCKET_HEIGHT,
@@ -82,7 +82,7 @@ export function buildLightweightFloorCutters(
           fractionalTemplate = sketch(rectProfile, 'XY', cutterZ).extrude(-cutterDepth);
           templates.set(fractionalKey, fractionalTemplate);
         }
-        cutters.push(translate(clone(fractionalTemplate), [cell.centerX, cell.centerY, 0]));
+        cutters.push(translate(unwrap(clone(fractionalTemplate)), [cell.centerX, cell.centerY, 0]));
         return;
       }
 
@@ -126,7 +126,7 @@ export function buildLightweightFloorCutters(
         templates.set(cacheKey, template);
       }
 
-      cutters.push(translate(clone(template), [cell.centerX, cell.centerY, 0]));
+      cutters.push(translate(unwrap(clone(template)), [cell.centerX, cell.centerY, 0]));
     },
     cellOpts
   );

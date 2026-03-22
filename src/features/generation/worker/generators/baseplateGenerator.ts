@@ -35,7 +35,7 @@ import {
   mesh,
   exportSTEP,
 } from 'brepjs';
-import type { Shape3D, Sketch, Drawing } from 'brepjs';
+import type { Shape3D, ValidSolid, Sketch, Drawing } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
@@ -191,13 +191,13 @@ function getPocketTemplate(
   const key = pocketCacheKey(cellW_mm, cellD_mm, forExport, throughCut);
   const cached = pocketTemplateCache.get(key);
   if (cached !== undefined) {
-    return clone(cached);
+    return unwrap(clone(cached));
   }
   const template = forExport
     ? buildPocketCutter(cellW_mm, cellD_mm, throughCut)
     : buildSimplifiedPocketCutter(cellW_mm, cellD_mm, throughCut);
   pocketTemplateCache.set(key, template);
-  return clone(template);
+  return unwrap(clone(template));
 }
 /**
  * Build magnet hole cutters that open from the pocket floor (top side).
@@ -236,7 +236,9 @@ function buildMagnetHoles(
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
       for (const [dx, dy] of MAGNET_OFFSETS) {
-        holes.push(translate(clone(magnetTemplate), [cell.centerX + dx, cell.centerY + dy, 0]));
+        holes.push(
+          translate(unwrap(clone(magnetTemplate)), [cell.centerX + dx, cell.centerY + dy, 0])
+        );
       }
     },
     cellOpts
@@ -987,7 +989,7 @@ function buildBaseplateSolid(
   let baseplate: Shape3D;
 
   if (cachedSlab !== undefined) {
-    baseplate = clone(cachedSlab);
+    baseplate = unwrap(clone(cachedSlab));
     onProgress?.(0.5);
   } else {
     // Build solid slab with RECTANGULAR profile for caching — pocket cuts are
@@ -1018,12 +1020,12 @@ function buildBaseplateSolid(
     );
 
     if (pockets.length > 0) {
-      baseplate = unwrap(cutAll(baseplate, pockets));
+      baseplate = unwrap(cutAll(baseplate as ValidSolid, pockets as ValidSolid[]));
     }
 
     slabWithPocketsCache.set(spKey, baseplate);
     // Clone after caching so subsequent mutations don't corrupt the cached solid
-    baseplate = clone(baseplate);
+    baseplate = unwrap(clone(baseplate));
     onProgress?.(0.5);
   }
 
@@ -1089,13 +1091,13 @@ function buildBaseplateSolid(
   allCuts.push(...connHoles);
 
   if (nubs.length > 0) {
-    baseplate = unwrap(fuseAll([baseplate, ...nubs]));
+    baseplate = unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]));
   }
 
   onProgress?.(0.6);
 
   if (allCuts.length > 0) {
-    baseplate = unwrap(cutAll(baseplate, allCuts));
+    baseplate = unwrap(cutAll(baseplate as ValidSolid, allCuts as ValidSolid[]));
   }
 
   onProgress?.(0.8);

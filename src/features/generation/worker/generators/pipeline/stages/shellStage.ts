@@ -131,6 +131,6 @@ export const shellStage: PipelineStage = {
 
     setShellCache(dim.shellKey, bin);
 
-    return { ...ctx, solid: clone(bin) };
+    return { ...ctx, solid: unwrap(clone(bin)) };
   },
 };

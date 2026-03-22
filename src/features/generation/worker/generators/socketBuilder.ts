@@ -20,7 +20,7 @@ import {
   fuse,
   withScope,
 } from 'brepjs';
-import type { Shape3D, Sketch, DisposalScope } from 'brepjs';
+import type { Shape3D, ValidSolid, Sketch, DisposalScope } from 'brepjs';
 import {
   SIZE,
   CLEARANCE,
@@ -190,7 +190,9 @@ export function buildBaseSocket(
     if (cellSockets.length === 0) {
       throw new Error('Invalid grid dimensions: at least one cell required');
     }
-    let result: Shape3D = unwrap(fuseAll(cellSockets, { optimisation: 'commonFace' }));
+    let result: Shape3D = unwrap(
+      fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' })
+    );
     // Delete consumed cellSockets (skip if fuseAll returned the same reference)
     for (const s of cellSockets) {
       if (s !== result) s.delete();
@@ -226,7 +228,7 @@ export function buildBaseSocket(
           if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
           for (const [dx, dy] of holeOffsets) {
             holeTools.push(
-              translate(scope.register(clone(cutout)), [
+              translate(scope.register(unwrap(clone(cutout))), [
                 cell.centerX + dx,
                 cell.centerY + dy,
                 -SOCKET_HEIGHT,
@@ -239,7 +241,7 @@ export function buildBaseSocket(
 
       if (holeTools.length > 0) {
         const preCut = result;
-        result = unwrap(cutAll(result, holeTools));
+        result = unwrap(cutAll(result as ValidSolid, holeTools as ValidSolid[]));
         if (preCut !== result) preCut.delete();
         for (const t of holeTools) {
           if (t !== result) t.delete();

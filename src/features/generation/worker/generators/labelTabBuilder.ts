@@ -6,7 +6,7 @@
  */
 
 import { draw, unwrap, fuseAll, fuse, translate } from 'brepjs';
-import type { Shape3D, Drawing } from 'brepjs';
+import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
@@ -212,7 +212,7 @@ export function buildLabelTabs(
             return translate(gusset, [gx, 0, 0]);
           });
 
-          tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes))));
+          tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes as ValidSolid[]))));
         }
       }
 

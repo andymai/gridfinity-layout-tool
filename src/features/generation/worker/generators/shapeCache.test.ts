@@ -160,8 +160,8 @@ describe('cache stats exports', () => {
 
   it('getAllShapeCacheStats returns stats for all LRU caches', () => {
     const stats = getAllShapeCacheStats();
-    // 4 base caches (socket, lip, box, shell) + 6 feature caches = 10
-    expect(stats.length).toBe(10);
+    // 4 base caches (socket, lip, box, shell) + 8 feature caches = 12
+    expect(stats.length).toBe(12);
     expect(stats.every((s) => s.hits === 0 && s.misses === 0)).toBe(true);
   });
 

@@ -6,7 +6,7 @@
  */
 
 import { unwrap, fuse, fuseAll, cut, cutAll } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
 import { checkCancelled } from '../../meshUtils';
@@ -58,15 +58,15 @@ function applyCutPass(
   const result = batchWithFallback(
     bin,
     targets,
-    (b, ts) => unwrap(cutAll(b, [...ts], opts)),
-    (b, t) => unwrap(cut(b, t))
+    (b, ts) => unwrap(cutAll(b as ValidSolid, [...ts] as ValidSolid[], opts)),
+    (b, t) => unwrap(cut(b as ValidSolid, t as ValidSolid))
   );
   if (prev !== originalSolid && prev !== result) prev.delete();
   return result;
 }
 
 export const booleanStage: PipelineStage = {
-  name: 'features',
+  name: 'boolean',
   progressValue: 0.6,
 
   shouldRun(ctx: PipelineContext): boolean {
@@ -87,8 +87,8 @@ export const booleanStage: PipelineStage = {
       bin = batchWithFallback(
         bin,
         ctx.fuseTargets,
-        (b, targets) => unwrap(fuseAll([b, ...targets])),
-        (b, t) => unwrap(fuse(b, t))
+        (b, targets) => unwrap(fuseAll([b, ...targets] as ValidSolid[])),
+        (b, t) => unwrap(fuse(b as ValidSolid, t as ValidSolid))
       );
     }
 

@@ -16,16 +16,23 @@
  * - patternTemplateCache: pattern shape template (single-entry, cheap to rebuild)
  */
 
-import { clone } from 'brepjs';
+import { clone, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
 import { GRIDFINITY } from '@/shared/constants/bin';
+
 /** Dispose callback for LRU caches holding WASM-backed shapes. */
 const disposeShape = (_key: string, shape: Shape3D): void => {
   shape.delete();
 };
+
+/** Clone a shape from an LRU cache hit, or return null on miss. Caller owns the clone. */
+function cloneFromCache(cache: LRUCache<Shape3D>, key: string): Shape3D | null {
+  const shape = cache.get(key);
+  return shape !== undefined ? unwrap(clone(shape)) : null;
+}
 
 /**
  * Create a cloning cache accessor pair for an LRU cache.
@@ -38,12 +45,11 @@ function createCloningAccessors(cache: LRUCache<Shape3D>): {
 } {
   return {
     get(key: string): Shape3D | null {
-      const shape = cache.get(key);
-      return shape !== undefined ? clone(shape) : null;
+      return cloneFromCache(cache, key);
     },
     set(key: string, shape: Shape3D): Shape3D {
       cache.set(key, shape);
-      return clone(shape);
+      return unwrap(clone(shape));
     },
   };
 }
@@ -66,14 +72,17 @@ interface CacheEntry {
 
 let patternTemplateCache: CacheEntry | null = null;
 let lastSolid: Shape3D | null = null;
+
 /** Feature tool caches — sized for multi-feature iteration workflows */
 const FEATURE_NAMES = [
   'compartmentWalls',
+  'handles',
   'insertCuts',
   'labelTabs',
   'scoopRamps',
   'slotCuts',
   'wallCutoutCuts',
+  'wallPattern',
 ] as const;
 
 const featureToolCaches = new Map<string, LRUCache<Shape3D>>(
@@ -88,6 +97,7 @@ const allLruCaches: readonly LRUCache<Shape3D>[] = [
   shellCache,
   ...featureToolCaches.values(),
 ];
+
 export function socketCacheKey(
   gridW: number,
   gridD: number,
@@ -123,14 +133,15 @@ export const getBoxCache = box.get;
 export const setBoxCache = box.set;
 export const getLipCache = lip.get;
 export const setLipCache = lip.set;
+
 export function getShellCache(key: string): Shape3D | null {
-  const shape = shellCache.get(key);
-  return shape !== undefined ? clone(shape) : null;
+  return cloneFromCache(shellCache, key);
 }
 
 export function setShellCache(key: string, shape: Shape3D): void {
   shellCache.set(key, shape);
 }
+
 /** Returns raw shape (no clone) — caller uses transformCopy which is non-destructive. */
 export function getPatternTemplateCache(key: string): Shape3D | null {
   return patternTemplateCache?.key === key ? patternTemplateCache.shape : null;
@@ -142,6 +153,7 @@ export function setPatternTemplateCache(key: string, shape: Shape3D): void {
   }
   patternTemplateCache = { key, shape };
 }
+
 export function getLastSolid(): Shape3D | null {
   return lastSolid;
 }
@@ -150,16 +162,16 @@ export function setLastSolid(shape: Shape3D | null): void {
   if (lastSolid && lastSolid !== shape) lastSolid.delete();
   lastSolid = shape;
 }
+
 export function getFeatureCache(feature: string, key: string): Shape3D | null {
   const cache = featureToolCaches.get(feature);
-  if (!cache) return null;
-  const shape = cache.get(key);
-  return shape !== undefined ? clone(shape) : null;
+  return cache ? cloneFromCache(cache, key) : null;
 }
 
 export function setFeatureCache(feature: string, key: string, shape: Shape3D): void {
   featureToolCaches.get(feature)?.set(key, shape);
 }
+
 /** Clear all shape caches, disposing WASM handles. Required when switching geometry kernels in tests. */
 export function clearAllCaches(): void {
   for (const cache of allLruCaches) {

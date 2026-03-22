@@ -13,7 +13,7 @@ import {
   fuseAll,
   translate,
 } from 'brepjs';
-import type { Shape3D, Drawing } from 'brepjs';
+import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 /**
@@ -66,5 +66,5 @@ export function buildInsertCuts(params: BinParams): Shape3D | null {
 
   if (insertShapes.length === 0) return null;
   if (insertShapes.length === 1) return insertShapes[0];
-  return unwrap(fuseAll(insertShapes));
+  return unwrap(fuseAll(insertShapes as ValidSolid[]));
 }

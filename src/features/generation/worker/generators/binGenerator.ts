@@ -281,7 +281,7 @@ function splitSolidIntoPieces(
       });
 
       // Split body with cutting box
-      let piece = unwrap(intersect(clone(bodySolid), cuttingBox));
+      let piece = unwrap(intersect(unwrap(clone(bodySolid)), cuttingBox));
 
       // Validate that the boolean intersection preserved the full geometry.
       // If OCCT silently dropped walls/lip due to coplanarity, the Z extent
@@ -299,7 +299,7 @@ function splitSolidIntoPieces(
       // Split and fuse lip piece using a clone of the same cutting box
       if (lipSolid) {
         try {
-          const lipPiece = unwrap(intersect(clone(lipSolid), clone(cuttingBox)));
+          const lipPiece = unwrap(intersect(unwrap(clone(lipSolid)), unwrap(clone(cuttingBox))));
           piece = unwrap(fuse(piece, lipPiece));
         } catch (e) {
           if (e instanceof DOMException && e.name === 'AbortError') throw e;

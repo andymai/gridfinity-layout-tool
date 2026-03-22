@@ -24,7 +24,7 @@ import {
   getKernel,
   withScope,
 } from 'brepjs';
-import type { Shape3D, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
+import type { Shape3D, ValidSolid, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
 import {
   SIZE,
   CLEARANCE,
@@ -84,7 +84,7 @@ export function buildBinBox(
           .parallelTo('Z')
           .atDistance(wallHeight, [0, 0, 0])
           .findAll(box);
-        const hollowWalls = unwrap(shell(box, topFaces, wallThickness));
+        const hollowWalls = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
         scope.register(box); // consumed by shell
 
         // Build interior solid block stopping at wallHeight - cutoutTopOffset
@@ -114,7 +114,7 @@ export function buildBinBox(
     }
 
     const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-    const result = unwrap(shell(box, topFaces, wallThickness));
+    const result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
     scope.register(box); // consumed by shell
     return setBoxCache(boxKey, result);
   });
@@ -191,7 +191,7 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
 
       if (lipEdges.length > 0) {
         scope.register(result); // consumed by fillet
-        result = unwrap(fillet(result, lipEdges, TOP_FILLET));
+        result = unwrap(fillet(result as ValidSolid, lipEdges, TOP_FILLET));
       }
     }
 
@@ -255,7 +255,7 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
 
       if (lipEdges.length > 0) {
         scope.register(swept); // consumed by fillet
-        return unwrap(fillet(swept, lipEdges, TOP_FILLET));
+        return unwrap(fillet(swept as ValidSolid, lipEdges, TOP_FILLET));
       }
     }
     return swept;
