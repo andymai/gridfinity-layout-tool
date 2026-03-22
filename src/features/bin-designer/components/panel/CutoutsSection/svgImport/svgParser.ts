@@ -20,6 +20,19 @@ import { MAX_SVG_SHAPES } from './types';
 /** Geometric SVG element tag names we process. */
 const GEOMETRIC_TAGS = 'rect, circle, ellipse, polygon, polyline, path';
 
+/** SVG containers whose children are not directly rendered. */
+const NON_RENDERED_CONTAINERS = new Set(['defs', 'clipPath', 'mask', 'symbol', 'pattern']);
+
+/** Check if an element is nested inside a non-rendered container (defs, clipPath, etc.). */
+function isInsideNonRenderedContainer(el: Element, root: Element): boolean {
+  let node = el.parentElement;
+  while (node && node !== root) {
+    if (NON_RENDERED_CONTAINERS.has(node.localName)) return true;
+    node = node.parentElement;
+  }
+  return false;
+}
+
 /**
  * Parse an SVG string into intermediate cutout specs.
  *
@@ -42,8 +55,12 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
     return err({ code: 'SVG_UNSUPPORTED', detail: 'No <svg> root element found' });
   }
 
-  // Collect all geometric elements
-  const elements = svgRoot.querySelectorAll(GEOMETRIC_TAGS);
+  // Collect geometric elements, excluding those inside non-rendered containers
+  const allElements = svgRoot.querySelectorAll(GEOMETRIC_TAGS);
+  const elements = Array.from(allElements).filter(
+    (el) => !isInsideNonRenderedContainer(el, svgRoot)
+  );
+
   if (elements.length === 0) {
     return err({ code: 'SVG_NO_SHAPES', detail: 'No geometric elements found' });
   }
@@ -78,6 +95,14 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
 
   if (specs.length === 0) {
     return err({ code: 'SVG_NO_SHAPES', detail: 'All shapes failed conversion' });
+  }
+
+  // Guard against multi-contour paths expanding beyond the element-count limit
+  if (specs.length > MAX_SVG_SHAPES) {
+    return err({
+      code: 'SVG_SHAPE_LIMIT',
+      detail: `Produced ${specs.length} cutouts, max is ${MAX_SVG_SHAPES}`,
+    });
   }
 
   return ok(specs);
@@ -251,25 +276,21 @@ function flipY(y: number, viewBox: ViewBox): number {
 }
 
 function convertRect(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutoutSpec | null {
-  let x = numAttr(el, 'x');
-  let y = numAttr(el, 'y');
+  const x = numAttr(el, 'x');
+  const y = numAttr(el, 'y');
   const w = numAttr(el, 'width');
   const h = numAttr(el, 'height');
   const rx = numAttr(el, 'rx');
 
   if (w <= 0 || h <= 0) return null;
 
-  // Apply viewBox offset
-  x -= viewBox.minX;
-  y -= viewBox.minY;
-
-  // Check if transform is identity or simple translate (can preserve rectangle shape)
+  // Apply transform in original SVG space, then adjust for viewBox
   if (isIdentityOrTranslate(matrix)) {
     const translated = applyMatrix(matrix, x, y);
     return {
       shape: 'rectangle',
-      x: translated.x,
-      y: flipY(translated.y + h, viewBox),
+      x: translated.x - viewBox.minX,
+      y: flipY(translated.y - viewBox.minY + h, viewBox),
       width: w,
       depth: h,
       cornerRadius: Math.min(rx, Math.min(w, h) / 2),
@@ -283,27 +304,25 @@ function convertRect(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutou
     applyMatrix(matrix, x + w, y),
     applyMatrix(matrix, x + w, y + h),
     applyMatrix(matrix, x, y + h),
-  ];
+  ].map((c) => ({ x: c.x - viewBox.minX, y: c.y - viewBox.minY }));
 
   return pointsToPathSpec(corners, viewBox);
 }
 
 function convertCircle(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutoutSpec | null {
-  let cx = numAttr(el, 'cx');
-  let cy = numAttr(el, 'cy');
+  const cx = numAttr(el, 'cx');
+  const cy = numAttr(el, 'cy');
   const r = numAttr(el, 'r');
 
   if (r <= 0) return null;
 
-  cx -= viewBox.minX;
-  cy -= viewBox.minY;
-
+  // Apply transform in original SVG space, then adjust for viewBox
   if (isIdentityOrTranslate(matrix)) {
     const center = applyMatrix(matrix, cx, cy);
     return {
       shape: 'circle',
-      x: center.x - r,
-      y: flipY(center.y + r, viewBox),
+      x: center.x - viewBox.minX - r,
+      y: flipY(center.y - viewBox.minY + r, viewBox),
       width: r * 2,
       depth: r * 2,
       cornerRadius: 0,
@@ -311,27 +330,24 @@ function convertCircle(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCut
     };
   }
 
-  // Complex transform: approximate as ellipse path
   return convertCircleAsPath(cx, cy, r, r, matrix, viewBox);
 }
 
 function convertEllipse(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutoutSpec | null {
-  let cx = numAttr(el, 'cx');
-  let cy = numAttr(el, 'cy');
+  const cx = numAttr(el, 'cx');
+  const cy = numAttr(el, 'cy');
   const rx = numAttr(el, 'rx');
   const ry = numAttr(el, 'ry');
 
   if (rx <= 0 || ry <= 0) return null;
 
-  cx -= viewBox.minX;
-  cy -= viewBox.minY;
-
+  // Apply transform in original SVG space, then adjust for viewBox
   if (isIdentityOrTranslate(matrix)) {
     const center = applyMatrix(matrix, cx, cy);
     return {
       shape: 'circle',
-      x: center.x - rx,
-      y: flipY(center.y + ry, viewBox),
+      x: center.x - viewBox.minX - rx,
+      y: flipY(center.y - viewBox.minY + ry, viewBox),
       width: rx * 2,
       depth: ry * 2,
       cornerRadius: 0,
@@ -346,9 +362,11 @@ function convertPolygon(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCu
   const points = parsePointsAttr(el.getAttribute('points') ?? '');
   if (points.length < 3) return null;
 
-  const transformed = points.map((p) =>
-    applyMatrix(matrix, p.x - viewBox.minX, p.y - viewBox.minY)
-  );
+  // Apply transform in original SVG space, then adjust for viewBox
+  const transformed = points.map((p) => {
+    const t = applyMatrix(matrix, p.x, p.y);
+    return { x: t.x - viewBox.minX, y: t.y - viewBox.minY };
+  });
   return pointsToPathSpec(transformed, viewBox);
 }
 
@@ -356,9 +374,11 @@ function convertPolyline(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedC
   const points = parsePointsAttr(el.getAttribute('points') ?? '');
   if (points.length < 3) return null;
 
-  const transformed = points.map((p) =>
-    applyMatrix(matrix, p.x - viewBox.minX, p.y - viewBox.minY)
-  );
+  // Apply transform in original SVG space, then adjust for viewBox
+  const transformed = points.map((p) => {
+    const t = applyMatrix(matrix, p.x, p.y);
+    return { x: t.x - viewBox.minX, y: t.y - viewBox.minY };
+  });
   return pointsToPathSpec(transformed, viewBox);
 }
 
@@ -577,8 +597,9 @@ function transformPoint(
   matrix: Matrix,
   viewBox: ViewBox
 ): { x: number; y: number } {
-  const t = applyMatrix(matrix, x - viewBox.minX, y - viewBox.minY);
-  return { x: t.x, y: flipY(t.y, viewBox) };
+  // Apply transform in original SVG user space, then adjust for viewBox
+  const t = applyMatrix(matrix, x, y);
+  return { x: t.x - viewBox.minX, y: flipY(t.y - viewBox.minY, viewBox) };
 }
 
 function makeCornerPoint(x: number, y: number, matrix: Matrix, viewBox: ViewBox): PathPoint {
@@ -627,7 +648,13 @@ function pointsToPathSpec(
   return pathPointsToSpec(pathPoints);
 }
 
-/** Compute bounds and build spec from PathPoint array. */
+/**
+ * Compute bounds and build spec from PathPoint array.
+ *
+ * Note: bounds are computed from anchor points only, not bezier control-point
+ * extents. For paths with convex handles the visual extent may exceed this box.
+ * A proper fix would solve for cubic bezier axis-extrema (dB/dt = 0).
+ */
 function pathPointsToSpec(pathPoints: PathPoint[]): ParsedCutoutSpec | null {
   if (pathPoints.length < 2) return null;
 

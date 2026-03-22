@@ -245,4 +245,74 @@ describe('parseSvgString', () => {
       expect(result.value[1].shape).toBe('circle');
     });
   });
+
+  describe('non-rendered containers', () => {
+    it('ignores shapes inside <defs>', () => {
+      const svg = svgWrap(
+        '<defs><rect id="template" x="0" y="0" width="20" height="20"/></defs>' +
+          '<circle cx="50" cy="50" r="10"/>'
+      );
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      expect(result.value).toHaveLength(1);
+      expect(result.value[0].shape).toBe('circle');
+    });
+
+    it('ignores shapes inside <clipPath>', () => {
+      const svg = svgWrap(
+        '<clipPath id="clip"><rect x="0" y="0" width="50" height="50"/></clipPath>' +
+          '<rect x="10" y="10" width="30" height="30"/>'
+      );
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      expect(result.value).toHaveLength(1);
+    });
+
+    it('returns SVG_NO_SHAPES when all shapes are inside defs', () => {
+      const svg = svgWrap('<defs><rect x="0" y="0" width="20" height="20"/></defs>');
+      const result = parseSvgString(svg);
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('SVG_NO_SHAPES');
+      }
+    });
+  });
+
+  describe('viewBox with transforms', () => {
+    it('does not double-apply viewBox offset for transformed circle', () => {
+      // Non-zero viewBox origin + rotation transform
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="50 50 100 100">
+        <circle cx="100" cy="100" r="10" transform="rotate(45 100 100)"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      const spec = result.value[0];
+      // Center should be at (50,50) in viewBox-adjusted coords, not shifted by extra viewBox offset
+      const centerX = spec.x + spec.width / 2;
+      const centerY = spec.y + spec.depth / 2;
+      expect(centerX).toBeCloseTo(50, 0);
+      expect(centerY).toBeCloseTo(50, 0);
+    });
+
+    it('does not double-apply viewBox offset for transformed ellipse', () => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="50 50 100 100">
+        <ellipse cx="100" cy="100" rx="10" ry="5" transform="rotate(45 100 100)"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      const spec = result.value[0];
+      const centerX = spec.x + spec.width / 2;
+      const centerY = spec.y + spec.depth / 2;
+      expect(centerX).toBeCloseTo(50, 0);
+      expect(centerY).toBeCloseTo(50, 0);
+    });
+  });
 });
