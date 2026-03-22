@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.17.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.17.0...gridfinity-layout-tool-v4.17.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* **baseplate:** prevent lightweight floor overhangs and reduce pad size ([#1175](https://github.com/andymai/gridfinity-layout-tool/issues/1175)) ([2c6064b](https://github.com/andymai/gridfinity-layout-tool/commit/2c6064b1f087b6e592e41afee89918b6acd39902))
+
 ## [4.17.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.16.1...gridfinity-layout-tool-v4.17.0) (2026-03-22)
 
 
