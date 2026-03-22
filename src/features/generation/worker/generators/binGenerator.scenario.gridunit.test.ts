@@ -9,7 +9,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin, getGenerateSplitPreview } from './__dual-kernel__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { GRIDFINITY } from '@/shared/constants/bin';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/shared/types/bin';
 
 const CLEARANCE = GRIDFINITY.TOLERANCE;
 

@@ -208,7 +208,8 @@ function splitSolidIntoPieces(
     throw new Error('Failed to generate solid for splitting');
   }
 
-  const gridUnitMm = params.gridUnitMm;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
+  const gridUnitMm = params.gridUnitMm ?? SIZE;
   const outerW = params.width * gridUnitMm - CLEARANCE;
   const outerD = params.depth * gridUnitMm - CLEARANCE;
 

@@ -26,7 +26,8 @@ export async function exportDividers(
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = totalHeight - SOCKET_HEIGHT;
 
-  const gridUnitMm = params.gridUnitMm;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
+  const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
   const outerW = params.width * gridUnitMm - CLEARANCE;
   const outerD = params.depth * gridUnitMm - CLEARANCE;
   const innerW = outerW - 2 * wallThickness;

@@ -21,6 +21,7 @@ import type { Shape3D } from 'brepjs';
 import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
+import { GRIDFINITY } from '@/shared/constants/bin';
 /** Dispose callback for LRU caches holding WASM-backed shapes. */
 const disposeShape = (_key: string, shape: Shape3D): void => {
   shape.delete();
@@ -97,7 +98,7 @@ export function socketCacheKey(
   screwRadius: number,
   forExport: boolean,
   halfSockets: boolean,
-  gridUnitMm: number = 42
+  gridUnitMm: number = GRIDFINITY.GRID_SIZE
 ): string {
   return compactKey(
     buildCacheKey(

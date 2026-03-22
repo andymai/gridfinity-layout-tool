@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useDesignerStore } from '../store';
+import { setPendingMeshCache } from '../store/helpers';
 
 export function useSyncPhysicalUnits(): void {
   const { gridUnitMm, heightUnitMm } = useLayoutStore(
@@ -25,6 +26,10 @@ export function useSyncPhysicalUnits(): void {
     if (params.gridUnitMm === gridUnitMm && params.heightUnitMm === heightUnitMm) {
       return;
     }
+
+    // Clear pending mesh cache — the old mesh was generated with different
+    // physical units and would be incorrectly associated with the next undo entry.
+    setPendingMeshCache(null);
 
     // Update params without history push — epoch increments to trigger regeneration
     useDesignerStore.setState((state) => ({
