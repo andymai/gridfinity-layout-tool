@@ -241,15 +241,6 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* Options divider — separates primary controls from rarely-changed settings */}
-        <div className="flex items-center gap-3 px-4 py-2">
-          <div className="h-px flex-1 bg-stroke-subtle" />
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-content-tertiary">
-            {t('baseplate.sectionOptions')}
-          </span>
-          <div className="h-px flex-1 bg-stroke-subtle" />
-        </div>
-
         {/* 3. Base — magnet holes toggle */}
         <StickyGroupHeader
           title={t('baseplate.sectionBase')}
