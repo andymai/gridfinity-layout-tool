@@ -27,6 +27,7 @@ import {
 } from '../panel/CutoutsSection/renderer/constants';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
+import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { FloatingInspector } from './FloatingInspector';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import type { ContextMenuAction } from '../panel/CutoutsSection/CutoutContextMenu';
@@ -95,6 +96,7 @@ export function CutoutWorkspace() {
   const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
 
   const t = useTranslation();
+  const { triggerImport: triggerSvgImport } = useSvgImport();
 
   // Quickstart overlay state
   const { quickstartSeen, markQuickstartSeen } = useCutoutQuickstart();
@@ -650,6 +652,7 @@ export function CutoutWorkspace() {
               gridSize={gridSize}
               onGridSizeChange={setGridSize}
               vertical
+              onImportSvg={triggerSvgImport}
             />
           </div>
         </div>

@@ -180,4 +180,45 @@ describe('CutoutShapeToolbar', () => {
     );
     expect(screen.queryByText('binDesigner.cutouts.dragToDraw')).not.toBeInTheDocument();
   });
+
+  it('renders Import SVG button when onImportSvg is provided', () => {
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+        onImportSvg={vi.fn()}
+      />
+    );
+    expect(screen.getByTitle('binDesigner.cutouts.importSvg')).toBeInTheDocument();
+  });
+
+  it('does not render Import SVG button when onImportSvg is not provided', () => {
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+      />
+    );
+    expect(screen.queryByTitle('binDesigner.cutouts.importSvg')).not.toBeInTheDocument();
+  });
+
+  it('calls onImportSvg when Import SVG button is clicked', () => {
+    const onImportSvg = vi.fn();
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+        onImportSvg={onImportSvg}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('binDesigner.cutouts.importSvg'));
+    expect(onImportSvg).toHaveBeenCalledOnce();
+  });
 });

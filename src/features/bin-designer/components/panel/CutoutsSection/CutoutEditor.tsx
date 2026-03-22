@@ -14,6 +14,7 @@ import { useCutoutInteraction } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
 import { CutoutCanvas3D } from './renderer';
 import { CutoutShapeToolbar } from './CutoutShapeToolbar';
+import { useSvgImport } from './svgImport';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
@@ -141,6 +142,7 @@ export function CutoutEditor() {
   });
 
   const t = useTranslation();
+  const { triggerImport: triggerSvgImport } = useSvgImport();
 
   // Marquee state — in mm world coordinates
   const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(
@@ -433,6 +435,7 @@ export function CutoutEditor() {
         onSnapToggle={setSnapEnabled}
         gridSize={gridSize}
         onGridSizeChange={setGridSize}
+        onImportSvg={triggerSvgImport}
       />
 
       {/* Global top offset control */}

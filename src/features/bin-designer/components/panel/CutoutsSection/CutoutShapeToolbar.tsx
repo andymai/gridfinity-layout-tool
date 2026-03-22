@@ -41,6 +41,8 @@ interface CutoutShapeToolbarProps {
   readonly onGridSizeChange: (size: number) => void;
   /** Render as vertical icon-only strip (for workspace mode) */
   readonly vertical?: boolean;
+  /** Callback to trigger SVG file import. When omitted, the button is hidden. */
+  readonly onImportSvg?: () => void;
 }
 
 export function CutoutShapeToolbar({
@@ -51,6 +53,7 @@ export function CutoutShapeToolbar({
   gridSize,
   onGridSizeChange,
   vertical = false,
+  onImportSvg,
 }: CutoutShapeToolbarProps) {
   const t = useTranslation();
   // Derive which tool is "active" across all transient interaction states
@@ -210,6 +213,36 @@ export function CutoutShapeToolbar({
           {!vertical && t('binDesigner.cutouts.penTool')}
         </button>
       )}
+
+      {onImportSvg &&
+        wrap(
+          t('binDesigner.cutouts.importSvg'),
+          'I',
+          <button
+            type="button"
+            className={`${btnBase} ${btnInactive}`}
+            onClick={onImportSvg}
+            aria-label={t('binDesigner.cutouts.importSvg')}
+            title={!vertical ? t('binDesigner.cutouts.importSvg') : undefined}
+          >
+            <svg
+              className={iconSize}
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {/* Upload arrow */}
+              <path d="M7 10V3" />
+              <path d="M4 5.5L7 2.5L10 5.5" />
+              {/* File base */}
+              <path d="M2 9v2.5a1 1 0 001 1h8a1 1 0 001-1V9" />
+            </svg>
+            {!vertical && t('binDesigner.cutouts.importSvg')}
+          </button>
+        )}
 
       <div
         className={
