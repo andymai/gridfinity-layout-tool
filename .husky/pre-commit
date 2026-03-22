@@ -9,7 +9,7 @@ if git diff --cached --name-only | grep -qE '^src/i18n/'; then
   pnpm run check:i18n:unused
 fi
 pnpm run check:exhaustiveness
-pnpm run test:affected
+# pnpm run test:affected  # disabled — too slow for pre-commit, run manually or in CI
 pnpm run check:component-structure
 pnpm run check:missing-tests
 pnpm run check:readme-reminders
