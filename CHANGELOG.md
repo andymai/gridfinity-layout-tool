@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.20.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.19.0...gridfinity-layout-tool-v4.20.0) (2026-03-22)
+
+
+### Features
+
+* **bin-designer:** add SVG file import for custom cutouts ([#1194](https://github.com/andymai/gridfinity-layout-tool/issues/1194)) ([64a6850](https://github.com/andymai/gridfinity-layout-tool/commit/64a6850ef619ba98693b14b9c24d45cebdb3cd17))
+
 ## [4.19.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.18.3...gridfinity-layout-tool-v4.19.0) (2026-03-22)
 
 
