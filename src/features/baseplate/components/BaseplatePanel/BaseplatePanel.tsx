@@ -237,19 +237,6 @@ export function BaseplatePanel() {
                 info={t('baseplate.magnetDepthInfo')}
               />
             </FeatureToggle>
-          </div>
-        </StickyGroupHeader>
-
-        {/* Corner Radius — adjustable outer corners */}
-        <StickyGroupHeader
-          title={t('baseplate.cornerRadius')}
-          summary={
-            baseplateParams.cornerRadii
-              ? `${baseplateParams.cornerRadii.tl}/${baseplateParams.cornerRadii.tr}/${baseplateParams.cornerRadii.bl}/${baseplateParams.cornerRadii.br}mm`
-              : `${baseplateParams.cornerRadius ?? 2.5}mm`
-          }
-        >
-          <div className="space-y-3 px-4 py-3">
             <CornerRadiusControl
               cornerRadius={baseplateParams.cornerRadius}
               cornerRadii={baseplateParams.cornerRadii}
@@ -418,7 +405,7 @@ function SplitViewStrip({
   );
 }
 
-/** Linked/unlinked corner radius controls. */
+/** Corner radius controls with optional per-corner mode. */
 function CornerRadiusControl({
   cornerRadius,
   cornerRadii,
@@ -435,44 +422,39 @@ function CornerRadiusControl({
   readonly onPerCornerChange: (radii: { tl: number; tr: number; bl: number; br: number }) => void;
 }) {
   const t = useTranslation();
-  const linked = cornerRadii === undefined;
+  const perCorner = cornerRadii !== undefined;
   const uniformR = cornerRadius ?? 2.5;
-
-  const toggleLink = () => {
-    if (linked) {
-      onPerCornerChange({ tl: uniformR, tr: uniformR, bl: uniformR, br: uniformR });
-    } else {
-      onUniformChange(cornerRadii.tl);
-    }
-  };
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-content-secondary">
-          {linked ? t('baseplate.cornerRadiusLinked') : t('baseplate.cornerRadiusUnlink')}
-        </span>
-        <button
-          type="button"
-          onClick={toggleLink}
-          className="text-xs text-accent hover:text-accent-hover"
-          title={linked ? t('baseplate.cornerRadiusUnlink') : t('baseplate.cornerRadiusLinked')}
-        >
-          {linked ? t('baseplate.cornerRadiusUnlink') : t('baseplate.cornerRadiusLinked')}
-        </button>
-      </div>
-      {linked ? (
-        <SliderInput
-          label={t('baseplate.cornerRadius')}
-          value={uniformR}
-          onChange={onUniformChange}
-          min={0}
-          max={maxRadius}
-          step={0.5}
-          unit="mm"
-          info={t('baseplate.cornerRadiusInfo')}
-        />
-      ) : (
+      <SliderInput
+        label={t('baseplate.cornerRadius')}
+        value={perCorner ? cornerRadii.tl : uniformR}
+        onChange={(v) => {
+          if (perCorner) {
+            onPerCornerChange({ ...cornerRadii, tl: v, tr: v, bl: v, br: v });
+          } else {
+            onUniformChange(v);
+          }
+        }}
+        min={0}
+        max={maxRadius}
+        step={0.5}
+        unit="mm"
+        info={t('baseplate.cornerRadiusInfo')}
+      />
+      <Checkbox
+        label={t('baseplate.cornerRadiusUnlink')}
+        checked={perCorner}
+        onChange={() => {
+          if (perCorner) {
+            onUniformChange(cornerRadii.tl);
+          } else {
+            onPerCornerChange({ tl: uniformR, tr: uniformR, bl: uniformR, br: uniformR });
+          }
+        }}
+      />
+      {perCorner && (
         <>
           <SliderInput
             label={t('baseplate.cornerRadiusTL')}
