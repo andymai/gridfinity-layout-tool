@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useLayoutPromotion } from './useLayoutPromotion';

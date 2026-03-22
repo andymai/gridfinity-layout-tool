@@ -1,6 +1,7 @@
 // src/test/setup.ts
 // Base test setup — used by ALL vitest workspace projects.
-// Contains only environment-agnostic mocks (no DOM, no indexedDB).
+// Contains environment-agnostic mocks (no DOM dependencies).
+import 'fake-indexeddb/auto';
 import { vi } from 'vitest';
 
 // Mock the i18n module using actual English translations.

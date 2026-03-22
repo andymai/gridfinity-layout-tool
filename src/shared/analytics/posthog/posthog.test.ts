@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import type { Layout } from '@/core/types';
 import {

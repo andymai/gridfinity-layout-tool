@@ -3,7 +3,6 @@
 // Base setup (i18n mock) is loaded separately via vitest.workspace.ts setupFiles.
 
 import '@testing-library/jest-dom';
-import 'fake-indexeddb/auto';
 import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
