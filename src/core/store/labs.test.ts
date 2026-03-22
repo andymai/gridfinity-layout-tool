@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Labs Feature Flags Tests
  *

@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Tests for cloud share URL detection utilities.
  * Tests /l/{id}/{slug} patterns.

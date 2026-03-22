@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { FORMAT_MIME_TYPES, triggerDownload } from './exportUtils';
 

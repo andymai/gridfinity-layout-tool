@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Tests for Result-based storage functions.
  *

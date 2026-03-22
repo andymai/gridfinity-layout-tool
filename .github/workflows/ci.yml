@@ -54,7 +54,8 @@ jobs:
           project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
           api-key: ${{ secrets.POSTHOG_API_KEY }}
 
-  # PRs + main: Full test suite with coverage
+  # PRs: Full test suite without coverage (fast feedback)
+  # Main: Full test suite with coverage thresholds (regression guard)
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -78,12 +79,21 @@ jobs:
         # Tests import it via lazy-loading, so it must exist before vitest runs.
         run: pnpm run build:en-locale
 
-      - name: Run tests with coverage
-        run: pnpm run test:coverage
+      - name: Run tests
+        env:
+          GIT_REF: ${{ github.ref }}
+        run: |
+          if [ "$GIT_REF" = "refs/heads/main" ]; then
+            echo "Running with coverage (main branch)"
+            pnpm run test:coverage
+          else
+            echo "Running without coverage (PR)"
+            pnpm run test:run
+          fi
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v7
-        if: failure()
+        if: failure() && github.ref == 'refs/heads/main'
         with:
           name: coverage-report
           path: coverage/

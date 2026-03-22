@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Tests for recentStore (frecency-based command usage tracking)
  */

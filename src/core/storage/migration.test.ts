@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { expectOk, expectErr } from '@/test/testUtils';
 import { ok } from '@/core/result';
