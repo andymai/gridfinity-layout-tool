@@ -14,11 +14,13 @@ import type { FilamentSlotId } from '@/features/bin-designer/types/featureColors
 
 /** Single filament slot dropdown with color swatch */
 function FilamentSelect({
+  id,
   label,
   value,
   onChange,
   disabled,
 }: {
+  id: string;
   label: string;
   value: FilamentSlotId;
   onChange: (slotId: FilamentSlotId) => void;
@@ -28,13 +30,16 @@ function FilamentSelect({
 
   return (
     <div className={`flex items-center justify-between gap-2 ${disabled ? 'opacity-40' : ''}`}>
-      <span className="text-xs text-content-secondary">{label}</span>
+      <label htmlFor={id} className="text-xs text-content-secondary">
+        {label}
+      </label>
       <div className="relative flex items-center">
         <div
           className="absolute left-2 w-3 h-3 rounded-full border border-stroke-subtle pointer-events-none"
           style={{ backgroundColor: palette.find((s) => s.id === value)?.color ?? '#888' }}
         />
         <select
+          id={id}
           value={value}
           onChange={(e) => onChange(e.target.value as FilamentSlotId)}
           disabled={disabled}
@@ -81,17 +86,20 @@ export function ColorsSection() {
   return (
     <div className="space-y-3">
       <FilamentSelect
+        id="filament-body"
         label={t('binDesigner.colors.body')}
         value={featureColors.body}
         onChange={(slotId) => updateFeatureColors({ body: slotId })}
       />
       <FilamentSelect
+        id="filament-lip"
         label={t('binDesigner.colors.lip')}
         value={featureColors.lip}
         onChange={(slotId) => updateFeatureColors({ lip: slotId })}
         disabled={!hasLip}
       />
       <FilamentSelect
+        id="filament-label-tab"
         label={t('binDesigner.colors.labelTab')}
         value={featureColors.labelTab}
         onChange={(slotId) => updateFeatureColors({ labelTab: slotId })}

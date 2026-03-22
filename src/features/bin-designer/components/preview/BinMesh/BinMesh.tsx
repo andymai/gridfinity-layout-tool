@@ -42,7 +42,8 @@ interface BinMeshProps {
 function buildMultiColorGroups(
   faceGroups: readonly FaceGroupData[],
   featureColors: FeatureColorConfig,
-  palette: readonly FilamentSlot[]
+  palette: readonly FilamentSlot[],
+  totalIndexCount: number
 ): { groups: MeshFaceGroup[]; colors: readonly string[] } | null {
   if (isSingleColor(featureColors)) return null;
 
@@ -61,6 +62,16 @@ function buildMultiColorGroups(
       materialIndex: slotToIndex.get(slotId) ?? defaultIndex,
     };
   });
+
+  // Ensure any indices not covered by faceGroups still render (body default)
+  const coveredEnd = faceGroups.reduce((max, fg) => Math.max(max, fg.start + fg.count), 0);
+  if (coveredEnd < totalIndexCount) {
+    groups.push({
+      start: coveredEnd,
+      count: totalIndexCount - coveredEnd,
+      materialIndex: defaultIndex,
+    });
+  }
 
   return { groups, colors };
 }
@@ -84,9 +95,9 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
-    if (!multiColorEnabled || !faceGroups || !featureColors) return null;
-    return buildMultiColorGroups(faceGroups, featureColors, filamentPalette);
-  }, [multiColorEnabled, faceGroups, featureColors, filamentPalette]);
+    if (!multiColorEnabled || !faceGroups || !featureColors || !indices) return null;
+    return buildMultiColorGroups(faceGroups, featureColors, filamentPalette, indices.length);
+  }, [multiColorEnabled, faceGroups, featureColors, filamentPalette, indices]);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices,

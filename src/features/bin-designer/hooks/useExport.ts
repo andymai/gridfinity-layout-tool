@@ -30,6 +30,7 @@ import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
+import type { ThreeMFColorConfig } from '@/shared/generation/export';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
@@ -149,7 +150,7 @@ export function useExport(): UseExportReturn {
           const currentEstimates = estimatePrint(params, currentPrintSettings);
 
           // Build multi-color config when Labs flag is enabled and face groups are available
-          let colorConfig;
+          let colorConfig: ThreeMFColorConfig | undefined;
           if (
             isFeatureEnabled('multi_color_export') &&
             stlResult.faceGroups &&
