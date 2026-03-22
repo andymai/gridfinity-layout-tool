@@ -208,8 +208,10 @@ function splitSolidIntoPieces(
     throw new Error('Failed to generate solid for splitting');
   }
 
-  const outerW = params.width * SIZE - CLEARANCE;
-  const outerD = params.depth * SIZE - CLEARANCE;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
+  const gridUnitMm = params.gridUnitMm ?? SIZE;
+  const outerW = params.width * gridUnitMm - CLEARANCE;
+  const outerD = params.depth * gridUnitMm - CLEARANCE;
 
   const connectorConfig = splitConnectorConfig ?? params.splitConnectors;
 
@@ -226,7 +228,7 @@ function splitSolidIntoPieces(
   // LIP_FUSE_OVERLAP to ensure a volumetric overlap for clean fusing.
   let lipSolid: Shape3D | undefined;
   if (hasLip) {
-    lipSolid = translate(buildTopShape(params.width, params.depth, true), [
+    lipSolid = translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
       0,
       0,
       wallTopZ - LIP_FUSE_OVERLAP,

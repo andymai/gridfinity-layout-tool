@@ -19,6 +19,7 @@ import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
+import { useSyncPhysicalUnits } from '@/features/bin-designer/hooks/useSyncPhysicalUnits';
 import { useDesignerInit } from '@/features/bin-designer/hooks/useDesignerInit';
 import { useCreateFromBin } from '@/features/bin-designer/hooks/useCreateFromBin';
 import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
@@ -167,6 +168,9 @@ export function DesignerPage() {
 
   // Handle createFrom=bin URL params (must run after init, before generation)
   useCreateFromBin();
+
+  // Sync physical units (gridUnitMm, heightUnitMm) from layout store into designer params
+  useSyncPhysicalUnits();
 
   // Initialize generation bridge - auto-generates mesh when params change
   useGeneration();

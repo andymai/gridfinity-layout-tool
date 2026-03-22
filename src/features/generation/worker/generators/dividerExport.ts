@@ -11,7 +11,6 @@ import type { BinParams } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
 
-const SIZE = GRIDFINITY.GRID_SIZE;
 const CLEARANCE = GRIDFINITY.TOLERANCE;
 const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
 
@@ -27,8 +26,10 @@ export async function exportDividers(
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = totalHeight - SOCKET_HEIGHT;
 
-  const outerW = params.width * SIZE - CLEARANCE;
-  const outerD = params.depth * SIZE - CLEARANCE;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
+  const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
+  const outerW = params.width * gridUnitMm - CLEARANCE;
+  const outerD = params.depth * gridUnitMm - CLEARANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const hasLip = params.base.stackingLip;

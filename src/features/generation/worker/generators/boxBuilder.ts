@@ -52,12 +52,14 @@ export function buildBinBox(
   wallHeight: number,
   wallThickness: number,
   solid: boolean,
-  cutoutTopOffset: number = 0
+  cutoutTopOffset: number = 0,
+  gridUnitMm: number = SIZE
 ): Shape3D {
   const boxKey = buildCacheKey(
-    'v1',
+    'v2',
     quantize(gridW),
     quantize(gridD),
+    quantize(gridUnitMm),
     quantize(wallHeight),
     quantize(wallThickness),
     solid,
@@ -68,8 +70,8 @@ export function buildBinBox(
     return cached;
   }
 
-  const outerW = gridW * SIZE - CLEARANCE;
-  const outerD = gridD * SIZE - CLEARANCE;
+  const outerW = gridW * gridUnitMm - CLEARANCE;
+  const outerD = gridD * gridUnitMm - CLEARANCE;
 
   return withScope((scope: DisposalScope) => {
     const box = sketch(drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS)).extrude(wallHeight);
@@ -270,15 +272,26 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
  * Built at Z=0 locally, caller translates to wallHeight.
  */
-export function buildTopShape(gridW: number, gridD: number, includeLip: boolean): Shape3D {
-  const lipKey = buildCacheKey('v1', quantize(gridW), quantize(gridD), includeLip);
+export function buildTopShape(
+  gridW: number,
+  gridD: number,
+  includeLip: boolean,
+  gridUnitMm: number = SIZE
+): Shape3D {
+  const lipKey = buildCacheKey(
+    'v2',
+    quantize(gridW),
+    quantize(gridD),
+    quantize(gridUnitMm),
+    includeLip
+  );
   const cached = getLipCache(lipKey);
   if (cached) {
     return cached;
   }
 
-  const outerW = gridW * SIZE - CLEARANCE;
-  const outerD = gridD * SIZE - CLEARANCE;
+  const outerW = gridW * gridUnitMm - CLEARANCE;
+  const outerD = gridD * gridUnitMm - CLEARANCE;
 
   let result: Shape3D;
   if (getKernel().kernelId === 'brepkit') {

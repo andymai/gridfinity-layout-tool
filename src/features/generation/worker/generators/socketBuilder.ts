@@ -140,7 +140,8 @@ export function buildBaseSocket(
   magnetDepth: number,
   screwRadius: number,
   forExport = false,
-  halfSockets = false
+  halfSockets = false,
+  gridUnitMm: number = SIZE
 ): Shape3D {
   // Check socket cache -- skip entire build if params haven't changed
   const key = socketCacheKey(
@@ -152,7 +153,8 @@ export function buildBaseSocket(
     magnetDepth,
     screwRadius,
     forExport,
-    halfSockets
+    halfSockets,
+    gridUnitMm
   );
   const cached = getSocketCache(key);
   if (cached) {
@@ -167,8 +169,8 @@ export function buildBaseSocket(
       gridW,
       gridD,
       (cell) => {
-        const cellW_mm = cell.widthUnits * SIZE - CLEARANCE;
-        const cellD_mm = cell.depthUnits * SIZE - CLEARANCE;
+        const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
+        const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
         // Use simplified 3-section socket for preview, full 5-section for export
         // NOTE: cellSockets are NOT scope-registered because fuseAll may return
         // one of its inputs when given a single element. They're deleted manually.
@@ -182,7 +184,7 @@ export function buildBaseSocket(
         );
         cellSockets.push(cellSocket);
       },
-      halfSockets
+      { halfSockets, gridUnitMm }
     );
 
     if (cellSockets.length === 0) {
@@ -217,18 +219,23 @@ export function buildBaseSocket(
 
       // NOTE: holeTools are NOT scope-registered — cutAll may return an input.
       const holeTools: Shape3D[] = [];
-      forEachCell(gridW, gridD, (cell) => {
-        if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
-        for (const [dx, dy] of holeOffsets) {
-          holeTools.push(
-            translate(scope.register(clone(cutout)), [
-              cell.centerX + dx,
-              cell.centerY + dy,
-              -SOCKET_HEIGHT,
-            ])
-          );
-        }
-      });
+      forEachCell(
+        gridW,
+        gridD,
+        (cell) => {
+          if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+          for (const [dx, dy] of holeOffsets) {
+            holeTools.push(
+              translate(scope.register(clone(cutout)), [
+                cell.centerX + dx,
+                cell.centerY + dy,
+                -SOCKET_HEIGHT,
+              ])
+            );
+          }
+        },
+        { gridUnitMm }
+      );
 
       if (holeTools.length > 0) {
         const preCut = result;

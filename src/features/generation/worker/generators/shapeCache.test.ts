@@ -20,7 +20,7 @@ function mockShape(): Shape3D & { delete: ReturnType<typeof vi.fn> } {
 describe('socketCacheKey', () => {
   it('produces deterministic versioned key from parameters', () => {
     const key = socketCacheKey(2, 2, true, false, 3.1, 2.0, 1.5, false, false);
-    expect(key).toBe('v1|2|2|true|false|3.1|2|1.5|false|false');
+    expect(key).toBe('v2|2|2|42|true|false|3.1|2|1.5|false|false');
   });
 
   it('differs when magnet flag changes', () => {
@@ -53,9 +53,15 @@ describe('socketCacheKey', () => {
     expect(a).not.toBe(b);
   });
 
+  it('differs when gridUnitMm changes', () => {
+    const a = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, 42);
+    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, 50);
+    expect(a).not.toBe(b);
+  });
+
   it('includes all parameters in key', () => {
     const key = socketCacheKey(1.5, 2.5, true, true, 3.1, 2.4, 1.75, true, true);
-    expect(key).toMatch(/^v1\|/);
+    expect(key).toMatch(/^v2\|/);
     expect(key).toContain('1.5');
     expect(key).toContain('2.5');
     expect(key).toContain('true');
