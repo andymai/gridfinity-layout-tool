@@ -7,9 +7,6 @@
  * clipping logic that don't fit the single cacheKey/build interface.
  *
  * Called as a special case after the generic feature runner in featuresStage.
- *
- * Extracted from featuresStage.ts for code organization; the actual
- * migration to use this module happens in Phase 4.
  */
 
 import {
@@ -40,6 +37,7 @@ import {
   getExpandedCutoutDimensions,
 } from './wallPatterns';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import type { WallCutoutShape } from '@/shared/types/bin';
 import { buildSingleCutout } from './featureBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
@@ -190,24 +188,26 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       )
     );
 
+    const clip: CutoutClipParams | null = cutoutCfg?.enabled
+      ? {
+          cutoutCfg,
+          cutWidth,
+          userCutHeight,
+          expandedWidth,
+          expandedHeight,
+          clipOvershoot,
+          clipExtrudeDepth,
+          wallHeight: dim.wallHeight,
+          wallSpan,
+          wallShape: params.walls.shape,
+          wallThickness: params.wallThickness,
+        }
+      : null;
+
     // Use the existing cachedFeature-style pattern: cache owns original, caller gets clone
     let shape = getFeatureCache('wallPattern', wallKey);
     if (!shape) {
-      const built = buildWallPatternShape(
-        shapeTemplate,
-        wall,
-        halfDepth,
-        cutoutCfg,
-        cutWidth,
-        userCutHeight,
-        expandedWidth,
-        expandedHeight,
-        clipOvershoot,
-        clipExtrudeDepth,
-        dim.wallHeight,
-        wallSpan,
-        params
-      );
+      const built = buildWallPatternShape(shapeTemplate, wall, halfDepth, clip);
       if (built) {
         setFeatureCache('wallPattern', wallKey, built);
         shape = unwrap(clone(built));
@@ -222,54 +222,58 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   return patternCutTargets;
 }
 
+/** Pre-computed cutout clipping parameters passed to buildWallPatternShape. */
+interface CutoutClipParams {
+  readonly cutoutCfg: {
+    enabled: boolean;
+    widthMm: number | null;
+    width: number;
+    depth: number;
+    alignment: 'left' | 'center' | 'right';
+    offset: number;
+  };
+  readonly cutWidth: number;
+  readonly userCutHeight: number;
+  readonly expandedWidth: number;
+  readonly expandedHeight: number;
+  readonly clipOvershoot: number;
+  readonly clipExtrudeDepth: number;
+  readonly wallHeight: number;
+  readonly wallSpan: number;
+  readonly wallShape: WallCutoutShape;
+  readonly wallThickness: number;
+}
+
 /** Build a single wall's pattern compound with optional cutout clipping. */
 function buildWallPatternShape(
   shapeTemplate: Shape3D,
   wall: WallPatternDescriptor,
   halfDepth: number,
-  cutoutCfg:
-    | {
-        enabled: boolean;
-        widthMm: number | null;
-        width: number;
-        depth: number;
-        alignment: 'left' | 'center' | 'right';
-        offset: number;
-      }
-    | undefined,
-  cutWidth: number,
-  userCutHeight: number,
-  expandedWidth: number,
-  expandedHeight: number,
-  clipOvershoot: number,
-  clipExtrudeDepth: number,
-  wallHeight: number,
-  wallSpan: number,
-  params: PipelineContext['params']
+  clip: CutoutClipParams | null
 ): Shape3D | null {
   const hexCompound = buildWallPatternCompound(shapeTemplate, wall, halfDepth);
   if (!hexCompound) return null;
 
-  if (!cutoutCfg?.enabled || cutWidth < 0.1 || userCutHeight < 0.1) {
+  if (!clip || clip.cutWidth < 0.1 || clip.userCutHeight < 0.1) {
     return hexCompound;
   }
 
   const rotateZ = wall.side === 'left' || wall.side === 'right' ? 90 : 0;
   const centerOffset = computeCutoutCenter(
-    wallSpan,
-    cutWidth,
-    params.wallThickness,
-    cutoutCfg.alignment,
-    cutoutCfg.offset
+    clip.wallSpan,
+    clip.cutWidth,
+    clip.wallThickness,
+    clip.cutoutCfg.alignment,
+    clip.cutoutCfg.offset
   );
 
   const clipSolid = buildSingleCutout(
-    params.walls.shape,
-    expandedWidth,
-    expandedHeight,
-    clipOvershoot,
-    clipExtrudeDepth,
-    wallHeight,
+    clip.wallShape,
+    clip.expandedWidth,
+    clip.expandedHeight,
+    clip.clipOvershoot,
+    clip.clipExtrudeDepth,
+    clip.wallHeight,
     {
       x: rotateZ === 0 ? wall.translateX + centerOffset : wall.translateX,
       y: rotateZ !== 0 ? wall.translateY + centerOffset : wall.translateY,

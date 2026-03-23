@@ -60,17 +60,12 @@ export function runFeatureBuilders(
     if (!shape) {
       const built = builder.build(ctx);
       if (built && built.length > 0) {
-        // For single-shape features (most cases): cache owns original, clone for caller
-        if (built.length === 1) {
-          setFeatureCache(builder.name, key, built[0]);
-          shape = unwrap(clone(built[0]));
-        } else {
-          // Multi-shape: each shape cached individually would need multiple keys.
-          // For now, fuse or use first shape. In practice, all current builders
-          // return single shapes (multi-shape is wall patterns, handled separately).
-          setFeatureCache(builder.name, key, built[0]);
-          shape = unwrap(clone(built[0]));
-        }
+        // Cache owns original, caller gets a clone
+        setFeatureCache(builder.name, key, built[0]);
+        shape = unwrap(clone(built[0]));
+        // Dispose any extra shapes to avoid WASM handle leaks.
+        // Current builders always return single shapes; this is defensive.
+        for (let i = 1; i < built.length; i++) built[i].delete();
       }
     }
 

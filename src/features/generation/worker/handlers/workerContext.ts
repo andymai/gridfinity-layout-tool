@@ -126,6 +126,7 @@ export function runGeneration(
     if (e instanceof DOMException && e.name === 'AbortError') return;
     if (activeRequestId !== requestId) return;
     const errorMsg = formatError(e);
+
     console.error(`[${logPrefix}] Generation failed:`, errorMsg);
     if (e instanceof Error && e.stack) {
       console.error(`[${logPrefix}] Stack:`, e.stack);

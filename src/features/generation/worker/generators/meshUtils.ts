@@ -4,7 +4,7 @@
  * Core implementations have moved to utils/ modules. This file re-exports
  * them for backwards compatibility with existing imports.
  *
- * @see utils/abort.ts — isAbortError, checkCancelled
+ * @see utils/abort.ts — checkCancelled (isAbortError available via direct import)
  * @see utils/mesh.ts — toIndexedMeshData
  */
 
