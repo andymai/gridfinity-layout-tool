@@ -82,7 +82,7 @@ export function HeaderSupportLinks() {
       {/* Help */}
       <button
         onClick={handleHelpClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary relative flex items-center"
+        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary relative flex items-center"
         title={t('header.showHelp')}
         aria-label={t('header.helpAndShortcuts')}
       >
