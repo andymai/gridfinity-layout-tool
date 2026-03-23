@@ -186,6 +186,7 @@ export type WorkerResponse =
   | DividersExportResultResponse
   | SplitExportResultResponse
   | CacheStatsResponse
+  | KernelPerfStatsResponse
   | CleanupDoneResponse
   | ErrorResponse;
 
@@ -208,6 +209,19 @@ export interface CacheStatsResponse {
 
 export interface CleanupDoneResponse {
   readonly type: 'CLEANUP_DONE';
+}
+
+/** Per-category kernel performance timing from brepjs. */
+export interface KernelPerfCategory {
+  readonly totalMs: number;
+  readonly count: number;
+}
+
+/** Kernel performance stats posted after each generation. */
+export interface KernelPerfStatsResponse {
+  readonly type: 'KERNEL_PERF_STATS';
+  readonly requestId: string;
+  readonly stats: Readonly<Record<string, KernelPerfCategory>>;
 }
 
 export interface InitReadyResponse {

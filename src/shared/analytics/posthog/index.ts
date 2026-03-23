@@ -47,6 +47,7 @@ export {
   trackTemplateLoadError,
   trackWasmThreadingStatus,
   trackCachePerformance,
+  trackKernelPerformance,
   trackGalleryOpened,
   trackGalleryClosed,
   listenForPwaInstall,

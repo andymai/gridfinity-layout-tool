@@ -1,18 +1,9 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock capability detection
-const mockDetect = vi.fn();
-vi.mock('@/shared/generation/wasmCapabilities', () => ({
-  detectWasmCapabilities: () => mockDetect(),
-}));
-
 // Mock WASM URL imports — Vite ?url imports resolve to strings at build time
 vi.mock('brepjs-opencascade/src/brepjs_single.wasm?url', () => ({
   default: '/mock-single.wasm',
-}));
-vi.mock('brepjs-opencascade/src/brepjs_threaded.wasm?url', () => ({
-  default: '/mock-threaded.wasm',
 }));
 vi.mock('brepkit-wasm/brepkit_wasm_bg.wasm?url', () => ({
   default: '/mock-brepkit.wasm',
@@ -26,34 +17,14 @@ describe('preloadWasmBinary', () => {
     // Reset module registry so `preloaded` flag starts as false each test
     vi.resetModules();
     fetchSpy.mockClear();
-    // Default: no threading support
-    mockDetect.mockReturnValue({
-      supportsThreads: false,
-      hardwareConcurrency: 4,
-      crossOriginIsolated: false,
-    });
   });
 
-  it('preloads single-threaded WASM when threads are not supported', async () => {
+  it('preloads single-threaded WASM', async () => {
     const { preloadWasmBinary } = await import('./wasmPreload');
     preloadWasmBinary();
 
     expect(fetchSpy).toHaveBeenCalledOnce();
     expect(fetchSpy).toHaveBeenCalledWith('/mock-single.wasm', { credentials: 'same-origin' });
-  });
-
-  it('preloads threaded WASM when threads are supported', async () => {
-    mockDetect.mockReturnValue({
-      supportsThreads: true,
-      hardwareConcurrency: 8,
-      crossOriginIsolated: true,
-    });
-
-    const { preloadWasmBinary } = await import('./wasmPreload');
-    preloadWasmBinary();
-
-    expect(fetchSpy).toHaveBeenCalledOnce();
-    expect(fetchSpy).toHaveBeenCalledWith('/mock-threaded.wasm', { credentials: 'same-origin' });
   });
 
   it('does not inject any <link rel="preload"> elements', async () => {

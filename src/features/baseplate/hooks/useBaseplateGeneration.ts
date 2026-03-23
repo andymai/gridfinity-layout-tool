@@ -17,7 +17,11 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { WorkerPool } from '@/shared/generation/bridge';
-import { trackWasmThreadingStatus, trackCachePerformance } from '@/shared/analytics/posthog';
+import {
+  trackWasmThreadingStatus,
+  trackCachePerformance,
+  trackKernelPerformance,
+} from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
@@ -255,8 +259,9 @@ export function useBaseplateGeneration(): void {
           trackWasmThreadingStatus(threadingInfo.isThreaded, threadingInfo.hardwareConcurrency);
         }
 
-        // Wire up cache stats reporting to PostHog
+        // Wire up cache stats and kernel perf reporting to PostHog
         bridge.onCacheStats = trackCachePerformance;
+        bridge.onKernelPerfStats = trackKernelPerformance;
 
         // Acquire shared worker pool in the background (don't block initial generation)
         void workerPoolManager

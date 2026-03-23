@@ -65,7 +65,6 @@ graph TB
 - `export/stlExporter.ts` — STL file export
 - `export/threemfExporter.ts` — 3MF file export
 - `export/validation.ts` — shared mesh data validation
-- `../../shared/generation/wasmCapabilities.ts` — multi-threading detection (moved to shared)
 
 ## Pipeline Stages
 
@@ -108,7 +107,6 @@ Add new patterns by implementing `PatternCalculator` interface and registering i
 2. **Magnet holes only in full cells** — half cells remain solid
 3. **Features fail silently** — tiny cells → feature skipped
 4. **WASM objects are ephemeral** — brepjs GC invalidates refs unpredictably
-5. **Multi-threading requires cross-origin isolation** — SharedArrayBuffer needs COOP/COEP headers
 
 ## Adaptive Debounce
 

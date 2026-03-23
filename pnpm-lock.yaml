@@ -50,11 +50,11 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       brepjs:
-        specifier: 14.1.3
-        version: 14.1.3(brepjs-opencascade@0.9.0)(brepkit-wasm@1.3.2)
+        specifier: 14.2.1
+        version: 14.2.1(brepjs-opencascade@0.11.0)(brepkit-wasm@1.3.2)
       brepjs-opencascade:
-        specifier: ^0.9.0
-        version: 0.9.0
+        specifier: ^0.11.0
+        version: 0.11.0
       brepkit-wasm:
         specifier: ^1.0.8
         version: 1.3.2
@@ -402,11 +402,6 @@ packages:
 
   '@babel/parser@7.29.0':
     resolution: {integrity: sha512-IyDgFV5GeDUVX4YdF/3CPULtVGSXXMLh1xVIgdCgxApktqnQV0r7/8Nqthg+8YLGaAtdyIlo2qIdZrbCv4+7ww==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
-
-  '@babel/parser@7.29.2':
-    resolution: {integrity: sha512-4GgRzy/+fsBa72/RZVJmGKPmZu9Byn8o4MoLpmNe1m8ZfYnz5emHLQz3U4gLud6Zwl0RZIcgiLD7Uq7ySFuDLA==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -2998,15 +2993,15 @@ packages:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
 
-  brepjs-opencascade@0.9.0:
-    resolution: {integrity: sha512-q9PMg0WQE56GILbazVdiOwZNLeZYghL7X94IZcqfmswSXMaNbs1y7wA/A5MuovsyLwMKyfRlk6AUFn4p7Iz+1Q==}
+  brepjs-opencascade@0.11.0:
+    resolution: {integrity: sha512-lgplk97fmhsZlWWtkLT2IEmeb1hjUWiMleMeBy2wBWQGV2dlh2JQ9Jn03E9rrrW+iLugo4DP+06xZo/95198tw==}
     engines: {node: '>=24 <25'}
 
-  brepjs@14.1.3:
-    resolution: {integrity: sha512-3w3M7Nr6uwsTsX9IfRzKpdZkBXu/FJOmSVJTBCoirMtyF2lCySazOcKhl8t8MD2/sKM+TnugAp83/3HvJNasfg==}
+  brepjs@14.2.1:
+    resolution: {integrity: sha512-fhgPKgDYd1FXkwKsSzn/QWD1RLEsrV78VIDStwa8VMfhiPPH11ejXt9ZXXhrMTUrMGOd00znsj0NLdiE31f1AQ==}
     engines: {node: '>=24'}
     peerDependencies:
-      brepjs-opencascade: ^0.5.1 || ^0.6.0 || ^0.7.0 || ^0.8.0 || ^0.9.0 || ^0.10.0
+      brepjs-opencascade: ^0.5.1 || ^0.6.0 || ^0.7.0 || ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0
       brepkit-wasm: ^0.10.1 || ^1.0.0 || ^2.0.0
     peerDependenciesMeta:
       brepjs-opencascade:
@@ -5798,10 +5793,6 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.0
 
-  '@babel/parser@7.29.2':
-    dependencies:
-      '@babel/types': 7.29.0
-
   '@babel/plugin-bugfix-firefox-class-in-computed-class-key@7.28.5(@babel/core@7.29.0)':
     dependencies:
       '@babel/core': 7.29.0
@@ -8133,14 +8124,14 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  brepjs-opencascade@0.9.0: {}
+  brepjs-opencascade@0.11.0: {}
 
-  brepjs@14.1.3(brepjs-opencascade@0.9.0)(brepkit-wasm@1.3.2):
+  brepjs@14.2.1(brepjs-opencascade@0.11.0)(brepkit-wasm@1.3.2):
     dependencies:
       flatbush: 4.5.1
       opentype.js: 1.3.4
     optionalDependencies:
-      brepjs-opencascade: 0.9.0
+      brepjs-opencascade: 0.11.0
       brepkit-wasm: 1.3.2
 
   brepkit-wasm@1.3.2: {}
@@ -9484,7 +9475,7 @@ snapshots:
 
   magicast@0.5.2:
     dependencies:
-      '@babel/parser': 7.29.2
+      '@babel/parser': 7.29.0
       '@babel/types': 7.29.0
       source-map-js: 1.2.1
 
