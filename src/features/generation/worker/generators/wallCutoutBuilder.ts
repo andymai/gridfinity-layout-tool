@@ -123,6 +123,36 @@ function buildSingleCutout(
 }
 
 /**
+ * Build an expanded cutout solid for clipping hex patterns.
+ *
+ * Creates a solid with the cutout profile expanded by `borderWidth` on each
+ * side (and bottom), positioned identically to the real cutout. Used to
+ * boolean-subtract from a hex pattern compound so no hex geometry overlaps
+ * the cutout + border zone.
+ *
+ * @returns Positioned Shape3D for boolean subtraction from hex compound
+ */
+export function buildCutoutClipSolid(
+  cutoutShape: WallCutoutShape,
+  expandedCutWidth: number,
+  expandedCutHeight: number,
+  overshoot: number,
+  extrudeDepth: number,
+  wallHeight: number,
+  position: { x: number; y: number; rotateZ: number }
+): Shape3D {
+  return buildSingleCutout(
+    cutoutShape,
+    expandedCutWidth,
+    expandedCutHeight,
+    overshoot,
+    extrudeDepth,
+    wallHeight,
+    position
+  );
+}
+
+/**
  * Build wall cutout cuts for all enabled sides and interior divider walls.
  *
  * Supports multiple cutout shapes: u-shape (rectangular notch with rounded corners),
