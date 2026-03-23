@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.21.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.21.2...gridfinity-layout-tool-v4.21.3) (2026-03-23)
+
+
+### Bug Fixes
+
+* **generation:** extend label tab support to reach shelf front edge ([#1206](https://github.com/andymai/gridfinity-layout-tool/issues/1206)) ([a1b14d5](https://github.com/andymai/gridfinity-layout-tool/commit/a1b14d531edb8c6c6e0c9f1e1852cbc797a63233))
+
 ## [4.21.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.21.1...gridfinity-layout-tool-v4.21.2) (2026-03-23)
 
 
