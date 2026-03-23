@@ -14,7 +14,7 @@
 export { pruneAnalyticsData } from './identity';
 
 // Init
-export { initAnalytics, optOutAnalytics, optInAnalytics } from './init';
+export { initAnalytics, optOutAnalytics, optInAnalytics, isTrackingOptOut } from './init';
 
 // Metrics
 export type { LabsMetrics, LayoutMetrics } from './metrics';

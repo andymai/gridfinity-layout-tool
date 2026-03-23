@@ -23,6 +23,23 @@ export function getPosthogInstance(): PostHog | null {
   return posthogInstance;
 }
 
+/**
+ * Check if the browser signals a tracking opt-out via
+ * Global Privacy Control (modern, legally enforceable) or
+ * legacy Do Not Track (still in Chrome/Edge).
+ */
+export function isTrackingOptOut(): boolean {
+  if (typeof navigator === 'undefined') return false;
+
+  // GPC — modern signal, boolean, legally enforceable in CA/CO/CT/NJ
+  if (navigator.globalPrivacyControl === true) return true;
+
+  // Legacy DNT — returns string "1", "0", or null
+  if (navigator.doNotTrack === '1') return true;
+
+  return false;
+}
+
 export function initAnalytics(): void {
   if (initPromise) return;
   if (typeof window === 'undefined') return;
