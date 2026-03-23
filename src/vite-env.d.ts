@@ -22,3 +22,9 @@ declare module 'virtual:pwa-register/react' {
     updateServiceWorker: (reloadPage?: boolean) => Promise<void>;
   };
 }
+
+// Global Privacy Control — experimental, not yet in lib.dom.d.ts
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/globalPrivacyControl
+interface Navigator {
+  readonly globalPrivacyControl?: boolean;
+}
