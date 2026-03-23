@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.22.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.21.3...gridfinity-layout-tool-v4.22.0) (2026-03-23)
+
+
+### Features
+
+* **privacy:** respect browser Do Not Track and Global Privacy Control signals ([#1219](https://github.com/andymai/gridfinity-layout-tool/issues/1219)) ([f8ef009](https://github.com/andymai/gridfinity-layout-tool/commit/f8ef00906d211e7b6222bcb31f922ae0a9bdd2e5))
+
 ## [4.21.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.21.2...gridfinity-layout-tool-v4.21.3) (2026-03-23)
 
 
