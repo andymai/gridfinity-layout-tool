@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.20.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.20.0...gridfinity-layout-tool-v4.20.1) (2026-03-23)
+
+
+### Performance
+
+* **generation:** upgrade brepjs to v14 and optimize hex wall pattern ([#1196](https://github.com/andymai/gridfinity-layout-tool/issues/1196)) ([845e2f2](https://github.com/andymai/gridfinity-layout-tool/commit/845e2f22d1fd625d1f68ded0d8e314aeb6e6e1e7))
+
 ## [4.20.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.19.0...gridfinity-layout-tool-v4.20.0) (2026-03-22)
 
 
