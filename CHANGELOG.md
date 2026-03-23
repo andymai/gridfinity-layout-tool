@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.21.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.20.1...gridfinity-layout-tool-v4.21.0) (2026-03-23)
+
+
+### Features
+
+* **generation:** solid border around wall cutouts in honeycomb pattern ([#1199](https://github.com/andymai/gridfinity-layout-tool/issues/1199)) ([8ce8945](https://github.com/andymai/gridfinity-layout-tool/commit/8ce894555948caed97c2488103111a71b76f41fe))
+
 ## [4.20.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.20.0...gridfinity-layout-tool-v4.20.1) (2026-03-23)
 
 
