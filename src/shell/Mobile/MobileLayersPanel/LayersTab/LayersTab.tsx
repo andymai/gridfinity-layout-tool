@@ -302,7 +302,7 @@ export function LayersTab() {
                 <button
                   onClick={() => handleHeightChange(layer.id, -1)}
                   disabled={layer.height <= CONSTRAINTS.MIN_LAYER_HEIGHT}
-                  className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover disabled:opacity-30 transition-colors"
+                  className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover disabled:opacity-50 transition-colors"
                   aria-label={t('layers.decreaseHeight', { name: layer.name })}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -342,7 +342,7 @@ export function LayersTab() {
                   <button
                     onClick={() => handleMoveLayer(displayIndex, 'up')}
                     disabled={displayIndex === 0}
-                    className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-50 transition-colors"
                     aria-label={t('mobile.moveLayerUp')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -357,7 +357,7 @@ export function LayersTab() {
                   <button
                     onClick={() => handleMoveLayer(displayIndex, 'down')}
                     disabled={displayIndex === layers.length - 1}
-                    className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-50 transition-colors"
                     aria-label={t('mobile.moveLayerDown')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

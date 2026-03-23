@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useFeatureFlag, isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
 import { useLabsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -53,6 +53,44 @@ describe('useFeatureFlag', () => {
       const { result } = renderHook(() => useFeatureFlag('test_feature' as features.FeatureId));
 
       expect(result.current).toBe(true);
+    });
+
+    it('reactively updates when feature flag is toggled', () => {
+      mockGetFeature.mockReturnValue({
+        id: 'test_feature',
+        name: 'Test Feature',
+        status: 'experimental',
+      });
+
+      const { result } = renderHook(() => useFeatureFlag('test_feature' as features.FeatureId));
+
+      expect(result.current).toBe(false);
+
+      // Toggle the flag via store — hook should reactively update
+      act(() => {
+        useLabsStore.setState({
+          preferences: {
+            enabledFeatures: { test_feature: true },
+            lastModified: new Date().toISOString(),
+            version: 1,
+          },
+        });
+      });
+
+      expect(result.current).toBe(true);
+
+      // Toggle back
+      act(() => {
+        useLabsStore.setState({
+          preferences: {
+            enabledFeatures: { test_feature: false },
+            lastModified: new Date().toISOString(),
+            version: 1,
+          },
+        });
+      });
+
+      expect(result.current).toBe(false);
     });
 
     it('returns true for graduated features regardless of preferences', () => {

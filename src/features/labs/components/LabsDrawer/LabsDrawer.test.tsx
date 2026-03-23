@@ -217,7 +217,7 @@ describe('LabsDrawer', () => {
     });
 
     const { container } = render(<LabsDrawer />);
-    const backdrop = container.querySelector('.bg-black\\/50');
+    const backdrop = container.querySelector('.bg-overlay-dark');
     expect(backdrop).toHaveClass('opacity-100');
   });
 });

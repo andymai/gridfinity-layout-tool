@@ -26,7 +26,7 @@ const inputWrapperVariants = cva(
         true: 'border-error focus-within:border-error focus-within:ring-error',
       },
       disabled: {
-        true: 'opacity-40 cursor-not-allowed hover:border-stroke',
+        true: 'opacity-50 cursor-not-allowed hover:border-stroke',
       },
     },
     defaultVariants: {

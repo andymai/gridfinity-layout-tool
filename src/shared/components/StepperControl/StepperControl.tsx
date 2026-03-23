@@ -134,9 +134,7 @@ export function StepperControl({
   // Button styles based on variant
   const buttonBaseClass = isMobile
     ? 'btn btn-secondary w-12 h-12 p-0'
-    : isCompact
-      ? 'h-full px-1 border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors'
-      : 'h-full px-2 border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors';
+    : `h-full ${isCompact ? 'px-1' : 'px-2'} border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-50 transition-colors`;
 
   const decreaseButtonClass = isMobile
     ? `${buttonBaseClass} rounded-r-none`
@@ -151,17 +149,15 @@ export function StepperControl({
 
   // Input/display styles
   // Focus styles handled by global CSS (inset outline to prevent clipping)
+  const textSizeClass = isCompact ? 'text-xs' : 'text-sm';
+
   const inputClass = isMobile
     ? 'input flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none'
-    : isCompact
-      ? 'flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs'
-      : 'flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-sm';
+    : `flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary ${textSizeClass}${isCompact ? ' leading-none' : ''}`;
 
   const displayClass = isMobile
     ? 'flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content'
-    : isCompact
-      ? 'flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs'
-      : 'flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-sm';
+    : `flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary ${textSizeClass}`;
 
   return (
     <div className={`flex items-center ${heightClass} ${className}`}>

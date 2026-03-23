@@ -23,7 +23,6 @@ const buttonVariants = cva(
     'border border-stroke-subtle',
     'text-content-tertiary',
     'hover:text-content hover:bg-surface-hover',
-    'disabled:opacity-30',
     interactiveTransition,
     ...focusRing,
     ...disabledStyles,

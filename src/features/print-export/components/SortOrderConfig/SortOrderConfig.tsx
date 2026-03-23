@@ -228,7 +228,7 @@ function SortFieldItem({
           type="button"
           onClick={onMoveUp}
           disabled={isFirst}
-          className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           title={t('print.sort.moveUp')}
           aria-label={t('print.sort.moveFieldUp', { field: t(SORT_FIELD_KEYS[config.field]) })}
         >
@@ -246,7 +246,7 @@ function SortFieldItem({
           type="button"
           onClick={onMoveDown}
           disabled={isLast}
-          className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           title={t('print.sort.moveDown')}
           aria-label={t('print.sort.moveFieldDown', { field: t(SORT_FIELD_KEYS[config.field]) })}
         >

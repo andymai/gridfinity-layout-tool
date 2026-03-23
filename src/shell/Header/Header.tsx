@@ -5,6 +5,7 @@ import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
+import { activePress } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
@@ -125,7 +126,7 @@ export function Header({ saveStatus }: HeaderProps) {
         ) : (
           <button
             onClick={handleNameClick}
-            className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+            className={`px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] ${activePress} text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]`}
             title={t('header.editLayoutName')}
           >
             {layout.name}
@@ -135,7 +136,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {/* Layout Manager Button */}
         <button
           onClick={() => setShowLayoutManager(true)}
-          className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+          className={`px-2 py-1.5 text-sm leading-none rounded-md transition-all ${activePress} text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5`}
           title={`${t('header.openLayoutManager')} (${modKey}+O)`}
           aria-label={t('header.openLayoutManager')}
         >
@@ -150,7 +151,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {/* Print Button */}
         <button
           onClick={() => setPrintModalOpen(true)}
-          className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+          className={`px-2 py-1.5 text-sm leading-none rounded-md transition-all ${activePress} text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5`}
           title={t('header.printLayout')}
           aria-label={t('header.printLayout')}
         >
@@ -199,7 +200,7 @@ export function Header({ saveStatus }: HeaderProps) {
         )}
         {saveStatus === 'saved' && (
           <div
-            className="flex items-center gap-1 px-2 py-1 text-[11px] mr-2 text-content-secondary animate-fade-in"
+            className="flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 text-content-secondary animate-fade-in"
             aria-live="polite"
             role="status"
           >

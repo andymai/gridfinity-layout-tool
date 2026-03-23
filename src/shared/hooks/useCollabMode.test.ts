@@ -49,9 +49,10 @@ describe('useCollabMode', () => {
 
     // Reset stores to default state
     useLabsStore.setState({
-      features: {},
-      isFeatureEnabled: (featureId: string) => {
-        return useLabsStore.getState().features[featureId]?.enabled ?? false;
+      preferences: {
+        enabledFeatures: {},
+        lastModified: new Date().toISOString(),
+        version: 1,
       },
     });
 
@@ -72,8 +73,11 @@ describe('useCollabMode', () => {
   describe('feature flag disabled', () => {
     it('returns non-collaborative mode when feature is disabled', () => {
       useLabsStore.setState({
-        features: { collaborative_editing: { enabled: false } },
-        isFeatureEnabled: () => false,
+        preferences: {
+          enabledFeatures: { collaborative_editing: false },
+          lastModified: new Date().toISOString(),
+          version: 1,
+        },
       });
 
       const { result } = renderHook(() => useCollabMode());
@@ -87,8 +91,11 @@ describe('useCollabMode', () => {
 
     it('returns non-collaborative even with cloud share when feature is disabled', () => {
       useLabsStore.setState({
-        features: { collaborative_editing: { enabled: false } },
-        isFeatureEnabled: () => false,
+        preferences: {
+          enabledFeatures: { collaborative_editing: false },
+          lastModified: new Date().toISOString(),
+          version: 1,
+        },
       });
 
       useLibraryStore.setState({
@@ -105,8 +112,11 @@ describe('useCollabMode', () => {
   describe('feature flag enabled - shared preview mode', () => {
     beforeEach(() => {
       useLabsStore.setState({
-        features: { collaborative_editing: { enabled: true } },
-        isFeatureEnabled: () => true,
+        preferences: {
+          enabledFeatures: { collaborative_editing: true },
+          lastModified: new Date().toISOString(),
+          version: 1,
+        },
       });
     });
 
@@ -178,8 +188,11 @@ describe('useCollabMode', () => {
   describe('feature flag enabled - local cloud share', () => {
     beforeEach(() => {
       useLabsStore.setState({
-        features: { collaborative_editing: { enabled: true } },
-        isFeatureEnabled: () => true,
+        preferences: {
+          enabledFeatures: { collaborative_editing: true },
+          lastModified: new Date().toISOString(),
+          version: 1,
+        },
       });
     });
 
@@ -229,8 +242,11 @@ describe('useCollabMode', () => {
   describe('reactivity', () => {
     beforeEach(() => {
       useLabsStore.setState({
-        features: { collaborative_editing: { enabled: true } },
-        isFeatureEnabled: () => true,
+        preferences: {
+          enabledFeatures: { collaborative_editing: true },
+          lastModified: new Date().toISOString(),
+          version: 1,
+        },
       });
     });
 

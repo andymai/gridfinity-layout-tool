@@ -4,10 +4,11 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useLabsStore, useLayoutStore, useToastStore } from '@/core/store';
+import { useLayoutStore, useToastStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import { slugify } from '@/shared/utils/slug';
 import type { SharePermission } from '@/core/types';
@@ -23,7 +24,7 @@ const POPOVER_WIDTH = 320;
  */
 export function ShareButton() {
   const t = useTranslation();
-  const isFeatureEnabled = useLabsStore((state) => state.isFeatureEnabled('collaborative_editing'));
+  const isFeatureEnabled = useFeatureFlag('collaborative_editing');
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);

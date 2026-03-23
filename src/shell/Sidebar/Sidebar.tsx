@@ -132,7 +132,7 @@ export function Sidebar() {
               isScrolled ? 'shadow-elevated' : ''
             }`}
           >
-            <h2 className="flex-1 text-xs font-semibold text-content-tertiary uppercase tracking-wider">
+            <h2 className="flex-1 text-xs leading-none font-semibold text-content-tertiary uppercase tracking-wider">
               {t('sidebar.tools')}
             </h2>
             <button

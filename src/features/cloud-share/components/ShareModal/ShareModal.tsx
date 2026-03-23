@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useLayoutStore, useLibraryStore, useLabsStore } from '@/core/store';
+import { useLayoutStore, useLibraryStore } from '@/core/store';
 import { useInteractionStore } from '@/core/store/interaction';
 import {
   generateShareableURL,
@@ -10,6 +10,7 @@ import {
 import { trackLayoutSnapshot, trackEvent } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { CloudShareTab } from '../CloudShareTab';
 
 interface ShareModalProps {
@@ -31,7 +32,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   // When collaborative_editing is enabled, cloud sharing is handled by the ShareButton instead
-  const isCollabEnabled = useLabsStore((state) => state.isFeatureEnabled('collaborative_editing'));
+  const isCollabEnabled = useFeatureFlag('collaborative_editing');
 
   // Use provided layoutId or fall back to active layout
   const targetLayoutId = layoutId ?? activeLayoutId;
@@ -105,7 +106,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-overlay-dark flex items-center justify-center z-50"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onClose();

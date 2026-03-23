@@ -619,7 +619,7 @@ const PADDING_MIN = 0;
 const PADDING_MAX = 100;
 
 const sideStepperBtnClass =
-  'flex h-6 w-8 items-center justify-center border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:bg-surface-hover hover:text-content disabled:opacity-30';
+  'flex h-6 w-8 items-center justify-center border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:bg-surface-hover hover:text-content disabled:opacity-50';
 
 /** Compact vertical stepper for left/right edges — value + buttons stacked to save width. */
 function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {

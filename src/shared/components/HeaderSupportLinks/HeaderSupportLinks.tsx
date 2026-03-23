@@ -64,7 +64,7 @@ export function HeaderSupportLinks() {
       {/* Feedback — opens GitHub Issues + thank-you toast with Ko-fi mention */}
       <button
         onClick={handleFeedbackClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary flex items-center gap-1.5"
+        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.sendFeedback')}
         aria-label={t('header.sendFeedback')}
       >
@@ -82,7 +82,7 @@ export function HeaderSupportLinks() {
       {/* Help */}
       <button
         onClick={handleHelpClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary relative"
+        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary relative flex items-center"
         title={t('header.showHelp')}
         aria-label={t('header.helpAndShortcuts')}
       >
@@ -118,7 +118,7 @@ export function HeaderSupportLinks() {
         href={GITHUB_REPO_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary flex items-center gap-1.5"
+        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.starOnGithub')}
         aria-label={t('header.starOnGithub')}
       >
@@ -131,7 +131,7 @@ export function HeaderSupportLinks() {
       {/* Ko-fi tip */}
       <button
         onClick={handleKofiClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary flex items-center gap-1.5"
+        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.tip')}
         aria-label={t('header.tip')}
       >
