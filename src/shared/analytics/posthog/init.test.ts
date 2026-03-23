@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach } from 'vitest';
-import { isTrackingOptOut } from './init';
+import { isTrackingOptOut } from './privacy';
 
 describe('isTrackingOptOut', () => {
   const originalDoNotTrack = Object.getOwnPropertyDescriptor(Navigator.prototype, 'doNotTrack');
