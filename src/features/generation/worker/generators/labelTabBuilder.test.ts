@@ -76,4 +76,44 @@ describe('buildLabelTabs', () => {
     // (it sits near the top, not at the floor)
     expect(minZ).toBeGreaterThan(wallHeight / 2);
   });
+
+  it.each(['solid', 'bracket', 'fillet'] as const)(
+    '%s support reaches the front edge of the shelf (no overhang gap)',
+    async (support) => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const { mesh } = await import('brepjs');
+      const wallHeight = 35;
+      const wt = 1.2;
+      const tabDepth = 12;
+      const params = {
+        ...DEFAULT_BIN_PARAMS,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          support,
+          depth: tabDepth,
+          width: 50,
+          alignment: 'center' as const,
+        },
+      };
+      const result = buildLabelTabs(params, 80, 80, wallHeight, wt);
+      expect(result).not.toBeNull();
+
+      // Tessellate and find the Y extent. The shelf front edge is at
+      // backEdgeY - tabDepth. The support must reach at least that far
+      // (within tessellation tolerance).
+      const tessellated = mesh(result!, { tolerance: 0.1, angularTolerance: 10 });
+      const verts = tessellated.vertices;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (let i = 1; i < verts.length; i += 3) {
+        if (verts[i] < minY) minY = verts[i];
+        if (verts[i] > maxY) maxY = verts[i];
+      }
+      // The Y extent of the tab should equal tabDepth (shelf front to back wall).
+      // Allow 0.5mm tolerance for tessellation.
+      const yExtent = maxY - minY;
+      expect(yExtent).toBeGreaterThanOrEqual(tabDepth - 0.5);
+    }
+  );
 });
