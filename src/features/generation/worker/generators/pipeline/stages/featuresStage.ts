@@ -371,8 +371,9 @@ export const featuresStage: PipelineStage = {
         for (const wall of wallDescriptors) {
           checkCancelled(signal);
           // Cache key captures everything that affects this wall's hex compound.
-          // Include first center position to fingerprint the grid layout — center
-          // count alone can't distinguish walls with different fill dimensions.
+          // c0.x encodes fillW (wall span) which isn't in the translate values
+          // for front/back walls. c0.y encodes fillH similarly. Together with
+          // centers.length they uniquely identify the staggered grid layout.
           const c0 = wall.centers[0];
           const wallKey = compactKey(
             buildCacheKey(
