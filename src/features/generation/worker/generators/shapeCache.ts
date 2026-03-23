@@ -73,30 +73,24 @@ interface CacheEntry {
 let patternTemplateCache: CacheEntry | null = null;
 let lastSolid: Shape3D | null = null;
 
-/** Feature tool caches — sized for multi-feature iteration workflows */
-const FEATURE_NAMES = [
-  'compartmentWalls',
-  'handles',
-  'insertCuts',
-  'labelTabs',
-  'scoopRamps',
-  'slotCuts',
-  'wallCutoutCuts',
-  'wallPattern',
-] as const;
+/**
+ * Feature tool caches — created lazily by builder name.
+ * New builders automatically get their own LRU cache on first use.
+ */
+const featureToolCaches = new Map<string, LRUCache<Shape3D>>();
 
-const featureToolCaches = new Map<string, LRUCache<Shape3D>>(
-  FEATURE_NAMES.map((name) => [name, new LRUCache<Shape3D>(`feature-${name}`, 12, disposeShape)])
-);
+/** Get or create a feature cache by name. */
+function getOrCreateFeatureCache(name: string): LRUCache<Shape3D> {
+  let cache = featureToolCaches.get(name);
+  if (!cache) {
+    cache = new LRUCache<Shape3D>(`feature-${name}`, 12, disposeShape);
+    featureToolCaches.set(name, cache);
+  }
+  return cache;
+}
 
-/** All LRU caches, for batch disposal in clearAllCaches. */
-const allLruCaches: readonly LRUCache<Shape3D>[] = [
-  socketCache,
-  lipCache,
-  boxCache,
-  shellCache,
-  ...featureToolCaches.values(),
-];
+/** Static LRU caches (socket, lip, box, shell). */
+const staticLruCaches: readonly LRUCache<Shape3D>[] = [socketCache, lipCache, boxCache, shellCache];
 
 export function socketCacheKey(
   gridW: number,
@@ -164,17 +158,19 @@ export function setLastSolid(shape: Shape3D | null): void {
 }
 
 export function getFeatureCache(feature: string, key: string): Shape3D | null {
-  const cache = featureToolCaches.get(feature);
-  return cache ? cloneFromCache(cache, key) : null;
+  return cloneFromCache(getOrCreateFeatureCache(feature), key);
 }
 
 export function setFeatureCache(feature: string, key: string, shape: Shape3D): void {
-  featureToolCaches.get(feature)?.set(key, shape);
+  getOrCreateFeatureCache(feature).set(key, shape);
 }
 
 /** Clear all shape caches, disposing WASM handles. Required when switching geometry kernels in tests. */
 export function clearAllCaches(): void {
-  for (const cache of allLruCaches) {
+  for (const cache of staticLruCaches) {
+    cache.dispose();
+  }
+  for (const cache of featureToolCaches.values()) {
     cache.dispose();
   }
   if (patternTemplateCache) {
@@ -189,12 +185,18 @@ export function clearAllCaches(): void {
 
 /** Collect stats from all shape LRU caches. */
 export function getAllShapeCacheStats(): CacheStats[] {
-  return allLruCaches.map((cache) => cache.getStats());
+  return [
+    ...staticLruCaches.map((cache) => cache.getStats()),
+    ...[...featureToolCaches.values()].map((cache) => cache.getStats()),
+  ];
 }
 
 /** Reset stats counters on all shape LRU caches. */
 export function resetAllShapeCacheStats(): void {
-  for (const cache of allLruCaches) {
+  for (const cache of staticLruCaches) {
+    cache.resetStats();
+  }
+  for (const cache of featureToolCaches.values()) {
     cache.resetStats();
   }
 }

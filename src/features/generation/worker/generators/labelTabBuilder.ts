@@ -233,3 +233,43 @@ export function buildLabelTabs(
 
   return fuseAllOrNull(allTabs);
 }
+
+// --- FeatureBuilder protocol ---
+
+import type { FeatureBuilder } from './pipeline/featureBuilder';
+import { FeatureTag } from './featureTags';
+import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
+
+export const labelTabsFeature: FeatureBuilder = {
+  name: 'labelTabs',
+  tag: FeatureTag.LABEL_TAB,
+  target: 'fuse',
+  shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
+  cacheKey: (ctx) => {
+    const { dimensions: dim, params } = ctx;
+    return compactKey(
+      buildCacheKey(
+        'v1',
+        dim.shellKey,
+        stableSerialize(params.label),
+        quantize(dim.innerW),
+        quantize(dim.innerD),
+        quantize(dim.interiorHeight),
+        quantize(params.wallThickness),
+        params.compartments.cols,
+        params.compartments.rows,
+        params.compartments.cells.join(',')
+      )
+    );
+  },
+  build: (ctx) => {
+    const result = buildLabelTabs(
+      ctx.params,
+      ctx.dimensions.innerW,
+      ctx.dimensions.innerD,
+      ctx.dimensions.interiorHeight,
+      ctx.params.wallThickness
+    );
+    return result ? [result] : null;
+  },
+};

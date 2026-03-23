@@ -11,7 +11,7 @@
 import { unwrap, fuse, clone, translate, withScope } from 'brepjs';
 import type { DisposalScope } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
-import { checkCancelled } from '../../meshUtils';
+import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket } from '../../socketBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { getShellCache, setShellCache } from '../../shapeCache';
@@ -73,7 +73,7 @@ export const shellStage: PipelineStage = {
               )
             );
           } catch (e: unknown) {
-            if (e instanceof DOMException && e.name === 'AbortError') throw e;
+            if (isAbortError(e)) throw e;
             return binBody; // fuse failed — withScope exempts returned value from disposal
           }
         }
@@ -121,7 +121,7 @@ export const shellStage: PipelineStage = {
             )
           );
         } catch (e: unknown) {
-          if (e instanceof DOMException && e.name === 'AbortError') throw e;
+          if (isAbortError(e)) throw e;
           return unwrap(fuse(base, binBody));
         }
       }

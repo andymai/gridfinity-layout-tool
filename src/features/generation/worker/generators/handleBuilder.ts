@@ -128,3 +128,43 @@ export function buildHandles(
 
   return fuseAllOrNull(allHandles);
 }
+
+// --- FeatureBuilder protocol ---
+
+import type { FeatureBuilder } from './pipeline/featureBuilder';
+import { FeatureTag } from './featureTags';
+import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
+
+export const handlesFeature: FeatureBuilder = {
+  name: 'handles',
+  tag: FeatureTag.HANDLE,
+  target: 'fuse',
+  shouldBuild: (ctx) => ctx.params.handles.enabled && !ctx.dimensions.isSlotted,
+  cacheKey: (ctx) => {
+    const { dimensions: dim, params } = ctx;
+    return compactKey(
+      buildCacheKey(
+        'v1',
+        dim.shellKey,
+        stableSerialize(params.handles),
+        quantize(dim.innerW),
+        quantize(dim.innerD),
+        quantize(dim.interiorHeight),
+        quantize(params.wallThickness),
+        params.label.enabled,
+        dim.hasLip
+      )
+    );
+  },
+  build: (ctx) => {
+    const result = buildHandles(
+      ctx.params,
+      ctx.dimensions.innerW,
+      ctx.dimensions.innerD,
+      ctx.dimensions.interiorHeight,
+      ctx.params.wallThickness,
+      ctx.dimensions.hasLip
+    );
+    return result ? [result] : null;
+  },
+};
