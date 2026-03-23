@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.21.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.21.1...gridfinity-layout-tool-v4.21.2) (2026-03-23)
+
+
+### Bug Fixes
+
+* standardize disabled opacity, focus rings, icon alignment, modal overlays, and labs reactivity ([#1203](https://github.com/andymai/gridfinity-layout-tool/issues/1203)) ([b3badcf](https://github.com/andymai/gridfinity-layout-tool/commit/b3badcfcc3a6b06d87e975957a31234383bf3189))
+
 ## [4.21.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.21.0...gridfinity-layout-tool-v4.21.1) (2026-03-23)
 
 
