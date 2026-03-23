@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.api.tsbuildinfo",
-    "target": "ES2022",
-    "lib": ["ES2022"],
+    "target": "ES2024",
+    "lib": ["ES2024"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],
@@ -16,13 +16,12 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
 
-    /* Interop */
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true
+    /* JSON module support */
+    "resolveJsonModule": true
   },
   "include": ["api/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]

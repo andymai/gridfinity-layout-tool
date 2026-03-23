@@ -2,7 +2,7 @@
 
 Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organizer layouts.
 
-**Stack:** React 19, TypeScript 5.9, Vite 7, Zustand 5 + Immer, Tailwind CSS 4, Three.js, Vitest, Playwright, PWA, Vercel Blob + Redis, Liveblocks, PostHog.
+**Stack:** React 19, TypeScript 6, Vite 7, Zustand 5 + Immer, Tailwind CSS 4, Three.js, Vitest, Playwright, PWA, Vercel Blob + Redis, Liveblocks, PostHog.
 
 ## Git & Quality
 
