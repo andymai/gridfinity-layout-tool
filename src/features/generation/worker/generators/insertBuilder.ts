@@ -68,3 +68,22 @@ export function buildInsertCuts(params: BinParams): Shape3D | null {
   if (insertShapes.length === 1) return insertShapes[0];
   return unwrap(fuseAll(insertShapes as ValidSolid[]));
 }
+
+// --- FeatureBuilder protocol ---
+
+import type { FeatureBuilder } from './pipeline/featureBuilder';
+import { FeatureTag } from './featureTags';
+import { buildCacheKey, stableSerialize, compactKey } from './cacheKeyUtils';
+
+export const insertCutsFeature: FeatureBuilder = {
+  name: 'insertCuts',
+  tag: FeatureTag.INSERT,
+  target: 'cut',
+  shouldBuild: () => true,
+  cacheKey: (ctx) =>
+    compactKey(buildCacheKey('v1', ctx.dimensions.shellKey, stableSerialize(ctx.params.inserts))),
+  build: (ctx) => {
+    const result = buildInsertCuts(ctx.params);
+    return result ? [result] : null;
+  },
+};

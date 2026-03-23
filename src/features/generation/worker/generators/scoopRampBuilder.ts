@@ -177,3 +177,45 @@ export function buildScoopRamps(
 
   return fuseAllOrNull(scoopShapes);
 }
+
+// --- FeatureBuilder protocol ---
+
+import type { FeatureBuilder } from './pipeline/featureBuilder';
+import { FeatureTag } from './featureTags';
+import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
+
+export const scoopRampsFeature: FeatureBuilder = {
+  name: 'scoopRamps',
+  tag: FeatureTag.SCOOP,
+  target: 'fuse',
+  shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
+  cacheKey: (ctx) => {
+    const { dimensions: dim, params } = ctx;
+    return compactKey(
+      buildCacheKey(
+        'v1',
+        dim.shellKey,
+        stableSerialize(params.scoop),
+        params.style,
+        quantize(dim.innerW),
+        quantize(dim.innerD),
+        quantize(dim.wallHeight),
+        quantize(params.wallThickness),
+        dim.hasLip,
+        params.compartments.cols,
+        params.compartments.rows,
+        params.compartments.cells.join(',')
+      )
+    );
+  },
+  build: (ctx) => {
+    const result = buildScoopRamps(
+      ctx.params,
+      ctx.dimensions.innerW,
+      ctx.dimensions.innerD,
+      ctx.dimensions.wallHeight,
+      ctx.params.wallThickness
+    );
+    return result ? [result] : null;
+  },
+};

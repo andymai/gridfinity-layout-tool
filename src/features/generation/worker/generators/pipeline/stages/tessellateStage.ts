@@ -1,16 +1,13 @@
 /**
  * Tessellate stage — converts BREP solid to triangle mesh.
  *
- * Dynamic quality selection:
- * - Export: fine tessellation (0.01mm tolerance)
- * - Lip bins: tight tolerance to preserve chamfer profile at corner junctions
- * - Small bins: moderate quality
- * - Large bins: coarser tessellation for speed
+ * Dynamic quality selection via computeTessellationTolerances().
  */
 
 import { mesh, meshEdges } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
-import { toIndexedMeshData } from '../../meshUtils';
+import { toIndexedMeshData } from '../../utils/mesh';
+import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastSolid } from '../../shapeCache';
 
 export const tessellateStage: PipelineStage = {
@@ -27,22 +24,11 @@ export const tessellateStage: PipelineStage = {
 
     setLastSolid(solid);
 
-    let tolerance: number;
-    let angularTolerance: number;
-
-    if (forExport) {
-      tolerance = 0.01;
-      angularTolerance = 5;
-    } else if (dim.hasLip) {
-      tolerance = Math.min(0.1, Math.max(0.05, dim.maxDimension / 2500));
-      angularTolerance = 10;
-    } else if (dim.maxDimension <= 200) {
-      tolerance = Math.min(0.4, Math.max(0.15, dim.maxDimension / 600));
-      angularTolerance = 12;
-    } else {
-      tolerance = Math.min(1.0, Math.max(0.3, dim.maxDimension / 300));
-      angularTolerance = 25;
-    }
+    const { tolerance, angularTolerance } = computeTessellationTolerances(
+      forExport,
+      dim.hasLip,
+      dim.maxDimension
+    );
 
     const shapeMesh = mesh(solid, { tolerance, angularTolerance });
     const edgeMesh = meshEdges(solid, { tolerance, angularTolerance });

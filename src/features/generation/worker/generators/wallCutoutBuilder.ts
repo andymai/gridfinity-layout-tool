@@ -278,3 +278,43 @@ export function buildWallCutoutCuts(
 
   return fuseAllOrNull(cutShapes);
 }
+
+// --- FeatureBuilder protocol ---
+
+import type { FeatureBuilder } from './pipeline/featureBuilder';
+import { FeatureTag } from './featureTags';
+import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
+
+export const wallCutoutsFeature: FeatureBuilder = {
+  name: 'wallCutoutCuts',
+  tag: FeatureTag.WALL_CUTOUT,
+  target: 'cut',
+  shouldBuild: (ctx) => ctx.params.walls.enabled,
+  cacheKey: (ctx) => {
+    const { dimensions: dim, params } = ctx;
+    return compactKey(
+      buildCacheKey(
+        'v1',
+        dim.shellKey,
+        stableSerialize(params.walls),
+        quantize(dim.innerW),
+        quantize(dim.innerD),
+        quantize(dim.wallHeight),
+        dim.hasLip,
+        params.compartments.cols,
+        params.compartments.rows,
+        params.compartments.cells.join(',')
+      )
+    );
+  },
+  build: (ctx) => {
+    const result = buildWallCutoutCuts(
+      ctx.params,
+      ctx.dimensions.innerW,
+      ctx.dimensions.innerD,
+      ctx.dimensions.wallHeight,
+      ctx.dimensions.hasLip
+    );
+    return result ? [result] : null;
+  },
+};

@@ -239,3 +239,49 @@ export function buildSlotCuts(
   // Batch-fuse all slots into a single compound for one boolean cut
   return unwrap(fuseAll(slots as ValidSolid[]));
 }
+
+// --- FeatureBuilder protocol ---
+
+import type { FeatureBuilder } from './pipeline/featureBuilder';
+import { FeatureTag } from './featureTags';
+import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
+import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
+
+export const slotCutsFeature: FeatureBuilder = {
+  name: 'slotCuts',
+  tag: FeatureTag.SLOT,
+  target: 'cut',
+  shouldBuild: (ctx) => ctx.dimensions.isSlotted,
+  cacheKey: (ctx) => {
+    const { dimensions: dim, params } = ctx;
+    const lipInfo = dim.hasLip
+      ? { wallHeight: dim.wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
+      : undefined;
+    return compactKey(
+      buildCacheKey(
+        'v1',
+        dim.shellKey,
+        stableSerialize(params.slotConfig),
+        quantize(dim.innerW),
+        quantize(dim.innerD),
+        quantize(dim.interiorHeight),
+        lipInfo
+          ? buildCacheKey(
+              'lip',
+              quantize(lipInfo.wallHeight),
+              quantize(lipInfo.lipHeight),
+              quantize(lipInfo.lipTaperWidth)
+            )
+          : 'none'
+      )
+    );
+  },
+  build: (ctx) => {
+    const { dimensions: dim, params } = ctx;
+    const lipInfo = dim.hasLip
+      ? { wallHeight: dim.wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
+      : undefined;
+    const result = buildSlotCuts(params, dim.innerW, dim.innerD, dim.interiorHeight, lipInfo);
+    return result ? [result] : null;
+  },
+};

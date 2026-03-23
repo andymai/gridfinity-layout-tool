@@ -5,15 +5,13 @@
  * Walls appear at boundaries between cells with different compartment IDs.
  */
 
-import { box, unwrap, fuseAll } from 'brepjs';
-import type { Shape3D, ValidSolid } from 'brepjs';
+import { box } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-/** Fuse an array of shapes into one, returning null if the array is empty. */
-export function fuseAllOrNull(shapes: Shape3D[]): Shape3D | null {
-  if (shapes.length === 0) return null;
-  if (shapes.length === 1) return shapes[0];
-  return unwrap(fuseAll(shapes as ValidSolid[]));
-}
+import { fuseAllOrNull } from './utils/shapeOps';
+
+// Re-export for backwards compatibility with existing imports
+export { fuseAllOrNull } from './utils/shapeOps';
 
 /** Build a positioned wall segment solid. */
 function buildWallSegment(w: number, d: number, height: number, x: number, y: number): Shape3D {
@@ -139,3 +137,41 @@ export function buildCompartmentWalls(
 
   return fuseAllOrNull(wallSegments);
 }
+
+// --- FeatureBuilder protocol ---
+
+import type { FeatureBuilder } from './pipeline/featureBuilder';
+import { FeatureTag } from './featureTags';
+import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
+
+export const compartmentWallsFeature: FeatureBuilder = {
+  name: 'compartmentWalls',
+  tag: FeatureTag.DIVIDER,
+  target: 'fuse',
+  shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
+  cacheKey: (ctx) => {
+    const { dimensions: dim, params } = ctx;
+    return compactKey(
+      buildCacheKey(
+        'v1',
+        dim.shellKey,
+        quantize(dim.innerW),
+        quantize(dim.innerD),
+        quantize(dim.interiorHeight),
+        params.compartments.cols,
+        params.compartments.rows,
+        quantize(params.compartments.thickness),
+        params.compartments.cells.join(',')
+      )
+    );
+  },
+  build: (ctx) => {
+    const result = buildCompartmentWalls(
+      ctx.params,
+      ctx.dimensions.innerW,
+      ctx.dimensions.innerD,
+      ctx.dimensions.interiorHeight
+    );
+    return result ? [result] : null;
+  },
+};
