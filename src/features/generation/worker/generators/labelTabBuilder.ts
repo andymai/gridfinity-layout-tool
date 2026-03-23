@@ -13,8 +13,9 @@ import { fuseAllOrNull } from './compartmentBuilder';
 import { buildFilletProfile } from './filletProfile';
 /**
  * Build a right-triangle profile for label tab gusset supports.
- * The triangle has its right angle at the origin, with the depth leg
- * extending to (-depth, height) and the height leg to (0, height).
+ * The triangle has its right angle at (0, height), with the depth leg
+ * running horizontally to (-depth, height) and the height leg running
+ * vertically down to (0, 0).
  */
 function buildGussetProfile(depth: number, height: number): Drawing {
   return draw([0, height]).lineTo([-depth, height]).lineTo([0, 0]).close();
@@ -61,7 +62,8 @@ export function buildLabelTabs(
   const wt = wallThickness;
   const gt = thickness; // gusset thickness = compartment divider thickness
 
-  // 45deg triangle envelope: height = depth
+  // Tab envelope height equals depth (design invariant).
+  // Gusset height is tabHeight - wt (shelf occupies the top wt).
   const tabHeight = tabDepth;
 
   // Safety: tab must fit within wall height

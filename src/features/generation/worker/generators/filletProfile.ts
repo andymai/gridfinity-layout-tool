@@ -39,8 +39,9 @@ const HEIGHT_CLEARANCE = 0.1;
  */
 export function buildFilletProfile(radius: number, height: number, depth?: number): Drawing {
   const maxR = height - HEIGHT_CLEARANCE;
+  const fallbackDepth = depth ?? MIN_RADIUS;
   if (maxR < MIN_RADIUS)
-    return draw([0, 0]).lineTo([-MIN_RADIUS, 0]).lineTo([0, -MIN_RADIUS]).close();
+    return draw([0, 0]).lineTo([-fallbackDepth, 0]).lineTo([0, -MIN_RADIUS]).close();
   const safeR = Math.max(MIN_RADIUS, Math.min(radius, maxR));
   const effectiveDepth = depth ?? safeR;
 
