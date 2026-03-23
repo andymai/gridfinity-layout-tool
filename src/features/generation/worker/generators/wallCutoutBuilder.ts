@@ -94,7 +94,7 @@ function buildCutoutProfile(
  *
  * @returns Positioned Shape3D ready for boolean subtraction
  */
-function buildSingleCutout(
+export function buildSingleCutout(
   cutoutShape: WallCutoutShape,
   cutWidth: number,
   userCutHeight: number,

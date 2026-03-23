@@ -23,6 +23,8 @@ export interface SlotFreeWalls {
 
 /** Descriptor for a single wall's pattern element positions + transform. */
 export interface WallPatternDescriptor {
+  /** Which outer wall this descriptor belongs to. */
+  readonly side: 'front' | 'back' | 'left' | 'right';
   /** Element center positions on the flat XY grid (before wall rotation). Non-empty — walls with zero centers are filtered out by getWallPatternDescriptors. */
   readonly centers: readonly [PatternCenter, ...PatternCenter[]];
   /** Translation to position pattern panel on wall face */
@@ -49,6 +51,9 @@ export function getSlotFreeWalls(params: BinParams): SlotFreeWalls {
 }
 /** Keep-out from wall top edge (stacking lip interface). */
 export const TOP_KEEP_OUT = 1.5;
+
+/** Solid border width around wall cutouts in honeycomb pattern (mm). */
+export const CUTOUT_BORDER_WIDTH = 1.5;
 
 /**
  * Minimum keep-out from wall bottom edge (base/floor junction).
@@ -103,6 +108,7 @@ function getWallPatternDescriptors(
   const descriptors: WallPatternDescriptor[] = [];
 
   const addWall = (
+    side: 'front' | 'back' | 'left' | 'right',
     fillW: number,
     translateX: number,
     translateY: number,
@@ -112,6 +118,7 @@ function getWallPatternDescriptors(
     if (centers.length === 0) return;
     const [first, ...rest] = centers;
     descriptors.push({
+      side,
       centers: [first, ...rest],
       translateX,
       translateY,
@@ -120,12 +127,40 @@ function getWallPatternDescriptors(
     });
   };
 
-  if (slotFree.front) addWall(innerW, 0, -innerD / 2);
-  if (slotFree.back) addWall(innerW, 0, innerD / 2, 180);
-  if (slotFree.left) addWall(innerD, -innerW / 2, 0, 90);
-  if (slotFree.right) addWall(innerD, innerW / 2, 0, -90);
+  if (slotFree.front) addWall('front', innerW, 0, -innerD / 2);
+  if (slotFree.back) addWall('back', innerW, 0, innerD / 2, 180);
+  if (slotFree.left) addWall('left', innerD, -innerW / 2, 0, 90);
+  if (slotFree.right) addWall('right', innerD, innerW / 2, 0, -90);
 
   return descriptors.length > 0 ? descriptors : null;
+}
+
+/**
+ * Compute expanded cutout dimensions for clipping hex patterns.
+ *
+ * The expansion creates a solid border zone around the cutout where no
+ * hex pattern elements appear. Width expands by borderWidth on each side;
+ * height expands by borderWidth at the bottom edge only (the top already
+ * opens at the wall top).
+ *
+ * @param cutWidth - Original cutout width in mm
+ * @param userCutHeight - Original cutout height (depth from wall top) in mm
+ * @param borderWidth - Border width to add around the cutout in mm
+ * @param wallSpan - Optional wall inner span; if provided, sets suppressPattern
+ * @returns Expanded dimensions and optional suppression flag
+ */
+export function getExpandedCutoutDimensions(
+  cutWidth: number,
+  userCutHeight: number,
+  borderWidth: number
+): {
+  expandedWidth: number;
+  expandedHeight: number;
+} {
+  return {
+    expandedWidth: cutWidth + 2 * borderWidth,
+    expandedHeight: userCutHeight + borderWidth,
+  };
 }
 
 /**
