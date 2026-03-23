@@ -1189,6 +1189,7 @@
   "settings.accentColor.sky": "Himmelblå",
   "settings.accentColor.violet": "Fiolett",
   "settings.autoDetect": "Auto (nettleserstandard)",
+  "settings.browserPrivacySignal": "Analyse deaktivert basert på nettleserens personverninnstilling. Du kan endre dette nedenfor.",
   "settings.confirmCopyFromLayout.confirm": "Kopier",
   "settings.confirmCopyFromLayout.message": "Erstatt alle standardverdier med innstillingene fra ditt gjeldende layout?\n\nGjeldende layout: {width}×{depth}×{height}u\nLaghøyde: {layerHeight}u\nPrintplate: {printBed}mm\nRutenettenhet: {gridUnit}mm",
   "settings.confirmCopyFromLayout.title": "Kopier fra gjeldende layout",

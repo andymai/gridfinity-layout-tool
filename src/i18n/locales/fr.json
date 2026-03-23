@@ -1189,6 +1189,7 @@
   "settings.accentColor.sky": "Ciel",
   "settings.accentColor.violet": "Violet",
   "settings.autoDetect": "Auto (langue du navigateur)",
+  "settings.browserPrivacySignal": "Analytique désactivée en raison des paramètres de confidentialité de votre navigateur. Vous pouvez modifier cela ci-dessous.",
   "settings.confirmCopyFromLayout.confirm": "Copier",
   "settings.confirmCopyFromLayout.message": "Remplacer toutes les valeurs par défaut par les paramètres du design actuel ?\n\nDesign actuel : {width}×{depth}×{height}u\nHauteur de couche : {layerHeight}u\nPlateau d'impression : {printBed}mm\nUnité de grille : {gridUnit}mm",
   "settings.confirmCopyFromLayout.title": "Copier depuis le design actuel",

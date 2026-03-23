@@ -589,6 +589,8 @@ const en: Record<string, string> = {
   'settings.privacy': 'Privacy',
   'settings.helpImprove': 'Help improve suggestions',
   'settings.helpImproveHint': 'Share bin sizes and placement patterns (no personal data)',
+  'settings.browserPrivacySignal':
+    'Analytics disabled based on your browser privacy setting. You can override this below.',
   'settings.toggleUsageData': 'Toggle usage data collection',
   'settings.language': 'Language',
   'settings.languageHint': 'Choose your preferred language',
