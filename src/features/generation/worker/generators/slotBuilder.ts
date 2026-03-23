@@ -14,7 +14,7 @@
  */
 
 import { box, unwrap, fuseAll } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import {
   calculateSlotPositions,
@@ -237,5 +237,5 @@ export function buildSlotCuts(
   if (slots.length === 0) return null;
 
   // Batch-fuse all slots into a single compound for one boolean cut
-  return unwrap(fuseAll(slots));
+  return unwrap(fuseAll(slots as ValidSolid[]));
 }

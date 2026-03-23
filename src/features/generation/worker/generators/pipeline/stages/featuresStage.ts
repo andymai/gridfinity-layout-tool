@@ -41,9 +41,58 @@ import {
   buildWallCutoutCuts,
 } from '../../featureBuilder';
 import { buildSlotCuts } from '../../slotBuilder';
+import type { WallPatternDescriptor } from '../../wallPatterns';
 import { getPatternDescriptors } from '../../wallPatterns';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
+
+/**
+ * Build a compound of positioned hex prisms for a single wall.
+ *
+ * Creates one transformCopy per hex center, then groups them with compound()
+ * (O(n) topology grouping, not O(n²) fuseAll). Returns null if no elements.
+ */
+function buildWallPatternCompound(
+  shapeTemplate: Shape3D,
+  wall: WallPatternDescriptor,
+  halfDepth: number
+): Shape3D | null {
+  const elements: Shape3D[] = [];
+  try {
+    for (const center of wall.centers) {
+      const ops: TransformOp[] = [
+        { type: 'translate', v: [center.x, center.y, -halfDepth] },
+        { type: 'rotate', angle: 90, axis: [1, 0, 0] },
+      ];
+      if (wall.zRotation !== undefined) {
+        ops.push({ type: 'rotate', angle: wall.zRotation, axis: [0, 0, 1] });
+      }
+      ops.push({
+        type: 'translate',
+        v: [wall.translateX, wall.translateY, wall.translateZ],
+      });
+      const trsf = composeTransforms(ops);
+      try {
+        elements.push(transformCopy(shapeTemplate, trsf));
+      } finally {
+        trsf.cleanup();
+      }
+    }
+
+    if (elements.length === 0) return null;
+    if (elements.length === 1) return elements[0];
+
+    const grouped = compound(elements);
+    // Dispose individual handles — compound shares the underlying
+    // OCCT TShape references, so the geometry stays alive.
+    for (const el of elements) el.delete();
+    return grouped;
+  } catch (e: unknown) {
+    for (const el of elements) el.delete();
+    if (e instanceof DOMException && e.name === 'AbortError') throw e;
+    return null;
+  }
+}
 
 /**
  * Get-or-build a cached feature shape and, if present, collect its
@@ -57,12 +106,13 @@ function cachedFeature(
   originToTag: Map<number, number>,
   targets: Shape3D[]
 ): void {
+  // getFeatureCache returns a clone (caller owns it), or null on miss.
   let shape = getFeatureCache(kind, key);
   if (!shape) {
-    shape = build();
-    if (shape) {
-      setFeatureCache(kind, key, shape);
-      shape = clone(shape); // Clone so targets array holds independent handle
+    const built = build();
+    if (built) {
+      setFeatureCache(kind, key, built); // Cache owns the original
+      shape = unwrap(clone(built)); // Clone for the targets array
     }
   }
   if (shape) {
@@ -292,82 +342,62 @@ export const featuresStage: PipelineStage = {
       );
     }
 
-    // Wall patterns — pre-fuse all hex elements into a single compound shape
-    // to avoid O(n²) boolean degradation from hundreds of individual cuts.
+    // Wall patterns — build per-wall compounds with caching.
+    // Each wall gets its own compound and cache entry, so:
+    // (a) unrelated param changes (label, color) don't rebuild hex geometry
+    // (b) OCCT processes 4 smaller tool shapes instead of one massive compound
     if (params.wallPattern.enabled) {
       const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
       if (patternResult) {
         const { descriptors: wallDescriptors, calculator } = patternResult;
-        const patternElements: Shape3D[] = [];
-        try {
-          const cutDepth = params.wallThickness * 4;
-          const halfDepth = cutDepth / 2;
-          const patternType = calculator.getPatternType();
-          const shapeRadius = calculator.getShapeRadius();
+        const cutDepth = params.wallThickness * 4;
+        const halfDepth = cutDepth / 2;
+        const patternType = calculator.getPatternType();
+        const shapeRadius = calculator.getShapeRadius();
 
-          const templateKey = buildCacheKey(
-            'v1',
-            patternType,
-            quantize(shapeRadius),
-            quantize(cutDepth)
+        const templateKey = buildCacheKey(
+          'v1',
+          patternType,
+          quantize(shapeRadius),
+          quantize(cutDepth)
+        );
+        let shapeTemplate = getPatternTemplateCache(templateKey);
+        if (!shapeTemplate) {
+          const sides = calculator.getSidesCount();
+          shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
+          setPatternTemplateCache(templateKey, shapeTemplate);
+        }
+
+        for (const wall of wallDescriptors) {
+          checkCancelled(signal);
+          // Cache key captures everything that affects this wall's hex compound.
+          // c0.x encodes fillW (wall span) which isn't in the translate values
+          // for front/back walls. c0.y encodes fillH similarly. Together with
+          // centers.length they uniquely identify the staggered grid layout.
+          const c0 = wall.centers[0];
+          const wallKey = compactKey(
+            buildCacheKey(
+              'v2',
+              patternType,
+              quantize(shapeRadius),
+              quantize(cutDepth),
+              wall.centers.length,
+              quantize(c0.x),
+              quantize(c0.y),
+              quantize(wall.translateX),
+              quantize(wall.translateY),
+              quantize(wall.translateZ),
+              wall.zRotation ?? 0
+            )
           );
-          const shapeTemplate =
-            getPatternTemplateCache(templateKey) ??
-            (() => {
-              const sides = calculator.getSidesCount();
-              const template = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
-              setPatternTemplateCache(templateKey, template);
-              return template;
-            })();
-
-          for (const wall of wallDescriptors) {
-            for (const center of wall.centers) {
-              const ops: TransformOp[] = [
-                { type: 'translate', v: [center.x, center.y, -halfDepth] },
-                { type: 'rotate', angle: 90, axis: [1, 0, 0] },
-              ];
-              if (wall.zRotation !== undefined) {
-                ops.push({ type: 'rotate', angle: wall.zRotation, axis: [0, 0, 1] });
-              }
-              ops.push({
-                type: 'translate',
-                v: [wall.translateX, wall.translateY, wall.translateZ],
-              });
-              const trsf = composeTransforms(ops);
-              try {
-                patternElements.push(transformCopy(shapeTemplate, trsf));
-              } finally {
-                trsf.cleanup();
-              }
-            }
-          }
-
-          if (patternElements.length > 0) {
-            checkCancelled(signal);
-            // Use compound() (O(n) topology grouping) instead of fuseAll()
-            // (O(n²) boolean union). cutAll() already handles compounds.
-            // Routed to patternCutTargets for a separate boolean pass —
-            // cutting patterns and cutouts in one batch forces OCCT to
-            // compute pairwise intersections between tool shapes.
-            if (patternElements.length === 1) {
-              const single = patternElements[0];
-              collectOrigins(single, FeatureTag.WALL_PATTERN, originToTag);
-              patternCutTargets.push(single);
-            } else {
-              const grouped = compound(patternElements);
-              // Dispose individual handles — compound shares the underlying
-              // OCCT TShape references, so the geometry stays alive.
-              for (const el of patternElements) el.delete();
-              patternElements.length = 0;
-              collectOrigins(grouped, FeatureTag.WALL_PATTERN, originToTag);
-              patternCutTargets.push(grouped);
-            }
-          }
-        } catch (e: unknown) {
-          // Dispose any pattern elements not handed off to patternCutTargets
-          for (const el of patternElements) el.delete();
-          if (e instanceof DOMException && e.name === 'AbortError') throw e;
-          // Pattern generation can fail on complex geometries; skip if it does
+          cachedFeature(
+            'wallPattern',
+            wallKey,
+            () => buildWallPatternCompound(shapeTemplate, wall, halfDepth),
+            FeatureTag.WALL_PATTERN,
+            originToTag,
+            patternCutTargets
+          );
         }
       }
     }

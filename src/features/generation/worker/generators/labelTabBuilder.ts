@@ -6,7 +6,7 @@
  */
 
 import { draw, unwrap, fuseAll, fuse, translate } from 'brepjs';
-import type { Shape3D, Drawing } from 'brepjs';
+import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
@@ -204,7 +204,7 @@ export function buildLabelTabs(
             0,
             gussetLeg,
           ]);
-          tabSolid = unwrap(fuse(tabSolid, filletSupport));
+          tabSolid = unwrap(fuse(tabSolid as ValidSolid, filletSupport as ValidSolid));
         } else if (gussetPositions.length > 0) {
           // Bracket style: discrete triangular gussets at edges + every <=10mm
           const gussetShapes: Shape3D[] = gussetPositions.map((gx) => {
@@ -212,7 +212,9 @@ export function buildLabelTabs(
             return translate(gusset, [gx, 0, 0]);
           });
 
-          tabSolid = unwrap(fuse(tabSolid, unwrap(fuseAll(gussetShapes))));
+          tabSolid = unwrap(
+            fuse(tabSolid as ValidSolid, unwrap(fuseAll(gussetShapes as ValidSolid[])))
+          );
         }
       }
 

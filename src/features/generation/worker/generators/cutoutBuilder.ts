@@ -23,7 +23,7 @@ import {
   isOk,
   curveLength,
 } from 'brepjs';
-import type { Shape3D, Edge, Dimension } from 'brepjs';
+import type { Shape3D, ValidSolid, Edge, Dimension } from 'brepjs';
 import type { BinParams, PathPoint } from '@/shared/types/bin';
 import { MIN_PATH_POINTS } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
@@ -274,7 +274,7 @@ export function applyFilletWithFallback(
     const r = radius * factor;
     if (r < MIN_FILLET_RADIUS) break;
     try {
-      const result = fillet(shape, edges as Edge[], r);
+      const result = fillet(shape as ValidSolid, edges as Edge[], r);
       if (isOk(result)) return unwrap(result);
     } catch {
       // Try next reduction
@@ -333,7 +333,7 @@ function applyAdaptiveScoop(
 
   // Try adaptive per-edge fillet first
   try {
-    const result = fillet(shape, edges as Edge[], radiusCallback);
+    const result = fillet(shape as ValidSolid, edges as Edge[], radiusCallback);
     if (isOk(result)) return unwrap(result);
   } catch {
     // Fall through to uniform fallback
@@ -411,7 +411,8 @@ function buildGroupedCutouts(
   }
   if (memberShapes.length === 0) return null;
 
-  let fused = memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes));
+  let fused =
+    memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes as ValidSolid[]));
 
   // Determine group scoop radius and cut depth from built members only
   const groupScoopRadius = Math.max(...builtMembers.map((c) => c.scoopRadius ?? 0));

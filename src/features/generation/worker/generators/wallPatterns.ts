@@ -23,8 +23,8 @@ export interface SlotFreeWalls {
 
 /** Descriptor for a single wall's pattern element positions + transform. */
 export interface WallPatternDescriptor {
-  /** Element center positions on the flat XY grid (before wall rotation) */
-  readonly centers: PatternCenter[];
+  /** Element center positions on the flat XY grid (before wall rotation). Non-empty — walls with zero centers are filtered out by getWallPatternDescriptors. */
+  readonly centers: readonly [PatternCenter, ...PatternCenter[]];
   /** Translation to position pattern panel on wall face */
   readonly translateX: number;
   readonly translateY: number;
@@ -110,8 +110,9 @@ function getWallPatternDescriptors(
   ): void => {
     const centers = calculator.calculateCenters({ fillW, fillH: patternHeight });
     if (centers.length === 0) return;
+    const [first, ...rest] = centers;
     descriptors.push({
-      centers,
+      centers: [first, ...rest],
       translateX,
       translateY,
       translateZ: patternCenterZ,
