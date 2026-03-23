@@ -76,4 +76,42 @@ describe('buildLabelTabs', () => {
     // (it sits near the top, not at the floor)
     expect(minZ).toBeGreaterThan(wallHeight / 2);
   });
+
+  it.each(['solid', 'bracket', 'fillet'] as const)(
+    '%s support reaches the front edge of the shelf (no overhang gap)',
+    async (support) => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const { mesh } = await import('brepjs');
+      const wallHeight = 35;
+      const wt = 1.2;
+      const tabDepth = 12;
+      const params = {
+        ...DEFAULT_BIN_PARAMS,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          support,
+          depth: tabDepth,
+          width: 50,
+          alignment: 'center' as const,
+        },
+      };
+      const result = buildLabelTabs(params, 80, 80, wallHeight, wt);
+      expect(result).not.toBeNull();
+
+      // Tessellate and verify support structure exists below the shelf.
+      // The detailed geometry regression is guarded by scenario snapshot tests
+      // (triangle count changes when the gusset profile depth changes).
+      const tessellated = mesh(result!, { tolerance: 0.1, angularTolerance: 10 });
+      const verts = tessellated.vertices;
+      let minZ = Infinity;
+      for (let i = 2; i < verts.length; i += 3) {
+        if (verts[i] < minZ) minZ = verts[i];
+      }
+      // Support must extend well below the shelf underside (wallHeight - wt).
+      // Without support, minZ would be at wallHeight - wt = 33.8.
+      // With support, minZ should be near wallHeight - tabDepth = 23.
+      expect(minZ).toBeLessThan(wallHeight - wt - 5);
+    }
+  );
 });

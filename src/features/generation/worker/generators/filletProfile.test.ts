@@ -36,4 +36,22 @@ describe('buildFilletProfile', () => {
     const sketched = profile.sketchOnPlane('XY');
     expect(sketched).toBeDefined();
   });
+
+  it('accepts explicit depth override wider than radius', async () => {
+    const { buildFilletProfile } = await import('./filletProfile');
+    const { mesh } = await import('brepjs');
+    const { sketch } = await import('./meshUtils');
+    // radius=3, height=10, depth=12 — profile should extend 12mm in depth
+    const profile = buildFilletProfile(3, 10, 12);
+    expect(profile).toBeDefined();
+    const solid = sketch(profile, 'XY', 0).extrude(1);
+    const tessellated = mesh(solid, { tolerance: 0.1, angularTolerance: 10 });
+    const verts = tessellated.vertices;
+    let minX = Infinity;
+    for (let i = 0; i < verts.length; i += 3) {
+      if (verts[i] < minX) minX = verts[i];
+    }
+    // The profile extends to -depth in X, so minX should be near -12
+    expect(minX).toBeLessThan(-11);
+  });
 });

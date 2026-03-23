@@ -12,12 +12,13 @@ import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
 import { buildFilletProfile } from './filletProfile';
 /**
- * Build a 45deg right-triangle profile for label tab gusset supports.
- * The triangle has its right angle at the origin, with legs extending
- * to (0, leg) and (-leg, leg).
+ * Build a right-triangle profile for label tab gusset supports.
+ * The triangle has its right angle at (0, height), with the depth leg
+ * running horizontally to (-depth, height) and the height leg running
+ * vertically down to (0, 0).
  */
-function buildGussetProfile(leg: number): Drawing {
-  return draw([0, leg]).lineTo([-leg, leg]).lineTo([0, 0]).close();
+function buildGussetProfile(depth: number, height: number): Drawing {
+  return draw([0, height]).lineTo([-depth, height]).lineTo([0, 0]).close();
 }
 /**
  * Build label tabs for every compartment.
@@ -61,7 +62,8 @@ export function buildLabelTabs(
   const wt = wallThickness;
   const gt = thickness; // gusset thickness = compartment divider thickness
 
-  // 45deg triangle envelope: height = depth
+  // Tab envelope height equals depth (design invariant).
+  // Gusset height is tabHeight - wt (shelf occupies the top wt).
   const tabHeight = tabDepth;
 
   // Safety: tab must fit within wall height
@@ -187,18 +189,19 @@ export function buildLabelTabs(
           gussetPositions.push(center - gt / 2);
         }
 
-        const gussetProfile = buildGussetProfile(gussetLeg);
+        const gussetProfile = buildGussetProfile(tabDepth, gussetLeg);
 
         if (params.label.support === 'solid') {
-          // Solid style: single continuous 45deg right-triangle prism under the shelf
+          // Solid style: single continuous right-triangle prism under the shelf.
+          // Depth leg = tabDepth so support reaches the shelf front edge.
           const solidSupport = sketch(gussetProfile, 'YZ', 0).extrude(tabWidth);
           tabSolid = unwrap(fuse(tabSolid, solidSupport));
         } else if (params.label.support === 'fillet') {
-          // Fillet style: continuous concave quarter-circle prism under the shelf.
+          // Fillet style: continuous concave prism under the shelf.
           // The fillet profile spans from Z=0 downward, so we translate it up
           // by gussetLeg to align the top edge with the shelf underside.
           const filletR = Math.min(gussetLeg, tabDepth * 0.8);
-          const filletProfile = buildFilletProfile(filletR, gussetLeg);
+          const filletProfile = buildFilletProfile(filletR, gussetLeg, tabDepth);
           const filletSupport = translate(sketch(filletProfile, 'YZ', 0).extrude(tabWidth), [
             0,
             0,
@@ -206,7 +209,8 @@ export function buildLabelTabs(
           ]);
           tabSolid = unwrap(fuse(tabSolid as ValidSolid, filletSupport as ValidSolid));
         } else if (gussetPositions.length > 0) {
-          // Bracket style: discrete triangular gussets at edges + every <=10mm
+          // Bracket style: discrete triangular gussets at edges + every <=10mm.
+          // Uses same profile with depth = tabDepth so gussets reach the shelf edge.
           const gussetShapes: Shape3D[] = gussetPositions.map((gx) => {
             const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
             return translate(gusset, [gx, 0, 0]);

@@ -20,9 +20,9 @@ const HEIGHT_CLEARANCE = 0.1;
 /**
  * Build a concave fillet profile in the XY plane.
  *
- * The profile is a small right triangle with the hypotenuse replaced by
- * a concave arc. Both legs equal the clamped radius — keeping the fillet
- * compact to preserve bin interior volume.
+ * The profile is a right triangle with the hypotenuse replaced by a
+ * concave arc. The height leg equals the clamped radius. The depth leg
+ * defaults to the radius but can be overridden to match the shelf depth.
  *
  * Coordinate system (looking from front):
  * ```
@@ -32,28 +32,30 @@ const HEIGHT_CLEARANCE = 0.1;
  * (0, -R) ──────────╱
  * ```
  *
- * @param radius - Fillet arc radius in mm (controls size of the support)
+ * @param radius - Fillet arc radius in mm (controls curvature of the support)
  * @param height - Available vertical space below the shelf in mm
+ * @param depth - Horizontal depth of the profile in mm (defaults to clamped radius)
  * @returns Closed 2D Drawing suitable for extrusion
  */
-export function buildFilletProfile(radius: number, height: number): Drawing {
+export function buildFilletProfile(radius: number, height: number, depth?: number): Drawing {
   const maxR = height - HEIGHT_CLEARANCE;
+  const fallbackDepth = depth ?? MIN_RADIUS;
   if (maxR < MIN_RADIUS)
-    return draw([0, 0]).lineTo([-MIN_RADIUS, 0]).lineTo([0, -MIN_RADIUS]).close();
+    return draw([0, 0]).lineTo([-fallbackDepth, 0]).lineTo([0, -MIN_RADIUS]).close();
   const safeR = Math.max(MIN_RADIUS, Math.min(radius, maxR));
-  const depth = safeR;
+  const effectiveDepth = depth ?? safeR;
 
   // Sagitta for a gentle concave curve on the hypotenuse.
-  // For equal legs, chord = R * sqrt(2). A sagitta of ~15% of chord
-  // gives a subtle scoop — enough to look concave without deep undercut.
-  const chord = safeR * Math.sqrt(2);
+  // Chord length between the two endpoints of the arc.
+  // A sagitta of ~15% of chord gives a subtle scoop.
+  const chord = Math.sqrt(effectiveDepth ** 2 + safeR ** 2);
   const sagitta = chord * 0.15;
 
   // Draw: shelf tip → origin → wall bottom → arc back to shelf tip.
   // Negative sagitta curves toward the origin (concave scoop).
-  return draw([-depth, 0])
+  return draw([-effectiveDepth, 0])
     .lineTo([0, 0])
     .lineTo([0, -safeR])
-    .sagittaArc(-depth, safeR, -sagitta)
+    .sagittaArc(-effectiveDepth, safeR, -sagitta)
     .close();
 }
