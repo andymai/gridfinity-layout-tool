@@ -220,6 +220,29 @@ describe('parseSvgString', () => {
       expect(spec.depth).toBe(100);
     });
 
+    it('falls back to width/height when viewBox has zero dimensions', () => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 0 100"><rect x="10" y="10" width="30" height="30"/></svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      // Should fall back to width=100, height=100 (not zero-width viewBox)
+      const spec = result.value[0];
+      expect(spec.width).toBe(30);
+      // Y-flip uses height=100: y = 100 - (10 + 30) = 60
+      expect(spec.y).toBe(60);
+    });
+
+    it('falls back to width/height when viewBox has negative dimensions', () => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 -50 -50"><rect x="10" y="10" width="30" height="30"/></svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      const spec = result.value[0];
+      expect(spec.width).toBe(30);
+    });
+
     it('handles viewBox with non-zero origin', () => {
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 80 80"><rect x="10" y="10" width="20" height="20"/></svg>`;
       const result = parseSvgString(svg);

@@ -146,8 +146,7 @@ function getWallPatternDescriptors(
  * @param cutWidth - Original cutout width in mm
  * @param userCutHeight - Original cutout height (depth from wall top) in mm
  * @param borderWidth - Border width to add around the cutout in mm
- * @param wallSpan - Optional wall inner span; if provided, sets suppressPattern
- * @returns Expanded dimensions and optional suppression flag
+ * @returns Expanded dimensions for the clipping solid
  */
 export function getExpandedCutoutDimensions(
   cutWidth: number,

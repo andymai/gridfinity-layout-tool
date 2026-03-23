@@ -14,6 +14,7 @@ import { isOk } from '@/core/result';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { parseSvgString } from './svgParser';
 import { specToCutout, DEFAULT_CUT_DEPTH } from './specToCutout';
+import { MAX_SVG_FILE_SIZE } from './types';
 import type { SvgImportErrorCode } from './types';
 
 /** Maps error codes to i18n toast keys. */
@@ -22,6 +23,7 @@ const ERROR_TOAST_KEYS: Record<SvgImportErrorCode, string> = {
   SVG_NO_SHAPES: 'toast.svgImport.noShapes',
   SVG_SHAPE_LIMIT: 'toast.svgImport.shapeLimitExceeded',
   SVG_UNSUPPORTED: 'toast.svgImport.unsupportedFile',
+  SVG_FILE_TOO_LARGE: 'toast.svgImport.fileTooLarge',
 };
 
 export interface UseSvgImportReturn {
@@ -53,6 +55,12 @@ export function useSvgImport(): UseSvgImportReturn {
 
   const handleFile = useCallback(
     (file: File) => {
+      if (file.size > MAX_SVG_FILE_SIZE) {
+        addToast(t(ERROR_TOAST_KEYS.SVG_FILE_TOO_LARGE), 'error');
+        trackEvent('svg_import', { success: false, error_code: 'SVG_FILE_TOO_LARGE' });
+        return;
+      }
+
       const reader = new FileReader();
 
       reader.onload = () => {

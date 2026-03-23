@@ -72,10 +72,7 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
       const matrix = resolveTransformChain(el, svgRoot);
       const converted = convertElement(el, matrix, viewBox);
       if (converted) {
-        // A single element can produce multiple specs (multi-contour paths)
-        for (const spec of converted) {
-          specs.push(spec);
-        }
+        specs.push(...converted);
       }
     } catch {
       // Skip individual elements that fail conversion
@@ -113,7 +110,12 @@ function parseViewBox(svg: SVGSVGElement): ViewBox {
       .trim()
       .split(/[\s,]+/)
       .map(Number);
-    if (parts.length === 4 && parts.every((n) => Number.isFinite(n))) {
+    if (
+      parts.length === 4 &&
+      parts.every((n) => Number.isFinite(n)) &&
+      parts[2] > 0 &&
+      parts[3] > 0
+    ) {
       return { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] };
     }
   }
@@ -241,9 +243,8 @@ function convertElement(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCu
     case 'ellipse':
       return wrapSingle(convertEllipse(el, matrix, viewBox));
     case 'polygon':
-      return wrapSingle(convertPolygon(el, matrix, viewBox));
     case 'polyline':
-      return wrapSingle(convertPolyline(el, matrix, viewBox));
+      return wrapSingle(convertPointsElement(el, matrix, viewBox));
     case 'path':
       return convertPath(el, matrix, viewBox);
     default:
@@ -347,23 +348,14 @@ function convertEllipse(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCu
   return convertCircleAsPath(cx, cy, rx, ry, matrix, viewBox);
 }
 
-function convertPolygon(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutoutSpec | null {
+function convertPointsElement(
+  el: Element,
+  matrix: Matrix,
+  viewBox: ViewBox
+): ParsedCutoutSpec | null {
   const points = parsePointsAttr(el.getAttribute('points') ?? '');
   if (points.length < 3) return null;
 
-  // Apply transform in original SVG space, then adjust for viewBox
-  const transformed = points.map((p) => {
-    const t = applyMatrix(matrix, p.x, p.y);
-    return { x: t.x - viewBox.minX, y: t.y - viewBox.minY };
-  });
-  return pointsToPathSpec(transformed, viewBox);
-}
-
-function convertPolyline(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutoutSpec | null {
-  const points = parsePointsAttr(el.getAttribute('points') ?? '');
-  if (points.length < 3) return null;
-
-  // Apply transform in original SVG space, then adjust for viewBox
   const transformed = points.map((p) => {
     const t = applyMatrix(matrix, p.x, p.y);
     return { x: t.x - viewBox.minX, y: t.y - viewBox.minY };
@@ -430,13 +422,7 @@ function convertContour(
     const cmd = commands[i];
 
     switch (cmd.type) {
-      case SVGPathDataEnum.MOVE_TO: {
-        currentX = cmd.x;
-        currentY = cmd.y;
-        pathPoints.push(makeCornerPoint(currentX, currentY, matrix, viewBox));
-        break;
-      }
-
+      case SVGPathDataEnum.MOVE_TO:
       case SVGPathDataEnum.LINE_TO: {
         currentX = cmd.x;
         currentY = cmd.y;

@@ -906,6 +906,7 @@ const en: Record<string, string> = {
   'toast.svgImport.noShapes': 'No supported shapes found in SVG',
   'toast.svgImport.shapeLimitExceeded': 'SVG contains too many shapes (max 500)',
   'toast.svgImport.unsupportedFile': 'File is not a valid SVG',
+  'toast.svgImport.fileTooLarge': 'SVG file is too large (max 5 MB)',
   'toast.layoutRecovered': 'Layout recovered from backup storage',
   'toast.layoutNotFound': 'Layout not found',
   'toast.layoutSwitchFailed': 'Failed to switch layout',

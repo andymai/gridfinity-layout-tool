@@ -1440,6 +1440,7 @@
   "toast.svgImport.noShapes": "Ingen støttede former funnet i SVG",
   "toast.svgImport.shapeLimitExceeded": "SVG inneholder for mange former (maks 500)",
   "toast.svgImport.unsupportedFile": "Filen er ikke en gyldig SVG",
+  "toast.svgImport.fileTooLarge": "SVG-filen er for stor (maks 5 MB)",
   "toast.layoutNotFound": "Layout ikke funnet",
   "toast.layoutRecovered": "Layout gjenopprettet fra sikkerhetskopi",
   "toast.layoutRenameFailed": "Kunne ikke gi nytt navn til layout",

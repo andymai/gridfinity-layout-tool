@@ -32,7 +32,8 @@ export type SvgImportErrorCode =
   | 'SVG_PARSE_FAILED'
   | 'SVG_NO_SHAPES'
   | 'SVG_SHAPE_LIMIT'
-  | 'SVG_UNSUPPORTED';
+  | 'SVG_UNSUPPORTED'
+  | 'SVG_FILE_TOO_LARGE';
 
 /** Structured error from SVG import. */
 export interface SvgImportError {
@@ -42,3 +43,6 @@ export interface SvgImportError {
 
 /** Maximum number of SVG shapes to import (guard against huge files). */
 export const MAX_SVG_SHAPES = 500;
+
+/** Maximum SVG file size in bytes (5 MB). */
+export const MAX_SVG_FILE_SIZE = 5 * 1024 * 1024;
