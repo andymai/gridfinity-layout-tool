@@ -152,19 +152,14 @@ function getWallPatternDescriptors(
 export function getExpandedCutoutDimensions(
   cutWidth: number,
   userCutHeight: number,
-  borderWidth: number,
-  wallSpan?: number
+  borderWidth: number
 ): {
   expandedWidth: number;
   expandedHeight: number;
-  suppressPattern?: boolean;
 } {
-  const expandedWidth = cutWidth + 2 * borderWidth;
-  const expandedHeight = userCutHeight + borderWidth;
   return {
-    expandedWidth,
-    expandedHeight,
-    suppressPattern: wallSpan !== undefined ? expandedWidth >= wallSpan : undefined,
+    expandedWidth: cutWidth + 2 * borderWidth,
+    expandedHeight: userCutHeight + borderWidth,
   };
 }
 

@@ -85,4 +85,24 @@ export const combinedFeatures: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
+  defineScenario('combined features', '2\u00d72 honeycomb walls + funnel cutout (left-aligned)', {
+    assert: 'structural',
+    params: {
+      width: 2,
+      depth: 2,
+      height: 5,
+      wallPattern: { enabled: true, pattern: 'honeycomb' },
+      walls: {
+        ...DEFAULT_BIN_PARAMS.walls,
+        enabled: true,
+        shape: 'funnel',
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 50, depth: 60, alignment: 'left' },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
+      },
+    },
+    timeout: 60_000,
+  }),
 ];

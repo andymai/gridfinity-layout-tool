@@ -94,7 +94,7 @@ function buildCutoutProfile(
  *
  * @returns Positioned Shape3D ready for boolean subtraction
  */
-function buildSingleCutout(
+export function buildSingleCutout(
   cutoutShape: WallCutoutShape,
   cutWidth: number,
   userCutHeight: number,
@@ -120,36 +120,6 @@ function buildSingleCutout(
   // shape center is offset upward by overshoot/2 from the visual center
   const cutZ = wallHeight - userCutHeight / 2 + overshoot / 2;
   return translate(shape, [position.x, position.y, cutZ]);
-}
-
-/**
- * Build an expanded cutout solid for clipping hex patterns.
- *
- * Creates a solid with the cutout profile expanded by `borderWidth` on each
- * side (and bottom), positioned identically to the real cutout. Used to
- * boolean-subtract from a hex pattern compound so no hex geometry overlaps
- * the cutout + border zone.
- *
- * @returns Positioned Shape3D for boolean subtraction from hex compound
- */
-export function buildCutoutClipSolid(
-  cutoutShape: WallCutoutShape,
-  expandedCutWidth: number,
-  expandedCutHeight: number,
-  overshoot: number,
-  extrudeDepth: number,
-  wallHeight: number,
-  position: { x: number; y: number; rotateZ: number }
-): Shape3D {
-  return buildSingleCutout(
-    cutoutShape,
-    expandedCutWidth,
-    expandedCutHeight,
-    overshoot,
-    extrudeDepth,
-    wallHeight,
-    position
-  );
 }
 
 /**

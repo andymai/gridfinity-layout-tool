@@ -39,7 +39,7 @@ import {
   buildHandles,
   buildScoopRamps,
   buildWallCutoutCuts,
-  buildCutoutClipSolid,
+  buildSingleCutout,
 } from '../../featureBuilder';
 import { buildSlotCuts } from '../../slotBuilder';
 import type { WallPatternDescriptor } from '../../wallPatterns';
@@ -386,6 +386,12 @@ export const featuresStage: PipelineStage = {
           right: innerD,
         };
 
+        // Cutout clipping constants (loop-invariant)
+        const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
+        const maxThickness = Math.max(params.wallThickness, params.compartments.thickness);
+        const clipExtrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
+        const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
+
         for (const wall of wallDescriptors) {
           checkCancelled(signal);
 
@@ -393,23 +399,29 @@ export const featuresStage: PipelineStage = {
           const cutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;
           const wallSpan = wallSpanForSide[wall.side];
 
+          // Compute cutout dimensions once (used for both suppression check and clipping)
+          let cutWidth = 0;
+          let userCutHeight = 0;
+          let expandedWidth = 0;
+          let expandedHeight = 0;
           if (cutoutCfg?.enabled) {
-            const cutWidth =
+            cutWidth =
               cutoutCfg.widthMm !== null
                 ? Math.min(cutoutCfg.widthMm, wallSpan)
                 : wallSpan * (cutoutCfg.width / 100);
             const interiorWallHeight = dim.wallHeight - params.wallThickness;
-            const userCutHeight = interiorWallHeight * (cutoutCfg.depth / 100);
+            userCutHeight = interiorWallHeight * (cutoutCfg.depth / 100);
 
-            const { suppressPattern } = getExpandedCutoutDimensions(
+            const expanded = getExpandedCutoutDimensions(
               cutWidth,
               userCutHeight,
-              CUTOUT_BORDER_WIDTH,
-              wallSpan
+              CUTOUT_BORDER_WIDTH
             );
+            expandedWidth = expanded.expandedWidth;
+            expandedHeight = expanded.expandedHeight;
 
             // Full-width cutout: skip pattern entirely for this wall
-            if (suppressPattern) continue;
+            if (expandedWidth >= wallSpan) continue;
           }
 
           // Cache key captures everything that affects this wall's hex compound.
@@ -420,15 +432,22 @@ export const featuresStage: PipelineStage = {
 
           // Include cutout config in cache key when clipping is active,
           // since the same hex grid produces different results with different cutouts.
+          // Key on the effective width input only: either absolute mm or
+          // percentage, not both. Avoids cache misses when the unused field
+          // changes (e.g. width% while widthMm is set).
           const cutoutKeyPart = cutoutCfg?.enabled
             ? buildCacheKey(
                 'clip',
                 params.walls.shape,
-                quantize(cutoutCfg.width),
+                cutoutCfg.widthMm !== null ? 'mm' : 'pct',
+                cutoutCfg.widthMm !== null
+                  ? quantize(cutoutCfg.widthMm)
+                  : quantize(cutoutCfg.width),
                 quantize(cutoutCfg.depth),
-                cutoutCfg.widthMm !== null ? quantize(cutoutCfg.widthMm) : 'pct',
                 cutoutCfg.alignment,
-                quantize(cutoutCfg.offset)
+                quantize(cutoutCfg.offset),
+                hasLip,
+                quantize(params.compartments.thickness)
               )
             : 'noclip';
 
@@ -457,43 +476,26 @@ export const featuresStage: PipelineStage = {
               if (!hexCompound) return null;
 
               // Clip hex compound against expanded cutout if this wall has one
-              if (!cutoutCfg?.enabled) return hexCompound;
+              if (!cutoutCfg?.enabled || cutWidth < 0.1 || userCutHeight < 0.1) {
+                return hexCompound;
+              }
 
-              const cutWidth =
-                cutoutCfg.widthMm !== null
-                  ? Math.min(cutoutCfg.widthMm, wallSpan)
-                  : wallSpan * (cutoutCfg.width / 100);
-              const interiorWallHeight = dim.wallHeight - params.wallThickness;
-              const userCutHeight = interiorWallHeight * (cutoutCfg.depth / 100);
-
-              if (cutWidth < 0.1 || userCutHeight < 0.1) return hexCompound;
-
-              const { expandedWidth, expandedHeight } = getExpandedCutoutDimensions(
-                cutWidth,
-                userCutHeight,
-                CUTOUT_BORDER_WIDTH
-              );
-
-              const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
-              const maxThickness = Math.max(params.wallThickness, params.compartments.thickness);
-              const clipExtrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
-              const overshoot = (hasLip ? LIP_HEIGHT : 0) + 2;
-
-              // Resolve cutout position (same logic as buildWallCutoutCuts)
+              // Resolve cutout position -- use original cutWidth (not expanded) so
+              // the clip solid is centered on the same anchor as the real cutout.
               const rotateZ = wall.side === 'left' || wall.side === 'right' ? 90 : 0;
               const centerOffset = computeCutoutCenter(
                 wallSpan,
-                expandedWidth,
+                cutWidth,
                 params.wallThickness,
                 cutoutCfg.alignment,
                 cutoutCfg.offset
               );
 
-              const clipSolid = buildCutoutClipSolid(
+              const clipSolid = buildSingleCutout(
                 params.walls.shape,
                 expandedWidth,
                 expandedHeight,
-                overshoot,
+                clipOvershoot,
                 clipExtrudeDepth,
                 dim.wallHeight,
                 {
@@ -506,12 +508,14 @@ export const featuresStage: PipelineStage = {
               try {
                 const clipped = unwrap(cut(hexCompound, clipSolid));
                 hexCompound.delete();
-                clipSolid.delete();
                 return clipped;
-              } catch {
+              } catch (err: unknown) {
+                // Re-throw cancellations so generation abort remains reliable
+                if (err instanceof DOMException && err.name === 'AbortError') throw err;
                 // Boolean cut can fail on edge cases; fall back to unclipped compound
-                clipSolid.delete();
                 return hexCompound;
+              } finally {
+                clipSolid.delete();
               }
             },
             FeatureTag.WALL_PATTERN,

@@ -5,6 +5,7 @@ import {
   CUTOUT_BORDER_WIDTH,
   getExpandedCutoutDimensions,
 } from './wallPatterns';
+import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import type { BinParams } from '@/shared/types/bin';
 import { DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 
@@ -146,20 +147,44 @@ describe('getExpandedCutoutDimensions', () => {
     });
   });
 
-  it('returns suppressPattern true when expanded width >= wall span', () => {
+  it('expanded width exceeds wall span for near-full-width cutouts', () => {
     // cutWidth = 40, wallSpan = 42 → expanded = 40 + 3 = 43 >= 42
-    const result = getExpandedCutoutDimensions(40, 20, CUTOUT_BORDER_WIDTH, 42);
-    expect(result.suppressPattern).toBe(true);
+    const { expandedWidth } = getExpandedCutoutDimensions(40, 20, CUTOUT_BORDER_WIDTH);
+    expect(expandedWidth).toBeGreaterThanOrEqual(42);
   });
 
-  it('returns suppressPattern false when expanded width < wall span', () => {
-    const result = getExpandedCutoutDimensions(20, 15, CUTOUT_BORDER_WIDTH, 42);
-    expect(result.suppressPattern).toBe(false);
+  it('expanded width stays within wall span for narrow cutouts', () => {
+    const { expandedWidth } = getExpandedCutoutDimensions(20, 15, CUTOUT_BORDER_WIDTH);
+    expect(expandedWidth).toBeLessThan(42);
+  });
+});
+
+describe('clip solid position correctness', () => {
+  it('clip solid must use original cutWidth for center computation, not expanded', () => {
+    const wallSpan = 84;
+    const cutWidth = 40;
+    const wallThickness = 1.2;
+
+    const originalCenter = computeCutoutCenter(wallSpan, cutWidth, wallThickness, 'left', 0);
+    const { expandedWidth } = getExpandedCutoutDimensions(cutWidth, 20, CUTOUT_BORDER_WIDTH);
+    const expandedCenter = computeCutoutCenter(wallSpan, expandedWidth, wallThickness, 'left', 0);
+
+    // Using expandedWidth shifts the anchor for left/right alignment — the clip
+    // solid must use the original cutWidth so the border is symmetric around the cutout.
+    expect(expandedCenter).not.toBe(originalCenter);
   });
 
-  it('returns suppressPattern undefined when wallSpan not provided', () => {
-    const result = getExpandedCutoutDimensions(20, 15, CUTOUT_BORDER_WIDTH);
-    expect(result.suppressPattern).toBeUndefined();
+  it('center alignment is unaffected by width (anchor = 0)', () => {
+    const wallSpan = 84;
+    const cutWidth = 40;
+    const wallThickness = 1.2;
+
+    const originalCenter = computeCutoutCenter(wallSpan, cutWidth, wallThickness, 'center', 0);
+    const { expandedWidth } = getExpandedCutoutDimensions(cutWidth, 20, CUTOUT_BORDER_WIDTH);
+    const expandedCenter = computeCutoutCenter(wallSpan, expandedWidth, wallThickness, 'center', 0);
+
+    expect(originalCenter).toBe(0);
+    expect(expandedCenter).toBe(0);
   });
 });
 
