@@ -193,8 +193,10 @@ function splitSolidIntoPieces(
         at: [boxCenterX, boxCenterY, 0],
       });
 
-      // Split body with cutting box
-      let piece = unwrap(intersect(unwrap(clone(bodySolid)), cuttingBox));
+      // Split body with cutting box — intersect creates new shape, inputs persist
+      const bodyClone = unwrap(clone(bodySolid));
+      let piece = unwrap(intersect(bodyClone, cuttingBox));
+      bodyClone.delete();
 
       // Validate that the boolean intersection preserved the full geometry.
       // If OCCT silently dropped walls/lip due to coplanarity, the Z extent
@@ -202,6 +204,7 @@ function splitSolidIntoPieces(
       const pieceBounds = getBounds(piece);
       const actualZ = pieceBounds.zMax - pieceBounds.zMin;
       if (actualZ < totalHeight * 0.8) {
+        cuttingBox.delete();
         throw new Error(
           `Split piece ${colLabel}${row + 1} lost geometry: ` +
             `expected body Z≈${totalHeight.toFixed(1)}mm (lip fused separately), got ${actualZ.toFixed(1)}mm. ` +
@@ -212,13 +215,22 @@ function splitSolidIntoPieces(
       // Split and fuse lip piece using a clone of the same cutting box
       if (lipSolid) {
         try {
-          const lipPiece = unwrap(intersect(unwrap(clone(lipSolid)), unwrap(clone(cuttingBox))));
-          piece = unwrap(fuse(piece, lipPiece));
+          const lipClone = unwrap(clone(lipSolid));
+          const boxClone = unwrap(clone(cuttingBox));
+          const lipPiece = unwrap(intersect(lipClone, boxClone));
+          lipClone.delete();
+          boxClone.delete();
+          const oldPiece = piece;
+          piece = unwrap(fuse(oldPiece, lipPiece));
+          oldPiece.delete();
+          lipPiece.delete();
         } catch (e) {
           if (isAbortError(e)) throw e;
           // Lip fuse failed — export piece without lip (non-critical degradation)
         }
       }
+
+      cuttingBox.delete();
 
       if (connectorConfig?.enabled) {
         const cutFaces = computeCutFaces(
@@ -288,6 +300,7 @@ function tessellatePiece(
     tolerance: PREVIEW_TOLERANCE,
     angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
   });
+  centeredPiece.delete();
   const meshData = toIndexedMeshData(shapeMesh, false, new Float32Array(edgeMesh.lines));
 
   return {
@@ -332,6 +345,7 @@ export async function exportSplitBin(
     mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
     const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));
     const data = await blob.arrayBuffer();
+    pieceSolid.delete();
     pieces.push({ data, label, col, row });
   }
 
@@ -420,7 +434,15 @@ export async function exportSplitBinRange(
     mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
     const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));
     const data = await blob.arrayBuffer();
+    pieceSolid.delete();
     pieces.push({ data, label, col, row });
+  }
+
+  // Dispose unused split pieces (not in pieceIndices)
+  for (let i = 0; i < splitPieces.length; i++) {
+    if (!pieceIndices.includes(i)) {
+      splitPieces[i].solid.delete();
+    }
   }
 
   return { pieces };
