@@ -86,7 +86,7 @@
     "@vercel/blob": "^2.3.1",
     "brepjs": "14.2.1",
     "brepjs-opencascade": "^0.11.0",
-    "brepkit-wasm": "^1.0.8",
+    "brepkit-wasm": "^2.32.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

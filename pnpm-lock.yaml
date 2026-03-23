@@ -51,13 +51,13 @@ importers:
         version: 2.3.1
       brepjs:
         specifier: 14.2.1
-        version: 14.2.1(brepjs-opencascade@0.11.0)(brepkit-wasm@1.3.2)
+        version: 14.2.1(brepjs-opencascade@0.11.0)(brepkit-wasm@2.32.0)
       brepjs-opencascade:
         specifier: ^0.11.0
         version: 0.11.0
       brepkit-wasm:
-        specifier: ^1.0.8
-        version: 1.3.2
+        specifier: ^2.32.0
+        version: 2.32.0
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -3009,8 +3009,8 @@ packages:
       brepkit-wasm:
         optional: true
 
-  brepkit-wasm@1.3.2:
-    resolution: {integrity: sha512-KlRIokD6M6lPdorE8ZZsik61VTvK0mOPtm8hfAh/xj0mwiTOcPB2SP9+TANeeBvLyOehoUMf3abTMrbFflu22w==}
+  brepkit-wasm@2.32.0:
+    resolution: {integrity: sha512-z8Be7f/dA6qdBOGF0e2ZPdEClIbIJgSlmrX1lBY8yB7W9VaDYaOLMC8tthezyaE9aKzVfFakd51EvwjGnSNPng==}
 
   browserslist@4.28.1:
     resolution: {integrity: sha512-ZC5Bd0LgJXgwGqUknZY/vkUQ04r8NXnJZ3yYi4vDmSiZmC/pdSN0NbNRPxZpbtO4uAfDUAFffO8IZoM3Gj8IkA==}
@@ -8126,15 +8126,15 @@ snapshots:
 
   brepjs-opencascade@0.11.0: {}
 
-  brepjs@14.2.1(brepjs-opencascade@0.11.0)(brepkit-wasm@1.3.2):
+  brepjs@14.2.1(brepjs-opencascade@0.11.0)(brepkit-wasm@2.32.0):
     dependencies:
       flatbush: 4.5.1
       opentype.js: 1.3.4
     optionalDependencies:
       brepjs-opencascade: 0.11.0
-      brepkit-wasm: 1.3.2
+      brepkit-wasm: 2.32.0
 
-  brepkit-wasm@1.3.2: {}
+  brepkit-wasm@2.32.0: {}
 
   browserslist@4.28.1:
     dependencies:
