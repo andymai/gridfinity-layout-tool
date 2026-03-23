@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.21.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.21.0...gridfinity-layout-tool-v4.21.1) (2026-03-23)
+
+
+### Bug Fixes
+
+* post-merge polish for SVG import and wall patterns ([#1201](https://github.com/andymai/gridfinity-layout-tool/issues/1201)) ([0954e44](https://github.com/andymai/gridfinity-layout-tool/commit/0954e44b4e4250acfafef02fd4efeaf3e9f152f4))
+
 ## [4.21.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.20.1...gridfinity-layout-tool-v4.21.0) (2026-03-23)
 
 
