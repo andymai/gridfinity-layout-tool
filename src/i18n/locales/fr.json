@@ -1440,6 +1440,7 @@
   "toast.svgImport.noShapes": "Aucune forme prise en charge trouvée dans le SVG",
   "toast.svgImport.shapeLimitExceeded": "Le SVG contient trop de formes (max 500)",
   "toast.svgImport.unsupportedFile": "Le fichier n'est pas un SVG valide",
+  "toast.svgImport.fileTooLarge": "Le fichier SVG est trop volumineux (max 5 Mo)",
   "toast.layoutNotFound": "Layout introuvable",
   "toast.layoutRecovered": "Disposition récupérée depuis le stockage de secours",
   "toast.layoutRenameFailed": "Échec du renommage du layout",
