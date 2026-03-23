@@ -255,7 +255,7 @@ export function SharedLayoutImporter() {
   // Show loading state for cloud shares
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-overlay-dark flex items-center justify-center z-50">
         <div className="bg-surface-elevated rounded-lg p-6 flex items-center gap-3">
           <svg
             className="w-5 h-5 animate-spin motion-reduce:animate-none text-accent"

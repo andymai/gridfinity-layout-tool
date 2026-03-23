@@ -332,7 +332,7 @@ export function WorkspaceHeader({
   ) => (
     <button
       type="button"
-      className="rounded p-1 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+      className="rounded p-1 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       onClick={onClick}
       title={title}
       aria-label={title}
@@ -345,7 +345,7 @@ export function WorkspaceHeader({
   const textBtn = (onClick: () => void, label: string, danger = false, isDisabled = false) => (
     <button
       type="button"
-      className={`rounded px-2 py-0.5 text-[11px] transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+      className={`rounded px-2 py-0.5 text-[11px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
         danger
           ? 'text-red-400 hover:bg-red-500/10'
           : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -461,7 +461,7 @@ export function WorkspaceHeader({
             type="button"
             onClick={onUndo}
             disabled={!canUndo}
-            className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title={t('binDesigner.cutoutEditor.undo')}
             aria-label={t('binDesigner.cutoutEditor.undo')}
           >
@@ -484,7 +484,7 @@ export function WorkspaceHeader({
             type="button"
             onClick={onRedo}
             disabled={!canRedo}
-            className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title={t('binDesigner.cutoutEditor.redo')}
             aria-label={t('binDesigner.cutoutEditor.redo')}
           >

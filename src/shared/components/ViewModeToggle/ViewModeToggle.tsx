@@ -45,7 +45,7 @@ export function ViewModeToggle({
   );
 
   const buttonClass = (isSelected: boolean): string =>
-    `p-1.5 rounded-md transition-colors ${
+    `p-1.5 rounded-md transition-colors leading-none ${
       isSelected
         ? 'bg-accent text-on-dark'
         : 'text-content-secondary hover:text-content hover:bg-surface-secondary'

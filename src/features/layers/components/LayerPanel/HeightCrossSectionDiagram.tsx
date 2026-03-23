@@ -375,7 +375,7 @@ export function HeightCrossSectionDiagram({
                             handleDebouncedHeightChange(layer.id, -1);
                           }}
                           disabled={previewHeight <= CONSTRAINTS.MIN_LAYER_HEIGHT}
-                          className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           aria-label={t('layers.decreaseHeight', { name: layer.name })}
                         >
                           <svg

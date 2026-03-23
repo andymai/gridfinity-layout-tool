@@ -64,10 +64,10 @@ export const focusRing = [
  */
 export const disabledStyles = [
   'disabled:pointer-events-none',
-  'disabled:opacity-40',
+  'disabled:opacity-50',
   'disabled:grayscale-[0.2]',
   'aria-disabled:pointer-events-none',
-  'aria-disabled:opacity-40',
+  'aria-disabled:opacity-50',
   'aria-disabled:grayscale-[0.2]',
 ] as const;
 
@@ -75,6 +75,11 @@ export const disabledStyles = [
  * Standard transition for interactive elements.
  */
 export const interactiveTransition = 'transition-all duration-100' as const;
+
+/**
+ * Tactile press feedback for buttons and interactive elements.
+ */
+export const activePress = 'active:scale-[0.98]' as const;
 
 /**
  * Touch-friendly minimum size (44px per Apple HIG).

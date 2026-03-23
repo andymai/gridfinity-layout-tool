@@ -26,6 +26,7 @@ export {
   focusRing,
   disabledStyles,
   interactiveTransition,
+  activePress,
   touchTarget,
   // Size mappings
   sizeHeights,

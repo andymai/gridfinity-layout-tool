@@ -125,7 +125,7 @@ export function Header({ saveStatus }: HeaderProps) {
         ) : (
           <button
             onClick={handleNameClick}
-            className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+            className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
             title={t('header.editLayoutName')}
           >
             {layout.name}
@@ -135,7 +135,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {/* Layout Manager Button */}
         <button
           onClick={() => setShowLayoutManager(true)}
-          className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+          className="px-2 py-1.5 text-sm leading-none rounded-md transition-all active:scale-[0.98] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
           title={`${t('header.openLayoutManager')} (${modKey}+O)`}
           aria-label={t('header.openLayoutManager')}
         >
@@ -150,7 +150,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {/* Print Button */}
         <button
           onClick={() => setPrintModalOpen(true)}
-          className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+          className="px-2 py-1.5 text-sm leading-none rounded-md transition-all active:scale-[0.98] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
           title={t('header.printLayout')}
           aria-label={t('header.printLayout')}
         >
@@ -199,7 +199,7 @@ export function Header({ saveStatus }: HeaderProps) {
         )}
         {saveStatus === 'saved' && (
           <div
-            className="flex items-center gap-1 px-2 py-1 text-[11px] mr-2 text-content-secondary animate-fade-in"
+            className="flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 text-content-secondary animate-fade-in"
             aria-live="polite"
             role="status"
           >
