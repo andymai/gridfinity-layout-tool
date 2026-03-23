@@ -35,10 +35,17 @@ describe('kernel performance stats', () => {
 
   it('resets stats between generations', () => {
     const generateBin = getGenerateBin();
+    // Use 2×2 socket+magnets to guarantee boolean ops (fuseAll cells + cutAll holes)
+    const params = buildParams({
+      width: 2,
+      depth: 2,
+      height: 3,
+      base: { style: 'socket', magnet: true, screw: false },
+    });
 
     // First generation
     resetPerformanceStats();
-    generateBin(buildParams({ width: 1, depth: 1, height: 2 }));
+    generateBin(params);
     const firstStats = getPerformanceStats();
     const firstBooleanCount = firstStats.boolean.count;
     expect(firstBooleanCount).toBeGreaterThan(0);
@@ -50,7 +57,7 @@ describe('kernel performance stats', () => {
     expect(resetStats.boolean.totalMs).toBe(0);
 
     // Second generation with same params should produce same counts
-    generateBin(buildParams({ width: 1, depth: 1, height: 2 }));
+    generateBin(params);
     const secondStats = getPerformanceStats();
     expect(secondStats.boolean.count).toBeLessThanOrEqual(firstBooleanCount);
   });
