@@ -16,9 +16,11 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
 
-    /* Interop */
+    /* JSON module support */
     "resolveJsonModule": true
   },
   "include": ["api/**/*.ts"],
