@@ -447,7 +447,11 @@ export const featuresStage: PipelineStage = {
                 cutoutCfg.alignment,
                 quantize(cutoutCfg.offset),
                 hasLip,
-                quantize(params.compartments.thickness)
+                quantize(params.compartments.thickness),
+                // wallThickness affects interiorWallHeight → userCutHeight and
+                // computeCutoutCenter margin. Also covered by cutDepth in outer
+                // key, but included explicitly for defensive cache correctness.
+                quantize(params.wallThickness)
               )
             : 'noclip';
 
@@ -510,8 +514,10 @@ export const featuresStage: PipelineStage = {
                 hexCompound.delete();
                 return clipped;
               } catch (err: unknown) {
-                // Re-throw cancellations so generation abort remains reliable
-                if (err instanceof DOMException && err.name === 'AbortError') throw err;
+                if (err instanceof DOMException && err.name === 'AbortError') {
+                  hexCompound.delete();
+                  throw err;
+                }
                 // Boolean cut can fail on edge cases; fall back to unclipped compound
                 return hexCompound;
               } finally {
