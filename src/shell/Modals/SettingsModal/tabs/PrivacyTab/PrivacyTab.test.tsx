@@ -6,6 +6,7 @@ const mockUpdateSetting = vi.hoisted(() => vi.fn());
 const mockOptIn = vi.hoisted(() => vi.fn());
 const mockOptOut = vi.hoisted(() => vi.fn());
 const mockPruneAnalytics = vi.hoisted(() => vi.fn());
+const mockIsTrackingOptOut = vi.hoisted(() => vi.fn(() => false));
 const mockState = vi.hoisted(() => ({ analyticsEnabled: true }));
 
 vi.mock('@/i18n', () => ({
@@ -34,6 +35,7 @@ vi.mock('@/shared/analytics/posthog', () => ({
   optInAnalytics: mockOptIn,
   optOutAnalytics: mockOptOut,
   pruneAnalyticsData: mockPruneAnalytics,
+  isTrackingOptOut: mockIsTrackingOptOut,
 }));
 
 describe('PrivacyTab', () => {
@@ -42,6 +44,7 @@ describe('PrivacyTab', () => {
     mockOptIn.mockClear();
     mockOptOut.mockClear();
     mockPruneAnalytics.mockClear();
+    mockIsTrackingOptOut.mockReturnValue(false);
     mockState.analyticsEnabled = true;
   });
 
@@ -102,5 +105,17 @@ describe('PrivacyTab', () => {
     const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
     fireEvent.keyDown(toggle, { key: 'Enter' });
     expect(mockUpdateSetting).toHaveBeenCalledWith('analyticsEnabled', false);
+  });
+
+  it('shows privacy signal banner when browser signal detected', () => {
+    mockIsTrackingOptOut.mockReturnValue(true);
+    render(<PrivacyTab />);
+    expect(screen.getByText('settings.browserPrivacySignal')).toBeInTheDocument();
+  });
+
+  it('does not show privacy signal banner when no signal', () => {
+    mockIsTrackingOptOut.mockReturnValue(false);
+    render(<PrivacyTab />);
+    expect(screen.queryByText('settings.browserPrivacySignal')).not.toBeInTheDocument();
   });
 });

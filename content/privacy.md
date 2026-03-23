@@ -7,7 +7,7 @@ schema: Article
 
 # Privacy Policy
 
-**Last updated:** January 2025
+**Last updated:** March 2026
 
 Gridfinity Layout Tool is a free, open-source web application maintained by Andy Aragon. This policy explains what data we collect and how we use it.
 
@@ -32,6 +32,8 @@ We use [PostHog](https://posthog.com) to understand how people use the app. This
 **Analytics is optional.** You can disable it in Settings > Privacy > "Help improve this tool."
 
 When analytics is disabled, no data is sent to PostHog.
+
+We also respect your browser's privacy settings. If your browser sends a [Global Privacy Control](https://globalprivacycontrol.org/) (GPC) or Do Not Track signal, analytics is disabled by default. You can still enable it manually in Settings if you choose.
 
 ### Layout Data
 
@@ -69,6 +71,7 @@ When you use the collaboration feature, your presence data (cursor position, ano
 You can:
 
 - **Opt out of analytics** in Settings > Privacy
+- **Use your browser's privacy setting** (Global Privacy Control or Do Not Track) to disable analytics automatically
 - **Delete your shared layouts** using the share modal
 - **Clear all local data** by clearing your browser's site data for this domain
 

@@ -1189,6 +1189,7 @@
   "settings.accentColor.sky": "Hemelsblauw",
   "settings.accentColor.violet": "Violet",
   "settings.autoDetect": "Automatisch (browserstandaard)",
+  "settings.browserPrivacySignal": "Analyse uitgeschakeld op basis van de privacyinstelling van uw browser. U kunt dit hieronder wijzigen.",
   "settings.confirmCopyFromLayout.confirm": "Kopiëren",
   "settings.confirmCopyFromLayout.message": "Alle standaardwaarden vervangen door de instellingen van je huidige ontwerp?\n\nHuidig ontwerp: {width}×{depth}×{height}u\nLaaghoogte: {layerHeight}u\nPrintbed: {printBed}mm\nRastereenheid: {gridUnit}mm",
   "settings.confirmCopyFromLayout.title": "Kopiëren van huidig ontwerp",

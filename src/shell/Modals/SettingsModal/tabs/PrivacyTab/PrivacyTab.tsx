@@ -1,7 +1,12 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { optInAnalytics, optOutAnalytics, pruneAnalyticsData } from '@/shared/analytics/posthog';
+import {
+  optInAnalytics,
+  optOutAnalytics,
+  pruneAnalyticsData,
+  isTrackingOptOut,
+} from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 
 export function PrivacyTab() {
@@ -13,6 +18,8 @@ export function PrivacyTab() {
       updateSetting: state.updateSetting,
     }))
   );
+
+  const browserPrivacySignal = isTrackingOptOut();
 
   const handlePrivacyToggle = () => {
     const newValue = !analyticsEnabled;
@@ -30,6 +37,11 @@ export function PrivacyTab() {
       {/* Analytics Toggle */}
       <section>
         <h3 className="text-base font-semibold text-content mb-3">{t('settings.privacy')}</h3>
+        {browserPrivacySignal && (
+          <p className="text-xs text-content-secondary bg-surface-secondary rounded-md px-3 py-2 mb-3">
+            {t('settings.browserPrivacySignal')}
+          </p>
+        )}
         <div
           className="flex items-center justify-between text-sm cursor-pointer group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
           onClick={handlePrivacyToggle}

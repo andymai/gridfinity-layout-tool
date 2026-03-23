@@ -6,6 +6,7 @@
 import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
 import { getStableUserId } from './identity';
+import { isTrackingOptOut } from './privacy';
 
 // INITIALIZATION (LAZY LOADED)
 
@@ -31,6 +32,9 @@ export function initAnalytics(): void {
   // Check if analytics is enabled in settings
   const { analyticsEnabled } = useSettingsStore.getState().settings;
   if (!analyticsEnabled) return;
+
+  // Respect browser privacy signals (GPC / DNT)
+  if (isTrackingOptOut()) return;
 
   const key = import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string | undefined;
 

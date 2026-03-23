@@ -16,6 +16,7 @@ import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 import { isOk } from '@/core/result';
 import { loadFromLocalStorage, saveToLocalStorage } from '@/core/storage/backends/localStorage';
+import { isTrackingOptOut } from '@/shared/analytics/posthog/privacy';
 import type { Result, StorageError } from '@/core/result';
 import { SETTINGS_STORAGE_KEY } from '@/core/storage/storageKeys';
 
@@ -145,10 +146,18 @@ export function loadSettings(): UserSettings {
       designListViewMode,
       printSettings,
     };
+    // If user never explicitly set analyticsEnabled, apply browser privacy signal
+    if (parsed.analyticsEnabled === undefined && isTrackingOptOut()) {
+      merged.analyticsEnabled = false;
+    }
     return merged;
   }
 
-  return { ...DEFAULT_SETTINGS };
+  const defaults = { ...DEFAULT_SETTINGS };
+  if (isTrackingOptOut()) {
+    defaults.analyticsEnabled = false;
+  }
+  return defaults;
 }
 
 /**

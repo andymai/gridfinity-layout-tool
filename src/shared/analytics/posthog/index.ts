@@ -16,6 +16,9 @@ export { pruneAnalyticsData } from './identity';
 // Init
 export { initAnalytics, optOutAnalytics, optInAnalytics } from './init';
 
+// Privacy signal detection (separate module to avoid circular deps with settings store)
+export { isTrackingOptOut } from './privacy';
+
 // Metrics
 export type { LabsMetrics, LayoutMetrics } from './metrics';
 export { computeLabsMetrics, computeLayoutMetrics } from './metrics';
