@@ -88,6 +88,14 @@ export interface CacheStatsPayload {
 /** Callback for cache stats reporting */
 export type CacheStatsCallback = (stats: CacheStatsPayload) => void;
 
+/** Payload for kernel performance stats callback */
+export interface KernelPerfStatsPayload {
+  readonly stats: Readonly<Record<string, { totalMs: number; count: number }>>;
+}
+
+/** Callback for kernel perf stats reporting */
+export type KernelPerfStatsCallback = (payload: KernelPerfStatsPayload) => void;
+
 /** Information about the WASM threading capabilities */
 export interface ThreadingInfo {
   /** Whether multi-threaded WASM is being used */
@@ -132,6 +140,9 @@ export class GenerationBridge {
 
   /** Optional callback for cache performance stats (called after each generation). */
   onCacheStats: CacheStatsCallback | null = null;
+
+  /** Optional callback for kernel performance stats (called after each generation). */
+  onKernelPerfStats: KernelPerfStatsCallback | null = null;
 
   constructor(kernel: KernelName = 'opencascade') {
     this.kernel = kernel;
@@ -717,6 +728,10 @@ export class GenerationBridge {
 
         case 'CACHE_STATS':
           this.handleCacheStats(response.caches);
+          break;
+
+        case 'KERNEL_PERF_STATS':
+          this.onKernelPerfStats?.({ stats: response.stats });
           break;
 
         case 'INIT_READY':

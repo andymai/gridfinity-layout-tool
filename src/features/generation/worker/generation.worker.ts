@@ -14,6 +14,7 @@
 // Must be first import — polyfills Symbol.dispose before brepjs loads
 import './symbolDisposePolyfill';
 
+import { getPerformanceStats, resetPerformanceStats } from 'brepjs';
 import type { WorkerMessage, WorkerResponse, MeshData } from '../bridge/types';
 import {
   generateBin,
@@ -122,12 +123,14 @@ function runGeneration(
   const startTime = performance.now();
 
   try {
+    resetPerformanceStats();
     const meshData = generator(signal);
 
     // Check for cancellation before posting result
     if (activeRequestId !== requestId) return;
 
     const timingMs = performance.now() - startTime;
+    const kernelPerfStats = getPerformanceStats();
 
     const verts = copyBuffers ? meshData.vertices.slice() : meshData.vertices;
     const norms = copyBuffers ? meshData.normals.slice() : meshData.normals;
@@ -157,6 +160,9 @@ function runGeneration(
     respond({ type: 'CACHE_STATS', requestId, caches: cacheStats });
     resetAllShapeCacheStats();
     resetBaseplateCacheStats();
+
+    // Post kernel performance stats (per-generation timing breakdown)
+    respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
   } catch (e) {
     // AbortError = expected cancellation -- silently discard
     if (e instanceof DOMException && e.name === 'AbortError') return;
