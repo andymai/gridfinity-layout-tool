@@ -41,14 +41,18 @@ describe('kernel performance stats', () => {
     generateBin(buildParams({ width: 1, depth: 1, height: 2 }));
     const firstStats = getPerformanceStats();
     const firstBooleanCount = firstStats.boolean.count;
+    expect(firstBooleanCount).toBeGreaterThan(0);
 
-    // Reset and second generation
+    // After reset, counts must be zero before next generation
     resetPerformanceStats();
+    const resetStats = getPerformanceStats();
+    expect(resetStats.boolean.count).toBe(0);
+    expect(resetStats.boolean.totalMs).toBe(0);
+
+    // Second generation with same params should produce same counts
     generateBin(buildParams({ width: 1, depth: 1, height: 2 }));
     const secondStats = getPerformanceStats();
-
-    // Counts should be similar (not accumulated from first run)
-    expect(secondStats.boolean.count).toBeLessThanOrEqual(firstBooleanCount * 2);
+    expect(secondStats.boolean.count).toBeLessThanOrEqual(firstBooleanCount);
   });
 
   it('tracks all expected category keys', () => {

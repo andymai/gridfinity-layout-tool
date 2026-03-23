@@ -563,12 +563,14 @@ export function trackCachePerformance(stats: {
 export function trackKernelPerformance(payload: {
   stats: Readonly<Record<string, { totalMs: number; count: number }>>;
 }): void {
-  // Flatten stats into top-level properties: boolean_ms, boolean_count, etc.
+  // Flatten stats into snake_case properties: boolean_ms, edge_mesh_count, etc.
+  const toSnakeCase = (s: string): string => s.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
   const properties: Record<string, number> = {};
   for (const [category, { totalMs, count }] of Object.entries(payload.stats)) {
     if (count > 0) {
-      properties[`${category}_ms`] = Math.round(totalMs * 10) / 10;
-      properties[`${category}_count`] = count;
+      const key = toSnakeCase(category);
+      properties[`${key}_ms`] = Math.round(totalMs * 10) / 10;
+      properties[`${key}_count`] = count;
     }
   }
   if (Object.keys(properties).length > 0) {
