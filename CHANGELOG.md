@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.26.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.25.1...gridfinity-layout-tool-v4.26.0) (2026-03-24)
+
+
+### Features
+
+* **handles:** replace ledge handles with through-hole grip cutouts ([#1237](https://github.com/andymai/gridfinity-layout-tool/issues/1237)) ([ee94d94](https://github.com/andymai/gridfinity-layout-tool/commit/ee94d94bf7fc8422b2c1cb7070f151a75e026adc))
+
 ## [4.25.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.25.0...gridfinity-layout-tool-v4.25.1) (2026-03-24)
 
 
