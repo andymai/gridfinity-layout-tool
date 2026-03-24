@@ -57,10 +57,10 @@ export const FEATURE_FLAGS = [
   },
   // cqrs_undo removed — undo capture middleware is now always active
   {
-    id: 'handle_ledges',
-    name: 'Handle Ledges',
+    id: 'handle_holes',
+    name: 'Handle Holes',
     description:
-      'Add interior grip ledges to bin walls. Small shelves with concave fillet supports make it easy to pull bins out of drawers.',
+      'Cut finger-grip holes through bin walls. Rounded rectangle cutouts make it easy to pull bins out of drawers.',
     status: 'experimental',
     risk: 'low',
     addedAt: '2026-03',

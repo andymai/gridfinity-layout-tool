@@ -50,22 +50,22 @@ export function useHandleSection() {
   );
 
   const setWidth = useCallback(
-    (width: number) => {
-      updateHandles({ width });
+    (w: number) => {
+      updateHandles({ width: w });
     },
     [updateHandles]
   );
 
-  const setDepth = useCallback(
-    (depth: number) => {
-      updateHandles({ depth });
+  const setHeight = useCallback(
+    (h: number) => {
+      updateHandles({ height: h });
     },
     [updateHandles]
   );
 
-  const setFilletRadius = useCallback(
-    (filletRadius: number) => {
-      updateHandles({ filletRadius });
+  const setCornerRadius = useCallback(
+    (r: number) => {
+      updateHandles({ cornerRadius: r });
     },
     [updateHandles]
   );
@@ -88,7 +88,7 @@ export function useHandleSection() {
     const sideNames = activeSides.map((s) => t(`binDesigner.handles.${s}`)).join(', ');
     return t('binDesigner.handles.summary', {
       sides: sideNames,
-      depth: String(handles.depth),
+      height: String(handles.height),
     });
   }, [handles, activeSides, t]);
 
@@ -104,7 +104,7 @@ export function useHandleSection() {
 
   return {
     state: { handles, isBackDisabled, handleWidthMm },
-    handlers: { toggleEnabled, toggleSide, setWidth, setDepth, setFilletRadius },
+    handlers: { toggleEnabled, toggleSide, setWidth, setHeight, setCornerRadius },
     meta,
     t,
   };
