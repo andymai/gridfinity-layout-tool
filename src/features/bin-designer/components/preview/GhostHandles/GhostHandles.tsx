@@ -12,26 +12,15 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import type { HandleWallSide } from '@/features/bin-designer/types';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import {
-  computeHandleSegments,
-  CUTOUT_CLEARANCE,
-  MIN_SEGMENT_WIDTH,
   HOLE_VERTICAL_CENTER,
+  buildHandleWallDefs,
+  computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
 
 const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.4;
-
-interface WallDef {
-  readonly side: HandleWallSide;
-  readonly wallSpan: number;
-  readonly x: number;
-  readonly y: number;
-  readonly rotateZ: number;
-}
 
 export function GhostHandles() {
   const { invalidate } = useThree();
@@ -84,62 +73,32 @@ export function GhostHandles() {
     const effectiveHeight = Math.min(handles.height, maxHalfHeight * 2);
     if (effectiveHeight < 1) return null;
 
-    // Rotations must match handleBuilder.ts (cut pattern)
-    const wallDefs: readonly WallDef[] = [
-      { side: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },
-      { side: 'back', wallSpan: innerW, x: 0, y: innerD / 2, rotateZ: 0 },
-      { side: 'left', wallSpan: innerD, x: -innerW / 2, y: 0, rotateZ: 90 },
-      { side: 'right', wallSpan: innerD, x: innerW / 2, y: 0, rotateZ: 90 },
-    ];
-
+    const wallDefs = buildHandleWallDefs(innerW, innerD);
     const matrices: THREE.Matrix4[] = [];
 
     for (const wall of wallDefs) {
       if (!handles[wall.side].enabled) continue;
       if (wall.side === 'back' && label.enabled) continue;
 
-      // Compute segments (split around cutout if present)
       const wallCutout = wallConfig.enabled ? wallConfig[wall.side] : undefined;
-      let segments: { offset: number; width: number }[];
-
-      if (wallCutout?.enabled) {
-        const cutWidth =
-          wallCutout.widthMm !== null
-            ? Math.min(wallCutout.widthMm, wall.wallSpan)
-            : wall.wallSpan * (wallCutout.width / 100);
-        const cutCenter = computeCutoutCenter(
-          wall.wallSpan,
-          cutWidth,
-          wallThickness,
-          wallCutout.alignment,
-          wallCutout.offset
-        );
-        segments = computeHandleSegments({
-          wallSpan: wall.wallSpan,
-          handleWidthPercent: handles.width,
-          cutoutCenter: cutCenter,
-          cutoutWidth: cutWidth,
-          clearance: CUTOUT_CLEARANCE,
-          minSegmentWidth: MIN_SEGMENT_WIDTH,
-        });
-      } else {
-        const holeWidth = wall.wallSpan * (handles.width / 100);
-        if (holeWidth <= 0) continue;
-        segments = [{ offset: 0, width: holeWidth }];
-      }
+      const segments = computeWallHandleSegments(
+        wall.wallSpan,
+        handles.width,
+        wallThickness,
+        wallCutout
+      );
+      if (!segments) continue;
 
       for (const seg of segments) {
         const matrix = new THREE.Matrix4();
-        // After plane.rotateX(π/2), vertical extent is Z not Y
+        // After plane.rotateX(pi/2), vertical extent is Z not Y
         const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, 1, effectiveHeight);
 
-        const localX = seg.offset;
-        const localY = 0;
         const angle = (wall.rotateZ * Math.PI) / 180;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        const worldX = wall.x + localX * cos - localY * sin;
-        const worldY = wall.y + localX * sin + localY * cos;
+        const worldX = wall.x + seg.offset * cos;
+        const worldY = wall.y + seg.offset * sin;
 
         const rotateMatrix = new THREE.Matrix4().makeRotationZ(angle);
         const translateMatrix = new THREE.Matrix4().makeTranslation(worldX, worldY, 0);

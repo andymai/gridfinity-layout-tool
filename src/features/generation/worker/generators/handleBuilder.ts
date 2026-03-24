@@ -7,36 +7,26 @@
  * of the interior wall height.
  *
  * When a wall also has a cutout enabled, the hole is split into
- * segments that flank the cutout region via computeHandleSegments().
+ * segments that flank the cutout region via computeWallHandleSegments().
  */
 
 import { drawRoundedRectangle, drawRectangle, translate, rotate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import type { BinParams, HandleWallSide } from '@/shared/types/bin';
+import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import {
-  computeHandleSegments,
-  CUTOUT_CLEARANCE,
-  MIN_SEGMENT_WIDTH,
   HOLE_VERTICAL_CENTER,
+  buildHandleWallDefs,
+  computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
-import type { HandleSegment } from '@/shared/utils/handleCutoutClip';
+import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { LIP_TAPER_WIDTH } from './generatorConstants';
-
-interface WallDef {
-  readonly side: HandleWallSide;
-  readonly wallSpan: number;
-  readonly x: number;
-  readonly y: number;
-  readonly rotateZ: number;
-}
 
 /**
  * Build a single hole cut solid for one segment.
  *
- * Sketches a rounded rectangle on XZ (width × height), extrudes through
+ * Sketches a rounded rectangle on XZ (width x height), extrudes through
  * the wall, and positions at the correct wall location and Z height.
  */
 function buildHoleCut(
@@ -46,7 +36,7 @@ function buildHoleCut(
   cornerRadius: number,
   extrudeDepth: number,
   centerZ: number,
-  wall: WallDef
+  wall: HandleWallDef
 ): Shape3D {
   // Clamp corner radius to half of smallest dimension
   const safeR = Math.max(0, Math.min(cornerRadius, segmentWidth / 2 - 0.01, holeHeight / 2 - 0.01));
@@ -103,50 +93,16 @@ export function buildHandleHoles(
   const effectiveHeight = Math.min(height, maxHalfHeight * 2);
   if (effectiveHeight < 1) return null;
 
-  const walls: readonly WallDef[] = [
-    { side: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },
-    { side: 'back', wallSpan: innerW, x: 0, y: innerD / 2, rotateZ: 0 },
-    { side: 'left', wallSpan: innerD, x: -innerW / 2, y: 0, rotateZ: 90 },
-    { side: 'right', wallSpan: innerD, x: innerW / 2, y: 0, rotateZ: 90 },
-  ];
-
+  const walls = buildHandleWallDefs(innerW, innerD);
   const allHoles: Shape3D[] = [];
 
   for (const wall of walls) {
     if (!params.handles[wall.side].enabled) continue;
-
-    // Back-wall suppression when label tabs are active
     if (wall.side === 'back' && params.label.enabled) continue;
 
-    // Compute segments (split around wall cutout if present)
     const wallCutout = params.walls.enabled ? params.walls[wall.side] : undefined;
-    let segments: HandleSegment[];
-
-    if (wallCutout?.enabled) {
-      const cutWidth =
-        wallCutout.widthMm !== null
-          ? Math.min(wallCutout.widthMm, wall.wallSpan)
-          : wall.wallSpan * (wallCutout.width / 100);
-      const cutCenter = computeCutoutCenter(
-        wall.wallSpan,
-        cutWidth,
-        params.wallThickness,
-        wallCutout.alignment,
-        wallCutout.offset
-      );
-      segments = computeHandleSegments({
-        wallSpan: wall.wallSpan,
-        handleWidthPercent: width,
-        cutoutCenter: cutCenter,
-        cutoutWidth: cutWidth,
-        clearance: CUTOUT_CLEARANCE,
-        minSegmentWidth: MIN_SEGMENT_WIDTH,
-      });
-    } else {
-      const holeWidth = wall.wallSpan * (width / 100);
-      if (holeWidth <= 0) continue;
-      segments = [{ offset: 0, width: holeWidth }];
-    }
+    const segments = computeWallHandleSegments(wall.wallSpan, width, wallThickness, wallCutout);
+    if (!segments) continue;
 
     for (const seg of segments) {
       if (seg.width <= 0) continue;

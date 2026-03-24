@@ -79,7 +79,12 @@ export function useHandleSection() {
     // based on which sides are enabled; for mixed, show the smallest (most constrained).
     const fbEnabled = handles.front.enabled || (handles.back.enabled && !isBackDisabled);
     const lrEnabled = handles.left.enabled || handles.right.enabled;
-    const span = fbEnabled && lrEnabled ? Math.min(innerW, innerD) : lrEnabled ? innerD : innerW;
+    let span = innerW;
+    if (fbEnabled && lrEnabled) {
+      span = Math.min(innerW, innerD);
+    } else if (lrEnabled) {
+      span = innerD;
+    }
     return Math.round(span * (handles.width / 100) * 10) / 10;
   }, [width, depth, wallThickness, handles, isBackDisabled]);
 
