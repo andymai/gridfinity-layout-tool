@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.25.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.24.0...gridfinity-layout-tool-v4.25.0) (2026-03-24)
+
+
+### Features
+
+* **cqrs:** promote undo to always-on, add batch(), remove useUndoableAction ([#1231](https://github.com/andymai/gridfinity-layout-tool/issues/1231)) ([4060a01](https://github.com/andymai/gridfinity-layout-tool/commit/4060a01d61bf3724a7d32ec0a7f0b8b279bd1d9e))
+
 ## [4.24.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.23.2...gridfinity-layout-tool-v4.24.0) (2026-03-24)
 
 
