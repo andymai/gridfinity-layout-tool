@@ -274,7 +274,7 @@ function convertRect(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutou
   // Our cutout system only supports circular corners, so use the larger value.
   const rxAttr = numAttr(el, 'rx');
   const ryAttr = numAttr(el, 'ry');
-  const cornerR = Math.max(rxAttr, ryAttr);
+  const cornerR = Math.max(0, rxAttr, ryAttr);
 
   if (w <= 0 || h <= 0) return null;
 

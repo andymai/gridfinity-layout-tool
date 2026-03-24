@@ -112,11 +112,9 @@ describe('buildLabelTabs', () => {
       let supportMinY = Infinity;
       let supportMaxY = -Infinity;
       let hasSupportVerts = false;
-      let globalMaxY = -Infinity;
       for (let i = 0; i < verts.length; i += 3) {
         const y = verts[i + 1];
         const z = verts[i + 2];
-        if (y > globalMaxY) globalMaxY = y;
         if (z < shelfUndersideZ - epsilon) {
           hasSupportVerts = true;
           if (y < supportMinY) supportMinY = y;
