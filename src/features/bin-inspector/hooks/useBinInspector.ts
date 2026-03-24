@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
+import { useMutations } from '@/shared/contexts';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk, isErr } from '@/core/result';
@@ -126,14 +127,8 @@ export function useBinInspector(): UseBinInspectorReturn {
 
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
-  const { layout, updateBin, deleteBin, moveBinToStaging } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      updateBin: state.updateBin,
-      deleteBin: state.deleteBin,
-      moveBinToStaging: state.moveBinToStaging,
-    }))
-  );
+  const layout = useLayoutStore((state) => state.layout);
+  const { updateBin, deleteBin, moveBinToStaging } = useMutations();
 
   const { execute } = useUndoableAction();
 
@@ -569,10 +564,10 @@ export function useBinInspector(): UseBinInspectorReturn {
       }
     });
 
-    setSelectedBins([]);
+    // Selection cleanup handled by CQRS selectionPruning subscriber
     setDeleteConfirmState(null);
     closeMobilePanel();
-  }, [selectedBins, execute, deleteBin, setSelectedBins, closeMobilePanel]);
+  }, [selectedBins, execute, deleteBin, closeMobilePanel]);
 
   const cancelDelete = useCallback(() => {
     setDeleteConfirmState(null);

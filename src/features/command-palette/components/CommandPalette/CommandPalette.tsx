@@ -22,7 +22,7 @@ import { useLayoutSwitcher } from '@/shared/hooks';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
 import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/shared/utils/entity';
-import { STAGING_ID } from '@/core/constants';
+
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { isOk, isErr } from '@/core/result';
@@ -115,7 +115,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
     }))
   );
   const { execute } = useUndoableAction();
-  const { deleteBin, duplicateBin, updateBin, addLayer } = useMutations();
+  const { deleteBin, duplicateBin, updateBin, moveBinToStaging, addLayer } = useMutations();
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
   const { alignBins } = useAlignBins();
   const { rotateAll, matchHeight } = useSelectionActions();
@@ -229,7 +229,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
                 if (isErr(result)) break;
               }
             });
-            setSelectedBins([]);
+            // Selection cleanup handled by CQRS selectionPruning subscriber
           }
         : null,
       'duplicate-selected': hasBinsSelected
@@ -353,11 +353,11 @@ function useActionHandlers(): Record<string, ActionHandler> {
         ? () => {
             execute(() => {
               for (const id of selectedBinIds) {
-                if (isErr(updateBin(id, { layerId: STAGING_ID }))) break;
+                if (isErr(moveBinToStaging(id))) break;
               }
             });
             addToast(t('toast.movedToStash', { count: selectedBinIds.length }), 'info');
-            setSelectedBins([]);
+            // Selection cleanup handled by CQRS selectionPruning subscriber
           }
         : null,
       'clear-staging':
@@ -445,6 +445,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
     deleteBin,
     duplicateBin,
     updateBin,
+    moveBinToStaging,
     addLayer,
     fillLayerGaps,
     fillLayer,
