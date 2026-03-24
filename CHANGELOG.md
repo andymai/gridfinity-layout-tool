@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.23.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.22.0...gridfinity-layout-tool-v4.23.0) (2026-03-24)
+
+
+### Features
+
+* **design-system:** redesign sliders with custom Slider primitive and editable value badge ([#1222](https://github.com/andymai/gridfinity-layout-tool/issues/1222)) ([662b6da](https://github.com/andymai/gridfinity-layout-tool/commit/662b6da1e0a4975c4268dc21247a4b06b95d3694))
+
 ## [4.22.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.21.3...gridfinity-layout-tool-v4.22.0) (2026-03-23)
 
 
