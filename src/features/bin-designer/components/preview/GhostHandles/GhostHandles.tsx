@@ -17,6 +17,12 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { HandleWallSide } from '@/features/bin-designer/types';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
+import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import {
+  computeHandleSegments,
+  CUTOUT_CLEARANCE,
+  MIN_SEGMENT_WIDTH,
+} from '@/shared/utils/handleCutoutClip';
 
 const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.4;
@@ -44,7 +50,17 @@ export function GhostHandles() {
     }))
   );
 
-  const { width, depth, height, wallThickness, style, handles, label, base } = params;
+  const {
+    width,
+    depth,
+    height,
+    wallThickness,
+    style,
+    handles,
+    label,
+    base,
+    walls: wallConfig,
+  } = params;
 
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
@@ -68,7 +84,7 @@ export function GhostHandles() {
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
-    const walls: readonly WallDef[] = [
+    const wallDefs: readonly WallDef[] = [
       { side: 'front', wallSpan: innerW, depthSpan: innerD, x: 0, y: -innerD / 2, rotateZ: 180 },
       { side: 'back', wallSpan: innerW, depthSpan: innerD, x: 0, y: innerD / 2, rotateZ: 0 },
       { side: 'left', wallSpan: innerD, depthSpan: innerW, x: -innerW / 2, y: 0, rotateZ: 90 },
@@ -77,7 +93,7 @@ export function GhostHandles() {
 
     const matrices: THREE.Matrix4[] = [];
 
-    for (const wall of walls) {
+    for (const wall of wallDefs) {
       if (!handles[wall.side].enabled) continue;
 
       // Back-wall suppression: skip back handle when label tabs are active
@@ -86,39 +102,55 @@ export function GhostHandles() {
       const effectiveDepth = Math.min(handles.depth, wall.depthSpan / 2 - wallThickness);
       if (effectiveDepth <= 0) continue;
 
-      const handleWidth = wall.wallSpan * (handles.width / 100);
-      if (handleWidth <= 0) continue;
+      // Compute segments (split around cutout if present on this wall)
+      const wallCutout = wallConfig.enabled ? wallConfig[wall.side] : undefined;
+      let segments: { offset: number; width: number }[];
 
-      // Build a transform that places a unit plane as the shelf quad:
-      // 1. Scale to handleWidth x effectiveDepth
-      // 2. Position at wall center, shelf extends inward (-Y in local space)
-      // 3. Rotate to wall orientation
+      if (wallCutout?.enabled) {
+        const cutWidth =
+          wallCutout.widthMm !== null
+            ? Math.min(wallCutout.widthMm, wall.wallSpan)
+            : wall.wallSpan * (wallCutout.width / 100);
+        const cutCenter = computeCutoutCenter(
+          wall.wallSpan,
+          cutWidth,
+          wallThickness,
+          wallCutout.alignment,
+          wallCutout.offset
+        );
+        segments = computeHandleSegments({
+          wallSpan: wall.wallSpan,
+          handleWidthPercent: handles.width,
+          cutoutCenter: cutCenter,
+          cutoutWidth: cutWidth,
+          clearance: CUTOUT_CLEARANCE,
+          minSegmentWidth: MIN_SEGMENT_WIDTH,
+        });
+      } else {
+        const handleWidth = wall.wallSpan * (handles.width / 100);
+        if (handleWidth <= 0) continue;
+        segments = [{ offset: 0, width: handleWidth }];
+      }
 
-      const matrix = new THREE.Matrix4();
+      for (const seg of segments) {
+        const matrix = new THREE.Matrix4();
+        const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, effectiveDepth, 1);
 
-      // Scale the unit plane
-      const scaleMatrix = new THREE.Matrix4().makeScale(handleWidth, effectiveDepth, 1);
+        const localX = seg.offset;
+        const localY = -effectiveDepth / 2;
+        const angle = (wall.rotateZ * Math.PI) / 180;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const worldX = wall.x + localX * cos - localY * sin;
+        const worldY = wall.y + localX * sin + localY * cos;
 
-      // The shelf center in local space (before rotation):
-      // X = 0 (centered on wall), Y = -effectiveDepth/2 (inward from wall face)
-      const localX = 0;
-      const localY = -effectiveDepth / 2;
+        const rotateMatrix = new THREE.Matrix4().makeRotationZ(angle);
+        const translateMatrix = new THREE.Matrix4().makeTranslation(worldX, worldY, 0);
 
-      // Rotate the local offset to world orientation
-      const angle = (wall.rotateZ * Math.PI) / 180;
-      const cos = Math.cos(angle);
-      const sin = Math.sin(angle);
-      const worldX = wall.x + localX * cos - localY * sin;
-      const worldY = wall.y + localX * sin + localY * cos;
-
-      // Compose: scale, then rotate around Z, then translate
-      const rotateMatrix = new THREE.Matrix4().makeRotationZ(angle);
-      const translateMatrix = new THREE.Matrix4().makeTranslation(worldX, worldY, 0);
-
-      matrix.multiplyMatrices(translateMatrix, rotateMatrix);
-      matrix.multiply(scaleMatrix);
-
-      matrices.push(matrix);
+        matrix.multiplyMatrices(translateMatrix, rotateMatrix);
+        matrix.multiply(scaleMatrix);
+        matrices.push(matrix);
+      }
     }
 
     if (matrices.length === 0) return null;
@@ -160,7 +192,7 @@ export function GhostHandles() {
     merged.setIndex(allIndices);
 
     return merged;
-  }, [shouldShow, innerW, innerD, wallThickness, handles, label.enabled]);
+  }, [shouldShow, innerW, innerD, wallThickness, handles, label.enabled, wallConfig]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;
