@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
@@ -55,8 +56,16 @@ export interface UseGridResizeOptions {
 export function useGridResize(options: UseGridResizeOptions): GridResizeState {
   const { cellSize, gap } = options;
 
-  const drawer = useLayoutStore((state) => state.layout.drawer);
-  const { updateDrawer, updateBin } = useMutations();
+  const { drawer, updateDrawer } = useLayoutStore(
+    useShallow((state) => ({
+      drawer: state.layout.drawer,
+      // updateDrawer called on every pointermove during drag — use store
+      // directly to avoid CQRS event/analytics/undo spam per frame.
+      // The undo snapshot is captured by useUndoableAction on pointer-up.
+      updateDrawer: state.updateDrawer,
+    }))
+  );
+  const { updateBin } = useMutations();
 
   const { execute } = useUndoableAction();
 
