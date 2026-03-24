@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.23.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.23.0...gridfinity-layout-tool-v4.23.1) (2026-03-24)
+
+
+### Bug Fixes
+
+* address unresolved PR review comments from recent merges ([#1224](https://github.com/andymai/gridfinity-layout-tool/issues/1224)) ([6dc4807](https://github.com/andymai/gridfinity-layout-tool/commit/6dc4807bd743a9531a0004da1fffd1e857b259b6))
+
 ## [4.23.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.22.0...gridfinity-layout-tool-v4.23.0) (2026-03-24)
 
 
