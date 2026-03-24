@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore, useMobileStore } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { PresenceAvatars } from '@/shell/Collab';
@@ -21,7 +22,7 @@ interface MobileHeaderProps {
 export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
   const t = useTranslation();
   const layout = useLayoutStore((state) => state.layout);
-  const setName = useLayoutStore((state) => state.setName);
+  const { setName } = useMutations();
 
   const canUndo = useHistoryStore((state) => state.canUndo);
   const canRedo = useHistoryStore((state) => state.canRedo);
