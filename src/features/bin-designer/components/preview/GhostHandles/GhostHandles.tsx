@@ -130,10 +130,8 @@ export function GhostHandles() {
 
       for (const seg of segments) {
         const matrix = new THREE.Matrix4();
-        // Scale unit plane to hole dimensions (width along X, height along Y)
+        // Scale: width along X, height along Z (plane is pre-rotated into XZ)
         const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, effectiveHeight, 1);
-        // Rotate plane from XY into XZ so it lies on the vertical wall face
-        const flipToWall = new THREE.Matrix4().makeRotationX(Math.PI / 2);
 
         const localX = seg.offset;
         const localY = 0;
@@ -146,9 +144,7 @@ export function GhostHandles() {
         const rotateMatrix = new THREE.Matrix4().makeRotationZ(angle);
         const translateMatrix = new THREE.Matrix4().makeTranslation(worldX, worldY, 0);
 
-        // Compose: scale → flip to wall → rotate to wall orientation → translate
         matrix.multiplyMatrices(translateMatrix, rotateMatrix);
-        matrix.multiply(flipToWall);
         matrix.multiply(scaleMatrix);
         matrices.push(matrix);
       }
@@ -156,7 +152,9 @@ export function GhostHandles() {
 
     if (matrices.length === 0) return null;
 
+    // Pre-rotate plane from XY into XZ so it lies on vertical wall faces
     const plane = new THREE.PlaneGeometry(1, 1);
+    plane.rotateX(Math.PI / 2);
     const merged = new THREE.BufferGeometry();
     const allPositions: number[] = [];
     const allIndices: number[] = [];

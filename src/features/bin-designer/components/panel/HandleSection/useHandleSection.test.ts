@@ -187,12 +187,12 @@ describe('useHandleSection', () => {
         handles: {
           ...DEFAULT_BIN_PARAMS.handles,
           enabled: true,
-          depth: 10,
+          height: 20,
         },
       },
     });
 
     const { result } = renderHook(() => useHandleSection());
-    expect(result.current.meta.summary).toContain('10');
+    expect(result.current.meta.summary).toContain('20');
   });
 });
