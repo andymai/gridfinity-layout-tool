@@ -20,4 +20,4 @@ export { buildCutoutCuts } from './cutoutBuilder';
 export { buildLabelTabs } from './labelTabBuilder';
 export { buildScoopRamps } from './scoopRampBuilder';
 export { buildWallCutoutCuts, buildSingleCutout } from './wallCutoutBuilder';
-export { buildHandles } from './handleBuilder';
+export { buildHandleHoles } from './handleBuilder';

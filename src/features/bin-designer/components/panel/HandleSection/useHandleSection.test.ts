@@ -120,24 +120,24 @@ describe('useHandleSection', () => {
     expect(useDesignerStore.getState().params.handles.width).toBe(50);
   });
 
-  it('setDepth updates handle depth', () => {
+  it('setHeight updates handle height', () => {
     const { result } = renderHook(() => useHandleSection());
 
     act(() => {
-      result.current.handlers.setDepth(8);
+      result.current.handlers.setHeight(20);
     });
 
-    expect(useDesignerStore.getState().params.handles.depth).toBe(8);
+    expect(useDesignerStore.getState().params.handles.height).toBe(20);
   });
 
-  it('setFilletRadius updates fillet radius', () => {
+  it('setCornerRadius updates corner radius', () => {
     const { result } = renderHook(() => useHandleSection());
 
     act(() => {
-      result.current.handlers.setFilletRadius(3);
+      result.current.handlers.setCornerRadius(5);
     });
 
-    expect(useDesignerStore.getState().params.handles.filletRadius).toBe(3);
+    expect(useDesignerStore.getState().params.handles.cornerRadius).toBe(5);
   });
 
   it('summary reflects only enabled sides', () => {
