@@ -49,7 +49,7 @@ function buildHoleCut(
   wall: WallDef
 ): Shape3D {
   // Clamp corner radius to half of smallest dimension
-  const safeR = Math.min(cornerRadius, segmentWidth / 2 - 0.01, holeHeight / 2 - 0.01);
+  const safeR = Math.max(0, Math.min(cornerRadius, segmentWidth / 2 - 0.01, holeHeight / 2 - 0.01));
 
   // 2D profile: rounded rectangle (or plain if radius too small)
   const profile =
