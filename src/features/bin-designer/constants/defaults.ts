@@ -78,7 +78,7 @@ const DEFAULT_HANDLE_CONFIG: HandleConfig = {
   enabled: false,
   width: 50,
   height: 15,
-  cornerRadius: 3,
+  cornerRadius: 10,
   front: { enabled: true },
   back: { enabled: false },
   left: { enabled: true },

@@ -325,7 +325,7 @@ describe('migrateParams', () => {
     expect(result.handles.enabled).toBe(true);
     expect(result.handles.width).toBe(80); // preserved
     expect(result.handles.height).toBe(15); // default (legacy depth stripped)
-    expect(result.handles.cornerRadius).toBe(3); // default (legacy fillet stripped)
+    expect(result.handles.cornerRadius).toBe(10); // default (legacy fillet stripped)
     expect(result.handles.front.enabled).toBe(false);
     expect(result.handles.back.enabled).toBe(false); // default
     expect(result.handles.left.enabled).toBe(true); // default
