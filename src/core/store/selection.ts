@@ -54,6 +54,7 @@ interface SelectionActions {
   restoreSelection: (updates: Partial<SelectionState>) => void;
 }
 
+export type { SelectionState };
 export type SelectionStore = SelectionState & SelectionActions;
 
 export const INITIAL_SELECTION_STATE = {

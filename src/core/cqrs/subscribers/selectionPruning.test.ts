@@ -200,15 +200,16 @@ describe('selectionPruning subscriber', () => {
 
   describe('layer.deleted', () => {
     it('resets activeLayerId when active layer is deleted', () => {
-      const layers = [makeLayer('layer1'), makeLayer('layer2')];
+      useSelectionStore.setState({
+        activeLayerId: layerId('layer2'),
+      });
+
+      // Mirror production ordering: store already updated before event fires
       useLayoutStore.setState({
         layout: {
           ...useLayoutStore.getState().layout,
-          layers,
+          layers: [makeLayer('layer1')],
         },
-      });
-      useSelectionStore.setState({
-        activeLayerId: layerId('layer2'),
       });
 
       bus.publish(
@@ -222,15 +223,16 @@ describe('selectionPruning subscriber', () => {
     });
 
     it('does not change activeLayerId when a different layer is deleted', () => {
-      const layers = [makeLayer('layer1'), makeLayer('layer2')];
+      useSelectionStore.setState({
+        activeLayerId: layerId('layer1'),
+      });
+
+      // Mirror production ordering: layer2 already removed from store
       useLayoutStore.setState({
         layout: {
           ...useLayoutStore.getState().layout,
-          layers,
+          layers: [makeLayer('layer1')],
         },
-      });
-      useSelectionStore.setState({
-        activeLayerId: layerId('layer1'),
       });
 
       bus.publish(
@@ -246,15 +248,16 @@ describe('selectionPruning subscriber', () => {
 
   describe('category.deleted', () => {
     it('resets activeCategoryId when active category is deleted', () => {
-      const categories = [makeCategory('cat1'), makeCategory('cat2')];
+      useSelectionStore.setState({
+        activeCategoryId: categoryId('cat2'),
+      });
+
+      // Mirror production ordering: store already updated before event fires
       useLayoutStore.setState({
         layout: {
           ...useLayoutStore.getState().layout,
-          categories,
+          categories: [makeCategory('cat1')],
         },
-      });
-      useSelectionStore.setState({
-        activeCategoryId: categoryId('cat2'),
       });
 
       bus.publish(
@@ -267,15 +270,16 @@ describe('selectionPruning subscriber', () => {
     });
 
     it('does not change activeCategoryId when a different category is deleted', () => {
-      const categories = [makeCategory('cat1'), makeCategory('cat2')];
+      useSelectionStore.setState({
+        activeCategoryId: categoryId('cat1'),
+      });
+
+      // Mirror production ordering: cat2 already removed from store
       useLayoutStore.setState({
         layout: {
           ...useLayoutStore.getState().layout,
-          categories,
+          categories: [makeCategory('cat1')],
         },
-      });
-      useSelectionStore.setState({
-        activeCategoryId: categoryId('cat1'),
       });
 
       bus.publish(

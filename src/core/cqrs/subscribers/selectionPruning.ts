@@ -14,26 +14,29 @@
 
 import type { UnsubscribeFn } from '../types';
 import type { EventBus } from '../bus/eventBus';
+import type { SelectionState } from '@/core/store/selection';
+import type { BinId } from '@/core/types';
 import { useSelectionStore } from '@/core/store/selection';
 import { useLayoutStore } from '@/core/store/layout';
+import { layerId, categoryId } from '@/core/types';
 
 /**
  * Remove a single bin ID from selection state.
  * Clears focusedBinId and quickLabelBinId if they match the deleted bin.
  */
-function removeBinFromSelection(binId: string): void {
+function removeBinFromSelection(id: BinId): void {
   const state = useSelectionStore.getState();
-  const updates: Record<string, unknown> = {};
+  const updates: Partial<SelectionState> = {};
 
-  if (state.selectedBinIds.includes(binId as never)) {
-    updates.selectedBinIds = state.selectedBinIds.filter((id) => id !== binId);
+  if (state.selectedBinIds.includes(id)) {
+    updates.selectedBinIds = state.selectedBinIds.filter((binId) => binId !== id);
   }
 
-  if (state.focusedBinId === binId) {
+  if (state.focusedBinId === id) {
     updates.focusedBinId = null;
   }
 
-  if (state.quickLabelBinId === binId) {
+  if (state.quickLabelBinId === id) {
     updates.quickLabelBinId = null;
   }
 
@@ -45,12 +48,12 @@ function removeBinFromSelection(binId: string): void {
 /**
  * Remove multiple bin IDs from selection state.
  */
-function removeBinsFromSelection(binIds: ReadonlyArray<string>): void {
+function removeBinsFromSelection(binIds: ReadonlyArray<BinId>): void {
   if (binIds.length === 0) return;
 
-  const idSet = new Set(binIds);
+  const idSet = new Set<BinId>(binIds);
   const state = useSelectionStore.getState();
-  const updates: Record<string, unknown> = {};
+  const updates: Partial<SelectionState> = {};
 
   const filtered = state.selectedBinIds.filter((id) => !idSet.has(id));
   if (filtered.length !== state.selectedBinIds.length) {
@@ -113,6 +116,8 @@ export function connectSelectionPruning(bus: EventBus): UnsubscribeFn {
         const layout = useLayoutStore.getState().layout;
         if (layout.layers.length > 0) {
           state.restoreSelection({ activeLayerId: layout.layers[0].id });
+        } else {
+          state.restoreSelection({ activeLayerId: layerId('') });
         }
       }
     })
@@ -126,6 +131,8 @@ export function connectSelectionPruning(bus: EventBus): UnsubscribeFn {
         const layout = useLayoutStore.getState().layout;
         if (layout.categories.length > 0) {
           state.restoreSelection({ activeCategoryId: layout.categories[0].id });
+        } else {
+          state.restoreSelection({ activeCategoryId: categoryId('') });
         }
       }
     })
