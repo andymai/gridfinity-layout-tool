@@ -185,7 +185,12 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
             id={id}
             type="range"
             value={value}
-            onChange={() => {}}
+            onChange={(e) => {
+              const newValue = Number(e.target.value);
+              if (newValue !== value) {
+                onChange(newValue);
+              }
+            }}
             onKeyDown={handleKeyDown}
             min={min}
             max={max}
