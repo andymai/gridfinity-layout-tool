@@ -26,7 +26,7 @@ const HEIGHT_CLEARANCE = 0.1;
  *
  * Coordinate system (looking from front):
  * ```
- * (0, 0) ──── (-R, 0)     shelf underside
+ * (0, 0) ── (-depth, 0)     shelf underside
  *   |              ╲
  *   |    concave    ╲
  * (0, -R) ──────────╱

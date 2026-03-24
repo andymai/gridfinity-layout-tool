@@ -9,8 +9,7 @@ import { unwrap, fuse, fuseAll, cut, cutAll } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
-import { checkCancelled } from '../../utils/abort';
-import { isAbortError } from '../../utils/abort';
+import { checkCancelled, isAbortError } from '../../utils/abort';
 
 /**
  * Try a batch boolean, falling back to sequential pairwise operations.

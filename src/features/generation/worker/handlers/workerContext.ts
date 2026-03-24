@@ -10,6 +10,7 @@ import { getPerformanceStats, resetPerformanceStats } from 'brepjs';
 import type { WorkerResponse, MeshData, KernelName } from '../../bridge/types';
 import { getAllShapeCacheStats, resetAllShapeCacheStats } from '../generators/shapeCache';
 import { getBaseplateCacheStats, resetBaseplateCacheStats } from '../generators/baseplateGenerator';
+import { isAbortError } from '../generators/utils/abort';
 
 /** Mutable worker state */
 let activeRequestId: string | null = null;
@@ -123,7 +124,7 @@ export function runGeneration(
 
     respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
   } catch (e) {
-    if (e instanceof DOMException && e.name === 'AbortError') return;
+    if (isAbortError(e)) return;
     if (activeRequestId !== requestId) return;
     const errorMsg = formatError(e);
 

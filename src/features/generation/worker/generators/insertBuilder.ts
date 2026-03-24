@@ -79,7 +79,7 @@ export const insertCutsFeature: FeatureBuilder = {
   name: 'insertCuts',
   tag: FeatureTag.INSERT,
   target: 'cut',
-  shouldBuild: () => true,
+  shouldBuild: (ctx) => ctx.params.inserts.length > 0,
   cacheKey: (ctx) =>
     compactKey(buildCacheKey('v1', ctx.dimensions.shellKey, stableSerialize(ctx.params.inserts))),
   build: (ctx) => {

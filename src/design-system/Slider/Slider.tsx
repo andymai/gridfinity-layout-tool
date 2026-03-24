@@ -115,10 +115,12 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
 
         if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
           e.preventDefault();
-          newValue = Math.min(max, value + step);
+          const raw = value + step;
+          newValue = Math.min(max, min + Math.round((raw - min) / step) * step);
         } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
           e.preventDefault();
-          newValue = Math.max(min, value - step);
+          const raw = value - step;
+          newValue = Math.max(min, min + Math.round((raw - min) / step) * step);
         } else if (e.key === 'Home') {
           e.preventDefault();
           newValue = min;

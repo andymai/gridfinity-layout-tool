@@ -107,10 +107,18 @@ describe('PrivacyTab', () => {
     expect(mockUpdateSetting).toHaveBeenCalledWith('analyticsEnabled', false);
   });
 
-  it('shows privacy signal banner when browser signal detected', () => {
+  it('shows privacy signal banner when browser signal detected and analytics disabled', () => {
     mockIsTrackingOptOut.mockReturnValue(true);
+    mockState.analyticsEnabled = false;
     render(<PrivacyTab />);
     expect(screen.getByText('settings.browserPrivacySignal')).toBeInTheDocument();
+  });
+
+  it('hides privacy signal banner when user explicitly enables analytics', () => {
+    mockIsTrackingOptOut.mockReturnValue(true);
+    mockState.analyticsEnabled = true;
+    render(<PrivacyTab />);
+    expect(screen.queryByText('settings.browserPrivacySignal')).not.toBeInTheDocument();
   });
 
   it('does not show privacy signal banner when no signal', () => {
