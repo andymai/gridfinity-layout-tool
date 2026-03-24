@@ -59,9 +59,11 @@ describe('SliderInput', () => {
     fireEvent.click(badge);
 
     const input = screen.getByRole('textbox');
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '9' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
+    expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(9);
   });
 
@@ -73,8 +75,10 @@ describe('SliderInput', () => {
     fireEvent.click(badge);
 
     const input = screen.getByRole('textbox');
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '99' } });
     fireEvent.keyDown(input, { key: 'Escape' });
+    fireEvent.blur(input);
 
     expect(onChange).not.toHaveBeenCalled();
   });

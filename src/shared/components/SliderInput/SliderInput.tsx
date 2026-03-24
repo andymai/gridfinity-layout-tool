@@ -48,6 +48,7 @@ export function SliderInput({
 
   const [isEditing, setIsEditing] = useState(false);
   const [localDraft, setLocalDraft] = useState('');
+  const skipBlurCommit = useRef(false);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -62,12 +63,21 @@ export function SliderInput({
       return;
     }
     const clamped = Math.min(max, Math.max(min, raw));
-    const snapped = Math.round(clamped / step) * step;
+    // Snap relative to min so values align to the step grid
+    const snapped = min + Math.round((clamped - min) / step) * step;
     const final = Number(snapped.toFixed(3));
     if (final !== value) {
       onChange(final);
     }
   }, [localDraft, value, min, max, step, onChange]);
+
+  const handleBlur = useCallback(() => {
+    if (skipBlurCommit.current) {
+      skipBlurCommit.current = false;
+      return;
+    }
+    commitValue();
+  }, [commitValue]);
 
   const startEditing = () => {
     if (disabled) return;
@@ -77,9 +87,11 @@ export function SliderInput({
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      skipBlurCommit.current = true;
       commitValue();
       (e.target as HTMLInputElement).blur();
     } else if (e.key === 'Escape') {
+      skipBlurCommit.current = true;
       setIsEditing(false);
       (e.target as HTMLInputElement).blur();
     }
@@ -92,7 +104,10 @@ export function SliderInput({
     <div className={disabled ? 'opacity-50' : ''}>
       {/* Label row with editable value badge */}
       <div className="flex items-center justify-between mb-1">
-        <label htmlFor={id} className="text-xs font-medium text-content-secondary">
+        <label
+          htmlFor={isEditing ? id : undefined}
+          className="text-xs font-medium text-content-secondary"
+        >
           {label}
         </label>
 
@@ -105,7 +120,7 @@ export function SliderInput({
               inputMode="decimal"
               value={localDraft}
               onChange={(e) => setLocalDraft(e.target.value)}
-              onBlur={commitValue}
+              onBlur={handleBlur}
               onKeyDown={handleInputKeyDown}
               disabled={disabled}
               className={cn(

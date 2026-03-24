@@ -52,6 +52,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
   ) => {
     const id = useId();
     const trackRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
 
@@ -64,7 +65,8 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
         const rect = trackRef.current.getBoundingClientRect();
         const rawPercent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
         const rawValue = min + rawPercent * range;
-        const snapped = Math.round(rawValue / step) * step;
+        // Snap relative to min so values align to the step grid
+        const snapped = min + Math.round((rawValue - min) / step) * step;
         return Math.max(min, Math.min(max, Number(snapped.toFixed(10))));
       },
       [min, max, range, step, value]
@@ -74,7 +76,9 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
       (e: React.PointerEvent<HTMLDivElement>) => {
         if (disabled) return;
         e.preventDefault();
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        // Restore focus lost from preventDefault
+        inputRef.current?.focus({ preventScroll: true });
+        e.currentTarget.setPointerCapture(e.pointerId);
         setIsDragging(true);
         const newValue = pointerToValue(e.clientX);
         if (newValue !== value) {
@@ -98,7 +102,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
     const handlePointerUp = useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
         if (!isDragging) return;
-        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        e.currentTarget.releasePointerCapture(e.pointerId);
         setIsDragging(false);
       },
       [isDragging]
@@ -182,6 +186,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
 
           {/* Hidden native input for keyboard navigation + ARIA */}
           <input
+            ref={inputRef}
             id={id}
             type="range"
             value={value}
