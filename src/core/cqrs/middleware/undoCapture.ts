@@ -1,23 +1,24 @@
 /**
- * Undo Capture Middleware
+ * Undo Capture Middleware + Batch Transactions
  *
  * Snapshots layout state before command execution for undo/redo.
- * Included in the pipeline when the `cqrs_undo` Labs flag is enabled.
+ * Always included in the middleware pipeline.
  *
- * A module-scoped re-entrancy guard prevents double undo entries during
- * the transition period when both `useUndoableAction()` and this middleware
- * may be active simultaneously.
+ * Batch mode: `batch(() => { ... })` groups multiple dispatches under
+ * a single undo snapshot. The middleware skips per-command snapshots
+ * when a batch is active — the batch function handles the snapshot.
  */
 
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/store/history';
 import { isOk } from '@/core/result';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { CommandResult, NextFn } from '../types';
 
-/** Re-entrancy guard — prevents double-push when useUndoableAction() wraps a CQRS-routed mutation */
-let isCapturing = false;
+/** When true, a batch is active — middleware skips individual snapshots */
+let isBatching = false;
 
 export function undoCaptureMiddleware(
   command: Command,
@@ -28,33 +29,82 @@ export function undoCaptureMiddleware(
     return next(command);
   }
 
-  // Skip if already capturing (re-entrant call)
-  if (isCapturing) {
+  // Skip if inside a batch — batch() handles the snapshot
+  if (isBatching) {
     return next(command);
   }
 
-  isCapturing = true;
+  // Clone BEFORE next() — Immer produces a new state object on mutation,
+  // so the pre-mutation reference stays immutable, but we need a deep copy
+  // for the undo stack (the snapshot must survive future mutations).
+  const layout = useLayoutStore.getState().layout;
+  const snapshot = structuredClone(layout);
+
+  const result = next(command);
+
+  if (isOk(result)) {
+    useHistoryStore.getState().push(snapshot);
+    mlTracking.recordAction?.();
+  }
+
+  return result;
+}
+
+/**
+ * Execute multiple mutations under a single undo snapshot.
+ *
+ * Captures one layout snapshot before the callback runs. All commands
+ * dispatched inside the callback skip individual undo capture. If the
+ * layout changes during the batch, the snapshot is pushed to the
+ * history stack.
+ *
+ * Only accepts synchronous callbacks — async callbacks would escape the
+ * batch scope when `isBatching` is cleared in the `finally` block.
+ *
+ * Supports nesting — inner batch() calls are no-ops (the outermost
+ * batch owns the snapshot).
+ *
+ * @returns The return value of the callback.
+ *
+ * @example
+ * ```ts
+ * batch(() => {
+ *   deleteBin(id1);
+ *   deleteBin(id2);
+ * });
+ * // One undo step reverts both deletions
+ * ```
+ */
+export function batch<T>(fn: () => T): T {
+  // Nested batch — just run, outer batch owns the snapshot
+  if (isBatching) {
+    return fn();
+  }
+
+  const layout = useLayoutStore.getState().layout;
+  const snapshot = structuredClone(layout);
+
+  isBatching = true;
   try {
-    const layout = useLayoutStore.getState().layout;
-    const snapshot = structuredClone(layout);
+    const result = fn();
 
-    const result = next(command);
-
-    // Only push to history if the command succeeded
-    if (isOk(result)) {
+    // Check if layout actually changed (Immer produces new reference on mutation)
+    const currentLayout = useLayoutStore.getState().layout;
+    if (currentLayout !== layout) {
       useHistoryStore.getState().push(snapshot);
+      mlTracking.recordAction?.();
     }
 
     return result;
   } finally {
-    isCapturing = false;
+    isBatching = false;
   }
 }
 
 /**
- * Reset the re-entrancy guard.
+ * Reset batch state.
  * Exported for testing only — not part of the public API.
  */
 export function _resetUndoCaptureState(): void {
-  isCapturing = false;
+  isBatching = false;
 }

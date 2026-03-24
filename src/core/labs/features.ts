@@ -55,18 +55,7 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-03',
     requiresRefresh: true,
   },
-  {
-    id: 'cqrs_undo',
-    name: 'Improved Undo System',
-    description:
-      'A redesigned undo/redo system that tracks your changes more reliably across the app.',
-    status: 'experimental',
-    risk: 'medium',
-    warning:
-      'Good to know: If undo doesn\u2019t work as expected, just toggle this off to switch back.',
-    addedAt: '2026-03',
-    requiresRefresh: true,
-  },
+  // cqrs_undo removed — undo capture middleware is now always active
   {
     id: 'handle_ledges',
     name: 'Handle Ledges',

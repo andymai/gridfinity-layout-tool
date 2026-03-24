@@ -2,11 +2,11 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
-import { useUndoableAction } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { computeAlignedPositions } from '@/shared/utils/alignBins';
 import type { AlignEdge } from '@/shared/utils/alignBins';
+import { batch } from '@/core/cqrs';
 
 /**
  * Hook for aligning selected bins to a common edge.
@@ -24,7 +24,6 @@ export function useAlignBins() {
     }))
   );
   const selectedBinIds = useSelectionStore((s) => s.selectedBinIds);
-  const { execute } = useUndoableAction();
   const addToast = useToastStore((s) => s.addToast);
 
   const canAlign = selectedBinIds.length >= 2;
@@ -46,7 +45,7 @@ export function useAlignBins() {
       if (movable.length === 0 && skipped === 0) return; // all already at target
 
       if (movable.length > 0) {
-        execute(() => {
+        batch(() => {
           for (const r of movable) {
             updateBin(r.binId, { x: r.newX, y: r.newY });
           }
@@ -68,7 +67,7 @@ export function useAlignBins() {
         });
       }
     },
-    [bins, selectedBinIds, layout, execute, updateBin, addToast, t]
+    [bins, selectedBinIds, layout, updateBin, addToast, t]
   );
 
   return { alignBins, canAlign };

@@ -31,7 +31,7 @@ export function handleDelete(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (!isShortcut(e.key, SHORTCUTS.DELETE) || ctx.selectedBinIds.length === 0) return false;
   e.preventDefault();
   mlTracking.trackBinsDeletion(findBinsByIds(ctx.layout, ctx.selectedBinIds), 'key');
-  ctx.execute(() => {
+  ctx.batch(() => {
     for (const binId of ctx.selectedBinIds) {
       ctx.deleteBin(binId);
     }
@@ -54,7 +54,7 @@ export function handleDuplicate(e: KeyboardEvent, ctx: KeyboardContext): boolean
   if (!ctrlOrMeta || e.key.toLowerCase() !== SHORTCUTS.DUPLICATE || ctx.selectedBinIds.length === 0)
     return false;
   e.preventDefault();
-  ctx.execute(() => {
+  ctx.batch(() => {
     const newIds: BinId[] = [];
     for (const binId of ctx.selectedBinIds) {
       const result = ctx.duplicateBin(binId);
@@ -187,7 +187,7 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     return true;
   }
 
-  ctx.execute(() => {
+  ctx.batch(() => {
     const updates: Partial<typeof bin> = { width: bin.depth, depth: bin.width };
     if (result.movedTo) {
       updates.x = result.movedTo.x as GridUnits;
@@ -227,7 +227,7 @@ export function handleCategoryCycling(e: KeyboardEvent, ctx: KeyboardContext): b
     const batchSize = binsToUpdate.length;
     const newCategory = categories[nextPos];
 
-    ctx.execute(() => {
+    ctx.batch(() => {
       for (const bin of binsToUpdate) {
         ctx.updateBin(bin.id, { category: newCategoryId });
       }
@@ -317,7 +317,7 @@ export function handleNudge(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     };
     mlTracking.trackMove(newFirstBin, oldPosition, 'nudge', selectedBins.length);
 
-    ctx.execute(() => {
+    ctx.batch(() => {
       for (const binId of ctx.selectedBinIds) {
         const bin = findBinById(ctx.layout, binId);
         if (!bin) continue;

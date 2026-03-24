@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
+import { useLayoutStore, useToastStore } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMutations } from '@/shared/contexts';
 import {
@@ -49,8 +50,6 @@ export function MultiBinContextMenu({
   const { deleteBin, updateBin } = useMutations();
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
   const addToast = useToastStore((state) => state.addToast);
-  const { execute } = useUndoableAction();
-
   const [showLayerPicker, setShowLayerPicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
@@ -67,7 +66,7 @@ export function MultiBinContextMenu({
     // Track deletion BEFORE executing (need bin data)
     mlTracking.trackBinsDeletion(bins, 'bulk');
 
-    execute(() => {
+    batch(() => {
       bins.forEach((b) => deleteBin(b.id));
     });
     setSelectedBins([]);
@@ -85,7 +84,7 @@ export function MultiBinContextMenu({
     const batchSize = binsToUpdate.length;
     const category = layout.categories.find((c) => c.id === categoryId);
 
-    execute(() => {
+    batch(() => {
       binsToUpdate.forEach((b) => {
         updateBin(b.id, { category: categoryId });
       });
@@ -104,7 +103,7 @@ export function MultiBinContextMenu({
     const layer = layout.layers.find((l) => l.id === targetLayerId);
     if (!layer) return;
 
-    execute(() => {
+    batch(() => {
       stagingBins.forEach((b) => {
         // Move to layer - keep original height (don't auto-adjust to layer minimum)
         updateBin(b.id, {

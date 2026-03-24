@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useSelectionStore, useInteractionStore, useUndoableAction } from '@/core/store';
+import { useSelectionStore, useInteractionStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import type { HeightUnits, LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
@@ -14,6 +14,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useResultToast } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
+import { batch } from '@/core/cqrs';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.
@@ -52,7 +53,6 @@ export function LayersTab() {
   );
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
-  const { execute } = useUndoableAction();
   const addToast = useToastStore((state) => state.addToast);
   const { showErrorToast } = useResultToast();
 
@@ -66,7 +66,7 @@ export function LayersTab() {
     if (!renameLayerId) return;
     const trimmed = renameValue.trim();
     if (trimmed) {
-      execute(() => {
+      batch(() => {
         updateLayer(renameLayerId, { name: trimmed.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
       });
       announceToScreenReader(`Renamed to ${trimmed}`);
@@ -124,7 +124,7 @@ export function LayersTab() {
     if (expansion.needsExpansion && expansion.newHeight !== undefined) {
       // Auto-expand the top layer, then add the new layer (atomic via execute)
       const newHeight = expansion.newHeight; // Capture for closure
-      execute(() => {
+      batch(() => {
         const expandResult = updateLayer(topLayer.id, { height: newHeight as HeightUnits });
         if (isErr(expandResult)) {
           showErrorToast(expandResult.error);
@@ -139,7 +139,7 @@ export function LayersTab() {
       });
     } else {
       // Normal case - no adjustment needed
-      execute(() => {
+      batch(() => {
         const result = addLayer();
         if (isOk(result)) {
           setActiveLayer(result.value);
@@ -160,7 +160,7 @@ export function LayersTab() {
 
   const confirmDeleteLayer = () => {
     if (!deleteLayerId) return;
-    execute(() => {
+    batch(() => {
       const result = deleteLayer(deleteLayerId);
       if (isOk(result) && activeLayerId === deleteLayerId && layers.length > 0) {
         const remaining = layers.filter((l) => l.id !== deleteLayerId);
@@ -176,7 +176,7 @@ export function LayersTab() {
     const layer = layers.find((l) => l.id === id);
     if (!layer) return;
     const newHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + delta);
-    execute(() => {
+    batch(() => {
       updateLayer(id, { height: newHeight as HeightUnits });
     });
   };
@@ -188,7 +188,7 @@ export function LayersTab() {
     const fromArrayIndex = displayToArrayIndex(displayIndex);
     const toArrayIndex = displayToArrayIndex(targetDisplayIndex);
 
-    execute(() => {
+    batch(() => {
       const result = reorderLayers(fromArrayIndex, toArrayIndex);
       if (isErr(result)) {
         setReorderError(getUserMessage(result.error));

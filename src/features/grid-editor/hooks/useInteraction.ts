@@ -1,12 +1,8 @@
 import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
 import type { BinId, Coord, ResizeHandle } from '@/core/types';
-import {
-  useLayoutStore,
-  useUndoableAction,
-  useSelectionStore,
-  useInteractionStore,
-} from '@/core/store';
+import { useLayoutStore, useSelectionStore, useInteractionStore } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useGridCoords } from './useGridCoords';
 import { useCollabPresence } from '@/shared/hooks/useCollabPresence';
@@ -96,7 +92,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   // Track captured pointer for reliable event delivery
   const capturedPointerRef = useRef<{ element: HTMLElement; pointerId: number } | null>(null);
   // Track Ctrl key state for disabling smart snap
-  const ctrlKeyRef = useRef<boolean>(false);
+  const ctrlKeyRef = useRef(false);
   const { getGridCoords, clampCoords, isInBounds } = useGridCoords(gridRef);
   const { updateInteraction } = useCollabPresence();
   // Interaction state
@@ -112,7 +108,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   // Layout state
   const layout = useLayoutStore((state) => state.layout);
   const { addBin, updateBin, deleteBin } = useMutations();
-  const { execute } = useUndoableAction();
 
   // Build shared context for mode hooks
   const interactionContext: InteractionContext = useMemo(
@@ -133,7 +128,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       addBin,
       updateBin,
       deleteBin,
-      execute,
+      execute: batch,
       activePointerIdRef,
       capturedPointerRef,
       ctrlKeyRef,
@@ -155,7 +150,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       addBin,
       updateBin,
       deleteBin,
-      execute,
       ctrlKeyRef,
     ]
   );
@@ -167,11 +161,13 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const resizeMode = useResizeInteraction(interactionContext);
   const stagingDragMode = useStagingDragInteraction(interactionContext);
 
-  // Refs to hold current mode handlers - allows stable callbacks while using current handlers
+  // Refs to hold current mode handlers — allows stable callbacks while using current handlers
+  /* eslint-disable @typescript-eslint/no-unnecessary-type-arguments -- generic default [] != specific tuple */
   const drawModeRef = useRef<ModeHandlers<DrawStartArgs>>(drawMode);
   const dragModeRef = useRef<ModeHandlers<DragStartArgs>>(dragMode);
   const resizeModeRef = useRef<ModeHandlers<ResizeStartArgs>>(resizeMode);
   const stagingDragModeRef = useRef<ModeHandlers<StagingDragStartArgs>>(stagingDragMode);
+  /* eslint-enable @typescript-eslint/no-unnecessary-type-arguments */
 
   // Keep refs in sync with current mode handlers (useLayoutEffect runs before any event handlers)
   useLayoutEffect(() => {

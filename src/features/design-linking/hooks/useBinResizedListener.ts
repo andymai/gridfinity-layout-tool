@@ -12,7 +12,8 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useUndoableAction, useToastStore } from '@/core/store';
+import { useToastStore } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useLatestRef, useLayoutRef } from '@/shared/hooks';
 import {
@@ -41,7 +42,6 @@ import {
 export function useBinResizedListener(): void {
   const t = useTranslation();
   const { updateBin } = useMutations();
-  const { execute } = useUndoableAction();
   const addToast = useToastStore((s) => s.addToast);
   const showSyncDialog = useLinkingStore((s) => s.showSyncDialog);
   const showBlockedResizeDialog = useLinkingStore((s) => s.showBlockedResizeDialog);
@@ -51,7 +51,6 @@ export function useBinResizedListener(): void {
   const layoutRef = useLayoutRef();
   const tRef = useLatestRef(t);
   const updateBinRef = useLatestRef(updateBin);
-  const executeRef = useLatestRef(execute);
   const addToastRef = useLatestRef(addToast);
   const showSyncDialogRef = useLatestRef(showSyncDialog);
   const showBlockedResizeDialogRef = useLatestRef(showBlockedResizeDialog);
@@ -170,7 +169,7 @@ export function useBinResizedListener(): void {
 
         if (allEligible) {
           const syncUpdate = createBinSyncUpdate(newDimensions);
-          executeRef.current(() => {
+          batch(() => {
             for (const bin of siblingBins) {
               updateBinRef.current(bin.id, syncUpdate);
             }
@@ -205,7 +204,6 @@ export function useBinResizedListener(): void {
     layoutRef,
     tRef,
     updateBinRef,
-    executeRef,
     addToastRef,
     showSyncDialogRef,
     showBlockedResizeDialogRef,

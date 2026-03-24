@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
+import { batch } from '@/core/cqrs';
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -25,7 +26,6 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
   const hideQuickLabel = useSelectionStore((state) => state.hideQuickLabel);
   const bins = useLayoutStore((state) => state.layout.bins);
   const { updateBin } = useMutations();
-  const { execute } = useUndoableAction();
 
   const bin = bins.find((b) => b.id === binId);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +38,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
     if (bin && value !== (bin.label || '')) {
       const oldLabel = bin.label;
       const newLabel = value.trim() || undefined;
-      execute(() => {
+      batch(() => {
         updateBin(bin.id, { label: newLabel });
       });
       // Track label change for ML telemetry
@@ -49,7 +49,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
       }
     }
     hideQuickLabel();
-  }, [bin, value, execute, updateBin, hideQuickLabel]);
+  }, [bin, value, updateBin, hideQuickLabel]);
 
   useEffect(() => {
     requestAnimationFrame(() => {

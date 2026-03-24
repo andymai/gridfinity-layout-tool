@@ -6,8 +6,8 @@ import {
   useInteractionStore,
   useHalfBinModeStore,
   useMobileStore,
-  useUndoableAction,
 } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useToastStore } from '@/core/store/toast';
 import { getLayerBins } from '@/shared/utils';
@@ -45,13 +45,8 @@ export function ToolsTab() {
   const [rotated, setRotated] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const { layout, fillLayerGaps } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      fillLayerGaps: state.fillLayerGaps,
-    }))
-  );
-  const { fillLayer, clearLayer } = useMutations();
+  const layout = useLayoutStore((state) => state.layout);
+  const { fillLayer, fillLayerGaps, clearLayer } = useMutations();
 
   const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
@@ -71,7 +66,6 @@ export function ToolsTab() {
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   const addToast = useToastStore((state) => state.addToast);
-  const { execute } = useUndoableAction();
 
   const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
   const layerBins = getLayerBins(layout.bins, activeLayerId);
@@ -86,7 +80,7 @@ export function ToolsTab() {
   const handleFillGaps = () => {
     if (!activeLayerId) return;
     const beforeCount = layerBins.length;
-    execute(() => {
+    batch(() => {
       fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode);
     });
     closeMobilePanel();
@@ -102,7 +96,7 @@ export function ToolsTab() {
   const handleClearLayer = () => {
     if (!activeLayerId || layerBins.length === 0) return;
     const count = layerBins.length;
-    execute(() => {
+    batch(() => {
       clearLayer(activeLayerId);
       setSelectedBins([]);
     });
@@ -114,7 +108,7 @@ export function ToolsTab() {
   const handleFill = (width: number, depth: number) => {
     if (!activeLayerId) return;
     const beforeCount = layerBins.length;
-    execute(() => {
+    batch(() => {
       fillLayer(activeLayerId, width, depth, activeCategoryId, halfBinMode);
     });
     // Exit paint mode after filling

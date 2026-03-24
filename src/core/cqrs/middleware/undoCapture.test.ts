@@ -4,7 +4,7 @@ import { layoutInvalidOperation } from '@/core/result/constructors';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/store/history';
 import { resetLayoutStore, resetHistoryStore, createTestLayout } from '@/test/testUtils';
-import { undoCaptureMiddleware, _resetUndoCaptureState } from './undoCapture';
+import { undoCaptureMiddleware, batch, _resetUndoCaptureState } from './undoCapture';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { CommandResult, NextFn } from '../types';
@@ -93,26 +93,23 @@ describe('undoCaptureMiddleware', () => {
     expect(history.past).toHaveLength(0);
   });
 
-  it('prevents double-push on re-entrant calls', () => {
+  it('batch() groups multiple dispatches into one undo snapshot', () => {
     const layout = createTestLayout({ name: 'Original' });
     useLayoutStore.setState({ layout });
 
-    // Simulate re-entrancy: the next function dispatches another command
-    // through the same middleware
-    const reentrantNext: NextFn<Command, DomainEvent> = () => {
-      // This inner call should skip undo capture due to the re-entrancy guard
-      const innerCommand = createTestCommand();
-      undoCaptureMiddleware(innerCommand, successNext());
-
+    // successNext that mutates state so batch detects the change
+    const mutatingNext: NextFn<Command, DomainEvent> = () => {
+      useLayoutStore.setState({
+        layout: { ...useLayoutStore.getState().layout, name: 'Changed' },
+      });
       return ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
     };
 
-    const command = createTestCommand();
-    const result = undoCaptureMiddleware(command, reentrantNext);
+    batch(() => {
+      undoCaptureMiddleware(createTestCommand(), mutatingNext);
+      undoCaptureMiddleware(createTestCommand(), mutatingNext);
+    });
 
-    expect(result.ok).toBe(true);
-
-    // Only one undo entry should exist, not two
     const history = useHistoryStore.getState();
     expect(history.past).toHaveLength(1);
     expect(history.past[0].name).toBe('Original');

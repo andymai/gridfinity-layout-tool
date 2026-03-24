@@ -35,10 +35,10 @@
 
 import { useEffect, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { batch } from '@/core/cqrs';
 import {
   useLayoutStore,
   useHistoryStore,
-  useUndoableAction,
   useToastStore,
   useSelectionStore,
   useInteractionStore,
@@ -147,8 +147,6 @@ export function useKeyboard() {
     }))
   );
 
-  const { execute } = useUndoableAction();
-
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -174,7 +172,7 @@ export function useKeyboard() {
         zoomIn,
         zoomOut,
         setShowLayoutManager,
-        execute,
+        batch,
         deleteBin,
         duplicateBin,
         updateBin,
@@ -205,7 +203,6 @@ export function useKeyboard() {
       setSelectedBins,
       setInteraction,
       setPaintSize,
-      execute,
       handleNavigationKey,
       activeLayerId,
       setActiveLayer,

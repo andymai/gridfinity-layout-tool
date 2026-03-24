@@ -72,6 +72,7 @@ export interface Mutations {
     categoryId: CategoryId,
     halfBinMode?: boolean
   ) => number;
+  fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfBinMode?: boolean) => number;
   clearLayer: (layerId: LayerId) => number;
 
   // Layout metadata

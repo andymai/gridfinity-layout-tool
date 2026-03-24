@@ -49,6 +49,7 @@ export type {
   MoveBinToStagingCommand,
   MoveBinFromStagingCommand,
   FillLayerCommand,
+  FillLayerGapsCommand,
   ClearLayerCommand,
   BinCommand,
   AddLayerCommand,
@@ -109,7 +110,7 @@ export type { EventStore, EventStoreQuery } from './store/eventStore';
 
 export { getPendingRetryCount, clearRetryQueue } from './store/retryQueue';
 
-export { undoCaptureMiddleware, _resetUndoCaptureState } from './middleware/undoCapture';
+export { undoCaptureMiddleware, batch, _resetUndoCaptureState } from './middleware/undoCapture';
 export { loggingMiddleware } from './middleware/logging';
 export { analyticsMiddleware } from './middleware/analytics';
 /** @deprecated Use `getDefaultPipeline()` instead */

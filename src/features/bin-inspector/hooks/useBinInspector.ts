@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
+import { useLayoutStore, useToastStore } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
@@ -130,8 +131,6 @@ export function useBinInspector(): UseBinInspectorReturn {
   const layout = useLayoutStore((state) => state.layout);
   const { updateBin, deleteBin, moveBinToStaging } = useMutations();
 
-  const { execute } = useUndoableAction();
-
   const selectedBins = useMemo(
     () => layout.bins.filter((b) => selectedBinIds.includes(b.id)),
     [layout.bins, selectedBinIds]
@@ -214,7 +213,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     (field: BinField, value: string | number) => {
       if (!bin) return;
 
-      execute(() => {
+      batch(() => {
         if (field === 'width' || field === 'depth') {
           // Support fractional values for half-bin mode
           const numValue = typeof value === 'number' ? value : parseFloat(value) || 0.5;
@@ -283,7 +282,6 @@ export function useBinInspector(): UseBinInspectorReturn {
       constraints.minHeight,
       constraints.maxHeight,
       constraints.maxClearance,
-      execute,
       updateBin,
       layout.categories,
     ]
@@ -299,11 +297,11 @@ export function useBinInspector(): UseBinInspectorReturn {
         return;
       }
 
-      execute(() => {
+      batch(() => {
         updateBin(bin.id, { customProperties: properties });
       });
     },
-    [bin, execute, updateBin, addToast]
+    [bin, updateBin, addToast]
   );
 
   const updateMultiCategory = useCallback(
@@ -317,7 +315,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       const batchSize = binsToUpdate.length;
       const category = layout.categories.find((c) => c.id === brandedCategoryId);
 
-      execute(() => {
+      batch(() => {
         for (const b of binsToUpdate) {
           if (isErr(updateBin(b.id, { category: brandedCategoryId }))) break;
         }
@@ -328,7 +326,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         mlTracking.trackCategory(binsToUpdate[0], category.name, batchSize);
       }
     },
-    [selectedBins, layout.categories, execute, updateBin]
+    [selectedBins, layout.categories, updateBin]
   );
 
   // Update/add a custom property on multiple bins
@@ -339,7 +337,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       const trimmedValue = value.trim();
       if (!trimmedKey) return;
 
-      execute(() => {
+      batch(() => {
         for (const b of selectedBins) {
           const existing = b.customProperties || {};
           updateBin(b.id, {
@@ -353,7 +351,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         'success'
       );
     },
-    [selectedBins, execute, updateBin, addToast, t]
+    [selectedBins, updateBin, addToast, t]
   );
 
   const updateMultiHeight = useCallback(
@@ -377,7 +375,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       });
 
       const succeededBinIds = new Set<string>();
-      execute(() => {
+      batch(() => {
         for (const { bin: b, newHeight } of updates) {
           if (isErr(updateBin(b.id, { height: newHeight }))) break;
           succeededBinIds.add(b.id);
@@ -395,14 +393,14 @@ export function useBinInspector(): UseBinInspectorReturn {
         emitLinkedBinResize(b, { width: b.width, depth: b.depth, height: newHeight });
       }
     },
-    [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
+    [selectedBins, layout.drawer.height, layout.layers, updateBin]
   );
 
   const updateMultiClearance = useCallback(
     (delta: number) => {
       if (selectedBins.length === 0) return;
 
-      execute(() => {
+      batch(() => {
         for (const b of selectedBins) {
           const binLayer = layout.layers.find((l) => l.id === b.layerId);
           // For staging bins, use full drawer height; for placed bins, account for layer position
@@ -421,7 +419,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         }
       });
     },
-    [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
+    [selectedBins, layout.drawer.height, layout.layers, updateBin]
   );
 
   const moveToLayer = useCallback(
@@ -457,7 +455,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       // Track layer move BEFORE executing (capture original layer)
       const fromLayerId = bin.layerId;
 
-      execute(() => {
+      batch(() => {
         updateBin(bin.id, {
           layerId: targetLayerId,
           // Keep bin's original height - don't auto-adjust to layer minimum
@@ -469,7 +467,7 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       addToast(t('toast.movedToLayer', { name: targetLayer.name }), 'success');
     },
-    [bin, layout, execute, updateBin, addToast, t]
+    [bin, layout, updateBin, addToast, t]
   );
 
   const updateMultiLayer = useCallback(
@@ -513,7 +511,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       const firstBin = movable[0];
       const fromLayerId = firstBin.layerId;
 
-      execute(() => {
+      batch(() => {
         for (const b of movable) {
           updateBin(b.id, {
             layerId: targetLayerId,
@@ -537,7 +535,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         );
       }
     },
-    [selectedBins, layout, execute, updateBin, addToast, t]
+    [selectedBins, layout, updateBin, addToast, t]
   );
 
   const requestDelete = useCallback(() => {
@@ -558,7 +556,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Track deletion BEFORE executing (need bin data)
     mlTracking.trackBinsDeletion(selectedBins, 'inspector');
 
-    execute(() => {
+    batch(() => {
       for (const b of selectedBins) {
         deleteBin(b.id);
       }
@@ -567,7 +565,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Selection cleanup handled by CQRS selectionPruning subscriber
     setDeleteConfirmState(null);
     closeMobilePanel();
-  }, [selectedBins, execute, deleteBin, closeMobilePanel]);
+  }, [selectedBins, deleteBin, closeMobilePanel]);
 
   const cancelDelete = useCallback(() => {
     setDeleteConfirmState(null);
@@ -576,14 +574,14 @@ export function useBinInspector(): UseBinInspectorReturn {
   const moveToStaging = useCallback(() => {
     if (selectedBins.length === 0) return;
 
-    execute(() => {
+    batch(() => {
       for (const b of selectedBins) {
         moveBinToStaging(b.id);
       }
     });
 
     closeMobilePanel();
-  }, [selectedBins, execute, moveBinToStaging, closeMobilePanel]);
+  }, [selectedBins, moveBinToStaging, closeMobilePanel]);
 
   const clearSelection = useCallback(() => {
     setSelectedBins([]);
@@ -604,7 +602,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Track rotation BEFORE executing (capture original dimensions)
     mlTracking.trackRotation(bin, 1);
 
-    execute(() => {
+    batch(() => {
       const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
       if (result.movedTo) {
         updates.x = result.movedTo.x as GridUnits;
@@ -620,7 +618,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     }
 
     return true;
-  }, [bin, layout, execute, updateBin, addToast, t]);
+  }, [bin, layout, updateBin, addToast, t]);
 
   return {
     selectedBins,

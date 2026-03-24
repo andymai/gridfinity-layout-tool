@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useUndoableAction, useSettingsStore } from '@/core/store';
+import { useLayoutStore, useSettingsStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { useMutations } from '@/shared/contexts';
@@ -14,6 +14,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { categoryId as toCategoryId } from '@/core/types';
 import type { CategoryId } from '@/core/types';
+import { batch } from '@/core/cqrs';
 
 interface ColorPaletteGridProps {
   selectedColor: string;
@@ -73,7 +74,6 @@ export function CategoriesPanel() {
 
   const saveCategoriesAsDefaults = useSettingsStore((state) => state.saveCategoriesAsDefaults);
   const addToast = useToastStore((state) => state.addToast);
-  const { execute } = useUndoableAction();
   const { showErrorToast } = useResultToast();
 
   // Calculate bin counts per category
@@ -146,7 +146,7 @@ export function CategoriesPanel() {
       if (binsToUpdate.length === 0) return;
 
       const binCount = binsToUpdate.length;
-      execute(() => {
+      batch(() => {
         for (const bin of binsToUpdate) {
           if (isErr(updateBin(bin.id, { category: catId }))) break;
         }
@@ -158,7 +158,7 @@ export function CategoriesPanel() {
   };
 
   const handleAddCategory = () => {
-    execute(() => {
+    batch(() => {
       const result = addCategory({ name: 'New Category', color: DEFAULT_CATEGORY_COLOR });
       if (isOk(result)) {
         setActiveCategory(result.value);
@@ -171,7 +171,7 @@ export function CategoriesPanel() {
     const updates = {
       [field]: field === 'name' ? value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) : value,
     };
-    const result = execute(() => updateCategory(toCategoryId(id), updates));
+    const result = batch(() => updateCategory(toCategoryId(id), updates));
     if (isErr(result)) {
       showErrorToast(result.error);
     }
@@ -202,7 +202,7 @@ export function CategoriesPanel() {
   const confirmDeleteCategory = () => {
     if (!deleteConfirm) return;
     const { id } = deleteConfirm;
-    const result = execute(() => {
+    const result = batch(() => {
       const deleteResult = deleteCategory(toCategoryId(id));
       if (isOk(deleteResult)) {
         // Access fresh state to avoid stale closure issues

@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
@@ -15,6 +15,7 @@ import { useTranslation } from '@/i18n';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
 import type { HeightUnits, LayerId } from '@/core/types';
 import { HeightCrossSectionDiagram } from './HeightCrossSectionDiagram';
+import { batch } from '@/core/cqrs';
 
 export function LayerPanel() {
   const t = useTranslation();
@@ -32,7 +33,6 @@ export function LayerPanel() {
     }))
   );
 
-  const { execute } = useUndoableAction();
   const addToast = useToastStore((state) => state.addToast);
   const { showErrorToast } = useResultToast();
 
@@ -97,7 +97,7 @@ export function LayerPanel() {
 
     if (expansion.needsExpansion && expansion.newHeight !== undefined) {
       const newHeight = expansion.newHeight;
-      execute(() => {
+      batch(() => {
         const expandResult = updateLayer(topLayer.id, { height: newHeight as HeightUnits });
         if (isErr(expandResult)) {
           showErrorToast(expandResult.error);
@@ -111,7 +111,7 @@ export function LayerPanel() {
         }
       });
     } else {
-      execute(() => {
+      batch(() => {
         const result = addLayer();
         if (isOk(result)) {
           setActiveLayer(result.value);
@@ -122,7 +122,7 @@ export function LayerPanel() {
 
   const handleDeleteLayer = useCallback(() => {
     if (!deleteLayerId) return;
-    execute(() => {
+    batch(() => {
       const result = deleteLayer(deleteLayerId);
       if (isOk(result) && activeLayerId === deleteLayerId && layers.length > 0) {
         const remaining = layers.filter((l) => l.id !== deleteLayerId);
@@ -132,10 +132,10 @@ export function LayerPanel() {
       }
     });
     setDeleteLayerId(null);
-  }, [deleteLayerId, deleteLayer, activeLayerId, layers, setActiveLayer, execute]);
+  }, [deleteLayerId, deleteLayer, activeLayerId, layers, setActiveLayer]);
 
   const handleNameChange = (layerId: LayerId, name: string) => {
-    execute(() => {
+    batch(() => {
       const result = updateLayer(layerId, {
         name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH),
       });
@@ -149,7 +149,7 @@ export function LayerPanel() {
     const layer = layers.find((l) => l.id === layerId);
     if (!layer) return;
     const newHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + delta);
-    execute(() => {
+    batch(() => {
       const result = updateLayer(layerId, { height: newHeight as HeightUnits });
       if (isErr(result)) {
         showErrorToast(result.error);
@@ -160,7 +160,7 @@ export function LayerPanel() {
   const handleReorder = (fromDisplayIndex: number, toDisplayIndex: number) => {
     const fromArrayIndex = displayToArrayIndex(fromDisplayIndex);
     const toArrayIndex = displayToArrayIndex(toDisplayIndex);
-    execute(() => {
+    batch(() => {
       const result = reorderLayers(fromArrayIndex, toArrayIndex);
       if (isErr(result)) {
         showErrorToast(result.error);
