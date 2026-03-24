@@ -128,16 +128,16 @@ export interface HandleSide {
   readonly enabled: boolean;
 }
 
-/** Handle configuration for interior grip ledges */
+/** Handle configuration for through-hole grip cutouts */
 export interface HandleConfig {
   /** Master toggle for the handles feature */
   readonly enabled: boolean;
-  /** Ledge depth inward from wall face (mm). Default: 10 */
-  readonly depth: number;
-  /** Ledge width as % of wall interior span (1-100). Default: 70 */
+  /** Hole width as % of wall interior span (1-100). Default: 50 */
   readonly width: number;
-  /** Concave fillet radius under the shelf (mm). Default: 5 */
-  readonly filletRadius: number;
+  /** Hole height in mm (vertical extent). Default: 15 */
+  readonly height: number;
+  /** Corner radius in mm (0 = sharp rectangle, max = oval/circle). Default: 3 */
+  readonly cornerRadius: number;
   readonly front: HandleSide;
   readonly back: HandleSide;
   readonly left: HandleSide;

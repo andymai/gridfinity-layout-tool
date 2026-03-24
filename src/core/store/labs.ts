@@ -19,7 +19,17 @@ export const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
 function loadPreferences(): LabsPreferences {
   const result = loadFromLocalStorage<Partial<LabsPreferences>>(LABS_STORAGE_KEY);
   if (isOk(result) && result.value) {
-    return { ...createDefaultLabsPreferences(), ...result.value };
+    const prefs = { ...createDefaultLabsPreferences(), ...result.value };
+
+    // Migrate renamed flags: handle_ledges → handle_holes
+    if (prefs.enabledFeatures.handle_ledges) {
+      if (!prefs.enabledFeatures.handle_holes) {
+        prefs.enabledFeatures.handle_holes = true;
+      }
+      delete prefs.enabledFeatures.handle_ledges;
+    }
+
+    return prefs;
   }
   return createDefaultLabsPreferences();
 }

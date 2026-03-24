@@ -5,9 +5,9 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { GhostHandles } from './GhostHandles';
 
-let mockHandleLedgesEnabled = false;
+let mockHandleHolesEnabled = false;
 vi.mock('@/shared/hooks/useFeatureFlag', () => ({
-  useFeatureFlag: (id: string) => (id === 'handle_ledges' ? mockHandleLedgesEnabled : false),
+  useFeatureFlag: (id: string) => (id === 'handle_holes' ? mockHandleHolesEnabled : false),
 }));
 
 vi.mock('@react-three/fiber', () => ({
@@ -36,6 +36,7 @@ vi.mock('three', () => {
       getZ: vi.fn(() => 0),
     }));
     getIndex = vi.fn(() => ({ count: 6, array: new Uint16Array(6) }));
+    rotateX = vi.fn().mockReturnThis();
     dispose = vi.fn();
   }
 
@@ -91,7 +92,7 @@ vi.mock('three', () => {
 describe('GhostHandles', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockHandleLedgesEnabled = false;
+    mockHandleHolesEnabled = false;
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -135,7 +136,7 @@ describe('GhostHandles', () => {
   });
 
   it('renders when handles enabled, flag on, and generating', () => {
-    mockHandleLedgesEnabled = true;
+    mockHandleHolesEnabled = true;
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,

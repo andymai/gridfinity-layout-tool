@@ -1,187 +1,126 @@
 /**
- * Handle ledge builder for Gridfinity bins.
+ * Handle hole builder for Gridfinity bins.
  *
- * Generates interior handle ledges -- small shelves with concave fillet supports
- * protruding inward from bin walls. Each handle has two fused pieces:
+ * Generates through-hole cutouts in bin walls as finger grips.
+ * Each hole is a rounded rectangle (controlled by cornerRadius)
+ * extruded through the full wall thickness, positioned at 70%
+ * of the interior wall height.
  *
- * 1. Shelf plate: flat rectangular box at the top of the interior wall
- * 2. Fillet support: concave quarter-circle profile extruded along the shelf width
- *
- * When a wall also has a cutout enabled, the handle is split into segments
- * that flank the cutout region, preventing topology gaps from overlapping
- * boolean operations.
+ * When a wall also has a cutout enabled, the hole is split into
+ * segments that flank the cutout region via computeWallHandleSegments().
  */
 
-import { draw, unwrap, fuse, translate, rotate } from 'brepjs';
+import { drawRoundedRectangle, drawRectangle, translate, rotate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import type { BinParams, HandleWallSide } from '@/shared/types/bin';
+import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
-import { buildFilletProfile } from './filletProfile';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import {
-  computeHandleSegments,
-  CUTOUT_CLEARANCE,
-  MIN_SEGMENT_WIDTH,
+  HOLE_VERTICAL_CENTER,
+  buildHandleWallDefs,
+  computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
-import type { HandleSegment } from '@/shared/utils/handleCutoutClip';
-
-/** Minimum shelf thickness for FDM printability (mm). */
-const MIN_SHELF_THICKNESS = 2.0;
-
-interface WallDef {
-  readonly side: HandleWallSide;
-  readonly wallSpan: number;
-  readonly depthSpan: number;
-  readonly x: number;
-  readonly y: number;
-  readonly rotateZ: number;
-}
+import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
+import { LIP_TAPER_WIDTH } from './generatorConstants';
 
 /**
- * Build a single handle segment (shelf + fillet) at the given offset and width.
+ * Build a single hole cut solid for one segment.
+ *
+ * Sketches a rounded rectangle on XZ (width x height), extrudes through
+ * the wall, and positions at the correct wall location and Z height.
  */
-function buildHandleSegment(
+function buildHoleCut(
   segmentWidth: number,
   segmentOffset: number,
-  effectiveDepth: number,
-  effectiveFilletR: number,
-  shelfThickness: number,
-  interiorHeight: number,
-  wall: WallDef
+  holeHeight: number,
+  cornerRadius: number,
+  extrudeDepth: number,
+  centerZ: number,
+  wall: HandleWallDef
 ): Shape3D {
-  // Shelf plate
-  const shelfDrawing = draw([0, 0])
-    .lineTo([segmentWidth, 0])
-    .lineTo([segmentWidth, -effectiveDepth])
-    .lineTo([0, -effectiveDepth])
-    .close();
-  const shelf = sketch(shelfDrawing, 'XY', 0).extrude(shelfThickness);
+  // Clamp corner radius to half of smallest dimension
+  const safeR = Math.max(0, Math.min(cornerRadius, segmentWidth / 2 - 0.01, holeHeight / 2 - 0.01));
 
-  // Fillet support
-  const filletHeight = Math.min(effectiveFilletR, interiorHeight - shelfThickness);
-  let solid: Shape3D;
-  if (filletHeight > 0) {
-    const filletProfile = buildFilletProfile(effectiveFilletR, filletHeight);
-    const filletShape = sketch(filletProfile, 'YZ', 0).extrude(segmentWidth);
-    solid = unwrap(fuse(shelf, filletShape));
-  } else {
-    solid = shelf;
-  }
+  // 2D profile: rounded rectangle (or plain if radius too small)
+  const profile =
+    safeR > 0.1
+      ? drawRoundedRectangle(segmentWidth, holeHeight, safeR)
+      : drawRectangle(segmentWidth, holeHeight);
 
-  // Center segment on wall at its offset position
-  solid = translate(solid, [-segmentWidth / 2 + segmentOffset, 0, 0]);
+  // Sketch on XZ plane, extrude along -Y (through wall)
+  let shape = sketch(profile, 'XZ').extrude(extrudeDepth);
+
+  // Center extrusion around Y=0 so it straddles the wall face
+  shape = translate(shape, [segmentOffset, extrudeDepth / 2, centerZ]);
 
   // Rotate to wall orientation
   if (wall.rotateZ !== 0) {
-    solid = rotate(solid, wall.rotateZ, { axis: [0, 0, 1] });
+    shape = rotate(shape, wall.rotateZ, { axis: [0, 0, 1] });
   }
 
-  // Position at wall, shelf top at interiorHeight
-  solid = translate(solid, [wall.x, wall.y, interiorHeight - shelfThickness]);
-
-  return solid;
+  // Translate to wall position
+  return translate(shape, [wall.x, wall.y, 0]);
 }
 
 /**
- * Build interior handle ledges for enabled walls.
+ * Build handle hole cuts for all enabled walls.
  *
- * Each ledge is a flat shelf plate with a concave fillet support underneath,
- * positioned at the top of the bin interior wall. When a wall cutout overlaps
- * the handle region, the handle is split into segments that flank the cutout.
- *
- * @param params - Bin parameters (handles config, label config, walls config)
- * @param innerW - Interior width in mm
- * @param innerD - Interior depth in mm
- * @param interiorHeight - Interior wall height in mm (Z extent from floor to wall top)
- * @param wallThickness - Bin wall thickness in mm
- * @param _hasLip - Whether the bin has a stacking lip (reserved for future use)
- * @returns Fused handle geometry, or null if no handles are enabled
+ * @returns Fused cut geometry (all holes merged), or null if none enabled
  */
-export function buildHandles(
+export function buildHandleHoles(
   params: BinParams,
   innerW: number,
   innerD: number,
   interiorHeight: number,
   wallThickness: number,
-  _hasLip: boolean
+  hasLip: boolean
 ): Shape3D | null {
   if (!params.handles.enabled) return null;
 
-  const { depth, width, filletRadius } = params.handles;
-  const shelfThickness = Math.max(wallThickness, MIN_SHELF_THICKNESS);
+  const { width, height, cornerRadius } = params.handles;
+  if (height <= 0) return null;
 
-  // Each wall is positioned at its center (x, y) with the other axis at 0.
-  // rotateZ maps the local shelf (-Y = depth direction) onto the bin interior.
-  // After rotation, the local X extrusion axis aligns with the wall's span.
-  const walls: readonly WallDef[] = [
-    { side: 'front', wallSpan: innerW, depthSpan: innerD, x: 0, y: -innerD / 2, rotateZ: 180 },
-    { side: 'back', wallSpan: innerW, depthSpan: innerD, x: 0, y: innerD / 2, rotateZ: 0 },
-    { side: 'left', wallSpan: innerD, depthSpan: innerW, x: -innerW / 2, y: 0, rotateZ: 90 },
-    { side: 'right', wallSpan: innerD, depthSpan: innerW, x: innerW / 2, y: 0, rotateZ: 270 },
-  ];
+  // Extrude depth: must fully penetrate the wall (+ lip overhang if present)
+  const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
+  const extrudeDepth = (wallThickness + lipOverhang) * 2 + 1;
 
-  const allHandles: Shape3D[] = [];
+  // Vertical center at 70% of interior height
+  const centerZ = interiorHeight * HOLE_VERTICAL_CENTER;
+
+  // Clamp hole height so it stays within wall bounds around centerZ
+  const margin = interiorHeight * 0.1;
+  const maxHalfHeight = Math.max(0, Math.min(centerZ, interiorHeight - centerZ) - margin);
+  const effectiveHeight = Math.min(height, maxHalfHeight * 2);
+  if (effectiveHeight < 1) return null;
+
+  const walls = buildHandleWallDefs(innerW, innerD);
+  const allHoles: Shape3D[] = [];
 
   for (const wall of walls) {
-    // Skip disabled sides
     if (!params.handles[wall.side].enabled) continue;
-
-    // Back-wall suppression: skip back handle when label tabs are active
     if (wall.side === 'back' && params.label.enabled) continue;
 
-    // Clamp depth so handle doesn't overlap the opposite wall
-    const effectiveDepth = Math.min(depth, wall.depthSpan / 2 - wallThickness);
-    if (effectiveDepth <= 0) continue;
-
-    // Clamp fillet radius to fit within the effective depth
-    const effectiveFilletR = Math.min(filletRadius, effectiveDepth * 0.7);
-
-    // Compute segments (split around cutout if present on this wall)
     const wallCutout = params.walls.enabled ? params.walls[wall.side] : undefined;
-    let segments: HandleSegment[];
-
-    if (wallCutout?.enabled) {
-      const cutWidth =
-        wallCutout.widthMm !== null
-          ? Math.min(wallCutout.widthMm, wall.wallSpan)
-          : wall.wallSpan * (wallCutout.width / 100);
-      const cutCenter = computeCutoutCenter(
-        wall.wallSpan,
-        cutWidth,
-        params.wallThickness,
-        wallCutout.alignment,
-        wallCutout.offset
-      );
-      segments = computeHandleSegments({
-        wallSpan: wall.wallSpan,
-        handleWidthPercent: width,
-        cutoutCenter: cutCenter,
-        cutoutWidth: cutWidth,
-        clearance: CUTOUT_CLEARANCE,
-        minSegmentWidth: MIN_SEGMENT_WIDTH,
-      });
-    } else {
-      segments = [{ offset: 0, width: wall.wallSpan * (width / 100) }];
-    }
+    const segments = computeWallHandleSegments(wall.wallSpan, width, wallThickness, wallCutout);
+    if (!segments) continue;
 
     for (const seg of segments) {
       if (seg.width <= 0) continue;
-      allHandles.push(
-        buildHandleSegment(
+      allHoles.push(
+        buildHoleCut(
           seg.width,
           seg.offset,
-          effectiveDepth,
-          effectiveFilletR,
-          shelfThickness,
-          interiorHeight,
+          effectiveHeight,
+          cornerRadius,
+          extrudeDepth,
+          centerZ,
           wall
         )
       );
     }
   }
 
-  return fuseAllOrNull(allHandles);
+  return fuseAllOrNull(allHoles);
 }
 
 // --- FeatureBuilder protocol ---
@@ -193,13 +132,10 @@ import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKey
 export const handlesFeature: FeatureBuilder = {
   name: 'handles',
   tag: FeatureTag.HANDLE,
-  target: 'fuse',
+  target: 'cut', // Holes are subtractive
   shouldBuild: (ctx) => ctx.params.handles.enabled && !ctx.dimensions.isSlotted,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
-    // Only serialize per-side cutout fields that affect horizontal clipping
-    // (enabled, width, widthMm, alignment, offset). Exclude shape/depth/interior
-    // which don't affect handle splitting.
     const cutoutClipKey = params.walls.enabled
       ? (['front', 'back', 'left', 'right'] as const)
           .map((s) => {
@@ -211,7 +147,7 @@ export const handlesFeature: FeatureBuilder = {
       : '';
     return compactKey(
       buildCacheKey(
-        'v2',
+        'v3', // bump: holes replace ledges
         dim.shellKey,
         stableSerialize(params.handles),
         cutoutClipKey,
@@ -225,7 +161,7 @@ export const handlesFeature: FeatureBuilder = {
     );
   },
   build: (ctx) => {
-    const result = buildHandles(
+    const result = buildHandleHoles(
       ctx.params,
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,

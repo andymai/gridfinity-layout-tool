@@ -1,11 +1,8 @@
 /**
- * Renders ghost handle ledge planes in the 3D preview during mesh regeneration.
+ * Renders ghost handle hole outlines in the 3D preview during mesh regeneration.
  *
- * Shows translucent cyan quads at the top of each enabled handle wall where
- * handle ledges will appear. Provides immediate visual feedback when the user
- * changes handle width, depth, or per-wall toggles.
- *
- * Position math mirrors handleBuilder.ts buildHandles.
+ * Shows translucent cyan rectangles on wall faces where handle holes will be cut.
+ * Position math mirrors handleBuilder.ts buildHandleHoles.
  */
 
 import { useMemo, useEffect } from 'react';
@@ -15,33 +12,19 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import type { HandleWallSide } from '@/features/bin-designer/types';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import {
-  computeHandleSegments,
-  CUTOUT_CLEARANCE,
-  MIN_SEGMENT_WIDTH,
+  HOLE_VERTICAL_CENTER,
+  buildHandleWallDefs,
+  computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
 
 const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.4;
 
-/** Minimum shelf thickness for FDM printability (mm) — mirrors handleBuilder.ts */
-const MIN_SHELF_THICKNESS = 2.0;
-
-interface WallDef {
-  readonly side: HandleWallSide;
-  readonly wallSpan: number;
-  readonly depthSpan: number;
-  readonly x: number;
-  readonly y: number;
-  readonly rotateZ: number;
-}
-
 export function GhostHandles() {
   const { invalidate } = useThree();
-  const flagEnabled = useFeatureFlag('handle_ledges');
+  const flagEnabled = useFeatureFlag('handle_holes');
 
   const { params, generationStatus } = useDesignerStore(
     useShallow((s) => ({
@@ -72,7 +55,6 @@ export function GhostHandles() {
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
   const hasLip = base.stackingLip;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
-  const shelfThickness = Math.max(wallThickness, MIN_SHELF_THICKNESS);
 
   const shouldShow =
     flagEnabled &&
@@ -84,65 +66,39 @@ export function GhostHandles() {
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
-    const wallDefs: readonly WallDef[] = [
-      { side: 'front', wallSpan: innerW, depthSpan: innerD, x: 0, y: -innerD / 2, rotateZ: 180 },
-      { side: 'back', wallSpan: innerW, depthSpan: innerD, x: 0, y: innerD / 2, rotateZ: 0 },
-      { side: 'left', wallSpan: innerD, depthSpan: innerW, x: -innerW / 2, y: 0, rotateZ: 90 },
-      { side: 'right', wallSpan: innerD, depthSpan: innerW, x: innerW / 2, y: 0, rotateZ: 270 },
-    ];
+    // Clamp hole height to stay within wall bounds around centerZ
+    const centerZ = interiorHeight * HOLE_VERTICAL_CENTER;
+    const margin = interiorHeight * 0.1;
+    const maxHalfHeight = Math.max(0, Math.min(centerZ, interiorHeight - centerZ) - margin);
+    const effectiveHeight = Math.min(handles.height, maxHalfHeight * 2);
+    if (effectiveHeight < 1) return null;
 
+    const wallDefs = buildHandleWallDefs(innerW, innerD);
     const matrices: THREE.Matrix4[] = [];
 
     for (const wall of wallDefs) {
       if (!handles[wall.side].enabled) continue;
-
-      // Back-wall suppression: skip back handle when label tabs are active
       if (wall.side === 'back' && label.enabled) continue;
 
-      const effectiveDepth = Math.min(handles.depth, wall.depthSpan / 2 - wallThickness);
-      if (effectiveDepth <= 0) continue;
-
-      // Compute segments (split around cutout if present on this wall)
       const wallCutout = wallConfig.enabled ? wallConfig[wall.side] : undefined;
-      let segments: { offset: number; width: number }[];
-
-      if (wallCutout?.enabled) {
-        const cutWidth =
-          wallCutout.widthMm !== null
-            ? Math.min(wallCutout.widthMm, wall.wallSpan)
-            : wall.wallSpan * (wallCutout.width / 100);
-        const cutCenter = computeCutoutCenter(
-          wall.wallSpan,
-          cutWidth,
-          wallThickness,
-          wallCutout.alignment,
-          wallCutout.offset
-        );
-        segments = computeHandleSegments({
-          wallSpan: wall.wallSpan,
-          handleWidthPercent: handles.width,
-          cutoutCenter: cutCenter,
-          cutoutWidth: cutWidth,
-          clearance: CUTOUT_CLEARANCE,
-          minSegmentWidth: MIN_SEGMENT_WIDTH,
-        });
-      } else {
-        const handleWidth = wall.wallSpan * (handles.width / 100);
-        if (handleWidth <= 0) continue;
-        segments = [{ offset: 0, width: handleWidth }];
-      }
+      const segments = computeWallHandleSegments(
+        wall.wallSpan,
+        handles.width,
+        wallThickness,
+        wallCutout
+      );
+      if (!segments) continue;
 
       for (const seg of segments) {
         const matrix = new THREE.Matrix4();
-        const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, effectiveDepth, 1);
+        // After plane.rotateX(pi/2), vertical extent is Z not Y
+        const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, 1, effectiveHeight);
 
-        const localX = seg.offset;
-        const localY = -effectiveDepth / 2;
         const angle = (wall.rotateZ * Math.PI) / 180;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        const worldX = wall.x + localX * cos - localY * sin;
-        const worldY = wall.y + localX * sin + localY * cos;
+        const worldX = wall.x + seg.offset * cos;
+        const worldY = wall.y + seg.offset * sin;
 
         const rotateMatrix = new THREE.Matrix4().makeRotationZ(angle);
         const translateMatrix = new THREE.Matrix4().makeTranslation(worldX, worldY, 0);
@@ -155,8 +111,9 @@ export function GhostHandles() {
 
     if (matrices.length === 0) return null;
 
-    // Merge all quads into a single BufferGeometry
+    // Pre-rotate plane from XY into XZ so it lies on vertical wall faces
     const plane = new THREE.PlaneGeometry(1, 1);
+    plane.rotateX(Math.PI / 2);
     const merged = new THREE.BufferGeometry();
     const allPositions: number[] = [];
     const allIndices: number[] = [];
@@ -170,7 +127,6 @@ export function GhostHandles() {
 
     for (let i = 0; i < matrices.length; i++) {
       const offset = i * basePositions.count;
-
       for (let v = 0; v < basePositions.count; v++) {
         const vec = new THREE.Vector3(
           basePositions.getX(v),
@@ -180,23 +136,28 @@ export function GhostHandles() {
         vec.applyMatrix4(matrices[i]);
         allPositions.push(vec.x, vec.y, vec.z);
       }
-
       for (let j = 0; j < baseIndex.count; j++) {
         allIndices.push(baseIndex.array[j] + offset);
       }
     }
 
     plane.dispose();
-
     merged.setAttribute('position', new THREE.Float32BufferAttribute(allPositions, 3));
     merged.setIndex(allIndices);
-
     return merged;
-  }, [shouldShow, innerW, innerD, wallThickness, handles, label.enabled, wallConfig]);
+  }, [
+    shouldShow,
+    innerW,
+    innerD,
+    wallThickness,
+    handles,
+    label.enabled,
+    wallConfig,
+    interiorHeight,
+  ]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;
-
     return new THREE.MeshBasicMaterial({
       color: GHOST_COLOR,
       transparent: true,
@@ -206,7 +167,6 @@ export function GhostHandles() {
     });
   }, [shouldShow]);
 
-  // Dispose resources on unmount or change
   useEffect(() => {
     return () => {
       geometry?.dispose();
@@ -214,17 +174,14 @@ export function GhostHandles() {
     };
   }, [geometry, material]);
 
-  // Invalidate frame when geometry changes
   useEffect(() => {
     if (geometry && material) invalidate();
   }, [geometry, material, invalidate]);
 
   if (!geometry || !material) return null;
 
-  // Z position: shelf top at interiorHeight, offset by socket height for world space.
-  // interiorHeight is relative to bin floor; socket height raises it to world Z.
   const socketZ = isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT;
-  const shelfZ = socketZ + interiorHeight - shelfThickness + 0.2;
+  const holeZ = socketZ + interiorHeight * HOLE_VERTICAL_CENTER;
 
-  return <mesh geometry={geometry} material={material} position={[0, 0, shelfZ]} renderOrder={2} />;
+  return <mesh geometry={geometry} material={material} position={[0, 0, holeZ]} renderOrder={2} />;
 }

@@ -76,9 +76,9 @@ export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
 /** Default handle configuration: disabled, front + sides enabled when toggled on */
 const DEFAULT_HANDLE_CONFIG: HandleConfig = {
   enabled: false,
-  depth: 10,
-  width: 70,
-  filletRadius: 5,
+  width: 50,
+  height: 15,
+  cornerRadius: 10,
   front: { enabled: true },
   back: { enabled: false },
   left: { enabled: true },
@@ -397,14 +397,17 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ...((params.cutoutConfig as Partial<CutoutConfig> | undefined) ?? {}),
   };
 
-  // Migrate handle config
+  // Migrate handle config (v2: ledges → holes)
+  // Strip legacy ledge fields (depth, filletRadius) to prevent storage pollution
+  const rawHandles = (params.handles ?? {}) as Record<string, unknown>;
+  const { depth: _legacyDepth, filletRadius: _legacyFillet, ...cleanHandles } = rawHandles;
   const handlesConfig: HandleConfig = {
     ...DEFAULT_HANDLE_CONFIG,
-    ...(params.handles ?? {}),
-    front: { ...DEFAULT_HANDLE_CONFIG.front, ...(params.handles?.front ?? {}) },
-    back: { ...DEFAULT_HANDLE_CONFIG.back, ...(params.handles?.back ?? {}) },
-    left: { ...DEFAULT_HANDLE_CONFIG.left, ...(params.handles?.left ?? {}) },
-    right: { ...DEFAULT_HANDLE_CONFIG.right, ...(params.handles?.right ?? {}) },
+    ...(cleanHandles as Partial<HandleConfig>),
+    front: { ...DEFAULT_HANDLE_CONFIG.front, ...((rawHandles.front as object) ?? {}) },
+    back: { ...DEFAULT_HANDLE_CONFIG.back, ...((rawHandles.back as object) ?? {}) },
+    left: { ...DEFAULT_HANDLE_CONFIG.left, ...((rawHandles.left as object) ?? {}) },
+    right: { ...DEFAULT_HANDLE_CONFIG.right, ...((rawHandles.right as object) ?? {}) },
   };
 
   // Remove legacy and already-handled fields from spread

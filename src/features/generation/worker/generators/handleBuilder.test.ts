@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Tests for the handle ledge builder.
+ * Tests for the handle hole builder.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__dual-kernel__/wasmInit';
@@ -26,16 +26,16 @@ beforeAll(async () => {
   await initBrepjs();
 }, 30_000);
 
-describe('buildHandles', () => {
+describe('buildHandleHoles', () => {
   it('returns null when handles disabled', async () => {
-    const { buildHandles } = await import('./handleBuilder');
+    const { buildHandleHoles } = await import('./handleBuilder');
     const params = makeParams({ enabled: false });
-    const result = buildHandles(params, 40, 40, 20, 1.2, false);
+    const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).toBeNull();
   });
 
   it('returns null when all sides disabled', async () => {
-    const { buildHandles } = await import('./handleBuilder');
+    const { buildHandleHoles } = await import('./handleBuilder');
     const params = makeParams({
       enabled: true,
       front: { enabled: false },
@@ -43,28 +43,28 @@ describe('buildHandles', () => {
       left: { enabled: false },
       right: { enabled: false },
     });
-    const result = buildHandles(params, 40, 40, 20, 1.2, false);
+    const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).toBeNull();
   });
 
   it('produces geometry when front enabled', async () => {
-    const { buildHandles } = await import('./handleBuilder');
+    const { buildHandleHoles } = await import('./handleBuilder');
     const params = makeParams({
       enabled: true,
-      depth: 8,
-      width: 70,
-      filletRadius: 5,
+      height: 15,
+      width: 50,
+      cornerRadius: 3,
       front: { enabled: true },
       back: { enabled: false },
       left: { enabled: false },
       right: { enabled: false },
     });
-    const result = buildHandles(params, 40, 40, 20, 1.2, false);
+    const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).not.toBeNull();
   });
 
   it('suppresses back handle when label tabs enabled', async () => {
-    const { buildHandles } = await import('./handleBuilder');
+    const { buildHandleHoles } = await import('./handleBuilder');
     // Only back enabled + label enabled => should suppress back => null
     const params = makeParams(
       {
@@ -76,72 +76,71 @@ describe('buildHandles', () => {
       },
       { enabled: true }
     );
-    const result = buildHandles(params, 40, 40, 20, 1.2, false);
+    const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).toBeNull();
   });
 
-  it('produces geometry with minimum depth and width', async () => {
-    const { buildHandles } = await import('./handleBuilder');
+  it('produces geometry with minimum height and width', async () => {
+    const { buildHandleHoles } = await import('./handleBuilder');
     const params = makeParams({
       enabled: true,
-      depth: 4, // MIN_HANDLE_DEPTH
+      height: 8, // MIN_HANDLE_HEIGHT
       width: 10, // MIN_HANDLE_WIDTH
-      filletRadius: 2,
+      cornerRadius: 0,
       front: { enabled: true },
       back: { enabled: false },
       left: { enabled: false },
       right: { enabled: false },
     });
-    const result = buildHandles(params, 40, 40, 20, 1.2, false);
+    const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).not.toBeNull();
   });
 
-  it('clamps depth on narrow bins to prevent opposite-wall overlap', async () => {
-    const { buildHandles } = await import('./handleBuilder');
-    // 0.5-unit bin: innerD ≈ 19.8mm. depthSpan/2 - wt ≈ 8.7mm. depth=10 should clamp.
+  it('produces geometry with sharp corners (radius=0)', async () => {
+    const { buildHandleHoles } = await import('./handleBuilder');
     const params = makeParams({
       enabled: true,
-      depth: 10,
-      width: 70,
-      filletRadius: 5,
+      height: 15,
+      width: 50,
+      cornerRadius: 0,
       front: { enabled: true },
       back: { enabled: false },
       left: { enabled: false },
       right: { enabled: false },
     });
-    const result = buildHandles(params, 40, 19.8, 20, 1.2, false);
+    const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).not.toBeNull();
   });
 
-  it('handles fillet radius larger than depth gracefully', async () => {
-    const { buildHandles } = await import('./handleBuilder');
+  it('clamps corner radius to half smallest dimension', async () => {
+    const { buildHandleHoles } = await import('./handleBuilder');
     const params = makeParams({
       enabled: true,
-      depth: 5,
-      width: 70,
-      filletRadius: 10, // >> depth * 0.7 = 3.5, will be clamped
+      height: 10,
+      width: 50,
+      cornerRadius: 10, // larger than height/2, will be clamped
       front: { enabled: true },
       back: { enabled: false },
       left: { enabled: false },
       right: { enabled: false },
     });
-    const result = buildHandles(params, 40, 40, 20, 1.2, false);
+    const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).not.toBeNull();
   });
 
   it('produces geometry for multiple sides', async () => {
-    const { buildHandles } = await import('./handleBuilder');
+    const { buildHandleHoles } = await import('./handleBuilder');
     const params = makeParams({
       enabled: true,
-      depth: 8,
-      width: 70,
-      filletRadius: 5,
+      height: 15,
+      width: 50,
+      cornerRadius: 3,
       front: { enabled: true },
       back: { enabled: false },
       left: { enabled: true },
       right: { enabled: true },
     });
-    const result = buildHandles(params, 40, 40, 20, 1.2, false);
+    const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).not.toBeNull();
   });
 });

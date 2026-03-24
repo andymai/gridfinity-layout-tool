@@ -1,3 +1,6 @@
+import type { HandleWallSide } from '@/features/bin-designer/types';
+import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+
 /** A handle segment: horizontal offset from wall center and width in mm. */
 export interface HandleSegment {
   /** Horizontal center offset from wall center (mm). Negative = toward left. */
@@ -21,12 +24,80 @@ interface HandleSegmentInput {
   readonly minSegmentWidth: number;
 }
 
+/** Per-wall positioning for handle hole placement. */
+export interface HandleWallDef {
+  readonly side: HandleWallSide;
+  readonly wallSpan: number;
+  readonly x: number;
+  readonly y: number;
+  readonly rotateZ: number;
+}
+
+/** Vertical center of handle hole as fraction of interior height (from floor). */
+export const HOLE_VERTICAL_CENTER = 0.7;
 /** Clearance gap between handle edge and cutout edge (mm). */
 export const CUTOUT_CLEARANCE = 1.0;
 /** Minimum handle segment width to generate (mm). */
 export const MIN_SEGMENT_WIDTH = 10.0;
 /** Epsilon for floating-point comparison of segment widths (mm). */
 const EPSILON = 1e-6;
+
+/** Build the four wall definitions from inner dimensions. */
+export function buildHandleWallDefs(innerW: number, innerD: number): readonly HandleWallDef[] {
+  return [
+    { side: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },
+    { side: 'back', wallSpan: innerW, x: 0, y: innerD / 2, rotateZ: 0 },
+    { side: 'left', wallSpan: innerD, x: -innerW / 2, y: 0, rotateZ: 90 },
+    { side: 'right', wallSpan: innerD, x: innerW / 2, y: 0, rotateZ: 90 },
+  ];
+}
+
+/** Minimal wall cutout info needed for segment computation. */
+interface WallCutoutInfo {
+  readonly enabled: boolean;
+  readonly width: number;
+  readonly widthMm: number | null;
+  readonly alignment: 'left' | 'center' | 'right';
+  readonly offset: number;
+}
+
+/**
+ * Compute handle segments for a single wall, splitting around a cutout if present.
+ *
+ * Returns null if the wall has zero handle width (caller should skip).
+ */
+export function computeWallHandleSegments(
+  wallSpan: number,
+  handleWidthPercent: number,
+  wallThickness: number,
+  cutout: WallCutoutInfo | undefined
+): HandleSegment[] | null {
+  if (cutout?.enabled) {
+    const cutWidth =
+      cutout.widthMm !== null
+        ? Math.min(cutout.widthMm, wallSpan)
+        : wallSpan * (cutout.width / 100);
+    const cutCenter = computeCutoutCenter(
+      wallSpan,
+      cutWidth,
+      wallThickness,
+      cutout.alignment,
+      cutout.offset
+    );
+    return computeHandleSegments({
+      wallSpan,
+      handleWidthPercent,
+      cutoutCenter: cutCenter,
+      cutoutWidth: cutWidth,
+      clearance: CUTOUT_CLEARANCE,
+      minSegmentWidth: MIN_SEGMENT_WIDTH,
+    });
+  }
+
+  const holeWidth = wallSpan * (handleWidthPercent / 100);
+  if (holeWidth <= 0) return null;
+  return [{ offset: 0, width: holeWidth }];
+}
 
 /**
  * Compute handle segments that avoid a wall cutout's horizontal span.

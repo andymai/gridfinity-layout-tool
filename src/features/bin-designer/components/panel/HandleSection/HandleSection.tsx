@@ -1,8 +1,8 @@
 /**
- * Handle section: interior grip ledges on bin walls.
+ * Handle section: through-hole grip cutouts in bin walls.
  *
  * Controls: master toggle, side chip toggles (F/B/L/R),
- * width/depth/fillet-radius steppers.
+ * width/height/corner-radius steppers.
  */
 
 import { FeatureToggle } from '../FeatureToggle';
@@ -50,7 +50,7 @@ export function HandleSection() {
         })}
       </div>
 
-      {/* Width + Depth steppers side by side */}
+      {/* Width + Height steppers side by side */}
       <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
@@ -81,27 +81,27 @@ export function HandleSection() {
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {/* eslint-disable-next-line i18next/no-literal-string -- unit suffix */}
-            {t('binDesigner.handles.depth')} {'(mm)'}
+            {t('binDesigner.handles.height')} {'(mm)'}
           </span>
           <StepperControl
-            value={handles.depth}
-            onChange={handlers.setDepth}
+            value={handles.height}
+            onChange={handlers.setHeight}
             onStep={(delta) =>
-              handlers.setDepth(
+              handlers.setHeight(
                 Math.min(
-                  DESIGNER_CONSTRAINTS.MAX_HANDLE_DEPTH,
+                  DESIGNER_CONSTRAINTS.MAX_HANDLE_HEIGHT,
                   Math.max(
-                    DESIGNER_CONSTRAINTS.MIN_HANDLE_DEPTH,
-                    handles.depth + delta * DESIGNER_CONSTRAINTS.HANDLE_DEPTH_STEP
+                    DESIGNER_CONSTRAINTS.MIN_HANDLE_HEIGHT,
+                    handles.height + delta * DESIGNER_CONSTRAINTS.HANDLE_HEIGHT_STEP
                   )
                 )
               )
             }
-            min={DESIGNER_CONSTRAINTS.MIN_HANDLE_DEPTH}
-            max={DESIGNER_CONSTRAINTS.MAX_HANDLE_DEPTH}
-            step={DESIGNER_CONSTRAINTS.HANDLE_DEPTH_STEP}
+            min={DESIGNER_CONSTRAINTS.MIN_HANDLE_HEIGHT}
+            max={DESIGNER_CONSTRAINTS.MAX_HANDLE_HEIGHT}
+            step={DESIGNER_CONSTRAINTS.HANDLE_HEIGHT_STEP}
             variant="desktop"
-            ariaLabel="Handle depth"
+            ariaLabel="Handle height"
           />
         </div>
       </div>
@@ -122,38 +122,42 @@ export function HandleSection() {
           />
         </svg>
         <span className="tabular-nums">
-          {handleWidthMm} × {handles.depth} mm
+          {handleWidthMm} × {handles.height} mm
         </span>
       </div>
 
-      {/* Fillet radius stepper */}
+      {/* Corner radius stepper */}
       <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.handles.filletRadius')}
+            {/* eslint-disable-next-line i18next/no-literal-string -- unit suffix */}
+            {t('binDesigner.handles.cornerRadius')} {'(mm)'}
           </span>
           <StepperControl
-            value={handles.filletRadius}
-            onChange={handlers.setFilletRadius}
+            value={handles.cornerRadius}
+            onChange={handlers.setCornerRadius}
             onStep={(delta) =>
-              handlers.setFilletRadius(
+              handlers.setCornerRadius(
                 Math.min(
-                  DESIGNER_CONSTRAINTS.MAX_HANDLE_FILLET,
+                  DESIGNER_CONSTRAINTS.MAX_HANDLE_CORNER_RADIUS,
                   Math.max(
-                    DESIGNER_CONSTRAINTS.MIN_HANDLE_FILLET,
-                    handles.filletRadius + delta * DESIGNER_CONSTRAINTS.HANDLE_FILLET_STEP
+                    DESIGNER_CONSTRAINTS.MIN_HANDLE_CORNER_RADIUS,
+                    handles.cornerRadius + delta * DESIGNER_CONSTRAINTS.HANDLE_CORNER_RADIUS_STEP
                   )
                 )
               )
             }
-            min={DESIGNER_CONSTRAINTS.MIN_HANDLE_FILLET}
-            max={DESIGNER_CONSTRAINTS.MAX_HANDLE_FILLET}
-            step={DESIGNER_CONSTRAINTS.HANDLE_FILLET_STEP}
+            min={DESIGNER_CONSTRAINTS.MIN_HANDLE_CORNER_RADIUS}
+            max={DESIGNER_CONSTRAINTS.MAX_HANDLE_CORNER_RADIUS}
+            step={DESIGNER_CONSTRAINTS.HANDLE_CORNER_RADIUS_STEP}
             variant="desktop"
-            ariaLabel="Handle fillet radius"
+            ariaLabel="Handle corner radius"
           />
         </div>
       </div>
+
+      {/* FDM support note */}
+      <p className="text-[11px] text-content-tertiary">{t('binDesigner.handles.supportNote')}</p>
     </FeatureToggle>
   );
 }

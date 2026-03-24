@@ -307,26 +307,31 @@ describe('migrateParams', () => {
     expect(result.handles).toEqual(DEFAULT_BIN_PARAMS.handles);
   });
 
-  it('preserves existing handle config with nested side merging', () => {
+  it('migrates legacy handle config (ledge → hole) with nested side merging', () => {
     const old = {
       width: 2,
       depth: 2,
       height: 3,
       handles: {
         enabled: true,
-        depth: 12,
+        depth: 12, // legacy field — should be stripped
         width: 80,
-        filletRadius: 6,
+        filletRadius: 6, // legacy field — should be stripped
         front: { enabled: false },
         // back, left, right omitted — should get defaults
       },
     };
     const result = migrateParams(old as any);
     expect(result.handles.enabled).toBe(true);
-    expect(result.handles.depth).toBe(12);
+    expect(result.handles.width).toBe(80); // preserved
+    expect(result.handles.height).toBe(15); // default (legacy depth stripped)
+    expect(result.handles.cornerRadius).toBe(10); // default (legacy fillet stripped)
     expect(result.handles.front.enabled).toBe(false);
     expect(result.handles.back.enabled).toBe(false); // default
     expect(result.handles.left.enabled).toBe(true); // default
+    // Verify legacy fields are not present on migrated config
+    expect((result.handles as Record<string, unknown>).depth).toBeUndefined();
+    expect((result.handles as Record<string, unknown>).filletRadius).toBeUndefined();
   });
 
   it('should preserve valid walls.shape values', () => {
