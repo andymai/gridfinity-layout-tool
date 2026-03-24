@@ -56,10 +56,10 @@ describe('kernel performance stats', () => {
     expect(resetStats.boolean.count).toBe(0);
     expect(resetStats.boolean.totalMs).toBe(0);
 
-    // Second generation with same params should produce same (not accumulated) counts
+    // Second generation with same params — counts must not exceed first run
+    // (may be lower due to cache hits reducing boolean operations)
     generateBin(params);
     const secondStats = getPerformanceStats();
-    expect(secondStats.boolean.count).toBeGreaterThan(0);
     expect(secondStats.boolean.count).toBeLessThanOrEqual(firstBooleanCount);
   });
 
