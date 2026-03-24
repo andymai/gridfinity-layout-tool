@@ -11,10 +11,15 @@ describe('SliderInput', () => {
     max: 10,
   };
 
-  it('renders label and value', () => {
+  it('renders label and slider', () => {
     render(<SliderInput {...defaultProps} />);
-    expect(screen.getByLabelText('Width')).toBeDefined();
-    expect(screen.getByLabelText('Width slider')).toBeDefined();
+    expect(screen.getByText('Width')).toBeDefined();
+    expect(screen.getByRole('slider')).toBeDefined();
+  });
+
+  it('shows value in the badge', () => {
+    render(<SliderInput {...defaultProps} />);
+    expect(screen.getByText('5')).toBeDefined();
   });
 
   it('shows unit suffix when provided', () => {
@@ -32,21 +37,14 @@ describe('SliderInput', () => {
     expect(container.querySelector('.opacity-50')).not.toBeNull();
   });
 
-  it('calls onChange on slider change', () => {
-    const onChange = vi.fn();
-    render(<SliderInput {...defaultProps} onChange={onChange} />);
-
-    const slider = screen.getByLabelText('Width slider');
-    fireEvent.change(slider, { target: { value: '7' } });
-    expect(onChange).toHaveBeenCalledWith(7);
-  });
-
-  it('updates local draft on input focus then commits on blur', () => {
+  it('enters edit mode on badge click and commits on blur', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width');
-    fireEvent.focus(input);
+    const badge = screen.getByText('5');
+    fireEvent.click(badge);
+
+    const input = screen.getByRole('textbox');
     fireEvent.change(input, { target: { value: '8' } });
     fireEvent.blur(input);
 
@@ -57,11 +55,15 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width');
+    const badge = screen.getByText('5');
+    fireEvent.click(badge);
+
+    const input = screen.getByRole('textbox');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '9' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
+    expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(9);
   });
 
@@ -69,10 +71,14 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width');
+    const badge = screen.getByText('5');
+    fireEvent.click(badge);
+
+    const input = screen.getByRole('textbox');
     fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '99' } });
     fireEvent.keyDown(input, { key: 'Escape' });
+    fireEvent.blur(input);
 
     expect(onChange).not.toHaveBeenCalled();
   });
@@ -81,8 +87,10 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} max={10} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width');
-    fireEvent.focus(input);
+    const badge = screen.getByText('5');
+    fireEvent.click(badge);
+
+    const input = screen.getByRole('textbox');
     fireEvent.change(input, { target: { value: '15' } });
     fireEvent.blur(input);
 
@@ -93,11 +101,22 @@ describe('SliderInput', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} step={0.5} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Width');
-    fireEvent.focus(input);
+    const badge = screen.getByText('5');
+    fireEvent.click(badge);
+
+    const input = screen.getByRole('textbox');
     fireEvent.change(input, { target: { value: '7.3' } });
     fireEvent.blur(input);
 
     expect(onChange).toHaveBeenCalledWith(7.5);
+  });
+
+  it('slider keyboard interaction calls onChange', () => {
+    const onChange = vi.fn();
+    render(<SliderInput {...defaultProps} value={5} step={1} onChange={onChange} />);
+
+    const slider = screen.getByRole('slider');
+    fireEvent.keyDown(slider, { key: 'ArrowRight' });
+    expect(onChange).toHaveBeenCalledWith(6);
   });
 });

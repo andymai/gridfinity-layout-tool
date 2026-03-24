@@ -209,8 +209,8 @@ describe('ParameterPanel', () => {
       const customizeBtn = screen.getAllByText('Customize')[0];
       fireEvent.click(customizeBtn);
 
-      expect(screen.getByLabelText('Magnet radius')).toBeInTheDocument();
-      expect(screen.getByLabelText('Magnet depth')).toBeInTheDocument();
+      expect(screen.getByRole('slider', { name: 'Magnet radius' })).toBeInTheDocument();
+      expect(screen.getByRole('slider', { name: 'Magnet depth' })).toBeInTheDocument();
     });
 
     it('does not show screw slider when screw is off', () => {
@@ -229,7 +229,7 @@ describe('ParameterPanel', () => {
       const customizeBtns = screen.getAllByText('Customize');
       fireEvent.click(customizeBtns[0]);
 
-      expect(screen.getByLabelText('Screw radius')).toBeInTheDocument();
+      expect(screen.getByRole('slider', { name: 'Screw radius' })).toBeInTheDocument();
     });
 
     it('magnet radius slider updates magnetDiameter (radius × 2)', () => {
@@ -246,7 +246,7 @@ describe('ParameterPanel', () => {
       const customizeBtn = screen.getAllByText('Customize')[0];
       fireEvent.click(customizeBtn);
 
-      const radiusSlider = screen.getByLabelText('Magnet radius slider');
+      const radiusSlider = screen.getByRole('slider', { name: 'Magnet radius' });
       fireEvent.change(radiusSlider, { target: { value: '4.0' } });
 
       expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(8.0);
@@ -266,7 +266,7 @@ describe('ParameterPanel', () => {
       const customizeBtn = screen.getAllByText('Customize')[0];
       fireEvent.click(customizeBtn);
 
-      const depthSlider = screen.getByLabelText('Magnet depth slider');
+      const depthSlider = screen.getByRole('slider', { name: 'Magnet depth' });
       fireEvent.change(depthSlider, { target: { value: '3.0' } });
 
       expect(useDesignerStore.getState().params.base.magnetDepth).toBe(3.0);
@@ -286,7 +286,7 @@ describe('ParameterPanel', () => {
       const customizeBtn = screen.getAllByText('Customize')[0];
       fireEvent.click(customizeBtn);
 
-      const radiusSlider = screen.getByLabelText('Screw radius slider');
+      const radiusSlider = screen.getByRole('slider', { name: 'Screw radius' });
       fireEvent.change(radiusSlider, { target: { value: '2.0' } });
 
       expect(useDesignerStore.getState().params.base.screwDiameter).toBe(4.0);
