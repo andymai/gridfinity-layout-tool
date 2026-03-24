@@ -130,8 +130,8 @@ export function GhostHandles() {
 
       for (const seg of segments) {
         const matrix = new THREE.Matrix4();
-        // Scale: width along X, height along Z (plane is pre-rotated into XZ)
-        const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, effectiveHeight, 1);
+        // After plane.rotateX(π/2), vertical extent is Z not Y
+        const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, 1, effectiveHeight);
 
         const localX = seg.offset;
         const localY = 0;
