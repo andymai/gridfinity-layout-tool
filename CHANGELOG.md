@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.23.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.23.1...gridfinity-layout-tool-v4.23.2) (2026-03-24)
+
+
+### Bug Fixes
+
+* svg ry attribute, label tab test regression, brepkit stats guard ([#1225](https://github.com/andymai/gridfinity-layout-tool/issues/1225)) ([e9ee3a6](https://github.com/andymai/gridfinity-layout-tool/commit/e9ee3a618a81ac442131ed1674fd970ff1226ba6))
+
 ## [4.23.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.23.0...gridfinity-layout-tool-v4.23.1) (2026-03-24)
 
 
