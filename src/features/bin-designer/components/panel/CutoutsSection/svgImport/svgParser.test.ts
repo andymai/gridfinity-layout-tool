@@ -66,6 +66,24 @@ describe('parseSvgString', () => {
       expect(result.value[0].cornerRadius).toBe(3);
     });
 
+    it('uses ry when rx is absent (SVG spec fallback)', () => {
+      const result = parseSvgString(svgWrap('<rect x="0" y="0" width="20" height="20" ry="4"/>'));
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      expect(result.value[0].cornerRadius).toBe(4);
+    });
+
+    it('uses max(rx, ry) for elliptical corner approximation', () => {
+      const result = parseSvgString(
+        svgWrap('<rect x="0" y="0" width="20" height="20" rx="2" ry="5"/>')
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      expect(result.value[0].cornerRadius).toBe(5);
+    });
+
     it('clamps corner radius to half the smaller dimension', () => {
       const result = parseSvgString(svgWrap('<rect x="0" y="0" width="10" height="20" rx="8"/>'));
       expect(isOk(result)).toBe(true);
