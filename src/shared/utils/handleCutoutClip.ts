@@ -21,6 +21,8 @@ interface HandleSegmentInput {
   readonly minSegmentWidth: number;
 }
 
+/** Vertical center of handle hole as fraction of interior height (from floor). */
+export const HOLE_VERTICAL_CENTER = 0.7;
 /** Clearance gap between handle edge and cutout edge (mm). */
 export const CUTOUT_CLEARANCE = 1.0;
 /** Minimum handle segment width to generate (mm). */

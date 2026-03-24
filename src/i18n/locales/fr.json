@@ -215,6 +215,7 @@
   "binDesigner.handles.right": "Droite",
   "binDesigner.handles.sides": "Côtés",
   "binDesigner.handles.summary": "{sides}: {height}mm de hauteur",
+  "binDesigner.handles.supportNote": "Les trous larges peuvent nécessiter des supports lors de l'impression",
   "binDesigner.handles.unavailableSlotted": "Non disponible pour les bacs à fentes",
   "binDesigner.handles.width": "Largeur",
   "binDesigner.heightUnit": "Unité de hauteur",

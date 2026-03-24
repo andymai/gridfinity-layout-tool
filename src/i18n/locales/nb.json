@@ -215,6 +215,7 @@
   "binDesigner.handles.right": "Høyre",
   "binDesigner.handles.sides": "Sider",
   "binDesigner.handles.summary": "{sides}: {height}mm høyt",
+  "binDesigner.handles.supportNote": "Brede hull kan kreve støttestrukturer ved utskrift",
   "binDesigner.handles.unavailableSlotted": "Ikke tilgjengelig for spor-bins",
   "binDesigner.handles.width": "Bredde",
   "binDesigner.heightUnit": "Høydeenhet",

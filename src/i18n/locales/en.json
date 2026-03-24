@@ -215,6 +215,7 @@
   "binDesigner.handles.right": "Right",
   "binDesigner.handles.sides": "Sides",
   "binDesigner.handles.summary": "{sides}: {height}mm tall",
+  "binDesigner.handles.supportNote": "Wide holes may require supports when printing",
   "binDesigner.handles.unavailableSlotted": "Not available for slotted bins",
   "binDesigner.handles.width": "Width",
   "binDesigner.heightUnit": "Height unit",

@@ -215,6 +215,7 @@
   "binDesigner.handles.right": "Rechts",
   "binDesigner.handles.sides": "Zijden",
   "binDesigner.handles.summary": "{sides}: {height}mm hoog",
+  "binDesigner.handles.supportNote": "Brede gaten hebben mogelijk ondersteuning nodig bij het printen",
   "binDesigner.handles.unavailableSlotted": "Niet beschikbaar voor gesleufd bakjes",
   "binDesigner.handles.width": "Breedte",
   "binDesigner.heightUnit": "Hoogte-eenheid",

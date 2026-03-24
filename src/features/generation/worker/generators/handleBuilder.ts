@@ -20,12 +20,10 @@ import {
   computeHandleSegments,
   CUTOUT_CLEARANCE,
   MIN_SEGMENT_WIDTH,
+  HOLE_VERTICAL_CENTER,
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleSegment } from '@/shared/utils/handleCutoutClip';
 import { LIP_TAPER_WIDTH } from './generatorConstants';
-
-/** Vertical center of hole as fraction of interior height (from floor). */
-export const HOLE_VERTICAL_CENTER = 0.7;
 
 interface WallDef {
   readonly side: HandleWallSide;

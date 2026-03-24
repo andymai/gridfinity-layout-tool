@@ -1321,6 +1321,7 @@ const en: Record<string, string> = {
   'binDesigner.handles.cornerRadius': 'Corner radius',
   'binDesigner.handles.backDisabledByLabelTab': 'Back handle disabled — label tab active',
   'binDesigner.handles.summary': '{sides}: {height}mm tall',
+  'binDesigner.handles.supportNote': 'Wide holes may require supports when printing',
   'binDesigner.handles.unavailableSlotted': 'Not available for slotted bins',
   'binDesigner.tabSupport.fillet': 'Curved',
   'binDesigner.interior.standard.title': 'Grid Dividers',

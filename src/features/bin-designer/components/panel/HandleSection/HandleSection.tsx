@@ -154,6 +154,9 @@ export function HandleSection() {
           />
         </div>
       </div>
+
+      {/* FDM support note */}
+      <p className="text-[11px] text-content-tertiary">{t('binDesigner.handles.supportNote')}</p>
     </FeatureToggle>
   );
 }

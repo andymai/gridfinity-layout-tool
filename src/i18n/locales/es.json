@@ -215,6 +215,7 @@
   "binDesigner.handles.right": "Derecha",
   "binDesigner.handles.sides": "Lados",
   "binDesigner.handles.summary": "{sides}: {height}mm de altura",
+  "binDesigner.handles.supportNote": "Los agujeros anchos pueden requerir soportes al imprimir",
   "binDesigner.handles.unavailableSlotted": "No disponible para bins ranurados",
   "binDesigner.handles.width": "Anchura",
   "binDesigner.heightUnit": "Unidad de altura",

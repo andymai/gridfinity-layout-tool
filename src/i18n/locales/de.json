@@ -215,6 +215,7 @@
   "binDesigner.handles.right": "Rechts",
   "binDesigner.handles.sides": "Seiten",
   "binDesigner.handles.summary": "{sides}: {height}mm hoch",
+  "binDesigner.handles.supportNote": "Breite Löcher erfordern möglicherweise Stützstrukturen beim Drucken",
   "binDesigner.handles.unavailableSlotted": "Nicht verfügbar für Schlitz-Bins",
   "binDesigner.handles.width": "Breite",
   "binDesigner.heightUnit": "Höheneinheit",
