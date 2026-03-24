@@ -129,4 +129,32 @@ export const handles: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
+  defineScenario('handles', 'handle holes + left-aligned cutout (asymmetric split)', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 2,
+      height: 5,
+      walls: {
+        ...DEFAULT_BIN_PARAMS.walls,
+        enabled: true,
+        front: {
+          ...DISABLED_WALL_CUTOUT,
+          enabled: true,
+          width: 30,
+          depth: 50,
+          alignment: 'left',
+          offset: 0,
+          widthMm: null,
+        },
+      },
+      handles: {
+        ...DEFAULT_BIN_PARAMS.handles,
+        enabled: true,
+        width: 90,
+        front: { enabled: true },
+      },
+    },
+    timeout: 60_000,
+  }),
 ];

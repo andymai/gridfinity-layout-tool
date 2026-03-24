@@ -97,9 +97,10 @@ export function buildHandleHoles(
   // Vertical center at 70% of interior height
   const centerZ = interiorHeight * HOLE_VERTICAL_CENTER;
 
-  // Clamp hole height so it stays within wall bounds
-  const maxHeight = interiorHeight * 0.8; // leave 10% margin top and bottom
-  const effectiveHeight = Math.min(height, maxHeight);
+  // Clamp hole height so it stays within wall bounds around centerZ
+  const margin = interiorHeight * 0.1;
+  const maxHalfHeight = Math.max(0, Math.min(centerZ, interiorHeight - centerZ) - margin);
+  const effectiveHeight = Math.min(height, maxHalfHeight * 2);
   if (effectiveHeight < 1) return null;
 
   const walls: readonly WallDef[] = [

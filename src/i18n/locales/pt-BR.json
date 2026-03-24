@@ -214,7 +214,7 @@
   "binDesigner.handles.left": "Esquerda",
   "binDesigner.handles.right": "Direita",
   "binDesigner.handles.sides": "Lados",
-  "binDesigner.handles.summary": "{sides}: {height}mm de alturae",
+  "binDesigner.handles.summary": "{sides}: {height}mm de altura",
   "binDesigner.handles.supportNote": "Furos largos podem precisar de suportes na impressão",
   "binDesigner.handles.unavailableSlotted": "Não disponível para bins com ranhuras",
   "binDesigner.handles.width": "Largura",

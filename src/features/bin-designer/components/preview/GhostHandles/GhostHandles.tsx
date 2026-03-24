@@ -77,9 +77,11 @@ export function GhostHandles() {
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
-    // Clamp hole height
-    const maxHeight = interiorHeight * 0.8;
-    const effectiveHeight = Math.min(handles.height, maxHeight);
+    // Clamp hole height to stay within wall bounds around centerZ
+    const centerZ = interiorHeight * HOLE_VERTICAL_CENTER;
+    const margin = interiorHeight * 0.1;
+    const maxHalfHeight = Math.max(0, Math.min(centerZ, interiorHeight - centerZ) - margin);
+    const effectiveHeight = Math.min(handles.height, maxHalfHeight * 2);
     if (effectiveHeight < 1) return null;
 
     // Rotations must match handleBuilder.ts (cut pattern)
@@ -128,7 +130,10 @@ export function GhostHandles() {
 
       for (const seg of segments) {
         const matrix = new THREE.Matrix4();
+        // Scale unit plane to hole dimensions (width along X, height along Y)
         const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, effectiveHeight, 1);
+        // Rotate plane from XY into XZ so it lies on the vertical wall face
+        const flipToWall = new THREE.Matrix4().makeRotationX(Math.PI / 2);
 
         const localX = seg.offset;
         const localY = 0;
@@ -141,7 +146,9 @@ export function GhostHandles() {
         const rotateMatrix = new THREE.Matrix4().makeRotationZ(angle);
         const translateMatrix = new THREE.Matrix4().makeTranslation(worldX, worldY, 0);
 
+        // Compose: scale → flip to wall → rotate to wall orientation → translate
         matrix.multiplyMatrices(translateMatrix, rotateMatrix);
+        matrix.multiply(flipToWall);
         matrix.multiply(scaleMatrix);
         matrices.push(matrix);
       }
