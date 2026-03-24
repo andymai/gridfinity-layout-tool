@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.25.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.25.0...gridfinity-layout-tool-v4.25.1) (2026-03-24)
+
+
+### Bug Fixes
+
+* **handles:** split handles around wall cutouts to prevent topology gaps ([#1235](https://github.com/andymai/gridfinity-layout-tool/issues/1235)) ([27e35e2](https://github.com/andymai/gridfinity-layout-tool/commit/27e35e2fdba5ff505f962de71edd6f1b199c8dd0))
+
 ## [4.25.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.24.0...gridfinity-layout-tool-v4.25.0) (2026-03-24)
 
 
