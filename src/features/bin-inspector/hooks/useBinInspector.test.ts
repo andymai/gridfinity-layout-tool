@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { resetAllStores } from '@/test/testUtils';
+import { connectSelectionPruning, eventBus } from '@/core/cqrs';
 import type { Bin } from '@/core/types';
 
 vi.mock('@/shared/events/syncEventBus', () => ({
@@ -26,9 +27,14 @@ describe('useBinInspector', () => {
     notes: '',
   });
 
+  let unsubscribePruning: () => void;
+
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
+
+    // Connect CQRS selection pruning subscriber so event-driven cleanup works
+    unsubscribePruning = connectSelectionPruning(eventBus);
 
     // Set up default layout with a layer and category
     const layout = useLayoutStore.getState().layout;
@@ -42,6 +48,7 @@ describe('useBinInspector', () => {
   });
 
   afterEach(() => {
+    unsubscribePruning();
     vi.restoreAllMocks();
   });
 

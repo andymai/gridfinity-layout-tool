@@ -120,3 +120,5 @@ export { validationMiddleware, COMMAND_SCHEMAS, getCommandSchema } from './valid
 export { createCqrsMutations } from './integration/mutationsAdapter';
 
 export { applyEvent, replayEvents, replayFromStore } from './projection/replay';
+
+export { connectSelectionPruning } from './subscribers';

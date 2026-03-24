@@ -15,7 +15,7 @@ import { initializeLayoutLibrary, loadSharedWithMe } from '@/core/storage';
 import { isOk } from '@/core/result';
 import type { Locale } from '@/i18n/types.ts';
 import { recoverFromBadWwwMigration } from '@/core/storage/wwwMigrationRecovery';
-import { connectEventStoreToBus } from '@/core/cqrs';
+import { connectEventStoreToBus, connectSelectionPruning, eventBus } from '@/core/cqrs';
 import { InitErrorFallback } from '@/shell/InitErrorFallback';
 
 // Recovery for canonical users who went through a broken www→canonical migration
@@ -104,6 +104,10 @@ if (recoverFromBadWwwMigration()) {
 
       // Connect CQRS event store — persists domain events to IndexedDB asynchronously
       connectEventStoreToBus();
+
+      // Connect selection pruning — automatically cleans stale bin/layer/category
+      // references from selection store when entities are deleted or moved
+      connectSelectionPruning(eventBus);
     })
     .catch((e: unknown) => {
       initError = e instanceof Error ? e : new Error(String(e));
