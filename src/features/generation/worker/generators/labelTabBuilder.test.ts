@@ -99,19 +99,26 @@ describe('buildLabelTabs', () => {
       const result = buildLabelTabs(params, 80, 80, wallHeight, wt);
       expect(result).not.toBeNull();
 
-      // Tessellate and verify support structure exists below the shelf.
-      // The detailed geometry regression is guarded by scenario snapshot tests
-      // (triangle count changes when the gusset profile depth changes).
+      // Tessellate and verify support structure extends well below the shelf.
+      // The support's Z-extent is the key regression indicator: without support,
+      // minZ would be near wallHeight - wt (just the shelf plate). With support,
+      // minZ should reach wallHeight - tabHeight (near wallHeight - tabDepth).
       const tessellated = mesh(result!, { tolerance: 0.1, angularTolerance: 10 });
       const verts = tessellated.vertices;
+      const shelfUndersideZ = wallHeight - wt;
+
       let minZ = Infinity;
+      let hasSupportVerts = false;
       for (let i = 2; i < verts.length; i += 3) {
         if (verts[i] < minZ) minZ = verts[i];
+        if (verts[i] < shelfUndersideZ - 0.1) hasSupportVerts = true;
       }
-      // Support must extend well below the shelf underside (wallHeight - wt).
-      // Without support, minZ would be at wallHeight - wt = 33.8.
+      // Support geometry must exist below the shelf
+      expect(hasSupportVerts).toBe(true);
+      // Support must extend well below the shelf underside (wallHeight - wt = 33.8).
+      // Without support, minZ would equal shelfUndersideZ.
       // With support, minZ should be near wallHeight - tabDepth = 23.
-      expect(minZ).toBeLessThan(wallHeight - wt - 5);
+      expect(minZ).toBeLessThan(shelfUndersideZ - 5);
     }
   );
 });

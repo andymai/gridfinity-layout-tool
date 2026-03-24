@@ -87,13 +87,14 @@ export function runGeneration(
   const startTime = performance.now();
 
   try {
-    resetPerformanceStats();
+    // brepjs perf stats are only meaningful for the opencascade kernel
+    if (activeKernel === 'opencascade') resetPerformanceStats();
     const meshData = generator(signal);
 
     if (activeRequestId !== requestId) return;
 
     const timingMs = performance.now() - startTime;
-    const kernelPerfStats = getPerformanceStats();
+    const kernelPerfStats = activeKernel === 'opencascade' ? getPerformanceStats() : {};
 
     const verts = copyBuffers ? meshData.vertices.slice() : meshData.vertices;
     const norms = copyBuffers ? meshData.normals.slice() : meshData.normals;
@@ -122,7 +123,9 @@ export function runGeneration(
     resetAllShapeCacheStats();
     resetBaseplateCacheStats();
 
-    respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
+    if (activeKernel === 'opencascade') {
+      respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
+    }
   } catch (e) {
     if (isAbortError(e)) return;
     if (activeRequestId !== requestId) return;

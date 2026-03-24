@@ -270,7 +270,11 @@ function convertRect(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutou
   const y = numAttr(el, 'y');
   const w = numAttr(el, 'width');
   const h = numAttr(el, 'height');
-  const rx = numAttr(el, 'rx');
+  // SVG spec: if rx or ry is absent, it defaults to the other.
+  // Our cutout system only supports circular corners, so use the larger value.
+  const rxAttr = numAttr(el, 'rx');
+  const ryAttr = numAttr(el, 'ry');
+  const cornerR = Math.max(0, rxAttr, ryAttr);
 
   if (w <= 0 || h <= 0) return null;
 
@@ -283,7 +287,7 @@ function convertRect(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutou
       y: flipY(translated.y - viewBox.minY + h, viewBox),
       width: w,
       depth: h,
-      cornerRadius: Math.min(rx, Math.min(w, h) / 2),
+      cornerRadius: Math.min(cornerR, Math.min(w, h) / 2),
       rotation: 0,
     };
   }
