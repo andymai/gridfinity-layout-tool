@@ -1,10 +1,10 @@
 import { Suspense, lazy, useState } from 'react';
+import { batch } from '@/core/cqrs';
 import {
   useLayoutStore,
   useSelectionStore,
   useMobileStore,
   useViewStore,
-  useUndoableAction,
   useToastStore,
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
@@ -67,25 +67,24 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const toggleRightPanel = useViewStore((state) => state.toggleRightPanel);
   const addToast = useToastStore((state) => state.addToast);
 
-  const { execute } = useUndoableAction();
   const { isDesktop } = useResponsive();
 
   const handleDelete = () => {
     // Track deletion BEFORE executing (need bin data)
     mlTracking.trackBinsDeletion([bin], 'context_menu');
 
-    execute(() => deleteBin(bin.id));
+    batch(() => deleteBin(bin.id));
     setSelectedBins([]);
     onClose();
   };
 
   const handleToStaging = () => {
-    execute(() => moveBinToStaging(bin.id));
+    batch(() => moveBinToStaging(bin.id));
     onClose();
   };
 
   const handleDuplicate = () => {
-    execute(() => {
+    batch(() => {
       const result = duplicateBin(bin.id);
       if (isOk(result)) {
         // Track for ML telemetry
@@ -120,7 +119,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
       return;
     }
 
-    execute(() => {
+    batch(() => {
       const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
       if (result.movedTo) {
         updates.x = result.movedTo.x as GridUnits;
@@ -139,7 +138,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const [showLayerPicker, setShowLayerPicker] = useState(false);
 
   const handleMoveToGrid = (targetLayerId: LayerId) => {
-    const placed = execute(() => isOk(moveBinFromStaging(bin.id, targetLayerId, 0, 0)));
+    const placed = batch(() => isOk(moveBinFromStaging(bin.id, targetLayerId, 0, 0)));
     if (placed) {
       addToast(t('toast.binsMovedToLayer', { count: 1 }), 'success');
     } else {

@@ -2,17 +2,17 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
-import { useUndoableAction } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { STAGING_ID } from '@/core/constants';
 import type { CategoryId, LayerId, HeightUnits } from '@/core/types';
+import { batch } from '@/core/cqrs';
 
 /**
  * Hook providing bulk actions for multi-selected bins.
  *
- * All actions wrap mutations in a single `execute()` call for one-step undo.
+ * All actions wrap mutations in a single `batch()` call for one-step undo.
  * Collision-aware operations skip bins that can't be placed and report via toast.
  */
 export function useSelectionActions() {
@@ -32,7 +32,6 @@ export function useSelectionActions() {
       clearSelection: s.clearSelection,
     }))
   );
-  const { execute } = useUndoableAction();
   const addToast = useToastStore((s) => s.addToast);
 
   const getSelectedBins = useCallback(
@@ -48,7 +47,7 @@ export function useSelectionActions() {
       const needsUpdate = selected.filter((b) => b.category !== categoryId);
       if (needsUpdate.length === 0) return;
 
-      execute(() => {
+      batch(() => {
         for (const bin of needsUpdate) {
           updateBin(bin.id, { category: categoryId });
         }
@@ -64,7 +63,7 @@ export function useSelectionActions() {
         duration: 2000,
       });
     },
-    [getSelectedBins, execute, updateBin, layout.categories, addToast, t]
+    [getSelectedBins, updateBin, layout.categories, addToast, t]
   );
 
   const rotateAll = useCallback(() => {
@@ -107,7 +106,7 @@ export function useSelectionActions() {
       return;
     }
 
-    execute(() => {
+    batch(() => {
       for (const bin of rotatable) {
         updateBin(bin.id, { width: bin.depth, depth: bin.width });
       }
@@ -126,7 +125,7 @@ export function useSelectionActions() {
         duration: 2000,
       });
     }
-  }, [getSelectedBins, selectedBinIds, layout, execute, updateBin, addToast, t]);
+  }, [getSelectedBins, selectedBinIds, layout, updateBin, addToast, t]);
 
   const matchHeight = useCallback(() => {
     const selected = getSelectedBins();
@@ -158,7 +157,7 @@ export function useSelectionActions() {
 
     if (updatable.length === 0) return;
 
-    execute(() => {
+    batch(() => {
       for (const bin of updatable) {
         updateBin(bin.id, { height: maxHeight });
       }
@@ -169,7 +168,7 @@ export function useSelectionActions() {
       type: 'success',
       duration: 2000,
     });
-  }, [getSelectedBins, selectedBinIds, layout, execute, updateBin, addToast, t]);
+  }, [getSelectedBins, selectedBinIds, layout, updateBin, addToast, t]);
 
   const moveToLayer = useCallback(
     (targetLayerId: LayerId) => {
@@ -218,7 +217,7 @@ export function useSelectionActions() {
         return;
       }
 
-      execute(() => {
+      batch(() => {
         for (const bin of movable) {
           updateBin(bin.id, { layerId: targetLayerId, height: targetLayer.height });
         }
@@ -248,14 +247,14 @@ export function useSelectionActions() {
         });
       }
     },
-    [getSelectedBins, selectedBinIds, layout, execute, updateBin, clearSelection, addToast, t]
+    [getSelectedBins, selectedBinIds, layout, updateBin, clearSelection, addToast, t]
   );
 
   const moveToStash = useCallback(() => {
     const count = selectedBinIds.length;
     if (count === 0) return;
 
-    execute(() => {
+    batch(() => {
       for (const id of selectedBinIds) {
         moveBinToStaging(id);
       }
@@ -267,13 +266,13 @@ export function useSelectionActions() {
       type: 'success',
       duration: 2000,
     });
-  }, [selectedBinIds, execute, moveBinToStaging, clearSelection, addToast, t]);
+  }, [selectedBinIds, moveBinToStaging, clearSelection, addToast, t]);
 
   const deleteAll = useCallback(() => {
     const count = selectedBinIds.length;
     if (count === 0) return;
 
-    execute(() => {
+    batch(() => {
       deleteBins([...selectedBinIds]);
     });
 
@@ -283,7 +282,7 @@ export function useSelectionActions() {
       type: 'success',
       duration: 2000,
     });
-  }, [selectedBinIds, execute, deleteBins, clearSelection, addToast, t]);
+  }, [selectedBinIds, deleteBins, clearSelection, addToast, t]);
 
   return { setCategory, rotateAll, matchHeight, moveToLayer, moveToStash, deleteAll };
 }

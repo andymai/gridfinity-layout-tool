@@ -114,6 +114,13 @@ const binFillLayerSchema = z.object({
   halfBinMode: z.boolean().optional(),
 });
 
+/** bin.fillGaps */
+const binFillGapsSchema = z.object({
+  layerId: layerIdSchema,
+  categoryId: categoryIdSchema,
+  halfBinMode: z.boolean().optional(),
+});
+
 /** bin.clearLayer */
 const binClearLayerSchema = z.object({ layerId: layerIdSchema });
 /** layer.add: empty payload */
@@ -219,6 +226,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'bin.moveToStaging': binMoveToStagingSchema,
   'bin.moveFromStaging': binMoveFromStagingSchema,
   'bin.fillLayer': binFillLayerSchema,
+  'bin.fillGaps': binFillGapsSchema,
   'bin.clearLayer': binClearLayerSchema,
 
   // Layer commands (4)

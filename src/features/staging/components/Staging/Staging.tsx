@@ -1,6 +1,7 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
@@ -55,7 +56,6 @@ export function Staging() {
       setDropTarget: state.setDropTarget,
     }))
   );
-  const { execute } = useUndoableAction();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const addToast = useToastStore((state) => state.addToast);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -213,13 +213,13 @@ export function Staging() {
       const bin = stagingBins.find((b) => b.id === brandedBinId);
       if (!bin) return;
 
-      execute(() => {
+      batch(() => {
         if (isErr(updateBin(brandedBinId, { width: bin.depth, depth: bin.width }))) return;
       });
 
       addToast(t('toast.binRotated'), 'success');
     },
-    [stagingBins, execute, updateBin, addToast, t]
+    [stagingBins, updateBin, addToast, t]
   );
 
   const handleClearStaging = () => {
@@ -227,7 +227,7 @@ export function Staging() {
 
     mlTracking.trackBinsDeletion(stagingBins, 'bulk');
 
-    execute(() => {
+    batch(() => {
       for (const bin of stagingBins) {
         deleteBin(bin.id);
       }

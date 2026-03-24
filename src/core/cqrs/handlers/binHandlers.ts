@@ -18,6 +18,7 @@ import type {
   MoveBinToStagingCommand,
   MoveBinFromStagingCommand,
   FillLayerCommand,
+  FillLayerGapsCommand,
   ClearLayerCommand,
 } from '../commands';
 import type { DomainEvent } from '../events';
@@ -222,6 +223,33 @@ export function handleFillLayer(command: FillLayerCommand): CommandResult<number
   });
 }
 
+export function handleFillLayerGaps(
+  command: FillLayerGapsCommand
+): CommandResult<number, DomainEvent> {
+  const store = useLayoutStore.getState();
+  const { layerId, categoryId, halfBinMode } = command.payload;
+
+  const previousIds = new Set(store.layout.bins.map((b) => b.id));
+  const count = store.fillLayerGaps(layerId, categoryId, halfBinMode);
+
+  const currentBins = useLayoutStore.getState().layout.bins;
+  const newBins = currentBins.filter((b) => !previousIds.has(b.id)).map((b) => ({ ...b }));
+
+  return ok({
+    value: count,
+    events:
+      count > 0
+        ? [
+            {
+              type: 'bin.layerFilled' as const,
+              payload: { layerId, binsCreated: count, bins: newBins },
+              meta: createEventMeta(command.meta, 'bin.layerFilled'),
+            },
+          ]
+        : [],
+  });
+}
+
 export function handleClearLayer(command: ClearLayerCommand): CommandResult<number, DomainEvent> {
   const store = useLayoutStore.getState();
   const { layerId } = command.payload;
@@ -256,5 +284,6 @@ export const binHandlers = {
   'bin.moveToStaging': handleMoveBinToStaging,
   'bin.moveFromStaging': handleMoveBinFromStaging,
   'bin.fillLayer': handleFillLayer,
+  'bin.fillGaps': handleFillLayerGaps,
   'bin.clearLayer': handleClearLayer,
 } as const;

@@ -66,11 +66,5 @@ export function createCommandBus(
   };
 }
 
-/**
- * Singleton command bus for the application.
- *
- * The middleware pipeline is captured once at module load via `getDefaultPipeline()`.
- * Toggling the `cqrs_undo` Labs flag at runtime will NOT change the pipeline — the
- * flag's `requiresRefresh: true` ensures a page reload rebuilds the singleton.
- */
+/** Singleton command bus for the application. */
 export const commandBus = createCommandBus();

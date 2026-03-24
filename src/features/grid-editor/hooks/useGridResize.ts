@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
-import { useUndoableAction } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useSettingsStore } from '@/core/store/settings';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
@@ -61,13 +61,11 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
       drawer: state.layout.drawer,
       // updateDrawer called on every pointermove during drag — use store
       // directly to avoid CQRS event/analytics/undo spam per frame.
-      // The undo snapshot is captured by useUndoableAction on pointer-up.
+      // The undo snapshot is captured by batch() on pointer-up.
       updateDrawer: state.updateDrawer,
     }))
   );
   const { updateBin } = useMutations();
-
-  const { execute } = useUndoableAction();
 
   // Grid edge resize state
   const [resizeDirection, setResizeDirection] = useState<ResizeDirection>(null);
@@ -238,7 +236,7 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
     // Capture old dimensions for tracking (current state before applying resize)
     const oldDrawer = { ...drawerRef.current };
 
-    execute(() => {
+    batch(() => {
       // Move clipped bins to staging
       for (const id of pendingResize.clippedBinIds) {
         if (isErr(updateBin(toBinId(id), { layerId: STAGING_ID }))) break;
@@ -258,7 +256,7 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
     );
 
     setPendingResize(null);
-  }, [pendingResize, execute, updateBin, updateDrawer]);
+  }, [pendingResize, updateBin, updateDrawer]);
 
   // Cancel pending resize
   const cancelResize = useCallback(() => {

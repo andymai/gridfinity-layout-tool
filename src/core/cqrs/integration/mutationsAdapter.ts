@@ -135,6 +135,14 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       return 0;
     },
 
+    fillLayerGaps(layerId: LayerId, categoryId: CategoryId, halfBinMode?: boolean): number {
+      const result = bus.dispatch(
+        createCommand('bin.fillGaps', { layerId, categoryId, halfBinMode })
+      );
+      if (isOk(result)) return result.value.value as number;
+      return 0;
+    },
+
     clearLayer(layerId: LayerId): number {
       const result = bus.dispatch(createCommand('bin.clearLayer', { layerId }));
       if (isOk(result)) return result.value.value as number;

@@ -6,7 +6,8 @@
  */
 
 import { useCallback } from 'react';
-import { useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
+import { useLayoutStore, useToastStore } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useShallow } from 'zustand/react/shallow';
 import {
@@ -70,7 +71,6 @@ export function useBinLinking(): UseBinLinkingReturn {
   const t = useTranslation();
   const layout = useLayoutStore(useShallow((state) => state.layout));
   const { updateBin } = useMutations();
-  const { execute } = useUndoableAction();
   const addToast = useToastStore((s) => s.addToast);
   const registry = useCustomBins();
   const {
@@ -91,7 +91,7 @@ export function useBinLinking(): UseBinLinkingReturn {
       const bin = layout.bins.find((b) => b.id === binId);
       if (!bin) return;
 
-      execute(() => {
+      batch(() => {
         updateBin(binId, { linkedDesignId: designId });
       });
 
@@ -104,7 +104,7 @@ export function useBinLinking(): UseBinLinkingReturn {
         });
       }
     },
-    [layout.bins, execute, updateBin, registry, addToast, t]
+    [layout.bins, updateBin, registry, addToast, t]
   );
 
   // Unlink a bin from its design
@@ -113,7 +113,7 @@ export function useBinLinking(): UseBinLinkingReturn {
       const bin = layout.bins.find((b) => b.id === binId);
       if (!bin || !bin.linkedDesignId) return;
 
-      execute(() => {
+      batch(() => {
         updateBin(binId, { linkedDesignId: undefined });
       });
 
@@ -123,19 +123,19 @@ export function useBinLinking(): UseBinLinkingReturn {
         duration: 2000,
       });
     },
-    [layout.bins, execute, updateBin, addToast, t]
+    [layout.bins, updateBin, addToast, t]
   );
 
   // Unlink multiple bins
   const unlinkBins = useCallback(
     (binIds: BinId[]) => {
-      execute(() => {
+      batch(() => {
         for (const binId of binIds) {
           updateBin(binId, { linkedDesignId: undefined });
         }
       });
     },
-    [execute, updateBin]
+    [updateBin]
   );
 
   // Navigate to designer to edit a design
@@ -237,7 +237,7 @@ export function useBinLinking(): UseBinLinkingReturn {
       const synced: BinId[] = [];
       const unlinked: BinId[] = [];
 
-      execute(() => {
+      batch(() => {
         for (const elig of eligibility) {
           if (elig.canSync) {
             // Sync dimensions
@@ -278,7 +278,7 @@ export function useBinLinking(): UseBinLinkingReturn {
 
       return { synced, unlinked, totalLinked };
     },
-    [layout, execute, updateBin, addToast, t]
+    [layout, updateBin, addToast, t]
   );
 
   // Navigate to designer to create new design and auto-link
@@ -306,7 +306,7 @@ export function useBinLinking(): UseBinLinkingReturn {
   const deleteLinkedDesign = useCallback(
     async (binId: BinId, designId: DesignId, designName: string): Promise<boolean> => {
       // First unlink the bin
-      execute(() => {
+      batch(() => {
         updateBin(binId, { linkedDesignId: undefined });
       });
 
@@ -329,7 +329,7 @@ export function useBinLinking(): UseBinLinkingReturn {
         return false;
       }
     },
-    [execute, updateBin, addToast, t]
+    [updateBin, addToast, t]
   );
 
   return {

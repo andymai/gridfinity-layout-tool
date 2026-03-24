@@ -43,7 +43,7 @@ export interface KeyboardContext {
   setShowLayoutManager: (show: boolean) => void;
 
   // Mutations
-  execute: (fn: () => void) => void;
+  batch: <T>(fn: () => T) => T;
   deleteBin: (id: BinId) => void;
   duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
   updateBin: (id: BinId, updates: Partial<Bin>) => void;

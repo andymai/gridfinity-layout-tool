@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
@@ -12,6 +12,7 @@ import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useTranslation } from '@/i18n';
 import { SizeSelectorPopover } from './SizeSelectorPopover';
+import { batch } from '@/core/cqrs';
 
 export function ActiveLayerPanel() {
   const t = useTranslation();
@@ -19,13 +20,8 @@ export function ActiveLayerPanel() {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const sizeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const { layout, fillLayerGaps } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      fillLayerGaps: state.fillLayerGaps,
-    }))
-  );
-  const { fillLayer, clearLayer, addBin } = useMutations();
+  const layout = useLayoutStore((state) => state.layout);
+  const { fillLayer, fillLayerGaps, clearLayer, addBin } = useMutations();
 
   const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
@@ -46,7 +42,6 @@ export function ActiveLayerPanel() {
   const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
 
   const addToast = useToastStore((state) => state.addToast);
-  const { execute } = useUndoableAction();
 
   const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
   const layerBins = getLayerBins(layout.bins, activeLayerId);
@@ -59,7 +54,7 @@ export function ActiveLayerPanel() {
   const handleFillGaps = () => {
     if (!activeLayerId) return;
     const beforeCount = layerBins.length;
-    execute(() => {
+    batch(() => {
       fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode);
     });
     setTimeout(() => {
@@ -74,7 +69,7 @@ export function ActiveLayerPanel() {
   const handleClearLayer = () => {
     if (!activeLayerId || layerBins.length === 0) return;
     const count = layerBins.length;
-    execute(() => {
+    batch(() => {
       clearLayer(activeLayerId);
       setSelectedBins([]);
     });
@@ -86,7 +81,7 @@ export function ActiveLayerPanel() {
     if (!activeLayerId || !paintSize) return;
     const { width, depth } = paintSize;
     const beforeCount = layerBins.length;
-    execute(() => {
+    batch(() => {
       fillLayer(activeLayerId, width, depth, activeCategoryId, halfBinMode);
     });
     // Exit paint mode after filling
@@ -104,7 +99,7 @@ export function ActiveLayerPanel() {
 
   // Add bin directly to stash (Shift+click on size button in popover)
   const handleAddToStash = (w: number, d: number) => {
-    execute(() => {
+    batch(() => {
       addBin({
         layerId: STAGING_ID,
         x: gridUnits(0),

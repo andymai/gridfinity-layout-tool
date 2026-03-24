@@ -14,7 +14,8 @@
  */
 
 import { useEffect } from 'react';
-import { useUndoableAction, useToastStore } from '@/core/store';
+import { useToastStore } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useLatestRef, useLayoutRef } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
@@ -35,7 +36,6 @@ import {
 export function useDesignSavedListener(): void {
   const t = useTranslation();
   const { updateBin } = useMutations();
-  const { execute } = useUndoableAction();
   const addToast = useToastStore((s) => s.addToast);
   const showSyncDialog = useLinkingStore((s) => s.showSyncDialog);
   const registry = useCustomBins();
@@ -43,7 +43,6 @@ export function useDesignSavedListener(): void {
   const layoutRef = useLayoutRef();
   const tRef = useLatestRef(t);
   const updateBinRef = useLatestRef(updateBin);
-  const executeRef = useLatestRef(execute);
   const addToastRef = useLatestRef(addToast);
   const showSyncDialogRef = useLatestRef(showSyncDialog);
   const registryRef = useLatestRef(registry);
@@ -64,7 +63,7 @@ export function useDesignSavedListener(): void {
 
       if (allEligible) {
         const syncUpdate = createBinSyncUpdate(event.dimensions);
-        executeRef.current(() => {
+        batch(() => {
           for (const bin of binsNeedingSync) {
             updateBinRef.current(bin.id, syncUpdate);
           }
@@ -129,5 +128,5 @@ export function useDesignSavedListener(): void {
     }
 
     return unsubscribe;
-  }, [layoutRef, tRef, updateBinRef, executeRef, addToastRef, showSyncDialogRef, registryRef]);
+  }, [layoutRef, tRef, updateBinRef, addToastRef, showSyncDialogRef, registryRef]);
 }

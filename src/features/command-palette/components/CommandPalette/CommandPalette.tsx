@@ -14,8 +14,8 @@ import {
   useHalfBinModeStore,
   useInteractionStore,
   useToastStore,
-  useUndoableAction,
 } from '@/core/store';
+import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutSwitcher } from '@/shared/hooks';
@@ -114,7 +114,6 @@ function useActionHandlers(): Record<string, ActionHandler> {
       fillLayer: s.fillLayer,
     }))
   );
-  const { execute } = useUndoableAction();
   const { deleteBin, duplicateBin, updateBin, moveBinToStaging, addLayer } = useMutations();
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
   const { alignBins } = useAlignBins();
@@ -157,7 +156,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
           const nextPos = (currentPos + direction + categories.length) % categories.length;
           const newCategoryId = categories[nextPos].id;
 
-          execute(() => {
+          batch(() => {
             for (const id of selectedBinIds) {
               const result = updateBin(id, { category: newCategoryId });
               if (isErr(result)) break;
@@ -211,7 +210,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
       const bin = findBinById(layout, selectedBinIds[0]);
       if (!bin) return null;
       return () => {
-        execute(() => {
+        batch(() => {
           const result = updateBin(bin.id, { width: bin.depth, depth: bin.width });
           if (isErr(result)) return;
         });
@@ -223,7 +222,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
       redo: canRedo ? () => redo() : null,
       'delete-selected': hasBinsSelected
         ? () => {
-            execute(() => {
+            batch(() => {
               for (const id of selectedBinIds) {
                 const result = deleteBin(id);
                 if (isErr(result)) break;
@@ -234,7 +233,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
         : null,
       'duplicate-selected': hasBinsSelected
         ? () => {
-            execute(() => {
+            batch(() => {
               const newIds: BinId[] = [];
               for (const id of selectedBinIds) {
                 const result = duplicateBin(id);
@@ -320,7 +319,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
           : null,
       'clear-layer': () => {
         if (layerBins.length === 0) return;
-        execute(() => {
+        batch(() => {
           for (const b of layerBins) {
             const result = deleteBin(b.id);
             if (isErr(result)) break;
@@ -351,7 +350,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
       'next-category': cycleCategory(1),
       'move-to-stash': hasBinsSelected
         ? () => {
-            execute(() => {
+            batch(() => {
               for (const id of selectedBinIds) {
                 if (isErr(moveBinToStaging(id))) break;
               }
@@ -363,7 +362,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
       'clear-staging':
         stagingBins.length > 0
           ? () => {
-              execute(() => {
+              batch(() => {
                 for (const bin of stagingBins) {
                   const result = deleteBin(bin.id);
                   if (isErr(result)) break;
@@ -375,7 +374,7 @@ function useActionHandlers(): Record<string, ActionHandler> {
       'restore-from-staging':
         stagingBins.length > 0
           ? () => {
-              execute(() => {
+              batch(() => {
                 for (const bin of stagingBins) {
                   const result = updateBin(bin.id, { layerId: activeLayerId });
                   if (isErr(result)) break;
@@ -441,7 +440,6 @@ function useActionHandlers(): Record<string, ActionHandler> {
     showIsometricPreview,
     halfBinMode,
     paintSize,
-    execute,
     deleteBin,
     duplicateBin,
     updateBin,

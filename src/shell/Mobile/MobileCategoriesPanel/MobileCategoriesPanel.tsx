@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useSelectionStore, useMobileStore, useUndoableAction } from '@/core/store';
+import { useSelectionStore, useMobileStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useToastStore } from '@/core/store/toast';
 import type { CategoryId } from '@/core/types';
@@ -9,6 +9,7 @@ import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/c
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { batch } from '@/core/cqrs';
 
 /**
  * Mobile-optimized categories panel with large touch targets.
@@ -36,7 +37,6 @@ export function MobileCategoriesPanel() {
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   const addToast = useToastStore((state) => state.addToast);
-  const { execute } = useUndoableAction();
 
   // Calculate bin counts per category
   const binCounts = useMemo(() => {
@@ -53,7 +53,7 @@ export function MobileCategoriesPanel() {
 
     // If bins are selected, update their categories
     if (selectedBinIds.length > 0) {
-      execute(() => {
+      batch(() => {
         for (const binId of selectedBinIds) {
           updateBin(binId, { category: id });
         }
@@ -66,7 +66,7 @@ export function MobileCategoriesPanel() {
   };
 
   const handleAddCategory = () => {
-    execute(() => {
+    batch(() => {
       const result = addCategory({ name: 'New Category', color: DEFAULT_CATEGORY_COLOR });
       if (isOk(result)) {
         setActiveCategory(result.value);
@@ -76,13 +76,13 @@ export function MobileCategoriesPanel() {
   };
 
   const handleUpdateColor = (id: CategoryId, color: string) => {
-    execute(() => {
+    batch(() => {
       updateCategory(id, { color });
     });
   };
 
   const handleUpdateName = (id: CategoryId, name: string) => {
-    execute(() => {
+    batch(() => {
       updateCategory(id, { name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
     });
   };
@@ -108,7 +108,7 @@ export function MobileCategoriesPanel() {
   const confirmDelete = () => {
     if (!deleteConfirm) return;
     const { id } = deleteConfirm;
-    execute(() => {
+    batch(() => {
       deleteCategory(id);
       // Access fresh state to avoid stale closure issues
       const currentCategories = useLayoutStore.getState().layout.categories;

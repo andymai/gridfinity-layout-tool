@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { batch } from '@/core/cqrs';
 import {
   useLayoutStore,
   useSettingsStore,
@@ -7,7 +8,6 @@ import {
   useSelectionStore,
   useHalfBinModeStore,
 } from '@/core/store';
-import { useUndoableAction } from '@/core/store/history';
 import { useMutations } from '@/shared/contexts';
 import {
   calcMaxGridUnits,
@@ -199,7 +199,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     useMutations();
 
   // Undo support
-  const { execute } = useUndoableAction();
 
   // Get active layer's height (for save as defaults)
   const layers = useLayoutStore((state) => state.layout.layers);
@@ -235,9 +234,9 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
         0.5,
         Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * widthStep)
       ) as GridUnits;
-      execute(() => updateDrawer({ width: newWidth }));
+      batch(() => updateDrawer({ width: newWidth }));
     },
-    [widthStep, drawerWidth, execute, updateDrawer]
+    [widthStep, drawerWidth, updateDrawer]
   );
 
   const handleDrawerDepthChange = useCallback(
@@ -246,54 +245,54 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
         0.5,
         Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * depthStep)
       ) as GridUnits;
-      execute(() => updateDrawer({ depth: newDepth }));
+      batch(() => updateDrawer({ depth: newDepth }));
     },
-    [depthStep, drawerDepth, execute, updateDrawer]
+    [depthStep, drawerDepth, updateDrawer]
   );
 
   const handleDrawerHeightChange = useCallback(
     (delta: number) => {
       const newHeight = Math.max(1, drawerHeight + delta) as HeightUnits;
-      execute(() => updateDrawer({ height: newHeight }));
+      batch(() => updateDrawer({ height: newHeight }));
     },
-    [drawerHeight, execute, updateDrawer]
+    [drawerHeight, updateDrawer]
   );
 
   // Direct input handlers (for number inputs)
   const handleDrawerWidthInput = useCallback(
     (width: number) => {
       const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width))));
-      execute(() => updateDrawer({ width: snapped }));
+      batch(() => updateDrawer({ width: snapped }));
       if (isFractional(snapped) && !halfBinMode) {
         setHalfBinMode(true);
         addToast(t('toast.halfBinModeAutoEnabled'), 'info');
       }
     },
-    [execute, updateDrawer, halfBinMode, setHalfBinMode, addToast, t]
+    [updateDrawer, halfBinMode, setHalfBinMode, addToast, t]
   );
 
   const handleDrawerDepthInput = useCallback(
     (depth: number) => {
       const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth))));
-      execute(() => updateDrawer({ depth: snapped }));
+      batch(() => updateDrawer({ depth: snapped }));
       if (isFractional(snapped) && !halfBinMode) {
         setHalfBinMode(true);
         addToast(t('toast.halfBinModeAutoEnabled'), 'info');
       }
     },
-    [execute, updateDrawer, halfBinMode, setHalfBinMode, addToast, t]
+    [updateDrawer, halfBinMode, setHalfBinMode, addToast, t]
   );
 
   // Fractional edge position handler
   const handleFractionalEdgeChange = useCallback(
     (axis: 'x' | 'y', edge: 'start' | 'end') => {
       if (axis === 'x') {
-        execute(() => updateDrawer({ fractionalEdgeX: edge }));
+        batch(() => updateDrawer({ fractionalEdgeX: edge }));
       } else {
-        execute(() => updateDrawer({ fractionalEdgeY: edge }));
+        batch(() => updateDrawer({ fractionalEdgeY: edge }));
       }
     },
-    [execute, updateDrawer]
+    [updateDrawer]
   );
 
   // Half-bin mode toggle with validation
@@ -315,7 +314,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     if (!halfBinViolation) return;
 
     let movedCount = 0;
-    execute(() => {
+    batch(() => {
       // Move all fractional bins to staging (skip already-deleted bins)
       for (const id of halfBinViolation.binIds) {
         const result = updateBin(toBinId(id), { layerId: STAGING_ID });
@@ -330,7 +329,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     // Close modal and show success message
     setShowHalfBinBlockedModal(false);
     addToast(`Moved ${movedCount} bin${movedCount !== 1 ? 's' : ''} to staging`, 'success');
-  }, [halfBinViolation, execute, updateBin, setHalfBinMode, addToast]);
+  }, [halfBinViolation, updateBin, setHalfBinMode, addToast]);
 
   // Save current settings as defaults
   const handleSaveDefaults = useCallback(() => {
