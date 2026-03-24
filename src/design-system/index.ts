@@ -72,6 +72,10 @@ export type { PopoverProps } from './Popover';
 export { ProgressBar } from './ProgressBar';
 export type { ProgressBarProps } from './ProgressBar';
 
+// Slider
+export { Slider } from './Slider';
+export type { SliderProps } from './Slider';
+
 // Composite Components
 
 // Stepper
