@@ -4,7 +4,7 @@ import { computeHandleSegments } from './handleCutoutClip';
 describe('computeHandleSegments', () => {
   // wallSpan=80mm, handle centered at 70% width = 56mm
   // cutout centered, 50% width = 40mm
-  it('splits handle into two segments around a centered cutout', () => {
+  it('suppresses both segments when cutout leaves only narrow offcuts', () => {
     const segments = computeHandleSegments({
       wallSpan: 80,
       handleWidthPercent: 70,

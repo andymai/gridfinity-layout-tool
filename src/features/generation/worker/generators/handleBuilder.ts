@@ -206,6 +206,7 @@ export const handlesFeature: FeatureBuilder = {
             const c = params.walls[s];
             return c.enabled ? `${s}:${c.width},${c.widthMm},${c.alignment},${c.offset}` : '';
           })
+          .filter(Boolean)
           .join('|')
       : '';
     return compactKey(

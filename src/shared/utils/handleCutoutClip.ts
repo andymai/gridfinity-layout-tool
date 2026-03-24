@@ -25,6 +25,8 @@ interface HandleSegmentInput {
 export const CUTOUT_CLEARANCE = 1.0;
 /** Minimum handle segment width to generate (mm). */
 export const MIN_SEGMENT_WIDTH = 10.0;
+/** Epsilon for floating-point comparison of segment widths (mm). */
+const EPSILON = 1e-6;
 
 /**
  * Compute handle segments that avoid a wall cutout's horizontal span.
@@ -61,14 +63,14 @@ export function computeHandleSegments(input: HandleSegmentInput): HandleSegment[
 
   // Left segment: from handleLeft to cutLeft
   const leftWidth = cutLeft - handleLeft;
-  if (leftWidth >= minSegmentWidth) {
+  if (leftWidth >= minSegmentWidth - EPSILON) {
     const leftCenter = handleLeft + leftWidth / 2;
     segments.push({ offset: leftCenter, width: leftWidth });
   }
 
   // Right segment: from cutRight to handleRight
   const rightWidth = handleRight - cutRight;
-  if (rightWidth >= minSegmentWidth) {
+  if (rightWidth >= minSegmentWidth - EPSILON) {
     const rightCenter = cutRight + rightWidth / 2;
     segments.push({ offset: rightCenter, width: rightWidth });
   }
