@@ -130,7 +130,8 @@ export function HandleSection() {
       <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.handles.cornerRadius')}
+            {/* eslint-disable-next-line i18next/no-literal-string -- unit suffix */}
+            {t('binDesigner.handles.cornerRadius')} {'(mm)'}
           </span>
           <StepperControl
             value={handles.cornerRadius}
