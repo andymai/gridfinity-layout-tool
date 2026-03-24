@@ -17,6 +17,7 @@ import type {
   SplitPreviewPiece,
   FaceGroupData,
   KernelName,
+  KernelPerfCategory,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 
@@ -90,7 +91,7 @@ export type CacheStatsCallback = (stats: CacheStatsPayload) => void;
 
 /** Payload for kernel performance stats callback */
 export interface KernelPerfStatsPayload {
-  readonly stats: Readonly<Record<string, { totalMs: number; count: number }>>;
+  readonly stats: Readonly<Record<string, KernelPerfCategory>>;
 }
 
 /** Callback for kernel perf stats reporting */

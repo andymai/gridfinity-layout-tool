@@ -22,7 +22,7 @@ import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
 
 import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
-import { toIndexedMeshData } from './meshUtils';
+import { toIndexedMeshData } from './utils/mesh';
 import { buildTopShape } from './boxBuilder';
 import { generateBin } from './binOrchestrator';
 import { getLastSolid } from './shapeCache';
@@ -204,6 +204,7 @@ function splitSolidIntoPieces(
       const pieceBounds = getBounds(piece);
       const actualZ = pieceBounds.zMax - pieceBounds.zMin;
       if (actualZ < totalHeight * 0.8) {
+        piece.delete();
         cuttingBox.delete();
         throw new Error(
           `Split piece ${colLabel}${row + 1} lost geometry: ` +

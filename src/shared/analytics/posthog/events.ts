@@ -556,6 +556,8 @@ export function trackCachePerformance(stats: {
 
 // KERNEL PERFORMANCE TRACKING
 
+const toSnakeCase = (s: string): string => s.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+
 /**
  * Track brepjs kernel operation timing for performance monitoring.
  * Called after each geometry generation with per-category timing breakdown.
@@ -564,7 +566,6 @@ export function trackKernelPerformance(payload: {
   stats: Readonly<Record<string, { totalMs: number; count: number }>>;
 }): void {
   // Flatten stats into snake_case properties: boolean_ms, edge_mesh_count, etc.
-  const toSnakeCase = (s: string): string => s.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
   const properties: Record<string, number> = {};
   for (const [category, { totalMs, count }] of Object.entries(payload.stats)) {
     if (count > 0) {

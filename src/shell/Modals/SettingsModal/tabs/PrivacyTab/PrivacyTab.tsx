@@ -37,7 +37,7 @@ export function PrivacyTab() {
       {/* Analytics Toggle */}
       <section>
         <h3 className="text-base font-semibold text-content mb-3">{t('settings.privacy')}</h3>
-        {browserPrivacySignal && (
+        {browserPrivacySignal && !analyticsEnabled && (
           <p className="text-xs text-content-secondary bg-surface-secondary rounded-md px-3 py-2 mb-3">
             {t('settings.browserPrivacySignal')}
           </p>
