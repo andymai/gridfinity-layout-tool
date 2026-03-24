@@ -1,6 +1,7 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
@@ -33,13 +34,8 @@ const DEFAULT_STASH_MAX_HEIGHT_VH = 33;
  */
 export function Staging() {
   const t = useTranslation();
-  const { layout, deleteBin, updateBin } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      deleteBin: state.deleteBin,
-      updateBin: state.updateBin,
-    }))
-  );
+  const layout = useLayoutStore((state) => state.layout);
+  const { deleteBin, updateBin } = useMutations();
   const { selectedBinIds, setSelectedBin, toggleSelection } = useSelectionStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,

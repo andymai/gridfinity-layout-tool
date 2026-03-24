@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useHistoryStore, useViewStore } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
@@ -38,12 +39,8 @@ export function Header({ saveStatus }: HeaderProps) {
   const isCollabEnabled = useFeatureFlag('collaborative_editing');
   const { isCollaborative } = useCollabMode();
 
-  const { layout, setName } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      setName: state.setName,
-    }))
-  );
+  const layout = useLayoutStore((state) => state.layout);
+  const { setName } = useMutations();
 
   const { canUndo, canRedo, undo, redo } = useHistoryStore(
     useShallow((state) => ({

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useUndoableAction } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
@@ -18,15 +19,13 @@ export function ActiveLayerPanel() {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const sizeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const { layout, fillLayer, fillLayerGaps, clearLayer, addBin } = useLayoutStore(
+  const { layout, fillLayerGaps } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
-      fillLayer: state.fillLayer,
       fillLayerGaps: state.fillLayerGaps,
-      clearLayer: state.clearLayer,
-      addBin: state.addBin,
     }))
   );
+  const { fillLayer, clearLayer, addBin } = useMutations();
 
   const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({

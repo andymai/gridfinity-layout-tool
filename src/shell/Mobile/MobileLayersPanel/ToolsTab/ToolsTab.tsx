@@ -8,6 +8,7 @@ import {
   useMobileStore,
   useUndoableAction,
 } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
 import { useToastStore } from '@/core/store/toast';
 import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -44,14 +45,13 @@ export function ToolsTab() {
   const [rotated, setRotated] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const { layout, fillLayer, fillLayerGaps, clearLayer } = useLayoutStore(
+  const { layout, fillLayerGaps } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
-      fillLayer: state.fillLayer,
       fillLayerGaps: state.fillLayerGaps,
-      clearLayer: state.clearLayer,
     }))
   );
+  const { fillLayer, clearLayer } = useMutations();
 
   const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({

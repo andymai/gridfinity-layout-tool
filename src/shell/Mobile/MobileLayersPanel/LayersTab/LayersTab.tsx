@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore, useInteractionStore, useUndoableAction } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
 import type { HeightUnits, LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
@@ -37,15 +38,8 @@ export function LayersTab() {
     }
   }, [renameLayerId]);
 
-  const { layout, addLayer, updateLayer, deleteLayer, reorderLayers } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      addLayer: state.addLayer,
-      updateLayer: state.updateLayer,
-      deleteLayer: state.deleteLayer,
-      reorderLayers: state.reorderLayers,
-    }))
-  );
+  const layout = useLayoutStore((state) => state.layout);
+  const { addLayer, updateLayer, deleteLayer, reorderLayers } = useMutations();
   const layers = layout.layers;
   const bins = layout.bins;
   const drawer = layout.drawer;

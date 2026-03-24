@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore, useMobileStore, useUndoableAction } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
 import { useToastStore } from '@/core/store/toast';
 import type { CategoryId } from '@/core/types';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
@@ -17,17 +18,13 @@ export function MobileCategoriesPanel() {
   const [editingId, setEditingId] = useState<CategoryId | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: CategoryId; name: string } | null>(null);
 
-  const { categories, bins, addCategory, updateCategory, deleteCategory, updateBin } =
-    useLayoutStore(
-      useShallow((state) => ({
-        categories: state.layout.categories,
-        bins: state.layout.bins,
-        addCategory: state.addCategory,
-        updateCategory: state.updateCategory,
-        deleteCategory: state.deleteCategory,
-        updateBin: state.updateBin,
-      }))
-    );
+  const { categories, bins } = useLayoutStore(
+    useShallow((state) => ({
+      categories: state.layout.categories,
+      bins: state.layout.bins,
+    }))
+  );
+  const { addCategory, updateCategory, deleteCategory, updateBin } = useMutations();
 
   const { activeCategoryId, setActiveCategory, selectedBinIds } = useSelectionStore(
     useShallow((state) => ({
