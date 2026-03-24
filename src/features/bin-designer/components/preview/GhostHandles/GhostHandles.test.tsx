@@ -36,6 +36,7 @@ vi.mock('three', () => {
       getZ: vi.fn(() => 0),
     }));
     getIndex = vi.fn(() => ({ count: 6, array: new Uint16Array(6) }));
+    rotateX = vi.fn().mockReturnThis();
     dispose = vi.fn();
   }
 
