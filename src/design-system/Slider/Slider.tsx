@@ -159,7 +159,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
           {/* Track background */}
           <div
             className={cn(
-              'absolute top-1/2 left-0 right-0 h-1 -translate-y-1/2 rounded-full bg-stroke-subtle',
+              'absolute top-1/2 left-0 right-0 h-1.5 -translate-y-1/2 rounded-full bg-stroke-subtle',
               interactiveTransition,
               !disabled && isHovering && 'bg-stroke'
             )}
@@ -168,7 +168,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
           {/* Filled track */}
           <div
             data-testid="slider-fill"
-            className="absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded-full bg-accent"
+            className="absolute top-1/2 left-0 h-1.5 -translate-y-1/2 rounded-full bg-accent"
             style={{ width: `${percent}%` }}
           />
 
@@ -176,7 +176,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
           <div
             data-testid="slider-thumb"
             className={cn(
-              'pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent bg-surface shadow-sm',
+              'pointer-events-none absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent bg-surface shadow-sm',
               interactiveTransition,
               thumbActive && !disabled && 'scale-110 shadow-md',
               isDragging && !disabled && 'ring-2 ring-accent/30'
