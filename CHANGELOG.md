@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.24.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.23.2...gridfinity-layout-tool-v4.24.0) (2026-03-24)
+
+
+### Features
+
+* **cqrs:** event-driven selection pruning subscriber ([#1228](https://github.com/andymai/gridfinity-layout-tool/issues/1228)) ([23e4c67](https://github.com/andymai/gridfinity-layout-tool/commit/23e4c675d6c3500376e4f7f95ee981d6f0458923))
+
 ## [4.23.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.23.1...gridfinity-layout-tool-v4.23.2) (2026-03-24)
 
 
