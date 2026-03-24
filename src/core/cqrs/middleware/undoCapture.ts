@@ -34,6 +34,9 @@ export function undoCaptureMiddleware(
     return next(command);
   }
 
+  // Clone BEFORE next() — Immer produces a new state object on mutation,
+  // so the pre-mutation reference stays immutable, but we need a deep copy
+  // for the undo stack (the snapshot must survive future mutations).
   const layout = useLayoutStore.getState().layout;
   const snapshot = structuredClone(layout);
 
@@ -51,8 +54,12 @@ export function undoCaptureMiddleware(
  * Execute multiple mutations under a single undo snapshot.
  *
  * Captures one layout snapshot before the callback runs. All commands
- * dispatched inside the callback skip individual undo capture. If any
- * command succeeds, the snapshot is pushed to the history stack.
+ * dispatched inside the callback skip individual undo capture. If the
+ * layout changes during the batch, the snapshot is pushed to the
+ * history stack.
+ *
+ * Only accepts synchronous callbacks — async callbacks would escape the
+ * batch scope when `isBatching` is cleared in the `finally` block.
  *
  * Supports nesting — inner batch() calls are no-ops (the outermost
  * batch owns the snapshot).
@@ -81,7 +88,7 @@ export function batch<T>(fn: () => T): T {
   try {
     const result = fn();
 
-    // Check if layout actually changed
+    // Check if layout actually changed (Immer produces new reference on mutation)
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
       useHistoryStore.getState().push(snapshot);
