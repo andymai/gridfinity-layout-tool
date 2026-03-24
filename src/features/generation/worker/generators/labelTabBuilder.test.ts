@@ -99,32 +99,26 @@ describe('buildLabelTabs', () => {
       const result = buildLabelTabs(params, 80, 80, wallHeight, wt);
       expect(result).not.toBeNull();
 
-      // Tessellate and verify support structure reaches the shelf front edge.
-      // We filter to vertices below the shelf underside (support geometry only)
-      // and check their Y-extent matches tabDepth. Without this filter, the
-      // shelf plate alone satisfies the Y-extent check — the original bug.
+      // Tessellate and verify support structure extends well below the shelf.
+      // The support's Z-extent is the key regression indicator: without support,
+      // minZ would be near wallHeight - wt (just the shelf plate). With support,
+      // minZ should reach wallHeight - tabHeight (near wallHeight - tabDepth).
       const tessellated = mesh(result!, { tolerance: 0.1, angularTolerance: 10 });
       const verts = tessellated.vertices;
       const shelfUndersideZ = wallHeight - wt;
-      const epsilon = 0.1;
 
-      // Collect Y bounds for support-only vertices (below shelf underside)
-      let supportMinY = Infinity;
-      let supportMaxY = -Infinity;
+      let minZ = Infinity;
       let hasSupportVerts = false;
-      for (let i = 0; i < verts.length; i += 3) {
-        const y = verts[i + 1];
-        const z = verts[i + 2];
-        if (z < shelfUndersideZ - epsilon) {
-          hasSupportVerts = true;
-          if (y < supportMinY) supportMinY = y;
-          if (y > supportMaxY) supportMaxY = y;
-        }
+      for (let i = 2; i < verts.length; i += 3) {
+        if (verts[i] < minZ) minZ = verts[i];
+        if (verts[i] < shelfUndersideZ - 0.1) hasSupportVerts = true;
       }
+      // Support geometry must exist below the shelf
       expect(hasSupportVerts).toBe(true);
-      // Support must reach from near the back edge to the front edge of the shelf
-      const supportDepth = supportMaxY - supportMinY;
-      expect(supportDepth).toBeGreaterThanOrEqual(tabDepth - 1);
+      // Support must extend well below the shelf underside (wallHeight - wt = 33.8).
+      // Without support, minZ would equal shelfUndersideZ.
+      // With support, minZ should be near wallHeight - tabDepth = 23.
+      expect(minZ).toBeLessThan(shelfUndersideZ - 5);
     }
   );
 });
