@@ -44,6 +44,8 @@ graph TB
 - `worker/generators/labelTabBuilder.ts` — label tab shelves + gussets
 - `worker/generators/scoopRampBuilder.ts` — scoop ramp geometry
 - `worker/generators/wallCutoutBuilder.ts` — wall U-notch cutouts
+- `worker/generators/handleBuilder.ts` — handle hole through-cuts in bin walls
+- `worker/generators/wallPatternBuilder.ts` — per-wall hex pattern compounds with cutout/handle clipping
 - `worker/generators/featureBuilder.ts` — barrel re-export of all builder modules
 - `worker/generators/dividerBuilder.ts` — divider piece generation
 - `worker/generators/dividerExport.ts` — standalone divider STL export
@@ -107,6 +109,7 @@ Add new patterns by implementing `PatternCalculator` interface and registering i
 2. **Magnet holes only in full cells** — half cells remain solid
 3. **Features fail silently** — tiny cells → feature skipped
 4. **WASM objects are ephemeral** — brepjs GC invalidates refs unpredictably
+5. **Wall pattern border rule** — any feature that cuts through a wall (cutouts, handles, future features) MUST have corresponding border clipping in `wallPatternBuilder.ts`. Without it, hex prisms overlap the cut region, producing jagged edges. Use `CUTOUT_BORDER_WIDTH` (1.5mm) for the expansion. See `wallPatternBuilder.ts` for the cutout and handle clipping implementations as reference.
 
 ## Adaptive Debounce
 

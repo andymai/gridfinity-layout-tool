@@ -69,6 +69,7 @@ Bin → position (x,y), size (w,d,h), layerId, category, label, notes, customPro
 2. **Staging**: `layerId === '__staging__'` = off-grid stash. Auto-used when bins displaced.
 3. **Half-Bin Mode**: 0.5 increments. Helpers: `snapToHalf()`, `snapToGrid()`, `isFractional()`. `HALF_BIN_SCALE = 2`.
 4. **Multi-Layout**: Each layout stored by UUID (`gridfinity-layout-{uuid}`). Library index tracks metadata only.
+5. **Wall Pattern Border Rule**: Any feature that cuts through a wall (cutouts, handles, etc.) MUST have corresponding border clipping in `wallPatternBuilder.ts` using `CUTOUT_BORDER_WIDTH` (1.5mm). Without it, hex prisms overlap the cut region producing jagged edges.
 
 ### Result Type (`src/core/result/`)
 

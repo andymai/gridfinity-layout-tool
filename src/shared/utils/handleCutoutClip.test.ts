@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { computeHandleSegments } from './handleCutoutClip';
+import {
+  computeHandleSegments,
+  computeHandleHoleGeometry,
+  HOLE_VERTICAL_CENTER,
+} from './handleCutoutClip';
 
 describe('computeHandleSegments', () => {
   // wallSpan=80mm, handle centered at 70% width = 56mm
@@ -91,5 +95,33 @@ describe('computeHandleSegments', () => {
     });
     // Handle: [-18, 18]. Cutout: [40, 60]. No overlap -> full handle.
     expect(segments).toEqual([{ offset: 0, width: 36 }]);
+  });
+});
+
+describe('computeHandleHoleGeometry', () => {
+  it('computes centerZ at 70% of interior height', () => {
+    const { centerZ } = computeHandleHoleGeometry(100, 20);
+    expect(centerZ).toBe(100 * HOLE_VERTICAL_CENTER);
+  });
+
+  it('clamps height to available space around centerZ', () => {
+    // interiorHeight=100, centerZ=70, margin=10
+    // maxHalfHeight = min(70, 30) - 10 = 20
+    // effectiveHeight = min(requestedHeight=50, 40) = 40
+    const { effectiveHeight } = computeHandleHoleGeometry(100, 50);
+    expect(effectiveHeight).toBe(40);
+  });
+
+  it('returns requested height when it fits', () => {
+    const { effectiveHeight } = computeHandleHoleGeometry(100, 20);
+    expect(effectiveHeight).toBe(20);
+  });
+
+  it('returns effectiveHeight below 1 for very short interior', () => {
+    // interiorHeight=2, centerZ=1.4, margin=0.2
+    // maxHalfHeight = max(0, min(1.4, 0.6) - 0.2) = 0.4
+    // effectiveHeight = min(10, 0.8) = 0.8 → below the <1 guard
+    const { effectiveHeight } = computeHandleHoleGeometry(2, 10);
+    expect(effectiveHeight).toBeLessThan(1);
   });
 });

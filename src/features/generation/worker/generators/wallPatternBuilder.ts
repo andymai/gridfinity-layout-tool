@@ -11,12 +11,16 @@
 
 import {
   drawPolysides,
+  drawRectangle,
   unwrap,
   cut,
+  fuse,
   clone,
   compound,
   composeTransforms,
   transformCopy,
+  translate,
+  rotate,
 } from 'brepjs';
 import type { Shape3D, TransformOp } from 'brepjs';
 import type { PipelineContext } from './pipeline/types';
@@ -41,6 +45,12 @@ import type { WallCutoutShape } from '@/shared/types/bin';
 import { buildSingleCutout } from './featureBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
+import {
+  buildHandleWallDefs,
+  computeHandleHoleGeometry,
+  computeWallHandleSegments,
+} from '@/shared/utils/handleCutoutClip';
+import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
 
 /**
  * Build a compound of positioned hex prisms for a single wall.
@@ -129,6 +139,10 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   const clipExtrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
   const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
 
+  // Build handle wall defs for clip positioning (uses handleBuilder coordinate convention)
+  const handleWallDefs = params.handles.enabled ? buildHandleWallDefs(innerW, innerD) : [];
+  const handleWallDefForSide = new Map(handleWallDefs.map((d) => [d.side, d]));
+
   for (const wall of wallDescriptors) {
     checkCancelled(signal);
 
@@ -156,38 +170,6 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
 
     const c0 = wall.centers[0];
 
-    const cutoutKeyPart = cutoutCfg?.enabled
-      ? buildCacheKey(
-          'clip',
-          params.walls.shape,
-          cutoutCfg.widthMm !== null ? 'mm' : 'pct',
-          cutoutCfg.widthMm !== null ? quantize(cutoutCfg.widthMm) : quantize(cutoutCfg.width),
-          quantize(cutoutCfg.depth),
-          cutoutCfg.alignment,
-          quantize(cutoutCfg.offset),
-          hasLip,
-          quantize(params.compartments.thickness),
-          quantize(params.wallThickness)
-        )
-      : 'noclip';
-
-    const wallKey = compactKey(
-      buildCacheKey(
-        'v3',
-        patternType,
-        quantize(shapeRadius),
-        quantize(cutDepth),
-        wall.centers.length,
-        quantize(c0.x),
-        quantize(c0.y),
-        quantize(wall.translateX),
-        quantize(wall.translateY),
-        quantize(wall.translateZ),
-        wall.zRotation ?? 0,
-        cutoutKeyPart
-      )
-    );
-
     const clip: CutoutClipParams | null = cutoutCfg?.enabled
       ? {
           cutoutCfg,
@@ -204,10 +186,80 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         }
       : null;
 
+    // Handle border clipping
+    let handleClip: HandleClipParams | null = null;
+    const handleWall = handleWallDefForSide.get(wall.side);
+    if (
+      params.handles.enabled &&
+      !dim.isSlotted &&
+      handleWall &&
+      params.handles[wall.side]?.enabled &&
+      !(wall.side === 'back' && params.label.enabled)
+    ) {
+      const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
+        interiorHeight,
+        params.handles.height
+      );
+      if (effectiveHeight >= 1) {
+        const handleCutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;
+        const segments = computeWallHandleSegments(
+          wallSpan,
+          params.handles.width,
+          params.wallThickness,
+          handleCutoutCfg
+        );
+        if (segments && segments.length > 0) {
+          handleClip = { segments, effectiveHeight, centerZ, clipExtrudeDepth, handleWall };
+        }
+      }
+    }
+
+    const cutoutKeyPart = cutoutCfg?.enabled
+      ? buildCacheKey(
+          'clip',
+          params.walls.shape,
+          cutoutCfg.widthMm !== null ? 'mm' : 'pct',
+          cutoutCfg.widthMm !== null ? quantize(cutoutCfg.widthMm) : quantize(cutoutCfg.width),
+          quantize(cutoutCfg.depth),
+          cutoutCfg.alignment,
+          quantize(cutoutCfg.offset),
+          hasLip,
+          quantize(params.compartments.thickness),
+          quantize(params.wallThickness)
+        )
+      : 'noclip';
+
+    const handleKeyPart = handleClip
+      ? buildCacheKey(
+          'hdl',
+          quantize(handleClip.centerZ),
+          quantize(handleClip.effectiveHeight),
+          handleClip.segments.map((s) => `${quantize(s.offset)}:${quantize(s.width)}`).join(',')
+        )
+      : 'nohdl';
+
+    const wallKey = compactKey(
+      buildCacheKey(
+        'v4', // bumped: handle border clipping added
+        patternType,
+        quantize(shapeRadius),
+        quantize(cutDepth),
+        wall.centers.length,
+        quantize(c0.x),
+        quantize(c0.y),
+        quantize(wall.translateX),
+        quantize(wall.translateY),
+        quantize(wall.translateZ),
+        wall.zRotation ?? 0,
+        cutoutKeyPart,
+        handleKeyPart
+      )
+    );
+
     // Use the existing cachedFeature-style pattern: cache owns original, caller gets clone
     let shape = getFeatureCache('wallPattern', wallKey);
     if (!shape) {
-      const built = buildWallPatternShape(shapeTemplate, wall, halfDepth, clip);
+      const built = buildWallPatternShape(shapeTemplate, wall, halfDepth, clip, handleClip);
       if (built) {
         setFeatureCache('wallPattern', wallKey, built);
         shape = unwrap(clone(built));
@@ -244,54 +296,132 @@ interface CutoutClipParams {
   readonly wallThickness: number;
 }
 
-/** Build a single wall's pattern compound with optional cutout clipping. */
+/** Pre-computed handle clipping parameters for a single wall. */
+interface HandleClipParams {
+  readonly segments: HandleSegment[];
+  readonly effectiveHeight: number;
+  readonly centerZ: number;
+  readonly clipExtrudeDepth: number;
+  /** Handle wall positioning (uses handleBuilder convention, not pattern descriptor). */
+  readonly handleWall: HandleWallDef;
+}
+
+/** Build a single wall's pattern compound with optional cutout/handle clipping. */
 function buildWallPatternShape(
   shapeTemplate: Shape3D,
   wall: WallPatternDescriptor,
   halfDepth: number,
-  clip: CutoutClipParams | null
+  clip: CutoutClipParams | null,
+  handleClip: HandleClipParams | null
 ): Shape3D | null {
   const hexCompound = buildWallPatternCompound(shapeTemplate, wall, halfDepth);
   if (!hexCompound) return null;
 
-  if (!clip || clip.cutWidth < 0.1 || clip.userCutHeight < 0.1) {
-    return hexCompound;
+  // --- Cutout border clipping ---
+  let result = hexCompound;
+  if (clip && clip.cutWidth >= 0.1 && clip.userCutHeight >= 0.1) {
+    const rotateZ = wall.side === 'left' || wall.side === 'right' ? 90 : 0;
+    const centerOffset = computeCutoutCenter(
+      clip.wallSpan,
+      clip.cutWidth,
+      clip.wallThickness,
+      clip.cutoutCfg.alignment,
+      clip.cutoutCfg.offset
+    );
+
+    const clipSolid = buildSingleCutout(
+      clip.wallShape,
+      clip.expandedWidth,
+      clip.expandedHeight,
+      clip.clipOvershoot,
+      clip.clipExtrudeDepth,
+      clip.wallHeight,
+      {
+        x: rotateZ === 0 ? wall.translateX + centerOffset : wall.translateX,
+        y: rotateZ !== 0 ? wall.translateY + centerOffset : wall.translateY,
+        rotateZ,
+      }
+    );
+
+    try {
+      const clipped = unwrap(cut(result, clipSolid));
+      result.delete();
+      result = clipped;
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
+        result.delete();
+        throw err;
+      }
+      // On non-abort failure, keep result as-is
+    } finally {
+      clipSolid.delete();
+    }
   }
 
-  const rotateZ = wall.side === 'left' || wall.side === 'right' ? 90 : 0;
-  const centerOffset = computeCutoutCenter(
-    clip.wallSpan,
-    clip.cutWidth,
-    clip.wallThickness,
-    clip.cutoutCfg.alignment,
-    clip.cutoutCfg.offset
-  );
+  // --- Handle border clipping ---
+  if (!handleClip || handleClip.segments.length === 0) {
+    return result;
+  }
 
-  const clipSolid = buildSingleCutout(
-    clip.wallShape,
-    clip.expandedWidth,
-    clip.expandedHeight,
-    clip.clipOvershoot,
-    clip.clipExtrudeDepth,
-    clip.wallHeight,
-    {
-      x: rotateZ === 0 ? wall.translateX + centerOffset : wall.translateX,
-      y: rotateZ !== 0 ? wall.translateY + centerOffset : wall.translateY,
-      rotateZ,
-    }
-  );
+  const border = CUTOUT_BORDER_WIDTH;
+  const clipBoxes: Shape3D[] = [];
 
+  const hw = handleClip.handleWall;
   try {
-    const clipped = unwrap(cut(hexCompound, clipSolid));
-    hexCompound.delete();
-    return clipped;
+    for (const seg of handleClip.segments) {
+      const boxW = seg.width + 2 * border;
+      const boxH = handleClip.effectiveHeight + 2 * border;
+      const profile = drawRectangle(boxW, boxH);
+      let box = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
+      box = translate(box, [seg.offset, handleClip.clipExtrudeDepth / 2, handleClip.centerZ]);
+      // Use handleBuilder coordinate convention (not pattern descriptor)
+      if (hw.rotateZ !== 0) {
+        box = rotate(box, hw.rotateZ, { axis: [0, 0, 1] });
+      }
+      box = translate(box, [hw.x, hw.y, 0]);
+      clipBoxes.push(box);
+    }
+
+    let handleClipSolid: Shape3D;
+    if (clipBoxes.length === 1) {
+      handleClipSolid = clipBoxes[0];
+    } else {
+      handleClipSolid = unwrap(fuse(clipBoxes[0], clipBoxes[1]));
+      clipBoxes[0].delete();
+      clipBoxes[1].delete();
+      for (let i = 2; i < clipBoxes.length; i++) {
+        const merged = unwrap(fuse(handleClipSolid, clipBoxes[i]));
+        handleClipSolid.delete();
+        clipBoxes[i].delete();
+        handleClipSolid = merged;
+      }
+    }
+
+    try {
+      const handleClipped = unwrap(cut(result, handleClipSolid));
+      result.delete();
+      return handleClipped;
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
+        result.delete();
+        throw err;
+      }
+      return result;
+    } finally {
+      handleClipSolid.delete();
+    }
   } catch (err: unknown) {
+    for (const box of clipBoxes) {
+      try {
+        box.delete();
+      } catch {
+        /* already cleaned */
+      }
+    }
     if (isAbortError(err)) {
-      hexCompound.delete();
+      result.delete();
       throw err;
     }
-    return hexCompound;
-  } finally {
-    clipSolid.delete();
+    return result;
   }
 }

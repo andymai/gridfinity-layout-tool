@@ -105,4 +105,58 @@ export const combinedFeatures: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
+  defineScenario('combined features', '2\u00d72 honeycomb walls + handle holes', {
+    assert: 'structural',
+    params: {
+      width: 2,
+      depth: 2,
+      height: 5,
+      wallPattern: { enabled: true, pattern: 'honeycomb' },
+      handles: {
+        ...DEFAULT_BIN_PARAMS.handles,
+        enabled: true,
+        front: { enabled: true },
+        left: { enabled: true },
+      },
+    },
+    timeout: 60_000,
+  }),
+  defineScenario('combined features', '2\u00d72 honeycomb walls + handles + wall cutouts', {
+    assert: 'structural',
+    params: {
+      width: 2,
+      depth: 2,
+      height: 5,
+      wallPattern: { enabled: true, pattern: 'honeycomb' },
+      walls: {
+        ...DEFAULT_BIN_PARAMS.walls,
+        enabled: true,
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 50, depth: 50 },
+      },
+      handles: {
+        ...DEFAULT_BIN_PARAMS.handles,
+        enabled: true,
+        front: { enabled: true },
+        right: { enabled: true },
+      },
+    },
+    timeout: 60_000,
+  }),
+  defineScenario('combined features', '2\u00d72 honeycomb walls + handles + label (back skip)', {
+    assert: 'structural',
+    params: {
+      width: 2,
+      depth: 2,
+      height: 5,
+      wallPattern: { enabled: true, pattern: 'honeycomb' },
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      handles: {
+        ...DEFAULT_BIN_PARAMS.handles,
+        enabled: true,
+        front: { enabled: true },
+        back: { enabled: true },
+      },
+    },
+    timeout: 60_000,
+  }),
 ];
