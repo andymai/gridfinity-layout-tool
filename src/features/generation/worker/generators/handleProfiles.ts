@@ -13,6 +13,9 @@
 import { draw, drawRoundedRectangle, drawRectangle, drawEllipse } from 'brepjs';
 import type { Drawing } from 'brepjs';
 import type { HandleCutoutShape } from '@/shared/types/bin';
+import { U_SHAPE_OVERSHOOT } from '@/shared/utils/handleCutoutClip';
+
+export { U_SHAPE_OVERSHOOT };
 
 interface ProfileArgs {
   /** Horizontal span in mm */
@@ -22,9 +25,6 @@ interface ProfileArgs {
   /** Corner radius in mm (used for rectangle and u-shape) */
   readonly cornerRadius: number;
 }
-
-/** U-shape floor overshoot for clean boolean cut (mm). */
-export const U_SHAPE_OVERSHOOT = 5;
 
 /**
  * Build a 2D handle cutout profile for the given shape.
