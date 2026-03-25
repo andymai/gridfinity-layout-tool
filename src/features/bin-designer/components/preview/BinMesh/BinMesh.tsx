@@ -119,13 +119,12 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     faceGroups: multiColorData?.groups,
   });
 
-  // Build material array for multi-color, or null for single-color
+  // Build material array for multi-color, with hover glow applied
   const materials = useMemo(() => {
     if (!multiColorData) return null;
 
-    // Determine which material index is hovered (if any)
     let hoveredIndex: number | undefined;
-    if (hoveredColorZone && featureColors) {
+    if (hoveredColorZone) {
       const hoveredSlotId = featureColors[hoveredColorZone];
       hoveredIndex = multiColorData.slotToIndex.get(hoveredSlotId);
     }

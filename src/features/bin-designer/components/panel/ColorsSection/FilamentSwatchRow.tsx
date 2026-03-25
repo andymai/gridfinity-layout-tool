@@ -66,7 +66,7 @@ export function FilamentSwatchRow({
                   : 'border-stroke-subtle/50 hover:border-stroke hover:scale-105'
               }`}
               style={{ backgroundColor: slot.color }}
-              aria-label={slot.name}
+              aria-label={`${label}: ${slot.name}`}
               aria-pressed={isSelected}
               title={slot.name}
             >
