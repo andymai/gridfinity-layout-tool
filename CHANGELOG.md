@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.28.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.28.0...gridfinity-layout-tool-v4.28.1) (2026-03-25)
+
+
+### Performance
+
+* deduplicate identical generation requests in bridge ([#1247](https://github.com/andymai/gridfinity-layout-tool/issues/1247)) ([586c480](https://github.com/andymai/gridfinity-layout-tool/commit/586c48019ae8e258a0a6389c0aa35ed606d607ee))
+
 ## [4.28.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.27.0...gridfinity-layout-tool-v4.28.0) (2026-03-25)
 
 
