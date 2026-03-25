@@ -85,6 +85,13 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_HANDLE_CORNER_RADIUS: 0, // mm (sharp rectangle)
   MAX_HANDLE_CORNER_RADIUS: 10, // mm
   HANDLE_CORNER_RADIUS_STEP: 1, // mm
+  // Handle vertical position
+  MIN_HANDLE_VERTICAL_POSITION: 0.2, // fraction from floor
+  MAX_HANDLE_VERTICAL_POSITION: 0.9, // fraction from floor
+  HANDLE_VERTICAL_POSITION_STEP: 0.05,
+  // Handle count per wall
+  MIN_HANDLE_COUNT: 1,
+  MAX_HANDLE_COUNT: 3,
 } as const;
 
 /**
