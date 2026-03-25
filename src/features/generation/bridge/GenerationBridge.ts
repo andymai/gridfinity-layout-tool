@@ -3,6 +3,10 @@
  *
  * Manages worker lifecycle, debounces rapid parameter changes, and supports
  * request cancellation via AbortController pattern.
+ *
+ * Includes params-level deduplication: if generate() is called with the same
+ * parameters as the last successful generation, the cached result is returned
+ * immediately without dispatching to the worker.
  */
 
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
@@ -20,6 +24,25 @@ import type {
   KernelPerfCategory,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
+
+/**
+ * Deterministic fingerprint for generation params.
+ *
+ * Uses JSON.stringify with sorted keys to ensure identical params always
+ * produce the same string, regardless of property insertion order.
+ */
+function paramsFingerprint(params: unknown): string {
+  return JSON.stringify(params, (_, value: unknown) => {
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      const sorted: Record<string, unknown> = {};
+      for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+        sorted[key] = (value as Record<string, unknown>)[key];
+      }
+      return sorted;
+    }
+    return value;
+  });
+}
 
 /** Extract threading info from INIT_READY with defensive validation. */
 function extractThreadingInfo(data: {
@@ -107,6 +130,18 @@ export interface ThreadingInfo {
   readonly kernel: KernelName;
 }
 
+/** Size-1 dedup cache: stores the fingerprint and result of the last successful generation. */
+interface DedupCache {
+  fingerprint: string | null;
+  result: GenerationResult | null;
+  /** Fingerprint of the currently in-flight request (stored so we can cache on success). */
+  pendingFingerprint: string | null;
+}
+
+function createDedupCache(): DedupCache {
+  return { fingerprint: null, result: null, pendingFingerprint: null };
+}
+
 /** Keys for the pending export request slots */
 type ExportSlot = 'export' | 'dividers' | 'split' | 'splitPreview';
 
@@ -138,6 +173,10 @@ export class GenerationBridge {
   private destroyed = false;
   private adaptiveDebounce = new AdaptiveDebounce();
   private threadingInfo: ThreadingInfo | null = null;
+
+  /** Size-1 dedup caches for bin and baseplate generation. */
+  private binCache: DedupCache = createDedupCache();
+  private baseplateCache: DedupCache = createDedupCache();
 
   /** Optional callback for cache performance stats (called after each generation). */
   onCacheStats: CacheStatsCallback | null = null;
@@ -257,6 +296,12 @@ export class GenerationBridge {
       return Promise.reject(new Error('Bridge has been destroyed'));
     }
 
+    // Deduplication: return cached result if params haven't changed
+    const fingerprint = paramsFingerprint(params);
+    if (this.binCache.fingerprint === fingerprint && this.binCache.result) {
+      return Promise.resolve(this.binCache.result);
+    }
+
     // Cancel any pending debounce
     if (this.debounceTimer !== null) {
       clearTimeout(this.debounceTimer);
@@ -275,10 +320,10 @@ export class GenerationBridge {
       if (debounce) {
         this.debounceTimer = setTimeout(() => {
           this.debounceTimer = null;
-          this.sendGenerateMessage(params);
+          this.sendGenerateMessage(params, fingerprint);
         }, this.adaptiveDebounce.getDelay());
       } else {
-        this.sendGenerateMessage(params);
+        this.sendGenerateMessage(params, fingerprint);
       }
     });
   }
@@ -314,6 +359,8 @@ export class GenerationBridge {
     this.initPromise = null;
     this.onProgress = null;
     this.adaptiveDebounce.reset();
+    this.binCache = createDedupCache();
+    this.baseplateCache = createDedupCache();
   }
 
   /**
@@ -520,6 +567,12 @@ export class GenerationBridge {
       return Promise.reject(new Error('Bridge has been destroyed'));
     }
 
+    // Deduplication: return cached result if params haven't changed
+    const fingerprint = paramsFingerprint(params);
+    if (this.baseplateCache.fingerprint === fingerprint && this.baseplateCache.result) {
+      return Promise.resolve(this.baseplateCache.result);
+    }
+
     if (this.debounceTimer !== null) {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
@@ -535,6 +588,7 @@ export class GenerationBridge {
       const sendMessage = (): void => {
         const requestId = this.nextRequestId();
         this.currentRequestId = requestId;
+        this.baseplateCache.pendingFingerprint = fingerprint;
         this.postMessage({
           type: 'GENERATE_BASEPLATE',
           payload: { params, requestId },
@@ -639,9 +693,10 @@ export class GenerationBridge {
     return false;
   }
 
-  private sendGenerateMessage(params: BinParams): void {
+  private sendGenerateMessage(params: BinParams, fingerprint: string): void {
     const requestId = this.nextRequestId();
     this.currentRequestId = requestId;
+    this.binCache.pendingFingerprint = fingerprint;
 
     this.postMessage({
       type: 'GENERATE',
@@ -666,8 +721,7 @@ export class GenerationBridge {
           if (response.requestId === this.currentRequestId && this.pendingResolve) {
             this.adaptiveDebounce.recordTiming(response.timingMs);
             const resolve = this.pendingResolve;
-            this.clearPending();
-            resolve({
+            const result: GenerationResult = {
               mesh: {
                 vertices: response.vertices,
                 normals: response.normals,
@@ -677,7 +731,14 @@ export class GenerationBridge {
                 faceGroups: response.faceGroups,
               },
               timingMs: response.timingMs,
-            });
+            };
+
+            // Cache for deduplication (bin or baseplate — only one is in-flight)
+            this.commitDedupCache(this.binCache, result);
+            this.commitDedupCache(this.baseplateCache, result);
+
+            this.clearPending();
+            resolve(result);
           }
           break;
 
@@ -778,11 +839,22 @@ export class GenerationBridge {
     }
   }
 
+  /** If this cache has a pending fingerprint, promote it to the cached result and clear pending. */
+  private commitDedupCache(cache: DedupCache, result: GenerationResult): void {
+    if (cache.pendingFingerprint) {
+      cache.fingerprint = cache.pendingFingerprint;
+      cache.result = result;
+      cache.pendingFingerprint = null;
+    }
+  }
+
   private clearPending(): void {
     this.pendingResolve = null;
     this.pendingReject = null;
     this.currentRequestId = null;
     this.onProgress = null;
+    this.binCache.pendingFingerprint = null;
+    this.baseplateCache.pendingFingerprint = null;
   }
 
   private postMessage(message: WorkerMessage): void {
