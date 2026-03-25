@@ -16,8 +16,8 @@ import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
 import {
-  HOLE_VERTICAL_CENTER,
   buildHandleWallDefs,
+  computeHandleHoleGeometry,
   computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
@@ -84,13 +84,7 @@ export function buildHandleHoles(
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
   const extrudeDepth = (wallThickness + lipOverhang) * 2 + 1;
 
-  // Vertical center at 70% of interior height
-  const centerZ = interiorHeight * HOLE_VERTICAL_CENTER;
-
-  // Clamp hole height so it stays within wall bounds around centerZ
-  const margin = interiorHeight * 0.1;
-  const maxHalfHeight = Math.max(0, Math.min(centerZ, interiorHeight - centerZ) - margin);
-  const effectiveHeight = Math.min(height, maxHalfHeight * 2);
+  const { centerZ, effectiveHeight } = computeHandleHoleGeometry(interiorHeight, height);
   if (effectiveHeight < 1) return null;
 
   const walls = buildHandleWallDefs(innerW, innerD);

@@ -42,6 +42,23 @@ export const MIN_SEGMENT_WIDTH = 10.0;
 /** Epsilon for floating-point comparison of segment widths (mm). */
 const EPSILON = 1e-6;
 
+/**
+ * Compute handle hole vertical center and clamped height.
+ *
+ * Shared between handleBuilder (hole geometry) and wallPatternBuilder
+ * (border clipping) to prevent drift.
+ */
+export function computeHandleHoleGeometry(
+  interiorHeight: number,
+  requestedHeight: number
+): { centerZ: number; effectiveHeight: number } {
+  const centerZ = interiorHeight * HOLE_VERTICAL_CENTER;
+  const margin = interiorHeight * 0.1;
+  const maxHalfHeight = Math.max(0, Math.min(centerZ, interiorHeight - centerZ) - margin);
+  const effectiveHeight = Math.min(requestedHeight, maxHalfHeight * 2);
+  return { centerZ, effectiveHeight };
+}
+
 /** Build the four wall definitions from inner dimensions. */
 export function buildHandleWallDefs(innerW: number, innerD: number): readonly HandleWallDef[] {
   return [
