@@ -414,6 +414,97 @@ describe('GenerationBridge', () => {
     });
   });
 
+  describe('deduplication', () => {
+    /** Helper: init bridge, generate with DEFAULT_BIN_PARAMS, and complete successfully. */
+    async function initAndGenerate(): Promise<void> {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      await vi.advanceTimersByTimeAsync(200);
+
+      const generateMessages = getWorker().messages.filter(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      );
+      const msg = generateMessages[0] as { payload: { requestId: string } };
+      getWorker().simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: msg.payload.requestId,
+        vertices: new Float32Array([1, 2, 3]),
+        normals: new Float32Array([0, 0, 1]),
+        indices: new Uint32Array([0]),
+        triangleCount: 1,
+        timingMs: 42,
+      });
+
+      await genPromise;
+    }
+
+    it('returns cached result for identical params', async () => {
+      await initAndGenerate();
+
+      // Second call with identical params should resolve immediately
+      const result = await bridge.generate(DEFAULT_BIN_PARAMS);
+      expect(result.mesh.triangleCount).toBe(1);
+      expect(result.timingMs).toBe(42);
+
+      // No new GENERATE messages should have been sent
+      const generateMessages = getWorker().messages.filter(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      );
+      expect(generateMessages.length).toBe(1); // Only the first one
+    });
+
+    it('does not cache when params differ', async () => {
+      await initAndGenerate();
+
+      // Different params should send a new request
+      const genPromise = bridge.generate({ ...DEFAULT_BIN_PARAMS, width: 3 });
+      await vi.advanceTimersByTimeAsync(200);
+
+      const generateMessages = getWorker().messages.filter(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      );
+      expect(generateMessages.length).toBe(2); // First + new one
+
+      // Complete the second request
+      const msg = generateMessages[1] as { payload: { requestId: string } };
+      getWorker().simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: msg.payload.requestId,
+        vertices: new Float32Array([4, 5, 6]),
+        normals: new Float32Array([0, 1, 0]),
+        indices: new Uint32Array([0]),
+        triangleCount: 2,
+        timingMs: 50,
+      });
+
+      const result = await genPromise;
+      expect(result.mesh.triangleCount).toBe(2);
+    });
+
+    it('generateImmediate also uses cache', async () => {
+      await initAndGenerate();
+
+      const result = await bridge.generateImmediate(DEFAULT_BIN_PARAMS);
+      expect(result.mesh.triangleCount).toBe(1);
+
+      // No new GENERATE messages
+      const generateMessages = getWorker().messages.filter(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      );
+      expect(generateMessages.length).toBe(1);
+    });
+
+    it('cache is cleared on destroy', async () => {
+      await initAndGenerate();
+
+      bridge.destroy();
+      await expect(bridge.generate(DEFAULT_BIN_PARAMS)).rejects.toThrow('destroyed');
+    });
+  });
+
   describe('types', () => {
     it('MeshResultResponse supports optional faceGroups', () => {
       const response: MeshResultResponse = {

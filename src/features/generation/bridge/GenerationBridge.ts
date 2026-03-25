@@ -3,6 +3,10 @@
  *
  * Manages worker lifecycle, debounces rapid parameter changes, and supports
  * request cancellation via AbortController pattern.
+ *
+ * Includes params-level deduplication: if generate() is called with the same
+ * parameters as the last successful generation, the cached result is returned
+ * immediately without dispatching to the worker.
  */
 
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
@@ -20,6 +24,25 @@ import type {
   KernelPerfCategory,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
+
+/**
+ * Deterministic fingerprint for generation params.
+ *
+ * Uses JSON.stringify with sorted keys to ensure identical params always
+ * produce the same string, regardless of property insertion order.
+ */
+function paramsFingerprint(params: unknown): string {
+  return JSON.stringify(params, (_, value: unknown) => {
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      const sorted: Record<string, unknown> = {};
+      for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+        sorted[key] = (value as Record<string, unknown>)[key];
+      }
+      return sorted;
+    }
+    return value;
+  });
+}
 
 /** Extract threading info from INIT_READY with defensive validation. */
 function extractThreadingInfo(data: {
@@ -139,6 +162,14 @@ export class GenerationBridge {
   private adaptiveDebounce = new AdaptiveDebounce();
   private threadingInfo: ThreadingInfo | null = null;
 
+  /** Last successful bin generation: fingerprint + result for deduplication. */
+  private lastBinFingerprint: string | null = null;
+  private lastBinResult: GenerationResult | null = null;
+
+  /** Last successful baseplate generation: fingerprint + result for deduplication. */
+  private lastBaseplateFingerprint: string | null = null;
+  private lastBaseplateResult: GenerationResult | null = null;
+
   /** Optional callback for cache performance stats (called after each generation). */
   onCacheStats: CacheStatsCallback | null = null;
 
@@ -257,6 +288,12 @@ export class GenerationBridge {
       return Promise.reject(new Error('Bridge has been destroyed'));
     }
 
+    // Deduplication: return cached result if params haven't changed
+    const fingerprint = paramsFingerprint(params);
+    if (this.lastBinFingerprint === fingerprint && this.lastBinResult) {
+      return Promise.resolve(this.lastBinResult);
+    }
+
     // Cancel any pending debounce
     if (this.debounceTimer !== null) {
       clearTimeout(this.debounceTimer);
@@ -275,10 +312,10 @@ export class GenerationBridge {
       if (debounce) {
         this.debounceTimer = setTimeout(() => {
           this.debounceTimer = null;
-          this.sendGenerateMessage(params);
+          this.sendGenerateMessage(params, fingerprint);
         }, this.adaptiveDebounce.getDelay());
       } else {
-        this.sendGenerateMessage(params);
+        this.sendGenerateMessage(params, fingerprint);
       }
     });
   }
@@ -314,6 +351,10 @@ export class GenerationBridge {
     this.initPromise = null;
     this.onProgress = null;
     this.adaptiveDebounce.reset();
+    this.lastBinFingerprint = null;
+    this.lastBinResult = null;
+    this.lastBaseplateFingerprint = null;
+    this.lastBaseplateResult = null;
   }
 
   /**
@@ -511,6 +552,9 @@ export class GenerationBridge {
     return this.generateBaseplateInternal(params, onProgress, false);
   }
 
+  /** Fingerprint of the in-flight baseplate generation request. */
+  private pendingBaseplateFingerprint: string | null = null;
+
   private generateBaseplateInternal(
     params: BaseplateParams,
     onProgress: ProgressCallback | undefined,
@@ -518,6 +562,12 @@ export class GenerationBridge {
   ): Promise<GenerationResult> {
     if (this.destroyed) {
       return Promise.reject(new Error('Bridge has been destroyed'));
+    }
+
+    // Deduplication: return cached result if params haven't changed
+    const fingerprint = paramsFingerprint(params);
+    if (this.lastBaseplateFingerprint === fingerprint && this.lastBaseplateResult) {
+      return Promise.resolve(this.lastBaseplateResult);
     }
 
     if (this.debounceTimer !== null) {
@@ -535,6 +585,7 @@ export class GenerationBridge {
       const sendMessage = (): void => {
         const requestId = this.nextRequestId();
         this.currentRequestId = requestId;
+        this.pendingBaseplateFingerprint = fingerprint;
         this.postMessage({
           type: 'GENERATE_BASEPLATE',
           payload: { params, requestId },
@@ -639,9 +690,13 @@ export class GenerationBridge {
     return false;
   }
 
-  private sendGenerateMessage(params: BinParams): void {
+  /** Fingerprint of the in-flight bin generation request (stored for caching on success). */
+  private pendingBinFingerprint: string | null = null;
+
+  private sendGenerateMessage(params: BinParams, fingerprint: string): void {
     const requestId = this.nextRequestId();
     this.currentRequestId = requestId;
+    this.pendingBinFingerprint = fingerprint;
 
     this.postMessage({
       type: 'GENERATE',
@@ -666,8 +721,7 @@ export class GenerationBridge {
           if (response.requestId === this.currentRequestId && this.pendingResolve) {
             this.adaptiveDebounce.recordTiming(response.timingMs);
             const resolve = this.pendingResolve;
-            this.clearPending();
-            resolve({
+            const result: GenerationResult = {
               mesh: {
                 vertices: response.vertices,
                 normals: response.normals,
@@ -677,7 +731,21 @@ export class GenerationBridge {
                 faceGroups: response.faceGroups,
               },
               timingMs: response.timingMs,
-            });
+            };
+
+            // Cache for deduplication (bin or baseplate — only one is in-flight)
+            if (this.pendingBinFingerprint) {
+              this.lastBinFingerprint = this.pendingBinFingerprint;
+              this.lastBinResult = result;
+              this.pendingBinFingerprint = null;
+            } else if (this.pendingBaseplateFingerprint) {
+              this.lastBaseplateFingerprint = this.pendingBaseplateFingerprint;
+              this.lastBaseplateResult = result;
+              this.pendingBaseplateFingerprint = null;
+            }
+
+            this.clearPending();
+            resolve(result);
           }
           break;
 
