@@ -22,7 +22,7 @@ import type { BinParams } from '../types';
 export function useGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const initializedRef = useRef(false);
-  const prevEpochRef = useRef<number>(-1);
+  const prevEpochRef = useRef(-1);
 
   const { params, epoch } = useDesignerStore(
     useShallow((state) => ({
@@ -73,6 +73,7 @@ export function useGeneration(): void {
           normals: result.mesh.normals,
           indices: result.mesh.indices,
           edgeVertices: result.mesh.edgeVertices,
+          faceGroups: result.mesh.faceGroups ? [...result.mesh.faceGroups] : undefined,
           error: null,
           timingMs: result.timingMs,
         });

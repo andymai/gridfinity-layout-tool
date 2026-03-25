@@ -368,6 +368,37 @@ describe('migrateParams', () => {
     });
     expect(resultUShape.walls.shape).toBe('u-shape');
   });
+
+  it('should provide default featureColors when absent', () => {
+    const result = migrateParams({});
+    expect(result.featureColors).toEqual({
+      body: 'slot1',
+      lip: 'slot1',
+      labelTab: 'slot1',
+    });
+  });
+
+  it('should preserve custom featureColors through round-trip', () => {
+    const custom = { body: 'slot2' as const, lip: 'slot3' as const, labelTab: 'slot1' as const };
+    const result = migrateParams({ featureColors: custom });
+    expect(result.featureColors).toEqual(custom);
+  });
+
+  it('should preserve featureColors through double migration (load path)', () => {
+    const custom = { body: 'slot2' as const, lip: 'slot3' as const, labelTab: 'slot4' as const };
+    const firstPass = migrateParams({ featureColors: custom });
+    const secondPass = migrateParams(firstPass);
+    expect(secondPass.featureColors).toEqual(custom);
+  });
+
+  it('should backfill missing featureColors fields from defaults', () => {
+    // Simulates a saved design with a partial featureColors (e.g., future schema change)
+    const partial = { body: 'slot2' } as any;
+    const result = migrateParams({ featureColors: partial });
+    expect(result.featureColors.body).toBe('slot2');
+    expect(result.featureColors.lip).toBe('slot1');
+    expect(result.featureColors.labelTab).toBe('slot1');
+  });
 });
 
 describe('GRIDFINITY constants', () => {

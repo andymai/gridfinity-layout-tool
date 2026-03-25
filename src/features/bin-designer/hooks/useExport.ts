@@ -151,13 +151,9 @@ export function useExport(): UseExportReturn {
 
           // Build multi-color config when Labs flag is enabled and face groups are available
           let colorConfig: ThreeMFColorConfig | undefined;
-          if (
-            isFeatureEnabled('multi_color_export') &&
-            stlResult.faceGroups &&
-            params.featureColors
-          ) {
+          if (isFeatureEnabled('multi_color_export') && stlResult.faceGroups) {
             const palette = useSettingsStore.getState().settings.filamentPalette;
-            const featureColors = params.featureColors;
+            const { featureColors } = params;
             const triangleCount = vertices.length / 9;
             colorConfig =
               buildTriangleMaterialIndices(

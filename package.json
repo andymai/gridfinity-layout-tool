@@ -119,7 +119,8 @@
     "onlyBuiltDependencies": [
       "core-js",
       "esbuild",
-      "protobufjs"
+      "protobufjs",
+      "unrs-resolver"
     ],
     "overrides": {
       "@vercel/node>undici": "^7.20.0",

@@ -162,6 +162,30 @@ export const FILAMENT_COLORS = [
   { color: '#a855f7', name: 'Purple' },
 ] as const;
 
+/** Curated 20-color preset grid for the filament palette editor popover. */
+export const FILAMENT_PRESET_COLORS = [
+  { color: '#f5f5f5', name: 'White' },
+  { color: '#d4d8dc', name: 'Light Grey' },
+  { color: '#6b7280', name: 'Grey' },
+  { color: '#1f2937', name: 'Black' },
+  { color: '#fef3c7', name: 'Cream' },
+  { color: '#ef4444', name: 'Red' },
+  { color: '#f97316', name: 'Orange' },
+  { color: '#fbbf24', name: 'Yellow' },
+  { color: '#d97706', name: 'Gold' },
+  { color: '#92400e', name: 'Brown' },
+  { color: '#3b82f6', name: 'Blue' },
+  { color: '#0ea5e9', name: 'Sky Blue' },
+  { color: '#06b6d4', name: 'Cyan' },
+  { color: '#2dd4bf', name: 'Teal' },
+  { color: '#22c55e', name: 'Green' },
+  { color: '#84cc16', name: 'Lime' },
+  { color: '#a855f7', name: 'Purple' },
+  { color: '#ec4899', name: 'Pink' },
+  { color: '#f43f5e', name: 'Rose' },
+  { color: '#fcd34d', name: 'Neon Yellow' },
+] as const;
+
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   magnetHoles: false,

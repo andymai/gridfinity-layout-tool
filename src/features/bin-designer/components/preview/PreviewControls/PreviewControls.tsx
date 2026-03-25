@@ -31,6 +31,8 @@ interface PreviewControlsProps {
   splitViewMode?: SplitViewMode;
   /** Callback when split view mode changes */
   onSplitViewModeChange?: (mode: SplitViewMode) => void;
+  /** When true, hides the single-color picker (e.g. multi-color mode active) */
+  hideColorPicker?: boolean;
 }
 
 const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
@@ -206,6 +208,7 @@ export function PreviewControls({
   needsSplit,
   splitViewMode,
   onSplitViewModeChange,
+  hideColorPicker,
 }: PreviewControlsProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const desktopPickerRef = useRef<HTMLDivElement>(null);
@@ -345,28 +348,33 @@ export function PreviewControls({
             <span>{t('binDesigner.wire')}</span>
           </button>
 
-          {/* Divider */}
-          <div className="w-px h-5 bg-stroke-subtle/50" />
+          {/* Color picker (hidden in multi-color mode) */}
+          {!hideColorPicker && (
+            <>
+              {/* Divider */}
+              <div className="w-px h-5 bg-stroke-subtle/50" />
 
-          {/* Color picker button */}
-          <button
-            type="button"
-            onClick={() => setColorPickerOpen((v) => !v)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
-            title={t('binDesigner.changePreviewColor')}
-            aria-label={t('binDesigner.changePreviewColor')}
-            aria-expanded={colorPickerOpen}
-          >
-            <span
-              className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
-              style={{ backgroundColor: previewColor }}
-            />
-            <span>{t('common.color')}</span>
-          </button>
+              {/* Color picker button */}
+              <button
+                type="button"
+                onClick={() => setColorPickerOpen((v) => !v)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+                title={t('binDesigner.changePreviewColor')}
+                aria-label={t('binDesigner.changePreviewColor')}
+                aria-expanded={colorPickerOpen}
+              >
+                <span
+                  className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
+                  style={{ backgroundColor: previewColor }}
+                />
+                <span>{t('common.color')}</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Color picker dropdown - outside overflow-hidden container */}
-        {colorPickerOpen && (
+        {!hideColorPicker && colorPickerOpen && (
           <div
             className="absolute right-0 top-full z-50 mt-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
             role="listbox"
@@ -462,28 +470,33 @@ export function PreviewControls({
             <IconWireframe />
           </button>
 
-          {/* Spacer to push color picker to right */}
-          <div className="flex-1" />
+          {/* Color picker (hidden in multi-color mode) */}
+          {!hideColorPicker && (
+            <>
+              {/* Spacer to push color picker to right */}
+              <div className="flex-1" />
 
-          {/* Color picker */}
-          <button
-            type="button"
-            onClick={() => setColorPickerOpen((v) => !v)}
-            className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
-            title={t('binDesigner.changePreviewColor')}
-            aria-label={t('binDesigner.changePreviewColor')}
-            aria-expanded={colorPickerOpen}
-          >
-            <span
-              className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
-              style={{ backgroundColor: previewColor }}
-            />
-          </button>
+              {/* Color picker */}
+              <button
+                type="button"
+                onClick={() => setColorPickerOpen((v) => !v)}
+                className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+                title={t('binDesigner.changePreviewColor')}
+                aria-label={t('binDesigner.changePreviewColor')}
+                aria-expanded={colorPickerOpen}
+              >
+                <span
+                  className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
+                  style={{ backgroundColor: previewColor }}
+                />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Mobile color picker — bottom sheet style overlay */}
-      {colorPickerOpen && !isDesktop && (
+      {!hideColorPicker && colorPickerOpen && !isDesktop && (
         <div className="fixed inset-0 z-50 md:hidden">
           {/* Backdrop */}
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- decorative backdrop, keyboard users dismiss via Escape */}
