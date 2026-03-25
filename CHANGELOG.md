@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.30.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.29.1...gridfinity-layout-tool-v4.30.0) (2026-03-25)
+
+
+### Features
+
+* **bin-designer:** multi-color UX — visual swatch palette + featureColors persistence ([#1253](https://github.com/andymai/gridfinity-layout-tool/issues/1253)) ([a65157d](https://github.com/andymai/gridfinity-layout-tool/commit/a65157d9cac4a60ba225dbba5d06d66da11b4230))
+
 ## [4.29.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.29.0...gridfinity-layout-tool-v4.29.1) (2026-03-25)
 
 
