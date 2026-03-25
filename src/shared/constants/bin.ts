@@ -7,6 +7,7 @@
  */
 export {
   DEFAULT_BIN_PARAMS,
+  DEFAULT_HANDLE_SIDE,
   DISABLED_WALL_CUTOUT,
 } from '@/features/bin-designer/constants/defaults';
 export { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';

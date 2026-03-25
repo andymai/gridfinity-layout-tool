@@ -13,10 +13,12 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import {
-  HOLE_VERTICAL_CENTER,
   buildHandleWallDefs,
+  computeHandleHoleGeometry,
   computeWallHandleSegments,
+  U_SHAPE_OVERSHOOT,
 } from '@/shared/utils/handleCutoutClip';
+import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 
 const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.4;
@@ -59,49 +61,69 @@ export function GhostHandles() {
     style !== 'solid' &&
     generationStatus === 'generating';
 
+  const isUShape = handles.shape === 'u-shape';
+
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
-
-    // Clamp hole height to stay within wall bounds around centerZ
-    const centerZ = interiorHeight * HOLE_VERTICAL_CENTER;
-    const margin = interiorHeight * 0.1;
-    const maxHalfHeight = Math.max(0, Math.min(centerZ, interiorHeight - centerZ) - margin);
-    const effectiveHeight = Math.min(handles.height, maxHalfHeight * 2);
-    if (effectiveHeight < 1) return null;
 
     const wallDefs = buildHandleWallDefs(innerW, innerD);
     const matrices: THREE.Matrix4[] = [];
 
     for (const wall of wallDefs) {
-      if (!handles[wall.side].enabled) continue;
+      const side = handles[wall.side];
+      if (!side.enabled) continue;
       if (wall.side === 'back' && label.enabled) continue;
+
+      // Resolve per-side overrides
+      const sideWidth = side.width ?? handles.width;
+      const sideHeight = side.height ?? handles.height;
+
+      // Compute vertical geometry per-side (matches handleBuilder)
+      let effectiveHeight: number;
+      if (isUShape) {
+        const clampedHeight = Math.min(sideHeight, interiorHeight);
+        effectiveHeight = clampedHeight + U_SHAPE_OVERSHOOT;
+      } else {
+        const geom = computeHandleHoleGeometry(
+          interiorHeight,
+          sideHeight,
+          handles.verticalPosition
+        );
+        effectiveHeight = geom.effectiveHeight;
+      }
+      if (effectiveHeight < 1) continue;
 
       const wallCutout = wallConfig.enabled ? wallConfig[wall.side] : undefined;
       const segments = computeWallHandleSegments(
         wall.wallSpan,
-        handles.width,
+        sideWidth,
         wallThickness,
         wallCutout
       );
       if (!segments) continue;
 
-      for (const seg of segments) {
-        const matrix = new THREE.Matrix4();
-        // After plane.rotateX(pi/2), vertical extent is Z not Y
-        const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, 1, effectiveHeight);
+      // Multi-handle offsets
+      const handleWidthMm = wall.wallSpan * (sideWidth / 100);
+      const offsets = computeMultiHandleOffsets(handles.count, wall.wallSpan, handleWidthMm);
 
-        const angle = (wall.rotateZ * Math.PI) / 180;
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        const worldX = wall.x + seg.offset * cos;
-        const worldY = wall.y + seg.offset * sin;
+      for (const handleOffset of offsets) {
+        for (const seg of segments) {
+          const matrix = new THREE.Matrix4();
+          const scaleMatrix = new THREE.Matrix4().makeScale(seg.width, 1, effectiveHeight);
 
-        const rotateMatrix = new THREE.Matrix4().makeRotationZ(angle);
-        const translateMatrix = new THREE.Matrix4().makeTranslation(worldX, worldY, 0);
+          const angle = (wall.rotateZ * Math.PI) / 180;
+          const cos = Math.cos(angle);
+          const sin = Math.sin(angle);
+          const worldX = wall.x + (seg.offset + handleOffset) * cos;
+          const worldY = wall.y + (seg.offset + handleOffset) * sin;
 
-        matrix.multiplyMatrices(translateMatrix, rotateMatrix);
-        matrix.multiply(scaleMatrix);
-        matrices.push(matrix);
+          const rotateMatrix = new THREE.Matrix4().makeRotationZ(angle);
+          const translateMatrix = new THREE.Matrix4().makeTranslation(worldX, worldY, 0);
+
+          matrix.multiplyMatrices(translateMatrix, rotateMatrix);
+          matrix.multiply(scaleMatrix);
+          matrices.push(matrix);
+        }
       }
     }
 
@@ -150,6 +172,7 @@ export function GhostHandles() {
     label.enabled,
     wallConfig,
     interiorHeight,
+    isUShape,
   ]);
 
   const material = useMemo(() => {
@@ -177,7 +200,13 @@ export function GhostHandles() {
   if (!geometry || !material) return null;
 
   const socketZ = isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT;
-  const holeZ = socketZ + interiorHeight * HOLE_VERTICAL_CENTER;
+  // Use variable vertical position for ghost mesh world-space position
+  let holeZ: number;
+  if (isUShape) {
+    holeZ = socketZ + (Math.min(handles.height, interiorHeight) - U_SHAPE_OVERSHOOT) / 2;
+  } else {
+    holeZ = socketZ + interiorHeight * handles.verticalPosition;
+  }
 
   return <mesh geometry={geometry} material={material} position={[0, 0, holeZ]} renderOrder={2} />;
 }

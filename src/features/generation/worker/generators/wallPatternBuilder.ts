@@ -49,8 +49,10 @@ import {
   buildHandleWallDefs,
   computeHandleHoleGeometry,
   computeWallHandleSegments,
+  U_SHAPE_OVERSHOOT,
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
+import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 
 /**
  * Build a compound of positioned hex prisms for a single wall.
@@ -196,20 +198,54 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       params.handles[wall.side]?.enabled &&
       !(wall.side === 'back' && params.label.enabled)
     ) {
-      const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
-        interiorHeight,
-        params.handles.height
-      );
-      if (effectiveHeight >= 1) {
+      const isUShape = params.handles.shape === 'u-shape';
+      const side = params.handles[wall.side];
+      const sideHeight = side.height ?? params.handles.height;
+      const sideWidth = side.width ?? params.handles.width;
+
+      let handleCenterZ: number;
+      let handleEffHeight: number;
+      if (isUShape) {
+        const clampedHeight = Math.min(sideHeight, interiorHeight);
+        handleEffHeight = clampedHeight + U_SHAPE_OVERSHOOT;
+        handleCenterZ = (clampedHeight - U_SHAPE_OVERSHOOT) / 2;
+      } else {
+        const geom = computeHandleHoleGeometry(
+          interiorHeight,
+          sideHeight,
+          params.handles.verticalPosition
+        );
+        handleCenterZ = geom.centerZ;
+        handleEffHeight = geom.effectiveHeight;
+      }
+
+      if (handleEffHeight >= 1) {
         const handleCutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;
-        const segments = computeWallHandleSegments(
+        const baseSegments = computeWallHandleSegments(
           wallSpan,
-          params.handles.width,
+          sideWidth,
           params.wallThickness,
           handleCutoutCfg
         );
-        if (segments && segments.length > 0) {
-          handleClip = { segments, effectiveHeight, centerZ, clipExtrudeDepth, handleWall };
+        if (baseSegments && baseSegments.length > 0) {
+          // Expand segments with multi-handle offsets
+          const handleWidthMm = wallSpan * (sideWidth / 100);
+          const offsets = computeMultiHandleOffsets(params.handles.count, wallSpan, handleWidthMm);
+          const expandedSegments: HandleSegment[] = [];
+          for (const handleOffset of offsets) {
+            for (const seg of baseSegments) {
+              expandedSegments.push({ offset: seg.offset + handleOffset, width: seg.width });
+            }
+          }
+          if (expandedSegments.length > 0) {
+            handleClip = {
+              segments: expandedSegments,
+              effectiveHeight: handleEffHeight,
+              centerZ: handleCenterZ,
+              clipExtrudeDepth,
+              handleWall,
+            };
+          }
         }
       }
     }
@@ -232,6 +268,8 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
     const handleKeyPart = handleClip
       ? buildCacheKey(
           'hdl',
+          params.handles.shape,
+          params.handles.count,
           quantize(handleClip.centerZ),
           quantize(handleClip.effectiveHeight),
           handleClip.segments.map((s) => `${quantize(s.offset)}:${quantize(s.width)}`).join(',')

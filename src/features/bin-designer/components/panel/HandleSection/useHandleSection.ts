@@ -1,13 +1,15 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
-import type { HandleWallSide } from '@/features/bin-designer/types';
+import { DEFAULT_HANDLE_SIDE } from '../../../constants/defaults';
+import type { HandleWallSide, HandleCutoutShape, HandleSide } from '@/features/bin-designer/types';
 import type { SectionMeta } from '../types';
 
-export const HANDLE_SIDES: readonly HandleWallSide[] = ['front', 'back', 'left', 'right'];
+/** Side chip order matches WallCutoutsSection: L R F B */
+export const HANDLE_SIDES: readonly HandleWallSide[] = ['left', 'right', 'front', 'back'];
 
 export function useHandleSection() {
   const { handles, updateHandles, updateHandleSide, params, width, depth, wallThickness } =
@@ -23,6 +25,7 @@ export function useHandleSection() {
       }))
     );
   const t = useTranslation();
+  const [linked, setLinked] = useState(true);
 
   const featureStatus = getFeatureStatus(params, 'handles');
   const isUnavailable = !featureStatus.available;
@@ -44,30 +47,67 @@ export function useHandleSection() {
   const toggleSide = useCallback(
     (side: HandleWallSide) => {
       if (side === 'back' && isBackDisabled) return;
-      updateHandleSide(side, { enabled: !handles[side].enabled });
+      if (handles[side].enabled) {
+        updateHandleSide(side, { ...DEFAULT_HANDLE_SIDE, enabled: false });
+      } else {
+        // When linked, copy values from first active side; otherwise use defaults
+        const source =
+          linked && activeSides.length > 0 ? handles[activeSides[0]] : DEFAULT_HANDLE_SIDE;
+        updateHandleSide(side, { ...source, enabled: true });
+      }
     },
-    [handles, updateHandleSide, isBackDisabled]
+    [handles, updateHandleSide, isBackDisabled, linked, activeSides]
   );
 
-  const setWidth = useCallback(
-    (w: number) => {
-      updateHandles({ width: w });
+  /** Apply a partial update to the target side, or all active sides when linked. */
+  const applySideUpdate = useCallback(
+    (side: HandleWallSide, patch: Partial<HandleSide>) => {
+      const targets = linked ? activeSides : [side];
+      for (const s of targets) {
+        updateHandleSide(s, patch);
+      }
     },
-    [updateHandles]
+    [updateHandleSide, linked, activeSides]
   );
 
-  const setHeight = useCallback(
-    (h: number) => {
-      updateHandles({ height: h });
-    },
-    [updateHandles]
-  );
-
+  // Global setters
+  const setWidth = useCallback((w: number) => updateHandles({ width: w }), [updateHandles]);
+  const setHeight = useCallback((h: number) => updateHandles({ height: h }), [updateHandles]);
   const setCornerRadius = useCallback(
-    (r: number) => {
-      updateHandles({ cornerRadius: r });
-    },
+    (r: number) => updateHandles({ cornerRadius: r }),
     [updateHandles]
+  );
+  const setShape = useCallback(
+    (shape: HandleCutoutShape) => updateHandles({ shape }),
+    [updateHandles]
+  );
+  const setVerticalPosition = useCallback(
+    (v: number) => updateHandles({ verticalPosition: v }),
+    [updateHandles]
+  );
+  const setCount = useCallback((count: number) => updateHandles({ count }), [updateHandles]);
+  const toggleChamfer = useCallback(
+    () => updateHandles({ chamfer: !handles.chamfer }),
+    [handles.chamfer, updateHandles]
+  );
+  const toggleInterior = useCallback(
+    () => updateHandles({ interior: !handles.interior }),
+    [handles.interior, updateHandles]
+  );
+  const toggleLinked = useCallback(() => setLinked((prev) => !prev), []);
+
+  // Per-side setters
+  const setSideWidth = useCallback(
+    (side: HandleWallSide, w: number) => applySideUpdate(side, { width: w }),
+    [applySideUpdate]
+  );
+  const setSideHeight = useCallback(
+    (side: HandleWallSide, h: number) => applySideUpdate(side, { height: h }),
+    [applySideUpdate]
+  );
+  const setSideCornerRadius = useCallback(
+    (side: HandleWallSide, r: number) => applySideUpdate(side, { cornerRadius: r }),
+    [applySideUpdate]
   );
 
   const handleWidthMm = useMemo(() => {
@@ -75,8 +115,6 @@ export function useHandleSection() {
     const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
     const innerW = outerW - 2 * wallThickness;
     const innerD = outerD - 2 * wallThickness;
-    // Front/back use innerW, left/right use innerD. Show the applicable value
-    // based on which sides are enabled; for mixed, show the smallest (most constrained).
     const fbEnabled = handles.front.enabled || (handles.back.enabled && !isBackDisabled);
     const lrEnabled = handles.left.enabled || handles.right.enabled;
     let span = innerW;
@@ -91,7 +129,12 @@ export function useHandleSection() {
   const summary = useMemo(() => {
     if (!handles.enabled || activeSides.length === 0) return undefined;
     const sideNames = activeSides.map((s) => t(`binDesigner.handles.${s}`)).join(', ');
+    const shapeName = t(
+      `binDesigner.handles.shape.${handles.shape === 'u-shape' ? 'uShape' : handles.shape}`
+    );
+    const countSuffix = handles.count > 1 ? ` ×${handles.count}` : '';
     return t('binDesigner.handles.summary', {
+      shape: shapeName + countSuffix,
       sides: sideNames,
       height: String(handles.height),
     });
@@ -107,9 +150,37 @@ export function useHandleSection() {
     [isUnavailable, summary, disabledReason]
   );
 
+  const isUShape = handles.shape === 'u-shape';
+  const showCornerRadius = handles.shape === 'rectangle' || handles.shape === 'u-shape';
+  const hasCompartments = params.compartments.cols > 1 || params.compartments.rows > 1;
+
   return {
-    state: { handles, isBackDisabled, handleWidthMm },
-    handlers: { toggleEnabled, toggleSide, setWidth, setHeight, setCornerRadius },
+    state: {
+      handles,
+      isBackDisabled,
+      handleWidthMm,
+      linked,
+      isUShape,
+      showCornerRadius,
+      hasCompartments,
+      activeSides,
+    },
+    handlers: {
+      toggleEnabled,
+      toggleSide,
+      setWidth,
+      setHeight,
+      setCornerRadius,
+      setShape,
+      setVerticalPosition,
+      setCount,
+      toggleChamfer,
+      toggleInterior,
+      toggleLinked,
+      setSideWidth,
+      setSideHeight,
+      setSideCornerRadius,
+    },
     meta,
     t,
   };

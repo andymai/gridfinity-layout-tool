@@ -1,6 +1,12 @@
-import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import {
+  DEFAULT_BIN_PARAMS,
+  DEFAULT_HANDLE_SIDE,
+  DISABLED_WALL_CUTOUT,
+} from '@/shared/constants/bin';
 import { defineScenario, makeInsert } from '../__dual-kernel__/scenarioTypes';
 import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+
+const ENABLED_SIDE = { ...DEFAULT_HANDLE_SIDE, enabled: true } as const;
 
 export const combinedFeatures: ScenarioCase[] = [
   defineScenario('combined features', '2\u00d72 standard + lip + 2\u00d72 compartments + scoop', {
@@ -115,8 +121,8 @@ export const combinedFeatures: ScenarioCase[] = [
       handles: {
         ...DEFAULT_BIN_PARAMS.handles,
         enabled: true,
-        front: { enabled: true },
-        left: { enabled: true },
+        front: ENABLED_SIDE,
+        left: ENABLED_SIDE,
       },
     },
     timeout: 60_000,
@@ -136,8 +142,8 @@ export const combinedFeatures: ScenarioCase[] = [
       handles: {
         ...DEFAULT_BIN_PARAMS.handles,
         enabled: true,
-        front: { enabled: true },
-        right: { enabled: true },
+        front: ENABLED_SIDE,
+        right: ENABLED_SIDE,
       },
     },
     timeout: 60_000,
@@ -153,8 +159,8 @@ export const combinedFeatures: ScenarioCase[] = [
       handles: {
         ...DEFAULT_BIN_PARAMS.handles,
         enabled: true,
-        front: { enabled: true },
-        back: { enabled: true },
+        front: ENABLED_SIDE,
+        back: ENABLED_SIDE,
       },
     },
     timeout: 60_000,

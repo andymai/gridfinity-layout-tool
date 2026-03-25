@@ -33,8 +33,12 @@ export interface HandleWallDef {
   readonly rotateZ: number;
 }
 
-/** Vertical center of handle hole as fraction of interior height (from floor). */
-export const HOLE_VERTICAL_CENTER = 0.7;
+/** Default vertical center of handle hole as fraction of interior height (from floor). */
+export const DEFAULT_VERTICAL_POSITION = 0.7;
+/** U-shape floor overshoot for clean boolean cut (mm). */
+export const U_SHAPE_OVERSHOOT = 5;
+/** @deprecated Use DEFAULT_VERTICAL_POSITION instead */
+export const HOLE_VERTICAL_CENTER = DEFAULT_VERTICAL_POSITION;
 /** Clearance gap between handle edge and cutout edge (mm). */
 export const CUTOUT_CLEARANCE = 1.0;
 /** Minimum handle segment width to generate (mm). */
@@ -47,12 +51,15 @@ const EPSILON = 1e-6;
  *
  * Shared between handleBuilder (hole geometry) and wallPatternBuilder
  * (border clipping) to prevent drift.
+ *
+ * @param verticalPosition - Vertical center as fraction 0-1 from floor (default 0.7)
  */
 export function computeHandleHoleGeometry(
   interiorHeight: number,
-  requestedHeight: number
+  requestedHeight: number,
+  verticalPosition: number = DEFAULT_VERTICAL_POSITION
 ): { centerZ: number; effectiveHeight: number } {
-  const centerZ = interiorHeight * HOLE_VERTICAL_CENTER;
+  const centerZ = interiorHeight * verticalPosition;
   const margin = interiorHeight * 0.1;
   const maxHalfHeight = Math.max(0, Math.min(centerZ, interiorHeight - centerZ) - margin);
   const effectiveHeight = Math.min(requestedHeight, maxHalfHeight * 2);

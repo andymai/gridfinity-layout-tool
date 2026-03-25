@@ -8,6 +8,7 @@ import type {
   GenerationState,
   DesignerHistory,
   HandleConfig,
+  HandleSide,
   WallCutout,
   WallConfig,
   WallCutoutShape,
@@ -73,16 +74,29 @@ export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   ridgeHeightFraction: 0.8,
 } as const;
 
+/** Default per-side handle config: enabled=false, no per-side overrides */
+export const DEFAULT_HANDLE_SIDE: HandleSide = {
+  enabled: false,
+  width: null,
+  height: null,
+  cornerRadius: null,
+} as const;
+
 /** Default handle configuration: disabled, front + sides enabled when toggled on */
 const DEFAULT_HANDLE_CONFIG: HandleConfig = {
   enabled: false,
+  shape: 'rectangle',
   width: 50,
   height: 15,
   cornerRadius: 10,
-  front: { enabled: true },
-  back: { enabled: false },
-  left: { enabled: true },
-  right: { enabled: true },
+  verticalPosition: 0.7,
+  count: 1,
+  chamfer: false,
+  interior: false,
+  front: { ...DEFAULT_HANDLE_SIDE, enabled: true },
+  back: { ...DEFAULT_HANDLE_SIDE, enabled: false },
+  left: { ...DEFAULT_HANDLE_SIDE, enabled: true },
+  right: { ...DEFAULT_HANDLE_SIDE, enabled: true },
 } as const;
 
 /** Default feature color config: all zones use the primary filament slot */
@@ -404,10 +418,10 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   const handlesConfig: HandleConfig = {
     ...DEFAULT_HANDLE_CONFIG,
     ...(cleanHandles as Partial<HandleConfig>),
-    front: { ...DEFAULT_HANDLE_CONFIG.front, ...((rawHandles.front as object) ?? {}) },
-    back: { ...DEFAULT_HANDLE_CONFIG.back, ...((rawHandles.back as object) ?? {}) },
-    left: { ...DEFAULT_HANDLE_CONFIG.left, ...((rawHandles.left as object) ?? {}) },
-    right: { ...DEFAULT_HANDLE_CONFIG.right, ...((rawHandles.right as object) ?? {}) },
+    front: { ...DEFAULT_HANDLE_CONFIG.front, ...((rawHandles.front as object | undefined) ?? {}) },
+    back: { ...DEFAULT_HANDLE_CONFIG.back, ...((rawHandles.back as object | undefined) ?? {}) },
+    left: { ...DEFAULT_HANDLE_CONFIG.left, ...((rawHandles.left as object | undefined) ?? {}) },
+    right: { ...DEFAULT_HANDLE_CONFIG.right, ...((rawHandles.right as object | undefined) ?? {}) },
   };
 
   // Remove legacy and already-handled fields from spread

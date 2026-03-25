@@ -33,6 +33,7 @@ export type {
   WallPatternType,
   SplitConnectorConfig,
   HandleConfig,
+  HandleCutoutShape,
   HandleSide,
   HandleWallSide,
 } from '@/features/bin-designer/types';
