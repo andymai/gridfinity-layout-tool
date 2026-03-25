@@ -111,7 +111,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     return buildMultiColorGroups(faceGroups, featureColors, filamentPalette, indices.length);
   }, [multiColorEnabled, faceGroups, featureColors, filamentPalette, indices]);
 
-  const { geometry, edgesGeometry } = useMeshGeometry({
+  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices,
     normals,
     indices,
