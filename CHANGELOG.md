@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.29.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.29.0...gridfinity-layout-tool-v4.29.1) (2026-03-25)
+
+
+### Performance
+
+* **generation:** tighten preview tessellation for smoother 3D preview ([#1255](https://github.com/andymai/gridfinity-layout-tool/issues/1255)) ([4c6d43c](https://github.com/andymai/gridfinity-layout-tool/commit/4c6d43ca5da92af32967ae227a05cae01b9a9ecb))
+
 ## [4.29.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.28.2...gridfinity-layout-tool-v4.29.0) (2026-03-25)
 
 
