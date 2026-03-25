@@ -11,9 +11,10 @@ import type { BaseplateParams } from '@/shared/types/bin';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
-/** Must match baseplateGenerator.ts constants */
-const SOCKET_HEIGHT = 5;
+const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+/** Retaining floor thickness above magnet holes (generation-specific, not in GRIDFINITY_SPEC) */
 const MAGNET_FLOOR = 0.5;
 
 export interface PrintGuideInput {
@@ -153,14 +154,21 @@ function generateGridMap(
 
   const lines = ['─── Assembly Layout (front of drawer at bottom) ─', ''];
 
+  // Precompute (col, row) → piece index for O(1) lookups
+  const gridLookup = new Map<string, number>();
+  for (let i = 0; i < tiling.pieces.length; i++) {
+    const p = tiling.pieces[i];
+    gridLookup.set(`${p.col},${p.row}`, i);
+  }
+
   // Rows printed top-to-bottom (highest row at top, Row 1 at bottom)
   for (let r = tiling.rows - 1; r >= 0; r--) {
     const rowLabel = `Row ${r + 1}:`.padEnd(8);
     const cells: string[] = [];
 
     for (let c = 0; c < tiling.cols; c++) {
-      const pieceIdx = tiling.pieces.findIndex((p) => p.col === c && p.row === r);
-      const name = pieceIdx >= 0 ? (pieceNameLookup.get(pieceIdx) ?? '?') : '?';
+      const pieceIdx = gridLookup.get(`${c},${r}`);
+      const name = pieceIdx !== undefined ? (pieceNameLookup.get(pieceIdx) ?? '?') : '?';
       const padded = name.padEnd(maxNameLen);
       cells.push(`[ ${padded} ]`);
     }

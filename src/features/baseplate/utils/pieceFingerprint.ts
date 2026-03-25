@@ -13,6 +13,10 @@ import { pieceToBaseplateParams } from './splitPlanner';
 /**
  * Compute a stable fingerprint for a set of baseplate generation params.
  * Every field that affects BREP geometry output is included.
+ *
+ * Uses `|` as field delimiter and `:` as key-value separator.
+ * Field values must not contain these characters (safe for current
+ * numeric, boolean, and short enum values in BaseplateParams).
  */
 export function computePieceFingerprint(params: BaseplateParams): string {
   const parts = [
@@ -30,7 +34,7 @@ export function computePieceFingerprint(params: BaseplateParams): string {
     `fy:${params.fractionalEdgeY}`,
     `cn:${params.connectorNubs ? 1 : 0}`,
     `lw:${params.lightweight ? 1 : 0}`,
-    `cr:${params.cornerRadius ?? 0}`,
+    params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
   ];
 
   if (params.edges) {
@@ -52,11 +56,18 @@ export function computePieceFingerprint(params: BaseplateParams): string {
 
 /** A group of pieces sharing the same geometry fingerprint. */
 export interface PieceGroup {
-  /** Indices into the original tiling.pieces array */
-  readonly indices: number[];
+  /** Indices into the original tiling.pieces array (mutable during grouping) */
+  readonly indices: readonly number[];
   /** Generation params for this group (from first piece) */
   readonly params: BaseplateParams;
   /** The fingerprint key */
+  readonly fingerprint: string;
+}
+
+/** Mutable version used internally during grouping. */
+interface MutablePieceGroup {
+  readonly indices: number[];
+  readonly params: BaseplateParams;
   readonly fingerprint: string;
 }
 
@@ -71,7 +82,7 @@ export function groupPiecesByFingerprint(
   pieces: readonly BaseplatePiece[],
   parentParams: BaseplateParams
 ): Map<string, PieceGroup> {
-  const groups = new Map<string, PieceGroup>();
+  const groups = new Map<string, MutablePieceGroup>();
 
   for (let i = 0; i < pieces.length; i++) {
     const pieceParams = pieceToBaseplateParams(pieces[i], parentParams);
@@ -85,5 +96,5 @@ export function groupPiecesByFingerprint(
     }
   }
 
-  return groups;
+  return groups as Map<string, PieceGroup>;
 }

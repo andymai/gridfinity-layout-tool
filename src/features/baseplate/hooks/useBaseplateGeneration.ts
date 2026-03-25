@@ -72,6 +72,20 @@ const EMPTY_MESH = {
   timingMs: 0,
 } as const;
 
+/** Clone mesh buffers so each piece gets independent typed arrays for Three.js. */
+function cloneGenerationResult(result: GenerationResult): GenerationResult {
+  return {
+    mesh: {
+      ...result.mesh,
+      vertices: result.mesh.vertices.slice(),
+      normals: result.mesh.normals.slice(),
+      indices: result.mesh.indices.slice(),
+      edgeVertices: result.mesh.edgeVertices.slice(),
+    },
+    timingMs: 0,
+  };
+}
+
 const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
 
 /**
@@ -225,20 +239,7 @@ export function useBaseplateGeneration(): void {
               if (j === 0) {
                 meshEntries[pieceIdx] = buildPieceMeshEntry(result, piece);
               } else {
-                // Clone mesh data for duplicate pieces
-                meshEntries[pieceIdx] = buildPieceMeshEntry(
-                  {
-                    mesh: {
-                      ...result.mesh,
-                      vertices: result.mesh.vertices.slice(),
-                      normals: result.mesh.normals.slice(),
-                      indices: result.mesh.indices.slice(),
-                      edgeVertices: result.mesh.edgeVertices.slice(),
-                    },
-                    timingMs: 0,
-                  },
-                  piece
-                );
+                meshEntries[pieceIdx] = buildPieceMeshEntry(cloneGenerationResult(result), piece);
               }
             }
           }

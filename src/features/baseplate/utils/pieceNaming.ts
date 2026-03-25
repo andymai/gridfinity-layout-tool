@@ -87,12 +87,17 @@ function assignRoleNames(
   return result;
 }
 
+function indexToLabel(idx: number): string {
+  if (idx < 26) return String.fromCharCode(97 + idx);
+  return String(idx + 1);
+}
+
 function assignSequentialNames(groups: Map<string, PieceGroup>): Map<string, string> {
   const result = new Map<string, string>();
   let idx = 0;
 
   for (const fp of groups.keys()) {
-    result.set(fp, `piece-${String.fromCharCode(97 + idx)}`);
+    result.set(fp, `piece-${indexToLabel(idx)}`);
     idx++;
   }
 
