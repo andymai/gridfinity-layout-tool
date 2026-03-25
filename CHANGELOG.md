@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.28.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.27.0...gridfinity-layout-tool-v4.28.0) (2026-03-25)
+
+
+### Features
+
+* **handles:** graduate handle holes out of labs ([#1244](https://github.com/andymai/gridfinity-layout-tool/issues/1244)) ([33e2d6d](https://github.com/andymai/gridfinity-layout-tool/commit/33e2d6d49900a56b5d2321a4b38c1c5fa87931da))
+
 ## [4.27.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.26.0...gridfinity-layout-tool-v4.27.0) (2026-03-25)
 
 
