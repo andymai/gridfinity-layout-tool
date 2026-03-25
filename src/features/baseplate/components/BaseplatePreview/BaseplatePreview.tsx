@@ -966,10 +966,17 @@ function BaseplatePreviewControls({
 function overlayStatusText(
   isWasmLoading: boolean,
   splitProgress: { current: number; total: number } | null,
+  dedupStats: { uniqueCount: number; duplicatesSkipped: number } | null,
   t: ReturnType<typeof useTranslation>
 ): string {
   if (isWasmLoading) return t('baseplate.initializingEngine');
   if (splitProgress) {
+    if (dedupStats && dedupStats.duplicatesSkipped > 0) {
+      return t('baseplate.generation.dedupProgress', {
+        unique: dedupStats.uniqueCount,
+        skipped: dedupStats.duplicatesSkipped,
+      });
+    }
     return t('baseplate.generatingSplit', {
       current: splitProgress.current,
       total: splitProgress.total,
@@ -990,7 +997,7 @@ interface BaseplatePreviewProps {
 /** Track elapsed seconds during generation, returning null until 2s have passed. */
 function useGenerationElapsed(isGenerating: boolean): number | null {
   const [elapsed, setElapsed] = useState<number | null>(null);
-  const startRef = useRef<number>(0);
+  const startRef = useRef(0);
 
   useEffect(() => {
     if (!isGenerating) return undefined;
@@ -1034,6 +1041,7 @@ export function BaseplatePreview({
     splitViewMode,
     generationStatus,
     splitProgress,
+    dedupStats,
   } = useBaseplatePageStore(
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
@@ -1043,6 +1051,7 @@ export function BaseplatePreview({
       splitViewMode: s.splitViewMode,
       generationStatus: s.generation.status,
       splitProgress: s.splitProgress,
+      dedupStats: s.dedupStats,
     }))
   );
 
@@ -1289,7 +1298,7 @@ export function BaseplatePreview({
               />
             </svg>
             <span className="text-content-secondary">
-              {overlayStatusText(isWasmLoading, splitProgress, t)}
+              {overlayStatusText(isWasmLoading, splitProgress, dedupStats, t)}
               {elapsedSec !== null && (
                 <span className="ml-1.5 text-content-tertiary">
                   {t('baseplate.elapsed', { seconds: elapsedSec })}

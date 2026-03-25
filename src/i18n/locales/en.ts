@@ -1060,6 +1060,9 @@ const en: Record<string, string> = {
   'baseplate.export.enableSplit': 'Split into pieces',
   'baseplate.export.threeDModel': '3D Model',
   'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
+  'baseplate.export.dedupSuccess': 'Baseplate exported ({unique} unique pieces, {total} total)',
+  'baseplate.generation.dedupProgress':
+    'Generating {unique} unique pieces ({skipped} duplicates skipped)',
 
   // Drawer Settings
 
