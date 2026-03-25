@@ -1,9 +1,13 @@
 /**
  * Tessellation performance regression guard.
  *
- * Measures total generation time for representative bin configurations
- * and asserts they stay within a budget ceiling. This catches tessellation
- * tolerance changes that accidentally blow past the 2× performance target.
+ * Measures total generation time (tessellation only — warm-up fills the shell
+ * cache so BREP boolean-op time is excluded) for representative bin configs
+ * and asserts they stay within a budget ceiling.
+ *
+ * Run in isolation via the profile config to avoid CI flakiness from
+ * CPU contention with parallel test workers:
+ *   pnpm exec vitest run --config vitest.profile.config.ts tessellation.perf
  *
  * Update baselines after verified tolerance changes:
  *   Adjust MAX_MS_* constants if the new timings are intentional.
@@ -26,8 +30,9 @@ beforeAll(async () => {
 const MAX_MS_SMALL_BIN = 3_000;
 const MAX_MS_LARGE_BIN = 8_000;
 const MAX_MS_COMPLEX_BIN = 10_000;
+const MAX_MS_VERY_LARGE_BIN = 20_000;
 
-/** Number of warm-up runs before measuring (fills caches). */
+/** Number of warm-up runs before measuring (fills shell cache). */
 const WARMUP_RUNS = 1;
 /** Number of measured runs to average. */
 const MEASURE_RUNS = 3;
@@ -35,7 +40,7 @@ const MEASURE_RUNS = 3;
 function benchmarkGeneration(params: ReturnType<typeof buildParams>, forExport = false): number {
   const generateBin = getGenerateBin();
 
-  // Warm up (fills shell cache, JIT optimises hot paths)
+  // Warm up: fills shell cache so measured runs only time tessellation + features
   for (let i = 0; i < WARMUP_RUNS; i++) {
     generateBin(params, undefined, forExport);
   }
@@ -78,6 +83,20 @@ describe('tessellation performance budget', () => {
     // eslint-disable-next-line no-console -- perf reporting
     console.log(`  4×4 lip bin: ${avgMs.toFixed(1)}ms avg (budget: ${MAX_MS_LARGE_BIN}ms)`);
     expect(avgMs).toBeLessThan(MAX_MS_LARGE_BIN);
+  });
+
+  it(`8×8 standard bin with lip stays under ${MAX_MS_VERY_LARGE_BIN}ms`, () => {
+    const params = buildParams({
+      width: 8,
+      depth: 8,
+      height: 4,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+    });
+    const avgMs = benchmarkGeneration(params);
+
+    // eslint-disable-next-line no-console -- perf reporting
+    console.log(`  8×8 lip bin: ${avgMs.toFixed(1)}ms avg (budget: ${MAX_MS_VERY_LARGE_BIN}ms)`);
+    expect(avgMs).toBeLessThan(MAX_MS_VERY_LARGE_BIN);
   });
 
   it(`2×2 complex bin (lip + scoop + magnets + compartments) stays under ${MAX_MS_COMPLEX_BIN}ms`, () => {

@@ -19,7 +19,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/features/generation/worker/generators/__dual-kernel__/**/*.test.ts'],
+    include: [
+      'src/features/generation/worker/generators/__dual-kernel__/**/*.test.ts',
+      'src/features/generation/worker/generators/tessellation.perf.test.ts',
+    ],
     exclude: [],
     testTimeout: 600_000,
     pool: 'forks',

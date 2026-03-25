@@ -35,10 +35,8 @@ export const tessellateStage: PipelineStage = {
       tolerance,
       angularTolerance: angularTolerance * 0.5,
     });
-    const edgeVertices = new Float32Array(edgeMesh.lines);
-
     ctx.onProgress?.('merge', 1.0);
-    const meshData = toIndexedMeshData(shapeMesh, edgeVertices, ctx.originToTag);
+    const meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines, ctx.originToTag);
 
     return { ...ctx, mesh: meshData, solid: null };
   },

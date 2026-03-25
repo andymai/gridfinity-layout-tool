@@ -302,7 +302,7 @@ function tessellatePiece(
     angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
   });
   centeredPiece.delete();
-  const meshData = toIndexedMeshData(shapeMesh, new Float32Array(edgeMesh.lines));
+  const meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines);
 
   return {
     vertices: meshData.vertices,
