@@ -261,6 +261,7 @@ export function useBaseplateGeneration(): void {
         if (generationEpochRef.current !== epoch) return;
 
         setSplitProgress(null);
+        setDedupStats(null);
         setGenerationResult({
           ...EMPTY_MESH,
           error: e instanceof Error ? e.message : String(e),
