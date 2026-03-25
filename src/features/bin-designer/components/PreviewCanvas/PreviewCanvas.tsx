@@ -44,6 +44,7 @@ import { useSplitPreview } from '../../hooks/useSplitPreview';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
@@ -446,11 +447,14 @@ export function PreviewCanvas() {
     }
   }, [wasmStatus]);
 
+  // Hide single-color picker when multi-color palette is active
+  const showColors = useFeatureFlag('multi_color_export');
+
   // Responsive state for touch optimizations
   const { isDesktop } = useResponsive();
 
   // Double-tap to reset view (mobile only)
-  const lastTapRef = useRef<number>(0);
+  const lastTapRef = useRef(0);
   const handleCanvasDoubleTouch = useCallback(
     (e: React.PointerEvent) => {
       if (isDesktop || e.pointerType !== 'touch') return;
@@ -602,6 +606,7 @@ export function PreviewCanvas() {
             needsSplit={needsSplit}
             splitViewMode={splitViewMode}
             onSplitViewModeChange={setSplitViewMode}
+            hideColorPicker={showColors}
           />
 
           {/* Touch gesture hint (mobile/tablet first visit) */}

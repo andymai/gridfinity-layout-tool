@@ -7,7 +7,7 @@
 
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { DesignId } from '@/core/types';
-import type { FeatureColorConfig } from './featureColors';
+import type { FeatureColorConfig, ColorZone } from './featureColors';
 
 // Bin Configuration Types
 
@@ -256,8 +256,8 @@ export interface BinParams {
   readonly wallPattern: WallPatternConfig;
   /** Split connector config. If omitted/undefined, default split connector settings are applied (connectors enabled with defaults). */
   readonly splitConnectors?: SplitConnectorConfig;
-  /** Per-feature filament color assignment for multi-color 3MF export. If omitted, single-color export. */
-  readonly featureColors?: FeatureColorConfig;
+  /** Per-feature filament color assignment for multi-color 3MF export. */
+  readonly featureColors: FeatureColorConfig;
 }
 
 // Insert Types
@@ -455,6 +455,8 @@ export interface DesignerUIState {
   readonly splitViewMode: SplitViewMode;
   /** Per-piece mesh data for split bin preview (populated when exploded mode is active) */
   readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
+  /** Currently hovered color zone in the panel (for 3D preview glow feedback) */
+  readonly hoveredColorZone: ColorZone | null;
 }
 
 /** Undo/redo history for bin parameters with optional mesh cache */
@@ -614,6 +616,7 @@ export interface DesignerState {
   setCutoutEditorOpen: (open: boolean) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
+  setHoveredColorZone: (zone: ColorZone | null) => void;
   setPreviewCompartments: (preview: CompartmentConfig | null) => void;
   setPreviewSelection: (
     selection: {

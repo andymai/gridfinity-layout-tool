@@ -159,6 +159,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   cutouts: [],
   cutoutConfig: DEFAULT_CUTOUT_CONFIG,
   wallPattern: DEFAULT_WALL_PATTERN_CONFIG,
+  featureColors: DEFAULT_FEATURE_COLOR_CONFIG,
 } as const;
 
 /** Default generation state */
@@ -181,6 +182,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   previewSelection: null,
   splitViewMode: 'exploded',
   splitPieceMeshes: [],
+  hoveredColorZone: null,
 };
 
 /** Default empty history */
@@ -448,6 +450,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     cutouts: params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts,
     cutoutConfig,
     wallPattern: wallPatternConfig,
+    featureColors: params.featureColors
+      ? { ...DEFAULT_FEATURE_COLOR_CONFIG, ...params.featureColors }
+      : DEFAULT_FEATURE_COLOR_CONFIG,
     ...(params.splitConnectors !== undefined
       ? { splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, ...params.splitConnectors } }
       : {}),

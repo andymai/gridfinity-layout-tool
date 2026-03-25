@@ -1205,6 +1205,14 @@ const en: Record<string, string> = {
   'binDesigner.colors.body': 'Body',
   'binDesigner.colors.lip': 'Stacking Lip',
   'binDesigner.colors.labelTab': 'Label Tab',
+  'binDesigner.colors.palette': 'Filament Palette',
+  'binDesigner.colors.editSlot': 'Edit {name}',
+  'binDesigner.colors.slotName': 'Slot name',
+  'binDesigner.colors.hexColor': 'Hex color',
+  'binDesigner.colors.hexInvalid': 'Invalid hex color',
+  'binDesigner.colors.presets': 'Presets',
+  'binDesigner.colors.enableLipHint': 'Enable stacking lip to assign a color',
+  'binDesigner.colors.enableLabelTabHint': 'Enable label tabs to assign a color',
 
   'binDesigner.splitAxisInfo': 'Split along {axis} into {count} pieces',
 

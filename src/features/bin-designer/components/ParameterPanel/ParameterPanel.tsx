@@ -59,6 +59,15 @@ export function ParameterPanel() {
           </div>
         </StickyGroupHeader>
 
+        {/* Colors group (Labs: multi_color_export) — between Shape and Interior */}
+        {showColors && (
+          <StickyGroupHeader title={t('binDesigner.group.colors')} defaultExpanded>
+            <div className="px-4 py-4">
+              <ColorsSection />
+            </div>
+          </StickyGroupHeader>
+        )}
+
         {/* Interior group */}
         <StickyGroupHeader
           title={t('binDesigner.group.interior')}
@@ -77,15 +86,6 @@ export function ParameterPanel() {
             <ScoopSection />
           </div>
         </StickyGroupHeader>
-
-        {/* Colors group (Labs: multi_color_export) */}
-        {showColors && (
-          <StickyGroupHeader title={t('binDesigner.group.colors')} defaultExpanded={false}>
-            <div className="px-4 py-4">
-              <ColorsSection />
-            </div>
-          </StickyGroupHeader>
-        )}
 
         {/* Base group */}
         <StickyGroupHeader

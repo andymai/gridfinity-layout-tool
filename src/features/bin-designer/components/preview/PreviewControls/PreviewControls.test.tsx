@@ -79,4 +79,14 @@ describe('PreviewControls', () => {
     fireEvent.mouseDown(document.body);
     expect(screen.queryAllByRole('listbox').length).toBe(0);
   });
+
+  it('hides color picker button when hideColorPicker is true', () => {
+    render(<PreviewControls {...defaultProps} hideColorPicker />);
+    expect(screen.queryAllByLabelText(/Change preview color/).length).toBe(0);
+  });
+
+  it('shows color picker button when hideColorPicker is false', () => {
+    render(<PreviewControls {...defaultProps} hideColorPicker={false} />);
+    expect(screen.getAllByLabelText(/Change preview color/).length).toBeGreaterThan(0);
+  });
 });

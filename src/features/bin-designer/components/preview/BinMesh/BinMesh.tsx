@@ -24,7 +24,11 @@ import {
   resolveSlotMapping,
 } from '@/features/bin-designer/types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
-import type { FeatureColorConfig, FilamentSlot } from '@/features/bin-designer/types/featureColors';
+import type {
+  FeatureColorConfig,
+  FilamentSlot,
+  FilamentSlotId,
+} from '@/features/bin-designer/types/featureColors';
 
 /** Edge line color (black for sketch look) */
 const EDGE_COLOR = '#000000';
@@ -44,7 +48,11 @@ function buildMultiColorGroups(
   featureColors: FeatureColorConfig,
   palette: readonly FilamentSlot[],
   totalIndexCount: number
-): { groups: MeshFaceGroup[]; colors: readonly string[] } | null {
+): {
+  groups: MeshFaceGroup[];
+  colors: readonly string[];
+  slotToIndex: ReadonlyMap<FilamentSlotId, number>;
+} | null {
   if (isSingleColor(featureColors)) return null;
 
   const {
@@ -76,7 +84,7 @@ function buildMultiColorGroups(
     groups.push({ start: cursor, count: totalIndexCount - cursor, materialIndex: defaultIndex });
   }
 
-  return { groups, colors };
+  return { groups, colors, slotToIndex };
 }
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
@@ -90,19 +98,20 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       indices: s.generation.mesh?.indices ?? null,
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
       faceGroups: s.generation.mesh?.faceGroups ?? null,
-      featureColors: s.params.featureColors ?? null,
+      featureColors: s.params.featureColors,
     }))
   );
 
   const filamentPalette = useSettingsStore((s) => s.settings.filamentPalette);
+  const hoveredColorZone = useDesignerStore((s) => s.ui.hoveredColorZone);
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
-    if (!multiColorEnabled || !faceGroups || !featureColors || !indices) return null;
+    if (!multiColorEnabled || !faceGroups || !indices) return null;
     return buildMultiColorGroups(faceGroups, featureColors, filamentPalette, indices.length);
   }, [multiColorEnabled, faceGroups, featureColors, filamentPalette, indices]);
 
-  const { geometry, edgesGeometry } = useMeshGeometry({
+  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices,
     normals,
     indices,
@@ -110,11 +119,18 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     faceGroups: multiColorData?.groups,
   });
 
-  // Build material array for multi-color, or null for single-color
+  // Build material array for multi-color, with hover glow applied
   const materials = useMemo(() => {
     if (!multiColorData) return null;
+
+    let hoveredIndex: number | undefined;
+    if (hoveredColorZone) {
+      const hoveredSlotId = featureColors[hoveredColorZone];
+      hoveredIndex = multiColorData.slotToIndex.get(hoveredSlotId);
+    }
+
     return multiColorData.colors.map(
-      (c) =>
+      (c, i) =>
         new THREE.MeshStandardMaterial({
           color: c,
           roughness: 0.45,
@@ -122,13 +138,14 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           wireframe,
           side: THREE.DoubleSide,
           emissive: new THREE.Color(c),
-          emissiveIntensity: 0.08,
+          emissiveIntensity: i === hoveredIndex ? 0.35 : 0.08,
+          flatShading: !hasPrecomputedNormals,
           polygonOffset: true,
           polygonOffsetFactor: 1,
           polygonOffsetUnits: 1,
         })
     );
-  }, [multiColorData, wireframe]);
+  }, [multiColorData, wireframe, hasPrecomputedNormals, hoveredColorZone, featureColors]);
 
   // Dispose materials on change
   useEffect(() => {
