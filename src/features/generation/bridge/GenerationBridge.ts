@@ -130,6 +130,18 @@ export interface ThreadingInfo {
   readonly kernel: KernelName;
 }
 
+/** Size-1 dedup cache: stores the fingerprint and result of the last successful generation. */
+interface DedupCache {
+  fingerprint: string | null;
+  result: GenerationResult | null;
+  /** Fingerprint of the currently in-flight request (stored so we can cache on success). */
+  pendingFingerprint: string | null;
+}
+
+function createDedupCache(): DedupCache {
+  return { fingerprint: null, result: null, pendingFingerprint: null };
+}
+
 /** Keys for the pending export request slots */
 type ExportSlot = 'export' | 'dividers' | 'split' | 'splitPreview';
 
@@ -162,13 +174,9 @@ export class GenerationBridge {
   private adaptiveDebounce = new AdaptiveDebounce();
   private threadingInfo: ThreadingInfo | null = null;
 
-  /** Last successful bin generation: fingerprint + result for deduplication. */
-  private lastBinFingerprint: string | null = null;
-  private lastBinResult: GenerationResult | null = null;
-
-  /** Last successful baseplate generation: fingerprint + result for deduplication. */
-  private lastBaseplateFingerprint: string | null = null;
-  private lastBaseplateResult: GenerationResult | null = null;
+  /** Size-1 dedup caches for bin and baseplate generation. */
+  private binCache: DedupCache = createDedupCache();
+  private baseplateCache: DedupCache = createDedupCache();
 
   /** Optional callback for cache performance stats (called after each generation). */
   onCacheStats: CacheStatsCallback | null = null;
@@ -290,8 +298,8 @@ export class GenerationBridge {
 
     // Deduplication: return cached result if params haven't changed
     const fingerprint = paramsFingerprint(params);
-    if (this.lastBinFingerprint === fingerprint && this.lastBinResult) {
-      return Promise.resolve(this.lastBinResult);
+    if (this.binCache.fingerprint === fingerprint && this.binCache.result) {
+      return Promise.resolve(this.binCache.result);
     }
 
     // Cancel any pending debounce
@@ -351,10 +359,8 @@ export class GenerationBridge {
     this.initPromise = null;
     this.onProgress = null;
     this.adaptiveDebounce.reset();
-    this.lastBinFingerprint = null;
-    this.lastBinResult = null;
-    this.lastBaseplateFingerprint = null;
-    this.lastBaseplateResult = null;
+    this.binCache = createDedupCache();
+    this.baseplateCache = createDedupCache();
   }
 
   /**
@@ -552,9 +558,6 @@ export class GenerationBridge {
     return this.generateBaseplateInternal(params, onProgress, false);
   }
 
-  /** Fingerprint of the in-flight baseplate generation request. */
-  private pendingBaseplateFingerprint: string | null = null;
-
   private generateBaseplateInternal(
     params: BaseplateParams,
     onProgress: ProgressCallback | undefined,
@@ -566,8 +569,8 @@ export class GenerationBridge {
 
     // Deduplication: return cached result if params haven't changed
     const fingerprint = paramsFingerprint(params);
-    if (this.lastBaseplateFingerprint === fingerprint && this.lastBaseplateResult) {
-      return Promise.resolve(this.lastBaseplateResult);
+    if (this.baseplateCache.fingerprint === fingerprint && this.baseplateCache.result) {
+      return Promise.resolve(this.baseplateCache.result);
     }
 
     if (this.debounceTimer !== null) {
@@ -585,7 +588,7 @@ export class GenerationBridge {
       const sendMessage = (): void => {
         const requestId = this.nextRequestId();
         this.currentRequestId = requestId;
-        this.pendingBaseplateFingerprint = fingerprint;
+        this.baseplateCache.pendingFingerprint = fingerprint;
         this.postMessage({
           type: 'GENERATE_BASEPLATE',
           payload: { params, requestId },
@@ -690,13 +693,10 @@ export class GenerationBridge {
     return false;
   }
 
-  /** Fingerprint of the in-flight bin generation request (stored for caching on success). */
-  private pendingBinFingerprint: string | null = null;
-
   private sendGenerateMessage(params: BinParams, fingerprint: string): void {
     const requestId = this.nextRequestId();
     this.currentRequestId = requestId;
-    this.pendingBinFingerprint = fingerprint;
+    this.binCache.pendingFingerprint = fingerprint;
 
     this.postMessage({
       type: 'GENERATE',
@@ -734,15 +734,8 @@ export class GenerationBridge {
             };
 
             // Cache for deduplication (bin or baseplate — only one is in-flight)
-            if (this.pendingBinFingerprint) {
-              this.lastBinFingerprint = this.pendingBinFingerprint;
-              this.lastBinResult = result;
-              this.pendingBinFingerprint = null;
-            } else if (this.pendingBaseplateFingerprint) {
-              this.lastBaseplateFingerprint = this.pendingBaseplateFingerprint;
-              this.lastBaseplateResult = result;
-              this.pendingBaseplateFingerprint = null;
-            }
+            this.commitDedupCache(this.binCache, result);
+            this.commitDedupCache(this.baseplateCache, result);
 
             this.clearPending();
             resolve(result);
@@ -846,11 +839,22 @@ export class GenerationBridge {
     }
   }
 
+  /** If this cache has a pending fingerprint, promote it to the cached result and clear pending. */
+  private commitDedupCache(cache: DedupCache, result: GenerationResult): void {
+    if (cache.pendingFingerprint) {
+      cache.fingerprint = cache.pendingFingerprint;
+      cache.result = result;
+      cache.pendingFingerprint = null;
+    }
+  }
+
   private clearPending(): void {
     this.pendingResolve = null;
     this.pendingReject = null;
     this.currentRequestId = null;
     this.onProgress = null;
+    this.binCache.pendingFingerprint = null;
+    this.baseplateCache.pendingFingerprint = null;
   }
 
   private postMessage(message: WorkerMessage): void {

@@ -434,6 +434,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 0, 1]),
         indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 1,
         timingMs: 42,
       });
@@ -476,6 +477,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array([4, 5, 6]),
         normals: new Float32Array([0, 1, 0]),
         indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 2,
         timingMs: 50,
       });
@@ -502,6 +504,125 @@ describe('GenerationBridge', () => {
 
       bridge.destroy();
       await expect(bridge.generate(DEFAULT_BIN_PARAMS)).rejects.toThrow('destroyed');
+    });
+
+    it('does not serve stale cache after cancel', async () => {
+      await initAndGenerate();
+
+      // Start a new generation with different params, then cancel
+      const genPromise = bridge.generate({ ...DEFAULT_BIN_PARAMS, width: 5 });
+      await vi.advanceTimersByTimeAsync(200);
+
+      const rejection = expect(genPromise).rejects.toThrow('cancelled');
+      bridge.cancel();
+      await rejection;
+
+      // Retry with the original params — should still re-dispatch because
+      // the last *successful* result was for DEFAULT_BIN_PARAMS, which
+      // should still be cached
+      const result = await bridge.generate(DEFAULT_BIN_PARAMS);
+      expect(result.mesh.triangleCount).toBe(1);
+
+      // Only 2 GENERATE messages total (initial + the cancelled one)
+      const generateMessages = getWorker().messages.filter(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      );
+      expect(generateMessages.length).toBe(2);
+    });
+
+    it('does not cache failed generation', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      // First generation fails
+      const failPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      await vi.advanceTimersByTimeAsync(200);
+
+      const msgs1 = getWorker().messages.filter((m) => (m as { type: string }).type === 'GENERATE');
+      const msg1 = msgs1[0] as { payload: { requestId: string } };
+      getWorker().simulateResponse({
+        type: 'ERROR',
+        requestId: msg1.payload.requestId,
+        error: 'OCCT failure',
+      });
+      await expect(failPromise).rejects.toThrow('OCCT failure');
+
+      // Retry with same params — should re-dispatch (not serve cached error)
+      const retryPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      await vi.advanceTimersByTimeAsync(200);
+
+      const msgs2 = getWorker().messages.filter((m) => (m as { type: string }).type === 'GENERATE');
+      expect(msgs2.length).toBe(2); // Both dispatched
+
+      // Complete the retry
+      const msg2 = msgs2[1] as { payload: { requestId: string } };
+      getWorker().simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: msg2.payload.requestId,
+        vertices: new Float32Array([1, 2, 3]),
+        normals: new Float32Array([0, 0, 1]),
+        indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
+        triangleCount: 1,
+        timingMs: 10,
+      });
+
+      const result = await retryPromise;
+      expect(result.mesh.triangleCount).toBe(1);
+    });
+
+    it('does not cross-contaminate bin and baseplate caches when interleaved', async () => {
+      await initAndGenerate(); // bin cache is warm (triangleCount=1)
+
+      // Start a bin generation with different params (will be cancelled by baseplate)
+      const binPromise = bridge.generate({ ...DEFAULT_BIN_PARAMS, width: 4 });
+      await vi.advanceTimersByTimeAsync(200);
+
+      // Supersede with a baseplate request — this cancels the in-flight bin request
+      const rejection = expect(binPromise).rejects.toThrow('cancelled');
+      const bpPromise = bridge.generateBaseplate(
+        {
+          width: 2,
+          depth: 2,
+          gridUnitMm: 42,
+          magnetHoles: false,
+          magnetDiameter: 6.5,
+          magnetDepth: 2.4,
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingFront: 0,
+          paddingBack: 0,
+          fractionalEdgeX: 'end',
+          fractionalEdgeY: 'end',
+        },
+        () => {}
+      );
+      await rejection;
+      await vi.advanceTimersByTimeAsync(200);
+
+      // Complete the baseplate request
+      const bpMsgs = getWorker().messages.filter(
+        (m) => (m as { type: string }).type === 'GENERATE_BASEPLATE'
+      );
+      const bpMsg = bpMsgs[0] as { payload: { requestId: string } };
+      getWorker().simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: bpMsg.payload.requestId,
+        vertices: new Float32Array([7, 8, 9]),
+        normals: new Float32Array([0, 0, 1]),
+        indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
+        triangleCount: 99,
+        timingMs: 20,
+      });
+
+      const bpResult = await bpPromise;
+      expect(bpResult.mesh.triangleCount).toBe(99);
+
+      // Now verify bin cache still returns the original result (not baseplate data)
+      const binResult = await bridge.generate(DEFAULT_BIN_PARAMS);
+      expect(binResult.mesh.triangleCount).toBe(1); // Original cached bin result
     });
   });
 
