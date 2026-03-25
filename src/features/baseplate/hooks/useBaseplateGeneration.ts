@@ -229,10 +229,11 @@ export function useBaseplateGeneration(): void {
                 meshEntries[pieceIdx] = buildPieceMeshEntry(
                   {
                     mesh: {
-                      vertices: result.mesh.vertices?.slice() ?? null,
-                      normals: result.mesh.normals?.slice() ?? null,
-                      indices: result.mesh.indices?.slice() ?? null,
-                      edgeVertices: result.mesh.edgeVertices?.slice() ?? null,
+                      ...result.mesh,
+                      vertices: result.mesh.vertices.slice(),
+                      normals: result.mesh.normals.slice(),
+                      indices: result.mesh.indices.slice(),
+                      edgeVertices: result.mesh.edgeVertices.slice(),
                     },
                     timingMs: 0,
                   },
