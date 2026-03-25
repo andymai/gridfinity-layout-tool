@@ -20,7 +20,9 @@ import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
-import { pieceToBaseplateParams } from '../utils/splitPlanner';
+import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
+import { assignGroupNames } from '../utils/pieceNaming';
+import { generatePrintGuide } from '../utils/printGuide';
 import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
@@ -120,70 +122,82 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
         const extension = FORMAT_EXTENSIONS[format];
 
         if (tiling?.isSplit && splitEnabled) {
-          // Multi-piece ZIP export
+          // Multi-piece ZIP export with deduplication
           const bridgeFormat = format === '3mf' ? 'stl' : format;
           const pool = workerPoolManager.get();
-          const total = tiling.pieces.length;
-          setExportProgress({ current: 0, total });
 
-          let pieces: { data: ArrayBuffer; label: string }[];
+          // Deduplicate: group pieces by geometry fingerprint
+          const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
+          const groupNames = assignGroupNames(groups, tiling.pieces);
+          const uniqueGroups = [...groups.entries()];
+          const uniqueCount = uniqueGroups.length;
+          const totalPieces = tiling.pieces.length;
+
+          setExportProgress({ current: 0, total: uniqueCount });
+
+          // Generate only unique shapes
+          const uniqueParams = uniqueGroups.map(([, g]) => g.params);
+          let uniqueExports: ArrayBuffer[];
 
           if (pool && !pool.isDestroyed && pool.size > 1) {
-            // Parallel export via shared worker pool
-            const pieceParamsArray = tiling.pieces.map((piece) =>
-              pieceToBaseplateParams(piece, fullParams)
-            );
             const results = await pool.exportBaseplates(
-              pieceParamsArray,
+              uniqueParams,
               bridgeFormat,
-              (completed, pieceTotal) => {
-                setExportProgress({ current: completed, total: pieceTotal });
-              }
+              (completed, pieceTotal) =>
+                setExportProgress({ current: completed, total: pieceTotal })
             );
-
-            if (format === '3mf') {
-              const convertedPieces: { data: ArrayBuffer; label: string }[] = [];
-              for (let i = 0; i < results.length; i++) {
-                const blob = convertStlTo3mf(
-                  results[i].data,
-                  `${baseNameNoExt}_${tiling.pieces[i].label}`
-                );
-                convertedPieces.push({
-                  data: await blob.arrayBuffer(),
-                  label: tiling.pieces[i].label,
-                });
-              }
-              pieces = convertedPieces;
-            } else {
-              pieces = results.map((r, i) => ({
-                data: r.data,
-                label: tiling.pieces[i].label,
-              }));
-            }
+            uniqueExports = results.map((r) => r.data);
           } else {
-            // Sequential fallback
-            pieces = [];
-            for (let i = 0; i < tiling.pieces.length; i++) {
-              const piece = tiling.pieces[i];
-              setExportProgress({ current: i + 1, total });
-              const pieceParams = pieceToBaseplateParams(piece, fullParams);
-              const result = await bridge.exportBaseplate(pieceParams, bridgeFormat);
-
-              if (format === '3mf') {
-                const blob = convertStlTo3mf(result.data, `${baseNameNoExt}_${piece.label}`);
-                pieces.push({ data: await blob.arrayBuffer(), label: piece.label });
-              } else {
-                pieces.push({ data: result.data, label: piece.label });
-              }
+            uniqueExports = [];
+            for (let i = 0; i < uniqueGroups.length; i++) {
+              setExportProgress({ current: i + 1, total: uniqueCount });
+              const result = await bridge.exportBaseplate(uniqueGroups[i][1].params, bridgeFormat);
+              uniqueExports.push(result.data);
             }
           }
 
-          const zip = await packagePiecesAsZip(pieces, baseNameNoExt, extension);
+          // Build pieces array with role-based names (one file per unique shape)
+          const pieces: { data: ArrayBuffer; label: string }[] = [];
+          for (let i = 0; i < uniqueGroups.length; i++) {
+            const [fp] = uniqueGroups[i];
+            const name = groupNames.get(fp) ?? 'unknown';
+            let data = uniqueExports[i];
+
+            if (format === '3mf') {
+              const blob = convertStlTo3mf(data, `${baseNameNoExt}_${name}`);
+              data = await blob.arrayBuffer();
+            }
+
+            pieces.push({ data, label: name });
+          }
+
+          // Generate print guide
+          const guideText = generatePrintGuide({
+            tiling,
+            groups,
+            groupNames,
+            parentParams: fullParams,
+            fileExtension: extension,
+            baseFileName: baseNameNoExt,
+          });
+
+          const zip = await packagePiecesAsZip(pieces, baseNameNoExt, extension, [
+            { name: 'print-guide.txt', content: guideText },
+          ]);
           triggerDownload(zip, `${baseNameNoExt}.zip`);
 
-          useToastStore
-            .getState()
-            .addToast(t('baseplate.export.splitSuccess', { count: total }), 'success');
+          if (uniqueCount < totalPieces) {
+            useToastStore
+              .getState()
+              .addToast(
+                t('baseplate.export.dedupSuccess', { unique: uniqueCount, total: totalPieces }),
+                'success'
+              );
+          } else {
+            useToastStore
+              .getState()
+              .addToast(t('baseplate.export.splitSuccess', { count: totalPieces }), 'success');
+          }
         } else {
           // Single piece export
           if (format === '3mf') {

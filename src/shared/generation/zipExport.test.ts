@@ -78,6 +78,34 @@ describe('packagePiecesAsZip', () => {
     expect(mockFile).toHaveBeenCalledWith('grid_B2.stl', pieces[3].data);
   });
 
+  it('includes extra text files in the ZIP when provided', async () => {
+    const pieces = [{ data: new ArrayBuffer(10), label: 'corner' }];
+
+    await packagePiecesAsZip(pieces, 'test', '.stl', [
+      { name: 'print-guide.txt', content: 'Hello world' },
+    ]);
+
+    expect(mockFile).toHaveBeenCalledTimes(2);
+    expect(mockFile).toHaveBeenCalledWith('test_corner.stl', pieces[0].data);
+    expect(mockFile).toHaveBeenCalledWith('print-guide.txt', 'Hello world');
+  });
+
+  it('skips extra files when not provided', async () => {
+    const pieces = [{ data: new ArrayBuffer(10), label: 'piece' }];
+
+    await packagePiecesAsZip(pieces, 'test', '.stl');
+
+    expect(mockFile).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips extra files when empty array provided', async () => {
+    const pieces = [{ data: new ArrayBuffer(10), label: 'piece' }];
+
+    await packagePiecesAsZip(pieces, 'test', '.stl', []);
+
+    expect(mockFile).toHaveBeenCalledTimes(1);
+  });
+
   it('returns the blob from generateAsync', async () => {
     const expectedBlob = new Blob(['custom-content']);
     mockGenerateAsync.mockResolvedValue(expectedBlob);

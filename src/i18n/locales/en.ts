@@ -1056,10 +1056,13 @@ const en: Record<string, string> = {
   'baseplate.export.success': '{format} baseplate exported successfully',
   'baseplate.export.splitSuccess': 'Baseplate exported ({count} pieces)',
   'baseplate.export.splitBanner':
-    'Baseplate exceeds {size}mm print bed — will export as {count} pieces',
+    'Baseplate exceeds {size}mm print bed — will export as {count} pieces in a ZIP with print guide',
   'baseplate.export.enableSplit': 'Split into pieces',
   'baseplate.export.threeDModel': '3D Model',
   'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
+  'baseplate.export.dedupSuccess': 'Baseplate exported ({unique} unique pieces, {total} total)',
+  'baseplate.generation.dedupProgress':
+    'Generating {unique} unique pieces ({skipped} duplicates skipped)',
 
   // Drawer Settings
 

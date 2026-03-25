@@ -62,3 +62,13 @@ export interface BaseplateTiling {
   /** Hint: reducing padding by this amount would save pieces. null if no benefit. */
   readonly paddingReductionHint: PaddingReductionHint | null;
 }
+
+/** Statistics about deduplication in a split baseplate generation/export. */
+export interface DedupStats {
+  /** Number of unique shapes generated */
+  readonly uniqueCount: number;
+  /** Total number of pieces (unique + duplicates) */
+  readonly totalCount: number;
+  /** Number of duplicates that were cloned instead of generated */
+  readonly duplicatesSkipped: number;
+}

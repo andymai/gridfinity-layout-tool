@@ -8,7 +8,7 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { BaseplateTiling } from '../types/tiling';
+import type { BaseplateTiling, DedupStats } from '../types/tiling';
 import type { ExportFileNameConfig } from '@/shared/types/bin';
 
 type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
@@ -58,6 +58,8 @@ interface BaseplatePageState {
   splitViewMode: SplitViewMode;
   /** Progress for multi-piece generation: null when not splitting */
   splitProgress: { current: number; total: number } | null;
+  /** Deduplication statistics for current split generation */
+  dedupStats: DedupStats | null;
 
   /** Currently hovered piece label (e.g. "A1"), synced between panel and 3D */
   hoveredPieceLabel: string | null;
@@ -84,6 +86,7 @@ interface BaseplatePageState {
   setExportDialogOpen: (open: boolean) => void;
   setExportFileNameConfig: (config: ExportFileNameConfig) => void;
   setExportProgress: (progress: { current: number; total: number } | null) => void;
+  setDedupStats: (stats: DedupStats | null) => void;
 }
 
 export const useBaseplatePageStore = create<BaseplatePageState>()(
@@ -98,6 +101,7 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     pieceMeshes: [],
     splitViewMode: 'exploded',
     splitProgress: null,
+    dedupStats: null,
     hoveredPieceLabel: null,
     selectedPieceLabel: null,
     exportDialogOpen: false,
@@ -185,6 +189,12 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     setExportProgress: (progress) => {
       set((state) => {
         state.exportProgress = progress;
+      });
+    },
+
+    setDedupStats: (stats) => {
+      set((state) => {
+        state.dedupStats = stats;
       });
     },
   }))

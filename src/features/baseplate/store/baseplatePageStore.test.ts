@@ -284,6 +284,35 @@ describe('baseplatePageStore', () => {
     });
   });
 
+  describe('dedupStats', () => {
+    it('starts as null', () => {
+      expect(useBaseplatePageStore.getState().dedupStats).toBeNull();
+    });
+
+    it('sets dedup stats', () => {
+      useBaseplatePageStore.getState().setDedupStats({
+        uniqueCount: 3,
+        totalCount: 9,
+        duplicatesSkipped: 6,
+      });
+      expect(useBaseplatePageStore.getState().dedupStats).toEqual({
+        uniqueCount: 3,
+        totalCount: 9,
+        duplicatesSkipped: 6,
+      });
+    });
+
+    it('clears dedup stats with null', () => {
+      useBaseplatePageStore.getState().setDedupStats({
+        uniqueCount: 3,
+        totalCount: 9,
+        duplicatesSkipped: 6,
+      });
+      useBaseplatePageStore.getState().setDedupStats(null);
+      expect(useBaseplatePageStore.getState().dedupStats).toBeNull();
+    });
+  });
+
   describe('auto-reset on regeneration', () => {
     const makePiece = (label: string): PieceMeshEntry => ({
       label,
