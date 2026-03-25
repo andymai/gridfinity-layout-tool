@@ -42,6 +42,11 @@ describe('WallsSection', () => {
     expect(screen.getByText('Walls with divider slots will keep solid walls')).toBeInTheDocument();
   });
 
+  it('always renders handle section', () => {
+    render(<WallsSection />);
+    expect(screen.getByText('Handles')).toBeInTheDocument();
+  });
+
   it('renders with honeycomb pattern selected', () => {
     useDesignerStore.setState({
       params: {

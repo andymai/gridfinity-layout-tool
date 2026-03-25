@@ -21,6 +21,9 @@ function loadPreferences(): LabsPreferences {
   if (isOk(result) && result.value) {
     const prefs = { ...createDefaultLabsPreferences(), ...result.value };
 
+    // Clean up orphaned key from pre-graduation rename
+    delete prefs.enabledFeatures.handle_ledges;
+
     return prefs;
   }
   return createDefaultLabsPreferences();
