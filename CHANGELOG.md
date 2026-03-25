@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.29.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.28.2...gridfinity-layout-tool-v4.29.0) (2026-03-25)
+
+
+### Features
+
+* redesign handle cutouts with shapes, multi-handle, and per-side controls ([#1252](https://github.com/andymai/gridfinity-layout-tool/issues/1252)) ([5f490c6](https://github.com/andymai/gridfinity-layout-tool/commit/5f490c6fba0add32a236053c7baed3ea22b6a75a))
+
 ## [4.28.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.28.1...gridfinity-layout-tool-v4.28.2) (2026-03-25)
 
 
