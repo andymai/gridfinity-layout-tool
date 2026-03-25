@@ -10,21 +10,18 @@
  * checks for overlap and splits or skips as needed.
  */
 
-import { translate, rotate, cut } from 'brepjs';
+import { translate, rotate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import { isOk } from '@/core/result';
 import type { BinParams, HandleCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull, findWallSegments } from './compartmentBuilder';
 import {
   buildHandleWallDefs,
   computeHandleHoleGeometry,
-  CUTOUT_CLEARANCE,
-  MIN_SEGMENT_WIDTH,
+  computeWallHandleSegments,
   U_SHAPE_OVERSHOOT,
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { buildHandleProfile } from './handleProfiles';
 import { LIP_TAPER_WIDTH } from './generatorConstants';
@@ -62,178 +59,38 @@ function buildHoleCut(
   return translate(cutShape, [wall.x, wall.y, 0]);
 }
 
-/** Chamfer distance in mm — applied to both entry faces of the handle hole. */
+/** Chamfer distance in mm. */
 const CHAMFER_DISTANCE = 0.8;
 
 /**
- * Build chamfer cuts for a handle hole.
+ * Build a chamfer cut for a handle hole.
  *
- * Creates slightly larger, shallow cuts on both wall faces to bevel the edges.
- * Returns null if the chamfer profile fails to build.
+ * Extrudes a slightly larger profile to shallow depth. Since the handle hole
+ * already creates the void, this larger cut creates a beveled edge automatically.
  */
-function buildChamferCuts(
+function buildChamferCut(
   shape: HandleCutoutShape,
   segmentWidth: number,
   segmentOffset: number,
   holeHeight: number,
   cornerRadius: number,
-  _wallThickness: number,
   centerZ: number,
   wall: HandleWallDef
 ): Shape3D | null {
-  // Build a slightly larger profile for the chamfer
-  const chamferProfile = buildHandleProfile(shape, {
+  const profile = buildHandleProfile(shape, {
     width: segmentWidth + CHAMFER_DISTANCE * 2,
     height: holeHeight + CHAMFER_DISTANCE * 2,
     cornerRadius: cornerRadius + CHAMFER_DISTANCE,
   });
-  if (!chamferProfile) return null;
+  if (!profile) return null;
 
-  // Build the original hole profile to subtract from the chamfer ring
-  const holeProfile = buildHandleProfile(shape, {
-    width: segmentWidth,
-    height: holeHeight,
-    cornerRadius,
-  });
-  if (!holeProfile) return null;
+  let chamfer = sketch(profile, 'XZ').extrude(CHAMFER_DISTANCE);
+  chamfer = translate(chamfer, [segmentOffset, CHAMFER_DISTANCE / 2, centerZ]);
 
-  // Chamfer ring = larger profile extruded shallow, minus the hole profile
-  const chamferDepth = CHAMFER_DISTANCE;
-  let outerShape = sketch(chamferProfile, 'XZ').extrude(chamferDepth);
-  const innerShape = sketch(holeProfile, 'XZ').extrude(chamferDepth + 0.1);
-
-  // Position both at the same Z
-  outerShape = translate(outerShape, [segmentOffset, chamferDepth / 2, centerZ]);
-  const innerCut = translate(innerShape, [segmentOffset, chamferDepth / 2, centerZ]);
-
-  const ringResult = cut(outerShape, innerCut);
-  if (!isOk(ringResult)) return null;
-  let ring = ringResult.value;
-
-  // Position at wall face (offset by half wall thickness to sit on the outer face)
-  // The ring needs to be at the wall's outer face, not centered in the wall
   if (wall.rotateZ !== 0) {
-    ring = rotate(ring, wall.rotateZ, { axis: [0, 0, 1] });
+    chamfer = rotate(chamfer, wall.rotateZ, { axis: [0, 0, 1] });
   }
-  return translate(ring, [wall.x, wall.y, 0]);
-}
-
-/** Resolve cutout horizontal info for overlap checking. */
-function resolveCutoutSpan(
-  wallSpan: number,
-  wallThickness: number,
-  cutout: {
-    enabled: boolean;
-    width: number;
-    widthMm: number | null;
-    alignment: string;
-    offset: number;
-  }
-): { cutCenter: number; cutWidth: number } | null {
-  if (!cutout.enabled) return null;
-  const cutWidth =
-    cutout.widthMm !== null ? Math.min(cutout.widthMm, wallSpan) : wallSpan * (cutout.width / 100);
-  if (cutWidth <= 0) return null;
-  const cutCenter = computeCutoutCenter(
-    wallSpan,
-    cutWidth,
-    wallThickness,
-    cutout.alignment as 'left' | 'center' | 'right',
-    cutout.offset
-  );
-  return { cutCenter, cutWidth };
-}
-
-/**
- * Build handle holes for a single handle at a given offset, checking cutout overlap.
- *
- * Returns 0-2 hole shapes: full handle if no overlap, left/right remnants if partial overlap,
- * nothing if fully covered.
- */
-function buildHandleAtOffset(
-  shape: HandleCutoutShape,
-  handleOffset: number,
-  handleWidthMm: number,
-  holeHeight: number,
-  cornerRadius: number,
-  extrudeDepth: number,
-  centerZ: number,
-  wall: HandleWallDef,
-  wallThickness: number,
-  chamfer: boolean,
-  cutoutSpan: { cutCenter: number; cutWidth: number } | null
-): Shape3D[] {
-  const results: Shape3D[] = [];
-
-  if (cutoutSpan) {
-    const handleLeft = handleOffset - handleWidthMm / 2;
-    const handleRight = handleOffset + handleWidthMm / 2;
-    const cutLeft = cutoutSpan.cutCenter - cutoutSpan.cutWidth / 2 - CUTOUT_CLEARANCE;
-    const cutRight = cutoutSpan.cutCenter + cutoutSpan.cutWidth / 2 + CUTOUT_CLEARANCE;
-
-    // Check overlap
-    if (handleRight > cutLeft && handleLeft < cutRight) {
-      // Partial or full overlap — compute remnant segments
-      const leftWidth = cutLeft - handleLeft;
-      if (leftWidth >= MIN_SEGMENT_WIDTH) {
-        const leftCenter = handleLeft + leftWidth / 2;
-        const hole = buildHoleCut(
-          shape,
-          leftWidth,
-          leftCenter,
-          holeHeight,
-          cornerRadius,
-          extrudeDepth,
-          centerZ,
-          wall
-        );
-        if (hole) results.push(hole);
-      }
-      const rightWidth = handleRight - cutRight;
-      if (rightWidth >= MIN_SEGMENT_WIDTH) {
-        const rightCenter = cutRight + rightWidth / 2;
-        const hole = buildHoleCut(
-          shape,
-          rightWidth,
-          rightCenter,
-          holeHeight,
-          cornerRadius,
-          extrudeDepth,
-          centerZ,
-          wall
-        );
-        if (hole) results.push(hole);
-      }
-      return results;
-    }
-  }
-
-  // No overlap — build full handle
-  const hole = buildHoleCut(
-    shape,
-    handleWidthMm,
-    handleOffset,
-    holeHeight,
-    cornerRadius,
-    extrudeDepth,
-    centerZ,
-    wall
-  );
-  if (hole) results.push(hole);
-  if (chamfer) {
-    const chamferCut = buildChamferCuts(
-      shape,
-      handleWidthMm,
-      handleOffset,
-      holeHeight,
-      cornerRadius,
-      wallThickness,
-      centerZ,
-      wall
-    );
-    if (chamferCut) results.push(chamferCut);
-  }
-  return results;
+  return translate(chamfer, [wall.x, wall.y, 0]);
 }
 
 /**
@@ -295,31 +152,41 @@ export function buildHandleHoles(
     }
     if (effectiveHeight < 1) continue;
 
-    // Resolve wall cutout info for overlap checking
-    const wallCutout = params.walls.enabled ? params.walls[wall.side] : undefined;
-    const cutoutSpan = wallCutout
-      ? resolveCutoutSpan(wall.wallSpan, wallThickness, wallCutout)
-      : null;
-
-    // Multi-handle: compute offsets for each handle on this wall
+    // Multi-handle: compute offsets, then split each around wall cutout
     const handleWidthMm = wall.wallSpan * (sideWidth / 100);
     const offsets = computeMultiHandleOffsets(count, wall.wallSpan, handleWidthMm);
 
+    // Resolve wall cutout for segment splitting (uses shared utility)
+    const wallCutout = params.walls.enabled ? params.walls[wall.side] : undefined;
+    const segments = computeWallHandleSegments(wall.wallSpan, sideWidth, wallThickness, wallCutout);
+    if (!segments) continue;
+
     for (const handleOffset of offsets) {
-      const holes = buildHandleAtOffset(
-        shape,
-        handleOffset,
-        handleWidthMm,
-        effectiveHeight,
-        sideRadius,
-        extrudeDepth,
-        centerZ,
-        wall,
-        wallThickness,
-        chamfer,
-        cutoutSpan
-      );
-      allHoles.push(...holes);
+      for (const seg of segments) {
+        const hole = buildHoleCut(
+          shape,
+          seg.width,
+          seg.offset + handleOffset,
+          effectiveHeight,
+          sideRadius,
+          extrudeDepth,
+          centerZ,
+          wall
+        );
+        if (hole) allHoles.push(hole);
+        if (chamfer) {
+          const chamferHole = buildChamferCut(
+            shape,
+            seg.width,
+            seg.offset + handleOffset,
+            effectiveHeight,
+            sideRadius,
+            centerZ,
+            wall
+          );
+          if (chamferHole) allHoles.push(chamferHole);
+        }
+      }
     }
   }
 
