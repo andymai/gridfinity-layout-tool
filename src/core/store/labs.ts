@@ -21,14 +21,6 @@ function loadPreferences(): LabsPreferences {
   if (isOk(result) && result.value) {
     const prefs = { ...createDefaultLabsPreferences(), ...result.value };
 
-    // Migrate renamed flags: handle_ledges → handle_holes
-    if (prefs.enabledFeatures.handle_ledges) {
-      if (!prefs.enabledFeatures.handle_holes) {
-        prefs.enabledFeatures.handle_holes = true;
-      }
-      delete prefs.enabledFeatures.handle_ledges;
-    }
-
     return prefs;
   }
   return createDefaultLabsPreferences();
