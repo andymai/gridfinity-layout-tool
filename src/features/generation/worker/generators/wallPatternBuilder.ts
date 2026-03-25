@@ -46,10 +46,11 @@ import { buildSingleCutout } from './featureBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import {
+  buildHandleWallDefs,
   computeHandleHoleGeometry,
   computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
-import type { HandleSegment } from '@/shared/utils/handleCutoutClip';
+import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
 
 /**
  * Build a compound of positioned hex prisms for a single wall.
@@ -138,6 +139,10 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   const clipExtrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
   const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
 
+  // Build handle wall defs for clip positioning (uses handleBuilder coordinate convention)
+  const handleWallDefs = params.handles.enabled ? buildHandleWallDefs(innerW, innerD) : [];
+  const handleWallDefForSide = new Map(handleWallDefs.map((d) => [d.side, d]));
+
   for (const wall of wallDescriptors) {
     checkCancelled(signal);
 
@@ -183,9 +188,11 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
 
     // Handle border clipping
     let handleClip: HandleClipParams | null = null;
+    const handleWall = handleWallDefForSide.get(wall.side);
     if (
       params.handles.enabled &&
       !dim.isSlotted &&
+      handleWall &&
       params.handles[wall.side]?.enabled &&
       !(wall.side === 'back' && params.label.enabled)
     ) {
@@ -202,7 +209,7 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
           handleCutoutCfg
         );
         if (segments && segments.length > 0) {
-          handleClip = { segments, effectiveHeight, centerZ, clipExtrudeDepth };
+          handleClip = { segments, effectiveHeight, centerZ, clipExtrudeDepth, handleWall };
         }
       }
     }
@@ -295,6 +302,8 @@ interface HandleClipParams {
   readonly effectiveHeight: number;
   readonly centerZ: number;
   readonly clipExtrudeDepth: number;
+  /** Handle wall positioning (uses handleBuilder convention, not pattern descriptor). */
+  readonly handleWall: HandleWallDef;
 }
 
 /** Build a single wall's pattern compound with optional cutout/handle clipping. */
@@ -357,6 +366,7 @@ function buildWallPatternShape(
   const border = CUTOUT_BORDER_WIDTH;
   const clipBoxes: Shape3D[] = [];
 
+  const hw = handleClip.handleWall;
   try {
     for (const seg of handleClip.segments) {
       const boxW = seg.width + 2 * border;
@@ -364,10 +374,11 @@ function buildWallPatternShape(
       const profile = drawRectangle(boxW, boxH);
       let box = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
       box = translate(box, [seg.offset, handleClip.clipExtrudeDepth / 2, handleClip.centerZ]);
-      if (wall.zRotation !== undefined && wall.zRotation !== 0) {
-        box = rotate(box, wall.zRotation, { axis: [0, 0, 1] });
+      // Use handleBuilder coordinate convention (not pattern descriptor)
+      if (hw.rotateZ !== 0) {
+        box = rotate(box, hw.rotateZ, { axis: [0, 0, 1] });
       }
-      box = translate(box, [wall.translateX, wall.translateY, 0]);
+      box = translate(box, [hw.x, hw.y, 0]);
       clipBoxes.push(box);
     }
 
