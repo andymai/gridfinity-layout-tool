@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.28.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.28.1...gridfinity-layout-tool-v4.28.2) (2026-03-25)
+
+
+### Performance
+
+* **baseplate:** deduplicate identical split pieces ([#1249](https://github.com/andymai/gridfinity-layout-tool/issues/1249)) ([15b983f](https://github.com/andymai/gridfinity-layout-tool/commit/15b983f39418f24bf2eebb82f0609055bf0cce58))
+
 ## [4.28.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.28.0...gridfinity-layout-tool-v4.28.1) (2026-03-25)
 
 
