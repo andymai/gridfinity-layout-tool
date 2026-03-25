@@ -22,6 +22,7 @@ import {
   isSingleColor,
   resolveColorMapping,
 } from '@/features/bin-designer/types/featureColors';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 
@@ -41,9 +42,10 @@ interface BinMeshProps {
 function buildMultiColorGroups(
   faceGroups: readonly FaceGroupData[],
   featureColors: FeatureColorConfig,
+  activeZones: ReadonlySet<ColorZone>,
   totalIndexCount: number
 ): { groups: MeshFaceGroup[]; colors: readonly string[] } | null {
-  if (isSingleColor(featureColors)) return null;
+  if (isSingleColor(featureColors, activeZones)) return null;
 
   const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
 
@@ -77,7 +79,16 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   const { invalidate } = useThree();
   const multiColorEnabled = useFeatureFlag('multi_color_export');
 
-  const { vertices, normals, indices, edgeVertices, faceGroups, featureColors } = useDesignerStore(
+  const {
+    vertices,
+    normals,
+    indices,
+    edgeVertices,
+    faceGroups,
+    featureColors,
+    hasLip,
+    hasLabelTabs,
+  } = useDesignerStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
       normals: s.generation.mesh?.normals ?? null,
@@ -85,14 +96,24 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
       faceGroups: s.generation.mesh?.faceGroups ?? null,
       featureColors: s.params.featureColors ?? null,
+      hasLip: s.params.base.stackingLip,
+      hasLabelTabs: s.params.label.enabled,
     }))
   );
+
+  // Build active zone set — scales as more zones are added
+  const activeZones = useMemo(() => {
+    const zones = new Set<ColorZone>(['body']);
+    if (hasLip) zones.add('lip');
+    if (hasLabelTabs) zones.add('labelTab');
+    return zones;
+  }, [hasLip, hasLabelTabs]);
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
     if (!multiColorEnabled || !faceGroups || !featureColors || !indices) return null;
-    return buildMultiColorGroups(faceGroups, featureColors, indices.length);
-  }, [multiColorEnabled, faceGroups, featureColors, indices]);
+    return buildMultiColorGroups(faceGroups, featureColors, activeZones, indices.length);
+  }, [multiColorEnabled, faceGroups, featureColors, activeZones, indices]);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices,

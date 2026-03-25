@@ -37,11 +37,19 @@ export function featureTagToColorZone(tag: number): ColorZone {
 }
 
 /**
- * Returns true when all color zones use the same color
+ * Returns true when all *active* color zones use the same color
  * (single-color — no multi-material needed).
+ *
+ * @param activeZones - Set of zone keys that are currently enabled.
+ *   Omit to check all zones. Pass only enabled zones to ignore disabled
+ *   features (e.g., lip color differs but stacking lip is off).
  */
-export function isSingleColor(featureColors: FeatureColorConfig): boolean {
-  return featureColors.body === featureColors.lip && featureColors.body === featureColors.labelTab;
+export function isSingleColor(
+  featureColors: FeatureColorConfig,
+  activeZones?: ReadonlySet<ColorZone>
+): boolean {
+  const zones: ColorZone[] = activeZones ? [...activeZones] : ['body', 'lip', 'labelTab'];
+  return zones.every((z) => featureColors[z] === featureColors.body);
 }
 
 /**

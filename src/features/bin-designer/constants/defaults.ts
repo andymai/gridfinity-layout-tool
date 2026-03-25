@@ -100,11 +100,12 @@ const DEFAULT_HANDLE_CONFIG: HandleConfig = {
 } as const;
 
 /** Map legacy FilamentSlotId values to default hex colors */
+/** Must match DEFAULT_SETTINGS.filamentPalette in core/store/settings.types.ts */
 const LEGACY_SLOT_COLORS: Record<string, string> = {
   slot1: '#d4d8dc',
-  slot2: '#1f2937',
-  slot3: '#ef4444',
-  slot4: '#3b82f6',
+  slot2: '#3b82f6',
+  slot3: '#22c55e',
+  slot4: '#ef4444',
 };
 
 /** Migrate featureColors from old slot-based format to direct hex colors */
