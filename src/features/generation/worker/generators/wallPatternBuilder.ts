@@ -196,20 +196,43 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       params.handles[wall.side]?.enabled &&
       !(wall.side === 'back' && params.label.enabled)
     ) {
-      const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
-        interiorHeight,
-        params.handles.height
-      );
-      if (effectiveHeight >= 1) {
+      const isUShape = params.handles.shape === 'u-shape';
+      const side = params.handles[wall.side];
+      const sideHeight = side.height ?? params.handles.height;
+      const sideWidth = side.width ?? params.handles.width;
+
+      let handleCenterZ: number;
+      let handleEffHeight: number;
+      if (isUShape) {
+        const overshoot = 5;
+        handleEffHeight = Math.min(sideHeight + overshoot, interiorHeight + overshoot);
+        handleCenterZ = (sideHeight - overshoot) / 2;
+      } else {
+        const geom = computeHandleHoleGeometry(
+          interiorHeight,
+          sideHeight,
+          params.handles.verticalPosition
+        );
+        handleCenterZ = geom.centerZ;
+        handleEffHeight = geom.effectiveHeight;
+      }
+
+      if (handleEffHeight >= 1) {
         const handleCutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;
         const segments = computeWallHandleSegments(
           wallSpan,
-          params.handles.width,
+          sideWidth,
           params.wallThickness,
           handleCutoutCfg
         );
         if (segments && segments.length > 0) {
-          handleClip = { segments, effectiveHeight, centerZ, clipExtrudeDepth, handleWall };
+          handleClip = {
+            segments,
+            effectiveHeight: handleEffHeight,
+            centerZ: handleCenterZ,
+            clipExtrudeDepth,
+            handleWall,
+          };
         }
       }
     }
@@ -232,6 +255,8 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
     const handleKeyPart = handleClip
       ? buildCacheKey(
           'hdl',
+          params.handles.shape,
+          params.handles.count,
           quantize(handleClip.centerZ),
           quantize(handleClip.effectiveHeight),
           handleClip.segments.map((s) => `${quantize(s.offset)}:${quantize(s.width)}`).join(',')
