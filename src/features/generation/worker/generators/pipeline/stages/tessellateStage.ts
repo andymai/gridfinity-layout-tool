@@ -31,16 +31,14 @@ export const tessellateStage: PipelineStage = {
     );
 
     const shapeMesh = mesh(solid, { tolerance, angularTolerance });
-    const edgeMesh = meshEdges(solid, { tolerance, angularTolerance });
+    const edgeMesh = meshEdges(solid, {
+      tolerance,
+      angularTolerance: angularTolerance * 0.5,
+    });
     const edgeVertices = new Float32Array(edgeMesh.lines);
 
     ctx.onProgress?.('merge', 1.0);
-    const meshData = toIndexedMeshData(
-      shapeMesh,
-      !dim.useHighQuality,
-      edgeVertices,
-      ctx.originToTag
-    );
+    const meshData = toIndexedMeshData(shapeMesh, edgeVertices, ctx.originToTag);
 
     return { ...ctx, mesh: meshData, solid: null };
   },

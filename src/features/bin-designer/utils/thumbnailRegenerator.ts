@@ -99,7 +99,7 @@ export async function regenerateThumbnail(
       side: THREE.DoubleSide,
       emissive: new THREE.Color(DEFAULT_COLOR),
       emissiveIntensity: 0.08,
-      flatShading: !(normals.length > 0),
+      flatShading: false,
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1,

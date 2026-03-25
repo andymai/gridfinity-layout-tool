@@ -17,19 +17,6 @@ describe('toIndexedMeshData', () => {
     expect(result.triangleCount).toBe(1);
   });
 
-  it('skips normals when requested', () => {
-    const meshInput = {
-      vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
-      normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
-      triangles: new Uint32Array([0, 1, 2]),
-    };
-
-    const result = toIndexedMeshData(meshInput, true);
-
-    expect(result.normals.length).toBe(0);
-    expect(result.vertices.length).toBe(9);
-  });
-
   it('reuses Float32Array inputs without copying', () => {
     const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
     const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
@@ -77,7 +64,7 @@ describe('toIndexedMeshData', () => {
     };
     const edges = new Float32Array([0, 0, 0, 1, 1, 1]);
 
-    const result = toIndexedMeshData(meshInput, false, edges);
+    const result = toIndexedMeshData(meshInput, edges);
     expect(result.edgeVertices).toBe(edges);
   });
 
@@ -88,7 +75,7 @@ describe('toIndexedMeshData', () => {
       triangles: new Uint32Array([0]),
     };
 
-    const result = toIndexedMeshData(meshInput, false, [0, 0, 0, 1, 1, 1]);
+    const result = toIndexedMeshData(meshInput, [0, 0, 0, 1, 1, 1]);
     expect(result.edgeVertices).toBeInstanceOf(Float32Array);
     expect(result.edgeVertices.length).toBe(6);
   });
@@ -103,7 +90,7 @@ describe('toIndexedMeshData faceGroups', () => {
       faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 42 }],
     };
     const originToTag = new Map([[42, 2]]); // origin 42 -> SCOOP (2)
-    const result = toIndexedMeshData(meshResult, false, undefined, originToTag);
+    const result = toIndexedMeshData(meshResult, undefined, originToTag);
     expect(result.faceGroups).toEqual([{ start: 0, count: 3, tag: 2 }]);
   });
 
@@ -114,7 +101,7 @@ describe('toIndexedMeshData faceGroups', () => {
       triangles: new Uint32Array([0, 1, 2]),
       faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 99 }],
     };
-    const result = toIndexedMeshData(meshResult, false, undefined, undefined);
+    const result = toIndexedMeshData(meshResult, undefined, undefined);
     expect(result.faceGroups).toEqual([{ start: 0, count: 3, tag: 255 }]);
   });
 

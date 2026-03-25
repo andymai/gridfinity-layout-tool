@@ -934,7 +934,7 @@ export function generateBaseplate(
 
   onProgress('base', 1);
 
-  const result = toIndexedMeshData(meshResult, false, edgeVerts);
+  const result = toIndexedMeshData(meshResult, edgeVerts);
   meshResultCache.set(cacheKey, result);
   return result;
 }

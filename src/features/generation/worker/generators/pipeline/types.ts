@@ -28,7 +28,6 @@ export interface BinDimensions {
   readonly isSlotted: boolean;
   readonly hasLip: boolean;
   readonly interiorHeight: number;
-  readonly useHighQuality: boolean;
   readonly maxDimension: number;
   readonly shellKey: string;
   readonly withMagnet: boolean;

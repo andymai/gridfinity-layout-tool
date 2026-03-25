@@ -94,7 +94,7 @@ export const shellStage: PipelineStage = {
           params.base.magnetDiameter / 2,
           params.base.magnetDepth,
           params.base.screwDiameter / 2,
-          dim.useHighQuality,
+          ctx.forExport,
           dim.halfSockets,
           params.gridUnitMm
         )

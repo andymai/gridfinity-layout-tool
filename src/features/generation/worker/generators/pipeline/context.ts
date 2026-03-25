@@ -36,8 +36,6 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
     !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
   const maxDimension = Math.max(params.width, params.depth) * gridUnit;
-  const isSmallBin = maxDimension <= 200;
-  const useHighQuality = forExport || isSmallBin || params.base.stackingLip;
 
   const hasLip = params.base.stackingLip;
   const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
@@ -45,7 +43,7 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
   // Shell cache key — versioned + quantized for deterministic matching
   const shellKey = compactKey(
     buildCacheKey(
-      'v2',
+      'v3',
       quantize(params.width),
       quantize(params.depth),
       quantize(gridUnit),
@@ -56,7 +54,7 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
       quantize(params.base.magnetDiameter),
       quantize(params.base.magnetDepth),
       quantize(params.base.screwDiameter),
-      useHighQuality,
+      forExport,
       quantize(wallHeight),
       quantize(params.wallThickness),
       params.base.stackingLip,
@@ -77,7 +75,6 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
     isSlotted,
     hasLip,
     interiorHeight,
-    useHighQuality,
     maxDimension,
     shellKey,
     withMagnet,

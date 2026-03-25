@@ -11,7 +11,6 @@ import type { MeshData } from '../../../bridge/types';
  * Convert brepjs indexed mesh to our MeshData format, keeping indexed representation.
  *
  * @param meshResult brepjs mesh with indexed vertices/normals/triangles
- * @param skipNormals If true, returns empty normals array (GPU will compute flat shading)
  */
 export function toIndexedMeshData(
   meshResult: {
@@ -20,7 +19,6 @@ export function toIndexedMeshData(
     triangles: ArrayLike<number>;
     faceGroups?: ReadonlyArray<{ start: number; count: number; faceId: number; origin?: number }>;
   },
-  skipNormals = false,
   edgeVertices?: ArrayLike<number>,
   originToTag?: ReadonlyMap<number, number>
 ): MeshData {
@@ -38,7 +36,7 @@ export function toIndexedMeshData(
 
   return {
     vertices: toFloat32Array(meshResult.vertices),
-    normals: skipNormals ? new Float32Array(0) : toFloat32Array(meshResult.normals),
+    normals: toFloat32Array(meshResult.normals),
     indices: toUint32Array(meshResult.triangles),
     edgeVertices: edgeVertices ? toFloat32Array(edgeVertices) : new Float32Array(0),
     triangleCount: meshResult.triangles.length / 3,
