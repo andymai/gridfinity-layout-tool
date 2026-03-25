@@ -15,7 +15,7 @@ import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 
 /** Derive all dimensions from bin parameters. */
-function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions {
+function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
   const halfSockets = params.base.halfSockets && !isFlat;
@@ -36,8 +36,6 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
     !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
   const maxDimension = Math.max(params.width, params.depth) * gridUnit;
-  const isSmallBin = maxDimension <= 200;
-  const useHighQuality = forExport || isSmallBin || params.base.stackingLip;
 
   const hasLip = params.base.stackingLip;
   const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
@@ -45,7 +43,7 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
   // Shell cache key — versioned + quantized for deterministic matching
   const shellKey = compactKey(
     buildCacheKey(
-      'v2',
+      'v4',
       quantize(params.width),
       quantize(params.depth),
       quantize(gridUnit),
@@ -56,7 +54,6 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
       quantize(params.base.magnetDiameter),
       quantize(params.base.magnetDepth),
       quantize(params.base.screwDiameter),
-      useHighQuality,
       quantize(wallHeight),
       quantize(params.wallThickness),
       params.base.stackingLip,
@@ -77,7 +74,6 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
     isSlotted,
     hasLip,
     interiorHeight,
-    useHighQuality,
     maxDimension,
     shellKey,
     withMagnet,

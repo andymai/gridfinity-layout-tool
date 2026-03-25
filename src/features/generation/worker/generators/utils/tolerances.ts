@@ -29,18 +29,18 @@ export function computeTessellationTolerances(
   }
   if (hasLip) {
     return {
-      tolerance: Math.min(0.1, Math.max(0.05, maxDimension / 2500)),
-      angularTolerance: 10,
+      tolerance: Math.min(0.06, Math.max(0.03, maxDimension / 5000)),
+      angularTolerance: 8,
     };
   }
   if (maxDimension <= 200) {
     return {
-      tolerance: Math.min(0.4, Math.max(0.15, maxDimension / 600)),
-      angularTolerance: 12,
+      tolerance: Math.min(0.2, Math.max(0.08, maxDimension / 1200)),
+      angularTolerance: 10,
     };
   }
   return {
-    tolerance: Math.min(1.0, Math.max(0.3, maxDimension / 300)),
-    angularTolerance: 25,
+    tolerance: Math.min(0.5, Math.max(0.15, maxDimension / 600)),
+    angularTolerance: 15,
   };
 }

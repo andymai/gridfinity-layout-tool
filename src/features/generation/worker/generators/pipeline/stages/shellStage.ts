@@ -94,7 +94,7 @@ export const shellStage: PipelineStage = {
           params.base.magnetDiameter / 2,
           params.base.magnetDepth,
           params.base.screwDiameter / 2,
-          dim.useHighQuality,
+          true, // Always use full 5-section socket profile (OCCT v8 is fast enough)
           dim.halfSockets,
           params.gridUnitMm
         )

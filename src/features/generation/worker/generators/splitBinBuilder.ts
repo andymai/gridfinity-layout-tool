@@ -70,9 +70,9 @@ const CUTTING_BOX_HEIGHT = 500;
  */
 const LIP_FUSE_OVERLAP = 0.05;
 
-/** Preview tessellation tolerance: moderate quality for responsive interaction */
-const PREVIEW_TOLERANCE = 0.15;
-const PREVIEW_ANGULAR_TOLERANCE = 15;
+/** Preview tessellation tolerance: tightened for smooth normals on curved surfaces */
+const PREVIEW_TOLERANCE = 0.1;
+const PREVIEW_ANGULAR_TOLERANCE = 10;
 
 /** Metadata for a single split piece within the grid */
 interface SplitPieceInfo {
@@ -299,10 +299,10 @@ function tessellatePiece(
   });
   const edgeMesh = meshEdges(centeredPiece, {
     tolerance: PREVIEW_TOLERANCE,
-    angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+    angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
   });
   centeredPiece.delete();
-  const meshData = toIndexedMeshData(shapeMesh, false, new Float32Array(edgeMesh.lines));
+  const meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines);
 
   return {
     vertices: meshData.vertices,

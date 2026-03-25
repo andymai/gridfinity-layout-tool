@@ -68,7 +68,7 @@ function PieceMesh({
   const colors = useThreeColors();
   const accentHex = useMemo(() => getAccentHex(), []);
 
-  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(entry.mesh);
+  const { geometry, edgesGeometry } = useMeshGeometry(entry.mesh);
 
   useEffect(() => {
     if (geometry) invalidate();
@@ -96,7 +96,6 @@ function PieceMesh({
           side={THREE.DoubleSide}
           emissive={color}
           emissiveIntensity={0.08}
-          flatShading={!hasPrecomputedNormals}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

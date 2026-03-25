@@ -5,6 +5,10 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import type { SplitPieceMeshEntry } from '../../../types';
 
+vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
+  toCreasedNormals: vi.fn((geo: unknown) => geo),
+}));
+
 // Mock Three.js before the component is imported
 vi.mock('three', () => ({
   BufferGeometry: vi.fn().mockImplementation(() => ({

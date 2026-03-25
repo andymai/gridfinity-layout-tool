@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 
+vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
+  toCreasedNormals: vi.fn((geo: unknown) => geo),
+}));
+
 // Mock Three.js
 vi.mock('three', () => ({
   Vector3: vi.fn().mockImplementation(() => ({

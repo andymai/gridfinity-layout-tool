@@ -102,7 +102,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     return buildMultiColorGroups(faceGroups, featureColors, filamentPalette, indices.length);
   }, [multiColorEnabled, faceGroups, featureColors, filamentPalette, indices]);
 
-  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
+  const { geometry, edgesGeometry } = useMeshGeometry({
     vertices,
     normals,
     indices,
@@ -123,13 +123,12 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           side: THREE.DoubleSide,
           emissive: new THREE.Color(c),
           emissiveIntensity: 0.08,
-          flatShading: !hasPrecomputedNormals,
           polygonOffset: true,
           polygonOffsetFactor: 1,
           polygonOffsetUnits: 1,
         })
     );
-  }, [multiColorData, wireframe, hasPrecomputedNormals]);
+  }, [multiColorData, wireframe]);
 
   // Dispose materials on change
   useEffect(() => {
@@ -164,7 +163,6 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
             side={THREE.DoubleSide}
             emissive={color}
             emissiveIntensity={0.08}
-            flatShading={!hasPrecomputedNormals}
             polygonOffset
             polygonOffsetFactor={1}
             polygonOffsetUnits={1}

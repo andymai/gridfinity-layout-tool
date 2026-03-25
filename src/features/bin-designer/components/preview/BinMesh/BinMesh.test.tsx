@@ -21,6 +21,10 @@ vi.mock('@react-three/fiber', () => ({
   extend: vi.fn(),
 }));
 
+vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
+  toCreasedNormals: vi.fn((geo: unknown) => geo),
+}));
+
 vi.mock('three', () => {
   class MockBufferGeometry {
     setAttribute = vi.fn();
