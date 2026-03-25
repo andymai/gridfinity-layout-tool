@@ -16,7 +16,7 @@
   "baseplate.errorRetryHint": "Try refreshing the page. If the problem persists, try a different browser.",
   "baseplate.export.dedupSuccess": "Baseplate exported ({unique} unique pieces, {total} total)",
   "baseplate.export.enableSplit": "Split into pieces",
-  "baseplate.export.splitBanner": "Baseplate exceeds {size}mm print bed — will export as {count} pieces",
+  "baseplate.export.splitBanner": "Baseplate exceeds {size}mm print bed — will export as {count} pieces in a ZIP with print guide",
   "baseplate.export.splitSuccess": "Baseplate exported ({count} pieces)",
   "baseplate.export.success": "{format} baseplate exported successfully",
   "baseplate.export.threeDModel": "3D Model",

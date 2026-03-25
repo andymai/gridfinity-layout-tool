@@ -16,7 +16,7 @@
   "baseplate.errorRetryHint": "Probeer de pagina te vernieuwen. Als het probleem aanhoudt, probeer een andere browser.",
   "baseplate.export.dedupSuccess": "Basisplaat geëxporteerd ({unique} unieke onderdelen, {total} totaal)",
   "baseplate.export.enableSplit": "Opsplitsen in onderdelen",
-  "baseplate.export.splitBanner": "Basisplaat overschrijdt {size}mm printbed — wordt geëxporteerd als {count} onderdelen in een ZIP",
+  "baseplate.export.splitBanner": "Basisplaat overschrijdt {size}mm printbed — wordt geëxporteerd als {count} onderdelen in een ZIP met printgids",
   "baseplate.export.splitSuccess": "Basisplaat geëxporteerd ({count} onderdelen)",
   "baseplate.export.success": "{format}-basisplaat succesvol geëxporteerd",
   "baseplate.export.threeDModel": "3D-model",

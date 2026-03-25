@@ -16,7 +16,7 @@
   "baseplate.errorRetryHint": "Intenta recargar la página. Si el problema persiste, prueba con otro navegador.",
   "baseplate.export.dedupSuccess": "Placa base exportada ({unique} piezas únicas, {total} total)",
   "baseplate.export.enableSplit": "Dividir en piezas",
-  "baseplate.export.splitBanner": "La placa base excede la cama de impresión de {size}mm — se exportará como {count} piezas en un ZIP",
+  "baseplate.export.splitBanner": "La placa base excede la cama de impresión de {size}mm — se exportará como {count} piezas en un ZIP con guía de impresión",
   "baseplate.export.splitSuccess": "Placa base exportada ({count} piezas)",
   "baseplate.export.success": "Placa base {format} exportada correctamente",
   "baseplate.export.threeDModel": "Modelo 3D",
