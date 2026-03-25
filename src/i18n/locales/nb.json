@@ -78,6 +78,8 @@
   "binDesigner.clickToRename": "Klikk for å gi nytt navn til design",
   "binDesigner.colors.body": "Kropp",
   "binDesigner.colors.editSlot": "Rediger {name}",
+  "binDesigner.colors.enableLabelTabHint": "Aktiver etikettfaner for å tildele en farge",
+  "binDesigner.colors.enableLipHint": "Aktiver stablelippe for å tildele en farge",
   "binDesigner.colors.hexColor": "Hex-farge",
   "binDesigner.colors.hexInvalid": "Ugyldig hex-farge",
   "binDesigner.colors.labelTab": "Etikett-fane",

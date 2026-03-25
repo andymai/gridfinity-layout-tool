@@ -2,7 +2,7 @@
  * Swatch row for a single color zone (Body / Lip / Label Tab).
  *
  * Shows 4 clickable swatch buttons — one per palette slot.
- * Selected swatch gets a ring + checkmark overlay.
+ * Selected swatch gets a ring + auto-contrast checkmark overlay.
  * Fires pointer events for 3D preview glow feedback.
  */
 
@@ -16,6 +16,16 @@ interface FilamentSwatchRowProps {
   onChange: (slotId: FilamentSlotId) => void;
   onHover: (zone: ColorZone | null) => void;
   disabled?: boolean;
+  disabledReason?: string;
+}
+
+/** Returns true if the hex color is perceptually light (checkmark should be dark). */
+function isLightColor(hex: string): boolean {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  // Relative luminance (sRGB simplified)
+  return r * 0.299 + g * 0.587 + b * 0.114 > 160;
 }
 
 export function FilamentSwatchRow({
@@ -25,19 +35,25 @@ export function FilamentSwatchRow({
   onChange,
   onHover,
   disabled,
+  disabledReason,
 }: FilamentSwatchRowProps) {
   const palette = useSettingsStore((s) => s.settings.filamentPalette);
 
   return (
     <div
-      className={`flex items-center justify-between gap-2 ${disabled ? 'opacity-40 pointer-events-none' : ''}`}
+      className={`flex items-center justify-between gap-2 rounded-md px-1.5 py-1 -mx-1.5 transition-colors ${
+        disabled ? 'opacity-40 pointer-events-none' : 'hover:bg-surface-hover/50'
+      }`}
       onPointerEnter={() => onHover(zone)}
       onPointerLeave={() => onHover(null)}
+      title={disabled ? disabledReason : undefined}
     >
       <span className="text-xs text-content-secondary">{label}</span>
       <div className="flex items-center gap-1.5">
         {palette.map((slot) => {
           const isSelected = slot.id === value;
+          // eslint-disable-next-line i18next/no-literal-string -- hex color constants
+          const checkColor = isLightColor(slot.color) ? '#1f2937' : '#ffffff';
           return (
             <button
               key={slot.id}
@@ -63,7 +79,7 @@ export function FilamentSwatchRow({
                 >
                   <path
                     d="M3 7l3 3 5-5"
-                    stroke="white"
+                    stroke={checkColor}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"

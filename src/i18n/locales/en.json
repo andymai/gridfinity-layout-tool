@@ -78,6 +78,8 @@
   "binDesigner.clickToRename": "Click to rename design",
   "binDesigner.colors.body": "Body",
   "binDesigner.colors.editSlot": "Edit {name}",
+  "binDesigner.colors.enableLabelTabHint": "Enable label tabs to assign a color",
+  "binDesigner.colors.enableLipHint": "Enable stacking lip to assign a color",
   "binDesigner.colors.hexColor": "Hex color",
   "binDesigner.colors.hexInvalid": "Invalid hex color",
   "binDesigner.colors.labelTab": "Label Tab",

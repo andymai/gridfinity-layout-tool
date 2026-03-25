@@ -78,6 +78,8 @@
   "binDesigner.clickToRename": "Clic para renombrar diseño",
   "binDesigner.colors.body": "Cuerpo",
   "binDesigner.colors.editSlot": "Editar {name}",
+  "binDesigner.colors.enableLabelTabHint": "Activa las pestañas de etiqueta para asignar un color",
+  "binDesigner.colors.enableLipHint": "Activa el labio apilable para asignar un color",
   "binDesigner.colors.hexColor": "Color hex",
   "binDesigner.colors.hexInvalid": "Color hex no válido",
   "binDesigner.colors.labelTab": "Pestaña de etiqueta",

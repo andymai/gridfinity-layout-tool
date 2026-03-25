@@ -44,8 +44,10 @@ export function PaletteHeader() {
             }}
             type="button"
             onClick={() => setEditingSlotId(editingSlotId === slot.id ? null : slot.id)}
-            className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
-              editingSlotId === slot.id ? 'bg-surface-hover ring-1 ring-accent' : ''
+            className={`flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-[11px] transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+              editingSlotId === slot.id
+                ? 'bg-surface-hover border-accent ring-1 ring-accent'
+                : 'border-stroke-subtle hover:border-stroke'
             }`}
             aria-label={t('binDesigner.colors.editSlot', { name: slot.name })}
             aria-expanded={editingSlotId === slot.id}

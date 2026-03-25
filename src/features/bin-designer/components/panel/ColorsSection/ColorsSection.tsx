@@ -32,7 +32,7 @@ export function ColorsSection() {
   return (
     <div className="space-y-4">
       <PaletteHeader />
-      <div className="space-y-3">
+      <div className="space-y-1">
         <FilamentSwatchRow
           zone="body"
           label={t('binDesigner.colors.body')}
@@ -47,6 +47,7 @@ export function ColorsSection() {
           onChange={(slotId) => updateFeatureColors({ lip: slotId })}
           onHover={setHoveredColorZone}
           disabled={!hasLip}
+          disabledReason={t('binDesigner.colors.enableLipHint')}
         />
         <FilamentSwatchRow
           zone="labelTab"
@@ -55,6 +56,7 @@ export function ColorsSection() {
           onChange={(slotId) => updateFeatureColors({ labelTab: slotId })}
           onHover={setHoveredColorZone}
           disabled={!hasLabelTabs}
+          disabledReason={t('binDesigner.colors.enableLabelTabHint')}
         />
       </div>
     </div>

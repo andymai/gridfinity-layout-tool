@@ -78,6 +78,8 @@
   "binDesigner.clickToRename": "Klicken zum Umbenennen des Designs",
   "binDesigner.colors.body": "Korpus",
   "binDesigner.colors.editSlot": "{name} bearbeiten",
+  "binDesigner.colors.enableLabelTabHint": "Etikettenlasche aktivieren, um eine Farbe zuzuweisen",
+  "binDesigner.colors.enableLipHint": "Stapellippe aktivieren, um eine Farbe zuzuweisen",
   "binDesigner.colors.hexColor": "Hex-Farbe",
   "binDesigner.colors.hexInvalid": "Ungültige Hex-Farbe",
   "binDesigner.colors.labelTab": "Beschriftungslasche",

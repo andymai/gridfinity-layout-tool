@@ -78,6 +78,8 @@
   "binDesigner.clickToRename": "Cliquer pour renommer le design",
   "binDesigner.colors.body": "Corps",
   "binDesigner.colors.editSlot": "Modifier {name}",
+  "binDesigner.colors.enableLabelTabHint": "Activez les onglets d'étiquette pour attribuer une couleur",
+  "binDesigner.colors.enableLipHint": "Activez la lèvre d'empilement pour attribuer une couleur",
   "binDesigner.colors.hexColor": "Couleur hex",
   "binDesigner.colors.hexInvalid": "Couleur hex invalide",
   "binDesigner.colors.labelTab": "Languette d'étiquette",

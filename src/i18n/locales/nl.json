@@ -78,6 +78,8 @@
   "binDesigner.clickToRename": "Klik om design te hernoemen",
   "binDesigner.colors.body": "Behuizing",
   "binDesigner.colors.editSlot": "{name} bewerken",
+  "binDesigner.colors.enableLabelTabHint": "Schakel labeltabs in om een kleur toe te wijzen",
+  "binDesigner.colors.enableLipHint": "Schakel stapellip in om een kleur toe te wijzen",
   "binDesigner.colors.hexColor": "Hex-kleur",
   "binDesigner.colors.hexInvalid": "Ongeldige hex-kleur",
   "binDesigner.colors.labelTab": "Labeltab",
