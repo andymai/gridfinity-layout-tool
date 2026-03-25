@@ -4,6 +4,7 @@
     "binDesigner.cart.cost",
     "binDesigner.handles.shape.oval",
     "binDesigner.handles.shape.rectangle",
+    "binDesigner.handles.summary",
     "binDesigner.wallCutouts.summary",
     "binDesigner.compartmentsShort",
     "binDesigner.designCount",

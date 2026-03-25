@@ -226,7 +226,7 @@
   "binDesigner.handles.shape.scoop": "Cuchara",
   "binDesigner.handles.shape.uShape": "U",
   "binDesigner.handles.sides": "Lados",
-  "binDesigner.handles.summary": "{sides}: {height}mm de altura",
+  "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Los agujeros anchos pueden requerir soportes al imprimir",
   "binDesigner.handles.unavailableSlotted": "No disponible para bins ranurados",
   "binDesigner.handles.verticalPosition": "Posición vertical",

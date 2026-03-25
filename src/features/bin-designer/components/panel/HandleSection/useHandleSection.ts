@@ -8,7 +8,8 @@ import { DEFAULT_HANDLE_SIDE } from '../../../constants/defaults';
 import type { HandleWallSide, HandleCutoutShape, HandleSide } from '@/features/bin-designer/types';
 import type { SectionMeta } from '../types';
 
-export const HANDLE_SIDES: readonly HandleWallSide[] = ['front', 'back', 'left', 'right'];
+/** Side chip order matches WallCutoutsSection: L R F B */
+export const HANDLE_SIDES: readonly HandleWallSide[] = ['left', 'right', 'front', 'back'];
 
 export function useHandleSection() {
   const { handles, updateHandles, updateHandleSide, params, width, depth, wallThickness } =
@@ -128,7 +129,12 @@ export function useHandleSection() {
   const summary = useMemo(() => {
     if (!handles.enabled || activeSides.length === 0) return undefined;
     const sideNames = activeSides.map((s) => t(`binDesigner.handles.${s}`)).join(', ');
+    const shapeName = t(
+      `binDesigner.handles.shape.${handles.shape === 'u-shape' ? 'uShape' : handles.shape}`
+    );
+    const countSuffix = handles.count > 1 ? ` ×${handles.count}` : '';
     return t('binDesigner.handles.summary', {
+      shape: shapeName + countSuffix,
       sides: sideNames,
       height: String(handles.height),
     });

@@ -226,7 +226,7 @@
   "binDesigner.handles.shape.scoop": "Skje",
   "binDesigner.handles.shape.uShape": "U-form",
   "binDesigner.handles.sides": "Sider",
-  "binDesigner.handles.summary": "{sides}: {height}mm høyt",
+  "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Brede hull kan kreve støttestrukturer ved utskrift",
   "binDesigner.handles.unavailableSlotted": "Ikke tilgjengelig for spor-bins",
   "binDesigner.handles.verticalPosition": "Vertikal posisjon",

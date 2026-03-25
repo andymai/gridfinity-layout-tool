@@ -1323,7 +1323,7 @@ const en: Record<string, string> = {
   'binDesigner.handles.height': 'Height',
   'binDesigner.handles.cornerRadius': 'Corner radius',
   'binDesigner.handles.backDisabledByLabelTab': 'Back handle disabled — label tab active',
-  'binDesigner.handles.summary': '{sides}: {height}mm tall',
+  'binDesigner.handles.summary': '{shape} {sides}: {height}mm',
   'binDesigner.handles.supportNote': 'Wide holes may require supports when printing',
   'binDesigner.handles.unavailableSlotted': 'Not available for slotted bins',
   'binDesigner.handles.shape': 'Shape',

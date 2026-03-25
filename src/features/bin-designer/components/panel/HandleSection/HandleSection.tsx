@@ -51,6 +51,17 @@ function LinkIcon({ linked }: { linked: boolean }) {
   );
 }
 
+/** Side chip button class based on state. */
+function sideChipClass(isDisabled: boolean, isActive: boolean): string {
+  if (isDisabled) {
+    return 'border border-stroke-subtle bg-surface-secondary text-content-tertiary cursor-not-allowed opacity-50';
+  }
+  if (isActive) {
+    return 'bg-accent text-on-accent';
+  }
+  return 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover';
+}
+
 export function HandleSection() {
   const { state, handlers, meta, t } = useHandleSection();
   const {
@@ -75,26 +86,23 @@ export function HandleSection() {
         <div className="space-y-3">
           {/* Shape selector */}
           <div className="flex gap-1">
-            {SHAPE_OPTIONS.map(({ value, labelKey }) => {
-              const isActive = handles.shape === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => handlers.setShape(value)}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    isActive
-                      ? 'bg-accent text-on-accent'
-                      : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                  }`}
-                >
-                  {t(labelKey)}
-                </button>
-              );
-            })}
+            {SHAPE_OPTIONS.map(({ value, labelKey }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => handlers.setShape(value)}
+                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                  handles.shape === value
+                    ? 'bg-accent text-on-accent'
+                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                }`}
+              >
+                {t(labelKey)}
+              </button>
+            ))}
           </div>
 
-          {/* Side toggle chips */}
+          {/* Side toggle chips — same order as WallCutoutsSection: L R F B */}
           <div className="flex gap-1">
             {HANDLE_SIDES.map((side) => {
               const isActive = handles[side].enabled;
@@ -108,13 +116,7 @@ export function HandleSection() {
                   disabled={isDisabled}
                   title={isDisabled ? t('binDesigner.handles.backDisabledByLabelTab') : undefined}
                   onClick={() => handlers.toggleSide(side)}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    isDisabled
-                      ? 'border border-stroke-subtle bg-surface-secondary text-content-tertiary cursor-not-allowed opacity-50'
-                      : isActive
-                        ? 'bg-accent text-on-accent'
-                        : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                  }`}
+                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${sideChipClass(isDisabled, isActive)}`}
                 >
                   {t(`binDesigner.handles.${side}`)}
                 </button>
@@ -144,7 +146,6 @@ export function HandleSection() {
               {/* Shared controls (linked mode) */}
               {linked && (
                 <>
-                  {/* Width + Height steppers */}
                   <div className="flex items-end gap-2">
                     <div className="flex-1 min-w-0">
                       <span className="mb-1 block text-xs text-content-tertiary">
@@ -200,7 +201,7 @@ export function HandleSection() {
                     </div>
                   </div>
 
-                  {/* Physical dimensions */}
+                  {/* Physical dimensions readout */}
                   <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
                     <svg
                       className="h-3.5 w-3.5 flex-shrink-0"
@@ -324,9 +325,10 @@ export function HandleSection() {
                   </div>
                 ))}
 
-              {/* Vertical position — hidden for u-shape (auto-anchored to bottom) */}
-              {!isUShape && (
-                <div className="flex items-end gap-2">
+              {/* Global controls: vertical position + count (always visible, not per-side) */}
+              <div className="flex items-end gap-2">
+                {/* Vertical position — hidden for u-shape (auto-anchored to bottom) */}
+                {!isUShape && (
                   <div className="flex-1 min-w-0">
                     <span className="mb-1 block text-xs text-content-tertiary">
                       {}
@@ -352,11 +354,9 @@ export function HandleSection() {
                       ariaLabel="Handle vertical position"
                     />
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Count stepper */}
-              <div className="flex items-end gap-2">
+                {/* Count stepper — shares row with vertical position */}
                 <div className="flex-1 min-w-0">
                   <span className="mb-1 block text-xs text-content-tertiary">
                     {t('binDesigner.handles.count')}
@@ -381,29 +381,30 @@ export function HandleSection() {
                 </div>
               </div>
 
-              {/* Chamfer toggle */}
-              <label className="flex items-center gap-2 text-xs text-content-secondary cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={handles.chamfer}
-                  onChange={handlers.toggleChamfer}
-                  className="rounded border-stroke-subtle text-accent focus:ring-accent h-3.5 w-3.5"
-                />
-                {t('binDesigner.handles.chamfer')}
-              </label>
-
-              {/* Interior walls toggle — only show when compartments exist */}
-              {hasCompartments && (
+              {/* Behavior toggles — separated visually */}
+              <div className="border-t border-stroke-subtle/50 pt-2 space-y-2">
                 <label className="flex items-center gap-2 text-xs text-content-secondary cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={handles.interior}
-                    onChange={handlers.toggleInterior}
+                    checked={handles.chamfer}
+                    onChange={handlers.toggleChamfer}
                     className="rounded border-stroke-subtle text-accent focus:ring-accent h-3.5 w-3.5"
                   />
-                  {t('binDesigner.handles.interior')}
+                  {t('binDesigner.handles.chamfer')}
                 </label>
-              )}
+
+                {hasCompartments && (
+                  <label className="flex items-center gap-2 text-xs text-content-secondary cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={handles.interior}
+                      onChange={handlers.toggleInterior}
+                      className="rounded border-stroke-subtle text-accent focus:ring-accent h-3.5 w-3.5"
+                    />
+                    {t('binDesigner.handles.interior')}
+                  </label>
+                )}
+              </div>
             </>
           )}
 

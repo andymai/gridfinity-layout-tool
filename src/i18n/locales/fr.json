@@ -226,7 +226,7 @@
   "binDesigner.handles.shape.scoop": "Cuillère",
   "binDesigner.handles.shape.uShape": "U",
   "binDesigner.handles.sides": "Côtés",
-  "binDesigner.handles.summary": "{sides}: {height}mm de hauteur",
+  "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Les trous larges peuvent nécessiter des supports lors de l'impression",
   "binDesigner.handles.unavailableSlotted": "Non disponible pour les bacs à fentes",
   "binDesigner.handles.verticalPosition": "Position verticale",

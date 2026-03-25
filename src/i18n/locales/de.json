@@ -226,7 +226,7 @@
   "binDesigner.handles.shape.scoop": "Schaufel",
   "binDesigner.handles.shape.uShape": "U-Form",
   "binDesigner.handles.sides": "Seiten",
-  "binDesigner.handles.summary": "{sides}: {height}mm hoch",
+  "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Breite Löcher erfordern möglicherweise Stützstrukturen beim Drucken",
   "binDesigner.handles.unavailableSlotted": "Nicht verfügbar für Schlitz-Bins",
   "binDesigner.handles.verticalPosition": "Vertikale Position",

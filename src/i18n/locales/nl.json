@@ -226,7 +226,7 @@
   "binDesigner.handles.shape.scoop": "Schep",
   "binDesigner.handles.shape.uShape": "U-vorm",
   "binDesigner.handles.sides": "Zijden",
-  "binDesigner.handles.summary": "{sides}: {height}mm hoog",
+  "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Brede gaten hebben mogelijk ondersteuning nodig bij het printen",
   "binDesigner.handles.unavailableSlotted": "Niet beschikbaar voor gesleufd bakjes",
   "binDesigner.handles.verticalPosition": "Verticale positie",
