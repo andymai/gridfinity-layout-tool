@@ -10,7 +10,6 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import {
@@ -24,8 +23,6 @@ const GHOST_OPACITY = 0.4;
 
 export function GhostHandles() {
   const { invalidate } = useThree();
-  const flagEnabled = useFeatureFlag('handle_holes');
-
   const { params, generationStatus } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -57,7 +54,6 @@ export function GhostHandles() {
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
 
   const shouldShow =
-    flagEnabled &&
     handles.enabled &&
     style !== 'slotted' &&
     style !== 'solid' &&

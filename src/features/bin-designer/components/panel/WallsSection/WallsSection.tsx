@@ -12,11 +12,9 @@ import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { WallCutoutsSection } from '../WallCutoutsSection';
 import { HandleSection } from '../HandleSection';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 
 export function WallsSection() {
   const { state, handlers, t } = useWallsSection();
-  const handleHolesFlag = useFeatureFlag('handle_holes');
 
   return (
     <div className="space-y-4">
@@ -42,11 +40,9 @@ export function WallsSection() {
       <div className="pt-3 border-t border-stroke-subtle/50">
         <WallCutoutsSection />
       </div>
-      {handleHolesFlag && (
-        <div className="pt-3 border-t border-stroke-subtle/50">
-          <HandleSection />
-        </div>
-      )}
+      <div className="pt-3 border-t border-stroke-subtle/50">
+        <HandleSection />
+      </div>
     </div>
   );
 }

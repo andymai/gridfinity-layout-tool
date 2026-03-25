@@ -61,9 +61,10 @@ export const FEATURE_FLAGS = [
     name: 'Handle Holes',
     description:
       'Cut finger-grip holes through bin walls. Rounded rectangle cutouts make it easy to pull bins out of drawers.',
-    status: 'experimental',
+    status: 'graduated',
     risk: 'low',
     addedAt: '2026-03',
+    graduatedAt: '2026-03',
     requiresRefresh: false,
   },
   {
