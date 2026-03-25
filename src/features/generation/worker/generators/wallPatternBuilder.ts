@@ -206,11 +206,9 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       let handleCenterZ: number;
       let handleEffHeight: number;
       if (isUShape) {
-        handleEffHeight = Math.min(
-          sideHeight + U_SHAPE_OVERSHOOT,
-          interiorHeight + U_SHAPE_OVERSHOOT
-        );
-        handleCenterZ = (sideHeight - U_SHAPE_OVERSHOOT) / 2;
+        const clampedHeight = Math.min(sideHeight, interiorHeight);
+        handleEffHeight = clampedHeight + U_SHAPE_OVERSHOOT;
+        handleCenterZ = (clampedHeight - U_SHAPE_OVERSHOOT) / 2;
       } else {
         const geom = computeHandleHoleGeometry(
           interiorHeight,

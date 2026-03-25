@@ -285,11 +285,9 @@ export function buildHandleHoles(
     let effectiveHeight: number;
     if (isUShape) {
       // Auto-anchor: U-shape extends from floor upward, with overshoot below
-      effectiveHeight = Math.min(
-        sideHeight + U_SHAPE_OVERSHOOT,
-        interiorHeight + U_SHAPE_OVERSHOOT
-      );
-      centerZ = (sideHeight - U_SHAPE_OVERSHOOT) / 2;
+      const clampedHeight = Math.min(sideHeight, interiorHeight);
+      effectiveHeight = clampedHeight + U_SHAPE_OVERSHOOT;
+      centerZ = (clampedHeight - U_SHAPE_OVERSHOOT) / 2;
     } else {
       const geom = computeHandleHoleGeometry(interiorHeight, sideHeight, verticalPosition);
       centerZ = geom.centerZ;

@@ -81,10 +81,8 @@ export function GhostHandles() {
       // Compute vertical geometry per-side (matches handleBuilder)
       let effectiveHeight: number;
       if (isUShape) {
-        effectiveHeight = Math.min(
-          sideHeight + U_SHAPE_OVERSHOOT,
-          interiorHeight + U_SHAPE_OVERSHOOT
-        );
+        const clampedHeight = Math.min(sideHeight, interiorHeight);
+        effectiveHeight = clampedHeight + U_SHAPE_OVERSHOOT;
       } else {
         const geom = computeHandleHoleGeometry(
           interiorHeight,
@@ -205,7 +203,7 @@ export function GhostHandles() {
   // Use variable vertical position for ghost mesh world-space position
   let holeZ: number;
   if (isUShape) {
-    holeZ = socketZ + (handles.height - U_SHAPE_OVERSHOOT) / 2;
+    holeZ = socketZ + (Math.min(handles.height, interiorHeight) - U_SHAPE_OVERSHOOT) / 2;
   } else {
     holeZ = socketZ + interiorHeight * handles.verticalPosition;
   }
