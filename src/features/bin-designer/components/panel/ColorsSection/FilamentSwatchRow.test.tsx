@@ -41,7 +41,7 @@ describe('FilamentSwatchRow', () => {
         onHover={onHoverMock}
       />
     );
-    const accentBtn = screen.getByLabelText('Accent (selected)');
+    const accentBtn = screen.getByLabelText('Body: Accent');
     expect(accentBtn.getAttribute('aria-pressed')).toBe('true');
   });
 
@@ -55,7 +55,7 @@ describe('FilamentSwatchRow', () => {
         onHover={onHoverMock}
       />
     );
-    fireEvent.click(screen.getByLabelText('Accent'));
+    fireEvent.click(screen.getByLabelText('Body: Accent'));
     expect(onChangeMock).toHaveBeenCalledWith('slot2');
   });
 
