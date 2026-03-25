@@ -198,6 +198,10 @@ vi.mock('three/examples/jsm/lines/LineSegmentsGeometry.js', () => ({
   },
 }));
 
+vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
+  toCreasedNormals: vi.fn((geo: unknown) => geo),
+}));
+
 // Mock the generation hook to avoid worker initialization
 vi.mock('../../hooks/useGeneration', () => ({
   useGeneration: vi.fn(),

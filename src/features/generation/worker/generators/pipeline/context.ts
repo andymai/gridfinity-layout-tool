@@ -15,7 +15,7 @@ import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 
 /** Derive all dimensions from bin parameters. */
-function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions {
+function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
   const halfSockets = params.base.halfSockets && !isFlat;
@@ -43,7 +43,7 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
   // Shell cache key — versioned + quantized for deterministic matching
   const shellKey = compactKey(
     buildCacheKey(
-      'v3',
+      'v4',
       quantize(params.width),
       quantize(params.depth),
       quantize(gridUnit),
@@ -54,7 +54,6 @@ function deriveDimensions(params: BinParams, forExport: boolean): BinDimensions 
       quantize(params.base.magnetDiameter),
       quantize(params.base.magnetDepth),
       quantize(params.base.screwDiameter),
-      forExport,
       quantize(wallHeight),
       quantize(params.wallThickness),
       params.base.stackingLip,

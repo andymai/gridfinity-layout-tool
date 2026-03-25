@@ -7,6 +7,15 @@
 
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
+import { toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
+/**
+ * Crease angle threshold (radians). Edges where adjacent face normals differ
+ * by more than this angle get sharp (split) normals; smoother transitions are
+ * interpolated. 35° catches the lip chamfer edges (~45°) while preserving
+ * smooth shading on gentle curves like scoop ramps and fillets.
+ */
+const CREASE_ANGLE = (35 * Math.PI) / 180;
 
 /** Per-face group defining a material index range within the index buffer */
 export interface MeshFaceGroup {
@@ -33,6 +42,10 @@ interface MeshGeometryResult {
 /**
  * Build and manage Three.js BufferGeometry from typed array mesh data.
  * Handles normal computation fallback and automatic disposal.
+ *
+ * When OCCT normals are provided, applies crease-angle-aware normal splitting
+ * so sharp BREP edges (lip chamfer, wall junctions) get distinct normals per
+ * face while smooth surfaces (scoops, fillets) keep interpolated shading.
  */
 export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
   const { vertices, normals, indices, edgeVertices, faceGroups } = arrays;
@@ -41,7 +54,7 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
   const geometry = useMemo(() => {
     if (!vertices || vertices.length === 0) return null;
 
-    const geo = new THREE.BufferGeometry();
+    let geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 
     if (indices && indices.length > 0) {
@@ -49,7 +62,13 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
     }
 
     if (hasPrecomputedNormals) {
-      geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+      // Use crease-angle splitting: smooth normals on gentle curves but sharp
+      // normals at BREP edges where face normals diverge (e.g. lip chamfer).
+      // toCreasedNormals converts to non-indexed internally.
+      geo.computeVertexNormals();
+      const creased = toCreasedNormals(geo, CREASE_ANGLE);
+      geo.dispose();
+      geo = creased;
     } else {
       geo.computeVertexNormals();
     }
@@ -63,7 +82,7 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
     }
 
     return geo;
-  }, [vertices, normals, indices, hasPrecomputedNormals, faceGroups]);
+  }, [vertices, indices, hasPrecomputedNormals, faceGroups]);
 
   const edgesGeometry = useMemo(() => {
     if (!edgeVertices || edgeVertices.length === 0) return null;
