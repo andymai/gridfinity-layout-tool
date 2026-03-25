@@ -66,23 +66,6 @@ export function GhostHandles() {
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
-    // Compute vertical geometry based on shape
-    let effectiveHeight: number;
-    if (isUShape) {
-      effectiveHeight = Math.min(
-        handles.height + U_SHAPE_OVERSHOOT,
-        interiorHeight + U_SHAPE_OVERSHOOT
-      );
-    } else {
-      const geom = computeHandleHoleGeometry(
-        interiorHeight,
-        handles.height,
-        handles.verticalPosition
-      );
-      effectiveHeight = geom.effectiveHeight;
-    }
-    if (effectiveHeight < 1) return null;
-
     const wallDefs = buildHandleWallDefs(innerW, innerD);
     const matrices: THREE.Matrix4[] = [];
 
@@ -93,6 +76,24 @@ export function GhostHandles() {
 
       // Resolve per-side overrides
       const sideWidth = side.width ?? handles.width;
+      const sideHeight = side.height ?? handles.height;
+
+      // Compute vertical geometry per-side (matches handleBuilder)
+      let effectiveHeight: number;
+      if (isUShape) {
+        effectiveHeight = Math.min(
+          sideHeight + U_SHAPE_OVERSHOOT,
+          interiorHeight + U_SHAPE_OVERSHOOT
+        );
+      } else {
+        const geom = computeHandleHoleGeometry(
+          interiorHeight,
+          sideHeight,
+          handles.verticalPosition
+        );
+        effectiveHeight = geom.effectiveHeight;
+      }
+      if (effectiveHeight < 1) continue;
 
       const wallCutout = wallConfig.enabled ? wallConfig[wall.side] : undefined;
       const segments = computeWallHandleSegments(

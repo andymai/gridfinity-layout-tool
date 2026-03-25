@@ -141,110 +141,188 @@ export function HandleSection() {
                 </button>
               </div>
 
-              {/* Width + Height steppers */}
-              <div className="flex items-end gap-2">
-                <div className="flex-1 min-w-0">
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {}
-                    {t('binDesigner.handles.width')} {'(%)'}
-                  </span>
-                  <StepperControl
-                    value={handles.width}
-                    onChange={handlers.setWidth}
-                    onStep={(delta) =>
-                      handlers.setWidth(
-                        Math.min(
-                          C.MAX_HANDLE_WIDTH,
-                          Math.max(C.MIN_HANDLE_WIDTH, handles.width + delta * C.HANDLE_WIDTH_STEP)
-                        )
-                      )
-                    }
-                    min={C.MIN_HANDLE_WIDTH}
-                    max={C.MAX_HANDLE_WIDTH}
-                    step={C.HANDLE_WIDTH_STEP}
-                    variant="desktop"
-                    ariaLabel="Handle width"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {}
-                    {t('binDesigner.handles.height')} {'(mm)'}
-                  </span>
-                  <StepperControl
-                    value={handles.height}
-                    onChange={handlers.setHeight}
-                    onStep={(delta) =>
-                      handlers.setHeight(
-                        Math.min(
-                          C.MAX_HANDLE_HEIGHT,
-                          Math.max(
-                            C.MIN_HANDLE_HEIGHT,
-                            handles.height + delta * C.HANDLE_HEIGHT_STEP
-                          )
-                        )
-                      )
-                    }
-                    min={C.MIN_HANDLE_HEIGHT}
-                    max={C.MAX_HANDLE_HEIGHT}
-                    step={C.HANDLE_HEIGHT_STEP}
-                    variant="desktop"
-                    ariaLabel="Handle height"
-                  />
-                </div>
-              </div>
-
-              {/* Physical dimensions */}
-              <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
-                <svg
-                  className="h-3.5 w-3.5 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
-                  />
-                </svg>
-                <span className="tabular-nums">
-                  {handleWidthMm} × {handles.height} mm
-                </span>
-              </div>
-
-              {/* Corner radius — only for rectangle and u-shape */}
-              {showCornerRadius && (
-                <div className="flex items-end gap-2">
-                  <div className="flex-1 min-w-0">
-                    <span className="mb-1 block text-xs text-content-tertiary">
-                      {}
-                      {t('binDesigner.handles.cornerRadius')} {'(mm)'}
-                    </span>
-                    <StepperControl
-                      value={handles.cornerRadius}
-                      onChange={handlers.setCornerRadius}
-                      onStep={(delta) =>
-                        handlers.setCornerRadius(
-                          Math.min(
-                            C.MAX_HANDLE_CORNER_RADIUS,
-                            Math.max(
-                              C.MIN_HANDLE_CORNER_RADIUS,
-                              handles.cornerRadius + delta * C.HANDLE_CORNER_RADIUS_STEP
+              {/* Shared controls (linked mode) */}
+              {linked && (
+                <>
+                  {/* Width + Height steppers */}
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1 min-w-0">
+                      <span className="mb-1 block text-xs text-content-tertiary">
+                        {}
+                        {t('binDesigner.handles.width')} {'(%)'}
+                      </span>
+                      <StepperControl
+                        value={handles.width}
+                        onChange={handlers.setWidth}
+                        onStep={(delta) =>
+                          handlers.setWidth(
+                            Math.min(
+                              C.MAX_HANDLE_WIDTH,
+                              Math.max(
+                                C.MIN_HANDLE_WIDTH,
+                                handles.width + delta * C.HANDLE_WIDTH_STEP
+                              )
                             )
                           )
-                        )
-                      }
-                      min={C.MIN_HANDLE_CORNER_RADIUS}
-                      max={C.MAX_HANDLE_CORNER_RADIUS}
-                      step={C.HANDLE_CORNER_RADIUS_STEP}
-                      variant="desktop"
-                      ariaLabel="Handle corner radius"
-                    />
+                        }
+                        min={C.MIN_HANDLE_WIDTH}
+                        max={C.MAX_HANDLE_WIDTH}
+                        step={C.HANDLE_WIDTH_STEP}
+                        variant="desktop"
+                        ariaLabel="Handle width"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="mb-1 block text-xs text-content-tertiary">
+                        {}
+                        {t('binDesigner.handles.height')} {'(mm)'}
+                      </span>
+                      <StepperControl
+                        value={handles.height}
+                        onChange={handlers.setHeight}
+                        onStep={(delta) =>
+                          handlers.setHeight(
+                            Math.min(
+                              C.MAX_HANDLE_HEIGHT,
+                              Math.max(
+                                C.MIN_HANDLE_HEIGHT,
+                                handles.height + delta * C.HANDLE_HEIGHT_STEP
+                              )
+                            )
+                          )
+                        }
+                        min={C.MIN_HANDLE_HEIGHT}
+                        max={C.MAX_HANDLE_HEIGHT}
+                        step={C.HANDLE_HEIGHT_STEP}
+                        variant="desktop"
+                        ariaLabel="Handle height"
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  {/* Physical dimensions */}
+                  <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
+                    <svg
+                      className="h-3.5 w-3.5 flex-shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
+                      />
+                    </svg>
+                    <span className="tabular-nums">
+                      {handleWidthMm} × {handles.height} mm
+                    </span>
+                  </div>
+
+                  {/* Corner radius — only for rectangle and u-shape */}
+                  {showCornerRadius && (
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1 min-w-0">
+                        <span className="mb-1 block text-xs text-content-tertiary">
+                          {}
+                          {t('binDesigner.handles.cornerRadius')} {'(mm)'}
+                        </span>
+                        <StepperControl
+                          value={handles.cornerRadius}
+                          onChange={handlers.setCornerRadius}
+                          onStep={(delta) =>
+                            handlers.setCornerRadius(
+                              Math.min(
+                                C.MAX_HANDLE_CORNER_RADIUS,
+                                Math.max(
+                                  C.MIN_HANDLE_CORNER_RADIUS,
+                                  handles.cornerRadius + delta * C.HANDLE_CORNER_RADIUS_STEP
+                                )
+                              )
+                            )
+                          }
+                          min={C.MIN_HANDLE_CORNER_RADIUS}
+                          max={C.MAX_HANDLE_CORNER_RADIUS}
+                          step={C.HANDLE_CORNER_RADIUS_STEP}
+                          variant="desktop"
+                          ariaLabel="Handle corner radius"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
+
+              {/* Per-side controls (independent mode) */}
+              {!linked &&
+                HANDLE_SIDES.filter(
+                  (s) => handles[s].enabled && !(s === 'back' && isBackDisabled)
+                ).map((side) => (
+                  <div key={side} className="space-y-2">
+                    <label className="text-xs font-medium text-content-secondary block">
+                      {t(`binDesigner.handles.${side}`)}
+                    </label>
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1 min-w-0">
+                        <span className="mb-1 block text-xs text-content-tertiary">
+                          {}
+                          {t('binDesigner.handles.width')} {'(%)'}
+                        </span>
+                        <StepperControl
+                          value={handles[side].width ?? handles.width}
+                          onChange={(v) => handlers.setSideWidth(side, v)}
+                          onStep={(delta) =>
+                            handlers.setSideWidth(
+                              side,
+                              Math.min(
+                                C.MAX_HANDLE_WIDTH,
+                                Math.max(
+                                  C.MIN_HANDLE_WIDTH,
+                                  (handles[side].width ?? handles.width) +
+                                    delta * C.HANDLE_WIDTH_STEP
+                                )
+                              )
+                            )
+                          }
+                          min={C.MIN_HANDLE_WIDTH}
+                          max={C.MAX_HANDLE_WIDTH}
+                          step={C.HANDLE_WIDTH_STEP}
+                          variant="desktop"
+                          ariaLabel={`${side} handle width`}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="mb-1 block text-xs text-content-tertiary">
+                          {}
+                          {t('binDesigner.handles.height')} {'(mm)'}
+                        </span>
+                        <StepperControl
+                          value={handles[side].height ?? handles.height}
+                          onChange={(v) => handlers.setSideHeight(side, v)}
+                          onStep={(delta) =>
+                            handlers.setSideHeight(
+                              side,
+                              Math.min(
+                                C.MAX_HANDLE_HEIGHT,
+                                Math.max(
+                                  C.MIN_HANDLE_HEIGHT,
+                                  (handles[side].height ?? handles.height) +
+                                    delta * C.HANDLE_HEIGHT_STEP
+                                )
+                              )
+                            )
+                          }
+                          min={C.MIN_HANDLE_HEIGHT}
+                          max={C.MAX_HANDLE_HEIGHT}
+                          step={C.HANDLE_HEIGHT_STEP}
+                          variant="desktop"
+                          ariaLabel={`${side} handle height`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
 
               {/* Vertical position — hidden for u-shape (auto-anchored to bottom) */}
               {!isUShape && (

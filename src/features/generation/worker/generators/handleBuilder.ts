@@ -10,8 +10,9 @@
  * checks for overlap and splits or skips as needed.
  */
 
-import { translate, rotate } from 'brepjs';
+import { translate, rotate, cut } from 'brepjs';
 import type { Shape3D } from 'brepjs';
+import { isOk } from '@/core/result';
 import type { BinParams, HandleCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull, findWallSegments } from './compartmentBuilder';
@@ -20,11 +21,12 @@ import {
   computeHandleHoleGeometry,
   CUTOUT_CLEARANCE,
   MIN_SEGMENT_WIDTH,
+  U_SHAPE_OVERSHOOT,
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
-import { buildHandleProfile, U_SHAPE_OVERSHOOT } from './handleProfiles';
+import { buildHandleProfile } from './handleProfiles';
 import { LIP_TAPER_WIDTH } from './generatorConstants';
 
 /**
@@ -58,6 +60,62 @@ function buildHoleCut(
   }
 
   return translate(cutShape, [wall.x, wall.y, 0]);
+}
+
+/** Chamfer distance in mm — applied to both entry faces of the handle hole. */
+const CHAMFER_DISTANCE = 0.8;
+
+/**
+ * Build chamfer cuts for a handle hole.
+ *
+ * Creates slightly larger, shallow cuts on both wall faces to bevel the edges.
+ * Returns null if the chamfer profile fails to build.
+ */
+function buildChamferCuts(
+  shape: HandleCutoutShape,
+  segmentWidth: number,
+  segmentOffset: number,
+  holeHeight: number,
+  cornerRadius: number,
+  _wallThickness: number,
+  centerZ: number,
+  wall: HandleWallDef
+): Shape3D | null {
+  // Build a slightly larger profile for the chamfer
+  const chamferProfile = buildHandleProfile(shape, {
+    width: segmentWidth + CHAMFER_DISTANCE * 2,
+    height: holeHeight + CHAMFER_DISTANCE * 2,
+    cornerRadius: cornerRadius + CHAMFER_DISTANCE,
+  });
+  if (!chamferProfile) return null;
+
+  // Build the original hole profile to subtract from the chamfer ring
+  const holeProfile = buildHandleProfile(shape, {
+    width: segmentWidth,
+    height: holeHeight,
+    cornerRadius,
+  });
+  if (!holeProfile) return null;
+
+  // Chamfer ring = larger profile extruded shallow, minus the hole profile
+  const chamferDepth = CHAMFER_DISTANCE;
+  let outerShape = sketch(chamferProfile, 'XZ').extrude(chamferDepth);
+  const innerShape = sketch(holeProfile, 'XZ').extrude(chamferDepth + 0.1);
+
+  // Position both at the same Z
+  outerShape = translate(outerShape, [segmentOffset, chamferDepth / 2, centerZ]);
+  const innerCut = translate(innerShape, [segmentOffset, chamferDepth / 2, centerZ]);
+
+  const ringResult = cut(outerShape, innerCut);
+  if (!isOk(ringResult)) return null;
+  let ring = ringResult.value;
+
+  // Position at wall face (offset by half wall thickness to sit on the outer face)
+  // The ring needs to be at the wall's outer face, not centered in the wall
+  if (wall.rotateZ !== 0) {
+    ring = rotate(ring, wall.rotateZ, { axis: [0, 0, 1] });
+  }
+  return translate(ring, [wall.x, wall.y, 0]);
 }
 
 /** Resolve cutout horizontal info for overlap checking. */
@@ -101,6 +159,8 @@ function buildHandleAtOffset(
   extrudeDepth: number,
   centerZ: number,
   wall: HandleWallDef,
+  wallThickness: number,
+  chamfer: boolean,
   cutoutSpan: { cutCenter: number; cutWidth: number } | null
 ): Shape3D[] {
   const results: Shape3D[] = [];
@@ -160,6 +220,19 @@ function buildHandleAtOffset(
     wall
   );
   if (hole) results.push(hole);
+  if (chamfer) {
+    const chamferCut = buildChamferCuts(
+      shape,
+      handleWidthMm,
+      handleOffset,
+      holeHeight,
+      cornerRadius,
+      wallThickness,
+      centerZ,
+      wall
+    );
+    if (chamferCut) results.push(chamferCut);
+  }
   return results;
 }
 
@@ -185,6 +258,7 @@ export function buildHandleHoles(
     cornerRadius: globalRadius,
     verticalPosition,
     count,
+    chamfer,
     interior,
   } = params.handles;
   if (globalHeight <= 0) return null;
@@ -243,6 +317,8 @@ export function buildHandleHoles(
         extrudeDepth,
         centerZ,
         wall,
+        wallThickness,
+        chamfer,
         cutoutSpan
       );
       allHoles.push(...holes);

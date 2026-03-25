@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   computeHandleSegments,
   computeHandleHoleGeometry,
-  HOLE_VERTICAL_CENTER,
+  DEFAULT_VERTICAL_POSITION,
 } from './handleCutoutClip';
 
 describe('computeHandleSegments', () => {
@@ -101,7 +101,7 @@ describe('computeHandleSegments', () => {
 describe('computeHandleHoleGeometry', () => {
   it('computes centerZ at 70% of interior height', () => {
     const { centerZ } = computeHandleHoleGeometry(100, 20);
-    expect(centerZ).toBe(100 * HOLE_VERTICAL_CENTER);
+    expect(centerZ).toBe(100 * DEFAULT_VERTICAL_POSITION);
   });
 
   it('clamps height to available space around centerZ', () => {

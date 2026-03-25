@@ -49,8 +49,10 @@ import {
   buildHandleWallDefs,
   computeHandleHoleGeometry,
   computeWallHandleSegments,
+  U_SHAPE_OVERSHOOT,
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
+import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 
 /**
  * Build a compound of positioned hex prisms for a single wall.
@@ -204,9 +206,11 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       let handleCenterZ: number;
       let handleEffHeight: number;
       if (isUShape) {
-        const overshoot = 5;
-        handleEffHeight = Math.min(sideHeight + overshoot, interiorHeight + overshoot);
-        handleCenterZ = (sideHeight - overshoot) / 2;
+        handleEffHeight = Math.min(
+          sideHeight + U_SHAPE_OVERSHOOT,
+          interiorHeight + U_SHAPE_OVERSHOOT
+        );
+        handleCenterZ = (sideHeight - U_SHAPE_OVERSHOOT) / 2;
       } else {
         const geom = computeHandleHoleGeometry(
           interiorHeight,
@@ -219,20 +223,31 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
 
       if (handleEffHeight >= 1) {
         const handleCutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;
-        const segments = computeWallHandleSegments(
+        const baseSegments = computeWallHandleSegments(
           wallSpan,
           sideWidth,
           params.wallThickness,
           handleCutoutCfg
         );
-        if (segments && segments.length > 0) {
-          handleClip = {
-            segments,
-            effectiveHeight: handleEffHeight,
-            centerZ: handleCenterZ,
-            clipExtrudeDepth,
-            handleWall,
-          };
+        if (baseSegments && baseSegments.length > 0) {
+          // Expand segments with multi-handle offsets
+          const handleWidthMm = wallSpan * (sideWidth / 100);
+          const offsets = computeMultiHandleOffsets(params.handles.count, wallSpan, handleWidthMm);
+          const expandedSegments: HandleSegment[] = [];
+          for (const handleOffset of offsets) {
+            for (const seg of baseSegments) {
+              expandedSegments.push({ offset: seg.offset + handleOffset, width: seg.width });
+            }
+          }
+          if (expandedSegments.length > 0) {
+            handleClip = {
+              segments: expandedSegments,
+              effectiveHeight: handleEffHeight,
+              centerZ: handleCenterZ,
+              clipExtrudeDepth,
+              handleWall,
+            };
+          }
         }
       }
     }

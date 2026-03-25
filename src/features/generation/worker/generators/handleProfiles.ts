@@ -15,8 +15,6 @@ import type { Drawing } from 'brepjs';
 import type { HandleCutoutShape } from '@/shared/types/bin';
 import { U_SHAPE_OVERSHOOT } from '@/shared/utils/handleCutoutClip';
 
-export { U_SHAPE_OVERSHOOT };
-
 interface ProfileArgs {
   /** Horizontal span in mm */
   readonly width: number;
