@@ -1,149 +1,149 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`asymmetric dimensions > 0.5×4 extreme asymmetry 1`] = `1676`;
+exports[`asymmetric dimensions > 0.5×4 extreme asymmetry 1`] = `1868`;
 
 exports[`base styles > flat base no lip 1`] = `196`;
 
-exports[`base styles > flat base with lip 1`] = `556`;
+exports[`base styles > flat base with lip 1`] = `588`;
 
-exports[`base styles > magnet base no lip 1`] = `636`;
+exports[`base styles > magnet base no lip 1`] = `652`;
 
-exports[`base styles > magnet base with lip 1`] = `1308`;
+exports[`base styles > magnet base with lip 1`] = `1372`;
 
-exports[`base styles > magnet+screw base no lip 1`] = `796`;
+exports[`base styles > magnet+screw base no lip 1`] = `812`;
 
-exports[`base styles > magnet+screw base with lip 1`] = `1596`;
+exports[`base styles > magnet+screw base with lip 1`] = `1660`;
 
-exports[`base styles > screw base no lip 1`] = `556`;
+exports[`base styles > screw base no lip 1`] = `572`;
 
-exports[`base styles > screw base with lip 1`] = `1180`;
+exports[`base styles > screw base with lip 1`] = `1244`;
 
-exports[`base styles > standard base no lip 1`] = `396`;
+exports[`base styles > standard base no lip 1`] = `412`;
 
-exports[`base styles > standard base with lip 1`] = `892`;
+exports[`base styles > standard base with lip 1`] = `956`;
 
-exports[`base styles > weighted base no lip 1`] = `396`;
+exports[`base styles > weighted base no lip 1`] = `412`;
 
-exports[`base styles > weighted base with lip 1`] = `892`;
+exports[`base styles > weighted base with lip 1`] = `956`;
 
-exports[`bin styles > 2×2 slotted 1`] = `2236`;
+exports[`bin styles > 2×2 slotted 1`] = `2396`;
 
-exports[`bin styles > 2×2 solid 1`] = `1724`;
+exports[`bin styles > 2×2 solid 1`] = `1884`;
 
-exports[`bin styles > 2×2 standard 1`] = `1900`;
+exports[`bin styles > 2×2 standard 1`] = `2060`;
 
-exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`] = `892`;
+exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`] = `924`;
 
-exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `2364`;
+exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `2524`;
 
-exports[`combined features > 2×2 label tabs with merged compartments 1`] = `4352`;
+exports[`combined features > 2×2 label tabs with merged compartments 1`] = `4512`;
 
-exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `6124`;
+exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `6556`;
 
-exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `13624`;
+exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `14648`;
 
-exports[`compartments > 2×2 bin with 1×1 (none) compartments 1`] = `1900`;
+exports[`compartments > 2×2 bin with 1×1 (none) compartments 1`] = `2060`;
 
-exports[`compartments > 2×2 bin with 2×2 compartments 1`] = `2620`;
+exports[`compartments > 2×2 bin with 2×2 compartments 1`] = `2780`;
 
-exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `2712`;
+exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `2872`;
 
-exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `4364`;
+exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `4524`;
 
-exports[`dimensions > 0.5×0.5 no lip 1`] = `396`;
+exports[`dimensions > 0.5×0.5 no lip 1`] = `412`;
 
-exports[`dimensions > 0.5×0.5 with lip 1`] = `892`;
+exports[`dimensions > 0.5×0.5 with lip 1`] = `956`;
 
-exports[`dimensions > 1.5×2 fractional no lip 1`] = `972`;
+exports[`dimensions > 1.5×2 fractional no lip 1`] = `1036`;
 
-exports[`dimensions > 1.5×2 fractional with lip 1`] = `1900`;
+exports[`dimensions > 1.5×2 fractional with lip 1`] = `2060`;
 
-exports[`dimensions > 1×1 no lip 1`] = `396`;
+exports[`dimensions > 1×1 no lip 1`] = `412`;
 
-exports[`dimensions > 1×1 with lip 1`] = `892`;
+exports[`dimensions > 1×1 with lip 1`] = `956`;
 
-exports[`dimensions > 2×2 no lip 1`] = `972`;
+exports[`dimensions > 2×2 no lip 1`] = `1036`;
 
-exports[`dimensions > 2×2 with lip 1`] = `1900`;
+exports[`dimensions > 2×2 with lip 1`] = `2060`;
 
-exports[`dimensions > 4×4 no lip 1`] = `2684`;
+exports[`dimensions > 4×4 no lip 1`] = `2940`;
 
-exports[`dimensions > 4×4 with lip 1`] = `5228`;
+exports[`dimensions > 4×4 with lip 1`] = `5996`;
 
-exports[`export mode > 2×2 default params (forExport=true) 1`] = `5988`;
+exports[`export mode > 2×2 default params (forExport=true) 1`] = `5140`;
 
-exports[`half-sockets > 1.5×1.5 with half sockets 1`] = `3580`;
+exports[`half-sockets > 1.5×1.5 with half sockets 1`] = `3900`;
 
-exports[`half-sockets > 1×1 with half sockets 1`] = `1900`;
+exports[`half-sockets > 1×1 with half sockets 1`] = `2060`;
 
-exports[`half-sockets > 2×2 with half sockets 1`] = `5932`;
+exports[`half-sockets > 2×2 with half sockets 1`] = `6476`;
 
-exports[`height > 2×2 height minimum (2u) 1`] = `1900`;
+exports[`height > 2×2 height minimum (2u) 1`] = `2060`;
 
-exports[`height > 2×2 height tall (10u) 1`] = `1900`;
+exports[`height > 2×2 height tall (10u) 1`] = `2060`;
 
-exports[`inserts > 2×2 with circle insert 1`] = `2120`;
+exports[`inserts > 2×2 with circle insert 1`] = `2280`;
 
-exports[`inserts > 2×2 with hexagon insert 1`] = `2120`;
+exports[`inserts > 2×2 with hexagon insert 1`] = `2280`;
 
-exports[`inserts > 2×2 with rectangle insert 1`] = `1936`;
+exports[`inserts > 2×2 with rectangle insert 1`] = `2096`;
 
-exports[`inserts > 2×2 with rounded-rect insert 1`] = `2048`;
+exports[`inserts > 2×2 with rounded-rect insert 1`] = `2208`;
 
-exports[`inserts > 2×2 with slot insert 1`] = `2072`;
+exports[`inserts > 2×2 with slot insert 1`] = `2232`;
 
-exports[`label tabs > 2×2 label bracket center 1`] = `2672`;
+exports[`label tabs > 2×2 label bracket center 1`] = `2832`;
 
-exports[`label tabs > 2×2 label bracket left 1`] = `2672`;
+exports[`label tabs > 2×2 label bracket left 1`] = `2832`;
 
-exports[`label tabs > 2×2 label bracket right 1`] = `2672`;
+exports[`label tabs > 2×2 label bracket right 1`] = `2832`;
 
-exports[`label tabs > 2×2 label disabled 1`] = `1900`;
+exports[`label tabs > 2×2 label disabled 1`] = `2060`;
 
-exports[`label tabs > 2×2 label solid left 1`] = `2348`;
+exports[`label tabs > 2×2 label solid left 1`] = `2508`;
 
-exports[`large bin > 8×8 standard 1`] = `15236`;
+exports[`large bin > 8×8 standard 1`] = `15252`;
 
-exports[`multiple inserts > 2×2 with 2 circle inserts 1`] = `2296`;
+exports[`multiple inserts > 2×2 with 2 circle inserts 1`] = `2456`;
 
-exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `2632`;
+exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `3064`;
 
-exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `3508`;
+exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `3940`;
 
-exports[`scoop > 2×2 scoop auto radius 1`] = `2632`;
+exports[`scoop > 2×2 scoop auto radius 1`] = `3064`;
 
-exports[`scoop > 2×2 scoop disabled 1`] = `1900`;
+exports[`scoop > 2×2 scoop disabled 1`] = `2060`;
 
-exports[`scoop > 2×2 scoop radius 10mm 1`] = `2644`;
+exports[`scoop > 2×2 scoop radius 10mm 1`] = `3092`;
 
-exports[`slotted variations > slotted with Y-axis slots 1`] = `2236`;
+exports[`slotted variations > slotted with Y-axis slots 1`] = `2396`;
 
-exports[`slotted variations > slotted with both axes 1`] = `2572`;
+exports[`slotted variations > slotted with both axes 1`] = `2732`;
 
-exports[`slotted variations > slotted without lip 1`] = `1092`;
+exports[`slotted variations > slotted without lip 1`] = `1156`;
 
-exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `1912`;
+exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `2072`;
 
-exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `1876`;
+exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `2036`;
 
-exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `1938`;
+exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `2098`;
 
-exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `1754`;
+exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `1914`;
 
-exports[`solid cutouts > 2×2 solid with path cutout having closing bezier curve 1`] = `1916`;
+exports[`solid cutouts > 2×2 solid with path cutout having closing bezier curve 1`] = `2076`;
 
-exports[`solid cutouts > 2×2 solid with rectangle cutout 1`] = `1744`;
+exports[`solid cutouts > 2×2 solid with rectangle cutout 1`] = `1904`;
 
-exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `2272`;
+exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `2432`;
 
-exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `1756`;
+exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `1916`;
 
-exports[`solid cutouts > 2×2 solid with rounded-rectangle cutout 1`] = `1852`;
+exports[`solid cutouts > 2×2 solid with rounded-rectangle cutout 1`] = `2012`;
 
-exports[`solid cutouts > 2×2 solid with topOffset 1`] = `1736`;
+exports[`solid cutouts > 2×2 solid with topOffset 1`] = `1896`;
 
-exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `1736`;
+exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `1896`;
 
-exports[`wall thickness > 2×2 thick (2.4mm) walls 1`] = `1860`;
+exports[`wall thickness > 2×2 thick (2.4mm) walls 1`] = `2020`;
 
-exports[`wall thickness > 2×2 thin (0.4mm) walls 1`] = `2028`;
+exports[`wall thickness > 2×2 thin (0.4mm) walls 1`] = `2188`;
