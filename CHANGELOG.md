@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.27.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.26.0...gridfinity-layout-tool-v4.27.0) (2026-03-25)
+
+
+### Features
+
+* **generation:** add border around handles in honeycomb wall pattern ([#1241](https://github.com/andymai/gridfinity-layout-tool/issues/1241)) ([c2f7925](https://github.com/andymai/gridfinity-layout-tool/commit/c2f792544c690fb444781dee79c0b61643ac33ce))
+
 ## [4.26.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.25.1...gridfinity-layout-tool-v4.26.0) (2026-03-24)
 
 
