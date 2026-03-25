@@ -25,7 +25,8 @@ import {
 import { useToastStore } from '@/core/store/toast';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
-import { computeBaseplateTiling, pieceToBaseplateParams } from '../utils/splitPlanner';
+import { computeBaseplateTiling } from '../utils/splitPlanner';
+import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
 import type { PieceMeshEntry } from '../store/baseplatePageStore';
 import type { GenerationResult } from '@/shared/generation/bridge';
@@ -136,6 +137,7 @@ export function useBaseplateGeneration(): void {
   const setTiling = useBaseplatePageStore((s) => s.setTiling);
   const setPieceMeshes = useBaseplatePageStore((s) => s.setPieceMeshes);
   const setSplitProgress = useBaseplatePageStore((s) => s.setSplitProgress);
+  const setDedupStats = useBaseplatePageStore((s) => s.setDedupStats);
 
   const runGeneration = useCallback(
     async (fullParams: FullBaseplateParams, bedSizeMm: number) => {
@@ -151,6 +153,7 @@ export function useBaseplateGeneration(): void {
       setTiling(tiling);
 
       setGenerationStatus('generating');
+      setDedupStats(null);
 
       try {
         if (!tiling.isSplit) {
@@ -171,41 +174,71 @@ export function useBaseplateGeneration(): void {
           setPieceMeshes([]);
           setGenerationStatus('complete');
         } else {
-          // Multi-piece — use worker pool for parallel generation
+          // Multi-piece — deduplicate then generate unique shapes only
           const pool = poolRef.current;
-          const total = tiling.pieces.length;
-          setSplitProgress({ current: 0, total });
+          const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
+          const uniqueGroups = [...groups.values()];
+          const uniqueCount = uniqueGroups.length;
+          const totalCount = tiling.pieces.length;
+          const duplicatesSkipped = totalCount - uniqueCount;
 
-          const pieceParamsArray = tiling.pieces.map((piece) =>
-            pieceToBaseplateParams(piece, fullParams)
-          );
+          setDedupStats({ uniqueCount, totalCount, duplicatesSkipped });
+          setSplitProgress({ current: 0, total: uniqueCount });
 
-          let meshEntries: PieceMeshEntry[];
+          // Generate only unique shapes
+          const uniqueParams = uniqueGroups.map((g) => g.params);
+          let uniqueResults: GenerationResult[];
 
           if (pool && !pool.isDestroyed && pool.size > 1) {
-            // Parallel generation via worker pool
-            const results = await pool.generateBaseplates(
-              pieceParamsArray,
-              (completed, pieceTotal) => setSplitProgress({ current: completed, total: pieceTotal })
+            uniqueResults = await pool.generateBaseplates(uniqueParams, (completed, pieceTotal) =>
+              setSplitProgress({ current: completed, total: pieceTotal })
             );
 
             if (generationEpochRef.current !== epoch) return;
-
-            meshEntries = results.map((result, i) => buildPieceMeshEntry(result, tiling.pieces[i]));
           } else {
-            // Fallback: sequential generation via primary bridge
-            meshEntries = [];
+            uniqueResults = [];
 
-            for (let i = 0; i < tiling.pieces.length; i++) {
-              setSplitProgress({ current: i + 1, total });
+            for (let i = 0; i < uniqueParams.length; i++) {
+              setSplitProgress({ current: i + 1, total: uniqueCount });
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- re-check between async iterations
               if (bridge.isDestroyed || generationEpochRef.current !== epoch) return;
 
-              const result = await bridge.generateBaseplate(pieceParamsArray[i], NO_OP_PROGRESS);
+              const result = await bridge.generateBaseplate(uniqueParams[i], NO_OP_PROGRESS);
 
               if (generationEpochRef.current !== epoch) return;
 
-              meshEntries.push(buildPieceMeshEntry(result, tiling.pieces[i]));
+              uniqueResults.push(result);
+            }
+          }
+
+          // Build mesh entries: original for first piece in group, clone for duplicates
+          const meshEntries: PieceMeshEntry[] = new Array(totalCount);
+
+          for (let groupIdx = 0; groupIdx < uniqueGroups.length; groupIdx++) {
+            const group = uniqueGroups[groupIdx];
+            const result = uniqueResults[groupIdx];
+
+            for (let j = 0; j < group.indices.length; j++) {
+              const pieceIdx = group.indices[j];
+              const piece = tiling.pieces[pieceIdx];
+
+              if (j === 0) {
+                meshEntries[pieceIdx] = buildPieceMeshEntry(result, piece);
+              } else {
+                // Clone mesh data for duplicate pieces
+                meshEntries[pieceIdx] = buildPieceMeshEntry(
+                  {
+                    mesh: {
+                      vertices: result.mesh.vertices?.slice() ?? null,
+                      normals: result.mesh.normals?.slice() ?? null,
+                      indices: result.mesh.indices?.slice() ?? null,
+                      edgeVertices: result.mesh.edgeVertices?.slice() ?? null,
+                    },
+                    timingMs: 0,
+                  },
+                  piece
+                );
+              }
             }
           }
 
@@ -234,7 +267,14 @@ export function useBaseplateGeneration(): void {
         setGenerationStatus('error');
       }
     },
-    [setGenerationStatus, setGenerationResult, setTiling, setPieceMeshes, setSplitProgress]
+    [
+      setGenerationStatus,
+      setGenerationResult,
+      setTiling,
+      setPieceMeshes,
+      setSplitProgress,
+      setDedupStats,
+    ]
   );
 
   // Initialize bridge via BridgeManager + worker pool on mount
