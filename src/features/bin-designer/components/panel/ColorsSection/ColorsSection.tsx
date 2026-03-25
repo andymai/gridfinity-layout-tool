@@ -5,6 +5,7 @@
  * Only rendered when multi_color_export Labs flag is enabled.
  */
 
+import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -24,6 +25,9 @@ export function ColorsSection() {
 
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
   const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
+
+  // Clear hovered zone on unmount to prevent stale preview glow
+  useEffect(() => () => setHoveredColorZone(null), [setHoveredColorZone]);
 
   return (
     <div className="space-y-4">

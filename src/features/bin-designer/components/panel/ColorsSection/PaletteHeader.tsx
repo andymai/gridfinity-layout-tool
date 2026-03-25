@@ -16,13 +16,15 @@ export function PaletteHeader() {
   const t = useTranslation();
   const palette = useSettingsStore((s) => s.settings.filamentPalette);
   const [editingSlotId, setEditingSlotId] = useState<FilamentSlotId | null>(null);
-  const buttonElements = useRef(new Map());
+  const buttonElements = useRef(new Map<FilamentSlotId, HTMLButtonElement>());
 
   const handleClose = useCallback(() => setEditingSlotId(null), []);
 
   const editingSlot = editingSlotId ? palette.find((s) => s.id === editingSlotId) : null;
 
-  // Stable ref for the Popover anchor — updated in effect, not during render
+  // Anchor ref for Popover — updated in effect to comply with React 19 ref rules.
+  // The key prop on Popover forces remount when the slot changes, ensuring the
+  // effect runs before Popover measures its position.
   const anchorRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     anchorRef.current = editingSlotId ? (buttonElements.current.get(editingSlotId) ?? null) : null;
@@ -58,7 +60,13 @@ export function PaletteHeader() {
       </div>
 
       {editingSlot && (
-        <Popover anchorRef={anchorRef} isOpen onClose={handleClose} placement="bottom-start">
+        <Popover
+          key={editingSlotId}
+          anchorRef={anchorRef}
+          isOpen
+          onClose={handleClose}
+          placement="bottom-start"
+        >
           <FilamentSlotEditor slot={editingSlot} />
         </Popover>
       )}

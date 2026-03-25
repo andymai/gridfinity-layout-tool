@@ -50,8 +50,7 @@ export function FilamentSwatchRow({
                   : 'border-stroke-subtle/50 hover:border-stroke hover:scale-105'
               }`}
               style={{ backgroundColor: slot.color }}
-              // eslint-disable-next-line i18next/no-literal-string -- dynamic slot name + state suffix, not user-facing prose
-              aria-label={`${slot.name}${isSelected ? ' (selected)' : ''}`}
+              aria-label={slot.name}
               aria-pressed={isSelected}
               title={slot.name}
             >
