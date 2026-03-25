@@ -124,4 +124,21 @@ describe('computeHandleHoleGeometry', () => {
     const { effectiveHeight } = computeHandleHoleGeometry(2, 10);
     expect(effectiveHeight).toBeLessThan(1);
   });
+
+  it('respects custom verticalPosition parameter', () => {
+    const result = computeHandleHoleGeometry(100, 20, 0.5);
+    expect(result.centerZ).toBeCloseTo(50, 1);
+  });
+
+  it('clamps height near floor with low verticalPosition', () => {
+    const result = computeHandleHoleGeometry(100, 80, 0.2);
+    // centerZ=20, margin=10, maxHalfHeight=max(0, min(20,80)-10)=10
+    expect(result.effectiveHeight).toBeLessThanOrEqual(20);
+  });
+
+  it('clamps height near ceiling with high verticalPosition', () => {
+    const result = computeHandleHoleGeometry(100, 80, 0.9);
+    // centerZ=90, margin=10, maxHalfHeight=max(0, min(90,10)-10)=0
+    expect(result.effectiveHeight).toBeLessThanOrEqual(0);
+  });
 });
