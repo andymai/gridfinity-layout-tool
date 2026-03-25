@@ -418,10 +418,10 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   const handlesConfig: HandleConfig = {
     ...DEFAULT_HANDLE_CONFIG,
     ...(cleanHandles as Partial<HandleConfig>),
-    front: { ...DEFAULT_HANDLE_SIDE, ...((rawHandles.front as object | undefined) ?? {}) },
-    back: { ...DEFAULT_HANDLE_SIDE, ...((rawHandles.back as object | undefined) ?? {}) },
-    left: { ...DEFAULT_HANDLE_SIDE, ...((rawHandles.left as object | undefined) ?? {}) },
-    right: { ...DEFAULT_HANDLE_SIDE, ...((rawHandles.right as object | undefined) ?? {}) },
+    front: { ...DEFAULT_HANDLE_CONFIG.front, ...((rawHandles.front as object | undefined) ?? {}) },
+    back: { ...DEFAULT_HANDLE_CONFIG.back, ...((rawHandles.back as object | undefined) ?? {}) },
+    left: { ...DEFAULT_HANDLE_CONFIG.left, ...((rawHandles.left as object | undefined) ?? {}) },
+    right: { ...DEFAULT_HANDLE_CONFIG.right, ...((rawHandles.right as object | undefined) ?? {}) },
   };
 
   // Remove legacy and already-handled fields from spread
