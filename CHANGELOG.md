@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.31.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.30.0...gridfinity-layout-tool-v4.31.0) (2026-03-26)
+
+
+### Features
+
+* combine bin and divider exports into single download ([#1251](https://github.com/andymai/gridfinity-layout-tool/issues/1251)) ([#1259](https://github.com/andymai/gridfinity-layout-tool/issues/1259)) ([76e944c](https://github.com/andymai/gridfinity-layout-tool/commit/76e944c590b1c533deaf4c8b8a022ac25aa5bb68))
+
 ## [4.30.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.29.1...gridfinity-layout-tool-v4.30.0) (2026-03-25)
 
 
