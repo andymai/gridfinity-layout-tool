@@ -372,32 +372,37 @@ describe('migrateParams', () => {
   it('should provide default featureColors when absent', () => {
     const result = migrateParams({});
     expect(result.featureColors).toEqual({
-      body: 'slot1',
-      lip: 'slot1',
-      labelTab: 'slot1',
+      body: '#d4d8dc',
+      lip: '#d4d8dc',
+      labelTab: '#d4d8dc',
     });
   });
 
-  it('should preserve custom featureColors through round-trip', () => {
-    const custom = { body: 'slot2' as const, lip: 'slot3' as const, labelTab: 'slot1' as const };
-    const result = migrateParams({ featureColors: custom });
-    expect(result.featureColors).toEqual(custom);
+  it('should migrate legacy slot IDs to hex colors', () => {
+    const legacy = { body: 'slot2' as const, lip: 'slot3' as const, labelTab: 'slot1' as const };
+    const result = migrateParams({
+      featureColors: legacy as unknown as typeof result.featureColors,
+    });
+    expect(result.featureColors).toEqual({
+      body: '#3b82f6',
+      lip: '#22c55e',
+      labelTab: '#d4d8dc',
+    });
   });
 
-  it('should preserve featureColors through double migration (load path)', () => {
-    const custom = { body: 'slot2' as const, lip: 'slot3' as const, labelTab: 'slot4' as const };
-    const firstPass = migrateParams({ featureColors: custom });
+  it('should preserve hex featureColors through double migration', () => {
+    const hex = { body: '#ef4444', lip: '#3b82f6', labelTab: '#22c55e' };
+    const firstPass = migrateParams({ featureColors: hex });
     const secondPass = migrateParams(firstPass);
-    expect(secondPass.featureColors).toEqual(custom);
+    expect(secondPass.featureColors).toEqual(hex);
   });
 
   it('should backfill missing featureColors fields from defaults', () => {
-    // Simulates a saved design with a partial featureColors (e.g., future schema change)
-    const partial = { body: 'slot2' } as any;
+    const partial = { body: '#3b82f6' } as unknown as typeof DEFAULT_BIN_PARAMS.featureColors;
     const result = migrateParams({ featureColors: partial });
-    expect(result.featureColors.body).toBe('slot2');
-    expect(result.featureColors.lip).toBe('slot1');
-    expect(result.featureColors.labelTab).toBe('slot1');
+    expect(result.featureColors.body).toBe('#3b82f6');
+    expect(result.featureColors.lip).toBe('#d4d8dc');
+    expect(result.featureColors.labelTab).toBe('#d4d8dc');
   });
 });
 
