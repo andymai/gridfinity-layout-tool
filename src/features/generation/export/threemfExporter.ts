@@ -24,6 +24,14 @@ export interface ThreeMFColorConfig {
   readonly triangleMaterialIndices: readonly number[];
 }
 
+/** A single mesh object for multi-object 3MF export */
+export interface ThreeMFObject {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly name: string;
+  readonly colorConfig?: ThreeMFColorConfig;
+}
+
 /** Options for 3MF export */
 export interface ThreeMFOptions {
   /** Model name for metadata */
@@ -75,6 +83,54 @@ export function export3MF(
   return new Blob([buffer.buffer.slice(0) as ArrayBuffer], {
     type: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
   });
+}
+
+/**
+ * Generates a 3MF file Blob containing multiple named objects.
+ *
+ * Each object gets its own `<object>` element with a unique id and name,
+ * all referenced in the `<build>` section. This allows slicers to display
+ * each piece (bin, dividers) as a separate named object.
+ */
+export function export3MFMultiObject(
+  objects: readonly ThreeMFObject[],
+  options: ThreeMFOptions
+): Blob {
+  const buffer = build3MFMultiObjectBuffer(objects, options);
+  return new Blob([buffer.buffer.slice(0) as ArrayBuffer], {
+    type: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
+  });
+}
+
+/**
+ * Builds the raw multi-object 3MF ZIP as a Uint8Array.
+ * Exposed separately for testing.
+ */
+export function build3MFMultiObjectBuffer(
+  objects: readonly ThreeMFObject[],
+  options: ThreeMFOptions
+): Uint8Array {
+  for (const obj of objects) {
+    validateMeshData(obj.vertices, obj.normals);
+  }
+
+  const meshes = objects.map((obj) => ({
+    mesh: deduplicateVertices(obj.vertices),
+    name: obj.name,
+    colorConfig: obj.colorConfig,
+  }));
+
+  const files: Record<string, Uint8Array> = {
+    '[Content_Types].xml': strToU8(buildContentTypes(!!options.thumbnail)),
+    '_rels/.rels': strToU8(buildRelationships()),
+    '3D/3dmodel.model': strToU8(buildMultiObjectModelXML(meshes, options)),
+  };
+
+  if (options.thumbnail) {
+    files['Metadata/thumbnail.png'] = options.thumbnail;
+  }
+
+  return zipSync(files, { level: 6 });
 }
 
 /**
@@ -259,6 +315,110 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   xml += '</model>';
   return xml;
 }
+function buildMultiObjectModelXML(
+  objects: readonly {
+    mesh: IndexedMesh;
+    name: string;
+    colorConfig?: ThreeMFColorConfig;
+  }[],
+  options: ThreeMFOptions
+): string {
+  const NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
+
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  xml += `<model unit="millimeter" xml:lang="en-US" xmlns="${NS}">\n`;
+
+  // Metadata
+  xml += `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
+  xml += '  <metadata name="Designer">Gridfinity Layout Tool</metadata>\n';
+  xml += `  <metadata name="CreationDate">${new Date().toISOString().split('T')[0]}</metadata>\n`;
+
+  if (options.printSettings) {
+    const ps = options.printSettings;
+    if (ps.layerHeight !== undefined) {
+      xml += `  <metadata name="PrintSettings.LayerHeight">${ps.layerHeight}</metadata>\n`;
+    }
+    if (ps.infillPercent !== undefined) {
+      xml += `  <metadata name="PrintSettings.InfillPercent">${ps.infillPercent}</metadata>\n`;
+    }
+    if (ps.material) {
+      xml += `  <metadata name="PrintSettings.Material">${escapeXml(ps.material)}</metadata>\n`;
+    }
+    if (ps.supportRequired !== undefined) {
+      xml += `  <metadata name="PrintSettings.SupportRequired">${ps.supportRequired}</metadata>\n`;
+    }
+    if (ps.estimatedMinutes !== undefined) {
+      xml += `  <metadata name="PrintSettings.EstimatedMinutes">${ps.estimatedMinutes}</metadata>\n`;
+    }
+    if (ps.estimatedGrams !== undefined) {
+      xml += `  <metadata name="PrintSettings.EstimatedGrams">${ps.estimatedGrams}</metadata>\n`;
+    }
+  }
+
+  xml += '  <resources>\n';
+
+  // Emit each object with a unique ID
+  const objectIds: number[] = [];
+  let nextId = 1;
+
+  for (const obj of objects) {
+    const hasColors = obj.colorConfig && obj.colorConfig.materials.length > 0;
+    const colorConfig = hasColors ? obj.colorConfig : undefined;
+
+    // Basematerials for this object (if colored)
+    let baseMaterialsId: number | undefined;
+    if (colorConfig) {
+      baseMaterialsId = nextId++;
+      xml += `    <basematerials id="${baseMaterialsId}">\n`;
+      for (const mat of colorConfig.materials) {
+        xml += `      <base name="${escapeXml(mat.name)}" displaycolor="${escapeXml(mat.color)}" />\n`;
+      }
+      xml += '    </basematerials>\n';
+    }
+
+    const objectId = nextId++;
+    objectIds.push(objectId);
+
+    xml += `    <object id="${objectId}" type="model" name="${escapeXml(obj.name)}">\n`;
+    xml += '      <mesh>\n';
+
+    xml += '        <vertices>\n';
+    for (const [x, y, z] of obj.mesh.vertices) {
+      xml += `          <vertex x="${formatFloat(x)}" y="${formatFloat(y)}" z="${formatFloat(z)}" />\n`;
+    }
+    xml += '        </vertices>\n';
+
+    xml += '        <triangles>\n';
+    if (colorConfig && baseMaterialsId !== undefined) {
+      const indices = colorConfig.triangleMaterialIndices;
+      for (let i = 0; i < obj.mesh.triangles.length; i++) {
+        const [v1, v2, v3] = obj.mesh.triangles[i];
+        const pindex = indices[i] ?? 0;
+        xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="${baseMaterialsId}" p1="${pindex}" />\n`;
+      }
+    } else {
+      for (const [v1, v2, v3] of obj.mesh.triangles) {
+        xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
+      }
+    }
+    xml += '        </triangles>\n';
+
+    xml += '      </mesh>\n';
+    xml += '    </object>\n';
+  }
+
+  xml += '  </resources>\n';
+
+  xml += '  <build>\n';
+  for (const id of objectIds) {
+    xml += `    <item objectid="${id}" />\n`;
+  }
+  xml += '  </build>\n';
+
+  xml += '</model>';
+  return xml;
+}
+
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, '&amp;')

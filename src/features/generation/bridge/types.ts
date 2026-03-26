@@ -20,6 +20,7 @@ export type WorkerMessage =
   | ExportMessage
   | ExportBaseplateMessage
   | ExportDividersMessage
+  | ExportCombinedMessage
   | ExportSplitMessage
   | ExportSplitRangeMessage;
 
@@ -94,6 +95,21 @@ export interface ExportDividersMessage {
 export interface ExportDividersPayload {
   readonly params: BinParams;
   readonly requestId: string;
+}
+
+export interface ExportCombinedMessage {
+  readonly type: 'EXPORT_COMBINED';
+  readonly payload: ExportCombinedPayload;
+}
+
+export interface ExportCombinedPayload {
+  readonly params: BinParams;
+  readonly requestId: string;
+  readonly format: ExportFormat;
+  /** STL tessellation tolerance in mm (lower = smoother, default 0.01) */
+  readonly tolerance?: number;
+  /** STL angular tolerance in degrees (default 5) */
+  readonly angularTolerance?: number;
 }
 
 export interface GenerateSplitPreviewMessage {
@@ -184,6 +200,7 @@ export type WorkerResponse =
   | BaseplateExportResultResponse
   | ExportResultResponse
   | DividersExportResultResponse
+  | CombinedExportResultResponse
   | SplitExportResultResponse
   | CacheStatsResponse
   | KernelPerfStatsResponse
@@ -277,6 +294,21 @@ export interface DividersExportResultResponse {
   readonly requestId: string;
   readonly data: ArrayBuffer;
   readonly fileName: string;
+}
+
+/** A single piece from a combined bin + divider export */
+export interface CombinedExportPiece {
+  readonly data: ArrayBuffer;
+  readonly label: string;
+}
+
+export interface CombinedExportResultResponse {
+  readonly type: 'COMBINED_EXPORT_RESULT';
+  readonly requestId: string;
+  readonly pieces: readonly CombinedExportPiece[];
+  readonly format: ExportFormat;
+  /** Face groups for the bin piece (provenance coloring). */
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 /** A single piece from a split export */

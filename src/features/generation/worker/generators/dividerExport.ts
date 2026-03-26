@@ -6,8 +6,9 @@
  * in their slicer as needed.
  */
 
-import { unwrap, fuse, exportSTL } from 'brepjs';
+import { unwrap, fuse, exportSTL, exportSTEP } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
+import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
 
@@ -57,4 +58,49 @@ export async function exportDividers(
 
   const name = `gridfinity-${params.width}x${params.depth}-divider`;
   return { data, fileName: `${name}.stl` };
+}
+
+/**
+ * Export each divider piece separately with axis labels.
+ *
+ * Unlike `exportDividers()` which fuses all pieces, this returns one
+ * labeled piece per enabled axis for combined bin + divider exports.
+ */
+export async function exportDividerPiecesSeparately(
+  params: BinParams,
+  format: ExportFormat,
+  tolerance = 0.01,
+  angularTolerance = 5
+): Promise<CombinedExportPiece[]> {
+  const wallThickness = params.wallThickness;
+  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const wallHeight = totalHeight - SOCKET_HEIGHT;
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
+  const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
+  const outerW = params.width * gridUnitMm - CLEARANCE;
+  const outerD = params.depth * gridUnitMm - CLEARANCE;
+  const innerW = outerW - 2 * wallThickness;
+  const innerD = outerD - 2 * wallThickness;
+  const hasLip = params.base.stackingLip;
+
+  const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);
+  if (pieces.length === 0) return [];
+
+  // Build axis labels matching piece order from buildUniqueDividerPieces
+  const labels: string[] = [];
+  if (params.slotConfig.x.enabled) labels.push('divider-horizontal');
+  if (params.slotConfig.y.enabled) labels.push('divider-vertical');
+
+  const results: CombinedExportPiece[] = [];
+  for (let i = 0; i < pieces.length; i++) {
+    if (format === 'step') {
+      const blob = unwrap(exportSTEP(pieces[i]));
+      results.push({ data: await blob.arrayBuffer(), label: labels[i] });
+    } else {
+      const blob = unwrap(exportSTL(pieces[i], { tolerance, angularTolerance, binary: true }));
+      results.push({ data: await blob.arrayBuffer(), label: labels[i] });
+    }
+  }
+  return results;
 }

@@ -5,9 +5,10 @@
  * triggers browser download, and computes live print estimates.
  *
  * Supports STL (binary mesh), STEP (exact BREP), and 3MF (mesh + metadata).
- * STL/STEP export goes directly through the BREP worker.
- * 3MF export uses worker-generated STL data, parses it back into mesh arrays,
- * then packages via threemfExporter with embedded print metadata.
+ * When a bin has removable dividers, they are automatically included:
+ * - 3MF: multiple named objects (bin + per-axis dividers) in one file
+ * - STEP: compound assembly with bin + divider parts
+ * - STL: ZIP archive with separate files per piece
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -16,21 +17,17 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
 import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
-import {
-  generateFileName,
-  generateDividerFileName,
-} from '@/features/bin-designer/utils/fileNaming';
+import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import {
   getSplitPieceCount,
   getSplitPlanePositionsMm,
 } from '@/features/bin-designer/utils/splitPositions';
-import { packageSplitPiecesAsZip } from '@/features/bin-designer/utils/splitExport';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
-import { export3MF } from '@/shared/generation/export';
+import { export3MF, export3MFMultiObject } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
-import type { ThreeMFColorConfig } from '@/shared/generation/export';
+import type { ThreeMFColorConfig, ThreeMFObject } from '@/shared/generation/export';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
@@ -38,30 +35,43 @@ import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/mate
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 
+/** Map piece labels from the worker to descriptive display names for 3MF/STEP. */
+function formatPieceDisplayName(
+  label: string,
+  params: { width: number; depth: number; height: number }
+): string {
+  const dims = `${params.width}x${params.depth}x${params.height}`;
+  switch (label) {
+    case 'bin':
+      return `Bin ${dims}`;
+    case 'divider-horizontal':
+      return 'Divider Horizontal';
+    case 'divider-vertical':
+      return 'Divider Vertical';
+    case 'assembly':
+      return `Bin ${dims} Assembly`;
+    default:
+      return label;
+  }
+}
+
 interface UseExportReturn {
   /** Whether a main bin or split export is currently in progress */
   readonly isExportingBin: boolean;
-  /** Whether a dividers export is currently in progress */
-  readonly isExportingDividers: boolean;
   /** Whether any export is currently in progress */
   readonly isExporting: boolean;
   /** Whether mesh data is available for export (bridge active + mesh exists) */
   readonly canExport: boolean;
   /** Current print estimates based on params */
   readonly estimates: PrintEstimate;
-  /** Download the bin in the specified format (STL, STEP, or 3MF) */
+  /** Download bin (and dividers if present) in the specified format */
   readonly downloadBin: (
     format: ExportFileFormat,
     config: ExportFileNameConfig,
     designName?: string
   ) => Promise<void>;
-  /** Trigger divider pieces STL download (slotted bins only) */
-  readonly downloadDividersSTL: (
-    config: ExportFileNameConfig,
-    designName?: string
-  ) => Promise<void>;
-  /** Whether divider export is available */
-  readonly canExportDividers: boolean;
+  /** Whether the bin has exportable dividers (used for display extension) */
+  readonly hasDividers: boolean;
   /** Whether the bin exceeds print bed and needs splitting */
   readonly needsSplit: boolean;
   /** Number of pieces the bin would be split into */
@@ -93,17 +103,14 @@ export function useExport(): UseExportReturn {
   );
 
   const [isExportingBin, setIsExportingBin] = useState(false);
-  const [isExportingDividers, setIsExportingDividers] = useState(false);
-  const isExporting = isExportingBin || isExportingDividers;
+  const isExporting = isExportingBin;
 
   // Export requires both a preview mesh (to show UI) and an active bridge (to regenerate)
   const canExport =
     mesh !== null && mesh.vertices !== null && mesh.error === null && getActiveBridge() !== null;
 
-  const canExportDividers =
-    canExport &&
-    params.style === 'slotted' &&
-    (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
+  const hasDividers =
+    params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
 
   const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
 
@@ -121,10 +128,14 @@ export function useExport(): UseExportReturn {
   );
 
   /**
-   * Download the bin in the specified format.
+   * Download bin + dividers (if present) in the specified format.
    *
-   * STL/STEP: Direct worker export via bridge.exportBin().
-   * 3MF: Worker generates STL → parse into mesh arrays → package as 3MF with print metadata.
+   * Uses the combined export worker message to get all pieces in one call.
+   * Packaging varies by format:
+   * - 3MF: multi-object file with named pieces
+   * - STEP: compound assembly (single file)
+   * - STL + no dividers: plain .stl
+   * - STL + dividers: .zip with separate .stl files
    */
   const downloadBin = useCallback(
     async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {
@@ -137,52 +148,117 @@ export function useExport(): UseExportReturn {
         const fileName = generateFileName(params, format, config, designName);
 
         if (format === '3mf') {
-          // 3MF: get high-quality STL from worker, parse, then package as 3MF
-          const stlResult = await bridge.exportBin(params, 'stl');
-          const parseResult = parseSTLBinary(stlResult.data);
-          if (isErr(parseResult)) {
-            throw new Error(getUserMessage(parseResult.error));
-          }
-          const { vertices, normals } = parseResult.value;
+          // Combined export as STL (worker doesn't know 3MF), then package on main thread
+          const result = await bridge.exportCombined(params, 'stl');
 
           // Read print settings at call time to avoid capturing reactive values
           const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
           const currentEstimates = estimatePrint(params, currentPrintSettings);
 
-          // Build multi-color config when Labs flag is enabled and face groups are available
-          let colorConfig: ThreeMFColorConfig | undefined;
-          if (isFeatureEnabled('multi_color_export') && stlResult.faceGroups) {
-            const palette = useSettingsStore.getState().settings.filamentPalette;
-            const { featureColors } = params;
-            const triangleCount = vertices.length / 9;
-            colorConfig =
-              buildTriangleMaterialIndices(
-                stlResult.faceGroups,
-                featureColors,
-                palette,
-                triangleCount
-              ) ?? undefined;
+          const threeMFPrintSettings = {
+            layerHeight: currentPrintSettings.layerHeightMm,
+            infillPercent: currentPrintSettings.infillPercent,
+            material: 'PLA' as const,
+            supportRequired: false,
+            estimatedMinutes: currentEstimates.printTimeMinutes,
+            estimatedGrams: currentEstimates.gramsFilament,
+          };
+
+          const modelName =
+            designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`;
+
+          if (result.pieces.length === 1) {
+            // Single piece (no dividers) — use existing single-object 3MF
+            const parseResult = parseSTLBinary(result.pieces[0].data);
+            if (isErr(parseResult)) {
+              throw new Error(getUserMessage(parseResult.error));
+            }
+            const { vertices, normals } = parseResult.value;
+
+            // Build multi-color config when Labs flag is enabled
+            let colorConfig: ThreeMFColorConfig | undefined;
+            if (isFeatureEnabled('multi_color_export') && result.faceGroups) {
+              const palette = useSettingsStore.getState().settings.filamentPalette;
+              const { featureColors } = params;
+              const triangleCount = vertices.length / 9;
+              colorConfig =
+                buildTriangleMaterialIndices(
+                  result.faceGroups,
+                  featureColors,
+                  palette,
+                  triangleCount
+                ) ?? undefined;
+            }
+
+            const blob = export3MF(vertices, normals, {
+              name: modelName,
+              colorConfig,
+              printSettings: threeMFPrintSettings,
+            });
+            triggerDownload(blob, fileName);
+          } else {
+            // Multiple pieces — multi-object 3MF
+            const objects: ThreeMFObject[] = [];
+
+            for (let i = 0; i < result.pieces.length; i++) {
+              const piece = result.pieces[i];
+              const parseResult = parseSTLBinary(piece.data);
+              if (isErr(parseResult)) {
+                throw new Error(getUserMessage(parseResult.error));
+              }
+
+              // Only apply color config to the bin piece (first piece)
+              let colorConfig: ThreeMFColorConfig | undefined;
+              if (i === 0 && isFeatureEnabled('multi_color_export') && result.faceGroups) {
+                const palette = useSettingsStore.getState().settings.filamentPalette;
+                const { featureColors } = params;
+                const triangleCount = parseResult.value.vertices.length / 9;
+                colorConfig =
+                  buildTriangleMaterialIndices(
+                    result.faceGroups,
+                    featureColors,
+                    palette,
+                    triangleCount
+                  ) ?? undefined;
+              }
+
+              objects.push({
+                vertices: parseResult.value.vertices,
+                normals: parseResult.value.normals,
+                name: formatPieceDisplayName(piece.label, params),
+                colorConfig,
+              });
+            }
+
+            const blob = export3MFMultiObject(objects, {
+              name: modelName,
+              printSettings: threeMFPrintSettings,
+            });
+            triggerDownload(blob, fileName);
           }
-
-          const blob = export3MF(vertices, normals, {
-            name: designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`,
-            colorConfig,
-            printSettings: {
-              layerHeight: currentPrintSettings.layerHeightMm,
-              infillPercent: currentPrintSettings.infillPercent,
-              material: 'PLA',
-              supportRequired: false,
-              estimatedMinutes: currentEstimates.printTimeMinutes,
-              estimatedGrams: currentEstimates.gramsFilament,
-            },
-          });
-
+        } else if (format === 'step') {
+          // STEP: worker returns compound assembly as single piece
+          const result = await bridge.exportCombined(params, 'step');
+          const blob = new Blob([result.pieces[0].data], { type: FORMAT_MIME_TYPES.step });
           triggerDownload(blob, fileName);
         } else {
-          // STL or STEP: direct worker export
-          const result = await bridge.exportBin(params, format);
-          const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-          triggerDownload(blob, fileName);
+          // STL
+          const result = await bridge.exportCombined(params, 'stl');
+
+          if (result.pieces.length === 1) {
+            // No dividers — plain STL
+            const blob = new Blob([result.pieces[0].data], { type: FORMAT_MIME_TYPES.stl });
+            triggerDownload(blob, fileName);
+          } else {
+            // Dividers present — ZIP of separate STLs
+            const baseName = fileName.replace(/\.stl$/, '');
+            const zip = await packagePiecesAsZip(
+              result.pieces.map((p) => ({ data: p.data, label: p.label })),
+              baseName,
+              '.stl'
+            );
+            triggerDownload(zip, `${baseName}.zip`);
+          }
         }
       } finally {
         setIsExportingBin(false);
@@ -192,31 +268,10 @@ export function useExport(): UseExportReturn {
   );
 
   /**
-   * Download divider pieces as a combined STL via worker bridge.
-   */
-  const downloadDividersSTL = useCallback(
-    async (config: ExportFileNameConfig, designName?: string) => {
-      const bridge = getActiveBridge();
-      if (!bridge) return;
-
-      setIsExportingDividers(true);
-
-      try {
-        const result = await bridge.exportDividers(params);
-        const fileName = generateDividerFileName(params, config, designName);
-        const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES.stl });
-        triggerDownload(blob, fileName);
-      } finally {
-        setIsExportingDividers(false);
-      }
-    },
-    [params]
-  );
-
-  /**
    * Download split export as ZIP via worker bridge.
    * Computes cut planes, sends to worker for boolean splitting,
    * then packages results into a ZIP archive.
+   * When dividers are present, includes divider pieces in the ZIP.
    * Uses worker pool for parallel export when available.
    * Supports STL and 3MF formats (STEP is not supported for split export).
    */
@@ -271,6 +326,18 @@ export function useExport(): UseExportReturn {
           ''
         );
 
+        // Collect divider pieces if present
+        const dividerPieces: { data: ArrayBuffer; label: string }[] = [];
+        if (hasDividers) {
+          const dividerResult = await bridge.exportCombined(params, 'stl');
+          // Skip the first piece (bin) — only include divider pieces
+          for (const piece of dividerResult.pieces) {
+            if (piece.label !== 'bin') {
+              dividerPieces.push({ data: piece.data, label: piece.label });
+            }
+          }
+        }
+
         if (format === '3mf') {
           // Convert each STL piece to 3MF before packaging
           const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
@@ -297,28 +364,52 @@ export function useExport(): UseExportReturn {
             convertedPieces.push({ data: await blob.arrayBuffer(), label: piece.label });
           }
 
+          // Add divider pieces as 3MF
+          for (const divPiece of dividerPieces) {
+            const parseResult = parseSTLBinary(divPiece.data);
+            if (isErr(parseResult)) {
+              throw new Error(getUserMessage(parseResult.error));
+            }
+            const { vertices, normals } = parseResult.value;
+            const blob = export3MF(vertices, normals, {
+              name: `${baseName}_${divPiece.label}`,
+              printSettings: {
+                layerHeight: currentPrintSettings.layerHeightMm,
+                infillPercent: currentPrintSettings.infillPercent,
+                material: 'PLA',
+                supportRequired: false,
+                estimatedMinutes: currentEstimates.printTimeMinutes,
+                estimatedGrams: currentEstimates.gramsFilament,
+              },
+            });
+            convertedPieces.push({ data: await blob.arrayBuffer(), label: divPiece.label });
+          }
+
           const zip = await packagePiecesAsZip(convertedPieces, baseName, '.3mf');
           triggerDownload(zip, `${baseName}_split.zip`);
         } else {
-          const blob = await packageSplitPiecesAsZip(result.pieces, baseName);
+          // STL: package split pieces + divider pieces into ZIP
+          const allPieces = [
+            ...result.pieces.map((p) => ({ data: p.data, label: p.label })),
+            ...dividerPieces,
+          ];
+          const blob = await packagePiecesAsZip(allPieces, baseName, '.stl');
           triggerDownload(blob, `${baseName}_split.zip`);
         }
       } finally {
         setIsExportingBin(false);
       }
     },
-    [params, maxGridUnits]
+    [params, maxGridUnits, hasDividers]
   );
 
   return {
     isExporting,
     isExportingBin,
-    isExportingDividers,
     canExport,
-    canExportDividers,
+    hasDividers,
     estimates,
     downloadBin,
-    downloadDividersSTL,
     needsSplit,
     splitPieceCount,
     maxGridUnits,

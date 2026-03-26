@@ -180,7 +180,7 @@
   "binDesigner.dividerThickness": "Skilletykkelse",
   "binDesigner.doubleTapToReset": "Dobbelttrykk for å tilbakestille",
   "binDesigner.downloadDesignJson": "Last ned Design JSON",
-  "binDesigner.downloadDividersSTL": "Last ned Skille-STL",
+
   "binDesigner.downloadFormat": "Last ned {format}",
   "binDesigner.downloadJSON": "Last ned JSON",
   "binDesigner.dragDropDesignJson": "Dra og slipp en design JSON-fil her",

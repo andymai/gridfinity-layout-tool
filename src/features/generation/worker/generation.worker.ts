@@ -32,6 +32,7 @@ import {
   handleExport,
   handleExportBaseplate,
   handleExportDividers,
+  handleExportCombined,
 } from './handlers/exportHandler';
 import {
   handleSplitPreview,
@@ -96,6 +97,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'EXPORT_DIVIDERS':
         await handleExportDividers(message);
+        break;
+
+      case 'EXPORT_COMBINED':
+        await handleExportCombined(message);
         break;
 
       case 'EXPORT_SPLIT':

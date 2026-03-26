@@ -180,7 +180,7 @@
   "binDesigner.dividerThickness": "Espessura do divisor",
   "binDesigner.doubleTapToReset": "Toque duplo para redefinir",
   "binDesigner.downloadDesignJson": "Baixar JSON de design",
-  "binDesigner.downloadDividersSTL": "Baixar STL das divisórias",
+
   "binDesigner.downloadFormat": "Baixar {format}",
   "binDesigner.downloadJSON": "Baixar JSON",
   "binDesigner.dragDropDesignJson": "Arraste e solte um arquivo JSON de design aqui",
