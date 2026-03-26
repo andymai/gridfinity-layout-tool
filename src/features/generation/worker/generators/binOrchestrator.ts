@@ -57,7 +57,6 @@ export function generateBin(
       ...result.mesh,
       coarseLOD: {
         vertices: result.coarseMesh.vertices,
-        normals: result.coarseMesh.normals,
         indices: result.coarseMesh.indices,
         triangleCount: result.coarseMesh.triangleCount,
       },

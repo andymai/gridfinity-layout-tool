@@ -5,7 +5,7 @@
  * generation state, and designer UI state.
  */
 
-import type { FaceGroupData } from '@/shared/types/generation';
+import type { FaceGroupData, CoarseLODData } from '@/shared/types/generation';
 import type { DesignId } from '@/core/types';
 import type { FeatureColorConfig, ColorZone } from './featureColors';
 
@@ -375,12 +375,7 @@ export interface GenerationResult {
   /** Optional per-face feature groups for provenance-based coloring. */
   readonly faceGroups?: FaceGroupData[];
   /** Coarse LOD mesh for distance-based rendering (preview only) */
-  readonly coarseLOD?: {
-    readonly vertices: Float32Array;
-    readonly normals: Float32Array;
-    readonly indices: Uint32Array;
-    readonly triangleCount: number;
-  };
+  readonly coarseLOD?: CoarseLODData;
 }
 
 /** Generation state tracked in the store */

@@ -8,6 +8,7 @@
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import type { CoarseLODData } from '@/shared/types/generation';
 
 /**
  * Crease angle threshold (radians). Edges where adjacent face normals differ
@@ -106,15 +107,7 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
  * Simpler than useMeshGeometry — no crease normals or face groups.
  */
 export function useCoarseGeometry(
-  coarseLOD:
-    | {
-        readonly vertices: Float32Array;
-        readonly normals: Float32Array;
-        readonly indices: Uint32Array;
-        readonly triangleCount: number;
-      }
-    | null
-    | undefined
+  coarseLOD: CoarseLODData | null | undefined
 ): THREE.BufferGeometry | null {
   const geometry = useMemo(() => {
     if (!coarseLOD || coarseLOD.vertices.length === 0) return null;

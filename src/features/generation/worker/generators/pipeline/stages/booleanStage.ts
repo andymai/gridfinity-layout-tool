@@ -64,41 +64,6 @@ function applyCutPass(
   return result;
 }
 
-/**
- * Run fuse/cut passes sequentially with batch+pairwise retry.
- */
-function fallbackBooleans(
-  bin: Shape3D,
-  originalSolid: Shape3D,
-  ctx: PipelineContext,
-  forExport: boolean,
-  signal?: AbortSignal
-): Shape3D {
-  const cutOpts = { simplify: forExport, signal } as BooleanOpts;
-
-  if (ctx.fuseTargets.length > 0) {
-    checkCancelled(signal);
-    bin = batchWithFallback(
-      bin,
-      ctx.fuseTargets,
-      (b, targets) => unwrap(fuseAll([b, ...targets] as ValidSolid[])),
-      (b, t) => unwrap(fuse(b as ValidSolid, t as ValidSolid))
-    );
-  }
-
-  if (ctx.cutTargets.length > 0) {
-    checkCancelled(signal);
-    bin = applyCutPass(bin, originalSolid, ctx.cutTargets, cutOpts);
-  }
-
-  if (ctx.patternCutTargets.length > 0) {
-    checkCancelled(signal);
-    bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, cutOpts);
-  }
-
-  return bin;
-}
-
 export const booleanStage: PipelineStage = {
   name: 'boolean',
   progressValue: 0.6,
@@ -117,12 +82,30 @@ export const booleanStage: PipelineStage = {
 
     checkCancelled(signal);
 
-    // NOTE: booleanPipeline() is available for chained boolean operations and is
-    // used by socketBuilder and baseplateGenerator for simpler fuse→cut chains.
-    // Here we keep batch fuseAll/cutAll passes because cutAll() compounds tools
-    // into a single boolean, preserving better face topology for complex bins
-    // (e.g., slotted + lip).
-    bin = fallbackBooleans(bin, originalSolid, ctx, forExport, signal);
+    // Batch fuseAll/cutAll passes with pairwise fallback. cutAll() compounds
+    // tools into a single boolean, preserving better face topology for complex
+    // bins (e.g., slotted + lip) than booleanPipeline()'s sequential approach.
+    const cutOpts = { simplify: forExport, signal } as BooleanOpts;
+
+    if (ctx.fuseTargets.length > 0) {
+      checkCancelled(signal);
+      bin = batchWithFallback(
+        bin,
+        ctx.fuseTargets,
+        (b, targets) => unwrap(fuseAll([b, ...targets] as ValidSolid[])),
+        (b, t) => unwrap(fuse(b as ValidSolid, t as ValidSolid))
+      );
+    }
+
+    if (ctx.cutTargets.length > 0) {
+      checkCancelled(signal);
+      bin = applyCutPass(bin, originalSolid, ctx.cutTargets, cutOpts);
+    }
+
+    if (ctx.patternCutTargets.length > 0) {
+      checkCancelled(signal);
+      bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, cutOpts);
+    }
 
     if (bin !== originalSolid) originalSolid.delete();
     const allTargets = [...ctx.fuseTargets, ...ctx.cutTargets, ...ctx.patternCutTargets];

@@ -118,6 +118,17 @@ export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): S
 
   return s1.loftWith([s3], { ruled: true });
 }
+/** Fuse all cell sockets, then cut all hole tools. Disposes replaced intermediates. */
+function batchFuseAndCut(cellSockets: Shape3D[], holeTools: Shape3D[]): Shape3D {
+  let result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
+  if (holeTools.length > 0) {
+    const preCut = result;
+    result = unwrap(cutAll(result, holeTools as ValidSolid[]));
+    if (preCut !== result) preCut.delete();
+  }
+  return result;
+}
+
 /**
  * Build the segmented base socket grid for the bin.
  *
@@ -253,21 +264,10 @@ export function buildBaseSocket(
       if (isOk(pipelineResult)) {
         result = pipelineResult.value;
       } else {
-        result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
-        if (holeTools.length > 0) {
-          const preCut = result;
-          result = unwrap(cutAll(result as ValidSolid, holeTools as ValidSolid[]));
-          if (preCut !== result) preCut.delete();
-        }
+        result = batchFuseAndCut(cellSockets, holeTools);
       }
     } else {
-      // Batch path: compound booleans for large grids
-      result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
-      if (holeTools.length > 0) {
-        const preCut = result;
-        result = unwrap(cutAll(result as ValidSolid, holeTools as ValidSolid[]));
-        if (preCut !== result) preCut.delete();
-      }
+      result = batchFuseAndCut(cellSockets, holeTools);
     }
 
     // Dispose consumed inputs (skip if result reuses a reference)

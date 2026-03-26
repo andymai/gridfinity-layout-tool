@@ -185,24 +185,27 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     if (coarseGeometry) invalidate();
   }, [coarseGeometry, invalidate]);
 
-  if (!geometry) return null;
-
   const baseColor = multiColorEnabled && featureColors ? featureColors.body : color;
 
   // Single-color material props shared between fine mesh and coarse LOD
-  const singleMatProps = {
-    color: baseColor,
-    roughness: 0.45,
-    metalness: 0,
-    wireframe,
-    side: THREE.DoubleSide as THREE.Side,
-    emissive: new THREE.Color(baseColor),
-    emissiveIntensity: 0.08,
-    flatShading: !hasPrecomputedNormals,
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1,
-  };
+  const singleMatProps = useMemo(
+    () => ({
+      color: baseColor,
+      roughness: 0.45,
+      metalness: 0,
+      wireframe,
+      side: THREE.DoubleSide as THREE.Side,
+      emissive: new THREE.Color(baseColor),
+      emissiveIntensity: 0.08,
+      flatShading: !hasPrecomputedNormals,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    }),
+    [baseColor, wireframe, hasPrecomputedNormals]
+  );
+
+  if (!geometry) return null;
 
   const fineMesh = materials ? (
     <mesh geometry={geometry} material={materials} />

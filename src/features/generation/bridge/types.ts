@@ -183,6 +183,13 @@ export interface ExportSplitRangePayload {
 /** Export file formats supported by the BREP worker */
 export type ExportFormat = 'stl' | 'step';
 
+/** Coarse LOD mesh data for distance-based rendering (preview only). */
+export interface CoarseLODData {
+  readonly vertices: Float32Array;
+  readonly indices: Uint32Array;
+  readonly triangleCount: number;
+}
+
 /** Per-face-group feature tag for provenance-based coloring. */
 export interface FaceGroupData {
   /** Starting index offset into the triangles/indices array. */
@@ -270,12 +277,7 @@ export interface MeshResultResponse {
   /** Optional per-face feature groups for provenance-based coloring. */
   readonly faceGroups?: readonly FaceGroupData[];
   /** Coarse LOD mesh for distance-based rendering (preview only) */
-  readonly coarseLOD?: {
-    readonly vertices: Float32Array;
-    readonly normals: Float32Array;
-    readonly indices: Uint32Array;
-    readonly triangleCount: number;
-  };
+  readonly coarseLOD?: CoarseLODData;
 }
 
 export interface ExportResultResponse {
@@ -374,10 +376,5 @@ export interface MeshData {
   readonly triangleCount: number;
   readonly faceGroups?: readonly FaceGroupData[];
   /** Coarse LOD mesh for distance-based rendering (preview only, omitted for export) */
-  readonly coarseLOD?: {
-    readonly vertices: Float32Array;
-    readonly normals: Float32Array;
-    readonly indices: Uint32Array;
-    readonly triangleCount: number;
-  };
+  readonly coarseLOD?: CoarseLODData;
 }
