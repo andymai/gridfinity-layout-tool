@@ -100,3 +100,39 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
 
   return { geometry, edgesGeometry, hasPrecomputedNormals };
 }
+
+/**
+ * Build a coarse LOD geometry from raw mesh arrays.
+ * Simpler than useMeshGeometry — no crease normals or face groups.
+ */
+export function useCoarseGeometry(
+  coarseLOD:
+    | {
+        readonly vertices: Float32Array;
+        readonly normals: Float32Array;
+        readonly indices: Uint32Array;
+        readonly triangleCount: number;
+      }
+    | null
+    | undefined
+): THREE.BufferGeometry | null {
+  const geometry = useMemo(() => {
+    if (!coarseLOD || coarseLOD.vertices.length === 0) return null;
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(coarseLOD.vertices, 3));
+    if (coarseLOD.indices.length > 0) {
+      geo.setIndex(new THREE.BufferAttribute(coarseLOD.indices, 1));
+    }
+    geo.computeVertexNormals();
+    return geo;
+  }, [coarseLOD]);
+
+  useEffect(() => {
+    return () => {
+      geometry?.dispose();
+    };
+  }, [geometry]);
+
+  return geometry;
+}

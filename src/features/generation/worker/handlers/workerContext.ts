@@ -101,6 +101,16 @@ export function runGeneration(
     const idxs = copyBuffers ? meshData.indices.slice() : meshData.indices;
     const edges = copyBuffers ? meshData.edgeVertices.slice() : meshData.edgeVertices;
 
+    // Prepare coarse LOD buffers when available (preview mode)
+    const coarseLOD = meshData.coarseLOD
+      ? {
+          vertices: copyBuffers ? meshData.coarseLOD.vertices.slice() : meshData.coarseLOD.vertices,
+          normals: copyBuffers ? meshData.coarseLOD.normals.slice() : meshData.coarseLOD.normals,
+          indices: copyBuffers ? meshData.coarseLOD.indices.slice() : meshData.coarseLOD.indices,
+          triangleCount: meshData.coarseLOD.triangleCount,
+        }
+      : undefined;
+
     const response: WorkerResponse = {
       type: 'MESH_RESULT',
       requestId,
@@ -111,12 +121,20 @@ export function runGeneration(
       triangleCount: meshData.triangleCount,
       timingMs,
       faceGroups: meshData.faceGroups,
+      coarseLOD,
     };
-    self.postMessage(response, {
-      transfer: [verts.buffer, norms.buffer, idxs.buffer, edges.buffer].filter(
-        (b) => b.byteLength > 0
-      ),
-    });
+
+    const transfer = [verts.buffer, norms.buffer, idxs.buffer, edges.buffer].filter(
+      (b) => b.byteLength > 0
+    );
+    if (coarseLOD) {
+      transfer.push(
+        ...[coarseLOD.vertices.buffer, coarseLOD.normals.buffer, coarseLOD.indices.buffer].filter(
+          (b) => b.byteLength > 0
+        )
+      );
+    }
+    self.postMessage(response, { transfer });
 
     const cacheStats = [...getAllShapeCacheStats(), ...getBaseplateCacheStats()];
     respond({ type: 'CACHE_STATS', requestId, caches: cacheStats });

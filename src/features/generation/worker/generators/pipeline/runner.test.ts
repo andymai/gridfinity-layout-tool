@@ -12,6 +12,7 @@ function createMockContext(overrides?: Partial<PipelineContext>): PipelineContex
     fuseTargets: [],
     cutTargets: [],
     mesh: null,
+    coarseMesh: null,
     ...overrides,
   };
 }

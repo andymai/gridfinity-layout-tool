@@ -1,8 +1,12 @@
 /**
  * Boolean stage — applies additive fuses and subtractive cuts.
  *
- * Uses batch operations (fuseAll / cutAll) with sequential fallback
- * for OCCT edge cases where batched operations fail.
+ * Uses batch fuseAll/cutAll passes with sequential pairwise fallback.
+ * cutAll() compounds tools into a single boolean, which preserves better
+ * face topology for complex bins than booleanPipeline()'s sequential approach.
+ *
+ * booleanPipeline() is used by socketBuilder and baseplateGenerator for
+ * simpler fuse→cut chains where topology differences are negligible.
  */
 
 import { unwrap, fuse, fuseAll, cut, cutAll } from 'brepjs';
@@ -60,6 +64,41 @@ function applyCutPass(
   return result;
 }
 
+/**
+ * Run fuse/cut passes sequentially with batch+pairwise retry.
+ */
+function fallbackBooleans(
+  bin: Shape3D,
+  originalSolid: Shape3D,
+  ctx: PipelineContext,
+  forExport: boolean,
+  signal?: AbortSignal
+): Shape3D {
+  const cutOpts = { simplify: forExport, signal } as BooleanOpts;
+
+  if (ctx.fuseTargets.length > 0) {
+    checkCancelled(signal);
+    bin = batchWithFallback(
+      bin,
+      ctx.fuseTargets,
+      (b, targets) => unwrap(fuseAll([b, ...targets] as ValidSolid[])),
+      (b, t) => unwrap(fuse(b as ValidSolid, t as ValidSolid))
+    );
+  }
+
+  if (ctx.cutTargets.length > 0) {
+    checkCancelled(signal);
+    bin = applyCutPass(bin, originalSolid, ctx.cutTargets, cutOpts);
+  }
+
+  if (ctx.patternCutTargets.length > 0) {
+    checkCancelled(signal);
+    bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, cutOpts);
+  }
+
+  return bin;
+}
+
 export const booleanStage: PipelineStage = {
   name: 'boolean',
   progressValue: 0.6,
@@ -75,29 +114,15 @@ export const booleanStage: PipelineStage = {
     let bin = ctx.solid;
     if (!bin) return ctx;
     const originalSolid = bin;
-    const cutOpts = { simplify: forExport, signal } as BooleanOpts;
 
-    if (ctx.fuseTargets.length > 0) {
-      checkCancelled(signal);
-      bin = batchWithFallback(
-        bin,
-        ctx.fuseTargets,
-        (b, targets) => unwrap(fuseAll([b, ...targets] as ValidSolid[])),
-        (b, t) => unwrap(fuse(b as ValidSolid, t as ValidSolid))
-      );
-    }
+    checkCancelled(signal);
 
-    // Cut passes are separated so OCCT doesn't compute pairwise intersections
-    // between unrelated tool shapes (e.g. wall cutouts vs pattern elements).
-    if (ctx.cutTargets.length > 0) {
-      checkCancelled(signal);
-      bin = applyCutPass(bin, originalSolid, ctx.cutTargets, cutOpts);
-    }
-
-    if (ctx.patternCutTargets.length > 0) {
-      checkCancelled(signal);
-      bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, cutOpts);
-    }
+    // NOTE: booleanPipeline() is available for chained boolean operations and is
+    // used by socketBuilder and baseplateGenerator for simpler fuse→cut chains.
+    // Here we keep batch fuseAll/cutAll passes because cutAll() compounds tools
+    // into a single boolean, preserving better face topology for complex bins
+    // (e.g., slotted + lip).
+    bin = fallbackBooleans(bin, originalSolid, ctx, forExport, signal);
 
     if (bin !== originalSolid) originalSolid.delete();
     const allTargets = [...ctx.fuseTargets, ...ctx.cutTargets, ...ctx.patternCutTargets];

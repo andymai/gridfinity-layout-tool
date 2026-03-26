@@ -374,6 +374,13 @@ export interface GenerationResult {
   readonly timingMs: number;
   /** Optional per-face feature groups for provenance-based coloring. */
   readonly faceGroups?: FaceGroupData[];
+  /** Coarse LOD mesh for distance-based rendering (preview only) */
+  readonly coarseLOD?: {
+    readonly vertices: Float32Array;
+    readonly normals: Float32Array;
+    readonly indices: Uint32Array;
+    readonly triangleCount: number;
+  };
 }
 
 /** Generation state tracked in the store */

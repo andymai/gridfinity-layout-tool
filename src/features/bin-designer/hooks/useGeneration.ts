@@ -74,6 +74,7 @@ export function useGeneration(): void {
           indices: result.mesh.indices,
           edgeVertices: result.mesh.edgeVertices,
           faceGroups: result.mesh.faceGroups ? [...result.mesh.faceGroups] : undefined,
+          coarseLOD: result.mesh.coarseLOD,
           error: null,
           timingMs: result.timingMs,
         });

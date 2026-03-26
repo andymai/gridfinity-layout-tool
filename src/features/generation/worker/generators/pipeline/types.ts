@@ -53,6 +53,8 @@ export interface PipelineContext {
   readonly patternCutTargets: readonly Shape3D[];
   /** Final mesh output (set by tessellate stage) */
   readonly mesh: MeshData | null;
+  /** Coarse LOD mesh for distance-based rendering (preview only) */
+  readonly coarseMesh: MeshData | null;
 }
 
 /** A single composable pipeline stage. */

@@ -269,6 +269,13 @@ export interface MeshResultResponse {
   readonly timingMs: number;
   /** Optional per-face feature groups for provenance-based coloring. */
   readonly faceGroups?: readonly FaceGroupData[];
+  /** Coarse LOD mesh for distance-based rendering (preview only) */
+  readonly coarseLOD?: {
+    readonly vertices: Float32Array;
+    readonly normals: Float32Array;
+    readonly indices: Uint32Array;
+    readonly triangleCount: number;
+  };
 }
 
 export interface ExportResultResponse {
@@ -366,4 +373,11 @@ export interface MeshData {
   readonly edgeVertices: Float32Array;
   readonly triangleCount: number;
   readonly faceGroups?: readonly FaceGroupData[];
+  /** Coarse LOD mesh for distance-based rendering (preview only, omitted for export) */
+  readonly coarseLOD?: {
+    readonly vertices: Float32Array;
+    readonly normals: Float32Array;
+    readonly indices: Uint32Array;
+    readonly triangleCount: number;
+  };
 }

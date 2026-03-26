@@ -34,8 +34,10 @@ import {
   fuseAll,
   mesh,
   exportSTEP,
+  booleanPipeline,
+  isOk,
 } from 'brepjs';
-import type { Shape3D, ValidSolid, Sketch, Drawing } from 'brepjs';
+import type { Shape3D, ValidSolid, Sketch, Drawing, BooleanPipelineStep } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
@@ -1090,15 +1092,28 @@ function buildBaseplateSolid(
   );
   allCuts.push(...connHoles);
 
-  if (nubs.length > 0) {
-    baseplate = unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]));
+  // Primary path: single-call pipeline fuses nubs then cuts holes,
+  // skipping intermediate UnifySameDomain between the fuse and cut passes.
+  if (nubs.length > 0 || allCuts.length > 0) {
+    const steps: BooleanPipelineStep[] = [
+      ...nubs.map((n): BooleanPipelineStep => ({ op: 'fuse', tool: n })),
+      ...allCuts.map((c): BooleanPipelineStep => ({ op: 'cut', tool: c })),
+    ];
+    const pipelineResult = booleanPipeline(baseplate, steps);
+    if (isOk(pipelineResult)) {
+      baseplate = pipelineResult.value;
+    } else {
+      // Fallback: sequential fuseAll then cutAll
+      if (nubs.length > 0) {
+        baseplate = unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]));
+      }
+      if (allCuts.length > 0) {
+        baseplate = unwrap(cutAll(baseplate as ValidSolid, allCuts as ValidSolid[]));
+      }
+    }
   }
 
   onProgress?.(0.6);
-
-  if (allCuts.length > 0) {
-    baseplate = unwrap(cutAll(baseplate as ValidSolid, allCuts as ValidSolid[]));
-  }
 
   onProgress?.(0.8);
 

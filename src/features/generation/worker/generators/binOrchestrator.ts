@@ -51,5 +51,18 @@ export function generateBin(
     throw new Error('Pipeline did not produce mesh output');
   }
 
+  // Fold coarse LOD mesh into MeshData when available (preview mode)
+  if (result.coarseMesh) {
+    return {
+      ...result.mesh,
+      coarseLOD: {
+        vertices: result.coarseMesh.vertices,
+        normals: result.coarseMesh.normals,
+        indices: result.coarseMesh.indices,
+        triangleCount: result.coarseMesh.triangleCount,
+      },
+    };
+  }
+
   return result.mesh;
 }

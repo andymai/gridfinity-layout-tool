@@ -19,8 +19,10 @@ import {
   translate,
   fuse,
   withScope,
+  booleanPipeline,
+  isOk,
 } from 'brepjs';
-import type { Shape3D, ValidSolid, Sketch, DisposalScope } from 'brepjs';
+import type { Shape3D, ValidSolid, Sketch, DisposalScope, BooleanPipelineStep } from 'brepjs';
 import {
   SIZE,
   CLEARANCE,
@@ -190,15 +192,9 @@ export function buildBaseSocket(
     if (cellSockets.length === 0) {
       throw new Error('Invalid grid dimensions: at least one cell required');
     }
-    let result: Shape3D = unwrap(
-      fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' })
-    );
-    // Delete consumed cellSockets (skip if fuseAll returned the same reference)
-    for (const s of cellSockets) {
-      if (s !== result) s.delete();
-    }
 
-    // Cut magnet/screw holes at standard 4-corner positions per full cell.
+    // Build hole tools upfront so they can be included in the pipeline
+    const holeTools: Shape3D[] = [];
     if (withScrew || withMagnet) {
       const HOLE_OFFSET = 13; // mm from cell center to hole center (Gridfinity spec)
       const magnetCutout = withMagnet ? scope.register(cylinder(magnetRadius, magnetDepth)) : null;
@@ -219,8 +215,6 @@ export function buildBaseSocket(
         [HOLE_OFFSET, -HOLE_OFFSET],
       ];
 
-      // NOTE: holeTools are NOT scope-registered — cutAll may return an input.
-      const holeTools: Shape3D[] = [];
       forEachCell(
         gridW,
         gridD,
@@ -238,15 +232,37 @@ export function buildBaseSocket(
         },
         { gridUnitMm }
       );
+    }
 
+    // Primary path: single-call pipeline fuses cells then cuts holes,
+    // skipping intermediate UnifySameDomain between the fuse and cut passes.
+    const steps: BooleanPipelineStep[] = [
+      ...cellSockets.slice(1).map((s): BooleanPipelineStep => ({ op: 'fuse', tool: s })),
+      ...holeTools.map((t): BooleanPipelineStep => ({ op: 'cut', tool: t })),
+    ];
+    const pipelineResult = booleanPipeline(cellSockets[0], steps, {
+      optimisation: 'commonFace',
+    });
+
+    let result: Shape3D;
+    if (isOk(pipelineResult)) {
+      result = pipelineResult.value;
+    } else {
+      // Fallback: batch fuseAll then batch cutAll
+      result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
       if (holeTools.length > 0) {
         const preCut = result;
         result = unwrap(cutAll(result as ValidSolid, holeTools as ValidSolid[]));
         if (preCut !== result) preCut.delete();
-        for (const t of holeTools) {
-          if (t !== result) t.delete();
-        }
       }
+    }
+
+    // Dispose consumed inputs (skip if result reuses a reference)
+    for (const s of cellSockets) {
+      if (s !== result) s.delete();
+    }
+    for (const t of holeTools) {
+      if (t !== result) t.delete();
     }
 
     return setSocketCache(key, result); // result NOT registered — survives scope
