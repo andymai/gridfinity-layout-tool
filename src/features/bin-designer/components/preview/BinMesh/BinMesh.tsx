@@ -13,7 +13,6 @@ import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useSettingsStore } from '@/core/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import type { MeshFaceGroup } from '@/shared/components/preview/useMeshGeometry';
@@ -21,14 +20,11 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import {
   featureTagToColorZone,
   isSingleColor,
-  resolveSlotMapping,
+  resolveColorMapping,
 } from '@/features/bin-designer/types/featureColors';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
-import type {
-  FeatureColorConfig,
-  FilamentSlot,
-  FilamentSlotId,
-} from '@/features/bin-designer/types/featureColors';
+import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 
 /** Edge line color (black for sketch look) */
 const EDGE_COLOR = '#000000';
@@ -46,20 +42,16 @@ interface BinMeshProps {
 function buildMultiColorGroups(
   faceGroups: readonly FaceGroupData[],
   featureColors: FeatureColorConfig,
-  palette: readonly FilamentSlot[],
+  activeZones: ReadonlySet<ColorZone>,
   totalIndexCount: number
 ): {
   groups: MeshFaceGroup[];
   colors: readonly string[];
-  slotToIndex: ReadonlyMap<FilamentSlotId, number>;
+  colorToIndex: ReadonlyMap<string, number>;
 } | null {
-  if (isSingleColor(featureColors)) return null;
+  if (isSingleColor(featureColors, activeZones)) return null;
 
-  const {
-    items: colors,
-    slotToIndex,
-    defaultIndex,
-  } = resolveSlotMapping(featureColors, palette, (slot) => slot.color);
+  const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
 
   // Sort by start position, then fill leading/interior/trailing gaps with body default
   const sorted = [...faceGroups].sort((a, b) => a.start - b.start);
@@ -71,11 +63,11 @@ function buildMultiColorGroups(
       groups.push({ start: cursor, count: fg.start - cursor, materialIndex: defaultIndex });
     }
     const zone = featureTagToColorZone(fg.tag);
-    const slotId = featureColors[zone];
+    const hex = featureColors[zone];
     groups.push({
       start: fg.start,
       count: fg.count,
-      materialIndex: slotToIndex.get(slotId) ?? defaultIndex,
+      materialIndex: colorToIndex.get(hex) ?? defaultIndex,
     });
     cursor = fg.start + fg.count;
   }
@@ -84,32 +76,50 @@ function buildMultiColorGroups(
     groups.push({ start: cursor, count: totalIndexCount - cursor, materialIndex: defaultIndex });
   }
 
-  return { groups, colors, slotToIndex };
+  return { groups, colors, colorToIndex };
 }
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
   const { invalidate } = useThree();
   const multiColorEnabled = useFeatureFlag('multi_color_export');
 
-  const { vertices, normals, indices, edgeVertices, faceGroups, featureColors } = useDesignerStore(
+  const {
+    vertices,
+    normals,
+    indices,
+    edgeVertices,
+    faceGroups,
+    featureColors,
+    hasLip,
+    hasLabelTabs,
+    hoveredColorZone,
+  } = useDesignerStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
       normals: s.generation.mesh?.normals ?? null,
       indices: s.generation.mesh?.indices ?? null,
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
       faceGroups: s.generation.mesh?.faceGroups ?? null,
-      featureColors: s.params.featureColors,
+      featureColors: s.params.featureColors ?? null,
+      hasLip: s.params.base.stackingLip,
+      hasLabelTabs: s.params.label.enabled,
+      hoveredColorZone: s.ui.hoveredColorZone,
     }))
   );
 
-  const filamentPalette = useSettingsStore((s) => s.settings.filamentPalette);
-  const hoveredColorZone = useDesignerStore((s) => s.ui.hoveredColorZone);
+  // Build active zone set — scales as more zones are added
+  const activeZones = useMemo(() => {
+    const zones = new Set<ColorZone>(['body']);
+    if (hasLip) zones.add('lip');
+    if (hasLabelTabs) zones.add('labelTab');
+    return zones;
+  }, [hasLip, hasLabelTabs]);
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
-    if (!multiColorEnabled || !faceGroups || !indices) return null;
-    return buildMultiColorGroups(faceGroups, featureColors, filamentPalette, indices.length);
-  }, [multiColorEnabled, faceGroups, featureColors, filamentPalette, indices]);
+    if (!multiColorEnabled || !faceGroups || !featureColors || !indices) return null;
+    return buildMultiColorGroups(faceGroups, featureColors, activeZones, indices.length);
+  }, [multiColorEnabled, faceGroups, featureColors, activeZones, indices]);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices,
@@ -123,10 +133,11 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   const materials = useMemo(() => {
     if (!multiColorData) return null;
 
+    // Determine which material index is hovered (if any)
     let hoveredIndex: number | undefined;
-    if (hoveredColorZone) {
-      const hoveredSlotId = featureColors[hoveredColorZone];
-      hoveredIndex = multiColorData.slotToIndex.get(hoveredSlotId);
+    if (hoveredColorZone && featureColors) {
+      const hoveredHex = featureColors[hoveredColorZone];
+      hoveredIndex = multiColorData.colorToIndex.get(hoveredHex);
     }
 
     return multiColorData.colors.map(
@@ -173,13 +184,14 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       ) : (
         <mesh geometry={geometry} position={[0, 0, 0.1]}>
           <meshStandardMaterial
-            color={color}
+            color={multiColorEnabled && featureColors ? featureColors.body : color}
             roughness={0.45}
             metalness={0}
             wireframe={wireframe}
             side={THREE.DoubleSide}
-            emissive={color}
+            emissive={multiColorEnabled && featureColors ? featureColors.body : color}
             emissiveIntensity={0.08}
+            flatShading={!hasPrecomputedNormals}
             polygonOffset
             polygonOffsetFactor={1}
             polygonOffsetUnits={1}

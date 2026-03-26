@@ -177,15 +177,16 @@ export function useExport(): UseExportReturn {
 
             // Build multi-color config when Labs flag is enabled
             let colorConfig: ThreeMFColorConfig | undefined;
-            if (isFeatureEnabled('multi_color_export') && result.faceGroups) {
-              const palette = useSettingsStore.getState().settings.filamentPalette;
-              const { featureColors } = params;
+            if (
+              isFeatureEnabled('multi_color_export') &&
+              result.faceGroups &&
+              params.featureColors
+            ) {
               const triangleCount = vertices.length / 9;
               colorConfig =
                 buildTriangleMaterialIndices(
                   result.faceGroups,
-                  featureColors,
-                  palette,
+                  params.featureColors,
                   triangleCount
                 ) ?? undefined;
             }
@@ -209,15 +210,17 @@ export function useExport(): UseExportReturn {
 
               // Only apply color config to the bin piece (first piece)
               let colorConfig: ThreeMFColorConfig | undefined;
-              if (i === 0 && isFeatureEnabled('multi_color_export') && result.faceGroups) {
-                const palette = useSettingsStore.getState().settings.filamentPalette;
-                const { featureColors } = params;
+              if (
+                i === 0 &&
+                isFeatureEnabled('multi_color_export') &&
+                result.faceGroups &&
+                params.featureColors
+              ) {
                 const triangleCount = parseResult.value.vertices.length / 9;
                 colorConfig =
                   buildTriangleMaterialIndices(
                     result.faceGroups,
-                    featureColors,
-                    palette,
+                    params.featureColors,
                     triangleCount
                   ) ?? undefined;
               }
@@ -274,6 +277,8 @@ export function useExport(): UseExportReturn {
    * When dividers are present, includes divider pieces in the ZIP.
    * Uses worker pool for parallel export when available.
    * Supports STL and 3MF formats (STEP is not supported for split export).
+   * NOTE: Multi-color data is NOT propagated to split pieces — each piece
+   * exports as single-color. Split + multi-color is a known gap.
    */
   const downloadSplit = useCallback(
     async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {

@@ -2,7 +2,6 @@ import type { Locale } from '@/i18n/types';
 import type { Category } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
-import type { FilamentSlot } from '@/shared/types/filament';
 
 // STL Search Sites Configuration
 
@@ -237,9 +236,6 @@ export interface UserSettings {
   /** Filament color for the baseplate 3D preview. */
   baseplateFilamentColor: string;
 
-  /** Global filament palette for multi-color bin export (up to 4 slots). */
-  filamentPalette: FilamentSlot[];
-
   /**
    * One-time UI hints that have been dismissed.
    * Replaces individual localStorage keys for hint tracking.
@@ -300,14 +296,6 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Baseplate 3D preview
   baseplateFilamentColor: '#d4d8dc',
-
-  // Multi-color bin export palette
-  filamentPalette: [
-    { id: 'slot1', name: 'Primary', color: '#d4d8dc' },
-    { id: 'slot2', name: 'Accent', color: '#3b82f6' },
-    { id: 'slot3', name: 'Slot 3', color: '#22c55e' },
-    { id: 'slot4', name: 'Slot 4', color: '#ef4444' },
-  ],
 
   // Dismissed hints
   dismissedHints: [],

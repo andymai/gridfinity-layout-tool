@@ -1,31 +1,29 @@
 /**
- * Feature color types for multi-color 3MF export.
+ * Feature color types for multi-color bin design.
  *
- * Maps bin features to filament slots from the user's global palette,
- * enabling per-feature color assignment for multi-material printing.
+ * Each color zone stores a hex color string directly.
+ * No palette indirection — users pick colors per zone.
  */
 
 import { FeatureTag } from '@/shared/types/generation';
 
-// Re-export filament types from shared (canonical location for cross-layer imports)
-export type { FilamentSlotId, FilamentSlot } from '@/shared/types/filament';
-import type { FilamentSlotId, FilamentSlot } from '@/shared/types/filament';
-
 /** High-level color zone grouping multiple FeatureTags */
 export type ColorZone = 'body' | 'lip' | 'labelTab';
 
-/** Per-feature filament assignment: maps each color zone to a filament slot */
+/** Per-zone hex color assignment */
 export interface FeatureColorConfig {
-  readonly body: FilamentSlotId;
-  readonly lip: FilamentSlotId;
-  readonly labelTab: FilamentSlotId;
+  /** Body shell color (hex, e.g. '#3b82f6') */
+  readonly body: string;
+  /** Stacking lip color */
+  readonly lip: string;
+  /** Label tab color */
+  readonly labelTab: string;
 }
 
 /**
  * Maps a FeatureTag to its high-level ColorZone.
  *
  * LIP → 'lip', LABEL_TAB → 'labelTab', everything else → 'body'.
- * This collapses 12 feature tags into 3 user-facing zones.
  */
 export function featureTagToColorZone(tag: number): ColorZone {
   switch (tag) {
@@ -38,56 +36,46 @@ export function featureTagToColorZone(tag: number): ColorZone {
   }
 }
 
-/** Resolved slot mapping: deduplicated slot list with index lookup */
-export interface SlotMapping<T> {
-  /** Ordered list of resolved values (one per unique slot) */
-  readonly items: readonly T[];
-  /** Maps each FilamentSlotId to its index in `items` */
-  readonly slotToIndex: ReadonlyMap<FilamentSlotId, number>;
-  /** Index for untagged/body triangles */
-  readonly defaultIndex: number;
-}
-
 /**
- * Returns true when all color zones map to the same filament slot
+ * Returns true when all *active* color zones use the same color
  * (single-color — no multi-material needed).
+ *
+ * @param activeZones - Set of zone keys that are currently enabled.
+ *   Omit to check all zones. Pass only enabled zones to ignore disabled
+ *   features (e.g., lip color differs but stacking lip is off).
  */
-export function isSingleColor(featureColors: FeatureColorConfig): boolean {
-  return featureColors.body === featureColors.lip && featureColors.body === featureColors.labelTab;
+export function isSingleColor(
+  featureColors: FeatureColorConfig,
+  activeZones?: ReadonlySet<ColorZone>
+): boolean {
+  const zones: ColorZone[] = activeZones ? [...activeZones] : ['body', 'lip', 'labelTab'];
+  return zones.every((z) => featureColors[z] === featureColors.body);
 }
 
 /**
- * Deduplicates active filament slots and builds an index mapping.
+ * Deduplicates zone colors and builds a color-to-index mapping.
  *
- * Shared by both the 3MF exporter (materialMapping) and the 3D preview (BinMesh).
- * The `resolve` callback transforms each FilamentSlot into the desired output type
- * (e.g., `{ name, color }` for 3MF, or just the color string for preview).
+ * Shared by both the 3D preview (BinMesh) and 3MF exporter.
+ * Returns the unique color list and a lookup from hex color to material index.
  */
-export function resolveSlotMapping<T>(
-  featureColors: FeatureColorConfig,
-  palette: readonly FilamentSlot[],
-  resolve: (slot: FilamentSlot) => T
-): SlotMapping<T> {
-  // Insert body slot first to guarantee it's at index 0 (safe fallback)
-  const slotToIndex = new Map<FilamentSlotId, number>();
-  const items: T[] = [];
+export function resolveColorMapping(featureColors: FeatureColorConfig): {
+  colors: readonly string[];
+  colorToIndex: ReadonlyMap<string, number>;
+  defaultIndex: number;
+} {
+  const colorToIndex = new Map<string, number>();
+  const colors: string[] = [];
 
-  const bodySlot = palette.find((s) => s.id === featureColors.body);
-  if (bodySlot) {
-    slotToIndex.set(featureColors.body, 0);
-    items.push(resolve(bodySlot));
+  // Body first (index 0 = default fallback)
+  colorToIndex.set(featureColors.body, 0);
+  colors.push(featureColors.body);
+
+  // Add remaining unique colors
+  for (const hex of [featureColors.lip, featureColors.labelTab]) {
+    if (colorToIndex.has(hex)) continue;
+    colorToIndex.set(hex, colors.length);
+    colors.push(hex);
   }
 
-  // Add remaining unique slots
-  for (const slotId of [featureColors.lip, featureColors.labelTab]) {
-    if (slotToIndex.has(slotId)) continue;
-    const slot = palette.find((s) => s.id === slotId);
-    if (slot) {
-      slotToIndex.set(slotId, items.length);
-      items.push(resolve(slot));
-    }
-  }
-
-  const defaultIndex = slotToIndex.get(featureColors.body) ?? 0;
-  return { items, slotToIndex, defaultIndex };
+  return { colors, colorToIndex, defaultIndex: 0 };
 }

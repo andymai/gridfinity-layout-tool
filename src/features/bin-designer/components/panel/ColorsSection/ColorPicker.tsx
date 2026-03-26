@@ -1,45 +1,25 @@
 /**
- * Popover content for editing a single filament slot (name + color).
+ * Color picker popover content: preset filament color grid + hex input.
  *
- * Provides a name input, preset color grid, and hex color input.
- * Saves immediately to the global settings store palette.
+ * No palette concept — just pick a color directly.
  */
 
 import { useState, useCallback } from 'react';
-import { useSettingsStore } from '@/core/store';
 import { FILAMENT_PRESET_COLORS } from '@/core/constants';
 import { Input } from '@/design-system/Input/Input';
 import { useTranslation } from '@/i18n';
-import type { FilamentSlot, FilamentSlotId } from '@/features/bin-designer/types/featureColors';
 
 const HEX_REGEX = /^#[0-9a-f]{6}$/i;
-const MAX_NAME_LENGTH = 20;
 
-interface FilamentSlotEditorProps {
-  slot: FilamentSlot;
+interface ColorPickerProps {
+  color: string;
+  onChange: (hex: string) => void;
 }
 
-/** Update a single slot in the palette array */
-function updatePaletteSlot(slotId: FilamentSlotId, updates: Partial<FilamentSlot>) {
-  const { settings, updateSetting } = useSettingsStore.getState();
-  const updatedPalette = settings.filamentPalette.map((s) =>
-    s.id === slotId ? { ...s, ...updates } : s
-  );
-  updateSetting('filamentPalette', updatedPalette);
-}
-
-export function FilamentSlotEditor({ slot }: FilamentSlotEditorProps) {
+export function ColorPicker({ color, onChange }: ColorPickerProps) {
   const t = useTranslation();
-  const [hexInput, setHexInput] = useState(slot.color);
+  const [hexInput, setHexInput] = useState(color);
   const [hexError, setHexError] = useState(false);
-
-  const handleNameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const name = e.target.value.slice(0, MAX_NAME_LENGTH);
-      updatePaletteSlot(slot.id, { name });
-    },
-    [slot.id]
-  );
 
   const applyHex = useCallback(
     (value: string) => {
@@ -47,52 +27,42 @@ export function FilamentSlotEditor({ slot }: FilamentSlotEditorProps) {
       if (HEX_REGEX.test(normalized)) {
         setHexError(false);
         setHexInput(normalized);
-        updatePaletteSlot(slot.id, { color: normalized });
+        onChange(normalized);
       } else {
         setHexError(true);
       }
     },
-    [slot.id]
+    [onChange]
   );
 
   const handlePresetClick = useCallback(
-    (color: string) => {
-      setHexInput(color);
+    (presetColor: string) => {
+      setHexInput(presetColor);
       setHexError(false);
-      updatePaletteSlot(slot.id, { color });
+      onChange(presetColor);
     },
-    [slot.id]
+    [onChange]
   );
 
   return (
     <div className="w-56 p-3 space-y-3">
-      {/* Slot name */}
-      <Input
-        size="sm"
-        value={slot.name}
-        onChange={handleNameChange}
-        maxLength={MAX_NAME_LENGTH}
-        aria-label={t('binDesigner.colors.slotName')}
-        placeholder={t('binDesigner.colors.slotName')}
-      />
-
       {/* Preset color grid */}
       <div>
         <p className="text-[10px] font-medium text-content-tertiary mb-1.5">
           {t('binDesigner.colors.presets')}
         </p>
         <div className="grid grid-cols-5 gap-1.5">
-          {FILAMENT_PRESET_COLORS.map(({ color, name }) => (
+          {FILAMENT_PRESET_COLORS.map(({ color: presetColor, name }) => (
             <button
-              key={color}
+              key={presetColor}
               type="button"
-              onClick={() => handlePresetClick(color)}
+              onClick={() => handlePresetClick(presetColor)}
               className={`w-8 h-8 rounded-md border transition-colors hover:scale-105 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
-                slot.color === color
+                color === presetColor
                   ? 'ring-2 ring-accent border-accent'
                   : 'border-stroke-subtle/50 hover:border-stroke'
               }`}
-              style={{ backgroundColor: color }}
+              style={{ backgroundColor: presetColor }}
               aria-label={name}
               title={name}
             />
@@ -118,7 +88,7 @@ export function FilamentSlotEditor({ slot }: FilamentSlotEditorProps) {
         leftIcon={
           <span
             className="w-3.5 h-3.5 rounded-sm border border-stroke-subtle/50"
-            style={{ backgroundColor: slot.color }}
+            style={{ backgroundColor: color }}
           />
         }
       />

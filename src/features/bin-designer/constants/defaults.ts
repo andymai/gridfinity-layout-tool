@@ -99,11 +99,32 @@ const DEFAULT_HANDLE_CONFIG: HandleConfig = {
   right: { ...DEFAULT_HANDLE_SIDE, enabled: true },
 } as const;
 
-/** Default feature color config: all zones use the primary filament slot */
+/** Map legacy FilamentSlotId values (from pre-v4.30 designs) to hex colors for migration */
+const LEGACY_SLOT_COLORS: Record<string, string> = {
+  slot1: '#d4d8dc',
+  slot2: '#3b82f6',
+  slot3: '#22c55e',
+  slot4: '#ef4444',
+};
+
+/** Migrate featureColors from old slot-based format to direct hex colors */
+function migrateFeatureColors(raw: Partial<FeatureColorConfig> | undefined): FeatureColorConfig {
+  if (!raw) return DEFAULT_FEATURE_COLOR_CONFIG;
+  return {
+    body: LEGACY_SLOT_COLORS[raw.body as string] ?? raw.body ?? DEFAULT_FEATURE_COLOR_CONFIG.body,
+    lip: LEGACY_SLOT_COLORS[raw.lip as string] ?? raw.lip ?? DEFAULT_FEATURE_COLOR_CONFIG.lip,
+    labelTab:
+      LEGACY_SLOT_COLORS[raw.labelTab as string] ??
+      raw.labelTab ??
+      DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
+  };
+}
+
+/** Default feature color config: all zones use the default bin color (light grey) */
 export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
-  body: 'slot1',
-  lip: 'slot1',
-  labelTab: 'slot1',
+  body: '#d4d8dc',
+  lip: '#d4d8dc',
+  labelTab: '#d4d8dc',
 } as const;
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -450,9 +471,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     cutouts: params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts,
     cutoutConfig,
     wallPattern: wallPatternConfig,
-    featureColors: params.featureColors
-      ? { ...DEFAULT_FEATURE_COLOR_CONFIG, ...params.featureColors }
-      : DEFAULT_FEATURE_COLOR_CONFIG,
+    featureColors: migrateFeatureColors(params.featureColors),
     ...(params.splitConnectors !== undefined
       ? { splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, ...params.splitConnectors } }
       : {}),
