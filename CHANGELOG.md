@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.32.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.31.0...gridfinity-layout-tool-v4.32.0) (2026-03-26)
+
+
+### Features
+
+* **colors:** redesign multi-color UI with direct color pickers ([#1257](https://github.com/andymai/gridfinity-layout-tool/issues/1257)) ([2f8454f](https://github.com/andymai/gridfinity-layout-tool/commit/2f8454fb46aaa4bacdb3858b8f7ab3b963598fa9))
+
 ## [4.31.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.30.0...gridfinity-layout-tool-v4.31.0) (2026-03-26)
 
 
