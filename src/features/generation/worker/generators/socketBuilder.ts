@@ -234,21 +234,34 @@ export function buildBaseSocket(
       );
     }
 
-    // Primary path: single-call pipeline fuses cells then cuts holes,
-    // skipping intermediate UnifySameDomain between the fuse and cut passes.
-    const steps: BooleanPipelineStep[] = [
-      ...cellSockets.slice(1).map((s): BooleanPipelineStep => ({ op: 'fuse', tool: s })),
-      ...holeTools.map((t): BooleanPipelineStep => ({ op: 'cut', tool: t })),
-    ];
-    const pipelineResult = booleanPipeline(cellSockets[0], steps, {
-      optimisation: 'commonFace',
-    });
-
+    // Use booleanPipeline for small sockets (fuse cells → cut holes in one
+    // WASM call, skipping intermediate UnifySameDomain). For large grids, fall
+    // back to batch fuseAll/cutAll — compound booleans are faster than N
+    // sequential pipeline steps when there are many targets.
+    const totalSteps = cellSockets.length - 1 + holeTools.length;
     let result: Shape3D;
-    if (isOk(pipelineResult)) {
-      result = pipelineResult.value;
+
+    if (totalSteps <= 20) {
+      const steps: BooleanPipelineStep[] = [
+        ...cellSockets.slice(1).map((s): BooleanPipelineStep => ({ op: 'fuse', tool: s })),
+        ...holeTools.map((t): BooleanPipelineStep => ({ op: 'cut', tool: t })),
+      ];
+      const pipelineResult = booleanPipeline(cellSockets[0], steps, {
+        optimisation: 'commonFace',
+      });
+
+      if (isOk(pipelineResult)) {
+        result = pipelineResult.value;
+      } else {
+        result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
+        if (holeTools.length > 0) {
+          const preCut = result;
+          result = unwrap(cutAll(result as ValidSolid, holeTools as ValidSolid[]));
+          if (preCut !== result) preCut.delete();
+        }
+      }
     } else {
-      // Fallback: batch fuseAll then batch cutAll
+      // Batch path: compound booleans for large grids
       result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
       if (holeTools.length > 0) {
         const preCut = result;
