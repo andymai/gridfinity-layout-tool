@@ -41,17 +41,22 @@ export function pushHistoryEntry(state: Draft<DesignerState>): void {
     params: current(state.params),
     mesh: pendingMeshCache,
   };
-  state.history.past = [
-    ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+
+  // Snapshot past as plain objects to avoid leaking draft proxies into
+  // the new array — Immer proxies from the old draft array would be revoked
+  // during finalization, causing "Cannot perform 'get' on a proxy that has
+  // been revoked" errors in evictIfNeeded.
+  const pastSnapshot = current(state.history).past;
+  const newPast: HistoryEntry[] = [
+    ...pastSnapshot.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
     entry,
   ];
-  state.history.future = [];
-  state.generation.epoch += 1;
 
-  // Evict old meshes if over memory budget
-  const evicted = evictIfNeeded(state.history.past, state.history.future);
+  // Evict old meshes if over memory budget (all entries are plain objects)
+  const evicted = evictIfNeeded(newPast, []);
   state.history.past = evicted.past as HistoryEntry[];
   state.history.future = evicted.future as HistoryEntry[];
+  state.generation.epoch += 1;
 
   // Clear cached mesh for the previous params; new params need a fresh result
   pendingMeshCache = null;

@@ -35,15 +35,17 @@ export function createHistorySlice(set: Set, get: Get) {
       if (history.past.length === 0) return;
 
       set((state) => {
-        const previous = state.history.past[state.history.past.length - 1];
-        state.history.past = state.history.past.slice(0, -1);
+        // Snapshot history as plain objects to avoid draft proxy revocation
+        const historySnapshot = current(state.history);
+        const previous = historySnapshot.past[historySnapshot.past.length - 1];
+        state.history.past = historySnapshot.past.slice(0, -1) as HistoryEntry[];
 
         // Push current state (with pending mesh) to future
         const currentEntry: HistoryEntry = {
           params: current(state.params),
           mesh: getPendingMeshCache(),
         };
-        state.history.future = [currentEntry, ...state.history.future];
+        state.history.future = [currentEntry, ...historySnapshot.future] as HistoryEntry[];
 
         restoreHistoryEntry(state, previous);
       });
@@ -54,15 +56,17 @@ export function createHistorySlice(set: Set, get: Get) {
       if (history.future.length === 0) return;
 
       set((state) => {
-        const next = state.history.future[0];
-        state.history.future = state.history.future.slice(1);
+        // Snapshot history as plain objects to avoid draft proxy revocation
+        const historySnapshot = current(state.history);
+        const next = historySnapshot.future[0];
+        state.history.future = historySnapshot.future.slice(1) as HistoryEntry[];
 
         // Push current state (with pending mesh) to past
         const currentEntry: HistoryEntry = {
           params: current(state.params),
           mesh: getPendingMeshCache(),
         };
-        state.history.past = [...state.history.past, currentEntry];
+        state.history.past = [...historySnapshot.past, currentEntry] as HistoryEntry[];
 
         restoreHistoryEntry(state, next);
       });
