@@ -19,8 +19,10 @@ import {
   translate,
   fuse,
   withScope,
+  booleanPipeline,
+  isOk,
 } from 'brepjs';
-import type { Shape3D, ValidSolid, Sketch, DisposalScope } from 'brepjs';
+import type { Shape3D, ValidSolid, Sketch, DisposalScope, BooleanPipelineStep } from 'brepjs';
 import {
   SIZE,
   CLEARANCE,
@@ -116,6 +118,17 @@ export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): S
 
   return s1.loftWith([s3], { ruled: true });
 }
+/** Fuse all cell sockets, then cut all hole tools. Disposes replaced intermediates. */
+function batchFuseAndCut(cellSockets: Shape3D[], holeTools: Shape3D[]): Shape3D {
+  let result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
+  if (holeTools.length > 0) {
+    const preCut = result;
+    result = unwrap(cutAll(result, holeTools as ValidSolid[]));
+    if (preCut !== result) preCut.delete();
+  }
+  return result;
+}
+
 /**
  * Build the segmented base socket grid for the bin.
  *
@@ -190,15 +203,9 @@ export function buildBaseSocket(
     if (cellSockets.length === 0) {
       throw new Error('Invalid grid dimensions: at least one cell required');
     }
-    let result: Shape3D = unwrap(
-      fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' })
-    );
-    // Delete consumed cellSockets (skip if fuseAll returned the same reference)
-    for (const s of cellSockets) {
-      if (s !== result) s.delete();
-    }
 
-    // Cut magnet/screw holes at standard 4-corner positions per full cell.
+    // Build hole tools upfront so they can be included in the pipeline
+    const holeTools: Shape3D[] = [];
     if (withScrew || withMagnet) {
       const HOLE_OFFSET = 13; // mm from cell center to hole center (Gridfinity spec)
       const magnetCutout = withMagnet ? scope.register(cylinder(magnetRadius, magnetDepth)) : null;
@@ -219,8 +226,6 @@ export function buildBaseSocket(
         [HOLE_OFFSET, -HOLE_OFFSET],
       ];
 
-      // NOTE: holeTools are NOT scope-registered — cutAll may return an input.
-      const holeTools: Shape3D[] = [];
       forEachCell(
         gridW,
         gridD,
@@ -238,15 +243,39 @@ export function buildBaseSocket(
         },
         { gridUnitMm }
       );
+    }
 
-      if (holeTools.length > 0) {
-        const preCut = result;
-        result = unwrap(cutAll(result as ValidSolid, holeTools as ValidSolid[]));
-        if (preCut !== result) preCut.delete();
-        for (const t of holeTools) {
-          if (t !== result) t.delete();
-        }
+    // Use booleanPipeline for small sockets (fuse cells → cut holes in one
+    // WASM call, skipping intermediate UnifySameDomain). For large grids, fall
+    // back to batch fuseAll/cutAll — compound booleans are faster than N
+    // sequential pipeline steps when there are many targets.
+    const totalSteps = cellSockets.length - 1 + holeTools.length;
+    let result: Shape3D;
+
+    if (totalSteps <= 20) {
+      const steps: BooleanPipelineStep[] = [
+        ...cellSockets.slice(1).map((s): BooleanPipelineStep => ({ op: 'fuse', tool: s })),
+        ...holeTools.map((t): BooleanPipelineStep => ({ op: 'cut', tool: t })),
+      ];
+      const pipelineResult = booleanPipeline(cellSockets[0], steps, {
+        optimisation: 'commonFace',
+      });
+
+      if (isOk(pipelineResult)) {
+        result = pipelineResult.value;
+      } else {
+        result = batchFuseAndCut(cellSockets, holeTools);
       }
+    } else {
+      result = batchFuseAndCut(cellSockets, holeTools);
+    }
+
+    // Dispose consumed inputs (skip if result reuses a reference)
+    for (const s of cellSockets) {
+      if (s !== result) s.delete();
+    }
+    for (const t of holeTools) {
+      if (t !== result) t.delete();
     }
 
     return setSocketCache(key, result); // result NOT registered — survives scope

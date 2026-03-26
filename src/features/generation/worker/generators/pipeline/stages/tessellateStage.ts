@@ -2,6 +2,10 @@
  * Tessellate stage — converts BREP solid to triangle mesh.
  *
  * Dynamic quality selection via computeTessellationTolerances().
+ *
+ * LOD infrastructure (coarseMesh, CoarseLODData, BinMesh Detailed) is wired
+ * through the pipeline but not yet activated here — meshMultiLOD doubles
+ * tessellation cost. Enable by setting coarseMesh in the return value.
  */
 
 import { mesh, meshEdges } from 'brepjs';
@@ -37,7 +41,6 @@ export const tessellateStage: PipelineStage = {
     });
     ctx.onProgress?.('merge', 1.0);
     const meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines, ctx.originToTag);
-
-    return { ...ctx, mesh: meshData, solid: null };
+    return { ...ctx, mesh: meshData, coarseMesh: null, solid: null };
   },
 };

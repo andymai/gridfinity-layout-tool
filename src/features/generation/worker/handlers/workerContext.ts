@@ -96,10 +96,22 @@ export function runGeneration(
     const timingMs = performance.now() - startTime;
     const kernelPerfStats = activeKernel === 'opencascade' ? getPerformanceStats() : {};
 
-    const verts = copyBuffers ? meshData.vertices.slice() : meshData.vertices;
-    const norms = copyBuffers ? meshData.normals.slice() : meshData.normals;
-    const idxs = copyBuffers ? meshData.indices.slice() : meshData.indices;
-    const edges = copyBuffers ? meshData.edgeVertices.slice() : meshData.edgeVertices;
+    const maybeCopy = <T extends Float32Array | Uint32Array>(buf: T): T =>
+      (copyBuffers ? buf.slice() : buf) as T;
+
+    const verts = maybeCopy(meshData.vertices);
+    const norms = maybeCopy(meshData.normals);
+    const idxs = maybeCopy(meshData.indices);
+    const edges = maybeCopy(meshData.edgeVertices);
+
+    // Prepare coarse LOD buffers when available (preview mode)
+    const coarseLOD = meshData.coarseLOD
+      ? {
+          vertices: maybeCopy(meshData.coarseLOD.vertices),
+          indices: maybeCopy(meshData.coarseLOD.indices),
+          triangleCount: meshData.coarseLOD.triangleCount,
+        }
+      : undefined;
 
     const response: WorkerResponse = {
       type: 'MESH_RESULT',
@@ -111,12 +123,15 @@ export function runGeneration(
       triangleCount: meshData.triangleCount,
       timingMs,
       faceGroups: meshData.faceGroups,
+      coarseLOD,
     };
-    self.postMessage(response, {
-      transfer: [verts.buffer, norms.buffer, idxs.buffer, edges.buffer].filter(
-        (b) => b.byteLength > 0
-      ),
-    });
+
+    const transfer = [verts.buffer, norms.buffer, idxs.buffer, edges.buffer];
+    if (coarseLOD) {
+      transfer.push(coarseLOD.vertices.buffer, coarseLOD.indices.buffer);
+    }
+    const nonEmptyTransfer = transfer.filter((b) => b.byteLength > 0);
+    self.postMessage(response, { transfer: nonEmptyTransfer });
 
     const cacheStats = [...getAllShapeCacheStats(), ...getBaseplateCacheStats()];
     respond({ type: 'CACHE_STATS', requestId, caches: cacheStats });

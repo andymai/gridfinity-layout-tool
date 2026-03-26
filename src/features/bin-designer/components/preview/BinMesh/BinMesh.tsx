@@ -12,9 +12,10 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
+import { Detailed } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
-import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
+import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
 import type { MeshFaceGroup } from '@/shared/components/preview/useMeshGeometry';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import {
@@ -89,6 +90,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     indices,
     edgeVertices,
     faceGroups,
+    coarseLOD,
     featureColors,
     hasLip,
     hasLabelTabs,
@@ -100,6 +102,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       indices: s.generation.mesh?.indices ?? null,
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
       faceGroups: s.generation.mesh?.faceGroups ?? null,
+      coarseLOD: s.generation.mesh?.coarseLOD ?? null,
       featureColors: s.params.featureColors ?? null,
       hasLip: s.params.base.stackingLip,
       hasLabelTabs: s.params.label.enabled,
@@ -128,6 +131,8 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     edgeVertices,
     faceGroups: multiColorData?.groups,
   });
+
+  const coarseGeometry = useCoarseGeometry(coarseLOD);
 
   // Build material array for multi-color, with hover glow applied
   const materials = useMemo(() => {
@@ -175,35 +180,60 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     invalidate();
   }, [wireframe, color, materials, invalidate]);
 
+  // Invalidate when coarse geometry changes (LOD needs re-render)
+  useEffect(() => {
+    if (coarseGeometry) invalidate();
+  }, [coarseGeometry, invalidate]);
+
+  const baseColor = multiColorEnabled && featureColors ? featureColors.body : color;
+
+  // Single-color material props shared between fine mesh and coarse LOD
+  const singleMatProps = useMemo(
+    () => ({
+      color: baseColor,
+      roughness: 0.45,
+      metalness: 0,
+      wireframe,
+      side: THREE.DoubleSide as THREE.Side,
+      emissive: new THREE.Color(baseColor),
+      emissiveIntensity: 0.08,
+      flatShading: !hasPrecomputedNormals,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    }),
+    [baseColor, wireframe, hasPrecomputedNormals]
+  );
+
   if (!geometry) return null;
 
+  const fineMesh = materials ? (
+    <mesh geometry={geometry} material={materials} />
+  ) : (
+    <mesh geometry={geometry}>
+      <meshStandardMaterial {...singleMatProps} />
+    </mesh>
+  );
+
   return (
-    <>
-      {materials ? (
-        <mesh geometry={geometry} position={[0, 0, 0.1]} material={materials} />
+    <group position={[0, 0, 0.1]}>
+      {coarseGeometry ? (
+        // LOD: fine mesh at distance 0, coarse at 300mm (zoomed out)
+        <Detailed distances={[0, 300]}>
+          {fineMesh}
+          <mesh geometry={coarseGeometry}>
+            <meshStandardMaterial {...singleMatProps} flatShading />
+          </mesh>
+        </Detailed>
       ) : (
-        <mesh geometry={geometry} position={[0, 0, 0.1]}>
-          <meshStandardMaterial
-            color={multiColorEnabled && featureColors ? featureColors.body : color}
-            roughness={0.45}
-            metalness={0}
-            wireframe={wireframe}
-            side={THREE.DoubleSide}
-            emissive={multiColorEnabled && featureColors ? featureColors.body : color}
-            emissiveIntensity={0.08}
-            flatShading={!hasPrecomputedNormals}
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
-        </mesh>
+        fineMesh
       )}
-      {/* Edge lines from BREP topology (pre-computed in worker) */}
+      {/* Edge lines from BREP topology (pre-computed in worker, fine LOD only) */}
       {!wireframe && edgesGeometry && (
-        <lineSegments geometry={edgesGeometry} position={[0, 0, 0.1]} renderOrder={1}>
+        <lineSegments geometry={edgesGeometry} renderOrder={1}>
           <lineBasicMaterial color={EDGE_COLOR} depthTest={true} />
         </lineSegments>
       )}
-    </>
+    </group>
   );
 }

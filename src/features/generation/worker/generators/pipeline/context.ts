@@ -100,5 +100,6 @@ export function createInitialContext(
     cutTargets: [],
     patternCutTargets: [],
     mesh: null,
+    coarseMesh: null,
   };
 }
