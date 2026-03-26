@@ -99,8 +99,7 @@ const DEFAULT_HANDLE_CONFIG: HandleConfig = {
   right: { ...DEFAULT_HANDLE_SIDE, enabled: true },
 } as const;
 
-/** Map legacy FilamentSlotId values to default hex colors */
-/** Must match DEFAULT_SETTINGS.filamentPalette in core/store/settings.types.ts */
+/** Map legacy FilamentSlotId values (from pre-v4.30 designs) to hex colors for migration */
 const LEGACY_SLOT_COLORS: Record<string, string> = {
   slot1: '#d4d8dc',
   slot2: '#3b82f6',
