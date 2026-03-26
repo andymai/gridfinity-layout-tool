@@ -1,17 +1,11 @@
 /**
- * File naming utilities for bin and divider exports.
+ * File naming utilities for bin exports.
  *
  * Generates descriptive, compact, or custom file names from bin parameters
  * and optional design name.
  */
 
 import type { BinParams, FileNameStyle, ExportFileNameConfig } from '../types';
-import { GRIDFINITY } from '../constants/gridfinity';
-import {
-  calculateDividerHeight,
-  calculateDividerLength,
-  getEffectiveSlotDimensions,
-} from '@/shared/utils/slotMath';
 
 /** Default export filename config */
 export const DEFAULT_EXPORT_FILE_NAME_CONFIG: ExportFileNameConfig = {
@@ -140,84 +134,4 @@ function collectFeatures(params: BinParams): string[] {
   }
 
   return features;
-}
-
-/**
- * Generates a descriptive filename for divider piece STL exports.
- *
- * Includes bin dimensions, divider direction, and actual piece dimensions
- * so the user can identify pieces when they have multiple divider files
- * in their slicer folder.
- *
- * @example
- * // No design name, vertical only: "gridfinity_2x3x6_divider-vertical_78x30mm.stl"
- * // With design name, horizontal: "Screwdriver Bin_2x3x6_divider-horizontal_36x30mm.stl"
- * // Both axes: "gridfinity_2x3x6_dividers_78x30+36x30mm.stl"
- * // Custom naming: "my-bin_dividers.stl"
- */
-export function generateDividerFileName(
-  params: BinParams,
-  config: FileNameStyle | ExportFileNameConfig = 'descriptive',
-  designName?: string
-): string {
-  const resolved =
-    typeof config === 'string'
-      ? { style: (config === 'custom' ? 'descriptive' : config) as FileNameStyle, customName: '' }
-      : config;
-
-  if (resolved.style === 'custom') {
-    const sanitized = sanitizeFileName(resolved.customName);
-    const name = !sanitized || /^_+$/.test(sanitized) ? 'gridfinity-dividers' : sanitized;
-    return `${name}_dividers.stl`;
-  }
-
-  const dims = formatDimensions(params);
-  const effectiveName = getEffectiveDesignName(designName);
-
-  // Compute actual divider piece dimensions
-  const { slotConfig, dividerPieces, wallThickness } = params;
-  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
-  const wallHeight = totalH - GRIDFINITY.SOCKET_HEIGHT;
-  const hasLip = params.base.stackingLip;
-  const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
-  const { slotDepth } = getEffectiveSlotDimensions(
-    wallThickness,
-    dividerPieces.thickness,
-    dividerPieces.clearance
-  );
-
-  const outerW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
-
-  const xEnabled = slotConfig.x.enabled;
-  const yEnabled = slotConfig.y.enabled;
-
-  // Build piece dimension strings (length×height in mm, 1 decimal)
-  const fmtMm = (n: number) => (Math.round(n * 10) / 10).toString();
-  const pieceDims: string[] = [];
-  if (xEnabled) {
-    const len = calculateDividerLength(innerW, slotDepth, dividerPieces.clearance);
-    pieceDims.push(`${fmtMm(len)}x${fmtMm(dividerHeight)}`);
-  }
-  if (yEnabled) {
-    const len = calculateDividerLength(innerD, slotDepth, dividerPieces.clearance);
-    pieceDims.push(`${fmtMm(len)}x${fmtMm(dividerHeight)}`);
-  }
-
-  // Direction label
-  const bothAxes = xEnabled && yEnabled;
-  const direction = bothAxes ? '' : xEnabled ? '-horizontal' : '-vertical';
-  const dividerLabel = bothAxes ? 'dividers' : `divider${direction}`;
-
-  if (resolved.style === 'compact') {
-    const prefix = effectiveName ?? 'gf';
-    return `${prefix}_${dims}_${dividerLabel}.stl`;
-  }
-
-  // Descriptive style: include piece dimensions
-  const prefix = effectiveName ?? 'gridfinity';
-  const pieceSuffix = pieceDims.length > 0 ? `_${pieceDims.join('+')}mm` : '';
-  return `${prefix}_${dims}_${dividerLabel}${pieceSuffix}.stl`;
 }

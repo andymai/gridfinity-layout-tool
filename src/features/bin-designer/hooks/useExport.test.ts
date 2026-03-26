@@ -8,10 +8,12 @@ import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 // Mock the bridge module
 const mockExportBin = vi.fn();
+const mockExportCombined = vi.fn();
 const mockExportSplitBin = vi.fn();
 vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => ({
     exportBin: mockExportBin,
+    exportCombined: mockExportCombined,
     exportSplitBin: mockExportSplitBin,
   }),
   workerPoolManager: {
@@ -38,6 +40,7 @@ describe('useExport', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExportBin.mockReset();
+    mockExportCombined.mockReset();
     mockExportSplitBin.mockReset();
     // Apply URL mock before each test
     Object.defineProperty(globalThis, 'URL', {
@@ -143,10 +146,10 @@ describe('useExport', () => {
       },
     });
 
-    // Mock bridge to return STL data
-    mockExportBin.mockResolvedValue({
-      data: new ArrayBuffer(100),
-      fileName: 'test.stl',
+    // Mock combined export to return single bin piece (no dividers)
+    mockExportCombined.mockResolvedValue({
+      pieces: [{ data: new ArrayBuffer(100), label: 'bin' }],
+      format: 'stl',
     });
 
     // Mock DOM APIs - only intercept 'a' elements to not break renderHook container
@@ -180,7 +183,7 @@ describe('useExport', () => {
       });
     });
 
-    expect(mockExportBin).toHaveBeenCalledWith(expect.any(Object), 'stl');
+    expect(mockExportCombined).toHaveBeenCalledWith(expect.any(Object), 'stl');
     expect(mockCreateObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(mockAnchor.click).toHaveBeenCalled();
     expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
@@ -206,9 +209,9 @@ describe('useExport', () => {
       },
     });
 
-    mockExportBin.mockResolvedValue({
-      data: new ArrayBuffer(200),
-      fileName: 'test.step',
+    mockExportCombined.mockResolvedValue({
+      pieces: [{ data: new ArrayBuffer(200), label: 'assembly' }],
+      format: 'step',
     });
 
     const mockAnchor = {
@@ -241,7 +244,7 @@ describe('useExport', () => {
       });
     });
 
-    expect(mockExportBin).toHaveBeenCalledWith(expect.any(Object), 'step');
+    expect(mockExportCombined).toHaveBeenCalledWith(expect.any(Object), 'step');
     expect(mockAnchor.download).toContain('.step');
 
     createElementSpy.mockRestore();
@@ -265,10 +268,10 @@ describe('useExport', () => {
       },
     });
 
-    // Mock bridge
-    mockExportBin.mockResolvedValue({
-      data: new ArrayBuffer(100),
-      fileName: 'test.stl',
+    // Mock combined export
+    mockExportCombined.mockResolvedValue({
+      pieces: [{ data: new ArrayBuffer(100), label: 'bin' }],
+      format: 'stl',
     });
 
     const mockAnchor = {

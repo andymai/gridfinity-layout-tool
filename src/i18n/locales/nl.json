@@ -180,7 +180,7 @@
   "binDesigner.dividerThickness": "Scheidingsdikte",
   "binDesigner.doubleTapToReset": "Dubbeltik om te resetten",
   "binDesigner.downloadDesignJson": "Ontwerp-JSON downloaden",
-  "binDesigner.downloadDividersSTL": "Scheidingswand-STL downloaden",
+
   "binDesigner.downloadFormat": "{format} downloaden",
   "binDesigner.downloadJSON": "JSON downloaden",
   "binDesigner.dragDropDesignJson": "Sleep een ontwerp-JSON-bestand hierheen",

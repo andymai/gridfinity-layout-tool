@@ -180,7 +180,7 @@
   "binDesigner.dividerThickness": "Épaisseur du séparateur",
   "binDesigner.doubleTapToReset": "Double tap pour réinitialiser",
   "binDesigner.downloadDesignJson": "Télécharger le JSON de design",
-  "binDesigner.downloadDividersSTL": "Télécharger le STL des séparateurs",
+
   "binDesigner.downloadFormat": "Télécharger {format}",
   "binDesigner.downloadJSON": "Télécharger JSON",
   "binDesigner.dragDropDesignJson": "Glissez-déposez un fichier JSON de design ici",

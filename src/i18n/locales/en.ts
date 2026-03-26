@@ -1159,7 +1159,6 @@ const en: Record<string, string> = {
   'binDesigner.dividerAutoHeight': 'Auto',
   'binDesigner.dividerDimensions': '{length} × {height}mm',
   'binDesigner.dividerHeightOnly': '{height}mm tall',
-  'binDesigner.downloadDividersSTL': 'Download Divider STL',
   'binDesigner.labelTabs': 'Label tabs',
   'binDesigner.compartmentsUnavailableSlotted': 'Not available for slotted bins',
   'binDesigner.labelTabsUnavailableSlotted': 'Not available for slotted bins',

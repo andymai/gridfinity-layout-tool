@@ -12,6 +12,7 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
   useExport: () => ({
     canExport: true,
     isExporting: false,
+    isExportingBin: false,
     estimates: {
       volumeMm3: 15000,
       gramsFilament: 18.6,
@@ -20,9 +21,8 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
       costUSD: 0.47,
     },
     downloadBin: mockDownloadBin,
-    downloadDividersSTL: vi.fn().mockResolvedValue(undefined),
     downloadSplit: vi.fn().mockResolvedValue(undefined),
-    canExportDividers: false,
+    hasDividers: false,
     needsSplit: false,
     splitPieceCount: 1,
     maxGridUnits: 6,

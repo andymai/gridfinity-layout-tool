@@ -1,15 +1,21 @@
 /**
- * EXPORT, EXPORT_BASEPLATE, EXPORT_DIVIDERS message handlers.
+ * EXPORT, EXPORT_BASEPLATE, EXPORT_DIVIDERS, and EXPORT_COMBINED message handlers.
  */
 
+import { unwrap, compound, exportSTEP } from 'brepjs';
 import type {
   ExportMessage,
   ExportBaseplateMessage,
   ExportDividersMessage,
+  ExportCombinedMessage,
+  CombinedExportPiece,
 } from '../../bridge/types';
 import { exportBin } from '../generators/binGenerator';
+import { getLastSolid } from '../generators/shapeCache';
 import { exportBaseplate } from '../generators/baseplateGenerator';
-import { exportDividers } from '../generators/dividerExport';
+import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
+import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
+import { GRIDFINITY } from '@/shared/constants/bin';
 import { runExport } from './workerContext';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
@@ -66,5 +72,74 @@ export async function handleExportDividers(message: ExportDividersMessage): Prom
     },
     'Divider export failed',
     (p) => [p.data]
+  );
+}
+
+/**
+ * Combined bin + dividers export.
+ *
+ * Returns labeled pieces for the main thread to package per format:
+ * - STL: multiple pieces (bin + divider per axis) → main thread ZIPs them
+ * - STEP: single compound assembly piece
+ * - No dividers: single bin piece (same as regular export)
+ */
+export async function handleExportCombined(message: ExportCombinedMessage): Promise<void> {
+  const { params, requestId, format, tolerance, angularTolerance } = message.payload;
+
+  await runExport(
+    requestId,
+    'COMBINED_EXPORT_RESULT',
+    async () => {
+      // Export the bin first (regenerates solid if needed)
+      const binResult = await exportBin(params, format, tolerance, angularTolerance);
+
+      const hasDividers =
+        params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
+
+      if (!hasDividers) {
+        return {
+          pieces: [{ data: binResult.data, label: 'bin' }] as CombinedExportPiece[],
+          format,
+          faceGroups: binResult.faceGroups,
+        };
+      }
+
+      if (format === 'step') {
+        // STEP: create compound assembly of bin + divider solids
+        const binSolid = getLastSolid();
+        if (!binSolid) throw new Error('Failed to get bin solid for compound assembly');
+
+        const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
+        const outerW = params.width * gridUnitMm - GRIDFINITY.TOLERANCE;
+        const outerD = params.depth * gridUnitMm - GRIDFINITY.TOLERANCE;
+        const innerW = outerW - 2 * params.wallThickness;
+        const innerD = outerD - 2 * params.wallThickness;
+        const wallHeight = params.height * GRIDFINITY.HEIGHT_UNIT - GRIDFINITY.SOCKET_HEIGHT;
+        const hasLip = params.base.stackingLip;
+
+        const dividerSolids = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);
+        const assembly = compound([binSolid, ...dividerSolids]);
+        const blob = unwrap(exportSTEP(assembly));
+
+        return {
+          pieces: [{ data: await blob.arrayBuffer(), label: 'assembly' }] as CombinedExportPiece[],
+          format,
+        };
+      }
+
+      // STL: export bin + each divider piece separately
+      const pieces: CombinedExportPiece[] = [{ data: binResult.data, label: 'bin' }];
+      const dividerPieces = await exportDividerPiecesSeparately(
+        params,
+        format,
+        tolerance,
+        angularTolerance
+      );
+      pieces.push(...dividerPieces);
+
+      return { pieces, format, faceGroups: binResult.faceGroups };
+    },
+    'Combined export failed',
+    (p) => p.pieces.map((piece: CombinedExportPiece) => piece.data)
   );
 }

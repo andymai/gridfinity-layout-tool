@@ -180,7 +180,7 @@
   "binDesigner.dividerThickness": "Trennwanddicke",
   "binDesigner.doubleTapToReset": "Doppeltippen zum Zurücksetzen",
   "binDesigner.downloadDesignJson": "Design-JSON herunterladen",
-  "binDesigner.downloadDividersSTL": "Trennwand-STL herunterladen",
+
   "binDesigner.downloadFormat": "{format} herunterladen",
   "binDesigner.downloadJSON": "JSON herunterladen",
   "binDesigner.dragDropDesignJson": "Design-JSON-Datei hier ablegen",

@@ -19,6 +19,7 @@ import type {
   ExportFormat,
   SplitExportPiece,
   SplitPreviewPiece,
+  CombinedExportPiece,
   FaceGroupData,
   KernelName,
   KernelPerfCategory,
@@ -82,6 +83,13 @@ export interface DividersExportResult {
   readonly fileName: string;
 }
 
+/** Result from a combined bin + dividers export */
+export interface CombinedExportResult {
+  readonly pieces: readonly CombinedExportPiece[];
+  readonly format: ExportFormat;
+  readonly faceGroups?: readonly FaceGroupData[];
+}
+
 /** Result from a successful split export */
 export interface SplitExportResult {
   readonly pieces: readonly SplitExportPiece[];
@@ -143,7 +151,7 @@ function createDedupCache(): DedupCache {
 }
 
 /** Keys for the pending export request slots */
-type ExportSlot = 'export' | 'dividers' | 'split' | 'splitPreview';
+type ExportSlot = 'export' | 'dividers' | 'combined' | 'split' | 'splitPreview';
 
 /** A pending export request: resolve/reject callbacks + request ID */
 interface PendingExport<T> {
@@ -404,6 +412,36 @@ export class GenerationBridge {
       this.postMessage({
         type: 'EXPORT_DIVIDERS',
         payload: { params, requestId },
+      });
+    });
+  }
+
+  /**
+   * Export bin + divider pieces in a single worker call.
+   *
+   * Returns labeled pieces that the caller packages per format:
+   * - STL: multiple pieces → ZIP
+   * - STEP: single compound assembly piece
+   * - No dividers: single bin piece
+   */
+  async exportCombined(
+    params: BinParams,
+    format: ExportFormat,
+    options?: { tolerance?: number; angularTolerance?: number }
+  ): Promise<CombinedExportResult> {
+    const requestId = await this.prepareExport('combined');
+
+    return new Promise<CombinedExportResult>((resolve, reject) => {
+      this.pendingExports.set('combined', { resolve, reject, requestId });
+      this.postMessage({
+        type: 'EXPORT_COMBINED',
+        payload: {
+          params,
+          requestId,
+          format,
+          tolerance: options?.tolerance,
+          angularTolerance: options?.angularTolerance,
+        },
       });
     });
   }
@@ -773,6 +811,14 @@ export class GenerationBridge {
           this.resolveExport('dividers', response.requestId, {
             data: response.data,
             fileName: response.fileName,
+          });
+          break;
+
+        case 'COMBINED_EXPORT_RESULT':
+          this.resolveExport('combined', response.requestId, {
+            pieces: response.pieces,
+            format: response.format,
+            faceGroups: response.faceGroups,
           });
           break;
 

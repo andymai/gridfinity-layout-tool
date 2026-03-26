@@ -1,8 +1,11 @@
 /**
  * Bin designer export dialog — thin wrapper around the shared ExportDialog.
  *
- * Reads bin-designer-specific state (params, estimates, split info, dividers)
+ * Reads bin-designer-specific state (params, estimates, split info)
  * from Zustand stores and maps them to the shared dialog's props interface.
+ *
+ * Dividers are automatically included in the export when present —
+ * there is no separate divider download button.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -51,13 +54,11 @@ export function ExportDialog() {
 
   const {
     canExport,
-    canExportDividers,
+    hasDividers,
     estimates,
     isExporting,
     isExportingBin,
-    isExportingDividers,
     downloadBin,
-    downloadDividersSTL,
     needsSplit,
     splitPieceCount,
     downloadSplit,
@@ -76,7 +77,11 @@ export function ExportDialog() {
     [params, activeFormat, exportFileNameConfig, designName]
   );
 
-  const displayExtension = useSplitExport ? '.zip' : FORMAT_EXTENSIONS[activeFormat];
+  // STL + dividers = ZIP; split export = ZIP; otherwise format extension
+  const displayExtension =
+    useSplitExport || (activeFormat === 'stl' && hasDividers)
+      ? '.zip'
+      : FORMAT_EXTENSIONS[activeFormat];
 
   // Build estimates array for the shared dialog
   const fileSizeLabel = getFileSizeLabel(activeFormat, triangleCount);
@@ -134,23 +139,6 @@ export function ExportDialog() {
     t,
   ]);
 
-  const handleDividersDownload = useCallback(async () => {
-    try {
-      await downloadDividersSTL(exportFileNameConfig, designName);
-      addToast({
-        message: t('binDesigner.exportSuccess', { format: 'STL' }),
-        type: 'success',
-        duration: 3000,
-      });
-    } catch {
-      addToast({
-        message: t('binDesigner.exportFailed'),
-        type: 'error',
-        duration: 5000,
-      });
-    }
-  }, [downloadDividersSTL, exportFileNameConfig, designName, addToast, t]);
-
   let downloadLabel: string;
   if (isExportingBin) {
     downloadLabel = t('binDesigner.exporting');
@@ -195,18 +183,6 @@ export function ExportDialog() {
         infill: printSettings.infillPercent,
         layerHeight: printSettings.layerHeightMm,
       })}
-      secondaryDownload={
-        canExportDividers
-          ? {
-              label: isExportingDividers
-                ? t('binDesigner.exporting')
-                : t('binDesigner.downloadDividersSTL'),
-              isExporting: isExportingDividers,
-              onClick: () => void handleDividersDownload(),
-              visible: true,
-            }
-          : null
-      }
       noMeshWarning={t('binDesigner.generateAMeshFirstToEnableExport')}
       sectionTitle={t('binDesigner.threeDModel')}
       sectionDescription={t('binDesigner.threeDModelDescription')}
