@@ -6,6 +6,7 @@
  * Only rendered when multi_color_export Labs flag is enabled.
  */
 
+import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
@@ -29,26 +30,36 @@ export function ColorsSection() {
 
   const featureColors = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
+  const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
+
+  // Clear hovered zone on unmount to prevent stale preview glow
+  useEffect(() => () => setHoveredColorZone(null), [setHoveredColorZone]);
 
   return (
     <div className="space-y-1">
       <ColorZoneRow
+        zone="body"
         label={t('binDesigner.colors.body')}
         color={featureColors.body}
         onChange={(hex) => updateFeatureColors({ body: hex })}
+        onHover={setHoveredColorZone}
       />
       {hasLip && (
         <ColorZoneRow
+          zone="lip"
           label={t('binDesigner.colors.lip')}
           color={featureColors.lip}
           onChange={(hex) => updateFeatureColors({ lip: hex })}
+          onHover={setHoveredColorZone}
         />
       )}
       {hasLabelTabs && (
         <ColorZoneRow
+          zone="labelTab"
           label={t('binDesigner.colors.labelTab')}
           color={featureColors.labelTab}
           onChange={(hex) => updateFeatureColors({ labelTab: hex })}
+          onHover={setHoveredColorZone}
         />
       )}
     </div>

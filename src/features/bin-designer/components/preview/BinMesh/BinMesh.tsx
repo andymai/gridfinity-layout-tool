@@ -44,7 +44,11 @@ function buildMultiColorGroups(
   featureColors: FeatureColorConfig,
   activeZones: ReadonlySet<ColorZone>,
   totalIndexCount: number
-): { groups: MeshFaceGroup[]; colors: readonly string[] } | null {
+): {
+  groups: MeshFaceGroup[];
+  colors: readonly string[];
+  colorToIndex: ReadonlyMap<string, number>;
+} | null {
   if (isSingleColor(featureColors, activeZones)) return null;
 
   const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
@@ -72,7 +76,7 @@ function buildMultiColorGroups(
     groups.push({ start: cursor, count: totalIndexCount - cursor, materialIndex: defaultIndex });
   }
 
-  return { groups, colors };
+  return { groups, colors, colorToIndex };
 }
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
@@ -88,6 +92,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     featureColors,
     hasLip,
     hasLabelTabs,
+    hoveredColorZone,
   } = useDesignerStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
@@ -98,6 +103,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       featureColors: s.params.featureColors ?? null,
       hasLip: s.params.base.stackingLip,
       hasLabelTabs: s.params.label.enabled,
+      hoveredColorZone: s.ui.hoveredColorZone,
     }))
   );
 
@@ -123,11 +129,19 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     faceGroups: multiColorData?.groups,
   });
 
-  // Build material array for multi-color, or null for single-color
+  // Build material array for multi-color, with hover glow applied
   const materials = useMemo(() => {
     if (!multiColorData) return null;
+
+    // Determine which material index is hovered (if any)
+    let hoveredIndex: number | undefined;
+    if (hoveredColorZone && featureColors) {
+      const hoveredHex = featureColors[hoveredColorZone];
+      hoveredIndex = multiColorData.colorToIndex.get(hoveredHex);
+    }
+
     return multiColorData.colors.map(
-      (c) =>
+      (c, i) =>
         new THREE.MeshStandardMaterial({
           color: c,
           roughness: 0.45,
@@ -135,14 +149,14 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           wireframe,
           side: THREE.DoubleSide,
           emissive: new THREE.Color(c),
-          emissiveIntensity: 0.08,
+          emissiveIntensity: i === hoveredIndex ? 0.35 : 0.08,
           flatShading: !hasPrecomputedNormals,
           polygonOffset: true,
           polygonOffsetFactor: 1,
           polygonOffsetUnits: 1,
         })
     );
-  }, [multiColorData, wireframe, hasPrecomputedNormals]);
+  }, [multiColorData, wireframe, hasPrecomputedNormals, hoveredColorZone, featureColors]);
 
   // Dispose materials on change
   useEffect(() => {
