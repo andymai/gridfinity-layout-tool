@@ -277,6 +277,8 @@ export function useExport(): UseExportReturn {
    * When dividers are present, includes divider pieces in the ZIP.
    * Uses worker pool for parallel export when available.
    * Supports STL and 3MF formats (STEP is not supported for split export).
+   * NOTE: Multi-color data is NOT propagated to split pieces — each piece
+   * exports as single-color. Split + multi-color is a known gap.
    */
   const downloadSplit = useCallback(
     async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {

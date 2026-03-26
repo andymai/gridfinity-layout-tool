@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { FILAMENT_COLORS } from '@/core/constants';
+import { FILAMENT_PRESET_COLORS } from '@/core/constants';
 import { Input } from '@/design-system/Input/Input';
 import { useTranslation } from '@/i18n';
 
@@ -52,7 +52,7 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
           {t('binDesigner.colors.presets')}
         </p>
         <div className="grid grid-cols-5 gap-1.5">
-          {FILAMENT_COLORS.map(({ color: presetColor, name }) => (
+          {FILAMENT_PRESET_COLORS.map(({ color: presetColor, name }) => (
             <button
               key={presetColor}
               type="button"

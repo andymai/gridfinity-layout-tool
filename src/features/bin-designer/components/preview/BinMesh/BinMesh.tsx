@@ -184,12 +184,12 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       ) : (
         <mesh geometry={geometry} position={[0, 0, 0.1]}>
           <meshStandardMaterial
-            color={color}
+            color={multiColorEnabled && featureColors ? featureColors.body : color}
             roughness={0.45}
             metalness={0}
             wireframe={wireframe}
             side={THREE.DoubleSide}
-            emissive={color}
+            emissive={multiColorEnabled && featureColors ? featureColors.body : color}
             emissiveIntensity={0.08}
             flatShading={!hasPrecomputedNormals}
             polygonOffset
