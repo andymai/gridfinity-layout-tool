@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.32.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.32.0...gridfinity-layout-tool-v4.32.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* **bin-designer:** resolve Immer proxy revocation in history operations ([#1264](https://github.com/andymai/gridfinity-layout-tool/issues/1264)) ([5f72b92](https://github.com/andymai/gridfinity-layout-tool/commit/5f72b9242cf7d38cf90bb9cb20f54f63a99d0f01))
+
 ## [4.32.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.31.0...gridfinity-layout-tool-v4.32.0) (2026-03-26)
 
 
