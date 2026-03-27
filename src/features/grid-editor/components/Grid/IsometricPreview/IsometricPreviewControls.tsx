@@ -1,10 +1,11 @@
+import type { RefObject } from 'react';
 import type { LayerViewMode } from '@/core/store/view';
 import type { SceneHandle } from './Scene';
 import type { Layer } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
 interface IsometricPreviewControlsProps {
-  sceneRef: React.RefObject<SceneHandle | null>;
+  sceneRef: RefObject<SceneHandle | null>;
   isPreviewExpanded: boolean;
   isMobile: boolean;
   isTablet: boolean;

@@ -94,7 +94,7 @@ export function useBinsToRender({
     });
 
     // Add tiny z-offsets to prevent z-fighting on coplanar surfaces
-    // 0.0002 units = 0.2mm per bin - imperceptible but prevents flickering
+    // 0.0002 grid units per bin (~0.0084mm when gridUnitMm=42) - imperceptible but prevents flickering
     result.forEach((binData, index) => {
       binData.z += index * 0.0002;
     });

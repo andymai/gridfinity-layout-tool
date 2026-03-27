@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import { useMemo, useRef, useState, useEffect } from 'react';
 
 const PREVIEW_SIZE_SMALL = 280;
@@ -10,7 +11,7 @@ interface UsePreviewSizeOptions {
 }
 
 interface UsePreviewSizeResult {
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  containerRef: RefObject<HTMLDivElement | null>;
   previewSize: number;
 }
 

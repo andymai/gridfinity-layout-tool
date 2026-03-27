@@ -44,7 +44,7 @@ describe('usePreviewSize', () => {
     expect(result.current.containerRef.current).toBeNull();
   });
 
-  it('returns 0 for inline mode without container dimensions', () => {
+  it('falls back to PREVIEW_SIZE_SMALL for inline mode without container dimensions', () => {
     const { result } = renderHook(() =>
       usePreviewSize({
         inline: true,
