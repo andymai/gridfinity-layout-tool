@@ -15,8 +15,8 @@ commandBus.dispatch(command)
     |
     v
 [Middleware Pipeline]
-    validation  ->  undoCapture?  ->  analytics  ->  logging
-    (Zod)           (Labs flag)       (PostHog)      (dev only)
+    validation  ->  undoCapture  ->  analytics  ->  logging
+    (Zod)           (domain only)    (PostHog)      (dev only)
     |
     v
 Command Handler
@@ -225,13 +225,7 @@ Command payloads are validated by Zod schemas before reaching handlers. This pro
 
 ## Undo Integration
 
-CQRS undo capture is behind the `cqrs_undo` Labs flag.
-
-When enabled, the `undoCaptureMiddleware` takes a snapshot of the layout state **before** each command executes. On undo, the snapshot is restored directly (not replayed from events).
-
-This is a **Labs experiment** — the standard undo system (in `src/core/store/history.ts`) continues to work independently. The Labs flag controls whether the CQRS pipeline also captures snapshots.
-
-Enable via: Settings > Labs > `cqrs_undo`
+The `undoCaptureMiddleware` takes a snapshot of the layout state **before** each domain command executes. On undo, the snapshot is restored directly (not replayed from events). Undo capture runs unconditionally for all domain commands (`bin.*`, `layer.*`, `category.*`, `drawer.*`, `layout.*`) and is skipped for library, designer, UI, and restore commands via the middleware flags registry.
 
 ## Event Persistence and Retry
 

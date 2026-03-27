@@ -35,15 +35,15 @@ describe('COMMAND_SCHEMAS', () => {
     'layout.setBaseplateParams',
   ];
 
-  it('has schemas for all 22 command types', () => {
+  it('has schemas for all original domain command types', () => {
     for (const type of ALL_COMMAND_TYPES) {
       expect(COMMAND_SCHEMAS[type], `Missing schema for ${type}`).toBeDefined();
     }
   });
 
-  it('has exactly 23 schemas', () => {
+  it('has exactly 34 schemas', () => {
     const registeredCount = Object.keys(COMMAND_SCHEMAS).length;
-    expect(registeredCount).toBe(23);
+    expect(registeredCount).toBe(34);
   });
 });
 

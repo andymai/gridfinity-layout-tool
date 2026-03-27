@@ -47,12 +47,57 @@ export type {
   SetHeightUnitMmCommand,
   SetBaseplateParamsCommand,
 } from './drawerCommands';
+
+export type {
+  LibraryCommand,
+  CreateEntryCommand,
+  DeleteEntryCommand,
+  DuplicateEntryCommand,
+  SwitchActiveCommand,
+  UpdateEntryCommand,
+  SetAuthorNameCommand,
+  SetCloudShareCommand,
+  ClearCloudShareCommand,
+  RenameEntryCommand,
+  ImportLayoutCommand,
+} from './libraryCommands';
+
+export type { DesignerCommand, DesignerSaveCommand } from './designerCommands';
+
+export type { RestoreCommand, RestoreLayoutCommand } from './restoreCommands';
+
+export type {
+  UiCommand,
+  UiPageViewCommand,
+  UiModalOpenCommand,
+  UiModalCloseCommand,
+  UiFeatureUsedCommand,
+  UiShareAttemptCommand,
+  UiShareCompleteCommand,
+  UiShareFailedCommand,
+  UiOnboardingStepCommand,
+  UiTemplateAppliedCommand,
+  UiLayoutExportedCommand,
+} from './uiCommands';
+
 import type { BinCommand } from './binCommands';
 import type { LayerCommand } from './layerCommands';
 import type { CategoryCommand } from './categoryCommands';
 import type { DrawerCommand } from './drawerCommands';
+import type { LibraryCommand } from './libraryCommands';
+import type { DesignerCommand } from './designerCommands';
+import type { RestoreCommand } from './restoreCommands';
+import type { UiCommand } from './uiCommands';
 
-export type Command = BinCommand | LayerCommand | CategoryCommand | DrawerCommand;
+export type Command =
+  | BinCommand
+  | LayerCommand
+  | CategoryCommand
+  | DrawerCommand
+  | LibraryCommand
+  | DesignerCommand
+  | RestoreCommand
+  | UiCommand;
 
 /** All possible command type strings, derived from the Command union */
 export type CommandType = Command['type'];

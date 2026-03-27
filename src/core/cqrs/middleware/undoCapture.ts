@@ -16,6 +16,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { CommandResult, NextFn } from '../types';
+import { getMiddlewareFlags } from './middlewareConfig';
 
 /** When true, a batch is active — middleware skips individual snapshots */
 let isBatching = false;
@@ -24,8 +25,14 @@ export function undoCaptureMiddleware(
   command: Command,
   next: NextFn<Command, DomainEvent>
 ): CommandResult<unknown, DomainEvent> {
-  // Skip undo capture for replayed commands
-  if (command.meta.source === 'replay') {
+  // Skip undo capture for commands that don't need it (library, designer, UI, restore)
+  const flags = getMiddlewareFlags(command.type);
+  if (!flags.undo) {
+    return next(command);
+  }
+
+  // Skip undo capture for replayed and cascaded commands
+  if (command.meta.source === 'replay' || command.meta.source === 'cascade') {
     return next(command);
   }
 

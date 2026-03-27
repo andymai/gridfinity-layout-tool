@@ -68,6 +68,28 @@ export type {
   SetHeightUnitMmCommand,
   SetBaseplateParamsCommand,
   DrawerCommand,
+  // Library commands
+  LibraryCommand,
+  CreateEntryCommand,
+  DeleteEntryCommand,
+  DuplicateEntryCommand,
+  SwitchActiveCommand,
+  UpdateEntryCommand,
+  SetAuthorNameCommand,
+  SetCloudShareCommand,
+  ClearCloudShareCommand,
+  RenameEntryCommand,
+  ImportLayoutCommand,
+  // Designer commands
+  DesignerCommand,
+  DesignerSaveCommand,
+  // Restore commands
+  RestoreCommand,
+  RestoreLayoutCommand,
+  // UI commands
+  UiCommand,
+  UiPageViewCommand,
+  UiFeatureUsedCommand,
 } from './commands';
 
 export type { DomainEvent, DomainEventType } from './events';
@@ -98,6 +120,23 @@ export type {
   HeightUnitMmSetEvent,
   BaseplateParamsSetEvent,
   DrawerEvent,
+  // Library events
+  LibraryEvent,
+  LibraryEntryCreatedEvent,
+  LibraryEntryDeletedEvent,
+  LibraryEntryDuplicatedEvent,
+  LibraryActiveSwitchedEvent,
+  LibraryEntryUpdatedEvent,
+  LibraryAuthorNameSetEvent,
+  LibraryCloudShareUpdatedEvent,
+  LibraryCloudShareClearedEvent,
+  LibraryEntryRenamedEvent,
+  // Designer events
+  DesignerEvent,
+  DesignerSavedEvent,
+  // Restore events
+  RestoreEvent,
+  LayoutRestoredEvent,
 } from './events';
 
 export { commandBus, createCommandBus } from './bus/commandBus';
@@ -117,6 +156,8 @@ export { analyticsMiddleware } from './middleware/analytics';
 export { defaultPipeline, getDefaultPipeline } from './middleware';
 
 export { validationMiddleware, COMMAND_SCHEMAS, getCommandSchema } from './validation';
+export { getMiddlewareFlags } from './middleware/middlewareConfig';
+export type { MiddlewareFlags, MiddlewareProfile } from './middleware/middlewareConfig';
 
 export { createCqrsMutations } from './integration/mutationsAdapter';
 

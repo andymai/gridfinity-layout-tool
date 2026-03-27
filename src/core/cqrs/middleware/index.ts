@@ -7,6 +7,8 @@ export { undoCaptureMiddleware, batch } from './undoCapture';
 export { _resetUndoCaptureState } from './undoCapture';
 export { loggingMiddleware } from './logging';
 export { analyticsMiddleware } from './analytics';
+export { getMiddlewareFlags } from './middlewareConfig';
+export type { MiddlewareFlags, MiddlewareProfile } from './middlewareConfig';
 
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';

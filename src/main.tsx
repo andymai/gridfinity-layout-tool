@@ -16,6 +16,7 @@ import { isOk } from '@/core/result';
 import type { Locale } from '@/i18n/types.ts';
 import { recoverFromBadWwwMigration } from '@/core/storage/wwwMigrationRecovery';
 import { connectEventStoreToBus, connectSelectionPruning, eventBus } from '@/core/cqrs';
+import { connectDesignLinking } from '@/features/design-linking/subscribers';
 import { InitErrorFallback } from '@/shell/InitErrorFallback';
 
 // Recovery for canonical users who went through a broken www→canonical migration
@@ -108,6 +109,10 @@ if (recoverFromBadWwwMigration()) {
       // Connect selection pruning — automatically cleans stale bin/layer/category
       // references from selection store when entities are deleted or moved
       connectSelectionPruning(eventBus);
+
+      // Connect design-linking — bridges CQRS events to syncEventBus for
+      // design dimension cascade between linked bins and designs
+      connectDesignLinking(eventBus);
     })
     .catch((e: unknown) => {
       initError = e instanceof Error ? e : new Error(String(e));

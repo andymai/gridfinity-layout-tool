@@ -15,7 +15,7 @@ export const commandId = (id: string): CommandId => id as CommandId;
 export const eventId = (id: string): EventId => id as EventId;
 export const correlationId = (id: string): CorrelationId => id as CorrelationId;
 /** Source of a command — who/what initiated it */
-export type CommandSource = 'user' | 'system' | 'replay' | 'collab';
+export type CommandSource = 'user' | 'system' | 'replay' | 'collab' | 'cascade';
 
 export interface CommandMeta {
   readonly id: CommandId;

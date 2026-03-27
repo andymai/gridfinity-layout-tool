@@ -35,7 +35,6 @@ Internal status enum values → UI badge labels: `experimental` → "Early acces
 | `baseplate_generator`   | `graduated`     | Custom baseplate generator     |
 | `collaborative_editing` | `experimental`  | Real-time Liveblocks collab    |
 | `brepkit_kernel`        | `experimental`  | Alternative 3D geometry engine |
-| `cqrs_undo`             | `experimental`  | Improved undo/redo system      |
 
 ## Usage
 

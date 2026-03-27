@@ -16,6 +16,7 @@ import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { CommandResult, NextFn } from '../types';
 import { getCommandSchema } from './schemas';
+import { getMiddlewareFlags } from '../middleware/middlewareConfig';
 
 /**
  * Format Zod validation issues into a human-readable error message.
@@ -39,6 +40,12 @@ export function validationMiddleware(
   command: Command,
   next: NextFn<Command, DomainEvent>
 ): CommandResult<unknown, DomainEvent> {
+  // Skip validation for commands that don't need it (e.g., UI analytics)
+  const flags = getMiddlewareFlags(command.type);
+  if (!flags.validation) {
+    return next(command);
+  }
+
   const schema = getCommandSchema(command.type);
 
   // No schema registered — pass through (forward-compatible)
