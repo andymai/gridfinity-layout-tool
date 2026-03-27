@@ -179,6 +179,8 @@
       "destination": "/gridfinity-baseplate-generator/index.html"
     },
     { "source": "/gridfinity-sizes", "destination": "/gridfinity-sizes/index.html" },
+    { "source": "/designer", "destination": "/" },
+    { "source": "/baseplate", "destination": "/" },
     { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})/:slug*", "destination": "/" },
