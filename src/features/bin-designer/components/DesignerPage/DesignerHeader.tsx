@@ -11,7 +11,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import { SaveStatusIndicator } from './SaveStatusIndicator';
-import type { useDesignNameEditor } from './useDesignNameEditor';
+import type { DesignNameEditor } from './useDesignNameEditor';
 
 /** Platform modifier key for keyboard shortcut hints */
 const MOD_KEY =
@@ -19,7 +19,7 @@ const MOD_KEY =
 
 interface DesignerHeaderProps {
   isDesktop: boolean;
-  nameEditor: ReturnType<typeof useDesignNameEditor>;
+  nameEditor: DesignNameEditor;
 }
 
 export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {

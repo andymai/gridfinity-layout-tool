@@ -17,9 +17,10 @@ export function useShareLoading(): boolean {
   const addToast = useToastStore((s) => s.addToast);
 
   const shareHandled = useRef(false);
-  const [shareLoading, setShareLoading] = useState(() =>
-    new URLSearchParams(window.location.search).has('share')
-  );
+  const [shareLoading, setShareLoading] = useState(() => {
+    const id = new URLSearchParams(window.location.search).get('share');
+    return Boolean(id);
+  });
 
   useEffect(() => {
     if (shareHandled.current) return;

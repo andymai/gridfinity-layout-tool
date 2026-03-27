@@ -21,7 +21,7 @@ import { binId, designId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import type { RefObject } from 'react';
 
-interface DesignNameEditor {
+export interface DesignNameEditor {
   isEditingName: boolean;
   editNameValue: string;
   nameInputRef: RefObject<HTMLInputElement | null>;

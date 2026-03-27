@@ -4,7 +4,7 @@ import { resetAllStores } from '@/test/testUtils';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { DesignerHeader } from './DesignerHeader';
-import type { useDesignNameEditor } from './useDesignNameEditor';
+import type { DesignNameEditor } from './useDesignNameEditor';
 import { createRef } from 'react';
 
 // Mock child components
@@ -16,9 +16,7 @@ vi.mock('@/shared/components/HeaderSupportLinks', () => ({
   HeaderSupportLinks: () => <div data-testid="header-support-links" />,
 }));
 
-function createMockNameEditor(
-  overrides: Partial<ReturnType<typeof useDesignNameEditor>> = {}
-): ReturnType<typeof useDesignNameEditor> {
+function createMockNameEditor(overrides: Partial<DesignNameEditor> = {}): DesignNameEditor {
   return {
     isEditingName: false,
     editNameValue: '',
