@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.32.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.32.1...gridfinity-layout-tool-v4.32.2) (2026-03-27)
+
+
+### Bug Fixes
+
+* **routing:** add Vercel rewrites for /designer and /baseplate SPA routes ([#1266](https://github.com/andymai/gridfinity-layout-tool/issues/1266)) ([97c608f](https://github.com/andymai/gridfinity-layout-tool/commit/97c608f528042bdc5e39901690013fec1be6b289))
+
 ## [4.32.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.32.0...gridfinity-layout-tool-v4.32.1) (2026-03-26)
 
 
