@@ -1,11 +1,9 @@
-import type { useTranslation } from '@/i18n';
-
 /** Resolve the overlay status message, avoiding a nested ternary in JSX. */
 export function overlayStatusText(
   isWasmLoading: boolean,
   splitProgress: { current: number; total: number } | null,
   dedupStats: { uniqueCount: number; duplicatesSkipped: number } | null,
-  t: ReturnType<typeof useTranslation>
+  t: (key: string, params?: Record<string, unknown>) => string
 ): string {
   if (isWasmLoading) return t('baseplate.initializingEngine');
   if (splitProgress) {
