@@ -11,6 +11,19 @@
 import * as z from 'zod';
 import { CONSTRAINTS } from '@/core/constants';
 import type { CommandType } from '../commands';
+import {
+  libraryCreateEntrySchema,
+  libraryDeleteEntrySchema,
+  libraryDuplicateEntrySchema,
+  librarySwitchActiveSchema,
+  libraryUpdateEntrySchema,
+  librarySetAuthorNameSchema,
+  librarySetCloudShareSchema,
+  libraryClearCloudShareSchema,
+  libraryRenameEntrySchema,
+  libraryImportLayoutSchema,
+} from './librarySchemas';
+import { designerSaveSchema } from './designerSchemas';
 /** Branded string IDs are strings at runtime */
 const binIdSchema = z.string().min(1);
 const layerIdSchema = z.string().min(1);
@@ -247,6 +260,21 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'layout.setGridUnitMm': layoutSetGridUnitMmSchema,
   'layout.setHeightUnitMm': layoutSetHeightUnitMmSchema,
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,
+
+  // Library commands (10)
+  'library.createEntry': libraryCreateEntrySchema,
+  'library.deleteEntry': libraryDeleteEntrySchema,
+  'library.duplicateEntry': libraryDuplicateEntrySchema,
+  'library.switchActive': librarySwitchActiveSchema,
+  'library.updateEntry': libraryUpdateEntrySchema,
+  'library.setAuthorName': librarySetAuthorNameSchema,
+  'library.setCloudShare': librarySetCloudShareSchema,
+  'library.clearCloudShare': libraryClearCloudShareSchema,
+  'library.renameEntry': libraryRenameEntrySchema,
+  'library.importLayout': libraryImportLayoutSchema,
+
+  // Designer commands (1)
+  'designer.save': designerSaveSchema,
 };
 
 /**
