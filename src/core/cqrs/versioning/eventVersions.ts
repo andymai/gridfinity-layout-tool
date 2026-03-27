@@ -38,4 +38,21 @@ export const CURRENT_EVENT_VERSIONS: Record<DomainEventType, number> = {
   'layout.gridUnitMmSet': 1,
   'layout.heightUnitMmSet': 1,
   'layout.baseplateParamsSet': 1,
+
+  // Library events
+  'library.entryCreated': 1,
+  'library.entryDeleted': 1,
+  'library.entryDuplicated': 1,
+  'library.activeLayoutSwitched': 1,
+  'library.entryUpdated': 1,
+  'library.authorNameSet': 1,
+  'library.cloudShareUpdated': 1,
+  'library.cloudShareCleared': 1,
+  'library.entryRenamed': 1,
+
+  // Designer events
+  'designer.saved': 1,
+
+  // Restore events
+  'layout.restored': 1,
 };
