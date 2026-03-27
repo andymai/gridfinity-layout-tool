@@ -10,6 +10,9 @@ import { layerHandlers } from './layerHandlers';
 import { categoryHandlers } from './categoryHandlers';
 import { drawerHandlers } from './drawerHandlers';
 import { libraryHandlers } from './libraryHandlers';
+import { designerHandlers } from './designerHandlers';
+import { restoreHandlers } from './restoreHandlers';
+import { uiHandlers } from './uiHandlers';
 
 export { resetVersionCounters } from './shared';
 
@@ -21,6 +24,9 @@ const handlerRegistry: Record<string, HandlerFn> = {
   ...categoryHandlers,
   ...drawerHandlers,
   ...libraryHandlers,
+  ...designerHandlers,
+  ...restoreHandlers,
+  ...uiHandlers,
 };
 
 export function getHandler(
