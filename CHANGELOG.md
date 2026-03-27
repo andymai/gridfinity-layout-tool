@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.33.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.32.2...gridfinity-layout-tool-v4.33.0) (2026-03-27)
+
+
+### Features
+
+* **cqrs:** complete CQRS adoption with library, designer, restore, and UI commands ([#1269](https://github.com/andymai/gridfinity-layout-tool/issues/1269)) ([09d87a0](https://github.com/andymai/gridfinity-layout-tool/commit/09d87a03ee432948939336215a7a8970a08f25cd))
+
 ## [4.32.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.32.1...gridfinity-layout-tool-v4.32.2) (2026-03-27)
 
 
