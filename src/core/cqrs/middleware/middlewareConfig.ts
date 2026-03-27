@@ -4,12 +4,9 @@
  * Maps command types to middleware profiles that control which middleware
  * runs for each command. Matches the pattern used by getCommandSchema().
  *
- * Profiles determine:
- * - validation: Zod schema validation
- * - undo: Undo capture (snapshot before execution)
- * - analytics: PostHog event tracking
- * - logging: Dev console logging
- * - persistEvents: Whether events go to IndexedDB event store
+ * Currently enforced flags:
+ * - validation: Checked by validationMiddleware (skip if false)
+ * - undo: Checked by undoCaptureMiddleware (skip if false)
  */
 
 import type { CommandType } from '../commands';
@@ -19,29 +16,14 @@ export type MiddlewareProfile = 'domain' | 'library' | 'designer' | 'restore' | 
 export interface MiddlewareFlags {
   readonly validation: boolean;
   readonly undo: boolean;
-  readonly analytics: boolean;
-  readonly logging: boolean;
-  readonly persistEvents: boolean;
 }
 
 const PROFILES: Readonly<Record<MiddlewareProfile, MiddlewareFlags>> = {
-  domain: { validation: true, undo: true, analytics: true, logging: true, persistEvents: true },
-  library: { validation: true, undo: false, analytics: true, logging: true, persistEvents: true },
-  designer: {
-    validation: true,
-    undo: false,
-    analytics: true,
-    logging: true,
-    persistEvents: true,
-  },
-  restore: {
-    validation: false,
-    undo: false,
-    analytics: true,
-    logging: true,
-    persistEvents: true,
-  },
-  ui: { validation: false, undo: false, analytics: true, logging: true, persistEvents: false },
+  domain: { validation: true, undo: true },
+  library: { validation: true, undo: false },
+  designer: { validation: true, undo: false },
+  restore: { validation: false, undo: false },
+  ui: { validation: false, undo: false },
 };
 
 const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {

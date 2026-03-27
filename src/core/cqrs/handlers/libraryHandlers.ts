@@ -11,9 +11,10 @@
 
 import { useLibraryStore } from '@/core/store/library';
 import { ok, err, isErr } from '@/core/result';
+import { layoutInvalidOperation } from '@/core/result/constructors';
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from '@/core/storage';
-import type { LayoutPreview } from '@/core/types';
+import type { LayoutId, LayoutPreview } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
 import type { CommandResult } from '../types';
 import type { DomainEvent } from '../events';
@@ -41,7 +42,9 @@ function getDefaultPreview(): LayoutPreview {
   };
 }
 
-export function handleCreateEntry(command: CreateEntryCommand): CommandResult<string, DomainEvent> {
+export function handleCreateEntry(
+  command: CreateEntryCommand
+): CommandResult<LayoutId, DomainEvent> {
   const store = useLibraryStore.getState();
   const layoutId = command.payload.layoutId ?? generateLayoutId();
   const preview = command.payload.preview ?? getDefaultPreview();
@@ -49,7 +52,7 @@ export function handleCreateEntry(command: CreateEntryCommand): CommandResult<st
   const entry = store.createEntry(command.payload.name, layoutId, preview);
 
   return ok({
-    value: entry.id as string,
+    value: entry.id,
     events: [
       {
         type: 'library.entryCreated' as const,
@@ -80,19 +83,24 @@ export function handleDeleteEntry(command: DeleteEntryCommand): CommandResult<vo
 
 export function handleDuplicateEntry(
   command: DuplicateEntryCommand
-): CommandResult<string, DomainEvent> {
+): CommandResult<LayoutId, DomainEvent> {
   const store = useLibraryStore.getState();
   const sourceEntry = store.getEntry(command.payload.sourceLayoutId);
 
   if (!sourceEntry) {
-    return ok({ value: '', events: [] });
+    return err(
+      layoutInvalidOperation(
+        'library.duplicateEntry',
+        `Source layout ${command.payload.sourceLayoutId as string} not found`
+      )
+    );
   }
 
   const newLayoutId = generateLayoutId();
   const newEntry = store.duplicateEntry(sourceEntry, newLayoutId);
 
   return ok({
-    value: newEntry.id as string,
+    value: newEntry.id,
     events: [
       {
         type: 'library.entryDuplicated' as const,
@@ -138,7 +146,7 @@ export function handleUpdateEntry(command: UpdateEntryCommand): CommandResult<vo
         type: 'library.entryUpdated' as const,
         payload: {
           layoutId: command.payload.layoutId,
-          changes: command.payload.updates as unknown as Record<string, unknown>,
+          changes: { ...command.payload.updates },
         },
         meta: createEventMeta(command.meta, 'library.entryUpdated'),
       },
@@ -230,7 +238,7 @@ export function handleRenameEntry(command: RenameEntryCommand): CommandResult<vo
 
 export function handleImportLayout(
   command: ImportLayoutCommand
-): CommandResult<string, DomainEvent> {
+): CommandResult<LayoutId, DomainEvent> {
   const store = useLibraryStore.getState();
   const layoutId = generateLayoutId();
   const preview = computePreview(command.payload.layout);
@@ -238,7 +246,7 @@ export function handleImportLayout(
   const entry = store.createEntry(command.payload.name, layoutId, preview);
 
   return ok({
-    value: entry.id as string,
+    value: entry.id,
     events: [
       {
         type: 'library.entryCreated' as const,

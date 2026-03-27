@@ -142,6 +142,15 @@ describe('Library Handlers', () => {
   });
 
   describe('handleDuplicateEntry', () => {
+    it('returns error when source layout not found', () => {
+      const cmd = createCommand('library.duplicateEntry', {
+        sourceLayoutId: 'nonexistent' as LayoutId,
+      });
+      const result = handleDuplicateEntry(cmd);
+
+      expect(isErr(result)).toBe(true);
+    });
+
     it('duplicates entry and produces entryDuplicated event', () => {
       const cmd = createCommand('library.duplicateEntry', {
         sourceLayoutId: testLayoutId,

@@ -35,7 +35,7 @@ describe('COMMAND_SCHEMAS', () => {
     'layout.setBaseplateParams',
   ];
 
-  it('has schemas for all 22 command types', () => {
+  it('has schemas for all original domain command types', () => {
     for (const type of ALL_COMMAND_TYPES) {
       expect(COMMAND_SCHEMAS[type], `Missing schema for ${type}`).toBeDefined();
     }

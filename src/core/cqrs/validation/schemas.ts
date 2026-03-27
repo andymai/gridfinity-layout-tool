@@ -227,7 +227,7 @@ const baseplateParamsSchema = z.object({
 const layoutSetBaseplateParamsSchema = z.object({ params: baseplateParamsSchema });
 /**
  * Maps command type strings to their payload Zod schemas.
- * All 22 command types are registered.
+ * UI and restore commands are excluded (validation=false in their middleware profiles).
  */
 export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> = {
   // Bin commands (9)

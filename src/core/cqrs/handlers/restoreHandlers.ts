@@ -1,14 +1,15 @@
 /**
  * Restore Command Handlers
  *
- * Handles undo/redo layout restoration through the CQRS pipeline.
- * Replaces the direct restoreLayout() call in history.ts, ensuring
- * that restore operations emit events for subscribers to react to
- * (e.g., selection pruning, design-linking reconciliation).
+ * Centralizes layout restoration and related side effects (e.g., selection
+ * pruning) so that, once wired up, history.ts can dispatch a restore command
+ * instead of calling restoreLayout() directly. Currently not yet wired —
+ * history.ts still restores directly.
  */
 
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
+import type { SelectionState } from '@/core/store/selection';
 import { ok } from '@/core/result';
 import type { CommandResult } from '../types';
 import type { DomainEvent } from '../events';
@@ -18,41 +19,41 @@ import { createEventMeta } from './shared';
 export function handleRestoreLayout(
   command: RestoreLayoutCommand
 ): CommandResult<void, DomainEvent> {
-  // Restore the layout state
   useLayoutStore.getState().restoreLayout(command.payload.layout);
 
   // Prune stale selections (bins/layers/categories that no longer exist)
-  const restoredLayout = command.payload.layout;
-  const selectionState = useSelectionStore.getState();
-  const binIds = new Set(restoredLayout.bins.map((b) => b.id));
-  const layerIds = new Set(restoredLayout.layers.map((l) => l.id));
-  const categoryIds = new Set(restoredLayout.categories.map((c) => c.id));
+  const { layout } = command.payload;
+  const selection = useSelectionStore.getState();
+  const binIds = new Set(layout.bins.map((b) => b.id));
+  const layerIds = new Set(layout.layers.map((l) => l.id));
+  const categoryIds = new Set(layout.categories.map((c) => c.id));
 
-  const prunedSelection: Record<string, unknown> = {};
+  const pruned: Partial<SelectionState> = {};
 
-  const validBins = selectionState.selectedBinIds.filter((id) => binIds.has(id));
-  if (validBins.length !== selectionState.selectedBinIds.length) {
-    prunedSelection.selectedBinIds = validBins;
+  const validBins = selection.selectedBinIds.filter((id) => binIds.has(id));
+  if (validBins.length !== selection.selectedBinIds.length) {
+    pruned.selectedBinIds = validBins;
   }
 
-  if (selectionState.focusedBinId && !binIds.has(selectionState.focusedBinId)) {
-    prunedSelection.focusedBinId = null;
+  if (selection.focusedBinId && !binIds.has(selection.focusedBinId)) {
+    pruned.focusedBinId = null;
   }
 
-  if (selectionState.quickLabelBinId && !binIds.has(selectionState.quickLabelBinId)) {
-    prunedSelection.quickLabelBinId = null;
+  if (selection.quickLabelBinId && !binIds.has(selection.quickLabelBinId)) {
+    pruned.quickLabelBinId = null;
   }
 
-  if (!layerIds.has(selectionState.activeLayerId) && restoredLayout.layers.length > 0) {
-    prunedSelection.activeLayerId = restoredLayout.layers[0].id;
+  // Fall back to last layer (top in UI, since layers[0] is bottom)
+  if (!layerIds.has(selection.activeLayerId) && layout.layers.length > 0) {
+    pruned.activeLayerId = layout.layers[layout.layers.length - 1].id;
   }
 
-  if (!categoryIds.has(selectionState.activeCategoryId) && restoredLayout.categories.length > 0) {
-    prunedSelection.activeCategoryId = restoredLayout.categories[0].id;
+  if (!categoryIds.has(selection.activeCategoryId) && layout.categories.length > 0) {
+    pruned.activeCategoryId = layout.categories[0].id;
   }
 
-  if (Object.keys(prunedSelection).length > 0) {
-    selectionState.restoreSelection(prunedSelection);
+  if (Object.keys(pruned).length > 0) {
+    selection.restoreSelection(pruned);
   }
 
   return ok({

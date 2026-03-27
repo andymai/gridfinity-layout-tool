@@ -6,8 +6,7 @@
  */
 
 import type { BaseCommand } from '../types';
-import type { LayoutId, CloudShareInfo, LayoutPreview } from '@/core/types';
-import type { Layout } from '@/core/types';
+import type { Layout, LayoutId, CloudShareInfo, LayoutPreview } from '@/core/types';
 
 export type CreateEntryCommand = BaseCommand<
   'library.createEntry',

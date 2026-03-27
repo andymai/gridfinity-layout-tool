@@ -7,11 +7,11 @@
  * This is the incremental migration path: CQRS events → syncEventBus → React hooks.
  * In the future, the hooks can be refactored to subscribe to CQRS events directly.
  *
- * **Behavioral change (intentional):**
- * - CQRS subscribers are always-active (registered at app bootstrap), unlike React hooks
+ * **Future behavioral change (when fully wired):**
+ * - CQRS subscribers will be always-active (registered at app bootstrap), unlike React hooks
  *   that only run when their host component is mounted.
- * - `bin.updated` events from ALL sources (including undo/redo) can trigger cascades.
- *   The `source: 'cascade'` tag prevents infinite loops.
+ * - `bin.updated` events from ALL sources (including undo/redo) will trigger cascades.
+ *   The `source: 'cascade'` CommandSource (added in this PR) will prevent infinite loops.
  */
 
 import type { EventBus, UnsubscribeFn } from '@/core/cqrs';

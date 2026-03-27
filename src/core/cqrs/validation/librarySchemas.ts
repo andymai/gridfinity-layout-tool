@@ -3,9 +3,10 @@
  */
 
 import * as z from 'zod';
+import { CONSTRAINTS } from '@/core/constants';
 
 const layoutIdSchema = z.string().min(1);
-const nameStr = z.string().min(1).max(64);
+const nameStr = z.string().min(1).max(CONSTRAINTS.NAME_MAX_LENGTH);
 
 export const libraryCreateEntrySchema = z.object({
   name: nameStr,

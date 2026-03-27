@@ -4,13 +4,7 @@ import { getMiddlewareFlags } from './middlewareConfig';
 describe('getMiddlewareFlags', () => {
   it('returns domain profile for existing bin commands', () => {
     const flags = getMiddlewareFlags('bin.add');
-    expect(flags).toEqual({
-      validation: true,
-      undo: true,
-      analytics: true,
-      logging: true,
-      persistEvents: true,
-    });
+    expect(flags).toEqual({ validation: true, undo: true });
   });
 
   it('returns domain profile for all existing 23 domain commands', () => {
@@ -49,13 +43,7 @@ describe('getMiddlewareFlags', () => {
 
   it('returns library profile for library commands', () => {
     const flags = getMiddlewareFlags('library.createEntry');
-    expect(flags).toEqual({
-      validation: true,
-      undo: false,
-      analytics: true,
-      logging: true,
-      persistEvents: true,
-    });
+    expect(flags).toEqual({ validation: true, undo: false });
   });
 
   it('returns library profile for all library commands', () => {
@@ -76,40 +64,21 @@ describe('getMiddlewareFlags', () => {
       const flags = getMiddlewareFlags(cmd);
       expect(flags.undo, `${cmd} should have undo=false`).toBe(false);
       expect(flags.validation, `${cmd} should have validation=true`).toBe(true);
-      expect(flags.persistEvents, `${cmd} should have persistEvents=true`).toBe(true);
     }
   });
 
   it('returns ui profile for UI commands', () => {
     const flags = getMiddlewareFlags('ui.pageView');
-    expect(flags).toEqual({
-      validation: false,
-      undo: false,
-      analytics: true,
-      logging: true,
-      persistEvents: false,
-    });
+    expect(flags).toEqual({ validation: false, undo: false });
   });
 
   it('returns restore profile for layout.restore', () => {
     const flags = getMiddlewareFlags('layout.restore');
-    expect(flags).toEqual({
-      validation: false,
-      undo: false,
-      analytics: true,
-      logging: true,
-      persistEvents: true,
-    });
+    expect(flags).toEqual({ validation: false, undo: false });
   });
 
   it('returns designer profile for designer.save', () => {
     const flags = getMiddlewareFlags('designer.save');
-    expect(flags).toEqual({
-      validation: true,
-      undo: false,
-      analytics: true,
-      logging: true,
-      persistEvents: true,
-    });
+    expect(flags).toEqual({ validation: true, undo: false });
   });
 });
