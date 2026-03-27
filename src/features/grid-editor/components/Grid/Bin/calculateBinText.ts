@@ -50,7 +50,7 @@ export function calculateBinText(input: BinTextInput): BinTextResult {
   let labelFits = false;
   let labelFontSize = maxFontSize;
 
-  if (hasLabel && label) {
+  if (hasLabel) {
     const labelLength = label.length;
     const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
 
