@@ -21,6 +21,7 @@ jobs:
   # PRs + main: Build and bundle size check
   build:
     name: Build
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -58,6 +59,7 @@ jobs:
   # Main: Full test suite with coverage thresholds (regression guard, single runner)
   test:
     name: Unit Tests (${{ matrix.shard }})
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -108,6 +110,7 @@ jobs:
   # All checks run to completion so every failure is visible in one pass
   quality:
     name: Quality
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
