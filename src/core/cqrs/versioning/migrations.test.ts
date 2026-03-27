@@ -179,6 +179,20 @@ describe('CURRENT_EVENT_VERSIONS registry completeness', () => {
     'layout.gridUnitMmSet',
     'layout.heightUnitMmSet',
     'layout.baseplateParamsSet',
+    // Library events
+    'library.entryCreated',
+    'library.entryDeleted',
+    'library.entryDuplicated',
+    'library.activeLayoutSwitched',
+    'library.entryUpdated',
+    'library.authorNameSet',
+    'library.cloudShareUpdated',
+    'library.cloudShareCleared',
+    'library.entryRenamed',
+    // Designer events
+    'designer.saved',
+    // Restore events
+    'layout.restored',
   ];
 
   it.each(expectedEventTypes)('has a version entry for %s', (eventType) => {
